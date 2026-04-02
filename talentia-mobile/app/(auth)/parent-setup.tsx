@@ -42,8 +42,9 @@ export default function ParentSetupScreen() {
   const handleComplete = async () => {
     setError('');
     if (!childName.trim()) return;
-    if (childMode === 'special' && !methodology) return;
     if (!user?.id) return;
+
+    const resolvedMethodology = childMode === 'special' ? 'aba' : null;
 
     setLoading(true);
     const row: ChildProfileRow = {
@@ -53,7 +54,7 @@ export default function ParentSetupScreen() {
       language,
       avatar_id: avatarId,
       child_mode: childMode,
-      methodology: childMode === 'special' ? methodology : null,
+      methodology: resolvedMethodology,
       updated_at: new Date().toISOString(),
     };
 
@@ -61,7 +62,7 @@ export default function ParentSetupScreen() {
       await setDemoProfile(row);
       setLanguage(language);
       updateProfile({ childName: childName.trim(), ageBand, avatarId });
-      if (childMode === 'special' && methodology) {
+      if (childMode === 'special') {
         useSettingsStore.getState().setMethodology('aba');
       }
       useSettingsStore.getState().setBreakReminderEnabled(breakReminderEnabled);
@@ -84,7 +85,7 @@ export default function ParentSetupScreen() {
 
     setLanguage(language);
     updateProfile({ childName: childName.trim(), ageBand, avatarId });
-    if (childMode === 'special' && methodology) {
+    if (childMode === 'special') {
       useSettingsStore.getState().setMethodology('aba');
     }
     useSettingsStore.getState().setBreakReminderEnabled(breakReminderEnabled);
@@ -210,28 +211,17 @@ export default function ParentSetupScreen() {
               <AppText>{t('auth.childModeStandard')}</AppText>
             </Card>
           </Pressable>
-          <Pressable onPress={() => setChildMode('special')}>
-            <Card highlighted={childMode === 'special'} style={{ paddingVertical: theme.spacing.sm, paddingHorizontal: theme.spacing.md }}>
-              <AppText>{t('auth.childModeSpecial')}</AppText>
+          <Pressable onPress={() => { setChildMode('special'); setMethodology('aba'); }}>
+            <Card highlighted={childMode === 'special'} style={{ paddingVertical: theme.spacing.sm, paddingHorizontal: theme.spacing.md, flex: 1 }}>
+              <AppText numberOfLines={2}>{t('auth.childModeSpecial')}</AppText>
+              {childMode === 'special' && (
+                <AppText variant="small" style={{ color: theme.colors.textMuted, marginTop: 2 }} numberOfLines={3}>
+                  {t('auth.methodologyABAShort')}
+                </AppText>
+              )}
             </Card>
           </Pressable>
         </View>
-        {childMode === 'special' && (
-          <>
-            <Spacer size="md" />
-            <AppText variant="small" style={{ color: theme.colors.textMuted }}>
-              {t('auth.methodologyLabel')}
-            </AppText>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm, marginTop: theme.spacing.xs }}>
-              <Pressable onPress={() => setMethodology('aba')}>
-                <Card highlighted={methodology === 'aba'} style={{ padding: theme.spacing.md, minWidth: 120 }}>
-                  <AppText>{t('settings.methodologyABA')}</AppText>
-                  <AppText variant="small" style={{ color: theme.colors.textMuted, marginTop: theme.spacing.xs }}>{t('auth.methodologyABAShort')}</AppText>
-                </Card>
-              </Pressable>
-            </View>
-          </>
-        )}
         {error ? (
           <>
             <Spacer size="sm" />
@@ -239,7 +229,7 @@ export default function ParentSetupScreen() {
           </>
         ) : null}
         <Spacer size="lg" />
-        <Button onPress={handleComplete} loading={loading} disabled={!childName.trim() || (childMode === 'special' && !methodology)}>
+        <Button onPress={handleComplete} loading={loading} disabled={!childName.trim()}>
           {t('auth.continue')}
         </Button>
       </Card>
