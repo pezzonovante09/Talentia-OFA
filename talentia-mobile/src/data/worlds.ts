@@ -104,9 +104,9 @@ export const worlds: World[] = [
     titleKey: 'data.worlds.jungle',
     descriptionKey: 'data.worldDesc.jungle',
     accentColor: '#4CAF50',
-    biome: 'рџЊї',
+    biome: '🌿',
     npcName: 'Rex',
-    npcEmoji: 'рџ¦–',
+    npcEmoji: '🦖',
     topics: [
       {
         id: 'jungle-addition',
@@ -124,8 +124,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.jungle_add_1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.jungleAdd_0_title', bodyKey: 'data.intro.jungleAdd_0_body', emoji: 'рџЌЊ' },
-              { titleKey: 'data.intro.jungleAdd_1_title', bodyKey: 'data.intro.jungleAdd_1_body', emoji: 'рџЌЊ' },
+              { titleKey: 'data.intro.jungleAdd_0_title', bodyKey: 'data.intro.jungleAdd_0_body', emoji: '🍌' },
+              { titleKey: 'data.intro.jungleAdd_1_title', bodyKey: 'data.intro.jungleAdd_1_body', emoji: '🍌' },
             ],
             tasks: [
               // Standard tasks
@@ -135,7 +135,7 @@ export const worlds: World[] = [
                 questionKey: 'data.tasks.jungle_q_count_bananas',
                 difficulty: 1,
                 visualCount: 3,
-                visualEmoji: 'рџЌЊ',
+                visualEmoji: '🍌',
                 options: [
                   { id: 'opt-2', textKey: 'data.tasks.opt_two', correct: false },
                   { id: 'opt-3', textKey: 'data.tasks.opt_three', correct: true },
@@ -159,7 +159,7 @@ export const worlds: World[] = [
                 questionKey: 'data.tasks.q_count_apples',
                 difficulty: 1,
                 visualCount: 5,
-                visualEmoji: 'рџЌЋ',
+                visualEmoji: '🍎',
                 options: [
                   { id: 'opt-4', textKey: 'data.tasks.opt_four', correct: false },
                   { id: 'opt-5', textKey: 'data.tasks.opt_five', correct: true },
@@ -174,7 +174,7 @@ export const worlds: World[] = [
                 questionKey: 'data.tasks.aba_jungleAdd_q1',
                 difficulty: 1,
                 visualCount: 3,
-                visualEmoji: 'рџЌЊ',
+                visualEmoji: '🍌',
                 options: [
                   { id: 'opt-2', textKey: 'data.tasks.opt_two', correct: false },
                   { id: 'opt-3', textKey: 'data.tasks.opt_three', correct: true },
@@ -255,8 +255,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.jungle_sub_1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.jungleSub_0_title', bodyKey: 'data.intro.jungleSub_0_body', emoji: 'вћ–' },
-              { titleKey: 'data.intro.jungleSub_1_title', bodyKey: 'data.intro.jungleSub_1_body', emoji: 'вћ—' },
+              { titleKey: 'data.intro.jungleSub_0_title', bodyKey: 'data.intro.jungleSub_0_body', emoji: '➖' },
+              { titleKey: 'data.intro.jungleSub_1_title', bodyKey: 'data.intro.jungleSub_1_body', emoji: '➗' },
             ],
             tasks: [
               // Standard tasks
@@ -346,8 +346,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.jungle_compare_1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.jungleCmp_0_title', bodyKey: 'data.intro.jungleCmp_0_body', emoji: 'рџ“Њ' },
-              { titleKey: 'data.intro.jungleCmp_1_title', bodyKey: 'data.intro.jungleCmp_1_body', emoji: 'рџЋЇ' },
+              { titleKey: 'data.intro.jungleCmp_0_title', bodyKey: 'data.intro.jungleCmp_0_body', emoji: '📌' },
+              { titleKey: 'data.intro.jungleCmp_1_title', bodyKey: 'data.intro.jungleCmp_1_body', emoji: '🎯' },
             ],
             tasks: [
               // Standard tasks
@@ -373,9 +373,9 @@ export const worlds: World[] = [
     titleKey: 'data.worlds.canyon',
     descriptionKey: 'data.worldDesc.canyon',
     accentColor: '#FF9800',
-    biome: 'рџЏњпёЏ',
+    biome: '🏜️',
     npcName: 'Dippy',
-    npcEmoji: 'рџ¦Ћ',
+    npcEmoji: '🦎',
     topics: [
       {
         id: 'canyon-words',
@@ -393,8 +393,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.canyon_words_1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.canyonWords_0_title', bodyKey: 'data.intro.canyonWords_0_body', emoji: 'рџ“–' },
-              { titleKey: 'data.intro.canyonWords_1_title', bodyKey: 'data.intro.canyonWords_1_body', emoji: 'рџ“„' },
+              { titleKey: 'data.intro.canyonWords_0_title', bodyKey: 'data.intro.canyonWords_0_body', emoji: '📖' },
+              { titleKey: 'data.intro.canyonWords_1_title', bodyKey: 'data.intro.canyonWords_1_body', emoji: '📄' },
             ],
             tasks: [
               // Standard tasks
@@ -460,8 +460,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.canyon_sent_1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.canyonSent_0_title', bodyKey: 'data.intro.canyonSent_0_body', emoji: 'рџ“–' },
-              { titleKey: 'data.intro.canyonSent_1_title', bodyKey: 'data.intro.canyonSent_1_body', emoji: 'рџ“Ћ' },
+              { titleKey: 'data.intro.canyonSent_0_title', bodyKey: 'data.intro.canyonSent_0_body', emoji: '📖' },
+              { titleKey: 'data.intro.canyonSent_1_title', bodyKey: 'data.intro.canyonSent_1_body', emoji: '📎' },
             ],
             tasks: [
               {
@@ -497,9 +497,9 @@ export const worlds: World[] = [
     titleKey: 'data.worlds.lab',
     descriptionKey: 'data.worldDesc.lab',
     accentColor: '#9C27B0',
-    biome: 'рџ§Є',
+    biome: '🧪',
     npcName: 'Spike',
-    npcEmoji: 'рџ¦Ћ',
+    npcEmoji: '🦎',
     topics: [
       {
         id: 'lab-animals',
@@ -517,8 +517,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.lab_animals_1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.labAnimals_0_title', bodyKey: 'data.intro.labAnimals_0_body', emoji: 'рџ¦Ћ' },
-              { titleKey: 'data.intro.labAnimals_1_title', bodyKey: 'data.intro.labAnimals_1_body', emoji: 'рџ“¬' },
+              { titleKey: 'data.intro.labAnimals_0_title', bodyKey: 'data.intro.labAnimals_0_body', emoji: '🦎' },
+              { titleKey: 'data.intro.labAnimals_1_title', bodyKey: 'data.intro.labAnimals_1_body', emoji: '📬' },
             ],
             tasks: [
               {
@@ -613,8 +613,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.lab_physics_1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.labPhysics_0_title', bodyKey: 'data.intro.labPhysics_0_body', emoji: 'рџ§Є' },
-              { titleKey: 'data.intro.labPhysics_1_title', bodyKey: 'data.intro.labPhysics_1_body', emoji: 'рџ§Є' },
+              { titleKey: 'data.intro.labPhysics_0_title', bodyKey: 'data.intro.labPhysics_0_body', emoji: '🧪' },
+              { titleKey: 'data.intro.labPhysics_1_title', bodyKey: 'data.intro.labPhysics_1_body', emoji: '🧪' },
             ],
             tasks: [
               {
@@ -659,9 +659,9 @@ export const worlds: World[] = [
     titleKey: 'data.worlds.space',
     descriptionKey: 'data.worldDesc.space',
     accentColor: '#3F51B5',
-    biome: 'рџЊЊ',
+    biome: '🌌',
     npcName: 'Stela',
-    npcEmoji: 'рџ¦•',
+    npcEmoji: '🦕',
     topics: [
       {
         id: 'space-planets',
@@ -679,8 +679,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.space_planets_1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.spacePlanets_0_title', bodyKey: 'data.intro.spacePlanets_0_body', emoji: 'рџЊЌ' },
-              { titleKey: 'data.intro.spacePlanets_1_title', bodyKey: 'data.intro.spacePlanets_1_body', emoji: 'рџЊЊ' },
+              { titleKey: 'data.intro.spacePlanets_0_title', bodyKey: 'data.intro.spacePlanets_0_body', emoji: '🌍' },
+              { titleKey: 'data.intro.spacePlanets_1_title', bodyKey: 'data.intro.spacePlanets_1_body', emoji: '🌌' },
             ],
             tasks: [
               {
@@ -765,8 +765,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.space_solar_1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.spaceSolar_0_title', bodyKey: 'data.intro.spaceSolar_0_body', emoji: 'вњЏпёЏ' },
-              { titleKey: 'data.intro.spaceSolar_1_title', bodyKey: 'data.intro.spaceSolar_1_body', emoji: 'рџЄђ' },
+              { titleKey: 'data.intro.spaceSolar_0_title', bodyKey: 'data.intro.spaceSolar_0_body', emoji: '✏️' },
+              { titleKey: 'data.intro.spaceSolar_1_title', bodyKey: 'data.intro.spaceSolar_1_body', emoji: '🪐' },
             ],
             tasks: [
               {
@@ -815,9 +815,9 @@ export const worlds: World[] = [
     titleKey: 'data.worlds.meadow',
     descriptionKey: 'data.worldDesc.meadow',
     accentColor: '#FF7043',
-    biome: 'рџЊѕ',
-    npcName: 'Р—Р°Р№РєР° Р—РѕСЏ',
-    npcEmoji: 'рџђ°',
+    biome: '🌾',
+    npcName: 'Зайка Зоя',
+    npcEmoji: '🐰',
     topics: [
       // ---
       {
@@ -836,13 +836,13 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.meadow_c5l1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.meadow_c5l1_0_t', bodyKey: 'data.intro.meadow_c5l1_0_b', emoji: 'рџЊњ' },
-              { titleKey: 'data.intro.meadow_c5l1_1_t', bodyKey: 'data.intro.meadow_c5l1_1_b', emoji: 'вњЏпёЏ' },
+              { titleKey: 'data.intro.meadow_c5l1_0_t', bodyKey: 'data.intro.meadow_c5l1_0_b', emoji: '🌜' },
+              { titleKey: 'data.intro.meadow_c5l1_1_t', bodyKey: 'data.intro.meadow_c5l1_1_b', emoji: '✏️' },
             ],
             tasks: [
-              { id: 'mc5l1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_1apple', difficulty: 1, visualCount: 1, visualEmoji: 'рџЌЋ', options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: true }, { id: 'b', textKey: 'data.tasks.opt_two', correct: false }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
-              { id: 'mc5l1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_2stars', difficulty: 1, visualCount: 2, visualEmoji: 'в­ђ', options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
-              { id: 'mc5l1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_3flowers', difficulty: 1, visualCount: 3, visualEmoji: 'рџЊё', options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
+              { id: 'mc5l1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_1apple', difficulty: 1, visualCount: 1, visualEmoji: '🍎', options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: true }, { id: 'b', textKey: 'data.tasks.opt_two', correct: false }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
+              { id: 'mc5l1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_2stars', difficulty: 1, visualCount: 2, visualEmoji: '⭐', options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
+              { id: 'mc5l1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_3flowers', difficulty: 1, visualCount: 3, visualEmoji: '🌸', options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
               { id: 'mc5l1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_after2', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
             ],
           },
@@ -856,12 +856,12 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.meadow_c5l2_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.meadow_c5l2_0_t', bodyKey: 'data.intro.meadow_c5l2_0_b', emoji: 'рџҐ•' },
-              { titleKey: 'data.intro.meadow_c5l2_1_t', bodyKey: 'data.intro.meadow_c5l2_1_b', emoji: 'рџђЈ' },
+              { titleKey: 'data.intro.meadow_c5l2_0_t', bodyKey: 'data.intro.meadow_c5l2_0_b', emoji: '🥕' },
+              { titleKey: 'data.intro.meadow_c5l2_1_t', bodyKey: 'data.intro.meadow_c5l2_1_b', emoji: '🐣' },
             ],
             tasks: [
-              { id: 'mc5l2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_4carrots', difficulty: 1, visualCount: 4, visualEmoji: 'рџҐ•', options: [{ id: 'a', textKey: 'data.tasks.opt_three', correct: false }, { id: 'b', textKey: 'data.tasks.opt_four', correct: true }, { id: 'c', textKey: 'data.tasks.opt_five', correct: false }] },
-              { id: 'mc5l2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_5butterflies', difficulty: 1, visualCount: 5, visualEmoji: 'рџ¦‹', options: [{ id: 'a', textKey: 'data.tasks.opt_four', correct: false }, { id: 'b', textKey: 'data.tasks.opt_five', correct: true }, { id: 'c', textKey: 'data.tasks.opt_six', correct: false }] },
+              { id: 'mc5l2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_4carrots', difficulty: 1, visualCount: 4, visualEmoji: '🥕', options: [{ id: 'a', textKey: 'data.tasks.opt_three', correct: false }, { id: 'b', textKey: 'data.tasks.opt_four', correct: true }, { id: 'c', textKey: 'data.tasks.opt_five', correct: false }] },
+              { id: 'mc5l2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_5butterflies', difficulty: 1, visualCount: 5, visualEmoji: '🦋', options: [{ id: 'a', textKey: 'data.tasks.opt_four', correct: false }, { id: 'b', textKey: 'data.tasks.opt_five', correct: true }, { id: 'c', textKey: 'data.tasks.opt_six', correct: false }] },
               { id: 'mc5l2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_after4', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_three', correct: false }, { id: 'b', textKey: 'data.tasks.opt_five', correct: true }, { id: 'c', textKey: 'data.tasks.opt_six', correct: false }] },
               { id: 'mc5l2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_fingers_one_hand', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_four', correct: false }, { id: 'b', textKey: 'data.tasks.opt_five', correct: true }, { id: 'c', textKey: 'data.tasks.opt_six', correct: false }] },
             ],
@@ -876,8 +876,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.meadow_c5l3_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.meadow_c5l3_0_t', bodyKey: 'data.intro.meadow_c5l3_0_b', emoji: 'рџ§Є' },
-              { titleKey: 'data.intro.meadow_c5l3_1_t', bodyKey: 'data.intro.meadow_c5l3_1_b', emoji: 'в­ђ' },
+              { titleKey: 'data.intro.meadow_c5l3_0_t', bodyKey: 'data.intro.meadow_c5l3_0_b', emoji: '🧪' },
+              { titleKey: 'data.intro.meadow_c5l3_1_t', bodyKey: 'data.intro.meadow_c5l3_1_b', emoji: '⭐' },
             ],
             tasks: [
               { id: 'mc5l3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_more_2or4', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_four', correct: true }] },
@@ -905,12 +905,12 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.meadow_c10l1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.meadow_c10l1_0_t', bodyKey: 'data.intro.meadow_c10l1_0_b', emoji: '6пёЏвѓЈ' },
-              { titleKey: 'data.intro.meadow_c10l1_1_t', bodyKey: 'data.intro.meadow_c10l1_1_b', emoji: '7пёЏвѓЈ' },
+              { titleKey: 'data.intro.meadow_c10l1_0_t', bodyKey: 'data.intro.meadow_c10l1_0_b', emoji: '6️⃣' },
+              { titleKey: 'data.intro.meadow_c10l1_1_t', bodyKey: 'data.intro.meadow_c10l1_1_b', emoji: '7️⃣' },
             ],
             tasks: [
-              { id: 'mc10l1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_6berries', difficulty: 1, visualCount: 6, visualEmoji: 'рџЌ’', options: [{ id: 'a', textKey: 'data.tasks.opt_five', correct: false }, { id: 'b', textKey: 'data.tasks.opt_six', correct: true }, { id: 'c', textKey: 'data.tasks.opt_seven', correct: false }] },
-              { id: 'mc10l1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_7chicks', difficulty: 1, visualCount: 7, visualEmoji: 'рџђҐ', options: [{ id: 'a', textKey: 'data.tasks.opt_six', correct: false }, { id: 'b', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'c', textKey: 'data.tasks.opt_eight', correct: false }] },
+              { id: 'mc10l1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_6berries', difficulty: 1, visualCount: 6, visualEmoji: '🍒', options: [{ id: 'a', textKey: 'data.tasks.opt_five', correct: false }, { id: 'b', textKey: 'data.tasks.opt_six', correct: true }, { id: 'c', textKey: 'data.tasks.opt_seven', correct: false }] },
+              { id: 'mc10l1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_7chicks', difficulty: 1, visualCount: 7, visualEmoji: '🐥', options: [{ id: 'a', textKey: 'data.tasks.opt_six', correct: false }, { id: 'b', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'c', textKey: 'data.tasks.opt_eight', correct: false }] },
               { id: 'mc10l1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_after6', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_five', correct: false }, { id: 'b', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'c', textKey: 'data.tasks.opt_eight', correct: false }] },
               { id: 'mc10l1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_5plus1', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_five', correct: false }, { id: 'b', textKey: 'data.tasks.opt_six', correct: true }, { id: 'c', textKey: 'data.tasks.opt_seven', correct: false }] },
             ],
@@ -925,12 +925,12 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.meadow_c10l2_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.meadow_c10l2_0_t', bodyKey: 'data.intro.meadow_c10l2_0_b', emoji: '8пёЏвѓЈ' },
-              { titleKey: 'data.intro.meadow_c10l2_1_t', bodyKey: 'data.intro.meadow_c10l2_1_b', emoji: '8пёЏвѓЈ' },
+              { titleKey: 'data.intro.meadow_c10l2_0_t', bodyKey: 'data.intro.meadow_c10l2_0_b', emoji: '8️⃣' },
+              { titleKey: 'data.intro.meadow_c10l2_1_t', bodyKey: 'data.intro.meadow_c10l2_1_b', emoji: '8️⃣' },
             ],
             tasks: [
-              { id: 'mc10l2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_8fish', difficulty: 1, visualCount: 8, visualEmoji: 'рџђВ ', options: [{ id: 'a', textKey: 'data.tasks.opt_seven', correct: false }, { id: 'b', textKey: 'data.tasks.opt_eight', correct: true }, { id: 'c', textKey: 'data.tasks.opt_nine', correct: false }] },
-              { id: 'mc10l2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_9stars', difficulty: 1, visualCount: 9, visualEmoji: 'в­ђ', options: [{ id: 'a', textKey: 'data.tasks.opt_eight', correct: false }, { id: 'b', textKey: 'data.tasks.opt_nine', correct: true }, { id: 'c', textKey: 'data.tasks.opt_ten', correct: false }] },
+              { id: 'mc10l2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_8fish', difficulty: 1, visualCount: 8, visualEmoji: '🐘 ', options: [{ id: 'a', textKey: 'data.tasks.opt_seven', correct: false }, { id: 'b', textKey: 'data.tasks.opt_eight', correct: true }, { id: 'c', textKey: 'data.tasks.opt_nine', correct: false }] },
+              { id: 'mc10l2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_9stars', difficulty: 1, visualCount: 9, visualEmoji: '⭐', options: [{ id: 'a', textKey: 'data.tasks.opt_eight', correct: false }, { id: 'b', textKey: 'data.tasks.opt_nine', correct: true }, { id: 'c', textKey: 'data.tasks.opt_ten', correct: false }] },
               { id: 'mc10l2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_biggest_to10', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_eight', correct: false }, { id: 'b', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'c', textKey: 'data.tasks.opt_ten', correct: true }] },
               { id: 'mc10l2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_9plus1', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'b', textKey: 'data.tasks.opt_ten', correct: true }, { id: 'c', textKey: 'data.tasks.opt_eleven', correct: false }] },
             ],
@@ -945,8 +945,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.meadow_c10l3_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.meadow_c10l3_0_t', bodyKey: 'data.intro.meadow_c10l3_0_b', emoji: 'рџ”џ' },
-              { titleKey: 'data.intro.meadow_c10l3_1_t', bodyKey: 'data.intro.meadow_c10l3_1_b', emoji: 'в­ђ' },
+              { titleKey: 'data.intro.meadow_c10l3_0_t', bodyKey: 'data.intro.meadow_c10l3_0_b', emoji: '🔟' },
+              { titleKey: 'data.intro.meadow_c10l3_1_t', bodyKey: 'data.intro.meadow_c10l3_1_b', emoji: '⭐' },
             ],
             tasks: [
               { id: 'mc10l3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_more_7or3', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'b', textKey: 'data.tasks.opt_three', correct: false }] },
@@ -974,8 +974,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.meadow_shl1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.meadow_shl1_0_t', bodyKey: 'data.intro.meadow_shl1_0_b', emoji: 'рџ”µ' },
-              { titleKey: 'data.intro.meadow_shl1_1_t', bodyKey: 'data.intro.meadow_shl1_1_b', emoji: 'в¬њ' },
+              { titleKey: 'data.intro.meadow_shl1_0_t', bodyKey: 'data.intro.meadow_shl1_0_b', emoji: '🔵' },
+              { titleKey: 'data.intro.meadow_shl1_1_t', bodyKey: 'data.intro.meadow_shl1_1_b', emoji: '⬜' },
             ],
             tasks: [
               { id: 'mshl1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_shape_circle_q', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_circle', correct: true }, { id: 'b', textKey: 'data.tasks.opt_square', correct: false }, { id: 'c', textKey: 'data.tasks.opt_triangle', correct: false }] },
@@ -994,8 +994,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.meadow_shl2_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.meadow_shl2_0_t', bodyKey: 'data.intro.meadow_shl2_0_b', emoji: 'рџ”є' },
-              { titleKey: 'data.intro.meadow_shl2_1_t', bodyKey: 'data.intro.meadow_shl2_1_b', emoji: 'вњЏпёЏ' },
+              { titleKey: 'data.intro.meadow_shl2_0_t', bodyKey: 'data.intro.meadow_shl2_0_b', emoji: '🔺' },
+              { titleKey: 'data.intro.meadow_shl2_1_t', bodyKey: 'data.intro.meadow_shl2_1_b', emoji: '✏️' },
             ],
             tasks: [
               { id: 'mshl2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_shape_3corners', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_circle', correct: false }, { id: 'b', textKey: 'data.tasks.opt_triangle', correct: true }, { id: 'c', textKey: 'data.tasks.opt_square', correct: false }] },
@@ -1014,8 +1014,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.meadow_shl3_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.meadow_shl3_0_t', bodyKey: 'data.intro.meadow_shl3_0_b', emoji: 'рџ”·' },
-              { titleKey: 'data.intro.meadow_shl3_1_t', bodyKey: 'data.intro.meadow_shl3_1_b', emoji: 'рџЊѕ' },
+              { titleKey: 'data.intro.meadow_shl3_0_t', bodyKey: 'data.intro.meadow_shl3_0_b', emoji: '🔷' },
+              { titleKey: 'data.intro.meadow_shl3_1_t', bodyKey: 'data.intro.meadow_shl3_1_b', emoji: '🌾' },
             ],
             tasks: [
               { id: 'mshl3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_no_corners_shape', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_square', correct: false }, { id: 'b', textKey: 'data.tasks.opt_triangle', correct: false }, { id: 'c', textKey: 'data.tasks.opt_circle', correct: true }] },
@@ -1036,9 +1036,9 @@ export const worlds: World[] = [
     titleKey: 'data.worlds.forest',
     descriptionKey: 'data.worldDesc.forest',
     accentColor: '#66BB6A',
-    biome: 'рџЊІ',
-    npcName: 'РЃР¶РёРє Р¤РµРґСЏ',
-    npcEmoji: 'рџ¦Њ',
+    biome: '🌲',
+    npcName: 'Ёжик Федя',
+    npcEmoji: '🦌',
     topics: [
       // ---
       {
@@ -1057,8 +1057,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.forest_vl1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.forest_vl1_0_t', bodyKey: 'data.intro.forest_vl1_0_b', emoji: 'рџ…°пёЏ' },
-              { titleKey: 'data.intro.forest_vl1_1_t', bodyKey: 'data.intro.forest_vl1_1_b', emoji: 'рџЌЋ' },
+              { titleKey: 'data.intro.forest_vl1_0_t', bodyKey: 'data.intro.forest_vl1_0_b', emoji: '🅰️' },
+              { titleKey: 'data.intro.forest_vl1_1_t', bodyKey: 'data.intro.forest_vl1_1_b', emoji: '🍎' },
             ],
             tasks: [
               { id: 'fvl1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_letter_a_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_cloud', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_watermelon', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_cat', correct: false }] },
@@ -1077,8 +1077,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.forest_vl2_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.forest_vl2_0_t', bodyKey: 'data.intro.forest_vl2_0_b', emoji: 'рџ…ѕпёЏ' },
-              { titleKey: 'data.intro.forest_vl2_1_t', bodyKey: 'data.intro.forest_vl2_1_b', emoji: 'рџЌЉ' },
+              { titleKey: 'data.intro.forest_vl2_0_t', bodyKey: 'data.intro.forest_vl2_0_b', emoji: '🅾️' },
+              { titleKey: 'data.intro.forest_vl2_1_t', bodyKey: 'data.intro.forest_vl2_1_b', emoji: '🍊' },
             ],
             tasks: [
               { id: 'fvl2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_letter_o_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_duck', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_watermelon', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_veggies', correct: true }] },
@@ -1097,8 +1097,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.forest_vl3_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.forest_vl3_0_t', bodyKey: 'data.intro.forest_vl3_0_b', emoji: 'в„№пёЏ' },
-              { titleKey: 'data.intro.forest_vl3_1_t', bodyKey: 'data.intro.forest_vl3_1_b', emoji: 'вњЏпёЏ' },
+              { titleKey: 'data.intro.forest_vl3_0_t', bodyKey: 'data.intro.forest_vl3_0_b', emoji: 'ℹ️' },
+              { titleKey: 'data.intro.forest_vl3_1_t', bodyKey: 'data.intro.forest_vl3_1_b', emoji: '✏️' },
             ],
             tasks: [
               { id: 'fvl3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_letter_i_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_echo', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_toy', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_watermelon', correct: false }] },
@@ -1126,8 +1126,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.forest_conl1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.forest_conl1_0_t', bodyKey: 'data.intro.forest_conl1_0_b', emoji: 'рџ”¤' },
-              { titleKey: 'data.intro.forest_conl1_1_t', bodyKey: 'data.intro.forest_conl1_1_b', emoji: 'рџЊї' },
+              { titleKey: 'data.intro.forest_conl1_0_t', bodyKey: 'data.intro.forest_conl1_0_b', emoji: '🔤' },
+              { titleKey: 'data.intro.forest_conl1_1_t', bodyKey: 'data.intro.forest_conl1_1_b', emoji: '🌿' },
             ],
             tasks: [
               { id: 'fconl1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_m_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_mama', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_watermelon', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_cloud', correct: false }] },
@@ -1146,8 +1146,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.forest_conl2_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.forest_conl2_0_t', bodyKey: 'data.intro.forest_conl2_0_b', emoji: 'рџЊї' },
-              { titleKey: 'data.intro.forest_conl2_1_t', bodyKey: 'data.intro.forest_conl2_1_b', emoji: 'рџ¦”' },
+              { titleKey: 'data.intro.forest_conl2_0_t', bodyKey: 'data.intro.forest_conl2_0_b', emoji: '🌿' },
+              { titleKey: 'data.intro.forest_conl2_1_t', bodyKey: 'data.intro.forest_conl2_1_b', emoji: '🦔' },
             ],
             tasks: [
               { id: 'fconl2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_t_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_tiger', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_duck', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_mama', correct: false }] },
@@ -1166,8 +1166,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.forest_conl3_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.forest_conl3_0_t', bodyKey: 'data.intro.forest_conl3_0_b', emoji: 'рџЊђ' },
-              { titleKey: 'data.intro.forest_conl3_1_t', bodyKey: 'data.intro.forest_conl3_1_b', emoji: 'рџ“•' },
+              { titleKey: 'data.intro.forest_conl3_0_t', bodyKey: 'data.intro.forest_conl3_0_b', emoji: '🌐' },
+              { titleKey: 'data.intro.forest_conl3_1_t', bodyKey: 'data.intro.forest_conl3_1_b', emoji: '📕' },
             ],
             tasks: [
               { id: 'fconl3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_n_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_scissors_ru', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_sky_ru', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_mama', correct: false }] },
@@ -1195,8 +1195,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.forest_syll1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.forest_syll1_0_t', bodyKey: 'data.intro.forest_syll1_0_b', emoji: 'рџ”ў' },
-              { titleKey: 'data.intro.forest_syll1_1_t', bodyKey: 'data.intro.forest_syll1_1_b', emoji: 'рџ“„' },
+              { titleKey: 'data.intro.forest_syll1_0_t', bodyKey: 'data.intro.forest_syll1_0_b', emoji: '🔢' },
+              { titleKey: 'data.intro.forest_syll1_1_t', bodyKey: 'data.intro.forest_syll1_1_b', emoji: '📄' },
             ],
             tasks: [
               { id: 'fsyll1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_read_ma', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_ma', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_mo', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_mu', correct: false }] },
@@ -1215,8 +1215,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.forest_syll2_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.forest_syll2_0_t', bodyKey: 'data.intro.forest_syll2_0_b', emoji: 'рџ“ќ' },
-              { titleKey: 'data.intro.forest_syll2_1_t', bodyKey: 'data.intro.forest_syll2_1_b', emoji: 'рџЊЌ' },
+              { titleKey: 'data.intro.forest_syll2_0_t', bodyKey: 'data.intro.forest_syll2_0_b', emoji: '📝' },
+              { titleKey: 'data.intro.forest_syll2_1_t', bodyKey: 'data.intro.forest_syll2_1_b', emoji: '🌍' },
             ],
             tasks: [
               { id: 'fsyll2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_read_sa', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_sa', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_so', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_su', correct: false }] },
@@ -1235,8 +1235,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.forest_syll3_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.forest_syll3_0_t', bodyKey: 'data.intro.forest_syll3_0_b', emoji: 'рџ“–' },
-              { titleKey: 'data.intro.forest_syll3_1_t', bodyKey: 'data.intro.forest_syll3_1_b', emoji: 'рџЋ“' },
+              { titleKey: 'data.intro.forest_syll3_0_t', bodyKey: 'data.intro.forest_syll3_0_b', emoji: '📖' },
+              { titleKey: 'data.intro.forest_syll3_1_t', bodyKey: 'data.intro.forest_syll3_1_b', emoji: '🎓' },
             ],
             tasks: [
               { id: 'fsyll3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_read_na', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_ma', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_na', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_sa', correct: false }] },
@@ -1257,9 +1257,9 @@ export const worlds: World[] = [
     titleKey: 'data.worlds.garden',
     descriptionKey: 'data.worldDesc.garden',
     accentColor: '#9CCC65',
-    biome: 'рџЊ·',
-    npcName: 'Р§РµСЂРµРїР°С€РєР° РўР°СЂР°',
-    npcEmoji: 'рџђў',
+    biome: '🌷',
+    npcName: 'Черепашка Тара',
+    npcEmoji: '🐢',
     topics: [
       // ---
       {
@@ -1278,8 +1278,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.garden_coll1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.garden_coll1_0_t', bodyKey: 'data.intro.garden_coll1_0_b', emoji: 'рџЋЁ' },
-              { titleKey: 'data.intro.garden_coll1_1_t', bodyKey: 'data.intro.garden_coll1_1_b', emoji: 'рџЊѕ' },
+              { titleKey: 'data.intro.garden_coll1_0_t', bodyKey: 'data.intro.garden_coll1_0_b', emoji: '🎨' },
+              { titleKey: 'data.intro.garden_coll1_1_t', bodyKey: 'data.intro.garden_coll1_1_b', emoji: '🌾' },
             ],
             tasks: [
               { id: 'gcoll1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_color_apple', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }, { id: 'c', textKey: 'data.tasks.opt_green', correct: false }] },
@@ -1298,8 +1298,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.garden_coll2_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.garden_coll2_0_t', bodyKey: 'data.intro.garden_coll2_0_b', emoji: 'рџџЎ' },
-              { titleKey: 'data.intro.garden_coll2_1_t', bodyKey: 'data.intro.garden_coll2_1_b', emoji: 'рџџ ' },
+              { titleKey: 'data.intro.garden_coll2_0_t', bodyKey: 'data.intro.garden_coll2_0_b', emoji: '🟡' },
+              { titleKey: 'data.intro.garden_coll2_1_t', bodyKey: 'data.intro.garden_coll2_1_b', emoji: '🟠' },
             ],
             tasks: [
               { id: 'gcoll2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_color_orange_fruit', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_orange', correct: true }, { id: 'c', textKey: 'data.tasks.opt_blue', correct: false }] },
@@ -1318,8 +1318,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.garden_coll3_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.garden_coll3_0_t', bodyKey: 'data.intro.garden_coll3_0_b', emoji: 'рџџЈ' },
-              { titleKey: 'data.intro.garden_coll3_1_t', bodyKey: 'data.intro.garden_coll3_1_b', emoji: 'рџЋ“' },
+              { titleKey: 'data.intro.garden_coll3_0_t', bodyKey: 'data.intro.garden_coll3_0_b', emoji: '🟣' },
+              { titleKey: 'data.intro.garden_coll3_1_t', bodyKey: 'data.intro.garden_coll3_1_b', emoji: '🎓' },
             ],
             tasks: [
               { id: 'gcoll3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_color_snow', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_white', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }, { id: 'c', textKey: 'data.tasks.opt_red', correct: false }] },
@@ -1347,8 +1347,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.garden_animl1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.garden_animl1_0_t', bodyKey: 'data.intro.garden_animl1_0_b', emoji: 'рџђ„' },
-              { titleKey: 'data.intro.garden_animl1_1_t', bodyKey: 'data.intro.garden_animl1_1_b', emoji: 'рџђ•' },
+              { titleKey: 'data.intro.garden_animl1_0_t', bodyKey: 'data.intro.garden_animl1_0_b', emoji: '🐄' },
+              { titleKey: 'data.intro.garden_animl1_1_t', bodyKey: 'data.intro.garden_animl1_1_b', emoji: '🐕' },
             ],
             tasks: [
               { id: 'ganiml1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_domestic_animal', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_wolf', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_cow', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_bear', correct: false }] },
@@ -1367,8 +1367,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.garden_animl2_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.garden_animl2_0_t', bodyKey: 'data.intro.garden_animl2_0_b', emoji: 'рџ¦Ћ' },
-              { titleKey: 'data.intro.garden_animl2_1_t', bodyKey: 'data.intro.garden_animl2_1_b', emoji: 'рџЊї' },
+              { titleKey: 'data.intro.garden_animl2_0_t', bodyKey: 'data.intro.garden_animl2_0_b', emoji: '🦎' },
+              { titleKey: 'data.intro.garden_animl2_1_t', bodyKey: 'data.intro.garden_animl2_1_b', emoji: '🌿' },
             ],
             tasks: [
               { id: 'ganiml2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_wild_animal', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_cow', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_wolf', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_horse', correct: false }] },
@@ -1387,8 +1387,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.garden_animl3_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.garden_animl3_0_t', bodyKey: 'data.intro.garden_animl3_0_b', emoji: 'рџђ„' },
-              { titleKey: 'data.intro.garden_animl3_1_t', bodyKey: 'data.intro.garden_animl3_1_b', emoji: 'рџ¦•' },
+              { titleKey: 'data.intro.garden_animl3_0_t', bodyKey: 'data.intro.garden_animl3_0_b', emoji: '🐄' },
+              { titleKey: 'data.intro.garden_animl3_1_t', bodyKey: 'data.intro.garden_animl3_1_b', emoji: '🦕' },
             ],
             tasks: [
               { id: 'ganiml3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_fish_lives', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_land', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_water', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_sky', correct: false }] },
@@ -1416,8 +1416,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.garden_seasl1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.garden_seasl1_0_t', bodyKey: 'data.intro.garden_seasl1_0_b', emoji: 'рџЌ‚' },
-              { titleKey: 'data.intro.garden_seasl1_1_t', bodyKey: 'data.intro.garden_seasl1_1_b', emoji: 'вњ”пёЏ' },
+              { titleKey: 'data.intro.garden_seasl1_0_t', bodyKey: 'data.intro.garden_seasl1_0_b', emoji: '🍂' },
+              { titleKey: 'data.intro.garden_seasl1_1_t', bodyKey: 'data.intro.garden_seasl1_1_b', emoji: '✔️' },
             ],
             tasks: [
               { id: 'gseasl1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_autumn_sign', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_flowers_bloom', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_leaves_fall', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_snow_melts', correct: false }] },
@@ -1436,8 +1436,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.garden_seasl2_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.garden_seasl2_0_t', bodyKey: 'data.intro.garden_seasl2_0_b', emoji: 'рџЊё' },
-              { titleKey: 'data.intro.garden_seasl2_1_t', bodyKey: 'data.intro.garden_seasl2_1_b', emoji: 'вЂпёЏ' },
+              { titleKey: 'data.intro.garden_seasl2_0_t', bodyKey: 'data.intro.garden_seasl2_0_b', emoji: '🌸' },
+              { titleKey: 'data.intro.garden_seasl2_1_t', bodyKey: 'data.intro.garden_seasl2_1_b', emoji: '☀️' },
             ],
             tasks: [
               { id: 'gseasl2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_spring_sign', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_snow_falls', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_snow_melts', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_leaves_fall', correct: false }] },
@@ -1456,8 +1456,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.garden_seasl3_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.garden_seasl3_0_t', bodyKey: 'data.intro.garden_seasl3_0_b', emoji: 'вњЏпёЏ' },
-              { titleKey: 'data.intro.garden_seasl3_1_t', bodyKey: 'data.intro.garden_seasl3_1_b', emoji: 'рџЏ–пёЏ' },
+              { titleKey: 'data.intro.garden_seasl3_0_t', bodyKey: 'data.intro.garden_seasl3_0_b', emoji: '✏️' },
+              { titleKey: 'data.intro.garden_seasl3_1_t', bodyKey: 'data.intro.garden_seasl3_1_b', emoji: '🏖️' },
             ],
             tasks: [
               { id: 'gseasl3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_summer_sign', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_snow_falls', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_hot', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_leaves_fall', correct: false }] },
@@ -1478,9 +1478,9 @@ export const worlds: World[] = [
     titleKey: 'data.worlds.island',
     descriptionKey: 'data.worldDesc.island',
     accentColor: '#29B6F6',
-    biome: 'рџЏќпёЏ',
-    npcName: 'РџРѕРїСѓРіР°Р№ РџРёС‚',
-    npcEmoji: 'рџ¦њ',
+    biome: '🏝️',
+    npcName: 'Попугай Пит',
+    npcEmoji: '🦜',
     topics: [
       // ---
       {
@@ -1499,8 +1499,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.island_abcl1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.island_abcl1_0_t', bodyKey: 'data.intro.island_abcl1_0_b', emoji: 'рџ…°пёЏ' },
-              { titleKey: 'data.intro.island_abcl1_1_t', bodyKey: 'data.intro.island_abcl1_1_b', emoji: 'рџ“љ' },
+              { titleKey: 'data.intro.island_abcl1_0_t', bodyKey: 'data.intro.island_abcl1_0_b', emoji: '🅰️' },
+              { titleKey: 'data.intro.island_abcl1_1_t', bodyKey: 'data.intro.island_abcl1_1_b', emoji: '📚' },
             ],
             tasks: [
               { id: 'iabcl1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_letter_a', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_a', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_en_b', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_en_c', correct: false }] },
@@ -1519,8 +1519,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.island_abcl2_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.island_abcl2_0_t', bodyKey: 'data.intro.island_abcl2_0_b', emoji: 'рџђ±' },
-              { titleKey: 'data.intro.island_abcl2_1_t', bodyKey: 'data.intro.island_abcl2_1_b', emoji: 'рџђ¬' },
+              { titleKey: 'data.intro.island_abcl2_0_t', bodyKey: 'data.intro.island_abcl2_0_b', emoji: '🐱' },
+              { titleKey: 'data.intro.island_abcl2_1_t', bodyKey: 'data.intro.island_abcl2_1_b', emoji: '🐬' },
             ],
             tasks: [
               { id: 'iabcl2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_letter_c', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_b', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_c', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_d', correct: false }] },
@@ -1539,8 +1539,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.island_abcl3_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.island_abcl3_0_t', bodyKey: 'data.intro.island_abcl3_0_b', emoji: 'рџҐљ' },
-              { titleKey: 'data.intro.island_abcl3_1_t', bodyKey: 'data.intro.island_abcl3_1_b', emoji: 'рџЋ“' },
+              { titleKey: 'data.intro.island_abcl3_0_t', bodyKey: 'data.intro.island_abcl3_0_b', emoji: '🥚' },
+              { titleKey: 'data.intro.island_abcl3_1_t', bodyKey: 'data.intro.island_abcl3_1_b', emoji: '🎓' },
             ],
             tasks: [
               { id: 'iabcl3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_letter_e', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_d', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_e', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_f', correct: false }] },
@@ -1568,8 +1568,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.island_coll1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.island_coll1_0_t', bodyKey: 'data.intro.island_coll1_0_b', emoji: 'рџ”ґ' },
-              { titleKey: 'data.intro.island_coll1_1_t', bodyKey: 'data.intro.island_coll1_1_b', emoji: 'рџ”µ' },
+              { titleKey: 'data.intro.island_coll1_0_t', bodyKey: 'data.intro.island_coll1_0_b', emoji: '🔴' },
+              { titleKey: 'data.intro.island_coll1_1_t', bodyKey: 'data.intro.island_coll1_1_b', emoji: '🔵' },
             ],
             tasks: [
               { id: 'icoll1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_apple_color', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }, { id: 'c', textKey: 'data.tasks.opt_green', correct: false }] },
@@ -1588,8 +1588,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.island_coll2_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.island_coll2_0_t', bodyKey: 'data.intro.island_coll2_0_b', emoji: 'рџџЎ' },
-              { titleKey: 'data.intro.island_coll2_1_t', bodyKey: 'data.intro.island_coll2_1_b', emoji: 'рџџ ' },
+              { titleKey: 'data.intro.island_coll2_0_t', bodyKey: 'data.intro.island_coll2_0_b', emoji: '🟡' },
+              { titleKey: 'data.intro.island_coll2_1_t', bodyKey: 'data.intro.island_coll2_1_b', emoji: '🟠' },
             ],
             tasks: [
               { id: 'icoll2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_sun_color', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_yellow', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }, { id: 'c', textKey: 'data.tasks.opt_red', correct: false }] },
@@ -1608,8 +1608,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.island_coll3_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.island_coll3_0_t', bodyKey: 'data.intro.island_coll3_0_b', emoji: 'рџЊѕ' },
-              { titleKey: 'data.intro.island_coll3_1_t', bodyKey: 'data.intro.island_coll3_1_b', emoji: 'рџЋЁ' },
+              { titleKey: 'data.intro.island_coll3_0_t', bodyKey: 'data.intro.island_coll3_0_b', emoji: '🌾' },
+              { titleKey: 'data.intro.island_coll3_1_t', bodyKey: 'data.intro.island_coll3_1_b', emoji: '🎨' },
             ],
             tasks: [
               { id: 'icoll3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_frog_color', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: false }, { id: 'b', textKey: 'data.tasks.opt_green', correct: true }, { id: 'c', textKey: 'data.tasks.opt_blue', correct: false }] },
@@ -1637,8 +1637,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.island_animl1_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.island_animl1_0_t', bodyKey: 'data.intro.island_animl1_0_b', emoji: 'рџђ±' },
-              { titleKey: 'data.intro.island_animl1_1_t', bodyKey: 'data.intro.island_animl1_1_b', emoji: 'рџ“–' },
+              { titleKey: 'data.intro.island_animl1_0_t', bodyKey: 'data.intro.island_animl1_0_b', emoji: '🐱' },
+              { titleKey: 'data.intro.island_animl1_1_t', bodyKey: 'data.intro.island_animl1_1_b', emoji: '📖' },
             ],
             tasks: [
               { id: 'ianiml1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_cat_word', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_cat', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_en_dog', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_en_bird', correct: false }] },
@@ -1657,8 +1657,8 @@ export const worlds: World[] = [
               { speaker: 'npc', textKey: 'data.dialog.island_animl2_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.island_animl2_0_t', bodyKey: 'data.intro.island_animl2_0_b', emoji: 'рџђ¦' },
-              { titleKey: 'data.intro.island_animl2_1_t', bodyKey: 'data.intro.island_animl2_1_b', emoji: 'рџђџ' },
+              { titleKey: 'data.intro.island_animl2_0_t', bodyKey: 'data.intro.island_animl2_0_b', emoji: '🐦' },
+              { titleKey: 'data.intro.island_animl2_1_t', bodyKey: 'data.intro.island_animl2_1_b', emoji: '🐟' },
             ],
             tasks: [
               { id: 'ianiml2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_bird_word', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_cat', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_bird', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_fish', correct: false }] },
@@ -1677,8 +1677,8 @@ export const worlds: World[] = [
               { speaker: 'tali', textKey: 'data.dialog.island_animl3_1' },
             ],
             intro: [
-              { titleKey: 'data.intro.island_animl3_0_t', bodyKey: 'data.intro.island_animl3_0_b', emoji: 'рџ¦Ћ' },
-              { titleKey: 'data.intro.island_animl3_1_t', bodyKey: 'data.intro.island_animl3_1_b', emoji: 'рџЋ“' },
+              { titleKey: 'data.intro.island_animl3_0_t', bodyKey: 'data.intro.island_animl3_0_b', emoji: '🦎' },
+              { titleKey: 'data.intro.island_animl3_1_t', bodyKey: 'data.intro.island_animl3_1_b', emoji: '🎓' },
             ],
             tasks: [
               { id: 'ianiml3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_cow_word', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_cat', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_cow', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_dog', correct: false }] },
@@ -1694,12 +1694,12 @@ export const worlds: World[] = [
   // ---
   {
     id: 'g1math', titleKey: 'data.worlds.g1math', descriptionKey: 'data.worldDesc.g1math',
-    biome: 'town', accentColor: '#FF7043', npcEmoji: 'рџ¦Ѓ', ageBand: '7',
+    biome: 'town', accentColor: '#FF7043', npcEmoji: '🦁', ageBand: '7',
     topics: [
       { id: 'g1m-cnt20', worldId: 'g1math', titleKey: 'data.topics.g1mCnt20', subject: 'math', lessons: [
         { id: 'g1m-c20-l1', topicId: 'g1m-cnt20', titleKey: 'data.lessons.g1mC20L1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1m_c20l1_0' }, { speaker: 'tali', textKey: 'data.dialog.g1m_c20l1_1' }],
-          intro: [{ titleKey: 'data.intro.g1m_c20l1_0_t', bodyKey: 'data.intro.g1m_c20l1_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g1m_c20l1_1_t', bodyKey: 'data.intro.g1m_c20l1_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g1m_c20l1_0_t', bodyKey: 'data.intro.g1m_c20l1_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g1m_c20l1_1_t', bodyKey: 'data.intro.g1m_c20l1_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g1c20l1t1', type: 'multiple_choice', questionKey: 'data.tasks.g1m_what_is_12', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_11', correct: false }, { id: 'b', textKey: 'data.tasks.opt_12', correct: true }, { id: 'c', textKey: 'data.tasks.opt_13', correct: false }] },
             { id: 'g1c20l1t2', type: 'multiple_choice', questionKey: 'data.tasks.g1m_after_13', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_13', correct: false }, { id: 'b', textKey: 'data.tasks.opt_14', correct: true }, { id: 'c', textKey: 'data.tasks.opt_15', correct: false }] },
@@ -1708,7 +1708,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1m-c20-l2', topicId: 'g1m-cnt20', titleKey: 'data.lessons.g1mC20L2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1m_c20l2_0' }, { speaker: 'tali', textKey: 'data.dialog.g1m_c20l2_1' }],
-          intro: [{ titleKey: 'data.intro.g1m_c20l2_0_t', bodyKey: 'data.intro.g1m_c20l2_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g1m_c20l2_1_t', bodyKey: 'data.intro.g1m_c20l2_1_b', emoji: 'рџЊЌ' }],
+          intro: [{ titleKey: 'data.intro.g1m_c20l2_0_t', bodyKey: 'data.intro.g1m_c20l2_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g1m_c20l2_1_t', bodyKey: 'data.intro.g1m_c20l2_1_b', emoji: '🌍' }],
           tasks: [
             { id: 'g1c20l2t1', type: 'multiple_choice', questionKey: 'data.tasks.g1m_after_17', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_17', correct: false }, { id: 'b', textKey: 'data.tasks.opt_18', correct: true }, { id: 'c', textKey: 'data.tasks.opt_19', correct: false }] },
             { id: 'g1c20l2t2', type: 'multiple_choice', questionKey: 'data.tasks.g1m_before_20', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_18', correct: false }, { id: 'b', textKey: 'data.tasks.opt_19', correct: true }, { id: 'c', textKey: 'data.tasks.opt_20', correct: false }] },
@@ -1717,7 +1717,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1m-c20-l3', topicId: 'g1m-cnt20', titleKey: 'data.lessons.g1mC20L3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1m_c20l3_0' }, { speaker: 'tali', textKey: 'data.dialog.g1m_c20l3_1' }],
-          intro: [{ titleKey: 'data.intro.g1m_c20l3_0_t', bodyKey: 'data.intro.g1m_c20l3_0_b', emoji: 'рџ§Є' }, { titleKey: 'data.intro.g1m_c20l3_1_t', bodyKey: 'data.intro.g1m_c20l3_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g1m_c20l3_0_t', bodyKey: 'data.intro.g1m_c20l3_0_b', emoji: '🧪' }, { titleKey: 'data.intro.g1m_c20l3_1_t', bodyKey: 'data.intro.g1m_c20l3_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g1c20l3t1', type: 'multiple_choice', questionKey: 'data.tasks.g1m_compare_14_17', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_greater', correct: false }, { id: 'b', textKey: 'data.tasks.opt_less', correct: true }, { id: 'c', textKey: 'data.tasks.opt_equal', correct: false }] },
             { id: 'g1c20l3t2', type: 'multiple_choice', questionKey: 'data.tasks.g1m_compare_20_20', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_greater', correct: false }, { id: 'b', textKey: 'data.tasks.opt_less', correct: false }, { id: 'c', textKey: 'data.tasks.opt_equal', correct: true }] },
@@ -1728,7 +1728,7 @@ export const worlds: World[] = [
       { id: 'g1m-add', worldId: 'g1math', titleKey: 'data.topics.g1mAdd', subject: 'math', lessons: [
         { id: 'g1m-add-l1', topicId: 'g1m-add', titleKey: 'data.lessons.g1mAddL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1m_addl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g1m_addl1_1' }],
-          intro: [{ titleKey: 'data.intro.g1m_addl1_0_t', bodyKey: 'data.intro.g1m_addl1_0_b', emoji: 'вћ•' }, { titleKey: 'data.intro.g1m_addl1_1_t', bodyKey: 'data.intro.g1m_addl1_1_b', emoji: 'рџЌЋ' }],
+          intro: [{ titleKey: 'data.intro.g1m_addl1_0_t', bodyKey: 'data.intro.g1m_addl1_0_b', emoji: '➕' }, { titleKey: 'data.intro.g1m_addl1_1_t', bodyKey: 'data.intro.g1m_addl1_1_b', emoji: '🍎' }],
           tasks: [
             { id: 'g1addl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g1m_3plus4', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_six', correct: false }, { id: 'b', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'c', textKey: 'data.tasks.opt_eight', correct: false }] },
             { id: 'g1addl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g1m_2plus6', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_seven', correct: false }, { id: 'b', textKey: 'data.tasks.opt_eight', correct: true }, { id: 'c', textKey: 'data.tasks.opt_nine', correct: false }] },
@@ -1737,7 +1737,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1m-add-l2', topicId: 'g1m-add', titleKey: 'data.lessons.g1mAddL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1m_addl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g1m_addl2_1' }],
-          intro: [{ titleKey: 'data.intro.g1m_addl2_0_t', bodyKey: 'data.intro.g1m_addl2_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g1m_addl2_1_t', bodyKey: 'data.intro.g1m_addl2_1_b', emoji: 'вћ•' }],
+          intro: [{ titleKey: 'data.intro.g1m_addl2_0_t', bodyKey: 'data.intro.g1m_addl2_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g1m_addl2_1_t', bodyKey: 'data.intro.g1m_addl2_1_b', emoji: '➕' }],
           tasks: [
             { id: 'g1addl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g1m_missing_7_plus_10', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
             { id: 'g1addl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g1m_missing_4_plus_10', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_four', correct: false }, { id: 'b', textKey: 'data.tasks.opt_six', correct: true }, { id: 'c', textKey: 'data.tasks.opt_eight', correct: false }] },
@@ -1746,7 +1746,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1m-add-l3', topicId: 'g1m-add', titleKey: 'data.lessons.g1mAddL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1m_addl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g1m_addl3_1' }],
-          intro: [{ titleKey: 'data.intro.g1m_addl3_0_t', bodyKey: 'data.intro.g1m_addl3_0_b', emoji: 'вћ•' }, { titleKey: 'data.intro.g1m_addl3_1_t', bodyKey: 'data.intro.g1m_addl3_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g1m_addl3_0_t', bodyKey: 'data.intro.g1m_addl3_0_b', emoji: '➕' }, { titleKey: 'data.intro.g1m_addl3_1_t', bodyKey: 'data.intro.g1m_addl3_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g1addl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g1m_10plus5', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_13', correct: false }, { id: 'b', textKey: 'data.tasks.opt_15', correct: true }, { id: 'c', textKey: 'data.tasks.opt_17', correct: false }] },
             { id: 'g1addl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g1m_10plus8', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_16', correct: false }, { id: 'b', textKey: 'data.tasks.opt_18', correct: true }, { id: 'c', textKey: 'data.tasks.opt_20', correct: false }] },
@@ -1757,7 +1757,7 @@ export const worlds: World[] = [
       { id: 'g1m-sub', worldId: 'g1math', titleKey: 'data.topics.g1mSub', subject: 'math', lessons: [
         { id: 'g1m-sub-l1', topicId: 'g1m-sub', titleKey: 'data.lessons.g1mSubL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1m_subl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g1m_subl1_1' }],
-          intro: [{ titleKey: 'data.intro.g1m_subl1_0_t', bodyKey: 'data.intro.g1m_subl1_0_b', emoji: 'вћ–' }, { titleKey: 'data.intro.g1m_subl1_1_t', bodyKey: 'data.intro.g1m_subl1_1_b', emoji: 'вќ“' }],
+          intro: [{ titleKey: 'data.intro.g1m_subl1_0_t', bodyKey: 'data.intro.g1m_subl1_0_b', emoji: '➖' }, { titleKey: 'data.intro.g1m_subl1_1_t', bodyKey: 'data.intro.g1m_subl1_1_b', emoji: '❓' }],
           tasks: [
             { id: 'g1subl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g1m_7minus3', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_three', correct: false }, { id: 'b', textKey: 'data.tasks.opt_four', correct: true }, { id: 'c', textKey: 'data.tasks.opt_five', correct: false }] },
             { id: 'g1subl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g1m_8minus5', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
@@ -1766,7 +1766,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1m-sub-l2', topicId: 'g1m-sub', titleKey: 'data.lessons.g1mSubL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1m_subl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g1m_subl2_1' }],
-          intro: [{ titleKey: 'data.intro.g1m_subl2_0_t', bodyKey: 'data.intro.g1m_subl2_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g1m_subl2_1_t', bodyKey: 'data.intro.g1m_subl2_1_b', emoji: 'вћ–' }],
+          intro: [{ titleKey: 'data.intro.g1m_subl2_0_t', bodyKey: 'data.intro.g1m_subl2_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g1m_subl2_1_t', bodyKey: 'data.intro.g1m_subl2_1_b', emoji: '➖' }],
           tasks: [
             { id: 'g1subl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g1m_10minus3', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_six', correct: false }, { id: 'b', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'c', textKey: 'data.tasks.opt_eight', correct: false }] },
             { id: 'g1subl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g1m_10minus7', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
@@ -1775,7 +1775,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1m-sub-l3', topicId: 'g1m-sub', titleKey: 'data.lessons.g1mSubL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1m_subl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g1m_subl3_1' }],
-          intro: [{ titleKey: 'data.intro.g1m_subl3_0_t', bodyKey: 'data.intro.g1m_subl3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g1m_subl3_1_t', bodyKey: 'data.intro.g1m_subl3_1_b', emoji: 'рџЊђ' }],
+          intro: [{ titleKey: 'data.intro.g1m_subl3_0_t', bodyKey: 'data.intro.g1m_subl3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g1m_subl3_1_t', bodyKey: 'data.intro.g1m_subl3_1_b', emoji: '🌐' }],
           tasks: [
             { id: 'g1subl3t1', type: 'input', questionKey: 'data.tasks.g1m_10minus4', difficulty: 1, answer: '6' },
             { id: 'g1subl3t2', type: 'input', questionKey: 'data.tasks.g1m_mixed_5plus4minus3', difficulty: 2, answer: '6' },
@@ -1787,12 +1787,12 @@ export const worlds: World[] = [
   },
   {
     id: 'g1rus', titleKey: 'data.worlds.g1rus', descriptionKey: 'data.worldDesc.g1rus',
-    biome: 'village', accentColor: '#FFC107', npcEmoji: 'рџ“љ', ageBand: '7',
+    biome: 'village', accentColor: '#FFC107', npcEmoji: '📚', ageBand: '7',
     topics: [
       { id: 'g1r-vowels', worldId: 'g1rus', titleKey: 'data.topics.g1rVowels', subject: 'reading_ru', lessons: [
         { id: 'g1r-vow-l1', topicId: 'g1r-vowels', titleKey: 'data.lessons.g1rVowL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1r_vowl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g1r_vowl1_1' }],
-          intro: [{ titleKey: 'data.intro.g1r_vowl1_0_t', bodyKey: 'data.intro.g1r_vowl1_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g1r_vowl1_1_t', bodyKey: 'data.intro.g1r_vowl1_1_b', emoji: 'рџЏ—пёЏ' }],
+          intro: [{ titleKey: 'data.intro.g1r_vowl1_0_t', bodyKey: 'data.intro.g1r_vowl1_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g1r_vowl1_1_t', bodyKey: 'data.intro.g1r_vowl1_1_b', emoji: '🏗️' }],
           tasks: [
             { id: 'g1rvowl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g1r_which_vowel_abc', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1r_opt_A', correct: true }, { id: 'b', textKey: 'data.tasks.g1r_opt_B', correct: false }, { id: 'c', textKey: 'data.tasks.g1r_opt_V', correct: false }] },
             { id: 'g1rvowl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g1r_utka_first_letter', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1r_opt_A', correct: false }, { id: 'b', textKey: 'data.tasks.g1r_opt_U', correct: true }, { id: 'c', textKey: 'data.tasks.g1r_opt_O', correct: false }] },
@@ -1801,7 +1801,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1r-vow-l2', topicId: 'g1r-vowels', titleKey: 'data.lessons.g1rVowL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1r_vowl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g1r_vowl2_1' }],
-          intro: [{ titleKey: 'data.intro.g1r_vowl2_0_t', bodyKey: 'data.intro.g1r_vowl2_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g1r_vowl2_1_t', bodyKey: 'data.intro.g1r_vowl2_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g1r_vowl2_0_t', bodyKey: 'data.intro.g1r_vowl2_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g1r_vowl2_1_t', bodyKey: 'data.intro.g1r_vowl2_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g1rvowl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g1r_which_vowel_soft', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1r_opt_Ya', correct: true }, { id: 'b', textKey: 'data.tasks.g1r_opt_D', correct: false }, { id: 'c', textKey: 'data.tasks.g1r_opt_T', correct: false }] },
             { id: 'g1rvowl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g1r_yula_first', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1r_opt_Yu', correct: true }, { id: 'b', textKey: 'data.tasks.g1r_opt_Ya', correct: false }, { id: 'c', textKey: 'data.tasks.g1r_opt_Ye', correct: false }] },
@@ -1810,7 +1810,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1r-vow-l3', topicId: 'g1r-vowels', titleKey: 'data.lessons.g1rVowL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1r_vowl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g1r_vowl3_1' }],
-          intro: [{ titleKey: 'data.intro.g1r_vowl3_0_t', bodyKey: 'data.intro.g1r_vowl3_0_b', emoji: 'рџ“–' }, { titleKey: 'data.intro.g1r_vowl3_1_t', bodyKey: 'data.intro.g1r_vowl3_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g1r_vowl3_0_t', bodyKey: 'data.intro.g1r_vowl3_0_b', emoji: '📖' }, { titleKey: 'data.intro.g1r_vowl3_1_t', bodyKey: 'data.intro.g1r_vowl3_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g1rvowl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g1r_kon_soft', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
             { id: 'g1rvowl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g1r_nos_soft', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_soft', correct: false }, { id: 'b', textKey: 'data.tasks.opt_hard', correct: true }] },
@@ -1821,7 +1821,7 @@ export const worlds: World[] = [
       { id: 'g1r-words', worldId: 'g1rus', titleKey: 'data.topics.g1rWords', subject: 'reading_ru', lessons: [
         { id: 'g1r-wrd-l1', topicId: 'g1r-words', titleKey: 'data.lessons.g1rWrdL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1r_wrdl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g1r_wrdl1_1' }],
-          intro: [{ titleKey: 'data.intro.g1r_wrdl1_0_t', bodyKey: 'data.intro.g1r_wrdl1_0_b', emoji: 'рџ…±пёЏ' }, { titleKey: 'data.intro.g1r_wrdl1_1_t', bodyKey: 'data.intro.g1r_wrdl1_1_b', emoji: 'рџЌ–' }],
+          intro: [{ titleKey: 'data.intro.g1r_wrdl1_0_t', bodyKey: 'data.intro.g1r_wrdl1_0_b', emoji: '🅱️' }, { titleKey: 'data.intro.g1r_wrdl1_1_t', bodyKey: 'data.intro.g1r_wrdl1_1_b', emoji: '🍖' }],
           tasks: [
             { id: 'g1rwrdl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g1r_read_kot', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1r_opt_kit', correct: false }, { id: 'b', textKey: 'data.tasks.g1r_opt_kot', correct: true }, { id: 'c', textKey: 'data.tasks.g1r_opt_kat', correct: false }] },
             { id: 'g1rwrdl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g1r_som_missing', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1r_opt_M', correct: true }, { id: 'b', textKey: 'data.tasks.g1r_opt_N', correct: false }, { id: 'c', textKey: 'data.tasks.g1r_opt_R', correct: false }] },
@@ -1830,7 +1830,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1r-wrd-l2', topicId: 'g1r-words', titleKey: 'data.lessons.g1rWrdL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1r_wrdl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g1r_wrdl2_1' }],
-          intro: [{ titleKey: 'data.intro.g1r_wrdl2_0_t', bodyKey: 'data.intro.g1r_wrdl2_0_b', emoji: 'рџђВ' }, { titleKey: 'data.intro.g1r_wrdl2_1_t', bodyKey: 'data.intro.g1r_wrdl2_1_b', emoji: 'рџЌ–' }],
+          intro: [{ titleKey: 'data.intro.g1r_wrdl2_0_t', bodyKey: 'data.intro.g1r_wrdl2_0_b', emoji: '🐘' }, { titleKey: 'data.intro.g1r_wrdl2_1_t', bodyKey: 'data.intro.g1r_wrdl2_1_b', emoji: '🍖' }],
           tasks: [
             { id: 'g1rwrdl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g1r_read_stol', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1r_opt_stol', correct: true }, { id: 'b', textKey: 'data.tasks.g1r_opt_stul', correct: false }, { id: 'c', textKey: 'data.tasks.g1r_opt_ston', correct: false }] },
             { id: 'g1rwrdl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g1r_slon_missing', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1r_opt_S', correct: true }, { id: 'b', textKey: 'data.tasks.g1r_opt_Z', correct: false }, { id: 'c', textKey: 'data.tasks.g1r_opt_Sh', correct: false }] },
@@ -1839,7 +1839,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1r-wrd-l3', topicId: 'g1r-words', titleKey: 'data.lessons.g1rWrdL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1r_wrdl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g1r_wrdl3_1' }],
-          intro: [{ titleKey: 'data.intro.g1r_wrdl3_0_t', bodyKey: 'data.intro.g1r_wrdl3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g1r_wrdl3_1_t', bodyKey: 'data.intro.g1r_wrdl3_1_b', emoji: 'рџЊ™' }],
+          intro: [{ titleKey: 'data.intro.g1r_wrdl3_0_t', bodyKey: 'data.intro.g1r_wrdl3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g1r_wrdl3_1_t', bodyKey: 'data.intro.g1r_wrdl3_1_b', emoji: '🌙' }],
           tasks: [
             { id: 'g1rwrdl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g1r_mama_myla_words', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
             { id: 'g1rwrdl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g1r_sentence_starts_capital', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
@@ -1850,7 +1850,7 @@ export const worlds: World[] = [
       { id: 'g1r-gram', worldId: 'g1rus', titleKey: 'data.topics.g1rGram', subject: 'reading_ru', lessons: [
         { id: 'g1r-grm-l1', topicId: 'g1r-gram', titleKey: 'data.lessons.g1rGrmL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1r_grml1_0' }, { speaker: 'tali', textKey: 'data.dialog.g1r_grml1_1' }],
-          intro: [{ titleKey: 'data.intro.g1r_grml1_0_t', bodyKey: 'data.intro.g1r_grml1_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g1r_grml1_1_t', bodyKey: 'data.intro.g1r_grml1_1_b', emoji: '1пёЏвѓЈ' }],
+          intro: [{ titleKey: 'data.intro.g1r_grml1_0_t', bodyKey: 'data.intro.g1r_grml1_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g1r_grml1_1_t', bodyKey: 'data.intro.g1r_grml1_1_b', emoji: '1️⃣' }],
           tasks: [
             { id: 'g1rgrml1t1', type: 'multiple_choice', questionKey: 'data.tasks.g1r_name_uppercase', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1r_opt_MASHA', correct: true }, { id: 'b', textKey: 'data.tasks.g1r_opt_masha', correct: false }] },
             { id: 'g1rgrml1t2', type: 'multiple_choice', questionKey: 'data.tasks.g1r_city_capital', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
@@ -1868,7 +1868,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1r-grm-l3', topicId: 'g1r-gram', titleKey: 'data.lessons.g1rGrmL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1r_grml3_0' }, { speaker: 'tali', textKey: 'data.dialog.g1r_grml3_1' }],
-          intro: [{ titleKey: 'data.intro.g1r_grml3_0_t', bodyKey: 'data.intro.g1r_grml3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g1r_grml3_1_t', bodyKey: 'data.intro.g1r_grml3_1_b', emoji: 'рџђЂ' }],
+          intro: [{ titleKey: 'data.intro.g1r_grml3_0_t', bodyKey: 'data.intro.g1r_grml3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g1r_grml3_1_t', bodyKey: 'data.intro.g1r_grml3_1_b', emoji: '🐀' }],
           tasks: [
             { id: 'g1rgrml3t1', type: 'multiple_choice', questionKey: 'data.tasks.g1r_kto_answers', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1r_opt_animate', correct: true }, { id: 'b', textKey: 'data.tasks.g1r_opt_inanimate', correct: false }] },
             { id: 'g1rgrml3t2', type: 'multiple_choice', questionKey: 'data.tasks.g1r_chto_answers', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1r_opt_animate', correct: false }, { id: 'b', textKey: 'data.tasks.g1r_opt_inanimate', correct: true }] },
@@ -1880,12 +1880,12 @@ export const worlds: World[] = [
   },
   {
     id: 'g1world', titleKey: 'data.worlds.g1world', descriptionKey: 'data.worldDesc.g1world',
-    biome: 'park', accentColor: '#8BC34A', npcEmoji: 'рџ¦Љ', ageBand: '7',
+    biome: 'park', accentColor: '#8BC34A', npcEmoji: '🦊', ageBand: '7',
     topics: [
       { id: 'g1w-school', worldId: 'g1world', titleKey: 'data.topics.g1wSchool', subject: 'logic', lessons: [
         { id: 'g1w-sch-l1', topicId: 'g1w-school', titleKey: 'data.lessons.g1wSchL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1w_schl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g1w_schl1_1' }],
-          intro: [{ titleKey: 'data.intro.g1w_schl1_0_t', bodyKey: 'data.intro.g1w_schl1_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g1w_schl1_1_t', bodyKey: 'data.intro.g1w_schl1_1_b', emoji: 'рџЏ«' }],
+          intro: [{ titleKey: 'data.intro.g1w_schl1_0_t', bodyKey: 'data.intro.g1w_schl1_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g1w_schl1_1_t', bodyKey: 'data.intro.g1w_schl1_1_b', emoji: '🏫' }],
           tasks: [
             { id: 'g1wschl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g1w_school_supply', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_pencil', correct: true }, { id: 'b', textKey: 'data.tasks.g1w_opt_sandwich', correct: false }, { id: 'c', textKey: 'data.tasks.g1w_opt_toy', correct: false }] },
             { id: 'g1wschl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g1w_write_with', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_pen', correct: true }, { id: 'b', textKey: 'data.tasks.g1w_opt_spoon', correct: false }, { id: 'c', textKey: 'data.tasks.g1w_opt_scissors', correct: false }] },
@@ -1894,7 +1894,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1w-sch-l2', topicId: 'g1w-school', titleKey: 'data.lessons.g1wSchL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1w_schl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g1w_schl2_1' }],
-          intro: [{ titleKey: 'data.intro.g1w_schl2_0_t', bodyKey: 'data.intro.g1w_schl2_0_b', emoji: 'рџЏ«' }, { titleKey: 'data.intro.g1w_schl2_1_t', bodyKey: 'data.intro.g1w_schl2_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g1w_schl2_0_t', bodyKey: 'data.intro.g1w_schl2_0_b', emoji: '🏫' }, { titleKey: 'data.intro.g1w_schl2_1_t', bodyKey: 'data.intro.g1w_schl2_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g1wschl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g1w_teacher_writes_on', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_board', correct: true }, { id: 'b', textKey: 'data.tasks.g1w_opt_window', correct: false }, { id: 'c', textKey: 'data.tasks.g1w_opt_door', correct: false }] },
             { id: 'g1wschl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g1w_sit_on', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_table', correct: false }, { id: 'b', textKey: 'data.tasks.g1w_opt_chair', correct: true }, { id: 'c', textKey: 'data.tasks.g1w_opt_board', correct: false }] },
@@ -1903,7 +1903,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1w-sch-l3', topicId: 'g1w-school', titleKey: 'data.lessons.g1wSchL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1w_schl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g1w_schl3_1' }],
-          intro: [{ titleKey: 'data.intro.g1w_schl3_0_t', bodyKey: 'data.intro.g1w_schl3_0_b', emoji: 'рџ¤Ќ' }, { titleKey: 'data.intro.g1w_schl3_1_t', bodyKey: 'data.intro.g1w_schl3_1_b', emoji: 'рџЏ„' }],
+          intro: [{ titleKey: 'data.intro.g1w_schl3_0_t', bodyKey: 'data.intro.g1w_schl3_0_b', emoji: '🤍' }, { titleKey: 'data.intro.g1w_schl3_1_t', bodyKey: 'data.intro.g1w_schl3_1_b', emoji: '🏄' }],
           tasks: [
             { id: 'g1wschl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g1w_pe_class_do', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_read', correct: false }, { id: 'b', textKey: 'data.tasks.g1w_opt_run', correct: true }, { id: 'c', textKey: 'data.tasks.g1w_opt_draw', correct: false }] },
             { id: 'g1wschl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g1w_art_class_do', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_count', correct: false }, { id: 'b', textKey: 'data.tasks.g1w_opt_draw', correct: true }, { id: 'c', textKey: 'data.tasks.g1w_opt_sing', correct: false }] },
@@ -1914,7 +1914,7 @@ export const worlds: World[] = [
       { id: 'g1w-nature', worldId: 'g1world', titleKey: 'data.topics.g1wNature', subject: 'logic', lessons: [
         { id: 'g1w-nat-l1', topicId: 'g1w-nature', titleKey: 'data.lessons.g1wNatL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1w_natl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g1w_natl1_1' }],
-          intro: [{ titleKey: 'data.intro.g1w_natl1_0_t', bodyKey: 'data.intro.g1w_natl1_0_b', emoji: 'рџЊІ' }, { titleKey: 'data.intro.g1w_natl1_1_t', bodyKey: 'data.intro.g1w_natl1_1_b', emoji: 'рџЊі' }],
+          intro: [{ titleKey: 'data.intro.g1w_natl1_0_t', bodyKey: 'data.intro.g1w_natl1_0_b', emoji: '🌲' }, { titleKey: 'data.intro.g1w_natl1_1_t', bodyKey: 'data.intro.g1w_natl1_1_b', emoji: '🌳' }],
           tasks: [
             { id: 'g1wnatl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g1w_which_is_tree', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_oak', correct: true }, { id: 'b', textKey: 'data.tasks.g1w_opt_rose', correct: false }, { id: 'c', textKey: 'data.tasks.g1w_opt_mushroom', correct: false }] },
             { id: 'g1wnatl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g1w_tree_drinks', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_leaves', correct: false }, { id: 'b', textKey: 'data.tasks.g1w_opt_roots', correct: true }, { id: 'c', textKey: 'data.tasks.g1w_opt_trunk', correct: false }] },
@@ -1923,7 +1923,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1w-nat-l2', topicId: 'g1w-nature', titleKey: 'data.lessons.g1wNatL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1w_natl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g1w_natl2_1' }],
-          intro: [{ titleKey: 'data.intro.g1w_natl2_0_t', bodyKey: 'data.intro.g1w_natl2_0_b', emoji: 'рџђ' }, { titleKey: 'data.intro.g1w_natl2_1_t', bodyKey: 'data.intro.g1w_natl2_1_b', emoji: 'рџђ„' }],
+          intro: [{ titleKey: 'data.intro.g1w_natl2_0_t', bodyKey: 'data.intro.g1w_natl2_0_b', emoji: '🐘' }, { titleKey: 'data.intro.g1w_natl2_1_t', bodyKey: 'data.intro.g1w_natl2_1_b', emoji: '🐄' }],
           tasks: [
             { id: 'g1wnatl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g1w_forest_animal', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_cow_an', correct: false }, { id: 'b', textKey: 'data.tasks.g1w_opt_wolf_an', correct: true }, { id: 'c', textKey: 'data.tasks.g1w_opt_hen_an', correct: false }] },
             { id: 'g1wnatl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g1w_domestic_animal', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_wolf_an', correct: false }, { id: 'b', textKey: 'data.tasks.g1w_opt_bear_an', correct: false }, { id: 'c', textKey: 'data.tasks.g1w_opt_cat_an', correct: true }] },
@@ -1932,7 +1932,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1w-nat-l3', topicId: 'g1w-nature', titleKey: 'data.lessons.g1wNatL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1w_natl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g1w_natl3_1' }],
-          intro: [{ titleKey: 'data.intro.g1w_natl3_0_t', bodyKey: 'data.intro.g1w_natl3_0_b', emoji: 'вћЎпёЏ' }, { titleKey: 'data.intro.g1w_natl3_1_t', bodyKey: 'data.intro.g1w_natl3_1_b', emoji: 'рџЊђ' }],
+          intro: [{ titleKey: 'data.intro.g1w_natl3_0_t', bodyKey: 'data.intro.g1w_natl3_0_b', emoji: '➡️' }, { titleKey: 'data.intro.g1w_natl3_1_t', bodyKey: 'data.intro.g1w_natl3_1_b', emoji: '🌐' }],
           tasks: [
             { id: 'g1wnatl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g1w_winter_falls', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_rain', correct: false }, { id: 'b', textKey: 'data.tasks.g1w_opt_snow', correct: true }, { id: 'c', textKey: 'data.tasks.g1w_opt_hail', correct: false }] },
             { id: 'g1wnatl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g1w_warmest_season', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_spring', correct: false }, { id: 'b', textKey: 'data.tasks.g1w_opt_summer', correct: true }, { id: 'c', textKey: 'data.tasks.g1w_opt_autumn', correct: false }] },
@@ -1943,7 +1943,7 @@ export const worlds: World[] = [
       { id: 'g1w-body', worldId: 'g1world', titleKey: 'data.topics.g1wBody', subject: 'logic', lessons: [
         { id: 'g1w-bdy-l1', topicId: 'g1w-body', titleKey: 'data.lessons.g1wBdyL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1w_bdyl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g1w_bdyl1_1' }],
-          intro: [{ titleKey: 'data.intro.g1w_bdyl1_0_t', bodyKey: 'data.intro.g1w_bdyl1_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g1w_bdyl1_1_t', bodyKey: 'data.intro.g1w_bdyl1_1_b', emoji: 'рџЌЊ' }],
+          intro: [{ titleKey: 'data.intro.g1w_bdyl1_0_t', bodyKey: 'data.intro.g1w_bdyl1_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g1w_bdyl1_1_t', bodyKey: 'data.intro.g1w_bdyl1_1_b', emoji: '🍌' }],
           tasks: [
             { id: 'g1wbdyl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g1w_how_many_eyes', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
             { id: 'g1wbdyl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g1w_hear_with', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_eyes', correct: false }, { id: 'b', textKey: 'data.tasks.g1w_opt_ears', correct: true }, { id: 'c', textKey: 'data.tasks.g1w_opt_nose', correct: false }] },
@@ -1952,7 +1952,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1w-bdy-l2', topicId: 'g1w-body', titleKey: 'data.lessons.g1wBdyL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1w_bdyl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g1w_bdyl2_1' }],
-          intro: [{ titleKey: 'data.intro.g1w_bdyl2_0_t', bodyKey: 'data.intro.g1w_bdyl2_0_b', emoji: 'рџ¦‡' }, { titleKey: 'data.intro.g1w_bdyl2_1_t', bodyKey: 'data.intro.g1w_bdyl2_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g1w_bdyl2_0_t', bodyKey: 'data.intro.g1w_bdyl2_0_b', emoji: '🦇' }, { titleKey: 'data.intro.g1w_bdyl2_1_t', bodyKey: 'data.intro.g1w_bdyl2_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g1wbdyl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g1w_wash_hands', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_before_eat', correct: true }, { id: 'b', textKey: 'data.tasks.g1w_opt_never', correct: false }, { id: 'c', textKey: 'data.tasks.g1w_opt_once_week', correct: false }] },
             { id: 'g1wbdyl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g1w_sleep_hours', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_5_6h', correct: false }, { id: 'b', textKey: 'data.tasks.g1w_opt_9_10h', correct: true }, { id: 'c', textKey: 'data.tasks.g1w_opt_3_4h', correct: false }] },
@@ -1961,7 +1961,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1w-bdy-l3', topicId: 'g1w-body', titleKey: 'data.lessons.g1wBdyL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1w_bdyl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g1w_bdyl3_1' }],
-          intro: [{ titleKey: 'data.intro.g1w_bdyl3_0_t', bodyKey: 'data.intro.g1w_bdyl3_0_b', emoji: 'рџ§¦' }, { titleKey: 'data.intro.g1w_bdyl3_1_t', bodyKey: 'data.intro.g1w_bdyl3_1_b', emoji: 'рџ§‘вЂЌ' }],
+          intro: [{ titleKey: 'data.intro.g1w_bdyl3_0_t', bodyKey: 'data.intro.g1w_bdyl3_0_b', emoji: '🧦' }, { titleKey: 'data.intro.g1w_bdyl3_1_t', bodyKey: 'data.intro.g1w_bdyl3_1_b', emoji: '🧑‍' }],
           tasks: [
             { id: 'g1wbdyl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g1w_cross_road_at', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_red_light', correct: false }, { id: 'b', textKey: 'data.tasks.g1w_opt_green_light', correct: true }, { id: 'c', textKey: 'data.tasks.g1w_opt_yellow_light', correct: false }] },
             { id: 'g1wbdyl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g1w_if_lost_call', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1w_opt_run_alone', correct: false }, { id: 'b', textKey: 'data.tasks.g1w_opt_call_parents', correct: true }, { id: 'c', textKey: 'data.tasks.g1w_opt_hide', correct: false }] },
@@ -1973,12 +1973,12 @@ export const worlds: World[] = [
   },
   {
     id: 'g1eng', titleKey: 'data.worlds.g1eng', descriptionKey: 'data.worldDesc.g1eng',
-    biome: 'harbor', accentColor: '#29B6F6', npcEmoji: 'рџђ™', ageBand: '7',
+    biome: 'harbor', accentColor: '#29B6F6', npcEmoji: '🐙', ageBand: '7',
     topics: [
       { id: 'g1e-abc', worldId: 'g1eng', titleKey: 'data.topics.g1eAbc', subject: 'reading', lessons: [
         { id: 'g1e-abc-l1', topicId: 'g1e-abc', titleKey: 'data.lessons.g1eAbcL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1e_abcl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g1e_abcl1_1' }],
-          intro: [{ titleKey: 'data.intro.g1e_abcl1_0_t', bodyKey: 'data.intro.g1e_abcl1_0_b', emoji: 'рџђђ' }, { titleKey: 'data.intro.g1e_abcl1_1_t', bodyKey: 'data.intro.g1e_abcl1_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g1e_abcl1_0_t', bodyKey: 'data.intro.g1e_abcl1_0_b', emoji: '🐐' }, { titleKey: 'data.intro.g1e_abcl1_1_t', bodyKey: 'data.intro.g1e_abcl1_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g1eabcl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g1e_G_for', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_bear', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_goat', correct: true }, { id: 'c', textKey: 'data.tasks.g1e_opt_apple', correct: false }] },
             { id: 'g1eabcl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g1e_happy_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_G', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_H', correct: true }, { id: 'c', textKey: 'data.tasks.g1e_opt_I', correct: false }] },
@@ -1987,7 +1987,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1e-abc-l2', topicId: 'g1e-abc', titleKey: 'data.lessons.g1eAbcL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1e_abcl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g1e_abcl2_1' }],
-          intro: [{ titleKey: 'data.intro.g1e_abcl2_0_t', bodyKey: 'data.intro.g1e_abcl2_0_b', emoji: 'рџЏ„' }, { titleKey: 'data.intro.g1e_abcl2_1_t', bodyKey: 'data.intro.g1e_abcl2_1_b', emoji: 'рџЊ›' }],
+          intro: [{ titleKey: 'data.intro.g1e_abcl2_0_t', bodyKey: 'data.intro.g1e_abcl2_0_b', emoji: '🏄' }, { titleKey: 'data.intro.g1e_abcl2_1_t', bodyKey: 'data.intro.g1e_abcl2_1_b', emoji: '🌛' }],
           tasks: [
             { id: 'g1eabcl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g1e_K_for', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_kite', correct: true }, { id: 'b', textKey: 'data.tasks.g1e_opt_lamp', correct: false }, { id: 'c', textKey: 'data.tasks.g1e_opt_moon', correct: false }] },
             { id: 'g1eabcl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g1e_starts_with_L', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_kite', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_lamp', correct: true }, { id: 'c', textKey: 'data.tasks.g1e_opt_nose', correct: false }] },
@@ -1996,7 +1996,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1e-abc-l3', topicId: 'g1e-abc', titleKey: 'data.lessons.g1eAbcL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1e_abcl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g1e_abcl3_1' }],
-          intro: [{ titleKey: 'data.intro.g1e_abcl3_0_t', bodyKey: 'data.intro.g1e_abcl3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g1e_abcl3_1_t', bodyKey: 'data.intro.g1e_abcl3_1_b', emoji: 'рџЊ™' }],
+          intro: [{ titleKey: 'data.intro.g1e_abcl3_0_t', bodyKey: 'data.intro.g1e_abcl3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g1e_abcl3_1_t', bodyKey: 'data.intro.g1e_abcl3_1_b', emoji: '🌙' }],
           tasks: [
             { id: 'g1eabcl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g1e_O_for', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_orange', correct: true }, { id: 'b', textKey: 'data.tasks.g1e_opt_pen', correct: false }, { id: 'c', textKey: 'data.tasks.g1e_opt_queen', correct: false }] },
             { id: 'g1eabcl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g1e_P_for', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_orange', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_pen', correct: true }, { id: 'c', textKey: 'data.tasks.g1e_opt_queen', correct: false }] },
@@ -2007,7 +2007,7 @@ export const worlds: World[] = [
       { id: 'g1e-nums', worldId: 'g1eng', titleKey: 'data.topics.g1eNums', subject: 'reading', lessons: [
         { id: 'g1e-num-l1', topicId: 'g1e-nums', titleKey: 'data.lessons.g1eNumL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1e_numl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g1e_numl1_1' }],
-          intro: [{ titleKey: 'data.intro.g1e_numl1_0_t', bodyKey: 'data.intro.g1e_numl1_0_b', emoji: '1пёЏвѓЈ' }, { titleKey: 'data.intro.g1e_numl1_1_t', bodyKey: 'data.intro.g1e_numl1_1_b', emoji: '5пёЏвѓЈ' }],
+          intro: [{ titleKey: 'data.intro.g1e_numl1_0_t', bodyKey: 'data.intro.g1e_numl1_0_b', emoji: '1️⃣' }, { titleKey: 'data.intro.g1e_numl1_1_t', bodyKey: 'data.intro.g1e_numl1_1_b', emoji: '5️⃣' }],
           tasks: [
             { id: 'g1enuml1t1', type: 'multiple_choice', questionKey: 'data.tasks.g1e_three_cats', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.g1e_opt_four', correct: false }] },
             { id: 'g1enuml1t2', type: 'multiple_choice', questionKey: 'data.tasks.g1e_two_in_num', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
@@ -2016,7 +2016,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1e-num-l2', topicId: 'g1e-nums', titleKey: 'data.lessons.g1eNumL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1e_numl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g1e_numl2_1' }],
-          intro: [{ titleKey: 'data.intro.g1e_numl2_0_t', bodyKey: 'data.intro.g1e_numl2_0_b', emoji: '6пёЏвѓЈ' }, { titleKey: 'data.intro.g1e_numl2_1_t', bodyKey: 'data.intro.g1e_numl2_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g1e_numl2_0_t', bodyKey: 'data.intro.g1e_numl2_0_b', emoji: '6️⃣' }, { titleKey: 'data.intro.g1e_numl2_1_t', bodyKey: 'data.intro.g1e_numl2_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g1enuml2t1', type: 'multiple_choice', questionKey: 'data.tasks.g1e_7_in_en', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_six', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_seven', correct: true }, { id: 'c', textKey: 'data.tasks.g1e_opt_eight', correct: false }] },
             { id: 'g1enuml2t2', type: 'multiple_choice', questionKey: 'data.tasks.g1e_nine_in_num', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_seven', correct: false }, { id: 'b', textKey: 'data.tasks.opt_eight', correct: false }, { id: 'c', textKey: 'data.tasks.opt_nine', correct: true }] },
@@ -2025,7 +2025,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1e-num-l3', topicId: 'g1e-nums', titleKey: 'data.lessons.g1eNumL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1e_numl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g1e_numl3_1' }],
-          intro: [{ titleKey: 'data.intro.g1e_numl3_0_t', bodyKey: 'data.intro.g1e_numl3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g1e_numl3_1_t', bodyKey: 'data.intro.g1e_numl3_1_b', emoji: 'рџЊЌ' }],
+          intro: [{ titleKey: 'data.intro.g1e_numl3_0_t', bodyKey: 'data.intro.g1e_numl3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g1e_numl3_1_t', bodyKey: 'data.intro.g1e_numl3_1_b', emoji: '🌍' }],
           tasks: [
             { id: 'g1enuml3t1', type: 'multiple_choice', questionKey: 'data.tasks.g1e_six_minus_three', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.g1e_opt_four', correct: false }] },
             { id: 'g1enuml3t2', type: 'multiple_choice', questionKey: 'data.tasks.g1e_three_plus_four', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_six', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_seven', correct: true }, { id: 'c', textKey: 'data.tasks.g1e_opt_eight', correct: false }] },
@@ -2036,7 +2036,7 @@ export const worlds: World[] = [
       { id: 'g1e-greet', worldId: 'g1eng', titleKey: 'data.topics.g1eGreet', subject: 'reading', lessons: [
         { id: 'g1e-grt-l1', topicId: 'g1e-greet', titleKey: 'data.lessons.g1eGrtL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1e_grtl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g1e_grtl1_1' }],
-          intro: [{ titleKey: 'data.intro.g1e_grtl1_0_t', bodyKey: 'data.intro.g1e_grtl1_0_b', emoji: 'рџ‘‹' }, { titleKey: 'data.intro.g1e_grtl1_1_t', bodyKey: 'data.intro.g1e_grtl1_1_b', emoji: 'рџЊЅ' }],
+          intro: [{ titleKey: 'data.intro.g1e_grtl1_0_t', bodyKey: 'data.intro.g1e_grtl1_0_b', emoji: '👋' }, { titleKey: 'data.intro.g1e_grtl1_1_t', bodyKey: 'data.intro.g1e_grtl1_1_b', emoji: '🌽' }],
           tasks: [
             { id: 'g1egrtl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g1e_morning_greeting', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_good_morning', correct: true }, { id: 'b', textKey: 'data.tasks.g1e_opt_good_night', correct: false }, { id: 'c', textKey: 'data.tasks.g1e_opt_goodbye', correct: false }] },
             { id: 'g1egrtl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g1e_when_leaving', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_hello', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_goodbye', correct: true }, { id: 'c', textKey: 'data.tasks.g1e_opt_sorry', correct: false }] },
@@ -2045,7 +2045,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1e-grt-l2', topicId: 'g1e-greet', titleKey: 'data.lessons.g1eGrtL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1e_grtl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g1e_grtl2_1' }],
-          intro: [{ titleKey: 'data.intro.g1e_grtl2_0_t', bodyKey: 'data.intro.g1e_grtl2_0_b', emoji: 'рџ‘¤' }, { titleKey: 'data.intro.g1e_grtl2_1_t', bodyKey: 'data.intro.g1e_grtl2_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g1e_grtl2_0_t', bodyKey: 'data.intro.g1e_grtl2_0_b', emoji: '👤' }, { titleKey: 'data.intro.g1e_grtl2_1_t', bodyKey: 'data.intro.g1e_grtl2_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g1egrtl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g1e_my_name_blank', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_am', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_is', correct: true }, { id: 'c', textKey: 'data.tasks.g1e_opt_are', correct: false }] },
             { id: 'g1egrtl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g1e_menya_zovut', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_i_am', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_my_name_is', correct: true }, { id: 'c', textKey: 'data.tasks.g1e_opt_hello_i', correct: false }] },
@@ -2054,7 +2054,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g1e-grt-l3', topicId: 'g1e-greet', titleKey: 'data.lessons.g1eGrtL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1e_grtl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g1e_grtl3_1' }],
-          intro: [{ titleKey: 'data.intro.g1e_grtl3_0_t', bodyKey: 'data.intro.g1e_grtl3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g1e_grtl3_1_t', bodyKey: 'data.intro.g1e_grtl3_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g1e_grtl3_0_t', bodyKey: 'data.intro.g1e_grtl3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g1e_grtl3_1_t', bodyKey: 'data.intro.g1e_grtl3_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g1egrtl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g1e_how_are_you_means', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_kak_dela', correct: true }, { id: 'b', textKey: 'data.tasks.g1e_opt_poka', correct: false }, { id: 'c', textKey: 'data.tasks.g1e_opt_privet', correct: false }] },
             { id: 'g1egrtl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g1e_best_reply_how', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_fine_thanks', correct: true }, { id: 'b', textKey: 'data.tasks.g1e_opt_goodbye', correct: false }, { id: 'c', textKey: 'data.tasks.g1e_opt_my_name_is', correct: false }] },
@@ -2069,12 +2069,12 @@ export const worlds: World[] = [
   // ---
   {
     id: 'g2math', titleKey: 'data.worlds.g2math', descriptionKey: 'data.worldDesc.g2math',
-    biome: 'mountain', accentColor: '#2196F3', npcEmoji: 'рџ¦…', ageBand: '8',
+    biome: 'mountain', accentColor: '#2196F3', npcEmoji: '🦅', ageBand: '8',
     topics: [
       { id: 'g2m-100', worldId: 'g2math', titleKey: 'data.topics.g2m100', subject: 'math', lessons: [
         { id: 'g2m-100-l1', topicId: 'g2m-100', titleKey: 'data.lessons.g2m100L1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2m_100l1_0' }, { speaker: 'tali', textKey: 'data.dialog.g2m_100l1_1' }],
-          intro: [{ titleKey: 'data.intro.g2m_100l1_0_t', bodyKey: 'data.intro.g2m_100l1_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g2m_100l1_1_t', bodyKey: 'data.intro.g2m_100l1_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2m_100l1_0_t', bodyKey: 'data.intro.g2m_100l1_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g2m_100l1_1_t', bodyKey: 'data.intro.g2m_100l1_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2m100l1t1', type: 'multiple_choice', questionKey: 'data.tasks.g2m_10x3', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_20', correct: false }, { id: 'b', textKey: 'data.tasks.opt_30', correct: true }, { id: 'c', textKey: 'data.tasks.opt_40', correct: false }] },
             { id: 'g2m100l1t2', type: 'multiple_choice', questionKey: 'data.tasks.g2m_10x7', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_60', correct: false }, { id: 'b', textKey: 'data.tasks.opt_70', correct: true }, { id: 'c', textKey: 'data.tasks.opt_80', correct: false }] },
@@ -2083,7 +2083,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2m-100-l2', topicId: 'g2m-100', titleKey: 'data.lessons.g2m100L2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2m_100l2_0' }, { speaker: 'tali', textKey: 'data.dialog.g2m_100l2_1' }],
-          intro: [{ titleKey: 'data.intro.g2m_100l2_0_t', bodyKey: 'data.intro.g2m_100l2_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g2m_100l2_1_t', bodyKey: 'data.intro.g2m_100l2_1_b', emoji: 'рџЌЊ' }],
+          intro: [{ titleKey: 'data.intro.g2m_100l2_0_t', bodyKey: 'data.intro.g2m_100l2_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g2m_100l2_1_t', bodyKey: 'data.intro.g2m_100l2_1_b', emoji: '🍌' }],
           tasks: [
             { id: 'g2m100l2t1', type: 'input', questionKey: 'data.tasks.g2m_25_after', difficulty: 1, answer: '26' },
             { id: 'g2m100l2t2', type: 'multiple_choice', questionKey: 'data.tasks.g2m_biggest_37_42_29', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_37', correct: false }, { id: 'b', textKey: 'data.tasks.opt_42', correct: true }, { id: 'c', textKey: 'data.tasks.opt_29', correct: false }] },
@@ -2092,7 +2092,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2m-100-l3', topicId: 'g2m-100', titleKey: 'data.lessons.g2m100L3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2m_100l3_0' }, { speaker: 'tali', textKey: 'data.dialog.g2m_100l3_1' }],
-          intro: [{ titleKey: 'data.intro.g2m_100l3_0_t', bodyKey: 'data.intro.g2m_100l3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g2m_100l3_1_t', bodyKey: 'data.intro.g2m_100l3_1_b', emoji: 'рџЏ†' }],
+          intro: [{ titleKey: 'data.intro.g2m_100l3_0_t', bodyKey: 'data.intro.g2m_100l3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g2m_100l3_1_t', bodyKey: 'data.intro.g2m_100l3_1_b', emoji: '🏆' }],
           tasks: [
             { id: 'g2m100l3t1', type: 'input', questionKey: 'data.tasks.g2m_before_100', difficulty: 1, answer: '99' },
             { id: 'g2m100l3t2', type: 'multiple_choice', questionKey: 'data.tasks.g2m_smallest_78_82_91', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_78', correct: true }, { id: 'b', textKey: 'data.tasks.opt_82', correct: false }, { id: 'c', textKey: 'data.tasks.opt_91', correct: false }] },
@@ -2103,7 +2103,7 @@ export const worlds: World[] = [
       { id: 'g2m-add2', worldId: 'g2math', titleKey: 'data.topics.g2mAdd2', subject: 'math', lessons: [
         { id: 'g2m-add2-l1', topicId: 'g2m-add2', titleKey: 'data.lessons.g2mAdd2L1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2m_add2l1_0' }, { speaker: 'tali', textKey: 'data.dialog.g2m_add2l1_1' }],
-          intro: [{ titleKey: 'data.intro.g2m_add2l1_0_t', bodyKey: 'data.intro.g2m_add2l1_0_b', emoji: 'вћ•' }, { titleKey: 'data.intro.g2m_add2l1_1_t', bodyKey: 'data.intro.g2m_add2l1_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2m_add2l1_0_t', bodyKey: 'data.intro.g2m_add2l1_0_b', emoji: '➕' }, { titleKey: 'data.intro.g2m_add2l1_1_t', bodyKey: 'data.intro.g2m_add2l1_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2madd2l1t1', type: 'input', questionKey: 'data.tasks.g2m_20plus30', difficulty: 1, answer: '50' },
             { id: 'g2madd2l1t2', type: 'input', questionKey: 'data.tasks.g2m_40plus50', difficulty: 1, answer: '90' },
@@ -2112,7 +2112,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2m-add2-l2', topicId: 'g2m-add2', titleKey: 'data.lessons.g2mAdd2L2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2m_add2l2_0' }, { speaker: 'tali', textKey: 'data.dialog.g2m_add2l2_1' }],
-          intro: [{ titleKey: 'data.intro.g2m_add2l2_0_t', bodyKey: 'data.intro.g2m_add2l2_0_b', emoji: 'рџ”џ' }, { titleKey: 'data.intro.g2m_add2l2_1_t', bodyKey: 'data.intro.g2m_add2l2_1_b', emoji: 'вћ•' }],
+          intro: [{ titleKey: 'data.intro.g2m_add2l2_0_t', bodyKey: 'data.intro.g2m_add2l2_0_b', emoji: '🔟' }, { titleKey: 'data.intro.g2m_add2l2_1_t', bodyKey: 'data.intro.g2m_add2l2_1_b', emoji: '➕' }],
           tasks: [
             { id: 'g2madd2l2t1', type: 'input', questionKey: 'data.tasks.g2m_23plus14', difficulty: 1, answer: '37' },
             { id: 'g2madd2l2t2', type: 'input', questionKey: 'data.tasks.g2m_35plus42', difficulty: 1, answer: '77' },
@@ -2121,7 +2121,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2m-add2-l3', topicId: 'g2m-add2', titleKey: 'data.lessons.g2mAdd2L3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2m_add2l3_0' }, { speaker: 'tali', textKey: 'data.dialog.g2m_add2l3_1' }],
-          intro: [{ titleKey: 'data.intro.g2m_add2l3_0_t', bodyKey: 'data.intro.g2m_add2l3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g2m_add2l3_1_t', bodyKey: 'data.intro.g2m_add2l3_1_b', emoji: 'рџЌЋ' }],
+          intro: [{ titleKey: 'data.intro.g2m_add2l3_0_t', bodyKey: 'data.intro.g2m_add2l3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g2m_add2l3_1_t', bodyKey: 'data.intro.g2m_add2l3_1_b', emoji: '🍎' }],
           tasks: [
             { id: 'g2madd2l3t1', type: 'input', questionKey: 'data.tasks.g2m_sub_65minus23', difficulty: 1, answer: '42' },
             { id: 'g2madd2l3t2', type: 'input', questionKey: 'data.tasks.g2m_sub_80minus47', difficulty: 2, answer: '33' },
@@ -2132,7 +2132,7 @@ export const worlds: World[] = [
       { id: 'g2m-times', worldId: 'g2math', titleKey: 'data.topics.g2mTimes', subject: 'math', lessons: [
         { id: 'g2m-times-l1', topicId: 'g2m-times', titleKey: 'data.lessons.g2mTimesL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2m_timesl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g2m_timesl1_1' }],
-          intro: [{ titleKey: 'data.intro.g2m_timesl1_0_t', bodyKey: 'data.intro.g2m_timesl1_0_b', emoji: 'вњ–пёЏ' }, { titleKey: 'data.intro.g2m_timesl1_1_t', bodyKey: 'data.intro.g2m_timesl1_1_b', emoji: '2пёЏвѓЈ' }],
+          intro: [{ titleKey: 'data.intro.g2m_timesl1_0_t', bodyKey: 'data.intro.g2m_timesl1_0_b', emoji: '✖️' }, { titleKey: 'data.intro.g2m_timesl1_1_t', bodyKey: 'data.intro.g2m_timesl1_1_b', emoji: '2️⃣' }],
           tasks: [
             { id: 'g2mtimesl1t1', type: 'input', questionKey: 'data.tasks.g2m_2x4', difficulty: 1, answer: '8' },
             { id: 'g2mtimesl1t2', type: 'input', questionKey: 'data.tasks.g2m_2x7', difficulty: 1, answer: '14' },
@@ -2141,7 +2141,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2m-times-l2', topicId: 'g2m-times', titleKey: 'data.lessons.g2mTimesL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2m_timesl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g2m_timesl2_1' }],
-          intro: [{ titleKey: 'data.intro.g2m_timesl2_0_t', bodyKey: 'data.intro.g2m_timesl2_0_b', emoji: '5пёЏвѓЈ' }, { titleKey: 'data.intro.g2m_timesl2_1_t', bodyKey: 'data.intro.g2m_timesl2_1_b', emoji: 'вњ–пёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2m_timesl2_0_t', bodyKey: 'data.intro.g2m_timesl2_0_b', emoji: '5️⃣' }, { titleKey: 'data.intro.g2m_timesl2_1_t', bodyKey: 'data.intro.g2m_timesl2_1_b', emoji: '✖️' }],
           tasks: [
             { id: 'g2mtimesl2t1', type: 'input', questionKey: 'data.tasks.g2m_5x3', difficulty: 1, answer: '15' },
             { id: 'g2mtimesl2t2', type: 'input', questionKey: 'data.tasks.g2m_5x6', difficulty: 1, answer: '30' },
@@ -2150,7 +2150,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2m-times-l3', topicId: 'g2m-times', titleKey: 'data.lessons.g2mTimesL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2m_timesl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g2m_timesl3_1' }],
-          intro: [{ titleKey: 'data.intro.g2m_timesl3_0_t', bodyKey: 'data.intro.g2m_timesl3_0_b', emoji: '3пёЏвѓЈ' }, { titleKey: 'data.intro.g2m_timesl3_1_t', bodyKey: 'data.intro.g2m_timesl3_1_b', emoji: 'вњ–пёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2m_timesl3_0_t', bodyKey: 'data.intro.g2m_timesl3_0_b', emoji: '3️⃣' }, { titleKey: 'data.intro.g2m_timesl3_1_t', bodyKey: 'data.intro.g2m_timesl3_1_b', emoji: '✖️' }],
           tasks: [
             { id: 'g2mtimesl3t1', type: 'input', questionKey: 'data.tasks.g2m_3x4', difficulty: 1, answer: '12' },
             { id: 'g2mtimesl3t2', type: 'input', questionKey: 'data.tasks.g2m_3x7', difficulty: 1, answer: '21' },
@@ -2162,12 +2162,12 @@ export const worlds: World[] = [
   },
   {
     id: 'g2rus', titleKey: 'data.worlds.g2rus', descriptionKey: 'data.worldDesc.g2rus',
-    biome: 'library', accentColor: '#9C27B0', npcEmoji: 'рџ¦‰', ageBand: '8',
+    biome: 'library', accentColor: '#9C27B0', npcEmoji: '🦉', ageBand: '8',
     topics: [
       { id: 'g2r-softhard', worldId: 'g2rus', titleKey: 'data.topics.g2rSoftHard', subject: 'reading_ru', lessons: [
         { id: 'g2r-sh-l1', topicId: 'g2r-softhard', titleKey: 'data.lessons.g2rShL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2r_shl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g2r_shl1_1' }],
-          intro: [{ titleKey: 'data.intro.g2r_shl1_0_t', bodyKey: 'data.intro.g2r_shl1_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g2r_shl1_1_t', bodyKey: 'data.intro.g2r_shl1_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2r_shl1_0_t', bodyKey: 'data.intro.g2r_shl1_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g2r_shl1_1_t', bodyKey: 'data.intro.g2r_shl1_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2rshl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g2r_nos_consonant', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_soft', correct: false }, { id: 'b', textKey: 'data.tasks.opt_hard', correct: true }] },
             { id: 'g2rshl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g2r_zha_hard', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
@@ -2176,7 +2176,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2r-sh-l2', topicId: 'g2r-softhard', titleKey: 'data.lessons.g2rShL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2r_shl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g2r_shl2_1' }],
-          intro: [{ titleKey: 'data.intro.g2r_shl2_0_t', bodyKey: 'data.intro.g2r_shl2_0_b', emoji: 'рџ“–' }, { titleKey: 'data.intro.g2r_shl2_1_t', bodyKey: 'data.intro.g2r_shl2_1_b', emoji: 'рџђґ' }],
+          intro: [{ titleKey: 'data.intro.g2r_shl2_0_t', bodyKey: 'data.intro.g2r_shl2_0_b', emoji: '📖' }, { titleKey: 'data.intro.g2r_shl2_1_t', bodyKey: 'data.intro.g2r_shl2_1_b', emoji: '🐴' }],
           tasks: [
             { id: 'g2rshl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g2r_kon_konj', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2r_opt_kon', correct: false }, { id: 'b', textKey: 'data.tasks.g2r_opt_konj', correct: true }] },
             { id: 'g2rshl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g2r_soft_sign_role', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2r_opt_softens', correct: true }, { id: 'b', textKey: 'data.tasks.g2r_opt_hardens', correct: false }, { id: 'c', textKey: 'data.tasks.g2r_opt_no_role', correct: false }] },
@@ -2185,7 +2185,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2r-sh-l3', topicId: 'g2r-softhard', titleKey: 'data.lessons.g2rShL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2r_shl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g2r_shl3_1' }],
-          intro: [{ titleKey: 'data.intro.g2r_shl3_0_t', bodyKey: 'data.intro.g2r_shl3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g2r_shl3_1_t', bodyKey: 'data.intro.g2r_shl3_1_b', emoji: 'рџЏ†' }],
+          intro: [{ titleKey: 'data.intro.g2r_shl3_0_t', bodyKey: 'data.intro.g2r_shl3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g2r_shl3_1_t', bodyKey: 'data.intro.g2r_shl3_1_b', emoji: '🏆' }],
           tasks: [
             { id: 'g2rshl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g2r_li_is_soft', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
             { id: 'g2rshl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g2r_lu_is_hard', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
@@ -2196,7 +2196,7 @@ export const worlds: World[] = [
       { id: 'g2r-speech', worldId: 'g2rus', titleKey: 'data.topics.g2rSpeech', subject: 'reading_ru', lessons: [
         { id: 'g2r-sp-l1', topicId: 'g2r-speech', titleKey: 'data.lessons.g2rSpL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2r_spl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g2r_spl1_1' }],
-          intro: [{ titleKey: 'data.intro.g2r_spl1_0_t', bodyKey: 'data.intro.g2r_spl1_0_b', emoji: 'рџЌ¦' }, { titleKey: 'data.intro.g2r_spl1_1_t', bodyKey: 'data.intro.g2r_spl1_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2r_spl1_0_t', bodyKey: 'data.intro.g2r_spl1_0_b', emoji: '🍦' }, { titleKey: 'data.intro.g2r_spl1_1_t', bodyKey: 'data.intro.g2r_spl1_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2rspl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g2r_noun_question', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2r_opt_kto_chto', correct: true }, { id: 'b', textKey: 'data.tasks.g2r_opt_chto_delaet', correct: false }, { id: 'c', textKey: 'data.tasks.g2r_opt_kakoy', correct: false }] },
             { id: 'g2rspl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g2r_kot_noun', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
@@ -2205,7 +2205,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2r-sp-l2', topicId: 'g2r-speech', titleKey: 'data.lessons.g2rSpL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2r_spl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g2r_spl2_1' }],
-          intro: [{ titleKey: 'data.intro.g2r_spl2_0_t', bodyKey: 'data.intro.g2r_spl2_0_b', emoji: 'рџЏ„' }, { titleKey: 'data.intro.g2r_spl2_1_t', bodyKey: 'data.intro.g2r_spl2_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2r_spl2_0_t', bodyKey: 'data.intro.g2r_spl2_0_b', emoji: '🏄' }, { titleKey: 'data.intro.g2r_spl2_1_t', bodyKey: 'data.intro.g2r_spl2_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2rspl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g2r_verb_question', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2r_opt_kto_chto', correct: false }, { id: 'b', textKey: 'data.tasks.g2r_opt_chto_delaet', correct: true }, { id: 'c', textKey: 'data.tasks.g2r_opt_kakoy', correct: false }] },
             { id: 'g2rspl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g2r_idet_verb', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
@@ -2214,7 +2214,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2r-sp-l3', topicId: 'g2r-speech', titleKey: 'data.lessons.g2rSpL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2r_spl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g2r_spl3_1' }],
-          intro: [{ titleKey: 'data.intro.g2r_spl3_0_t', bodyKey: 'data.intro.g2r_spl3_0_b', emoji: 'рџЊђ' }, { titleKey: 'data.intro.g2r_spl3_1_t', bodyKey: 'data.intro.g2r_spl3_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2r_spl3_0_t', bodyKey: 'data.intro.g2r_spl3_0_b', emoji: '🌐' }, { titleKey: 'data.intro.g2r_spl3_1_t', bodyKey: 'data.intro.g2r_spl3_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2rspl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g2r_adj_question', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2r_opt_kto_chto', correct: false }, { id: 'b', textKey: 'data.tasks.g2r_opt_chto_delaet', correct: false }, { id: 'c', textKey: 'data.tasks.g2r_opt_kakoy', correct: true }] },
             { id: 'g2rspl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g2r_krasivyi_adj', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
@@ -2234,7 +2234,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2r-sent-l2', topicId: 'g2r-sentence', titleKey: 'data.lessons.g2rSentL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2r_sentl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g2r_sentl2_1' }],
-          intro: [{ titleKey: 'data.intro.g2r_sentl2_0_t', bodyKey: 'data.intro.g2r_sentl2_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g2r_sentl2_1_t', bodyKey: 'data.intro.g2r_sentl2_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2r_sentl2_0_t', bodyKey: 'data.intro.g2r_sentl2_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g2r_sentl2_1_t', bodyKey: 'data.intro.g2r_sentl2_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2rsentl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g2r_subject_is', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2r_opt_about_who', correct: true }, { id: 'b', textKey: 'data.tasks.g2r_opt_action', correct: false }, { id: 'c', textKey: 'data.tasks.g2r_opt_sign', correct: false }] },
             { id: 'g2rsentl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g2r_predicate_is', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2r_opt_about_who', correct: false }, { id: 'b', textKey: 'data.tasks.g2r_opt_action', correct: true }, { id: 'c', textKey: 'data.tasks.g2r_opt_sign', correct: false }] },
@@ -2243,7 +2243,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2r-sent-l3', topicId: 'g2r-sentence', titleKey: 'data.lessons.g2rSentL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2r_sentl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g2r_sentl3_1' }],
-          intro: [{ titleKey: 'data.intro.g2r_sentl3_0_t', bodyKey: 'data.intro.g2r_sentl3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g2r_sentl3_1_t', bodyKey: 'data.intro.g2r_sentl3_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2r_sentl3_0_t', bodyKey: 'data.intro.g2r_sentl3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g2r_sentl3_1_t', bodyKey: 'data.intro.g2r_sentl3_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2rsentl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g2r_sentence_first_word', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
             { id: 'g2rsentl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g2r_sentence_end_dot', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
@@ -2255,12 +2255,12 @@ export const worlds: World[] = [
   },
   {
     id: 'g2sci', titleKey: 'data.worlds.g2sci', descriptionKey: 'data.worldDesc.g2sci',
-    biome: 'savanna', accentColor: '#4CAF50', npcEmoji: 'рџ¦Ћ', ageBand: '8',
+    biome: 'savanna', accentColor: '#4CAF50', npcEmoji: '🦎', ageBand: '8',
     topics: [
       { id: 'g2s-plants', worldId: 'g2sci', titleKey: 'data.topics.g2sPlants', subject: 'logic', lessons: [
         { id: 'g2s-plt-l1', topicId: 'g2s-plants', titleKey: 'data.lessons.g2sPltL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2s_pltl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g2s_pltl1_1' }],
-          intro: [{ titleKey: 'data.intro.g2s_pltl1_0_t', bodyKey: 'data.intro.g2s_pltl1_0_b', emoji: 'рџЊ±' }, { titleKey: 'data.intro.g2s_pltl1_1_t', bodyKey: 'data.intro.g2s_pltl1_1_b', emoji: 'рџЊЌ' }],
+          intro: [{ titleKey: 'data.intro.g2s_pltl1_0_t', bodyKey: 'data.intro.g2s_pltl1_0_b', emoji: '🌱' }, { titleKey: 'data.intro.g2s_pltl1_1_t', bodyKey: 'data.intro.g2s_pltl1_1_b', emoji: '🌍' }],
           tasks: [
             { id: 'g2spltl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g2s_root_function', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_water_food', correct: true }, { id: 'b', textKey: 'data.tasks.g2s_opt_photosyn', correct: false }, { id: 'c', textKey: 'data.tasks.g2s_opt_flowers', correct: false }] },
             { id: 'g2spltl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g2s_leaf_function', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_water_food', correct: false }, { id: 'b', textKey: 'data.tasks.g2s_opt_photosyn', correct: true }, { id: 'c', textKey: 'data.tasks.g2s_opt_flowers', correct: false }] },
@@ -2269,7 +2269,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2s-plt-l2', topicId: 'g2s-plants', titleKey: 'data.lessons.g2sPltL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2s_pltl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g2s_pltl2_1' }],
-          intro: [{ titleKey: 'data.intro.g2s_pltl2_0_t', bodyKey: 'data.intro.g2s_pltl2_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g2s_pltl2_1_t', bodyKey: 'data.intro.g2s_pltl2_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2s_pltl2_0_t', bodyKey: 'data.intro.g2s_pltl2_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g2s_pltl2_1_t', bodyKey: 'data.intro.g2s_pltl2_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2spltl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g2s_plants_need_sun', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
             { id: 'g2spltl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g2s_photosyn_needs', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_sun_water_co2', correct: true }, { id: 'b', textKey: 'data.tasks.g2s_opt_only_water', correct: false }, { id: 'c', textKey: 'data.tasks.g2s_opt_only_sun', correct: false }] },
@@ -2278,7 +2278,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2s-plt-l3', topicId: 'g2s-plants', titleKey: 'data.lessons.g2sPltL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2s_pltl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g2s_pltl3_1' }],
-          intro: [{ titleKey: 'data.intro.g2s_pltl3_0_t', bodyKey: 'data.intro.g2s_pltl3_0_b', emoji: 'рџҐ•' }, { titleKey: 'data.intro.g2s_pltl3_1_t', bodyKey: 'data.intro.g2s_pltl3_1_b', emoji: 'рџЊЅ' }],
+          intro: [{ titleKey: 'data.intro.g2s_pltl3_0_t', bodyKey: 'data.intro.g2s_pltl3_0_b', emoji: '🥕' }, { titleKey: 'data.intro.g2s_pltl3_1_t', bodyKey: 'data.intro.g2s_pltl3_1_b', emoji: '🌽' }],
           tasks: [
             { id: 'g2spltl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g2s_carrot_part', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_root_p', correct: true }, { id: 'b', textKey: 'data.tasks.g2s_opt_fruit_p', correct: false }, { id: 'c', textKey: 'data.tasks.g2s_opt_leaf_p', correct: false }] },
             { id: 'g2spltl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g2s_tomato_part', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_root_p', correct: false }, { id: 'b', textKey: 'data.tasks.g2s_opt_fruit_p', correct: true }, { id: 'c', textKey: 'data.tasks.g2s_opt_leaf_p', correct: false }] },
@@ -2289,7 +2289,7 @@ export const worlds: World[] = [
       { id: 'g2s-animals', worldId: 'g2sci', titleKey: 'data.topics.g2sAnimals', subject: 'logic', lessons: [
         { id: 'g2s-ani-l1', topicId: 'g2s-animals', titleKey: 'data.lessons.g2sAniL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2s_anil1_0' }, { speaker: 'tali', textKey: 'data.dialog.g2s_anil1_1' }],
-          intro: [{ titleKey: 'data.intro.g2s_anil1_0_t', bodyKey: 'data.intro.g2s_anil1_0_b', emoji: 'рџђВ' }, { titleKey: 'data.intro.g2s_anil1_1_t', bodyKey: 'data.intro.g2s_anil1_1_b', emoji: 'рџ¦Ћ' }],
+          intro: [{ titleKey: 'data.intro.g2s_anil1_0_t', bodyKey: 'data.intro.g2s_anil1_0_b', emoji: '🐘' }, { titleKey: 'data.intro.g2s_anil1_1_t', bodyKey: 'data.intro.g2s_anil1_1_b', emoji: '🦎' }],
           tasks: [
             { id: 'g2sanil1t1', type: 'multiple_choice', questionKey: 'data.tasks.g2s_mammal_is', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_dog_cl', correct: true }, { id: 'b', textKey: 'data.tasks.g2s_opt_eagle_cl', correct: false }, { id: 'c', textKey: 'data.tasks.g2s_opt_frog_cl', correct: false }] },
             { id: 'g2sanil1t2', type: 'multiple_choice', questionKey: 'data.tasks.g2s_mammal_feature', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_warm_blood', correct: true }, { id: 'b', textKey: 'data.tasks.g2s_opt_lays_eggs', correct: false }, { id: 'c', textKey: 'data.tasks.g2s_opt_cold_blood', correct: false }] },
@@ -2298,7 +2298,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2s-ani-l2', topicId: 'g2s-animals', titleKey: 'data.lessons.g2sAniL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2s_anil2_0' }, { speaker: 'tali', textKey: 'data.dialog.g2s_anil2_1' }],
-          intro: [{ titleKey: 'data.intro.g2s_anil2_0_t', bodyKey: 'data.intro.g2s_anil2_0_b', emoji: 'рџ¦…' }, { titleKey: 'data.intro.g2s_anil2_1_t', bodyKey: 'data.intro.g2s_anil2_1_b', emoji: 'рџђ¦' }],
+          intro: [{ titleKey: 'data.intro.g2s_anil2_0_t', bodyKey: 'data.intro.g2s_anil2_0_b', emoji: '🦅' }, { titleKey: 'data.intro.g2s_anil2_1_t', bodyKey: 'data.intro.g2s_anil2_1_b', emoji: '🐦' }],
           tasks: [
             { id: 'g2sanil2t1', type: 'multiple_choice', questionKey: 'data.tasks.g2s_bird_is', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_sparrow_cl', correct: true }, { id: 'b', textKey: 'data.tasks.g2s_opt_bat_cl', correct: false }, { id: 'c', textKey: 'data.tasks.g2s_opt_fish_cl', correct: false }] },
             { id: 'g2sanil2t2', type: 'multiple_choice', questionKey: 'data.tasks.g2s_bird_feature', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_has_feathers', correct: true }, { id: 'b', textKey: 'data.tasks.g2s_opt_has_fur', correct: false }, { id: 'c', textKey: 'data.tasks.g2s_opt_has_scales', correct: false }] },
@@ -2307,7 +2307,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2s-ani-l3', topicId: 'g2s-animals', titleKey: 'data.lessons.g2sAniL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2s_anil3_0' }, { speaker: 'tali', textKey: 'data.dialog.g2s_anil3_1' }],
-          intro: [{ titleKey: 'data.intro.g2s_anil3_0_t', bodyKey: 'data.intro.g2s_anil3_0_b', emoji: 'рџђџ' }, { titleKey: 'data.intro.g2s_anil3_1_t', bodyKey: 'data.intro.g2s_anil3_1_b', emoji: 'рџђЊ' }],
+          intro: [{ titleKey: 'data.intro.g2s_anil3_0_t', bodyKey: 'data.intro.g2s_anil3_0_b', emoji: '🐟' }, { titleKey: 'data.intro.g2s_anil3_1_t', bodyKey: 'data.intro.g2s_anil3_1_b', emoji: '🐌' }],
           tasks: [
             { id: 'g2sanil3t1', type: 'multiple_choice', questionKey: 'data.tasks.g2s_fish_breathes', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_gills', correct: true }, { id: 'b', textKey: 'data.tasks.g2s_opt_lungs', correct: false }, { id: 'c', textKey: 'data.tasks.g2s_opt_skin', correct: false }] },
             { id: 'g2sanil3t2', type: 'multiple_choice', questionKey: 'data.tasks.g2s_insect_legs', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_four', correct: false }, { id: 'b', textKey: 'data.tasks.opt_six', correct: true }, { id: 'c', textKey: 'data.tasks.opt_eight', correct: false }] },
@@ -2318,7 +2318,7 @@ export const worlds: World[] = [
       { id: 'g2s-body', worldId: 'g2sci', titleKey: 'data.topics.g2sBody', subject: 'logic', lessons: [
         { id: 'g2s-bdy-l1', topicId: 'g2s-body', titleKey: 'data.lessons.g2sBdyL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2s_bdyl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g2s_bdyl1_1' }],
-          intro: [{ titleKey: 'data.intro.g2s_bdyl1_0_t', bodyKey: 'data.intro.g2s_bdyl1_0_b', emoji: 'рџ¦ґ' }, { titleKey: 'data.intro.g2s_bdyl1_1_t', bodyKey: 'data.intro.g2s_bdyl1_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2s_bdyl1_0_t', bodyKey: 'data.intro.g2s_bdyl1_0_b', emoji: '🦴' }, { titleKey: 'data.intro.g2s_bdyl1_1_t', bodyKey: 'data.intro.g2s_bdyl1_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2sbdyl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g2s_skeleton_function', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_support', correct: true }, { id: 'b', textKey: 'data.tasks.g2s_opt_digestion', correct: false }, { id: 'c', textKey: 'data.tasks.g2s_opt_breathing', correct: false }] },
             { id: 'g2sbdyl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g2s_muscles_do', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_move_body', correct: true }, { id: 'b', textKey: 'data.tasks.g2s_opt_digest', correct: false }, { id: 'c', textKey: 'data.tasks.g2s_opt_breathe', correct: false }] },
@@ -2327,7 +2327,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2s-bdy-l2', topicId: 'g2s-body', titleKey: 'data.lessons.g2sBdyL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2s_bdyl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g2s_bdyl2_1' }],
-          intro: [{ titleKey: 'data.intro.g2s_bdyl2_0_t', bodyKey: 'data.intro.g2s_bdyl2_0_b', emoji: 'вњ”пёЏ' }, { titleKey: 'data.intro.g2s_bdyl2_1_t', bodyKey: 'data.intro.g2s_bdyl2_1_b', emoji: 'рџ’µ' }],
+          intro: [{ titleKey: 'data.intro.g2s_bdyl2_0_t', bodyKey: 'data.intro.g2s_bdyl2_0_b', emoji: '✔️' }, { titleKey: 'data.intro.g2s_bdyl2_1_t', bodyKey: 'data.intro.g2s_bdyl2_1_b', emoji: '💵' }],
           tasks: [
             { id: 'g2sbdyl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g2s_heart_does', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_pumps_blood', correct: true }, { id: 'b', textKey: 'data.tasks.g2s_opt_digests', correct: false }, { id: 'c', textKey: 'data.tasks.g2s_opt_breathes', correct: false }] },
             { id: 'g2sbdyl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g2s_lungs_do', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_pumps_blood', correct: false }, { id: 'b', textKey: 'data.tasks.g2s_opt_breathe_f', correct: true }, { id: 'c', textKey: 'data.tasks.g2s_opt_digest_f', correct: false }] },
@@ -2336,7 +2336,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2s-bdy-l3', topicId: 'g2s-body', titleKey: 'data.lessons.g2sBdyL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2s_bdyl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g2s_bdyl3_1' }],
-          intro: [{ titleKey: 'data.intro.g2s_bdyl3_0_t', bodyKey: 'data.intro.g2s_bdyl3_0_b', emoji: 'рџҐ¦' }, { titleKey: 'data.intro.g2s_bdyl3_1_t', bodyKey: 'data.intro.g2s_bdyl3_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2s_bdyl3_0_t', bodyKey: 'data.intro.g2s_bdyl3_0_b', emoji: '🥦' }, { titleKey: 'data.intro.g2s_bdyl3_1_t', bodyKey: 'data.intro.g2s_bdyl3_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2sbdyl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g2s_vitamins_in', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_fruits_veg', correct: true }, { id: 'b', textKey: 'data.tasks.g2s_opt_candy', correct: false }, { id: 'c', textKey: 'data.tasks.g2s_opt_chips', correct: false }] },
             { id: 'g2sbdyl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g2s_protein_in', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2s_opt_meat_eggs', correct: true }, { id: 'b', textKey: 'data.tasks.g2s_opt_sugar_food', correct: false }, { id: 'c', textKey: 'data.tasks.g2s_opt_water_only', correct: false }] },
@@ -2348,12 +2348,12 @@ export const worlds: World[] = [
   },
   {
     id: 'g2eng', titleKey: 'data.worlds.g2eng', descriptionKey: 'data.worldDesc.g2eng',
-    biome: 'bridge', accentColor: '#00BCD4', npcEmoji: 'рџђё', ageBand: '8',
+    biome: 'bridge', accentColor: '#00BCD4', npcEmoji: '🐸', ageBand: '8',
     topics: [
       { id: 'g2e-days', worldId: 'g2eng', titleKey: 'data.topics.g2eDays', subject: 'reading', lessons: [
         { id: 'g2e-days-l1', topicId: 'g2e-days', titleKey: 'data.lessons.g2eDaysL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2e_daysl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g2e_daysl1_1' }],
-          intro: [{ titleKey: 'data.intro.g2e_daysl1_0_t', bodyKey: 'data.intro.g2e_daysl1_0_b', emoji: 'рџ“…' }, { titleKey: 'data.intro.g2e_daysl1_1_t', bodyKey: 'data.intro.g2e_daysl1_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2e_daysl1_0_t', bodyKey: 'data.intro.g2e_daysl1_0_b', emoji: '📅' }, { titleKey: 'data.intro.g2e_daysl1_1_t', bodyKey: 'data.intro.g2e_daysl1_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2edaysl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g2e_monday_ru', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_monday', correct: true }, { id: 'b', textKey: 'data.tasks.g2e_opt_tuesday', correct: false }, { id: 'c', textKey: 'data.tasks.g2e_opt_wednesday', correct: false }] },
             { id: 'g2edaysl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g2e_tuesday_ru', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_monday', correct: false }, { id: 'b', textKey: 'data.tasks.g2e_opt_tuesday', correct: true }, { id: 'c', textKey: 'data.tasks.g2e_opt_wednesday', correct: false }] },
@@ -2362,7 +2362,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2e-days-l2', topicId: 'g2e-days', titleKey: 'data.lessons.g2eDaysL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2e_daysl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g2e_daysl2_1' }],
-          intro: [{ titleKey: 'data.intro.g2e_daysl2_0_t', bodyKey: 'data.intro.g2e_daysl2_0_b', emoji: 'рџ“…' }, { titleKey: 'data.intro.g2e_daysl2_1_t', bodyKey: 'data.intro.g2e_daysl2_1_b', emoji: 'рџ“…' }],
+          intro: [{ titleKey: 'data.intro.g2e_daysl2_0_t', bodyKey: 'data.intro.g2e_daysl2_0_b', emoji: '📅' }, { titleKey: 'data.intro.g2e_daysl2_1_t', bodyKey: 'data.intro.g2e_daysl2_1_b', emoji: '📅' }],
           tasks: [
             { id: 'g2edaysl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g2e_thursday_ru', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_thursday', correct: true }, { id: 'b', textKey: 'data.tasks.g2e_opt_friday', correct: false }, { id: 'c', textKey: 'data.tasks.g2e_opt_saturday', correct: false }] },
             { id: 'g2edaysl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g2e_friday_ru', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_thursday', correct: false }, { id: 'b', textKey: 'data.tasks.g2e_opt_friday', correct: true }, { id: 'c', textKey: 'data.tasks.g2e_opt_sunday', correct: false }] },
@@ -2371,7 +2371,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2e-days-l3', topicId: 'g2e-days', titleKey: 'data.lessons.g2eDaysL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2e_daysl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g2e_daysl3_1' }],
-          intro: [{ titleKey: 'data.intro.g2e_daysl3_0_t', bodyKey: 'data.intro.g2e_daysl3_0_b', emoji: 'рџ“†' }, { titleKey: 'data.intro.g2e_daysl3_1_t', bodyKey: 'data.intro.g2e_daysl3_1_b', emoji: 'рџЊЋ' }],
+          intro: [{ titleKey: 'data.intro.g2e_daysl3_0_t', bodyKey: 'data.intro.g2e_daysl3_0_b', emoji: '📆' }, { titleKey: 'data.intro.g2e_daysl3_1_t', bodyKey: 'data.intro.g2e_daysl3_1_b', emoji: '🌎' }],
           tasks: [
             { id: 'g2edaysl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g2e_january_ru', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_january', correct: true }, { id: 'b', textKey: 'data.tasks.g2e_opt_february', correct: false }, { id: 'c', textKey: 'data.tasks.g2e_opt_march', correct: false }] },
             { id: 'g2edaysl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g2e_march_ru', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_january', correct: false }, { id: 'b', textKey: 'data.tasks.g2e_opt_february', correct: false }, { id: 'c', textKey: 'data.tasks.g2e_opt_march', correct: true }] },
@@ -2382,7 +2382,7 @@ export const worlds: World[] = [
       { id: 'g2e-phrases', worldId: 'g2eng', titleKey: 'data.topics.g2ePhrases', subject: 'reading', lessons: [
         { id: 'g2e-phr-l1', topicId: 'g2e-phrases', titleKey: 'data.lessons.g2ePhrL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2e_phrl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g2e_phrl1_1' }],
-          intro: [{ titleKey: 'data.intro.g2e_phrl1_0_t', bodyKey: 'data.intro.g2e_phrl1_0_b', emoji: 'рџ‘¤' }, { titleKey: 'data.intro.g2e_phrl1_1_t', bodyKey: 'data.intro.g2e_phrl1_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2e_phrl1_0_t', bodyKey: 'data.intro.g2e_phrl1_0_b', emoji: '👤' }, { titleKey: 'data.intro.g2e_phrl1_1_t', bodyKey: 'data.intro.g2e_phrl1_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2ephrl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g2e_i_am_blank_student', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_am', correct: true }, { id: 'b', textKey: 'data.tasks.g1e_opt_is', correct: false }, { id: 'c', textKey: 'data.tasks.g1e_opt_are', correct: false }] },
             { id: 'g2ephrl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g2e_you_are_blank', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_am', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_is', correct: false }, { id: 'c', textKey: 'data.tasks.g1e_opt_are', correct: true }] },
@@ -2391,7 +2391,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2e-phr-l2', topicId: 'g2e-phrases', titleKey: 'data.lessons.g2ePhrL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2e_phrl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g2e_phrl2_1' }],
-          intro: [{ titleKey: 'data.intro.g2e_phrl2_0_t', bodyKey: 'data.intro.g2e_phrl2_0_b', emoji: 'рџЏ«' }, { titleKey: 'data.intro.g2e_phrl2_1_t', bodyKey: 'data.intro.g2e_phrl2_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2e_phrl2_0_t', bodyKey: 'data.intro.g2e_phrl2_0_b', emoji: '🏫' }, { titleKey: 'data.intro.g2e_phrl2_1_t', bodyKey: 'data.intro.g2e_phrl2_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2ephrl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g2e_i_have_blank_cat', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_have', correct: true }, { id: 'b', textKey: 'data.tasks.g2e_opt_has', correct: false }, { id: 'c', textKey: 'data.tasks.g2e_opt_had', correct: false }] },
             { id: 'g2ephrl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g2e_he_blank_dog', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_have', correct: false }, { id: 'b', textKey: 'data.tasks.g2e_opt_has', correct: true }, { id: 'c', textKey: 'data.tasks.g2e_opt_had', correct: false }] },
@@ -2400,7 +2400,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2e-phr-l3', topicId: 'g2e-phrases', titleKey: 'data.lessons.g2ePhrL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2e_phrl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g2e_phrl3_1' }],
-          intro: [{ titleKey: 'data.intro.g2e_phrl3_0_t', bodyKey: 'data.intro.g2e_phrl3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g2e_phrl3_1_t', bodyKey: 'data.intro.g2e_phrl3_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2e_phrl3_0_t', bodyKey: 'data.intro.g2e_phrl3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g2e_phrl3_1_t', bodyKey: 'data.intro.g2e_phrl3_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2ephrl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g2e_where_is_cat', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_where', correct: true }, { id: 'b', textKey: 'data.tasks.g2e_opt_what', correct: false }, { id: 'c', textKey: 'data.tasks.g2e_opt_who', correct: false }] },
             { id: 'g2ephrl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g2e_what_is_this', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_where', correct: false }, { id: 'b', textKey: 'data.tasks.g2e_opt_what', correct: true }, { id: 'c', textKey: 'data.tasks.g2e_opt_who', correct: false }] },
@@ -2411,7 +2411,7 @@ export const worlds: World[] = [
       { id: 'g2e-school', worldId: 'g2eng', titleKey: 'data.topics.g2eSchool', subject: 'reading', lessons: [
         { id: 'g2e-sch-l1', topicId: 'g2e-school', titleKey: 'data.lessons.g2eSchL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2e_schl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g2e_schl1_1' }],
-          intro: [{ titleKey: 'data.intro.g2e_schl1_0_t', bodyKey: 'data.intro.g2e_schl1_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g2e_schl1_1_t', bodyKey: 'data.intro.g2e_schl1_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2e_schl1_0_t', bodyKey: 'data.intro.g2e_schl1_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g2e_schl1_1_t', bodyKey: 'data.intro.g2e_schl1_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2eschl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g2e_book_en', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_book', correct: true }, { id: 'b', textKey: 'data.tasks.g2e_opt_pen', correct: false }, { id: 'c', textKey: 'data.tasks.g2e_opt_desk', correct: false }] },
             { id: 'g2eschl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g2e_pen_en', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_book', correct: false }, { id: 'b', textKey: 'data.tasks.g2e_opt_pen', correct: true }, { id: 'c', textKey: 'data.tasks.g2e_opt_board', correct: false }] },
@@ -2420,7 +2420,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2e-sch-l2', topicId: 'g2e-school', titleKey: 'data.lessons.g2eSchL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2e_schl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g2e_schl2_1' }],
-          intro: [{ titleKey: 'data.intro.g2e_schl2_0_t', bodyKey: 'data.intro.g2e_schl2_0_b', emoji: 'рџ”џ' }, { titleKey: 'data.intro.g2e_schl2_1_t', bodyKey: 'data.intro.g2e_schl2_1_b', emoji: 'рџЏ ' }],
+          intro: [{ titleKey: 'data.intro.g2e_schl2_0_t', bodyKey: 'data.intro.g2e_schl2_0_b', emoji: '🔟' }, { titleKey: 'data.intro.g2e_schl2_1_t', bodyKey: 'data.intro.g2e_schl2_1_b', emoji: '🏠' }],
           tasks: [
             { id: 'g2eschl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g2e_math_in_en', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_maths', correct: true }, { id: 'b', textKey: 'data.tasks.g2e_opt_music', correct: false }, { id: 'c', textKey: 'data.tasks.g2e_opt_art', correct: false }] },
             { id: 'g2eschl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g2e_art_in_en', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_maths', correct: false }, { id: 'b', textKey: 'data.tasks.g2e_opt_music', correct: false }, { id: 'c', textKey: 'data.tasks.g2e_opt_art', correct: true }] },
@@ -2429,7 +2429,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g2e-sch-l3', topicId: 'g2e-school', titleKey: 'data.lessons.g2eSchL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g2e_schl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g2e_schl3_1' }],
-          intro: [{ titleKey: 'data.intro.g2e_schl3_0_t', bodyKey: 'data.intro.g2e_schl3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g2e_schl3_1_t', bodyKey: 'data.intro.g2e_schl3_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g2e_schl3_0_t', bodyKey: 'data.intro.g2e_schl3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g2e_schl3_1_t', bodyKey: 'data.intro.g2e_schl3_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g2eschl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g2e_wake_up_means', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_wake_up', correct: true }, { id: 'b', textKey: 'data.tasks.g2e_opt_go_to_bed', correct: false }, { id: 'c', textKey: 'data.tasks.g2e_opt_eat_lunch', correct: false }] },
             { id: 'g2eschl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g2e_go_to_school', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2e_opt_wake_up', correct: false }, { id: 'b', textKey: 'data.tasks.g2e_opt_go_school', correct: true }, { id: 'c', textKey: 'data.tasks.g2e_opt_go_to_bed', correct: false }] },
@@ -2444,12 +2444,12 @@ export const worlds: World[] = [
   // ---
   {
     id: 'g3math', titleKey: 'data.worlds.g3math', descriptionKey: 'data.worldDesc.g3math',
-    biome: 'future', accentColor: '#607D8B', npcEmoji: 'рџ¤–', ageBand: '9-10',
+    biome: 'future', accentColor: '#607D8B', npcEmoji: '🤖', ageBand: '9-10',
     topics: [
       { id: 'g3m-1000', worldId: 'g3math', titleKey: 'data.topics.g3m1000', subject: 'math', lessons: [
         { id: 'g3m-1000-l1', topicId: 'g3m-1000', titleKey: 'data.lessons.g3m1000L1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3m_1000l1_0' }, { speaker: 'tali', textKey: 'data.dialog.g3m_1000l1_1' }],
-          intro: [{ titleKey: 'data.intro.g3m_1000l1_0_t', bodyKey: 'data.intro.g3m_1000l1_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g3m_1000l1_1_t', bodyKey: 'data.intro.g3m_1000l1_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3m_1000l1_0_t', bodyKey: 'data.intro.g3m_1000l1_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g3m_1000l1_1_t', bodyKey: 'data.intro.g3m_1000l1_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g3m1000l1t1', type: 'multiple_choice', questionKey: 'data.tasks.g3m_3hundreds', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_200', correct: false }, { id: 'b', textKey: 'data.tasks.opt_300', correct: true }, { id: 'c', textKey: 'data.tasks.opt_400', correct: false }] },
             { id: 'g3m1000l1t2', type: 'multiple_choice', questionKey: 'data.tasks.g3m_5hundreds', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_400', correct: false }, { id: 'b', textKey: 'data.tasks.opt_500', correct: true }, { id: 'c', textKey: 'data.tasks.opt_600', correct: false }] },
@@ -2458,7 +2458,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3m-1000-l2', topicId: 'g3m-1000', titleKey: 'data.lessons.g3m1000L2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3m_1000l2_0' }, { speaker: 'tali', textKey: 'data.dialog.g3m_1000l2_1' }],
-          intro: [{ titleKey: 'data.intro.g3m_1000l2_0_t', bodyKey: 'data.intro.g3m_1000l2_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g3m_1000l2_1_t', bodyKey: 'data.intro.g3m_1000l2_1_b', emoji: 'рџЌЊ' }],
+          intro: [{ titleKey: 'data.intro.g3m_1000l2_0_t', bodyKey: 'data.intro.g3m_1000l2_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g3m_1000l2_1_t', bodyKey: 'data.intro.g3m_1000l2_1_b', emoji: '🍌' }],
           tasks: [
             { id: 'g3m1000l2t1', type: 'input', questionKey: 'data.tasks.g3m_hundreds_in_347', difficulty: 1, answer: '3' },
             { id: 'g3m1000l2t2', type: 'input', questionKey: 'data.tasks.g3m_tens_in_456', difficulty: 1, answer: '5' },
@@ -2467,7 +2467,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3m-1000-l3', topicId: 'g3m-1000', titleKey: 'data.lessons.g3m1000L3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3m_1000l3_0' }, { speaker: 'tali', textKey: 'data.dialog.g3m_1000l3_1' }],
-          intro: [{ titleKey: 'data.intro.g3m_1000l3_0_t', bodyKey: 'data.intro.g3m_1000l3_0_b', emoji: 'вћ•' }, { titleKey: 'data.intro.g3m_1000l3_1_t', bodyKey: 'data.intro.g3m_1000l3_1_b', emoji: 'вћ–' }],
+          intro: [{ titleKey: 'data.intro.g3m_1000l3_0_t', bodyKey: 'data.intro.g3m_1000l3_0_b', emoji: '➕' }, { titleKey: 'data.intro.g3m_1000l3_1_t', bodyKey: 'data.intro.g3m_1000l3_1_b', emoji: '➖' }],
           tasks: [
             { id: 'g3m1000l3t1', type: 'input', questionKey: 'data.tasks.g3m_200plus350', difficulty: 1, answer: '550' },
             { id: 'g3m1000l3t2', type: 'input', questionKey: 'data.tasks.g3m_600minus240', difficulty: 1, answer: '360' },
@@ -2478,7 +2478,7 @@ export const worlds: World[] = [
       { id: 'g3m-tables', worldId: 'g3math', titleKey: 'data.topics.g3mTables', subject: 'math', lessons: [
         { id: 'g3m-tab-l1', topicId: 'g3m-tables', titleKey: 'data.lessons.g3mTabL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3m_tabl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g3m_tabl1_1' }],
-          intro: [{ titleKey: 'data.intro.g3m_tabl1_0_t', bodyKey: 'data.intro.g3m_tabl1_0_b', emoji: '4пёЏвѓЈ' }, { titleKey: 'data.intro.g3m_tabl1_1_t', bodyKey: 'data.intro.g3m_tabl1_1_b', emoji: '6пёЏвѓЈ' }],
+          intro: [{ titleKey: 'data.intro.g3m_tabl1_0_t', bodyKey: 'data.intro.g3m_tabl1_0_b', emoji: '4️⃣' }, { titleKey: 'data.intro.g3m_tabl1_1_t', bodyKey: 'data.intro.g3m_tabl1_1_b', emoji: '6️⃣' }],
           tasks: [
             { id: 'g3mtabl1t1', type: 'input', questionKey: 'data.tasks.g3m_4x6', difficulty: 1, answer: '24' },
             { id: 'g3mtabl1t2', type: 'input', questionKey: 'data.tasks.g3m_4x8', difficulty: 1, answer: '32' },
@@ -2487,7 +2487,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3m-tab-l2', topicId: 'g3m-tables', titleKey: 'data.lessons.g3mTabL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3m_tabl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g3m_tabl2_1' }],
-          intro: [{ titleKey: 'data.intro.g3m_tabl2_0_t', bodyKey: 'data.intro.g3m_tabl2_0_b', emoji: '7пёЏвѓЈ' }, { titleKey: 'data.intro.g3m_tabl2_1_t', bodyKey: 'data.intro.g3m_tabl2_1_b', emoji: '8пёЏвѓЈ' }],
+          intro: [{ titleKey: 'data.intro.g3m_tabl2_0_t', bodyKey: 'data.intro.g3m_tabl2_0_b', emoji: '7️⃣' }, { titleKey: 'data.intro.g3m_tabl2_1_t', bodyKey: 'data.intro.g3m_tabl2_1_b', emoji: '8️⃣' }],
           tasks: [
             { id: 'g3mtabl2t1', type: 'input', questionKey: 'data.tasks.g3m_7x5', difficulty: 1, answer: '35' },
             { id: 'g3mtabl2t2', type: 'input', questionKey: 'data.tasks.g3m_7x8', difficulty: 2, answer: '56' },
@@ -2496,7 +2496,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3m-tab-l3', topicId: 'g3m-tables', titleKey: 'data.lessons.g3mTabL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3m_tabl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g3m_tabl3_1' }],
-          intro: [{ titleKey: 'data.intro.g3m_tabl3_0_t', bodyKey: 'data.intro.g3m_tabl3_0_b', emoji: '9пёЏвѓЈ' }, { titleKey: 'data.intro.g3m_tabl3_1_t', bodyKey: 'data.intro.g3m_tabl3_1_b', emoji: 'вњ–пёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3m_tabl3_0_t', bodyKey: 'data.intro.g3m_tabl3_0_b', emoji: '9️⃣' }, { titleKey: 'data.intro.g3m_tabl3_1_t', bodyKey: 'data.intro.g3m_tabl3_1_b', emoji: '✖️' }],
           tasks: [
             { id: 'g3mtabl3t1', type: 'input', questionKey: 'data.tasks.g3m_9x4', difficulty: 1, answer: '36' },
             { id: 'g3mtabl3t2', type: 'input', questionKey: 'data.tasks.g3m_9x7', difficulty: 2, answer: '63' },
@@ -2507,7 +2507,7 @@ export const worlds: World[] = [
       { id: 'g3m-divide', worldId: 'g3math', titleKey: 'data.topics.g3mDivide', subject: 'math', lessons: [
         { id: 'g3m-div-l1', topicId: 'g3m-divide', titleKey: 'data.lessons.g3mDivL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3m_divl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g3m_divl1_1' }],
-          intro: [{ titleKey: 'data.intro.g3m_divl1_0_t', bodyKey: 'data.intro.g3m_divl1_0_b', emoji: 'вћ—' }, { titleKey: 'data.intro.g3m_divl1_1_t', bodyKey: 'data.intro.g3m_divl1_1_b', emoji: 'вћ—' }],
+          intro: [{ titleKey: 'data.intro.g3m_divl1_0_t', bodyKey: 'data.intro.g3m_divl1_0_b', emoji: '➗' }, { titleKey: 'data.intro.g3m_divl1_1_t', bodyKey: 'data.intro.g3m_divl1_1_b', emoji: '➗' }],
           tasks: [
             { id: 'g3mdivl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g3m_div_concept', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3m_opt_div_split', correct: true }, { id: 'b', textKey: 'data.tasks.g3m_opt_div_add', correct: false }, { id: 'c', textKey: 'data.tasks.g3m_opt_div_mul', correct: false }] },
             { id: 'g3mdivl1t2', type: 'input', questionKey: 'data.tasks.g3m_6div2', difficulty: 1, answer: '3' },
@@ -2516,7 +2516,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3m-div-l2', topicId: 'g3m-divide', titleKey: 'data.lessons.g3mDivL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3m_divl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g3m_divl2_1' }],
-          intro: [{ titleKey: 'data.intro.g3m_divl2_0_t', bodyKey: 'data.intro.g3m_divl2_0_b', emoji: '2пёЏвѓЈ' }, { titleKey: 'data.intro.g3m_divl2_1_t', bodyKey: 'data.intro.g3m_divl2_1_b', emoji: 'вћ—' }],
+          intro: [{ titleKey: 'data.intro.g3m_divl2_0_t', bodyKey: 'data.intro.g3m_divl2_0_b', emoji: '2️⃣' }, { titleKey: 'data.intro.g3m_divl2_1_t', bodyKey: 'data.intro.g3m_divl2_1_b', emoji: '➗' }],
           tasks: [
             { id: 'g3mdivl2t1', type: 'input', questionKey: 'data.tasks.g3m_18div2', difficulty: 1, answer: '9' },
             { id: 'g3mdivl2t2', type: 'input', questionKey: 'data.tasks.g3m_14div2', difficulty: 1, answer: '7' },
@@ -2525,7 +2525,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3m-div-l3', topicId: 'g3m-divide', titleKey: 'data.lessons.g3mDivL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3m_divl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g3m_divl3_1' }],
-          intro: [{ titleKey: 'data.intro.g3m_divl3_0_t', bodyKey: 'data.intro.g3m_divl3_0_b', emoji: '5пёЏвѓЈ' }, { titleKey: 'data.intro.g3m_divl3_1_t', bodyKey: 'data.intro.g3m_divl3_1_b', emoji: 'вћ—' }],
+          intro: [{ titleKey: 'data.intro.g3m_divl3_0_t', bodyKey: 'data.intro.g3m_divl3_0_b', emoji: '5️⃣' }, { titleKey: 'data.intro.g3m_divl3_1_t', bodyKey: 'data.intro.g3m_divl3_1_b', emoji: '➗' }],
           tasks: [
             { id: 'g3mdivl3t1', type: 'input', questionKey: 'data.tasks.g3m_25div5', difficulty: 1, answer: '5' },
             { id: 'g3mdivl3t2', type: 'input', questionKey: 'data.tasks.g3m_45div5', difficulty: 1, answer: '9' },
@@ -2537,12 +2537,12 @@ export const worlds: World[] = [
   },
   {
     id: 'g3rus', titleKey: 'data.worlds.g3rus', descriptionKey: 'data.worldDesc.g3rus',
-    biome: 'castle', accentColor: '#795548', npcEmoji: 'рџ¦ќ', ageBand: '9-10',
+    biome: 'castle', accentColor: '#795548', npcEmoji: '🦝', ageBand: '9-10',
     topics: [
       { id: 'g3r-gender', worldId: 'g3rus', titleKey: 'data.topics.g3rGender', subject: 'reading_ru', lessons: [
         { id: 'g3r-gen-l1', topicId: 'g3r-gender', titleKey: 'data.lessons.g3rGenL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3r_genl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g3r_genl1_1' }],
-          intro: [{ titleKey: 'data.intro.g3r_genl1_0_t', bodyKey: 'data.intro.g3r_genl1_0_b', emoji: 'в™‚пёЏ' }, { titleKey: 'data.intro.g3r_genl1_1_t', bodyKey: 'data.intro.g3r_genl1_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3r_genl1_0_t', bodyKey: 'data.intro.g3r_genl1_0_b', emoji: '♂️' }, { titleKey: 'data.intro.g3r_genl1_1_t', bodyKey: 'data.intro.g3r_genl1_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g3rgenl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g3r_masc_question', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3r_opt_on', correct: true }, { id: 'b', textKey: 'data.tasks.g3r_opt_ona', correct: false }, { id: 'c', textKey: 'data.tasks.g3r_opt_ono', correct: false }] },
             { id: 'g3rgenl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g3r_dom_gender', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3r_opt_muzhskoy', correct: true }, { id: 'b', textKey: 'data.tasks.g3r_opt_zhenskiy', correct: false }, { id: 'c', textKey: 'data.tasks.g3r_opt_sredniy', correct: false }] },
@@ -2551,7 +2551,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3r-gen-l2', topicId: 'g3r-gender', titleKey: 'data.lessons.g3rGenL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3r_genl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g3r_genl2_1' }],
-          intro: [{ titleKey: 'data.intro.g3r_genl2_0_t', bodyKey: 'data.intro.g3r_genl2_0_b', emoji: 'в™ЂпёЏ' }, { titleKey: 'data.intro.g3r_genl2_1_t', bodyKey: 'data.intro.g3r_genl2_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3r_genl2_0_t', bodyKey: 'data.intro.g3r_genl2_0_b', emoji: '♀️' }, { titleKey: 'data.intro.g3r_genl2_1_t', bodyKey: 'data.intro.g3r_genl2_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g3rgenl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g3r_fem_question', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3r_opt_on', correct: false }, { id: 'b', textKey: 'data.tasks.g3r_opt_ona', correct: true }, { id: 'c', textKey: 'data.tasks.g3r_opt_ono', correct: false }] },
             { id: 'g3rgenl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g3r_koshka_gender', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3r_opt_muzhskoy', correct: false }, { id: 'b', textKey: 'data.tasks.g3r_opt_zhenskiy', correct: true }, { id: 'c', textKey: 'data.tasks.g3r_opt_sredniy', correct: false }] },
@@ -2560,7 +2560,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3r-gen-l3', topicId: 'g3r-gender', titleKey: 'data.lessons.g3rGenL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3r_genl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g3r_genl3_1' }],
-          intro: [{ titleKey: 'data.intro.g3r_genl3_0_t', bodyKey: 'data.intro.g3r_genl3_0_b', emoji: 'вќ¤пёЏ' }, { titleKey: 'data.intro.g3r_genl3_1_t', bodyKey: 'data.intro.g3r_genl3_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3r_genl3_0_t', bodyKey: 'data.intro.g3r_genl3_0_b', emoji: '❤️' }, { titleKey: 'data.intro.g3r_genl3_1_t', bodyKey: 'data.intro.g3r_genl3_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g3rgenl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g3r_neut_question', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3r_opt_on', correct: false }, { id: 'b', textKey: 'data.tasks.g3r_opt_ona', correct: false }, { id: 'c', textKey: 'data.tasks.g3r_opt_ono', correct: true }] },
             { id: 'g3rgenl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g3r_okno_gender', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3r_opt_muzhskoy', correct: false }, { id: 'b', textKey: 'data.tasks.g3r_opt_zhenskiy', correct: false }, { id: 'c', textKey: 'data.tasks.g3r_opt_sredniy', correct: true }] },
@@ -2571,7 +2571,7 @@ export const worlds: World[] = [
       { id: 'g3r-verb', worldId: 'g3rus', titleKey: 'data.topics.g3rVerb', subject: 'reading_ru', lessons: [
         { id: 'g3r-verb-l1', topicId: 'g3r-verb', titleKey: 'data.lessons.g3rVerbL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3r_verbl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g3r_verbl1_1' }],
-          intro: [{ titleKey: 'data.intro.g3r_verbl1_0_t', bodyKey: 'data.intro.g3r_verbl1_0_b', emoji: 'рџЏ„' }, { titleKey: 'data.intro.g3r_verbl1_1_t', bodyKey: 'data.intro.g3r_verbl1_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3r_verbl1_0_t', bodyKey: 'data.intro.g3r_verbl1_0_b', emoji: '🏄' }, { titleKey: 'data.intro.g3r_verbl1_1_t', bodyKey: 'data.intro.g3r_verbl1_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g3rverbl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g3r_idet_present', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
             { id: 'g3rverbl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g3r_present_question', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3r_opt_chto_delal', correct: false }, { id: 'b', textKey: 'data.tasks.g3r_opt_chto_delaet', correct: true }, { id: 'c', textKey: 'data.tasks.g3r_opt_chto_budet', correct: false }] },
@@ -2580,7 +2580,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3r-verb-l2', topicId: 'g3r-verb', titleKey: 'data.lessons.g3rVerbL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3r_verbl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g3r_verbl2_1' }],
-          intro: [{ titleKey: 'data.intro.g3r_verbl2_0_t', bodyKey: 'data.intro.g3r_verbl2_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g3r_verbl2_1_t', bodyKey: 'data.intro.g3r_verbl2_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3r_verbl2_0_t', bodyKey: 'data.intro.g3r_verbl2_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g3r_verbl2_1_t', bodyKey: 'data.intro.g3r_verbl2_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g3rverbl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g3r_past_question', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3r_opt_chto_delal', correct: true }, { id: 'b', textKey: 'data.tasks.g3r_opt_chto_delaet', correct: false }, { id: 'c', textKey: 'data.tasks.g3r_opt_chto_budet', correct: false }] },
             { id: 'g3rverbl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g3r_chital_past', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
@@ -2589,7 +2589,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3r-verb-l3', topicId: 'g3r-verb', titleKey: 'data.lessons.g3rVerbL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3r_verbl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g3r_verbl3_1' }],
-          intro: [{ titleKey: 'data.intro.g3r_verbl3_0_t', bodyKey: 'data.intro.g3r_verbl3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g3r_verbl3_1_t', bodyKey: 'data.intro.g3r_verbl3_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3r_verbl3_0_t', bodyKey: 'data.intro.g3r_verbl3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g3r_verbl3_1_t', bodyKey: 'data.intro.g3r_verbl3_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g3rverbl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g3r_future_question', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3r_opt_chto_delal', correct: false }, { id: 'b', textKey: 'data.tasks.g3r_opt_chto_delaet', correct: false }, { id: 'c', textKey: 'data.tasks.g3r_opt_chto_budet', correct: true }] },
             { id: 'g3rverbl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g3r_which_future', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3r_opt_chital', correct: false }, { id: 'b', textKey: 'data.tasks.g3r_opt_chitaet', correct: false }, { id: 'c', textKey: 'data.tasks.g3r_opt_budet_chitat', correct: true }] },
@@ -2600,7 +2600,7 @@ export const worlds: World[] = [
       { id: 'g3r-adj', worldId: 'g3rus', titleKey: 'data.topics.g3rAdj', subject: 'reading_ru', lessons: [
         { id: 'g3r-adj-l1', topicId: 'g3r-adj', titleKey: 'data.lessons.g3rAdjL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3r_adjl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g3r_adjl1_1' }],
-          intro: [{ titleKey: 'data.intro.g3r_adjl1_0_t', bodyKey: 'data.intro.g3r_adjl1_0_b', emoji: 'рџЊђ' }, { titleKey: 'data.intro.g3r_adjl1_1_t', bodyKey: 'data.intro.g3r_adjl1_1_b', emoji: 'рџЏ ' }],
+          intro: [{ titleKey: 'data.intro.g3r_adjl1_0_t', bodyKey: 'data.intro.g3r_adjl1_0_b', emoji: '🌐' }, { titleKey: 'data.intro.g3r_adjl1_1_t', bodyKey: 'data.intro.g3r_adjl1_1_b', emoji: '🏠' }],
           tasks: [
             { id: 'g3radjl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g3r_krasny_adj', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
             { id: 'g3radjl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g3r_adj_color_examples', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3r_opt_sinil_belyj', correct: true }, { id: 'b', textKey: 'data.tasks.g3r_opt_idet_sidit', correct: false }, { id: 'c', textKey: 'data.tasks.g3r_opt_stol_kniga', correct: false }] },
@@ -2609,7 +2609,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3r-adj-l2', topicId: 'g3r-adj', titleKey: 'data.lessons.g3rAdjL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3r_adjl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g3r_adjl2_1' }],
-          intro: [{ titleKey: 'data.intro.g3r_adjl2_0_t', bodyKey: 'data.intro.g3r_adjl2_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g3r_adjl2_1_t', bodyKey: 'data.intro.g3r_adjl2_1_b', emoji: 'рџ§Є' }],
+          intro: [{ titleKey: 'data.intro.g3r_adjl2_0_t', bodyKey: 'data.intro.g3r_adjl2_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g3r_adjl2_1_t', bodyKey: 'data.intro.g3r_adjl2_1_b', emoji: '🧪' }],
           tasks: [
             { id: 'g3radjl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g3r_bolshoy_adj', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
             { id: 'g3radjl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g3r_size_adj_examples', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3r_opt_bolshoy_maliy', correct: true }, { id: 'b', textKey: 'data.tasks.g3r_opt_idet_bezhit', correct: false }, { id: 'c', textKey: 'data.tasks.g3r_opt_dom_shkola', correct: false }] },
@@ -2618,7 +2618,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3r-adj-l3', topicId: 'g3r-adj', titleKey: 'data.lessons.g3rAdjL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3r_adjl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g3r_adjl3_1' }],
-          intro: [{ titleKey: 'data.intro.g3r_adjl3_0_t', bodyKey: 'data.intro.g3r_adjl3_0_b', emoji: 'рџ¤Ќ' }, { titleKey: 'data.intro.g3r_adjl3_1_t', bodyKey: 'data.intro.g3r_adjl3_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3r_adjl3_0_t', bodyKey: 'data.intro.g3r_adjl3_0_b', emoji: '🤍' }, { titleKey: 'data.intro.g3r_adjl3_1_t', bodyKey: 'data.intro.g3r_adjl3_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g3radjl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g3r_krasny_for_stol', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3r_opt_krasny', correct: true }, { id: 'b', textKey: 'data.tasks.g3r_opt_krasnaya', correct: false }, { id: 'c', textKey: 'data.tasks.g3r_opt_krasnoe', correct: false }] },
             { id: 'g3radjl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g3r_krasnoe_for_okno', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3r_opt_krasny', correct: false }, { id: 'b', textKey: 'data.tasks.g3r_opt_krasnaya', correct: false }, { id: 'c', textKey: 'data.tasks.g3r_opt_krasnoe', correct: true }] },
@@ -2630,12 +2630,12 @@ export const worlds: World[] = [
   },
   {
     id: 'g3world', titleKey: 'data.worlds.g3world', descriptionKey: 'data.worldDesc.g3world',
-    biome: 'globe', accentColor: '#009688', npcEmoji: 'рџЊЏ', ageBand: '9-10',
+    biome: 'globe', accentColor: '#009688', npcEmoji: '🌏', ageBand: '9-10',
     topics: [
       { id: 'g3w-geo', worldId: 'g3world', titleKey: 'data.topics.g3wGeo', subject: 'logic', lessons: [
         { id: 'g3w-geo-l1', topicId: 'g3w-geo', titleKey: 'data.lessons.g3wGeoL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3w_geol1_0' }, { speaker: 'tali', textKey: 'data.dialog.g3w_geol1_1' }],
-          intro: [{ titleKey: 'data.intro.g3w_geol1_0_t', bodyKey: 'data.intro.g3w_geol1_0_b', emoji: 'рџЊЊ' }, { titleKey: 'data.intro.g3w_geol1_1_t', bodyKey: 'data.intro.g3w_geol1_1_b', emoji: 'рџ—єпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3w_geol1_0_t', bodyKey: 'data.intro.g3w_geol1_0_b', emoji: '🌌' }, { titleKey: 'data.intro.g3w_geol1_1_t', bodyKey: 'data.intro.g3w_geol1_1_b', emoji: '🗺️' }],
           tasks: [
             { id: 'g3wgeol1t1', type: 'multiple_choice', questionKey: 'data.tasks.g3w_continents_count', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_five', correct: false }, { id: 'b', textKey: 'data.tasks.opt_six', correct: false }, { id: 'c', textKey: 'data.tasks.opt_seven', correct: true }] },
             { id: 'g3wgeol1t2', type: 'multiple_choice', questionKey: 'data.tasks.g3w_largest_continent', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_africa', correct: false }, { id: 'b', textKey: 'data.tasks.g3w_opt_eurasia', correct: true }, { id: 'c', textKey: 'data.tasks.g3w_opt_america', correct: false }] },
@@ -2644,7 +2644,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3w-geo-l2', topicId: 'g3w-geo', titleKey: 'data.lessons.g3wGeoL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3w_geol2_0' }, { speaker: 'tali', textKey: 'data.dialog.g3w_geol2_1' }],
-          intro: [{ titleKey: 'data.intro.g3w_geol2_0_t', bodyKey: 'data.intro.g3w_geol2_0_b', emoji: 'рџЊ€' }, { titleKey: 'data.intro.g3w_geol2_1_t', bodyKey: 'data.intro.g3w_geol2_1_b', emoji: 'рџ—єпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3w_geol2_0_t', bodyKey: 'data.intro.g3w_geol2_0_b', emoji: '🌈' }, { titleKey: 'data.intro.g3w_geol2_1_t', bodyKey: 'data.intro.g3w_geol2_1_b', emoji: '🗺️' }],
           tasks: [
             { id: 'g3wgeol2t1', type: 'multiple_choice', questionKey: 'data.tasks.g3w_oceans_count', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_three', correct: false }, { id: 'b', textKey: 'data.tasks.opt_four', correct: false }, { id: 'c', textKey: 'data.tasks.opt_five', correct: true }] },
             { id: 'g3wgeol2t2', type: 'multiple_choice', questionKey: 'data.tasks.g3w_largest_ocean', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_pacific', correct: true }, { id: 'b', textKey: 'data.tasks.g3w_opt_atlantic', correct: false }, { id: 'c', textKey: 'data.tasks.g3w_opt_indian', correct: false }] },
@@ -2653,7 +2653,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3w-geo-l3', topicId: 'g3w-geo', titleKey: 'data.lessons.g3wGeoL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3w_geol3_0' }, { speaker: 'tali', textKey: 'data.dialog.g3w_geol3_1' }],
-          intro: [{ titleKey: 'data.intro.g3w_geol3_0_t', bodyKey: 'data.intro.g3w_geol3_0_b', emoji: 'рџЏ”пёЏ' }, { titleKey: 'data.intro.g3w_geol3_1_t', bodyKey: 'data.intro.g3w_geol3_1_b', emoji: 'рџЊЌ' }],
+          intro: [{ titleKey: 'data.intro.g3w_geol3_0_t', bodyKey: 'data.intro.g3w_geol3_0_b', emoji: '🏔️' }, { titleKey: 'data.intro.g3w_geol3_1_t', bodyKey: 'data.intro.g3w_geol3_1_b', emoji: '🌍' }],
           tasks: [
             { id: 'g3wgeol3t1', type: 'multiple_choice', questionKey: 'data.tasks.g3w_russia_capital', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_moscow', correct: true }, { id: 'b', textKey: 'data.tasks.g3w_opt_spb', correct: false }, { id: 'c', textKey: 'data.tasks.g3w_opt_novosibirsk', correct: false }] },
             { id: 'g3wgeol3t2', type: 'multiple_choice', questionKey: 'data.tasks.g3w_france_capital', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_london', correct: false }, { id: 'b', textKey: 'data.tasks.g3w_opt_paris', correct: true }, { id: 'c', textKey: 'data.tasks.g3w_opt_berlin', correct: false }] },
@@ -2664,7 +2664,7 @@ export const worlds: World[] = [
       { id: 'g3w-nature', worldId: 'g3world', titleKey: 'data.topics.g3wNature', subject: 'logic', lessons: [
         { id: 'g3w-nat-l1', topicId: 'g3w-nature', titleKey: 'data.lessons.g3wNatL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3w_natl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g3w_natl1_1' }],
-          intro: [{ titleKey: 'data.intro.g3w_natl1_0_t', bodyKey: 'data.intro.g3w_natl1_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g3w_natl1_1_t', bodyKey: 'data.intro.g3w_natl1_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3w_natl1_0_t', bodyKey: 'data.intro.g3w_natl1_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g3w_natl1_1_t', bodyKey: 'data.intro.g3w_natl1_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g3wnatl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g3w_water_cycle_steps', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_evaporation', correct: true }, { id: 'b', textKey: 'data.tasks.g3w_opt_explosion', correct: false }, { id: 'c', textKey: 'data.tasks.g3w_opt_erosion', correct: false }] },
             { id: 'g3wnatl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g3w_clouds_form_from', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_water_vapor', correct: true }, { id: 'b', textKey: 'data.tasks.g3w_opt_dust', correct: false }, { id: 'c', textKey: 'data.tasks.g3w_opt_smoke', correct: false }] },
@@ -2673,7 +2673,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3w-nat-l2', topicId: 'g3w-nature', titleKey: 'data.lessons.g3wNatL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3w_natl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g3w_natl2_1' }],
-          intro: [{ titleKey: 'data.intro.g3w_natl2_0_t', bodyKey: 'data.intro.g3w_natl2_0_b', emoji: 'рџЊ‘' }, { titleKey: 'data.intro.g3w_natl2_1_t', bodyKey: 'data.intro.g3w_natl2_1_b', emoji: 'рџЊ’' }],
+          intro: [{ titleKey: 'data.intro.g3w_natl2_0_t', bodyKey: 'data.intro.g3w_natl2_0_b', emoji: '🌑' }, { titleKey: 'data.intro.g3w_natl2_1_t', bodyKey: 'data.intro.g3w_natl2_1_b', emoji: '🌒' }],
           tasks: [
             { id: 'g3wnatl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g3w_hottest_zone', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_equatorial', correct: true }, { id: 'b', textKey: 'data.tasks.g3w_opt_temperate', correct: false }, { id: 'c', textKey: 'data.tasks.g3w_opt_polar', correct: false }] },
             { id: 'g3wnatl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g3w_coldest_zone', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_equatorial', correct: false }, { id: 'b', textKey: 'data.tasks.g3w_opt_temperate', correct: false }, { id: 'c', textKey: 'data.tasks.g3w_opt_polar', correct: true }] },
@@ -2682,7 +2682,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3w-nat-l3', topicId: 'g3w-nature', titleKey: 'data.lessons.g3wNatL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3w_natl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g3w_natl3_1' }],
-          intro: [{ titleKey: 'data.intro.g3w_natl3_0_t', bodyKey: 'data.intro.g3w_natl3_0_b', emoji: 'рџЊ™' }, { titleKey: 'data.intro.g3w_natl3_1_t', bodyKey: 'data.intro.g3w_natl3_1_b', emoji: 'рџЊ•' }],
+          intro: [{ titleKey: 'data.intro.g3w_natl3_0_t', bodyKey: 'data.intro.g3w_natl3_0_b', emoji: '🌙' }, { titleKey: 'data.intro.g3w_natl3_1_t', bodyKey: 'data.intro.g3w_natl3_1_b', emoji: '🌕' }],
           tasks: [
             { id: 'g3wnatl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g3w_protect_nature_how', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_recycle', correct: true }, { id: 'b', textKey: 'data.tasks.g3w_opt_burn_trash', correct: false }, { id: 'c', textKey: 'data.tasks.g3w_opt_cut_trees', correct: false }] },
             { id: 'g3wnatl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g3w_plant_trees_help', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
@@ -2693,7 +2693,7 @@ export const worlds: World[] = [
       { id: 'g3w-eco', worldId: 'g3world', titleKey: 'data.topics.g3wEco', subject: 'logic', lessons: [
         { id: 'g3w-eco-l1', topicId: 'g3w-eco', titleKey: 'data.lessons.g3wEcoL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3w_ecol1_0' }, { speaker: 'tali', textKey: 'data.dialog.g3w_ecol1_1' }],
-          intro: [{ titleKey: 'data.intro.g3w_ecol1_0_t', bodyKey: 'data.intro.g3w_ecol1_0_b', emoji: 'рџЊ±' }, { titleKey: 'data.intro.g3w_ecol1_1_t', bodyKey: 'data.intro.g3w_ecol1_1_b', emoji: 'рџ¤Ќ' }],
+          intro: [{ titleKey: 'data.intro.g3w_ecol1_0_t', bodyKey: 'data.intro.g3w_ecol1_0_b', emoji: '🌱' }, { titleKey: 'data.intro.g3w_ecol1_1_t', bodyKey: 'data.intro.g3w_ecol1_1_b', emoji: '🤍' }],
           tasks: [
             { id: 'g3wecol1t1', type: 'multiple_choice', questionKey: 'data.tasks.g3w_ecology_studies', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_nature_relations', correct: true }, { id: 'b', textKey: 'data.tasks.g3w_opt_math_calc', correct: false }, { id: 'c', textKey: 'data.tasks.g3w_opt_history', correct: false }] },
             { id: 'g3wecol1t2', type: 'multiple_choice', questionKey: 'data.tasks.g3w_pollution_is_bad', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
@@ -2702,7 +2702,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3w-eco-l2', topicId: 'g3w-eco', titleKey: 'data.lessons.g3wEcoL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3w_ecol2_0' }, { speaker: 'tali', textKey: 'data.dialog.g3w_ecol2_1' }],
-          intro: [{ titleKey: 'data.intro.g3w_ecol2_0_t', bodyKey: 'data.intro.g3w_ecol2_0_b', emoji: 'рџЏћпёЏ' }, { titleKey: 'data.intro.g3w_ecol2_1_t', bodyKey: 'data.intro.g3w_ecol2_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3w_ecol2_0_t', bodyKey: 'data.intro.g3w_ecol2_0_b', emoji: '🏞️' }, { titleKey: 'data.intro.g3w_ecol2_1_t', bodyKey: 'data.intro.g3w_ecol2_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g3wecol2t1', type: 'multiple_choice', questionKey: 'data.tasks.g3w_air_pollution_cause', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_factories', correct: true }, { id: 'b', textKey: 'data.tasks.g3w_opt_trees', correct: false }, { id: 'c', textKey: 'data.tasks.g3w_opt_rain', correct: false }] },
             { id: 'g3wecol2t2', type: 'multiple_choice', questionKey: 'data.tasks.g3w_forest_importance', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_makes_oxygen', correct: true }, { id: 'b', textKey: 'data.tasks.g3w_opt_pollutes_air', correct: false }, { id: 'c', textKey: 'data.tasks.g3w_opt_dries_rivers', correct: false }] },
@@ -2711,7 +2711,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3w-eco-l3', topicId: 'g3w-eco', titleKey: 'data.lessons.g3wEcoL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3w_ecol3_0' }, { speaker: 'tali', textKey: 'data.dialog.g3w_ecol3_1' }],
-          intro: [{ titleKey: 'data.intro.g3w_ecol3_0_t', bodyKey: 'data.intro.g3w_ecol3_0_b', emoji: 'рџђС' }, { titleKey: 'data.intro.g3w_ecol3_1_t', bodyKey: 'data.intro.g3w_ecol3_1_b', emoji: 'вњ”пёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3w_ecol3_0_t', bodyKey: 'data.intro.g3w_ecol3_0_b', emoji: '🐘ј' }, { titleKey: 'data.intro.g3w_ecol3_1_t', bodyKey: 'data.intro.g3w_ecol3_1_b', emoji: '✔️' }],
           tasks: [
             { id: 'g3wecol3t1', type: 'multiple_choice', questionKey: 'data.tasks.g3w_amur_tiger_endangered', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
             { id: 'g3wecol3t2', type: 'multiple_choice', questionKey: 'data.tasks.g3w_poaching_is', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_illegal_hunting', correct: true }, { id: 'b', textKey: 'data.tasks.g3w_opt_legal_hunting', correct: false }, { id: 'c', textKey: 'data.tasks.g3w_opt_bird_watching', correct: false }] },
@@ -2723,12 +2723,12 @@ export const worlds: World[] = [
   },
   {
     id: 'g3eng', titleKey: 'data.worlds.g3eng', descriptionKey: 'data.worldDesc.g3eng',
-    biome: 'academy', accentColor: '#FF5722', npcEmoji: 'рџЋ“', ageBand: '9-10',
+    biome: 'academy', accentColor: '#FF5722', npcEmoji: '🎓', ageBand: '9-10',
     topics: [
       { id: 'g3e-tobe', worldId: 'g3eng', titleKey: 'data.topics.g3eTobe', subject: 'reading', lessons: [
         { id: 'g3e-tobe-l1', topicId: 'g3e-tobe', titleKey: 'data.lessons.g3eTobeL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3e_tobel1_0' }, { speaker: 'tali', textKey: 'data.dialog.g3e_tobel1_1' }],
-          intro: [{ titleKey: 'data.intro.g3e_tobel1_0_t', bodyKey: 'data.intro.g3e_tobel1_0_b', emoji: 'рџ‘¤' }, { titleKey: 'data.intro.g3e_tobel1_1_t', bodyKey: 'data.intro.g3e_tobel1_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3e_tobel1_0_t', bodyKey: 'data.intro.g3e_tobel1_0_b', emoji: '👤' }, { titleKey: 'data.intro.g3e_tobel1_1_t', bodyKey: 'data.intro.g3e_tobel1_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g3etobel1t1', type: 'multiple_choice', questionKey: 'data.tasks.g3e_i_blank_happy', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_am', correct: true }, { id: 'b', textKey: 'data.tasks.g1e_opt_is', correct: false }, { id: 'c', textKey: 'data.tasks.g1e_opt_are', correct: false }] },
             { id: 'g3etobel1t2', type: 'multiple_choice', questionKey: 'data.tasks.g3e_you_blank_smart', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_am', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_is', correct: false }, { id: 'c', textKey: 'data.tasks.g1e_opt_are', correct: true }] },
@@ -2737,7 +2737,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3e-tobe-l2', topicId: 'g3e-tobe', titleKey: 'data.lessons.g3eTobeL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3e_tobel2_0' }, { speaker: 'tali', textKey: 'data.dialog.g3e_tobel2_1' }],
-          intro: [{ titleKey: 'data.intro.g3e_tobel2_0_t', bodyKey: 'data.intro.g3e_tobel2_0_b', emoji: '1пёЏвѓЈ' }, { titleKey: 'data.intro.g3e_tobel2_1_t', bodyKey: 'data.intro.g3e_tobel2_1_b', emoji: 'рџ’§' }],
+          intro: [{ titleKey: 'data.intro.g3e_tobel2_0_t', bodyKey: 'data.intro.g3e_tobel2_0_b', emoji: '1️⃣' }, { titleKey: 'data.intro.g3e_tobel2_1_t', bodyKey: 'data.intro.g3e_tobel2_1_b', emoji: '💧' }],
           tasks: [
             { id: 'g3etobel2t1', type: 'multiple_choice', questionKey: 'data.tasks.g3e_he_blank_tall', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_am', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_is', correct: true }, { id: 'c', textKey: 'data.tasks.g1e_opt_are', correct: false }] },
             { id: 'g3etobel2t2', type: 'multiple_choice', questionKey: 'data.tasks.g3e_she_blank_kind', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_am', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_is', correct: true }, { id: 'c', textKey: 'data.tasks.g1e_opt_are', correct: false }] },
@@ -2746,7 +2746,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3e-tobe-l3', topicId: 'g3e-tobe', titleKey: 'data.lessons.g3eTobeL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3e_tobel3_0' }, { speaker: 'tali', textKey: 'data.dialog.g3e_tobel3_1' }],
-          intro: [{ titleKey: 'data.intro.g3e_tobel3_0_t', bodyKey: 'data.intro.g3e_tobel3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g3e_tobel3_1_t', bodyKey: 'data.intro.g3e_tobel3_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3e_tobel3_0_t', bodyKey: 'data.intro.g3e_tobel3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g3e_tobel3_1_t', bodyKey: 'data.intro.g3e_tobel3_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g3etobel3t1', type: 'multiple_choice', questionKey: 'data.tasks.g3e_we_blank_ready', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_am', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_is', correct: false }, { id: 'c', textKey: 'data.tasks.g1e_opt_are', correct: true }] },
             { id: 'g3etobel3t2', type: 'multiple_choice', questionKey: 'data.tasks.g3e_they_blank_students', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g1e_opt_am', correct: false }, { id: 'b', textKey: 'data.tasks.g1e_opt_is', correct: false }, { id: 'c', textKey: 'data.tasks.g1e_opt_are', correct: true }] },
@@ -2757,7 +2757,7 @@ export const worlds: World[] = [
       { id: 'g3e-food', worldId: 'g3eng', titleKey: 'data.topics.g3eFood', subject: 'reading', lessons: [
         { id: 'g3e-food-l1', topicId: 'g3e-food', titleKey: 'data.lessons.g3eFoodL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3e_foodl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g3e_foodl1_1' }],
-          intro: [{ titleKey: 'data.intro.g3e_foodl1_0_t', bodyKey: 'data.intro.g3e_foodl1_0_b', emoji: 'рџЌЋ' }, { titleKey: 'data.intro.g3e_foodl1_1_t', bodyKey: 'data.intro.g3e_foodl1_1_b', emoji: 'вќ“' }],
+          intro: [{ titleKey: 'data.intro.g3e_foodl1_0_t', bodyKey: 'data.intro.g3e_foodl1_0_b', emoji: '🍎' }, { titleKey: 'data.intro.g3e_foodl1_1_t', bodyKey: 'data.intro.g3e_foodl1_1_b', emoji: '❓' }],
           tasks: [
             { id: 'g3efoodl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g3e_apple_en', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3e_opt_apple', correct: true }, { id: 'b', textKey: 'data.tasks.g3e_opt_orange', correct: false }, { id: 'c', textKey: 'data.tasks.g3e_opt_banana', correct: false }] },
             { id: 'g3efoodl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g3e_orange_en', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3e_opt_apple', correct: false }, { id: 'b', textKey: 'data.tasks.g3e_opt_orange', correct: true }, { id: 'c', textKey: 'data.tasks.g3e_opt_grape', correct: false }] },
@@ -2766,7 +2766,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3e-food-l2', topicId: 'g3e-food', titleKey: 'data.lessons.g3eFoodL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3e_foodl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g3e_foodl2_1' }],
-          intro: [{ titleKey: 'data.intro.g3e_foodl2_0_t', bodyKey: 'data.intro.g3e_foodl2_0_b', emoji: 'рџҐ•' }, { titleKey: 'data.intro.g3e_foodl2_1_t', bodyKey: 'data.intro.g3e_foodl2_1_b', emoji: 'рџҐ¦' }],
+          intro: [{ titleKey: 'data.intro.g3e_foodl2_0_t', bodyKey: 'data.intro.g3e_foodl2_0_b', emoji: '🥕' }, { titleKey: 'data.intro.g3e_foodl2_1_t', bodyKey: 'data.intro.g3e_foodl2_1_b', emoji: '🥦' }],
           tasks: [
             { id: 'g3efoodl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g3e_carrot_en', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3e_opt_carrot', correct: true }, { id: 'b', textKey: 'data.tasks.g3e_opt_potato', correct: false }, { id: 'c', textKey: 'data.tasks.g3e_opt_tomato', correct: false }] },
             { id: 'g3efoodl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g3e_tomato_en', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3e_opt_carrot', correct: false }, { id: 'b', textKey: 'data.tasks.g3e_opt_potato', correct: false }, { id: 'c', textKey: 'data.tasks.g3e_opt_tomato', correct: true }] },
@@ -2775,7 +2775,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3e-food-l3', topicId: 'g3e-food', titleKey: 'data.lessons.g3eFoodL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3e_foodl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g3e_foodl3_1' }],
-          intro: [{ titleKey: 'data.intro.g3e_foodl3_0_t', bodyKey: 'data.intro.g3e_foodl3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g3e_foodl3_1_t', bodyKey: 'data.intro.g3e_foodl3_1_b', emoji: 'рџ¤¤' }],
+          intro: [{ titleKey: 'data.intro.g3e_foodl3_0_t', bodyKey: 'data.intro.g3e_foodl3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g3e_foodl3_1_t', bodyKey: 'data.intro.g3e_foodl3_1_b', emoji: '🤤' }],
           tasks: [
             { id: 'g3efoodl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g3e_i_like_apples', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3e_opt_i_like', correct: true }, { id: 'b', textKey: 'data.tasks.g3e_opt_i_dont_like', correct: false }, { id: 'c', textKey: 'data.tasks.g3e_opt_i_eat', correct: false }] },
             { id: 'g3efoodl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g3e_i_dont_like_means', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3e_opt_i_like_ru', correct: false }, { id: 'b', textKey: 'data.tasks.g3e_opt_i_dont_like_ru', correct: true }, { id: 'c', textKey: 'data.tasks.g3e_opt_i_eat_ru', correct: false }] },
@@ -2786,7 +2786,7 @@ export const worlds: World[] = [
       { id: 'g3e-daily', worldId: 'g3eng', titleKey: 'data.topics.g3eDaily', subject: 'reading', lessons: [
         { id: 'g3e-daily-l1', topicId: 'g3e-daily', titleKey: 'data.lessons.g3eDailyL1',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3e_dailyl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g3e_dailyl1_1' }],
-          intro: [{ titleKey: 'data.intro.g3e_dailyl1_0_t', bodyKey: 'data.intro.g3e_dailyl1_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g3e_dailyl1_1_t', bodyKey: 'data.intro.g3e_dailyl1_1_b', emoji: 'рџЊЅ' }],
+          intro: [{ titleKey: 'data.intro.g3e_dailyl1_0_t', bodyKey: 'data.intro.g3e_dailyl1_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g3e_dailyl1_1_t', bodyKey: 'data.intro.g3e_dailyl1_1_b', emoji: '🌽' }],
           tasks: [
             { id: 'g3edailyl1t1', type: 'multiple_choice', questionKey: 'data.tasks.g3e_wake_up_en', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3e_opt_wake_up_f', correct: true }, { id: 'b', textKey: 'data.tasks.g3e_opt_go_sleep', correct: false }, { id: 'c', textKey: 'data.tasks.g3e_opt_have_lunch', correct: false }] },
             { id: 'g3edailyl1t2', type: 'multiple_choice', questionKey: 'data.tasks.g3e_brush_teeth_en', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3e_opt_brush_teeth', correct: true }, { id: 'b', textKey: 'data.tasks.g3e_opt_eat_breakfast', correct: false }, { id: 'c', textKey: 'data.tasks.g3e_opt_take_shower', correct: false }] },
@@ -2795,7 +2795,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3e-daily-l2', topicId: 'g3e-daily', titleKey: 'data.lessons.g3eDailyL2',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3e_dailyl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g3e_dailyl2_1' }],
-          intro: [{ titleKey: 'data.intro.g3e_dailyl2_0_t', bodyKey: 'data.intro.g3e_dailyl2_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g3e_dailyl2_1_t', bodyKey: 'data.intro.g3e_dailyl2_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3e_dailyl2_0_t', bodyKey: 'data.intro.g3e_dailyl2_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g3e_dailyl2_1_t', bodyKey: 'data.intro.g3e_dailyl2_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g3edailyl2t1', type: 'multiple_choice', questionKey: 'data.tasks.g3e_study_en', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3e_opt_study', correct: true }, { id: 'b', textKey: 'data.tasks.g3e_opt_play', correct: false }, { id: 'c', textKey: 'data.tasks.g3e_opt_sleep', correct: false }] },
             { id: 'g3edailyl2t2', type: 'multiple_choice', questionKey: 'data.tasks.g3e_write_en', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3e_opt_read_w', correct: false }, { id: 'b', textKey: 'data.tasks.g3e_opt_write_w', correct: true }, { id: 'c', textKey: 'data.tasks.g3e_opt_count_w', correct: false }] },
@@ -2804,7 +2804,7 @@ export const worlds: World[] = [
           ] },
         { id: 'g3e-daily-l3', topicId: 'g3e-daily', titleKey: 'data.lessons.g3eDailyL3',
           dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3e_dailyl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g3e_dailyl3_1' }],
-          intro: [{ titleKey: 'data.intro.g3e_dailyl3_0_t', bodyKey: 'data.intro.g3e_dailyl3_0_b', emoji: 'вњЏпёЏ' }, { titleKey: 'data.intro.g3e_dailyl3_1_t', bodyKey: 'data.intro.g3e_dailyl3_1_b', emoji: 'вњЏпёЏ' }],
+          intro: [{ titleKey: 'data.intro.g3e_dailyl3_0_t', bodyKey: 'data.intro.g3e_dailyl3_0_b', emoji: '✏️' }, { titleKey: 'data.intro.g3e_dailyl3_1_t', bodyKey: 'data.intro.g3e_dailyl3_1_b', emoji: '✏️' }],
           tasks: [
             { id: 'g3edailyl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g3e_play_football_en', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3e_opt_play_football', correct: true }, { id: 'b', textKey: 'data.tasks.g3e_opt_watch_tv', correct: false }, { id: 'c', textKey: 'data.tasks.g3e_opt_read_book', correct: false }] },
             { id: 'g3edailyl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g3e_watch_tv_means', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3e_opt_tv_ru', correct: true }, { id: 'b', textKey: 'data.tasks.g3e_opt_football_ru', correct: false }, { id: 'c', textKey: 'data.tasks.g3e_opt_book_ru', correct: false }] },
@@ -2818,7 +2818,7 @@ export const worlds: World[] = [
   // в”Ђв”Ђ Grade 4 в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
   {
     id: 'g4math', titleKey: 'data.worlds.g4math', descriptionKey: 'data.worldDesc.g4math',
-    biome: 'numbers', accentColor: '#FF5722', npcEmoji: 'рџ§®', ageBand: '9-10', npcName: 'Digit',
+    biome: 'numbers', accentColor: '#FF5722', npcEmoji: '🧮', ageBand: '9-10', npcName: 'Digit',
     topics: [
       { id: 'g4m-multidigit', worldId: 'g4math', titleKey: 'data.topics.g4mMultidigit', subject: 'math', lessons: [
         { id: 'g4m-md-l1', topicId: 'g4m-multidigit', titleKey: 'data.lessons.g4mMdL1', reward: { xp: 30 }, tasks: [
@@ -2884,7 +2884,7 @@ export const worlds: World[] = [
   },
   {
     id: 'g4rus', titleKey: 'data.worlds.g4rus', descriptionKey: 'data.worldDesc.g4rus',
-    biome: 'library', accentColor: '#7C4DFF', npcEmoji: 'рџ“ќ', ageBand: '9-10', npcName: 'РЎР»РѕРІРѕ',
+    biome: 'library', accentColor: '#7C4DFF', npcEmoji: '📝', ageBand: '9-10', npcName: 'Слово',
     topics: [
       { id: 'g4r-conjugation', worldId: 'g4rus', titleKey: 'data.topics.g4rConjugation', subject: 'reading_ru', lessons: [
         { id: 'g4r-conj-l1', topicId: 'g4r-conjugation', titleKey: 'data.lessons.g4rConjL1', reward: { xp: 30 }, tasks: [
@@ -2950,7 +2950,7 @@ export const worlds: World[] = [
   },
   {
     id: 'g4eng', titleKey: 'data.worlds.g4eng', descriptionKey: 'data.worldDesc.g4eng',
-    biome: 'campus', accentColor: '#00ACC1', npcEmoji: 'рџЊЌ', ageBand: '9-10', npcName: 'Spark',
+    biome: 'campus', accentColor: '#00ACC1', npcEmoji: '🌍', ageBand: '9-10', npcName: 'Spark',
     topics: [
       { id: 'g4e-present', worldId: 'g4eng', titleKey: 'data.topics.g4ePresent', subject: 'reading', lessons: [
         { id: 'g4e-pres-l1', topicId: 'g4e-present', titleKey: 'data.lessons.g4ePresL1', reward: { xp: 30 }, tasks: [
@@ -3016,7 +3016,7 @@ export const worlds: World[] = [
   },
   {
     id: 'g4social', titleKey: 'data.worlds.g4social', descriptionKey: 'data.worldDesc.g4social',
-    biome: 'town', accentColor: '#66BB6A', npcEmoji: 'рџ¤ќ', ageBand: '9-10', npcName: 'Friendly',
+    biome: 'town', accentColor: '#66BB6A', npcEmoji: '🤝', ageBand: '9-10', npcName: 'Friendly',
     topics: [
       { id: 'g4s-ask-help', worldId: 'g4social', titleKey: 'data.topics.g4sAskHelp', subject: 'social', lessons: [
         { id: 'g4s-help-l1', topicId: 'g4s-ask-help', titleKey: 'data.lessons.g4sHelpL1', reward: { xp: 30 }, tasks: [
@@ -3141,11 +3141,11 @@ export type LessonNode = {
 };
 
 const SUBJECT_EMOJI: Record<string, string> = {
-  math: 'рџ”ў',
-  reading: 'рџ’–',
-  reading_ru: 'рџ“љ',
-  logic: 'рџ“ђ',
-  social: 'рџ¤ќ',
+  math: '🔢',
+  reading: '💖',
+  reading_ru: '📚',
+  logic: '📐',
+  social: '🤝',
 };
 
 function toSubjectId(subject: string): SubjectId {
@@ -3161,7 +3161,7 @@ export function getOrderedLessonNodes(ageBand?: AgeBand): LessonNode[] {
   const filtered = ageBand ? worlds.filter((w) => !w.ageBand || w.ageBand === ageBand) : worlds;
   for (const world of filtered) {
     for (const topic of world.topics) {
-      const emoji = SUBJECT_EMOJI[topic.subject] ?? 'вњЏпёЏ';
+      const emoji = SUBJECT_EMOJI[topic.subject] ?? '✏️';
       const subjectId = toSubjectId(topic.subject);
       for (const lesson of topic.lessons) {
         nodes.push({
