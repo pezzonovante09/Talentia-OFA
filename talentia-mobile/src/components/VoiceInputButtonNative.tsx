@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useAppTheme } from '../theme';
 import { useSettingsStore } from '../store/settingsStore';
+import { AppText } from './Text';
 
 const LANG_MAP: Record<string, string> = {
   en: 'en-US',
@@ -19,9 +20,11 @@ const LANG_MAP: Record<string, string> = {
 type Props = {
   onTranscript: (text: string) => void;
   disabled?: boolean;
+  large?: boolean;
+  label?: string;
 };
 
-export function VoiceInputButtonNative({ onTranscript, disabled }: Props) {
+export function VoiceInputButtonNative({ onTranscript, disabled, large, label }: Props) {
   const { t } = useTranslation();
   const theme = useAppTheme();
   const language = useSettingsStore((s) => s.language);
@@ -75,6 +78,43 @@ export function VoiceInputButtonNative({ onTranscript, disabled }: Props) {
   }, []);
 
   if (available === false || Platform.OS === 'web') return null;
+
+  const activeColor = recognizing ? theme.colors.error : theme.colors.primary;
+  const btnLabel = label ?? (recognizing ? t('voiceInput.listening') : t('voiceInput.label'));
+
+  if (large) {
+    return (
+      <Pressable
+        onPress={recognizing ? handleStop : handlePress}
+        disabled={disabled}
+        style={{
+          flex: 1,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: theme.spacing.sm,
+          paddingVertical: theme.spacing.md,
+          paddingHorizontal: theme.spacing.lg,
+          borderRadius: theme.radii.pill,
+          backgroundColor: recognizing ? theme.colors.error + '25' : theme.colors.primary + '18',
+          borderWidth: 2,
+          borderColor: activeColor,
+          opacity: disabled ? 0.4 : 1,
+        }}
+        accessibilityRole="button"
+        accessibilityLabel={btnLabel}
+      >
+        <MaterialIcons
+          name={recognizing ? 'stop' : 'mic'}
+          size={28}
+          color={activeColor}
+        />
+        <AppText style={{ color: activeColor, fontWeight: '700', fontSize: 15 }}>
+          {btnLabel}
+        </AppText>
+      </Pressable>
+    );
+  }
 
   return (
     <Pressable

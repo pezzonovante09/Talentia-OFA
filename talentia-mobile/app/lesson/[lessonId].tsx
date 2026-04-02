@@ -244,6 +244,28 @@ export default function LessonScreen() {
     }
   }, [user?.id]);
 
+  // Auto-speak task question when a new task appears
+  useEffect(() => {
+    if (phase !== 'tasks' || !task) return;
+    const text = t(task.questionKey);
+    const delay = setTimeout(() => speak(text), 500);
+    return () => clearTimeout(delay);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, currentIndex]);
+
+  // Auto-speak feedback when it changes
+  useEffect(() => {
+    if (feedback === 'correct') {
+      const delay = setTimeout(() => speak(correctFeedbackText), 200);
+      return () => clearTimeout(delay);
+    }
+    if (feedback === 'incorrect') {
+      const delay = setTimeout(() => speak(incorrectFeedbackText), 200);
+      return () => clearTimeout(delay);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [feedback]);
+
   // Break reminder
   useEffect(() => {
     if (!breakReminderEnabled || phase !== 'tasks') return;
@@ -847,6 +869,31 @@ export default function LessonScreen() {
 
       <Spacer size="lg" />
 
+      {/* Large voice input row — shown when task is not yet checked */}
+      {!hasChecked && (
+        <View style={{ flexDirection: 'row', gap: theme.spacing.sm, marginBottom: theme.spacing.sm }}>
+          <VoiceInputButton
+            large
+            label={t('voiceInput.speakAnswer')}
+            onTranscript={(transcript) => {
+              if (hasChecked) return;
+              if (task.type === 'multiple_choice') {
+                const lower = transcript.toLowerCase();
+                const mcTask = task as MultipleChoiceTask;
+                const match = mcTask.options.find((o) =>
+                  (isEnglishLesson ? tEn(o.textKey) : t(o.textKey)).toLowerCase().includes(lower) ||
+                  lower.includes((isEnglishLesson ? tEn(o.textKey) : t(o.textKey)).toLowerCase()),
+                );
+                if (match) { setSelectedOptionId(match.id); setSelectHint(false); }
+              } else {
+                setInputValue(transcript);
+              }
+            }}
+            disabled={hasChecked}
+          />
+        </View>
+      )}
+
       <Button
         onPress={handlePrimaryPress}
         style={{
@@ -944,8 +991,17 @@ function IntroPhase({
   t: (key: string) => string;
   onNext: () => void;
 }) {
+  const { speak } = useSpeech();
   const fullBodyText = t(slide.bodyKey);
   const { displayed } = useTypingText(fullBodyText, 18);
+
+  useEffect(() => {
+    const title = t(slide.titleKey);
+    const body = t(slide.bodyKey);
+    const delay = setTimeout(() => speak(`${title}. ${body}`), 400);
+    return () => clearTimeout(delay);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slideIndex]);
 
   return (
     <Screen>
@@ -1057,7 +1113,14 @@ function DialogPhase({
   t: (key: string) => string;
   onNext: () => void;
 }) {
+  const { speak } = useSpeech();
   const { displayed } = useTypingText(fullText, 22);
+
+  useEffect(() => {
+    const delay = setTimeout(() => speak(fullText), 300);
+    return () => clearTimeout(delay);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fullText]);
 
   return (
     <Screen>

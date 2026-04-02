@@ -67,7 +67,9 @@
     "label": "Voice input",
     "hint": "Use microphone for input tasks.",
     "permissionTitle": "Microphone needed",
-    "permissionBody": "Allow microphone access for voice input."
+    "permissionBody": "Allow microphone access for voice input.",
+    "listening": "Listening...",
+    "speakAnswer": "Say your answer"
   },
   "breakReminder": {
     "title": "Time to rest! 🧘",

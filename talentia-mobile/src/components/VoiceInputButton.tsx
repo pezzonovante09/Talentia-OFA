@@ -4,6 +4,8 @@ import { Platform } from 'react-native';
 type Props = {
   onTranscript: (text: string) => void;
   disabled?: boolean;
+  large?: boolean;
+  label?: string;
 };
 
 /** Check once at load time — expo-speech-recognition requires a dev build, fails in Expo Go */
