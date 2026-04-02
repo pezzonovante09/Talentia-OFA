@@ -334,7 +334,9 @@ export default function ParentReportScreen() {
       {!loading && !error && activeTab === 'overall' && report && (
         <>
           <Card>
-            <AppText variant="subtitle">{t('parentReport.strongSides')}</AppText>
+            <AppText variant="subtitle" style={{ color: theme.colors.success, fontWeight: '800' }}>
+              ✅ {t('parentReport.strongSides')}
+            </AppText>
             <Spacer size="xs" />
             {report.strongSides.map((s, i) => (
               <View key={i} style={{ marginBottom: theme.spacing.xs }}>
@@ -342,23 +344,15 @@ export default function ParentReportScreen() {
               </View>
             ))}
           </Card>
-          <Spacer size="md" />
-          <Card>
-            <AppText variant="subtitle">{t('parentReport.weakSides')}</AppText>
-            <Spacer size="xs" />
-            {report.weakSides.map((s, i) => (
-              <View key={i} style={{ marginBottom: theme.spacing.xs }}>
-                <AppText>• {s}</AppText>
-              </View>
-            ))}
-          </Card>
-          {report.commonMistakes && report.commonMistakes.length > 0 && (
+          {(report.commonMistakes?.length ?? 0) > 0 && (
             <>
               <Spacer size="md" />
               <Card>
-                <AppText variant="subtitle">{t('parentReport.commonMistakes')}</AppText>
+                <AppText variant="subtitle" style={{ color: theme.colors.secondary, fontWeight: '800' }}>
+                  ⚠️ {t('parentReport.commonMistakes')}
+                </AppText>
                 <Spacer size="xs" />
-                {report.commonMistakes.map((s, i) => (
+                {report.commonMistakes!.map((s, i) => (
                   <View key={i} style={{ marginBottom: theme.spacing.xs }}>
                     <AppText>• {s}</AppText>
                   </View>
@@ -368,20 +362,12 @@ export default function ParentReportScreen() {
           )}
           <Spacer size="md" />
           <Card>
-            <AppText variant="subtitle">{t('parentReport.advice')}</AppText>
+            <AppText variant="subtitle" style={{ color: theme.colors.primary, fontWeight: '800' }}>
+              💡 {t('parentReport.advice')}
+            </AppText>
             <Spacer size="xs" />
-            <AppText>{report.advice}</AppText>
+            <AppText style={{ lineHeight: 24 }}>{report.advice}</AppText>
           </Card>
-          {report.howToHelpAtHome && (
-            <>
-              <Spacer size="md" />
-              <Card>
-                <AppText variant="subtitle">{t('parentReport.howToHelpAtHome')}</AppText>
-                <Spacer size="xs" />
-                <AppText>{report.howToHelpAtHome}</AppText>
-              </Card>
-            </>
-          )}
           <Spacer size="xl" />
           <Button onPress={handleDiscussWithAI}>{t('parentReport.discussWithAI')}</Button>
           <Spacer size="sm" />
@@ -423,50 +409,28 @@ export default function ParentReportScreen() {
                     )}
                     {!isLoading && wr && (
                       <>
-                        <AppText variant="small" style={{ fontWeight: '600', marginBottom: theme.spacing.xs }}>
-                          {t('parentReport.strongSides')}
+                        <AppText variant="small" style={{ fontWeight: '700', color: theme.colors.success, marginBottom: theme.spacing.xs }}>
+                          ✅ {t('parentReport.strongSides')}
                         </AppText>
                         {wr.strongSides.map((s, i) => (
-                          <AppText key={i} style={{ marginBottom: theme.spacing.xs }}>
-                            • {s}
-                          </AppText>
+                          <AppText key={i} style={{ marginBottom: theme.spacing.xs }}>• {s}</AppText>
                         ))}
-                        <Spacer size="sm" />
-                        <AppText variant="small" style={{ fontWeight: '600', marginBottom: theme.spacing.xs }}>
-                          {t('parentReport.weakSides')}
-                        </AppText>
-                        {wr.weakSides.map((s, i) => (
-                          <AppText key={i} style={{ marginBottom: theme.spacing.xs }}>
-                            • {s}
-                          </AppText>
-                        ))}
-                        {wr.commonMistakes && wr.commonMistakes.length > 0 && (
+                        {(wr.commonMistakes?.length ?? 0) > 0 && (
                           <>
                             <Spacer size="sm" />
-                            <AppText variant="small" style={{ fontWeight: '600', marginBottom: theme.spacing.xs }}>
-                              {t('parentReport.commonMistakes')}
+                            <AppText variant="small" style={{ fontWeight: '700', color: theme.colors.secondary, marginBottom: theme.spacing.xs }}>
+                              ⚠️ {t('parentReport.commonMistakes')}
                             </AppText>
-                            {wr.commonMistakes.map((s, i) => (
-                              <AppText key={i} style={{ marginBottom: theme.spacing.xs }}>
-                                • {s}
-                              </AppText>
+                            {wr.commonMistakes!.map((s, i) => (
+                              <AppText key={i} style={{ marginBottom: theme.spacing.xs }}>• {s}</AppText>
                             ))}
                           </>
                         )}
                         <Spacer size="sm" />
-                        <AppText variant="small" style={{ fontWeight: '600', marginBottom: theme.spacing.xs }}>
-                          {t('parentReport.advice')}
+                        <AppText variant="small" style={{ fontWeight: '700', color: theme.colors.primary, marginBottom: theme.spacing.xs }}>
+                          💡 {t('parentReport.advice')}
                         </AppText>
                         <AppText>{wr.advice}</AppText>
-                        {wr.howToHelpAtHome && (
-                          <>
-                            <Spacer size="sm" />
-                            <AppText variant="small" style={{ fontWeight: '600', marginBottom: theme.spacing.xs }}>
-                              {t('parentReport.howToHelpAtHome')}
-                            </AppText>
-                            <AppText>{wr.howToHelpAtHome}</AppText>
-                          </>
-                        )}
                       </>
                     )}
                   </Card>
@@ -516,26 +480,13 @@ export default function ParentReportScreen() {
             </View>
           </Card>
 
-          {weekly.insights.length > 0 && (
-            <>
-              <Spacer size="md" />
-              <Card>
-                <AppText variant="subtitle">💡 {t('parentReport.insights')}</AppText>
-                <Spacer size="xs" />
-                {weekly.insights.map((insight, i) => (
-                  <View key={i} style={{ marginBottom: theme.spacing.xs }}>
-                    <AppText>• {insight}</AppText>
-                  </View>
-                ))}
-              </Card>
-            </>
-          )}
-
           <Spacer size="md" />
           <Card>
-            <AppText variant="subtitle">{t('parentReport.advice')}</AppText>
+            <AppText variant="subtitle" style={{ color: theme.colors.primary, fontWeight: '800' }}>
+              💡 {t('parentReport.advice')}
+            </AppText>
             <Spacer size="xs" />
-            <AppText>{weekly.advice}</AppText>
+            <AppText style={{ lineHeight: 24 }}>{weekly.advice}</AppText>
           </Card>
         </>
       )}

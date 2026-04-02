@@ -252,7 +252,21 @@ export default function TaliScreen() {
           </View>
         )}
 
-        {/* Input */}
+        {/* Large voice button — prominent, above text input */}
+        <View style={{ marginBottom: theme.spacing.sm }}>
+          <VoiceInputButton
+            large
+            label={t('voiceInput.speakAnswer')}
+            disabled={sending}
+            onTranscript={(text) => {
+              const trimmed = text.trim();
+              if (!trimmed || sending) return;
+              void sendMessage(trimmed);
+            }}
+          />
+        </View>
+
+        {/* Text input + send */}
         <View
           style={{
             flexDirection: 'row',
@@ -281,14 +295,6 @@ export default function TaliScreen() {
             accessible
             accessibilityLabel={t('tali.inputPlaceholder')}
           />
-          <VoiceInputButton
-            disabled={sending}
-            onTranscript={(text) => {
-              const trimmed = text.trim();
-              if (!trimmed || sending) return;
-              void sendMessage(trimmed);
-            }}
-          />
           <Button
             onPress={() => sendMessage(input)}
             loading={sending}
@@ -298,9 +304,6 @@ export default function TaliScreen() {
             {t('tali.send')}
           </Button>
         </View>
-        <AppText variant="small" style={{ color: theme.colors.textMuted, marginTop: theme.spacing.xs }}>
-          {t('tali.voiceHint')}
-        </AppText>
       </Screen>
     </KeyboardAvoidingView>
   );
