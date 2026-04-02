@@ -1,0 +1,23 @@
+﻿# Cursor не индексирует тяжёлые/нерелевантные папки
+node_modules/
+.expo/
+.next/
+.vercel/
+dist/
+build/
+out/
+web-build/
+ios/
+android/
+.kotlin/
+/coverage
+
+# Секреты
+.env
+.env.*
+
+# Build-артефакты
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

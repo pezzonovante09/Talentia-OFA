@@ -1,0 +1,44 @@
+# ─── Dependencies ──────────────────────────────────────────────
+node_modules/
+
+# ─── Environment & Secrets (NEVER commit real keys) ────────────
+.env
+.env.*
+!.env.example
+
+# ─── Expo ──────────────────────────────────────────────────────
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+.metro-health-check*
+
+# ─── Native generated folders ──────────────────────────────────
+ios/
+android/
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# ─── Next.js build output ──────────────────────────────────────
+.next/
+out/
+build/
+
+# ─── Vercel ────────────────────────────────────────────────────
+.vercel/
+
+# ─── Misc ──────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.pem
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+/coverage
