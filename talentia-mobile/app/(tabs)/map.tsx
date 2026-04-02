@@ -66,8 +66,8 @@ function WorldBanner({
 
   const isLocked = !!world.isPremium && !isPremiumUnlocked;
   const decor = WORLD_DECOR[worldId] ?? WORLD_DECOR.jungle;
-  const methStyle = METHODOLOGY_STYLES[methodology];
-  const methDecor = METHODOLOGY_DECOR[methodology];
+  const methStyle = METHODOLOGY_STYLES[methodology] ?? METHODOLOGY_STYLES.aba;
+  const methDecor = METHODOLOGY_DECOR[methodology] ?? { left: [], right: [] };
 
   const bannerBg = isLocked ? theme.colors.surfaceAlt : world.accentColor + 'E8';
   const bannerBorder = isLocked ? theme.colors.border : world.accentColor;
@@ -173,7 +173,7 @@ export default function MapScreen() {
   const hasSeenMapTip = useSettingsStore((s) => s.hasSeenMapTip);
   const setHasSeenMapTip = useSettingsStore((s) => s.setHasSeenMapTip);
 
-  const methStyle = METHODOLOGY_STYLES[methodology];
+  const methStyle = METHODOLOGY_STYLES[methodology] ?? METHODOLOGY_STYLES.aba;
 
   const xpInfo = getXPToNextLevel(xp);
 
@@ -514,7 +514,7 @@ export default function MapScreen() {
                   const isNodeLeft = globalIndex % 2 === 0;
                   const isLastOverall = globalIndex === orderedNodes.length - 1;
                   const biomeDecor = WORLD_DECOR[group.worldId] ?? WORLD_DECOR.jungle;
-                  const methDecor = METHODOLOGY_DECOR[methodology];
+                  const methDecor = METHODOLOGY_DECOR[methodology] ?? { left: [], right: [] };
                   const sideDecorLeft = methDecor.left.length
                     ? methDecor.left[globalIndex % methDecor.left.length]
                     : biomeDecor.left[globalIndex % biomeDecor.left.length];
