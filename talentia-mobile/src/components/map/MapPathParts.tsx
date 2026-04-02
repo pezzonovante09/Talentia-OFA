@@ -268,7 +268,7 @@ export function PathBridge({
   methodologyStyle: MethodologyStyle;
 }) {
   const biomeDecor = WORLD_DECOR[worldId] ?? WORLD_DECOR.jungle;
-  const methDecor = METHODOLOGY_DECOR[methodology];
+  const methDecor = METHODOLOGY_DECOR[methodology] ?? { left: [], right: [] };
 
   const leftPool = methDecor.left.length
     ? [biomeDecor.left[nodeIndex % biomeDecor.left.length], methDecor.left[nodeIndex % methDecor.left.length]]
