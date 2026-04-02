@@ -1,4 +1,4 @@
-﻿export type TaskType = 'multiple_choice' | 'input';
+export type TaskType = 'multiple_choice' | 'input';
 
 export type MultipleChoiceOption = {
   id: string;
@@ -16,6 +16,8 @@ export type BaseTask = {
   audience?: TaskAudience;
   visualCount?: number;
   visualEmoji?: string;
+  /** If true and type is 'input', show a Skip button instead of a text field (for pre-literate children) */
+  skippable?: boolean;
 };
 
 export type MultipleChoiceTask = BaseTask & {
@@ -881,7 +883,7 @@ export const worlds: World[] = [
               { id: 'mc5l3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_more_2or4', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_four', correct: true }] },
               { id: 'mc5l3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_less_5or3', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_five', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }] },
               { id: 'mc5l3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_more_3or1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_zoya', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_squirrel', correct: false }] },
-              { id: 'mc5l3-t4', type: 'input', questionKey: 'data.tasks.pre_order_first', difficulty: 2, answer: '1' },
+              { id: 'mc5l3-t4', type: 'input', questionKey: 'data.tasks.pre_order_first', difficulty: 2, answer: '1', skippable: true },
             ],
           },
         ],
@@ -1240,7 +1242,7 @@ export const worlds: World[] = [
               { id: 'fsyll3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_read_na', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_ma', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_na', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_sa', correct: false }] },
               { id: 'fsyll3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_nora_syllables', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
               { id: 'fsyll3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_first_syl_mama', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_ma', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_na', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_sa', correct: false }] },
-              { id: 'fsyll3-t4', type: 'input', questionKey: 'data.tasks.pre_type_syl_mo', difficulty: 2, answer: 'РњРћ' },
+              { id: 'fsyll3-t4', type: 'input', questionKey: 'data.tasks.pre_type_syl_mo', difficulty: 2, answer: 'МО', skippable: true },
             ],
           },
         ],

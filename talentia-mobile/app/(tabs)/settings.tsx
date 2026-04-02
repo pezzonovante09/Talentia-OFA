@@ -62,6 +62,8 @@ export default function SettingsScreen() {
   const focusMode = useSettingsStore((state) => state.focusMode);
   const ttsEnabled = useSettingsStore((state) => state.ttsEnabled);
   const setTtsEnabled = useSettingsStore((state) => state.setTtsEnabled);
+  const taliSpeakEnabled = useSettingsStore((state) => state.taliSpeakEnabled);
+  const setTaliSpeakEnabled = useSettingsStore((state) => state.setTaliSpeakEnabled);
   const setLanguage = useSettingsStore((state) => state.setLanguage);
   const setMethodologyStore = useSettingsStore((state) => state.setMethodology);
   const toggleCalmMode = useSettingsStore((state) => state.toggleCalmMode);
@@ -304,6 +306,37 @@ export default function SettingsScreen() {
             value={ttsEnabled}
             onValueChange={setTtsEnabled}
             thumbColor={ttsEnabled ? theme.colors.primary : theme.colors.surface}
+            trackColor={{
+              false: theme.colors.border,
+              true: theme.colors.primary,
+            }}
+          />
+        </View>
+
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginTop: theme.spacing.md,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <AppText variant="subtitle">
+              {t('settings.taliSpeakLabel')}
+            </AppText>
+            <Spacer size="xs" />
+            <AppText
+              variant="small"
+              style={{ color: theme.colors.textMuted }}
+            >
+              {t('settings.taliSpeakDescription')}
+            </AppText>
+          </View>
+          <Switch
+            value={taliSpeakEnabled}
+            onValueChange={setTaliSpeakEnabled}
+            thumbColor={taliSpeakEnabled ? theme.colors.primary : theme.colors.surface}
             trackColor={{
               false: theme.colors.border,
               true: theme.colors.primary,

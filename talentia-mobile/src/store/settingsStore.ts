@@ -43,6 +43,8 @@ type SettingsState = {
   hasSeenMapTip: boolean;
   /** Whether text-to-speech is enabled for lesson questions and options */
   ttsEnabled: boolean;
+  /** Whether Tali speaks her chat replies aloud via neural TTS */
+  taliSpeakEnabled: boolean;
   setLanguage: (language: LanguageCode) => void;
   setMethodology: (methodology: Methodology) => void;
   toggleCalmMode: () => void;
@@ -65,6 +67,7 @@ type SettingsState = {
   setVoiceInputEnabled: (value: boolean) => void;
   setHasSeenMapTip: () => void;
   setTtsEnabled: (value: boolean) => void;
+  setTaliSpeakEnabled: (value: boolean) => void;
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -89,7 +92,8 @@ export const useSettingsStore = create<SettingsState>()(
       adaptiveSpeed: 'medium',
       voiceInputEnabled: false,
       hasSeenMapTip: false,
-      ttsEnabled: false,
+      ttsEnabled: true,
+      taliSpeakEnabled: true,
       setLanguage: (language) => set({ language }),
       setMethodology: (methodology) => set({ methodology }),
       toggleCalmMode: () => set((state) => ({ calmMode: !state.calmMode })),
@@ -108,6 +112,7 @@ export const useSettingsStore = create<SettingsState>()(
       setVoiceInputEnabled: (value) => set({ voiceInputEnabled: value }),
       setHasSeenMapTip: () => set({ hasSeenMapTip: true }),
       setTtsEnabled: (value) => set({ ttsEnabled: value }),
+      setTaliSpeakEnabled: (value) => set({ taliSpeakEnabled: value }),
     }),
     {
       name: 'talentia-settings',
@@ -133,6 +138,7 @@ export const useSettingsStore = create<SettingsState>()(
         voiceInputEnabled: state.voiceInputEnabled,
         hasSeenMapTip: state.hasSeenMapTip,
         ttsEnabled: state.ttsEnabled,
+        taliSpeakEnabled: state.taliSpeakEnabled,
       }),
     },
   ),

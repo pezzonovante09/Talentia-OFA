@@ -15,9 +15,11 @@ import { AppText } from '../src/components/Text';
 import { Spacer } from '../src/components/Spacer';
 import { Card } from '../src/components/Card';
 import { Button } from '../src/components/Button';
+import { VoiceInputButton } from '../src/components/VoiceInputButton';
 import { TaliVideo } from '../src/components/TaliVideo';
 import { useAppTheme } from '../src/theme';
 import { sendToCompanion, getHint, getScienceFact, getMotivation } from '../src/services/CompanionService';
+import { speakWithTali, stopTaliSpeech } from '../src/services/ttsService';
 import { useSettingsStore } from '../src/store/settingsStore';
 import { useProgressStore } from '../src/store/progressStore';
 import { useAuth } from '../src/context/AuthContext';
@@ -43,6 +45,7 @@ export default function TaliScreen() {
   const language = useSettingsStore((s) => s.language);
   const methodology = useSettingsStore((s) => s.methodology);
   const childName = useSettingsStore((s) => s.childName);
+  const taliSpeakEnabled = useSettingsStore((s) => s.taliSpeakEnabled);
   const { profile } = useAuth();
   const streakCount = useProgressStore((s) => s.streakCount);
 
@@ -55,12 +58,18 @@ export default function TaliScreen() {
   const isParentContext = context === 'parent' && reportSummary;
   const hasLessonContext = !!lessonId || !!topicId;
 
+  // Stop audio when leaving the screen
+  React.useEffect(() => () => { void stopTaliSpeech(); }, []);
+
   const addMessage = (from: 'child' | 'tali', text: string) => {
     setMessages((prev) => {
       const next = [...prev, { id: `${Date.now()}-${from}`, from, text }];
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
       return next;
     });
+    if (from === 'tali' && taliSpeakEnabled) {
+      void speakWithTali(text, language);
+    }
   };
 
   const sendMessage = async (userText: string, overrideMessage?: string) => {
@@ -272,6 +281,14 @@ export default function TaliScreen() {
             accessible
             accessibilityLabel={t('tali.inputPlaceholder')}
           />
+          <VoiceInputButton
+            disabled={sending}
+            onTranscript={(text) => {
+              const trimmed = text.trim();
+              if (!trimmed || sending) return;
+              void sendMessage(trimmed);
+            }}
+          />
           <Button
             onPress={() => sendMessage(input)}
             loading={sending}
@@ -281,6 +298,9 @@ export default function TaliScreen() {
             {t('tali.send')}
           </Button>
         </View>
+        <AppText variant="small" style={{ color: theme.colors.textMuted, marginTop: theme.spacing.xs }}>
+          {t('tali.voiceHint')}
+        </AppText>
       </Screen>
     </KeyboardAvoidingView>
   );

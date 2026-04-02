@@ -509,8 +509,36 @@ export default function LessonScreen() {
       return;
     }
 
-    // Wrong answer → reset for retry (keep promptLevel from before)
-    if (feedback === 'incorrect') {
+  // Skip skippable input task — neutral, no record, no mistake
+  const handleSkip = () => {
+    if (isLastTask) {
+      const reward = lesson.reward;
+      const xpGain = reward?.xp ?? 20;
+      const prevLevel = getLevelFromXP(xp);
+      const stars: 1 | 2 | 3 = mistakeCount === 0 ? 3 : mistakeCount <= 2 ? 2 : 1;
+      markLessonCompleted({ topicId: topic.id, lessonId: lesson.id, mistakeCount });
+      addXP(xpGain);
+      const newXP = xp + xpGain;
+      const nextLevel = getLevelFromXP(newXP);
+      if (reward?.item) {
+        addItem(reward.item);
+        const meta = COLLECTIBLES_META[reward.item];
+        setEarnedItem(meta?.emoji ?? '🎁');
+      }
+      setEarnedXP(xpGain);
+      setEarnedStars(stars);
+      setLeveledUp(nextLevel > prevLevel);
+      setNewLevel(nextLevel);
+      setPhase('reward');
+    } else {
+      setCurrentIndex((prev) => prev + 1);
+      resetForNextTask();
+      fadeIn();
+    }
+  };
+
+  // Wrong answer → reset for retry (keep promptLevel from before)
+  if (feedback === 'incorrect') {
       setSelectedOptionId(null);
       setInputValue('');
       setFeedback('idle');
@@ -742,6 +770,16 @@ export default function LessonScreen() {
                 </Pressable>
               );
             })}
+          </View>
+        ) : task.skippable ? (
+          <View style={{ alignItems: 'center', paddingVertical: theme.spacing.md }}>
+            <Button
+              variant="secondary"
+              onPress={handleSkip}
+              style={{ minWidth: 200 }}
+            >
+              {t('lesson.skipTask')}
+            </Button>
           </View>
         ) : (
           <View>
