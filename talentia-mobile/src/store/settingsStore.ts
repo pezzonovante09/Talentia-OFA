@@ -45,6 +45,8 @@ type SettingsState = {
   ttsEnabled: boolean;
   /** Whether Tali speaks her chat replies aloud via neural TTS */
   taliSpeakEnabled: boolean;
+  /** Fewer motion effects (no confetti, no map node pulse) */
+  reduceMotion: boolean;
   setLanguage: (language: LanguageCode) => void;
   setMethodology: (methodology: Methodology) => void;
   toggleCalmMode: () => void;
@@ -68,6 +70,7 @@ type SettingsState = {
   setHasSeenMapTip: () => void;
   setTtsEnabled: (value: boolean) => void;
   setTaliSpeakEnabled: (value: boolean) => void;
+  setReduceMotion: (value: boolean) => void;
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -94,6 +97,7 @@ export const useSettingsStore = create<SettingsState>()(
       hasSeenMapTip: false,
       ttsEnabled: true,
       taliSpeakEnabled: true,
+      reduceMotion: false,
       setLanguage: (language) => set({ language }),
       setMethodology: (methodology) => set({ methodology }),
       toggleCalmMode: () => set((state) => ({ calmMode: !state.calmMode })),
@@ -113,6 +117,7 @@ export const useSettingsStore = create<SettingsState>()(
       setHasSeenMapTip: () => set({ hasSeenMapTip: true }),
       setTtsEnabled: (value) => set({ ttsEnabled: value }),
       setTaliSpeakEnabled: (value) => set({ taliSpeakEnabled: value }),
+      setReduceMotion: (value) => set({ reduceMotion: value }),
     }),
     {
       name: 'talentia-settings',
@@ -139,6 +144,7 @@ export const useSettingsStore = create<SettingsState>()(
         hasSeenMapTip: state.hasSeenMapTip,
         ttsEnabled: state.ttsEnabled,
         taliSpeakEnabled: state.taliSpeakEnabled,
+        reduceMotion: state.reduceMotion,
       }),
     },
   ),

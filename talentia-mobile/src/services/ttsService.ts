@@ -1,48 +1,94 @@
 /**
- * Neural TTS service — calls the /api/tts backend endpoint (HF MMS-TTS),
- * writes the returned audio to a temp file, and plays it via expo-av.
- *
- * Falls back silently if the backend is unavailable or TTS is disabled.
+ * TTS: ElevenLabs via /api/tts (MP3 stream) when backend is configured;
+ * fallback to expo-speech when offline or on error.
  */
-import * as FileSystem from "expo-file-system";
+import { File, Paths } from "expo-file-system";
 import { Audio } from "expo-av";
+import * as Speech from "expo-speech";
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 let currentSound: Audio.Sound | null = null;
 
-/** Speak text using the backend TTS. No-op when backend URL is not set. */
-export async function speakWithTali(
-  text: string,
-  language: string,
-): Promise<void> {
-  if (!BACKEND_URL || !text.trim()) return;
+export type TaliTtsLanguage = "ru" | "en";
+
+function stripForNeuralTts(text: string): string {
+  return text
+    .replace(/[\u{1F000}-\u{1FFFF}]/gu, "")
+    .replace(/[\u{2600}-\u{27BF}]/gu, "")
+    .replace(/[\u{FE00}-\u{FEFF}]/gu, "")
+    .replace(/[\u{1F900}-\u{1F9FF}]/gu, "")
+    .replace(/[\uFE0E\uFE0F]/g, "")
+    .replace(/[•·]/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function speechLocaleForTts(lang: TaliTtsLanguage): string {
+  return lang === "en" ? "en-US" : "ru-RU";
+}
+
+function mapAppLanguageToTts(lang: string): TaliTtsLanguage {
+  return lang === "en" ? "en" : "ru";
+}
+
+function speakWithExpoSpeech(text: string, lang: TaliTtsLanguage): void {
+  const cleaned = stripForNeuralTts(text);
+  if (!cleaned) return;
+  Speech.stop();
+  Speech.speak(cleaned, {
+    language: speechLocaleForTts(lang),
+    rate: 0.88,
+    pitch: 1.05,
+  });
+}
+
+/**
+ * Neural TTS through the proxy (/api/tts → ElevenLabs MP3).
+ * Falls back to system expo-speech if there is no backend URL or the request fails.
+ */
+export async function speakViaTali(text: string, language: TaliTtsLanguage): Promise<void> {
+  const trimmed = stripForNeuralTts(text).slice(0, 400);
+  if (!trimmed) return;
+
+  await stopTaliSpeech();
+
+  if (!BACKEND_URL) {
+    speakWithExpoSpeech(trimmed, language);
+    return;
+  }
 
   try {
-    // Stop anything already playing
-    await stopTaliSpeech();
-
     const res = await fetch(`${BACKEND_URL}/api/tts`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: text.slice(0, 400), language }),
+      body: JSON.stringify({ text: trimmed, language }),
     });
 
-    if (!res.ok) return;
+    if (!res.ok) {
+      speakWithExpoSpeech(trimmed, language);
+      return;
+    }
 
-    const data = (await res.json()) as { audio?: string; mimeType?: string };
-    if (!data.audio) return;
+    const ct = res.headers.get("content-type") ?? "";
+    if (!ct.includes("mpeg") && !ct.includes("octet-stream") && !ct.includes("audio")) {
+      speakWithExpoSpeech(trimmed, language);
+      return;
+    }
 
-    // Write base64 audio to a temporary file
-    const path = `${FileSystem.cacheDirectory ?? ""}tali_tts_${Date.now()}.flac`;
-    await FileSystem.writeAsStringAsync(path, data.audio, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
+    const buf = await res.arrayBuffer();
+    if (buf.byteLength === 0) {
+      speakWithExpoSpeech(trimmed, language);
+      return;
+    }
 
-    // Enable audio in silent mode (important for iOS)
+    const outFile = new File(Paths.cache, `tali_tts_${Date.now()}.mp3`);
+    outFile.create();
+    outFile.write(new Uint8Array(buf));
+
     await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
 
-    const { sound } = await Audio.Sound.createAsync({ uri: path });
+    const { sound } = await Audio.Sound.createAsync({ uri: outFile.uri });
     currentSound = sound;
     await sound.playAsync();
 
@@ -53,12 +99,18 @@ export async function speakWithTali(
       }
     });
   } catch {
-    // Silent fail — chat text is always shown regardless
+    speakWithExpoSpeech(trimmed, language);
   }
 }
 
-/** Stop any currently playing TTS audio. */
+/** @deprecated Prefer speakViaTali with explicit 'ru' | 'en'. Maps app language codes to TTS language. */
+export async function speakWithTali(text: string, language: string): Promise<void> {
+  return speakViaTali(text, mapAppLanguageToTts(language));
+}
+
+/** Stop neural playback and any in-flight expo-speech from this flow. */
 export async function stopTaliSpeech(): Promise<void> {
+  Speech.stop();
   if (!currentSound) return;
   const s = currentSound;
   currentSound = null;

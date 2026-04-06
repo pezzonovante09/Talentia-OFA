@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '../../src/components/Screen';
+import { ABAReinforcementBanner } from '../../src/components/ABAReinforcementBanner';
 import { TaliVideo } from '../../src/components/TaliVideo';
 import { AppText } from '../../src/components/Text';
 import { Spacer } from '../../src/components/Spacer';
@@ -139,6 +140,7 @@ export default function LessonScreen() {
 
   const { profile, user } = useAuth();
   const language = useSettingsStore((s) => s.language);
+  const reduceMotion = useSettingsStore((s) => s.reduceMotion);
   const breakReminderEnabled = useSettingsStore((s) => s.breakReminderEnabled);
   const sessionDurationMinutes = useSettingsStore((s) => s.sessionDurationMinutes);
   const breakDurationMinutes = useSettingsStore((s) => s.breakDurationMinutes);
@@ -170,6 +172,9 @@ export default function LessonScreen() {
   );
 
   const topicDifficulty = topic ? (topicsState[topic.id]?.difficulty ?? 1) : 1;
+
+  /** ABA: иерархия подсказок, подсветка верного ответа, озвучка правильного варианта — только в режиме «особый» (special). */
+  const useAbaPedagogy = profile?.child_mode === 'special';
 
   // ALL hooks must be declared before any early return
   const tasks = useMemo(() => {
@@ -208,6 +213,21 @@ export default function LessonScreen() {
   const [earnedStars, setEarnedStars] = useState<1 | 2 | 3>(3);
   const [breakModalVisible, setBreakModalVisible] = useState(false);
   const sessionStartRef = useRef<number | null>(null);
+  const lessonRewardClaimedRef = useRef(false);
+  const taskGapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [taskTransitionBusy, setTaskTransitionBusy] = useState(false);
+  const [abaReinforcement, setAbaReinforcement] = useState<{ phrase: string; emoji: string } | null>(
+    null,
+  );
+  const abaCorrectProceedRef = useRef<(() => void) | null>(null);
+
+  const finishAbaReinforcement = useCallback(() => {
+    setAbaReinforcement(null);
+    setTaskTransitionBusy(false);
+    const fn = abaCorrectProceedRef.current;
+    abaCorrectProceedRef.current = null;
+    fn?.();
+  }, []);
 
   // ABA Engine state
   const [promptLevel, setPromptLevel] = useState<PromptLevel>(0);
@@ -225,17 +245,23 @@ export default function LessonScreen() {
   }, [hasChecked, feedback, isLastTask, t]);
 
   const correctFeedbackText = useMemo(() => {
+    if (!useAbaPedagogy) {
+      return t('lesson.standardCorrect');
+    }
     if (feedback === 'correct' && successType === 'assisted') {
       return t('lesson.abaAssistedSuccess');
     }
     return t('lesson.abaCorrect');
-  }, [feedback, successType, t]);
+  }, [feedback, successType, t, useAbaPedagogy]);
 
   const incorrectFeedbackText = useMemo(() => {
+    if (!useAbaPedagogy) {
+      return t('lesson.standardIncorrect');
+    }
     if (promptLevel >= 2) return t('lesson.abaVerbalPromptFeedback');
     if (promptLevel >= 1) return t('lesson.abaVisualPromptFeedback');
     return t('lesson.abaIncorrect');
-  }, [promptLevel, t]);
+  }, [promptLevel, t, useAbaPedagogy]);
 
   // Flush queued analytics on mount
   useEffect(() => {
@@ -243,6 +269,18 @@ export default function LessonScreen() {
       flushAnalyticsQueue(user.id).catch(() => {});
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    lessonRewardClaimedRef.current = false;
+    setAbaReinforcement(null);
+    abaCorrectProceedRef.current = null;
+    return () => {
+      if (taskGapTimerRef.current) {
+        clearTimeout(taskGapTimerRef.current);
+        taskGapTimerRef.current = null;
+      }
+    };
+  }, [lessonId]);
 
   // Auto-speak task question when a new task appears
   useEffect(() => {
@@ -253,9 +291,10 @@ export default function LessonScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, currentIndex]);
 
-  // Auto-speak feedback when it changes
+  // Auto-speak feedback when it changes (ABA: correct — only banner, no duplicate TTS)
   useEffect(() => {
     if (feedback === 'correct') {
+      if (useAbaPedagogy) return;
       const delay = setTimeout(() => speak(correctFeedbackText), 200);
       return () => clearTimeout(delay);
     }
@@ -264,7 +303,7 @@ export default function LessonScreen() {
       return () => clearTimeout(delay);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [feedback]);
+  }, [feedback, correctFeedbackText, incorrectFeedbackText, useAbaPedagogy]);
 
   // Break reminder
   useEffect(() => {
@@ -324,7 +363,8 @@ export default function LessonScreen() {
     topicId: topic.id,
     lessonId: lesson.id,
     childMode: profile?.child_mode ?? 'standard',
-    methodology: 'aba',
+    methodology:
+      profile?.child_mode === 'special' ? (profile.methodology ?? 'aba') : 'standard',
     correctAnswer:
       task?.type === 'multiple_choice'
         ? (() => {
@@ -420,6 +460,7 @@ export default function LessonScreen() {
   }
 
   const difficulty = topicsState[topic.id]?.difficulty ?? 1;
+  const TASK_GAP_MS = 1500;
 
   const resetForNextTask = () => {
     setSelectedOptionId(null);
@@ -435,7 +476,48 @@ export default function LessonScreen() {
     lastWrongAnswer.current = null;
   };
 
+  const grantLessonReward = (totalMistakes: number) => {
+    if (lessonRewardClaimedRef.current) return;
+    lessonRewardClaimedRef.current = true;
+
+    const reward = lesson.reward;
+    const xpGain = reward?.xp ?? 20;
+    const prevLevel = getLevelFromXP(xp);
+    const stars: 1 | 2 | 3 = totalMistakes === 0 ? 3 : totalMistakes <= 2 ? 2 : 1;
+
+    markLessonCompleted({ topicId: topic.id, lessonId: lesson.id, mistakeCount: totalMistakes });
+    addXP(xpGain);
+
+    const newXP = xp + xpGain;
+    const nextLevel = getLevelFromXP(newXP);
+
+    if (reward?.item) {
+      addItem(reward.item);
+      const meta = COLLECTIBLES_META[reward.item];
+      setEarnedItem(meta?.emoji ?? '🎁');
+    }
+
+    setEarnedXP(xpGain);
+    setEarnedStars(stars);
+    setLeveledUp(nextLevel > prevLevel);
+    setNewLevel(nextLevel);
+    setPhase('reward');
+  };
+
+  const handleSkip = () => {
+    if (taskTransitionBusy) return;
+    if (isLastTask) {
+      grantLessonReward(mistakeCount);
+    } else {
+      setCurrentIndex((prev) => prev + 1);
+      resetForNextTask();
+      fadeIn();
+    }
+  };
+
   const handlePrimaryPress = () => {
+    if (taskTransitionBusy) return;
+
     if (!hasChecked) {
       if (task.type === 'multiple_choice' && !selectedOptionId) {
         setSelectHint(true);
@@ -481,8 +563,7 @@ export default function LessonScreen() {
           attemptNo: trialCount,
         });
 
-        // When child succeeded after verbal prompt (level 2), explain error via Tali
-        if (promptLevel >= 2 && lastWrongAnswer.current) {
+        if (useAbaPedagogy && promptLevel >= 2 && lastWrongAnswer.current) {
           const taskCtx = buildTaskContext();
           explainError(taskCtx, lastWrongAnswer.current, language)
             .then((msg) => { if (msg) setHintText(msg); })
@@ -500,27 +581,26 @@ export default function LessonScreen() {
           correct: false,
           taskId: task.id,
           taskIndex: currentIndex,
-          promptLevel,
+          promptLevel: useAbaPedagogy ? promptLevel : 0,
           latencyMs,
           sessionId,
           attemptNo: trialCount,
         });
 
-        // Prompt Hierarchy
-        if (mistakeCount === 0) {
-          // 1st wrong → Visual Prompt: show AI hint + highlight correct option
-          setPromptLevel(1);
-          const taskCtx = buildTaskContext();
-          getHint(taskCtx, language)
-            .then((hint) => { if (hint) setHintText(hint); })
-            .catch(() => {});
-        } else if (mistakeCount >= 1) {
-          // 2nd+ wrong → Verbal Prompt: disable wrong options, speak correct answer
-          setPromptLevel(2);
-          if (task.type === 'multiple_choice') {
-            const correctOpt = (task as MultipleChoiceTask).options.find((o) => o.correct);
-            if (correctOpt) {
-              speak(optionText(correctOpt.textKey));
+        if (useAbaPedagogy) {
+          if (mistakeCount === 0) {
+            setPromptLevel(1);
+            const taskCtx = buildTaskContext();
+            getHint(taskCtx, language)
+              .then((hint) => { if (hint) setHintText(hint); })
+              .catch(() => {});
+          } else if (mistakeCount >= 1) {
+            setPromptLevel(2);
+            if (task.type === 'multiple_choice') {
+              const correctOpt = (task as MultipleChoiceTask).options.find((o) => o.correct);
+              if (correctOpt) {
+                speak(optionText(correctOpt.textKey));
+              }
             }
           }
         }
@@ -531,78 +611,78 @@ export default function LessonScreen() {
       return;
     }
 
-  // Skip skippable input task — neutral, no record, no mistake
-  const handleSkip = () => {
-    if (isLastTask) {
-      const reward = lesson.reward;
-      const xpGain = reward?.xp ?? 20;
-      const prevLevel = getLevelFromXP(xp);
-      const stars: 1 | 2 | 3 = mistakeCount === 0 ? 3 : mistakeCount <= 2 ? 2 : 1;
-      markLessonCompleted({ topicId: topic.id, lessonId: lesson.id, mistakeCount });
-      addXP(xpGain);
-      const newXP = xp + xpGain;
-      const nextLevel = getLevelFromXP(newXP);
-      if (reward?.item) {
-        addItem(reward.item);
-        const meta = COLLECTIBLES_META[reward.item];
-        setEarnedItem(meta?.emoji ?? '🎁');
-      }
-      setEarnedXP(xpGain);
-      setEarnedStars(stars);
-      setLeveledUp(nextLevel > prevLevel);
-      setNewLevel(nextLevel);
-      setPhase('reward');
-    } else {
-      setCurrentIndex((prev) => prev + 1);
-      resetForNextTask();
-      fadeIn();
-    }
-  };
+    const scheduleAfterGap = (fn: () => void) => {
+      if (taskGapTimerRef.current) clearTimeout(taskGapTimerRef.current);
+      setTaskTransitionBusy(true);
+      taskGapTimerRef.current = setTimeout(() => {
+        taskGapTimerRef.current = null;
+        fn();
+        setTaskTransitionBusy(false);
+      }, TASK_GAP_MS);
+    };
 
-  // Wrong answer → reset for retry (keep promptLevel from before)
-  if (feedback === 'incorrect') {
-      setSelectedOptionId(null);
-      setInputValue('');
-      setFeedback('idle');
-      setHasChecked(false);
-      setSelectHint(false);
+    if (feedback === 'incorrect') {
+      scheduleAfterGap(() => {
+        setSelectedOptionId(null);
+        setInputValue('');
+        setFeedback('idle');
+        setHasChecked(false);
+        setSelectHint(false);
+      });
       return;
     }
 
-    // Correct → advance
+    // feedback === 'correct'
+    if (useAbaPedagogy) {
+      setTaskTransitionBusy(true);
+      abaCorrectProceedRef.current = () => {
+        if (isLastTask) {
+          grantLessonReward(mistakeCount);
+        } else {
+          setCurrentIndex((prev) => prev + 1);
+          resetForNextTask();
+          fadeIn();
+        }
+      };
+      const keys = [
+        'lesson.abaReinforce1',
+        'lesson.abaReinforce2',
+        'lesson.abaReinforce3',
+        'lesson.abaReinforce4',
+      ] as const;
+      const phraseKey = keys[Math.floor(Math.random() * keys.length)];
+      setAbaReinforcement({
+        phrase: t(phraseKey),
+        emoji: Math.random() < 0.5 ? '⭐' : '🎉',
+      });
+      return;
+    }
+
     if (isLastTask) {
-      const reward = lesson.reward;
-      const xpGain = reward?.xp ?? 20;
-      const prevLevel = getLevelFromXP(xp);
-      const totalMistakes = mistakeCount;
-      const stars: 1 | 2 | 3 = totalMistakes === 0 ? 3 : totalMistakes <= 2 ? 2 : 1;
+      scheduleAfterGap(() => {
+        grantLessonReward(mistakeCount);
+      });
+      return;
+    }
 
-      markLessonCompleted({ topicId: topic.id, lessonId: lesson.id, mistakeCount: totalMistakes });
-      addXP(xpGain);
-
-      const newXP = xp + xpGain;
-      const nextLevel = getLevelFromXP(newXP);
-
-      if (reward?.item) {
-        addItem(reward.item);
-        const meta = COLLECTIBLES_META[reward.item];
-        setEarnedItem(meta?.emoji ?? '🎁');
-      }
-
-      setEarnedXP(xpGain);
-      setEarnedStars(stars);
-      setLeveledUp(nextLevel > prevLevel);
-      setNewLevel(nextLevel);
-      setPhase('reward');
-    } else {
+    scheduleAfterGap(() => {
       setCurrentIndex((prev) => prev + 1);
       resetForNextTask();
       fadeIn();
-    }
+    });
   };
 
   return (
-    <Screen scroll>
+    <Screen scroll rootBackgroundColor={useAbaPedagogy ? '#FAFAFA' : undefined}>
+      {abaReinforcement ? (
+        <ABAReinforcementBanner
+          visible
+          phrase={abaReinforcement.phrase}
+          emoji={abaReinforcement.emoji}
+          reduceMotion={reduceMotion}
+          onFinished={finishAbaReinforcement}
+        />
+      ) : null}
       {/* Progress bar */}
       <View style={{ marginBottom: theme.spacing.sm }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -626,7 +706,7 @@ export default function LessonScreen() {
       </View>
 
       {/* ABA: trial counter badge */}
-      {trialCount > 1 && (
+      {useAbaPedagogy && trialCount > 1 && (
         <View
           style={{
             backgroundColor: theme.colors.secondary + '20',
@@ -643,13 +723,18 @@ export default function LessonScreen() {
         </View>
       )}
 
-      {/* ABA: structured instruction label */}
-      <AppText
-        variant="small"
-        style={{ color: theme.colors.primary, fontWeight: '700', marginBottom: theme.spacing.sm }}
-      >
-        📋 {t('lesson.abaInstruction')}
-      </AppText>
+      {useAbaPedagogy ? (
+        <AppText
+          variant="small"
+          style={{ color: theme.colors.primary, fontWeight: '700', marginBottom: theme.spacing.sm }}
+        >
+          📋 {t('lesson.abaInstruction')}
+        </AppText>
+      ) : (
+        <AppText variant="small" style={{ color: theme.colors.textMuted, marginBottom: theme.spacing.sm }}>
+          {t('lesson.standardTaskLabel')}
+        </AppText>
+      )}
 
       <AppText variant="title" accessibilityRole="header">
         {t(lesson.titleKey)}
@@ -674,7 +759,7 @@ export default function LessonScreen() {
       <Spacer size="lg" />
 
       {/* ABA Hint Card (Visual Prompt Level 1+) */}
-      {hintText && promptLevel >= 1 && (
+      {useAbaPedagogy && hintText && promptLevel >= 1 && (
         <View
           style={{
             borderLeftWidth: 4,
@@ -733,7 +818,7 @@ export default function LessonScreen() {
               <View style={{ alignItems: 'flex-end', marginBottom: theme.spacing.sm }}>
                 <VoiceInputButton
                   onTranscript={(transcript) => {
-                    if (hasChecked) return;
+                    if (hasChecked || taskTransitionBusy) return;
                     const lower = transcript.toLowerCase();
                     const mcTask = task as MultipleChoiceTask;
                     const match = mcTask.options.find((o) =>
@@ -742,7 +827,7 @@ export default function LessonScreen() {
                     );
                     if (match) { setSelectedOptionId(match.id); setSelectHint(false); }
                   }}
-                  disabled={hasChecked}
+                  disabled={hasChecked || taskTransitionBusy}
                 />
               </View>
             )}
@@ -751,24 +836,31 @@ export default function LessonScreen() {
               const showCorrect = hasChecked && feedback === 'correct' && option.correct;
               const showWrong = hasChecked && feedback === 'incorrect' && isSelected;
               // Visual Prompt: highlight correct option with success glow
-              const isVisualTarget = promptLevel >= 1 && option.correct && !hasChecked;
-              // Verbal Prompt: disable wrong options
-              const isDisabledByPrompt = promptLevel >= 2 && !option.correct && !hasChecked;
+              const isVisualTarget =
+                useAbaPedagogy && promptLevel >= 1 && option.correct && !hasChecked;
+              const isDisabledByPrompt =
+                useAbaPedagogy && promptLevel >= 2 && !option.correct && !hasChecked;
 
               return (
                 <Pressable
                   key={option.id}
                   onPress={() => {
-                    if (!hasChecked && !isDisabledByPrompt) {
+                    if (!hasChecked && !isDisabledByPrompt && !taskTransitionBusy) {
                       speak(optionText(option.textKey));
                       setSelectedOptionId(option.id);
                       setSelectHint(false);
                     }
                   }}
                   accessibilityRole="radio"
-                  accessibilityState={{ selected: isSelected, disabled: isDisabledByPrompt }}
-                  style={{ marginBottom: theme.spacing.sm, opacity: isDisabledByPrompt ? 0.3 : 1 }}
-                  disabled={isDisabledByPrompt}
+                  accessibilityState={{
+                    selected: isSelected,
+                    disabled: isDisabledByPrompt || taskTransitionBusy,
+                  }}
+                  style={{
+                    marginBottom: theme.spacing.sm,
+                    opacity: isDisabledByPrompt || taskTransitionBusy ? 0.3 : 1,
+                  }}
+                  disabled={isDisabledByPrompt || taskTransitionBusy}
                 >
                   <Card
                     highlighted={isSelected && !hasChecked}
@@ -777,7 +869,9 @@ export default function LessonScreen() {
                       borderColor: showCorrect || isVisualTarget
                         ? theme.colors.success
                         : showWrong
-                          ? theme.colors.error
+                          ? useAbaPedagogy
+                            ? theme.colors.primary
+                            : theme.colors.error
                           : undefined,
                     }}
                   >
@@ -786,7 +880,7 @@ export default function LessonScreen() {
                         {optionText(option.textKey)}
                       </AppText>
                       {showCorrect && <AppText>✅</AppText>}
-                      {showWrong && <AppText>❌</AppText>}
+                      {showWrong && !useAbaPedagogy ? <AppText>❌</AppText> : null}
                     </View>
                   </Card>
                 </Pressable>
@@ -798,6 +892,7 @@ export default function LessonScreen() {
             <Button
               variant="secondary"
               onPress={handleSkip}
+              disabled={taskTransitionBusy}
               style={{ minWidth: 200 }}
             >
               {t('lesson.skipTask')}
@@ -812,12 +907,16 @@ export default function LessonScreen() {
                 onChangeText={setInputValue}
                 placeholder={t(task.placeholderKey ?? 'lesson.answerPlaceholder')}
                 placeholderTextColor={theme.colors.textMuted}
-                editable={!hasChecked}
+                editable={!hasChecked && !taskTransitionBusy}
                 style={{
                   flex: 1,
                   borderWidth: 2,
                   borderColor: hasChecked
-                    ? feedback === 'correct' ? theme.colors.success : theme.colors.error
+                    ? feedback === 'correct'
+                      ? theme.colors.success
+                      : useAbaPedagogy
+                        ? theme.colors.primary
+                        : theme.colors.error
                     : theme.colors.border,
                   borderRadius: theme.radii.md,
                   paddingHorizontal: theme.spacing.md,
@@ -831,7 +930,7 @@ export default function LessonScreen() {
               />
               <VoiceInputButton
                 onTranscript={(text) => setInputValue(text)}
-                disabled={hasChecked}
+                disabled={hasChecked || taskTransitionBusy}
               />
             </View>
           </View>
@@ -839,7 +938,7 @@ export default function LessonScreen() {
 
         <Spacer size="md" />
 
-        {feedback === 'correct' && (
+        {feedback === 'correct' && !useAbaPedagogy && (
           <View
             style={{
               backgroundColor: theme.colors.success + '22',
@@ -855,12 +954,17 @@ export default function LessonScreen() {
         {feedback === 'incorrect' && (
           <View
             style={{
-              backgroundColor: theme.colors.error + '22',
+              backgroundColor: useAbaPedagogy ? theme.colors.primary + '16' : theme.colors.error + '22',
               borderRadius: theme.radii.md,
               padding: theme.spacing.sm,
             }}
           >
-            <AppText style={{ color: theme.colors.error, fontWeight: '600' }}>
+            <AppText
+              style={{
+                color: useAbaPedagogy ? theme.colors.primary : theme.colors.error,
+                fontWeight: '600',
+              }}
+            >
               {incorrectFeedbackText}
             </AppText>
           </View>
@@ -876,7 +980,7 @@ export default function LessonScreen() {
             large
             label={t('voiceInput.speakAnswer')}
             onTranscript={(transcript) => {
-              if (hasChecked) return;
+              if (hasChecked || taskTransitionBusy) return;
               if (task.type === 'multiple_choice') {
                 const lower = transcript.toLowerCase();
                 const mcTask = task as MultipleChoiceTask;
@@ -889,24 +993,29 @@ export default function LessonScreen() {
                 setInputValue(transcript);
               }
             }}
-            disabled={hasChecked}
+            disabled={hasChecked || taskTransitionBusy}
           />
         </View>
       )}
 
       <Button
         onPress={handlePrimaryPress}
+        disabled={taskTransitionBusy}
         style={{
           backgroundColor: !hasChecked
             ? theme.colors.secondary
             : feedback === 'correct'
               ? theme.colors.success
-              : theme.colors.error,
+              : useAbaPedagogy
+                ? theme.colors.primary
+                : theme.colors.error,
           borderColor: !hasChecked
             ? theme.colors.secondary
             : feedback === 'correct'
               ? theme.colors.success
-              : theme.colors.error,
+              : useAbaPedagogy
+                ? theme.colors.primary
+                : theme.colors.error,
           shadowColor: !hasChecked ? theme.colors.secondary : theme.colors.primary,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.22,
@@ -1260,10 +1369,11 @@ function RewardPhase({
   onGoToMap: () => void;
 }) {
   const { t } = useTranslation();
+  const reduceMotion = useSettingsStore((s) => s.reduceMotion);
   return (
     <Screen scroll>
       <View style={{ alignItems: 'center', paddingTop: theme.spacing.xl, position: 'relative' }}>
-        <Confetti />
+        {!reduceMotion && <Confetti />}
 
         <TaliVideo emotion="energetic" size={140} bgColor={theme.colors.background} />
         <Spacer size="sm" />

@@ -7,6 +7,7 @@ import { useAppTheme } from '../../theme';
 import type { LessonNode } from '../../data/worlds';
 import type { LessonStatus } from '../../store/progressStore';
 import type { Methodology } from '../../store/settingsStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import {
   METHODOLOGY_DECOR,
   WORLD_DECOR,
@@ -27,9 +28,10 @@ function MiniStars({ stars }: { stars: 1 | 2 | 3 }) {
   );
 }
 
-function useNodePulse() {
+function useNodePulse(enabled: boolean) {
   const anim = useRef(new Animated.Value(0)).current;
   React.useEffect(() => {
+    if (!enabled) return;
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(anim, { toValue: 1, duration: 1000, useNativeDriver: true }),
@@ -38,25 +40,67 @@ function useNodePulse() {
     );
     loop.start();
     return () => loop.stop();
-  }, [anim]);
+  }, [anim, enabled]);
   return anim;
 }
 
 const START_BTN_COLOR = '#FF8C1A';
 const START_BTN_SHADOW = '#C45800';
 
-function StartButton3D({ label, onPress }: { label: string; onPress: () => void }) {
+function StartButton3D({
+  label,
+  onPress,
+  reduceMotion,
+}: {
+  label: string;
+  onPress: () => void;
+  reduceMotion?: boolean;
+}) {
   const pressAnim = useRef(new Animated.Value(0)).current;
 
   const handlePressIn = () => {
+    if (reduceMotion) return;
     Animated.spring(pressAnim, { toValue: 1, useNativeDriver: false, speed: 50 }).start();
   };
   const handlePressOut = () => {
+    if (reduceMotion) return;
     Animated.spring(pressAnim, { toValue: 0, useNativeDriver: false, speed: 50 }).start();
   };
 
   const translateY = pressAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 3] });
   const bottomBorder = pressAnim.interpolate({ inputRange: [0, 1], outputRange: [5, 2] });
+
+  if (reduceMotion) {
+    return (
+      <Pressable onPress={onPress} accessibilityRole="button">
+        <View
+          style={{
+            borderBottomWidth: 5,
+            borderBottomColor: START_BTN_SHADOW,
+            borderRadius: 999,
+            backgroundColor: START_BTN_COLOR,
+            paddingVertical: 14,
+            paddingHorizontal: 24,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <AppText
+            numberOfLines={1}
+            style={{
+              color: '#FFFFFF',
+              fontSize: 17,
+              fontWeight: '800',
+              letterSpacing: 0,
+              fontFamily: 'Nunito_800ExtraBold',
+            }}
+          >
+            {label}
+          </AppText>
+        </View>
+      </Pressable>
+    );
+  }
 
   return (
     <Pressable
@@ -126,7 +170,8 @@ export function MapPathNode({
   methodologyStyle,
   isStartNode,
 }: MapPathNodeProps) {
-  const pulseAnim = useNodePulse();
+  const reduceMotion = useSettingsStore((s) => s.reduceMotion);
+  const pulseAnim = useNodePulse(!reduceMotion);
   const isLocked = status === 'locked';
   const isCompleted = status === 'completed';
   const isAvailable = status === 'available';
@@ -148,6 +193,20 @@ export function MapPathNode({
   const bw = isAvailable ? methodologyStyle.nodeBorderWidth + 2 : methodologyStyle.nodeBorderWidth;
   const pulseScale = pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.08] });
   const pulseOpacity = pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [0.65, 1] });
+
+  const pulseWrap = (node: React.ReactNode) =>
+    reduceMotion ? (
+      <View>{node}</View>
+    ) : (
+      <Animated.View style={{ transform: [{ scale: pulseScale }], opacity: pulseOpacity }}>{node}</Animated.View>
+    );
+
+  const pulseWrapScaleOnly = (node: React.ReactNode) =>
+    reduceMotion ? (
+      <View>{node}</View>
+    ) : (
+      <Animated.View style={{ transform: [{ scale: pulseScale }] }}>{node}</Animated.View>
+    );
 
   const inner = (
     <View
@@ -207,10 +266,8 @@ export function MapPathNode({
   if (isStartNode && isAvailable) {
     return (
       <View style={{ alignItems: 'center', gap: 10 }}>
-        <Animated.View style={{ transform: [{ scale: pulseScale }], opacity: pulseOpacity }}>
-          {inner}
-        </Animated.View>
-        <StartButton3D label={t('map.startBadge')} onPress={onPress} />
+        {pulseWrap(inner)}
+        <StartButton3D label={t('map.startBadge')} onPress={onPress} reduceMotion={reduceMotion} />
       </View>
     );
   }
@@ -237,11 +294,7 @@ export function MapPathNode({
       style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
     >
       {isAvailable ? (
-        methodologyStyle.nodeGlow ? (
-          <Animated.View style={{ transform: [{ scale: pulseScale }], opacity: pulseOpacity }}>{wrap}</Animated.View>
-        ) : (
-          <Animated.View style={{ transform: [{ scale: pulseScale }] }}>{wrap}</Animated.View>
-        )
+        methodologyStyle.nodeGlow ? pulseWrap(wrap) : pulseWrapScaleOnly(wrap)
       ) : (
         wrap
       )}

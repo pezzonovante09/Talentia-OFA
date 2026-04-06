@@ -64,6 +64,8 @@ export default function SettingsScreen() {
   const setTtsEnabled = useSettingsStore((state) => state.setTtsEnabled);
   const taliSpeakEnabled = useSettingsStore((state) => state.taliSpeakEnabled);
   const setTaliSpeakEnabled = useSettingsStore((state) => state.setTaliSpeakEnabled);
+  const reduceMotion = useSettingsStore((state) => state.reduceMotion);
+  const setReduceMotion = useSettingsStore((state) => state.setReduceMotion);
   const setLanguage = useSettingsStore((state) => state.setLanguage);
   const setMethodologyStore = useSettingsStore((state) => state.setMethodology);
   const toggleCalmMode = useSettingsStore((state) => state.toggleCalmMode);
@@ -341,6 +343,31 @@ export default function SettingsScreen() {
               false: theme.colors.border,
               true: theme.colors.primary,
             }}
+          />
+        </View>
+
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginTop: theme.spacing.md,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <AppText variant="subtitle">
+              {t('settings.reduceMotionLabel')}
+            </AppText>
+            <Spacer size="xs" />
+            <AppText variant="small" style={{ color: theme.colors.textMuted }}>
+              {t('settings.reduceMotionDescription')}
+            </AppText>
+          </View>
+          <Switch
+            value={reduceMotion}
+            onValueChange={setReduceMotion}
+            thumbColor={reduceMotion ? theme.colors.primary : theme.colors.surface}
+            trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
           />
         </View>
       </Card>

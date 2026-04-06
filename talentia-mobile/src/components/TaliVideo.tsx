@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { Platform, View } from 'react-native';
-import { useVideoPlayer, VideoView } from 'expo-video';
+import { useVideoPlayer, VideoView, type VideoSource } from 'expo-video';
 
 export type TaliEmotion = 'idle' | 'energetic' | 'friendly' | 'default';
 
-const SOURCES: Record<TaliEmotion, ReturnType<typeof require>> = {
+const SOURCES: Record<TaliEmotion, VideoSource> = {
   idle: require('../../assets/videos/tali-idle.mp4'),
   energetic: require('../../assets/videos/tali-energetic.mp4'),
   friendly: require('../../assets/videos/tali-friendly.mp4'),

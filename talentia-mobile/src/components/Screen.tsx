@@ -9,11 +9,21 @@ type ScreenProps = PropsWithChildren<
   {
     scroll?: boolean;
     backgroundImage?: ImageSourcePropType;
+    /** When set, overrides SafeAreaView background (e.g. calm lesson surface). */
+    rootBackgroundColor?: string;
   } & ViewProps
 >;
 
-export function Screen({ children, scroll = false, backgroundImage, style, ...rest }: ScreenProps) {
+export function Screen({
+  children,
+  scroll = false,
+  backgroundImage,
+  rootBackgroundColor,
+  style,
+  ...rest
+}: ScreenProps) {
   const theme = useAppTheme();
+  const rootBg = rootBackgroundColor ?? theme.colors.background;
 
   const content = (
     <View
@@ -48,7 +58,7 @@ export function Screen({ children, scroll = false, backgroundImage, style, ...re
   if (backgroundImage) {
     if (theme.calmMode) {
       return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: rootBg }}>
           <LinearGradient
             colors={['#C8EDD8', '#DAF0E6', '#EEF8F2', '#F5FCF8']}
             locations={[0, 0.35, 0.7, 1]}
@@ -61,7 +71,7 @@ export function Screen({ children, scroll = false, backgroundImage, style, ...re
     }
 
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: rootBg }}>
         <ImageBackground
           source={backgroundImage}
           resizeMode="cover"
@@ -77,12 +87,7 @@ export function Screen({ children, scroll = false, backgroundImage, style, ...re
   }
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: theme.colors.background,
-      }}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: rootBg }}>
       {inner}
     </SafeAreaView>
   );

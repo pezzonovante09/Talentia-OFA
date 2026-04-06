@@ -34,18 +34,20 @@ const TALI_SKIN_EMOJI: Record<string, string> = {
   scientist: '🦖🔬',
 };
 
-const SUBJECTS: SubjectId[] = ['math', 'russian', 'english', 'science'];
+const SUBJECTS: SubjectId[] = ['math', 'russian', 'english', 'science', 'social'];
 const SUBJECT_LABEL_KEYS: Record<SubjectId, string> = {
   math: 'map.subjectMath',
   russian: 'map.subjectRussian',
   english: 'map.subjectEnglish',
   science: 'map.subjectScience',
+  social: 'map.subjectSocial',
 };
 const SUBJECT_EMOJI: Record<SubjectId, string> = {
   math: '🔢',
   russian: '📝',
   english: '📖',
   science: '🔬',
+  social: '🤝',
 };
 
 // ── World section banner ──────────────────────────────────────────────────────
@@ -217,10 +219,7 @@ export default function MapScreen() {
 
   // Methodology banner strip (shown when special mode is active)
   const methBannerConfig: Record<Methodology, { label: string; color: string; emoji: string } | null> = {
-    montessori: { label: 'Монтессори', color: '#B5835A', emoji: '🌱' },
     aba: { label: 'ABA', color: '#5B8EE8', emoji: '📋' },
-    teacch: { label: 'TEACCH', color: '#7B5CF6', emoji: '👁️' },
-    mixed: null,
   };
   // Only show methodology banner in special mode
   const isSpecialMode = profile?.child_mode === 'special';

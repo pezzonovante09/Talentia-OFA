@@ -19,7 +19,7 @@ import { VoiceInputButton } from '../src/components/VoiceInputButton';
 import { TaliVideo } from '../src/components/TaliVideo';
 import { useAppTheme } from '../src/theme';
 import { sendToCompanion, getHint, getScienceFact, getMotivation } from '../src/services/CompanionService';
-import { speakWithTali, stopTaliSpeech } from '../src/services/ttsService';
+import { speakViaTali, stopTaliSpeech, type TaliTtsLanguage } from '../src/services/ttsService';
 import { useSettingsStore } from '../src/store/settingsStore';
 import { useProgressStore } from '../src/store/progressStore';
 import { useAuth } from '../src/context/AuthContext';
@@ -68,7 +68,8 @@ export default function TaliScreen() {
       return next;
     });
     if (from === 'tali' && taliSpeakEnabled) {
-      void speakWithTali(text, language);
+      const ttsLang: TaliTtsLanguage = language === 'en' ? 'en' : 'ru';
+      void speakViaTali(text, ttsLang);
     }
   };
 
