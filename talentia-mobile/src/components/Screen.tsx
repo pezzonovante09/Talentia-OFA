@@ -5,10 +5,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { useAppTheme } from '../theme';
 
+const BG_TINT = {
+  default: 'rgba(235,249,255,0.58)',
+  /** Меньше «молока» поверх картинки — для ABA-градиента и насыщенных фонов. */
+  light: 'rgba(252,253,252,0.28)',
+} as const;
+
 type ScreenProps = PropsWithChildren<
   {
     scroll?: boolean;
     backgroundImage?: ImageSourcePropType;
+    /** Наложение поверх фоновой картинки (читаемость текста). */
+    backgroundImageTint?: keyof typeof BG_TINT;
     /** When set, overrides SafeAreaView background (e.g. calm lesson surface). */
     rootBackgroundColor?: string;
   } & ViewProps
@@ -18,6 +26,7 @@ export function Screen({
   children,
   scroll = false,
   backgroundImage,
+  backgroundImageTint = 'default',
   rootBackgroundColor,
   style,
   ...rest
@@ -78,7 +87,7 @@ export function Screen({
           style={{ flex: 1 }}
         >
           {/* semi-transparent overlay so text remains readable */}
-          <View style={{ flex: 1, backgroundColor: 'rgba(235,249,255,0.58)' }}>
+          <View style={{ flex: 1, backgroundColor: BG_TINT[backgroundImageTint] }}>
             {inner}
           </View>
         </ImageBackground>

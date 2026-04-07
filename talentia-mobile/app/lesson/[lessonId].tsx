@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, TextInput, View } from 'react-native';
+import type { ImageSourcePropType } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { NanoBananaIcon } from '../../src/components/NanoBananaIcon';
+import { NANO_UI, getNanoNpcForWorld, resolveScreenBackground } from '../../src/constants/nanoBananaAssets';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
@@ -12,6 +15,7 @@ import { Spacer } from '../../src/components/Spacer';
 import { Card } from '../../src/components/Card';
 import { Button } from '../../src/components/Button';
 import { LessonHelpPanel } from '../../src/components/LessonHelpPanel';
+import { LessonRepeatSpeechFab } from '../../src/components/LessonRepeatSpeechFab';
 import { VoiceInputButton } from '../../src/components/VoiceInputButton';
 import { useAppTheme } from '../../src/theme';
 import {
@@ -30,6 +34,17 @@ import { useAuth } from '../../src/context/AuthContext';
 import { useSettingsStore } from '../../src/store/settingsStore';
 import { getHint, explainError, type TaskContext } from '../../src/services/CompanionService';
 import { useSpeech } from '../../src/hooks/useSpeech';
+import {
+  getBundledVoiceModuleId,
+  lessonBundledVoiceKey,
+  tryPlayBundledLessonVoice,
+} from '../../src/services/lessonBundledVoice';
+import {
+  lessonTaskOptionVoiceKey,
+  lessonTaskQuestionVoiceKey,
+  playLessonTaskVoiceLine,
+} from '../../src/services/lessonTaskBundledVoice';
+import { stopTaliSpeech } from '../../src/services/ttsService';
 import { flushAnalyticsQueue } from '../../src/services/analyticsService';
 import i18nInstance from '../../src/i18n';
 
@@ -125,7 +140,12 @@ function StarsRow({ stars, size = 28 }: { stars: number; size?: number }) {
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 4 }}>
       {[1, 2, 3].map((i) => (
-        <AppText key={i} style={{ fontSize: size, opacity: i <= stars ? 1 : 0.25 }}>⭐</AppText>
+        <NanoBananaIcon
+          key={i}
+          source={NANO_UI.stars}
+          size={size}
+          style={{ opacity: i <= stars ? 1 : 0.25 }}
+        />
       ))}
     </View>
   );
@@ -140,6 +160,7 @@ export default function LessonScreen() {
 
   const { profile, user } = useAuth();
   const language = useSettingsStore((s) => s.language);
+  const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
   const reduceMotion = useSettingsStore((s) => s.reduceMotion);
   const breakReminderEnabled = useSettingsStore((s) => s.breakReminderEnabled);
   const sessionDurationMinutes = useSettingsStore((s) => s.sessionDurationMinutes);
@@ -175,6 +196,19 @@ export default function LessonScreen() {
 
   /** ABA: иерархия подсказок, подсветка верного ответа, озвучка правильного варианта — только в режиме «особый» (special). */
   const useAbaPedagogy = profile?.child_mode === 'special';
+
+  /** Обои ABA — только при особом профиле и методологии ABA. */
+  const isAbaWallpaperMode =
+    profile?.child_mode === 'special' && (profile?.methodology ?? 'aba') === 'aba';
+  const lessonBackgroundImage = useMemo(
+    () =>
+      resolveScreenBackground({
+        isAbaMode: isAbaWallpaperMode,
+        worldId: world?.id,
+      }),
+    [isAbaWallpaperMode, world?.id],
+  );
+  const lessonBackgroundTint = isAbaWallpaperMode ? ('light' as const) : ('default' as const);
 
   // ALL hooks must be declared before any early return
   const tasks = useMemo(() => {
@@ -282,14 +316,22 @@ export default function LessonScreen() {
     };
   }, [lessonId]);
 
-  // Auto-speak task question when a new task appears
+  // Auto-speak task question when a new task appears (вшитый mp3 при наличии)
   useEffect(() => {
-    if (phase !== 'tasks' || !task) return;
-    const text = t(task.questionKey);
-    const delay = setTimeout(() => speak(text), 500);
+    if (phase !== 'tasks' || !lesson || !ttsEnabled) return;
+    const tk = tasks[currentIndex];
+    if (!tk) return;
+    const text = t(tk.questionKey);
+    const delay = setTimeout(() => {
+      void playLessonTaskVoiceLine(
+        lesson.id,
+        lessonTaskQuestionVoiceKey(lesson.id, tk.id, language),
+        text,
+        language,
+      );
+    }, 500);
     return () => clearTimeout(delay);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, currentIndex]);
+  }, [phase, currentIndex, tasks, lesson, language, t, ttsEnabled]);
 
   // Auto-speak feedback when it changes (ABA: correct — only banner, no duplicate TTS)
   useEffect(() => {
@@ -331,7 +373,7 @@ export default function LessonScreen() {
   const task: LessonTask | undefined = tasks[currentIndex];
   const dialog = lesson.dialog ?? [];
   const npcName = world?.npcName ?? 'NPC';
-  const npcEmoji = world?.npcEmoji ?? '🦕';
+  const npcEmoji = world?.npcEmoji ?? '';
   const accentColor = world?.accentColor ?? theme.colors.primary;
 
   const fadeIn = () => {
@@ -380,13 +422,17 @@ export default function LessonScreen() {
   if (phase === 'dialog') {
     const line = dialog[dialogIndex];
     const isTali = line.speaker === 'tali';
-    const speakerName = isTali ? `${t('tali.name')} 🦖` : `${npcName} ${npcEmoji}`;
+    const speakerName = isTali ? t('tali.name') : `${npcName}${npcEmoji ? ` ${npcEmoji}` : ''}`.trim();
     const speakerColor = isTali ? theme.colors.primary : accentColor;
     const isLastLine = dialogIndex === dialog.length - 1;
     const fullText = t(line.textKey);
 
     return (
       <DialogPhase
+        lessonId={lesson.id}
+        worldId={world?.id}
+        backgroundImage={lessonBackgroundImage}
+        backgroundImageTint={lessonBackgroundTint}
         fullText={fullText}
         speakerName={speakerName}
         speakerColor={speakerColor}
@@ -421,6 +467,9 @@ export default function LessonScreen() {
     const isLastSlide = introIndex === intro.length - 1;
     return (
       <IntroPhase
+        lessonId={lesson.id}
+        backgroundImage={lessonBackgroundImage}
+        backgroundImageTint={lessonBackgroundTint}
         slide={slide}
         slideIndex={introIndex}
         totalSlides={intro.length}
@@ -449,6 +498,8 @@ export default function LessonScreen() {
         earnedStars={earnedStars}
         lessonTitle={t(lesson.titleKey)}
         theme={theme}
+        backgroundImage={lessonBackgroundImage}
+        backgroundImageTint={lessonBackgroundTint}
         onGoToMap={() => router.replace('/(tabs)/map')}
       />
     );
@@ -494,7 +545,7 @@ export default function LessonScreen() {
     if (reward?.item) {
       addItem(reward.item);
       const meta = COLLECTIBLES_META[reward.item];
-      setEarnedItem(meta?.emoji ?? '🎁');
+      setEarnedItem(t(meta.nameKey));
     }
 
     setEarnedXP(xpGain);
@@ -598,8 +649,14 @@ export default function LessonScreen() {
             setPromptLevel(2);
             if (task.type === 'multiple_choice') {
               const correctOpt = (task as MultipleChoiceTask).options.find((o) => o.correct);
-              if (correctOpt) {
-                speak(optionText(correctOpt.textKey));
+              if (correctOpt && ttsEnabled) {
+                const line = optionText(correctOpt.textKey);
+                void playLessonTaskVoiceLine(
+                  lesson.id,
+                  lessonTaskOptionVoiceKey(lesson.id, task.id, correctOpt.id, language),
+                  line,
+                  language,
+                );
               }
             }
           }
@@ -653,7 +710,7 @@ export default function LessonScreen() {
       const phraseKey = keys[Math.floor(Math.random() * keys.length)];
       setAbaReinforcement({
         phrase: t(phraseKey),
-        emoji: Math.random() < 0.5 ? '⭐' : '🎉',
+        emoji: '',
       });
       return;
     }
@@ -673,7 +730,13 @@ export default function LessonScreen() {
   };
 
   return (
-    <Screen scroll rootBackgroundColor={useAbaPedagogy ? '#FAFAFA' : undefined}>
+    <Screen
+      scroll
+      backgroundImage={lessonBackgroundImage}
+      backgroundImageTint={lessonBackgroundTint}
+      style={{ position: 'relative' }}
+    >
+      <LessonRepeatSpeechFab />
       {abaReinforcement ? (
         <ABAReinforcementBanner
           visible
@@ -718,7 +781,7 @@ export default function LessonScreen() {
           }}
         >
           <AppText variant="small" style={{ color: theme.colors.secondary, fontWeight: '700' }}>
-            🔄 {t('lesson.abaTrial', { n: trialCount })}
+            {t('lesson.abaTrial', { n: trialCount })}
           </AppText>
         </View>
       )}
@@ -728,7 +791,7 @@ export default function LessonScreen() {
           variant="small"
           style={{ color: theme.colors.primary, fontWeight: '700', marginBottom: theme.spacing.sm }}
         >
-          📋 {t('lesson.abaInstruction')}
+          {t('lesson.abaInstruction')}
         </AppText>
       ) : (
         <AppText variant="small" style={{ color: theme.colors.textMuted, marginBottom: theme.spacing.sm }}>
@@ -771,7 +834,7 @@ export default function LessonScreen() {
           }}
         >
           <AppText variant="small" style={{ color: theme.colors.primary, fontWeight: '700', marginBottom: 4 }}>
-            💡 {t('lesson.hintFromTali')}
+            {t('lesson.hintFromTali')}
           </AppText>
           <AppText variant="small">{hintText}</AppText>
         </View>
@@ -797,7 +860,19 @@ export default function LessonScreen() {
           </View>
         ) : null}
 
-        <Pressable onPress={() => speak(t(task.questionKey))} accessibilityRole="button">
+        <Pressable
+          onPress={() => {
+            if (!ttsEnabled) return;
+            const line = t(task.questionKey);
+            void playLessonTaskVoiceLine(
+              lesson.id,
+              lessonTaskQuestionVoiceKey(lesson.id, task.id, language),
+              line,
+              language,
+            );
+          }}
+          accessibilityRole="button"
+        >
           <AppText style={{ fontSize: theme.typography.body }}>
             {t(task.questionKey)}
           </AppText>
@@ -846,7 +921,6 @@ export default function LessonScreen() {
                   key={option.id}
                   onPress={() => {
                     if (!hasChecked && !isDisabledByPrompt && !taskTransitionBusy) {
-                      speak(optionText(option.textKey));
                       setSelectedOptionId(option.id);
                       setSelectHint(false);
                     }
@@ -879,8 +953,12 @@ export default function LessonScreen() {
                       <AppText style={{ fontSize: theme.typography.body }}>
                         {optionText(option.textKey)}
                       </AppText>
-                      {showCorrect && <AppText>✅</AppText>}
-                      {showWrong && !useAbaPedagogy ? <AppText>❌</AppText> : null}
+                      {showCorrect && (
+                        <NanoBananaIcon source={NANO_UI.check} size={22} accessibilityLabel="OK" />
+                      )}
+                      {showWrong && !useAbaPedagogy ? (
+                        <NanoBananaIcon source={NANO_UI.x} size={22} accessibilityLabel="X" />
+                      ) : null}
                     </View>
                   </Card>
                 </Pressable>
@@ -1080,6 +1158,9 @@ export default function LessonScreen() {
 
 // ── Intro phase component ──────────────────────────────────────────────────
 function IntroPhase({
+  lessonId,
+  backgroundImage,
+  backgroundImageTint,
   slide,
   slideIndex,
   totalSlides,
@@ -1090,6 +1171,9 @@ function IntroPhase({
   t,
   onNext,
 }: {
+  lessonId: string;
+  backgroundImage: ImageSourcePropType;
+  backgroundImageTint: 'default' | 'light';
   slide: IntroSlide;
   slideIndex: number;
   totalSlides: number;
@@ -1101,19 +1185,41 @@ function IntroPhase({
   onNext: () => void;
 }) {
   const { speak } = useSpeech();
+  const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
+  const language = useSettingsStore((s) => s.language);
   const fullBodyText = t(slide.bodyKey);
   const { displayed } = useTypingText(fullBodyText, 18);
 
   useEffect(() => {
+    if (!ttsEnabled) return;
     const title = t(slide.titleKey);
     const body = t(slide.bodyKey);
-    const delay = setTimeout(() => speak(`${title}. ${body}`), 400);
-    return () => clearTimeout(delay);
+    const fallback = `${title}. ${body}`;
+    const key = lessonBundledVoiceKey(lessonId, 'intro', slideIndex, language);
+    const mod = getBundledVoiceModuleId(key);
+    const delay = setTimeout(() => {
+      void (async () => {
+        if (mod !== undefined) {
+          const ok = await tryPlayBundledLessonVoice(mod);
+          if (!ok) speak(fallback);
+        } else {
+          speak(fallback);
+        }
+      })();
+    }, 400);
+    return () => {
+      clearTimeout(delay);
+      void stopTaliSpeech();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slideIndex]);
+  }, [slideIndex, lessonId, language, ttsEnabled]);
 
   return (
-    <Screen>
+    <Screen
+      backgroundImage={backgroundImage}
+      backgroundImageTint={backgroundImageTint}
+      style={{ position: 'relative' }}
+    >
       <Animated.View style={{ opacity: fadeAnim, flex: 1 }}>
         <View style={{ flex: 1, justifyContent: 'center', paddingVertical: theme.spacing.xl }}>
           {/* Progress dots */}
@@ -1141,28 +1247,26 @@ function IntroPhase({
             )}
           </View>
 
-          {/* Title */}
-          <AppText
-            variant="subtitle"
-            style={{
-              fontWeight: '800',
-              color: accentColor,
-              textAlign: 'left',
-              marginBottom: theme.spacing.md,
-            }}
-          >
-            {t(slide.titleKey)}
-          </AppText>
-
-          {/* Body card */}
+          {/* Title + body: solid white for readability on scene background */}
           <Card
             style={{
               borderLeftWidth: 4,
               borderLeftColor: accentColor,
-              backgroundColor: accentColor + '10',
+              backgroundColor: '#FFFFFF',
               marginBottom: theme.spacing.xl,
             }}
           >
+            <AppText
+              variant="subtitle"
+              style={{
+                fontWeight: '800',
+                color: accentColor,
+                textAlign: 'left',
+                marginBottom: theme.spacing.md,
+              }}
+            >
+              {t(slide.titleKey)}
+            </AppText>
             <View style={{ position: 'relative' }}>
               <AppText style={{ lineHeight: 30, fontSize: 17, opacity: 0 }} aria-hidden>
                 {fullBodyText}
@@ -1184,12 +1288,17 @@ function IntroPhase({
           </Button>
         </View>
       </Animated.View>
+      <LessonRepeatSpeechFab />
     </Screen>
   );
 }
 
 // ── Dialog phase component ─────────────────────────────────────────────────
 function DialogPhase({
+  lessonId,
+  worldId,
+  backgroundImage,
+  backgroundImageTint,
   fullText,
   speakerName,
   speakerColor,
@@ -1206,6 +1315,10 @@ function DialogPhase({
   t,
   onNext,
 }: {
+  lessonId: string;
+  worldId?: string;
+  backgroundImage: ImageSourcePropType;
+  backgroundImageTint: 'default' | 'light';
   fullText: string;
   speakerName: string;
   speakerColor: string;
@@ -1223,16 +1336,38 @@ function DialogPhase({
   onNext: () => void;
 }) {
   const { speak } = useSpeech();
+  const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
+  const language = useSettingsStore((s) => s.language);
   const { displayed } = useTypingText(fullText, 22);
+  const npcAvatar = worldId ? getNanoNpcForWorld(worldId) : undefined;
 
   useEffect(() => {
-    const delay = setTimeout(() => speak(fullText), 300);
-    return () => clearTimeout(delay);
+    if (!ttsEnabled) return;
+    const key = lessonBundledVoiceKey(lessonId, 'dialog', dialogIndex, language);
+    const mod = getBundledVoiceModuleId(key);
+    const delay = setTimeout(() => {
+      void (async () => {
+        if (mod !== undefined) {
+          const ok = await tryPlayBundledLessonVoice(mod);
+          if (!ok) speak(fullText);
+        } else {
+          speak(fullText);
+        }
+      })();
+    }, 300);
+    return () => {
+      clearTimeout(delay);
+      void stopTaliSpeech();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fullText]);
+  }, [fullText, dialogIndex, lessonId, language, ttsEnabled]);
 
   return (
-    <Screen>
+    <Screen
+      backgroundImage={backgroundImage}
+      backgroundImageTint={backgroundImageTint}
+      style={{ position: 'relative' }}
+    >
       <Animated.View style={{ opacity: fadeAnim, flex: 1 }}>
         <View style={{ flex: 1, justifyContent: 'flex-end', paddingBottom: theme.spacing.xl }}>
           {/* World banner */}
@@ -1260,9 +1395,14 @@ function DialogPhase({
                   borderColor: speakerColor + '88',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  overflow: 'hidden',
                 }}
               >
-                <AppText style={{ fontSize: 40 }}>{npcEmoji}</AppText>
+                {npcAvatar ? (
+                  <NanoBananaIcon source={npcAvatar} size={66} />
+                ) : (
+                  <AppText style={{ fontSize: 40 }}>{npcEmoji}</AppText>
+                )}
               </View>
             )}
             <AppText variant="small" style={{ color: speakerColor, fontWeight: '700', marginBottom: 6 }}>
@@ -1285,7 +1425,7 @@ function DialogPhase({
                 borderRightWidth: 10,
                 borderRightColor: 'transparent',
                 borderBottomWidth: 12,
-                borderBottomColor: theme.colors.surface,
+                borderBottomColor: '#FFFFFF',
                 zIndex: 1,
               }}
             />
@@ -1310,6 +1450,7 @@ function DialogPhase({
               style={{
                 borderLeftWidth: 4,
                 borderLeftColor: speakerColor,
+                backgroundColor: '#FFFFFF',
               }}
             >
               <View style={{ position: 'relative' }}>
@@ -1344,6 +1485,7 @@ function DialogPhase({
           </Button>
         </View>
       </Animated.View>
+      <LessonRepeatSpeechFab />
     </Screen>
   );
 }
@@ -1357,6 +1499,8 @@ function RewardPhase({
   earnedStars,
   lessonTitle,
   theme,
+  backgroundImage,
+  backgroundImageTint,
   onGoToMap,
 }: {
   earnedXP: number;
@@ -1366,12 +1510,14 @@ function RewardPhase({
   earnedStars: 1 | 2 | 3;
   lessonTitle: string;
   theme: ReturnType<typeof useAppTheme>;
+  backgroundImage: ImageSourcePropType;
+  backgroundImageTint: 'default' | 'light';
   onGoToMap: () => void;
 }) {
   const { t } = useTranslation();
   const reduceMotion = useSettingsStore((s) => s.reduceMotion);
   return (
-    <Screen scroll>
+    <Screen scroll backgroundImage={backgroundImage} backgroundImageTint={backgroundImageTint}>
       <View style={{ alignItems: 'center', paddingTop: theme.spacing.xl, position: 'relative' }}>
         {!reduceMotion && <Confetti />}
 
@@ -1403,7 +1549,7 @@ function RewardPhase({
               width: '100%',
             }}
           >
-            <AppText style={{ fontSize: 40 }}>⭐</AppText>
+            <NanoBananaIcon source={NANO_UI.lightning} size={40} accessibilityLabel="XP" />
             <AppText
               variant="subtitle"
               style={{ color: theme.colors.success, fontWeight: '700', marginTop: theme.spacing.xs }}
@@ -1423,7 +1569,7 @@ function RewardPhase({
                 width: '100%',
               }}
             >
-              <AppText style={{ fontSize: 40 }}>{earnedItemEmoji}</AppText>
+              <NanoBananaIcon source={NANO_UI.gift} size={40} accessibilityLabel="" />
               <AppText
                 variant="small"
                 style={{ color: theme.colors.secondary, fontWeight: '700', marginTop: theme.spacing.xs }}
@@ -1444,7 +1590,7 @@ function RewardPhase({
                 width: '100%',
               }}
             >
-              <AppText style={{ fontSize: 40 }}>⬆️</AppText>
+              <NanoBananaIcon source={NANO_UI.levelUp} size={40} accessibilityLabel="" />
               <AppText
                 variant="small"
                 style={{ color: theme.colors.primary, fontWeight: '700', marginTop: theme.spacing.xs }}

@@ -2,6 +2,8 @@ import React, { memo } from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { NanoBananaIcon } from '../src/components/NanoBananaIcon';
+import { NANO_UI } from '../src/constants/nanoBananaAssets';
 import { Screen } from '../src/components/Screen';
 import { AppText } from '../src/components/Text';
 import { Spacer } from '../src/components/Spacer';
@@ -52,9 +54,13 @@ const CollectionItem = memo(function CollectionItem({
           borderColor: owned ? rarityColor : theme.colors.border,
         }}
       >
-        <AppText style={{ fontSize: 40, marginBottom: theme.spacing.xs }}>
-          {owned ? meta.emoji : '❓'}
-        </AppText>
+        <View style={{ marginBottom: theme.spacing.xs, height: 44, justifyContent: 'center' }}>
+          {owned ? (
+            <NanoBananaIcon source={NANO_UI.gift} size={40} />
+          ) : (
+            <NanoBananaIcon source={NANO_UI.help} size={40} style={{ opacity: 0.55 }} />
+          )}
+        </View>
         <AppText
           variant="small"
           style={{

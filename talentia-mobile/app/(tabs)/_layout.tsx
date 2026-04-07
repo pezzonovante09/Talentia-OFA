@@ -74,6 +74,7 @@ export default function TabLayout() {
         options={{
           title: t('tabs.map'),
           tabBarLabel: t('tabs.map'),
+          tabBarAccessibilityLabel: t('tabs.map'),
           tabBarIcon: ({ color, size, focused }) => (
             <AnimatedTabIcon name="map" color={color} size={size} focused={focused} />
           ),
@@ -84,6 +85,7 @@ export default function TabLayout() {
         options={{
           title: t('tabs.profile'),
           tabBarLabel: t('tabs.profile'),
+          tabBarAccessibilityLabel: t('tabs.profile'),
           tabBarIcon: ({ color, size, focused }) => (
             <AnimatedTabIcon name="face" color={color} size={size} focused={focused} />
           ),
@@ -94,6 +96,7 @@ export default function TabLayout() {
         options={{
           title: t('tabs.settings'),
           tabBarLabel: t('tabs.settings'),
+          tabBarAccessibilityLabel: t('tabs.settings'),
           tabBarIcon: ({ color, size, focused }) => (
             <AnimatedTabIcon name="tune" color={color} size={size} focused={focused} />
           ),

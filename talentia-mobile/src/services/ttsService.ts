@@ -6,7 +6,13 @@ import { File, Paths } from "expo-file-system";
 import { Audio } from "expo-av";
 import * as Speech from "expo-speech";
 
+import { AV_PLAYBACK_RATE_SLOW, EXPO_SPEECH_RATE_SLOW } from "../constants/ttsPlayback";
+import { useLessonTtsReplayStore } from "../store/lessonTtsReplayStore";
+
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+
+/** Совпадает с лимитом прокси (talentia-ai-proxy-next MAX_TEXT_LEN). */
+const NEURAL_TTS_MAX_LEN = 2500;
 
 let currentSound: Audio.Sound | null = null;
 
@@ -35,12 +41,25 @@ function mapAppLanguageToTts(lang: string): TaliTtsLanguage {
 function speakWithExpoSpeech(text: string, lang: TaliTtsLanguage): void {
   const cleaned = stripForNeuralTts(text);
   if (!cleaned) return;
+  useLessonTtsReplayStore.getState().setLast({
+    kind: "expo",
+    text: cleaned,
+    locale: speechLocaleForTts(lang),
+  });
   Speech.stop();
   Speech.speak(cleaned, {
     language: speechLocaleForTts(lang),
-    rate: 0.88,
+    rate: EXPO_SPEECH_RATE_SLOW,
     pitch: 1.05,
   });
+}
+
+async function applySlowPlaybackRate(sound: Audio.Sound): Promise<void> {
+  try {
+    await sound.setRateAsync(AV_PLAYBACK_RATE_SLOW, true);
+  } catch {
+    /* web / старые устройства */
+  }
 }
 
 /**
@@ -48,10 +67,12 @@ function speakWithExpoSpeech(text: string, lang: TaliTtsLanguage): void {
  * Falls back to system expo-speech if there is no backend URL or the request fails.
  */
 export async function speakViaTali(text: string, language: TaliTtsLanguage): Promise<void> {
-  const trimmed = stripForNeuralTts(text).slice(0, 400);
+  const trimmed = stripForNeuralTts(text).slice(0, NEURAL_TTS_MAX_LEN);
   if (!trimmed) return;
 
   await stopTaliSpeech();
+
+  useLessonTtsReplayStore.getState().setLast({ kind: "neural", text: trimmed, lang: language });
 
   if (!BACKEND_URL) {
     speakWithExpoSpeech(trimmed, language);
@@ -71,6 +92,32 @@ export async function speakViaTali(text: string, language: TaliTtsLanguage): Pro
     }
 
     const ct = res.headers.get("content-type") ?? "";
+
+    // Hugging Face path: JSON { audio: base64, mimeType }
+    if (ct.includes("application/json")) {
+      const data = (await res.json()) as { audio?: string; mimeType?: string; error?: string };
+      if (data.error || !data.audio) {
+        speakWithExpoSpeech(trimmed, language);
+        return;
+      }
+      const ext = data.mimeType?.includes("flac") ? "flac" : "mp3";
+      const outFile = new File(Paths.cache, `tali_tts_${Date.now()}.${ext}`);
+      outFile.create();
+      outFile.write(data.audio, { encoding: "base64" });
+      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+      const { sound } = await Audio.Sound.createAsync({ uri: outFile.uri });
+      currentSound = sound;
+      await applySlowPlaybackRate(sound);
+      await sound.playAsync();
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          sound.unloadAsync().catch(() => undefined);
+          if (currentSound === sound) currentSound = null;
+        }
+      });
+      return;
+    }
+
     if (!ct.includes("mpeg") && !ct.includes("octet-stream") && !ct.includes("audio")) {
       speakWithExpoSpeech(trimmed, language);
       return;
@@ -90,6 +137,7 @@ export async function speakViaTali(text: string, language: TaliTtsLanguage): Pro
 
     const { sound } = await Audio.Sound.createAsync({ uri: outFile.uri });
     currentSound = sound;
+    await applySlowPlaybackRate(sound);
     await sound.playAsync();
 
     sound.setOnPlaybackStatusUpdate((status) => {
@@ -108,9 +156,11 @@ export async function speakWithTali(text: string, language: string): Promise<voi
   return speakViaTali(text, mapAppLanguageToTts(language));
 }
 
-/** Stop neural playback and any in-flight expo-speech from this flow. */
+/** Stop neural playback, вшитые mp3 урока и expo-speech. */
 export async function stopTaliSpeech(): Promise<void> {
   Speech.stop();
+  const { stopLessonBundledVoice } = await import("./lessonBundledVoice");
+  await stopLessonBundledVoice();
   if (!currentSound) return;
   const s = currentSound;
   currentSound = null;

@@ -4,19 +4,22 @@ Inclusive learning app for ages 5–8. Built with Expo, React Native, and Supaba
 
 ## Features
 
-- **Adventure Map** — World map with lesson nodes, subjects (math, English, Russian, science)
-- **Tali** — AI companion for hints, motivation, and science facts
-- **Parent Report** — Weekly progress and insights (PIN-protected)
-- **Profiles** — Child setup with methodology (Montessori, ABA, TEACCH)
-- **Multi-language** — English, Russian, Kyrgyz
+- **Adventure Map** — Subject tracks (math, Russian, English, science, social) with lesson nodes, stars, and world sections
+- **Lessons** — Dialog → intro slides → tasks (multiple choice & input), voice input, bundled lesson audio, XP and collectibles
+- **Tali** — AI companion (hints, facts, motivation) when `EXPO_PUBLIC_BACKEND_URL` is set
+- **Parent Report** — Progress, weekly stats, per-world summaries (PIN-protected); AI text from backend with local fallbacks
+- **Profiles** — Standard vs **special** child mode; in special mode, **ABA** methodology and adapted tasks (`special_aba` audience)
+- **Accessibility** — Tab bar `tabBarAccessibilityLabel`, map nodes with labels, `Button` exposes `accessibilityState.disabled` when loading/disabled; pass `accessibilityLabel` / `accessibilityHint` on buttons where the label is not obvious
+- **Comfort** — Calm mode, focus mode, reduce motion, TTS toggles, break reminders
+- **Multi-language** — English, Russian, Kyrgyz (i18next)
 
 ## Tech Stack
 
 - Expo SDK 54, React Native 0.81, React 19
-- Expo Router (file-based routing)
-- Zustand (state management)
-- Supabase (auth + profiles)
-- i18next (internationalization)
+- Expo Router (file-based routing, typed routes)
+- Zustand + AsyncStorage persist
+- Supabase (auth + profiles, optional)
+- i18next
 
 ## Setup
 
@@ -31,10 +34,19 @@ Copy `.env.example` to `.env` and fill in:
 ```env
 EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-EXPO_PUBLIC_BACKEND_URL=https://your-backend.com  # optional, for Tali AI
+EXPO_PUBLIC_BACKEND_URL=https://your-backend.com  # optional: Tali, TTS, AI reports (see talentia-ai-proxy-next)
 ```
 
 Without Supabase config, the app runs in **demo mode** (local auth only).
+
+### Optional: Nano Banana assets
+
+If you use the Cursor asset import scripts:
+
+```bash
+npm run assets:import-nano
+npm run assets:splice-nano-ui
+```
 
 ## Run
 
@@ -53,8 +65,18 @@ Then open in iOS simulator, Android emulator, or Expo Go.
 | `npm run ios` | Run on iOS |
 | `npm run web` | Run on web |
 | `npm run lint` | Run ESLint |
-| `npm test` | Run unit tests |
-| `npm run test:watch` | Run tests in watch mode |
+| `npm test` | Run unit tests (`**/__tests__/**/*.test.ts`) |
+| `npm run test:watch` | Tests in watch mode |
+
+## Tests
+
+Unit tests cover:
+
+- `src/utils/xpUtils` — level and XP bar math
+- `src/services/reportService` — `getWorldStats` aggregation
+- `src/data/worlds` — `getLesson`, `getWorldForLesson`, `filterTasksForProfile` (standard vs special/ABA)
+
+Add new tests under `src/**/__tests__/*.test.ts`.
 
 ## Project Structure
 
@@ -68,10 +90,20 @@ src/
   context/         # AuthContext
   data/            # worlds.ts (lessons, topics, tasks)
   i18n/            # Locales (en, ru, ky)
-  services/        # Supabase, CompanionService, reportService, notifications
+  services/        # Supabase, CompanionService, reportService, notifications, TTS
   store/           # Zustand (settings, progress, collectibles)
   theme/           # App theme
-  utils/           # Helpers
+  utils/           # Helpers (e.g. xpUtils)
+```
+
+## Monorepo
+
+This app lives next to **`talentia-ai-proxy-next`** (Next.js API routes for Tali, reports, ElevenLabs TTS). From repo root:
+
+```bash
+npm run install:all
+npm run dev          # mobile
+npm run dev:api      # proxy (separate terminal)
 ```
 
 ## Learn More

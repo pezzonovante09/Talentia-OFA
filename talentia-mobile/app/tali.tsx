@@ -7,6 +7,9 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { NanoBananaIcon } from '../src/components/NanoBananaIcon';
+import { NANO_UI } from '../src/constants/nanoBananaAssets';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
@@ -162,7 +165,7 @@ export default function TaliScreen() {
             ) : null}
           </View>
           <View style={{ alignItems: 'center' }}>
-            <AppText style={{ fontSize: 18 }}>🔥</AppText>
+            <NanoBananaIcon source={NANO_UI.streak} size={20} />
             <AppText variant="small" style={{ color: theme.colors.secondary, fontWeight: '700' }}>
               {streakCount}
             </AppText>
@@ -187,7 +190,6 @@ export default function TaliScreen() {
                 })}
               >
                 <AppText variant="small" style={{ fontWeight: '600' }}>
-                  {action === 'quickHint' ? '💡' : action === 'quickFact' ? '🔬' : '🌟'}{' '}
                   {t(`tali.${action}`)}
                 </AppText>
               </Pressable>
@@ -223,7 +225,7 @@ export default function TaliScreen() {
               >
                 {!isChild && (
                   <AppText variant="small" style={{ color: theme.colors.primary, fontWeight: '700', marginBottom: 4, marginLeft: theme.spacing.sm }}>
-                    🦖 {t('tali.name')}
+                    {t('tali.name')}
                   </AppText>
                 )}
                 <Card
@@ -246,7 +248,7 @@ export default function TaliScreen() {
 
         {sending && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm, marginBottom: theme.spacing.sm }}>
-            <AppText style={{ fontSize: 18 }}>🦖</AppText>
+            <MaterialIcons name="chat-bubble-outline" size={20} color={theme.colors.textMuted} />
             <AppText variant="small" style={{ color: theme.colors.textMuted }}>
               {t('lesson.dialogTyping')}
             </AppText>

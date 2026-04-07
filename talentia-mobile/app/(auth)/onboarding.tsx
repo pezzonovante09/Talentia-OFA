@@ -1,5 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { Animated, Pressable, View } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { NanoBananaIcon } from '../../src/components/NanoBananaIcon';
+import { NANO_UI } from '../../src/constants/nanoBananaAssets';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
@@ -17,20 +20,20 @@ const STEPS = [
   {
     titleKey: 'onboarding.step1Title',
     bodyKey: 'onboarding.step1Body',
-    taliEmoji: '🦖',
     bg: '#18C1B5',
+    video: true as const,
   },
   {
     titleKey: 'onboarding.step2Title',
     bodyKey: 'onboarding.step2Body',
-    taliEmoji: '🗺️',
     bg: '#FF9E66',
+    icon: 'explore' as const,
   },
   {
     titleKey: 'onboarding.step3Title',
     bodyKey: 'onboarding.step3Body',
-    taliEmoji: '🍌',
     bg: '#4CAF50',
+    icon: 'park' as const,
   },
 ];
 
@@ -110,10 +113,10 @@ export default function OnboardingScreen() {
                 overflow: 'hidden',
               }}
             >
-              {step === 0 ? (
+              {'video' in current && current.video ? (
                 <TaliVideo emotion="friendly" size={130} bgColor={current.bg + '22'} />
               ) : (
-                <AppText style={{ fontSize: 72 }}>{current.taliEmoji}</AppText>
+                <MaterialIcons name={'icon' in current ? current.icon : 'explore'} size={72} color={current.bg} />
               )}
             </View>
           </Animated.View>
@@ -149,7 +152,7 @@ export default function OnboardingScreen() {
                   width: '100%',
                 }}
               >
-                <AppText style={{ fontSize: 32 }}>🥚</AppText>
+                <NanoBananaIcon source={NANO_UI.gift} size={36} />
                 <Spacer size="xs" />
                 <AppText
                   variant="small"

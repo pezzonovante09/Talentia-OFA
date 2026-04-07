@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { Modal, Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { MaterialIcons } from '@expo/vector-icons';
 
+import { NanoBananaIcon } from './NanoBananaIcon';
+import { NANO_UI } from '../constants/nanoBananaAssets';
 import { useAppTheme } from '../theme';
 import { AppText } from './Text';
 import { Spacer } from './Spacer';
@@ -15,7 +18,9 @@ type PinModalProps = {
   onCancel: () => void;
 };
 
-const DIGITS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', '✓'];
+const PIN_BACK = '__BACK__';
+const PIN_OK = '__OK__';
+const NUMPAD_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', PIN_BACK, '0', PIN_OK] as const;
 
 export function PinModal({ visible, mode, existingPin, onSuccess, onCancel }: PinModalProps) {
   const { t } = useTranslation();
@@ -33,13 +38,13 @@ export function PinModal({ visible, mode, existingPin, onSuccess, onCancel }: Pi
   };
 
   const handleDigit = (d: string) => {
-    if (d === '⌫') {
+    if (d === PIN_BACK) {
       if (step === 'enter') setInput((p) => p.slice(0, -1));
       else setConfirmInput((p) => p.slice(0, -1));
       setError('');
       return;
     }
-    if (d === '✓') {
+    if (d === PIN_OK) {
       handleConfirm();
       return;
     }
@@ -115,7 +120,7 @@ export function PinModal({ visible, mode, existingPin, onSuccess, onCancel }: Pi
             elevation: 12,
           }}
         >
-          <AppText style={{ fontSize: 36 }}>🔐</AppText>
+          <NanoBananaIcon source={NANO_UI.lock} size={40} />
           <Spacer size="sm" />
           <AppText variant="subtitle" style={{ fontWeight: '800', textAlign: 'center' }}>
             {title}
@@ -151,7 +156,7 @@ export function PinModal({ visible, mode, existingPin, onSuccess, onCancel }: Pi
           {/* Numpad */}
           <Spacer size="md" />
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: 240, gap: 10 }}>
-            {DIGITS.map((d) => (
+            {NUMPAD_KEYS.map((d) => (
               <Pressable
                 key={d}
                 onPress={() => handleDigit(d)}
@@ -159,27 +164,31 @@ export function PinModal({ visible, mode, existingPin, onSuccess, onCancel }: Pi
                   width: 70,
                   height: 56,
                   borderRadius: theme.radii.md,
-                  backgroundColor: d === '✓'
+                  backgroundColor: d === PIN_OK
                     ? theme.colors.primary
-                    : d === '⌫'
-                      ? theme.colors.surfaceAlt
-                      : theme.colors.surfaceAlt,
+                    : theme.colors.surfaceAlt,
                   alignItems: 'center',
                   justifyContent: 'center',
                   opacity: pressed ? 0.7 : 1,
                   borderWidth: 1.5,
-                  borderColor: d === '✓' ? theme.colors.primary : theme.colors.border,
+                  borderColor: d === PIN_OK ? theme.colors.primary : theme.colors.border,
                 })}
               >
-                <AppText
-                  style={{
-                    fontSize: 20,
-                    fontWeight: '700',
-                    color: d === '✓' ? '#fff' : theme.colors.text,
-                  }}
-                >
-                  {d}
-                </AppText>
+                {d === PIN_BACK ? (
+                  <MaterialIcons name="backspace" size={22} color={theme.colors.text} />
+                ) : d === PIN_OK ? (
+                  <MaterialIcons name="check" size={24} color="#fff" />
+                ) : (
+                  <AppText
+                    style={{
+                      fontSize: 20,
+                      fontWeight: '700',
+                      color: theme.colors.text,
+                    }}
+                  >
+                    {d}
+                  </AppText>
+                )}
               </Pressable>
             ))}
           </View>

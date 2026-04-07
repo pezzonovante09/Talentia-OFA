@@ -2,7 +2,10 @@ import React from 'react';
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { MaterialIcons } from '@expo/vector-icons';
 
+import { NanoBananaIcon } from '../../src/components/NanoBananaIcon';
+import { NANO_UI } from '../../src/constants/nanoBananaAssets';
 import { useCollectiblesStore, COLLECTIBLES_META } from '../../src/store/collectiblesStore';
 import { useProgressStore, getXPToNextLevel } from '../../src/store/progressStore';
 
@@ -16,18 +19,12 @@ import { useAppTheme } from '../../src/theme';
 import { useSettingsStore } from '../../src/store/settingsStore';
 import { useAuth } from '../../src/context/AuthContext';
 
-const LEVEL_EMOJIS = ['🥚', '🦖', '🦕', '🌟', '🏆', '👑', '🔥', '⚡', '🌈', '💎'];
-
 const TALI_SKINS = [
-  { id: 'default' as const, emoji: '🦖', labelKey: 'profile.taliSkinDefault', color: '#0DBFB2' },
-  { id: 'cool' as const, emoji: '🦖💫', labelKey: 'profile.taliSkinCool', color: '#8B5CF6' },
-  { id: 'explorer' as const, emoji: '🦖🎒', labelKey: 'profile.taliSkinExplorer', color: '#C4783B' },
-  { id: 'scientist' as const, emoji: '🦖🔬', labelKey: 'profile.taliSkinScientist', color: '#5B5BE8' },
+  { id: 'default' as const, labelKey: 'profile.taliSkinDefault', color: '#0DBFB2' },
+  { id: 'cool' as const, labelKey: 'profile.taliSkinCool', color: '#8B5CF6' },
+  { id: 'explorer' as const, labelKey: 'profile.taliSkinExplorer', color: '#C4783B' },
+  { id: 'scientist' as const, labelKey: 'profile.taliSkinScientist', color: '#5B5BE8' },
 ];
-
-function getLevelEmoji(level: number): string {
-  return LEVEL_EMOJIS[Math.min(level - 1, LEVEL_EMOJIS.length - 1)] ?? '🦖';
-}
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
@@ -61,26 +58,6 @@ export default function ProfileScreen() {
 
   const childMode = profile?.child_mode ?? 'standard';
   const userEmail = user?.email ?? null;
-  const levelEmoji = getLevelEmoji(level);
-
-  const ACHIEVEMENT_EMOJIS: Record<string, string> = {
-    firstLessonCompleted: '🌟',
-    tenCorrectAnswers: '🧠',
-    threeDayStreak: '🔥',
-    firstWorldCompleted: '🏆',
-    sevenDayStreak: '🔥🔥',
-    fiftyCorrectAnswers: '💡',
-    perfectLesson: '💎',
-    islandExplorer: '🗺️',
-    hundredCorrectAnswers: '👑',
-    allWorldsStarted: '🌍',
-  };
-
-  const unlockedAchievementEmojis = Object.entries(achievements)
-    .filter(([, unlocked]) => unlocked)
-    .map(([key]) => ACHIEVEMENT_EMOJIS[key] ?? '🏅')
-    .slice(0, 4);
-
   return (
     <Screen scroll>
       <AppText variant="title" accessibilityRole="header">
@@ -160,7 +137,7 @@ export default function ProfileScreen() {
             alignItems: 'center', justifyContent: 'center',
             marginBottom: 6,
           }}>
-            <AppText style={{ fontSize: 22 }}>📚</AppText>
+            <NanoBananaIcon source={NANO_UI.book} size={24} />
           </View>
           <AppText
             style={{
@@ -194,7 +171,7 @@ export default function ProfileScreen() {
             alignItems: 'center', justifyContent: 'center',
             marginBottom: 6,
           }}>
-            <AppText style={{ fontSize: 22 }}>🔥</AppText>
+            <NanoBananaIcon source={NANO_UI.streak} size={24} />
           </View>
           <AppText
             style={{
@@ -228,7 +205,7 @@ export default function ProfileScreen() {
             alignItems: 'center', justifyContent: 'center',
             marginBottom: 6,
           }}>
-            <AppText style={{ fontSize: 22 }}>✅</AppText>
+            <NanoBananaIcon source={NANO_UI.check} size={24} />
           </View>
           <AppText
             style={{
@@ -265,7 +242,7 @@ export default function ProfileScreen() {
               borderColor: theme.colors.accent + '60',
             }}
           >
-            <AppText style={{ fontSize: 32 }}>🏆</AppText>
+            <NanoBananaIcon source={NANO_UI.trophy} size={32} />
             <AppText
               variant="small"
               style={{ fontWeight: '700', marginTop: 6, textAlign: 'center' }}
@@ -275,18 +252,6 @@ export default function ProfileScreen() {
             <AppText style={{ color: theme.colors.primary, fontWeight: '800', fontSize: 18 }}>
               {unlockedAchievements}/{totalAchievements}
             </AppText>
-            {unlockedAchievementEmojis.length > 0 && (
-              <View style={{ flexDirection: 'row', gap: 4, marginTop: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
-                {unlockedAchievementEmojis.map((emoji, i) => (
-                  <AppText key={i} style={{ fontSize: 18 }}>{emoji}</AppText>
-                ))}
-                {unlockedAchievements > 4 && (
-                  <AppText style={{ fontSize: 12, color: theme.colors.textMuted, alignSelf: 'center' }}>
-                    +{unlockedAchievements - 4}
-                  </AppText>
-                )}
-              </View>
-            )}
           </Card>
         </Pressable>
 
@@ -304,7 +269,7 @@ export default function ProfileScreen() {
               borderColor: theme.colors.secondary + '40',
             }}
           >
-            <AppText style={{ fontSize: 32 }}>🎒</AppText>
+            <NanoBananaIcon source={NANO_UI.backpack} size={32} />
             <AppText
               variant="small"
               style={{ fontWeight: '700', marginTop: 6, textAlign: 'center' }}
@@ -323,7 +288,7 @@ export default function ProfileScreen() {
       {/* Tali skin picker */}
       <Card style={{ marginBottom: theme.spacing.md }}>
         <AppText variant="subtitle" style={{ marginBottom: theme.spacing.sm }}>
-          🎨 {t('profile.taliSkinTitle')}
+          {t('profile.taliSkinTitle')}
         </AppText>
         <View style={{ flexDirection: 'row', gap: theme.spacing.sm, flexWrap: 'wrap' }}>
           {TALI_SKINS.map((skin) => {
@@ -346,7 +311,14 @@ export default function ProfileScreen() {
                     borderColor: selected ? skin.color : theme.colors.border,
                   }}
                 >
-                  <AppText style={{ fontSize: 26 }}>{skin.emoji}</AppText>
+                  <View
+                    style={{
+                      width: 26,
+                      height: 26,
+                      borderRadius: 13,
+                      backgroundColor: skin.color,
+                    }}
+                  />
                   <AppText
                     style={{
                       fontSize: 9,
@@ -368,13 +340,13 @@ export default function ProfileScreen() {
       {/* Account info */}
       <Card>
         <AppText variant="subtitle" style={{ marginBottom: theme.spacing.sm }}>
-          🦕 {t('profile.accountTitle')}
+          {t('profile.accountTitle')}
         </AppText>
 
         <View style={{ gap: theme.spacing.sm }}>
           {userEmail ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm }}>
-              <AppText style={{ fontSize: 16 }}>📧</AppText>
+              <MaterialIcons name="email" size={20} color={theme.colors.textMuted} />
               <View style={{ flex: 1 }}>
                 <AppText variant="small" style={{ color: theme.colors.textMuted }}>
                   {t('profile.emailLabel')}
@@ -384,7 +356,7 @@ export default function ProfileScreen() {
             </View>
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm }}>
-              <AppText style={{ fontSize: 16 }}>🎮</AppText>
+              <MaterialIcons name="sports-esports" size={20} color={theme.colors.textMuted} />
               <View style={{ flex: 1 }}>
                 <AppText variant="small" style={{ color: theme.colors.textMuted }}>
                   {t('profile.modeLabel')}
@@ -397,7 +369,7 @@ export default function ProfileScreen() {
           )}
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm }}>
-            <AppText style={{ fontSize: 16 }}>📖</AppText>
+            <NanoBananaIcon source={NANO_UI.book} size={20} />
             <View style={{ flex: 1 }}>
               <AppText variant="small" style={{ color: theme.colors.textMuted }}>
                 {t('auth.childModeLabel')}
@@ -412,10 +384,10 @@ export default function ProfileScreen() {
 
           {isPremium && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm }}>
-              <AppText style={{ fontSize: 16 }}>⭐</AppText>
+              <NanoBananaIcon source={NANO_UI.stars} size={20} />
               <View style={{ flex: 1 }}>
                 <AppText variant="small" style={{ color: theme.colors.secondary, fontWeight: '700' }}>
-                  ⭐ Premium
+                  Premium
                 </AppText>
               </View>
             </View>

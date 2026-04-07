@@ -24,6 +24,7 @@ export function Button({
   children,
   style,
   textStyle,
+  disabled,
   ...rest
 }: ButtonProps) {
   const theme = useAppTheme();
@@ -58,9 +59,13 @@ export function Button({
       ? theme.colors.error
       : '#000';
 
+  const isDisabled = !!(disabled || loading);
+
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled }}
+      disabled={isDisabled}
       style={({ pressed }) => [
         {
           backgroundColor: baseBackground,
@@ -69,7 +74,7 @@ export function Button({
           borderColor: baseBorderColor,
           paddingVertical: theme.spacing.md + 2,
           paddingHorizontal: theme.spacing.xl,
-          opacity: pressed ? 0.9 : 1,
+          opacity: pressed && !isDisabled ? 0.9 : isDisabled ? 0.55 : 1,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',

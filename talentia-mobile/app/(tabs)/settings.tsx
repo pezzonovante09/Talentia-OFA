@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, Pressable, Switch, View } from 'react-native';
+import { NanoBananaIcon } from '../../src/components/NanoBananaIcon';
+import { NANO_UI } from '../../src/constants/nanoBananaAssets';
 import { PinModal } from '../../src/components/PinModal';
 import {
   requestNotificationPermissions,
@@ -131,7 +133,7 @@ export default function SettingsScreen() {
         {isSpecialMode ? (
           <>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm, marginBottom: theme.spacing.sm }}>
-              <AppText style={{ fontSize: 18 }}>🎓</AppText>
+              <NanoBananaIcon source={NANO_UI.book} size={22} />
               <AppText variant="subtitle">{t('settings.methodologyLabel')}</AppText>
             </View>
             <View
@@ -176,7 +178,7 @@ export default function SettingsScreen() {
               gap: theme.spacing.sm,
             }}
           >
-            <AppText style={{ fontSize: 18 }}>📚</AppText>
+            <NanoBananaIcon source={NANO_UI.book} size={22} />
             <View style={{ flex: 1 }}>
               <AppText variant="small" style={{ fontWeight: '700', color: theme.colors.text }}>
                 {t('settings.methodologyStandardMode')}
@@ -376,9 +378,10 @@ export default function SettingsScreen() {
 
       {/* Parent controls card */}
       <Card>
-        <AppText variant="subtitle" style={{ marginBottom: theme.spacing.md }}>
-          🔐 {t('settings.parentControlsTitle')}
-        </AppText>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: theme.spacing.md }}>
+          <NanoBananaIcon source={NANO_UI.lock} size={22} />
+          <AppText variant="subtitle">{t('settings.parentControlsTitle')}</AppText>
+        </View>
 
         {/* PIN */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: theme.spacing.md }}>

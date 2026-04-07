@@ -2,9 +2,11 @@ import React, { useRef } from 'react';
 import { Animated, Pressable, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
+import { NanoBananaIcon } from '../NanoBananaIcon';
+import { NANO_UI } from '../../constants/nanoBananaAssets';
 import { AppText } from '../Text';
 import { useAppTheme } from '../../theme';
-import type { LessonNode } from '../../data/worlds';
+import type { LessonNode, SubjectId } from '../../data/worlds';
 import type { LessonStatus } from '../../store/progressStore';
 import type { Methodology } from '../../store/settingsStore';
 import { useSettingsStore } from '../../store/settingsStore';
@@ -16,13 +18,24 @@ import {
   PATH_SPINE_WIDTH,
 } from './mapConstants';
 
+const SUBJECT_NODE_ICON: Record<SubjectId, keyof typeof MaterialIcons.glyphMap> = {
+  math: 'calculate',
+  english: 'translate',
+  russian: 'menu-book',
+  science: 'science',
+  social: 'groups',
+};
+
 function MiniStars({ stars }: { stars: 1 | 2 | 3 }) {
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 1, marginTop: 2 }}>
       {[1, 2, 3].map((i) => (
-        <AppText key={i} style={{ fontSize: 9, opacity: i <= stars ? 1 : 0.2 }}>
-          ⭐
-        </AppText>
+        <NanoBananaIcon
+          key={i}
+          source={NANO_UI.stars}
+          size={10}
+          style={{ opacity: i <= stars ? 1 : 0.2 }}
+        />
       ))}
     </View>
   );
@@ -72,7 +85,11 @@ function StartButton3D({
 
   if (reduceMotion) {
     return (
-      <Pressable onPress={onPress} accessibilityRole="button">
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+      >
         <View
           style={{
             borderBottomWidth: 5,
@@ -108,6 +125,7 @@ function StartButton3D({
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       accessibilityRole="button"
+      accessibilityLabel={label}
     >
       <Animated.View
         style={{
@@ -227,10 +245,10 @@ export function MapPathNode({
       }}
     >
       {isLocked ? (
-        <MaterialIcons name="lock" size={26} color={theme.colors.textMuted} />
+        <NanoBananaIcon source={NANO_UI.lock} size={26} />
       ) : isCompleted ? (
         <>
-          <AppText style={{ fontSize: 26 }}>✅</AppText>
+          <NanoBananaIcon source={NANO_UI.check} size={26} />
           {stars ? (
             <MiniStars stars={stars} />
           ) : (
@@ -257,7 +275,15 @@ export function MapPathNode({
               {t('map.level')} {levelNumber}
             </AppText>
           )}
-          <AppText style={{ fontSize: methodologyStyle.nodeLabel === 'none' ? 30 : 24 }}>{node.emoji}</AppText>
+          {node.emoji ? (
+            <AppText style={{ fontSize: methodologyStyle.nodeLabel === 'none' ? 30 : 24 }}>{node.emoji}</AppText>
+          ) : (
+            <MaterialIcons
+              name={SUBJECT_NODE_ICON[node.subjectId]}
+              size={methodologyStyle.nodeLabel === 'none' ? 30 : 24}
+              color="#FFFFFF"
+            />
+          )}
         </>
       )}
     </View>
@@ -290,7 +316,7 @@ export function MapPathNode({
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${t('map.level')} ${levelNumber}${isCompleted ? ` ${t('map.completed')}` : ''}. ${node.emoji}`}
+      accessibilityLabel={`${t('map.level')} ${levelNumber}${isCompleted ? ` ${t('map.completed')}` : ''}`}
       style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
     >
       {isAvailable ? (
@@ -323,12 +349,17 @@ export function PathBridge({
   const biomeDecor = WORLD_DECOR[worldId] ?? WORLD_DECOR.jungle;
   const methDecor = METHODOLOGY_DECOR[methodology] ?? { left: [], right: [] };
 
-  const leftPool = methDecor.left.length
-    ? [biomeDecor.left[nodeIndex % biomeDecor.left.length], methDecor.left[nodeIndex % methDecor.left.length]]
-    : [biomeDecor.left[nodeIndex % biomeDecor.left.length]];
-  const rightPool = methDecor.right.length
-    ? [biomeDecor.right[(nodeIndex + 1) % biomeDecor.right.length], methDecor.right[(nodeIndex + 1) % methDecor.right.length]]
-    : [biomeDecor.right[(nodeIndex + 1) % biomeDecor.right.length]];
+  const pick = (arr: string[], idx: number) => (arr.length ? arr[idx % arr.length] : null);
+  const leftPool: string[] = [];
+  const lB = pick(biomeDecor.left, nodeIndex);
+  const lM = pick(methDecor.left, nodeIndex);
+  if (lB) leftPool.push(lB);
+  if (lM) leftPool.push(lM);
+  const rightPool: string[] = [];
+  const rB = pick(biomeDecor.right, nodeIndex + 1);
+  const rM = pick(methDecor.right, nodeIndex + 1);
+  if (rB) rightPool.push(rB);
+  if (rM) rightPool.push(rM);
 
   const spineBg = accentColor + '35';
   const spineBorder = accentColor + 'AA';

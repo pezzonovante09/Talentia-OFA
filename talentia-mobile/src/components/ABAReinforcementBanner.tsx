@@ -79,12 +79,14 @@ export function ABAReinforcementBanner({
         pointerEvents="auto"
       >
         <Animated.View style={{ alignItems: 'center', opacity }}>
-          <AppText style={{ fontSize: 72, lineHeight: 80 }} accessibilityLabel={emoji}>
-            {emoji}
-          </AppText>
+          {emoji ? (
+            <AppText style={{ fontSize: 72, lineHeight: 80 }} accessibilityLabel={emoji}>
+              {emoji}
+            </AppText>
+          ) : null}
           <AppText
             variant="title"
-            style={{ marginTop: 12, textAlign: 'center', fontWeight: '800' }}
+            style={{ marginTop: emoji ? 12 : 0, textAlign: 'center', fontWeight: '800' }}
             accessibilityRole="text"
           >
             {phrase}

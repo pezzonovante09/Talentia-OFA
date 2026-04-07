@@ -10,6 +10,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { MaterialIcons } from '@expo/vector-icons';
 
+import { NanoBananaIcon } from './NanoBananaIcon';
+import { NANO_UI } from '../constants/nanoBananaAssets';
 import { AppText } from './Text';
 import { Card } from './Card';
 import { Button } from './Button';
@@ -77,11 +79,7 @@ export function LessonHelpPanel({
     const childMentionedCorrect =
       correctAnswer.length > 0 &&
       userInput.toLowerCase().includes(correctAnswer.toLowerCase());
-    const praiseHint = childMentionedCorrect
-      ? '[ВАЖНО: ребёнок назвал правильный ответ — похвали его искренне и поздравь!]\n'
-      : '';
-
-    const contextualMessage = praiseHint + contextPrefix + userInput;
+    const contextualMessage = contextPrefix + userInput;
 
     try {
       setSending(true);
@@ -91,6 +89,7 @@ export function LessonHelpPanel({
         lessonId: taskContext.lessonId,
         topicId: taskContext.topicId,
         taskContext,
+        flags: { childGaveCorrectAnswer: childMentionedCorrect },
       });
       const responseText = reply ?? t('tali.errorGeneric');
       const taliMessage: Message = {
@@ -123,7 +122,7 @@ export function LessonHelpPanel({
         }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.xs }}>
-          <AppText style={{ fontSize: 18 }}>🦖</AppText>
+          <NanoBananaIcon source={NANO_UI.help} size={22} />
           <AppText variant="subtitle">{t('lesson.helpPanelTitle')}</AppText>
         </View>
         <Pressable
@@ -152,7 +151,7 @@ export function LessonHelpPanel({
           }}
         >
           <AppText variant="small" style={{ color: theme.colors.primary, fontWeight: '700', marginBottom: 2 }}>
-            📋 {t('lesson.currentTask')}
+            {t('lesson.currentTask')}
           </AppText>
           <AppText variant="small" style={{ color: theme.colors.text }} numberOfLines={2}>
             {taskContext.questionPrompt}

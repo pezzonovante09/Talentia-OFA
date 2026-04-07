@@ -35,6 +35,9 @@ yarn-error.*
 .env.*
 !.env.example
 
+# generated lesson voice packs (large binaries)
+scripts/output/audio/
+
 # typescript
 *.tsbuildinfo
 

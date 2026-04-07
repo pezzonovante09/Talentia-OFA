@@ -3,25 +3,25 @@ const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 // Offline fallback responses shown when backend is unreachable
 const OFFLINE_FALLBACKS: Record<string, Record<TaliMode, string>> = {
   ru: {
-    chat: 'Я сейчас не могу подключиться к серверу, но я здесь! Продолжай учиться — ты молодец 🦖',
-    hint: 'Подсказка сейчас недоступна. Попробуй ещё раз — ты справишься! 💪',
-    explain_error: 'Не переживай! Ошибки помогают учиться. Попробуй ещё раз внимательно 🌟',
-    science_fact: 'Интересный факт временно недоступен. Зато ты уже знаешь столько всего! 🦕',
-    motivation: 'Ты отлично справляешься! Каждый урок делает тебя умнее 🌟',
+    chat: 'Я сейчас не могу подключиться к серверу, но я здесь! Продолжай учиться — ты молодец.',
+    hint: 'Подсказка сейчас недоступна. Попробуй ещё раз — ты справишься!',
+    explain_error: 'Не переживай! Ошибки помогают учиться. Попробуй ещё раз внимательно.',
+    science_fact: 'Интересный факт временно недоступен. Зато ты уже знаешь столько всего!',
+    motivation: 'Ты отлично справляешься! Каждый урок делает тебя умнее.',
   },
   ky: {
-    chat: 'Азыр серверге туташа албай жатам, бирок мен бул жердемин! Окууңду уланта бер — сен эргежеклисиң 🦖',
-    hint: 'Сунуш азыр жеткиликсиз. Кайра аракет кыл — сен аткара аласың! 💪',
-    explain_error: 'Ойлонбо! Каталар окууга жардам берет. Дагы бир жолу аракет кыл 🌟',
-    science_fact: 'Кызыктуу факт убактылуу жеткиликсиз. Бирок сен буга чейин көп нерсе билесиң! 🦕',
-    motivation: 'Сен абдан жакшы иштедиң! Ар бир сабак сени акылдуу кылат 🌟',
+    chat: 'Азыр серверге туташа албай жатам, бирок мен бул жердемин! Окууңду уланта бер — сен эргежеклисиң.',
+    hint: 'Сунуш азыр жеткиликсиз. Кайра аракет кыл — сен аткара аласың!',
+    explain_error: 'Ойлонбо! Каталар окууга жардам берет. Дагы бир жолу аракет кыл.',
+    science_fact: 'Кызыктуу факт убактылуу жеткиликсиз. Бирок сен буга чейин көп нерсе билесиң!',
+    motivation: 'Сен абдан жакшы иштедиң! Ар бир сабак сени акылдуу кылат.',
   },
   en: {
-    chat: "I can't reach the server right now, but I'm here! Keep learning — you're doing great 🦖",
-    hint: "Hint not available right now. Try again — you've got this! 💪",
-    explain_error: "Don't worry! Mistakes help us learn. Try again carefully 🌟",
-    science_fact: 'Interesting fact is temporarily unavailable. But you already know so much! 🦕',
-    motivation: "You're doing amazing! Every lesson makes you smarter 🌟",
+    chat: "I can't reach the server right now, but I'm here! Keep learning — you're doing great.",
+    hint: "Hint not available right now. Try again — you've got this!",
+    explain_error: "Don't worry! Mistakes help us learn. Try again carefully.",
+    science_fact: 'Interesting fact is temporarily unavailable. But you already know so much!',
+    motivation: "You're doing amazing! Every lesson makes you smarter.",
   },
 };
 
@@ -49,6 +49,11 @@ export type TaskContext = {
   childAnswer?: string;
 };
 
+export type CompanionFlags = {
+  /** Клиент определил, что ребёнок назвал верный ответ — ИИ должен похвалить. */
+  childGaveCorrectAnswer?: boolean;
+};
+
 type CompanionRequest = {
   message: string;
   language: string;
@@ -59,6 +64,7 @@ type CompanionRequest = {
   parentContext?: string;
   /** Task context when helping during a lesson */
   taskContext?: TaskContext;
+  flags?: CompanionFlags;
 };
 
 type CompanionResponse = {
@@ -79,7 +85,7 @@ export async function sendToCompanion(payload: CompanionRequest): Promise<string
     const response = await fetch(`${BACKEND_URL}/api/tali`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'chat', ...payload }),
+      body: JSON.stringify({ ...payload, mode: payload.mode ?? 'chat' }),
       signal: controller.signal,
     });
     clearTimeout(timeout);

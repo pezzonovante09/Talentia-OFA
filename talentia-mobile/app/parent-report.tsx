@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, Share, View } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { NanoBananaIcon } from '../src/components/NanoBananaIcon';
+import { NANO_UI } from '../src/constants/nanoBananaAssets';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
@@ -50,9 +53,10 @@ function XPWeekChart({
 
   return (
     <Card style={{ marginBottom: 0 }}>
-      <AppText variant="subtitle" style={{ marginBottom: theme.spacing.md }}>
-        📈 {t('parentReport.xpChart')}
-      </AppText>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: theme.spacing.md }}>
+        <MaterialIcons name="show-chart" size={22} color={theme.colors.primary} />
+        <AppText variant="subtitle">{t('parentReport.xpChart')}</AppText>
+      </View>
       <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 6, height: 80 }}>
         {days.map((day) => {
           const barHeight = Math.max(4, (day.xp / maxXP) * 68);
@@ -220,19 +224,19 @@ export default function ParentReportScreen() {
   const handleShare = async () => {
     if (!report) return;
     const text = [
-      `📊 ${t('parentReport.title')}`,
+      t('parentReport.title'),
       '',
-      `✅ ${t('parentReport.strongSides')}:`,
+      `${t('parentReport.strongSides')}:`,
       ...report.strongSides.map((s) => `• ${s}`),
       '',
-      `⚠️ ${t('parentReport.weakSides')}:`,
+      `${t('parentReport.weakSides')}:`,
       ...report.weakSides.map((s) => `• ${s}`),
       '',
-      `💡 ${t('parentReport.advice')}:`,
+      `${t('parentReport.advice')}:`,
       report.advice,
       '',
-      `🔥 ${t('profile.streakDaysLabel')}: ${streakCount}`,
-      `✅ ${t('profile.correctLabel')}: ${globalCorrectCount}`,
+      `${t('profile.streakDaysLabel')}: ${streakCount}`,
+      `${t('profile.correctLabel')}: ${globalCorrectCount}`,
     ].join('\n');
 
     await Share.share({ message: text });
@@ -250,7 +254,7 @@ export default function ParentReportScreen() {
       <>
         <Screen>
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <AppText style={{ fontSize: 48 }}>🔐</AppText>
+            <NanoBananaIcon source={NANO_UI.lock} size={48} />
             <Spacer size="md" />
             <AppText variant="subtitle" style={{ textAlign: 'center', fontWeight: '800' }}>
               {t('parentReport.pinGateTitle')}
@@ -335,7 +339,7 @@ export default function ParentReportScreen() {
         <>
           <Card>
             <AppText variant="subtitle" style={{ color: theme.colors.success, fontWeight: '800' }}>
-              ✅ {t('parentReport.strongSides')}
+              {t('parentReport.strongSides')}
             </AppText>
             <Spacer size="xs" />
             {report.strongSides.map((s, i) => (
@@ -349,7 +353,7 @@ export default function ParentReportScreen() {
               <Spacer size="md" />
               <Card>
                 <AppText variant="subtitle" style={{ color: theme.colors.secondary, fontWeight: '800' }}>
-                  ⚠️ {t('parentReport.commonMistakes')}
+                  {t('parentReport.commonMistakes')}
                 </AppText>
                 <Spacer size="xs" />
                 {report.commonMistakes!.map((s, i) => (
@@ -363,7 +367,7 @@ export default function ParentReportScreen() {
           <Spacer size="md" />
           <Card>
             <AppText variant="subtitle" style={{ color: theme.colors.primary, fontWeight: '800' }}>
-              💡 {t('parentReport.advice')}
+              {t('parentReport.advice')}
             </AppText>
             <Spacer size="xs" />
             <AppText style={{ lineHeight: 24 }}>{report.advice}</AppText>
@@ -372,7 +376,7 @@ export default function ParentReportScreen() {
           <Button onPress={handleDiscussWithAI}>{t('parentReport.discussWithAI')}</Button>
           <Spacer size="sm" />
           <Button variant="secondary" onPress={handleShare}>
-            📤 {t('parentReport.share')}
+            {t('parentReport.share')}
           </Button>
         </>
       )}
@@ -410,7 +414,7 @@ export default function ParentReportScreen() {
                     {!isLoading && wr && (
                       <>
                         <AppText variant="small" style={{ fontWeight: '700', color: theme.colors.success, marginBottom: theme.spacing.xs }}>
-                          ✅ {t('parentReport.strongSides')}
+                          {t('parentReport.strongSides')}
                         </AppText>
                         {wr.strongSides.map((s, i) => (
                           <AppText key={i} style={{ marginBottom: theme.spacing.xs }}>• {s}</AppText>
@@ -419,7 +423,7 @@ export default function ParentReportScreen() {
                           <>
                             <Spacer size="sm" />
                             <AppText variant="small" style={{ fontWeight: '700', color: theme.colors.secondary, marginBottom: theme.spacing.xs }}>
-                              ⚠️ {t('parentReport.commonMistakes')}
+                              {t('parentReport.commonMistakes')}
                             </AppText>
                             {wr.commonMistakes!.map((s, i) => (
                               <AppText key={i} style={{ marginBottom: theme.spacing.xs }}>• {s}</AppText>
@@ -428,7 +432,7 @@ export default function ParentReportScreen() {
                         )}
                         <Spacer size="sm" />
                         <AppText variant="small" style={{ fontWeight: '700', color: theme.colors.primary, marginBottom: theme.spacing.xs }}>
-                          💡 {t('parentReport.advice')}
+                          {t('parentReport.advice')}
                         </AppText>
                         <AppText>{wr.advice}</AppText>
                       </>
@@ -450,7 +454,7 @@ export default function ParentReportScreen() {
             <View style={{ gap: theme.spacing.xs }}>
               <View style={{ flexDirection: 'row', gap: theme.spacing.md }}>
                 <View style={{ flex: 1, alignItems: 'center', backgroundColor: theme.colors.primary + '11', borderRadius: theme.radii.md, padding: theme.spacing.sm }}>
-                  <AppText style={{ fontSize: 28 }}>📚</AppText>
+                  <MaterialIcons name="menu-book" size={28} color={theme.colors.primary} />
                   <AppText variant="small" style={{ fontWeight: '700', color: theme.colors.primary }}>
                     {weekly.lessonsThisWeek}
                   </AppText>
@@ -459,7 +463,7 @@ export default function ParentReportScreen() {
                   </AppText>
                 </View>
                 <View style={{ flex: 1, alignItems: 'center', backgroundColor: theme.colors.success + '11', borderRadius: theme.radii.md, padding: theme.spacing.sm }}>
-                  <AppText style={{ fontSize: 28 }}>✅</AppText>
+                  <NanoBananaIcon source={NANO_UI.check} size={28} />
                   <AppText variant="small" style={{ fontWeight: '700', color: theme.colors.success }}>
                     {weekly.correctThisWeek}
                   </AppText>
@@ -468,7 +472,7 @@ export default function ParentReportScreen() {
                   </AppText>
                 </View>
                 <View style={{ flex: 1, alignItems: 'center', backgroundColor: theme.colors.secondary + '11', borderRadius: theme.radii.md, padding: theme.spacing.sm }}>
-                  <AppText style={{ fontSize: 28 }}>🔥</AppText>
+                  <NanoBananaIcon source={NANO_UI.streak} size={28} />
                   <AppText variant="small" style={{ fontWeight: '700', color: theme.colors.secondary }}>
                     {weekly.streakCount}
                   </AppText>
@@ -483,7 +487,7 @@ export default function ParentReportScreen() {
           <Spacer size="md" />
           <Card>
             <AppText variant="subtitle" style={{ color: theme.colors.primary, fontWeight: '800' }}>
-              💡 {t('parentReport.advice')}
+              {t('parentReport.advice')}
             </AppText>
             <Spacer size="xs" />
             <AppText style={{ lineHeight: 24 }}>{weekly.advice}</AppText>

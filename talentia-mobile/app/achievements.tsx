@@ -1,6 +1,8 @@
 import React, { memo } from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { NanoBananaIcon } from '../src/components/NanoBananaIcon';
+import { NANO_UI } from '../src/constants/nanoBananaAssets';
 
 import { Screen } from '../src/components/Screen';
 import { AppText } from '../src/components/Text';
@@ -13,20 +15,19 @@ type AchievementDef = {
   key: keyof Achievements;
   titleKey: string;
   descKey: string;
-  emoji: string;
 };
 
 const ACHIEVEMENT_DEFS: AchievementDef[] = [
-  { key: 'firstLessonCompleted', titleKey: 'achievements.firstLessonTitle', descKey: 'achievements.firstLessonDesc', emoji: '🌟' },
-  { key: 'tenCorrectAnswers', titleKey: 'achievements.tenCorrectTitle', descKey: 'achievements.tenCorrectDesc', emoji: '🧠' },
-  { key: 'threeDayStreak', titleKey: 'achievements.threeDayTitle', descKey: 'achievements.threeDayDesc', emoji: '🔥' },
-  { key: 'firstWorldCompleted', titleKey: 'achievements.firstWorldTitle', descKey: 'achievements.firstWorldDesc', emoji: '🏆' },
-  { key: 'sevenDayStreak', titleKey: 'achievements.sevenDayTitle', descKey: 'achievements.sevenDayDesc', emoji: '🔥🔥' },
-  { key: 'fiftyCorrectAnswers', titleKey: 'achievements.fiftyCorrectTitle', descKey: 'achievements.fiftyCorrectDesc', emoji: '💡' },
-  { key: 'perfectLesson', titleKey: 'achievements.perfectLessonTitle', descKey: 'achievements.perfectLessonDesc', emoji: '💎' },
-  { key: 'islandExplorer', titleKey: 'achievements.islandExplorerTitle', descKey: 'achievements.islandExplorerDesc', emoji: '🗺️' },
-  { key: 'hundredCorrectAnswers', titleKey: 'achievements.hundredCorrectTitle', descKey: 'achievements.hundredCorrectDesc', emoji: '👑' },
-  { key: 'allWorldsStarted', titleKey: 'achievements.allWorldsTitle', descKey: 'achievements.allWorldsDesc', emoji: '🌍' },
+  { key: 'firstLessonCompleted', titleKey: 'achievements.firstLessonTitle', descKey: 'achievements.firstLessonDesc' },
+  { key: 'tenCorrectAnswers', titleKey: 'achievements.tenCorrectTitle', descKey: 'achievements.tenCorrectDesc' },
+  { key: 'threeDayStreak', titleKey: 'achievements.threeDayTitle', descKey: 'achievements.threeDayDesc' },
+  { key: 'firstWorldCompleted', titleKey: 'achievements.firstWorldTitle', descKey: 'achievements.firstWorldDesc' },
+  { key: 'sevenDayStreak', titleKey: 'achievements.sevenDayTitle', descKey: 'achievements.sevenDayDesc' },
+  { key: 'fiftyCorrectAnswers', titleKey: 'achievements.fiftyCorrectTitle', descKey: 'achievements.fiftyCorrectDesc' },
+  { key: 'perfectLesson', titleKey: 'achievements.perfectLessonTitle', descKey: 'achievements.perfectLessonDesc' },
+  { key: 'islandExplorer', titleKey: 'achievements.islandExplorerTitle', descKey: 'achievements.islandExplorerDesc' },
+  { key: 'hundredCorrectAnswers', titleKey: 'achievements.hundredCorrectTitle', descKey: 'achievements.hundredCorrectDesc' },
+  { key: 'allWorldsStarted', titleKey: 'achievements.allWorldsTitle', descKey: 'achievements.allWorldsDesc' },
 ];
 
 const AchievementItem = memo(function AchievementItem({
@@ -59,7 +60,11 @@ const AchievementItem = memo(function AchievementItem({
             justifyContent: 'center',
           }}
         >
-          <AppText style={{ fontSize: 26 }}>{unlocked ? def.emoji : '🔒'}</AppText>
+          <NanoBananaIcon
+            source={unlocked ? NANO_UI.stars : NANO_UI.lock}
+            size={28}
+            style={unlocked ? undefined : { opacity: 0.85 }}
+          />
         </View>
         <View style={{ flex: 1 }}>
           <AppText
@@ -75,7 +80,9 @@ const AchievementItem = memo(function AchievementItem({
             {t(def.descKey)}
           </AppText>
         </View>
-        {unlocked && <AppText style={{ fontSize: 20 }}>✅</AppText>}
+        {unlocked ? (
+          <NanoBananaIcon source={NANO_UI.check} size={22} />
+        ) : null}
       </View>
     </Card>
   );
@@ -101,39 +108,11 @@ export default function AchievementsScreen() {
       </AppText>
       <Spacer size="md" />
 
-      {/* Progress bar */}
-      <View
-        style={{
-          height: 8,
-          backgroundColor: theme.colors.border,
-          borderRadius: 4,
-          overflow: 'hidden',
-          marginBottom: theme.spacing.lg,
-        }}
-      >
-        <View
-          style={{
-            height: '100%',
-            width: `${(unlockedCount / ACHIEVEMENT_DEFS.length) * 100}%`,
-            backgroundColor: theme.colors.primary,
-            borderRadius: 4,
-          }}
-        />
-      </View>
-
       <View style={{ gap: theme.spacing.sm }}>
         {ACHIEVEMENT_DEFS.map((def) => (
-          <AchievementItem
-            key={def.key}
-            def={def}
-            unlocked={achievements[def.key]}
-            theme={theme}
-            t={t}
-          />
+          <AchievementItem key={def.key} def={def} unlocked={!!achievements[def.key]} theme={theme} t={t} />
         ))}
       </View>
-
-      <Spacer size="xl" />
     </Screen>
   );
 }
