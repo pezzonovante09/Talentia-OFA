@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "talentia-mobile",
+    "name": "Talentia",
     "slug": "talentia-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,12 +11,16 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to use speech recognition.",
-        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to use the microphone."
-      }
+        "CFBundleDisplayName": "Talentia",
+        "NSSpeechRecognitionUsageDescription": "Talentia uses speech recognition to understand your child's voice answers.",
+        "NSMicrophoneUsageDescription": "Talentia uses the microphone so your child can answer by voice during lessons.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.talentia.mobile"
     },
     "android": {
       "package": "com.talentia.mobile",
+      "label": "Talentia",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -50,7 +54,16 @@
       ],
       "expo-localization",
       "expo-video",
-      "expo-font"
+      "expo-font",
+      "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enablePngCrunchInReleaseBuilds": false
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Talentia AI proxy (Next.js)
 
-## Getting Started
+API routes for the **Talentia** mobile app: Tali (DeepSeek), parent reports, TTS (ElevenLabs / Hugging Face).
 
-First, run the development server:
+## Environment
+
+Copy `.env.example` to `.env.local` and set at least:
+
+| Variable | Purpose |
+|----------|---------|
+| `DEEPSEEK_API_KEY` | Tali chat (`/api/tali`) |
+| `TALENTIA_API_SECRET` | When set, all `/api/*` methods except OPTIONS require header `X-Talentia-Secret` with the same value (timing-safe check). **Unset** = no secret check (local dev only). |
+| `ALLOWED_CORS_ORIGINS` | Comma-separated list of browser `Origin` values allowed for CORS. Native apps send no Origin — they are not CORS-restricted. |
+| `ELEVENLABS_API_KEY` / `ELEVENLABS_VOICE_ID` | TTS (`/api/tts`) |
+
+Mobile app: set `EXPO_PUBLIC_BACKEND_URL` to this deployment’s origin and `EXPO_PUBLIC_TALENTIA_API_SECRET` to match `TALENTIA_API_SECRET`.
+
+## Abuse prevention
+
+- **Shared secret**: `X-Talentia-Secret` (see above).
+- **CORS**: no wildcard; browser origins must be listed in `ALLOWED_CORS_ORIGINS`.
+- **Rate limit**: Edge middleware — max **60 requests/minute per client IP** (sliding window, in-memory). For global limits on Vercel, migrate to **@upstash/ratelimit + KV** (see `TODO` in `src/middleware.ts` and `src/lib/rate-limit-edge.ts`).
+
+## Run
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Verify auth / rate limit (curl)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+With `TALENTIA_API_SECRET=mysecret` and server on port 3010:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# 401 — missing secret
+curl -s -w "\n%{http_code}\n" http://localhost:3010/api/ping
 
-## Learn More
+# 200 — correct secret
+curl -s -w "\n%{http_code}\n" -H "X-Talentia-Secret: mysecret" http://localhost:3010/api/ping
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# 429 — more than 60 requests in one minute (repeat in a loop)
+```

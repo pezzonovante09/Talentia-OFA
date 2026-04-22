@@ -1,4 +1,5 @@
-import { corsAudioMpegResponse, corsJson } from "@/lib/api-cors";
+import { corsAudioMpegResponse, corsJson, corsPreflight } from "@/lib/api-cors";
+import { verifyTalentiaSecret } from "@/lib/api-secret";
 
 export const runtime = "nodejs";
 
@@ -42,6 +43,7 @@ async function synthesizeHuggingFace(
   text: string,
   language: "ru" | "en",
   hfToken: string,
+  req: Request,
 ): Promise<Response> {
   const modelId = HF_MODELS[language];
   const r = await fetch(`https://api-inference.huggingface.co/models/${modelId}`, {
@@ -57,18 +59,19 @@ async function synthesizeHuggingFace(
 
   if (!r.ok) {
     const err = await r.text().catch(() => "unknown");
-    return corsJson({ error: "Hugging Face TTS error", details: err }, r.status);
+    return corsJson({ error: "Hugging Face TTS error", details: err }, r.status, req);
   }
 
   const audioBuffer = await r.arrayBuffer();
   const base64 = Buffer.from(audioBuffer).toString("base64");
-  return corsJson({ audio: base64, mimeType: "audio/flac" });
+  return corsJson({ audio: base64, mimeType: "audio/flac" }, 200, req);
 }
 
 async function synthesizeElevenLabs(
   text: string,
   apiKey: string,
   voiceId: string,
+  req: Request,
 ): Promise<Response> {
   const modelId = process.env.ELEVENLABS_MODEL_ID?.trim() || DEFAULT_MODEL_ID;
   const stability = parseEnvFloat("ELEVENLABS_TTS_STABILITY", 0.42);
@@ -101,18 +104,20 @@ async function synthesizeElevenLabs(
 
   if (!r.ok) {
     const err = await r.text().catch(() => "unknown");
-    return corsJson({ error: "ElevenLabs TTS error", details: err }, r.status);
+    return corsJson({ error: "ElevenLabs TTS error", details: err }, r.status, req);
   }
 
   const audioBuffer = await r.arrayBuffer();
-  return corsAudioMpegResponse(audioBuffer, 200);
+  return corsAudioMpegResponse(audioBuffer, 200, req);
 }
 
-export async function OPTIONS() {
-  return corsJson({}, 200);
+export async function OPTIONS(req: Request) {
+  return corsPreflight(req);
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  const denied = verifyTalentiaSecret(req);
+  if (denied) return denied;
   const apiKey = trimmedEnv("ELEVENLABS_API_KEY");
   const voiceId = trimmedEnv("ELEVENLABS_VOICE_ID");
   const hfToken = huggingFaceToken();
@@ -159,18 +164,22 @@ export async function GET() {
       },
     },
     200,
+    req,
   );
 }
 
 export async function POST(req: Request) {
   try {
+    const denied = verifyTalentiaSecret(req);
+    if (denied) return denied;
+
     const body = await req.json().catch(() => ({}));
     const text = String(body.text ?? "").trim().slice(0, MAX_TEXT_LEN);
     const language = body.language;
 
-    if (!text) return corsJson({ error: "text is required" }, 400);
+    if (!text) return corsJson({ error: "text is required" }, 400, req);
     if (language !== "ru" && language !== "en") {
-      return corsJson({ error: "language must be 'ru' or 'en'" }, 400);
+      return corsJson({ error: "language must be 'ru' or 'en'" }, 400, req);
     }
 
     const hfToken = huggingFaceToken();
@@ -191,9 +200,10 @@ export async function POST(req: Request) {
             details: "TTS_ENGINE=huggingface requires HUGGINGFACE_API_TOKEN (or HF_API_TOKEN / TTS_KEY).",
           },
           503,
+          req,
         );
       }
-      return synthesizeHuggingFace(text, language, hfToken);
+      return synthesizeHuggingFace(text, language, hfToken, req);
     }
 
     // No ElevenLabs → Hugging Face if token present
@@ -211,23 +221,24 @@ export async function POST(req: Request) {
             missing,
           },
           503,
+          req,
         );
       }
-      return synthesizeHuggingFace(text, language, hfToken);
+      return synthesizeHuggingFace(text, language, hfToken, req);
     }
 
     // ElevenLabs primary
-    const elRes = await synthesizeElevenLabs(text, apiKey!, voiceId!);
+    const elRes = await synthesizeElevenLabs(text, apiKey!, voiceId!, req);
     if (elRes.ok) return elRes;
 
     const status = elRes.status;
     if ((status === 402 || status === 403) && hfFallback && hfToken) {
-      return synthesizeHuggingFace(text, language, hfToken);
+      return synthesizeHuggingFace(text, language, hfToken, req);
     }
 
     return elRes;
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
-    return corsJson({ error: "Server error", details: msg }, 500);
+    return corsJson({ error: "Server error", details: msg }, 500, req);
   }
 }

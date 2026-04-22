@@ -1,4 +1,6 @@
-import { corsJson } from "@/lib/api-cors";
+import { corsJson, corsPreflight } from "@/lib/api-cors";
+import { verifyTalentiaSecret } from "@/lib/api-secret";
+import { buildCorsHeaders } from "@/lib/cors-strict";
 
 export const runtime = "nodejs";
 
@@ -30,6 +32,10 @@ function buildSystemPrompt(args: {
   flags?: { childGaveCorrectAnswer?: boolean } | null;
 }): string {
   const { language, mode, taskContext, parentContext, flags } = args;
+
+  const isAbaContext =
+    taskContext?.childMode === "special" ||
+    taskContext?.methodology === "aba";
 
   const confidential =
     taskContext?.correctAnswer && String(taskContext.correctAnswer).trim()
@@ -83,13 +89,25 @@ function buildSystemPrompt(args: {
     "- Always be warm, supportive, patient, and encouraging. Never shame, mock, or sound cold.",
     "- If the child explicitly asks you to tell them the answer (e.g. \"say the right answer\", \"what should I choose?\", \"just tell me\"), kindly refuse: say you believe in them, then offer a tiny hint or a step to try — still without revealing the answer.",
     "- If they are stuck, you may briefly re-explain the topic or the question in simpler words, without naming the correct choice.",
+    ...(isAbaContext
+      ? [
+          "ABA MODE — this child may have developmental needs:",
+          "- Use MAXIMUM 1 short sentence per reply (5–8 words ideally).",
+          "- No complex words. Use simple, concrete language only.",
+          "- Never use metaphors, irony, or abstract explanations.",
+          "- Always end with one specific action: 'Попробуй!', 'Нажми!', 'Покажи!'",
+          "- Be extra warm and celebratory for any correct answer.",
+        ]
+      : []),
     confidential,
     taskBlock,
     parentBlock,
     modeHint,
     praiseBlock,
     "",
-    "Length: usually 1–3 short sentences; for a careful re-explanation without giving the answer, you may use up to 5 short sentences.",
+    isAbaContext
+      ? "Length: always 1 sentence maximum, 5–8 words"
+      : "Length: usually 1–3 short sentences; for a careful re-explanation without giving the answer, you may use up to 5 short sentences.",
   ]
     .filter(Boolean)
     .join("\n");
@@ -107,18 +125,26 @@ function buildUserMessage(
   return base || "(no message)";
 }
 
-export async function OPTIONS() {
-  return corsJson({}, 200);
+export async function OPTIONS(req: Request) {
+  return corsPreflight(req);
 }
 
-export async function GET() {
-  return new Response("ok", { status: 200 });
+export async function GET(req: Request) {
+  const denied = verifyTalentiaSecret(req);
+  if (denied) return denied;
+  return new Response("ok", {
+    status: 200,
+    headers: { "Content-Type": "text/plain", ...buildCorsHeaders(req) },
+  });
 }
 
 export async function POST(req: Request) {
   try {
+    const denied = verifyTalentiaSecret(req);
+    if (denied) return denied;
+
     const apiKey = process.env.DEEPSEEK_API_KEY;
-    if (!apiKey) return corsJson({ error: "Missing DEEPSEEK_API_KEY" }, 500);
+    if (!apiKey) return corsJson({ error: "Missing DEEPSEEK_API_KEY" }, 500, req);
 
     const body = await req.json().catch(() => ({}));
     const language = String(body.language ?? "ru");
@@ -129,7 +155,7 @@ export async function POST(req: Request) {
     const flags = body.flags ?? null;
 
     if (!message && mode === "chat" && !parentContext) {
-      return corsJson({ error: "message is required" }, 400);
+      return corsJson({ error: "message is required" }, 400, req);
     }
 
     const system = buildSystemPrompt({
@@ -162,7 +188,7 @@ export async function POST(req: Request) {
     const data = await r.json().catch(() => ({}));
 
     if (!r.ok) {
-      return corsJson({ error: "DeepSeek error", details: data }, r.status);
+      return corsJson({ error: "DeepSeek error", details: data }, r.status, req);
     }
 
     const fallback =
@@ -173,9 +199,9 @@ export async function POST(req: Request) {
           : "Давай попробуем ещё один маленький шаг вместе!";
     const reply = data?.choices?.[0]?.message?.content?.trim() || fallback;
 
-    return corsJson({ reply });
+    return corsJson({ reply }, 200, req);
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
-    return corsJson({ error: "Server error", details: msg }, 500);
+    return corsJson({ error: "Server error", details: msg }, 500, req);
   }
 }

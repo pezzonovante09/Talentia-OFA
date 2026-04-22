@@ -8,8 +8,7 @@ import * as Speech from "expo-speech";
 
 import { AV_PLAYBACK_RATE_SLOW, EXPO_SPEECH_RATE_SLOW } from "../constants/ttsPlayback";
 import { useLessonTtsReplayStore } from "../store/lessonTtsReplayStore";
-
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+import { backendFetch, getBackendBaseUrl } from "./backendApi";
 
 /** Совпадает с лимитом прокси (talentia-ai-proxy-next MAX_TEXT_LEN). */
 const NEURAL_TTS_MAX_LEN = 2500;
@@ -74,15 +73,14 @@ export async function speakViaTali(text: string, language: TaliTtsLanguage): Pro
 
   useLessonTtsReplayStore.getState().setLast({ kind: "neural", text: trimmed, lang: language });
 
-  if (!BACKEND_URL) {
+  if (!getBackendBaseUrl()) {
     speakWithExpoSpeech(trimmed, language);
     return;
   }
 
   try {
-    const res = await fetch(`${BACKEND_URL}/api/tts`, {
+    const res = await backendFetch("/api/tts", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: trimmed, language }),
     });
 

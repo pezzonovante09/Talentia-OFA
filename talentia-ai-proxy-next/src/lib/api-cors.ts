@@ -1,27 +1,32 @@
-/** Shared CORS headers for API routes (JSON and binary). */
-export const API_CORS_HEADERS: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
+import { buildCorsHeaders } from "@/lib/cors-strict";
 
-export function corsJson(data: unknown, status = 200) {
+/** CORS + JSON response. Pass `req` so strict CORS and preflight headers apply. */
+export function corsJson(data: unknown, status = 200, req: Request | null = null) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       "Content-Type": "application/json",
-      ...API_CORS_HEADERS,
+      ...buildCorsHeaders(req),
     },
   });
 }
 
 /** Binary audio response with the same CORS policy as JSON routes. */
-export function corsAudioMpegResponse(body: ArrayBuffer, status = 200) {
+export function corsAudioMpegResponse(
+  body: ArrayBuffer,
+  status = 200,
+  req: Request | null = null,
+) {
   return new Response(body, {
     status,
     headers: {
       "Content-Type": "audio/mpeg",
-      ...API_CORS_HEADERS,
+      ...buildCorsHeaders(req),
     },
   });
+}
+
+/** OPTIONS preflight — no body; does not require X-Talentia-Secret. */
+export function corsPreflight(req: Request): Response {
+  return new Response(null, { status: 204, headers: buildCorsHeaders(req) });
 }

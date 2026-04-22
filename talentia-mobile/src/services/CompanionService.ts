@@ -1,4 +1,4 @@
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+import { backendFetch, getBackendBaseUrl } from './backendApi';
 
 // Offline fallback responses shown when backend is unreachable
 const OFFLINE_FALLBACKS: Record<string, Record<TaliMode, string>> = {
@@ -74,7 +74,7 @@ type CompanionResponse = {
 export async function sendToCompanion(payload: CompanionRequest): Promise<string | null> {
   const mode: TaliMode = payload.mode ?? 'chat';
 
-  if (!BACKEND_URL) {
+  if (!getBackendBaseUrl()) {
     return getOfflineFallback(mode, payload.language);
   }
 
@@ -82,9 +82,8 @@ export async function sendToCompanion(payload: CompanionRequest): Promise<string
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 7000);
 
-    const response = await fetch(`${BACKEND_URL}/api/tali`, {
+    const response = await backendFetch('/api/tali', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...payload, mode: payload.mode ?? 'chat' }),
       signal: controller.signal,
     });

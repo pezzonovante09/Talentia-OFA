@@ -35,6 +35,8 @@ Copy `.env.example` to `.env` and fill in:
 EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 EXPO_PUBLIC_BACKEND_URL=https://your-backend.com  # optional: Tali, TTS, AI reports (see talentia-ai-proxy-next)
+# When the proxy has TALENTIA_API_SECRET set, use the same value here (public Expo env — treat like an app attestation key):
+EXPO_PUBLIC_TALENTIA_API_SECRET=your-shared-secret
 ```
 
 Without Supabase config, the app runs in **demo mode** (local auth only).

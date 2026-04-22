@@ -1,7 +1,7 @@
 import { worlds } from '../data/worlds';
 import type { TopicProgress } from '../store/progressStore';
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+import { backendFetch, getBackendBaseUrl } from './backendApi';
 
 export type ParentReport = {
   strongSides: string[];
@@ -9,6 +9,8 @@ export type ParentReport = {
   commonMistakes?: string[];
   advice: string;
   howToHelpAtHome?: string;
+  /** True when text comes from local stubs or backend failed (not a live AI response). */
+  isStub: boolean;
 };
 
 export type WeeklyReport = {
@@ -18,6 +20,7 @@ export type WeeklyReport = {
   topSubject: string;
   insights: string[];
   advice: string;
+  isStub: boolean;
 };
 
 export type ReportStats = {
@@ -44,6 +47,7 @@ const STUB_REPORTS: Record<string, ParentReport> = {
     commonMistakes: ['Skipping words when reading', 'Rushing through math'],
     advice: 'Keep practice sessions short and playful. Praise effort as much as correct answers.',
     howToHelpAtHome: 'Read together daily. Use real objects for counting. Celebrate small wins.',
+    isStub: true,
   },
   ru: {
     strongSides: ['Счёт и узнавание чисел', 'Следование инструкциям'],
@@ -51,6 +55,7 @@ const STUB_REPORTS: Record<string, ParentReport> = {
     commonMistakes: ['Пропуск слов при чтении', 'Спешка в заданиях по математике'],
     advice: 'Делайте занятия короткими и в игровой форме. Хвалите за старание не меньше, чем за правильные ответы.',
     howToHelpAtHome: 'Читайте вместе каждый день. Считайте на предметах. Отмечайте маленькие успехи.',
+    isStub: true,
   },
   ky: {
     strongSides: ['Саноо жана сандарды таануу', 'Көрсөтмөлөрдү аткаруу'],
@@ -58,6 +63,7 @@ const STUB_REPORTS: Record<string, ParentReport> = {
     commonMistakes: ['Окууда сөздөрдү өткөрүп жиберүү', 'Математикада шашылышуу'],
     advice: 'Сабактарды кыска жана оюн формасында өткөрүңүз. Туура жоопко эмес, аракетке баа бериңиз.',
     howToHelpAtHome: 'Күн сайын бирге окуңуз. Нерселер менен эсептөө. Кичине ийгиликтерди белгилеңиз.',
+    isStub: true,
   },
 };
 
@@ -110,13 +116,12 @@ function getStubWeeklyParts(lang?: string): Pick<WeeklyReport, 'topSubject' | 'i
 
 export async function generateReport(stats: ReportStats, language?: string): Promise<ParentReport> {
   const stub = getStubReport(language ?? stats.language);
-  if (!BACKEND_URL) {
-    return stub;
+  if (!getBackendBaseUrl()) {
+    return { ...stub, isStub: true };
   }
   try {
-    const res = await fetch(`${BACKEND_URL}/api/report`, {
+    const res = await backendFetch('/api/report', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...stats, language: language ?? stats.language ?? 'en' }),
     });
     if (!res.ok) throw new Error('Report failed');
@@ -130,10 +135,11 @@ export async function generateReport(stats: ReportStats, language?: string): Pro
       commonMistakes: (contentOk ? data.commonMistakes : null) ?? stub.commonMistakes,
       advice: (contentOk ? data.advice : null) ?? stub.advice,
       howToHelpAtHome: (contentOk ? data.howToHelpAtHome : null) ?? stub.howToHelpAtHome,
+      isStub: !contentOk,
     };
   } catch (err) {
     console.error('[reportService] generateReport failed:', err);
-    return stub;
+    return { ...stub, isStub: true };
   }
 }
 
@@ -179,18 +185,21 @@ const STUB_WORLD_REPORTS: Record<string, WorldReport> = {
     weakSides: ['Some topics need more practice.'],
     advice: 'Keep practicing regularly. Praise your child for effort.',
     howToHelpAtHome: 'Play board games together, read aloud.',
+    isStub: true,
   },
   ru: {
     strongSides: ['Успешно освоил задания острова.', 'Хорошо справляется с инструкциями.'],
     weakSides: ['Требуется больше практики в некоторых темах.'],
     advice: 'Продолжайте заниматься регулярно. Хвалите ребёнка за усилия.',
     howToHelpAtHome: 'Играйте в настольные игры, читайте вместе.',
+    isStub: true,
   },
   ky: {
     strongSides: ['Аралдагы тапшырмаларды ийгиликтүү аяктады.', 'Көрсөтмөлөрдү жакшы аткарат.'],
     weakSides: ['Кээ бир темаларда көбүрөөк көнүгүү керек.'],
     advice: 'Түздүктөн менен машыгууну улантыңыз. Балаңызды аракет үчүн мактаңыз.',
     howToHelpAtHome: 'Бирге настолка оюндарын ойноңуз, китеп окуңуз.',
+    isStub: true,
   },
 };
 
@@ -202,11 +211,10 @@ export async function generateWorldReport(params: {
 }): Promise<WorldReport> {
   const { worldId, worldName, stats, language } = params;
   const stub = STUB_WORLD_REPORTS[language] ?? STUB_WORLD_REPORTS.en;
-  if (!BACKEND_URL) return stub;
+  if (!getBackendBaseUrl()) return { ...stub, isStub: true };
   try {
-    const res = await fetch(`${BACKEND_URL}/api/report/world`, {
+    const res = await backendFetch('/api/report/world', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ worldId, worldName, stats, language }),
     });
     if (!res.ok) throw new Error('World report failed');
@@ -218,16 +226,17 @@ export async function generateWorldReport(params: {
       commonMistakes: (contentOk ? data.commonMistakes : null) ?? stub.commonMistakes,
       advice: (contentOk ? data.advice : null) ?? stub.advice,
       howToHelpAtHome: (contentOk ? data.howToHelpAtHome : null) ?? stub.howToHelpAtHome,
+      isStub: !contentOk,
     };
   } catch (err) {
     console.error('[reportService] generateWorldReport failed:', err);
-    return stub;
+    return { ...stub, isStub: true };
   }
 }
 
 export async function getWeeklyReport(stats: WeeklyStats): Promise<WeeklyReport> {
   const stubParts = getStubWeeklyParts(stats.language);
-  if (!BACKEND_URL) {
+  if (!getBackendBaseUrl()) {
     return {
       lessonsThisWeek: stats.lessonsThisWeek,
       correctThisWeek: stats.correctThisWeek,
@@ -235,12 +244,12 @@ export async function getWeeklyReport(stats: WeeklyStats): Promise<WeeklyReport>
       topSubject: stubParts.topSubject,
       insights: stubParts.insights,
       advice: stubParts.advice,
+      isStub: true,
     };
   }
   try {
-    const res = await fetch(`${BACKEND_URL}/api/report/weekly`, {
+    const res = await backendFetch('/api/report/weekly', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...stats, language: stats.language ?? 'en' }),
     });
     if (!res.ok) throw new Error('Weekly report failed');
@@ -253,6 +262,7 @@ export async function getWeeklyReport(stats: WeeklyStats): Promise<WeeklyReport>
       topSubject: (contentOk ? data.topSubject : null) ?? stubParts.topSubject,
       insights: (contentOk ? data.insights : null) ?? stubParts.insights,
       advice: (contentOk ? data.advice : null) ?? stubParts.advice,
+      isStub: !contentOk,
     };
   } catch (err) {
     console.error('[reportService] getWeeklyReport failed:', err);
@@ -263,6 +273,7 @@ export async function getWeeklyReport(stats: WeeklyStats): Promise<WeeklyReport>
       topSubject: stubParts.topSubject,
       insights: stubParts.insights,
       advice: stubParts.advice,
+      isStub: true,
     };
   }
 }
