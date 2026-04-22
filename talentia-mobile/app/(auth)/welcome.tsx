@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { Linking, Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
@@ -39,6 +39,28 @@ export default function WelcomeScreen() {
         >
           {t('auth.signUp')}
         </Button>
+        <Spacer size="xl" />
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: theme.spacing.md }}>
+          <Pressable
+            onPress={() => void Linking.openURL('https://talentia.app/privacy')}
+            accessibilityRole="link"
+          >
+            <AppText variant="small" style={{ color: theme.colors.primary, textDecorationLine: 'underline' }}>
+              {t('settings.privacy')}
+            </AppText>
+          </Pressable>
+          <AppText variant="small" style={{ color: theme.colors.textMuted }}>
+            ·
+          </AppText>
+          <Pressable
+            onPress={() => void Linking.openURL('https://talentia.app/terms')}
+            accessibilityRole="link"
+          >
+            <AppText variant="small" style={{ color: theme.colors.primary, textDecorationLine: 'underline' }}>
+              {t('settings.terms')}
+            </AppText>
+          </Pressable>
+        </View>
       </View>
     </Screen>
   );

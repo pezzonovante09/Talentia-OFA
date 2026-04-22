@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useLayoutEffect, useMemo } from 'react';
 import { Modal, Pressable, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -167,8 +168,25 @@ function WorldBanner({
 // ── Main screen ───────────────────────────────────────────────────────────────
 export default function MapScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const { t } = useTranslation();
   const theme = useAppTheme();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      headerRight: () => (
+        <Pressable
+          onPress={() => router.push('/parent-report')}
+          accessibilityLabel={t('parentMode.headerButton')}
+          hitSlop={10}
+          style={{ marginRight: 4, padding: 4 }}
+        >
+          <MaterialIcons name="supervisor-account" size={26} color={theme.colors.primary} />
+        </Pressable>
+      ),
+    });
+  }, [navigation, router, t, theme.colors.primary]);
   const [selectedSubject, setSelectedSubject] = React.useState<SubjectId>('math');
 
   const getLessonStatus = useProgressStore((state) => state.getLessonStatus);

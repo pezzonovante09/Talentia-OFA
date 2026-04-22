@@ -49,7 +49,7 @@ describe('worlds data helpers', () => {
     expect(out.map((t) => t.id)).toEqual(['a']);
   });
 
-  it('filterTasksForProfile special mode includes special_aba tasks', () => {
+  it('filterTasksForProfile special mode uses same tasks as standard (excludes special_aba rows)', () => {
     const tasks: LessonTask[] = [
       {
         id: 'a',
@@ -68,11 +68,16 @@ describe('worlds data helpers', () => {
         options: [{ id: '1', textKey: 'y', correct: true }],
       },
     ];
-    const out = filterTasksForProfile(tasks, {
+    const standardOut = filterTasksForProfile(tasks, {
+      child_mode: 'standard',
+      methodology: null,
+    });
+    const specialOut = filterTasksForProfile(tasks, {
       child_mode: 'special',
       methodology: 'aba',
     });
-    expect(out.map((t) => t.id).sort()).toEqual(['a', 'b']);
+    expect(specialOut.map((t) => t.id)).toEqual(['a']);
+    expect(specialOut.map((t) => t.id)).toEqual(standardOut.map((t) => t.id));
   });
 
   it('filterTasksForProfile null profile behaves like standard', () => {

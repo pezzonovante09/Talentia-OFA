@@ -1,10 +1,11 @@
 import React, { useRef, useEffect } from 'react';
-import { Animated } from 'react-native';
+import { Animated, View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../src/theme';
+import { TaliFAB } from '../../src/components/TaliFAB';
 
 type IconName = React.ComponentProps<typeof MaterialIcons>['name'];
 
@@ -42,6 +43,7 @@ export default function TabLayout() {
   const theme = useAppTheme();
 
   return (
+    <View style={{ flex: 1 }}>
     <Tabs
       initialRouteName="map"
       screenOptions={{
@@ -103,5 +105,7 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    <TaliFAB withTabBar />
+    </View>
   );
 }

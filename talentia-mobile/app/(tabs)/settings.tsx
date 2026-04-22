@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Alert, Pressable, Switch, View } from 'react-native';
+import { Alert, Linking, Pressable, Switch, View } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 import { NanoBananaIcon } from '../../src/components/NanoBananaIcon';
 import { NANO_UI } from '../../src/constants/nanoBananaAssets';
 import { PinModal } from '../../src/components/PinModal';
@@ -22,6 +23,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import {
   LanguageCode,
   Methodology,
+  PARENT_PIN_SECURE_KEY,
   useSettingsStore,
 } from '../../src/store/settingsStore';
 import { useProgressStore } from '../../src/store/progressStore';
@@ -78,6 +80,8 @@ export default function SettingsScreen() {
     try {
       useProgressStore.getState().resetAll();
       useCollectiblesStore.getState().resetAll();
+      await SecureStore.deleteItemAsync(PARENT_PIN_SECURE_KEY).catch(() => {});
+      useSettingsStore.setState({ parentPin: null, parentPinHydrated: true });
       await Promise.all(ALL_STORAGE_KEYS.map((key) => AsyncStorage.removeItem(key)));
       await signOut();
       router.replace('/');
@@ -126,6 +130,24 @@ export default function SettingsScreen() {
       <AppText variant="title" accessibilityRole="header">
         {t('settings.title')}
       </AppText>
+
+      <Spacer size="md" />
+
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: theme.spacing.sm }}>
+        <Pressable onPress={() => void Linking.openURL('https://talentia.app/privacy')} accessibilityRole="link">
+          <AppText variant="small" style={{ color: theme.colors.primary, textDecorationLine: 'underline' }}>
+            {t('settings.privacy')}
+          </AppText>
+        </Pressable>
+        <AppText variant="small" style={{ color: theme.colors.textMuted }}>
+          ·
+        </AppText>
+        <Pressable onPress={() => void Linking.openURL('https://talentia.app/terms')} accessibilityRole="link">
+          <AppText variant="small" style={{ color: theme.colors.primary, textDecorationLine: 'underline' }}>
+            {t('settings.terms')}
+          </AppText>
+        </Pressable>
+      </View>
 
       <Spacer size="lg" />
 

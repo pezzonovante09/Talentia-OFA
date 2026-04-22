@@ -1,4 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -12,6 +14,37 @@ export type AvatarId = 'sun' | 'rocket' | 'panda' | 'unicorn';
 
 export type TaliSkinId = 'default' | 'cool' | 'explorer' | 'scientist';
 
+/** Key for parent PIN in SecureStore (not persisted in Zustand JSON). */
+export const PARENT_PIN_SECURE_KEY = 'talentia_parent_pin';
+
+const SETTINGS_VERSION = 2;
+
+async function readPinFromSecureStore(): Promise<string | null> {
+  if (Platform.OS === 'web') {
+    return null;
+  }
+  try {
+    return await SecureStore.getItemAsync(PARENT_PIN_SECURE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+async function writePinToSecureStore(pin: string | null): Promise<void> {
+  if (Platform.OS === 'web') {
+    return;
+  }
+  try {
+    if (pin === null || pin === '') {
+      await SecureStore.deleteItemAsync(PARENT_PIN_SECURE_KEY);
+    } else {
+      await SecureStore.setItemAsync(PARENT_PIN_SECURE_KEY, pin);
+    }
+  } catch {
+    // non-critical
+  }
+}
+
 type SettingsState = {
   language: LanguageCode;
   methodology: Methodology;
@@ -23,29 +56,20 @@ type SettingsState = {
   taliSkinId: TaliSkinId;
   onboardingCompleted: boolean;
   isPremium: boolean;
-  /** 4-digit PIN code for parent-only sections. null = not set */
+  /** 4-digit PIN for parent-only sections; loaded from SecureStore. null = not set */
   parentPin: string | null;
-  /** Whether daily reminder notifications are enabled */
+  /** False until SecureStore read completes (avoids a brief wrong PIN gate). */
+  parentPinHydrated: boolean;
   notificationsEnabled: boolean;
-  /** Hour (0-23) for the daily reminder */
   reminderHour: number;
-  /** Whether break reminder during lessons is enabled */
   breakReminderEnabled: boolean;
-  /** Session duration in minutes before suggesting a break (15, 20, or 30) */
   sessionDurationMinutes: number;
-  /** Break duration in minutes (5 or 10) */
   breakDurationMinutes: number;
-  /** Adaptive difficulty speed: fast=wider range, slow=stricter match */
   adaptiveSpeed: 'fast' | 'medium' | 'slow';
-  /** Whether voice input is enabled for input tasks */
   voiceInputEnabled: boolean;
-  /** True after first map visit — hides the tutorial overlay */
   hasSeenMapTip: boolean;
-  /** Whether text-to-speech is enabled for lesson questions and options */
   ttsEnabled: boolean;
-  /** Whether Tali speaks her chat replies aloud via neural TTS */
   taliSpeakEnabled: boolean;
-  /** Fewer motion effects (no confetti, no map node pulse) */
   reduceMotion: boolean;
   setLanguage: (language: LanguageCode) => void;
   setMethodology: (methodology: Methodology) => void;
@@ -87,6 +111,7 @@ export const useSettingsStore = create<SettingsState>()(
       onboardingCompleted: false,
       isPremium: false,
       parentPin: null,
+      parentPinHydrated: false,
       notificationsEnabled: false,
       reminderHour: 18,
       breakReminderEnabled: true,
@@ -106,7 +131,12 @@ export const useSettingsStore = create<SettingsState>()(
       setTaliSkin: (skinId) => set({ taliSkinId: skinId }),
       setOnboardingCompleted: () => set({ onboardingCompleted: true }),
       setPremium: (value) => set({ isPremium: value }),
-      setParentPin: (pin) => set({ parentPin: pin }),
+      setParentPin: (pin) => {
+        void (async () => {
+          await writePinToSecureStore(pin);
+          set({ parentPin: pin, parentPinHydrated: true });
+        })();
+      },
       setNotificationsEnabled: (value) => set({ notificationsEnabled: value }),
       setReminderHour: (hour) => set({ reminderHour: hour }),
       setBreakReminderEnabled: (value) => set({ breakReminderEnabled: value }),
@@ -121,7 +151,22 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'talentia-settings',
+      version: SETTINGS_VERSION,
       storage: createJSONStorage(() => AsyncStorage),
+      migrate: async (persistedState) => {
+        const p = (persistedState as Record<string, unknown> | null) ?? {};
+        const legacy = p.parentPin;
+        if (typeof legacy === 'string' && legacy.length >= 4) {
+          await writePinToSecureStore(legacy);
+        }
+        const { parentPin: _removed, ...rest } = p;
+        const pin = await readPinFromSecureStore();
+        return {
+          ...rest,
+          parentPin: pin,
+          parentPinHydrated: true,
+        };
+      },
       partialize: (state) => ({
         language: state.language,
         methodology: state.methodology,
@@ -133,7 +178,6 @@ export const useSettingsStore = create<SettingsState>()(
         taliSkinId: state.taliSkinId,
         onboardingCompleted: state.onboardingCompleted,
         isPremium: state.isPremium,
-        parentPin: state.parentPin,
         notificationsEnabled: state.notificationsEnabled,
         reminderHour: state.reminderHour,
         breakReminderEnabled: state.breakReminderEnabled,
@@ -146,6 +190,15 @@ export const useSettingsStore = create<SettingsState>()(
         taliSpeakEnabled: state.taliSpeakEnabled,
         reduceMotion: state.reduceMotion,
       }),
+      onRehydrateStorage: () => () => {
+        void readPinFromSecureStore().then((pin) => {
+          useSettingsStore.setState({ parentPin: pin, parentPinHydrated: true });
+        });
+      },
     },
   ),
 );
+
+void readPinFromSecureStore().then((pin) => {
+  useSettingsStore.setState({ parentPin: pin, parentPinHydrated: true });
+});

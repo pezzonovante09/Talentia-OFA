@@ -33,6 +33,22 @@ export type LessonStatus = 'locked' | 'available' | 'completed';
 
 export { getLevelFromXP, getXPToNextLevel } from '../utils/xpUtils';
 
+/** Format a Date as local calendar YYYY-MM-DD (matches XP / streak date keys). */
+export function formatLocalDateYMD(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/** One day in the rolling 7-day parent report window (local dates). */
+export type WeeklyDayStat = {
+  date: string;
+  lessonsCompleted: number;
+  correctAnswers: number;
+  xpEarned: number;
+};
+
 type ProgressState = {
   topics: Record<string, TopicProgress>;
   achievements: Achievements;
@@ -47,6 +63,10 @@ type ProgressState = {
   dailyGoal: number;
   /** date (YYYY-MM-DD) → XP earned on that day */
   xpHistory: Record<string, number>;
+  /** date (YYYY-MM-DD) → lessons completed that day */
+  lessonsCompletedByDate: Record<string, number>;
+  /** date (YYYY-MM-DD) → correct task answers that day */
+  correctAnswersByDate: Record<string, number>;
   getTopicProgress: (topicId: string) => TopicProgress;
   getLessonStatus: (lessonId: string, orderedLessonIds: string[]) => LessonStatus;
   recordAnswer: (params: {
@@ -72,11 +92,7 @@ function clamp(value: number, min: number, max: number) {
 }
 
 function getTodayDateString() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return formatLocalDateYMD(new Date());
 }
 
 function isYesterday(previous: string, today: string) {
@@ -149,6 +165,8 @@ export const useProgressStore = create<ProgressState>()(
       dailyGoalDate: null,
       dailyGoal: 3,
       xpHistory: {},
+      lessonsCompletedByDate: {},
+      correctAnswersByDate: {},
 
       getTopicProgress: (topicId) => {
         const state = get();
@@ -306,7 +324,22 @@ export const useProgressStore = create<ProgressState>()(
             achievements = { ...achievements, allWorldsStarted: true };
           }
 
-          return { topics, globalCorrectCount, achievements, streakCount, lastActivityDate };
+          let correctAnswersByDate = state.correctAnswersByDate;
+          if (correct) {
+            correctAnswersByDate = {
+              ...state.correctAnswersByDate,
+              [today]: (state.correctAnswersByDate[today] ?? 0) + 1,
+            };
+          }
+
+          return {
+            topics,
+            globalCorrectCount,
+            achievements,
+            streakCount,
+            lastActivityDate,
+            correctAnswersByDate,
+          };
         }),
 
       setDailyGoal: (goal) => set({ dailyGoal: goal }),
@@ -336,6 +369,8 @@ export const useProgressStore = create<ProgressState>()(
           dailyGoalDate: null,
           dailyGoal: 3,
           xpHistory: {},
+          lessonsCompletedByDate: {},
+          correctAnswersByDate: {},
         }),
 
       markLessonCompleted: ({ topicId, lessonId, perfect, mistakeCount }) =>
@@ -392,7 +427,19 @@ export const useProgressStore = create<ProgressState>()(
             achievements = { ...achievements, islandExplorer: true };
           }
 
-          return { topics, achievements, lessonStars, dailyLessonsCompleted, dailyGoalDate };
+          const lessonsCompletedByDate = {
+            ...state.lessonsCompletedByDate,
+            [today]: (state.lessonsCompletedByDate[today] ?? 0) + 1,
+          };
+
+          return {
+            topics,
+            achievements,
+            lessonStars,
+            dailyLessonsCompleted,
+            dailyGoalDate,
+            lessonsCompletedByDate,
+          };
         }),
     }),
     {
@@ -413,3 +460,22 @@ export const useProgressStore = create<ProgressState>()(
     },
   ),
 );
+
+/** Last 7 local calendar days from today − 6 through today; numeric fields are 0 when missing. */
+export function getWeeklyStats(): WeeklyDayStat[] {
+  const { xpHistory, lessonsCompletedByDate, correctAnswersByDate } = useProgressStore.getState();
+  const out: WeeklyDayStat[] = [];
+  for (let offset = 6; offset >= 0; offset -= 1) {
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() - offset);
+    const date = formatLocalDateYMD(d);
+    out.push({
+      date,
+      lessonsCompleted: lessonsCompletedByDate[date] ?? 0,
+      correctAnswers: correctAnswersByDate[date] ?? 0,
+      xpEarned: xpHistory[date] ?? 0,
+    });
+  }
+  return out;
+}

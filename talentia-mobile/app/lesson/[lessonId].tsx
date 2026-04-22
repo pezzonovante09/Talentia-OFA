@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Modal, Pressable, TextInput, View } from 'react-native';
+import { Animated, Image, Modal, Pressable, TextInput, View } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { NanoBananaIcon } from '../../src/components/NanoBananaIcon';
@@ -14,7 +14,7 @@ import { AppText } from '../../src/components/Text';
 import { Spacer } from '../../src/components/Spacer';
 import { Card } from '../../src/components/Card';
 import { Button } from '../../src/components/Button';
-import { LessonHelpPanel } from '../../src/components/LessonHelpPanel';
+import { TaliFAB } from '../../src/components/TaliFAB';
 import { LessonRepeatSpeechFab } from '../../src/components/LessonRepeatSpeechFab';
 import { VoiceInputButton } from '../../src/components/VoiceInputButton';
 import { useAppTheme } from '../../src/theme';
@@ -26,6 +26,12 @@ import {
   getLesson,
   getTopicForLesson,
   getWorldForLesson,
+  type FillBlankTask,
+  type ImagePointTask,
+  type ImageWordMatchTask,
+  type RoutineChainTask,
+  type SortingTask,
+  type WorldKnowledgeTask,
 } from '../../src/data/worlds';
 import { getBiomeDisplayEmoji } from '../../src/utils/biomeDisplay';
 import { useProgressStore, getLevelFromXP } from '../../src/store/progressStore';
@@ -44,14 +50,75 @@ import {
   lessonTaskQuestionVoiceKey,
   playLessonTaskVoiceLine,
 } from '../../src/services/lessonTaskBundledVoice';
-import { stopTaliSpeech } from '../../src/services/ttsService';
+import { speakViaTali, stopTaliSpeech, type TaliTtsLanguage } from '../../src/services/ttsService';
+import { getAbaLessonImage } from '../../src/constants/abaLessonImages';
+import { useAbaTokenStore } from '../../src/store/abaTokenStore';
+import { useAbaLiveSessionStore } from '../../src/store/abaLiveSessionStore';
+import { ABATokenReward } from '../../src/components/ABATokenReward';
+import { ABAPuzzleScreen } from '../../src/components/ABAPuzzleScreen';
 import { flushAnalyticsQueue } from '../../src/services/analyticsService';
 import i18nInstance from '../../src/i18n';
 
-type Phase = 'dialog' | 'intro' | 'tasks' | 'reward';
+type Phase = 'dialog' | 'intro' | 'tasks' | 'aba_tokens' | 'aba_puzzle' | 'reward';
 type Feedback = 'idle' | 'correct' | 'incorrect';
 type PromptLevel = 0 | 1 | 2;
 type SuccessType = 'pure' | 'assisted';
+
+function mapLangToTaliTts(code: string): TaliTtsLanguage {
+  return code === 'en' ? 'en' : 'ru';
+}
+
+const ABA_REINFORCE_KEYS = [
+  'lesson.abaReinforce1',
+  'lesson.abaReinforce2',
+  'lesson.abaReinforce3',
+  'lesson.abaReinforce4',
+  'lesson.abaReinforce5',
+  'lesson.abaReinforce6',
+  'lesson.abaReinforce7',
+  'lesson.abaReinforce8',
+] as const;
+
+function isTherapistLedTask(t: LessonTask): boolean {
+  return (
+    t.type === 'vocal_imitation' ||
+    t.type === 'word_repetition' ||
+    t.type === 'volume_control' ||
+    t.type === 'action_instruction'
+  );
+}
+
+function shuffleArray<T>(items: T[]): T[] {
+  const a = [...items];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = a[i]!;
+    a[i] = a[j]!;
+    a[j] = tmp;
+  }
+  return a;
+}
+
+/** Syllable-ish chunks for stress highlight (Cyrillic + Latin). */
+function abaTaskInstructionI18nKey(taskType: LessonTask['type']): string {
+  if (taskType === 'action_instruction') return 'lesson.aba_action_instruction';
+  return `lesson.aba_${taskType}_instruction`;
+}
+
+function splitWordSyllables(word: string): string[] {
+  const vowel = /[aeiouyаеёиоуыэюяAEIOUYАЕЁИОУЫЭЮЯ]/;
+  const parts: string[] = [];
+  let buf = '';
+  for (const ch of word) {
+    buf += ch;
+    if (vowel.test(ch)) {
+      parts.push(buf);
+      buf = '';
+    }
+  }
+  if (buf.length) parts.push(buf);
+  return parts.length ? parts : [word];
+}
 
 // ── Typing animation hook ────────────────────────────────────────────────────
 function useTypingText(text: string, speed = 22): { displayed: string; done: boolean } {
@@ -172,6 +239,14 @@ export default function LessonScreen() {
   const xp = useProgressStore((s) => s.xp);
   const topicsState = useProgressStore((s) => s.topics);
   const addItem = useCollectiblesStore((s) => s.addItem);
+  const addLessonTokens = useAbaTokenStore((s) => s.addLessonTokens);
+  const resetPuzzleAfterCelebration = useAbaTokenStore((s) => s.resetPuzzleAfterCelebration);
+  const puzzlePlacedPieces = useAbaTokenStore((s) => s.placedPieces);
+  const startLiveSession = useAbaLiveSessionStore((s) => s.startSession);
+  const setLiveTaskProgress = useAbaLiveSessionStore((s) => s.setTaskProgress);
+  const recordLiveResult = useAbaLiveSessionStore((s) => s.recordResult);
+  const finishLiveSession = useAbaLiveSessionStore((s) => s.finishSession);
+  const clearLiveSession = useAbaLiveSessionStore((s) => s.clearSession);
 
   const { speak } = useSpeech();
 
@@ -213,15 +288,20 @@ export default function LessonScreen() {
   // ALL hooks must be declared before any early return
   const tasks = useMemo(() => {
     if (!lesson) return [];
-    const filtered = filterTasksForProfile(lesson.tasks, profile ? {
+    const baseFiltered = filterTasksForProfile(lesson.tasks, profile ? {
       child_mode: profile.child_mode,
       methodology: profile.methodology,
     } : null);
+    const baseIds = new Set(baseFiltered.map((t) => t.id));
+    const ordered = lesson.tasks.filter((tk) => {
+      if (profile?.child_mode === 'special' && tk.audience === 'special_aba') return true;
+      return baseIds.has(tk.id);
+    });
     const range = 1;
-    const byDifficulty = filtered.filter(
+    const byDifficulty = ordered.filter(
       (tk) => tk.difficulty >= topicDifficulty - range && tk.difficulty <= topicDifficulty + range,
     );
-    return byDifficulty.length > 0 ? byDifficulty : filtered;
+    return byDifficulty.length > 0 ? byDifficulty : ordered;
   }, [lesson, profile, topicDifficulty]);
 
   const hasDialog = (lesson?.dialog?.length ?? 0) > 0;
@@ -236,7 +316,6 @@ export default function LessonScreen() {
   const [inputValue, setInputValue] = useState('');
   const [feedback, setFeedback] = useState<Feedback>('idle');
   const [hasChecked, setHasChecked] = useState(false);
-  const [helpPanelOpen, setHelpPanelOpen] = useState(false);
   const [selectHint, setSelectHint] = useState(false);
   const [mistakeCount, setMistakeCount] = useState(0);
   const [trialCount, setTrialCount] = useState(1);
@@ -254,6 +333,14 @@ export default function LessonScreen() {
     null,
   );
   const abaCorrectProceedRef = useRef<(() => void) | null>(null);
+  const lastAbaReinforceIdx = useRef<number | null>(null);
+  const liveSessionStartedRef = useRef(false);
+
+  const [sortPickItemId, setSortPickItemId] = useState<string | null>(null);
+  const [sortAssignments, setSortAssignments] = useState<Record<string, string>>({});
+  const [routinePickedIds, setRoutinePickedIds] = useState<string[]>([]);
+  const [pendingAbaTokenCount, setPendingAbaTokenCount] = useState(0);
+  const [abaPuzzleCelebrate, setAbaPuzzleCelebrate] = useState(false);
 
   const finishAbaReinforcement = useCallback(() => {
     setAbaReinforcement(null);
@@ -270,6 +357,12 @@ export default function LessonScreen() {
 
   const totalTasks = tasks.length;
   const isLastTask = totalTasks > 0 && currentIndex === totalTasks - 1;
+
+  const routineShuffledSteps = useMemo(() => {
+    const tk = tasks[currentIndex];
+    if (!tk || tk.type !== 'routine_chain') return [] as RoutineChainTask['steps'];
+    return shuffleArray([...tk.steps]);
+  }, [tasks, currentIndex]);
 
   const checkButtonLabel = useMemo(() => {
     if (!hasChecked) return t('lesson.checkAnswer');
@@ -297,6 +390,36 @@ export default function LessonScreen() {
     return t('lesson.abaIncorrect');
   }, [promptLevel, t, useAbaPedagogy]);
 
+  const taskDescriptionForTali = useMemo(() => {
+    const tk = tasks[currentIndex];
+    if (!tk || !lesson || !topic) return '';
+    const questionPrompt = t(tk.questionKey);
+    const lines: string[] = [];
+    if (questionPrompt) lines.push(`Задание: "${questionPrompt}"`);
+    if (tk.type === 'multiple_choice') {
+      const opts = (tk as MultipleChoiceTask).options.map((o) => optionText(o.textKey));
+      if (opts.length) lines.push(`Варианты ответов: ${opts.join(', ')}`);
+    } else if (tk.type === 'fill_blank') {
+      const opts = (tk as FillBlankTask).options.map((o) => t(o.textKey));
+      if (opts.length) lines.push(`Варианты: ${opts.join(', ')}`);
+    } else if (tk.type === 'world_knowledge') {
+      const wk = tk as WorldKnowledgeTask;
+      const opts = wk.options.map((o) => (o.textKey ? t(o.textKey) : o.imageKey ?? '')).filter(Boolean);
+      if (opts.length) lines.push(`Варианты: ${opts.join(', ')}`);
+    } else if (tk.type === 'image_word_match') {
+      const im = tk as ImageWordMatchTask;
+      const opts = im.options.map((o) => (o.textKey ? t(o.textKey) : o.imageKey ?? '')).filter(Boolean);
+      if (opts.length) lines.push(`Варианты: ${opts.join(', ')}`);
+    } else if (tk.type === 'vocal_imitation') {
+      lines.push(t(tk.soundTextKey));
+    } else if (tk.type === 'word_repetition') {
+      lines.push(t(tk.wordKey));
+    } else if (tk.type === 'action_instruction') {
+      lines.push(t(tk.actionKey));
+    }
+    return lines.join('. ');
+  }, [tasks, currentIndex, lesson, topic, t, optionText]);
+
   // Flush queued analytics on mount
   useEffect(() => {
     if (user?.id) {
@@ -308,30 +431,75 @@ export default function LessonScreen() {
     lessonRewardClaimedRef.current = false;
     setAbaReinforcement(null);
     abaCorrectProceedRef.current = null;
+    liveSessionStartedRef.current = false;
+    lastAbaReinforceIdx.current = null;
+    clearLiveSession();
     return () => {
       if (taskGapTimerRef.current) {
         clearTimeout(taskGapTimerRef.current);
         taskGapTimerRef.current = null;
       }
     };
-  }, [lessonId]);
+  }, [lessonId, clearLiveSession]);
 
   // Auto-speak task question when a new task appears (вшитый mp3 при наличии)
   useEffect(() => {
     if (phase !== 'tasks' || !lesson || !ttsEnabled) return;
     const tk = tasks[currentIndex];
     if (!tk) return;
-    const text = t(tk.questionKey);
-    const delay = setTimeout(() => {
-      void playLessonTaskVoiceLine(
+    const speakLines = async () => {
+      const q = t(tk.questionKey);
+      await playLessonTaskVoiceLine(
         lesson.id,
         lessonTaskQuestionVoiceKey(lesson.id, tk.id, language),
-        text,
+        q,
         language,
       );
+      if (useAbaPedagogy) {
+        const instKey = abaTaskInstructionI18nKey(tk.type);
+        const inst = t(instKey);
+        if (inst && inst !== instKey) {
+          await speakViaTali(inst, mapLangToTaliTts(language));
+        }
+      }
+      if (tk.type === 'vocal_imitation') {
+        await speakViaTali(t(tk.soundTextKey), mapLangToTaliTts(language));
+        if (tk.audioPromptKey) {
+          await speakViaTali(t(tk.audioPromptKey), mapLangToTaliTts(language));
+        }
+      } else if (tk.type === 'word_repetition') {
+        await speakViaTali(t(tk.wordKey), mapLangToTaliTts(language));
+      } else if (tk.type === 'volume_control') {
+        await speakViaTali(t(tk.promptTextKey), mapLangToTaliTts(language));
+      } else if (tk.type === 'action_instruction') {
+        await speakViaTali(t(tk.actionKey), mapLangToTaliTts(language));
+      }
+    };
+    const delay = setTimeout(() => {
+      void speakLines();
     }, 500);
     return () => clearTimeout(delay);
-  }, [phase, currentIndex, tasks, lesson, language, t, ttsEnabled]);
+  }, [phase, currentIndex, tasks, lesson, language, t, ttsEnabled, useAbaPedagogy]);
+
+  useEffect(() => {
+    if (phase !== 'tasks' || !useAbaPedagogy || !lesson || tasks.length === 0) return;
+    if (liveSessionStartedRef.current) return;
+    liveSessionStartedRef.current = true;
+    startLiveSession(lesson.id, lesson.titleKey, tasks.length);
+  }, [phase, useAbaPedagogy, lesson, tasks.length, startLiveSession]);
+
+  useEffect(() => {
+    if (phase !== 'tasks' || !useAbaPedagogy) return;
+    setLiveTaskProgress(currentIndex, tasks.length);
+  }, [phase, useAbaPedagogy, currentIndex, tasks.length, setLiveTaskProgress]);
+
+  useEffect(() => {
+    if (!abaReinforcement || !ttsEnabled || !useAbaPedagogy) return;
+    const delay = setTimeout(() => {
+      void speakViaTali(abaReinforcement.phrase, mapLangToTaliTts(language));
+    }, 200);
+    return () => clearTimeout(delay);
+  }, [abaReinforcement, ttsEnabled, useAbaPedagogy, language]);
 
   // Auto-speak feedback when it changes (ABA: correct — only banner, no duplicate TTS)
   useEffect(() => {
@@ -388,12 +556,28 @@ export default function LessonScreen() {
 
   const buildTaskContext = (): TaskContext => ({
     questionPrompt: task ? t(task.questionKey) : '',
-    answerOptions:
-      task?.type === 'multiple_choice'
-        ? (task as MultipleChoiceTask).options.map((o) =>
+    answerOptions: (() => {
+      if (!task) return undefined;
+      if (task.type === 'multiple_choice') {
+        return (task as MultipleChoiceTask).options.map((o) =>
             isEnglishLesson ? tEn(o.textKey) : t(o.textKey),
-          )
-        : undefined,
+        );
+      }
+      if (task.type === 'fill_blank') {
+        return (task as FillBlankTask).options.map((o) => t(o.textKey));
+      }
+      if (task.type === 'world_knowledge') {
+        return (task as WorldKnowledgeTask).options.map((o) =>
+          o.textKey ? t(o.textKey) : o.imageKey ?? '',
+        );
+      }
+      if (task.type === 'image_word_match') {
+        return (task as ImageWordMatchTask).options.map((o) =>
+          o.textKey ? t(o.textKey) : o.imageKey ?? '',
+        );
+      }
+      return undefined;
+    })(),
     subjectId:
       topic.subject === 'math'
         ? 'math'
@@ -407,15 +591,29 @@ export default function LessonScreen() {
     childMode: profile?.child_mode ?? 'standard',
     methodology:
       profile?.child_mode === 'special' ? (profile.methodology ?? 'aba') : 'standard',
-    correctAnswer:
-      task?.type === 'multiple_choice'
-        ? (() => {
+    correctAnswer: (() => {
+      if (!task) return undefined;
+      if (task.type === 'multiple_choice') {
             const opt = (task as MultipleChoiceTask).options.find((o) => o.correct);
             return opt ? (isEnglishLesson ? tEn(opt.textKey) : t(opt.textKey)) : undefined;
-          })()
-        : 'answer' in (task ?? {})
-          ? String((task as unknown as { answer: string }).answer)
-          : undefined,
+      }
+      if (task.type === 'fill_blank') {
+        const opt = (task as FillBlankTask).options.find((o) => o.correct);
+        return opt ? t(opt.textKey) : undefined;
+      }
+      if (task.type === 'world_knowledge') {
+        const opt = (task as WorldKnowledgeTask).options.find((o) => o.correct);
+        if (!opt) return undefined;
+        return opt.textKey ? t(opt.textKey) : opt.imageKey;
+      }
+      if (task.type === 'image_word_match') {
+        const opt = (task as ImageWordMatchTask).options.find((o) => o.correct);
+        if (!opt) return undefined;
+        return opt.textKey ? t(opt.textKey) : opt.imageKey;
+      }
+      if (task.type === 'input') return String(task.answer);
+      return undefined;
+    })(),
   });
 
   // ── Dialog phase ─────────────────────────────────────────────────────────
@@ -487,6 +685,47 @@ export default function LessonScreen() {
     );
   }
 
+  // ── ABA token + puzzle (before XP reward) ───────────────────────────────
+  if (phase === 'aba_tokens') {
+    return (
+      <Screen backgroundImage={lessonBackgroundImage} backgroundImageTint={lessonBackgroundTint}>
+        <ABATokenReward
+          tokensEarned={pendingAbaTokenCount}
+          onContinue={() => {
+            const per = lesson.abaTokensPerPiece ?? 5;
+            const { newPieces, puzzleCompleted } = addLessonTokens(pendingAbaTokenCount, per);
+            if (newPieces === 0 && !puzzleCompleted) {
+              finishLiveSession(pendingAbaTokenCount);
+              setPhase('reward');
+              return;
+            }
+            setAbaPuzzleCelebrate(puzzleCompleted);
+            setPhase('aba_puzzle');
+          }}
+        />
+      </Screen>
+    );
+  }
+
+  if (phase === 'aba_puzzle') {
+    return (
+      <Screen backgroundImage={lessonBackgroundImage} backgroundImageTint={lessonBackgroundTint}>
+        <ABAPuzzleScreen
+          placedPieces={puzzlePlacedPieces}
+          showCelebration={abaPuzzleCelebrate}
+          onCelebrationDismiss={() => {
+            resetPuzzleAfterCelebration();
+            setAbaPuzzleCelebrate(false);
+          }}
+          onContinueToReward={() => {
+            finishLiveSession(pendingAbaTokenCount);
+            setPhase('reward');
+          }}
+        />
+      </Screen>
+    );
+  }
+
   // ── Reward phase ─────────────────────────────────────────────────────────
   if (phase === 'reward') {
     return (
@@ -523,12 +762,15 @@ export default function LessonScreen() {
     setPromptLevel(0);
     setHintText(null);
     setSuccessType('pure');
+    setSortPickItemId(null);
+    setSortAssignments({});
+    setRoutinePickedIds([]);
     taskStartTime.current = Date.now();
     lastWrongAnswer.current = null;
   };
 
-  const grantLessonReward = (totalMistakes: number) => {
-    if (lessonRewardClaimedRef.current) return;
+  const applyLessonRewards = (totalMistakes: number): 1 | 2 | 3 | null => {
+    if (lessonRewardClaimedRef.current) return null;
     lessonRewardClaimedRef.current = true;
 
     const reward = lesson.reward;
@@ -552,13 +794,28 @@ export default function LessonScreen() {
     setEarnedStars(stars);
     setLeveledUp(nextLevel > prevLevel);
     setNewLevel(nextLevel);
+    return stars;
+  };
+
+  const completeLessonFlow = (totalMistakes: number) => {
+    const stars = applyLessonRewards(totalMistakes);
+    if (stars === null) return;
+    if (useAbaPedagogy) {
+      setPendingAbaTokenCount(stars);
+      setPhase('aba_tokens');
+    } else {
     setPhase('reward');
+    }
   };
 
   const handleSkip = () => {
     if (taskTransitionBusy) return;
+    if (useAbaPedagogy && ttsEnabled) {
+      void speakViaTali(t('lesson.abaSkipFeedback'), mapLangToTaliTts(language));
+    }
+    if (useAbaPedagogy) recordLiveResult('skipped');
     if (isLastTask) {
-      grantLessonReward(mistakeCount);
+      completeLessonFlow(mistakeCount);
     } else {
       setCurrentIndex((prev) => prev + 1);
       resetForNextTask();
@@ -566,14 +823,70 @@ export default function LessonScreen() {
     }
   };
 
+  const playAbaLevel2CorrectVoice = () => {
+    if (!ttsEnabled) return;
+    if (task.type === 'multiple_choice') {
+      const correctOpt = (task as MultipleChoiceTask).options.find((o) => o.correct);
+      if (correctOpt) {
+        const line = optionText(correctOpt.textKey);
+        void playLessonTaskVoiceLine(
+          lesson.id,
+          lessonTaskOptionVoiceKey(lesson.id, task.id, correctOpt.id, language),
+          line,
+          language,
+        );
+      }
+    } else if (task.type === 'fill_blank') {
+      const correctOpt = (task as FillBlankTask).options.find((o) => o.correct);
+      if (correctOpt) {
+        void playLessonTaskVoiceLine(
+          lesson.id,
+          lessonTaskOptionVoiceKey(lesson.id, task.id, correctOpt.id, language),
+          t(correctOpt.textKey),
+          language,
+        );
+      }
+    } else if (task.type === 'world_knowledge' || task.type === 'image_word_match') {
+      const opts = task.options;
+      const co = opts.find((o) => o.correct);
+      if (co?.textKey) void speakViaTali(t(co.textKey), mapLangToTaliTts(language));
+    } else if (task.type === 'image_point') {
+      const hp = (task as ImagePointTask).hotspots.find((h) => h.correct);
+      if (hp?.labelKey) void speakViaTali(t(hp.labelKey), mapLangToTaliTts(language));
+    }
+  };
+
   const handlePrimaryPress = () => {
     if (taskTransitionBusy) return;
+    if (isTherapistLedTask(task)) return;
 
     if (!hasChecked) {
-      if (task.type === 'multiple_choice' && !selectedOptionId) {
+      const needsOption =
+        task.type === 'multiple_choice' ||
+        task.type === 'fill_blank' ||
+        task.type === 'world_knowledge' ||
+        task.type === 'image_word_match' ||
+        task.type === 'image_point';
+      if (needsOption && !selectedOptionId) {
         setSelectHint(true);
         return;
       }
+      if (task.type === 'sorting') {
+        const st = task as SortingTask;
+        const allPlaced = st.items.every((it) => sortAssignments[it.id]);
+        if (!allPlaced) {
+          setSelectHint(true);
+          return;
+        }
+      }
+      if (task.type === 'routine_chain') {
+        const rc = task as RoutineChainTask;
+        if (routinePickedIds.length !== rc.steps.length) {
+          setSelectHint(true);
+          return;
+        }
+      }
+
       let correct = false;
       if (task.type === 'multiple_choice') {
         const mcTask = task as MultipleChoiceTask;
@@ -582,22 +895,60 @@ export default function LessonScreen() {
         if (!correct && selectedOption) {
           lastWrongAnswer.current = optionText(selectedOption.textKey);
         }
-      } else {
+      } else if (task.type === 'fill_blank') {
+        const fb = task as FillBlankTask;
+        const selectedOption = fb.options.find((o) => o.id === selectedOptionId);
+        correct = !!selectedOption?.correct;
+        if (!correct && selectedOption) lastWrongAnswer.current = t(selectedOption.textKey);
+      } else if (task.type === 'world_knowledge') {
+        const wk = task as WorldKnowledgeTask;
+        const selectedOption = wk.options.find((o) => o.id === selectedOptionId);
+        correct = !!selectedOption?.correct;
+        if (!correct && selectedOption) {
+          lastWrongAnswer.current = selectedOption.textKey
+            ? t(selectedOption.textKey)
+            : selectedOption.imageKey ?? '';
+        }
+      } else if (task.type === 'image_word_match') {
+        const im = task as ImageWordMatchTask;
+        const selectedOption = im.options.find((o) => o.id === selectedOptionId);
+        correct = !!selectedOption?.correct;
+        if (!correct && selectedOption) {
+          lastWrongAnswer.current = selectedOption.textKey
+            ? t(selectedOption.textKey)
+            : selectedOption.imageKey ?? '';
+        }
+      } else if (task.type === 'image_point') {
+        const ip = task as ImagePointTask;
+        const h = ip.hotspots.find((x) => x.id === selectedOptionId);
+        correct = !!h?.correct;
+        if (!correct && h?.labelKey) lastWrongAnswer.current = t(h.labelKey);
+      } else if (task.type === 'sorting') {
+        const st = task as SortingTask;
+        correct = st.items.every((it) => sortAssignments[it.id] === it.groupId);
+        if (!correct) lastWrongAnswer.current = 'sort';
+      } else if (task.type === 'routine_chain') {
+        const rc = task as RoutineChainTask;
+        const ordered = [...rc.steps].sort((a, b) => a.order - b.order);
+        correct =
+          routinePickedIds.length === ordered.length &&
+          routinePickedIds.every((id, i) => ordered[i]?.id === id);
+        if (!correct) lastWrongAnswer.current = 'order';
+      } else if (task.type === 'input') {
         const expected = String(task.answer).trim().toLowerCase();
         const input = inputValue.trim().toLowerCase();
         const expNum = parseFloat(expected);
         const inpNum = parseFloat(input);
         const bothNumeric = !Number.isNaN(expNum) && !Number.isNaN(inpNum);
         correct = bothNumeric ? expNum === inpNum : expected === input;
-        if (!correct) {
-          lastWrongAnswer.current = inputValue.trim();
-        }
+        if (!correct) lastWrongAnswer.current = inputValue.trim();
       }
 
       const latencyMs = Date.now() - taskStartTime.current;
 
       if (correct) {
         hapticCorrect();
+        if (useAbaPedagogy) recordLiveResult('correct');
         const sType: SuccessType = promptLevel > 0 ? 'assisted' : 'pure';
         setSuccessType(sType);
 
@@ -622,6 +973,7 @@ export default function LessonScreen() {
         }
       } else {
         hapticWrong();
+        if (useAbaPedagogy) recordLiveResult('incorrect');
         const newMistakeCount = mistakeCount + 1;
         setMistakeCount(newMistakeCount);
         setTrialCount((c) => c + 1);
@@ -647,18 +999,7 @@ export default function LessonScreen() {
               .catch(() => {});
           } else if (mistakeCount >= 1) {
             setPromptLevel(2);
-            if (task.type === 'multiple_choice') {
-              const correctOpt = (task as MultipleChoiceTask).options.find((o) => o.correct);
-              if (correctOpt && ttsEnabled) {
-                const line = optionText(correctOpt.textKey);
-                void playLessonTaskVoiceLine(
-                  lesson.id,
-                  lessonTaskOptionVoiceKey(lesson.id, task.id, correctOpt.id, language),
-                  line,
-                  language,
-                );
-              }
-            }
+            playAbaLevel2CorrectVoice();
           }
         }
       }
@@ -682,6 +1023,9 @@ export default function LessonScreen() {
       scheduleAfterGap(() => {
         setSelectedOptionId(null);
         setInputValue('');
+        setSortPickItemId(null);
+        setSortAssignments({});
+        setRoutinePickedIds([]);
         setFeedback('idle');
         setHasChecked(false);
         setSelectHint(false);
@@ -694,20 +1038,22 @@ export default function LessonScreen() {
       setTaskTransitionBusy(true);
       abaCorrectProceedRef.current = () => {
         if (isLastTask) {
-          grantLessonReward(mistakeCount);
+          completeLessonFlow(mistakeCount);
         } else {
           setCurrentIndex((prev) => prev + 1);
           resetForNextTask();
           fadeIn();
         }
       };
-      const keys = [
-        'lesson.abaReinforce1',
-        'lesson.abaReinforce2',
-        'lesson.abaReinforce3',
-        'lesson.abaReinforce4',
-      ] as const;
-      const phraseKey = keys[Math.floor(Math.random() * keys.length)];
+      const pool = ABA_REINFORCE_KEYS.length;
+      let idx = Math.floor(Math.random() * pool);
+      if (lastAbaReinforceIdx.current !== null && pool > 1) {
+        while (idx === lastAbaReinforceIdx.current) {
+          idx = Math.floor(Math.random() * pool);
+        }
+      }
+      lastAbaReinforceIdx.current = idx;
+      const phraseKey = ABA_REINFORCE_KEYS[idx]!;
       setAbaReinforcement({
         phrase: t(phraseKey),
         emoji: '',
@@ -717,7 +1063,7 @@ export default function LessonScreen() {
 
     if (isLastTask) {
       scheduleAfterGap(() => {
-        grantLessonReward(mistakeCount);
+        completeLessonFlow(mistakeCount);
       });
       return;
     }
@@ -728,6 +1074,68 @@ export default function LessonScreen() {
       fadeIn();
     });
   };
+
+  const replayTherapistTaskTts = () => {
+    if (!ttsEnabled || !lesson) return;
+    void (async () => {
+      const q = t(task.questionKey);
+      await playLessonTaskVoiceLine(
+        lesson.id,
+        lessonTaskQuestionVoiceKey(lesson.id, task.id, language),
+        q,
+        language,
+      );
+      if (useAbaPedagogy) {
+        const instKey = abaTaskInstructionI18nKey(task.type);
+        const inst = t(instKey);
+        if (inst && inst !== instKey) {
+          await speakViaTali(inst, mapLangToTaliTts(language));
+        }
+      }
+      if (task.type === 'vocal_imitation') {
+        await speakViaTali(t(task.soundTextKey), mapLangToTaliTts(language));
+        if (task.audioPromptKey) {
+          await speakViaTali(t(task.audioPromptKey), mapLangToTaliTts(language));
+        }
+      } else if (task.type === 'word_repetition') {
+        await speakViaTali(t(task.wordKey), mapLangToTaliTts(language));
+      } else if (task.type === 'volume_control') {
+        await speakViaTali(t(task.promptTextKey), mapLangToTaliTts(language));
+      } else if (task.type === 'action_instruction') {
+        await speakViaTali(t(task.actionKey), mapLangToTaliTts(language));
+      }
+    })();
+  };
+
+  const handleTherapistDone = () => {
+    if (taskTransitionBusy || hasChecked) return;
+    hapticCorrect();
+    if (useAbaPedagogy) recordLiveResult('correct');
+    const latencyMs = Date.now() - taskStartTime.current;
+    setSuccessType('pure');
+    recordAnswer({
+      topicId: topic.id,
+      lessonId: lesson.id,
+      correct: true,
+      taskId: task.id,
+      taskIndex: currentIndex,
+      promptLevel: 0,
+      latencyMs,
+      successType: 'pure',
+      sessionId,
+      attemptNo: trialCount,
+    });
+    setFeedback('correct');
+    setHasChecked(true);
+  };
+
+  const handleTherapistRetry = () => {
+    if (taskTransitionBusy) return;
+    replayTherapistTaskTts();
+  };
+
+  const showAbaSkipBelow =
+    useAbaPedagogy && task.skippable && task.type !== 'input';
 
   return (
     <Screen
@@ -804,21 +1212,6 @@ export default function LessonScreen() {
       </AppText>
       <Spacer size="sm" />
 
-      <Button variant="ghost" onPress={() => setHelpPanelOpen(true)}>
-        {t('lesson.needHelp')}
-      </Button>
-
-      {helpPanelOpen && (
-        <>
-          <Spacer size="md" />
-          <LessonHelpPanel
-            taskContext={buildTaskContext()}
-            language={language}
-            onClose={() => setHelpPanelOpen(false)}
-          />
-        </>
-      )}
-
       <Spacer size="lg" />
 
       {/* ABA Hint Card (Visual Prompt Level 1+) */}
@@ -879,16 +1272,102 @@ export default function LessonScreen() {
         </Pressable>
         <Spacer size="md" />
 
-        {task.type === 'multiple_choice' ? (
-          <View accessibilityRole="radiogroup" accessibilityLabel={t('lesson.multipleChoiceLabel')}>
-            {selectHint && (
+        {selectHint &&
+          !isTherapistLedTask(task) &&
+          (task.type === 'multiple_choice' ||
+            task.type === 'fill_blank' ||
+            task.type === 'world_knowledge' ||
+            task.type === 'image_word_match' ||
+            task.type === 'image_point' ||
+            task.type === 'sorting' ||
+            task.type === 'routine_chain') && (
               <View style={{ marginBottom: theme.spacing.sm, padding: theme.spacing.sm, backgroundColor: theme.colors.accent + '22', borderRadius: theme.radii.sm }}>
                 <AppText style={{ color: theme.colors.secondary, fontWeight: '600', fontSize: 14 }}>
                   {t('lesson.selectAnswerHint')}
                 </AppText>
               </View>
             )}
-            {/* Voice button for MC */}
+
+        {isTherapistLedTask(task) ? (
+          <View style={{ gap: theme.spacing.md }}>
+            {task.type === 'vocal_imitation' && (
+              <AppText style={{ fontSize: 40, fontWeight: '700', textAlign: 'center' }}>
+                {t(task.soundTextKey)}
+              </AppText>
+            )}
+            {task.type === 'word_repetition' && (
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 4 }}>
+                {splitWordSyllables(t(task.wordKey)).map((syll, i) => (
+                  <AppText
+                    key={`${syll}-${i}`}
+                    style={{
+                      fontSize: 36,
+                      fontWeight: i === (task.stressSyllableIndex ?? -1) ? '900' : '600',
+                      color:
+                        i === (task.stressSyllableIndex ?? -1)
+                          ? theme.colors.primary
+                          : theme.colors.text,
+                    }}
+                  >
+                    {syll}
+                  </AppText>
+                ))}
+              </View>
+            )}
+            {task.type === 'volume_control' && (
+              <View>
+                <AppText style={{ textAlign: 'center', marginBottom: theme.spacing.sm }}>
+                  {t(task.promptTextKey)}
+                </AppText>
+                <View
+                  style={{
+                    height: 28,
+                    borderRadius: 14,
+                    backgroundColor: theme.colors.border,
+                    marginVertical: theme.spacing.md,
+                    justifyContent: 'center',
+                  }}
+                >
+                  <View
+                    style={{
+                      position: 'absolute',
+                      width: '24%',
+                      height: 22,
+                      borderRadius: 11,
+                      backgroundColor: theme.colors.primary + '99',
+                      left: task.direction === 'louder' ? '72%' : '4%',
+                    }}
+                  />
+                </View>
+              </View>
+            )}
+            {task.type === 'action_instruction' && (
+              <View style={{ alignItems: 'center', gap: theme.spacing.md }}>
+                {getAbaLessonImage(task.illustrationKey) ? (
+                  <Image
+                    source={getAbaLessonImage(task.illustrationKey)!}
+                    style={{ width: 160, height: 160, resizeMode: 'contain' }}
+                    accessibilityIgnoresInvertColors
+                  />
+                ) : null}
+                <AppText style={{ fontSize: 36, fontWeight: '800', textAlign: 'center' }}>
+                  {t(task.actionKey)}
+                </AppText>
+              </View>
+            )}
+            {!hasChecked && (
+              <View style={{ flexDirection: 'row', gap: theme.spacing.sm, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <Button variant="secondary" onPress={handleTherapistRetry} disabled={taskTransitionBusy}>
+                  {t('lesson.abaTherapistConfirmRetry')}
+                </Button>
+                <Button onPress={handleTherapistDone} disabled={taskTransitionBusy}>
+                  {t('lesson.abaTherapistConfirmDone')}
+                </Button>
+              </View>
+            )}
+          </View>
+        ) : task.type === 'multiple_choice' ? (
+          <View accessibilityRole="radiogroup" accessibilityLabel={t('lesson.multipleChoiceLabel')}>
             {!hasChecked && (
               <View style={{ alignItems: 'flex-end', marginBottom: theme.spacing.sm }}>
                 <VoiceInputButton
@@ -910,7 +1389,6 @@ export default function LessonScreen() {
               const isSelected = selectedOptionId === option.id;
               const showCorrect = hasChecked && feedback === 'correct' && option.correct;
               const showWrong = hasChecked && feedback === 'incorrect' && isSelected;
-              // Visual Prompt: highlight correct option with success glow
               const isVisualTarget =
                 useAbaPedagogy && promptLevel >= 1 && option.correct && !hasChecked;
               const isDisabledByPrompt =
@@ -965,7 +1443,371 @@ export default function LessonScreen() {
               );
             })}
           </View>
-        ) : task.skippable ? (
+        ) : task.type === 'world_knowledge' ? (
+          <View accessibilityRole="radiogroup" accessibilityLabel={t('lesson.multipleChoiceLabel')}>
+            {(task as WorldKnowledgeTask).options.map((option) => {
+              const isSelected = selectedOptionId === option.id;
+              const showCorrect = hasChecked && feedback === 'correct' && option.correct;
+              const showWrong = hasChecked && feedback === 'incorrect' && isSelected;
+              const isVisualTarget =
+                useAbaPedagogy && promptLevel >= 1 && option.correct && !hasChecked;
+              const isDisabledByPrompt =
+                useAbaPedagogy && promptLevel >= 2 && !option.correct && !hasChecked;
+              const label = option.textKey
+                ? isEnglishLesson
+                  ? tEn(option.textKey)
+                  : t(option.textKey)
+                : '';
+              const src = option.imageKey ? getAbaLessonImage(option.imageKey) : undefined;
+
+              return (
+                <Pressable
+                  key={option.id}
+                  onPress={() => {
+                    if (!hasChecked && !isDisabledByPrompt && !taskTransitionBusy) {
+                      setSelectedOptionId(option.id);
+                      setSelectHint(false);
+                    }
+                  }}
+                  accessibilityRole="radio"
+                  style={{
+                    marginBottom: theme.spacing.sm,
+                    opacity: isDisabledByPrompt || taskTransitionBusy ? 0.3 : 1,
+                  }}
+                  disabled={isDisabledByPrompt || taskTransitionBusy}
+                >
+                  <Card
+                    highlighted={isSelected && !hasChecked}
+                    style={{
+                      borderWidth: showCorrect || showWrong || isVisualTarget ? 2 : undefined,
+                      borderColor: showCorrect || isVisualTarget
+                        ? theme.colors.success
+                        : showWrong
+                          ? useAbaPedagogy
+                            ? theme.colors.primary
+                            : theme.colors.error
+                          : undefined,
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                      {src ? (
+                        <Image source={src} style={{ width: 48, height: 48, resizeMode: 'contain' }} />
+                      ) : null}
+                      {label ? (
+                        <AppText style={{ fontSize: theme.typography.body, flex: 1 }}>{label}</AppText>
+                      ) : null}
+                      {showCorrect && (
+                        <NanoBananaIcon source={NANO_UI.check} size={22} accessibilityLabel="OK" />
+                      )}
+                      {showWrong && !useAbaPedagogy ? (
+                        <NanoBananaIcon source={NANO_UI.x} size={22} accessibilityLabel="X" />
+                      ) : null}
+                    </View>
+                  </Card>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : task.type === 'image_word_match' ? (
+          <View accessibilityRole="radiogroup" accessibilityLabel={t('lesson.multipleChoiceLabel')}>
+            {(task as ImageWordMatchTask).direction === 'image_to_word' && (task as ImageWordMatchTask).promptImageKey ? (
+              <View style={{ alignItems: 'center', marginBottom: theme.spacing.md }}>
+                {getAbaLessonImage((task as ImageWordMatchTask).promptImageKey!) ? (
+                  <Image
+                    source={getAbaLessonImage((task as ImageWordMatchTask).promptImageKey!)!}
+                    style={{ width: 140, height: 140, resizeMode: 'contain' }}
+                  />
+                ) : null}
+              </View>
+            ) : (task as ImageWordMatchTask).promptTextKey ? (
+              <AppText style={{ marginBottom: theme.spacing.md, fontSize: theme.typography.body, textAlign: 'center' }}>
+                {t((task as ImageWordMatchTask).promptTextKey!)}
+              </AppText>
+            ) : null}
+            {(task as ImageWordMatchTask).options.map((option) => {
+              const isSelected = selectedOptionId === option.id;
+              const showCorrect = hasChecked && feedback === 'correct' && option.correct;
+              const showWrong = hasChecked && feedback === 'incorrect' && isSelected;
+              const isVisualTarget =
+                useAbaPedagogy && promptLevel >= 1 && option.correct && !hasChecked;
+              const isDisabledByPrompt =
+                useAbaPedagogy && promptLevel >= 2 && !option.correct && !hasChecked;
+              const label = option.textKey ? (isEnglishLesson ? tEn(option.textKey) : t(option.textKey)) : '';
+              const src = option.imageKey ? getAbaLessonImage(option.imageKey) : undefined;
+
+              return (
+                <Pressable
+                  key={option.id}
+                  onPress={() => {
+                    if (!hasChecked && !isDisabledByPrompt && !taskTransitionBusy) {
+                      setSelectedOptionId(option.id);
+                      setSelectHint(false);
+                    }
+                  }}
+                  accessibilityRole="radio"
+                  style={{
+                    marginBottom: theme.spacing.sm,
+                    opacity: isDisabledByPrompt || taskTransitionBusy ? 0.3 : 1,
+                  }}
+                  disabled={isDisabledByPrompt || taskTransitionBusy}
+                >
+                  <Card
+                    highlighted={isSelected && !hasChecked}
+                    style={{
+                      borderWidth: showCorrect || showWrong || isVisualTarget ? 2 : undefined,
+                      borderColor: showCorrect || isVisualTarget
+                        ? theme.colors.success
+                        : showWrong
+                          ? useAbaPedagogy
+                            ? theme.colors.primary
+                            : theme.colors.error
+                          : undefined,
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                      {src ? (
+                        <Image source={src} style={{ width: 48, height: 48, resizeMode: 'contain' }} />
+                      ) : null}
+                      {label ? (
+                        <AppText style={{ fontSize: theme.typography.body, flex: 1 }}>{label}</AppText>
+                      ) : null}
+                      {showCorrect && (
+                        <NanoBananaIcon source={NANO_UI.check} size={22} accessibilityLabel="OK" />
+                      )}
+                      {showWrong && !useAbaPedagogy ? (
+                        <NanoBananaIcon source={NANO_UI.x} size={22} accessibilityLabel="X" />
+                      ) : null}
+                    </View>
+                  </Card>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : task.type === 'fill_blank' ? (
+          <View>
+            {(() => {
+              const fbTask = task as FillBlankTask;
+              let blankDisplay = '…';
+              if (hasChecked) {
+                const co = fbTask.options.find((o) => o.correct);
+                if (co) blankDisplay = t(co.textKey);
+              } else if (selectedOptionId) {
+                const so = fbTask.options.find((o) => o.id === selectedOptionId);
+                if (so) blankDisplay = t(so.textKey);
+              }
+              const parts = t(fbTask.sentenceKey).split('_');
+              return (
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginBottom: theme.spacing.md }}>
+                  {parts.map((part, i, arr) => (
+                    <React.Fragment key={i}>
+                      <AppText style={{ fontSize: 22 }}>{part}</AppText>
+                      {i < arr.length - 1 ? (
+                        <View
+                          style={{
+                            minWidth: 40,
+                            borderBottomWidth: 3,
+                            borderColor: theme.colors.primary,
+                            marginHorizontal: 4,
+                            paddingHorizontal: 4,
+                          }}
+                        >
+                          <AppText style={{ fontSize: 22, textAlign: 'center' }}>{blankDisplay}</AppText>
+                        </View>
+                      ) : null}
+                    </React.Fragment>
+                  ))}
+                </View>
+              );
+            })()}
+            {(task as FillBlankTask).options.map((option) => {
+              const isSelected = selectedOptionId === option.id;
+              const showCorrect = hasChecked && feedback === 'correct' && option.correct;
+              const showWrong = hasChecked && feedback === 'incorrect' && isSelected;
+              const isVisualTarget =
+                useAbaPedagogy && promptLevel >= 1 && option.correct && !hasChecked;
+              const isDisabledByPrompt =
+                useAbaPedagogy && promptLevel >= 2 && !option.correct && !hasChecked;
+              return (
+                <Pressable
+                  key={option.id}
+                  onPress={() => {
+                    if (!hasChecked && !isDisabledByPrompt && !taskTransitionBusy) {
+                      setSelectedOptionId(option.id);
+                      setSelectHint(false);
+                    }
+                  }}
+                  style={{
+                    marginBottom: theme.spacing.sm,
+                    opacity: isDisabledByPrompt || taskTransitionBusy ? 0.3 : 1,
+                  }}
+                  disabled={isDisabledByPrompt || taskTransitionBusy}
+                >
+                  <Card
+                    highlighted={isSelected && !hasChecked}
+                    style={{
+                      borderWidth: showCorrect || showWrong || isVisualTarget ? 2 : undefined,
+                      borderColor: showCorrect || isVisualTarget
+                        ? theme.colors.success
+                        : showWrong
+                          ? useAbaPedagogy
+                            ? theme.colors.primary
+                            : theme.colors.error
+                          : undefined,
+                    }}
+                  >
+                    <AppText style={{ fontSize: theme.typography.body }}>{t(option.textKey)}</AppText>
+                  </Card>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : task.type === 'image_point' ? (
+          <View>
+            {getAbaLessonImage((task as ImagePointTask).imageKey) ? (
+              <View style={{ width: '100%', aspectRatio: 1, position: 'relative', marginBottom: theme.spacing.md }}>
+                <Image
+                  source={getAbaLessonImage((task as ImagePointTask).imageKey)!}
+                  style={{ width: '100%', height: '100%', resizeMode: 'contain' }}
+                />
+                {(task as ImagePointTask).hotspots.map((h) => {
+                  const isSelected = selectedOptionId === h.id;
+                  const showCorrect = hasChecked && feedback === 'correct' && h.correct;
+                  const showWrong = hasChecked && feedback === 'incorrect' && isSelected;
+                  const isHotVisual =
+                    useAbaPedagogy && promptLevel >= 1 && h.correct && !hasChecked;
+                  return (
+                    <Pressable
+                      key={h.id}
+                      onPress={() => {
+                        if (!hasChecked && !taskTransitionBusy) {
+                          setSelectedOptionId(h.id);
+                          setSelectHint(false);
+                        }
+                      }}
+                      style={{
+                        position: 'absolute',
+                        left: `${h.x * 100}%`,
+                        top: `${h.y * 100}%`,
+                        width: 52,
+                        height: 52,
+                        marginLeft: -26,
+                        marginTop: -26,
+                        borderRadius: 26,
+                        borderWidth: isSelected || showCorrect || showWrong || isHotVisual ? 3 : 2,
+                        borderColor: showCorrect || isHotVisual
+                          ? theme.colors.success
+                          : showWrong
+                            ? useAbaPedagogy
+                              ? theme.colors.primary
+                              : theme.colors.error
+                            : isSelected
+                              ? theme.colors.secondary
+                              : '#ffffffaa',
+                        backgroundColor: '#00000022',
+                      }}
+                      disabled={hasChecked || taskTransitionBusy}
+                    />
+                  );
+                })}
+              </View>
+            ) : (
+              <AppText>{t('errors.lessonNotFound')}</AppText>
+            )}
+          </View>
+        ) : task.type === 'sorting' ? (
+          <View>
+            <View style={{ flexDirection: 'row', gap: theme.spacing.sm, marginBottom: theme.spacing.md, flexWrap: 'wrap' }}>
+              {(task as SortingTask).groups.map((g) => (
+                <Pressable
+                  key={g.id}
+                  onPress={() => {
+                    if (hasChecked || taskTransitionBusy || !sortPickItemId) return;
+                    setSortAssignments((prev) => ({ ...prev, [sortPickItemId]: g.id }));
+                    setSortPickItemId(null);
+                  }}
+                  style={{
+                    flex: 1,
+                    minWidth: 120,
+                    padding: theme.spacing.md,
+                    borderRadius: theme.radii.md,
+                    borderWidth: 2,
+                    borderColor: theme.colors.border,
+                    backgroundColor: theme.colors.surfaceAlt,
+                  }}
+                >
+                  <AppText style={{ textAlign: 'center', fontWeight: '700' }}>{t(g.labelKey)}</AppText>
+                </Pressable>
+              ))}
+            </View>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm }}>
+              {(task as SortingTask).items.map((it) => {
+                const picked = sortPickItemId === it.id;
+                const assigned = sortAssignments[it.id];
+                const src = getAbaLessonImage(it.imageKey);
+                return (
+                  <Pressable
+                    key={it.id}
+                    onPress={() => {
+                      if (hasChecked || taskTransitionBusy) return;
+                      setSortPickItemId(it.id);
+                      setSelectHint(false);
+                    }}
+                    style={{
+                      padding: theme.spacing.sm,
+                      borderRadius: theme.radii.md,
+                      borderWidth: 2,
+                      borderColor: picked ? theme.colors.secondary : theme.colors.border,
+                      opacity: assigned ? 0.5 : 1,
+                    }}
+                  >
+                    {src ? <Image source={src} style={{ width: 56, height: 56, resizeMode: 'contain' }} /> : null}
+                    {assigned ? (
+                      <AppText variant="small" style={{ textAlign: 'center' }}>
+                        {t((task as SortingTask).groups.find((g) => g.id === assigned)?.labelKey ?? '')}
+                      </AppText>
+                    ) : null}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ) : task.type === 'routine_chain' ? (
+          <View>
+            <AppText variant="small" style={{ marginBottom: theme.spacing.sm, color: theme.colors.textMuted }}>
+              {t('lesson.abaRoutineTapOrder')}
+            </AppText>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm }}>
+              {routineShuffledSteps.map((step) => {
+                const picked = routinePickedIds.includes(step.id);
+                const src = getAbaLessonImage(step.imageKey);
+                return (
+                  <Pressable
+                    key={step.id}
+                    disabled={picked || hasChecked || taskTransitionBusy}
+                    onPress={() => {
+                      setRoutinePickedIds((prev) => [...prev, step.id]);
+                      setSelectHint(false);
+                    }}
+                    style={{
+                      width: 100,
+                      padding: theme.spacing.sm,
+                      borderRadius: theme.radii.md,
+                      borderWidth: 2,
+                      borderColor: theme.colors.border,
+                      opacity: picked ? 0.35 : 1,
+                      alignItems: 'center',
+                    }}
+                  >
+                    {src ? <Image source={src} style={{ width: 48, height: 48, resizeMode: 'contain' }} /> : null}
+                    <AppText variant="small" style={{ textAlign: 'center' }}>
+                      {t(step.labelKey)}
+                    </AppText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ) : task.type === 'input' && task.skippable ? (
           <View style={{ alignItems: 'center', paddingVertical: theme.spacing.md }}>
             <Button
               variant="secondary"
@@ -976,7 +1818,7 @@ export default function LessonScreen() {
               {t('lesson.skipTask')}
             </Button>
           </View>
-        ) : (
+        ) : task.type === 'input' ? (
           <View>
             <AppText style={{ marginBottom: theme.spacing.sm }}>{t('lesson.inputLabel')}</AppText>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm }}>
@@ -1012,7 +1854,17 @@ export default function LessonScreen() {
               />
             </View>
           </View>
+        ) : (
+          <AppText>{t('errors.lessonNotFound')}</AppText>
         )}
+
+        {showAbaSkipBelow ? (
+          <View style={{ alignItems: 'center', paddingTop: theme.spacing.md }}>
+            <Button variant="secondary" onPress={handleSkip} disabled={taskTransitionBusy} style={{ minWidth: 200 }}>
+              {t('lesson.skipTask')}
+            </Button>
+          </View>
+        ) : null}
 
         <Spacer size="md" />
 
@@ -1052,22 +1904,44 @@ export default function LessonScreen() {
       <Spacer size="lg" />
 
       {/* Large voice input row — shown when task is not yet checked */}
-      {!hasChecked && (
+      {!hasChecked && !isTherapistLedTask(task) && (
         <View style={{ flexDirection: 'row', gap: theme.spacing.sm, marginBottom: theme.spacing.sm }}>
           <VoiceInputButton
             large
             label={t('voiceInput.speakAnswer')}
             onTranscript={(transcript) => {
               if (hasChecked || taskTransitionBusy) return;
-              if (task.type === 'multiple_choice') {
                 const lower = transcript.toLowerCase();
+              if (task.type === 'multiple_choice') {
                 const mcTask = task as MultipleChoiceTask;
                 const match = mcTask.options.find((o) =>
                   (isEnglishLesson ? tEn(o.textKey) : t(o.textKey)).toLowerCase().includes(lower) ||
                   lower.includes((isEnglishLesson ? tEn(o.textKey) : t(o.textKey)).toLowerCase()),
                 );
                 if (match) { setSelectedOptionId(match.id); setSelectHint(false); }
-              } else {
+              } else if (task.type === 'fill_blank') {
+                const fb = task as FillBlankTask;
+                const match = fb.options.find((o) => t(o.textKey).toLowerCase().includes(lower));
+                if (match) { setSelectedOptionId(match.id); setSelectHint(false); }
+              } else if (task.type === 'world_knowledge') {
+                const wk = task as WorldKnowledgeTask;
+                const match = wk.options.find((o) =>
+                  o.textKey
+                    ? t(o.textKey).toLowerCase().includes(lower) ||
+                      lower.includes(t(o.textKey).toLowerCase())
+                    : false,
+                );
+                if (match) { setSelectedOptionId(match.id); setSelectHint(false); }
+              } else if (task.type === 'image_word_match') {
+                const im = task as ImageWordMatchTask;
+                const match = im.options.find((o) =>
+                  o.textKey
+                    ? (isEnglishLesson ? tEn(o.textKey) : t(o.textKey)).toLowerCase().includes(lower) ||
+                      lower.includes((isEnglishLesson ? tEn(o.textKey) : t(o.textKey)).toLowerCase())
+                    : false,
+                );
+                if (match) { setSelectedOptionId(match.id); setSelectHint(false); }
+              } else if (task.type === 'input') {
                 setInputValue(transcript);
               }
             }}
@@ -1076,6 +1950,7 @@ export default function LessonScreen() {
         </View>
       )}
 
+      {!(isTherapistLedTask(task) && !hasChecked) ? (
       <Button
         onPress={handlePrimaryPress}
         disabled={taskTransitionBusy}
@@ -1103,6 +1978,9 @@ export default function LessonScreen() {
       >
         {checkButtonLabel}
       </Button>
+      ) : (
+        <Spacer size="md" />
+      )}
 
       <Modal
         visible={breakModalVisible}
@@ -1152,6 +2030,13 @@ export default function LessonScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      <TaliFAB
+        lessonId={lesson.id}
+        topicId={topic.id}
+        taskContext={taskDescriptionForTali}
+        lessonTitle={t(lesson.titleKey)}
+      />
     </Screen>
   );
 }
@@ -1480,7 +2365,13 @@ function DialogPhase({
             </View>
           )}
 
-          <Button onPress={onNext}>
+          <Button
+            onPress={onNext}
+            style={{
+              minHeight: 54,
+              paddingVertical: 16,
+            }}
+          >
             {isLastLine ? t('lesson.dialogStartLesson') : t('lesson.dialogContinue')}
           </Button>
         </View>

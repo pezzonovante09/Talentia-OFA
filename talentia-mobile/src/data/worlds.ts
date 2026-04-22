@@ -1,4 +1,16 @@
-export type TaskType = 'multiple_choice' | 'input';
+export type TaskType =
+  | 'multiple_choice'
+  | 'input'
+  | 'image_point'
+  | 'vocal_imitation'
+  | 'word_repetition'
+  | 'volume_control'
+  | 'fill_blank'
+  | 'image_word_match'
+  | 'world_knowledge'
+  | 'sorting'
+  | 'routine_chain'
+  | 'action_instruction';
 
 export type MultipleChoiceOption = {
   id: string;
@@ -16,7 +28,7 @@ export type BaseTask = {
   audience?: TaskAudience;
   visualCount?: number;
   visualEmoji?: string;
-  /** If true and type is 'input', show a Skip button instead of a text field (for pre-literate children) */
+  /** If true, show Skip (ABA: any task type; standard: input-only in UI) */
   skippable?: boolean;
 };
 
@@ -31,7 +43,124 @@ export type InputTask = BaseTask & {
   placeholderKey?: string;
 };
 
-export type LessonTask = MultipleChoiceTask | InputTask;
+export type ImagePointHotspot = {
+  id: string;
+  labelKey?: string;
+  correct: boolean;
+  x: number;
+  y: number;
+};
+
+export type FillBlankOption = {
+  id: string;
+  textKey: string;
+  correct: boolean;
+};
+
+export type ImageWordMatchOption = {
+  id: string;
+  textKey?: string;
+  imageKey?: string;
+  correct: boolean;
+};
+
+export type SortingGroup = {
+  id: string;
+  labelKey: string;
+};
+
+export type SortingItem = {
+  id: string;
+  imageKey: string;
+  groupId: string;
+};
+
+export type RoutineStep = {
+  id: string;
+  labelKey: string;
+  imageKey: string;
+  order: number;
+};
+
+export type ImagePointTask = BaseTask & {
+  type: 'image_point';
+  imageKey: string;
+  hotspots: ImagePointHotspot[];
+};
+
+export type VocalImitationTask = BaseTask & {
+  type: 'vocal_imitation';
+  soundTextKey: string;
+  audioPromptKey?: string;
+};
+
+export type WordRepetitionTask = BaseTask & {
+  type: 'word_repetition';
+  wordKey: string;
+  stressSyllableIndex?: number;
+};
+
+export type VolumeControlTask = BaseTask & {
+  type: 'volume_control';
+  direction: 'louder' | 'quieter';
+  promptTextKey: string;
+};
+
+export type FillBlankTask = BaseTask & {
+  type: 'fill_blank';
+  sentenceKey: string;
+  options: FillBlankOption[];
+};
+
+export type ImageWordMatchTask = BaseTask & {
+  type: 'image_word_match';
+  direction: 'word_to_image' | 'image_to_word';
+  promptTextKey?: string;
+  promptImageKey?: string;
+  options: ImageWordMatchOption[];
+};
+
+export type WorldKnowledgeTask = BaseTask & {
+  type: 'world_knowledge';
+  category: 'world_knowledge';
+  options: Array<{
+    id: string;
+    textKey?: string;
+    imageKey?: string;
+    correct: boolean;
+  }>;
+};
+
+export type SortingTask = BaseTask & {
+  type: 'sorting';
+  groups: SortingGroup[];
+  items: SortingItem[];
+};
+
+export type RoutineChainTask = BaseTask & {
+  type: 'routine_chain';
+  steps: RoutineStep[];
+};
+
+export type ActionInstructionTask = BaseTask & {
+  type: 'action_instruction';
+  actionKey: string;
+  illustrationKey: string;
+};
+
+export type LessonTask =
+  | MultipleChoiceTask
+  | InputTask
+  | ImagePointTask
+  | VocalImitationTask
+  | WordRepetitionTask
+  | VolumeControlTask
+  | FillBlankTask
+  | ImageWordMatchTask
+  | WorldKnowledgeTask
+  | SortingTask
+  | RoutineChainTask
+  | ActionInstructionTask;
 
 export type CollectibleId =
   | 'banana_badge'
@@ -70,6 +199,8 @@ export type Lesson = {
   dialog?: DialogLine[];
   intro?: IntroSlide[];
   reward?: QuestReward;
+  /** ABA: tokens needed per puzzle piece (default 5 in store) */
+  abaTokensPerPiece?: number;
 };
 
 export type AgeBand = '5-6' | '7' | '8' | '9-10';
@@ -234,6 +365,307 @@ export const worlds: World[] = [
                 difficulty: 2,
                 answer: '5',
                 placeholderKey: 'lesson.answerPlaceholder',
+              },
+            ],
+          },
+          {
+            id: 'jungle-aba-showcase',
+            topicId: 'jungle-addition',
+            titleKey: 'data.lessons.jungleAbaShowcase',
+            reward: { xp: 25 },
+            abaTokensPerPiece: 5,
+            tasks: [
+              {
+                id: 'jungle-aba-t0',
+                type: 'multiple_choice',
+                questionKey: 'data.tasks.aba_demo_std_warmup',
+                difficulty: 1,
+                visualCount: 3,
+                visualEmoji: '🍌',
+                options: [
+                  { id: 'opt-2', textKey: 'data.tasks.opt_two', correct: false },
+                  { id: 'opt-3', textKey: 'data.tasks.opt_three', correct: true },
+                  { id: 'opt-4', textKey: 'data.tasks.opt_four', correct: false },
+                ],
+              },
+              {
+                id: 'jungle-aba-ip1',
+                type: 'image_point',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_ip_q',
+                difficulty: 1,
+                skippable: true,
+                imageKey: 'aba_scene_fruit',
+                hotspots: [
+                  { id: 'h-a', labelKey: 'data.tasks.aba_demo_ip_q', correct: true, x: 0.28, y: 0.5 },
+                  { id: 'h-b', labelKey: 'data.tasks.aba_demo_ip_q2', correct: false, x: 0.72, y: 0.5 },
+                ],
+              },
+              {
+                id: 'jungle-aba-ip2',
+                type: 'image_point',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_ip_q2',
+                difficulty: 1,
+                skippable: true,
+                imageKey: 'aba_scene_fruit',
+                hotspots: [
+                  { id: 'h-a2', labelKey: 'data.tasks.aba_demo_ip_q', correct: false, x: 0.28, y: 0.5 },
+                  { id: 'h-b2', labelKey: 'data.tasks.aba_demo_ip_q2', correct: true, x: 0.72, y: 0.5 },
+                ],
+              },
+              {
+                id: 'jungle-aba-vi1',
+                type: 'vocal_imitation',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_vi_sound',
+                difficulty: 1,
+                skippable: true,
+                soundTextKey: 'data.tasks.aba_demo_vi_sound',
+              },
+              {
+                id: 'jungle-aba-vi2',
+                type: 'vocal_imitation',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_vi_sound2',
+                difficulty: 1,
+                skippable: true,
+                soundTextKey: 'data.tasks.aba_demo_vi_sound2',
+              },
+              {
+                id: 'jungle-aba-wr1',
+                type: 'word_repetition',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_wr_word',
+                difficulty: 1,
+                skippable: true,
+                wordKey: 'data.tasks.aba_demo_wr_word',
+                stressSyllableIndex: 0,
+              },
+              {
+                id: 'jungle-aba-wr2',
+                type: 'word_repetition',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_wr_word2',
+                difficulty: 1,
+                skippable: true,
+                wordKey: 'data.tasks.aba_demo_wr_word2',
+                stressSyllableIndex: 1,
+              },
+              {
+                id: 'jungle-aba-vol1',
+                type: 'volume_control',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_vol_prompt',
+                difficulty: 1,
+                skippable: true,
+                direction: 'louder',
+                promptTextKey: 'data.tasks.aba_demo_vol_prompt',
+              },
+              {
+                id: 'jungle-aba-vol2',
+                type: 'volume_control',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_vol_prompt2',
+                difficulty: 1,
+                skippable: true,
+                direction: 'quieter',
+                promptTextKey: 'data.tasks.aba_demo_vol_prompt2',
+              },
+              {
+                id: 'jungle-aba-fb1',
+                type: 'fill_blank',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_fb_sent',
+                difficulty: 1,
+                skippable: true,
+                sentenceKey: 'data.tasks.aba_demo_fb_sent',
+                options: [
+                  { id: 'fb-a', textKey: 'data.tasks.aba_demo_fb_a', correct: true },
+                  { id: 'fb-b', textKey: 'data.tasks.aba_demo_fb_b', correct: false },
+                  { id: 'fb-c', textKey: 'data.tasks.aba_demo_fb_c', correct: false },
+                ],
+              },
+              {
+                id: 'jungle-aba-fb2',
+                type: 'fill_blank',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_fb_sent2',
+                difficulty: 1,
+                skippable: true,
+                sentenceKey: 'data.tasks.aba_demo_fb_sent2',
+                options: [
+                  { id: 'fb-d', textKey: 'data.tasks.aba_demo_fb_d', correct: false },
+                  { id: 'fb-e', textKey: 'data.tasks.aba_demo_fb_e', correct: true },
+                  { id: 'fb-f', textKey: 'data.tasks.aba_demo_fb_f', correct: false },
+                ],
+              },
+              {
+                id: 'jungle-aba-iwm1',
+                type: 'image_word_match',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_iwm_word',
+                difficulty: 1,
+                skippable: true,
+                direction: 'word_to_image',
+                promptTextKey: 'data.tasks.aba_demo_iwm_word',
+                options: [
+                  { id: 'iwm-a', imageKey: 'aba_match_sun', correct: true },
+                  { id: 'iwm-b', imageKey: 'aba_match_moon', correct: false },
+                  { id: 'iwm-c', imageKey: 'aba_match_star', correct: false },
+                ],
+              },
+              {
+                id: 'jungle-aba-iwm2',
+                type: 'image_word_match',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_iwm_word2',
+                difficulty: 1,
+                skippable: true,
+                direction: 'word_to_image',
+                promptTextKey: 'data.tasks.aba_demo_iwm_word2',
+                options: [
+                  { id: 'iwm-d', imageKey: 'aba_match_moon', correct: true },
+                  { id: 'iwm-e', imageKey: 'aba_match_sun', correct: false },
+                  { id: 'iwm-f', imageKey: 'aba_match_star', correct: false },
+                ],
+              },
+              {
+                id: 'jungle-aba-wk1',
+                type: 'world_knowledge',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_wk_q',
+                difficulty: 1,
+                skippable: true,
+                category: 'world_knowledge',
+                options: [
+                  { id: 'wk-a', textKey: 'data.tasks.aba_demo_room_living', correct: true },
+                  { id: 'wk-b', textKey: 'data.tasks.aba_demo_room_bed', correct: false },
+                  { id: 'wk-c', textKey: 'data.tasks.aba_demo_room_kitchen', correct: false },
+                ],
+              },
+              {
+                id: 'jungle-aba-wk2',
+                type: 'world_knowledge',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_wk_q2',
+                difficulty: 1,
+                skippable: true,
+                category: 'world_knowledge',
+                options: [
+                  { id: 'wk-d', textKey: 'data.tasks.aba_demo_room_kitchen', correct: true },
+                  { id: 'wk-e', textKey: 'data.tasks.aba_demo_room_bed', correct: false },
+                  { id: 'wk-f', textKey: 'data.tasks.aba_demo_room_living', correct: false },
+                ],
+              },
+              {
+                id: 'jungle-aba-so1',
+                type: 'sorting',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_sort_g1',
+                difficulty: 1,
+                skippable: true,
+                groups: [
+                  { id: 'g-food', labelKey: 'data.tasks.aba_demo_sort_g1' },
+                  { id: 'g-toy', labelKey: 'data.tasks.aba_demo_sort_g2' },
+                ],
+                items: [
+                  { id: 'so-1', imageKey: 'aba_sort_food', groupId: 'g-food' },
+                  { id: 'so-2', imageKey: 'aba_sort_toy', groupId: 'g-toy' },
+                  { id: 'so-3', imageKey: 'aba_apple', groupId: 'g-food' },
+                  { id: 'so-4', imageKey: 'aba_cat', groupId: 'g-toy' },
+                ],
+              },
+              {
+                id: 'jungle-aba-so2',
+                type: 'sorting',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_sort_g1',
+                difficulty: 1,
+                skippable: true,
+                groups: [
+                  { id: 'g2-food', labelKey: 'data.tasks.aba_demo_sort_g1' },
+                  { id: 'g2-toy', labelKey: 'data.tasks.aba_demo_sort_g2' },
+                ],
+                items: [
+                  { id: 'so2-1', imageKey: 'aba_banana', groupId: 'g2-food' },
+                  { id: 'so2-2', imageKey: 'aba_dog', groupId: 'g2-toy' },
+                ],
+              },
+              {
+                id: 'jungle-aba-rc1',
+                type: 'routine_chain',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_routine_wet',
+                difficulty: 1,
+                skippable: true,
+                steps: [
+                  { id: 'rc1', labelKey: 'data.tasks.aba_demo_routine_wet', imageKey: 'aba_routine_wet', order: 1 },
+                  { id: 'rc2', labelKey: 'data.tasks.aba_demo_routine_paste', imageKey: 'aba_routine_paste', order: 2 },
+                  { id: 'rc3', labelKey: 'data.tasks.aba_demo_routine_brush', imageKey: 'aba_routine_brush', order: 3 },
+                  { id: 'rc4', labelKey: 'data.tasks.aba_demo_routine_rinse', imageKey: 'aba_routine_rinse', order: 4 },
+                ],
+              },
+              {
+                id: 'jungle-aba-rc2',
+                type: 'routine_chain',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_routine_brush',
+                difficulty: 1,
+                skippable: true,
+                steps: [
+                  { id: 'rc2a', labelKey: 'data.tasks.aba_demo_routine_wet', imageKey: 'aba_routine_wet', order: 1 },
+                  { id: 'rc2b', labelKey: 'data.tasks.aba_demo_routine_paste', imageKey: 'aba_routine_paste', order: 2 },
+                  { id: 'rc2c', labelKey: 'data.tasks.aba_demo_routine_brush', imageKey: 'aba_routine_brush', order: 3 },
+                ],
+              },
+              {
+                id: 'jungle-aba-rc3',
+                type: 'routine_chain',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_routine_wash_title',
+                difficulty: 1,
+                skippable: true,
+                steps: [
+                  { id: 'rc3a', labelKey: 'data.tasks.aba_routine_wash_tap', imageKey: 'aba_routine_wash_tap', order: 1 },
+                  { id: 'rc3b', labelKey: 'data.tasks.aba_routine_wash_soap', imageKey: 'aba_routine_wash_soap', order: 2 },
+                  { id: 'rc3c', labelKey: 'data.tasks.aba_routine_wash_rinse', imageKey: 'aba_routine_wash_rinse', order: 3 },
+                  { id: 'rc3d', labelKey: 'data.tasks.aba_routine_wash_dry', imageKey: 'aba_routine_wash_dry', order: 4 },
+                ],
+              },
+              {
+                id: 'jungle-aba-rc4',
+                type: 'routine_chain',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_routine_sleep_title',
+                difficulty: 1,
+                skippable: true,
+                steps: [
+                  { id: 'rc4a', labelKey: 'data.tasks.aba_routine_sleep_pajamas', imageKey: 'aba_routine_sleep_pajamas', order: 1 },
+                  { id: 'rc4b', labelKey: 'data.tasks.aba_routine_sleep_teeth', imageKey: 'aba_routine_sleep_teeth', order: 2 },
+                  { id: 'rc4c', labelKey: 'data.tasks.aba_routine_sleep_read', imageKey: 'aba_routine_sleep_read', order: 3 },
+                  { id: 'rc4d', labelKey: 'data.tasks.aba_routine_sleep_sleep', imageKey: 'aba_routine_sleep_sleep', order: 4 },
+                ],
+              },
+              {
+                id: 'jungle-aba-ac1',
+                type: 'action_instruction',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_action_clap',
+                difficulty: 1,
+                skippable: true,
+                actionKey: 'data.tasks.aba_demo_action_clap',
+                illustrationKey: 'aba_action_clap',
+              },
+              {
+                id: 'jungle-aba-ac2',
+                type: 'action_instruction',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_action_jump',
+                difficulty: 1,
+                skippable: true,
+                actionKey: 'data.tasks.aba_demo_action_jump',
+                illustrationKey: 'aba_action_jump',
               },
             ],
           },
@@ -819,7 +1251,6 @@ export const worlds: World[] = [
     npcName: 'Зайка Зоя',
     npcEmoji: '',
     topics: [
-      // ---
       {
         id: 'meadow-count5',
         worldId: 'meadow',
@@ -827,68 +1258,70 @@ export const worlds: World[] = [
         subject: 'math',
         lessons: [
           {
-            id: 'meadow-c5-l1',
-            topicId: 'meadow-count5',
-            titleKey: 'data.lessons.meadowC5L1',
-            reward: { xp: 20 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.meadow_c5l1_0' },
-              { speaker: 'tali', textKey: 'data.dialog.meadow_c5l1_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.meadow_c5l1_0_t', bodyKey: 'data.intro.meadow_c5l1_0_b', emoji: '' },
-              { titleKey: 'data.intro.meadow_c5l1_1_t', bodyKey: 'data.intro.meadow_c5l1_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'mc5l1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_1apple', difficulty: 1, visualCount: 1, visualEmoji: '🍎', options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: true }, { id: 'b', textKey: 'data.tasks.opt_two', correct: false }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
-              { id: 'mc5l1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_2stars', difficulty: 1, visualCount: 2, visualEmoji: '⭐', options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
-              { id: 'mc5l1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_3flowers', difficulty: 1, visualCount: 3, visualEmoji: '🌸', options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
-              { id: 'mc5l1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_after2', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
-            ],
-          },
+  id: 'meadow-c5-l1',
+  topicId: 'meadow-count5',
+  titleKey: 'data.lessons.meadowC5L1',
+  reward: { xp: 20 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.meadow_c5l1_0' },
+    { speaker: 'tali', textKey: 'data.dialog.meadow_c5l1_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.meadow_c5l1_0_t', bodyKey: 'data.intro.meadow_c5l1_0_b', emoji: '🚀' },
+    { titleKey: 'data.intro.meadow_c5l1_1_t', bodyKey: 'data.intro.meadow_c5l1_1_b', emoji: '⭐' },
+  ],
+  tasks: [
+    { id: 'mc5l1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_2kittens', difficulty: 1, visualCount: 2, visualEmoji: '🐱', options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
+    { id: 'mc5l1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_next_after_2', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
+    { id: 'mc5l1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_story_tali_1plus2', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
+    { id: 'mc5l1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_true_3_more_1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+    { id: 'mc5l1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_count_2kittens', difficulty: 1, visualCount: 2, visualEmoji: '🐱', options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: true }, { id: 'b', textKey: 'data.tasks.opt_three', correct: false }] },
+  ],
+},
           {
-            id: 'meadow-c5-l2',
-            topicId: 'meadow-count5',
-            titleKey: 'data.lessons.meadowC5L2',
-            reward: { xp: 20 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.meadow_c5l2_0' },
-              { speaker: 'tali', textKey: 'data.dialog.meadow_c5l2_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.meadow_c5l2_0_t', bodyKey: 'data.intro.meadow_c5l2_0_b', emoji: '' },
-              { titleKey: 'data.intro.meadow_c5l2_1_t', bodyKey: 'data.intro.meadow_c5l2_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'mc5l2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_4carrots', difficulty: 1, visualCount: 4, visualEmoji: '🥕', options: [{ id: 'a', textKey: 'data.tasks.opt_three', correct: false }, { id: 'b', textKey: 'data.tasks.opt_four', correct: true }, { id: 'c', textKey: 'data.tasks.opt_five', correct: false }] },
-              { id: 'mc5l2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_5butterflies', difficulty: 1, visualCount: 5, visualEmoji: '🦋', options: [{ id: 'a', textKey: 'data.tasks.opt_four', correct: false }, { id: 'b', textKey: 'data.tasks.opt_five', correct: true }, { id: 'c', textKey: 'data.tasks.opt_six', correct: false }] },
-              { id: 'mc5l2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_after4', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_three', correct: false }, { id: 'b', textKey: 'data.tasks.opt_five', correct: true }, { id: 'c', textKey: 'data.tasks.opt_six', correct: false }] },
-              { id: 'mc5l2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_fingers_one_hand', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_four', correct: false }, { id: 'b', textKey: 'data.tasks.opt_five', correct: true }, { id: 'c', textKey: 'data.tasks.opt_six', correct: false }] },
-            ],
-          },
+  id: 'meadow-c5-l2',
+  topicId: 'meadow-count5',
+  titleKey: 'data.lessons.meadowC5L2',
+  reward: { xp: 20 },
+  dialog: [
+    { speaker: 'tali', textKey: 'data.dialog.meadow_c5l2_0' },
+    { speaker: 'npc', textKey: 'data.dialog.meadow_c5l2_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.meadow_c5l2_0_t', bodyKey: 'data.intro.meadow_c5l2_0_b', emoji: '🦕' },
+    { titleKey: 'data.intro.meadow_c5l2_1_t', bodyKey: 'data.intro.meadow_c5l2_1_b', emoji: '🍪' },
+  ],
+  tasks: [
+    { id: 'mc5l2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_4pizzas', difficulty: 1, visualCount: 4, visualEmoji: '🍕', options: [{ id: 'a', textKey: 'data.tasks.opt_three', correct: false }, { id: 'b', textKey: 'data.tasks.opt_four', correct: true }, { id: 'c', textKey: 'data.tasks.opt_five', correct: false }] },
+    { id: 'mc5l2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_missing_1_2_gap_4_5', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_five', correct: false }] },
+    { id: 'mc5l2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_how_many_more_3to5', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
+    { id: 'mc5l2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_toes_same_as_fingers', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+    { id: 'mc5l2-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_count_4pizzas', difficulty: 1, visualCount: 4, visualEmoji: '🍕', options: [{ id: 'a', textKey: 'data.tasks.opt_four', correct: true }, { id: 'b', textKey: 'data.tasks.opt_five', correct: false }] },
+  ],
+},
           {
-            id: 'meadow-c5-l3',
-            topicId: 'meadow-count5',
-            titleKey: 'data.lessons.meadowC5L3',
-            reward: { xp: 25, item: 'banana_badge' },
-            dialog: [
-              { speaker: 'tali', textKey: 'data.dialog.meadow_c5l3_0' },
-              { speaker: 'npc', textKey: 'data.dialog.meadow_c5l3_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.meadow_c5l3_0_t', bodyKey: 'data.intro.meadow_c5l3_0_b', emoji: '' },
-              { titleKey: 'data.intro.meadow_c5l3_1_t', bodyKey: 'data.intro.meadow_c5l3_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'mc5l3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_more_2or4', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_four', correct: true }] },
-              { id: 'mc5l3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_less_5or3', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_five', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }] },
-              { id: 'mc5l3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_more_3or1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_zoya', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_squirrel', correct: false }] },
-              { id: 'mc5l3-t4', type: 'input', questionKey: 'data.tasks.pre_order_first', difficulty: 2, answer: '1', skippable: true },
-            ],
-          },
+  id: 'meadow-c5-l3',
+  topicId: 'meadow-count5',
+  titleKey: 'data.lessons.meadowC5L3',
+  reward: { xp: 25, item: 'banana_badge' },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.meadow_c5l3_0' },
+    { speaker: 'tali', textKey: 'data.dialog.meadow_c5l3_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.meadow_c5l3_0_t', bodyKey: 'data.intro.meadow_c5l3_0_b', emoji: '⚖️' },
+    { titleKey: 'data.intro.meadow_c5l3_1_t', bodyKey: 'data.intro.meadow_c5l3_1_b', emoji: '🔢' },
+  ],
+  tasks: [
+    { id: 'mc5l3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_more_2or5', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_five', correct: true }] },
+    { id: 'mc5l3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_story_dino_4minus1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
+    { id: 'mc5l3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_pattern_1_2_3_4', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_three', correct: false }, { id: 'b', textKey: 'data.tasks.opt_five', correct: true }, { id: 'c', textKey: 'data.tasks.opt_six', correct: false }] },
+    { id: 'mc5l3-t4', type: 'input', questionKey: 'data.tasks.pre_2plus2', difficulty: 2, answer: '4', skippable: true },
+    { id: 'mc5l3-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_more_2or5', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_five', correct: true }] },
+  ],
+},
         ],
       },
-      // ---
       {
         id: 'meadow-count10',
         worldId: 'meadow',
@@ -896,68 +1329,70 @@ export const worlds: World[] = [
         subject: 'math',
         lessons: [
           {
-            id: 'meadow-c10-l1',
-            topicId: 'meadow-count10',
-            titleKey: 'data.lessons.meadowC10L1',
-            reward: { xp: 25 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.meadow_c10l1_0' },
-              { speaker: 'tali', textKey: 'data.dialog.meadow_c10l1_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.meadow_c10l1_0_t', bodyKey: 'data.intro.meadow_c10l1_0_b', emoji: '' },
-              { titleKey: 'data.intro.meadow_c10l1_1_t', bodyKey: 'data.intro.meadow_c10l1_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'mc10l1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_6berries', difficulty: 1, visualCount: 6, visualEmoji: '🫐', options: [{ id: 'a', textKey: 'data.tasks.opt_five', correct: false }, { id: 'b', textKey: 'data.tasks.opt_six', correct: true }, { id: 'c', textKey: 'data.tasks.opt_seven', correct: false }] },
-              { id: 'mc10l1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_7chicks', difficulty: 1, visualCount: 7, visualEmoji: '🐤', options: [{ id: 'a', textKey: 'data.tasks.opt_six', correct: false }, { id: 'b', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'c', textKey: 'data.tasks.opt_eight', correct: false }] },
-              { id: 'mc10l1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_after6', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_five', correct: false }, { id: 'b', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'c', textKey: 'data.tasks.opt_eight', correct: false }] },
-              { id: 'mc10l1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_5plus1', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_five', correct: false }, { id: 'b', textKey: 'data.tasks.opt_six', correct: true }, { id: 'c', textKey: 'data.tasks.opt_seven', correct: false }] },
-            ],
-          },
+  id: 'meadow-c10-l1',
+  topicId: 'meadow-count10',
+  titleKey: 'data.lessons.meadowC10L1',
+  reward: { xp: 25 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.meadow_c10l1_0' },
+    { speaker: 'tali', textKey: 'data.dialog.meadow_c10l1_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.meadow_c10l1_0_t', bodyKey: 'data.intro.meadow_c10l1_0_b', emoji: '🤖' },
+    { titleKey: 'data.intro.meadow_c10l1_1_t', bodyKey: 'data.intro.meadow_c10l1_1_b', emoji: '🍦' },
+  ],
+  tasks: [
+    { id: 'mc10l1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_6robots', difficulty: 1, visualCount: 6, visualEmoji: '🤖', options: [{ id: 'a', textKey: 'data.tasks.opt_five', correct: false }, { id: 'b', textKey: 'data.tasks.opt_six', correct: true }, { id: 'c', textKey: 'data.tasks.opt_seven', correct: false }] },
+    { id: 'mc10l1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_octopus_vs_spider', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_octopus', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_spider', correct: false }] },
+    { id: 'mc10l1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_how_many_more_5to7', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
+    { id: 'mc10l1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_true_6_less_7', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+    { id: 'mc10l1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_count_6robots', difficulty: 1, visualCount: 6, visualEmoji: '🤖', options: [{ id: 'a', textKey: 'data.tasks.opt_six', correct: true }, { id: 'b', textKey: 'data.tasks.opt_seven', correct: false }] },
+  ],
+},
           {
-            id: 'meadow-c10-l2',
-            topicId: 'meadow-count10',
-            titleKey: 'data.lessons.meadowC10L2',
-            reward: { xp: 25 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.meadow_c10l2_0' },
-              { speaker: 'tali', textKey: 'data.dialog.meadow_c10l2_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.meadow_c10l2_0_t', bodyKey: 'data.intro.meadow_c10l2_0_b', emoji: '' },
-              { titleKey: 'data.intro.meadow_c10l2_1_t', bodyKey: 'data.intro.meadow_c10l2_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'mc10l2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_8fish', difficulty: 1, visualCount: 8, visualEmoji: '🐟', options: [{ id: 'a', textKey: 'data.tasks.opt_seven', correct: false }, { id: 'b', textKey: 'data.tasks.opt_eight', correct: true }, { id: 'c', textKey: 'data.tasks.opt_nine', correct: false }] },
-              { id: 'mc10l2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_9stars', difficulty: 1, visualCount: 9, visualEmoji: '⭐', options: [{ id: 'a', textKey: 'data.tasks.opt_eight', correct: false }, { id: 'b', textKey: 'data.tasks.opt_nine', correct: true }, { id: 'c', textKey: 'data.tasks.opt_ten', correct: false }] },
-              { id: 'mc10l2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_biggest_to10', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_eight', correct: false }, { id: 'b', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'c', textKey: 'data.tasks.opt_ten', correct: true }] },
-              { id: 'mc10l2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_9plus1', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'b', textKey: 'data.tasks.opt_ten', correct: true }, { id: 'c', textKey: 'data.tasks.opt_eleven', correct: false }] },
-            ],
-          },
+  id: 'meadow-c10-l2',
+  topicId: 'meadow-count10',
+  titleKey: 'data.lessons.meadowC10L2',
+  reward: { xp: 25 },
+  dialog: [
+    { speaker: 'tali', textKey: 'data.dialog.meadow_c10l2_0' },
+    { speaker: 'npc', textKey: 'data.dialog.meadow_c10l2_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.meadow_c10l2_0_t', bodyKey: 'data.intro.meadow_c10l2_0_b', emoji: '🐙' },
+    { titleKey: 'data.intro.meadow_c10l2_1_t', bodyKey: 'data.intro.meadow_c10l2_1_b', emoji: '🌟' },
+  ],
+  tasks: [
+    { id: 'mc10l2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_story_parrots_9minus2', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_six', correct: false }, { id: 'b', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'c', textKey: 'data.tasks.opt_eight', correct: false }] },
+    { id: 'mc10l2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_missing_6_7_gap_9', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_seven', correct: false }, { id: 'b', textKey: 'data.tasks.opt_eight', correct: true }, { id: 'c', textKey: 'data.tasks.opt_ten', correct: false }] },
+    { id: 'mc10l2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_9stars_shine', difficulty: 1, visualCount: 9, visualEmoji: '🌟', options: [{ id: 'a', textKey: 'data.tasks.opt_eight', correct: false }, { id: 'b', textKey: 'data.tasks.opt_nine', correct: true }, { id: 'c', textKey: 'data.tasks.opt_ten', correct: false }] },
+    { id: 'mc10l2-t4', type: 'input', questionKey: 'data.tasks.pre_4plus4', difficulty: 2, answer: '8', skippable: true },
+    { id: 'mc10l2-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_missing_6_7_gap_9', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_eight', correct: true }, { id: 'b', textKey: 'data.tasks.opt_ten', correct: false }] },
+  ],
+},
           {
-            id: 'meadow-c10-l3',
-            topicId: 'meadow-count10',
-            titleKey: 'data.lessons.meadowC10L3',
-            reward: { xp: 30 },
-            dialog: [
-              { speaker: 'tali', textKey: 'data.dialog.meadow_c10l3_0' },
-              { speaker: 'npc', textKey: 'data.dialog.meadow_c10l3_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.meadow_c10l3_0_t', bodyKey: 'data.intro.meadow_c10l3_0_b', emoji: '' },
-              { titleKey: 'data.intro.meadow_c10l3_1_t', bodyKey: 'data.intro.meadow_c10l3_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'mc10l3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_more_7or3', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'b', textKey: 'data.tasks.opt_three', correct: false }] },
-              { id: 'mc10l3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_less_6or9', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_six', correct: true }, { id: 'b', textKey: 'data.tasks.opt_nine', correct: false }] },
-              { id: 'mc10l3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_between_7_9', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_six', correct: false }, { id: 'b', textKey: 'data.tasks.opt_eight', correct: true }, { id: 'c', textKey: 'data.tasks.opt_ten', correct: false }] },
-              { id: 'mc10l3-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_pattern_10864', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_four', correct: true }, { id: 'b', textKey: 'data.tasks.opt_five', correct: false }, { id: 'c', textKey: 'data.tasks.opt_seven', correct: false }] },
-            ],
-          },
+  id: 'meadow-c10-l3',
+  topicId: 'meadow-count10',
+  titleKey: 'data.lessons.meadowC10L3',
+  reward: { xp: 30 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.meadow_c10l3_0' },
+    { speaker: 'tali', textKey: 'data.dialog.meadow_c10l3_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.meadow_c10l3_0_t', bodyKey: 'data.intro.meadow_c10l3_0_b', emoji: '🔢' },
+    { titleKey: 'data.intro.meadow_c10l3_1_t', bodyKey: 'data.intro.meadow_c10l3_1_b', emoji: '🧩' },
+  ],
+  tasks: [
+    { id: 'mc10l3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_pattern_2_4_6_8', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'b', textKey: 'data.tasks.opt_ten', correct: true }, { id: 'c', textKey: 'data.tasks.opt_seven', correct: false }] },
+    { id: 'mc10l3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_story_cubes_6plus4', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'b', textKey: 'data.tasks.opt_ten', correct: true }, { id: 'c', textKey: 'data.tasks.opt_eleven', correct: false }] },
+    { id: 'mc10l3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_is_10_biggest_ever', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: false }, { id: 'b', textKey: 'data.tasks.opt_no', correct: true }] },
+    { id: 'mc10l3-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_between_8_10', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_seven', correct: false }, { id: 'b', textKey: 'data.tasks.opt_nine', correct: true }, { id: 'c', textKey: 'data.tasks.opt_ten', correct: false }] },
+    { id: 'mc10l3-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_between_8_10', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_nine', correct: true }, { id: 'b', textKey: 'data.tasks.opt_seven', correct: false }] },
+  ],
+},
         ],
       },
-      // ---
       {
         id: 'meadow-shapes',
         worldId: 'meadow',
@@ -965,65 +1400,68 @@ export const worlds: World[] = [
         subject: 'math',
         lessons: [
           {
-            id: 'meadow-sh-l1',
-            topicId: 'meadow-shapes',
-            titleKey: 'data.lessons.meadowShL1',
-            reward: { xp: 25 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.meadow_shl1_0' },
-              { speaker: 'tali', textKey: 'data.dialog.meadow_shl1_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.meadow_shl1_0_t', bodyKey: 'data.intro.meadow_shl1_0_b', emoji: '' },
-              { titleKey: 'data.intro.meadow_shl1_1_t', bodyKey: 'data.intro.meadow_shl1_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'mshl1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_shape_circle_q', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_circle', correct: true }, { id: 'b', textKey: 'data.tasks.opt_square', correct: false }, { id: 'c', textKey: 'data.tasks.opt_triangle', correct: false }] },
-              { id: 'mshl1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_square_corners', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_zero', correct: false }, { id: 'b', textKey: 'data.tasks.opt_four', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
-              { id: 'mshl1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_circle_like', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_book', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_ball', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_brick', correct: false }] },
-              { id: 'mshl1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_circle_no_corners', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: false }, { id: 'b', textKey: 'data.tasks.opt_no', correct: true }] },
-            ],
-          },
+  id: 'meadow-sh-l1',
+  topicId: 'meadow-shapes',
+  titleKey: 'data.lessons.meadowShL1',
+  reward: { xp: 25 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.meadow_shl1_0' },
+    { speaker: 'tali', textKey: 'data.dialog.meadow_shl1_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.meadow_shl1_0_t', bodyKey: 'data.intro.meadow_shl1_0_b', emoji: '⭕' },
+    { titleKey: 'data.intro.meadow_shl1_1_t', bodyKey: 'data.intro.meadow_shl1_1_b', emoji: '🔵' },
+  ],
+  tasks: [
+    { id: 'mshl1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_which_is_round', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_door', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_coin', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_brick', correct: false }] },
+    { id: 'mshl1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_circle_has_corners', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: false }, { id: 'b', textKey: 'data.tasks.opt_no', correct: true }] },
+    { id: 'mshl1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_snowball_shape', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_square', correct: false }, { id: 'b', textKey: 'data.tasks.opt_circle', correct: true }, { id: 'c', textKey: 'data.tasks.opt_triangle', correct: false }] },
+    { id: 'mshl1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_riddle_i_roll_no_corners', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_triangle', correct: false }, { id: 'b', textKey: 'data.tasks.opt_square', correct: false }, { id: 'c', textKey: 'data.tasks.opt_circle', correct: true }] },
+    { id: 'mshl1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_snowball_shape', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_circle', correct: true }, { id: 'b', textKey: 'data.tasks.opt_square', correct: false }] },
+  ],
+},
           {
-            id: 'meadow-sh-l2',
-            topicId: 'meadow-shapes',
-            titleKey: 'data.lessons.meadowShL2',
-            reward: { xp: 25 },
-            dialog: [
-              { speaker: 'tali', textKey: 'data.dialog.meadow_shl2_0' },
-              { speaker: 'npc', textKey: 'data.dialog.meadow_shl2_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.meadow_shl2_0_t', bodyKey: 'data.intro.meadow_shl2_0_b', emoji: '' },
-              { titleKey: 'data.intro.meadow_shl2_1_t', bodyKey: 'data.intro.meadow_shl2_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'mshl2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_shape_3corners', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_circle', correct: false }, { id: 'b', textKey: 'data.tasks.opt_triangle', correct: true }, { id: 'c', textKey: 'data.tasks.opt_square', correct: false }] },
-              { id: 'mshl2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_triangle_sides', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
-              { id: 'mshl2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_rect_like', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_ball', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_book', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_coin', correct: false }] },
-              { id: 'mshl2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_rect_corners', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: false }, { id: 'c', textKey: 'data.tasks.opt_four', correct: true }] },
-            ],
-          },
+  id: 'meadow-sh-l2',
+  topicId: 'meadow-shapes',
+  titleKey: 'data.lessons.meadowShL2',
+  reward: { xp: 25 },
+  dialog: [
+    { speaker: 'tali', textKey: 'data.dialog.meadow_shl2_0' },
+    { speaker: 'npc', textKey: 'data.dialog.meadow_shl2_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.meadow_shl2_0_t', bodyKey: 'data.intro.meadow_shl2_0_b', emoji: '🟦' },
+    { titleKey: 'data.intro.meadow_shl2_1_t', bodyKey: 'data.intro.meadow_shl2_1_b', emoji: '📺' },
+  ],
+  tasks: [
+    { id: 'mshl2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_square_sides_count', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_three', correct: false }, { id: 'b', textKey: 'data.tasks.opt_four', correct: true }, { id: 'c', textKey: 'data.tasks.opt_five', correct: false }] },
+    { id: 'mshl2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_door_shape', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_circle', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_rectangle', correct: true }, { id: 'c', textKey: 'data.tasks.opt_triangle', correct: false }] },
+    { id: 'mshl2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_sq_rect_same_corners', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+    { id: 'mshl2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_square_is_rectangle', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+    { id: 'mshl2-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_door_shape', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_rectangle', correct: true }, { id: 'b', textKey: 'data.tasks.opt_circle', correct: false }] },
+  ],
+},
           {
-            id: 'meadow-sh-l3',
-            topicId: 'meadow-shapes',
-            titleKey: 'data.lessons.meadowShL3',
-            reward: { xp: 30 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.meadow_shl3_0' },
-              { speaker: 'tali', textKey: 'data.dialog.meadow_shl3_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.meadow_shl3_0_t', bodyKey: 'data.intro.meadow_shl3_0_b', emoji: '' },
-              { titleKey: 'data.intro.meadow_shl3_1_t', bodyKey: 'data.intro.meadow_shl3_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'mshl3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_no_corners_shape', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_square', correct: false }, { id: 'b', textKey: 'data.tasks.opt_triangle', correct: false }, { id: 'c', textKey: 'data.tasks.opt_circle', correct: true }] },
-              { id: 'mshl3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_sq_tri_sides_total', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_five', correct: false }, { id: 'b', textKey: 'data.tasks.opt_six', correct: false }, { id: 'c', textKey: 'data.tasks.opt_seven', correct: true }] },
-              { id: 'mshl3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_sun_like', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_square', correct: false }, { id: 'b', textKey: 'data.tasks.opt_circle', correct: true }, { id: 'c', textKey: 'data.tasks.opt_triangle', correct: false }] },
-              { id: 'mshl3-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_roof_like', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_circle', correct: false }, { id: 'b', textKey: 'data.tasks.opt_square', correct: false }, { id: 'c', textKey: 'data.tasks.opt_triangle', correct: true }] },
-            ],
-          },
+  id: 'meadow-sh-l3',
+  topicId: 'meadow-shapes',
+  titleKey: 'data.lessons.meadowShL3',
+  reward: { xp: 30 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.meadow_shl3_0' },
+    { speaker: 'tali', textKey: 'data.dialog.meadow_shl3_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.meadow_shl3_0_t', bodyKey: 'data.intro.meadow_shl3_0_b', emoji: '🔺' },
+    { titleKey: 'data.intro.meadow_shl3_1_t', bodyKey: 'data.intro.meadow_shl3_1_b', emoji: '🧇' },
+  ],
+  tasks: [
+    { id: 'mshl3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_riddle_3corners_3sides', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_square', correct: false }, { id: 'b', textKey: 'data.tasks.opt_circle', correct: false }, { id: 'c', textKey: 'data.tasks.opt_triangle', correct: true }] },
+    { id: 'mshl3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_tri_plus_sq_corners', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_five', correct: false }, { id: 'b', textKey: 'data.tasks.opt_six', correct: false }, { id: 'c', textKey: 'data.tasks.opt_seven', correct: true }] },
+    { id: 'mshl3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_odd_one_out_shapes', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_circle', correct: false }, { id: 'b', textKey: 'data.tasks.opt_square', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_orange_fruit_obj', correct: true }] },
+    { id: 'mshl3-t4', type: 'input', questionKey: 'data.tasks.pre_circle_corners_input', difficulty: 1, answer: '0', skippable: true },
+    { id: 'mshl3-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_triangle_corners', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_three', correct: true }, { id: 'b', textKey: 'data.tasks.opt_four', correct: false }] },
+  ],
+},
         ],
       },
     ],
@@ -1040,7 +1478,6 @@ export const worlds: World[] = [
     npcName: 'Ёжик Федя',
     npcEmoji: '',
     topics: [
-      // ---
       {
         id: 'forest-vowels',
         worldId: 'forest',
@@ -1048,68 +1485,70 @@ export const worlds: World[] = [
         subject: 'reading_ru',
         lessons: [
           {
-            id: 'forest-v-l1',
-            topicId: 'forest-vowels',
-            titleKey: 'data.lessons.forestVL1',
-            reward: { xp: 20 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.forest_vl1_0' },
-              { speaker: 'tali', textKey: 'data.dialog.forest_vl1_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.forest_vl1_0_t', bodyKey: 'data.intro.forest_vl1_0_b', emoji: '' },
-              { titleKey: 'data.intro.forest_vl1_1_t', bodyKey: 'data.intro.forest_vl1_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'fvl1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_letter_a_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_cloud', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_watermelon', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_cat', correct: false }] },
-              { id: 'fvl1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_a_in_mama', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_m', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_a', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_no_such', correct: false }] },
-              { id: 'fvl1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_a_is_vowel', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_vowel', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_consonant', correct: false }] },
-              { id: 'fvl1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_stork_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_u', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_a', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_letter_o', correct: false }] },
-            ],
-          },
+  id: 'forest-v-l1',
+  topicId: 'forest-vowels',
+  titleKey: 'data.lessons.forestVL1',
+  reward: { xp: 20 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.forest_vl1_0' },
+    { speaker: 'tali', textKey: 'data.dialog.forest_vl1_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.forest_vl1_0_t', bodyKey: 'data.intro.forest_vl1_0_b', emoji: '🅰️' },
+    { titleKey: 'data.intro.forest_vl1_1_t', bodyKey: 'data.intro.forest_vl1_1_b', emoji: '🌀' },
+  ],
+  tasks: [
+    { id: 'fvl1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_arbuz_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_a', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_o', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_letter_u', correct: false }] },
+    { id: 'fvl1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_a_in_mama', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+    { id: 'fvl1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_a_is_vowel_truefalse', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+    { id: 'fvl1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_no_a_in_word', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_aist', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_arbuz', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_koshka_ru', correct: true }] },
+    { id: 'fvl1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_arbuz_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_a', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_o', correct: false }] },
+  ],
+},
           {
-            id: 'forest-v-l2',
-            topicId: 'forest-vowels',
-            titleKey: 'data.lessons.forestVL2',
-            reward: { xp: 20 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.forest_vl2_0' },
-              { speaker: 'tali', textKey: 'data.dialog.forest_vl2_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.forest_vl2_0_t', bodyKey: 'data.intro.forest_vl2_0_b', emoji: '' },
-              { titleKey: 'data.intro.forest_vl2_1_t', bodyKey: 'data.intro.forest_vl2_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'fvl2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_letter_o_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_duck', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_watermelon', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_veggies', correct: true }] },
-              { id: 'fvl2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_letter_u_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_duck', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_cloud', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_watermelon', correct: false }] },
-              { id: 'fvl2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_vowel_in_mak', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_m', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_a', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_letter_k', correct: false }] },
-              { id: 'fvl2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_o_is_vowel', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_vowel', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_consonant', correct: false }] },
-            ],
-          },
+  id: 'forest-v-l2',
+  topicId: 'forest-vowels',
+  titleKey: 'data.lessons.forestVL2',
+  reward: { xp: 20 },
+  dialog: [
+    { speaker: 'tali', textKey: 'data.dialog.forest_vl2_0' },
+    { speaker: 'npc', textKey: 'data.dialog.forest_vl2_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.forest_vl2_0_t', bodyKey: 'data.intro.forest_vl2_0_b', emoji: '🦆' },
+    { titleKey: 'data.intro.forest_vl2_1_t', bodyKey: 'data.intro.forest_vl2_1_b', emoji: '🐟' },
+  ],
+  tasks: [
+    { id: 'fvl2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_oblako_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_a', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_o', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_letter_u', correct: false }] },
+    { id: 'fvl2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_vowels_in_ukho', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
+    { id: 'fvl2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_two_u_in_utka', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: false }, { id: 'b', textKey: 'data.tasks.opt_no', correct: true }] },
+    { id: 'fvl2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_not_o_or_u', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_osel', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_utka_ru', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_apelsin', correct: true }] },
+    { id: 'fvl2-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_oblako_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_o', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_u', correct: false }] },
+  ],
+},
           {
-            id: 'forest-v-l3',
-            topicId: 'forest-vowels',
-            titleKey: 'data.lessons.forestVL3',
-            reward: { xp: 25 },
-            dialog: [
-              { speaker: 'tali', textKey: 'data.dialog.forest_vl3_0' },
-              { speaker: 'npc', textKey: 'data.dialog.forest_vl3_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.forest_vl3_0_t', bodyKey: 'data.intro.forest_vl3_0_b', emoji: '' },
-              { titleKey: 'data.intro.forest_vl3_1_t', bodyKey: 'data.intro.forest_vl3_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'fvl3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_letter_i_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_echo', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_toy', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_watermelon', correct: false }] },
-              { id: 'fvl3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_letter_e_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_needle', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_echo', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_duck', correct: false }] },
-              { id: 'fvl3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_vowels_in_aist', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
-              { id: 'fvl3-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_how_many_vowels_ru', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_five', correct: false }, { id: 'b', textKey: 'data.tasks.opt_six', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_ten', correct: true }] },
-            ],
-          },
+  id: 'forest-v-l3',
+  topicId: 'forest-vowels',
+  titleKey: 'data.lessons.forestVL3',
+  reward: { xp: 25 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.forest_vl3_0' },
+    { speaker: 'tali', textKey: 'data.dialog.forest_vl3_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.forest_vl3_0_t', bodyKey: 'data.intro.forest_vl3_0_b', emoji: '🦁' },
+    { titleKey: 'data.intro.forest_vl3_1_t', bodyKey: 'data.intro.forest_vl3_1_b', emoji: '🎪' },
+  ],
+  tasks: [
+    { id: 'fvl3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_yozh_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_yo', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_ya', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_letter_e', correct: false }] },
+    { id: 'fvl3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_vowel_in_kit', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_k', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_i', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_letter_t', correct: false }] },
+    { id: 'fvl3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_vowels_in_yabloko', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
+    { id: 'fvl3-t4', type: 'input', questionKey: 'data.tasks.pre_vowel_in_les_input', difficulty: 2, answer: 'Е', skippable: true },
+    { id: 'fvl3-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_yozh_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_yo', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_ya', correct: false }] },
+  ],
+},
         ],
       },
-      // ---
       {
         id: 'forest-consonants',
         worldId: 'forest',
@@ -1117,68 +1556,70 @@ export const worlds: World[] = [
         subject: 'reading_ru',
         lessons: [
           {
-            id: 'forest-con-l1',
-            topicId: 'forest-consonants',
-            titleKey: 'data.lessons.forestConL1',
-            reward: { xp: 25 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.forest_conl1_0' },
-              { speaker: 'tali', textKey: 'data.dialog.forest_conl1_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.forest_conl1_0_t', bodyKey: 'data.intro.forest_conl1_0_b', emoji: '' },
-              { titleKey: 'data.intro.forest_conl1_1_t', bodyKey: 'data.intro.forest_conl1_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'fconl1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_m_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_mama', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_watermelon', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_cloud', correct: false }] },
-              { id: 'fconl1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_m_is_consonant', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_vowel', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_consonant', correct: true }] },
-              { id: 'fconl1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_s_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_elephant', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_cat', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_dog_ru', correct: false }, { id: 'd', textKey: 'data.tasks.pre_opt_sun_ru', correct: true }] },
-              { id: 'fconl1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_m_or_a_consonant', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_m', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_a', correct: false }] },
-            ],
-          },
+  id: 'forest-con-l1',
+  topicId: 'forest-consonants',
+  titleKey: 'data.lessons.forestConL1',
+  reward: { xp: 25 },
+  dialog: [
+    { speaker: 'tali', textKey: 'data.dialog.forest_conl1_0' },
+    { speaker: 'npc', textKey: 'data.dialog.forest_conl1_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.forest_conl1_0_t', bodyKey: 'data.intro.forest_conl1_0_b', emoji: '🐻' },
+    { titleKey: 'data.intro.forest_conl1_1_t', bodyKey: 'data.intro.forest_conl1_1_b', emoji: '🍄' },
+  ],
+  tasks: [
+    { id: 'fconl1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_medved_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_m', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_p', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_letter_b', correct: false }] },
+    { id: 'fconl1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_m_vowel_or_cons', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_vowel', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_consonant', correct: true }] },
+    { id: 'fconl1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_b_in_babochka', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+    { id: 'fconl1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_starts_vowel_from_list', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_pauk', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_mukha', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_osel', correct: true }] },
+    { id: 'fconl1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_medved_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_m', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_p', correct: false }] },
+  ],
+},
           {
-            id: 'forest-con-l2',
-            topicId: 'forest-consonants',
-            titleKey: 'data.lessons.forestConL2',
-            reward: { xp: 25 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.forest_conl2_0' },
-              { speaker: 'tali', textKey: 'data.dialog.forest_conl2_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.forest_conl2_0_t', bodyKey: 'data.intro.forest_conl2_0_b', emoji: '' },
-              { titleKey: 'data.intro.forest_conl2_1_t', bodyKey: 'data.intro.forest_conl2_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'fconl2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_t_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_tiger', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_duck', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_mama', correct: false }] },
-              { id: 'fconl2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_k_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_watermelon', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_cat', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_duck', correct: false }] },
-              { id: 'fconl2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_t_or_o_consonant', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_t', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_o', correct: false }] },
-              { id: 'fconl2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_k_in_cat', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
-            ],
-          },
+  id: 'forest-con-l2',
+  topicId: 'forest-consonants',
+  titleKey: 'data.lessons.forestConL2',
+  reward: { xp: 25 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.forest_conl2_0' },
+    { speaker: 'tali', textKey: 'data.dialog.forest_conl2_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.forest_conl2_0_t', bodyKey: 'data.intro.forest_conl2_0_b', emoji: '🐊' },
+    { titleKey: 'data.intro.forest_conl2_1_t', bodyKey: 'data.intro.forest_conl2_1_b', emoji: '🦖' },
+  ],
+  tasks: [
+    { id: 'fconl2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_tigr_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_t', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_k', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_letter_d', correct: false }] },
+    { id: 'fconl2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_k_is_vowel_false', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: false }, { id: 'b', textKey: 'data.tasks.opt_no', correct: true }] },
+    { id: 'fconl2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_word_starts_d', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_tigr_ru', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_krokodil', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_delfin', correct: true }] },
+    { id: 'fconl2-t4', type: 'input', questionKey: 'data.tasks.pre_first_letter_koshka', difficulty: 1, answer: 'К', skippable: true },
+    { id: 'fconl2-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_tigr_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_t', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_k', correct: false }] },
+  ],
+},
           {
-            id: 'forest-con-l3',
-            topicId: 'forest-consonants',
-            titleKey: 'data.lessons.forestConL3',
-            reward: { xp: 30 },
-            dialog: [
-              { speaker: 'tali', textKey: 'data.dialog.forest_conl3_0' },
-              { speaker: 'npc', textKey: 'data.dialog.forest_conl3_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.forest_conl3_0_t', bodyKey: 'data.intro.forest_conl3_0_b', emoji: '' },
-              { titleKey: 'data.intro.forest_conl3_1_t', bodyKey: 'data.intro.forest_conl3_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'fconl3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_n_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_scissors_ru', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_sky_ru', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_mama', correct: false }] },
-              { id: 'fconl3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_n_is_consonant', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_vowel', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_consonant', correct: true }] },
-              { id: 'fconl3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_syllable_ma', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_ma', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_sa', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_na', correct: false }] },
-              { id: 'fconl3-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_letter_n_word', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_cat', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_nose_ru', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_mama', correct: false }] },
-            ],
-          },
+  id: 'forest-con-l3',
+  topicId: 'forest-consonants',
+  titleKey: 'data.lessons.forestConL3',
+  reward: { xp: 30 },
+  dialog: [
+    { speaker: 'tali', textKey: 'data.dialog.forest_conl3_0' },
+    { speaker: 'npc', textKey: 'data.dialog.forest_conl3_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.forest_conl3_0_t', bodyKey: 'data.intro.forest_conl3_0_b', emoji: '🦋' },
+    { titleKey: 'data.intro.forest_conl3_1_t', bodyKey: 'data.intro.forest_conl3_1_b', emoji: '🌺' },
+  ],
+  tasks: [
+    { id: 'fconl3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_raduga_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_r', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_l', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_letter_n', correct: false }] },
+    { id: 'fconl3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_l_vowel_or_cons', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_vowel', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_consonant', correct: true }] },
+    { id: 'fconl3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_consonants_in_nos', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
+    { id: 'fconl3-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_r_in_les', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: false }, { id: 'b', textKey: 'data.tasks.opt_no', correct: true }] },
+    { id: 'fconl3-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_raduga_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_r', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_n', correct: false }] },
+  ],
+},
         ],
       },
-      // ---
       {
         id: 'forest-syllables',
         worldId: 'forest',
@@ -1186,65 +1627,68 @@ export const worlds: World[] = [
         subject: 'reading_ru',
         lessons: [
           {
-            id: 'forest-syl-l1',
-            topicId: 'forest-syllables',
-            titleKey: 'data.lessons.forestSylL1',
-            reward: { xp: 30 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.forest_syll1_0' },
-              { speaker: 'tali', textKey: 'data.dialog.forest_syll1_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.forest_syll1_0_t', bodyKey: 'data.intro.forest_syll1_0_b', emoji: '' },
-              { titleKey: 'data.intro.forest_syll1_1_t', bodyKey: 'data.intro.forest_syll1_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'fsyll1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_read_ma', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_ma', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_mo', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_mu', correct: false }] },
-              { id: 'fsyll1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_read_mo', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_ma', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_mo', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_mu', correct: false }] },
-              { id: 'fsyll1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_mu_letter', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_s', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_m', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_letter_n', correct: false }] },
-              { id: 'fsyll1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_mama_syllables', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
-            ],
-          },
+  id: 'forest-syl-l1',
+  topicId: 'forest-syllables',
+  titleKey: 'data.lessons.forestSylL1',
+  reward: { xp: 30 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.forest_syll1_0' },
+    { speaker: 'tali', textKey: 'data.dialog.forest_syll1_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.forest_syll1_0_t', bodyKey: 'data.intro.forest_syll1_0_b', emoji: '🎵' },
+    { titleKey: 'data.intro.forest_syll1_1_t', bodyKey: 'data.intro.forest_syll1_1_b', emoji: '🐄' },
+  ],
+  tasks: [
+    { id: 'fsyll1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_read_ma', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_ma', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_mo', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_mu', correct: false }] },
+    { id: 'fsyll1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_mu_first_letter', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_s', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_m', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_letter_n', correct: false }] },
+    { id: 'fsyll1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_mama_syllables', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
+    { id: 'fsyll1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_build_ma_ma', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_word_mama', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_word_molo', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_word_muka', correct: false }] },
+    { id: 'fsyll1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_read_ma', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_ma', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_mo', correct: false }] },
+  ],
+},
           {
-            id: 'forest-syl-l2',
-            topicId: 'forest-syllables',
-            titleKey: 'data.lessons.forestSylL2',
-            reward: { xp: 30 },
-            dialog: [
-              { speaker: 'tali', textKey: 'data.dialog.forest_syll2_0' },
-              { speaker: 'npc', textKey: 'data.dialog.forest_syll2_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.forest_syll2_0_t', bodyKey: 'data.intro.forest_syll2_0_b', emoji: '' },
-              { titleKey: 'data.intro.forest_syll2_1_t', bodyKey: 'data.intro.forest_syll2_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'fsyll2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_read_sa', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_sa', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_so', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_su', correct: false }] },
-              { id: 'fsyll2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_so_letter', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_m', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_s', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_letter_n', correct: false }] },
-              { id: 'fsyll2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_sova_syllables', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
-              { id: 'fsyll2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_su_starts', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_sa', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_so', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_su', correct: true }] },
-            ],
-          },
+  id: 'forest-syl-l2',
+  topicId: 'forest-syllables',
+  titleKey: 'data.lessons.forestSylL2',
+  reward: { xp: 30 },
+  dialog: [
+    { speaker: 'tali', textKey: 'data.dialog.forest_syll2_0' },
+    { speaker: 'npc', textKey: 'data.dialog.forest_syll2_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.forest_syll2_0_t', bodyKey: 'data.intro.forest_syll2_0_b', emoji: '🦉' },
+    { titleKey: 'data.intro.forest_syll2_1_t', bodyKey: 'data.intro.forest_syll2_1_b', emoji: '🐘' },
+  ],
+  tasks: [
+    { id: 'fsyll2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_read_so', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_sa', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_so', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_su', correct: false }] },
+    { id: 'fsyll2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_sa_second_letter', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_letter_s', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_letter_a', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_letter_o', correct: false }] },
+    { id: 'fsyll2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_sova_syllables', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
+    { id: 'fsyll2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_syllable_has_vowel', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+    { id: 'fsyll2-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_read_so', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_so', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_sa', correct: false }] },
+  ],
+},
           {
-            id: 'forest-syl-l3',
-            topicId: 'forest-syllables',
-            titleKey: 'data.lessons.forestSylL3',
-            reward: { xp: 35, item: 'jungle_leaf' },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.forest_syll3_0' },
-              { speaker: 'tali', textKey: 'data.dialog.forest_syll3_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.forest_syll3_0_t', bodyKey: 'data.intro.forest_syll3_0_b', emoji: '' },
-              { titleKey: 'data.intro.forest_syll3_1_t', bodyKey: 'data.intro.forest_syll3_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'fsyll3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_read_na', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_ma', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_na', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_sa', correct: false }] },
-              { id: 'fsyll3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_nora_syllables', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
-              { id: 'fsyll3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_first_syl_mama', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_ma', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_na', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_sa', correct: false }] },
-              { id: 'fsyll3-t4', type: 'input', questionKey: 'data.tasks.pre_type_syl_mo', difficulty: 2, answer: 'МО', skippable: true },
-            ],
-          },
+  id: 'forest-syl-l3',
+  topicId: 'forest-syllables',
+  titleKey: 'data.lessons.forestSylL3',
+  reward: { xp: 35, item: 'jungle_leaf' },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.forest_syll3_0' },
+    { speaker: 'tali', textKey: 'data.dialog.forest_syll3_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.forest_syll3_0_t', bodyKey: 'data.intro.forest_syll3_0_b', emoji: '🌈' },
+    { titleKey: 'data.intro.forest_syll3_1_t', bodyKey: 'data.intro.forest_syll3_1_b', emoji: '🎯' },
+  ],
+  tasks: [
+    { id: 'fsyll3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_read_na', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_ma', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_na', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_sa', correct: false }] },
+    { id: 'fsyll3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_nora_syllables', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
+    { id: 'fsyll3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_first_syl_raketa', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_ra', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_na', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_syl_ke', correct: false }] },
+    { id: 'fsyll3-t4', type: 'input', questionKey: 'data.tasks.pre_type_syl_mo', difficulty: 2, answer: 'МО', skippable: true },
+    { id: 'fsyll3-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_read_na', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_syl_na', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_syl_sa', correct: false }] },
+  ],
+},
         ],
       },
     ],
@@ -1261,7 +1705,6 @@ export const worlds: World[] = [
     npcName: 'Черепашка Тара',
     npcEmoji: '',
     topics: [
-      // ---
       {
         id: 'garden-colors',
         worldId: 'garden',
@@ -1269,68 +1712,70 @@ export const worlds: World[] = [
         subject: 'logic',
         lessons: [
           {
-            id: 'garden-col-l1',
-            topicId: 'garden-colors',
-            titleKey: 'data.lessons.gardenColL1',
-            reward: { xp: 20 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.garden_coll1_0' },
-              { speaker: 'tali', textKey: 'data.dialog.garden_coll1_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.garden_coll1_0_t', bodyKey: 'data.intro.garden_coll1_0_b', emoji: '' },
-              { titleKey: 'data.intro.garden_coll1_1_t', bodyKey: 'data.intro.garden_coll1_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'gcoll1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_color_apple', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }, { id: 'c', textKey: 'data.tasks.opt_green', correct: false }] },
-              { id: 'gcoll1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_color_sky', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: false }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_yellow', correct: false }] },
-              { id: 'gcoll1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_color_grass', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: false }, { id: 'b', textKey: 'data.tasks.opt_green', correct: true }, { id: 'c', textKey: 'data.tasks.opt_blue', correct: false }] },
-              { id: 'gcoll1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_color_sun', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_yellow', correct: true }, { id: 'b', textKey: 'data.tasks.opt_red', correct: false }, { id: 'c', textKey: 'data.tasks.opt_blue', correct: false }] },
-            ],
-          },
+  id: 'garden-col-l1',
+  topicId: 'garden-colors',
+  titleKey: 'data.lessons.gardenColL1',
+  reward: { xp: 20 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.garden_coll1_0' },
+    { speaker: 'tali', textKey: 'data.dialog.garden_coll1_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.garden_coll1_0_t', bodyKey: 'data.intro.garden_coll1_0_b', emoji: '🎨' },
+    { titleKey: 'data.intro.garden_coll1_1_t', bodyKey: 'data.intro.garden_coll1_1_b', emoji: '🍓' },
+  ],
+  tasks: [
+    { id: 'gcoll1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_color_strawberry', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }, { id: 'c', textKey: 'data.tasks.opt_green', correct: false }] },
+    { id: 'gcoll1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_not_blue_sky_sea_grass', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_sky_ru', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_sea_ru', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_grass_ru', correct: true }] },
+    { id: 'gcoll1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_frog_is_green_true', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+    { id: 'gcoll1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_riddle_orange_underground', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_tomato_ru', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_morkovka', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_banana_ru', correct: false }] },
+    { id: 'gcoll1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_color_strawberry', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }] },
+  ],
+},
           {
-            id: 'garden-col-l2',
-            topicId: 'garden-colors',
-            titleKey: 'data.lessons.gardenColL2',
-            reward: { xp: 20 },
-            dialog: [
-              { speaker: 'tali', textKey: 'data.dialog.garden_coll2_0' },
-              { speaker: 'npc', textKey: 'data.dialog.garden_coll2_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.garden_coll2_0_t', bodyKey: 'data.intro.garden_coll2_0_b', emoji: '' },
-              { titleKey: 'data.intro.garden_coll2_1_t', bodyKey: 'data.intro.garden_coll2_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'gcoll2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_color_orange_fruit', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_orange', correct: true }, { id: 'c', textKey: 'data.tasks.opt_blue', correct: false }] },
-              { id: 'gcoll2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_color_banana', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_green', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_yellow', correct: true }, { id: 'c', textKey: 'data.tasks.opt_red', correct: false }] },
-              { id: 'gcoll2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_big_or_small_elephant', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_big', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_small', correct: false }] },
-              { id: 'gcoll2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_big_or_small_ant', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_big', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_small', correct: true }] },
-            ],
-          },
+  id: 'garden-col-l2',
+  topicId: 'garden-colors',
+  titleKey: 'data.lessons.gardenColL2',
+  reward: { xp: 20 },
+  dialog: [
+    { speaker: 'tali', textKey: 'data.dialog.garden_coll2_0' },
+    { speaker: 'npc', textKey: 'data.dialog.garden_coll2_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.garden_coll2_0_t', bodyKey: 'data.intro.garden_coll2_0_b', emoji: '🍊' },
+    { titleKey: 'data.intro.garden_coll2_1_t', bodyKey: 'data.intro.garden_coll2_1_b', emoji: '🐘' },
+  ],
+  tasks: [
+    { id: 'gcoll2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_color_sunflower', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_yellow', correct: true }, { id: 'c', textKey: 'data.tasks.opt_blue', correct: false }] },
+    { id: 'gcoll2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_mix_red_yellow', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_green', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_orange', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_purple', correct: false }] },
+    { id: 'gcoll2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_eggplant_purple_true', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+    { id: 'gcoll2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_yellow_lemon_banana_tomato', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
+    { id: 'gcoll2-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_color_sunflower', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_yellow', correct: true }, { id: 'b', textKey: 'data.tasks.opt_red', correct: false }] },
+  ],
+},
           {
-            id: 'garden-col-l3',
-            topicId: 'garden-colors',
-            titleKey: 'data.lessons.gardenColL3',
-            reward: { xp: 25 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.garden_coll3_0' },
-              { speaker: 'tali', textKey: 'data.dialog.garden_coll3_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.garden_coll3_0_t', bodyKey: 'data.intro.garden_coll3_0_b', emoji: '' },
-              { titleKey: 'data.intro.garden_coll3_1_t', bodyKey: 'data.intro.garden_coll3_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'gcoll3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_color_snow', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_white', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }, { id: 'c', textKey: 'data.tasks.opt_red', correct: false }] },
-              { id: 'gcoll3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_color_night', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_black', correct: true }, { id: 'c', textKey: 'data.tasks.opt_green', correct: false }] },
-              { id: 'gcoll3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_bigger_cat_mouse', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_cat', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_mouse', correct: false }] },
-              { id: 'gcoll3-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_mix_red_blue', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_green', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_purple', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_orange', correct: false }] },
-            ],
-          },
+  id: 'garden-col-l3',
+  topicId: 'garden-colors',
+  titleKey: 'data.lessons.gardenColL3',
+  reward: { xp: 25 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.garden_coll3_0' },
+    { speaker: 'tali', textKey: 'data.dialog.garden_coll3_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.garden_coll3_0_t', bodyKey: 'data.intro.garden_coll3_0_b', emoji: '🎭' },
+    { titleKey: 'data.intro.garden_coll3_1_t', bodyKey: 'data.intro.garden_coll3_1_b', emoji: '🌑' },
+  ],
+  tasks: [
+    { id: 'gcoll3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_color_polar_bear', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_white', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }, { id: 'c', textKey: 'data.tasks.opt_red', correct: false }] },
+    { id: 'gcoll3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_mix_blue_yellow', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: false }, { id: 'b', textKey: 'data.tasks.opt_green', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_orange', correct: false }] },
+    { id: 'gcoll3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_not_black_coal_raven_snow', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_coal', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_raven', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_snow_ru', correct: true }] },
+    { id: 'gcoll3-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_riddle_black_white_swims', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_dolphin', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_penguin_ru', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_polar_bear_ru', correct: false }] },
+    { id: 'gcoll3-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_polar_bear_color', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_white', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_black', correct: false }] },
+  ],
+},
         ],
       },
-      // ---
       {
         id: 'garden-animals',
         worldId: 'garden',
@@ -1338,65 +1783,68 @@ export const worlds: World[] = [
         subject: 'logic',
         lessons: [
           {
-            id: 'garden-anim-l1',
-            topicId: 'garden-animals',
-            titleKey: 'data.lessons.gardenAnimL1',
-            reward: { xp: 20 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.garden_animl1_0' },
-              { speaker: 'tali', textKey: 'data.dialog.garden_animl1_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.garden_animl1_0_t', bodyKey: 'data.intro.garden_animl1_0_b', emoji: '' },
-              { titleKey: 'data.intro.garden_animl1_1_t', bodyKey: 'data.intro.garden_animl1_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'ganiml1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_domestic_animal', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_wolf', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_cow', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_bear', correct: false }] },
-              { id: 'ganiml1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_dog_domestic', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
-              { id: 'ganiml1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_gives_milk', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_cat', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_cow', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_dog_ru', correct: false }] },
-              { id: 'ganiml1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_domestic', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
-            ],
-          },
+  id: 'garden-anim-l1',
+  topicId: 'garden-animals',
+  titleKey: 'data.lessons.gardenAnimL1',
+  reward: { xp: 20 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.garden_animl1_0' },
+    { speaker: 'tali', textKey: 'data.dialog.garden_animl1_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.garden_animl1_0_t', bodyKey: 'data.intro.garden_animl1_0_b', emoji: '🐄' },
+    { titleKey: 'data.intro.garden_animl1_1_t', bodyKey: 'data.intro.garden_animl1_1_b', emoji: '🏡' },
+  ],
+  tasks: [
+    { id: 'ganiml1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_who_gives_milk', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_cat', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_cow', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_dog_ru', correct: false }] },
+    { id: 'ganiml1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_dog_is_wild_false', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: false }, { id: 'b', textKey: 'data.tasks.opt_no', correct: true }] },
+    { id: 'ganiml1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_riddle_purrs_catches_mice', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_dog_ru', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_cat', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_cow', correct: false }] },
+    { id: 'ganiml1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_domestic_from4', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_one', correct: false }, { id: 'b', textKey: 'data.tasks.opt_two', correct: true }, { id: 'c', textKey: 'data.tasks.opt_three', correct: false }] },
+    { id: 'ganiml1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_cat_domestic', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+  ],
+},
           {
-            id: 'garden-anim-l2',
-            topicId: 'garden-animals',
-            titleKey: 'data.lessons.gardenAnimL2',
-            reward: { xp: 25 },
-            dialog: [
-              { speaker: 'tali', textKey: 'data.dialog.garden_animl2_0' },
-              { speaker: 'npc', textKey: 'data.dialog.garden_animl2_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.garden_animl2_0_t', bodyKey: 'data.intro.garden_animl2_0_b', emoji: '' },
-              { titleKey: 'data.intro.garden_animl2_1_t', bodyKey: 'data.intro.garden_animl2_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'ganiml2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_wild_animal', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_cow', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_wolf', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_horse', correct: false }] },
-              { id: 'ganiml2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_fox_wild', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
-              { id: 'ganiml2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_lives_forest', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_cow', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_bear', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_horse', correct: false }] },
-              { id: 'ganiml2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_lion_or_cat_wild', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_lion', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_cat', correct: false }] },
-            ],
-          },
+  id: 'garden-anim-l2',
+  topicId: 'garden-animals',
+  titleKey: 'data.lessons.gardenAnimL2',
+  reward: { xp: 25 },
+  dialog: [
+    { speaker: 'tali', textKey: 'data.dialog.garden_animl2_0' },
+    { speaker: 'npc', textKey: 'data.dialog.garden_animl2_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.garden_animl2_0_t', bodyKey: 'data.intro.garden_animl2_0_b', emoji: '🦊' },
+    { titleKey: 'data.intro.garden_animl2_1_t', bodyKey: 'data.intro.garden_animl2_1_b', emoji: '🌲' },
+  ],
+  tasks: [
+    { id: 'ganiml2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_bear_habitat', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_house', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_forest', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_sea', correct: false }] },
+    { id: 'ganiml2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_lion_is_domestic_false', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: false }, { id: 'b', textKey: 'data.tasks.opt_no', correct: true }] },
+    { id: 'ganiml2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_riddle_red_sly_forest', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_wolf', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_fox', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_bear', correct: false }] },
+    { id: 'ganiml2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_odd_domestic_in_wild', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_wolf', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_fox', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_cow', correct: true }] },
+    { id: 'ganiml2-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_fox_wild', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+  ],
+},
           {
-            id: 'garden-anim-l3',
-            topicId: 'garden-animals',
-            titleKey: 'data.lessons.gardenAnimL3',
-            reward: { xp: 25 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.garden_animl3_0' },
-              { speaker: 'tali', textKey: 'data.dialog.garden_animl3_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.garden_animl3_0_t', bodyKey: 'data.intro.garden_animl3_0_b', emoji: '' },
-              { titleKey: 'data.intro.garden_animl3_1_t', bodyKey: 'data.intro.garden_animl3_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'ganiml3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_fish_lives', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_land', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_water', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_sky', correct: false }] },
-              { id: 'ganiml3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_bird_lives', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_land', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_water', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_sky', correct: true }] },
-              { id: 'ganiml3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_can_fly', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_dog_ru', correct: false }, { id: 'b', textKey: 'data.tasks.opt_bird', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_horse', correct: false }] },
-              { id: 'ganiml3-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_cat_legs', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_four', correct: true }, { id: 'c', textKey: 'data.tasks.opt_six', correct: false }] },
-            ],
-          },
+  id: 'garden-anim-l3',
+  topicId: 'garden-animals',
+  titleKey: 'data.lessons.gardenAnimL3',
+  reward: { xp: 25 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.garden_animl3_0' },
+    { speaker: 'tali', textKey: 'data.dialog.garden_animl3_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.garden_animl3_0_t', bodyKey: 'data.intro.garden_animl3_0_b', emoji: '🐬' },
+    { titleKey: 'data.intro.garden_animl3_1_t', bodyKey: 'data.intro.garden_animl3_1_b', emoji: '🦅' },
+  ],
+  tasks: [
+    { id: 'ganiml3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_fish_habitat', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_land', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_water', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_sky', correct: false }] },
+    { id: 'ganiml3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_who_flies_and_swims', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_cat', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_utka_ru', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_dog_ru', correct: false }] },
+    { id: 'ganiml3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_riddle_sings_underwater', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_fish_ru', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_whale', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_crab', correct: false }] },
+    { id: 'ganiml3-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_cat_vs_bird_legs', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_cat', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_bird_ru', correct: false }] },
+    { id: 'ganiml3-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_fish_habitat', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_water', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_land', correct: false }] },
+  ],
+},
         ],
       },
       // ---
@@ -1482,7 +1930,6 @@ export const worlds: World[] = [
     npcName: 'Попугай Пит',
     npcEmoji: '',
     topics: [
-      // ---
       {
         id: 'island-abc',
         worldId: 'island',
@@ -1490,68 +1937,84 @@ export const worlds: World[] = [
         subject: 'reading',
         lessons: [
           {
-            id: 'island-abc-l1',
-            topicId: 'island-abc',
-            titleKey: 'data.lessons.islandAbcL1',
-            reward: { xp: 20 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.island_abcl1_0' },
-              { speaker: 'tali', textKey: 'data.dialog.island_abcl1_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.island_abcl1_0_t', bodyKey: 'data.intro.island_abcl1_0_b', emoji: '' },
-              { titleKey: 'data.intro.island_abcl1_1_t', bodyKey: 'data.intro.island_abcl1_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'iabcl1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_letter_a', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_a', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_en_b', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_en_c', correct: false }] },
-              { id: 'iabcl1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_apple_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_b', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_a', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_c', correct: false }] },
-              { id: 'iabcl1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_letter_b', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_a', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_b', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_c', correct: false }] },
-              { id: 'iabcl1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_ball_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_a', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_b', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_c', correct: false }] },
-            ],
-          },
+  id: 'island-abc-l1',
+  topicId: 'island-abc',
+  titleKey: 'data.lessons.islandAbcL1',
+  reward: { xp: 20 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.island_abcl1_0' },
+    { speaker: 'tali', textKey: 'data.dialog.island_abcl1_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.island_abcl1_0_t', bodyKey: 'data.intro.island_abcl1_0_b', emoji: '🦊' },
+    { titleKey: 'data.intro.island_abcl1_1_t', bodyKey: 'data.intro.island_abcl1_1_b', emoji: '🐝' },
+  ],
+  tasks: [
+    { id: 'iabcl1-t1', type: 'multiple_choice', questionKey: 'data.tasks.en_alligator_starts', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_a', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_en_b', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_en_c', correct: false }] },
+    { id: 'iabcl1-t2', type: 'multiple_choice', questionKey: 'data.tasks.en_ball_starts_a_false', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: false }, { id: 'b', textKey: 'data.tasks.opt_no', correct: true }] },
+    { id: 'iabcl1-t3', type: 'multiple_choice', questionKey: 'data.tasks.en_odd_not_c', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.en_opt_cat_en', correct: false }, { id: 'b', textKey: 'data.tasks.en_opt_car', correct: false }, { id: 'c', textKey: 'data.tasks.en_opt_dog_en', correct: true }] },
+    { id: 'iabcl1-t4', type: 'multiple_choice', questionKey: 'data.tasks.en_first_a_or_c', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_a', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_en_c', correct: false }] },
+    { id: 'iabcl1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_en_alligator_starts', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_a', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_en_b', correct: false }] },
+  ],
+},
           {
-            id: 'island-abc-l2',
-            topicId: 'island-abc',
-            titleKey: 'data.lessons.islandAbcL2',
-            reward: { xp: 20 },
-            dialog: [
-              { speaker: 'tali', textKey: 'data.dialog.island_abcl2_0' },
-              { speaker: 'npc', textKey: 'data.dialog.island_abcl2_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.island_abcl2_0_t', bodyKey: 'data.intro.island_abcl2_0_b', emoji: '' },
-              { titleKey: 'data.intro.island_abcl2_1_t', bodyKey: 'data.intro.island_abcl2_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'iabcl2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_letter_c', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_b', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_c', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_d', correct: false }] },
-              { id: 'iabcl2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_cat_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_a', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_c', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_d', correct: false }] },
-              { id: 'iabcl2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_letter_d', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_c', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_d', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_e', correct: false }] },
-              { id: 'iabcl2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_dog_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_c', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_d', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_e', correct: false }] },
-            ],
-          },
+  id: 'island-abc-l2',
+  topicId: 'island-abc',
+  titleKey: 'data.lessons.islandAbcL2',
+  reward: { xp: 20 },
+  dialog: [
+    { speaker: 'tali', textKey: 'data.dialog.island_abcl2_0' },
+    { speaker: 'npc', textKey: 'data.dialog.island_abcl2_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.island_abcl2_0_t', bodyKey: 'data.intro.island_abcl2_0_b', emoji: '🦕' },
+    { titleKey: 'data.intro.island_abcl2_1_t', bodyKey: 'data.intro.island_abcl2_1_b', emoji: '🐘' },
+  ],
+  tasks: [
+    { id: 'iabcl2-t1', type: 'multiple_choice', questionKey: 'data.tasks.en_elephant_starts', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_d', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_e', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_f', correct: false }] },
+    { id: 'iabcl2-t2', type: 'multiple_choice', questionKey: 'data.tasks.en_d_in_dinosaur', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+    { id: 'iabcl2-t3', type: 'multiple_choice', questionKey: 'data.tasks.en_odd_not_f', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.en_opt_fish_en', correct: false }, { id: 'b', textKey: 'data.tasks.en_opt_frog_en', correct: false }, { id: 'c', textKey: 'data.tasks.en_opt_egg', correct: true }] },
+    { id: 'iabcl2-t4', type: 'input', questionKey: 'data.tasks.en_first_letter_duck', difficulty: 1, answer: 'D', skippable: true },
+    { id: 'iabcl2-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_en_elephant_starts', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_e', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_en_d', correct: false }] },
+  ],
+},
           {
-            id: 'island-abc-l3',
-            topicId: 'island-abc',
-            titleKey: 'data.lessons.islandAbcL3',
-            reward: { xp: 25 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.island_abcl3_0' },
-              { speaker: 'tali', textKey: 'data.dialog.island_abcl3_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.island_abcl3_0_t', bodyKey: 'data.intro.island_abcl3_0_b', emoji: '' },
-              { titleKey: 'data.intro.island_abcl3_1_t', bodyKey: 'data.intro.island_abcl3_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'iabcl3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_letter_e', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_d', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_e', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_f', correct: false }] },
-              { id: 'iabcl3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_egg_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_d', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_e', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_f', correct: false }] },
-              { id: 'iabcl3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_letter_f', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_e', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_f', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_a', correct: false }] },
-              { id: 'iabcl3-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_frog_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_e', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_a', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_en_f', correct: true }] },
-            ],
-          },
+  id: 'island-abc-l3',
+  topicId: 'island-abc',
+  titleKey: 'data.lessons.islandAbcL3',
+  reward: { xp: 25 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.island_abcl3_0' },
+    { speaker: 'tali', textKey: 'data.dialog.island_abcl3_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.island_abcl3_0_t', bodyKey: 'data.intro.island_abcl3_0_b', emoji: '🌌' },
+    { titleKey: 'data.intro.island_abcl3_1_t', bodyKey: 'data.intro.island_abcl3_1_b', emoji: '🦛' },
+  ],
+  tasks: [
+    { id: 'iabcl3-t1', type: 'multiple_choice', questionKey: 'data.tasks.en_hippo_starts', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.en_opt_g', correct: false }, { id: 'b', textKey: 'data.tasks.en_opt_h', correct: true }, { id: 'c', textKey: 'data.tasks.en_opt_i', correct: false }] },
+    { id: 'iabcl3-t2', type: 'multiple_choice', questionKey: 'data.tasks.en_ice_igloo_both_i', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+    { id: 'iabcl3-t3', type: 'multiple_choice', questionKey: 'data.tasks.en_last_g_h_i', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.en_opt_g', correct: false }, { id: 'b', textKey: 'data.tasks.en_opt_h', correct: false }, { id: 'c', textKey: 'data.tasks.en_opt_i', correct: true }] },
+    { id: 'iabcl3-t4', type: 'multiple_choice', questionKey: 'data.tasks.en_riddle_first_letter', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_b', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_a', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_c', correct: false }] },
+    { id: 'iabcl3-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_en_hippo_starts', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.en_opt_h', correct: true }, { id: 'b', textKey: 'data.tasks.en_opt_g', correct: false }] },
+  ],
+},
         ],
       },
-      // ---
       {
         id: 'island-colors',
         worldId: 'island',
@@ -1559,68 +2022,85 @@ export const worlds: World[] = [
         subject: 'reading',
         lessons: [
           {
-            id: 'island-col-l1',
-            topicId: 'island-colors',
-            titleKey: 'data.lessons.islandColL1',
-            reward: { xp: 20 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.island_coll1_0' },
-              { speaker: 'tali', textKey: 'data.dialog.island_coll1_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.island_coll1_0_t', bodyKey: 'data.intro.island_coll1_0_b', emoji: '' },
-              { titleKey: 'data.intro.island_coll1_1_t', bodyKey: 'data.intro.island_coll1_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'icoll1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_apple_color', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }, { id: 'c', textKey: 'data.tasks.opt_green', correct: false }] },
-              { id: 'icoll1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_sky_color', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: false }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_yellow', correct: false }] },
-              { id: 'icoll1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_grass_color', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: false }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }, { id: 'c', textKey: 'data.tasks.opt_green', correct: true }] },
-              { id: 'icoll1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_red_object', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_cloud', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_apple', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_leaf', correct: false }] },
-            ],
-          },
+  id: 'island-col-l1',
+  topicId: 'island-colors',
+  titleKey: 'data.lessons.islandColL1',
+  reward: { xp: 20 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.island_coll1_0' },
+    { speaker: 'tali', textKey: 'data.dialog.island_coll1_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.island_coll1_0_t', bodyKey: 'data.intro.island_coll1_0_b', emoji: '🎨' },
+    { titleKey: 'data.intro.island_coll1_1_t', bodyKey: 'data.intro.island_coll1_1_b', emoji: '🌊' },
+  ],
+  tasks: [
+    { id: 'icoll1-t1', type: 'multiple_choice', questionKey: 'data.tasks.en_firetruck_color', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }, { id: 'c', textKey: 'data.tasks.opt_green', correct: false }] },
+    { id: 'icoll1-t2', type: 'multiple_choice', questionKey: 'data.tasks.en_not_blue_list', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.en_opt_sky_en', correct: false }, { id: 'b', textKey: 'data.tasks.en_opt_blueberry', correct: false }, { id: 'c', textKey: 'data.tasks.en_opt_banana_en', correct: true }] },
+    { id: 'icoll1-t3', type: 'multiple_choice', questionKey: 'data.tasks.en_grass_green_true', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+    { id: 'icoll1-t4', type: 'multiple_choice', questionKey: 'data.tasks.en_riddle_red_sweet_bush', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.en_opt_lemon_en', correct: false }, { id: 'b', textKey: 'data.tasks.en_opt_strawberry', correct: true }, { id: 'c', textKey: 'data.tasks.en_opt_blueberry', correct: false }] },
+    { id: 'icoll1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_en_firetruck_color', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }] },
+  ],
+},
           {
-            id: 'island-col-l2',
-            topicId: 'island-colors',
-            titleKey: 'data.lessons.islandColL2',
-            reward: { xp: 25 },
-            dialog: [
-              { speaker: 'tali', textKey: 'data.dialog.island_coll2_0' },
-              { speaker: 'npc', textKey: 'data.dialog.island_coll2_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.island_coll2_0_t', bodyKey: 'data.intro.island_coll2_0_b', emoji: '' },
-              { titleKey: 'data.intro.island_coll2_1_t', bodyKey: 'data.intro.island_coll2_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'icoll2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_sun_color', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_yellow', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }, { id: 'c', textKey: 'data.tasks.opt_red', correct: false }] },
-              { id: 'icoll2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_banana_color', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_yellow', correct: true }, { id: 'c', textKey: 'data.tasks.opt_green', correct: false }] },
-              { id: 'icoll2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_orange_object', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_apple', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_orange', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_cloud', correct: false }] },
-              { id: 'icoll2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_yellow_object', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_banana', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_en_apple', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_en_leaf', correct: false }] },
-            ],
-          },
+  id: 'island-col-l2',
+  topicId: 'island-colors',
+  titleKey: 'data.lessons.islandColL2',
+  reward: { xp: 25 },
+  dialog: [
+    { speaker: 'tali', textKey: 'data.dialog.island_coll2_0' },
+    { speaker: 'npc', textKey: 'data.dialog.island_coll2_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.island_coll2_0_t', bodyKey: 'data.intro.island_coll2_0_b', emoji: '🍊' },
+    { titleKey: 'data.intro.island_coll2_1_t', bodyKey: 'data.intro.island_coll2_1_b', emoji: '🟣' },
+  ],
+  tasks: [
+    { id: 'icoll2-t1', type: 'multiple_choice', questionKey: 'data.tasks.en_pumpkin_color', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_orange', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }, { id: 'c', textKey: 'data.tasks.opt_red', correct: false }] },
+    { id: 'icoll2-t2', type: 'multiple_choice', questionKey: 'data.tasks.en_mix_red_blue', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.opt_green', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_purple', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_orange', correct: false }] },
+    { id: 'icoll2-t3', type: 'multiple_choice', questionKey: 'data.tasks.en_count_yellow_in_list', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: true }, { id: 'c', textKey: 'data.tasks.opt_four', correct: false }] },
+    { id: 'icoll2-t4', type: 'multiple_choice', questionKey: 'data.tasks.en_grapes_always_green', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: false }, { id: 'b', textKey: 'data.tasks.opt_no', correct: true }] },
+    { id: 'icoll2-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_en_pumpkin_color', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_orange', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }] },
+  ],
+},
           {
-            id: 'island-col-l3',
-            topicId: 'island-colors',
-            titleKey: 'data.lessons.islandColL3',
-            reward: { xp: 30 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.island_coll3_0' },
-              { speaker: 'tali', textKey: 'data.dialog.island_coll3_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.island_coll3_0_t', bodyKey: 'data.intro.island_coll3_0_b', emoji: '' },
-              { titleKey: 'data.intro.island_coll3_1_t', bodyKey: 'data.intro.island_coll3_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'icoll3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_frog_color', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: false }, { id: 'b', textKey: 'data.tasks.opt_green', correct: true }, { id: 'c', textKey: 'data.tasks.opt_blue', correct: false }] },
-              { id: 'icoll3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_snow_color', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_white', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }, { id: 'c', textKey: 'data.tasks.opt_red', correct: false }] },
-              { id: 'icoll3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_night_color', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_black', correct: true }, { id: 'c', textKey: 'data.tasks.opt_green', correct: false }] },
-              { id: 'icoll3-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_what_color_tomato', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: true }, { id: 'b', textKey: 'data.tasks.opt_blue', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_yellow', correct: false }] },
-            ],
-          },
+  id: 'island-col-l3',
+  topicId: 'island-colors',
+  titleKey: 'data.lessons.islandColL3',
+  reward: { xp: 30 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.island_coll3_0' },
+    { speaker: 'tali', textKey: 'data.dialog.island_coll3_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.island_coll3_0_t', bodyKey: 'data.intro.island_coll3_0_b', emoji: '🐼' },
+    { titleKey: 'data.intro.island_coll3_1_t', bodyKey: 'data.intro.island_coll3_1_b', emoji: '🌑' },
+  ],
+  tasks: [
+    { id: 'icoll3-t1', type: 'multiple_choice', questionKey: 'data.tasks.en_polar_bear_color', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_white', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_black', correct: false }, { id: 'c', textKey: 'data.tasks.opt_red', correct: false }] },
+    { id: 'icoll3-t2', type: 'multiple_choice', questionKey: 'data.tasks.en_mix_yellow_blue', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.opt_red', correct: false }, { id: 'b', textKey: 'data.tasks.opt_green', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_orange', correct: false }] },
+    { id: 'icoll3-t3', type: 'multiple_choice', questionKey: 'data.tasks.en_not_black_list', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.en_opt_coal', correct: false }, { id: 'b', textKey: 'data.tasks.en_opt_raven_en', correct: false }, { id: 'c', textKey: 'data.tasks.en_opt_snow_en', correct: true }] },
+    { id: 'icoll3-t4', type: 'multiple_choice', questionKey: 'data.tasks.en_riddle_bw_cold_swims', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.en_opt_seal', correct: false }, { id: 'b', textKey: 'data.tasks.en_opt_penguin_en', correct: true }, { id: 'c', textKey: 'data.tasks.en_opt_dolphin_en', correct: false }] },
+    { id: 'icoll3-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_en_polar_bear_color', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_white', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_black', correct: false }] },
+  ],
+},
         ],
       },
-      // ---
       {
         id: 'island-animals',
         worldId: 'island',
@@ -1628,70 +2108,87 @@ export const worlds: World[] = [
         subject: 'reading',
         lessons: [
           {
-            id: 'island-anim-l1',
-            topicId: 'island-animals',
-            titleKey: 'data.lessons.islandAnimL1',
-            reward: { xp: 20 },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.island_animl1_0' },
-              { speaker: 'tali', textKey: 'data.dialog.island_animl1_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.island_animl1_0_t', bodyKey: 'data.intro.island_animl1_0_b', emoji: '' },
-              { titleKey: 'data.intro.island_animl1_1_t', bodyKey: 'data.intro.island_animl1_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'ianiml1-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_cat_word', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_cat', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_en_dog', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_en_bird', correct: false }] },
-              { id: 'ianiml1-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_dog_word', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_cat', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_dog', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_bird', correct: false }] },
-              { id: 'ianiml1-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_cat_sound', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_woof', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_meow', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_moo', correct: false }] },
-              { id: 'ianiml1-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_dog_starts', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_c', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_d', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_a', correct: false }] },
-            ],
-          },
+  id: 'island-anim-l1',
+  topicId: 'island-animals',
+  titleKey: 'data.lessons.islandAnimL1',
+  reward: { xp: 20 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.island_animl1_0' },
+    { speaker: 'tali', textKey: 'data.dialog.island_animl1_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.island_animl1_0_t', bodyKey: 'data.intro.island_animl1_0_b', emoji: '🐱' },
+    { titleKey: 'data.intro.island_animl1_1_t', bodyKey: 'data.intro.island_animl1_1_b', emoji: '🐶' },
+  ],
+  tasks: [
+    { id: 'ianiml1-t1', type: 'multiple_choice', questionKey: 'data.tasks.en_dog_sound', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_meow', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_woof', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_moo', correct: false }] },
+    { id: 'ianiml1-t2', type: 'multiple_choice', questionKey: 'data.tasks.en_rabbit_short_tail', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: true }, { id: 'b', textKey: 'data.tasks.opt_no', correct: false }] },
+    { id: 'ianiml1-t3', type: 'multiple_choice', questionKey: 'data.tasks.en_riddle_meow_whiskers', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.en_opt_dog_en', correct: false }, { id: 'b', textKey: 'data.tasks.en_opt_cat_en', correct: true }, { id: 'c', textKey: 'data.tasks.en_opt_rabbit', correct: false }] },
+    { id: 'ianiml1-t4', type: 'multiple_choice', questionKey: 'data.tasks.en_not_a_pet', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.en_opt_cat_en', correct: false }, { id: 'b', textKey: 'data.tasks.en_opt_rabbit', correct: false }, { id: 'c', textKey: 'data.tasks.en_opt_wolf_en', correct: true }] },
+    { id: 'ianiml1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_en_dog_sound', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_woof', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_en_meow', correct: false }] },
+  ],
+},
           {
-            id: 'island-anim-l2',
-            topicId: 'island-animals',
-            titleKey: 'data.lessons.islandAnimL2',
-            reward: { xp: 20 },
-            dialog: [
-              { speaker: 'tali', textKey: 'data.dialog.island_animl2_0' },
-              { speaker: 'npc', textKey: 'data.dialog.island_animl2_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.island_animl2_0_t', bodyKey: 'data.intro.island_animl2_0_b', emoji: '' },
-              { titleKey: 'data.intro.island_animl2_1_t', bodyKey: 'data.intro.island_animl2_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'ianiml2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_bird_word', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_cat', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_bird', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_fish', correct: false }] },
-              { id: 'ianiml2-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_fish_word', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_bird', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_fish', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_dog', correct: false }] },
-              { id: 'ianiml2-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_bird_can', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_swim', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_fly', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_run', correct: false }] },
-              { id: 'ianiml2-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_fish_lives', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_land', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_water', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_sky', correct: false }] },
-            ],
-          },
+  id: 'island-anim-l2',
+  topicId: 'island-animals',
+  titleKey: 'data.lessons.islandAnimL2',
+  reward: { xp: 20 },
+  dialog: [
+    { speaker: 'tali', textKey: 'data.dialog.island_animl2_0' },
+    { speaker: 'npc', textKey: 'data.dialog.island_animl2_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.island_animl2_0_t', bodyKey: 'data.intro.island_animl2_0_b', emoji: '🐦' },
+    { titleKey: 'data.intro.island_animl2_1_t', bodyKey: 'data.intro.island_animl2_1_b', emoji: '🐟' },
+  ],
+  tasks: [
+    { id: 'ianiml2-t1', type: 'multiple_choice', questionKey: 'data.tasks.en_bird_uses_wings', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_swim', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_fly', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_run', correct: false }] },
+    { id: 'ianiml2-t2', type: 'multiple_choice', questionKey: 'data.tasks.en_fish_lives_in', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.en_opt_sky_en', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_water', correct: true }, { id: 'c', textKey: 'data.tasks.en_opt_tree', correct: false }] },
+    { id: 'ianiml2-t3', type: 'multiple_choice', questionKey: 'data.tasks.en_frog_not_fish_can', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_swim', correct: false }, { id: 'b', textKey: 'data.tasks.en_opt_jump', correct: true }, { id: 'c', textKey: 'data.tasks.en_opt_bark', correct: false }] },
+    { id: 'ianiml2-t4', type: 'multiple_choice', questionKey: 'data.tasks.en_all_birds_fly_false', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: false }, { id: 'b', textKey: 'data.tasks.opt_no', correct: true }] },
+    { id: 'ianiml2-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_en_bird_fly', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_fly', correct: true }, { id: 'b', textKey: 'data.tasks.pre_opt_en_swim', correct: false }] },
+  ],
+},
           {
-            id: 'island-anim-l3',
-            topicId: 'island-animals',
-            titleKey: 'data.lessons.islandAnimL3',
-            reward: { xp: 30, item: 'star_fragment' },
-            dialog: [
-              { speaker: 'npc', textKey: 'data.dialog.island_animl3_0' },
-              { speaker: 'tali', textKey: 'data.dialog.island_animl3_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.island_animl3_0_t', bodyKey: 'data.intro.island_animl3_0_b', emoji: '' },
-              { titleKey: 'data.intro.island_animl3_1_t', bodyKey: 'data.intro.island_animl3_1_b', emoji: '' },
-            ],
-            tasks: [
-              { id: 'ianiml3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_cow_word', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_cat', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_cow', correct: true }, { id: 'c', textKey: 'data.tasks.pre_opt_en_dog', correct: false }] },
-              { id: 'ianiml3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_cow_sound', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_woof', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_meow', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_en_moo', correct: true }] },
-              { id: 'ianiml3-t3', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_how_many_animal_words', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_two', correct: false }, { id: 'b', textKey: 'data.tasks.opt_three', correct: false }, { id: 'c', textKey: 'data.tasks.opt_four', correct: true }] },
-              { id: 'ianiml3-t4', type: 'multiple_choice', questionKey: 'data.tasks.pre_en_which_swims', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_cat', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_bird', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_en_fish', correct: true }] },
-            ],
-          },
+  id: 'island-anim-l3',
+  topicId: 'island-animals',
+  titleKey: 'data.lessons.islandAnimL3',
+  reward: { xp: 30, item: 'star_fragment' },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.island_animl3_0' },
+    { speaker: 'tali', textKey: 'data.dialog.island_animl3_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.island_animl3_0_t', bodyKey: 'data.intro.island_animl3_0_b', emoji: '🐘' },
+    { titleKey: 'data.intro.island_animl3_1_t', bodyKey: 'data.intro.island_animl3_1_b', emoji: '🐧' },
+  ],
+  tasks: [
+    { id: 'ianiml3-t1', type: 'multiple_choice', questionKey: 'data.tasks.en_penguin_cannot', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.pre_opt_en_swim', correct: false }, { id: 'b', textKey: 'data.tasks.pre_opt_en_walk', correct: false }, { id: 'c', textKey: 'data.tasks.pre_opt_en_fly', correct: true }] },
+    { id: 'ianiml3-t2', type: 'multiple_choice', questionKey: 'data.tasks.en_riddle_trunk_biggest', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.en_opt_hippo_en', correct: false }, { id: 'b', textKey: 'data.tasks.en_opt_elephant_en', correct: true }, { id: 'c', textKey: 'data.tasks.en_opt_rhino', correct: false }] },
+    { id: 'ianiml3-t3', type: 'multiple_choice', questionKey: 'data.tasks.en_cat_vs_bird_legs', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.en_opt_cat_en', correct: true }, { id: 'b', textKey: 'data.tasks.en_opt_bird_en', correct: false }] },
+    { id: 'ianiml3-t4', type: 'multiple_choice', questionKey: 'data.tasks.en_which_cannot_fly', difficulty: 2,
+      options: [{ id: 'a', textKey: 'data.tasks.en_opt_eagle', correct: false }, { id: 'b', textKey: 'data.tasks.en_opt_parrot_en', correct: false }, { id: 'c', textKey: 'data.tasks.en_opt_penguin_en', correct: true }] },
+    { id: 'ianiml3-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_en_penguin_fly', difficulty: 1,
+      options: [{ id: 'a', textKey: 'data.tasks.opt_yes', correct: false }, { id: 'b', textKey: 'data.tasks.opt_no', correct: true }] },
+  ],
+},
         ],
       },
     ],
   },
-  // ---
   {
     id: 'g1math', titleKey: 'data.worlds.g1math', descriptionKey: 'data.worldDesc.g1math',
     biome: 'town', accentColor: '#FF7043', npcEmoji: '', ageBand: '7',
@@ -2824,7 +3321,7 @@ export const worlds: World[] = [
         { id: 'g4m-md-l1', topicId: 'g4m-multidigit', titleKey: 'data.lessons.g4mMdL1', reward: { xp: 30 }, tasks: [
           { id: 'g4m-md-l1-t1', type: 'multiple_choice', audience: 'standard', questionKey: 'data.tasks.g4m_md_q1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4m_md_q1_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md_q1_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_md_q1_c', correct: false }] },
           { id: 'g4m-md-l1-t2', type: 'multiple_choice', audience: 'standard', questionKey: 'data.tasks.g4m_md_q2', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4m_md_q2_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4m_md_q2_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4m_md_q2_c', correct: false }] },
-          { id: 'g4m-md-l1-t3', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.g4m_md_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md_q3_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4m_md_q3_c', correct: true }] },
+          { id: 'g4m-md-l1-t3', type: 'multiple_choice', audience: 'standard', questionKey: 'data.tasks.g4m_md_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md_q3_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4m_md_q3_c', correct: true }] },
           { id: 'g4m-md-l1-t4', type: 'multiple_choice', audience: 'standard', questionKey: 'data.tasks.g4m_md_q4', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4m_md_q4_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md_q4_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_md_q4_c', correct: false }] },
         ] },
         { id: 'g4m-md-l2', topicId: 'g4m-multidigit', titleKey: 'data.lessons.g4mMdL2', reward: { xp: 30 }, tasks: [
@@ -2836,7 +3333,7 @@ export const worlds: World[] = [
         { id: 'g4m-md-l3', topicId: 'g4m-multidigit', titleKey: 'data.lessons.g4mMdL3', reward: { xp: 30 }, tasks: [
           { id: 'g4m-md-l3-t1', type: 'multiple_choice', audience: 'standard', questionKey: 'data.tasks.g4m_md3_q1', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md3_q1_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md3_q1_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_md3_q1_c', correct: false }] },
           { id: 'g4m-md-l3-t2', type: 'multiple_choice', audience: 'standard', questionKey: 'data.tasks.g4m_md3_q2', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md3_q2_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4m_md3_q2_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4m_md3_q2_c', correct: false }] },
-          { id: 'g4m-md-l3-t3', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.g4m_md3_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md3_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md3_q3_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4m_md3_q3_c', correct: true }] },
+          { id: 'g4m-md-l3-t3', type: 'multiple_choice', audience: 'standard', questionKey: 'data.tasks.g4m_md3_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md3_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md3_q3_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4m_md3_q3_c', correct: true }] },
           { id: 'g4m-md-l3-t4', type: 'multiple_choice', audience: 'standard', questionKey: 'data.tasks.g4m_md3_q4', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4m_md3_q4_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md3_q4_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_md3_q4_c', correct: false }] },
         ] },
       ] },
@@ -3190,16 +3687,16 @@ export type ChildProfileForFilter = {
   methodology: string | null;
 };
 
+/** Tasks shown in a lesson: same set for standard and special (ABA) profiles. ABA differs in UI only (prompts, reinforcement). */
+function taskVisibleForLesson(t: LessonTask): boolean {
+  return !t.audience || t.audience === 'standard';
+}
+
 export function filterTasksForProfile(
   tasks: LessonTask[],
-  profile: ChildProfileForFilter | null,
+  _profile: ChildProfileForFilter | null,
 ): LessonTask[] {
-  if (!profile || profile.child_mode === 'standard') {
-    return tasks.filter((t) => !t.audience || t.audience === 'standard');
-  }
-  return tasks.filter(
-    (t) => !t.audience || t.audience === 'standard' || t.audience === 'special_aba',
-  );
+  return tasks.filter(taskVisibleForLesson);
 }
 
 

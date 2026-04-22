@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Pressable, Share, View } from 'react-native';
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Pressable, Share, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { NanoBananaIcon } from '../src/components/NanoBananaIcon';
 import { NANO_UI } from '../src/constants/nanoBananaAssets';
@@ -14,8 +14,16 @@ import { Button } from '../src/components/Button';
 import { PinModal } from '../src/components/PinModal';
 import { useAppTheme } from '../src/theme';
 import { useAuth } from '../src/context/AuthContext';
-import { useProgressStore, getCompletedWorlds } from '../src/store/progressStore';
+import {
+  useProgressStore,
+  getCompletedWorlds,
+  getWeeklyStats,
+  formatLocalDateYMD,
+  type WeeklyDayStat,
+} from '../src/store/progressStore';
 import { useSettingsStore } from '../src/store/settingsStore';
+import { useAbaLiveSessionStore } from '../src/store/abaLiveSessionStore';
+import { isSupabaseConfigured, supabase } from '@/src/services/supabase';
 import {
   generateReport,
   getWeeklyReport,
@@ -28,28 +36,52 @@ import {
 
 type TabId = 'overall' | 'weekly' | 'byIsland';
 
-// ── 7-day XP bar chart ────────────────────────────────────────────────────────
+type RealtimeAbaSession = {
+  active: boolean;
+  lessonTitleKey: string;
+  taskIndex: number;
+  totalTasks: number;
+  lastResult: string | null;
+  lastUpdated: string | null;
+  tasksCompleted: number;
+  tasksSkipped: number;
+  mistakes: number;
+  tokensEarned: number | null;
+  status: string;
+};
+
+function mapAbaLiveSessionRow(row: Record<string, unknown>): RealtimeAbaSession {
+  const status = String(row.status ?? '');
+  return {
+    active: status === 'active',
+    lessonTitleKey: String(row.lesson_title_key ?? ''),
+    taskIndex: Number(row.task_index ?? 0),
+    totalTasks: Number(row.total_tasks ?? 0),
+    lastResult: row.last_result != null ? String(row.last_result) : null,
+    lastUpdated: row.last_updated != null ? String(row.last_updated) : null,
+    tasksCompleted: Number(row.tasks_completed ?? 0),
+    tasksSkipped: Number(row.tasks_skipped ?? 0),
+    mistakes: Number(row.mistakes ?? 0),
+    tokensEarned: row.tokens_earned != null ? Number(row.tokens_earned) : null,
+    status,
+  };
+}
+
+// ── 7-day XP bar chart (local calendar dates, same source as getWeeklyStats) ─
 function XPWeekChart({
-  xpHistory,
+  weeklyStats,
   theme,
 }: {
-  xpHistory: Record<string, number>;
+  weeklyStats: WeeklyDayStat[];
   theme: ReturnType<typeof useAppTheme>;
 }) {
   const { t, i18n } = useTranslation();
 
   const localeMap: Record<string, string> = { en: 'en-US', ru: 'ru-RU', ky: 'ru-RU' };
   const dateLocale = localeMap[i18n.language] ?? 'ru-RU';
+  const todayKey = formatLocalDateYMD(new Date());
 
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    const key = d.toISOString().slice(0, 10);
-    const dayLabel = d.toLocaleDateString(dateLocale, { weekday: 'short' });
-    return { key, dayLabel, xp: xpHistory[key] ?? 0 };
-  });
-
-  const maxXP = Math.max(...days.map((d) => d.xp), 1);
+  const maxXP = Math.max(...weeklyStats.map((d) => d.xpEarned), 1);
 
   return (
     <Card style={{ marginBottom: 0 }}>
@@ -58,16 +90,18 @@ function XPWeekChart({
         <AppText variant="subtitle">{t('parentReport.xpChart')}</AppText>
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 6, height: 80 }}>
-        {days.map((day) => {
-          const barHeight = Math.max(4, (day.xp / maxXP) * 68);
-          const isToday = day.key === new Date().toISOString().slice(0, 10);
+        {weeklyStats.map((day) => {
+          const xp = day.xpEarned;
+          const barHeight = Math.max(4, (xp / maxXP) * 68);
+          const isToday = day.date === todayKey;
+          const dayLabel = new Date(`${day.date}T12:00:00`).toLocaleDateString(dateLocale, { weekday: 'short' });
           return (
-            <View key={day.key} style={{ flex: 1, alignItems: 'center' }}>
-              {day.xp > 0 && (
+            <View key={day.date} style={{ flex: 1, alignItems: 'center' }}>
+              {xp > 0 && (
                 <AppText
                   style={{ fontSize: 9, color: theme.colors.primary, fontWeight: '700', marginBottom: 2 }}
                 >
-                  {day.xp}
+                  {xp}
                 </AppText>
               )}
               <View
@@ -87,7 +121,7 @@ function XPWeekChart({
                   textTransform: 'capitalize',
                 }}
               >
-                {day.dayLabel}
+                {dayLabel}
               </AppText>
             </View>
           );
@@ -107,9 +141,36 @@ export default function ParentReportScreen() {
   const streakCount = useProgressStore((s) => s.streakCount);
   const topics = useProgressStore((s) => s.topics);
   const xpHistory = useProgressStore((s) => s.xpHistory);
+  const lessonsCompletedByDate = useProgressStore((s) => s.lessonsCompletedByDate);
+  const correctAnswersByDate = useProgressStore((s) => s.correctAnswersByDate);
+
+  const weeklyStats = useMemo(
+    () => getWeeklyStats(),
+    [xpHistory, lessonsCompletedByDate, correctAnswersByDate],
+  );
+  const lessonsSum = useMemo(
+    () => weeklyStats.reduce((acc, d) => acc + d.lessonsCompleted, 0),
+    [weeklyStats],
+  );
+  const correctSum = useMemo(
+    () => weeklyStats.reduce((acc, d) => acc + d.correctAnswers, 0),
+    [weeklyStats],
+  );
+  const xpSum = useMemo(() => weeklyStats.reduce((acc, d) => acc + d.xpEarned, 0), [weeklyStats]);
 
   const parentPin = useSettingsStore((s) => s.parentPin);
+  const parentPinHydrated = useSettingsStore((s) => s.parentPinHydrated);
   const language = useSettingsStore((s) => s.language);
+
+  const abaLiveActive = useAbaLiveSessionStore((s) => s.active);
+  const abaLiveLessonTitleKey = useAbaLiveSessionStore((s) => s.lessonTitleKey);
+  const abaLiveTaskIndex = useAbaLiveSessionStore((s) => s.taskIndex);
+  const abaLiveTotalTasks = useAbaLiveSessionStore((s) => s.totalTasks);
+  const abaLiveLastResult = useAbaLiveSessionStore((s) => s.lastResult);
+  const abaLiveLastUpdated = useAbaLiveSessionStore((s) => s.lastUpdated);
+  const abaLiveSummary = useAbaLiveSessionStore((s) => s.lastSummary);
+
+  const [realtimeSession, setRealtimeSession] = useState<RealtimeAbaSession | null>(null);
 
   const [activeTab, setActiveTab] = useState<TabId>('overall');
   const [report, setReport] = useState<ParentReport | null>(null);
@@ -118,8 +179,14 @@ export default function ParentReportScreen() {
   const [loadingWorlds, setLoadingWorlds] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [pinVerified, setPinVerified] = useState(!parentPin);
-  const [showPinModal, setShowPinModal] = useState(!!parentPin);
+  const [pinVerified, setPinVerified] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(false);
+
+  useLayoutEffect(() => {
+    if (!parentPinHydrated) return;
+    setPinVerified(!parentPin);
+    setShowPinModal(!!parentPin);
+  }, [parentPinHydrated, parentPin]);
 
   const totalAttempts = Object.values(topics).reduce(
     (sum, tp) => sum + (tp?.totalAttempts ?? 0),
@@ -181,11 +248,15 @@ export default function ParentReportScreen() {
     if (activeTab === 'weekly' && !weekly) {
       setError('');
       setLoading(true);
+      const w = getWeeklyStats();
+      const lessonsThisWeek = w.reduce((acc, d) => acc + d.lessonsCompleted, 0);
+      const correctThisWeek = w.reduce((acc, d) => acc + d.correctAnswers, 0);
+      const weekStartDate = w[0]?.date ?? '';
       getWeeklyReport({
         ...baseStats,
-        lessonsThisWeek: Math.min(totalAttempts, 20),
-        correctThisWeek: Math.min(globalCorrectCount, 20),
-        weekStartDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        lessonsThisWeek,
+        correctThisWeek,
+        weekStartDate,
       })
         .then(setWeekly)
         .catch(() => setError(t('profile.parentReportError')))
@@ -202,6 +273,100 @@ export default function ParentReportScreen() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchWorldReport is stable enough
   }, [activeTab, pinVerified, completedWorlds.length]);
+
+  useEffect(() => {
+    if (!pinVerified || !isSupabaseConfigured) return;
+
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+
+    void (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      if (!userId || cancelled) return;
+
+      const { data: activeRow } = await supabase
+        .from('aba_live_sessions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (activeRow && typeof activeRow === 'object') {
+        setRealtimeSession(mapAbaLiveSessionRow(activeRow as Record<string, unknown>));
+      } else {
+        setRealtimeSession(null);
+      }
+
+      if (cancelled) return;
+
+      const ch = supabase
+        .channel(`aba_live_sessions:${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'aba_live_sessions',
+            filter: `user_id=eq.${userId}`,
+          },
+          (payload) => {
+            if (payload.eventType === 'DELETE') {
+              const oldRow = payload.old as Record<string, unknown> | undefined;
+              if (oldRow && String(oldRow.user_id ?? '') === userId) {
+                setRealtimeSession(null);
+              }
+              return;
+            }
+            const row = payload.new as Record<string, unknown> | undefined;
+            if (!row || typeof row !== 'object') return;
+            setRealtimeSession(mapAbaLiveSessionRow(row));
+          },
+        )
+        .subscribe();
+
+      channel = ch;
+    })().catch(console.error);
+
+    return () => {
+      cancelled = true;
+      if (channel) {
+        void supabase.removeChannel(channel);
+      }
+    };
+  }, [pinVerified]);
+
+  const liveActive =
+    realtimeSession != null ? realtimeSession.status === 'active' : abaLiveActive;
+  const liveLessonTitleKey = realtimeSession?.lessonTitleKey ?? abaLiveLessonTitleKey;
+  const liveTaskIndex = realtimeSession?.taskIndex ?? abaLiveTaskIndex;
+  const liveTotalTasks = realtimeSession?.totalTasks ?? abaLiveTotalTasks;
+  const liveLastResult = realtimeSession?.lastResult ?? abaLiveLastResult;
+  const liveLastUpdated =
+    realtimeSession?.lastUpdated ??
+    (abaLiveLastUpdated != null ? new Date(abaLiveLastUpdated).toISOString() : null);
+
+  const displaySummary =
+    realtimeSession != null && realtimeSession.status === 'finished'
+      ? {
+          lessonTitleKey: realtimeSession.lessonTitleKey,
+          tasksCompleted: realtimeSession.tasksCompleted,
+          tasksSkipped: realtimeSession.tasksSkipped,
+          mistakes: realtimeSession.mistakes,
+          tokensEarned: realtimeSession.tokensEarned ?? 0,
+        }
+      : abaLiveSummary
+        ? {
+            lessonTitleKey: abaLiveSummary.lessonTitleKey,
+            tasksCompleted: abaLiveSummary.tasksCompleted,
+            tasksSkipped: abaLiveSummary.tasksSkipped,
+            mistakes: abaLiveSummary.mistakes,
+            tokensEarned: abaLiveSummary.tokensEarned,
+          }
+        : null;
 
   const handleDiscussWithAI = () => {
     const summary =
@@ -248,6 +413,16 @@ export default function ParentReportScreen() {
     { id: 'byIsland', labelKey: 'parentReport.tabByIsland' },
   ];
 
+  if (!parentPinHydrated) {
+    return (
+      <Screen>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      </Screen>
+    );
+  }
+
   // PIN gate
   if (!pinVerified) {
     return (
@@ -285,8 +460,89 @@ export default function ParentReportScreen() {
       <AppText style={{ color: theme.colors.textMuted }}>{t('parentReport.subtitle')}</AppText>
       <Spacer size="md" />
 
+      {((activeTab === 'overall' && report?.isStub) || (activeTab === 'weekly' && weekly?.isStub)) && (
+        <>
+          <View
+            style={{
+              backgroundColor: '#FFF8E6',
+              borderRadius: theme.radii.md,
+              borderWidth: 1,
+              borderColor: '#F0C040',
+              paddingVertical: theme.spacing.sm,
+              paddingHorizontal: theme.spacing.md,
+            }}
+          >
+            <AppText variant="small" style={{ color: '#7A5800', lineHeight: 20 }}>
+              {t('parentReport.stubNotice')}
+            </AppText>
+          </View>
+          <Spacer size="md" />
+        </>
+      )}
+
+      {(profile?.child_mode === 'special' || liveActive || displaySummary != null) && (
+        <Card style={{ marginBottom: theme.spacing.lg, borderLeftWidth: 4, borderLeftColor: theme.colors.primary }}>
+          <AppText variant="subtitle" style={{ fontWeight: '800', marginBottom: theme.spacing.sm }}>
+            {t('parentReport.liveSessionTitle')}
+          </AppText>
+          {!liveActive && !displaySummary ? (
+            <AppText style={{ color: theme.colors.textMuted }}>{t('parentReport.liveSessionIdle')}</AppText>
+          ) : null}
+          {liveActive && liveLessonTitleKey ? (
+            <View style={{ gap: 6 }}>
+              <AppText>
+                {t('parentReport.liveSessionLesson')}: {t(liveLessonTitleKey)}
+              </AppText>
+              <AppText style={{ color: theme.colors.textMuted }}>
+                {t('parentReport.liveSessionTask', {
+                  current: liveTaskIndex + 1,
+                  total: Math.max(liveTotalTasks, 1),
+                })}
+              </AppText>
+              {liveLastResult ? (
+                <AppText>
+                  {t('parentReport.liveSessionLast')}:{' '}
+                  {liveLastResult === 'correct'
+                    ? t('parentReport.liveSessionResultCorrect')
+                    : liveLastResult === 'incorrect'
+                      ? t('parentReport.liveSessionResultIncorrect')
+                      : t('parentReport.liveSessionResultSkipped')}
+                </AppText>
+              ) : null}
+              {liveLastUpdated ? (
+                <AppText variant="small" style={{ color: theme.colors.textMuted }}>
+                  {new Date(liveLastUpdated).toLocaleString(
+                    language === 'en' ? 'en-US' : language === 'ky' ? 'ky-KG' : 'ru-RU',
+                  )}
+                </AppText>
+              ) : null}
+            </View>
+          ) : null}
+          {displaySummary ? (
+            <View style={{ marginTop: liveActive ? theme.spacing.md : 0, gap: 4 }}>
+              <AppText variant="small" style={{ fontWeight: '700' }}>
+                {t('parentReport.liveSessionSummaryTitle')}
+              </AppText>
+              <AppText variant="small">{t(displaySummary.lessonTitleKey)}</AppText>
+              <AppText variant="small">
+                {t('parentReport.liveSessionSummaryTasks', { completed: displaySummary.tasksCompleted })}
+              </AppText>
+              <AppText variant="small">
+                {t('parentReport.liveSessionSummarySkipped', { skipped: displaySummary.tasksSkipped })}
+              </AppText>
+              <AppText variant="small">
+                {t('parentReport.liveSessionSummaryMistakes', { mistakes: displaySummary.mistakes })}
+              </AppText>
+              <AppText variant="small">
+                {t('parentReport.liveSessionSummaryTokens', { tokens: displaySummary.tokensEarned })}
+              </AppText>
+            </View>
+          ) : null}
+        </Card>
+      )}
+
       {/* XP 7-day chart */}
-      <XPWeekChart xpHistory={xpHistory} theme={theme} />
+      <XPWeekChart weeklyStats={weeklyStats} theme={theme} />
       <Spacer size="lg" />
 
       {/* Tabs */}
@@ -451,30 +707,73 @@ export default function ParentReportScreen() {
           <Card>
             <AppText variant="subtitle">{t('parentReport.weeklyTitle')}</AppText>
             <Spacer size="sm" />
-            <View style={{ gap: theme.spacing.xs }}>
-              <View style={{ flexDirection: 'row', gap: theme.spacing.md }}>
-                <View style={{ flex: 1, alignItems: 'center', backgroundColor: theme.colors.primary + '11', borderRadius: theme.radii.md, padding: theme.spacing.sm }}>
+            <View style={{ gap: theme.spacing.sm }}>
+              <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    backgroundColor: theme.colors.primary + '11',
+                    borderRadius: theme.radii.md,
+                    padding: theme.spacing.sm,
+                  }}
+                >
                   <MaterialIcons name="menu-book" size={28} color={theme.colors.primary} />
                   <AppText variant="small" style={{ fontWeight: '700', color: theme.colors.primary }}>
-                    {weekly.lessonsThisWeek}
+                    {lessonsSum}
                   </AppText>
                   <AppText variant="small" style={{ color: theme.colors.textMuted, textAlign: 'center' }}>
                     {t('parentReport.lessonsLabel')}
                   </AppText>
                 </View>
-                <View style={{ flex: 1, alignItems: 'center', backgroundColor: theme.colors.success + '11', borderRadius: theme.radii.md, padding: theme.spacing.sm }}>
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    backgroundColor: theme.colors.success + '11',
+                    borderRadius: theme.radii.md,
+                    padding: theme.spacing.sm,
+                  }}
+                >
                   <NanoBananaIcon source={NANO_UI.check} size={28} />
                   <AppText variant="small" style={{ fontWeight: '700', color: theme.colors.success }}>
-                    {weekly.correctThisWeek}
+                    {correctSum}
                   </AppText>
                   <AppText variant="small" style={{ color: theme.colors.textMuted, textAlign: 'center' }}>
                     {t('parentReport.correctLabel')}
                   </AppText>
                 </View>
-                <View style={{ flex: 1, alignItems: 'center', backgroundColor: theme.colors.secondary + '11', borderRadius: theme.radii.md, padding: theme.spacing.sm }}>
+              </View>
+              <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    backgroundColor: '#F0A00018',
+                    borderRadius: theme.radii.md,
+                    padding: theme.spacing.sm,
+                  }}
+                >
+                  <MaterialIcons name="bolt" size={28} color="#C49000" />
+                  <AppText variant="small" style={{ fontWeight: '700', color: '#A67C00' }}>
+                    {xpSum}
+                  </AppText>
+                  <AppText variant="small" style={{ color: theme.colors.textMuted, textAlign: 'center' }}>
+                    {t('parentReport.weeklyXpLabel')}
+                  </AppText>
+                </View>
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    backgroundColor: theme.colors.secondary + '11',
+                    borderRadius: theme.radii.md,
+                    padding: theme.spacing.sm,
+                  }}
+                >
                   <NanoBananaIcon source={NANO_UI.streak} size={28} />
                   <AppText variant="small" style={{ fontWeight: '700', color: theme.colors.secondary }}>
-                    {weekly.streakCount}
+                    {streakCount}
                   </AppText>
                   <AppText variant="small" style={{ color: theme.colors.textMuted, textAlign: 'center' }}>
                     {t('profile.streakDaysLabel')}
