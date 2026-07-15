@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, Share, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, Share, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { NanoBananaIcon } from '../src/components/NanoBananaIcon';
 import { NANO_UI } from '../src/constants/nanoBananaAssets';
@@ -33,8 +33,15 @@ import {
   type WeeklyReport,
   type WorldReport,
 } from '../src/services/reportService';
+import { useCloudProgress } from '../src/hooks/useCloudProgress';
 
 type TabId = 'overall' | 'weekly' | 'byIsland';
+
+// If the live session claims to be active but its last update is older than
+// this, the realtime channel or the child's connection is likely stuck
+// (app backgrounded, network drop, etc.) rather than the child just being
+// slow to answer — show a "stale" warning instead of a falsely-fresh timestamp.
+const LIVE_SESSION_STALE_MS = 90_000;
 
 type RealtimeAbaSession = {
   active: boolean;
@@ -135,7 +142,9 @@ export default function ParentReportScreen() {
   const { t } = useTranslation();
   const theme = useAppTheme();
   const router = useRouter();
-  const profile = useAuth().profile;
+  const profile = useAuth((s) => s.profile);
+  const user = useAuth((s) => s.user);
+  const { data: cloudProgress, loading: cloudLoading } = useCloudProgress(user?.id);
 
   const globalCorrectCount = useProgressStore((s) => s.globalCorrectCount);
   const streakCount = useProgressStore((s) => s.streakCount);
@@ -184,6 +193,12 @@ export default function ParentReportScreen() {
 
   useLayoutEffect(() => {
     if (!parentPinHydrated) return;
+    // SecureStore / PIN is unavailable on web — never auto-unlock the parent report.
+    if (Platform.OS === 'web') {
+      setPinVerified(false);
+      setShowPinModal(false);
+      return;
+    }
     setPinVerified(!parentPin);
     setShowPinModal(!!parentPin);
   }, [parentPinHydrated, parentPin]);
@@ -195,9 +210,11 @@ export default function ParentReportScreen() {
 
   const baseStats = {
     accuracyBySubject: {} as Record<string, number>,
-    totalCorrect: globalCorrectCount,
+    totalCorrect: cloudProgress?.totalLessonsCompleted
+      ? cloudProgress.totalLessonsCompleted
+      : globalCorrectCount,
     totalAttempts,
-    streakCount,
+    streakCount: cloudProgress?.streakCount ?? streakCount,
     childMode: profile?.child_mode ?? 'standard',
     methodology: profile?.methodology ?? null,
     language,
@@ -349,6 +366,19 @@ export default function ParentReportScreen() {
     realtimeSession?.lastUpdated ??
     (abaLiveLastUpdated != null ? new Date(abaLiveLastUpdated).toISOString() : null);
 
+  // Ticks every few seconds while a live session is shown so the staleness
+  // check below re-evaluates over time, even if no new realtime event ever
+  // arrives (which is exactly the case we want to detect and warn about).
+  const [liveNowTick, setLiveNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    if (!liveActive) return;
+    const id = setInterval(() => setLiveNowTick(Date.now()), 5000);
+    return () => clearInterval(id);
+  }, [liveActive]);
+
+  const isLiveSessionStale =
+    liveActive && liveLastUpdated != null && liveNowTick - new Date(liveLastUpdated).getTime() > LIVE_SESSION_STALE_MS;
+
   const displaySummary =
     realtimeSession != null && realtimeSession.status === 'finished'
       ? {
@@ -378,7 +408,7 @@ export default function ParentReportScreen() {
               ? t('parentReport.commonMistakes') + ': ' + report.commonMistakes.join(', ')
               : '',
             t('parentReport.advice') + ': ' + report.advice,
-            'Child mode: ' + (profile?.child_mode ?? 'standard'),
+            t('parentReport.childModeLabel') + ': ' + (profile?.child_mode ?? 'standard'),
           ]
             .filter(Boolean)
             .join('\n')
@@ -400,7 +430,7 @@ export default function ParentReportScreen() {
       `${t('parentReport.advice')}:`,
       report.advice,
       '',
-      `${t('profile.streakDaysLabel')}: ${streakCount}`,
+      `${t('profile.streakDaysLabel', { count: streakCount })}: ${streakCount}`,
       `${t('profile.correctLabel')}: ${globalCorrectCount}`,
     ].join('\n');
 
@@ -423,7 +453,27 @@ export default function ParentReportScreen() {
     );
   }
 
-  // PIN gate
+  // PIN gate (native) / hard block (web — PIN cannot protect this screen)
+  if (Platform.OS === 'web') {
+    return (
+      <Screen>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }}>
+          <NanoBananaIcon source={NANO_UI.lock} size={48} />
+          <Spacer size="md" />
+          <AppText variant="subtitle" style={{ textAlign: 'center', fontWeight: '800' }}>
+            {t('parentReport.pinGateTitle')}
+          </AppText>
+          <Spacer size="xs" />
+          <AppText style={{ color: theme.colors.error, textAlign: 'center' }}>
+            {t('pin.webUnprotectedWarning')}
+          </AppText>
+          <Spacer size="md" />
+          <Button onPress={() => router.back()}>{t('common.back')}</Button>
+        </View>
+      </Screen>
+    );
+  }
+
   if (!pinVerified) {
     return (
       <>
@@ -458,6 +508,7 @@ export default function ParentReportScreen() {
       </AppText>
       <Spacer size="xs" />
       <AppText style={{ color: theme.colors.textMuted }}>{t('parentReport.subtitle')}</AppText>
+
       <Spacer size="md" />
 
       {((activeTab === 'overall' && report?.isStub) || (activeTab === 'weekly' && weekly?.isStub)) && (
@@ -490,6 +541,25 @@ export default function ParentReportScreen() {
           ) : null}
           {liveActive && liveLessonTitleKey ? (
             <View style={{ gap: 6 }}>
+              {isLiveSessionStale ? (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    backgroundColor: '#FFF3CD',
+                    borderRadius: 8,
+                    paddingVertical: 6,
+                    paddingHorizontal: 10,
+                    marginBottom: 2,
+                  }}
+                >
+                  <MaterialIcons name="wifi-off" size={16} color="#7A5800" />
+                  <AppText variant="small" style={{ color: '#7A5800', flex: 1 }}>
+                    {t('parentReport.liveSessionStale')}
+                  </AppText>
+                </View>
+              ) : null}
               <AppText>
                 {t('parentReport.liveSessionLesson')}: {t(liveLessonTitleKey)}
               </AppText>
@@ -510,7 +580,10 @@ export default function ParentReportScreen() {
                 </AppText>
               ) : null}
               {liveLastUpdated ? (
-                <AppText variant="small" style={{ color: theme.colors.textMuted }}>
+                <AppText
+                  variant="small"
+                  style={{ color: isLiveSessionStale ? '#B45309' : theme.colors.textMuted }}
+                >
                   {new Date(liveLastUpdated).toLocaleString(
                     language === 'en' ? 'en-US' : language === 'ky' ? 'ky-KG' : 'ru-RU',
                   )}
@@ -543,6 +616,54 @@ export default function ParentReportScreen() {
 
       {/* XP 7-day chart */}
       <XPWeekChart weeklyStats={weeklyStats} theme={theme} />
+
+      {cloudLoading && (
+        <ActivityIndicator
+          size="small"
+          color={theme.colors.primary}
+          style={{ marginTop: theme.spacing.md }}
+        />
+      )}
+
+      {cloudProgress && (
+        <Card style={{ marginTop: theme.spacing.md }}>
+          <AppText variant="subtitle">{t('parentReport.cloudSummary')}</AppText>
+          <Spacer size="sm" />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <View style={{ alignItems: 'center' }}>
+              <AppText variant="title">{cloudProgress.totalLessonsCompleted}</AppText>
+              <AppText variant="small" style={{ color: theme.colors.textMuted }}>
+                {t('parentReport.lessonsTotal')}
+              </AppText>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <AppText variant="title">{cloudProgress.totalStars}</AppText>
+                <NanoBananaIcon source={NANO_UI.stars} size={28} accessibilityLabel="stars" />
+              </View>
+              <AppText variant="small" style={{ color: theme.colors.textMuted }}>
+                {t('parentReport.starsTotal')}
+              </AppText>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <AppText variant="title">{cloudProgress.streakCount}</AppText>
+                <NanoBananaIcon source={NANO_UI.streak} size={28} accessibilityLabel="streak" />
+              </View>
+              <AppText variant="small" style={{ color: theme.colors.textMuted }}>
+                {t('parentReport.streak')}
+              </AppText>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <AppText variant="title">Lv.{cloudProgress.level}</AppText>
+              <AppText variant="small" style={{ color: theme.colors.textMuted }}>
+                {t('parentReport.level')}
+              </AppText>
+            </View>
+          </View>
+        </Card>
+      )}
+
       <Spacer size="lg" />
 
       {/* Tabs */}
@@ -723,7 +844,7 @@ export default function ParentReportScreen() {
                     {lessonsSum}
                   </AppText>
                   <AppText variant="small" style={{ color: theme.colors.textMuted, textAlign: 'center' }}>
-                    {t('parentReport.lessonsLabel')}
+                    {t('parentReport.lessonsLabel', { count: lessonsSum })}
                   </AppText>
                 </View>
                 <View
@@ -776,7 +897,7 @@ export default function ParentReportScreen() {
                     {streakCount}
                   </AppText>
                   <AppText variant="small" style={{ color: theme.colors.textMuted, textAlign: 'center' }}>
-                    {t('profile.streakDaysLabel')}
+                    {t('profile.streakDaysLabel', { count: streakCount })}
                   </AppText>
                 </View>
               </View>

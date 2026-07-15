@@ -6,7 +6,7 @@ describe('getWorldStats', () => {
     expect(getWorldStats('nonexistent-world', {})).toBeNull();
   });
 
-  it('aggregates accuracy by subject label for known world with topic progress', () => {
+  it('aggregates accuracy by raw subject key (localized server-side) for known world with topic progress', () => {
     const topics: Record<string, TopicProgress> = {
       'jungle-addition': {
         topicId: 'jungle-addition',
@@ -23,7 +23,9 @@ describe('getWorldStats', () => {
     expect(result).not.toBeNull();
     expect(result!.totalCorrect).toBe(8);
     expect(result!.totalAttempts).toBe(10);
-    expect(result!.accuracyBySubject['Math']).toBe(80);
+    // Raw subject id, not a display label — the proxy translates this key
+    // into the requested report language via its own subjectLabel map.
+    expect(result!.accuracyBySubject['math']).toBe(80);
   });
 
   it('returns zeros when world exists but no matching topic progress', () => {

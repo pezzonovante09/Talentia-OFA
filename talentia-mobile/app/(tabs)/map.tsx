@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo } from 'react';
+import React, { useCallback, useLayoutEffect, useMemo } from 'react';
 import { Modal, Pressable, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
@@ -26,7 +26,7 @@ import {
   type LessonNode,
   type SubjectId,
 } from '../../src/data/worlds';
-import { useProgressStore, getXPToNextLevel } from '../../src/store/progressStore';
+import { useProgressStore, getXPToNextLevel, formatLocalDateYMD } from '../../src/store/progressStore';
 import { useSettingsStore } from '../../src/store/settingsStore';
 import type { Methodology } from '../../src/store/settingsStore';
 
@@ -200,16 +200,24 @@ export default function MapScreen() {
   const childName = useSettingsStore((s) => s.childName);
   const methodology = useSettingsStore((s) => s.methodology);
   const ageBand = useSettingsStore((s) => s.ageBand);
-  const { profile, isOffline } = useAuth();
+  const profile = useAuth((s) => s.profile);
+  const isOffline = useAuth((s) => s.isOffline);
   const hasSeenMapTip = useSettingsStore((s) => s.hasSeenMapTip);
   const setHasSeenMapTip = useSettingsStore((s) => s.setHasSeenMapTip);
 
   const methStyle = METHODOLOGY_STYLES[methodology] ?? METHODOLOGY_STYLES.aba;
 
+  const navigateToLesson = useCallback(
+    (lessonId: string, topicId: string) => {
+      router.push({ pathname: '/lesson/[lessonId]', params: { lessonId, topicId } });
+    },
+    [router],
+  );
+
   const xpInfo = getXPToNextLevel(xp);
 
-  // Daily goal: reset count if date changed
-  const today = new Date().toISOString().slice(0, 10);
+  // Daily goal: reset count if date changed (local calendar day, same as progressStore)
+  const today = formatLocalDateYMD(new Date());
   const todayDone = dailyGoalDate === today ? dailyLessonsCompleted : 0;
   const dailyGoalReached = todayDone >= dailyGoal;
   const greeting = childName?.trim()
@@ -450,7 +458,7 @@ export default function MapScreen() {
           {!dailyGoalReached && (
             <>
               <AppText variant="small" style={{ color: theme.colors.textMuted }}>
-                {t('map.dailyGoalProgress', { done: todayDone, goal: dailyGoal })}
+                {t('map.dailyGoalProgress', { done: todayDone, goal: dailyGoal, count: dailyGoal })}
               </AppText>
               <View style={{ height: 5, backgroundColor: theme.colors.border, borderRadius: 3, marginTop: 5, overflow: 'hidden' }}>
                 <View
@@ -580,12 +588,7 @@ export default function MapScreen() {
                             theme={theme}
                             t={t}
                             isStartNode={isStartNode}
-                            onPress={() =>
-                              router.push({
-                                pathname: '/lesson/[lessonId]',
-                                params: { lessonId: node.lessonId, topicId: node.topicId },
-                              })
-                            }
+                            onNavigate={navigateToLesson}
                             methodologyStyle={methStyle}
                           />
                         ) : isStartNode ? (
@@ -631,12 +634,7 @@ export default function MapScreen() {
                             theme={theme}
                             t={t}
                             isStartNode={isStartNode}
-                            onPress={() =>
-                              router.push({
-                                pathname: '/lesson/[lessonId]',
-                                params: { lessonId: node.lessonId, topicId: node.topicId },
-                              })
-                            }
+                            onNavigate={navigateToLesson}
                             methodologyStyle={methStyle}
                           />
                         ) : isStartNode ? (

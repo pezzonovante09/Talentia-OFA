@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Linking, Pressable, Switch, View } from 'react-native';
+import { Alert, Linking, Platform, Pressable, Switch, View } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { NanoBananaIcon } from '../../src/components/NanoBananaIcon';
 import { NANO_UI } from '../../src/constants/nanoBananaAssets';
@@ -42,11 +42,14 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const theme = useAppTheme();
   const router = useRouter();
-  const { signOut, profile, setDemoProfile } = useAuth();
+  const signOut = useAuth((s) => s.signOut);
+  const profile = useAuth((s) => s.profile);
+  const setDemoProfile = useAuth((s) => s.setDemoProfile);
   const isSpecialMode = profile?.child_mode === 'special';
   const [resetting, setResetting] = useState(false);
   const [pinModalMode, setPinModalMode] = useState<'set' | 'remove' | null>(null);
   const [pinVerifyForReset, setPinVerifyForReset] = useState(false);
+  const [pendingMethodology, setPendingMethodology] = useState<Methodology | null>(null);
 
   const parentPin = useSettingsStore((s) => s.parentPin);
   const setParentPin = useSettingsStore((s) => s.setParentPin);
@@ -55,8 +58,6 @@ export default function SettingsScreen() {
   const reminderHour = useSettingsStore((s) => s.reminderHour);
   const breakReminderEnabled = useSettingsStore((s) => s.breakReminderEnabled);
   const setBreakReminderEnabled = useSettingsStore((s) => s.setBreakReminderEnabled);
-  const sessionDurationMinutes = useSettingsStore((s) => s.sessionDurationMinutes);
-  const setSessionDurationMinutes = useSettingsStore((s) => s.setSessionDurationMinutes);
   const breakDurationMinutes = useSettingsStore((s) => s.breakDurationMinutes);
   const setBreakDurationMinutes = useSettingsStore((s) => s.setBreakDurationMinutes);
 
@@ -115,6 +116,15 @@ export default function SettingsScreen() {
     }
   };
 
+  /** Methodology affects the whole ABA pedagogy flow, so gate it behind the parent PIN when one is set. */
+  const requestMethodologyChange = (value: Methodology) => {
+    if (parentPin) {
+      setPendingMethodology(value);
+    } else {
+      void handleMethodologyChange(value);
+    }
+  };
+
   const languageOptions: { code: LanguageCode; labelKey: string }[] = [
     { code: 'en', labelKey: 'settings.languageEnglish' },
     { code: 'ru', labelKey: 'settings.languageRussian' },
@@ -170,7 +180,7 @@ export default function SettingsScreen() {
                 return (
                   <Pressable
                     key={option.value}
-                    onPress={() => handleMethodologyChange(option.value)}
+                    onPress={() => requestMethodologyChange(option.value)}
                     accessibilityRole="button"
                   >
                     <Card
@@ -410,24 +420,30 @@ export default function SettingsScreen() {
           <View style={{ flex: 1 }}>
             <AppText style={{ fontWeight: '600' }}>{t('settings.pinLabel')}</AppText>
             <AppText variant="small" style={{ color: theme.colors.textMuted }}>
-              {parentPin ? t('settings.pinSet') : t('settings.pinNotSet')}
+              {Platform.OS === 'web'
+                ? t('pin.webUnprotectedWarning')
+                : parentPin
+                  ? t('settings.pinSet')
+                  : t('settings.pinNotSet')}
             </AppText>
           </View>
-          <Pressable
-            onPress={() => setPinModalMode(parentPin ? 'remove' : 'set')}
-            style={{
-              backgroundColor: parentPin ? theme.colors.error + '18' : theme.colors.primary + '18',
-              borderRadius: theme.radii.pill,
-              paddingHorizontal: theme.spacing.md,
-              paddingVertical: theme.spacing.sm,
-              borderWidth: 1.5,
-              borderColor: parentPin ? theme.colors.error + '55' : theme.colors.primary + '55',
-            }}
-          >
-            <AppText variant="small" style={{ color: parentPin ? theme.colors.error : theme.colors.primary, fontWeight: '700' }}>
-              {parentPin ? t('settings.pinRemove') : t('settings.pinAdd')}
-            </AppText>
-          </Pressable>
+          {Platform.OS !== 'web' ? (
+            <Pressable
+              onPress={() => setPinModalMode(parentPin ? 'remove' : 'set')}
+              style={{
+                backgroundColor: parentPin ? theme.colors.error + '18' : theme.colors.primary + '18',
+                borderRadius: theme.radii.pill,
+                paddingHorizontal: theme.spacing.md,
+                paddingVertical: theme.spacing.sm,
+                borderWidth: 1.5,
+                borderColor: parentPin ? theme.colors.error + '55' : theme.colors.primary + '55',
+              }}
+            >
+              <AppText variant="small" style={{ color: parentPin ? theme.colors.error : theme.colors.primary, fontWeight: '700' }}>
+                {parentPin ? t('settings.pinRemove') : t('settings.pinAdd')}
+              </AppText>
+            </Pressable>
+          ) : null}
         </View>
 
         {/* Notifications */}
@@ -462,21 +478,19 @@ export default function SettingsScreen() {
           />
         </View>
         {breakReminderEnabled && (
-          <View style={{ marginTop: theme.spacing.sm, flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm }}>
-            {([15, 20, 30] as const).map((mins) => (
-              <Pressable key={mins} onPress={() => setSessionDurationMinutes(mins)} accessibilityRole="button">
-                <Card highlighted={sessionDurationMinutes === mins} style={{ paddingVertical: theme.spacing.sm, paddingHorizontal: theme.spacing.md }}>
-                  <AppText variant="small">{t(`parentSetup.sessionDuration${mins}`)}</AppText>
-                </Card>
-              </Pressable>
-            ))}
-            {([5, 10] as const).map((mins) => (
-              <Pressable key={mins} onPress={() => setBreakDurationMinutes(mins)} accessibilityRole="button">
-                <Card highlighted={breakDurationMinutes === mins} style={{ paddingVertical: theme.spacing.sm, paddingHorizontal: theme.spacing.md }}>
-                  <AppText variant="small">{t(`parentSetup.breakDuration${mins}`)}</AppText>
-                </Card>
-              </Pressable>
-            ))}
+          <View style={{ marginTop: theme.spacing.sm }}>
+            <AppText variant="small" style={{ color: theme.colors.textMuted, marginBottom: theme.spacing.xs }}>
+              {t('parentSetup.breakDurationLabel')}
+            </AppText>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm }}>
+              {([5, 10] as const).map((mins) => (
+                <Pressable key={mins} onPress={() => setBreakDurationMinutes(mins)} accessibilityRole="button">
+                  <Card highlighted={breakDurationMinutes === mins} style={{ paddingVertical: theme.spacing.sm, paddingHorizontal: theme.spacing.md }}>
+                    <AppText variant="small">{t(`parentSetup.breakDuration${mins}`)}</AppText>
+                  </Card>
+                </Pressable>
+              ))}
+            </View>
           </View>
         )}
       </Card>
@@ -503,6 +517,16 @@ export default function SettingsScreen() {
         existingPin={parentPin}
         onSuccess={() => { setPinVerifyForReset(false); doReset(); }}
         onCancel={() => setPinVerifyForReset(false)}
+      />
+      <PinModal
+        visible={pendingMethodology !== null}
+        mode="verify"
+        existingPin={parentPin}
+        onSuccess={() => {
+          if (pendingMethodology) void handleMethodologyChange(pendingMethodology);
+          setPendingMethodology(null);
+        }}
+        onCancel={() => setPendingMethodology(null)}
       />
 
       <Button

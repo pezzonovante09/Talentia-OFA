@@ -15,7 +15,14 @@ const NEURAL_TTS_MAX_LEN = 2500;
 
 let currentSound: Audio.Sound | null = null;
 
-export type TaliTtsLanguage = "ru" | "en";
+export type TaliTtsLanguage = "ru" | "en" | "ky";
+
+/** Maps app `LanguageCode` (en | ru | ky) to TTS pipeline language. */
+export function mapLanguageCodeToTaliTts(code: string): TaliTtsLanguage {
+  if (code === "en") return "en";
+  if (code === "ky") return "ky";
+  return "ru";
+}
 
 function stripForNeuralTts(text: string): string {
   return text
@@ -30,11 +37,9 @@ function stripForNeuralTts(text: string): string {
 }
 
 function speechLocaleForTts(lang: TaliTtsLanguage): string {
-  return lang === "en" ? "en-US" : "ru-RU";
-}
-
-function mapAppLanguageToTts(lang: string): TaliTtsLanguage {
-  return lang === "en" ? "en" : "ru";
+  if (lang === "en") return "en-US";
+  if (lang === "ky") return "ky-KG";
+  return "ru-RU";
 }
 
 function speakWithExpoSpeech(text: string, lang: TaliTtsLanguage): void {
@@ -147,11 +152,6 @@ export async function speakViaTali(text: string, language: TaliTtsLanguage): Pro
   } catch {
     speakWithExpoSpeech(trimmed, language);
   }
-}
-
-/** @deprecated Prefer speakViaTali with explicit 'ru' | 'en'. Maps app language codes to TTS language. */
-export async function speakWithTali(text: string, language: string): Promise<void> {
-  return speakViaTali(text, mapAppLanguageToTts(language));
 }
 
 /** Stop neural playback, вшитые mp3 урока и expo-speech. */

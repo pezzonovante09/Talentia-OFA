@@ -8,7 +8,9 @@ import { useAppTheme } from '../src/theme';
 import { useSettingsStore } from '../src/store/settingsStore';
 
 export default function Index() {
-  const { session, profileCompleted, loading } = useAuth();
+  const session = useAuth((s) => s.session);
+  const profileCompleted = useAuth((s) => s.profileCompleted);
+  const loading = useAuth((s) => s.loading);
   const theme = useAppTheme();
   const onboardingCompleted = useSettingsStore((s) => s.onboardingCompleted);
 

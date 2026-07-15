@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text as RNText, TextProps as RNTextProps } from 'react-native';
+import { Platform, Text as RNText, TextProps as RNTextProps } from 'react-native';
 
 import { useAppTheme } from '../theme';
 
@@ -18,6 +18,7 @@ function getFontFamily(weight: string): string {
 
 export function AppText({ style, variant = 'body', ...rest }: AppTextProps) {
   const theme = useAppTheme();
+  const isAndroid = Platform.OS === 'android';
 
   const fontSize =
     variant === 'title'
@@ -28,7 +29,10 @@ export function AppText({ style, variant = 'body', ...rest }: AppTextProps) {
       ? theme.typography.small
       : theme.typography.body;
 
-  const fontWeight = variant === 'title' ? '800' : variant === 'subtitle' ? '700' : '500';
+  const weightForVariant = variant === 'title' ? '800' : variant === 'subtitle' ? '700' : '500';
+  /** Android: system sans (Roboto) has reliable Cyrillic; bundled Nunito often renders mojibake. */
+  const androidVariantWeight =
+    weightForVariant === '800' ? '700' : weightForVariant === '700' ? '600' : '400';
 
   return (
     <RNText
@@ -37,10 +41,14 @@ export function AppText({ style, variant = 'body', ...rest }: AppTextProps) {
         {
           color: theme.colors.text,
           fontSize,
-          fontWeight,
-          fontFamily: getFontFamily(fontWeight),
         },
+        isAndroid
+          ? { fontFamily: 'sans-serif', fontWeight: androidVariantWeight }
+          : { fontFamily: getFontFamily(weightForVariant), fontWeight: 'normal' },
         style,
+        isAndroid
+          ? { fontFamily: 'sans-serif' }
+          : { fontWeight: 'normal' },
       ]}
     />
   );

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Modal, Pressable, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Modal, Platform, Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -8,6 +8,7 @@ import { NANO_UI } from '../constants/nanoBananaAssets';
 import { useAppTheme } from '../theme';
 import { AppText } from './Text';
 import { Spacer } from './Spacer';
+import { useSettingsStore } from '../store/settingsStore';
 
 type PinModalProps = {
   visible: boolean;
@@ -29,6 +30,26 @@ export function PinModal({ visible, mode, existingPin, onSuccess, onCancel }: Pi
   const [confirmInput, setConfirmInput] = useState('');
   const [step, setStep] = useState<'enter' | 'confirm'>('enter');
   const [error, setError] = useState('');
+  const [remainingLockMs, setRemainingLockMs] = useState(0);
+
+  const pinLockedUntil = useSettingsStore((s) => s.pinLockedUntil);
+  const registerPinFailure = useSettingsStore((s) => s.registerPinFailure);
+  const registerPinSuccess = useSettingsStore((s) => s.registerPinSuccess);
+
+  // Tick the lockout countdown once a second while the modal is visible and locked.
+  useEffect(() => {
+    if (!visible) return;
+    const update = () => {
+      const remaining = pinLockedUntil ? pinLockedUntil - Date.now() : 0;
+      setRemainingLockMs(remaining > 0 ? remaining : 0);
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [visible, pinLockedUntil]);
+
+  const isLocked = mode === 'verify' && remainingLockMs > 0;
+  const isWebUnprotected = Platform.OS === 'web';
 
   const reset = () => {
     setInput('');
@@ -38,6 +59,7 @@ export function PinModal({ visible, mode, existingPin, onSuccess, onCancel }: Pi
   };
 
   const handleDigit = (d: string) => {
+    if (isLocked || isWebUnprotected) return;
     if (d === PIN_BACK) {
       if (step === 'enter') setInput((p) => p.slice(0, -1));
       else setConfirmInput((p) => p.slice(0, -1));
@@ -56,11 +78,14 @@ export function PinModal({ visible, mode, existingPin, onSuccess, onCancel }: Pi
   };
 
   const handleConfirm = () => {
+    if (isLocked || isWebUnprotected) return;
     if (mode === 'verify') {
       if (input === existingPin) {
+        registerPinSuccess();
         reset();
         onSuccess();
       } else {
+        registerPinFailure();
         setError(t('pin.wrongPin'));
         setInput('');
       }
@@ -126,6 +151,15 @@ export function PinModal({ visible, mode, existingPin, onSuccess, onCancel }: Pi
             {title}
           </AppText>
 
+          {isWebUnprotected ? (
+            <>
+              <Spacer size="xs" />
+              <AppText variant="small" style={{ color: theme.colors.error, textAlign: 'center' }}>
+                {t('pin.webUnprotectedWarning')}
+              </AppText>
+            </>
+          ) : null}
+
           {/* PIN dots */}
           <Spacer size="lg" />
           <View style={{ flexDirection: 'row', gap: 14 }}>
@@ -145,7 +179,11 @@ export function PinModal({ visible, mode, existingPin, onSuccess, onCancel }: Pi
           </View>
           <Spacer size="sm" />
 
-          {error ? (
+          {isLocked ? (
+            <AppText variant="small" style={{ color: theme.colors.error, textAlign: 'center' }}>
+              {t('pin.lockedOut', { seconds: Math.ceil(remainingLockMs / 1000) })}
+            </AppText>
+          ) : error ? (
             <AppText variant="small" style={{ color: theme.colors.error, textAlign: 'center' }}>
               {error}
             </AppText>
@@ -160,6 +198,7 @@ export function PinModal({ visible, mode, existingPin, onSuccess, onCancel }: Pi
               <Pressable
                 key={d}
                 onPress={() => handleDigit(d)}
+                disabled={isLocked}
                 style={({ pressed }) => ({
                   width: 70,
                   height: 56,
@@ -169,7 +208,7 @@ export function PinModal({ visible, mode, existingPin, onSuccess, onCancel }: Pi
                     : theme.colors.surfaceAlt,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  opacity: pressed ? 0.7 : 1,
+                  opacity: isLocked ? 0.4 : pressed ? 0.7 : 1,
                   borderWidth: 1.5,
                   borderColor: d === PIN_OK ? theme.colors.primary : theme.colors.border,
                 })}

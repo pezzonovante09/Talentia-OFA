@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
 import React, { useEffect } from 'react';
+import { AppState } from 'react-native';
 import {
   useFonts,
   Nunito_400Regular,
@@ -18,9 +19,11 @@ import { useSettingsStore } from '../src/store/settingsStore';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider } from '../src/context/AuthContext';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
+import { initSentry, Sentry } from '../src/services/sentry';
 
 SplashScreen.preventAutoHideAsync();
 checkEnvInDev();
+initSentry();
 
 export const unstable_settings = {
   initialRouteName: '(tabs)',
@@ -87,7 +90,7 @@ function RootStack() {
   );
 }
 
-export default function RootLayout() {
+function RootLayout() {
   const language = useSettingsStore((state) => state.language);
   const [fontsLoaded] = useFonts({
     Nunito_400Regular,
@@ -106,6 +109,18 @@ export default function RootLayout() {
     }
   }, [fontsLoaded]);
 
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (next) => {
+      if (next === 'background' || next === 'inactive') {
+        const { syncWithRetry } = require('../src/services/syncStatus');
+        void syncWithRetry('layout:flushAnalyticsQueue', () =>
+          require('../src/store/analyticsQueueStore').useAnalyticsQueueStore.getState().flushQueue(),
+        );
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
   if (!fontsLoaded) return null;
 
   return (
@@ -119,3 +134,5 @@ export default function RootLayout() {
     </AppThemeProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);

@@ -1,8 +1,11 @@
 /**
- * Собирает require() для всех .mp3 в assets/audio/lesson-voice-5-6/
+ * Собирает require() для всех .mp3 в assets/audio/<pack>/
  * → src/generated/lessonVoiceAssets.ts
  *
  * Запуск: npm run lesson-voice:generate-map
+ * Папка по умолчанию: lesson-voice-5-6
+ * Другая папка: node scripts/generate-lesson-voice-map.mjs --dir=lesson-voice-v2
+ *   или LESSON_VOICE_PACK_SUBDIR=lesson-voice-v2
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -10,7 +13,11 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
-const mp3Dir = path.join(root, 'assets', 'audio', 'lesson-voice-5-6');
+const subdir =
+  process.argv.find((a) => a.startsWith('--dir='))?.slice(6)?.trim() ||
+  process.env.LESSON_VOICE_PACK_SUBDIR?.trim() ||
+  'lesson-voice-5-6';
+const mp3Dir = path.join(root, 'assets', 'audio', subdir);
 const outFile = path.join(root, 'src', 'generated', 'lessonVoiceAssets.ts');
 
 function main() {
@@ -25,14 +32,14 @@ function main() {
   const lines = [
     '/**',
     ' * AUTO-GENERATED — npm run lesson-voice:generate-map',
-    ' * Исходные файлы: assets/audio/lesson-voice-5-6/*.mp3',
+    ` * Исходные файлы: assets/audio/${subdir}/*.mp3`,
     ' */',
     '/* eslint-disable @typescript-eslint/no-require-imports */',
     'export const LESSON_VOICE_ASSETS: Record<string, number> = {',
   ];
   for (const f of files) {
     const key = f.replace(/\.mp3$/i, '');
-    lines.push(`  '${key}': require('../../assets/audio/lesson-voice-5-6/${f}'),`);
+    lines.push(`  '${key}': require('../../assets/audio/${subdir}/${f}'),`);
   }
   lines.push('};', '');
   fs.mkdirSync(path.dirname(outFile), { recursive: true });

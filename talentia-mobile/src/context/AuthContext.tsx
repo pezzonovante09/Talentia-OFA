@@ -1,6 +1,7 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useEffect } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
 
 import { supabase, isSupabaseConfigured, type ChildProfileRow } from '../services/supabase';
 import { useSettingsStore } from '../store/settingsStore';
@@ -30,7 +31,7 @@ type AuthState = {
   isOffline: boolean;
 };
 
-type AuthContextValue = AuthState & {
+export type AuthContextValue = AuthState & {
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   /** Demo mode: set after "sign up" / "login" when Supabase is not configured */
@@ -38,8 +39,6 @@ type AuthContextValue = AuthState & {
   /** Demo mode: set after parent-setup when Supabase is not configured */
   setDemoProfile: (profile: ChildProfileRow) => Promise<void>;
 };
-
-const AuthContext = createContext<AuthContextValue | null>(null);
 
 const PROFILE_TABLE = 'profiles';
 
@@ -89,54 +88,60 @@ async function loadOfflineCache(): Promise<OfflineCache | null> {
   }
 }
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<ChildProfileRow | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isOffline, setIsOffline] = useState(false);
+/**
+ * Backing store for auth state. Using Zustand (instead of a plain React
+ * Context value object) lets consumers subscribe with a selector so they
+ * only re-render when the specific slice they read actually changes,
+ * rather than on every auth state update (loading/session/etc).
+ */
+const useAuthStore = create<AuthContextValue>((set, get) => ({
+  user: null,
+  session: null,
+  profile: null,
+  loading: true,
+  profileCompleted: false,
+  isOffline: false,
 
-  const refreshProfile = useCallback(async () => {
+  refreshProfile: async () => {
     if (!isSupabaseConfigured) {
       try {
         const raw = await AsyncStorage.getItem(DEMO_STORAGE_KEY);
         if (raw) {
           const demo: DemoState = JSON.parse(raw);
-          setProfile(demo.profile);
+          set({ profile: demo.profile, profileCompleted: isProfileCompleted(demo.profile) });
           if (demo.profile) syncProfileToLocal(demo.profile);
         }
       } catch {
-        setProfile(null);
+        set({ profile: null, profileCompleted: false });
       }
       return;
     }
-    if (!user?.id) {
-      setProfile(null);
+    const userId = get().user?.id;
+    const userEmail = get().user?.email;
+    if (!userId) {
+      set({ profile: null, profileCompleted: false });
       return;
     }
-    const p = await fetchProfile(user.id);
+    const p = await fetchProfile(userId);
     if (p) {
-      setProfile(p);
+      set({ profile: p, profileCompleted: isProfileCompleted(p) });
       syncProfileToLocal(p);
-      // Keep offline cache fresh
-      await saveOfflineCache(user.id, user.email ?? '', p);
+      await saveOfflineCache(userId, userEmail ?? '', p);
     }
-  }, [user?.id, user?.email]);
+  },
 
-  const setDemoUser = useCallback(async (email: string) => {
+  setDemoUser: async (email: string) => {
     const demoUser = { id: `demo-${Date.now()}`, email };
     const sessionFake = { user: demoUser } as Session;
-    setUser(demoUser as User);
-    setSession(sessionFake);
-    setProfile(null);
+    set({ user: demoUser as User, session: sessionFake, profile: null, profileCompleted: false });
     await AsyncStorage.setItem(
       DEMO_STORAGE_KEY,
       JSON.stringify({ user: demoUser, profile: null }),
     );
-  }, []);
+  },
 
-  const setDemoProfile = useCallback(async (profileData: ChildProfileRow) => {
-    setProfile(profileData);
+  setDemoProfile: async (profileData: ChildProfileRow) => {
+    set({ profile: profileData, profileCompleted: isProfileCompleted(profileData) });
     syncProfileToLocal(profileData);
     try {
       const raw = await AsyncStorage.getItem(DEMO_STORAGE_KEY);
@@ -146,8 +151,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // ignore
     }
-  }, []);
+  },
 
+  signOut: async () => {
+    if (!isSupabaseConfigured) {
+      await AsyncStorage.removeItem(DEMO_STORAGE_KEY);
+    } else {
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        // Best-effort: local state is cleared below regardless of network errors.
+      }
+      await AsyncStorage.removeItem(OFFLINE_CACHE_KEY);
+    }
+    set({ user: null, session: null, profile: null, profileCompleted: false, isOffline: false });
+  },
+}));
+
+/**
+ * Mounts the auth session bootstrap/listener side effects once for the app.
+ * Does not provide a React Context — state lives in `useAuthStore` (Zustand)
+ * so consumers can select just the slice they need.
+ */
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isSupabaseConfigured) {
       AsyncStorage.getItem(DEMO_STORAGE_KEY)
@@ -155,14 +181,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (raw) {
             const demo: DemoState = JSON.parse(raw);
             const userFake = demo.user as User;
-            setUser(userFake);
-            setSession({ user: userFake } as Session);
-            setProfile(demo.profile);
+            useAuthStore.setState({
+              user: userFake,
+              session: { user: userFake } as Session,
+              profile: demo.profile,
+              profileCompleted: isProfileCompleted(demo.profile),
+            });
             if (demo.profile) syncProfileToLocal(demo.profile);
           }
-          setLoading(false);
+          useAuthStore.setState({ loading: false });
         })
-        .catch(() => setLoading(false));
+        .catch(() => useAuthStore.setState({ loading: false }));
       return;
     }
 
@@ -175,109 +204,81 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     Promise.race([supabase.auth.getSession(), timeoutPromise])
       .then((result) => {
         const { data: { session: s } } = result;
-        setSession(s);
-        setUser(s?.user ?? null);
-        setIsOffline(false);
+        useAuthStore.setState({ session: s, user: s?.user ?? null, isOffline: false });
         if (s?.user?.id) {
           fetchProfile(s.user.id).then((p) => {
-            setProfile(p);
+            useAuthStore.setState({ profile: p, profileCompleted: isProfileCompleted(p) });
             if (p) {
               syncProfileToLocal(p);
-              // Persist for offline use
               saveOfflineCache(s.user.id, s.user.email ?? '', p);
             }
           });
         } else {
-          setProfile(null);
+          useAuthStore.setState({ profile: null, profileCompleted: false });
         }
       })
       .catch(async () => {
-        // Network/timeout — try offline cache so user can still open the app
         const cache = await loadOfflineCache();
         if (cache) {
           const offlineUser = { id: cache.userId, email: cache.email } as User;
-          setUser(offlineUser);
-          setSession({ user: offlineUser } as Session);
-          setProfile(cache.profile);
+          useAuthStore.setState({
+            user: offlineUser,
+            session: { user: offlineUser } as Session,
+            profile: cache.profile,
+            profileCompleted: isProfileCompleted(cache.profile),
+            isOffline: true,
+          });
           if (cache.profile) syncProfileToLocal(cache.profile);
-          setIsOffline(true);
         } else {
-          // No cache — first time without network, must go to login
-          setSession(null);
-          setUser(null);
-          setProfile(null);
+          useAuthStore.setState({ session: null, user: null, profile: null, profileCompleted: false });
         }
       })
-      .finally(() => setLoading(false));
+      .finally(() => useAuthStore.setState({ loading: false }));
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, s) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      setIsOffline(false);
+      useAuthStore.setState({ session: s, user: s?.user ?? null, isOffline: false });
       if (s?.user?.id) {
         const p = await fetchProfile(s.user.id);
-        setProfile(p);
+        useAuthStore.setState({ profile: p, profileCompleted: isProfileCompleted(p) });
         if (p) {
           syncProfileToLocal(p);
           saveOfflineCache(s.user.id, s.user.email ?? '', p);
         }
       } else {
-        setProfile(null);
+        useAuthStore.setState({ profile: null, profileCompleted: false });
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  const userId = useAuthStore((s) => s.user?.id);
+  const userEmail = useAuthStore((s) => s.user?.email);
+  const isOffline = useAuthStore((s) => s.isOffline);
+
   useEffect(() => {
-    if (!isSupabaseConfigured || !user?.id || isOffline) return;
-    fetchProfile(user.id).then((p) => {
+    if (!isSupabaseConfigured || !userId || isOffline) return;
+    fetchProfile(userId).then((p) => {
       if (p) {
-        setProfile(p);
+        useAuthStore.setState({ profile: p, profileCompleted: isProfileCompleted(p) });
         syncProfileToLocal(p);
-        saveOfflineCache(user.id, user.email ?? '', p);
+        saveOfflineCache(userId, userEmail ?? '', p);
       }
     });
-  }, [user?.id, user?.email, isOffline]);
+  }, [userId, userEmail, isOffline]);
 
-  const signOut = useCallback(async () => {
-    if (!isSupabaseConfigured) {
-      await AsyncStorage.removeItem(DEMO_STORAGE_KEY);
-    } else {
-      await supabase.auth.signOut().catch(() => {});
-      await AsyncStorage.removeItem(OFFLINE_CACHE_KEY);
-    }
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    setIsOffline(false);
-  }, []);
-
-  const profileCompleted = isProfileCompleted(profile);
-
-  const value = useMemo<AuthContextValue>(
-    () => ({
-      user,
-      session,
-      profile,
-      loading,
-      profileCompleted,
-      isOffline,
-      signOut,
-      refreshProfile,
-      setDemoUser,
-      setDemoProfile,
-    }),
-    [user, session, profile, loading, profileCompleted, isOffline, signOut, refreshProfile, setDemoUser, setDemoProfile],
-  );
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <>{children}</>;
 }
 
-export function useAuth(): AuthContextValue {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
+/** Read the full auth state/actions object (re-renders on any change). */
+export function useAuth(): AuthContextValue;
+/** Read a derived slice of the auth state; only re-renders when that slice changes. */
+export function useAuth<T>(selector: (state: AuthContextValue) => T): T;
+export function useAuth<T>(selector?: (state: AuthContextValue) => T): T | AuthContextValue {
+  return useAuthStore(selector ?? ((s: AuthContextValue) => s as unknown as T));
 }
+
+/** Imperative access outside React components (e.g. non-hook utility code). */
+export const getAuthState = useAuthStore.getState;

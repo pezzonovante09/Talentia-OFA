@@ -3,8 +3,8 @@
  *
  * Режим A — ключ на Vercel (рекомендуется): только URL прокси, без ElevenLabs локально.
  *   TTS_PROXY_URL или EXPO_PUBLIC_BACKEND_URL = https://твой-проект.vercel.app
- *   POST { text, language: 'ru'|'en' } на /api/tts (как в приложении).
- *   Язык ky в прокси шлётся как ru (API прокси принимает только ru|en).
+ *   POST { text, language: 'ru'|'en'|'ky' } на /api/tts (как в приложении).
+ *   Для ky на прокси нужен ElevenLabs (см. ELEVENLABS_VOICE_ID_KY в README прокси).
  *   Один голос с сервера — различие Тали/NPC через прокси недоступно.
  *
  * Режим B — прямой ElevenLabs с машины:
@@ -43,9 +43,11 @@ function voiceForEntry(entry, defaultVoice, taliVoice, npcVoice) {
   return taliVoice;
 }
 
-/** Прокси /api/tts принимает только ru | en (см. talentia-ai-proxy-next). */
-function languageForProxy(appLang) {
-  return appLang === 'en' ? 'en' : 'ru';
+/** Язык для POST /api/tts (прокси: ru | en | ky). */
+function languageForProxyRequest(appLang) {
+  if (appLang === 'en') return 'en';
+  if (appLang === 'ky') return 'ky';
+  return 'ru';
 }
 
 async function synthesizeViaProxy(baseUrl, text, language) {
@@ -157,9 +159,8 @@ async function main() {
     console.log('Режим прокси:', proxyBase.replace(/\/$/, '') + '/api/tts');
     if (!langsExplicit && !langs.includes('ky')) {
       console.log(
-        'Языки озвучки: ru,en (по умолчанию для прокси). ky не качаем — в /api/tts только ru|en, для ky всё равно уходил бы language=ru.',
+        'Языки озвучки по умолчанию: ru,en (меньше запросов). Для кыргызских mp3 задай: VOICE_LANGS=ru,en,ky (на прокси нужен ElevenLabs с поддержкой ky).',
       );
-      console.log('Нужны отдельные mp3 под кыргызскую локаль — задай в .env: VOICE_LANGS=ru,en,ky');
     }
   }
 
@@ -197,7 +198,7 @@ async function main() {
       }
 
       if (dry) {
-        const tag = useProxy ? `proxy lang=${languageForProxy(lng)}` : `voice=${voiceId}`;
+        const tag = useProxy ? `proxy lang=${languageForProxyRequest(lng)}` : `voice=${voiceId}`;
         console.log('[dry-run]', filename, '|', tag, '|', text.slice(0, 60) + '…');
         ok += 1;
         continue;
@@ -206,7 +207,7 @@ async function main() {
       try {
         let buf;
         if (useProxy) {
-          buf = await synthesizeViaProxy(proxyBase, text, languageForProxy(lng));
+          buf = await synthesizeViaProxy(proxyBase, text, languageForProxyRequest(lng));
         } else {
           buf = await synthesize(apiKey, voiceId, text, modelId);
         }

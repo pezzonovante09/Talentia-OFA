@@ -1,11 +1,11 @@
+import type { NextRequest } from "next/server";
+
 import { corsJson, corsPreflight } from "@/lib/api-cors";
-import { verifyTalentiaSecret } from "@/lib/api-secret";
 import { buildCorsHeaders } from "@/lib/cors-strict";
-import {
-  buildWeeklyReport,
-  normalizeLanguage,
-  type ReportStatsInput,
-} from "@/lib/report";
+import { enforceRateLimit, ratelimitApi } from "@/lib/ratelimit";
+import { authJsonError, verifyAuth } from "@/lib/verifyAuth";
+import { buildWeeklyReport, normalizeLanguage } from "@/lib/report";
+import { WeeklyReportBodySchema } from "@/lib/reportSchemas";
 
 export const runtime = "nodejs";
 
@@ -13,38 +13,34 @@ export async function OPTIONS(req: Request) {
   return corsPreflight(req);
 }
 
-export async function GET(req: Request) {
-  const denied = verifyTalentiaSecret(req);
-  if (denied) return denied;
+export async function GET(req: NextRequest) {
+  const limited = await enforceRateLimit(req, ratelimitApi);
+  if (limited) return limited;
+  const auth = await verifyAuth(req);
+  if (!auth.ok) return authJsonError(req, auth);
   return new Response("ok", {
     status: 200,
     headers: { "Content-Type": "text/plain", ...buildCorsHeaders(req) },
   });
 }
 
-type WeeklyBody = ReportStatsInput & {
-  language?: string;
-  lessonsThisWeek?: number;
-  correctThisWeek?: number;
-  weekStartDate?: string;
-};
-
-export async function POST(req: Request) {
-  const denied = verifyTalentiaSecret(req);
-  if (denied) return denied;
+export async function POST(req: NextRequest) {
+  const limited = await enforceRateLimit(req, ratelimitApi);
+  if (limited) return limited;
+  const auth = await verifyAuth(req);
+  if (!auth.ok) return authJsonError(req, auth);
   try {
-    const body = (await req.json().catch(() => ({}))) as WeeklyBody;
+    const rawBody = await req.json().catch(() => ({}));
+    const parsed = WeeklyReportBodySchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return corsJson(
+        { error: "Invalid request", details: parsed.error.flatten() },
+        400,
+        req,
+      );
+    }
+    const body = parsed.data;
     const lang = normalizeLanguage(body.language);
-
-    if (body.weekStartDate === undefined || body.weekStartDate === null) {
-      return corsJson({ error: "weekStartDate is required" }, 400, req);
-    }
-    if (body.lessonsThisWeek === undefined || body.lessonsThisWeek === null) {
-      return corsJson({ error: "lessonsThisWeek is required" }, 400, req);
-    }
-    if (body.correctThisWeek === undefined || body.correctThisWeek === null) {
-      return corsJson({ error: "correctThisWeek is required" }, 400, req);
-    }
 
     const payload = buildWeeklyReport(
       {
@@ -57,7 +53,7 @@ export async function POST(req: Request) {
     );
     return corsJson(payload, 200, req);
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return corsJson({ error: "Server error", details: msg }, 500, req);
+    console.error("[report/weekly] Server error", e);
+    return corsJson({ error: "Server error" }, 500, req);
   }
 }

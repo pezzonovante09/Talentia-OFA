@@ -3,6 +3,8 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { getTopicForLesson, worlds } from '../data/worlds';
+import { syncLessonCompletion, syncUserStats } from '../services/analyticsService';
+import { syncWithRetry } from '../services/syncStatus';
 import { getLevelFromXP } from '../utils/xpUtils';
 
 export type TopicProgress = {
@@ -81,7 +83,13 @@ type ProgressState = {
     sessionId?: string;
     attemptNo?: number;
   }) => void;
-  markLessonCompleted: (params: { topicId: string; lessonId: string; perfect?: boolean; mistakeCount?: number }) => void;
+  markLessonCompleted: (params: {
+    topicId: string;
+    lessonId: string;
+    perfect?: boolean;
+    mistakeCount?: number;
+    hadSkips?: boolean;
+  }) => void;
   addXP: (amount: number) => void;
   setDailyGoal: (goal: number) => void;
   resetAll: () => void;
@@ -126,6 +134,15 @@ function checkWorldCompleted(topicId: string, topics: Record<string, TopicProgre
     const tp = topics[t.id];
     return tp && t.lessons.every((l) => !!tp.completedLessons[l.id]);
   });
+}
+
+/**
+ * Whether a lesson was already marked completed before this call.
+ * Used to guard against re-awarding XP/tokens when a child replays a finished lesson.
+ */
+export function isLessonAlreadyCompleted(topicId: string, lessonId: string): boolean {
+  const topic = useProgressStore.getState().topics[topicId];
+  return !!topic?.completedLessons[lessonId];
 }
 
 /** Returns worlds where all topics have all lessons completed */
@@ -205,7 +222,7 @@ export const useProgressStore = create<ProgressState>()(
         return thisCompleted ? 'completed' : 'available';
       },
 
-      addXP: (amount) =>
+      addXP: (amount) => {
         set((state) => {
           const newXP = state.xp + amount;
           const newLevel = getLevelFromXP(newXP);
@@ -218,17 +235,28 @@ export const useProgressStore = create<ProgressState>()(
               [today]: (state.xpHistory[today] ?? 0) + amount,
             },
           };
-        }),
+        });
+        const s = get();
+        void syncWithRetry('progressStore:addXP', () =>
+          syncUserStats({
+            xp: s.xp,
+            level: s.level,
+            streakCount: s.streakCount,
+            lastActivityDate: s.lastActivityDate,
+          }),
+        );
+      },
 
-      recordAnswer: ({ topicId, lessonId, correct, taskId, taskIndex, promptLevel, latencyMs, successType, sessionId, attemptNo }) =>
+      recordAnswer: ({ topicId, lessonId, correct, taskId, taskIndex, promptLevel, latencyMs, successType, sessionId, attemptNo }) => {
         set((state) => {
           // Enqueue analytics event (fire-and-forget, persisted offline)
           try {
-            const { enqueue } = require('../store/analyticsQueueStore').useAnalyticsQueueStore.getState();
+            const { enqueueEvent } = require('../store/analyticsQueueStore').useAnalyticsQueueStore.getState();
+            const { methodology } = require('../store/settingsStore').useSettingsStore.getState();
             const eventTs = new Date().toISOString();
             const sid = sessionId ?? 'unknown';
             const tid = taskId ?? 'unknown';
-            enqueue({
+            enqueueEvent({
               eventKey: `${sid}-${tid}-${eventTs}`,
               sessionId: sid,
               eventTs,
@@ -241,7 +269,7 @@ export const useProgressStore = create<ProgressState>()(
               attemptNo: attemptNo ?? 1,
               latencyMs: latencyMs ?? null,
               successType: successType ?? null,
-              methodology: 'aba',
+              methodology: methodology ?? 'standard',
               appVersion: '1.0.0',
             });
           } catch {
@@ -258,23 +286,15 @@ export const useProgressStore = create<ProgressState>()(
             completedLessons: {},
           };
 
-          let { correctStreak, incorrectStreak, difficulty, skill } = topic;
+          let { correctStreak, incorrectStreak, skill } = topic;
 
           if (correct) {
             correctStreak += 1;
             incorrectStreak = 0;
-            if (correctStreak >= 3 && difficulty < 5) {
-              difficulty += 1;
-              correctStreak = 0;
-            }
             skill = clamp(skill + 3, 0, 100);
           } else {
             incorrectStreak += 1;
             correctStreak = 0;
-            if (incorrectStreak >= 2 && difficulty > 1) {
-              difficulty -= 1;
-              incorrectStreak = 0;
-            }
             skill = clamp(skill - 2, 0, 100);
           }
 
@@ -283,7 +303,7 @@ export const useProgressStore = create<ProgressState>()(
 
           const topics = {
             ...state.topics,
-            [topicId]: { ...topic, correctStreak, incorrectStreak, difficulty, skill, totalAttempts, totalCorrect },
+            [topicId]: { ...topic, correctStreak, incorrectStreak, skill, totalAttempts, totalCorrect },
           };
 
           let { globalCorrectCount, achievements, streakCount, lastActivityDate } = state;
@@ -340,7 +360,17 @@ export const useProgressStore = create<ProgressState>()(
             lastActivityDate,
             correctAnswersByDate,
           };
-        }),
+        });
+        const s = get();
+        void syncWithRetry('progressStore:recordAnswer', () =>
+          syncUserStats({
+            xp: s.xp,
+            level: s.level,
+            streakCount: s.streakCount,
+            lastActivityDate: s.lastActivityDate,
+          }),
+        );
+      },
 
       setDailyGoal: (goal) => set({ dailyGoal: goal }),
 
@@ -373,7 +403,15 @@ export const useProgressStore = create<ProgressState>()(
           correctAnswersByDate: {},
         }),
 
-      markLessonCompleted: ({ topicId, lessonId, perfect, mistakeCount }) =>
+      markLessonCompleted: ({ topicId, lessonId, perfect, mistakeCount, hadSkips }) => {
+        // Hoist star computation so values are accessible after set() for cloud sync
+        const mistakes = mistakeCount ?? (perfect === false ? 3 : 0);
+        const perfectRun = mistakes === 0 && !hadSkips;
+        const stars: 1 | 2 | 3 = perfectRun ? 3 : mistakes <= 2 ? 2 : 1;
+
+        let newStars: 1 | 2 | 3 = stars;
+        const alreadyCompleted = !!get().topics[topicId]?.completedLessons[lessonId];
+
         set((state) => {
           const topic = state.topics[topicId] ?? {
             topicId,
@@ -386,6 +424,8 @@ export const useProgressStore = create<ProgressState>()(
             completedLessons: {},
           };
 
+          const wasAlreadyCompleted = !!topic.completedLessons[lessonId];
+
           const updatedTopic: TopicProgress = {
             ...topic,
             completedLessons: { ...topic.completedLessons, [lessonId]: true },
@@ -393,23 +433,28 @@ export const useProgressStore = create<ProgressState>()(
 
           const topics = { ...state.topics, [topicId]: updatedTopic };
 
-          // Compute star rating: 3 = perfect, 2 = 1-2 mistakes, 1 = 3+ mistakes
-          const mistakes = mistakeCount ?? (perfect === false ? 3 : 0);
-          const stars: 1 | 2 | 3 = mistakes === 0 ? 3 : mistakes <= 2 ? 2 : 1;
           // Keep highest rating if lesson was already completed better before
           const prevStars = state.lessonStars[lessonId] ?? 0;
-          const newStars = Math.max(prevStars, stars) as 1 | 2 | 3;
+          newStars = Math.max(prevStars, stars) as 1 | 2 | 3;
           const lessonStars = { ...state.lessonStars, [lessonId]: newStars };
 
-          // Daily goal tracking
+          // Daily / weekly lesson counters only move on first completion — replaying
+          // a finished lesson must not farm the map daily goal or parent weekly stats.
           const today = getTodayDateString();
           let dailyLessonsCompleted = state.dailyLessonsCompleted;
           let dailyGoalDate = state.dailyGoalDate;
-          if (dailyGoalDate === today) {
-            dailyLessonsCompleted += 1;
-          } else {
-            dailyLessonsCompleted = 1;
-            dailyGoalDate = today;
+          let lessonsCompletedByDate = state.lessonsCompletedByDate;
+          if (!wasAlreadyCompleted) {
+            if (dailyGoalDate === today) {
+              dailyLessonsCompleted += 1;
+            } else {
+              dailyLessonsCompleted = 1;
+              dailyGoalDate = today;
+            }
+            lessonsCompletedByDate = {
+              ...state.lessonsCompletedByDate,
+              [today]: (state.lessonsCompletedByDate[today] ?? 0) + 1,
+            };
           }
 
           let achievements = state.achievements;
@@ -417,7 +462,8 @@ export const useProgressStore = create<ProgressState>()(
           if (!anyCompletedBefore && !achievements.firstLessonCompleted) {
             achievements = { ...achievements, firstLessonCompleted: true };
           }
-          if (mistakes === 0 && !achievements.perfectLesson) {
+          // Perfect-run achievement only on first completion (blocks resume/skip bypass farming).
+          if (!wasAlreadyCompleted && perfectRun && !achievements.perfectLesson) {
             achievements = { ...achievements, perfectLesson: true };
           }
           if (!achievements.firstWorldCompleted && checkWorldCompleted(topicId, topics)) {
@@ -427,11 +473,6 @@ export const useProgressStore = create<ProgressState>()(
             achievements = { ...achievements, islandExplorer: true };
           }
 
-          const lessonsCompletedByDate = {
-            ...state.lessonsCompletedByDate,
-            [today]: (state.lessonsCompletedByDate[today] ?? 0) + 1,
-          };
-
           return {
             topics,
             achievements,
@@ -440,10 +481,27 @@ export const useProgressStore = create<ProgressState>()(
             dailyGoalDate,
             lessonsCompletedByDate,
           };
-        }),
+        });
+
+        void syncWithRetry('progressStore:flushAnalyticsQueue', () =>
+          require('../store/analyticsQueueStore').useAnalyticsQueueStore.getState().flushQueue(),
+        );
+
+        void syncWithRetry('progressStore:syncLessonCompletion', () =>
+          syncLessonCompletion({
+            lessonId,
+            topicId,
+            stars: newStars,
+            mistakeCount: mistakes,
+            isFirstCompletion: !alreadyCompleted,
+          }),
+        );
+      },
     }),
     {
       name: 'talentia-progress',
+      version: 1,
+      migrate: (persistedState) => persistedState as Partial<ProgressState>,
       storage: createJSONStorage(() => AsyncStorage),
       merge: (persistedState: unknown, currentState: ProgressState): ProgressState => {
         const persisted = (persistedState ?? {}) as Partial<ProgressState>;

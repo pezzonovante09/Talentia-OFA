@@ -16,7 +16,7 @@ export default function LoginScreen() {
   const { t } = useTranslation();
   const theme = useAppTheme();
   const router = useRouter();
-  const setDemoUser = useAuth().setDemoUser;
+  const setDemoUser = useAuth((s) => s.setDemoUser);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');

@@ -1,21 +1,44 @@
+import type { NextRequest } from "next/server";
+import { z } from "zod";
+
 import { corsJson, corsPreflight } from "@/lib/api-cors";
-import { verifyTalentiaSecret } from "@/lib/api-secret";
 import { buildCorsHeaders } from "@/lib/cors-strict";
+import { enforceRateLimit, ratelimitApi } from "@/lib/ratelimit";
+import { authJsonError, verifyAuth } from "@/lib/verifyAuth";
 
 export const runtime = "nodejs";
 
-type TaskContext = {
-  questionPrompt?: string;
-  answerOptions?: string[];
-  subjectId?: string;
-  topicId?: string;
-  lessonId?: string;
-  childMode?: string;
-  methodology?: string | null;
-  correctAnswer?: string;
-  wasIncorrect?: boolean;
-  childAnswer?: string;
-};
+// All free-form text fields are capped to keep the system prompt bounded — an
+// unbounded taskContext would let an authenticated client inflate LLM request
+// cost or smuggle prompt-injection text into the system prompt.
+export const TaskContextSchema = z.object({
+  questionPrompt: z.string().max(1000).optional(),
+  answerOptions: z.array(z.string().max(300)).max(12).optional(),
+  subjectId: z.string().max(100).optional(),
+  topicId: z.string().max(100).optional(),
+  lessonId: z.string().max(100).optional(),
+  childMode: z.string().max(100).optional(),
+  methodology: z.string().max(100).nullable().optional(),
+  correctAnswer: z.string().max(500).optional(),
+  wasIncorrect: z.boolean().optional(),
+  childAnswer: z.string().max(500).optional(),
+});
+
+export const TaliRequestSchema = z.object({
+  message: z.string().max(2000).default(""),
+  language: z.enum(["ru", "en", "ky"]).default("ru"),
+  mode: z
+    .enum(["chat", "hint", "explain_error", "science_fact", "motivation"])
+    .default("chat"),
+  taskContext: TaskContextSchema.nullable().optional(),
+  parentContext: z.string().max(4000).nullable().optional(),
+  flags: z
+    .object({ childGaveCorrectAnswer: z.boolean().optional() })
+    .nullable()
+    .optional(),
+});
+
+type TaskContext = z.infer<typeof TaskContextSchema>;
 
 type TaliMode =
   | "chat"
@@ -129,30 +152,40 @@ export async function OPTIONS(req: Request) {
   return corsPreflight(req);
 }
 
-export async function GET(req: Request) {
-  const denied = verifyTalentiaSecret(req);
-  if (denied) return denied;
+export async function GET(req: NextRequest) {
+  const limited = await enforceRateLimit(req, ratelimitApi);
+  if (limited) return limited;
+  const auth = await verifyAuth(req);
+  if (!auth.ok) return authJsonError(req, auth);
   return new Response("ok", {
     status: 200,
     headers: { "Content-Type": "text/plain", ...buildCorsHeaders(req) },
   });
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const limited = await enforceRateLimit(req, ratelimitApi);
+  if (limited) return limited;
   try {
-    const denied = verifyTalentiaSecret(req);
-    if (denied) return denied;
+    const auth = await verifyAuth(req);
+    if (!auth.ok) return authJsonError(req, auth);
 
     const apiKey = process.env.DEEPSEEK_API_KEY;
     if (!apiKey) return corsJson({ error: "Missing DEEPSEEK_API_KEY" }, 500, req);
 
-    const body = await req.json().catch(() => ({}));
-    const language = String(body.language ?? "ru");
-    const message = String(body.message ?? body.userMessage ?? "").trim();
-    const mode = (body.mode ?? "chat") as TaliMode;
-    const taskContext = (body.taskContext ?? null) as TaskContext | null;
-    const parentContext = body.parentContext != null ? String(body.parentContext) : null;
-    const flags = body.flags ?? null;
+    const rawBody = await req.json().catch(() => null);
+    const parsed = TaliRequestSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return corsJson(
+        { error: "Invalid request", details: parsed.error.flatten() },
+        400,
+        req,
+      );
+    }
+    const data = parsed.data;
+
+    const { language, mode, taskContext, parentContext, flags } = data;
+    const message = data.message.trim();
 
     if (!message && mode === "chat" && !parentContext) {
       return corsJson({ error: "message is required" }, 400, req);
@@ -161,12 +194,12 @@ export async function POST(req: Request) {
     const system = buildSystemPrompt({
       language,
       mode,
-      taskContext,
-      parentContext,
-      flags,
+      taskContext: taskContext ?? null,
+      parentContext: parentContext ?? null,
+      flags: flags ?? null,
     });
 
-    const userContent = buildUserMessage(message, mode, taskContext);
+    const userContent = buildUserMessage(message, mode, taskContext ?? null);
 
     const r = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
@@ -183,12 +216,14 @@ export async function POST(req: Request) {
         temperature: 0.5,
         max_tokens: 220,
       }),
+      signal: AbortSignal.timeout(20_000),
     });
 
-    const data = await r.json().catch(() => ({}));
+    const dsData = await r.json().catch(() => ({}));
 
     if (!r.ok) {
-      return corsJson({ error: "DeepSeek error", details: data }, r.status, req);
+      console.error("[tali] DeepSeek error", r.status, dsData);
+      return corsJson({ error: "Upstream AI service error" }, 502, req);
     }
 
     const fallback =
@@ -197,11 +232,11 @@ export async function POST(req: Request) {
         : language === "ky"
           ? "Кичине бир кадам менен аракет кылалы!"
           : "Давай попробуем ещё один маленький шаг вместе!";
-    const reply = data?.choices?.[0]?.message?.content?.trim() || fallback;
+    const reply = dsData?.choices?.[0]?.message?.content?.trim() || fallback;
 
     return corsJson({ reply }, 200, req);
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return corsJson({ error: "Server error", details: msg }, 500, req);
+    console.error("[tali] Server error", e);
+    return corsJson({ error: "Server error" }, 500, req);
   }
 }

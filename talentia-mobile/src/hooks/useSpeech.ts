@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 import { useSettingsStore } from '../store/settingsStore';
-import { speakViaTali, stopTaliSpeech, type TaliTtsLanguage } from '../services/ttsService';
+import { mapLanguageCodeToTaliTts, speakViaTali, stopTaliSpeech } from '../services/ttsService';
 
 /** Remove emoji characters and clean up extra whitespace for TTS. */
 function stripForTTS(text: string): string {
@@ -14,10 +14,6 @@ function stripForTTS(text: string): string {
     .replace(/[•·]/g, ' ')
     .replace(/\s{2,}/g, ' ')
     .trim();
-}
-
-function mapLanguageToTaliTts(language: string): TaliTtsLanguage {
-  return language === 'en' ? 'en' : 'ru';
 }
 
 /**
@@ -33,7 +29,7 @@ export function useSpeech() {
       if (!ttsEnabled || !text) return;
       const cleaned = stripForTTS(text);
       if (!cleaned) return;
-      void speakViaTali(cleaned, mapLanguageToTaliTts(language));
+      void speakViaTali(cleaned, mapLanguageCodeToTaliTts(language));
     },
     [language, ttsEnabled],
   );

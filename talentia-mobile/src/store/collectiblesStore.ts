@@ -47,6 +47,8 @@ export const useCollectiblesStore = create<CollectiblesState>()(
     }),
     {
       name: 'talentia-collectibles',
+      version: 1,
+      migrate: (persistedState) => persistedState as Partial<CollectiblesState>,
       storage: createJSONStorage(() => AsyncStorage),
     },
   ),

@@ -20,12 +20,13 @@ export default function ParentSetupScreen() {
   const { t } = useTranslation();
   const theme = useAppTheme();
   const router = useRouter();
-  const { user, refreshProfile, setDemoProfile } = useAuth();
+  const user = useAuth((s) => s.user);
+  const refreshProfile = useAuth((s) => s.refreshProfile);
+  const setDemoProfile = useAuth((s) => s.setDemoProfile);
   const setLanguage = useSettingsStore((state) => state.setLanguage);
   const updateProfile = useSettingsStore((state) => state.updateProfile);
   const breakReminderEnabled = useSettingsStore((s) => s.breakReminderEnabled);
   const setBreakReminderEnabled = useSettingsStore((s) => s.setBreakReminderEnabled);
-  const sessionDurationMinutes = useSettingsStore((s) => s.sessionDurationMinutes);
   const breakDurationMinutes = useSettingsStore((s) => s.breakDurationMinutes);
 
   const [childName, setChildName] = useState('');
@@ -34,7 +35,6 @@ export default function ParentSetupScreen() {
   const [avatarId, setAvatarId] = useState<AvatarId>('sun');
   const [childMode, setChildMode] = useState<'standard' | 'special'>('standard');
   const [methodology, setMethodology] = useState<string | null>(null);
-  const [sessionDuration, setSessionDuration] = useState(sessionDurationMinutes);
   const [breakDuration, setBreakDuration] = useState(breakDurationMinutes);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -66,7 +66,6 @@ export default function ParentSetupScreen() {
         useSettingsStore.getState().setMethodology('aba');
       }
       useSettingsStore.getState().setBreakReminderEnabled(breakReminderEnabled);
-      useSettingsStore.getState().setSessionDurationMinutes(sessionDuration);
       useSettingsStore.getState().setBreakDurationMinutes(breakDuration);
       setLoading(false);
       router.replace('/(tabs)/map');
@@ -89,7 +88,6 @@ export default function ParentSetupScreen() {
       useSettingsStore.getState().setMethodology('aba');
     }
     useSettingsStore.getState().setBreakReminderEnabled(breakReminderEnabled);
-    useSettingsStore.getState().setSessionDurationMinutes(sessionDuration);
     useSettingsStore.getState().setBreakDurationMinutes(breakDuration);
     await refreshProfile();
     router.replace('/(tabs)/map');
@@ -179,16 +177,6 @@ export default function ParentSetupScreen() {
         </View>
         {breakReminderEnabled && (
           <>
-            <AppText variant="small" style={{ color: theme.colors.textMuted, marginBottom: theme.spacing.xs }}>{t('parentSetup.sessionDurationLabel')}</AppText>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm, marginBottom: theme.spacing.md }}>
-              {([15, 20, 30] as const).map((mins) => (
-                <Pressable key={mins} onPress={() => setSessionDuration(mins)}>
-                  <Card highlighted={sessionDuration === mins} style={{ paddingVertical: theme.spacing.sm, paddingHorizontal: theme.spacing.md }}>
-                    <AppText>{t(`parentSetup.sessionDuration${mins}`)}</AppText>
-                  </Card>
-                </Pressable>
-              ))}
-            </View>
             <AppText variant="small" style={{ color: theme.colors.textMuted, marginBottom: theme.spacing.xs }}>{t('parentSetup.breakDurationLabel')}</AppText>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm, marginBottom: theme.spacing.md }}>
               {([5, 10] as const).map((mins) => (

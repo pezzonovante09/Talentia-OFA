@@ -19,7 +19,12 @@ if (!i18n.isInitialized) {
   i18n.use(initReactI18next).init({
     resources,
     lng: fallback,
-    fallbackLng: fallback,
+    /** Если в en/ky нет строки задания — показываем русский текст вместо сырого ключа. */
+    fallbackLng: {
+      en: ['en', 'ru'],
+      ky: ['ky', 'ru'],
+      default: ['ru'],
+    },
     compatibilityJSON: 'v4',
     interpolation: {
       escapeValue: false,

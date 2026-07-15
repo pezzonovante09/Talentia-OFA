@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { AppText } from './Text';
 import { Button } from './Button';
 import { useAppTheme } from '../theme';
+import { captureException } from '../services/sentry';
 
 type Props = {
   children: ReactNode;
@@ -28,6 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+    captureException(error, { componentStack: errorInfo.componentStack ?? undefined });
   }
 
   render() {

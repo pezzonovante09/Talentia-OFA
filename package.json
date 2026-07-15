@@ -9,7 +9,8 @@
     "dev:api": "npm run dev --prefix talentia-ai-proxy-next",
     "build:api": "npm run build --prefix talentia-ai-proxy-next",
     "lint": "npm run lint --prefix talentia-mobile && npm run lint --prefix talentia-ai-proxy-next",
-    "test": "npm run test --prefix talentia-mobile",
+    "typecheck": "npm run typecheck --prefix talentia-mobile && npm run typecheck --prefix talentia-ai-proxy-next",
+    "test": "npm run test --prefix talentia-mobile && npm run test --prefix talentia-ai-proxy-next",
     "install:all": "npm install --prefix talentia-mobile && npm install --prefix talentia-ai-proxy-next"
   }
 }

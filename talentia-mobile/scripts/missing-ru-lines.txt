@@ -1,0 +1,111 @@
+data.dialog.g2e_phrl3_2	No, you can't — это МОЙ бутерброд, Тали!
+data.dialog.g2r_sentl2_2	Отличное сравнение! Именно так!
+data.dialog.g2s_anil2_2	Хм… это хороший вопрос. Я, честно, немного сомневаюсь…
+data.tasks.g2e_phrl2_q4	Тали снова наступил на лапу Поли. Это уже второй раз! Он говорит «I'm sorry» и «Sorry» — это одно и то же?
+data.tasks.g2e_phrl2_q4_a	Да, оба означают «прости»
+data.tasks.g2e_phrl2_q4_b	Нет, это разные слова с разным смыслом
+data.tasks.g2r_sentl1_q2	В предложении «Кот сидит» — найди подлежащее. Тали думает, что это «сидит».
+data.tasks.g2r_sentl1_q2_a	КОТ — подлежащее
+data.tasks.g2r_sentl1_q2_b	СИДИТ — подлежащее (Тали прав)
+data.tasks.g2s_anil1_q2	Тали спрашивает: «Главный признак млекопитающих — что?» Арчи говорит: «Откладывают яйца!» Тали не верит. Кто прав?
+data.tasks.g2s_anil1_q2_a	Арчи прав — откладывают яйца
+data.tasks.g2s_anil1_q2_b	Тали прав — кормят детёнышей молоком
+data.tasks.g2s_anil3_q2	Тали думает, что у насекомого 6 ног. Арчи говорит 8. Кто прав?
+data.tasks.g2s_anil3_q2_a	Тали прав — у насекомых 6 ног
+data.tasks.g2s_anil3_q2_b	Арчи прав — у насекомых 8 ног
+data.tasks.g2s_bdyl2_q3	Арчи думает, что желудок отвечает за дыхание. Тали не согласен. Кто прав?
+data.tasks.g2s_bdyl2_q3_a	Арчи прав
+data.tasks.g2s_bdyl2_q3_b	Тали прав — желудок для пищеварения
+data.tasks.g2s_bdyl2_q4	Что контролирует мозг?
+data.tasks.g2s_bdyl2_q4_a	Всё тело — движения, мысли, ощущения
+data.tasks.g2s_bdyl2_q4_b	Только движения
+data.tasks.g2s_bdyl2_q4_c	Только мысли
+data.tasks.g2s_pltl1_q3	Стебель — это «труба» растения. Что он проводит?
+data.tasks.g2s_pltl1_q3_a	Воду и питательные вещества
+data.tasks.g2s_pltl1_q3_b	Только воздух
+data.tasks.g2s_pltl1_q3_c	Ничего особенного
+data.tasks.g2s_pltl2_q1	Тали поставил цветок в тёмный шкаф. Арчи говорит: «Плохая идея!» Почему?
+data.tasks.g2s_pltl2_q1_a	В темноте нет фотосинтеза — растение не сможет питаться
+data.tasks.g2s_pltl2_q1_b	В шкафу слишком тепло
+data.tasks.g2s_pltl2_q1_c	Всё в порядке, растению не нужен свет
+data.tasks.g3e_foodl1_q3	Tea, coffee, milk — все эти слова это:
+data.tasks.g3e_foodl1_q3_a	Напитки
+data.tasks.g3e_foodl1_q3_b	Еда
+data.tasks.g3e_foodl1_q3_c	Фрукты
+data.tasks.g3e_foodl2_q3	Как сказать «Мне нравится шоколад» по-английски?
+data.tasks.g3e_foodl2_q3_a	I like chocolate
+data.tasks.g3e_foodl2_q3_b	I don't like chocolate
+data.tasks.g3e_foodl2_q3_c	I am chocolate
+data.tasks.g3r_adjl2_q1	Слон говорит: «Я большой!» Жираф: «А я ___ тебя!» Сравнительная степень:
+data.tasks.g3r_adjl2_q1_a	Больший
+data.tasks.g3r_adjl2_q1_b	Больше
+data.tasks.g3r_adjl2_q1_c	Самый большой
+data.tasks.g3r_adjl2_q3	«Это самая интересная книга» — выдели превосходную степень:
+data.tasks.g3r_adjl2_q3_a	Самая интересная
+data.tasks.g3r_adjl2_q3_b	Интересная
+data.tasks.g3r_adjl2_q3_c	Интереснее
+data.tasks.g3r_adjl3_q4	«Летом дни длинные, а зимой — ___»:
+data.tasks.g3r_adjl3_q4_a	Длинные (то же самое)
+data.tasks.g3r_adjl3_q4_b	Короткие
+data.tasks.g3r_adjl3_q4_c	Средние
+data.tasks.g3r_verbl1_q1	Репортёр ведёт прямой эфир прямо сейчас. «Мальчик ___ по улице». Какой глагол?
+data.tasks.g3r_verbl1_q1_a	Шёл (прошедшее)
+data.tasks.g3r_verbl1_q1_b	Идёт (настоящее)
+data.tasks.g3r_verbl1_q1_c	Пойдёт (будущее)
+data.tasks.g3r_verbl1_q3	Найди «шпиона» — глагол в настоящем времени среди слов: ЧИТАЛ, ЧИТАЕТ, ПРОЧИТАЕТ.
+data.tasks.g3r_verbl1_q3_a	ЧИТАЛ (прошедшее)
+data.tasks.g3r_verbl1_q3_b	ЧИТАЕТ (настоящее)
+data.tasks.g3r_verbl1_q3_c	ПРОЧИТАЕТ (будущее)
+data.tasks.g3r_verbl2_q2	ЧИТАЛ — это какое время?
+data.tasks.g3r_verbl2_q2_a	Настоящее
+data.tasks.g3r_verbl2_q2_b	Прошедшее
+data.tasks.g3r_verbl2_q2_c	Будущее
+data.tasks.g3r_verbl2_q4	Тали узнал: в прошедшем времени глагол меняется по роду. Как скажем про девочку?
+data.tasks.g3r_verbl2_q4_a	Она читал
+data.tasks.g3r_verbl2_q4_b	Она читала
+data.tasks.g3r_verbl2_q4_c	Она читает
+data.tasks.g3r_verbl3_q3	Учитель говорит ученику: «Ты ___ задачу». 2-е лицо глагола «решить»:
+data.tasks.g3r_verbl3_q3_a	Решу (1-е лицо)
+data.tasks.g3r_verbl3_q3_b	Решишь (2-е лицо)
+data.tasks.g3r_verbl3_q3_c	Решит (3-е лицо)
+data.tasks.g3r_verbl3_q4	«Они ___ в парке» — 3-е лицо множественного числа глагола «гулять»:
+data.tasks.g3r_verbl3_q4_a	Гуляет (3-е лицо, ед.ч.)
+data.tasks.g3r_verbl3_q4_b	Гуляю (1-е лицо)
+data.tasks.g3r_verbl3_q4_c	Гуляют (3-е лицо, мн.ч.)
+data.tasks.g3w_ecol1_q2	Рыбы, лягушки и водоросли в пруду зависят друг от друга. Как называется такая система?
+data.tasks.g3w_ecol1_q2_a	Экосистема
+data.tasks.g3w_ecol1_q2_b	Библиотека
+data.tasks.g3w_ecol1_q2_c	Завод
+data.tasks.g3w_ecol2_q3	Если в лесу исчезнут все зайцы, что случится с лисами?
+data.tasks.g3w_ecol2_q3_a	Лисам станет лучше
+data.tasks.g3w_ecol2_q3_b	Лисам не хватит еды
+data.tasks.g3w_ecol2_q3_c	Ничего не изменится
+data.tasks.g3w_ecol2_q4	В цепи: дуб → гусеница → синица → ястреб. Кто «производитель» — начало цепи?
+data.tasks.g3w_ecol2_q4_a	Дуб
+data.tasks.g3w_ecol2_q4_b	Гусеница
+data.tasks.g3w_ecol2_q4_c	Ястреб
+data.tasks.g3w_ecol3_q1	Амурский тигр занесён в Красную книгу. Что значит «редкий вид»?
+data.tasks.g3w_ecol3_q1_a	Вид, которому грозит исчезновение
+data.tasks.g3w_ecol3_q1_b	Очень красивый вид
+data.tasks.g3w_ecol3_q1_c	Самый опасный вид
+data.tasks.g3w_ecol3_q3	Дети посадили цветы и сделали кормушки для птиц. Как называются такие действия?
+data.tasks.g3w_ecol3_q3_a	Охрана природы
+data.tasks.g3w_ecol3_q3_b	Браконьерство
+data.tasks.g3w_ecol3_q3_c	Загрязнение
+data.tasks.g3w_ecol3_q4	Фабрика сливает отходы в реку. Кто пострадает в первую очередь?
+data.tasks.g3w_ecol3_q4_a	Рыбы и водные животные
+data.tasks.g3w_ecol3_q4_b	Птицы в небе
+data.tasks.g3w_ecol3_q4_c	Горные животные
+data.tasks.g3w_natl1_q4	Вода упала в реку и снова нагрелась солнцем. Какой шаг повторится?
+data.tasks.g3w_natl1_q4_a	Испарение
+data.tasks.g3w_natl1_q4_b	Замерзание
+data.tasks.g3w_natl1_q4_c	Дождь
+data.tasks.g3w_natl3_q2	В заповеднике нельзя охотиться и рубить деревья. Зачем нужны заповедники?
+data.tasks.g3w_natl3_q2_a	Чтобы сохранить природные экосистемы
+data.tasks.g3w_natl3_q2_b	Чтобы туристы отдыхали
+data.tasks.g3w_natl3_q2_c	Чтобы добывать ресурсы
+data.tasks.g3w_natl3_q4	Какой поступок НЕ помогает охране природы?
+data.tasks.g3w_natl3_q4_a	Сортировка мусора
+data.tasks.g3w_natl3_q4_b	Экономия воды
+data.tasks.g3w_natl3_q4_c	Выброс мусора в лесу
+data.tasks.pre_opt_equal_short	Поровну

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Animated, Pressable, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -107,7 +107,6 @@ function StartButton3D({
             style={{
               color: '#FFFFFF',
               fontSize: 17,
-              fontWeight: '800',
               letterSpacing: 0,
               fontFamily: 'Nunito_800ExtraBold',
             }}
@@ -151,7 +150,6 @@ function StartButton3D({
           style={{
             color: '#FFFFFF',
             fontSize: 17,
-            fontWeight: '800',
             letterSpacing: 0,
             fontFamily: 'Nunito_800ExtraBold',
           }}
@@ -171,12 +169,13 @@ type MapPathNodeProps = {
   stars?: 1 | 2 | 3;
   theme: ReturnType<typeof useAppTheme>;
   t: (key: string) => string;
-  onPress: () => void;
+  /** Stable navigation callback, e.g. `useCallback((lessonId, topicId) => router.push(...), [router])`. */
+  onNavigate: (lessonId: string, topicId: string) => void;
   methodologyStyle: MethodologyStyle;
   isStartNode: boolean;
 };
 
-export function MapPathNode({
+function MapPathNodeImpl({
   node,
   levelNumber,
   totalInSubject,
@@ -184,12 +183,15 @@ export function MapPathNode({
   stars,
   theme,
   t,
-  onPress,
+  onNavigate,
   methodologyStyle,
   isStartNode,
 }: MapPathNodeProps) {
   const reduceMotion = useSettingsStore((s) => s.reduceMotion);
   const pulseAnim = useNodePulse(!reduceMotion);
+  const lessonId = node.lessonId;
+  const topicId = node.topicId;
+  const onPress = useCallback(() => onNavigate(lessonId, topicId), [onNavigate, lessonId, topicId]);
   const isLocked = status === 'locked';
   const isCompleted = status === 'completed';
   const isAvailable = status === 'available';
@@ -327,6 +329,8 @@ export function MapPathNode({
     </Pressable>
   );
 }
+
+export const MapPathNode = React.memo(MapPathNodeImpl);
 
 /** Vertical «дорожка» между узлами + декор по бокам */
 export function PathBridge({

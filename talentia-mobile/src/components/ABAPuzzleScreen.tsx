@@ -8,8 +8,8 @@ import { Spacer } from './Spacer';
 import { useAppTheme } from '../theme';
 import { ABA_PUZZLE_PIECE_COUNT } from '../store/abaTokenStore';
 
-const PUZZLE_IMAGE = require('../../assets/images/aba/aba-puzzle-bear.png');
-const CELEBRATION_CONFETTI = require('../../assets/images/aba/celebration-confetti.png');
+const PUZZLE_IMAGE = require('../../assets/images/aba/aba-puzzle-bear.webp');
+const CELEBRATION_CONFETTI = require('../../assets/images/aba/celebration-confetti.webp');
 
 /** Source image dimensions (6 tiles: 3×2 of 200×133). */
 const PUZZLE_SRC_W = 600;

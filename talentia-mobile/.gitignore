@@ -38,6 +38,15 @@ yarn-error.*
 # generated lesson voice packs (large binaries)
 scripts/output/audio/
 
+# MyMemory ru→en cache for import:final-tasks (regenerable)
+scripts/.cache/
+
+# translate-locales-from-ru.ts progress (regenerable)
+scripts/translate-locales.checkpoint.json
+
+# optional MD exports (audit lists; curricula/ holds grade-0–4 curriculum)
+scripts/generated/
+
 # typescript
 *.tsbuildinfo
 

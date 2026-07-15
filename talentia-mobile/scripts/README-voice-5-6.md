@@ -2,6 +2,11 @@
 
 В приложении это возраст **`5–6`**, миры: **meadow, forest, garden, island**. Отдельного поля «0 класс» в коде нет — это тот же контент.
 
+## Текущее состояние (после снятия старой озвучки)
+
+- Папка **`assets/audio/lesson-voice-5-6/`** может быть пустой (только `.gitkeep`): вшитых MP3 нет, **`src/generated/lessonVoiceAssets.ts`** содержит пустой объект `{}`.
+- На уроках озвучка идёт через **`speakViaTali`** → прокси **`POST /api/tts`** с языком **`ru` | `en` | `ky`** (или **expo-speech** офлайн). После записи новых MP3 снова скопируй файлы в `lesson-voice-5-6/` и выполни **`npm run lesson-voice:generate-map`**.
+
 ## Что уже автоматизировано в репозитории
 
 1. **Список всех фраз** (ru / en / ky): интро, диалоги, **текст вопроса** и **подписи вариантов** (multiple choice) с именами файлов `{lessonId}_task_{taskId}_q_{lang}.mp3` и `…_opt_{optionId}_{lang}.mp3`.
@@ -60,11 +65,11 @@ TTS_PROXY_URL=https://твой-проект.vercel.app
 
 Скрипт дергает **`POST …/api/tts`** с `{ text, language }` — как мобильное приложение. **API-ключ на компьютер не нужен.**
 
-Ограничения прокси:
+Прокси **`/api/tts`** (мобильное приложение и скрипт выгрузки):
 
-- Язык только **`ru`** или **`en`**. Строки для **`ky`** при явной настройке шлются как **`language: "ru"`** (кыргызский текст, тот же голос, что и для ru).
-- **По умолчанию в режиме прокси скрипт качает только `ru` и `en`**, без **`ky`**: иначе было бы вдвое больше запросов с тем же движком TTS, только другой текст. Если в приложении нужны отдельные файлы `*_ky.mp3`, задай **`VOICE_LANGS=ru,en,ky`**.
-- На сервере один **`ELEVENLABS_VOICE_ID`** — **два разных голоса** (Тали и NPC), как в прямом режиме ElevenLabs, через этот прокси **нельзя**, пока не расширите `/api/tts`.
+- Язык тела запроса: **`ru` | `en` | `ky`**. Для **ky** нужны **ElevenLabs** (`ELEVENLABS_API_KEY` + голос); Hugging Face MMS в прокси остаётся только для **ru/en**.
+- Опционально отдельный голос для кыргызского: **`ELEVENLABS_VOICE_ID_KY`** (если не задан — используется **`ELEVENLABS_VOICE_ID`**). Рекомендуется **multilingual** модель (`ELEVENLABS_MODEL_ID`, например `eleven_multilingual_v2`).
+- Скрипт **`fetch-lesson-audio-elevenlabs`**: по умолчанию может качать только `ru` и `en`; для отдельных `*_ky.mp3` задай **`VOICE_LANGS=ru,en,ky`**.
 
 ### Вариант 2: прямой ElevenLabs с твоего ПК
 
@@ -123,7 +128,7 @@ node scripts/fetch-lesson-audio-elevenlabs.mjs
    ```bash
    npm run lesson-voice:generate-map
    ```
-   Появится/обновится **`src/generated/lessonVoiceAssets.ts`** с `require(...)` для каждого файла.
+   Другая папка под новый пакет: `node scripts/generate-lesson-voice-map.mjs --dir=lesson-voice-v2` (или `LESSON_VOICE_PACK_SUBDIR`). Появится/обновится **`src/generated/lessonVoiceAssets.ts`** с `require(...)` для каждого файла.
 3. Запусти приложение как обычно. На экране урока (5–6) сначала ищут вшитый mp3 по ключу:
    - интро / диалоги: `{lessonId}_intro_{индекс}_{ru|en|ky}`, `{lessonId}_dialog_{индекс}_{ru|en|ky}`;
    - вопрос задания: `{lessonId}_task_{taskId}_q_{ru|en|ky}`;
@@ -136,7 +141,8 @@ node scripts/fetch-lesson-audio-elevenlabs.mjs
 
 ## Кыргызский язык (`ky`)
 
-Модель **eleven_multilingual_v2** обычно озвучивает кыргызский текст; качество зависит от голоса. Если не устраивает — в `.env` поставь `VOICE_LANGS=ru,en` и добери `ky` позже или в Studio другим голосом.
+- **Вшитые MP3**: ключи `*_ky.mp3` в манифесте; при отсутствии файла для `ky` в коде по-прежнему fallback на **`_ru`** для **bundled**-ключа (см. `lessonBundledVoice.ts` / `lessonTaskBundledVoice.ts`).
+- **Нейро TTS**: приложение шлёт `language: "ky"`; на прокси нужен ElevenLabs с мультиязычным голосом (см. **`ELEVENLABS_VOICE_ID_KY`** выше). Офлайн — **expo-speech** с локалью **`ky-KG`** (зависит от движка на устройстве).
 
 ---
 

@@ -1,11 +1,14 @@
 import React, { useRef, useEffect } from 'react';
-import { Animated, View } from 'react-native';
+import { Animated, Platform, View } from 'react-native';
+import type { ImageSourcePropType } from 'react-native';
 import { Tabs } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../src/theme';
 import { TaliFAB } from '../../src/components/TaliFAB';
+import { NanoBananaIcon } from '../../src/components/NanoBananaIcon';
+import { NANO_UI } from '../../src/constants/nanoBananaAssets';
 
 type IconName = React.ComponentProps<typeof MaterialIcons>['name'];
 
@@ -38,6 +41,37 @@ function AnimatedTabIcon({
   );
 }
 
+function AnimatedTabRasterIcon({
+  source,
+  size,
+  focused,
+}: {
+  source: ImageSourcePropType;
+  size: number;
+  focused: boolean;
+}) {
+  const scale = useRef(new Animated.Value(focused ? 1.15 : 1)).current;
+
+  useEffect(() => {
+    Animated.spring(scale, {
+      toValue: focused ? 1.15 : 1,
+      useNativeDriver: true,
+      speed: 30,
+      bounciness: 10,
+    }).start();
+  }, [focused, scale]);
+
+  return (
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <NanoBananaIcon
+        source={source}
+        size={size + 4}
+        style={{ opacity: focused ? 1 : 0.62 }}
+      />
+    </Animated.View>
+  );
+}
+
 export default function TabLayout() {
   const { t } = useTranslation();
   const theme = useAppTheme();
@@ -65,9 +99,10 @@ export default function TabLayout() {
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '600',
-          fontFamily: 'Nunito_600SemiBold',
           marginTop: 2,
+          ...(Platform.OS === 'android'
+            ? { fontFamily: 'sans-serif', fontWeight: '600' }
+            : { fontFamily: 'Nunito_600SemiBold' }),
         },
       }}
     >
@@ -88,8 +123,8 @@ export default function TabLayout() {
           title: t('tabs.profile'),
           tabBarLabel: t('tabs.profile'),
           tabBarAccessibilityLabel: t('tabs.profile'),
-          tabBarIcon: ({ color, size, focused }) => (
-            <AnimatedTabIcon name="face" color={color} size={size} focused={focused} />
+          tabBarIcon: ({ size, focused }) => (
+            <AnimatedTabRasterIcon source={NANO_UI.book} size={size} focused={focused} />
           ),
         }}
       />

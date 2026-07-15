@@ -1,11 +1,7 @@
 import { LESSON_VOICE_ASSETS } from '../generated/lessonVoiceAssets';
 import type { LanguageCode } from '../store/settingsStore';
 import { getBundledVoiceModuleId, tryPlayBundledLessonVoice } from './lessonBundledVoice';
-import { speakViaTali, type TaliTtsLanguage } from './ttsService';
-
-function mapToTaliLang(language: LanguageCode): TaliTtsLanguage {
-  return language === 'en' ? 'en' : 'ru';
-}
+import { mapLanguageCodeToTaliTts, speakViaTali } from './ttsService';
 
 export function lessonTaskQuestionVoiceKey(
   lessonId: string,
@@ -46,5 +42,5 @@ export async function playLessonTaskVoiceLine(
     const ok = await tryPlayBundledLessonVoice(mod);
     if (ok) return;
   }
-  await speakViaTali(fallbackText, mapToTaliLang(language));
+  await speakViaTali(fallbackText, mapLanguageCodeToTaliTts(language));
 }

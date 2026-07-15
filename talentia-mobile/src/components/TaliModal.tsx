@@ -22,8 +22,14 @@ import { Button } from './Button';
 import { VoiceInputButton } from './VoiceInputButton';
 import { TaliVideo } from './TaliVideo';
 import { useAppTheme } from '../theme';
-import { sendToCompanion, getHint, getScienceFact, getMotivation } from '../services/CompanionService';
-import { speakViaTali, stopTaliSpeech, type TaliTtsLanguage } from '../services/ttsService';
+import {
+  sendToCompanion,
+  getHint,
+  getScienceFact,
+  getMotivation,
+  type TaskContext,
+} from '../services/companionService';
+import { mapLanguageCodeToTaliTts, speakViaTali, stopTaliSpeech } from '../services/ttsService';
 import { useSettingsStore } from '../store/settingsStore';
 import { useProgressStore } from '../store/progressStore';
 import { useAuth } from '../context/AuthContext';
@@ -46,6 +52,8 @@ export type TaliModalProps = {
   lessonTitle?: string;
   /** Lesson task description (question + options); prepended to chat API messages only */
   taskContext?: string;
+  /** Same lesson as structured payload for /api/tali (preferred over string taskContext). */
+  companionTaskContext?: TaskContext;
 };
 
 const SHEET_HEIGHT = Math.round(Dimensions.get('window').height * 0.9);
@@ -59,6 +67,7 @@ export function TaliModal({
   reportSummary,
   lessonTitle,
   taskContext,
+  companionTaskContext,
 }: TaliModalProps) {
   const { t } = useTranslation();
   const theme = useAppTheme();
@@ -66,7 +75,7 @@ export function TaliModal({
   const methodology = useSettingsStore((s) => s.methodology);
   const childName = useSettingsStore((s) => s.childName);
   const taliSpeakEnabled = useSettingsStore((s) => s.taliSpeakEnabled);
-  const { profile } = useAuth();
+  const profile = useAuth((s) => s.profile);
   const streakCount = useProgressStore((s) => s.streakCount);
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -113,13 +122,16 @@ export function TaliModal({
       return next;
     });
     if (from === 'tali' && taliSpeakEnabled) {
-      const ttsLang: TaliTtsLanguage = language === 'en' ? 'en' : 'ru';
+      const ttsLang = mapLanguageCodeToTaliTts(language);
       void speakViaTali(text, ttsLang);
     }
   };
 
   const buildApiMessage = (userText: string) => {
     const trimmed = userText.trim();
+    if (companionTaskContext) {
+      return trimmed;
+    }
     if (taskContext?.trim()) {
       return `[${taskContext.trim()}]\n${trimmed}`;
     }
@@ -145,6 +157,7 @@ export function TaliModal({
         lessonId: lessonId ? String(lessonId) : undefined,
         topicId: topicId ? String(topicId) : undefined,
         parentContext: isParentContext ? String(reportSummary) : undefined,
+        taskContext: companionTaskContext,
       });
       addMessage('tali', reply ?? t('tali.errorGeneric'));
     } finally {
@@ -163,17 +176,18 @@ export function TaliModal({
       setSending(true);
       let reply: string | null = null;
       if (action === 'quickHint') {
-        reply = await getHint(
-          {
+        const hintCtx: TaskContext =
+          companionTaskContext ??
+          ({
             questionPrompt: '',
             subjectId: topicId ? 'science' : 'math',
             topicId: topicId ?? '',
             lessonId: lessonId ?? '',
             childMode: profile?.child_mode ?? 'standard',
-            methodology: profile?.child_mode === 'special' ? (profile.methodology ?? 'aba') : 'standard',
-          },
-          language,
-        );
+            methodology:
+              profile?.child_mode === 'special' ? (profile.methodology ?? 'aba') : null,
+          } satisfies TaskContext);
+        reply = await getHint(hintCtx, language);
       } else if (action === 'quickFact') {
         reply = await getScienceFact(
           topicId ? 'science' : 'math',

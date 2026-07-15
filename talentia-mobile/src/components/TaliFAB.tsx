@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { TaliVideo } from './TaliVideo';
 import { TaliModal } from './TaliModal';
+import type { TaskContext } from '../services/companionService';
 import { useAppTheme } from '../theme';
 
 /** Tab bar height from (tabs)/_layout — FAB must sit above it or taps hit tabs instead. */
@@ -17,6 +18,8 @@ export type TaliFABProps = {
   topicId?: string;
   context?: string;
   taskContext?: string;
+  /** Structured task for /api/tali (question, options, correct answer for model — not shown verbatim to child). */
+  companionTaskContext?: TaskContext;
   reportSummary?: string;
   lessonTitle?: string;
   /** When true (e.g. on map tabs), FAB is placed above the bottom tab bar. */
@@ -28,6 +31,7 @@ export function TaliFAB({
   topicId,
   context,
   taskContext,
+  companionTaskContext,
   reportSummary,
   lessonTitle,
   withTabBar = false,
@@ -82,6 +86,7 @@ export function TaliFAB({
         topicId={topicId}
         context={context}
         taskContext={taskContext}
+        companionTaskContext={companionTaskContext}
         reportSummary={reportSummary}
         lessonTitle={lessonTitle}
       />

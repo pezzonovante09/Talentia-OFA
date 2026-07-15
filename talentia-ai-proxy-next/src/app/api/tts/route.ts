@@ -1,11 +1,20 @@
+import type { NextRequest } from "next/server";
+import { z } from "zod";
+
 import { corsAudioMpegResponse, corsJson, corsPreflight } from "@/lib/api-cors";
-import { verifyTalentiaSecret } from "@/lib/api-secret";
+import { authJsonError, verifyAuth } from "@/lib/verifyAuth";
+import { enforceRateLimit, ratelimitApi, ratelimitTts } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 
 /** Default model; override with ELEVENLABS_MODEL_ID (e.g. eleven_multilingual_v3 if your plan supports it). */
 const DEFAULT_MODEL_ID = "eleven_multilingual_v2";
 const MAX_TEXT_LEN = 2500;
+
+export const TtsRequestSchema = z.object({
+  text: z.string().max(MAX_TEXT_LEN),
+  language: z.enum(["ru", "en", "ky"]),
+});
 
 /** Free tier: MMS-TTS on Hugging Face Inference API (token from https://huggingface.co/settings/tokens). */
 const HF_MODELS: Record<"ru" | "en", string> = {
@@ -29,6 +38,15 @@ function trimmedEnv(name: string): string | undefined {
   if (v === undefined) return undefined;
   const t = v.trim();
   return t.length > 0 ? t : undefined;
+}
+
+/** ElevenLabs voice: optional dedicated ID for Kyrgyz (multilingual model). */
+function resolveElevenLabsVoiceId(language: "ru" | "en" | "ky"): string | undefined {
+  const base = trimmedEnv("ELEVENLABS_VOICE_ID");
+  if (language === "ky") {
+    return trimmedEnv("ELEVENLABS_VOICE_ID_KY") ?? base;
+  }
+  return base;
 }
 
 function huggingFaceToken(): string | undefined {
@@ -59,7 +77,8 @@ async function synthesizeHuggingFace(
 
   if (!r.ok) {
     const err = await r.text().catch(() => "unknown");
-    return corsJson({ error: "Hugging Face TTS error", details: err }, r.status, req);
+    console.error("[tts] Hugging Face error", r.status, err);
+    return corsJson({ error: "Upstream TTS service error" }, 502, req);
   }
 
   const audioBuffer = await r.arrayBuffer();
@@ -104,7 +123,8 @@ async function synthesizeElevenLabs(
 
   if (!r.ok) {
     const err = await r.text().catch(() => "unknown");
-    return corsJson({ error: "ElevenLabs TTS error", details: err }, r.status, req);
+    console.error("[tts] ElevenLabs error", r.status, err);
+    return corsJson({ error: "Upstream TTS service error" }, 502, req);
   }
 
   const audioBuffer = await r.arrayBuffer();
@@ -115,9 +135,11 @@ export async function OPTIONS(req: Request) {
   return corsPreflight(req);
 }
 
-export async function GET(req: Request) {
-  const denied = verifyTalentiaSecret(req);
-  if (denied) return denied;
+export async function GET(req: NextRequest) {
+  const limited = await enforceRateLimit(req, ratelimitApi);
+  if (limited) return limited;
+  const auth = await verifyAuth(req);
+  if (!auth.ok) return authJsonError(req, auth);
   const apiKey = trimmedEnv("ELEVENLABS_API_KEY");
   const voiceId = trimmedEnv("ELEVENLABS_VOICE_ID");
   const hfToken = huggingFaceToken();
@@ -143,44 +165,34 @@ export async function GET(req: Request) {
     {
       ok: true,
       endpoint: "/api/tts",
-      usage:
-        "POST JSON: { text, language: 'ru'|'en' } → audio/mpeg (ElevenLabs) or JSON { audio, mimeType } (Hugging Face FLAC).",
-      activeEngine,
-      envPresent: {
-        ELEVENLABS_API_KEY: !!apiKey,
-        ELEVENLABS_VOICE_ID: !!voiceId,
-        HUGGINGFACE_API_TOKEN_or_TTS_KEY: hfReady,
-      },
       configured: elevenReady || hfReady,
-      hints: {
-        elevenLabsFreeTier:
-          "ElevenLabs Free: library voices are blocked for API (paid_plan_required). Upgrade or use Hugging Face.",
-        huggingFaceFree:
-          "Set HUGGINGFACE_API_TOKEN (HF token) and optionally TTS_ENGINE=huggingface, or TTS_HF_FALLBACK=1 to auto-fallback when ElevenLabs returns 402.",
-      },
-      options: {
-        TTS_ENGINE: "huggingface | (omit for elevenlabs when EL keys set)",
-        TTS_HF_FALLBACK: hfFallback ? "enabled" : "set to 1 to retry HF on EL 402/403",
-      },
+      activeEngine,
     },
     200,
     req,
   );
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const limited = await enforceRateLimit(req, ratelimitTts);
+  if (limited) return limited;
   try {
-    const denied = verifyTalentiaSecret(req);
-    if (denied) return denied;
+    const auth = await verifyAuth(req);
+    if (!auth.ok) return authJsonError(req, auth);
 
-    const body = await req.json().catch(() => ({}));
-    const text = String(body.text ?? "").trim().slice(0, MAX_TEXT_LEN);
-    const language = body.language;
+    const rawBody = await req.json().catch(() => ({}));
+    const parsed = TtsRequestSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return corsJson(
+        { error: "Invalid request", details: parsed.error.flatten() },
+        400,
+        req,
+      );
+    }
+    const text = parsed.data.text.trim().slice(0, MAX_TEXT_LEN);
+    const language = parsed.data.language;
 
     if (!text) return corsJson({ error: "text is required" }, 400, req);
-    if (language !== "ru" && language !== "en") {
-      return corsJson({ error: "language must be 'ru' or 'en'" }, 400, req);
-    }
 
     const hfToken = huggingFaceToken();
     const engineEnv = process.env.TTS_ENGINE?.trim().toLowerCase();
@@ -188,11 +200,22 @@ export async function POST(req: Request) {
       process.env.TTS_HF_FALLBACK === "1" || process.env.TTS_HF_FALLBACK?.toLowerCase() === "true";
 
     const apiKey = trimmedEnv("ELEVENLABS_API_KEY");
-    const voiceId = trimmedEnv("ELEVENLABS_VOICE_ID");
+    const voiceId = resolveElevenLabsVoiceId(language);
     const elevenReady = !!(apiKey && voiceId);
 
-    // Force Hugging Face only
+    // Force Hugging Face only (MMS: ru/en only)
     if (engineEnv === "huggingface") {
+      if (language === "ky") {
+        return corsJson(
+          {
+            error: "Hugging Face path does not support Kyrgyz",
+            details:
+              "Use ElevenLabs (unset TTS_ENGINE or set ELEVENLABS_*), or rely on client expo-speech fallback.",
+          },
+          400,
+          req,
+        );
+      }
       if (!hfToken) {
         return corsJson(
           {
@@ -206,8 +229,23 @@ export async function POST(req: Request) {
       return synthesizeHuggingFace(text, language, hfToken, req);
     }
 
-    // No ElevenLabs → Hugging Face if token present
+    // No ElevenLabs → Hugging Face if token present (ru/en only)
     if (!elevenReady) {
+      if (language === "ky") {
+        const missing: string[] = [];
+        if (!apiKey) missing.push("ELEVENLABS_API_KEY");
+        if (!voiceId) missing.push("ELEVENLABS_VOICE_ID or ELEVENLABS_VOICE_ID_KY");
+        return corsJson(
+          {
+            error: "TTS not configured for Kyrgyz",
+            details:
+              "Kyrgyz requires ElevenLabs (multilingual voice). Set ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID; optional ELEVENLABS_VOICE_ID_KY.",
+            missing,
+          },
+          503,
+          req,
+        );
+      }
       if (!hfToken) {
         const missing: string[] = [];
         if (!apiKey) missing.push("ELEVENLABS_API_KEY");
@@ -232,13 +270,13 @@ export async function POST(req: Request) {
     if (elRes.ok) return elRes;
 
     const status = elRes.status;
-    if ((status === 402 || status === 403) && hfFallback && hfToken) {
+    if ((status === 402 || status === 403) && hfFallback && hfToken && (language === "ru" || language === "en")) {
       return synthesizeHuggingFace(text, language, hfToken, req);
     }
 
     return elRes;
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return corsJson({ error: "Server error", details: msg }, 500, req);
+    console.error("[tts] Server error", e);
+    return corsJson({ error: "Server error" }, 500, req);
   }
 }

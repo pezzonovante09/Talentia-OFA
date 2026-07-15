@@ -26,7 +26,7 @@ export function corsAudioMpegResponse(
   });
 }
 
-/** OPTIONS preflight — no body; does not require X-Talentia-Secret. */
+/** OPTIONS preflight — no body; does not require auth. */
 export function corsPreflight(req: Request): Response {
   return new Response(null, { status: 204, headers: buildCorsHeaders(req) });
 }

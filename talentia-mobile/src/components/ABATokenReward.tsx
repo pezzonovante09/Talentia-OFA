@@ -7,7 +7,7 @@ import { Button } from './Button';
 import { Spacer } from './Spacer';
 import { useAppTheme } from '../theme';
 
-const TOKEN_COIN = require('../../assets/images/aba/aba-token-coin.png');
+const TOKEN_COIN = require('../../assets/images/aba/aba-token-coin.webp');
 
 const STAGGER_MS = 60;
 const POP_DURATION_MS = 360;

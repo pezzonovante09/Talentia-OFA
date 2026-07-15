@@ -16,9 +16,11 @@
         "NSMicrophoneUsageDescription": "Talentia uses the microphone so your child can answer by voice during lessons.",
         "ITSAppUsesNonExemptEncryption": false
       },
-      "bundleIdentifier": "com.talentia.mobile"
+      "bundleIdentifier": "com.talentia.mobile",
+      "buildNumber": "1"
     },
     "android": {
+      "versionCode": 1,
       "package": "com.talentia.mobile",
       "label": "Talentia",
       "adaptiveIcon": {
@@ -63,7 +65,8 @@
             "enablePngCrunchInReleaseBuilds": false
           }
         }
-      ]
+      ],
+      "@sentry/react-native"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -143,14 +143,14 @@ export async function generateReport(stats: ReportStats, language?: string): Pro
   }
 }
 
-const SUBJECT_LABEL: Record<string, string> = {
-  math: 'Math',
-  reading: 'English',
-  reading_ru: 'Russian',
-  logic: 'Science',
-};
-
-/** Stats for a single world, for AI report generation */
+/**
+ * Stats for a single world, for AI report generation.
+ *
+ * `accuracyBySubject` is keyed by the raw `topic.subject` id (e.g. "math",
+ * "reading", "reading_ru", "logic", "social") rather than a display label —
+ * the proxy (`talentia-ai-proxy-next/src/lib/report.ts`) localizes these
+ * keys into the report's target language via its own `subjectLabel` map.
+ */
 export function getWorldStats(
   worldId: string,
   topics: Record<string, TopicProgress>,
@@ -163,7 +163,7 @@ export function getWorldStats(
   for (const topic of world.topics) {
     const tp = topics[topic.id];
     if (!tp) continue;
-    const label = SUBJECT_LABEL[topic.subject] ?? topic.subject;
+    const label = topic.subject;
     if (!bySubject[label]) bySubject[label] = { correct: 0, attempts: 0 };
     bySubject[label].correct += tp.totalCorrect;
     bySubject[label].attempts += tp.totalAttempts;
@@ -181,7 +181,7 @@ export type WorldReport = ParentReport;
 
 const STUB_WORLD_REPORTS: Record<string, WorldReport> = {
   en: {
-    strongSides: ['Successfully completed the island tasks.', 'Follows instructions well.'],
+    strongSides: ['Successfully completed learning tasks.', 'Follows instructions well.'],
     weakSides: ['Some topics need more practice.'],
     advice: 'Keep practicing regularly. Praise your child for effort.',
     howToHelpAtHome: 'Play board games together, read aloud.',

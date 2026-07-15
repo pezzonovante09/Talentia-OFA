@@ -1,15 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Image, Modal, Pressable, TextInput, View } from 'react-native';
-import type { ImageSourcePropType } from 'react-native';
+import { Animated, Image, Pressable, TextInput, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { MaterialIcons } from '@expo/vector-icons';
 import { NanoBananaIcon } from '../../src/components/NanoBananaIcon';
-import { NANO_UI, getNanoNpcForWorld, resolveScreenBackground } from '../../src/constants/nanoBananaAssets';
+import { NANO_UI, resolveScreenBackground } from '../../src/constants/nanoBananaAssets';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '../../src/components/Screen';
 import { ABAReinforcementBanner } from '../../src/components/ABAReinforcementBanner';
-import { TaliVideo } from '../../src/components/TaliVideo';
 import { AppText } from '../../src/components/Text';
 import { Spacer } from '../../src/components/Spacer';
 import { Card } from '../../src/components/Card';
@@ -21,7 +20,6 @@ import { useAppTheme } from '../../src/theme';
 import {
   LessonTask,
   MultipleChoiceTask,
-  IntroSlide,
   filterTasksForProfile,
   getLesson,
   getTopicForLesson,
@@ -33,40 +31,51 @@ import {
   type SortingTask,
   type WorldKnowledgeTask,
 } from '../../src/data/worlds';
-import { getBiomeDisplayEmoji } from '../../src/utils/biomeDisplay';
-import { useProgressStore, getLevelFromXP } from '../../src/store/progressStore';
+import { useProgressStore, getLevelFromXP, isLessonAlreadyCompleted } from '../../src/store/progressStore';
 import { useCollectiblesStore, COLLECTIBLES_META } from '../../src/store/collectiblesStore';
 import { useAuth } from '../../src/context/AuthContext';
 import { useSettingsStore } from '../../src/store/settingsStore';
-import { getHint, explainError, type TaskContext } from '../../src/services/CompanionService';
+import { getHint, explainError, type TaskContext } from '../../src/services/companionService';
 import { useSpeech } from '../../src/hooks/useSpeech';
 import {
-  getBundledVoiceModuleId,
-  lessonBundledVoiceKey,
-  tryPlayBundledLessonVoice,
-} from '../../src/services/lessonBundledVoice';
-import {
-  lessonTaskOptionVoiceKey,
   lessonTaskQuestionVoiceKey,
   playLessonTaskVoiceLine,
 } from '../../src/services/lessonTaskBundledVoice';
-import { speakViaTali, stopTaliSpeech, type TaliTtsLanguage } from '../../src/services/ttsService';
+import { mapLanguageCodeToTaliTts, speakViaTali } from '../../src/services/ttsService';
 import { getAbaLessonImage } from '../../src/constants/abaLessonImages';
+import { VISUAL_COUNT_IMAGE_BY_EMOJI } from '../../src/constants/visualCountEmojiImages';
 import { useAbaTokenStore } from '../../src/store/abaTokenStore';
 import { useAbaLiveSessionStore } from '../../src/store/abaLiveSessionStore';
 import { ABATokenReward } from '../../src/components/ABATokenReward';
 import { ABAPuzzleScreen } from '../../src/components/ABAPuzzleScreen';
 import { flushAnalyticsQueue } from '../../src/services/analyticsService';
+import { syncWithRetry } from '../../src/services/syncStatus';
+import { captureException } from '../../src/services/sentry';
+import { lessonTaskToCompanionContext } from '../../src/utils/lessonCompanionTaskContext';
 import i18nInstance from '../../src/i18n';
+import { getAbaTextOverride, resolveLessonTextKey } from '../../src/i18n/resolveLessonText';
+import { TASK_FEEDBACK_KEYS_BY_TASK_ID } from '../../src/data/taskFeedbackKeys.generated';
+import {
+  abaTaskInstructionI18nKey,
+  isTherapistLedTask,
+  shuffleArray,
+  splitWordSyllables,
+} from '../../src/utils/lessonHelpers';
+import { IntroPhase } from '../../src/components/lesson/IntroPhase';
+import { DialogPhase } from '../../src/components/lesson/DialogPhase';
+import { RewardPhase } from '../../src/components/lesson/RewardPhase';
+import { BreakReminderModal } from '../../src/components/lesson/BreakReminderModal';
+import { useBreakReminder } from '../../src/hooks/useBreakReminder';
+import {
+  clearLessonResume,
+  getLessonResume,
+  saveLessonResume,
+} from '../../src/services/lessonResumeStore';
 
 type Phase = 'dialog' | 'intro' | 'tasks' | 'aba_tokens' | 'aba_puzzle' | 'reward';
 type Feedback = 'idle' | 'correct' | 'incorrect';
 type PromptLevel = 0 | 1 | 2;
 type SuccessType = 'pure' | 'assisted';
-
-function mapLangToTaliTts(code: string): TaliTtsLanguage {
-  return code === 'en' ? 'en' : 'ru';
-}
 
 const ABA_REINFORCE_KEYS = [
   'lesson.abaReinforce1',
@@ -79,145 +88,6 @@ const ABA_REINFORCE_KEYS = [
   'lesson.abaReinforce8',
 ] as const;
 
-function isTherapistLedTask(t: LessonTask): boolean {
-  return (
-    t.type === 'vocal_imitation' ||
-    t.type === 'word_repetition' ||
-    t.type === 'volume_control' ||
-    t.type === 'action_instruction'
-  );
-}
-
-function shuffleArray<T>(items: T[]): T[] {
-  const a = [...items];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const tmp = a[i]!;
-    a[i] = a[j]!;
-    a[j] = tmp;
-  }
-  return a;
-}
-
-/** Syllable-ish chunks for stress highlight (Cyrillic + Latin). */
-function abaTaskInstructionI18nKey(taskType: LessonTask['type']): string {
-  if (taskType === 'action_instruction') return 'lesson.aba_action_instruction';
-  return `lesson.aba_${taskType}_instruction`;
-}
-
-function splitWordSyllables(word: string): string[] {
-  const vowel = /[aeiouyаеёиоуыэюяAEIOUYАЕЁИОУЫЭЮЯ]/;
-  const parts: string[] = [];
-  let buf = '';
-  for (const ch of word) {
-    buf += ch;
-    if (vowel.test(ch)) {
-      parts.push(buf);
-      buf = '';
-    }
-  }
-  if (buf.length) parts.push(buf);
-  return parts.length ? parts : [word];
-}
-
-// ── Typing animation hook ────────────────────────────────────────────────────
-function useTypingText(text: string, speed = 22): { displayed: string; done: boolean } {
-  const [displayed, setDisplayed] = useState('');
-  const [done, setDone] = useState(false);
-  useEffect(() => {
-    setDisplayed('');
-    setDone(false);
-    if (!text) { setDone(true); return; }
-    let i = 0;
-    const interval = setInterval(() => {
-      i++;
-      setDisplayed(text.slice(0, i));
-      if (i >= text.length) { setDone(true); clearInterval(interval); }
-    }, speed);
-    return () => clearInterval(interval);
-  }, [text, speed]);
-  return { displayed, done };
-}
-
-// ── Confetti particle ────────────────────────────────────────────────────────
-const CONFETTI_COLORS = ['#FF9E66', '#18C1B5', '#FFD96A', '#FF5C7A', '#1AB58A', '#8B5CF6'];
-
-function ConfettiParticle({ delay, color, startX }: { delay: number; color: string; startX: number }) {
-  const y = useRef(new Animated.Value(0)).current;
-  const x = useRef(new Animated.Value(0)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
-  const rotate = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const dx = (Math.random() - 0.5) * 280;
-    const dy = -(Math.random() * 320 + 120);
-    Animated.sequence([
-      Animated.delay(delay),
-      Animated.parallel([
-        Animated.timing(opacity, { toValue: 1, duration: 100, useNativeDriver: true }),
-        Animated.spring(y, { toValue: dy, useNativeDriver: true, tension: 40, friction: 6 }),
-        Animated.spring(x, { toValue: dx, useNativeDriver: true, tension: 40, friction: 6 }),
-        Animated.timing(rotate, { toValue: 1, duration: 700, useNativeDriver: true }),
-      ]),
-      Animated.timing(opacity, { toValue: 0, duration: 400, useNativeDriver: true }),
-    ]).start();
-  }, []);
-
-  const spin = rotate.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
-
-  return (
-    <Animated.View
-      style={{
-        position: 'absolute',
-        left: startX,
-        top: 0,
-        width: 10,
-        height: 10,
-        borderRadius: 2,
-        backgroundColor: color,
-        transform: [{ translateY: y }, { translateX: x }, { rotate: spin }],
-        opacity,
-      }}
-    />
-  );
-}
-
-function Confetti() {
-  const particles = useMemo(
-    () =>
-      Array.from({ length: 30 }, (_, i) => ({
-        key: i,
-        delay: i * 30,
-        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-        startX: 120 + (i % 5) * 20,
-      })),
-    [],
-  );
-  return (
-    <View style={{ position: 'absolute', top: 80, left: 0, right: 0, height: 0, overflow: 'visible' }} pointerEvents="none">
-      {particles.map((p) => (
-        <ConfettiParticle key={p.key} delay={p.delay} color={p.color} startX={p.startX} />
-      ))}
-    </View>
-  );
-}
-
-// ── Stars display ─────────────────────────────────────────────────────────────
-function StarsRow({ stars, size = 28 }: { stars: number; size?: number }) {
-  return (
-    <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 4 }}>
-      {[1, 2, 3].map((i) => (
-        <NanoBananaIcon
-          key={i}
-          source={NANO_UI.stars}
-          size={size}
-          style={{ opacity: i <= stars ? 1 : 0.25 }}
-        />
-      ))}
-    </View>
-  );
-}
-
 // ── Main lesson screen ────────────────────────────────────────────────────────
 export default function LessonScreen() {
   const { lessonId } = useLocalSearchParams<{ lessonId?: string; topicId?: string }>();
@@ -225,19 +95,18 @@ export default function LessonScreen() {
   const theme = useAppTheme();
   const router = useRouter();
 
-  const { profile, user } = useAuth();
+  const profile = useAuth((s) => s.profile);
+  const user = useAuth((s) => s.user);
   const language = useSettingsStore((s) => s.language);
   const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
   const reduceMotion = useSettingsStore((s) => s.reduceMotion);
   const breakReminderEnabled = useSettingsStore((s) => s.breakReminderEnabled);
-  const sessionDurationMinutes = useSettingsStore((s) => s.sessionDurationMinutes);
   const breakDurationMinutes = useSettingsStore((s) => s.breakDurationMinutes);
 
   const recordAnswer = useProgressStore((s) => s.recordAnswer);
   const markLessonCompleted = useProgressStore((s) => s.markLessonCompleted);
   const addXP = useProgressStore((s) => s.addXP);
   const xp = useProgressStore((s) => s.xp);
-  const topicsState = useProgressStore((s) => s.topics);
   const addItem = useCollectiblesStore((s) => s.addItem);
   const addLessonTokens = useAbaTokenStore((s) => s.addLessonTokens);
   const resetPuzzleAfterCelebration = useAbaTokenStore((s) => s.resetPuzzleAfterCelebration);
@@ -261,16 +130,40 @@ export default function LessonScreen() {
   const world = lessonId ? getWorldForLesson(String(lessonId)) : null;
 
   const isEnglishLesson = topic?.subject === 'reading';
-  const tEn = useCallback((key: string) => i18nInstance.t(key, { lng: 'en' }), []);
-  const optionText = useCallback(
-    (key: string) => (isEnglishLesson ? tEn(key) : t(key)),
-    [isEnglishLesson, tEn, t],
-  );
-
-  const topicDifficulty = topic ? (topicsState[topic.id]?.difficulty ?? 1) : 1;
+  /** Английские уроки: при отсутствии ключа в en — подставляем ru (см. i18n fallbackLng). */
+  const tEn = useCallback((key: string) => {
+    const en = i18nInstance.t(key, { lng: 'en' });
+    if (en !== key) return en;
+    return i18nInstance.t(key, { lng: 'ru' });
+  }, []);
 
   /** ABA: иерархия подсказок, подсветка верного ответа, озвучка правильного варианта — только в режиме «особый» (special). */
   const useAbaPedagogy = profile?.child_mode === 'special';
+
+  const lt = useCallback(
+    (key: string) => resolveLessonTextKey(key, t, useAbaPedagogy, language),
+    [t, useAbaPedagogy, language],
+  );
+
+  const optionText = useCallback(
+    (key: string) => {
+      if (useAbaPedagogy) {
+        const aba = getAbaTextOverride(key, language);
+        if (aba) return aba;
+        if (language !== 'ru') {
+          const std = isEnglishLesson ? tEn(key) : t(key);
+          if (std !== key) return std;
+          const ruAba = getAbaTextOverride(key, 'ru');
+          if (ruAba) return ruAba;
+        } else {
+          const ruAba = getAbaTextOverride(key, 'ru');
+          if (ruAba) return ruAba;
+        }
+      }
+      return isEnglishLesson ? tEn(key) : t(key);
+    },
+    [isEnglishLesson, tEn, t, useAbaPedagogy, language],
+  );
 
   /** Обои ABA — только при особом профиле и методологии ABA. */
   const isAbaWallpaperMode =
@@ -293,16 +186,11 @@ export default function LessonScreen() {
       methodology: profile.methodology,
     } : null);
     const baseIds = new Set(baseFiltered.map((t) => t.id));
-    const ordered = lesson.tasks.filter((tk) => {
+    return lesson.tasks.filter((tk) => {
       if (profile?.child_mode === 'special' && tk.audience === 'special_aba') return true;
       return baseIds.has(tk.id);
     });
-    const range = 1;
-    const byDifficulty = ordered.filter(
-      (tk) => tk.difficulty >= topicDifficulty - range && tk.difficulty <= topicDifficulty + range,
-    );
-    return byDifficulty.length > 0 ? byDifficulty : ordered;
-  }, [lesson, profile, topicDifficulty]);
+  }, [lesson, profile]);
 
   const hasDialog = (lesson?.dialog?.length ?? 0) > 0;
   const hasIntro = (lesson?.intro?.length ?? 0) > 0;
@@ -324,9 +212,20 @@ export default function LessonScreen() {
   const [leveledUp, setLeveledUp] = useState(false);
   const [newLevel, setNewLevel] = useState(0);
   const [earnedStars, setEarnedStars] = useState<1 | 2 | 3>(3);
-  const [breakModalVisible, setBreakModalVisible] = useState(false);
-  const sessionStartRef = useRef<number | null>(null);
+  const [isReplayCompletion, setIsReplayCompletion] = useState(false);
+  const [resumedNotice, setResumedNotice] = useState(false);
+  /** False until getLessonResume settles for *this* lessonId — blocks checkpoint wipe. */
+  const [resumeHydrated, setResumeHydrated] = useState(false);
+  /** Sync twin of resumeHydrated keyed by lessonId (survives one stale React commit). */
+  const resumeHydratedForLessonRef = useRef<string | null>(null);
+  const resumeCheckedRef = useRef<string | null>(null);
+  /** Pending checkpoint for this lesson — re-applied when tasks.length grows (late profile). */
+  const pendingResumeRef = useRef<Awaited<ReturnType<typeof getLessonResume>>>(null);
+  const resumeAppliedRef = useRef(false);
   const lessonRewardClaimedRef = useRef(false);
+  const lessonWasAlreadyCompletedRef = useRef(false);
+  /** Tracks whether any task in this lesson attempt was skipped, so skipping can't be used to farm a perfect 3-star score. */
+  const skippedAnyTaskRef = useRef(false);
   const taskGapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [taskTransitionBusy, setTaskTransitionBusy] = useState(false);
   const [abaReinforcement, setAbaReinforcement] = useState<{ phrase: string; emoji: string } | null>(
@@ -350,13 +249,48 @@ export default function LessonScreen() {
     fn?.();
   }, []);
 
-  // ABA Engine state
+  /**
+   * ABA "least-to-most" prompt hierarchy for this task, escalated by wrong
+   * attempts (see the `mistakeCount` branch below):
+   *   - Level 0 (independent): no prompt — the child answers on their own.
+   *   - Level 1 (visual prompt): the correct option is highlighted with a
+   *     green border and a gentle text hint is shown; all options remain
+   *     selectable so the child still has to notice and choose correctly.
+   *   - Level 2 (restricted-choice prompt): incorrect options are disabled
+   *     (in addition to the level-1 highlight), narrowing the response set.
+   *     We deliberately do NOT speak the correct answer's text aloud here —
+   *     `playAbaLevel2ReinforcementCue` only plays a generic encouragement
+   *     phrase, so the answer is never verbally disclosed to the child.
+   */
   const [promptLevel, setPromptLevel] = useState<PromptLevel>(0);
   const [hintText, setHintText] = useState<string | null>(null);
   const [successType, setSuccessType] = useState<SuccessType>('pure');
 
   const totalTasks = tasks.length;
   const isLastTask = totalTasks > 0 && currentIndex === totalTasks - 1;
+
+  const narrativeFeedbackKeys = useMemo(() => {
+    const tk = tasks[currentIndex];
+    if (!tk) return null;
+    const withKeys = tk as LessonTask & {
+      correctFeedbackKey?: string;
+      incorrectFeedbackKey?: string;
+    };
+    if (withKeys.correctFeedbackKey || withKeys.incorrectFeedbackKey) {
+      return {
+        correctKey: withKeys.correctFeedbackKey,
+        incorrectKey: withKeys.incorrectFeedbackKey,
+      };
+    }
+    const fromMap = TASK_FEEDBACK_KEYS_BY_TASK_ID[tk.id];
+    if (fromMap) {
+      return {
+        correctKey: fromMap.correctFeedbackKey,
+        incorrectKey: fromMap.incorrectFeedbackKey,
+      };
+    }
+    return null;
+  }, [tasks, currentIndex]);
 
   const routineShuffledSteps = useMemo(() => {
     const tk = tasks[currentIndex];
@@ -372,6 +306,8 @@ export default function LessonScreen() {
   }, [hasChecked, feedback, isLastTask, t]);
 
   const correctFeedbackText = useMemo(() => {
+    const ck = narrativeFeedbackKeys?.correctKey;
+    if (ck) return t(ck);
     if (!useAbaPedagogy) {
       return t('lesson.standardCorrect');
     }
@@ -379,68 +315,247 @@ export default function LessonScreen() {
       return t('lesson.abaAssistedSuccess');
     }
     return t('lesson.abaCorrect');
-  }, [feedback, successType, t, useAbaPedagogy]);
+  }, [narrativeFeedbackKeys, feedback, successType, t, useAbaPedagogy]);
 
   const incorrectFeedbackText = useMemo(() => {
+    const ik = narrativeFeedbackKeys?.incorrectKey;
+    if (ik) return t(ik);
     if (!useAbaPedagogy) {
       return t('lesson.standardIncorrect');
     }
     if (promptLevel >= 2) return t('lesson.abaVerbalPromptFeedback');
     if (promptLevel >= 1) return t('lesson.abaVisualPromptFeedback');
     return t('lesson.abaIncorrect');
-  }, [promptLevel, t, useAbaPedagogy]);
+  }, [narrativeFeedbackKeys, promptLevel, t, useAbaPedagogy]);
 
   const taskDescriptionForTali = useMemo(() => {
     const tk = tasks[currentIndex];
     if (!tk || !lesson || !topic) return '';
-    const questionPrompt = t(tk.questionKey);
+    const questionPrompt = lt(tk.questionKey);
     const lines: string[] = [];
-    if (questionPrompt) lines.push(`Задание: "${questionPrompt}"`);
+    if (questionPrompt) lines.push(`${t('tali.taskContextLabel')}: "${questionPrompt}"`);
     if (tk.type === 'multiple_choice') {
       const opts = (tk as MultipleChoiceTask).options.map((o) => optionText(o.textKey));
-      if (opts.length) lines.push(`Варианты ответов: ${opts.join(', ')}`);
+      if (opts.length) lines.push(`${t('tali.optionsContextLabel')}: ${opts.join(', ')}`);
     } else if (tk.type === 'fill_blank') {
-      const opts = (tk as FillBlankTask).options.map((o) => t(o.textKey));
-      if (opts.length) lines.push(`Варианты: ${opts.join(', ')}`);
+      const opts = (tk as FillBlankTask).options.map((o) => lt(o.textKey));
+      if (opts.length) lines.push(`${t('tali.optionsShortLabel')}: ${opts.join(', ')}`);
     } else if (tk.type === 'world_knowledge') {
       const wk = tk as WorldKnowledgeTask;
-      const opts = wk.options.map((o) => (o.textKey ? t(o.textKey) : o.imageKey ?? '')).filter(Boolean);
-      if (opts.length) lines.push(`Варианты: ${opts.join(', ')}`);
+      const opts = wk.options.map((o) => (o.textKey ? lt(o.textKey) : o.imageKey ?? '')).filter(Boolean);
+      if (opts.length) lines.push(`${t('tali.optionsShortLabel')}: ${opts.join(', ')}`);
     } else if (tk.type === 'image_word_match') {
       const im = tk as ImageWordMatchTask;
-      const opts = im.options.map((o) => (o.textKey ? t(o.textKey) : o.imageKey ?? '')).filter(Boolean);
-      if (opts.length) lines.push(`Варианты: ${opts.join(', ')}`);
+      const opts = im.options.map((o) => (o.textKey ? lt(o.textKey) : o.imageKey ?? '')).filter(Boolean);
+      if (opts.length) lines.push(`${t('tali.optionsShortLabel')}: ${opts.join(', ')}`);
     } else if (tk.type === 'vocal_imitation') {
-      lines.push(t(tk.soundTextKey));
+      lines.push(lt(tk.soundTextKey));
     } else if (tk.type === 'word_repetition') {
-      lines.push(t(tk.wordKey));
+      lines.push(lt(tk.wordKey));
     } else if (tk.type === 'action_instruction') {
-      lines.push(t(tk.actionKey));
+      lines.push(lt(tk.actionKey));
     }
     return lines.join('. ');
-  }, [tasks, currentIndex, lesson, topic, t, optionText]);
+  }, [tasks, currentIndex, lesson, topic, lt, optionText, t]);
+
+  const companionTaskContext = useMemo((): TaskContext | undefined => {
+    if (phase !== 'tasks' || !lesson || !topic) return undefined;
+    const tk = tasks[currentIndex];
+    if (!tk) return undefined;
+    return lessonTaskToCompanionContext({
+      task: tk,
+      lesson,
+      topic,
+      childMode: profile?.child_mode ?? 'standard',
+      methodology:
+        profile?.child_mode === 'special' ? (profile.methodology ?? 'aba') : null,
+      isEnglishLesson,
+      t: lt,
+      tEn,
+      optionText,
+    });
+  }, [
+    phase,
+    tasks,
+    currentIndex,
+    lesson,
+    topic,
+    profile?.child_mode,
+    profile?.methodology,
+    isEnglishLesson,
+    lt,
+    tEn,
+    optionText,
+  ]);
 
   // Flush queued analytics on mount
   useEffect(() => {
     if (user?.id) {
-      flushAnalyticsQueue(user.id).catch(() => {});
+      void syncWithRetry('lesson:flushAnalyticsQueue', () => flushAnalyticsQueue(user.id));
     }
   }, [user?.id]);
 
   useEffect(() => {
     lessonRewardClaimedRef.current = false;
+    lessonWasAlreadyCompletedRef.current = false;
+    skippedAnyTaskRef.current = false;
+    resumeCheckedRef.current = null;
+    resumeHydratedForLessonRef.current = null;
+    pendingResumeRef.current = null;
+    resumeAppliedRef.current = false;
+    setResumeHydrated(false);
+    setIsReplayCompletion(false);
     setAbaReinforcement(null);
     abaCorrectProceedRef.current = null;
     liveSessionStartedRef.current = false;
     lastAbaReinforceIdx.current = null;
+    setMistakeCount(0);
+    setDialogIndex(0);
+    setIntroIndex(0);
+    setCurrentIndex(0);
+    setSelectedOptionId(null);
+    setInputValue('');
+    setFeedback('idle');
+    setHasChecked(false);
+    setSelectHint(false);
+    setPromptLevel(0);
+    setHintText(null);
+    setSuccessType('pure');
+    setSortPickItemId(null);
+    setSortAssignments({});
+    setRoutinePickedIds([]);
+    setPendingAbaTokenCount(0);
+    setAbaPuzzleCelebrate(false);
+    setResumedNotice(false);
+    setPhase(hasDialog ? 'dialog' : hasIntro ? 'intro' : 'tasks');
+    // Drop any leftover remote live row from a previous lesson; a new ABA
+    // session will startSession when tasks begin.
     clearLiveSession();
     return () => {
       if (taskGapTimerRef.current) {
         clearTimeout(taskGapTimerRef.current);
         taskGapTimerRef.current = null;
       }
+      // Only abandon an *still-active* session. If finishSession already ran,
+      // local `active` is false — calling clear would race the finish UPDATE
+      // and can leave tokens_earned null on the remote row.
+      const { active, clearSession } = useAbaLiveSessionStore.getState();
+      if (active) clearSession();
     };
-  }, [lessonId, clearLiveSession]);
+  }, [lessonId, clearLiveSession, hasDialog, hasIntro]);
+
+  // Resume mid-lesson progress: a child exiting on the middle of a lesson
+  // (back button, phone call, killed app, low battery, etc.) should return
+  // to roughly where they left off rather than restarting from scratch.
+  useEffect(() => {
+    if (!lesson) return;
+
+    const tryApplyResume = (resume: NonNullable<Awaited<ReturnType<typeof getLessonResume>>>) => {
+      if (resumeAppliedRef.current) return;
+      setMistakeCount(resume.mistakeCount);
+      skippedAnyTaskRef.current = resume.hadSkips;
+      if (resume.phase === 'tasks' && tasks.length > 0 && resume.index >= 0 && resume.index < tasks.length) {
+        setPhase('tasks');
+        setCurrentIndex(resume.index);
+        setResumedNotice(true);
+        resumeAppliedRef.current = true;
+      } else if (
+        resume.phase === 'dialog' &&
+        (lesson.dialog?.length ?? 0) > 0 &&
+        resume.index >= 0 &&
+        resume.index < (lesson.dialog?.length ?? 0)
+      ) {
+        setPhase('dialog');
+        setDialogIndex(resume.index);
+        setResumedNotice(true);
+        resumeAppliedRef.current = true;
+      } else if (
+        resume.phase === 'intro' &&
+        (lesson.intro?.length ?? 0) > 0 &&
+        resume.index >= 0 &&
+        resume.index < (lesson.intro?.length ?? 0)
+      ) {
+        setPhase('intro');
+        setIntroIndex(resume.index);
+        setResumedNotice(true);
+        resumeAppliedRef.current = true;
+      }
+      // tasks-phase with index OOB (profile not ready yet): leave applied=false so a
+      // later tasks.length change can retry.
+    };
+
+    // Already loaded for this lesson — only re-try apply when task list grows.
+    if (resumeCheckedRef.current === lesson.id) {
+      if (pendingResumeRef.current) tryApplyResume(pendingResumeRef.current);
+      return;
+    }
+
+    resumeCheckedRef.current = lesson.id;
+    resumeHydratedForLessonRef.current = null;
+    setResumeHydrated(false);
+    let cancelled = false;
+    void getLessonResume(lesson.id)
+      .then((resume) => {
+        if (cancelled) return;
+        pendingResumeRef.current = resume;
+        if (resume) tryApplyResume(resume);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        resumeHydratedForLessonRef.current = lesson.id;
+        setResumeHydrated(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [lesson, tasks.length]);
+
+  useEffect(() => {
+    if (!resumedNotice) return;
+    const timer = setTimeout(() => setResumedNotice(false), 4000);
+    return () => clearTimeout(timer);
+  }, [resumedNotice]);
+
+  // Checkpoint progress — gated until resume hydrate for *this* lessonId
+  // (sync ref avoids one-frame overwrite when lessonId changes in place).
+  useEffect(() => {
+    if (!lesson) return;
+    if (resumeHydratedForLessonRef.current !== lesson.id || !resumeHydrated) return;
+    if (phase === 'dialog') {
+      void saveLessonResume({
+        lessonId: lesson.id,
+        phase: 'dialog',
+        index: dialogIndex,
+        mistakeCount,
+        hadSkips: skippedAnyTaskRef.current,
+      });
+    } else if (phase === 'intro') {
+      void saveLessonResume({
+        lessonId: lesson.id,
+        phase: 'intro',
+        index: introIndex,
+        mistakeCount,
+        hadSkips: skippedAnyTaskRef.current,
+      });
+    } else if (phase === 'tasks') {
+      void saveLessonResume({
+        lessonId: lesson.id,
+        phase: 'tasks',
+        index: currentIndex,
+        mistakeCount,
+        hadSkips: skippedAnyTaskRef.current,
+      });
+    }
+  }, [lesson, phase, dialogIndex, introIndex, currentIndex, mistakeCount, resumeHydrated]);
+
+  // Once the lesson reaches a celebration/completion phase there is nothing
+  // left to resume — drop the checkpoint so a future replay starts fresh.
+  useEffect(() => {
+    if (!lesson) return;
+    if (phase === 'aba_tokens' || phase === 'aba_puzzle' || phase === 'reward') {
+      void clearLessonResume(lesson.id);
+    }
+  }, [lesson, phase]);
 
   // Auto-speak task question when a new task appears (вшитый mp3 при наличии)
   useEffect(() => {
@@ -448,7 +563,7 @@ export default function LessonScreen() {
     const tk = tasks[currentIndex];
     if (!tk) return;
     const speakLines = async () => {
-      const q = t(tk.questionKey);
+      const q = lt(tk.questionKey);
       await playLessonTaskVoiceLine(
         lesson.id,
         lessonTaskQuestionVoiceKey(lesson.id, tk.id, language),
@@ -459,27 +574,27 @@ export default function LessonScreen() {
         const instKey = abaTaskInstructionI18nKey(tk.type);
         const inst = t(instKey);
         if (inst && inst !== instKey) {
-          await speakViaTali(inst, mapLangToTaliTts(language));
+          await speakViaTali(inst, mapLanguageCodeToTaliTts(language));
         }
       }
       if (tk.type === 'vocal_imitation') {
-        await speakViaTali(t(tk.soundTextKey), mapLangToTaliTts(language));
+        await speakViaTali(lt(tk.soundTextKey), mapLanguageCodeToTaliTts(language));
         if (tk.audioPromptKey) {
-          await speakViaTali(t(tk.audioPromptKey), mapLangToTaliTts(language));
+          await speakViaTali(lt(tk.audioPromptKey), mapLanguageCodeToTaliTts(language));
         }
       } else if (tk.type === 'word_repetition') {
-        await speakViaTali(t(tk.wordKey), mapLangToTaliTts(language));
+        await speakViaTali(lt(tk.wordKey), mapLanguageCodeToTaliTts(language));
       } else if (tk.type === 'volume_control') {
-        await speakViaTali(t(tk.promptTextKey), mapLangToTaliTts(language));
+        await speakViaTali(lt(tk.promptTextKey), mapLanguageCodeToTaliTts(language));
       } else if (tk.type === 'action_instruction') {
-        await speakViaTali(t(tk.actionKey), mapLangToTaliTts(language));
+        await speakViaTali(lt(tk.actionKey), mapLanguageCodeToTaliTts(language));
       }
     };
     const delay = setTimeout(() => {
       void speakLines();
     }, 500);
     return () => clearTimeout(delay);
-  }, [phase, currentIndex, tasks, lesson, language, t, ttsEnabled, useAbaPedagogy]);
+  }, [phase, currentIndex, tasks, lesson, language, lt, t, ttsEnabled, useAbaPedagogy]);
 
   useEffect(() => {
     if (phase !== 'tasks' || !useAbaPedagogy || !lesson || tasks.length === 0) return;
@@ -496,42 +611,32 @@ export default function LessonScreen() {
   useEffect(() => {
     if (!abaReinforcement || !ttsEnabled || !useAbaPedagogy) return;
     const delay = setTimeout(() => {
-      void speakViaTali(abaReinforcement.phrase, mapLangToTaliTts(language));
+      void speakViaTali(abaReinforcement.phrase, mapLanguageCodeToTaliTts(language));
     }, 200);
     return () => clearTimeout(delay);
   }, [abaReinforcement, ttsEnabled, useAbaPedagogy, language]);
 
-  // Auto-speak feedback when it changes (ABA: correct — only banner, no duplicate TTS)
+  // Auto-speak feedback when it changes (ABA: correct — only banner, no duplicate TTS).
+  // Кастомный нарратив из v2 не дублируем озвучкой — только текст на баннере.
   useEffect(() => {
     if (feedback === 'correct') {
       if (useAbaPedagogy) return;
+      if (narrativeFeedbackKeys?.correctKey) return;
       const delay = setTimeout(() => speak(correctFeedbackText), 200);
       return () => clearTimeout(delay);
     }
     if (feedback === 'incorrect') {
+      if (narrativeFeedbackKeys?.incorrectKey) return;
       const delay = setTimeout(() => speak(incorrectFeedbackText), 200);
       return () => clearTimeout(delay);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [feedback, correctFeedbackText, incorrectFeedbackText, useAbaPedagogy]);
+  }, [feedback, correctFeedbackText, incorrectFeedbackText, useAbaPedagogy, narrativeFeedbackKeys]);
 
-  // Break reminder
-  useEffect(() => {
-    if (!breakReminderEnabled || phase !== 'tasks') return;
-    if (sessionStartRef.current === null) {
-      sessionStartRef.current = Date.now();
-    }
-    const interval = setInterval(() => {
-      const start = sessionStartRef.current;
-      if (!start || breakModalVisible) return;
-      const elapsed = (Date.now() - start) / (60 * 1000);
-      if (elapsed >= sessionDurationMinutes) {
-        setBreakModalVisible(true);
-        sessionStartRef.current = null;
-      }
-    }, 30_000);
-    return () => clearInterval(interval);
-  }, [breakReminderEnabled, phase, sessionDurationMinutes, breakModalVisible]);
+  const { visible: breakModalVisible, dismiss: dismissBreakReminder } = useBreakReminder({
+    enabled: breakReminderEnabled,
+    active: phase === 'tasks',
+  });
 
   // Early returns after all hooks
   if (!lessonId || !lesson || !topic) {
@@ -554,67 +659,31 @@ export default function LessonScreen() {
   const hapticWrong = () =>
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
 
-  const buildTaskContext = (): TaskContext => ({
-    questionPrompt: task ? t(task.questionKey) : '',
-    answerOptions: (() => {
-      if (!task) return undefined;
-      if (task.type === 'multiple_choice') {
-        return (task as MultipleChoiceTask).options.map((o) =>
-            isEnglishLesson ? tEn(o.textKey) : t(o.textKey),
-        );
-      }
-      if (task.type === 'fill_blank') {
-        return (task as FillBlankTask).options.map((o) => t(o.textKey));
-      }
-      if (task.type === 'world_knowledge') {
-        return (task as WorldKnowledgeTask).options.map((o) =>
-          o.textKey ? t(o.textKey) : o.imageKey ?? '',
-        );
-      }
-      if (task.type === 'image_word_match') {
-        return (task as ImageWordMatchTask).options.map((o) =>
-          o.textKey ? t(o.textKey) : o.imageKey ?? '',
-        );
-      }
-      return undefined;
-    })(),
-    subjectId:
-      topic.subject === 'math'
-        ? 'math'
-        : topic.subject === 'reading'
-          ? 'english'
-          : topic.subject === 'social'
-            ? 'social'
-            : 'science',
-    topicId: topic.id,
-    lessonId: lesson.id,
-    childMode: profile?.child_mode ?? 'standard',
-    methodology:
-      profile?.child_mode === 'special' ? (profile.methodology ?? 'aba') : 'standard',
-    correctAnswer: (() => {
-      if (!task) return undefined;
-      if (task.type === 'multiple_choice') {
-            const opt = (task as MultipleChoiceTask).options.find((o) => o.correct);
-            return opt ? (isEnglishLesson ? tEn(opt.textKey) : t(opt.textKey)) : undefined;
-      }
-      if (task.type === 'fill_blank') {
-        const opt = (task as FillBlankTask).options.find((o) => o.correct);
-        return opt ? t(opt.textKey) : undefined;
-      }
-      if (task.type === 'world_knowledge') {
-        const opt = (task as WorldKnowledgeTask).options.find((o) => o.correct);
-        if (!opt) return undefined;
-        return opt.textKey ? t(opt.textKey) : opt.imageKey;
-      }
-      if (task.type === 'image_word_match') {
-        const opt = (task as ImageWordMatchTask).options.find((o) => o.correct);
-        if (!opt) return undefined;
-        return opt.textKey ? t(opt.textKey) : opt.imageKey;
-      }
-      if (task.type === 'input') return String(task.answer);
-      return undefined;
-    })(),
-  });
+  const buildTaskContext = (): TaskContext => {
+    if (!task) {
+      return {
+        questionPrompt: '',
+        subjectId: topic.subject,
+        topicId: topic.id,
+        lessonId: lesson.id,
+        childMode: profile?.child_mode ?? 'standard',
+        methodology:
+          profile?.child_mode === 'special' ? (profile.methodology ?? 'aba') : null,
+      };
+    }
+    return lessonTaskToCompanionContext({
+      task,
+      lesson,
+      topic,
+      childMode: profile?.child_mode ?? 'standard',
+      methodology:
+        profile?.child_mode === 'special' ? (profile.methodology ?? 'aba') : null,
+      isEnglishLesson,
+      t: lt,
+      tEn,
+      optionText,
+    });
+  };
 
   // ── Dialog phase ─────────────────────────────────────────────────────────
   if (phase === 'dialog') {
@@ -623,7 +692,7 @@ export default function LessonScreen() {
     const speakerName = isTali ? t('tali.name') : `${npcName}${npcEmoji ? ` ${npcEmoji}` : ''}`.trim();
     const speakerColor = isTali ? theme.colors.primary : accentColor;
     const isLastLine = dialogIndex === dialog.length - 1;
-    const fullText = t(line.textKey);
+    const fullText = lt(line.textKey);
 
     return (
       <DialogPhase
@@ -644,7 +713,7 @@ export default function LessonScreen() {
         isLastLine={isLastLine}
         fadeAnim={fadeAnim}
         theme={theme}
-        t={t}
+        t={lt}
         onNext={() => {
           fadeIn();
           if (isLastLine) {
@@ -675,7 +744,7 @@ export default function LessonScreen() {
         accentColor={accentColor}
         fadeAnim={fadeAnim}
         theme={theme}
-        t={t}
+        t={lt}
         onNext={() => {
           fadeIn();
           if (isLastSlide) setPhase('tasks');
@@ -735,6 +804,7 @@ export default function LessonScreen() {
         leveledUp={leveledUp}
         newLevel={newLevel}
         earnedStars={earnedStars}
+        isReplay={isReplayCompletion}
         lessonTitle={t(lesson.titleKey)}
         theme={theme}
         backgroundImage={lessonBackgroundImage}
@@ -749,7 +819,6 @@ export default function LessonScreen() {
     return <Screen><AppText>{t('errors.lessonNotFound')}</AppText></Screen>;
   }
 
-  const difficulty = topicsState[topic.id]?.difficulty ?? 1;
   const TASK_GAP_MS = 1500;
 
   const resetForNextTask = () => {
@@ -773,18 +842,32 @@ export default function LessonScreen() {
     if (lessonRewardClaimedRef.current) return null;
     lessonRewardClaimedRef.current = true;
 
-    const reward = lesson.reward;
-    const xpGain = reward?.xp ?? 20;
-    const prevLevel = getLevelFromXP(xp);
-    const stars: 1 | 2 | 3 = totalMistakes === 0 ? 3 : totalMistakes <= 2 ? 2 : 1;
+    // A lesson already marked completed before this run must not grant XP/tokens
+    // again — otherwise a child can farm rewards by replaying finished lessons.
+    const alreadyCompleted = isLessonAlreadyCompleted(topic.id, lesson.id);
+    lessonWasAlreadyCompletedRef.current = alreadyCompleted;
+    setIsReplayCompletion(alreadyCompleted);
 
-    markLessonCompleted({ topicId: topic.id, lessonId: lesson.id, mistakeCount: totalMistakes });
-    addXP(xpGain);
+    const reward = lesson.reward;
+    const xpGain = alreadyCompleted ? 0 : reward?.xp ?? 20;
+    const prevLevel = getLevelFromXP(xp);
+    const perfectRun = totalMistakes === 0 && !skippedAnyTaskRef.current;
+    const stars: 1 | 2 | 3 = perfectRun ? 3 : totalMistakes <= 2 ? 2 : 1;
+
+    markLessonCompleted({
+      topicId: topic.id,
+      lessonId: lesson.id,
+      mistakeCount: totalMistakes,
+      hadSkips: skippedAnyTaskRef.current,
+    });
+    if (xpGain > 0) {
+      addXP(xpGain);
+    }
 
     const newXP = xp + xpGain;
     const nextLevel = getLevelFromXP(newXP);
 
-    if (reward?.item) {
+    if (reward?.item && !alreadyCompleted) {
       addItem(reward.item);
       const meta = COLLECTIBLES_META[reward.item];
       setEarnedItem(t(meta.nameKey));
@@ -800,18 +883,32 @@ export default function LessonScreen() {
   const completeLessonFlow = (totalMistakes: number) => {
     const stars = applyLessonRewards(totalMistakes);
     if (stars === null) return;
-    if (useAbaPedagogy) {
+    // Skip the ABA token/puzzle celebration on replays — no new tokens were earned.
+    // Still finish (or clear) the remote live session so the parent dashboard
+    // does not stay stuck on "active" after a replay or non-ABA completion.
+    if (useAbaPedagogy && !lessonWasAlreadyCompletedRef.current) {
       setPendingAbaTokenCount(stars);
+      // Finish the remote live row as soon as rewards are settled — before the
+      // celebration UI — so back/kill mid-tokens doesn't leave null tokens_earned.
+      finishLiveSession(stars);
       setPhase('aba_tokens');
     } else {
-    setPhase('reward');
+      if (useAbaPedagogy) {
+        finishLiveSession(0);
+      } else {
+        clearLiveSession();
+      }
+      setPhase('reward');
     }
   };
 
   const handleSkip = () => {
     if (taskTransitionBusy) return;
+    // Skipping is a valid ABA accommodation, but it must not be a free path to a
+    // perfect score — cap the lesson at 2 stars whenever a task was skipped.
+    skippedAnyTaskRef.current = true;
     if (useAbaPedagogy && ttsEnabled) {
-      void speakViaTali(t('lesson.abaSkipFeedback'), mapLangToTaliTts(language));
+      void speakViaTali(t('lesson.abaSkipFeedback'), mapLanguageCodeToTaliTts(language));
     }
     if (useAbaPedagogy) recordLiveResult('skipped');
     if (isLastTask) {
@@ -823,37 +920,16 @@ export default function LessonScreen() {
     }
   };
 
-  const playAbaLevel2CorrectVoice = () => {
+  /**
+   * ABA prompt-level 2 reinforcement: plays a short, generic encouragement
+   * phrase via TTS — it never speaks the correct answer's text. The answer
+   * itself is only surfaced visually (green highlight + disabled wrong
+   * options), which still requires the child to make the correct response
+   * rather than being told it outright.
+   */
+  const playAbaLevel2ReinforcementCue = () => {
     if (!ttsEnabled) return;
-    if (task.type === 'multiple_choice') {
-      const correctOpt = (task as MultipleChoiceTask).options.find((o) => o.correct);
-      if (correctOpt) {
-        const line = optionText(correctOpt.textKey);
-        void playLessonTaskVoiceLine(
-          lesson.id,
-          lessonTaskOptionVoiceKey(lesson.id, task.id, correctOpt.id, language),
-          line,
-          language,
-        );
-      }
-    } else if (task.type === 'fill_blank') {
-      const correctOpt = (task as FillBlankTask).options.find((o) => o.correct);
-      if (correctOpt) {
-        void playLessonTaskVoiceLine(
-          lesson.id,
-          lessonTaskOptionVoiceKey(lesson.id, task.id, correctOpt.id, language),
-          t(correctOpt.textKey),
-          language,
-        );
-      }
-    } else if (task.type === 'world_knowledge' || task.type === 'image_word_match') {
-      const opts = task.options;
-      const co = opts.find((o) => o.correct);
-      if (co?.textKey) void speakViaTali(t(co.textKey), mapLangToTaliTts(language));
-    } else if (task.type === 'image_point') {
-      const hp = (task as ImagePointTask).hotspots.find((h) => h.correct);
-      if (hp?.labelKey) void speakViaTali(t(hp.labelKey), mapLangToTaliTts(language));
-    }
+    void speakViaTali(t('lesson.abaLevel2ReinforcementVoice'), mapLanguageCodeToTaliTts(language));
   };
 
   const handlePrimaryPress = () => {
@@ -899,14 +975,14 @@ export default function LessonScreen() {
         const fb = task as FillBlankTask;
         const selectedOption = fb.options.find((o) => o.id === selectedOptionId);
         correct = !!selectedOption?.correct;
-        if (!correct && selectedOption) lastWrongAnswer.current = t(selectedOption.textKey);
+        if (!correct && selectedOption) lastWrongAnswer.current = lt(selectedOption.textKey);
       } else if (task.type === 'world_knowledge') {
         const wk = task as WorldKnowledgeTask;
         const selectedOption = wk.options.find((o) => o.id === selectedOptionId);
         correct = !!selectedOption?.correct;
         if (!correct && selectedOption) {
           lastWrongAnswer.current = selectedOption.textKey
-            ? t(selectedOption.textKey)
+            ? lt(selectedOption.textKey)
             : selectedOption.imageKey ?? '';
         }
       } else if (task.type === 'image_word_match') {
@@ -915,14 +991,14 @@ export default function LessonScreen() {
         correct = !!selectedOption?.correct;
         if (!correct && selectedOption) {
           lastWrongAnswer.current = selectedOption.textKey
-            ? t(selectedOption.textKey)
+            ? lt(selectedOption.textKey)
             : selectedOption.imageKey ?? '';
         }
       } else if (task.type === 'image_point') {
         const ip = task as ImagePointTask;
         const h = ip.hotspots.find((x) => x.id === selectedOptionId);
         correct = !!h?.correct;
-        if (!correct && h?.labelKey) lastWrongAnswer.current = t(h.labelKey);
+        if (!correct && h?.labelKey) lastWrongAnswer.current = lt(h.labelKey);
       } else if (task.type === 'sorting') {
         const st = task as SortingTask;
         correct = st.items.every((it) => sortAssignments[it.id] === it.groupId);
@@ -969,7 +1045,9 @@ export default function LessonScreen() {
           const taskCtx = buildTaskContext();
           explainError(taskCtx, lastWrongAnswer.current, language)
             .then((msg) => { if (msg) setHintText(msg); })
-            .catch(() => {});
+            .catch((err) => {
+              captureException(err, { where: 'lesson.explainError' });
+            });
         }
       } else {
         hapticWrong();
@@ -996,10 +1074,12 @@ export default function LessonScreen() {
             const taskCtx = buildTaskContext();
             getHint(taskCtx, language)
               .then((hint) => { if (hint) setHintText(hint); })
-              .catch(() => {});
+              .catch((err) => {
+                captureException(err, { where: 'lesson.getHint' });
+              });
           } else if (mistakeCount >= 1) {
             setPromptLevel(2);
-            playAbaLevel2CorrectVoice();
+            playAbaLevel2ReinforcementCue();
           }
         }
       }
@@ -1078,7 +1158,7 @@ export default function LessonScreen() {
   const replayTherapistTaskTts = () => {
     if (!ttsEnabled || !lesson) return;
     void (async () => {
-      const q = t(task.questionKey);
+      const q = lt(task.questionKey);
       await playLessonTaskVoiceLine(
         lesson.id,
         lessonTaskQuestionVoiceKey(lesson.id, task.id, language),
@@ -1089,20 +1169,20 @@ export default function LessonScreen() {
         const instKey = abaTaskInstructionI18nKey(task.type);
         const inst = t(instKey);
         if (inst && inst !== instKey) {
-          await speakViaTali(inst, mapLangToTaliTts(language));
+          await speakViaTali(inst, mapLanguageCodeToTaliTts(language));
         }
       }
       if (task.type === 'vocal_imitation') {
-        await speakViaTali(t(task.soundTextKey), mapLangToTaliTts(language));
+        await speakViaTali(lt(task.soundTextKey), mapLanguageCodeToTaliTts(language));
         if (task.audioPromptKey) {
-          await speakViaTali(t(task.audioPromptKey), mapLangToTaliTts(language));
+          await speakViaTali(lt(task.audioPromptKey), mapLanguageCodeToTaliTts(language));
         }
       } else if (task.type === 'word_repetition') {
-        await speakViaTali(t(task.wordKey), mapLangToTaliTts(language));
+        await speakViaTali(lt(task.wordKey), mapLanguageCodeToTaliTts(language));
       } else if (task.type === 'volume_control') {
-        await speakViaTali(t(task.promptTextKey), mapLangToTaliTts(language));
+        await speakViaTali(lt(task.promptTextKey), mapLanguageCodeToTaliTts(language));
       } else if (task.type === 'action_instruction') {
-        await speakViaTali(t(task.actionKey), mapLangToTaliTts(language));
+        await speakViaTali(lt(task.actionKey), mapLanguageCodeToTaliTts(language));
       }
     })();
   };
@@ -1154,14 +1234,30 @@ export default function LessonScreen() {
           onFinished={finishAbaReinforcement}
         />
       ) : null}
+      {resumedNotice ? (
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            backgroundColor: theme.colors.primary + '15',
+            borderRadius: theme.radii.sm,
+            paddingHorizontal: theme.spacing.sm,
+            paddingVertical: 6,
+            marginBottom: theme.spacing.sm,
+          }}
+        >
+          <MaterialIcons name="history" size={16} color={theme.colors.primary} />
+          <AppText variant="small" style={{ color: theme.colors.primary, flex: 1 }}>
+            {t('lesson.resumedNotice')}
+          </AppText>
+        </View>
+      ) : null}
       {/* Progress bar */}
       <View style={{ marginBottom: theme.spacing.sm }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
           <AppText variant="small" style={{ color: theme.colors.textMuted }}>
             {t('lesson.taskOf', { index: currentIndex + 1, total: totalTasks })}
-          </AppText>
-          <AppText variant="small" style={{ color: theme.colors.textMuted }}>
-            {t('lesson.difficultyNow', { difficulty })}
           </AppText>
         </View>
         <View style={{ height: 8, backgroundColor: theme.colors.border, borderRadius: 4, overflow: 'hidden' }}>
@@ -1245,18 +1341,26 @@ export default function LessonScreen() {
             }}
             accessibilityLabel={`${task.visualCount} ${task.visualEmoji}`}
           >
-            {Array.from({ length: task.visualCount }, (_, i) => (
-              <AppText key={i} style={{ fontSize: 36 }}>
-                {task.visualEmoji}
-              </AppText>
-            ))}
+            {(() => {
+              const visualEmoji = task.visualEmoji;
+              return Array.from({ length: task.visualCount }, (_, i) => {
+                const countImg = VISUAL_COUNT_IMAGE_BY_EMOJI[visualEmoji];
+                return countImg ? (
+                  <NanoBananaIcon key={i} source={countImg} size={40} accessibilityLabel={visualEmoji} />
+                ) : (
+                  <AppText key={i} style={{ fontSize: 36 }}>
+                    {visualEmoji}
+                  </AppText>
+                );
+              });
+            })()}
           </View>
         ) : null}
 
         <Pressable
           onPress={() => {
             if (!ttsEnabled) return;
-            const line = t(task.questionKey);
+            const line = lt(task.questionKey);
             void playLessonTaskVoiceLine(
               lesson.id,
               lessonTaskQuestionVoiceKey(lesson.id, task.id, language),
@@ -1267,7 +1371,7 @@ export default function LessonScreen() {
           accessibilityRole="button"
         >
           <AppText style={{ fontSize: theme.typography.body }}>
-            {t(task.questionKey)}
+            {lt(task.questionKey)}
           </AppText>
         </Pressable>
         <Spacer size="md" />
@@ -1292,12 +1396,12 @@ export default function LessonScreen() {
           <View style={{ gap: theme.spacing.md }}>
             {task.type === 'vocal_imitation' && (
               <AppText style={{ fontSize: 40, fontWeight: '700', textAlign: 'center' }}>
-                {t(task.soundTextKey)}
+                {lt(task.soundTextKey)}
               </AppText>
             )}
             {task.type === 'word_repetition' && (
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 4 }}>
-                {splitWordSyllables(t(task.wordKey)).map((syll, i) => (
+                {splitWordSyllables(lt(task.wordKey)).map((syll, i) => (
                   <AppText
                     key={`${syll}-${i}`}
                     style={{
@@ -1317,7 +1421,7 @@ export default function LessonScreen() {
             {task.type === 'volume_control' && (
               <View>
                 <AppText style={{ textAlign: 'center', marginBottom: theme.spacing.sm }}>
-                  {t(task.promptTextKey)}
+                  {lt(task.promptTextKey)}
                 </AppText>
                 <View
                   style={{
@@ -1351,7 +1455,7 @@ export default function LessonScreen() {
                   />
                 ) : null}
                 <AppText style={{ fontSize: 36, fontWeight: '800', textAlign: 'center' }}>
-                  {t(task.actionKey)}
+                  {lt(task.actionKey)}
                 </AppText>
               </View>
             )}
@@ -1376,8 +1480,8 @@ export default function LessonScreen() {
                     const lower = transcript.toLowerCase();
                     const mcTask = task as MultipleChoiceTask;
                     const match = mcTask.options.find((o) =>
-                      (isEnglishLesson ? tEn(o.textKey) : t(o.textKey)).toLowerCase().includes(lower) ||
-                      lower.includes((isEnglishLesson ? tEn(o.textKey) : t(o.textKey)).toLowerCase()),
+                      optionText(o.textKey).toLowerCase().includes(lower) ||
+                      lower.includes(optionText(o.textKey).toLowerCase()),
                     );
                     if (match) { setSelectedOptionId(match.id); setSelectHint(false); }
                   }}
@@ -1453,11 +1557,7 @@ export default function LessonScreen() {
                 useAbaPedagogy && promptLevel >= 1 && option.correct && !hasChecked;
               const isDisabledByPrompt =
                 useAbaPedagogy && promptLevel >= 2 && !option.correct && !hasChecked;
-              const label = option.textKey
-                ? isEnglishLesson
-                  ? tEn(option.textKey)
-                  : t(option.textKey)
-                : '';
+              const label = option.textKey ? optionText(option.textKey) : '';
               const src = option.imageKey ? getAbaLessonImage(option.imageKey) : undefined;
 
               return (
@@ -1521,7 +1621,7 @@ export default function LessonScreen() {
               </View>
             ) : (task as ImageWordMatchTask).promptTextKey ? (
               <AppText style={{ marginBottom: theme.spacing.md, fontSize: theme.typography.body, textAlign: 'center' }}>
-                {t((task as ImageWordMatchTask).promptTextKey!)}
+                {lt((task as ImageWordMatchTask).promptTextKey!)}
               </AppText>
             ) : null}
             {(task as ImageWordMatchTask).options.map((option) => {
@@ -1532,7 +1632,7 @@ export default function LessonScreen() {
                 useAbaPedagogy && promptLevel >= 1 && option.correct && !hasChecked;
               const isDisabledByPrompt =
                 useAbaPedagogy && promptLevel >= 2 && !option.correct && !hasChecked;
-              const label = option.textKey ? (isEnglishLesson ? tEn(option.textKey) : t(option.textKey)) : '';
+              const label = option.textKey ? optionText(option.textKey) : '';
               const src = option.imageKey ? getAbaLessonImage(option.imageKey) : undefined;
 
               return (
@@ -1590,12 +1690,12 @@ export default function LessonScreen() {
               let blankDisplay = '…';
               if (hasChecked) {
                 const co = fbTask.options.find((o) => o.correct);
-                if (co) blankDisplay = t(co.textKey);
+                if (co) blankDisplay = lt(co.textKey);
               } else if (selectedOptionId) {
                 const so = fbTask.options.find((o) => o.id === selectedOptionId);
-                if (so) blankDisplay = t(so.textKey);
+                if (so) blankDisplay = lt(so.textKey);
               }
-              const parts = t(fbTask.sentenceKey).split('_');
+              const parts = lt(fbTask.sentenceKey).split('_');
               return (
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginBottom: theme.spacing.md }}>
                   {parts.map((part, i, arr) => (
@@ -1655,7 +1755,7 @@ export default function LessonScreen() {
                           : undefined,
                     }}
                   >
-                    <AppText style={{ fontSize: theme.typography.body }}>{t(option.textKey)}</AppText>
+                    <AppText style={{ fontSize: theme.typography.body }}>{optionText(option.textKey)}</AppText>
                   </Card>
                 </Pressable>
               );
@@ -1735,7 +1835,7 @@ export default function LessonScreen() {
                     backgroundColor: theme.colors.surfaceAlt,
                   }}
                 >
-                  <AppText style={{ textAlign: 'center', fontWeight: '700' }}>{t(g.labelKey)}</AppText>
+                  <AppText style={{ textAlign: 'center', fontWeight: '700' }}>{lt(g.labelKey)}</AppText>
                 </Pressable>
               ))}
             </View>
@@ -1763,7 +1863,7 @@ export default function LessonScreen() {
                     {src ? <Image source={src} style={{ width: 56, height: 56, resizeMode: 'contain' }} /> : null}
                     {assigned ? (
                       <AppText variant="small" style={{ textAlign: 'center' }}>
-                        {t((task as SortingTask).groups.find((g) => g.id === assigned)?.labelKey ?? '')}
+                        {lt((task as SortingTask).groups.find((g) => g.id === assigned)?.labelKey ?? '')}
                       </AppText>
                     ) : null}
                   </Pressable>
@@ -1800,7 +1900,7 @@ export default function LessonScreen() {
                   >
                     {src ? <Image source={src} style={{ width: 48, height: 48, resizeMode: 'contain' }} /> : null}
                     <AppText variant="small" style={{ textAlign: 'center' }}>
-                      {t(step.labelKey)}
+                      {lt(step.labelKey)}
                     </AppText>
                   </Pressable>
                 );
@@ -1915,20 +2015,20 @@ export default function LessonScreen() {
               if (task.type === 'multiple_choice') {
                 const mcTask = task as MultipleChoiceTask;
                 const match = mcTask.options.find((o) =>
-                  (isEnglishLesson ? tEn(o.textKey) : t(o.textKey)).toLowerCase().includes(lower) ||
-                  lower.includes((isEnglishLesson ? tEn(o.textKey) : t(o.textKey)).toLowerCase()),
+                  optionText(o.textKey).toLowerCase().includes(lower) ||
+                  lower.includes(optionText(o.textKey).toLowerCase()),
                 );
                 if (match) { setSelectedOptionId(match.id); setSelectHint(false); }
               } else if (task.type === 'fill_blank') {
                 const fb = task as FillBlankTask;
-                const match = fb.options.find((o) => t(o.textKey).toLowerCase().includes(lower));
+                const match = fb.options.find((o) => lt(o.textKey).toLowerCase().includes(lower));
                 if (match) { setSelectedOptionId(match.id); setSelectHint(false); }
               } else if (task.type === 'world_knowledge') {
                 const wk = task as WorldKnowledgeTask;
                 const match = wk.options.find((o) =>
                   o.textKey
-                    ? t(o.textKey).toLowerCase().includes(lower) ||
-                      lower.includes(t(o.textKey).toLowerCase())
+                    ? lt(o.textKey).toLowerCase().includes(lower) ||
+                      lower.includes(lt(o.textKey).toLowerCase())
                     : false,
                 );
                 if (match) { setSelectedOptionId(match.id); setSelectHint(false); }
@@ -1936,8 +2036,8 @@ export default function LessonScreen() {
                 const im = task as ImageWordMatchTask;
                 const match = im.options.find((o) =>
                   o.textKey
-                    ? (isEnglishLesson ? tEn(o.textKey) : t(o.textKey)).toLowerCase().includes(lower) ||
-                      lower.includes((isEnglishLesson ? tEn(o.textKey) : t(o.textKey)).toLowerCase())
+                    ? optionText(o.textKey).toLowerCase().includes(lower) ||
+                      lower.includes(optionText(o.textKey).toLowerCase())
                     : false,
                 );
                 if (match) { setSelectedOptionId(match.id); setSelectHint(false); }
@@ -1982,522 +2082,20 @@ export default function LessonScreen() {
         <Spacer size="md" />
       )}
 
-      <Modal
+      <BreakReminderModal
         visible={breakModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => {
-          setBreakModalVisible(false);
-          sessionStartRef.current = Date.now();
-        }}
-      >
-        <Pressable
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: theme.spacing.xl,
-          }}
-          onPress={() => {
-            setBreakModalVisible(false);
-            sessionStartRef.current = Date.now();
-          }}
-        >
-          <Pressable
-            style={{
-              backgroundColor: theme.colors.surface,
-              borderRadius: theme.radii.lg,
-              padding: theme.spacing.xl,
-              maxWidth: 320,
-            }}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <AppText variant="title" style={{ marginBottom: theme.spacing.sm }}>
-              {t('breakReminder.title')}
-            </AppText>
-            <AppText variant="body" style={{ color: theme.colors.textMuted, marginBottom: theme.spacing.lg }}>
-              {t('breakReminder.body', { minutes: breakDurationMinutes })}
-            </AppText>
-            <Button
-              onPress={() => {
-                setBreakModalVisible(false);
-                sessionStartRef.current = Date.now();
-              }}
-            >
-              {t('breakReminder.dismiss')}
-            </Button>
-          </Pressable>
-        </Pressable>
-      </Modal>
+        breakDurationMinutes={breakDurationMinutes}
+        onDismiss={dismissBreakReminder}
+      />
 
       <TaliFAB
         lessonId={lesson.id}
         topicId={topic.id}
-        taskContext={taskDescriptionForTali}
+        taskContext={companionTaskContext ? undefined : taskDescriptionForTali}
+        companionTaskContext={companionTaskContext}
         lessonTitle={t(lesson.titleKey)}
       />
     </Screen>
   );
 }
 
-// ── Intro phase component ──────────────────────────────────────────────────
-function IntroPhase({
-  lessonId,
-  backgroundImage,
-  backgroundImageTint,
-  slide,
-  slideIndex,
-  totalSlides,
-  isLastSlide,
-  accentColor,
-  fadeAnim,
-  theme,
-  t,
-  onNext,
-}: {
-  lessonId: string;
-  backgroundImage: ImageSourcePropType;
-  backgroundImageTint: 'default' | 'light';
-  slide: IntroSlide;
-  slideIndex: number;
-  totalSlides: number;
-  isLastSlide: boolean;
-  accentColor: string;
-  fadeAnim: Animated.Value;
-  theme: ReturnType<typeof useAppTheme>;
-  t: (key: string) => string;
-  onNext: () => void;
-}) {
-  const { speak } = useSpeech();
-  const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
-  const language = useSettingsStore((s) => s.language);
-  const fullBodyText = t(slide.bodyKey);
-  const { displayed } = useTypingText(fullBodyText, 18);
-
-  useEffect(() => {
-    if (!ttsEnabled) return;
-    const title = t(slide.titleKey);
-    const body = t(slide.bodyKey);
-    const fallback = `${title}. ${body}`;
-    const key = lessonBundledVoiceKey(lessonId, 'intro', slideIndex, language);
-    const mod = getBundledVoiceModuleId(key);
-    const delay = setTimeout(() => {
-      void (async () => {
-        if (mod !== undefined) {
-          const ok = await tryPlayBundledLessonVoice(mod);
-          if (!ok) speak(fallback);
-        } else {
-          speak(fallback);
-        }
-      })();
-    }, 400);
-    return () => {
-      clearTimeout(delay);
-      void stopTaliSpeech();
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slideIndex, lessonId, language, ttsEnabled]);
-
-  return (
-    <Screen
-      backgroundImage={backgroundImage}
-      backgroundImageTint={backgroundImageTint}
-      style={{ position: 'relative' }}
-    >
-      <Animated.View style={{ opacity: fadeAnim, flex: 1 }}>
-        <View style={{ flex: 1, justifyContent: 'center', paddingVertical: theme.spacing.xl }}>
-          {/* Progress dots */}
-          {totalSlides > 1 && (
-            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, marginBottom: theme.spacing.lg }}>
-              {Array.from({ length: totalSlides }, (_, i) => (
-                <View
-                  key={i}
-                  style={{
-                    width: i === slideIndex ? 24 : 8,
-                    height: 8,
-                    borderRadius: 4,
-                    backgroundColor: i <= slideIndex ? accentColor : theme.colors.border,
-                  }}
-                />
-              ))}
-            </View>
-          )}
-
-          {/* Tali thinking + slide emoji */}
-          <View style={{ alignItems: 'center', marginBottom: theme.spacing.lg, flexDirection: 'row', justifyContent: 'center', gap: theme.spacing.md }}>
-            <TaliVideo emotion="idle" size={110} bgColor={theme.colors.surface} />
-            {slide.emoji && (
-              <AppText style={{ fontSize: 56 }}>{slide.emoji}</AppText>
-            )}
-          </View>
-
-          {/* Title + body: solid white for readability on scene background */}
-          <Card
-            style={{
-              borderLeftWidth: 4,
-              borderLeftColor: accentColor,
-              backgroundColor: '#FFFFFF',
-              marginBottom: theme.spacing.xl,
-            }}
-          >
-            <AppText
-              variant="subtitle"
-              style={{
-                fontWeight: '800',
-                color: accentColor,
-                textAlign: 'left',
-                marginBottom: theme.spacing.md,
-              }}
-            >
-              {t(slide.titleKey)}
-            </AppText>
-            <View style={{ position: 'relative' }}>
-              <AppText style={{ lineHeight: 30, fontSize: 17, opacity: 0 }} aria-hidden>
-                {fullBodyText}
-              </AppText>
-              <AppText style={{ lineHeight: 30, fontSize: 17, position: 'absolute', top: 0, left: 0, right: 0 }}>
-                {displayed}
-              </AppText>
-            </View>
-          </Card>
-
-          <Button
-            onPress={onNext}
-            style={{
-              backgroundColor: accentColor,
-              borderColor: accentColor,
-            }}
-          >
-            {isLastSlide ? t('lesson.introStart') : t('lesson.introNext')}
-          </Button>
-        </View>
-      </Animated.View>
-      <LessonRepeatSpeechFab />
-    </Screen>
-  );
-}
-
-// ── Dialog phase component ─────────────────────────────────────────────────
-function DialogPhase({
-  lessonId,
-  worldId,
-  backgroundImage,
-  backgroundImageTint,
-  fullText,
-  speakerName,
-  speakerColor,
-  isTali,
-  npcEmoji,
-  worldBiome,
-  worldTitleKey,
-  worldAccentColor,
-  dialogIndex,
-  totalLines,
-  isLastLine,
-  fadeAnim,
-  theme,
-  t,
-  onNext,
-}: {
-  lessonId: string;
-  worldId?: string;
-  backgroundImage: ImageSourcePropType;
-  backgroundImageTint: 'default' | 'light';
-  fullText: string;
-  speakerName: string;
-  speakerColor: string;
-  isTali: boolean;
-  npcEmoji: string;
-  worldBiome?: string;
-  worldTitleKey?: string;
-  worldAccentColor: string;
-  dialogIndex: number;
-  totalLines: number;
-  isLastLine: boolean;
-  fadeAnim: Animated.Value;
-  theme: ReturnType<typeof useAppTheme>;
-  t: (key: string) => string;
-  onNext: () => void;
-}) {
-  const { speak } = useSpeech();
-  const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
-  const language = useSettingsStore((s) => s.language);
-  const { displayed } = useTypingText(fullText, 22);
-  const npcAvatar = worldId ? getNanoNpcForWorld(worldId) : undefined;
-
-  useEffect(() => {
-    if (!ttsEnabled) return;
-    const key = lessonBundledVoiceKey(lessonId, 'dialog', dialogIndex, language);
-    const mod = getBundledVoiceModuleId(key);
-    const delay = setTimeout(() => {
-      void (async () => {
-        if (mod !== undefined) {
-          const ok = await tryPlayBundledLessonVoice(mod);
-          if (!ok) speak(fullText);
-        } else {
-          speak(fullText);
-        }
-      })();
-    }, 300);
-    return () => {
-      clearTimeout(delay);
-      void stopTaliSpeech();
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fullText, dialogIndex, lessonId, language, ttsEnabled]);
-
-  return (
-    <Screen
-      backgroundImage={backgroundImage}
-      backgroundImageTint={backgroundImageTint}
-      style={{ position: 'relative' }}
-    >
-      <Animated.View style={{ opacity: fadeAnim, flex: 1 }}>
-        <View style={{ flex: 1, justifyContent: 'flex-end', paddingBottom: theme.spacing.xl }}>
-          {/* World banner */}
-          {worldBiome && worldTitleKey && (
-            <View style={{ alignItems: 'center', marginBottom: theme.spacing.xl }}>
-              <AppText style={{ fontSize: 64 }}>{getBiomeDisplayEmoji(worldBiome)}</AppText>
-              <AppText variant="small" style={{ color: worldAccentColor, fontWeight: '700', marginTop: theme.spacing.xs }}>
-                {t(worldTitleKey)}
-              </AppText>
-            </View>
-          )}
-
-          {/* Speaker avatar */}
-          <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginBottom: theme.spacing.sm, gap: theme.spacing.sm }}>
-            {isTali ? (
-              <TaliVideo emotion="idle" size={72} bgColor={theme.colors.background} />
-            ) : (
-              <View
-                style={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: 36,
-                  backgroundColor: speakerColor + '22',
-                  borderWidth: 2,
-                  borderColor: speakerColor + '88',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  overflow: 'hidden',
-                }}
-              >
-                {npcAvatar ? (
-                  <NanoBananaIcon source={npcAvatar} size={66} />
-                ) : (
-                  <AppText style={{ fontSize: 40 }}>{npcEmoji}</AppText>
-                )}
-              </View>
-            )}
-            <AppText variant="small" style={{ color: speakerColor, fontWeight: '700', marginBottom: 6 }}>
-              {speakerName}
-            </AppText>
-          </View>
-
-          {/* Dialog bubble */}
-          <View style={{ position: 'relative', marginBottom: theme.spacing.lg }}>
-            <View
-              style={{
-                position: 'absolute',
-                top: -11,
-                left: 32,
-                width: 0,
-                height: 0,
-                borderStyle: 'solid',
-                borderLeftWidth: 10,
-                borderLeftColor: 'transparent',
-                borderRightWidth: 10,
-                borderRightColor: 'transparent',
-                borderBottomWidth: 12,
-                borderBottomColor: '#FFFFFF',
-                zIndex: 1,
-              }}
-            />
-            <View
-              style={{
-                position: 'absolute',
-                top: -14,
-                left: 30,
-                width: 0,
-                height: 0,
-                borderStyle: 'solid',
-                borderLeftWidth: 12,
-                borderLeftColor: 'transparent',
-                borderRightWidth: 12,
-                borderRightColor: 'transparent',
-                borderBottomWidth: 14,
-                borderBottomColor: speakerColor + '55',
-                zIndex: 0,
-              }}
-            />
-            <Card
-              style={{
-                borderLeftWidth: 4,
-                borderLeftColor: speakerColor,
-                backgroundColor: '#FFFFFF',
-              }}
-            >
-              <View style={{ position: 'relative' }}>
-                <AppText style={{ lineHeight: 30, opacity: 0 }} aria-hidden>
-                  {fullText}
-                </AppText>
-                <AppText style={{ lineHeight: 30, position: 'absolute', top: 0, left: 0, right: 0 }}>
-                  {displayed}
-                </AppText>
-              </View>
-            </Card>
-          </View>
-
-          {totalLines > 1 && (
-            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, marginBottom: theme.spacing.lg }}>
-              {Array.from({ length: totalLines }, (_, i) => (
-                <View
-                  key={i}
-                  style={{
-                    width: i === dialogIndex ? 20 : 6,
-                    height: 6,
-                    borderRadius: 3,
-                    backgroundColor: i <= dialogIndex ? theme.colors.primary : theme.colors.border,
-                  }}
-                />
-              ))}
-            </View>
-          )}
-
-          <Button
-            onPress={onNext}
-            style={{
-              minHeight: 54,
-              paddingVertical: 16,
-            }}
-          >
-            {isLastLine ? t('lesson.dialogStartLesson') : t('lesson.dialogContinue')}
-          </Button>
-        </View>
-      </Animated.View>
-      <LessonRepeatSpeechFab />
-    </Screen>
-  );
-}
-
-// ── Reward phase component ────────────────────────────────────────────────
-function RewardPhase({
-  earnedXP,
-  earnedItemEmoji,
-  leveledUp,
-  newLevel,
-  earnedStars,
-  lessonTitle,
-  theme,
-  backgroundImage,
-  backgroundImageTint,
-  onGoToMap,
-}: {
-  earnedXP: number;
-  earnedItemEmoji: string | null;
-  leveledUp: boolean;
-  newLevel: number;
-  earnedStars: 1 | 2 | 3;
-  lessonTitle: string;
-  theme: ReturnType<typeof useAppTheme>;
-  backgroundImage: ImageSourcePropType;
-  backgroundImageTint: 'default' | 'light';
-  onGoToMap: () => void;
-}) {
-  const { t } = useTranslation();
-  const reduceMotion = useSettingsStore((s) => s.reduceMotion);
-  return (
-    <Screen scroll backgroundImage={backgroundImage} backgroundImageTint={backgroundImageTint}>
-      <View style={{ alignItems: 'center', paddingTop: theme.spacing.xl, position: 'relative' }}>
-        {!reduceMotion && <Confetti />}
-
-        <TaliVideo emotion="energetic" size={140} bgColor={theme.colors.background} />
-        <Spacer size="sm" />
-        <AppText variant="title" style={{ textAlign: 'center' }}>
-          {t('lesson.rewardTitle')}
-        </AppText>
-        <Spacer size="sm" />
-        <AppText style={{ color: theme.colors.textMuted, textAlign: 'center' }}>{lessonTitle}</AppText>
-        <Spacer size="md" />
-
-        {/* Stars */}
-        <StarsRow stars={earnedStars} size={36} />
-        <AppText variant="small" style={{ color: theme.colors.textMuted, marginTop: 6 }}>
-          {t('lesson.starsEarned', { stars: earnedStars })}
-        </AppText>
-
-        <Spacer size="lg" />
-
-        <Card style={{ width: '100%', alignItems: 'center', gap: theme.spacing.md }}>
-          <View
-            style={{
-              backgroundColor: theme.colors.success + '22',
-              borderRadius: theme.radii.lg,
-              paddingHorizontal: theme.spacing.xl,
-              paddingVertical: theme.spacing.md,
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <NanoBananaIcon source={NANO_UI.lightning} size={40} accessibilityLabel="XP" />
-            <AppText
-              variant="subtitle"
-              style={{ color: theme.colors.success, fontWeight: '700', marginTop: theme.spacing.xs }}
-            >
-              {t('lesson.rewardXP', { xp: earnedXP })}
-            </AppText>
-          </View>
-
-          {earnedItemEmoji && (
-            <View
-              style={{
-                backgroundColor: theme.colors.secondary + '22',
-                borderRadius: theme.radii.lg,
-                paddingHorizontal: theme.spacing.xl,
-                paddingVertical: theme.spacing.md,
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <NanoBananaIcon source={NANO_UI.gift} size={40} accessibilityLabel="" />
-              <AppText
-                variant="small"
-                style={{ color: theme.colors.secondary, fontWeight: '700', marginTop: theme.spacing.xs }}
-              >
-                {t('lesson.rewardItem', { item: earnedItemEmoji })}
-              </AppText>
-            </View>
-          )}
-
-          {leveledUp && (
-            <View
-              style={{
-                backgroundColor: theme.colors.primary + '22',
-                borderRadius: theme.radii.lg,
-                paddingHorizontal: theme.spacing.xl,
-                paddingVertical: theme.spacing.md,
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <NanoBananaIcon source={NANO_UI.levelUp} size={40} accessibilityLabel="" />
-              <AppText
-                variant="small"
-                style={{ color: theme.colors.primary, fontWeight: '700', marginTop: theme.spacing.xs }}
-              >
-                {t('lesson.rewardLevelUp', { level: newLevel })}
-              </AppText>
-            </View>
-          )}
-        </Card>
-
-        <Spacer size="xl" />
-        <Button onPress={onGoToMap} style={{ width: '100%' }}>
-          {t('lesson.goToMap')}
-        </Button>
-      </View>
-      <Spacer size="xl" />
-    </Screen>
-  );
-}

@@ -30,7 +30,8 @@ export default function ProfileScreen() {
   const { t } = useTranslation();
   const theme = useAppTheme();
   const router = useRouter();
-  const { user, profile } = useAuth();
+  const user = useAuth((s) => s.user);
+  const profile = useAuth((s) => s.profile);
 
   const methodology = useSettingsStore((s) => s.methodology);
   const isPremium = useSettingsStore((s) => s.isPremium);
@@ -142,7 +143,6 @@ export default function ProfileScreen() {
           <AppText
             style={{
               fontSize: 56,
-              fontWeight: '800',
               fontFamily: 'Nunito_800ExtraBold',
               color: theme.colors.primary,
               lineHeight: 64,
@@ -151,7 +151,7 @@ export default function ProfileScreen() {
             {lessonsCompleted}
           </AppText>
           <AppText variant="small" style={{ color: theme.colors.textMuted, textAlign: 'center', marginTop: 2 }}>
-            {t('profile.lessonsLabel')}
+            {t('profile.lessonsLabel', { count: lessonsCompleted })}
           </AppText>
         </Card>
 
@@ -176,7 +176,6 @@ export default function ProfileScreen() {
           <AppText
             style={{
               fontSize: 56,
-              fontWeight: '800',
               fontFamily: 'Nunito_800ExtraBold',
               color: '#FF7A38',
               lineHeight: 64,
@@ -185,7 +184,7 @@ export default function ProfileScreen() {
             {streakCount}
           </AppText>
           <AppText variant="small" style={{ color: theme.colors.textMuted, textAlign: 'center', marginTop: 2 }}>
-            {t('profile.streakDaysLabel')}
+            {t('profile.streakDaysLabel', { count: streakCount })}
           </AppText>
         </Card>
 
@@ -210,7 +209,6 @@ export default function ProfileScreen() {
           <AppText
             style={{
               fontSize: 56,
-              fontWeight: '800',
               fontFamily: 'Nunito_800ExtraBold',
               color: theme.colors.success,
               lineHeight: 64,
@@ -230,7 +228,7 @@ export default function ProfileScreen() {
       <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
         <Pressable
           style={{ flex: 1 }}
-          onPress={() => router.push('/achievements' as any)}
+          onPress={() => router.push('/achievements')}
           accessibilityRole="button"
         >
           <Card
@@ -257,7 +255,7 @@ export default function ProfileScreen() {
 
         <Pressable
           style={{ flex: 1 }}
-          onPress={() => router.push('/collection' as any)}
+          onPress={() => router.push('/collection')}
           accessibilityRole="button"
         >
           <Card
@@ -399,7 +397,7 @@ export default function ProfileScreen() {
 
       <Button
         variant="secondary"
-        onPress={() => router.push('/parent-report' as any)}
+        onPress={() => router.push('/parent-report')}
       >
         {t('profile.parentReportLink')}
       </Button>

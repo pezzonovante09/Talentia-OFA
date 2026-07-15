@@ -52,6 +52,9 @@ export const useAbaTokenStore = create<AbaTokenState>()(
     }),
     {
       name: 'talentia-aba-tokens',
+      version: 1,
+      migrate: (persistedState) =>
+        persistedState as Pick<AbaTokenState, 'tokensTowardPiece' | 'placedPieces'>,
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (s) => ({
         tokensTowardPiece: s.tokensTowardPiece,

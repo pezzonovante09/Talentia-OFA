@@ -1,18 +1,16 @@
+import { supabase } from '@/src/services/supabase';
+
 /**
- * All HTTP calls to talentia-ai-proxy-next go through here so X-Talentia-Secret is applied consistently.
- * Secret: EXPO_PUBLIC_TALENTIA_API_SECRET (must match proxy TALENTIA_API_SECRET when the proxy enforces auth).
+ * All HTTP calls to talentia-ai-proxy-next go through here.
+ * When the user has a Supabase session, `Authorization: Bearer <access_token>` is set so the proxy can verify JWTs.
  */
 export function getBackendBaseUrl(): string | null {
   const u = process.env.EXPO_PUBLIC_BACKEND_URL?.trim();
   return u ? u.replace(/\/$/, "") : null;
 }
 
-function talentiaSecret(): string {
-  return process.env.EXPO_PUBLIC_TALENTIA_API_SECRET?.trim() ?? "";
-}
-
 /**
- * `fetch` to the configured backend with optional Talentia secret header.
+ * `fetch` to the configured backend with optional Supabase Bearer token.
  * @param path Absolute path starting with `/`, e.g. `/api/tali`
  */
 export async function backendFetch(path: string, init: RequestInit = {}): Promise<Response> {
@@ -25,9 +23,12 @@ export async function backendFetch(path: string, init: RequestInit = {}): Promis
   const url = `${base}${p}`;
 
   const headers = new Headers(init.headers);
-  const secret = talentiaSecret();
-  if (secret) {
-    headers.set("X-Talentia-Secret", secret);
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const token = session?.access_token;
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
   }
 
   if (!headers.has("Content-Type") && typeof init.body === "string") {

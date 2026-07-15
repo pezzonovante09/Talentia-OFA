@@ -1,11 +1,11 @@
+import type { NextRequest } from "next/server";
+
 import { corsJson, corsPreflight } from "@/lib/api-cors";
-import { verifyTalentiaSecret } from "@/lib/api-secret";
 import { buildCorsHeaders } from "@/lib/cors-strict";
-import {
-  buildStandardReport,
-  normalizeLanguage,
-  type ReportStatsInput,
-} from "@/lib/report";
+import { enforceRateLimit, ratelimitApi } from "@/lib/ratelimit";
+import { authJsonError, verifyAuth } from "@/lib/verifyAuth";
+import { buildStandardReport, normalizeLanguage } from "@/lib/report";
+import { StandardReportBodySchema } from "@/lib/reportSchemas";
 
 export const runtime = "nodejs";
 
@@ -13,27 +13,38 @@ export async function OPTIONS(req: Request) {
   return corsPreflight(req);
 }
 
-export async function GET(req: Request) {
-  const denied = verifyTalentiaSecret(req);
-  if (denied) return denied;
+export async function GET(req: NextRequest) {
+  const limited = await enforceRateLimit(req, ratelimitApi);
+  if (limited) return limited;
+  const auth = await verifyAuth(req);
+  if (!auth.ok) return authJsonError(req, auth);
   return new Response("ok", {
     status: 200,
     headers: { "Content-Type": "text/plain", ...buildCorsHeaders(req) },
   });
 }
 
-export async function POST(req: Request) {
-  const denied = verifyTalentiaSecret(req);
-  if (denied) return denied;
+export async function POST(req: NextRequest) {
+  const limited = await enforceRateLimit(req, ratelimitApi);
+  if (limited) return limited;
+  const auth = await verifyAuth(req);
+  if (!auth.ok) return authJsonError(req, auth);
   try {
-    const body = (await req.json().catch(() => ({}))) as ReportStatsInput & {
-      language?: string;
-    };
+    const rawBody = await req.json().catch(() => ({}));
+    const parsed = StandardReportBodySchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return corsJson(
+        { error: "Invalid request", details: parsed.error.flatten() },
+        400,
+        req,
+      );
+    }
+    const body = parsed.data;
     const lang = normalizeLanguage(body.language);
     const payload = buildStandardReport(body, lang);
     return corsJson(payload, 200, req);
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return corsJson({ error: "Server error", details: msg }, 500, req);
+    console.error("[report] Server error", e);
+    return corsJson({ error: "Server error" }, 500, req);
   }
 }
