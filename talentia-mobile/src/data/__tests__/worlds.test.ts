@@ -2,6 +2,7 @@ import {
   filterTasksForProfile,
   getLesson,
   getWorldForLesson,
+  withSpacedReviewTasks,
 } from '../worlds';
 import type { LessonTask } from '../worlds';
 
@@ -23,7 +24,7 @@ describe('worlds data helpers', () => {
     expect(world?.id).toBe('jungle');
   });
 
-  it('filterTasksForProfile standard mode excludes special_aba tasks', () => {
+  it('filterTasksForProfile standard mode excludes special_aba when standard exists', () => {
     const tasks: LessonTask[] = [
       {
         id: 'a',
@@ -49,7 +50,7 @@ describe('worlds data helpers', () => {
     expect(out.map((t) => t.id)).toEqual(['a']);
   });
 
-  it('filterTasksForProfile special mode uses same tasks as standard (excludes special_aba rows)', () => {
+  it('filterTasksForProfile special mode prefers special_aba rows', () => {
     const tasks: LessonTask[] = [
       {
         id: 'a',
@@ -68,19 +69,14 @@ describe('worlds data helpers', () => {
         options: [{ id: '1', textKey: 'y', correct: true }],
       },
     ];
-    const standardOut = filterTasksForProfile(tasks, {
-      child_mode: 'standard',
-      methodology: null,
-    });
     const specialOut = filterTasksForProfile(tasks, {
       child_mode: 'special',
       methodology: 'aba',
     });
-    expect(specialOut.map((t) => t.id)).toEqual(['a']);
-    expect(specialOut.map((t) => t.id)).toEqual(standardOut.map((t) => t.id));
+    expect(specialOut.map((t) => t.id)).toEqual(['b']);
   });
 
-  it('filterTasksForProfile null profile behaves like standard', () => {
+  it('filterTasksForProfile falls back to special_aba when lesson is ABA-only (showcase)', () => {
     const tasks: LessonTask[] = [
       {
         id: 'b',
@@ -91,6 +87,19 @@ describe('worlds data helpers', () => {
         options: [{ id: '1', textKey: 'y', correct: true }],
       },
     ];
-    expect(filterTasksForProfile(tasks, null)).toHaveLength(0);
+    expect(filterTasksForProfile(tasks, null).map((t) => t.id)).toEqual(['b']);
+    expect(
+      filterTasksForProfile(tasks, { child_mode: 'standard', methodology: null }).map((t) => t.id),
+    ).toEqual(['b']);
+  });
+
+  it('withSpacedReviewTasks injects a prior-lesson task on every 3rd lesson', () => {
+    const lesson = getLesson('meadow-c5-l3');
+    expect(lesson).toBeDefined();
+    if (!lesson) return;
+    const filtered = filterTasksForProfile(lesson.tasks, null);
+    const withReview = withSpacedReviewTasks(lesson.id, filtered, null);
+    expect(withReview.length).toBe(filtered.length + 1);
+    expect(withReview.some((t) => t.id.startsWith('review__'))).toBe(true);
   });
 });

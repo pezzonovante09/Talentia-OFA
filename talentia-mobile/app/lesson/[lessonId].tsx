@@ -24,6 +24,7 @@ import {
   getLesson,
   getTopicForLesson,
   getWorldForLesson,
+  withSpacedReviewTasks,
   type FillBlankTask,
   type ImagePointTask,
   type ImageWordMatchTask,
@@ -86,6 +87,10 @@ const ABA_REINFORCE_KEYS = [
   'lesson.abaReinforce6',
   'lesson.abaReinforce7',
   'lesson.abaReinforce8',
+  'lesson.abaReinforce9',
+  'lesson.abaReinforce10',
+  'lesson.abaReinforce11',
+  'lesson.abaReinforce12',
 ] as const;
 
 // ── Main lesson screen ────────────────────────────────────────────────────────
@@ -181,15 +186,11 @@ export default function LessonScreen() {
   // ALL hooks must be declared before any early return
   const tasks = useMemo(() => {
     if (!lesson) return [];
-    const baseFiltered = filterTasksForProfile(lesson.tasks, profile ? {
-      child_mode: profile.child_mode,
-      methodology: profile.methodology,
-    } : null);
-    const baseIds = new Set(baseFiltered.map((t) => t.id));
-    return lesson.tasks.filter((tk) => {
-      if (profile?.child_mode === 'special' && tk.audience === 'special_aba') return true;
-      return baseIds.has(tk.id);
-    });
+    const profileFilter = profile
+      ? { child_mode: profile.child_mode, methodology: profile.methodology }
+      : null;
+    const baseFiltered = filterTasksForProfile(lesson.tasks, profileFilter);
+    return withSpacedReviewTasks(lesson.id, baseFiltered, profileFilter);
   }, [lesson, profile]);
 
   const hasDialog = (lesson?.dialog?.length ?? 0) > 0;
@@ -201,6 +202,18 @@ export default function LessonScreen() {
   const [introIndex, setIntroIndex] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+
+  /** Shuffle MC options once per task to remove middle-option position bias. */
+  const displayOptions = useMemo(() => {
+    const tk = tasks[currentIndex];
+    if (!tk) return [] as MultipleChoiceTask['options'];
+    if (tk.type === 'multiple_choice') return shuffleArray([...(tk as MultipleChoiceTask).options]);
+    if (tk.type === 'fill_blank') return shuffleArray([...(tk as FillBlankTask).options]);
+    if (tk.type === 'world_knowledge') return shuffleArray([...(tk as WorldKnowledgeTask).options]);
+    if (tk.type === 'image_word_match') return shuffleArray([...(tk as ImageWordMatchTask).options]);
+    return [] as MultipleChoiceTask['options'];
+  }, [tasks, currentIndex]);
+
   const [inputValue, setInputValue] = useState('');
   const [feedback, setFeedback] = useState<Feedback>('idle');
   const [hasChecked, setHasChecked] = useState(false);
@@ -282,7 +295,8 @@ export default function LessonScreen() {
         incorrectKey: withKeys.incorrectFeedbackKey,
       };
     }
-    const fromMap = TASK_FEEDBACK_KEYS_BY_TASK_ID[tk.id];
+    const lookupId = tk.id.startsWith('review__') ? tk.id.slice('review__'.length) : tk.id;
+    const fromMap = TASK_FEEDBACK_KEYS_BY_TASK_ID[lookupId];
     if (fromMap) {
       return {
         correctKey: fromMap.correctFeedbackKey,
@@ -1479,9 +1493,11 @@ export default function LessonScreen() {
                     if (hasChecked || taskTransitionBusy) return;
                     const lower = transcript.toLowerCase();
                     const mcTask = task as MultipleChoiceTask;
-                    const match = mcTask.options.find((o) =>
-                      optionText(o.textKey).toLowerCase().includes(lower) ||
-                      lower.includes(optionText(o.textKey).toLowerCase()),
+                    const match = displayOptions.find((o) =>
+                      'textKey' in o &&
+                      o.textKey &&
+                      (optionText(o.textKey).toLowerCase().includes(lower) ||
+                        lower.includes(optionText(o.textKey).toLowerCase())),
                     );
                     if (match) { setSelectedOptionId(match.id); setSelectHint(false); }
                   }}
@@ -1489,7 +1505,7 @@ export default function LessonScreen() {
                 />
               </View>
             )}
-            {(task as MultipleChoiceTask).options.map((option) => {
+            {displayOptions.map((option) => {
               const isSelected = selectedOptionId === option.id;
               const showCorrect = hasChecked && feedback === 'correct' && option.correct;
               const showWrong = hasChecked && feedback === 'incorrect' && isSelected;
@@ -1533,7 +1549,7 @@ export default function LessonScreen() {
                   >
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                       <AppText style={{ fontSize: theme.typography.body }}>
-                        {optionText(option.textKey)}
+                        {optionText(('textKey' in option && option.textKey) ? option.textKey : '')}
                       </AppText>
                       {showCorrect && (
                         <NanoBananaIcon source={NANO_UI.check} size={22} accessibilityLabel="OK" />

@@ -3090,8 +3090,8 @@ export const worlds: World[] = [
           tasks: [
           { id: 'g4m-md-l1-t1', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md_q1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4m_md_q1_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md_q1_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_md_q1_c', correct: false }] },
           { id: 'g4m-md-l1-t2', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md_q2', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4m_md_q2_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4m_md_q2_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4m_md_q2_c', correct: false }] },
-          { id: 'g4m-md-l1-t3', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md_q3_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4m_md_q3_c', correct: true }] },
-          { id: 'g4m-md-l1-t4', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md_q4', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4m_md_q4_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md_q4_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_md_q4_c', correct: false }] },
+          { id: 'g4m-md-l1-t3', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md_q3_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_md_q3_c', correct: false }] },
+          { id: 'g4m-md-l1-t4', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md_q4', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4m_md_q4_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4m_md_q4_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4m_md_q4_c', correct: false }] },
         ] },
         { id: 'g4m-md-l2', topicId: 'g4m-multidigit', titleKey: 'data.lessons.g4mMdL2', reward: { xp: 30 },
           dialog: [
@@ -3105,7 +3105,7 @@ export const worlds: World[] = [
           tasks: [
           { id: 'g4m-md-l2-t1', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md2_q1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4m_md2_q1_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md2_q1_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_md2_q1_c', correct: false }] },
           { id: 'g4m-md-l2-t2', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md2_q2', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md2_q2_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4m_md2_q2_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4m_md2_q2_c', correct: false }] },
-          { id: 'g4m-md-l2-t3', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md2_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md2_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md2_q3_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4m_md2_q3_c', correct: true }] },
+          { id: 'g4m-md-l2-t3', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md2_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md2_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md2_q3_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_md2_q3_c', correct: false }] },
           { id: 'g4m-md-l2-t4', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md2_q4', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4m_md2_q4_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md2_q4_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_md2_q4_c', correct: false }] },
         ] },
         { id: 'g4m-md-l3', topicId: 'g4m-multidigit', titleKey: 'data.lessons.g4mMdL3', reward: { xp: 30 },
@@ -3118,9 +3118,9 @@ export const worlds: World[] = [
             { titleKey: 'data.intro.g4m_md_l3_1_t', bodyKey: 'data.intro.g4m_md_l3_1_b', emoji: '' },
           ],
           tasks: [
-          { id: 'g4m-md-l3-t1', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md3_q1', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md3_q1_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md3_q1_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_md3_q1_c', correct: false }] },
+          { id: 'g4m-md-l3-t1', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md3_q1', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md3_q1_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4m_md3_q1_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4m_md3_q1_c', correct: false }] },
           { id: 'g4m-md-l3-t2', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md3_q2', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md3_q2_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4m_md3_q2_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4m_md3_q2_c', correct: false }] },
-          { id: 'g4m-md-l3-t3', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md3_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md3_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md3_q3_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4m_md3_q3_c', correct: true }] },
+          { id: 'g4m-md-l3-t3', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md3_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_md3_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md3_q3_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_md3_q3_c', correct: false }] },
           { id: 'g4m-md-l3-t4', type: 'multiple_choice', questionKey: 'data.tasks.g4m_md3_q4', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4m_md3_q4_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_md3_q4_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_md3_q4_c', correct: false }] },
         ] },
       ] },
@@ -3237,7 +3237,7 @@ export const worlds: World[] = [
           tasks: [
           { id: 'g4r-conj-l1-t1', type: 'multiple_choice', questionKey: 'data.tasks.g4r_conj_q1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4r_conj_q1_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4r_conj_q1_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4r_conj_q1_c', correct: false }] },
           { id: 'g4r-conj-l1-t2', type: 'multiple_choice', questionKey: 'data.tasks.g4r_conj_q2', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4r_conj_q2_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4r_conj_q2_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4r_conj_q2_c', correct: false }] },
-          { id: 'g4r-conj-l1-t3', type: 'multiple_choice', questionKey: 'data.tasks.g4r_conj_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4r_conj_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4r_conj_q3_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4r_conj_q3_c', correct: true }] },
+          { id: 'g4r-conj-l1-t3', type: 'multiple_choice', questionKey: 'data.tasks.g4r_conj_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4r_conj_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4r_conj_q3_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4r_conj_q3_c', correct: false }] },
           { id: 'g4r-conj-l1-t4', type: 'multiple_choice', questionKey: 'data.tasks.g4r_conj_q4', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4r_conj_q4_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4r_conj_q4_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4r_conj_q4_c', correct: false }] },
         ] },
         { id: 'g4r-conj-l2', topicId: 'g4r-conjugation', titleKey: 'data.lessons.g4rConjL2', reward: { xp: 30 },
@@ -3251,8 +3251,8 @@ export const worlds: World[] = [
           ],
           tasks: [
           { id: 'g4r-conj-l2-t1', type: 'multiple_choice', questionKey: 'data.tasks.g4r_conj2_q1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4r_conj2_q1_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4r_conj2_q1_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4r_conj2_q1_c', correct: false }] },
-          { id: 'g4r-conj-l2-t2', type: 'multiple_choice', questionKey: 'data.tasks.g4r_conj2_q2', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4r_conj2_q2_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4r_conj2_q2_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4r_conj2_q2_c', correct: false }] },
-          { id: 'g4r-conj-l2-t3', type: 'multiple_choice', questionKey: 'data.tasks.g4r_conj2_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4r_conj2_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4r_conj2_q3_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4r_conj2_q3_c', correct: true }] },
+          { id: 'g4r-conj-l2-t2', type: 'multiple_choice', questionKey: 'data.tasks.g4r_conj2_q2', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4r_conj2_q2_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4r_conj2_q2_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4r_conj2_q2_c', correct: false }] },
+          { id: 'g4r-conj-l2-t3', type: 'multiple_choice', questionKey: 'data.tasks.g4r_conj2_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4r_conj2_q3_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4r_conj2_q3_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4r_conj2_q3_c', correct: false }] },
           { id: 'g4r-conj-l2-t4', type: 'multiple_choice', questionKey: 'data.tasks.g4r_conj2_q4', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4r_conj2_q4_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4r_conj2_q4_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4r_conj2_q4_c', correct: false }] },
         ] },
         { id: 'g4r-conj-l3', topicId: 'g4r-conjugation', titleKey: 'data.lessons.g4rConjL3', reward: { xp: 30 },
@@ -3771,16 +3771,57 @@ export type ChildProfileForFilter = {
   methodology: string | null;
 };
 
-/** Tasks shown in a lesson: same set for standard and special (ABA) profiles. ABA differs in UI only (prompts, reinforcement). */
-function taskVisibleForLesson(t: LessonTask): boolean {
-  return !t.audience || t.audience === 'standard';
+/** Tasks shown in a lesson.
+ * - standard profile: standard tasks; if a lesson is ABA-only (showcase), show those so it isn't empty
+ * - special (ABA) profile: prefer special_aba rows when present, else standard
+ */
+function taskAudience(t: LessonTask): TaskAudience {
+  return t.audience ?? 'standard';
 }
 
 export function filterTasksForProfile(
   tasks: LessonTask[],
-  _profile: ChildProfileForFilter | null,
+  profile: ChildProfileForFilter | null,
 ): LessonTask[] {
-  return tasks.filter(taskVisibleForLesson);
+  const isAba = profile?.child_mode === 'special';
+  const standard = tasks.filter((t) => taskAudience(t) === 'standard');
+  const aba = tasks.filter((t) => taskAudience(t) === 'special_aba');
+  if (isAba) {
+    return aba.length > 0 ? aba : standard;
+  }
+  return standard.length > 0 ? standard : aba;
+}
+
+/**
+ * Every 3rd lesson in a topic inserts one MC task from the previous lesson
+ * (spaced reinforcement). Review task keeps a stable `review__` id prefix.
+ */
+export function withSpacedReviewTasks(
+  lessonId: string,
+  tasks: LessonTask[],
+  profile: ChildProfileForFilter | null,
+): LessonTask[] {
+  const topic = getTopicForLesson(lessonId);
+  if (!topic || tasks.length === 0) return tasks;
+  const idx = topic.lessons.findIndex((l) => l.id === lessonId);
+  if (idx < 1 || (idx + 1) % 3 !== 0) return tasks;
+
+  const prev = topic.lessons[idx - 1];
+  if (!prev) return tasks;
+  const prevFiltered = filterTasksForProfile(prev.tasks, profile).filter(
+    (t) => t.type === 'multiple_choice' || t.type === 'input',
+  );
+  if (prevFiltered.length === 0) return tasks;
+
+  const pick = prevFiltered[Math.min(1, prevFiltered.length - 1)]!;
+  if (tasks.some((t) => t.id === pick.id || t.id === `review__${pick.id}`)) return tasks;
+
+  const reviewTask: LessonTask = {
+    ...pick,
+    id: `review__${pick.id}`,
+  };
+  // After the first new task so the lesson still opens on fresh content.
+  return [tasks[0]!, reviewTask, ...tasks.slice(1)];
 }
 
 
