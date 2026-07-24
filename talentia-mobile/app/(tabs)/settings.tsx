@@ -28,14 +28,22 @@ import {
 } from '../../src/store/settingsStore';
 import { useProgressStore } from '../../src/store/progressStore';
 import { useCollectiblesStore } from '../../src/store/collectiblesStore';
+import { useAnalyticsQueueStore } from '../../src/store/analyticsQueueStore';
 import { isSupabaseConfigured } from '../../src/services/supabase';
+import { backendFetch, getBackendBaseUrl } from '../../src/services/backendApi';
+import { getPrivacyPolicyUrl, getTermsOfUseUrl } from '../../src/constants/legalUrls';
+import { clearLessonResume } from '../../src/services/lessonResumeStore';
 
-// All AsyncStorage keys used by the app
+// Local wipe keys — Reset clears device data only (not the cloud account).
 const ALL_STORAGE_KEYS = [
   'talentia-demo-auth',
   'talentia-settings',
   'talentia-progress',
   'talentia-collectibles',
+  'talentia-analytics-queue',
+  'talentia-offline-session',
+  'talentia:lessonResume:v1',
+  'talentia:lessonResume:v2',
 ];
 
 export default function SettingsScreen() {
@@ -47,8 +55,10 @@ export default function SettingsScreen() {
   const setDemoProfile = useAuth((s) => s.setDemoProfile);
   const isSpecialMode = profile?.child_mode === 'special';
   const [resetting, setResetting] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [pinModalMode, setPinModalMode] = useState<'set' | 'remove' | null>(null);
   const [pinVerifyForReset, setPinVerifyForReset] = useState(false);
+  const [pinVerifyForDelete, setPinVerifyForDelete] = useState(false);
   const [pendingMethodology, setPendingMethodology] = useState<Methodology | null>(null);
 
   const parentPin = useSettingsStore((s) => s.parentPin);
@@ -76,18 +86,44 @@ export default function SettingsScreen() {
   const toggleCalmMode = useSettingsStore((state) => state.toggleCalmMode);
   const toggleFocusMode = useSettingsStore((state) => state.toggleFocusMode);
 
+  const wipeLocalData = async () => {
+    useProgressStore.getState().resetAll();
+    useCollectiblesStore.getState().resetAll();
+    useAnalyticsQueueStore.getState().clearAll();
+    await SecureStore.deleteItemAsync(PARENT_PIN_SECURE_KEY).catch(() => {});
+    useSettingsStore.setState({ parentPin: null, parentPinHydrated: true });
+    await clearLessonResume();
+    await Promise.all(ALL_STORAGE_KEYS.map((key) => AsyncStorage.removeItem(key)));
+  };
+
   const doReset = async () => {
     setResetting(true);
     try {
-      useProgressStore.getState().resetAll();
-      useCollectiblesStore.getState().resetAll();
-      await SecureStore.deleteItemAsync(PARENT_PIN_SECURE_KEY).catch(() => {});
-      useSettingsStore.setState({ parentPin: null, parentPinHydrated: true });
-      await Promise.all(ALL_STORAGE_KEYS.map((key) => AsyncStorage.removeItem(key)));
+      await wipeLocalData();
       await signOut();
       router.replace('/');
     } finally {
       setResetting(false);
+    }
+  };
+
+  const doDeleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      if (isSupabaseConfigured && getBackendBaseUrl()) {
+        const res = await backendFetch('/api/account/delete', { method: 'POST', body: '{}' });
+        if (!res.ok) {
+          Alert.alert(t('settings.deleteAccountTitle'), t('settings.deleteAccountFailed'));
+          return;
+        }
+      }
+      await wipeLocalData();
+      await signOut();
+      router.replace('/');
+    } catch {
+      Alert.alert(t('settings.deleteAccountTitle'), t('settings.deleteAccountFailed'));
+    } finally {
+      setDeletingAccount(false);
     }
   };
 
@@ -144,7 +180,7 @@ export default function SettingsScreen() {
       <Spacer size="md" />
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: theme.spacing.sm }}>
-        <Pressable onPress={() => void Linking.openURL('https://talentia.app/privacy')} accessibilityRole="link">
+        <Pressable onPress={() => void Linking.openURL(getPrivacyPolicyUrl())} accessibilityRole="link">
           <AppText variant="small" style={{ color: theme.colors.primary, textDecorationLine: 'underline' }}>
             {t('settings.privacy')}
           </AppText>
@@ -152,7 +188,7 @@ export default function SettingsScreen() {
         <AppText variant="small" style={{ color: theme.colors.textMuted }}>
           ·
         </AppText>
-        <Pressable onPress={() => void Linking.openURL('https://talentia.app/terms')} accessibilityRole="link">
+        <Pressable onPress={() => void Linking.openURL(getTermsOfUseUrl())} accessibilityRole="link">
           <AppText variant="small" style={{ color: theme.colors.primary, textDecorationLine: 'underline' }}>
             {t('settings.terms')}
           </AppText>
@@ -515,8 +551,15 @@ export default function SettingsScreen() {
         visible={pinVerifyForReset}
         mode="verify"
         existingPin={parentPin}
-        onSuccess={() => { setPinVerifyForReset(false); doReset(); }}
+        onSuccess={() => { setPinVerifyForReset(false); void doReset(); }}
         onCancel={() => setPinVerifyForReset(false)}
+      />
+      <PinModal
+        visible={pinVerifyForDelete}
+        mode="verify"
+        existingPin={parentPin}
+        onSuccess={() => { setPinVerifyForDelete(false); void doDeleteAccount(); }}
+        onCancel={() => setPinVerifyForDelete(false)}
       />
       <PinModal
         visible={pendingMethodology !== null}
@@ -557,7 +600,7 @@ export default function SettingsScreen() {
                   if (parentPin) {
                     setPinVerifyForReset(true);
                   } else {
-                    doReset();
+                    void doReset();
                   }
                 },
               },
@@ -568,6 +611,37 @@ export default function SettingsScreen() {
         textStyle={{ color: theme.colors.error }}
       >
         {t('settings.resetAllData')}
+      </Button>
+
+      <Spacer size="sm" />
+
+      <Button
+        variant="ghost"
+        loading={deletingAccount}
+        onPress={() => {
+          Alert.alert(
+            t('settings.deleteAccountTitle'),
+            t('settings.deleteAccountConfirm'),
+            [
+              { text: t('common.cancel'), style: 'cancel' },
+              {
+                text: t('settings.deleteAccountButton'),
+                style: 'destructive',
+                onPress: () => {
+                  if (parentPin) {
+                    setPinVerifyForDelete(true);
+                  } else {
+                    void doDeleteAccount();
+                  }
+                },
+              },
+            ],
+          );
+        }}
+        style={{ borderColor: theme.colors.error }}
+        textStyle={{ color: theme.colors.error }}
+      >
+        {t('settings.deleteAccount')}
       </Button>
 
       <Spacer size="xl" />

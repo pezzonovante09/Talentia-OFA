@@ -74,9 +74,10 @@ export const useAnalyticsQueueStore = create<QueueState>()(
         }));
 
         const { error } = await supabase.from('lesson_analytics').insert(rows);
-        if (!error) {
-          dequeue(queue.map((e) => e.eventKey));
+        if (error) {
+          throw error;
         }
+        dequeue(queue.map((e) => e.eventKey));
       },
     }),
     {

@@ -142,6 +142,9 @@ Background cloud syncs (progress, analytics, ABA live sessions) go through `sync
 - **RLS**: every table has row-level security — users can only read/write their own data
   (`aba_live_sessions` included: owner has full CRUD, linked parents get SELECT only)
 - **Parent access**: `parent_child` table enables parent users to SELECT child's progress
+  and ABA live sessions. The mobile parent report currently uses **same-device PIN** on the
+  child account (Realtime filter = signed-in `user_id`). Multi-device parent login is not
+  wired in the app yet — RLS still prevents reading unrelated children.
 - **PIN gate**: lesson methodology changes and parent report access require a PIN, with lockout
   after repeated failed attempts; the web build shows an explicit warning that this gate is
   unavailable there (no `expo-secure-store`) instead of silently skipping it
@@ -211,9 +214,15 @@ intentionally left to whoever deploys it (see each project's `.env.example`):
 
 - **Upstash Redis** (`UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`) — without it, rate
   limiting fails closed (503) in production, so the proxy needs this before going live.
-- **Sentry** (`EXPO_PUBLIC_SENTRY_DSN` for mobile; `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` for the
-  proxy) — error monitoring is a no-op without it.
+- **Sentry** (`EXPO_PUBLIC_SENTRY_DSN` for mobile via EAS Secrets / `eas.json` production `env`;
+  `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` on Vercel) — error monitoring is a no-op without it.
 - **DeepSeek / ElevenLabs / Hugging Face API keys** — `/api/tali` and `/api/tts` return explicit
   "not configured" errors without them; the app still runs, just without Tali chat/TTS.
-- **Google Play Data Safety / COPPA compliance forms, Privacy Policy & Terms hosting** — required
-  before a real production release to children; not something a codebase change can satisfy.
+- **Legal pages** — Privacy Policy and Terms are served by the proxy at `/privacy` and `/terms`.
+  Point `EXPO_PUBLIC_LEGAL_BASE_URL` (or `EXPO_PUBLIC_BACKEND_URL`) at the deployed proxy host.
+  Signup requires parental consent checkboxes; profiles store `parental_consent_at` /
+  `guardian_attested` (migration `20260724120000_parental_consent.sql`).
+- **Account deletion** — Settings → Delete account calls `POST /api/account/delete` (JWT +
+  service-role `auth.admin.deleteUser`); DB cascades remove child rows.
+- **Google Play Data Safety / Families forms** — still a Play Console process; align disclosures
+  with the hosted Privacy Policy (name, age band, email, progress, mic/STT, Tali/DeepSeek, TTS, Sentry).

@@ -46,7 +46,11 @@
     "continue": "Continue",
     "errorInvalidEmail": "Please enter a valid email.",
     "errorShortPassword": "Password must be at least 6 characters.",
-    "errorAuthFailed": "Could not sign in. Check email and password."
+    "errorAuthFailed": "Could not sign in. Check email and password.",
+    "consentGuardian": "I confirm I am the parent or legal guardian of the child who will use this app.",
+    "consentGuardianProfile": "I am the parent/guardian and I consent to creating this child profile and processing learning data as described in the Privacy Policy.",
+    "consentPrivacyPrefix": "I agree to the",
+    "errorConsentRequired": "Please confirm parental consent and accept Privacy & Terms to continue."
   },
   "parentSetup": {
     "breakReminderLabel": "Break reminder",
@@ -395,7 +399,7 @@
     "signOut": "Sign out",
     "resetAllData": "Reset all data",
     "resetTitle": "Reset data",
-    "resetConfirm": "All progress, account and settings will be deleted. The app will return to its initial state. Continue?",
+    "resetConfirm": "This clears progress and settings on this device only. Your cloud account and saved progress are not deleted. Continue?",
     "resetConfirmButton": "Reset",
     "methodologyLabel": "Methodology",
     "methodologyABA": "ABA",
@@ -428,7 +432,12 @@
     "languageRussian": "Russian",
     "languageKyrgyz": "Kyrgyz",
     "privacy": "Privacy Policy",
-    "terms": "Terms of Use"
+    "terms": "Terms of Use",
+    "deleteAccount": "Delete account",
+    "deleteAccountTitle": "Delete account",
+    "deleteAccountConfirm": "This permanently deletes your account and cloud learning data (profile, progress, analytics). This cannot be undone.",
+    "deleteAccountButton": "Delete forever",
+    "deleteAccountFailed": "Could not delete the account. Check your connection and try again."
   },
   "tali": {
     "name": "Tali",

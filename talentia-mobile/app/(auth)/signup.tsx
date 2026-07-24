@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { TextInput } from 'react-native';
+import { Linking, Pressable, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { MaterialIcons } from '@expo/vector-icons';
 
 import { Screen } from '../../src/components/Screen';
 import { AppText } from '../../src/components/Text';
@@ -11,6 +12,7 @@ import { Card } from '../../src/components/Card';
 import { useAppTheme } from '../../src/theme';
 import { supabase, isSupabaseConfigured } from '../../src/services/supabase';
 import { useAuth } from '../../src/context/AuthContext';
+import { getPrivacyPolicyUrl, getTermsOfUseUrl } from '../../src/constants/legalUrls';
 
 export default function SignupScreen() {
   const { t } = useTranslation();
@@ -19,6 +21,8 @@ export default function SignupScreen() {
   const setDemoUser = useAuth((s) => s.setDemoUser);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [guardianOk, setGuardianOk] = useState(false);
+  const [privacyOk, setPrivacyOk] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -32,6 +36,10 @@ export default function SignupScreen() {
       setError(t('auth.errorShortPassword'));
       return;
     }
+    if (!guardianOk || !privacyOk) {
+      setError(t('auth.errorConsentRequired'));
+      return;
+    }
     setLoading(true);
     if (!isSupabaseConfigured) {
       await setDemoUser(email.trim());
@@ -42,6 +50,12 @@ export default function SignupScreen() {
     const { error: err } = await supabase.auth.signUp({
       email: email.trim(),
       password,
+      options: {
+        data: {
+          guardian_attested: true,
+          privacy_accepted_at: new Date().toISOString(),
+        },
+      },
     });
     setLoading(false);
     if (err) {
@@ -50,6 +64,30 @@ export default function SignupScreen() {
     }
     router.replace('/');
   };
+
+  const ConsentRow = ({
+    checked,
+    onToggle,
+    children,
+  }: {
+    checked: boolean;
+    onToggle: () => void;
+    children: React.ReactNode;
+  }) => (
+    <Pressable
+      onPress={onToggle}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked }}
+      style={{ flexDirection: 'row', alignItems: 'flex-start', gap: theme.spacing.sm }}
+    >
+      <MaterialIcons
+        name={checked ? 'check-box' : 'check-box-outline-blank'}
+        size={24}
+        color={checked ? theme.colors.primary : theme.colors.textMuted}
+      />
+      <View style={{ flex: 1 }}>{children}</View>
+    </Pressable>
+  );
 
   return (
     <Screen scroll>
@@ -100,6 +138,31 @@ export default function SignupScreen() {
             marginTop: theme.spacing.xs,
           }}
         />
+        <Spacer size="lg" />
+        <ConsentRow checked={guardianOk} onToggle={() => setGuardianOk((v) => !v)}>
+          <AppText variant="small">{t('auth.consentGuardian')}</AppText>
+        </ConsentRow>
+        <Spacer size="md" />
+        <ConsentRow checked={privacyOk} onToggle={() => setPrivacyOk((v) => !v)}>
+          <AppText variant="small">
+            {t('auth.consentPrivacyPrefix')}{' '}
+            <AppText
+              variant="small"
+              style={{ color: theme.colors.primary, textDecorationLine: 'underline' }}
+              onPress={() => void Linking.openURL(getPrivacyPolicyUrl())}
+            >
+              {t('settings.privacy')}
+            </AppText>
+            {' · '}
+            <AppText
+              variant="small"
+              style={{ color: theme.colors.primary, textDecorationLine: 'underline' }}
+              onPress={() => void Linking.openURL(getTermsOfUseUrl())}
+            >
+              {t('settings.terms')}
+            </AppText>
+          </AppText>
+        </ConsentRow>
         {error ? (
           <>
             <Spacer size="sm" />
@@ -107,7 +170,7 @@ export default function SignupScreen() {
           </>
         ) : null}
         <Spacer size="lg" />
-        <Button onPress={handleSignup} loading={loading}>
+        <Button onPress={handleSignup} loading={loading} disabled={!guardianOk || !privacyOk}>
           {t('auth.signUp')}
         </Button>
       </Card>

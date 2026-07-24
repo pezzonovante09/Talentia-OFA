@@ -4,6 +4,7 @@ import { z } from "zod";
 import { corsJson, corsPreflight } from "@/lib/api-cors";
 import { buildCorsHeaders } from "@/lib/cors-strict";
 import { enforceRateLimit, ratelimitApi } from "@/lib/ratelimit";
+import { filterTaliReply, taliSafeFallback } from "@/lib/taliSafety";
 import { authJsonError, verifyAuth } from "@/lib/verifyAuth";
 
 export const runtime = "nodejs";
@@ -226,15 +227,19 @@ export async function POST(req: NextRequest) {
       return corsJson({ error: "Upstream AI service error" }, 502, req);
     }
 
-    const fallback =
-      language === "en"
-        ? "Let's try one small step together — you've got this!"
-        : language === "ky"
-          ? "Кичине бир кадам менен аракет кылалы!"
-          : "Давай попробуем ещё один маленький шаг вместе!";
-    const reply = dsData?.choices?.[0]?.message?.content?.trim() || fallback;
+    const fallback = taliSafeFallback(language);
+    const rawReply = dsData?.choices?.[0]?.message?.content?.trim() || fallback;
+    const filtered = filterTaliReply(rawReply);
+    const reply = filtered.ok ? filtered.reply : fallback;
 
-    return corsJson({ reply }, 200, req);
+    return corsJson(
+      {
+        reply,
+        ...(filtered.ok ? {} : { filtered: true, filterReason: filtered.reason }),
+      },
+      200,
+      req,
+    );
   } catch (e: unknown) {
     console.error("[tali] Server error", e);
     return corsJson({ error: "Server error" }, 500, req);

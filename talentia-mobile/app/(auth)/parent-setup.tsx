@@ -36,6 +36,7 @@ export default function ParentSetupScreen() {
   const [childMode, setChildMode] = useState<'standard' | 'special'>('standard');
   const [methodology, setMethodology] = useState<string | null>(null);
   const [breakDuration, setBreakDuration] = useState(breakDurationMinutes);
+  const [guardianOk, setGuardianOk] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -43,19 +44,26 @@ export default function ParentSetupScreen() {
     setError('');
     if (!childName.trim()) return;
     if (!user?.id) return;
+    if (!guardianOk) {
+      setError(t('auth.errorConsentRequired'));
+      return;
+    }
 
     const resolvedMethodology = childMode === 'special' ? 'aba' : null;
+    const consentAt = new Date().toISOString();
 
     setLoading(true);
     const row: ChildProfileRow = {
       user_id: user.id,
-      child_name: childName.trim(),
+      child_name: childName.trim().slice(0, 80),
       age_band: ageBand,
       language,
       avatar_id: avatarId,
       child_mode: childMode,
       methodology: resolvedMethodology,
-      updated_at: new Date().toISOString(),
+      parental_consent_at: consentAt,
+      guardian_attested: true,
+      updated_at: consentAt,
     };
 
     if (!isSupabaseConfigured) {
@@ -217,7 +225,23 @@ export default function ParentSetupScreen() {
           </>
         ) : null}
         <Spacer size="lg" />
-        <Button onPress={handleComplete} loading={loading} disabled={!childName.trim()}>
+        <Pressable
+          onPress={() => setGuardianOk((v) => !v)}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: guardianOk }}
+          style={{ flexDirection: 'row', alignItems: 'flex-start', gap: theme.spacing.sm }}
+        >
+          <MaterialIcons
+            name={guardianOk ? 'check-box' : 'check-box-outline-blank'}
+            size={24}
+            color={guardianOk ? theme.colors.primary : theme.colors.textMuted}
+          />
+          <AppText variant="small" style={{ flex: 1 }}>
+            {t('auth.consentGuardianProfile')}
+          </AppText>
+        </Pressable>
+        <Spacer size="lg" />
+        <Button onPress={handleComplete} loading={loading} disabled={!childName.trim() || !guardianOk}>
           {t('auth.continue')}
         </Button>
       </Card>

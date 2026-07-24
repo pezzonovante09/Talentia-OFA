@@ -23,6 +23,8 @@ export type ChildProfileRow = {
   avatar_id: string;
   child_mode: 'standard' | 'special';
   methodology: string | null;
+  parental_consent_at?: string | null;
+  guardian_attested?: boolean;
   created_at?: string;
   updated_at?: string;
 };

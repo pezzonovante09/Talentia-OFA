@@ -296,29 +296,29 @@ export default function ParentReportScreen() {
 
     let channel: ReturnType<typeof supabase.channel> | null = null;
     let cancelled = false;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
-    void (async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
-      if (!userId || cancelled) return;
-
+    const fetchActive = async (userId: string) => {
       const { data: activeRow } = await supabase
         .from('aba_live_sessions')
         .select('*')
         .eq('user_id', userId)
         .eq('status', 'active')
         .maybeSingle();
-
       if (cancelled) return;
       if (activeRow && typeof activeRow === 'object') {
         setRealtimeSession(mapAbaLiveSessionRow(activeRow as Record<string, unknown>));
       } else {
         setRealtimeSession(null);
       }
+    };
 
+    const subscribeForUser = (userId: string) => {
       if (cancelled) return;
+      if (channel) {
+        void supabase.removeChannel(channel);
+        channel = null;
+      }
 
       const ch = supabase
         .channel(`aba_live_sessions:${userId}`)
@@ -343,13 +343,37 @@ export default function ParentReportScreen() {
             setRealtimeSession(mapAbaLiveSessionRow(row));
           },
         )
-        .subscribe();
+        .subscribe((status) => {
+          if (cancelled) return;
+          if (status === 'SUBSCRIBED') {
+            void fetchActive(userId);
+            return;
+          }
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            reconnectTimer = setTimeout(() => {
+              if (!cancelled) subscribeForUser(userId);
+            }, 2500);
+          }
+        });
 
       channel = ch;
+    };
+
+    void (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      if (!userId || cancelled) return;
+      await fetchActive(userId);
+      if (cancelled) return;
+      subscribeForUser(userId);
     })().catch(console.error);
 
     return () => {
       cancelled = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
       if (channel) {
         void supabase.removeChannel(channel);
       }

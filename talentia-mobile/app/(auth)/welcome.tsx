@@ -8,6 +8,7 @@ import { AppText } from '../../src/components/Text';
 import { Spacer } from '../../src/components/Spacer';
 import { Button } from '../../src/components/Button';
 import { useAppTheme } from '../../src/theme';
+import { getPrivacyPolicyUrl, getTermsOfUseUrl } from '../../src/constants/legalUrls';
 
 export default function WelcomeScreen() {
   const { t } = useTranslation();
@@ -42,7 +43,7 @@ export default function WelcomeScreen() {
         <Spacer size="xl" />
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: theme.spacing.md }}>
           <Pressable
-            onPress={() => void Linking.openURL('https://talentia.app/privacy')}
+            onPress={() => void Linking.openURL(getPrivacyPolicyUrl())}
             accessibilityRole="link"
           >
             <AppText variant="small" style={{ color: theme.colors.primary, textDecorationLine: 'underline' }}>
@@ -53,7 +54,7 @@ export default function WelcomeScreen() {
             ·
           </AppText>
           <Pressable
-            onPress={() => void Linking.openURL('https://talentia.app/terms')}
+            onPress={() => void Linking.openURL(getTermsOfUseUrl())}
             accessibilityRole="link"
           >
             <AppText variant="small" style={{ color: theme.colors.primary, textDecorationLine: 'underline' }}>
