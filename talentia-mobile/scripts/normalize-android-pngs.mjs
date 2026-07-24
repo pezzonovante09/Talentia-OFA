@@ -1,11 +1,11 @@
 /**
- * Re-encodes PNGs to a minimal 8-bit RGBA form so Android AAPT2 can compile them.
- * Fixes "AAPT: error: file failed to compile" on some exports (ICC / odd PNG chunks).
+ * Re-encodes image assets that use a .png extension into real 8-bit RGBA PNGs
+ * so Android AAPT2 can compile them. Some exports were JPEG bytes behind a
+ * .png name, which fails release resource merging (`file failed to compile`).
  *
  * Run: node scripts/normalize-android-pngs.mjs
  */
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
@@ -16,6 +16,7 @@ const root = path.join(__dirname, "..");
 const dirs = [
   path.join(root, "assets", "images", "backgrounds"),
   path.join(root, "assets", "images", "npcs"),
+  path.join(root, "assets", "images", "ui"),
 ];
 
 function walkPng(dir) {
@@ -28,22 +29,25 @@ function walkPng(dir) {
 }
 
 async function normalize(file) {
-  const tmp = path.join(
-    os.tmpdir(),
-    `talentia-png-${path.basename(file)}-${process.pid}-${Date.now()}.png`,
-  );
-  await sharp(file)
+  const meta = await sharp(file).metadata();
+  const buf = await sharp(file)
     .ensureAlpha()
-    .png({ compressionLevel: 9, effort: 10 })
-    .toFile(tmp);
-  fs.copyFileSync(tmp, file);
-  fs.unlinkSync(tmp);
-  console.log("OK", path.relative(root, file));
+    .png({ compressionLevel: 9, effort: 10, force: true })
+    .toBuffer();
+  const tmp = `${file}.tmp-${process.pid}.png`;
+  fs.writeFileSync(tmp, buf);
+  fs.renameSync(tmp, file);
+  const after = await sharp(file).metadata();
+  console.log(
+    "OK",
+    path.relative(root, file),
+    `(was ${meta.format} → ${after.format}, ${after.width}x${after.height})`,
+  );
 }
 
 const files = dirs.flatMap(walkPng);
 if (files.length === 0) {
-  console.error("No PNGs found under backgrounds/npcs");
+  console.error("No PNGs found under backgrounds/npcs/ui");
   process.exit(1);
 }
 

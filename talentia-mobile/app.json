@@ -20,7 +20,7 @@
       "buildNumber": "1"
     },
     "android": {
-      "versionCode": 1,
+      "versionCode": 3,
       "package": "com.talentia.mobile",
       "label": "Talentia",
       "adaptiveIcon": {
@@ -62,7 +62,7 @@
         "expo-build-properties",
         {
           "android": {
-            "enablePngCrunchInReleaseBuilds": true
+            "enablePngCrunchInReleaseBuilds": false
           }
         }
       ],
