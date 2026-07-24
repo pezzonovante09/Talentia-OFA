@@ -1,25 +1,31 @@
-{
-  "cli": {
-    "version": ">= 16.0.0",
-    "appVersionSource": "local"
-  },
-  "build": {
-    "preview": {
-      "android": {
-        "buildType": "apk"
-      }
-    },
-    "production": {
-      "android": {
-        "buildType": "app-bundle",
-        "autoIncrement": true
-      },
-      "ios": {
-        "autoIncrement": true
-      }
-    }
-  },
-  "submit": {
-    "production": {}
-  }
-}
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "preview": {
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "autoIncrement": true
+      },
+      "ios": {
+        "autoIncrement": true
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
