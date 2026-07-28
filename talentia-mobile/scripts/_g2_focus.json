@@ -1,0 +1,740 @@
+[
+  {
+    "id": "g2m-100-l3",
+    "title": "Числа до 100",
+    "subject": "math",
+    "world": "g2math",
+    "types": [
+      "input",
+      "multiple_choice"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "Теперь я хочу научиться сравнивать большие числа. Тали, у тебя 82 ракушки, а у меня 78 перьев. Кто из нас собрал больше?",
+        "en": "Now I want to learn how to compare large numbers. Tali, you have 82 shells, and I have 78 feathers. Which of us collected more?",
+        "ky": "Эми мен чоң сандарды салыштырууну үйрөнгүм келет. Тали, сенде 82 снаряд бар, менде 78 жүнү бар. Кимибиз көбүрөөк чогулттук?",
+        "key": "data.dialog.g2m_100l3_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Я думаю, я! Но погоди — давай спросим у нашего друга, чтобы точно. Мне кажется, я немного запутался…",
+        "en": "99 is the largest two-digit number! Well done!",
+        "ky": "99 — эң чоң эки орундуу сан! Жарайсың!",
+        "key": "data.dialog.g2m_100l3_1"
+      }
+    ],
+    "intros": [
+      {
+        "title": "Сравниваем числа до 100!",
+        "body": "Сначала смотри на десятки: у кого больше — тот выиграл! Если десятки одинаковые — смотри на единицы. 82 > 78, потому что 8 десятков > 7 десятков.",
+        "titleEn": "Numbers up to 100!",
+        "bodyEn": "First, look at the tens: whoever has more wins! If the tens are the same, look at the ones. 82 > 78 because 8 tens > 7 tens.",
+        "titleKy": "Числа до 100!",
+        "bodyKy": "Биринчиден, ондуктарды караңыз: кимде көбүрөөк болсо, ошол жеңет! Эгер ондуктар бирдей болсо, аларды карагыла. 82 > 78, анткени 8 он > 7 ондук."
+      },
+      {
+        "title": "99 — самое большое двузначное!",
+        "body": "После 99 идёт 100 — уже трёхзначное. Арчи называет 99 «королём двузначных чисел».",
+        "titleEn": "You're doing great!",
+        "bodyEn": "You can count to 100 and understand place value. Well done!",
+        "titleKy": "Ты эксперт!",
+        "bodyKy": "Ты считаешь до 100 и понимаешь разряды. Молодец!"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "g2m100l3t1",
+        "type": "input",
+        "qRu": "Арчи летит к самому большому двузначному числу. Оно стоит прямо перед 100. Что это за число?",
+        "qEn": "What is the number before 100?",
+        "qKy": " Какое число перед 100?",
+        "qKey": "data.tasks.g2m_before_100",
+        "options": [],
+        "answer": null
+      },
+      {
+        "id": "g2m100l3t2",
+        "type": "multiple_choice",
+        "qRu": "Тали нашёл 82 ракушки, Арчи — 78 перьев. Тали говорит «я нашёл больше!», Арчи не верит. Кто прав?",
+        "qEn": "Compare the numbers and pick the right answer: Which is the smallest number: 78, 82 or 91?",
+        "qKy": "Сандарды салыштырып, туура жоопту танда: Какое число самое маленькое: 78, 82 или 91?",
+        "qKey": "data.tasks.g2m_smallest_78_82_91",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Арчи нашёл больше (78 > 82)",
+            "en": "Archie found more (78 > 82)",
+            "ky": "Арчи көбүрөөк тапты (78 > 82)",
+            "key": "data.tasks.g2m_100l3_q2_a"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Тали нашёл больше (82 > 78)",
+            "en": "Tali found more (82 > 78)",
+            "ky": "Тали көбүрөөк тапты (82 > 78)",
+            "key": "data.tasks.g2m_100l3_q2_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "У них поровну",
+            "en": "They found the same amount",
+            "ky": "Экөөндө бирдей",
+            "key": "data.tasks.g2m_100l3_q2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2m100l3t3",
+        "type": "input",
+        "qRu": "Сколько десятков в числе 90?",
+        "qEn": "How many tens are there in the number 90?",
+        "qKy": " 90 санында канча ондук бар?",
+        "qKey": "data.tasks.g2m_tens_in_90",
+        "options": [],
+        "answer": null
+      },
+      {
+        "id": "g2m100l3t4",
+        "type": "input",
+        "qRu": "Тали записал число: «пять десятков и шесть единиц». Что это за число?",
+        "qEn": "Write down the number: 5 tens and 6 units",
+        "qKy": " Запиши число: 5 десятков и 6 единиц",
+        "qKey": "data.tasks.g2m_num_5tens_6units",
+        "options": [],
+        "answer": null
+      }
+    ],
+    "enkyFlags": [
+      "KY_RU_LEAK?:g2m_before_100=\" Какое число перед 100?\"",
+      "KY_RU_LEAK?:g2m_smallest_78_82_91=\"Сандарды салыштырып, туура жоопту танда: Какое число самое ",
+      "KY_RU_LEAK?:g2m_tens_in_90=\" 90 санында канча ондук бар?\"",
+      "KY_RU_LEAK?:g2m_num_5tens_6units=\" Запиши число: 5 десятков и 6 единиц\"",
+      "CRITICAL:en_q_options_mismatch:data.tasks.g2m_smallest_78_82_91",
+      "CRITICAL:ky_stale_smallest_vs_who_more:data.tasks.g2m_smallest_78_82_91"
+    ]
+  },
+  {
+    "id": "g2m-times-l3",
+    "title": "Умножение на 3",
+    "subject": "math",
+    "world": "g2math",
+    "types": [
+      "input",
+      "multiple_choice"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "Тали, у тебя три кармана, в каждом по 7 монет. Сколько монет всего?",
+        "en": "Multiplying by 3! 3 x 4 = 12, 3 x 6 = 18!",
+        "ky": "3кө көбөйтүү! 3 × 4 = 12, 3 × 6 = 18!",
+        "key": "data.dialog.g2m_timesl3_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Три кармана по семь… Я думаю, это 3 + 7 = 10? Нет, подожди, это же умножение! 3 × 7… Помоги мне!",
+        "en": "Three pockets of seven... I think that's 3 + 7 = 10? No, wait, that's multiplication! 3 × 7... Help me!",
+        "ky": "Жетиден үч чөнтөк... Менимче бул 3 + 7 = 10? Жок, күтө тур, бул көбөйтүү! 3 × 7... Мага жардам бер!",
+        "key": "data.dialog.g2m_timesl3_1"
+      }
+    ],
+    "intros": [
+      {
+        "title": "Умножение на 3!",
+        "body": "3 × 7 = 21. Три группы по семь: 7+7+7=21. Можно считать сложением, но умножение быстрее!",
+        "titleEn": "Multiplying by 3!",
+        "bodyEn": "3 × 7 = 21. Three groups of seven: 7+7+7=21. You can count it as addition, but multiplication is faster!",
+        "titleKy": "3кө көбөйтүү!",
+        "bodyKy": "3 × 7 = 21. Жетиден турган үч топ: 7+7+7=21. Сиз аны кошуу катары эсептей аласыз, бирок көбөйтүү ылдамыраак!"
+      },
+      {
+        "title": "Тройка — три группы",
+        "body": "3 × 4 = 12, 3 × 6 = 18, 3 × 9 = 27.",
+        "titleEn": "Three",
+        "bodyEn": "3 × 4 = 12, 3 × 6 = 18, 3 × 9 = 27.",
+        "titleKy": "Үч",
+        "bodyKy": "3 × 4 = 12, 3 × 6 = 18, 3 × 9 = 27."
+      }
+    ],
+    "tasks": [
+      {
+        "id": "g2mtimesl3t1",
+        "type": "input",
+        "qRu": "У Тали три кармана по 4 монеты. 3 × 4 = ?",
+        "qEn": "3 × 4 =?",
+        "qKy": " 3 × 4 =?",
+        "qKey": "data.tasks.g2m_3x4",
+        "options": [],
+        "answer": null
+      },
+      {
+        "id": "g2mtimesl3t2",
+        "type": "input",
+        "qRu": "3 × 7 = ? (Сколько монет у Тали?)",
+        "qEn": "3 × 7 =?",
+        "qKy": " 3 × 7 =?",
+        "qKey": "data.tasks.g2m_3x7",
+        "options": [],
+        "answer": null
+      },
+      {
+        "id": "g2mtimesl3t3",
+        "type": "input",
+        "qRu": "3 × 9 = ?",
+        "qEn": "3 × 9 =?",
+        "qKy": " 3 × 9 =?",
+        "qKey": "data.tasks.g2m_3x9",
+        "options": [],
+        "answer": null
+      },
+      {
+        "id": "g2mtimesl3t4",
+        "type": "multiple_choice",
+        "qRu": "Арчи считает: «3 × 8 = 24!» — Тали говорит: «Нет, 26!» Кто из них прав?",
+        "qEn": "3 × 8 = 24. Right?",
+        "qKy": " 3 × 8 = 24. Верно?",
+        "qKey": "data.tasks.g2m_3x8_check",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Тали прав (26)",
+            "en": "Tali is right (26)",
+            "ky": "Тали туура (26)",
+            "key": "data.tasks.g2m_timesl3_q4_a"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Арчи прав (24)",
+            "en": "Archie is right (24)",
+            "ky": "Арчи туура (24)",
+            "key": "data.tasks.g2m_timesl3_q4_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Оба неправы",
+            "en": "Both are wrong",
+            "ky": "Экөө тең туура эмес",
+            "key": "data.tasks.g2m_timesl3_q4_c"
+          }
+        ],
+        "answer": null
+      }
+    ],
+    "enkyFlags": [
+      "KY_RU_LEAK?:g2m_3x8_check=\" 3 × 8 = 24. Верно?\"",
+      "KY_RU_LEAK?:g2m_timesl3_q4_a=\"Тали туура (26)\"",
+      "KY_RU_LEAK?:g2m_timesl3_q4_b=\"Арчи туура (24)\""
+    ]
+  },
+  {
+    "id": "g2r-sent-l2",
+    "title": "Члены предложения",
+    "subject": "reading_ru",
+    "world": "g2rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "Тали, кроме главных членов, есть ещё второстепенные — они поясняют и украшают предложение!",
+        "en": "Secondary members: modifier, object, adverbial!",
+        "ky": "Экинчи даражадагы мүчөлөр: аныктооч, толуктооч, бышыктооч!",
+        "key": "data.dialog.g2r_sentl2_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Как приправы к еде? Без них можно, но с ними вкуснее?",
+        "en": "They clarify the main members of the sentence!",
+        "ky": "Алар сүйлөмдүн негизги мүчөлөрүн тактайт!",
+        "key": "data.dialog.g2r_sentl2_1"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Отличное сравнение! Именно так!",
+        "en": "Great comparison! Exactly!",
+        "ky": "Сонун салыштыруу! Эле ушундай!",
+        "key": "data.dialog.g2r_sentl2_2"
+      }
+    ],
+    "intros": [
+      {
+        "title": "Второстепенные члены!",
+        "body": "Определение, дополнение, обстоятельство — они поясняют главные члены. «Кот БЫСТРО бежит» — БЫСТРО это обстоятельство!",
+        "titleEn": "Sentence members!",
+        "bodyEn": "Modifier, object, adverbial — secondary members!",
+        "titleKy": "Сүйлөм мүчөлөрү!",
+        "bodyKy": "Аныктооч, толуктооч, бышыктооч — экинчи даражадагы мүчөлөр!"
+      },
+      {
+        "title": "Поясняют!",
+        "body": "Без второстепенных: «Кот ест». С ними: «Пушистый кот быстро ест вкусную рыбу». Разница чувствуется!",
+        "titleEn": "They clarify",
+        "bodyEn": "They clarify the main members!",
+        "titleKy": "Алар тактайт",
+        "bodyKy": "Алар негизги мүчөлөрдү тактайт!"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "g2rsentl2t1",
+        "type": "multiple_choice",
+        "qRu": "В предложении «Пушистый кот бежит» слово ПУШИСТЫЙ — это…",
+        "qEn": "In “A fluffy cat runs”, the word FLUFFY is…",
+        "qKy": "«Пушистый кот бежит» сүйлөмүндө ПУШИСТЫЙ сөзү — бул…",
+        "qKey": "data.tasks.g2r_sentl2_q1",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Определение",
+            "en": "Attribute (modifier)",
+            "ky": "Аныктама",
+            "key": "data.tasks.g2r_opt_opred"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Дополнение",
+            "en": "Object",
+            "ky": "Толуктооч",
+            "key": "data.tasks.g2r_opt_dopol"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Обстоятельство",
+            "en": "Adverbial",
+            "ky": "Жагдай",
+            "key": "data.tasks.g2r_opt_obst"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2rsentl2t2",
+        "type": "multiple_choice",
+        "qRu": "В предложении «Кот ест рыбу» слово РЫБУ — это…",
+        "qEn": "In “The cat eats fish”, the word FISH is…",
+        "qKy": "«Кот ест рыбу» сүйлөмүндө РЫБУ сөзү — бул…",
+        "qKey": "data.tasks.g2r_sentl2_q2",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Определение",
+            "en": "Attribute (modifier)",
+            "ky": "Аныктама",
+            "key": "data.tasks.g2r_opt_opred"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Дополнение",
+            "en": "Object",
+            "ky": "Толуктооч",
+            "key": "data.tasks.g2r_opt_dopol"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Обстоятельство",
+            "en": "Adverbial",
+            "ky": "Жагдай",
+            "key": "data.tasks.g2r_opt_obst"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2rsentl2t3",
+        "type": "multiple_choice",
+        "qRu": "В предложении «Кот БЫСТРО бежит» слово БЫСТРО — это…",
+        "qEn": "In “The cat runs QUICKLY”, the word QUICKLY is…",
+        "qKy": "«Кот БЫСТРО бежит» сүйлөмүндө БЫСТРО сөзү — бул…",
+        "qKey": "data.tasks.g2r_sentl2_q3",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Определение",
+            "en": "Attribute (modifier)",
+            "ky": "Аныктама",
+            "key": "data.tasks.g2r_opt_opred"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Дополнение",
+            "en": "Object",
+            "ky": "Толуктооч",
+            "key": "data.tasks.g2r_opt_dopol"
+          },
+          {
+            "id": "c",
+            "correct": true,
+            "ru": "Обстоятельство",
+            "en": "Adverbial",
+            "ky": "Жагдай",
+            "key": "data.tasks.g2r_opt_obst"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2rsentl2t4",
+        "type": "input",
+        "qRu": "В предложении «Пушистый кот быстро ест вкусную рыбу» слово БЫСТРО — какой второстепенный член? (напиши: Определение / Дополнение / Обстоятельство)",
+        "qEn": "In “A fluffy cat quickly eats tasty fish”, what secondary part is QUICKLY? (Attribute / Object / Adverbial)",
+        "qKy": "«Пушистый кот быстро ест вкусную рыбу» сүйлөмүндө БЫСТРО — кайсы мүчө? (Аныктама / Толуктооч / Жагдай)",
+        "qKey": "data.tasks.g2r_sentl2_q4",
+        "options": [],
+        "answer": null
+      }
+    ],
+    "enkyFlags": [
+      "KY_RU_LEAK?:g2r_opt_opred=\"Аныктама\"",
+      "KY_RU_LEAK?:g2r_opt_dopol=\"Толуктооч\"",
+      "KY_RU_LEAK?:g2r_opt_obst=\"Жагдай\""
+    ]
+  },
+  {
+    "id": "g2s-plt-l2",
+    "title": "Фотосинтез",
+    "subject": "logic",
+    "world": "g2sci",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "ФОТО-СИНТЕЗ. Это звучит как название фокуса! Растение фотографирует солнце?",
+        "en": "Photosynthesis — a plant breathes and feeds using sunlight!",
+        "ky": "Фотосинтез — өсүмдүк күн жарыгы аркылуу дем алып, тамактанат!",
+        "key": "data.dialog.g2s_pltl2_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Хаха! Нет, но почти так же волшебно. Расскажи нам, как растения делают еду из света!",
+        "en": "Leaves absorb light and make nutrients!",
+        "ky": "Жалбырактар жарыкты сиңирип, азыктуу заттарды жасайт!",
+        "key": "data.dialog.g2s_pltl2_1"
+      }
+    ],
+    "intros": [
+      {
+        "title": "Фотосинтез — это магия природы!",
+        "body": "Листья поглощают солнечный свет + берут воду + углекислый газ → делают сахар и кислород. Настоящая фабрика!",
+        "titleEn": "Photosynthesis!",
+        "bodyEn": "A plant absorbs light and makes nutrients!",
+        "titleKy": "Фотосинтез!",
+        "bodyKy": "Өсүмдүк жарыкты сиңирип, азыктуу заттарды жасайт!"
+      },
+      {
+        "title": "Солнце — источник энергии",
+        "body": "Без солнца — нет фотосинтеза — нет еды — нет жизни. Вот почему растения тянутся к свету!",
+        "titleEn": "Sun and leaves",
+        "bodyEn": "Leaves are a nutrition factory!",
+        "titleKy": "Күн жана жалбырактар",
+        "bodyKy": "Жалбырактар — тамактануу фабрикасы!"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "g2spltl2t1",
+        "type": "multiple_choice",
+        "qRu": "Тали поставил цветок в тёмный шкаф. Арчи говорит: «Плохая идея!» Почему?",
+        "qEn": "Tali put a flower in a dark cupboard. Archie says: “Bad idea!” Why?",
+        "qKy": "Тали гүлдү караңгы шкафка койду. Арчи: «Жаман идея!» — эмнеге?",
+        "qKey": "data.tasks.g2s_pltl2_q1",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "В темноте нет фотосинтеза — растение не сможет питаться",
+            "en": "In the dark there’s no photosynthesis — the plant can’t feed itself.",
+            "ky": "Караңгуда фотосинтез болбойт — өсүмдүк өзүн багып албайт.",
+            "key": "data.tasks.g2s_pltl2_q1_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "В шкафу слишком тепло",
+            "en": "It’s too warm in the cupboard.",
+            "ky": "Шкафта өтө ысык.",
+            "key": "data.tasks.g2s_pltl2_q1_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Всё в порядке, растению не нужен свет",
+            "en": "It’s fine — plants don’t need light.",
+            "ky": "Бардыгы жакшы — өсүмдүккө жарык керек эмес.",
+            "key": "data.tasks.g2s_pltl2_q1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2spltl2t2",
+        "type": "multiple_choice",
+        "qRu": "Что нужно растению для фотосинтеза? Тали перечисляет: «свет, вода и… и… что ещё?»",
+        "qEn": "Photosynthesis requires:",
+        "qKy": " Для фотосинтеза нужны:",
+        "qKey": "data.tasks.g2s_photosyn_needs",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Свет, вода, углекислый газ",
+            "en": "light, water, CO2",
+            "ky": "жарык, суу, СО2",
+            "key": "data.tasks.g2s_opt_sun_water_co2"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Только вода",
+            "en": "water only",
+            "ky": "суу гана",
+            "key": "data.tasks.g2s_opt_only_water"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Только свет",
+            "en": "sunlight only",
+            "ky": "жарык гана",
+            "key": "data.tasks.g2s_opt_only_sun"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2spltl2t3",
+        "type": "multiple_choice",
+        "qRu": "Тали восклицает: «Растения дышат и выделяют кислород — значит, они помогают нам дышать?!» Это правда?",
+        "qEn": "Do plants release oxygen?",
+        "qKy": " Растения выделяют кислород?",
+        "qKey": "data.tasks.g2s_plants_make_oxygen",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Да",
+            "en": "Yes",
+            "ky": "Ооба",
+            "key": "data.tasks.opt_yes"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Нет",
+            "en": "No",
+            "ky": "Жок",
+            "key": "data.tasks.opt_no"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2spltl2t4",
+        "type": "input",
+        "qRu": "Где в растении происходит фотосинтез?",
+        "qEn": "From the seed grows:",
+        "qKy": " Из семени вырастает:",
+        "qKey": "data.tasks.g2s_seed_grows_into",
+        "options": [],
+        "answer": null
+      }
+    ],
+    "enkyFlags": [
+      "KY=RU:data.lessons.g2sPltL2",
+      "KY_RU_LEAK?:g2s_photosyn_needs=\" Для фотосинтеза нужны:\"",
+      "KY_RU_LEAK?:g2s_opt_sun_water_co2=\"жарык, суу, СО2\"",
+      "KY_RU_LEAK?:g2s_opt_only_water=\"суу гана\"",
+      "KY_RU_LEAK?:g2s_opt_only_sun=\"жарык гана\"",
+      "KY_RU_LEAK?:g2s_plants_make_oxygen=\" Растения выделяют кислород?\"",
+      "KY_RU_LEAK?:opt_yes=\"Ооба\"",
+      "KY_RU_LEAK?:g2s_seed_grows_into=\" Из семени вырастает:\""
+    ]
+  },
+  {
+    "id": "g2e-days-l3",
+    "title": "Расписание",
+    "subject": "reading",
+    "world": "g2eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "What day is it today? — Это вопрос «Какой сегодня день?»",
+        "en": "Timetable: What day is it today?",
+        "ky": "Жадыбал: What day is it today?",
+        "key": "data.dialog.g2e_daysl3_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "On Monday we have math! По понедельникам у нас математика. Поли, а у тебя есть расписание?",
+        "en": "On Monday we have math. Weekly timetable!",
+        "ky": "On Monday we have math. Жумалык жадыбал!",
+        "key": "data.dialog.g2e_daysl3_1"
+      }
+    ],
+    "intros": [
+      {
+        "title": "Расписание!",
+        "body": "What day is it today? — Какой сегодня день? On Monday we have math — По понедельникам у нас математика.",
+        "titleEn": "Timetable!",
+        "bodyEn": "What day is it today? On Monday we have math!",
+        "titleKy": "Жадыбал!",
+        "bodyKy": "What day is it today? On Monday we have math!"
+      },
+      {
+        "title": "Предлог ON",
+        "body": "On Monday, on Tuesday — с днями недели используем ON.",
+        "titleEn": "The week",
+        "bodyEn": "Weekly timetable!",
+        "titleKy": "Жума",
+        "bodyKy": "Жумалык жадыбал!"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "g2edaysl3t1",
+        "type": "multiple_choice",
+        "qRu": "On Monday we have ___ . Какой предмет?",
+        "qEn": "On Monday we have ___ . Which subject?",
+        "qKy": "On Monday we have ___ . Кайсы сабак?",
+        "qKey": "data.tasks.g2e_days3_q1",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Math",
+            "en": "Math",
+            "ky": "Math",
+            "key": "data.tasks.g2e_opt_maths"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Music",
+            "en": "Music",
+            "ky": "Музыка",
+            "key": "data.tasks.g2e_opt_music"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Art",
+            "en": "Art",
+            "ky": "Сүрөт",
+            "key": "data.tasks.g2e_opt_art"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2edaysl3t2",
+        "type": "multiple_choice",
+        "qRu": "“On ___ we have math.” Какой день недели?",
+        "qEn": "“On ___ we have math.” Which day?",
+        "qKy": "“On ___ we have math.” Кайсы күн?",
+        "qKey": "data.tasks.g2e_days3_q2",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Monday",
+            "key": "data.tasks.g2e_opt_day_monday"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Sunday",
+            "en": "Sunday",
+            "ky": "Sunday",
+            "key": "data.tasks.g2e_opt_day_sunday"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Saturday",
+            "en": "Saturday",
+            "ky": "Saturday",
+            "key": "data.tasks.g2e_opt_day_saturday"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2edaysl3t3",
+        "type": "multiple_choice",
+        "qRu": "Какой предлог ставим перед днём недели: ___ Monday?",
+        "qEn": "Which preposition goes before a weekday: ___ Monday?",
+        "qKy": "Жума күнүнүн алдында кайсы предлог: ___ Monday?",
+        "qKey": "data.tasks.g2e_days3_q3",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "On",
+            "en": "On",
+            "ky": "On",
+            "key": "data.tasks.g2e_opt_on"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "In",
+            "en": "In",
+            "ky": "In",
+            "key": "data.tasks.g2e_opt_in"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "At",
+            "en": "At",
+            "ky": "At",
+            "key": "data.tasks.g2e_opt_at"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2edaysl3t4",
+        "type": "input",
+        "qRu": "Дополни: On ___ we have math.",
+        "qEn": "Complete: On ___ we have math.",
+        "qKy": "Толукта: On ___ we have math.",
+        "qKey": "data.tasks.g2e_days3_q4",
+        "options": [],
+        "answer": null
+      }
+    ],
+    "enkyFlags": [
+      "KY=RU:data.lessons.g2eDaysL3",
+      "KY_RU_LEAK?:g2e_days3_q1=\"On Monday we have ___ . Кайсы сабак?\"",
+      "KY_RU_LEAK?:g2e_opt_music=\"Музыка\"",
+      "KY_RU_LEAK?:g2e_days3_q4=\"Толукта: On ___ we have math.\""
+    ]
+  }
+]

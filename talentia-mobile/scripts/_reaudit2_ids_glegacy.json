@@ -1,0 +1,179 @@
+[
+  {
+    "id": "jungle-add-1",
+    "title": "Считаем фрукты с Рексом",
+    "subject": "math",
+    "world": "jungle",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "jungle-add-2",
+    "title": "Складываем фрукты",
+    "subject": "math",
+    "world": "jungle",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 3
+  },
+  {
+    "id": "jungle-aba-showcase",
+    "title": "Практика АВА (микс)",
+    "subject": "math",
+    "world": "jungle",
+    "types": [
+      "multiple_choice",
+      "image_point",
+      "vocal_imitation",
+      "word_repetition",
+      "volume_control",
+      "fill_blank",
+      "image_word_match",
+      "world_knowledge",
+      "sorting",
+      "routine_chain",
+      "action_instruction"
+    ],
+    "taskCount": 23
+  },
+  {
+    "id": "jungle-sub-1",
+    "title": "Рекс делится фруктами",
+    "subject": "math",
+    "world": "jungle",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "jungle-sub-2",
+    "title": "Отнимаем числа",
+    "subject": "math",
+    "world": "jungle",
+    "types": [
+      "multiple_choice",
+      "input",
+      "fill_blank"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "jungle-compare-1",
+    "title": "Какая кучка больше?",
+    "subject": "math",
+    "world": "jungle",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "canyon-words-1",
+    "title": "Наскальные рисунки",
+    "subject": "reading",
+    "world": "canyon",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "canyon-words-2",
+    "title": "Письмо Диппи",
+    "subject": "reading",
+    "world": "canyon",
+    "types": [
+      "multiple_choice",
+      "input",
+      "fill_blank"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "canyon-sent-1",
+    "title": "Карта каньона",
+    "subject": "reading",
+    "world": "canyon",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "lab-animals-1",
+    "title": "Коллекция Спайка",
+    "subject": "logic",
+    "world": "lab",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "lab-animals-2",
+    "title": "Ещё о животных",
+    "subject": "logic",
+    "world": "lab",
+    "types": [
+      "multiple_choice",
+      "input",
+      "sorting"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "lab-physics-1",
+    "title": "Большой опыт",
+    "subject": "logic",
+    "world": "lab",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "space-planets-1",
+    "title": "Звёздная карта Стелы",
+    "subject": "logic",
+    "world": "space",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "space-planets-2",
+    "title": "Исследуем планеты",
+    "subject": "logic",
+    "world": "space",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "space-solar-1",
+    "title": "Путешествие по космосу",
+    "subject": "logic",
+    "world": "space",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  }
+]

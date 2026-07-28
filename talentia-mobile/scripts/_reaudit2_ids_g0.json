@@ -1,0 +1,317 @@
+[
+  {
+    "id": "meadow-c5-l1",
+    "title": "Один, два, три",
+    "subject": "math",
+    "world": "meadow",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "meadow-c5-l2",
+    "title": "Четыре и пять",
+    "subject": "math",
+    "world": "meadow",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "meadow-c5-l3",
+    "title": "Больше или меньше",
+    "subject": "math",
+    "world": "meadow",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "meadow-c10-l1",
+    "title": "Шесть и семь",
+    "subject": "math",
+    "world": "meadow",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "meadow-c10-l2",
+    "title": "Восемь, девять, десять",
+    "subject": "math",
+    "world": "meadow",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "meadow-c10-l3",
+    "title": "Сравниваем числа",
+    "subject": "math",
+    "world": "meadow",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "meadow-sh-l1",
+    "title": "Круг и квадрат",
+    "subject": "math",
+    "world": "meadow",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "meadow-sh-l2",
+    "title": "Треугольник и прямоугольник",
+    "subject": "math",
+    "world": "meadow",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "meadow-sh-l3",
+    "title": "Нахожу фигуры",
+    "subject": "math",
+    "world": "meadow",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5
+  },
+  {
+    "id": "forest-v-l1",
+    "title": "Буква А",
+    "subject": "reading_ru",
+    "world": "forest",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "forest-v-l2",
+    "title": "Буквы О и У",
+    "subject": "reading_ru",
+    "world": "forest",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "forest-v-l3",
+    "title": "Буквы И и Э",
+    "subject": "reading_ru",
+    "world": "forest",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "forest-con-l1",
+    "title": "Буквы М и С",
+    "subject": "reading_ru",
+    "world": "forest",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "forest-con-l2",
+    "title": "Буквы Т и К",
+    "subject": "reading_ru",
+    "world": "forest",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "forest-con-l3",
+    "title": "Буква Н",
+    "subject": "reading_ru",
+    "world": "forest",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "forest-syl-l1",
+    "title": "Слоги МА, МО, МУ",
+    "subject": "reading_ru",
+    "world": "forest",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "forest-syl-l2",
+    "title": "Слоги СА, СО, СУ",
+    "subject": "reading_ru",
+    "world": "forest",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "forest-syl-l3",
+    "title": "Слог НА и повторение",
+    "subject": "reading_ru",
+    "world": "forest",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "garden-col-l1",
+    "title": "Красный, синий, зелёный",
+    "subject": "logic",
+    "world": "garden",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "garden-col-l2",
+    "title": "Жёлтый, оранжевый и размеры",
+    "subject": "logic",
+    "world": "garden",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "garden-col-l3",
+    "title": "Белый, чёрный и повторение",
+    "subject": "logic",
+    "world": "garden",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "garden-anim-l1",
+    "title": "Домашние животные",
+    "subject": "logic",
+    "world": "garden",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "garden-anim-l2",
+    "title": "Дикие животные",
+    "subject": "logic",
+    "world": "garden",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "garden-anim-l3",
+    "title": "Рыбы, птицы и лапки",
+    "subject": "logic",
+    "world": "garden",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "garden-seas-l1",
+    "title": "Осень и зима",
+    "subject": "logic",
+    "world": "garden",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "garden-seas-l2",
+    "title": "Весна",
+    "subject": "logic",
+    "world": "garden",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "garden-seas-l3",
+    "title": "Лето и повторение",
+    "subject": "logic",
+    "world": "garden",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "island-abc-l1",
+    "title": "Буквы A и B",
+    "subject": "reading",
+    "world": "island",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "island-abc-l2",
+    "title": "Буквы C и D",
+    "subject": "reading",
+    "world": "island",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "island-abc-l3",
+    "title": "Буквы E и F",
+    "subject": "reading",
+    "world": "island",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "island-col-l1",
+    "title": "Красный, синий, зелёный",
+    "subject": "reading",
+    "world": "island",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "island-col-l2",
+    "title": "Жёлтый и оранжевый",
+    "subject": "reading",
+    "world": "island",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "island-col-l3",
+    "title": "Повторение цветов",
+    "subject": "reading",
+    "world": "island",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "island-anim-l1",
+    "title": "Кот и собака",
+    "subject": "reading",
+    "world": "island",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "island-anim-l2",
+    "title": "Птица и рыба",
+    "subject": "reading",
+    "world": "island",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "island-anim-l3",
+    "title": "Повторение животных",
+    "subject": "reading",
+    "world": "island",
+    "types": [],
+    "taskCount": 0
+  }
+]

@@ -1,0 +1,3993 @@
+[
+  {
+    "id": "g1m-c20-l1",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Привет! Я Лео из Города чисел — ворота откроются, если угадаем код из чисел 11–15. Поможешь?",
+      "Тали: После 10 идут 11, 12, 13, 14, 15! Я пробую, но иногда сбиваюсь. Ты поможешь мне проверить?"
+    ],
+    "intros": [
+      "Числа 11–15! — После 10 идут 11, 12, 13, 14, 15. Считай дальше от десяти! Тали хочет это запомнить вместе с тобой.",
+      "Сравниваем числа! — Какое число больше: 12 или 15? 15 больше! Тали иногда путает, у которого больше — помоги ему!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "На складе Города чисел 13 ящиков. Это больше, чем 15?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Да, 13 больше 15",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — 13 меньше 15!",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Они одинаковые",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Лео задаёт код: какое число стоит между 12 и 14?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "11",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "13",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "15",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Ряд: 11, 12, __, 14, 15. Что пропущено? Тали говорит: «Здесь должно быть 11!»",
+        "opts": [
+          {
+            "id": "a",
+            "text": "11",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "13",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "16",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "В Городе чисел 15 фонарей и 12 скамеек. Чего больше?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Фонарей (15)",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Скамеек (12)",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Поровну",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Какое число больше: 11 или 14?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "11",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "14",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-c20-l2",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Молодец! Теперь числа 16–20. Они идут подряд!",
+      "Тали: 17 между 16 и 18! Я запомнил, хотя поначалу путался. Проверь, всё ли я правильно понял?"
+    ],
+    "intros": [
+      "Числа 16–20! — 16, 17, 18, 19, 20 — последние числа второго десятка!",
+      "Между 16 и 18 — Какое число между 16 и 18? Правильно — 17! Тали специально учил это место, потому что раньше путался."
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "В Городе чисел 18 домов. Тали говорит: «18 — это меньше, чем 16!» Прав ли он?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Да, Тали прав",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — 18 больше 16!",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Они одинаковые",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Ряд: 16, __, 18, 19, 20. Какое число пропущено?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "15",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "17",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "21",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали считает жителей дома: на этаже 19 квартир. Следующий дом — 20 квартир. В каком больше?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "В первом (19)",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Во втором (20)",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Одинаково",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Нужно выбрать число между 17 и 19. Тали думает: «Это 20!» Прав?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "17",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "18",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "20",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Какое число больше: 16 или 20?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "16",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "20",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-c20-l3",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Сравниваем числа! Какое больше: 14 или 17?",
+      "Тали: 17 больше 14! Я запомнил: чем правее на числовой линии, тем больше! Теперь я хочу доказать, что научился. Проверишь меня?"
+    ],
+    "intros": [
+      "Сравнение чисел! — 14 и 17 — какое меньше? 14 меньше 17!",
+      "Равные числа — 20 и 20 — они равны! Знак = значит «равно»."
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "У Лео 14 монет, у Тали 17. Тали говорит: «У Лео больше!» Прав?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Да, у Лео больше",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — у Тали (17) больше!",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Поровну",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Ряд чисел: 14, 15, 16, 17, 18, 19, 20. Какое наименьшее?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "14",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "17",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "20",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Два числа: 20 и 20. Тали говорит: «Они неравные — одно больше!» Прав ли он?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Да, одно больше",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — они равны!",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "В Городе чисел есть улица 15-я и улица 18-я. Какая дальше от начала?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "15-я",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "18-я",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Одинаково",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Какое число меньше: 13 или 19?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "13",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "19",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-add-l1",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Сложение — это когда объединяем! 3 + 4 = ?",
+      "Тали: Я пробовал считать на пальцах, но у меня лапы! Помоги мне проверить мои ответы?"
+    ],
+    "intros": [
+      "Сложение до 10! — 3 + 4 = 7. Считай на пальцах или в уме!",
+      "Яблоки и груши — 3 яблока + 4 груши = 7 фруктов!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "У Тали 2 яблока, Лео дал ещё 3. Сколько всего?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "4",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "5",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "6",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "В кармане 3 монеты, нашёл ещё 3. Сколько стало?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "5",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "6",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "7",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "4 + 3 = ?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "6",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "7",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "8",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "На лавочке 5 птиц. Прилетели ещё 3. Сколько стало?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "7",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "8",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "9",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "1 + 4 = ?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "4",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "5",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-add-l2",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: До десятка! Сколько нужно добавить к 7, чтобы получить 10?",
+      "Тали: 7 + 3 = 10! Я запомнил этот секрет: смотрю, сколько не хватает до 10. Но с другими числами ещё путаюсь — проверишь меня?"
+    ],
+    "intros": [
+      "До десятка! — 7 +? = 10. Нужно добавить 3!",
+      "Сложение с 10 — 10 + 3 = 13. К десятку добавляем единицы!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали собирает 10 звёздочек. У него есть 6. Он думает: «Нужно найти ещё 5!» Прав?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Нужно 3",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нужно 4",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Нужно 5",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "8 + ? = 10. Тали говорит: «Нужно добавить 3!»",
+        "opts": [
+          {
+            "id": "a",
+            "text": "1",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "2",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "3",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "10 + 3 = ? Тали думает: «К десятку добавляем три — получится 14!»",
+        "opts": [
+          {
+            "id": "a",
+            "text": "12",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "13",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "14",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "5 + ? = 10. Сколько не хватает?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "4",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "5",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "6",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "7 + ? = 10",
+        "opts": [
+          {
+            "id": "a",
+            "text": "3",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "4",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-add-l3",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Сложение с 10! 10 + 5 = ?",
+      "Тали: 10 + 5 = 15! Это я знаю точно! Хочу доказать, что стал лучше считать. Проверишь?"
+    ],
+    "intros": [
+      "Сложение с 10! — 10 + 5 = 15, 10 + 8 = 18. Легко!",
+      "Большие примеры — 9 + 7 = 16. Разбей: 9 + 1 = 10, ещё 6 = 16!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "10 + 7 = ? Тали уверенно говорит: «18!»",
+        "opts": [
+          {
+            "id": "a",
+            "text": "16",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "17",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "18",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "10 + 4 = ?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "13",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "14",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "15",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "9 + 7 = ? Лео подсказывает: «Сначала 9 + 1 = 10, потом...»",
+        "opts": [
+          {
+            "id": "a",
+            "text": "15",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "16",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "17",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "10 + 9 = ? Тали говорит: «Это 20!»",
+        "opts": [
+          {
+            "id": "a",
+            "text": "18",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "19",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "20",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "10 + 5 = ?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "14",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "15",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-sub-l1",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Вычитание — убираем часть. 7 − 3 = ?",
+      "Тали: Представь 7 яблок. Съели 3. Сколько осталось? Тали считает на лапах... и говорит: «Осталось 3!»"
+    ],
+    "intros": [
+      "Вычитание до 10! — 7 − 3 = 4. Убери 3 из 7 — останется 4!",
+      "Проверка — Сложение и вычитание — обратные действия!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "У Тали 7 яблок, он съел 3. Тали говорит: «Осталось 3!» Это правильно?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "3",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "4",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "5",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "8 − 5 = ? Тали думает: «Это 4!»",
+        "opts": [
+          {
+            "id": "a",
+            "text": "2",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "3",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "4",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "У Лео 9 монет. Он потратил 4. Сколько осталось?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "4",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "5",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "6",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "6 − 2 = ? Тали говорит: «Это то же самое, что 6 − 3, поэтому 3!»",
+        "opts": [
+          {
+            "id": "a",
+            "text": "3",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "4",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "5",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "7 − 3 = ?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "3",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "4",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-sub-l2",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Вычитаем из 10! 10 − 3 = ?",
+      "Тали: 10 − 3 = 7! Я выучил специальные пары! Хочу показать — проверь, правильно ли я их запомнил?"
+    ],
+    "intros": [
+      "Вычитание из 10! — 10 − 3 = 7. Запомни пары: 10−3=7, 10−7=3!",
+      "Ещё примеры — 10 − 5 = 5, 10 − 1 = 9!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "10 − 4 = ? Тали говорит: «Это 5!»",
+        "opts": [
+          {
+            "id": "a",
+            "text": "5",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "6",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "7",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "10 − 7 = ? Тали думает: «Это 4!»",
+        "opts": [
+          {
+            "id": "a",
+            "text": "2",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "3",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "4",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "10 − 5 = ?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "4",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "5",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "6",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали говорит: «10 − 1 = 8!» Правда?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "8",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "9",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "10",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "10 − 3 = ?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "6",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "7",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-sub-l3",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Смешанные примеры! 5 + 4 − 3 = ?",
+      "Тали: Сначала сложи, потом вычти! Я пробовал, но часто забываю порядок. Поможешь проверить мои ответы?"
+    ],
+    "intros": [
+      "Смешанные примеры! — 5 + 4 − 3 =? Сначала сложи: 5+4=9, потом вычти: 9−3=6!",
+      "Проверяем — 7 − 2 = 5. Верно? Да! 5 + 2 = 7."
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "5 + 4 − 3 = ? Сначала сложи, потом вычти!",
+        "opts": [
+          {
+            "id": "a",
+            "text": "5",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "6",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "7",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "8 − 3 + 2 = ? Тали: «Это 5!»",
+        "opts": [
+          {
+            "id": "a",
+            "text": "5",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "7",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "9",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Проверка: 7 − 2 = 5, потому что 5 + 2 = 7. Верно?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Да, верно",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "6 + 3 − 4 = ? Тали считает: «Это 6!»",
+        "opts": [
+          {
+            "id": "a",
+            "text": "4",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "5",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "6",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "4 + 5 − 3 = ?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "5",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "6",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-vow-l1",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Привет! Я Маша! Буквы А, О, У — гласные!",
+      "Тали: Гласные можно петь: А-А-А! Я знаю, что в слове УТКА первая буква У. Но в других словах иногда путаюсь. Поможешь?"
+    ],
+    "intros": [
+      "Буквы А, О, У! — Гласные можно петь! В слове УТКА первая буква У!",
+      "Мягкость — Я, Ю, Е, Ё делают согласные мягкими. КОНЬ — мягкое Н!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "В слове ОСЕНЬ первая буква — гласная или согласная? Тали говорит: «Там согласная!» Прав?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Тали прав — согласная",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — О гласная!",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "В слове УХО есть буква А?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Да",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — только У и О",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Найди слово, где первая буква — У:",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Аист",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Утка",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Олень",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали говорит: «В слове МАМА нет гласных!» Правда?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Правда",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — есть две А!",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "В слове «ОСА» первая буква — гласная?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Да",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-vow-l2",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Буквы Я, Ю, Е, Ё — тоже гласные! Они делают согласные мягкими.",
+      "Тали: В слове ЮЛА первая буква Ю! Я только что это выучил. Проверь, правильно ли я запомнил!"
+    ],
+    "intros": [
+      "Буквы Я, Ю, Е, Ё! — В слове ЮЛА первая Ю. В слове ЕЛЬ первая Е!",
+      "Пара А—Я — А — твёрдая, Я — мягкая. Мама — Мая!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "В слове ЕЛЬ первая буква — это:",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Я",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Е",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Ю",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали говорит: «Буква Я — это то же самое, что буква А!» Правда?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Правда",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — Я делает согласную мягкой, А нет",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Найди слово, которое начинается на Ю:",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Ель",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Юла",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Яблоко",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "В слове ЁЖИК первая буква — это:",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Е",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Ё",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Ю",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "ЮЛА — первая буква:",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Ю",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Я",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-vow-l3",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Мягкость согласных! КОН — твёрдый, а в КОНЬ — мягкий!",
+      "Тали: Буква Ь показывает мягкость. НОС — твёрдый, НОЛЬ — мягкий! Тали говорит: «Я думаю, что Ь — это тоже гласная!» Правда?"
+    ],
+    "intros": [
+      "Мягкость! Ь — КОН — твёрдый, КОНЬ — мягкий. Ь показывает мягкость!",
+      "10 гласных — А, О, У, И, Э, Я, Ю, Е, Ё — 10 гласных букв!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали говорит: «Ь — это гласная, потому что стоит после согласной!» Прав ли он?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — Ь не гласная, она не обозначает звук",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "В слове КОНЬ последняя буква — это:",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Н",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Ь",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "О",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Чем отличаются ДЕНЬ и ДЕН? (с мягким знаком и без)",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Ничем — это одно и то же",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Ь меняет произношение — это разные слова",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "В слове МЯЧ есть мягкий знак?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Да",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Только в конце",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "В слове СОЛЬ есть мягкий знак?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Да",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-wrd-l1",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Читаем слова! К-О-Т — КОТ. По слогам!",
+      "Тали: К-О-Т — КОТ! Д-О-М — ДОМ! Читаю слова по буквам. Иногда путаю буквы местами — поможешь?"
+    ],
+    "intros": [
+      "Читаем слова! — К-О-Т — КОТ. Читай по слогам!",
+      "Читаем вместе — С-О-М — СОМ. М-А-М-А — МАМА. Собери слово из букв!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Прочитай по буквам: К-О-Т. Какое это слово?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "ТОК",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "КОТ",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Собери слово из букв: М-А-М-А",
+        "opts": [
+          {
+            "id": "a",
+            "text": "МАМ",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "МАМА",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "АМАМ",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Д-О-М — это какое слово?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "ДОМ",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "МОД",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "ОМД",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Прочитай: Р-Ы-Б-А. Какое слово получилось?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "БАРЫ",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "РЫБА",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Какое слово читается С-О-М?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "СОМ",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "МОС",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-wrd-l2",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Слова СТОЛ и СТУЛ похожи. Прочитай внимательно!",
+      "Тали: ТРА-ВА — два слога. КНИ-ГА — два слога! Тали говорит: «СТОЛ и СТУЛ — одно и то же слово!» Прав ли он?"
+    ],
+    "intros": [
+      "Слова похожи — СТОЛ и СТУЛ — разная одна буква! Читай внимательно!",
+      "Слоги в словах — ТРА-ВА — два слога. КНИ-ГА — два слога!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали говорит: «СТОЛ и СТУЛ — одно слово, просто написано по-разному!» Прав?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — это разные слова",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Сколько слогов в слове ТРА-ВА?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "1",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "2",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "3",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Найди слово с двумя слогами:",
+        "opts": [
+          {
+            "id": "a",
+            "text": "КОТ",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "КНИ-ГА",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "ЛЕС",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали хлопает на каждый слог: МА-ЛИ-НА. Сколько хлопков?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "2",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "3",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "4",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "КНИ-ГА — сколько слогов?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "1",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "2",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-wrd-l3",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Читаем предложения! Смотри: с большой буквы и знак в конце.",
+      "Тали: Тали говорит: «КОТ БЕЖИТ — тут два предложения!» Правда? Нет — это одно предложение с точкой в конце!"
+    ],
+    "intros": [
+      "Предложения! — Предложение выражает мысль. Начинается с большой буквы!",
+      "Конец предложения — В конце — точка, вопросительный или восклицательный знак!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали говорит: «КОТ БЕЖИТ — это два предложения!» Прав?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — это одно предложение",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Предложение начинается с...",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Маленькой буквы",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Большой буквы",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "В конце вопросительного предложения ставим...",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Точку",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Вопросительный знак",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Восклицательный знак",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "«мама варит суп» — что нужно исправить?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Всё верно",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Написать «Мама» с большой буквы",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Предложение «Кот пьёт молоко» — в конце нужна...",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Точка",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Запятая",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-grm-l1",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Заглавная буква! Имена и начало предложения пишут с большой буквы.",
+      "Тали: Маша, Москва, Тали — с большой! Тали говорит: «Значит, слово «кот» тоже надо писать с большой буквы — ведь это имя животного?»"
+    ],
+    "intros": [
+      "Заглавная буква! — Имена, клички, начало предложения — с большой буквы!",
+      "Примеры — Маша, Москва, Тали — пишем с большой буквы!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали говорит: «Слово «кот» надо писать с большой буквы — это ведь имя!» Прав ли он?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — «кот» не имя, а название животного",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Что нужно писать с большой буквы?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Все существительные",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Имена людей и клички животных",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Все слова",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Как правильно написать: «я живу в москве» или «Я живу в Москве»?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "я живу в москве",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Я живу в Москве",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали пишет письмо: «привет, маша!» Что нужно исправить?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Всё верно",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "«Привет» и «Маша» с большой буквы",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Имена пишутся с большой буквы?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Да",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-grm-l2",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Знаки препинания! В конце предложения ставим точку или вопросительный знак.",
+      "Тали: «Кто это?» — вопрос. «Мама дома.» — утверждение. Тали говорит: «После вопроса всегда нужна точка!» Правда?"
+    ],
+    "intros": [
+      "Знаки препинания! — Точка — в конце. Вопросительный знак — в вопросе!",
+      "Точка и вопросительный — Кто это? — вопрос. Мама дома. — утверждение."
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали говорит: «После вопроса нужна точка!» Прав ли он?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — после вопроса нужен ?",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "«Мама дома» — какой знак в конце?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "?",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": ".",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "!",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "«Ура! Каникулы!» — какой знак в конце?",
+        "opts": [
+          {
+            "id": "a",
+            "text": ".",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "?",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "!",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "«Где живёт медведь» — какой знак нужен?",
+        "opts": [
+          {
+            "id": "a",
+            "text": ".",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "?",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "!",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "В конце вопроса ставим:",
+        "opts": [
+          {
+            "id": "a",
+            "text": "?",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": ".",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-grm-l3",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Вопросы КТО? и ЧТО? Кто бежит? Что растёт?",
+      "Тали: КТО — про людей и животных. ЧТО — про предметы! Тали говорит: «Про облако нужно спрашивать КТО?» Правда?"
+    ],
+    "intros": [
+      "Вопросы КТО? ЧТО? — КТО — про людей и животных. ЧТО — про предметы!",
+      "Примеры вопросов — Кто бежит? Что растёт? Кто поёт?"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали говорит: «Про облако — КТО?» Прав ли он?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — облако это предмет, поэтому ЧТО?",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Про собаку спрашиваем...",
+        "opts": [
+          {
+            "id": "a",
+            "text": "ЧТО?",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "КТО?",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Про книгу спрашиваем...",
+        "opts": [
+          {
+            "id": "a",
+            "text": "КТО?",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "ЧТО?",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "«___ прыгает?» — про зайца. Какое слово?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "ЧТО",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "КТО",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Про дерево спрашиваем:",
+        "opts": [
+          {
+            "id": "a",
+            "text": "КТО?",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "ЧТО?",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1w-sch-l1",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Привет! Я Кеша! Ручка, тетрадь, учебник — школьные принадлежности!",
+      "Тали: В школе мы учимся. В классе — парты и доска! Тали говорит: «Я думаю, что линейка — не школьная принадлежность!» Правда?"
+    ],
+    "intros": [
+      "Школьные принадлежности! — Ручка, тетрадь, учебник, пенал — что лежит в портфеле!",
+      "Класс и уроки — В классе — парты, доска, учитель. Урок длится 45 минут!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали говорит: «Линейка — не школьная принадлежность!» Прав ли он?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — линейка нужна на уроках",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Что лежит в портфеле?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Кастрюля и сковородка",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Ручка, тетрадь, учебник",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Подушка и одеяло",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали хочет писать на уроке. Что ему нужно?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Ложка",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Ручка",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Молоток",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "В классе есть... Тали говорит: «Бассейн!»",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Бассейн",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Парты и доска",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Плита",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Тетрадь — школьная принадлежность?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Да",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1w-sch-l2",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Уроки бывают разные: математика, чтение, физкультура!",
+      "Тали: На физкультуре бегаем, на рисовании рисуем! Тали говорит: «На физкультуре мы решаем задачки!» Правда?"
+    ],
+    "intros": [
+      "Уроки в школе! — Математика, чтение, русский, физкультура, рисование!",
+      "Физкультура и рисование — На физкультуре бегаем и прыгаем. На рисовании — рисуем!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали говорит: «На физкультуре решаем задачки!» Прав ли он?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — на физкультуре бегаем и прыгаем",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "На каком уроке мы рисуем?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Математика",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Рисование",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Чтение",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "На каком уроке считаем и решаем примеры?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Математика",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Физкультура",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Музыка",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали любит петь. Какой урок ему понравится больше всего?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Математика",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Музыка",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Физкультура",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "На физкультуре мы...",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Бегаем и прыгаем",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Читаем книги",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1w-sch-l3",
+    "taskCount": 4,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      "Персонаж: На физкультуре бегаем, на рисовании рисуем! Что тебе нравится больше?",
+      "Тали: Я люблю и то и другое! На физкультуре прыгаю, а на рисовании — рисую динозавров. Помоги разобраться!"
+    ],
+    "intros": [
+      "Физкультура — На физкультуре мы бегаем, прыгаем и играем в мяч. Это спорт в школе!",
+      "Рисование — На рисовании мы рисуем красками и карандашами. Тут нужна кисть, а не мяч!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "На физкультуре Тали обычно…",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Бегает и прыгает",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Читает учебник",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Спит",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "На рисовании Тали…",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Рисует красками",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Прыгает через скакалку",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Считает примеры",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Что нужно для игры в мяч на физкультуре?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Мяч",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Кисть",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Книга",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "input",
+        "aba": false,
+        "q": "Тали говорит: «На рисовании мы бегаем!» Правда? _(ответ: Нет)_",
+        "opts": []
+      }
+    ]
+  },
+  {
+    "id": "g1w-nat-l1",
+    "taskCount": 4,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      "Персонаж: Деревья — дуб, берёза, ель. У них ствол и листья!",
+      "Тали: У дуба жёлуди, у берёзы — белая кора, у ели — иголки. Помоги запомнить!"
+    ],
+    "intros": [
+      "Деревья! — Дуб, берёза, ель — у них ствол, ветки, листья!",
+      "Хвойные и лиственные — Ель — хвойная (иголки). Берёза и дуб — лиственные (листья)."
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Какое из этих — дерево?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Дуб",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Роза",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Гриб",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Толстая «нога» дерева — это…",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Ствол",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Корень (под землёй)",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Цветок",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Какое дерево хвойное (с иголками)?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Ель",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Берёза",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Клён",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "input",
+        "aba": false,
+        "q": "У берёзы летом на ветках… _(ответ: Листья)_",
+        "opts": []
+      }
+    ]
+  },
+  {
+    "id": "g1w-nat-l2",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice"
+    ],
+    "dialog": [
+      "Персонаж: Животные бывают домашние и дикие. Корова — домашняя, а медведь — дикий!",
+      "Тали: Домашние живут рядом с людьми. Дикие — в лесу и саванне. Давай проверим!"
+    ],
+    "intros": [
+      "Домашние и дикие — Домашние: корова, собака, кот. Дикие: медведь, лев, лиса.",
+      "Где живут? — Дикие животные живут в лесу и саванне. Домашние — рядом с человеком."
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали видит следы медведя. «Медведь живёт в море!» — говорит он. Где правда?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "В доме",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "В лесу",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "В море",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Да, лев — домашний",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет, лев — дикий!",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали нашёл рыжий пушистый след в лесу. Кто это был?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Волк",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Лиса",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Медведь",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Волк",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Лиса",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Корова",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Лиса — дикое животное?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Да",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1w-nat-l3",
+    "taskCount": 4,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      "Персонаж: Погода бывает разная: солнце, дождь, снег! Что надеть — зависит от погоды.",
+      "Тали: В дождь — зонт, в снег — куртку. И природу береги: не мусори в лесу!"
+    ],
+    "intros": [
+      "Погода — Солнце, дождь, снег, ветер — это погода. От неё зависит, что надеть.",
+      "Береги природу — Не мусори в лесу и парке. Природа — наш общий дом!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Какая погода тёплая и яркая?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Солнечно",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Снег",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Дождь",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "На улице снег. Что надеть?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Тёплую куртку",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Купальник",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Сандалии",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Идёт дождь. Что взять с собой?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Зонт",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Санки",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Веер",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "input",
+        "aba": false,
+        "q": "Нужно ли беречь природу — не мусорить в лесу? _(ответ: Да)_",
+        "opts": []
+      }
+    ]
+  },
+  {
+    "id": "g1w-bdy-l1",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      "Персонаж: Органы чувств: глаза видят, уши слышат, нос чувствует запахи!",
+      "Тали: Руки трогают, язык чувствует вкус. Всё важно!"
+    ],
+    "intros": [
+      "Органы чувств! — Глаза видят, уши слышат, нос чувствует запахи, руки трогают!",
+      "Вкус и язык — Языком мы пробуем на вкус: сладкое, кислое, солёное. Это тоже орган чувств!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Чем мы видим?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Глаза",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Уши",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Нос",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Чем мы слышим?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Уши",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Глаза",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Язык",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Чем мы нюхаем?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Нос",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Руки",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Глаза",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "input",
+        "aba": false,
+        "q": "Чем мы пробуем на вкус? _(ответ: Язык)_",
+        "opts": []
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Чем смотрим на картинку?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Глаза",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Уши",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1w-bdy-l2",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      "Персонаж: Здоровье — это спорт, зарядка, правильное питание!",
+      "Тали: Фрукты и овощи полезны. Сладкое — понемногу!"
+    ],
+    "intros": [
+      "Скелет и мышцы! — Кости — опора. Мышцы помогают двигаться!",
+      "Здоровый сон — Сон — это когда тело отдыхает. Спи 9–10 часов!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Что помогает мышцам быть сильными?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Зарядка и спорт",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Только конфеты",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Сидеть у телевизора",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Какая еда полезная?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Фрукты и овощи",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Чипсы",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Газировка",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Сколько примерно нужно спать школьнику?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Около 9–10 часов",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "2 часа",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Не спать всю ночь",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "input",
+        "aba": false,
+        "q": "Что держит тело прямо, как опора? _(ответ: Скелет (кости))_",
+        "opts": []
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Нужно ли делать зарядку?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Да",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1w-bdy-l3",
+    "taskCount": 5,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      "Персонаж: Безопасность: не разговаривай с незнакомцами!",
+      "Тали: Переходи дорогу на зелёный свет. Будь осторожен!"
+    ],
+    "intros": [
+      "Безопасность! — Не разговаривай с незнакомцами! Не открывай дверь чужим!",
+      "Правила на дороге — Переходи на зелёный! Смотри по сторонам!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "На какой сигнал светофора можно переходить дорогу?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Зелёный",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Красный",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Жёлтый",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Незнакомый человек у двери. Что делать?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Позвать взрослого / не открывать",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Сразу открыть дверь",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Спрятаться под кровать",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Ты потерялся в магазине. К кому обратиться?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "К продавцу или охране",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "К любому незнакомцу",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Искать выход одному",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "input",
+        "aba": false,
+        "q": "Перед переходом дороги нужно… _(ответ: Посмотреть налево и направо)_",
+        "opts": []
+      },
+      {
+        "i": 5,
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Какой свет светофора — можно идти?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Зелёный",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Красный",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1e-abc-l1",
+    "taskCount": 4,
+    "types": [
+      "multiple_choice",
+      "fill_blank",
+      "input"
+    ],
+    "dialog": [
+      "Персонаж: Привет! Я Поли! Буквы G, H, I, J — учим дальше!",
+      "Тали: G — giraffe (жираф), H — house (дом). Я их выучил! Хотя... G и J иногда путаю. Поможешь?"
+    ],
+    "intros": [
+      "Буквы G, H, I, J! — G — goat (коза), H — house (дом). Учим английский!",
+      "Продолжаем алфавит — I — ice (лёд), J — juice (сок)!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "С какой буквы начинается GOAT?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "G",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "H",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "I",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "С какой буквы начинается HAPPY?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "G",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "H",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "I",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "fill_blank",
+        "aba": false,
+        "q": "Ice starts with _",
+        "opts": []
+      },
+      {
+        "i": 4,
+        "type": "input",
+        "aba": false,
+        "q": "С какой буквы начинается JELLY? Тали говорит: «С G!» _(ответ: J)_",
+        "opts": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-abc-l2",
+    "taskCount": 4,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      "Персонаж: K — kitten (котёнок), L — lion (лев). Запоминаю!",
+      "Тали: M — moon (луна), N — night (ночь). С какой буквы начинается MOON?"
+    ],
+    "intros": [
+      "Буквы K, L, M, N! — K — kitten, L — lion. Запоминай!",
+      "Луна и ночь — M — moon (луна), N — night (ночь)."
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "С какой буквы начинается KITE?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "K",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "L",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "M",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "С какой буквы начинается LAMP?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "K",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "L",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "N",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "С какой буквы начинается MOON?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "K",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "M",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "N",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "input",
+        "aba": false,
+        "q": "С какой буквы начинается NOSE? Тали говорит: «С M!» _(ответ: N)_",
+        "opts": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-abc-l3",
+    "taskCount": 4,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      "Персонаж: O — orange (апельсин), P — parrot (попугай). Почти половина алфавита!",
+      "Тали: Q — queen (королева), R — rain (дождь)! Тали, а с какой буквы QUEEN?"
+    ],
+    "intros": [
+      "Буквы O, P, Q, R! — O — orange, P — parrot. Почти половина алфавита!",
+      "Половина пути! — Ты знаешь буквы до R! Осталось ещё!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "С какой буквы начинается ORANGE?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "O",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "P",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Q",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "С какой буквы начинается PARROT?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "O",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "P",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Q",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "С какой буквы начинается QUEEN?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "O",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Q",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "R",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "input",
+        "aba": false,
+        "q": "С какой буквы начинается RAIN? _(ответ: R)_",
+        "opts": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-num-l1",
+    "taskCount": 4,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      "Персонаж: Числа по-английски: one, two, three, four, five!",
+      "Тали: 1 = one, 2 = two. Считаю по-английски! Но иногда путаю three и four. Поможешь?"
+    ],
+    "intros": [
+      "Числа 1–5! — One, two, three, four, five — считай по-английски!",
+      "Пять пальцев — Five fingers on one hand!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Как по-английски «три»?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "two",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "three",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "four",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Сколько это — TWO?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "1",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "2",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "3",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Как по-английски «четыре»? Тали говорит: «Five!»",
+        "opts": [
+          {
+            "id": "a",
+            "text": "four",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "five",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "six",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "input",
+        "aba": false,
+        "q": "Как по-английски «пять»? _(ответ: five)_",
+        "opts": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-num-l2",
+    "taskCount": 4,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      "Персонаж: Six, seven, eight, nine, ten!",
+      "Тали: 6 = six, 10 = ten! Продолжаем! Тали говорит: «Eight — это девять!» Правда?"
+    ],
+    "intros": [
+      "Числа 6–10! — Six, seven, eight, nine, ten!",
+      "Считаем дальше — Ten — десять! Самое важное число!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Как по-английски «семь»?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "six",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "seven",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "eight",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Сколько это — NINE?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "7",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "8",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "9",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Как по-английски «десять»?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "nine",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "ten",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "eleven",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "input",
+        "aba": false,
+        "q": "Как по-английски написать число 8? (словом) _(ответ: eight)_",
+        "opts": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-num-l3",
+    "taskCount": 4,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      "Персонаж: Простые примеры по-английски! Six minus three? Three plus four?",
+      "Тали: Six minus three = three! Three plus four = seven! Отлично!"
+    ],
+    "intros": [
+      "Простые примеры! — Six minus three = three! Three plus four = seven! Считай по-английски!",
+      "Проверка — Numbers help us count!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "6 − 3 =? (по-английски)",
+        "opts": [
+          {
+            "id": "a",
+            "text": "two",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "three",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "four",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "3 + 4 =? (по-английски)",
+        "opts": [
+          {
+            "id": "a",
+            "text": "six",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "seven",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "eight",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Какое число после 9?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "nine",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "ten",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "eleven",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "input",
+        "aba": false,
+        "q": "Сколько звёзд? (8 ★) — по-английски _(ответ: eight)_",
+        "opts": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-grt-l1",
+    "taskCount": 4,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      "Персонаж: Hello! Hi! Good morning!",
+      "Тали: Hello — привет! Я использую это слово всё время! Но Тали говорит: «Good morning — это «до свидания»!» Правда?"
+    ],
+    "intros": [
+      "Приветствия! — Hello! Hi! Good morning! — привет!",
+      "Когда говорить — Hello — когда встречаешь. Good morning — утром!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Утром, входя в класс, говорят:",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Good morning",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Good night",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Goodbye",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Что сказать при прощании?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Hello",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Goodbye",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Sorry",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Good night — когда говорят?",
+        "opts": [
+          {
+            "id": "a",
+            "text": "in the morning",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "at noon",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "at night",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "input",
+        "aba": false,
+        "q": "Hi означает: _(ответ: Привет)_",
+        "opts": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-grt-l2",
+    "taskCount": 4,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      "Персонаж: My name is Polly! What is your name?",
+      "Тали: My name is Tali! А ещё можно сказать: I am Tali. Как правильно спросить имя?"
+    ],
+    "intros": [
+      "Меня зовут — My name is Polly. I am Tali. Так мы представляемся!",
+      "Представляемся — My name is... What is your name?"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Закончи фразу: My name ___ Polly.",
+        "opts": [
+          {
+            "id": "a",
+            "text": "am",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "is",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "are",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "«Меня зовут» по-английски:",
+        "opts": [
+          {
+            "id": "a",
+            "text": "I am...",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "My name is",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Hello, I...",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Как по-английски спросить «Как тебя зовут?»",
+        "opts": [
+          {
+            "id": "a",
+            "text": "How old are you?",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "What is your name?",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Goodbye",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "input",
+        "aba": false,
+        "q": "Закончи: I ___ seven. _(ответ: am)_",
+        "opts": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-grt-l3",
+    "taskCount": 4,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      "Персонаж: Thank you — спасибо! Please — пожалуйста!",
+      "Тали: Вежливые слова важны на любом языке! Тали спрашивает: «Thank you — это «привет»?» Прав ли он?"
+    ],
+    "intros": [
+      "Thank you и Please — Thank you — спасибо! Please — пожалуйста!",
+      "How are you? — How are you? — Как дела? Fine, thanks! — Хорошо, спасибо!"
+    ],
+    "tasks": [
+      {
+        "i": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "«How are you?» означает:",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Как дела?",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Пока",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Привет",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Лучший ответ на «How are you?»:",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Fine, thanks",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Goodbye",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "My name is",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Thank you означает:",
+        "opts": [
+          {
+            "id": "a",
+            "text": "Пожалуйста",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Спасибо",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Привет",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "i": 4,
+        "type": "input",
+        "aba": false,
+        "q": "Please означает: _(ответ: Пожалуйста)_",
+        "opts": []
+      }
+    ]
+  }
+]

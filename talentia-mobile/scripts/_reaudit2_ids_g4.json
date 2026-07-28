@@ -1,0 +1,399 @@
+[
+  {
+    "id": "g4m-md-l1",
+    "title": "Чтение больших чисел",
+    "subject": "math",
+    "world": "g4math",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4m-md-l2",
+    "title": "Разряды числа",
+    "subject": "math",
+    "world": "g4math",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4m-md-l3",
+    "title": "Сравнение чисел",
+    "subject": "math",
+    "world": "g4math",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4m-cm-l1",
+    "title": "Основы умножения",
+    "subject": "math",
+    "world": "g4math",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4m-cm-l2",
+    "title": "Многозначное × однозначное",
+    "subject": "math",
+    "world": "g4math",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4m-cm-l3",
+    "title": "Многозначное × многозначное",
+    "subject": "math",
+    "world": "g4math",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4m-fr-l1",
+    "title": "Что такое дробь?",
+    "subject": "math",
+    "world": "g4math",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4m-fr-l2",
+    "title": "Равные части",
+    "subject": "math",
+    "world": "g4math",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4m-fr-l3",
+    "title": "Сравнение дробей",
+    "subject": "math",
+    "world": "g4math",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4r-conj-l1",
+    "title": "Я, ты, он/она",
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4r-conj-l2",
+    "title": "Мы, вы, они",
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4r-conj-l3",
+    "title": "Смешанная практика",
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4r-cases-l1",
+    "title": "Именительный и Винительный",
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4r-cases-l2",
+    "title": "Родительный и Дательный",
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4r-cases-l3",
+    "title": "Творительный и Предложный",
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4r-text-l1",
+    "title": "Прочитай и ответь",
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4r-text-l2",
+    "title": "Главная мысль",
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4r-text-l3",
+    "title": "Детали и последовательность",
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4e-pres-l1",
+    "title": "He / She / It",
+    "subject": "reading",
+    "world": "g4eng",
+    "types": [
+      "multiple_choice",
+      "fill_blank",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4e-pres-l2",
+    "title": "Отрицание",
+    "subject": "reading",
+    "world": "g4eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4e-pres-l3",
+    "title": "Вопросы",
+    "subject": "reading",
+    "world": "g4eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4e-past-l1",
+    "title": "Правильные глаголы",
+    "subject": "reading",
+    "world": "g4eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4e-past-l2",
+    "title": "Неправильные глаголы",
+    "subject": "reading",
+    "world": "g4eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4e-past-l3",
+    "title": "Смешанная практика",
+    "subject": "reading",
+    "world": "g4eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4e-quest-l1",
+    "title": "Да/нет вопросы",
+    "subject": "reading",
+    "world": "g4eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4e-quest-l2",
+    "title": "Вопросы с вопросительным словом",
+    "subject": "reading",
+    "world": "g4eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4e-quest-l3",
+    "title": "Краткие ответы",
+    "subject": "reading",
+    "world": "g4eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4s-help-l1",
+    "title": "Когда просить помощи",
+    "subject": "social",
+    "world": "g4social",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4s-help-l2",
+    "title": "Как вежливо попросить",
+    "subject": "social",
+    "world": "g4social",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4s-help-l3",
+    "title": "Практика ситуаций",
+    "subject": "social",
+    "world": "g4social",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4s-emo-l1",
+    "title": "Радость и грусть",
+    "subject": "social",
+    "world": "g4social",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4s-emo-l2",
+    "title": "Злость и страх",
+    "subject": "social",
+    "world": "g4social",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4s-emo-l3",
+    "title": "Удивление и спокойствие",
+    "subject": "social",
+    "world": "g4social",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4s-turn-l1",
+    "title": "Ждём своей очереди",
+    "subject": "social",
+    "world": "g4social",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4s-turn-l2",
+    "title": "Делимся и справедливость",
+    "subject": "social",
+    "world": "g4social",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g4s-turn-l3",
+    "title": "Игры с правилами",
+    "subject": "social",
+    "world": "g4social",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  }
+]

@@ -1,0 +1,1168 @@
+[
+  {
+    "id": "g1m-c20-l1",
+    "grade": 1,
+    "subject": "Математика",
+    "world": "g1math",
+    "title": "Числа 11–15",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "revise",
+    "problems": [
+      {
+        "ref": "dialog/npc",
+        "issue": "Анонсирует «посчитаем до 20» и «секретный код», но задания — сравнение/пропуски в диапазоне 11–15, счёта до 20 нет."
+      },
+      {
+        "ref": "task 2",
+        "issue": "Вопрос «Правда?» (про 11), а варианты — числа 11/13/15 без ответа «да/нет»; формат вопроса и ответов расходятся."
+      },
+      {
+        "ref": "tasks 1–5",
+        "issue": "Все задания multiple_choice; нет счёта вслух, порядка, сопоставления «число↔количество»."
+      }
+    ],
+    "fixes": [
+      "В dialog/npc заменить «до 20» на «числа 11–15 и секретный код площади».",
+      "Task 2: либо варианты «Да/Нет/Не знаю» + follow-up «Какое число между 12 и 14?», либо убрать «Правда?» и оставить «Какое число между 12 и 14?».",
+      "Добавить 1 задание order/drag: выстроить 11–15 или сопоставить 13 ящиков ↔ число."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "tali_wrong_claim",
+      "all_multiple_choice",
+      "city_of_numbers_story"
+    ]
+  },
+  {
+    "id": "g1m-c20-l2",
+    "grade": 1,
+    "subject": "Математика",
+    "world": "g1math",
+    "title": "Числа 16–20",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "light_revise",
+    "problems": [
+      {
+        "ref": "task 4",
+        "issue": "Снова «Прав?» про 20, а варианты — 17/18/20; ребёнок отвечает числом, не проверяя утверждение Тали явно."
+      },
+      {
+        "ref": "tasks 1–5",
+        "issue": "Шаблон сравнения почти как в l1; 19 vs 20 слабо отличает навык «знать 16–20» от «сравнивать»."
+      }
+    ],
+    "fixes": [
+      "Task 4: «Какое число между 17 и 19?» без ложного «Прав?» или с парой: (а) Тали неправ (б) 18.",
+      "Добавить задание «продолжи: 16,17,__» или «назови соседей 18» с order/fill."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "tali_wrong_claim",
+      "all_multiple_choice",
+      "missing_in_sequence"
+    ]
+  },
+  {
+    "id": "g1m-c20-l3",
+    "grade": 1,
+    "subject": "Математика",
+    "world": "g1math",
+    "title": "Сравнение чисел",
+    "coherence": 5,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "keep",
+    "problems": [
+      {
+        "ref": "task 3",
+        "issue": "Только 2 варианта (да/нет по равенству) — ок для ABA, но в основном треке слабее остальных задач."
+      },
+      {
+        "ref": "tasks",
+        "issue": "Нет явных знаков < > = в ответе — урок анонсирует «равно», но знак = почти не тренируется визуально."
+      }
+    ],
+    "fixes": [
+      "Добавить task: «Выбери верно: 14 □ 17» с вариантами < / > / =.",
+      "В intro оставить пример 20=20 и повторить его в одном задании с символом =."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "tali_wrong_claim",
+      "all_multiple_choice",
+      "compare_magnitude"
+    ]
+  },
+  {
+    "id": "g1m-add-l1",
+    "grade": 1,
+    "subject": "Математика",
+    "world": "g1math",
+    "title": "Сложение до 10",
+    "coherence": 4,
+    "usefulness": 2,
+    "engagement": 1,
+    "diversity": 1,
+    "verdict": "revise",
+    "problems": [
+      {
+        "ref": "tasks 1–5",
+        "issue": "Все правильные ответы = 7 (3+4, 2+5, 4+3, 5+2, ABA 3+4). Ребёнок запоминает «всегда 7», а не сложение."
+      },
+      {
+        "ref": "dialog/tali",
+        "issue": "Шутка про «лапы» милая, но не задаёт учебную цель урока."
+      }
+    ],
+    "fixes": [
+      "Заменить суммы: напр. 2+3=5, 1+6=7, 4+4=8, 5+3=8, ABA 3+2=5 — разные ответы.",
+      "Один task с наглядным «3 яблока + 4» и картинкой/счётом, не только MC."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "all_same_answer_7",
+      "tali_wrong_claim",
+      "all_multiple_choice"
+    ]
+  },
+  {
+    "id": "g1m-add-l2",
+    "grade": 1,
+    "subject": "Математика",
+    "world": "g1math",
+    "title": "До десятка",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "revise",
+    "problems": [
+      {
+        "ref": "intro 2",
+        "issue": "«Сложение с 10 / 10+3=13» — тема следующего урока g1m-add-l3, утечка фокуса."
+      },
+      {
+        "ref": "task 3",
+        "issue": "10+3 — уже не «дополнение до 10», ломает единство урока."
+      }
+    ],
+    "fixes": [
+      "Intro 2 заменить на: «6+?=10, 8+?=10 — сколько не хватает до десятка».",
+      "Task 3 заменить на 9+?=10 или 4+?=10; 10+n перенести в add-l3."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "make_ten",
+      "tali_wrong_claim",
+      "all_multiple_choice"
+    ]
+  },
+  {
+    "id": "g1m-add-l3",
+    "grade": 1,
+    "subject": "Математика",
+    "world": "g1math",
+    "title": "Сложение с 10",
+    "coherence": 4,
+    "usefulness": 5,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "light_revise",
+    "problems": [
+      {
+        "ref": "task 3",
+        "issue": "9+7 через разбиение — отлично, но единственный нешаблонный; остальные — «10+n, Тали ошибся»."
+      },
+      {
+        "ref": "tasks",
+        "issue": "Только MC; нет «собери 10+4 из блоков/цифр»."
+      }
+    ],
+    "fixes": [
+      "Добавить ещё один пример разбиения: 8+5 → 8+2+3.",
+      "Один fill_blank: «10 + 6 = __»."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "ten_plus",
+      "decompose_to_ten",
+      "tali_wrong_claim"
+    ]
+  },
+  {
+    "id": "g1m-sub-l1",
+    "grade": 1,
+    "subject": "Математика",
+    "world": "g1math",
+    "title": "Вычитание до 10",
+    "coherence": 5,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "keep",
+    "problems": [
+      {
+        "ref": "dialog/tali",
+        "issue": "Сразу даёт неверный ответ «осталось 3» — ок как крючок, но дублируется почти дословно в task 1."
+      },
+      {
+        "ref": "intro 2",
+        "issue": "«Обратные действия» заявлены, в заданиях почти не проверяются (кроме намёка)."
+      }
+    ],
+    "fixes": [
+      "Один task: «Если 4+3=7, то 7−3=?» для связи +/−.",
+      "Dialog укоротить: не спойлерить то же число, что в task 1."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "tali_wrong_claim",
+      "all_multiple_choice",
+      "take_away_story"
+    ]
+  },
+  {
+    "id": "g1m-sub-l2",
+    "grade": 1,
+    "subject": "Математика",
+    "world": "g1math",
+    "title": "Вычитание из 10",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "keep",
+    "problems": [
+      {
+        "ref": "tasks 1–4",
+        "issue": "Все «10 − n»; полезно, но однообразно — нет пары «если 10−3=7, то 10−7=?»."
+      }
+    ],
+    "fixes": [
+      "Добавить task на пару: «10−6=4. Сколько 10−4?» (проверка дополнения).",
+      "Визуал: 10 точек, зачеркнуть 3 — выбрать остаток."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "ten_minus",
+      "number_bonds_10",
+      "tali_wrong_claim"
+    ]
+  },
+  {
+    "id": "g1m-sub-l3",
+    "grade": 1,
+    "subject": "Математика",
+    "world": "g1math",
+    "title": "Смешанные примеры",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "revise",
+    "problems": [
+      {
+        "ref": "task 1",
+        "issue": "Тали считает «сначала 4−3», ответ всё равно 6 — ребёнок может подтвердить неверный порядок, получив «верно» по числу."
+      },
+      {
+        "ref": "task 3",
+        "issue": "Формулировка «Верно ли: 7−2=5+2=7?» запутанна для 7 лет; цепочка равенств выглядит как одно выражение."
+      }
+    ],
+    "fixes": [
+      "Task 1: варианты про порядок («Сначала сложить 5+4» ✓ / «Сначала 4−3» ✗), затем отдельно ответ 6.",
+      "Task 3: «7−2=5. Проверка: 5+2=7. Верно?» — двумя короткими предложениями."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "mixed_ops_left_to_right",
+      "tali_wrong_order",
+      "all_multiple_choice"
+    ]
+  },
+  {
+    "id": "g1r-vow-l1",
+    "grade": 1,
+    "subject": "Русский язык",
+    "world": "g1rus",
+    "title": "Буквы А, О, У",
+    "coherence": 2,
+    "usefulness": 3,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "revise",
+    "problems": [
+      {
+        "ref": "intro 2",
+        "issue": "Про Я/Ю/Е/Ё и КОНЬ — тема следующих уроков, не А/О/У."
+      },
+      {
+        "ref": "task 2",
+        "issue": "«В слове УХО есть буква А?» — слабый фокус на А/О/У (проверка отсутствия А)."
+      }
+    ],
+    "fixes": [
+      "Intro 2: «В УТКА — У, в ОСЕНЬ — О, в АИСТ — А. Гласные можно петь».",
+      "Task 2 заменить: «Какая гласная первая в слове ОСЕНЬ?» → О."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "tali_wrong_claim",
+      "first_letter",
+      "all_multiple_choice"
+    ]
+  },
+  {
+    "id": "g1r-vow-l2",
+    "grade": 1,
+    "subject": "Русский язык",
+    "world": "g1rus",
+    "title": "Я, Ю, Е, Ё",
+    "coherence": 5,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "keep",
+    "problems": [
+      {
+        "ref": "task 2",
+        "issue": "«Я = А» — важная идея мягкости, но без пары слов (МАЛ/МЯЛ или МАМА/Мая) абстрактно для 7 лет."
+      }
+    ],
+    "fixes": [
+      "В task 2 добавить опору: «МАЛ — твёрдо, МЯЛ — мягко. Я делает согласную мягкой».",
+      "Один audio/speak: повтори Ю-ЛА по слогам (если тип доступен)."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "iotated_vowels",
+      "first_letter",
+      "tali_wrong_claim"
+    ]
+  },
+  {
+    "id": "g1r-vow-l3",
+    "grade": 1,
+    "subject": "Русский язык",
+    "world": "g1rus",
+    "title": "Мягкость согласных",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "light_revise",
+    "problems": [
+      {
+        "ref": "task 3",
+        "issue": "«ДЕНЬ и ДЕНЬ — одно слово?» — опечатка/путаница; задумано ДЕНЬ vs ДЕН, формулировка ломает смысл."
+      },
+      {
+        "ref": "intro 2 / task 4",
+        "issue": "«10 гласных» — полезно, но уводит от фокуса мягкого знака; лучше 1 задание, не ядро урока."
+      }
+    ],
+    "fixes": [
+      "Task 3: «Чем отличаются КОН и КОНЬ?» → мягкость Н / ь.",
+      "Task 4 оставить как бонус или заменить на «В СОЛЬ есть Ь?»."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "soft_sign",
+      "tali_wrong_claim",
+      "all_multiple_choice"
+    ]
+  },
+  {
+    "id": "g1r-wrd-l1",
+    "grade": 1,
+    "subject": "Русский язык",
+    "world": "g1rus",
+    "title": "Читаем слова",
+    "coherence": 3,
+    "usefulness": 3,
+    "engagement": 2,
+    "diversity": 1,
+    "verdict": "revise",
+    "problems": [
+      {
+        "ref": "dialog + tasks",
+        "issue": "Анонс «читаем К-О-Т», задания — почти только «сколько слогов»; чтения/слияния нет."
+      },
+      {
+        "ref": "tasks 1–4",
+        "issue": "Однотипный подсчёт слогов (КОТ/МАМА/ДОМ/РЫБА)."
+      }
+    ],
+    "fixes": [
+      "Добавить task: собери слово из букв К-О-Т / выбери прочитанное слово по картинке.",
+      "Оставить 2 слоговых + 2 чтения (МА-МА → мама)."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "syllable_count_only",
+      "all_multiple_choice",
+      "tali_wrong_claim"
+    ]
+  },
+  {
+    "id": "g1r-wrd-l2",
+    "grade": 1,
+    "subject": "Русский язык",
+    "world": "g1rus",
+    "title": "Слоги",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "light_revise",
+    "problems": [
+      {
+        "ref": "dialog/npc",
+        "issue": "Фокус СТОЛ/СТУЛ (внимание к букве) смешивается с темой слогов — два навыка без явной связки."
+      }
+    ],
+    "fixes": [
+      "Разделить: 2 task на различение СТОЛ/СТУЛ, 2 на слоги ТРА-ВА / МА-ЛИ-НА.",
+      "Task с хлопками оставить — сильный ABA-приём."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "minimal_pair_stol_stul",
+      "syllable_clap",
+      "tali_wrong_claim"
+    ]
+  },
+  {
+    "id": "g1r-wrd-l3",
+    "grade": 1,
+    "subject": "Русский язык",
+    "world": "g1rus",
+    "title": "Предложения",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "revise",
+    "problems": [
+      {
+        "ref": "dialog/tali",
+        "issue": "Вводит «подлежащее и сказуемое» — тяжеловато для старта 1 класса; задания про заглавную и знаки, не про главные члены."
+      },
+      {
+        "ref": "tasks 2–4",
+        "issue": "Дублируют будущие уроки g1r-grm (заглавная, знаки) — мало про «кто? что делает?»."
+      }
+    ],
+    "fixes": [
+      "Dialog: «Предложение — законченная мысль: Кто? Что делает?» без терминов.",
+      "Tasks: «В „Кот бежит“ кто действует?» / «Что делает кот?» + 1 про большую букву."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "sentence_vs_words",
+      "capital_and_period_overlap",
+      "tali_wrong_claim"
+    ]
+  },
+  {
+    "id": "g1r-grm-l1",
+    "grade": 1,
+    "subject": "Русский язык",
+    "world": "g1rus",
+    "title": "Заглавная буква",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "keep",
+    "problems": [
+      {
+        "ref": "tasks",
+        "issue": "Только MC; нет «исправь написание» с вводом/выбором исправленной строки как единственного интерактива."
+      },
+      {
+        "ref": "tasks overall",
+        "issue": "Относительно разнообразна по смыслу (имена/города/исправление), но тип всё ещё только multiple_choice — потолок diversity."
+      }
+    ],
+    "fixes": [
+      "Добавить task: выбрать правильно написанное из трёх строк (уже близко в task 3 — усилить визуально).",
+      "ABA оставить да/нет про имена."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "capitalization_rules",
+      "tali_wrong_claim",
+      "fix_the_sentence"
+    ]
+  },
+  {
+    "id": "g1r-grm-l2",
+    "grade": 1,
+    "subject": "Русский язык",
+    "world": "g1rus",
+    "title": "Знаки препинания",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "keep",
+    "problems": [
+      {
+        "ref": "task 3",
+        "issue": "«Ура! Каникулы!» — два восклицания; для 7 лет ок, но можно одно короткое «Ура!»."
+      }
+    ],
+    "fixes": [
+      "Укоротить стимул до «Ура___» с выбором !",
+      "Один match: предложение → знак."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "end_punctuation",
+      "tali_wrong_claim",
+      "all_multiple_choice"
+    ]
+  },
+  {
+    "id": "g1r-grm-l3",
+    "grade": 1,
+    "subject": "Русский язык",
+    "world": "g1rus",
+    "title": "Вопросы кто? что?",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "keep",
+    "problems": [
+      {
+        "ref": "tasks 2–5",
+        "issue": "Очень ровная схема КТО/ЧТО; мало контекста предложения."
+      }
+    ],
+    "fixes": [
+      "1–2 task вида «___ мяукает?» / «___ лежит на столе?» с полной фразой.",
+      "Сохранить облако/собака/книга — удачные контрасты."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "who_vs_what",
+      "tali_wrong_claim",
+      "all_multiple_choice"
+    ]
+  },
+  {
+    "id": "g1w-sch-l1",
+    "grade": 1,
+    "subject": "Окружающий мир",
+    "world": "g1world",
+    "title": "Школьные принадлежности",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "light_revise",
+    "problems": [
+      {
+        "ref": "intro 2",
+        "issue": "«Урок 45 минут» — тема класса/уроков (l2), не принадлежностей; плюс спорно для 1 класса по длительности."
+      },
+      {
+        "ref": "task 2–3",
+        "issue": "Дистракторы «кастрюля/молоток» слишком гротескны — угадывание без знания темы."
+      }
+    ],
+    "fixes": [
+      "Intro 2: «Пенал, линейка, ластик — тоже в портфеле».",
+      "Дистракторы ближе: мяч / тарелка / расчёска."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "school_supplies",
+      "tali_wrong_claim",
+      "absurd_distractors"
+    ]
+  },
+  {
+    "id": "g1w-sch-l2",
+    "grade": 1,
+    "subject": "Окружающий мир",
+    "world": "g1world",
+    "title": "Класс и уроки",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "light_revise",
+    "problems": [
+      {
+        "ref": "intro 2",
+        "issue": "Снова раскрывает «физкультура и рисование» — дубль с названием l3."
+      },
+      {
+        "ref": "dialog",
+        "issue": "Dialog уже про физкультуру, хотя урок шире (математика/чтение/музыка)."
+      }
+    ],
+    "fixes": [
+      "Dialog: «Уроки разные — считаем, читаем, бегаем, рисуем».",
+      "Intro 2 про расписание/звонок, не спойлер l3."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "match_lesson_to_activity",
+      "tali_wrong_claim"
+    ]
+  },
+  {
+    "id": "g1w-sch-l3",
+    "grade": 1,
+    "subject": "Окружающий мир",
+    "world": "g1world",
+    "title": "Физкультура и рисование",
+    "coherence": 1,
+    "usefulness": 2,
+    "engagement": 5,
+    "diversity": 2,
+    "verdict": "rewrite",
+    "problems": [
+      {
+        "ref": "dialog",
+        "issue": "Общее «школа — место знаний», без физкультуры/рисования."
+      },
+      {
+        "ref": "tasks 1–5",
+        "issue": "Контент про полярного медведя, смешение красок, пингвина — чужой урок (природа/цвета), не школа."
+      }
+    ],
+    "fixes": [
+      "Переписать tasks: что делаем на физкультуре / что нужно для рисования / чем уроки отличаются.",
+      "Dialog: «На физкультуре двигаемся, на рисовании — краски и карандаши».",
+      "Текущие задания про Арктику/цвета перенести в природу или отдельный урок цвета."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "wrong_topic_content_swap",
+      "color_mix_orphan",
+      "all_multiple_choice"
+    ]
+  },
+  {
+    "id": "g1w-nat-l1",
+    "grade": 1,
+    "subject": "Окружающий мир",
+    "world": "g1world",
+    "title": "Деревья",
+    "coherence": 1,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "rewrite",
+    "problems": [
+      {
+        "ref": "dialog/tali + intro 2",
+        "issue": "Сразу про животных, хотя урок «Деревья»."
+      },
+      {
+        "ref": "tasks 1–5",
+        "issue": "Корова/кот/собака — ноль про дуб/берёзу/ель, ствол, листья."
+      }
+    ],
+    "fixes": [
+      "Tasks: какое дерево хвойное; что общее у деревьев; дуб/берёза/ель — узнать по признаку.",
+      "Животных перенести в g1w-nat-l2.",
+      "Dialog Tali: «У берёзы белый ствол!» вместо фермы."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "title_task_mismatch",
+      "farm_animals_wrong_slot"
+    ]
+  },
+  {
+    "id": "g1w-nat-l2",
+    "grade": 1,
+    "subject": "Окружающий мир",
+    "world": "g1world",
+    "title": "Животные",
+    "coherence": 2,
+    "usefulness": 3,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "revise",
+    "problems": [
+      {
+        "ref": "dialog",
+        "issue": "Dialog про погоду (солнце/дождь/снег), не про животных."
+      },
+      {
+        "ref": "intro 2",
+        "issue": "Снова погода — утечка в тему l3."
+      },
+      {
+        "ref": "tasks",
+        "issue": "Tasks про животных ок, но dialog/intro им противоречат."
+      }
+    ],
+    "fixes": [
+      "Dialog: «Дикие и домашние: лиса в лесу, корова дома».",
+      "Intro 2 убрать погоду; оставить слон/корова/лев/лиса."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "dialog_weather_tasks_animals",
+      "wild_vs_domestic"
+    ]
+  },
+  {
+    "id": "g1w-nat-l3",
+    "grade": 1,
+    "subject": "Окружающий мир",
+    "world": "g1world",
+    "title": "Погода",
+    "coherence": 1,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "rewrite",
+    "problems": [
+      {
+        "ref": "dialog + intro",
+        "issue": "Про бережное отношение к природе, почти без погоды/сезонов как фокуса заданий."
+      },
+      {
+        "ref": "tasks 1–5",
+        "issue": "Рыба/утка/кит/птица — среда обитания животных, не погода (дождь, снег, солнце)."
+      }
+    ],
+    "fixes": [
+      "Tasks: что надеть в дождь; когда идёт снег; солнце→тепло; туча→дождь.",
+      "Экологию («не мусори») — 1 task в конце или отдельный мини-урок.",
+      "Животных воды/воздуха вернуть в «Животные»."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "title_task_mismatch",
+      "habitat_not_weather"
+    ]
+  },
+  {
+    "id": "g1w-bdy-l1",
+    "grade": 1,
+    "subject": "Окружающий мир",
+    "world": "g1world",
+    "title": "Органы чувств",
+    "coherence": 1,
+    "usefulness": 1,
+    "engagement": 3,
+    "diversity": 1,
+    "verdict": "rewrite",
+    "problems": [
+      {
+        "ref": "dialog/intro vs tasks",
+        "issue": "Dialog/intro — глаза/уши/нос; tasks 1–4 — времена года (осень/снег/снеговик)."
+      },
+      {
+        "ref": "intro 2",
+        "issue": "«Бананы и здоровье» не про органы чувств."
+      }
+    ],
+    "fixes": [
+      "Tasks: чем нюхаем/слышим/видим/трогаем; «яблоко сладкое — какой орган?»",
+      "Сезонные tasks перенести в погоду/природу.",
+      "Убрать бананы из intro или связать со вкусом (язык)."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "severe_content_swap",
+      "seasons_in_body_lesson"
+    ]
+  },
+  {
+    "id": "g1w-bdy-l2",
+    "grade": 1,
+    "subject": "Окружающий мир",
+    "world": "g1world",
+    "title": "Здоровье",
+    "coherence": 1,
+    "usefulness": 1,
+    "engagement": 1,
+    "diversity": 1,
+    "verdict": "rewrite",
+    "problems": [
+      {
+        "ref": "dialog vs tasks",
+        "issue": "Dialog про спорт/питание; все 4 task — снова весна/цепочки времён года."
+      },
+      {
+        "ref": "intro 1",
+        "issue": "«Скелет и мышцы» заявлены и нигде не проверяются."
+      }
+    ],
+    "fixes": [
+      "Tasks: полезный завтрак; зачем зарядка; сколько спать; сладкое — понемногу.",
+      "Сезоны удалить отсюда полностью."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "severe_content_swap",
+      "seasons_chain_rote"
+    ]
+  },
+  {
+    "id": "g1w-bdy-l3",
+    "grade": 1,
+    "subject": "Окружающий мир",
+    "world": "g1world",
+    "title": "Безопасность",
+    "coherence": 1,
+    "usefulness": 1,
+    "engagement": 2,
+    "diversity": 1,
+    "verdict": "rewrite",
+    "problems": [
+      {
+        "ref": "dialog/intro vs tasks",
+        "issue": "Dialog — незнакомцы и зелёный свет; tasks — лето/купание/яблоки/цикл сезонов. Критичный навык безопасности не тренируется."
+      }
+    ],
+    "fixes": [
+      "Tasks: зелёный/красный; не открывать дверь чужим; к кому обратиться если потерялся; безопасный переход.",
+      "Сезоны — только в уроке погоды."
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "severe_content_swap",
+      "safety_announced_seasons_practiced"
+    ]
+  },
+  {
+    "id": "g1e-abc-l1",
+    "grade": 1,
+    "subject": "Английский",
+    "world": "g1eng",
+    "title": "Буквы G–J",
+    "coherence": 2,
+    "usefulness": 3,
+    "engagement": 2,
+    "diversity": 1,
+    "verdict": "revise",
+    "problems": [
+      {
+        "ref": "dialog vs intro",
+        "issue": "Dialog: G—giraffe; intro: G—goat. Разные якоря на одну букву."
+      },
+      {
+        "ref": "task 1",
+        "issue": "RU: «С какой буквы начинается GOAT?», варианты — слова bear/goat/apple (не буквы). Вопрос и опции несогласованы."
+      },
+      {
+        "ref": "task 4",
+        "issue": "Спрашивает букву JELLY, варианты jelly/kite/lamp — снова слово вместо буквы; Тали про G запутывает формат."
+      }
+    ],
+    "fixes": [
+      "Унифицировать: G—goat везде (или giraffe везде).",
+      "Либо вопрос «Какое слово на G?» + слова; либо «С какой буквы GOAT?» + G/H/I.",
+      "EN dialog.g1e_abcl1_1 расширить до уровня RU (путаница G/J)."
+    ],
+    "enkyFlags": [
+      "data.dialog.g1e_abcl1_1 EN укорочен/упрощён vs RU",
+      "data.tasks.g1e_G_for EN «with which word» vs RU «с какой буквы» — разная семантика"
+    ],
+    "templates": [
+      "letter_vs_word_option_mismatch",
+      "all_multiple_choice"
+    ]
+  },
+  {
+    "id": "g1e-abc-l2",
+    "grade": 1,
+    "subject": "Английский",
+    "world": "g1eng",
+    "title": "Буквы K–N",
+    "coherence": 2,
+    "usefulness": 3,
+    "engagement": 2,
+    "diversity": 1,
+    "verdict": "revise",
+    "problems": [
+      {
+        "ref": "dialog",
+        "issue": "NPC говорит K/L, Tali — M/N и MONKEY; в tasks MONKEY нет (есть kite/moon/nose)."
+      },
+      {
+        "ref": "tasks 1,3,4",
+        "issue": "Тот же баг: «с какой буквы» + варианты-слова."
+      }
+    ],
+    "fixes": [
+      "Либо добавить task про MONKEY→M, либо убрать MONKEY из dialog.",
+      "Выровнять формат вопрос↔опции как в l1.",
+      "EN data.dialog.g1e_abcl2_0/1 — сейчас swap ролей vs RU; синхронизировать."
+    ],
+    "enkyFlags": [
+      "data.dialog.g1e_abcl2_0 EN = буквы K–N, RU NPC = K/L words — расхождение ролей реплик",
+      "data.dialog.g1e_abcl2_1 EN stub-short"
+    ],
+    "templates": [
+      "letter_vs_word_option_mismatch",
+      "dialog_mentions_missing_word"
+    ]
+  },
+  {
+    "id": "g1e-abc-l3",
+    "grade": 1,
+    "subject": "Английский",
+    "world": "g1eng",
+    "title": "Буквы O–R",
+    "coherence": 3,
+    "usefulness": 3,
+    "engagement": 2,
+    "diversity": 1,
+    "verdict": "revise",
+    "problems": [
+      {
+        "ref": "tasks 1–4",
+        "issue": "Одинаковый шаблон «слово → выбрать то же слово из списка»; низкая нагрузка, путаница буква/слово."
+      },
+      {
+        "ref": "dialog/tali",
+        "issue": "Спрашивает QUEEN, task 3 как раз QUEEN — ок, но parrot из dialog в tasks нет (pen вместо parrot)."
+      }
+    ],
+    "fixes": [
+      "Intro: P—pen или вернуть parrot в options.",
+      "Чередовать: 2× «буква→слово», 2× «слово→буква» с опциями O/P/Q/R."
+    ],
+    "enkyFlags": [
+      "data.dialog.g1e_abcl3_1 EN stub «Well done!» без вопроса про QUEEN"
+    ],
+    "templates": [
+      "same_word_mc_loop",
+      "all_multiple_choice"
+    ]
+  },
+  {
+    "id": "g1e-num-l1",
+    "grade": 1,
+    "subject": "Английский",
+    "world": "g1eng",
+    "title": "Числа 1–5",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 2,
+    "diversity": 1,
+    "verdict": "rewrite",
+    "problems": [
+      {
+        "ref": "task 2",
+        "issue": "Ключ data.tasks.opt_two = «Кто? Что?»/«Who? What?» (коллизия с грамматикой) при correct:true — ответ бессмысленный."
+      },
+      {
+        "ref": "task 3",
+        "issue": "Вопрос «как „четыре“?» / EN g1e_four_plus_one «How do you say four…», correct = five. Ложный ключ и неверный correct."
+      }
+    ],
+    "fixes": [
+      "Исправить opt_two → «2»/«two»; для g1e использовать g1e_opt_two.",
+      "Task 3: вопрос про four, correct four; реплику Тали «Five!» оставить как ловушку.",
+      "Либо переименовать ключ four_plus_one в four_en и выставить correct four."
+    ],
+    "enkyFlags": [
+      "data.tasks.opt_two EN/RU stub-collision: Who? What? / Кто? Что?",
+      "data.tasks.g1e_four_plus_one EN спрашивает four, ключ верный five"
+    ],
+    "templates": [
+      "broken_option_key",
+      "question_answer_mismatch"
+    ]
+  },
+  {
+    "id": "g1e-num-l2",
+    "grade": 1,
+    "subject": "Английский",
+    "world": "g1eng",
+    "title": "Числа 6–10",
+    "coherence": 4,
+    "usefulness": 3,
+    "engagement": 2,
+    "diversity": 1,
+    "verdict": "light_revise",
+    "problems": [
+      {
+        "ref": "task 4",
+        "issue": "«Eight — это сколько?» варианты six/eight/ten — смешение «слово→цифра» и «слово→слово»."
+      },
+      {
+        "ref": "tasks",
+        "issue": "Только перевод чисел MC; нет сопоставления 8↔eight визуально."
+      }
+    ],
+    "fixes": [
+      "Task 4: варианты 6/8/9 или six/eight/nine единообразно.",
+      "Match: цифра — английское слово."
+    ],
+    "enkyFlags": [
+      "data.dialog.g1e_numl2_1 EN stub-short vs RU с ловушкой про eight=девять"
+    ],
+    "templates": [
+      "number_word_mc",
+      "all_multiple_choice"
+    ]
+  },
+  {
+    "id": "g1e-num-l3",
+    "grade": 1,
+    "subject": "Английский",
+    "world": "g1eng",
+    "title": "Простые примеры",
+    "coherence": 3,
+    "usefulness": 3,
+    "engagement": 2,
+    "diversity": 2,
+    "verdict": "revise",
+    "problems": [
+      {
+        "ref": "task 4",
+        "issue": "«Сколько звёзд?» без стимула/картинки количества — ответ eight не из чего вывести."
+      },
+      {
+        "ref": "dialog",
+        "issue": "Two plus three, а tasks — 6−3 и 3+4; анонс не совпадает с примерами."
+      }
+    ],
+    "fixes": [
+      "Показать 8 звёзд в вопросе/emoji или заменить на «8 = ? in English».",
+      "Dialog: «Считаем примеры: six minus three…».",
+      "Починить EN stubs g1e_six_minus_three / g1e_three_plus_four / g1e_how_many_8stars."
+    ],
+    "enkyFlags": [
+      "data.tasks.g1e_six_minus_three EN=\"6 3\" stub",
+      "data.tasks.g1e_three_plus_four EN=\"3 4\" stub",
+      "data.tasks.g1e_how_many_8stars EN=\"How many star\" stub/grammar"
+    ],
+    "templates": [
+      "missing_stimulus",
+      "en_task_stubs"
+    ]
+  },
+  {
+    "id": "g1e-grt-l1",
+    "grade": 1,
+    "subject": "Английский",
+    "world": "g1eng",
+    "title": "Приветствия",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "revise",
+    "problems": [
+      {
+        "ref": "task 2–3",
+        "issue": "Goodbye/Good night — тема прощания (l2), размывает фокус приветствий."
+      },
+      {
+        "ref": "dialog/tali",
+        "issue": "Ловушка «Good morning = до свидания» хороша, но не отражена отдельным task про morning."
+      }
+    ],
+    "fixes": [
+      "Tasks l1: Hello/Hi/Good morning (+ когда утро); Goodbye перенести в l2.",
+      "Явный task: «Good morning — это приветствие или прощание?»"
+    ],
+    "enkyFlags": [
+      "data.dialog.g1e_grtl1_1 EN stub vs RU с ловушкой Good morning",
+      "data.tasks.g1e_when_leaving / g1e_good_night_for — calque EN"
+    ],
+    "templates": [
+      "greeting_mixed_with_goodbye",
+      "tali_false_translation"
+    ]
+  },
+  {
+    "id": "g1e-grt-l2",
+    "grade": 1,
+    "subject": "Английский",
+    "world": "g1eng",
+    "title": "Прощание",
+    "coherence": 1,
+    "usefulness": 1,
+    "engagement": 2,
+    "diversity": 1,
+    "verdict": "rewrite",
+    "problems": [
+      {
+        "ref": "dialog vs intro/tasks",
+        "issue": "Dialog — Goodbye/Bye; intro и tasks — My name is / I am seven (представление). Полный разрыв темы."
+      },
+      {
+        "ref": "task 1 и 4",
+        "issue": "RU-опции g1e_opt_am/is/are = «Am/Is/Are they students?» — мусор для слотов am/is/are; correct is/am теряется в шуме."
+      }
+    ],
+    "fixes": [
+      "Либо переименовать урок в «Меня зовут / I am», либо заменить tasks на Bye/Goodbye/See you.",
+      "RU: g1e_opt_am→«am», g1e_opt_is→«is», g1e_opt_are→«are».",
+      "EN dialog оставить goodbye только если tasks про прощание."
+    ],
+    "enkyFlags": [
+      "data.dialog.g1e_grtl2_* про goodbye при tasks про name",
+      "data.tasks.g1e_opt_am/is/are RU = полные неверные фразы «Am/Is/Are they students?»"
+    ],
+    "templates": [
+      "dialog_X_tasks_Y",
+      "broken_copula_options"
+    ]
+  },
+  {
+    "id": "g1e-grt-l3",
+    "grade": 1,
+    "subject": "Английский",
+    "world": "g1eng",
+    "title": "Спасибо и пожалуйста",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "revise",
+    "problems": [
+      {
+        "ref": "intro 1",
+        "issue": "Заголовок intro «Торговая марка» — явный мусорный/ошибочный titleKey."
+      },
+      {
+        "ref": "intro 2",
+        "issue": "«Books — книги!» не про вежливость."
+      },
+      {
+        "ref": "tasks 1–2",
+        "issue": "How are you? — полезно, но шире title «thank you/please»; ok как мост, нужно связать в dialog."
+      }
+    ],
+    "fixes": [
+      "Intro titles: «Thank you» / «Please»; убрать Books.",
+      "Dialog: добавить How are you? → Fine, thanks → Thank you.",
+      "EN dialog.g1e_grtl3_1 расширить до ловушки про Thank you≠привет."
+    ],
+    "enkyFlags": [
+      "data.dialog.g1e_grtl3_1 EN generic stub",
+      "intro title «Торговая марка» — битый ключ/текст"
+    ],
+    "templates": [
+      "polite_phrases",
+      "intro_garbage_title",
+      "how_are_you_sidecar"
+    ]
+  }
+]

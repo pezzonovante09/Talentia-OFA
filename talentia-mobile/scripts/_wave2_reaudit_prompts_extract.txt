@@ -1,0 +1,64 @@
+﻿alts 2
+desc Reaudit grade 0
+You are a children's education methodologist auditing Talentia mobile curriculum AFTER wave1 content fixes. Fresh independent scores тАФ do NOT copy prior audit JSON scores.
+
+Workspace: c:\Users\User\Desktop\Talentia-v1.0\talentia-mobile
+
+Audit ALL grade-0 lessons listed in scripts/_reaudit2_ids_g0.json (36 lessons).
+
+Sources (prefer in order):
+1. curricula/grade-0-curriculum-ru.md
+2. When unsure: src/i18n/locales/ru.json + src/data/worlds.ts + rw56LessonTasks.ts
+3. Helper: node scripts/_dump_less
+---
+desc Reaudit grade 1
+You are a children's education methodologist auditing Talentia AFTER wave1 fixes. Fresh scores тАФ do NOT copy prior audit JSON.
+
+Workspace: c:\Users\User\Desktop\Talentia-v1.0\talentia-mobile
+
+Audit ALL grade-1 lessons in scripts/_reaudit2_ids_g1.json (36).
+
+Sources: curricula/grade-1-curriculum-ru.md; ru.json + worlds.ts + g1rusBridgedTasks.ts / g1worldRewrittenTasks.ts; node scripts/_dump_lesson.mjs <id>
+
+Score 1тАУ5: coherence, usefulness, engagement, diversity. Verdict ok|polish|revise. problem
+---
+desc Reaudit grade 2
+You are a children's education methodologist auditing Talentia AFTER wave1 fixes. Fresh scores тАФ do NOT copy prior audit JSON.
+
+Workspace: c:\Users\User\Desktop\Talentia-v1.0\talentia-mobile
+
+Audit ALL grade-2 lessons in scripts/_reaudit2_ids_g2.json (36).
+
+Sources: curricula/grade-2-curriculum-ru.md; ru.json + worlds.ts; dump: node scripts/_dump_lesson.mjs <id>
+
+Score 1тАУ5: coherence, usefulness, engagement, diversity. problems[], fixes[], enkyFlags[], templates[].
+
+Wave1 focus (must re-check ca
+---
+desc Reaudit grade 3
+You are a children's education methodologist auditing Talentia AFTER wave1 fixes. Fresh scores тАФ do NOT copy prior audit JSON.
+
+Workspace: c:\Users\User\Desktop\Talentia-v1.0\talentia-mobile
+
+Audit ALL grade-3 lessons in scripts/_reaudit2_ids_g3.json (36).
+
+Sources: curricula/grade-3-curriculum-ru.md; ru.json + en.json + worlds.ts; dump: node scripts/_dump_lesson.mjs <id>
+
+Score 1тАУ5: coherence, usefulness, engagement, diversity. problems[], fixes[], enkyFlags[], templates[].
+
+Wave1 CRITICAL focu
+---
+desc Reaudit g4+legacy
+You are a children's education methodologist auditing Talentia AFTER wave1 fixes. Fresh scores тАФ do NOT copy prior audit JSON.
+
+Workspace: c:\Users\User\Desktop\Talentia-v1.0\talentia-mobile
+
+Audit ALL lessons in BOTH:
+- scripts/_reaudit2_ids_g4.json
+- scripts/_reaudit2_ids_glegacy.json
+Total should be ~51 (g4 + legacy).
+
+Sources: curricula/grade-4-curriculum-ru.md + legacy curriculum md if any; ru.json + worlds.ts + rw56LessonTasks.ts; dump: node scripts/_dump_lesson.mjs <id>
+
+Score 1тАУ5: cohere
+---

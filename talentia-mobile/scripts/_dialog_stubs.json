@@ -1,0 +1,284 @@
+{
+  "en_Hi_count": 36,
+  "en_by_grade": {
+    "g2": 0,
+    "g3": 0,
+    "g4": 36
+  },
+  "en_all_keys": [
+    "g4e_past_l1_0",
+    "g4e_past_l2_0",
+    "g4e_past_l3_0",
+    "g4e_pres_l1_0",
+    "g4e_pres_l2_0",
+    "g4e_pres_l3_0",
+    "g4e_quest_l1_0",
+    "g4e_quest_l2_0",
+    "g4e_quest_l3_0",
+    "g4m_cm_l1_0",
+    "g4m_cm_l2_0",
+    "g4m_cm_l3_0",
+    "g4m_fr_l1_0",
+    "g4m_fr_l2_0",
+    "g4m_fr_l3_0",
+    "g4m_md_l1_0",
+    "g4m_md_l2_0",
+    "g4m_md_l3_0",
+    "g4r_cases_l1_0",
+    "g4r_cases_l2_0",
+    "g4r_cases_l3_0",
+    "g4r_conj_l1_0",
+    "g4r_conj_l2_0",
+    "g4r_conj_l3_0",
+    "g4r_text_l1_0",
+    "g4r_text_l2_0",
+    "g4r_text_l3_0",
+    "g4s_emo_l1_0",
+    "g4s_emo_l2_0",
+    "g4s_emo_l3_0",
+    "g4s_help_l1_0",
+    "g4s_help_l2_0",
+    "g4s_help_l3_0",
+    "g4s_turn_l1_0",
+    "g4s_turn_l2_0",
+    "g4s_turn_l3_0"
+  ],
+  "en_sample20": [
+    {
+      "key": "g4e_past_l1_0",
+      "text": "Hi! Lesson: «Правильные глаголы». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4e_past_l2_0",
+      "text": "Hi! Lesson: «Неправильные глаголы». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4e_past_l3_0",
+      "text": "Hi! Lesson: «Смешанная практика». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4e_pres_l1_0",
+      "text": "Hi! Lesson: «He / She / It». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4e_pres_l2_0",
+      "text": "Hi! Lesson: «Отрицание». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4e_pres_l3_0",
+      "text": "Hi! Lesson: «Вопросы». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4e_quest_l1_0",
+      "text": "Hi! Lesson: «Да/нет вопросы». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4e_quest_l2_0",
+      "text": "Hi! Lesson: «Wh-questions». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4e_quest_l3_0",
+      "text": "Hi! Lesson: «Краткие ответы». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4m_cm_l1_0",
+      "text": "Hi! Lesson: «Основы умножения». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4m_cm_l2_0",
+      "text": "Hi! Lesson: «Многозначное × однозначное». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4m_cm_l3_0",
+      "text": "Hi! Lesson: «Многозначное × многозначное». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4m_fr_l1_0",
+      "text": "Hi! Lesson: «Что такое дробь?». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4m_fr_l2_0",
+      "text": "Hi! Lesson: «Равные части». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4m_fr_l3_0",
+      "text": "Hi! Lesson: «Сравнение дробей». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4m_md_l1_0",
+      "text": "Hi! Lesson: «Чтение больших чисел». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4m_md_l2_0",
+      "text": "Hi! Lesson: «Разряды числа». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4m_md_l3_0",
+      "text": "Hi! Lesson: «Сравнение чисел». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4r_cases_l1_0",
+      "text": "Hi! Lesson: «Именительный и Винительный». We'll review the key idea, then practice."
+    },
+    {
+      "key": "g4r_cases_l2_0",
+      "text": "Hi! Lesson: «Родительный и Дательный». We'll review the key idea, then practice."
+    }
+  ],
+  "ky_Privet_count": 33,
+  "ky_by_grade": {
+    "g2": 0,
+    "g3": 0,
+    "g4": 33
+  },
+  "ky_all_keys": [
+    "g4e_past_l1_0",
+    "g4e_past_l2_0",
+    "g4e_past_l3_0",
+    "g4e_pres_l1_0",
+    "g4e_pres_l2_0",
+    "g4e_pres_l3_0",
+    "g4e_quest_l1_0",
+    "g4e_quest_l3_0",
+    "g4m_cm_l1_0",
+    "g4m_cm_l2_0",
+    "g4m_cm_l3_0",
+    "g4m_fr_l2_0",
+    "g4m_fr_l3_0",
+    "g4m_md_l1_0",
+    "g4m_md_l2_0",
+    "g4m_md_l3_0",
+    "g4r_cases_l1_0",
+    "g4r_cases_l2_0",
+    "g4r_cases_l3_0",
+    "g4r_conj_l1_0",
+    "g4r_conj_l2_0",
+    "g4r_conj_l3_0",
+    "g4r_text_l1_0",
+    "g4r_text_l2_0",
+    "g4r_text_l3_0",
+    "g4s_emo_l1_0",
+    "g4s_emo_l2_0",
+    "g4s_emo_l3_0",
+    "g4s_help_l1_0",
+    "g4s_help_l3_0",
+    "g4s_turn_l1_0",
+    "g4s_turn_l2_0",
+    "g4s_turn_l3_0"
+  ],
+  "ky_sample20": [
+    {
+      "key": "g4e_past_l1_0",
+      "text": "Привет! Урок «Правильные глаголы». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4e_past_l2_0",
+      "text": "Привет! Урок «Неправильные глаголы». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4e_past_l3_0",
+      "text": "Привет! Урок «Смешанная практика». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4e_pres_l1_0",
+      "text": "Привет! Урок «He / She / It». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4e_pres_l2_0",
+      "text": "Привет! Урок «Отрицание». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4e_pres_l3_0",
+      "text": "Привет! Урок «Вопросы». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4e_quest_l1_0",
+      "text": "Привет! Урок «Да/нет вопросы». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4e_quest_l3_0",
+      "text": "Привет! Урок «Краткие ответы». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4m_cm_l1_0",
+      "text": "Привет! Урок «Основы умножения». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4m_cm_l2_0",
+      "text": "Привет! Урок «Многозначное × однозначное». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4m_cm_l3_0",
+      "text": "Привет! Урок «Многозначное × многозначное». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4m_fr_l2_0",
+      "text": "Привет! Урок «Равные части». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4m_fr_l3_0",
+      "text": "Привет! Урок «Сравнение дробей». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4m_md_l1_0",
+      "text": "Привет! Урок «Чтение больших чисел». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4m_md_l2_0",
+      "text": "Привет! Урок «Разряды числа». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4m_md_l3_0",
+      "text": "Привет! Урок «Сравнение чисел». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4r_cases_l1_0",
+      "text": "Привет! Урок «Именительный и Винительный». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4r_cases_l2_0",
+      "text": "Привет! Урок «Родительный и Дательный». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4r_cases_l3_0",
+      "text": "Привет! Урок «Творительный и Предложный». Сейчас коротко вспомним правило — и к заданиям."
+    },
+    {
+      "key": "g4r_conj_l1_0",
+      "text": "Привет! Урок «Я, ты, он/она». Сейчас коротко вспомним правило — и к заданиям."
+    }
+  ],
+  "ky_Salam": [
+    {
+      "key": "g4e_quest_l2_0",
+      "text": "Салам! Сабак: «Wh-суроолор». Азыр эрежени кыскача эстеп, тапшырмаларга өтөбүз."
+    },
+    {
+      "key": "g4s_help_l2_0",
+      "text": "Салам! Сабак: «Кылдаттык менен суроо». Азыр эрежени кыскача эстеп, тапшырмаларга өтөбүз."
+    }
+  ],
+  "en_ImTali_count": 36,
+  "en_ImTali_sample5": [
+    {
+      "key": "g4e_past_l1_1",
+      "text": "I'm Tali: read each task carefully. You can say the words out loud."
+    },
+    {
+      "key": "g4e_past_l2_1",
+      "text": "I'm Tali: read each task carefully. You can say the words out loud."
+    },
+    {
+      "key": "g4e_past_l3_1",
+      "text": "I'm Tali: read each task carefully. You can say the words out loud."
+    },
+    {
+      "key": "g4e_pres_l1_1",
+      "text": "I'm Tali: read each task carefully. You can say the words out loud."
+    },
+    {
+      "key": "g4e_pres_l2_1",
+      "text": "I'm Tali: read each task carefully. You can say the words out loud."
+    }
+  ]
+}

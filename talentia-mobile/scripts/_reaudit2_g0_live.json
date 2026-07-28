@@ -1,0 +1,6509 @@
+[
+  {
+    "id": "meadow-c5-l1",
+    "title": "Один, два, три",
+    "subject": "math",
+    "world": "meadow",
+    "source": "worlds",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Привет! Мне нужно разложить морковки по корзинкам для пикника, но я путаюсь в счёте!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Привет! Я Тали! Я тоже хочу помочь Зайке, но честно — я сам немножко путаюсь. Давай разберёмся вместе?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "mc5l1-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали смотрит на котят и говорит: «Я думаю, их ТРОЕ!» Проверь — сколько котят?",
+        "qKey": "data.tasks.pre_count_2kittens",
+        "options": [
+          {
+            "id": "a",
+            "text": "1",
+            "correct": false,
+            "key": "data.tasks.opt_one"
+          },
+          {
+            "id": "b",
+            "text": "2",
+            "correct": true,
+            "key": "data.tasks.opt_two"
+          },
+          {
+            "id": "c",
+            "text": "3",
+            "correct": false,
+            "key": "data.tasks.opt_three"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc5l1-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали учит числа и спрашивает: «Какое число идёт ПОСЛЕ двойки? Я думаю, это снова 2?»",
+        "qKey": "data.tasks.pre_next_after_2",
+        "options": [
+          {
+            "id": "a",
+            "text": "1",
+            "correct": false,
+            "key": "data.tasks.opt_one"
+          },
+          {
+            "id": "b",
+            "text": "3",
+            "correct": true,
+            "key": "data.tasks.opt_three"
+          },
+          {
+            "id": "c",
+            "text": "4",
+            "correct": false,
+            "key": "data.tasks.opt_four"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc5l1-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "У Тали было 1 печенье. Зайка дала ещё 2. Тали считает на лапах и говорит: «Думаю, стало 4!» Правильно?",
+        "qKey": "data.tasks.pre_story_tali_1plus2",
+        "options": [
+          {
+            "id": "a",
+            "text": "2",
+            "correct": false,
+            "key": "data.tasks.opt_two"
+          },
+          {
+            "id": "b",
+            "text": "3",
+            "correct": true,
+            "key": "data.tasks.opt_three"
+          },
+          {
+            "id": "c",
+            "text": "4",
+            "correct": false,
+            "key": "data.tasks.opt_four"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc5l1-t4",
+        "type": "input",
+        "aba": false,
+        "q": "У Тали 3 яблока, у зайца 1. Тали говорит: «У нас поровну!» Правда?",
+        "qKey": "data.tasks.pre_story_3apples_more_1",
+        "options": [],
+        "answer": "У Тали больше",
+        "sentence": null
+      },
+      {
+        "id": "mc5l1-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "«Помоги мне — сколько звёздочек?» — просит Тали.",
+        "qKey": "data.tasks.aba_count_3stars",
+        "options": [
+          {
+            "id": "a",
+            "text": "2",
+            "correct": false,
+            "key": "data.tasks.opt_two"
+          },
+          {
+            "id": "b",
+            "text": "3",
+            "correct": true,
+            "key": "data.tasks.opt_three"
+          }
+        ],
+        "answer": null,
+        "sentence": null,
+        "en": "How many stars?",
+        "ky": "Канча жылдызча?"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ]
+  },
+  {
+    "id": "meadow-c5-l2",
+    "title": "Четыре и пять",
+    "subject": "math",
+    "world": "meadow",
+    "source": "worlds",
+    "dialog": [
+      {
+        "speaker": "tali",
+        "text": "Зайка, мне нужно отсчитать морковки — четыре или пять? Я всё время теряю счёт после трёх..."
+      },
+      {
+        "speaker": "npc",
+        "text": "Четыре больше трёх, а пять больше четырёх! Давайте попросим нашего друга помочь!"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "mc5l2-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "На картинке пиццы. Тали считает: «Раз, два, три... всё!» Помоги ему досчитать — сколько пицц?",
+        "qKey": "data.tasks.pre_count_4pizzas",
+        "options": [
+          {
+            "id": "a",
+            "text": "3",
+            "correct": false,
+            "key": "data.tasks.opt_three"
+          },
+          {
+            "id": "b",
+            "text": "4",
+            "correct": true,
+            "key": "data.tasks.opt_four"
+          },
+          {
+            "id": "c",
+            "text": "5",
+            "correct": false,
+            "key": "data.tasks.opt_five"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc5l2-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали смотрит на ряд: 1, 2, __, 4, 5. «Тут что-то пропало, но я не знаю что!» Подскажи!",
+        "qKey": "data.tasks.pre_missing_1_2_gap_4_5",
+        "options": [
+          {
+            "id": "a",
+            "text": "1",
+            "correct": false,
+            "key": "data.tasks.opt_one"
+          },
+          {
+            "id": "b",
+            "text": "3",
+            "correct": true,
+            "key": "data.tasks.opt_three"
+          },
+          {
+            "id": "c",
+            "text": "5",
+            "correct": false,
+            "key": "data.tasks.opt_five"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc5l2-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "У Зайки 3 морковки, нужно 5. Тали думает: «Зайке нужно ещё 3!» Проверь его.",
+        "qKey": "data.tasks.pre_how_many_more_3to5",
+        "options": [
+          {
+            "id": "a",
+            "text": "1",
+            "correct": false,
+            "key": "data.tasks.opt_one"
+          },
+          {
+            "id": "b",
+            "text": "2",
+            "correct": true,
+            "key": "data.tasks.opt_two"
+          },
+          {
+            "id": "c",
+            "text": "3",
+            "correct": false,
+            "key": "data.tasks.opt_three"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc5l2-t4",
+        "type": "input",
+        "aba": false,
+        "q": "На ветке 2 птицы, прилетели ещё 2. Тали говорит: «Стало 5!» Правда?",
+        "qKey": "data.tasks.pre_story_2birds_2more_total",
+        "options": [],
+        "answer": "4",
+        "sentence": null
+      },
+      {
+        "id": "mc5l2-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "«Сколько яблок?» — спрашивает Тали.",
+        "qKey": "data.tasks.aba_count_5apples",
+        "options": [
+          {
+            "id": "a",
+            "text": "3",
+            "correct": false,
+            "key": "data.tasks.opt_three"
+          },
+          {
+            "id": "b",
+            "text": "5",
+            "correct": true,
+            "key": "data.tasks.opt_five"
+          }
+        ],
+        "answer": null,
+        "sentence": null,
+        "en": "How many apples?",
+        "ky": "Канча алма?"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ]
+  },
+  {
+    "id": "meadow-c5-l3",
+    "title": "Больше или меньше",
+    "subject": "math",
+    "world": "meadow",
+    "source": "worlds",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Молодец! Ты уже здорово считаешь!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я всегда хочу побольше морковок, но никак не могу понять, в какой корзинке их больше. Помоги мне выбрать правильно!"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "mc5l3-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "В первой корзинке 2 моркови, во второй — 5. Тали тянется к первой: «Тут больше!» Он прав?",
+        "qKey": "data.tasks.mc5l3_q_carrots_baskets",
+        "options": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "correct": false,
+            "key": "data.tasks.mc5l3_opt_carrots_first2"
+          },
+          {
+            "id": "b",
+            "text": "Во второй (где 5) больше!",
+            "correct": true,
+            "key": "data.tasks.mc5l3_opt_carrots_second5"
+          },
+          {
+            "id": "c",
+            "text": "Поровну",
+            "correct": false,
+            "key": "data.tasks.mc5l3_opt_carrots_equal"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc5l3-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Слева 4 фонарика, справа — 2. Тали говорит: «Меньше там, где их 4». Правда?",
+        "qKey": "data.tasks.mc5l3_q_lanterns_sides",
+        "options": [
+          {
+            "id": "a",
+            "text": "Да, Тали прав",
+            "correct": false,
+            "key": "data.tasks.mc5l3_opt_lanterns_left4"
+          },
+          {
+            "id": "b",
+            "text": "Нет — меньше там, где 2",
+            "correct": true,
+            "key": "data.tasks.mc5l3_opt_lanterns_right2"
+          },
+          {
+            "id": "c",
+            "text": "Везде одинаково",
+            "correct": false,
+            "key": "data.tasks.mc5l3_opt_lanterns_equal"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc5l3-t3",
+        "type": "fill_blank",
+        "aba": false,
+        "q": "На полянке 3 котёнка и 3 щенка. Значит _",
+        "qKey": "data.tasks.mc5l3_fb_sent",
+        "options": [],
+        "answer": null,
+        "sentence": "На полянке 3 котёнка и 3 щенка. Значит _"
+      },
+      {
+        "id": "mc5l3-t4",
+        "type": "input",
+        "aba": false,
+        "q": "Тали видит числа 1 и 4 и говорит: «Они одинаковые!» Как на самом деле?",
+        "qKey": "data.tasks.mc5l3_q_which_bigger_1_or_4",
+        "options": [],
+        "answer": "4",
+        "sentence": null
+      },
+      {
+        "id": "mc5l3-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "«3 или 1 — что больше?» — Тали хочет знать.",
+        "qKey": "data.tasks.aba_bigger_3or1",
+        "options": [
+          {
+            "id": "a",
+            "text": "1",
+            "correct": false,
+            "key": "data.tasks.opt_one"
+          },
+          {
+            "id": "b",
+            "text": "3",
+            "correct": true,
+            "key": "data.tasks.opt_three"
+          }
+        ],
+        "answer": null,
+        "sentence": null,
+        "en": "3 or 1 — which is bigger?",
+        "ky": "3 же 1 — кайсынысы чоңураак?"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "fill_blank",
+      "input"
+    ]
+  },
+  {
+    "id": "meadow-c10-l1",
+    "title": "Шесть и семь",
+    "subject": "math",
+    "world": "meadow",
+    "source": "worlds",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Шесть ягод! Семь утят! Мы идём дальше!"
+      },
+      {
+        "speaker": "tali",
+        "text": "После пяти идут шесть и семь. Хм, а сколько это на пальцах? У меня лапы — я запутался. Поможешь?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "mc10l1-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали считает роботов на картинке и говорит: «Их пять!» Проверь.",
+        "qKey": "data.tasks.pre_count_6robots",
+        "options": [
+          {
+            "id": "a",
+            "text": "5",
+            "correct": false,
+            "key": "data.tasks.opt_five"
+          },
+          {
+            "id": "b",
+            "text": "6",
+            "correct": true,
+            "key": "data.tasks.opt_six"
+          },
+          {
+            "id": "c",
+            "text": "7",
+            "correct": false,
+            "key": "data.tasks.opt_seven"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc10l1-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "На дереве 6 птичек, на кустике — 4. Тали думает, что на кустике больше, «потому что куст ближе». Прав?",
+        "qKey": "data.tasks.pre_birds_tree_vs_bush",
+        "options": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "correct": false,
+            "key": "data.tasks.pre_opt_tree_six_birds"
+          },
+          {
+            "id": "b",
+            "text": "На дереве (где 6) больше",
+            "correct": true,
+            "key": "data.tasks.pre_opt_bush_four_birds"
+          },
+          {
+            "id": "c",
+            "text": "Поровну",
+            "correct": false,
+            "key": "data.tasks.pre_opt_birds_equal_spots"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc10l1-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "У тебя 5 звёздочек, нужно 7. Тали считает: «Тебе нужно ещё 3!» Правильно?",
+        "qKey": "data.tasks.pre_how_many_more_5to7",
+        "options": [
+          {
+            "id": "a",
+            "text": "1",
+            "correct": false,
+            "key": "data.tasks.opt_one"
+          },
+          {
+            "id": "b",
+            "text": "2",
+            "correct": true,
+            "key": "data.tasks.opt_two"
+          },
+          {
+            "id": "c",
+            "text": "3",
+            "correct": false,
+            "key": "data.tasks.opt_three"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc10l1-t4",
+        "type": "input",
+        "aba": false,
+        "q": "В красном аквариуме 6 рыбок, в синем 7. В каком больше?",
+        "qKey": "data.tasks.pre_story_6fish_7fish_which_more",
+        "options": [],
+        "answer": "В синем",
+        "sentence": null
+      },
+      {
+        "id": "mc10l1-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "«Сколько звёздочек?» — спрашивает Тали.",
+        "qKey": "data.tasks.aba_count_7stars",
+        "options": [
+          {
+            "id": "a",
+            "text": "6",
+            "correct": false,
+            "key": "data.tasks.opt_six"
+          },
+          {
+            "id": "b",
+            "text": "7",
+            "correct": true,
+            "key": "data.tasks.opt_seven"
+          }
+        ],
+        "answer": null,
+        "sentence": null,
+        "en": "How many stars?",
+        "ky": "Канча жылдызча?"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ]
+  },
+  {
+    "id": "meadow-c10-l2",
+    "title": "Восемь, девять, десять",
+    "subject": "math",
+    "world": "meadow",
+    "source": "worlds",
+    "dialog": [
+      {
+        "speaker": "tali",
+        "text": "Восемь, девять, десять — почти добрался! Но я часто забываю: после семи идёт восемь или девять? Поможешь запомнить?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Девять — самое большое однозначное число! Давайте запомним вместе!"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "mc10l2-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "На дереве 9 попугаев. 2 улетели. Тали считает: «Осталось 6!» Проверь.",
+        "qKey": "data.tasks.pre_story_parrots_9minus2",
+        "options": [
+          {
+            "id": "a",
+            "text": "6",
+            "correct": false,
+            "key": "data.tasks.opt_six"
+          },
+          {
+            "id": "b",
+            "text": "7",
+            "correct": true,
+            "key": "data.tasks.opt_seven"
+          },
+          {
+            "id": "c",
+            "text": "8",
+            "correct": false,
+            "key": "data.tasks.opt_eight"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc10l2-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Какое число пропущено: 6, 7, __, 9?",
+        "qKey": "data.tasks.pre_missing_6_7_gap_9",
+        "options": [
+          {
+            "id": "a",
+            "text": "7",
+            "correct": false,
+            "key": "data.tasks.opt_seven"
+          },
+          {
+            "id": "b",
+            "text": "8",
+            "correct": true,
+            "key": "data.tasks.opt_eight"
+          },
+          {
+            "id": "c",
+            "text": "10",
+            "correct": false,
+            "key": "data.tasks.opt_ten"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc10l2-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали пытается сосчитать звёздочки. Сколько их?",
+        "qKey": "data.tasks.pre_count_9stars_shine",
+        "options": [
+          {
+            "id": "a",
+            "text": "8",
+            "correct": false,
+            "key": "data.tasks.opt_eight"
+          },
+          {
+            "id": "b",
+            "text": "9",
+            "correct": true,
+            "key": "data.tasks.opt_nine"
+          },
+          {
+            "id": "c",
+            "text": "10",
+            "correct": false,
+            "key": "data.tasks.opt_ten"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc10l2-t4",
+        "type": "input",
+        "aba": false,
+        "q": "У паука 4 лапки слева и 4 справа. Тали: «У паука 6 лапок!» Как на самом деле?",
+        "qKey": "data.tasks.pre_story_spider_8legs",
+        "options": [],
+        "answer": "8",
+        "sentence": null
+      },
+      {
+        "id": "mc10l2-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "«Что идёт после 7?» — не помнит Тали.",
+        "qKey": "data.tasks.aba_after_7",
+        "options": [
+          {
+            "id": "a",
+            "text": "8",
+            "correct": true,
+            "key": "data.tasks.opt_eight"
+          },
+          {
+            "id": "b",
+            "text": "9",
+            "correct": false,
+            "key": "data.tasks.opt_nine"
+          }
+        ],
+        "answer": null,
+        "sentence": null,
+        "en": "What comes after 7?",
+        "ky": "7ден кийин эмне келет?"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ]
+  },
+  {
+    "id": "meadow-c10-l3",
+    "title": "Сравниваем числа",
+    "subject": "math",
+    "world": "meadow",
+    "source": "worlds",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Покажи мне: 7 больше 3? Ты точно умеешь!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я соберу больше ягод, чем у тебя! Проверим?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "mc10l3-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Паттерн: 2, 4, 6, 8, …?",
+        "qKey": "data.tasks.pre_pattern_2_4_6_8",
+        "options": [
+          {
+            "id": "a",
+            "text": "9",
+            "correct": false,
+            "key": "data.tasks.opt_nine"
+          },
+          {
+            "id": "b",
+            "text": "10",
+            "correct": true,
+            "key": "data.tasks.opt_ten"
+          },
+          {
+            "id": "c",
+            "text": "7",
+            "correct": false,
+            "key": "data.tasks.opt_seven"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc10l3-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "В одной коробке 6 кубиков, в другой 4. Сколько всего?",
+        "qKey": "data.tasks.pre_story_cubes_6plus4",
+        "options": [
+          {
+            "id": "a",
+            "text": "9",
+            "correct": false,
+            "key": "data.tasks.opt_nine"
+          },
+          {
+            "id": "b",
+            "text": "10",
+            "correct": true,
+            "key": "data.tasks.opt_ten"
+          },
+          {
+            "id": "c",
+            "text": "11",
+            "correct": false,
+            "key": "data.tasks.opt_eleven"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc10l3-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "В левой корзине 6 яблок, в правой — 4. В какой корзине яблок больше?",
+        "qKey": "data.tasks.pre_mc10l3_apples_baskets_more",
+        "options": [
+          {
+            "id": "a",
+            "text": "В левой (где 6)",
+            "correct": true,
+            "key": "data.tasks.pre_opt_left_basket_6_apples"
+          },
+          {
+            "id": "b",
+            "text": "В правой (где 4)",
+            "correct": false,
+            "key": "data.tasks.pre_opt_right_basket_4_apples"
+          },
+          {
+            "id": "c",
+            "text": "Одинаково в обеих корзинах",
+            "correct": false,
+            "key": "data.tasks.pre_opt_apples_equal_baskets"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mc10l3-t4",
+        "type": "input",
+        "aba": false,
+        "q": "Какое число между 8 и 10?",
+        "qKey": "data.tasks.pre_between_8_10",
+        "options": [],
+        "answer": "9",
+        "sentence": null
+      },
+      {
+        "id": "mc10l3-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "«9 или 10 — что больше?» — Тали хочет знать.",
+        "qKey": "data.tasks.aba_bigger_9or10",
+        "options": [
+          {
+            "id": "a",
+            "text": "9",
+            "correct": false,
+            "key": "data.tasks.opt_nine"
+          },
+          {
+            "id": "b",
+            "text": "10",
+            "correct": true,
+            "key": "data.tasks.opt_ten"
+          }
+        ],
+        "answer": null,
+        "sentence": null,
+        "en": "9 or 10 — which is bigger?",
+        "ky": "9 же 10 — кайсынысы чоңураак?"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ]
+  },
+  {
+    "id": "meadow-sh-l1",
+    "title": "Круг и квадрат",
+    "subject": "math",
+    "world": "meadow",
+    "source": "worlds",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Смотри — круглые и квадратные вещи вокруг нас!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Круг катится, квадрат стоит! У них разные свойства!"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "mshl1-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Что из этого круглое?",
+        "qKey": "data.tasks.pre_which_is_round",
+        "options": [
+          {
+            "id": "a",
+            "text": "Дверь",
+            "correct": false,
+            "key": "data.tasks.pre_opt_door"
+          },
+          {
+            "id": "b",
+            "text": "Монета",
+            "correct": true,
+            "key": "data.tasks.pre_opt_coin"
+          },
+          {
+            "id": "c",
+            "text": "Кирпич",
+            "correct": false,
+            "key": "data.tasks.pre_opt_brick"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mshl1-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "У круга есть углы — правда?",
+        "qKey": "data.tasks.pre_circle_has_corners",
+        "options": [
+          {
+            "id": "a",
+            "text": "Да",
+            "correct": false,
+            "key": "data.tasks.opt_yes"
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "correct": true,
+            "key": "data.tasks.opt_no"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mshl1-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Сколько сторон у квадрата?",
+        "qKey": "data.tasks.pre_square_sides_count",
+        "options": [
+          {
+            "id": "a",
+            "text": "3",
+            "correct": false,
+            "key": "data.tasks.opt_three"
+          },
+          {
+            "id": "b",
+            "text": "4",
+            "correct": true,
+            "key": "data.tasks.opt_four"
+          },
+          {
+            "id": "c",
+            "text": "5",
+            "correct": false,
+            "key": "data.tasks.opt_five"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mshl1-t4",
+        "type": "input",
+        "aba": false,
+        "q": "У какой фигуры 4 угла?",
+        "qKey": "data.tasks.pre_which_has_4_corners",
+        "options": [],
+        "answer": "Квадрат",
+        "sentence": null
+      },
+      {
+        "id": "mshl1-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Снежок — круг или квадрат?",
+        "qKey": "data.tasks.aba_snowball_shape",
+        "options": [
+          {
+            "id": "a",
+            "text": "Круг",
+            "correct": true,
+            "key": "data.tasks.opt_circle"
+          },
+          {
+            "id": "b",
+            "text": "Квадрат",
+            "correct": false,
+            "key": "data.tasks.opt_square"
+          }
+        ],
+        "answer": null,
+        "sentence": null,
+        "en": "A snowball — circle or square?",
+        "ky": "Кар кому — тегерек же квадрат?"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ]
+  },
+  {
+    "id": "meadow-sh-l2",
+    "title": "Треугольник и прямоугольник",
+    "subject": "math",
+    "world": "meadow",
+    "source": "worlds",
+    "dialog": [
+      {
+        "speaker": "tali",
+        "text": "Три угла — это треугольник! Посмотри на крышу!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Я нашла прямоугольный лист! Он похож на книжку!"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "mshl2-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Сколько сторон у треугольника?",
+        "qKey": "data.tasks.mshl2_triangle_sides_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "3",
+            "correct": true,
+            "key": "data.tasks.opt_three"
+          },
+          {
+            "id": "b",
+            "text": "4",
+            "correct": false,
+            "key": "data.tasks.opt_four"
+          },
+          {
+            "id": "c",
+            "text": "5",
+            "correct": false,
+            "key": "data.tasks.opt_five"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mshl2-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Дверь похожа на какую фигуру?",
+        "qKey": "data.tasks.pre_door_shape",
+        "options": [
+          {
+            "id": "a",
+            "text": "Круг",
+            "correct": false,
+            "key": "data.tasks.opt_circle"
+          },
+          {
+            "id": "b",
+            "text": "Прямоугольник",
+            "correct": true,
+            "key": "data.tasks.pre_opt_rectangle"
+          },
+          {
+            "id": "c",
+            "text": "Треугольник",
+            "correct": false,
+            "key": "data.tasks.opt_triangle"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mshl2-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "У какой фигуры 4 угла?",
+        "qKey": "data.tasks.mshl2_four_corners_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Круг",
+            "correct": false,
+            "key": "data.tasks.opt_circle"
+          },
+          {
+            "id": "b",
+            "text": "Треугольник",
+            "correct": false,
+            "key": "data.tasks.opt_triangle"
+          },
+          {
+            "id": "c",
+            "text": "Прямоугольник",
+            "correct": true,
+            "key": "data.tasks.pre_opt_rectangle"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mshl2-t4",
+        "type": "input",
+        "aba": false,
+        "q": "Что больше всего похоже на прямоугольник: мяч, книга или дверь?",
+        "qKey": "data.tasks.mshl2_rect_in_room_q",
+        "options": [],
+        "answer": "Книга",
+        "sentence": null
+      },
+      {
+        "id": "mshl2-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Дверь — прямоугольник?",
+        "qKey": "data.tasks.aba_door_shape",
+        "options": [
+          {
+            "id": "a",
+            "text": "Прямоугольник",
+            "correct": true,
+            "key": "data.tasks.pre_opt_rectangle"
+          },
+          {
+            "id": "b",
+            "text": "Круг",
+            "correct": false,
+            "key": "data.tasks.opt_circle"
+          }
+        ],
+        "answer": null,
+        "sentence": null,
+        "en": "Is a door a rectangle?",
+        "ky": "Эшик — түз төрт бурчтуу беле?"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ]
+  },
+  {
+    "id": "meadow-sh-l3",
+    "title": "Нахожу фигуры",
+    "subject": "math",
+    "world": "meadow",
+    "source": "worlds",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Фигуры везде — в доме, на улице, в природе!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Молодец! Ты знаешь все основные геометрические фигуры!"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "mshl3-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "У меня 3 угла и 3 стороны. Я острая как пика. Кто я?",
+        "qKey": "data.tasks.pre_riddle_3corners_3sides",
+        "options": [
+          {
+            "id": "a",
+            "text": "Квадрат",
+            "correct": false,
+            "key": "data.tasks.opt_square"
+          },
+          {
+            "id": "b",
+            "text": "Круг",
+            "correct": false,
+            "key": "data.tasks.opt_circle"
+          },
+          {
+            "id": "c",
+            "text": "Треугольник",
+            "correct": true,
+            "key": "data.tasks.opt_triangle"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mshl3-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Сколько сторон у треугольника?",
+        "qKey": "data.tasks.pre_triangle_sides",
+        "options": [
+          {
+            "id": "a",
+            "text": "2",
+            "correct": false,
+            "key": "data.tasks.opt_two"
+          },
+          {
+            "id": "b",
+            "text": "3",
+            "correct": true,
+            "key": "data.tasks.opt_three"
+          },
+          {
+            "id": "c",
+            "text": "4",
+            "correct": false,
+            "key": "data.tasks.opt_four"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mshl3-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Круг, квадрат, треугольник, апельсин — что лишнее?",
+        "qKey": "data.tasks.pre_odd_one_out_shapes",
+        "options": [
+          {
+            "id": "a",
+            "text": "Круг",
+            "correct": false,
+            "key": "data.tasks.opt_circle"
+          },
+          {
+            "id": "b",
+            "text": "Квадрат",
+            "correct": false,
+            "key": "data.tasks.opt_square"
+          },
+          {
+            "id": "c",
+            "text": "Апельсин 🍊",
+            "correct": true,
+            "key": "data.tasks.pre_opt_orange_fruit_obj"
+          }
+        ],
+        "answer": null,
+        "sentence": null
+      },
+      {
+        "id": "mshl3-t4",
+        "type": "input",
+        "aba": false,
+        "q": "У какой фигуры НЕТ углов?",
+        "qKey": "data.tasks.pre_which_shape_no_corners",
+        "options": [],
+        "answer": "Круг",
+        "sentence": null
+      },
+      {
+        "id": "mshl3-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Сколько углов у треугольника?",
+        "qKey": "data.tasks.aba_triangle_corners",
+        "options": [
+          {
+            "id": "a",
+            "text": "3",
+            "correct": true,
+            "key": "data.tasks.opt_three"
+          },
+          {
+            "id": "b",
+            "text": "4",
+            "correct": false,
+            "key": "data.tasks.opt_four"
+          }
+        ],
+        "answer": null,
+        "sentence": null,
+        "en": "How many corners does a triangle have?",
+        "ky": "Үч бурчтуктун канча бурчу бар?"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ]
+  },
+  {
+    "id": "forest-v-l1",
+    "title": "Буква А",
+    "subject": "reading_ru",
+    "world": "forest",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Я нашёл букву А на коре дерева!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Буква А — первая в алфавите! Я умею её петь: ААААА! Но иногда я не сразу нахожу её в словах. Поможешь мне?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "fvl1-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали хочет купить огромный полосатый фрукт, начинающийся на А. Он говорит: «Наверное, это огурец?» Прав ли Тали?",
+        "qKey": "data.tasks.nrw_fvl1_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Арбуз",
+            "correct": true,
+            "key": "data.tasks.nrw_fvl1_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Огурец",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl1_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Банан",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl1_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fvl1-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали пишет маме: «МАМА». Есть ли в этом слове буква А?",
+        "qKey": "data.tasks.nrw_fvl1_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Да, и не одна!",
+            "correct": true,
+            "key": "data.tasks.nrw_fvl1_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl1_t2_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fvl1-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали решил петь в лесу. Какой звук тянется дольше всего: А, М или Т?",
+        "qKey": "data.tasks.nrw_fvl1_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "А",
+            "correct": true,
+            "key": "data.tasks.nrw_fvl1_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "М",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl1_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Т",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl1_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fvl1-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Шпион спрятал букву А в одном из слов. В каком слове её НЕТ — там шпион не прятался!",
+        "qKey": "data.tasks.nrw_fvl1_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Аист",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl1_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Арбуз",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl1_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "Слон",
+            "correct": true,
+            "key": "data.tasks.nrw_fvl1_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fvl1-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "АРБУЗ — первая буква?",
+        "qKey": "data.tasks.nrw_fvl1_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "А",
+            "correct": true,
+            "key": "data.tasks.nrw_fvl1_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "О",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl1_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "АРБУЗ — первая буква?",
+        "ky": "АРБУЗ — первая буква?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "forest-v-l2",
+    "title": "Буквы О и У",
+    "subject": "reading_ru",
+    "world": "forest",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "tali",
+        "text": "Буквы О и У — тоже гласные! Но я их иногда путаю со словами. Поможешь?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Гласные буквы можно петь долго! О-О-О, У-У-У! Давай попробуем вместе!"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "fvl2-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали видит пушистое белое пятно в небе. «Это начинается на О... наверное, астероид?» Что это на самом деле?",
+        "qKey": "data.tasks.nrw_fvl2_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Астероид",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl2_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Облако",
+            "correct": true,
+            "key": "data.tasks.nrw_fvl2_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Утка",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl2_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fvl2-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали живёт в ДОМе. Какая буква — гласная, которую можно петь?",
+        "qKey": "data.tasks.nrw_fvl2_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Д",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl2_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "О",
+            "correct": true,
+            "key": "data.tasks.nrw_fvl2_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "М",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl2_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fvl2-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Детектив Тали проверяет слово УТКА. Он говорит: «Тут две буквы У!» Прав?",
+        "qKey": "data.tasks.nrw_fvl2_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Одна",
+            "correct": true,
+            "key": "data.tasks.nrw_fvl2_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Две",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl2_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Три",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl2_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fvl2-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали ищет слово без букв О и У. Какое слово подходит?",
+        "qKey": "data.tasks.nrw_fvl2_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Осёл",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl2_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Утка",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl2_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "Кит",
+            "correct": true,
+            "key": "data.tasks.nrw_fvl2_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fvl2-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "ОБЛАКО — первая буква?",
+        "qKey": "data.tasks.nrw_fvl2_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "О",
+            "correct": true,
+            "key": "data.tasks.nrw_fvl2_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "У",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl2_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "ОБЛАКО — первая буква?",
+        "ky": "ОБЛАКО — первая буква?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "forest-v-l3",
+    "title": "Буквы И и Э",
+    "subject": "reading_ru",
+    "world": "forest",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Теперь учим И и Э! Почти все гласные будут твоими!"
+      },
+      {
+        "speaker": "tali",
+        "text": "В слове АИСТ целых два гласных! А ты их слышишь?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "fvl3-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали играет в прятки со словами. ИГРА — с какой буквы начинается? Тали говорит: «С буквы А!»",
+        "qKey": "data.tasks.nrw_fvl3_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "И",
+            "correct": true,
+            "key": "data.tasks.nrw_fvl3_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Э",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl3_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "А",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl3_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fvl3-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали плывёт в море и видит КИТа. Какая гласная «живёт» в слове КИТ?",
+        "qKey": "data.tasks.nrw_fvl3_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "К",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl3_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "И",
+            "correct": true,
+            "key": "data.tasks.nrw_fvl3_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "Т",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl3_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fvl3-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Слово ЭКРАН — с какой гласной начинается?",
+        "qKey": "data.tasks.nrw_fvl3_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Э",
+            "correct": true,
+            "key": "data.tasks.nrw_fvl3_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "И",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl3_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "О",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl3_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fvl3-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали читает слово ЛЕС. Какой звук тянется и поётся?",
+        "qKey": "data.tasks.nrw_fvl3_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Л",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl3_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Е",
+            "correct": true,
+            "key": "data.tasks.nrw_fvl3_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "С",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl3_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fvl3-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "ИГРА — первая буква?",
+        "qKey": "data.tasks.nrw_fvl3_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "И",
+            "correct": true,
+            "key": "data.tasks.nrw_fvl3_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "Э",
+            "correct": false,
+            "key": "data.tasks.nrw_fvl3_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "ИГРА — первая буква?",
+        "ky": "ИГРА — первая буква?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "forest-con-l1",
+    "title": "Буквы М и С",
+    "subject": "reading_ru",
+    "world": "forest",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "tali",
+        "text": "Смотри — буква М! М-М-М... я не могу её долго петь!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Согласные «натыкаются» на что-то. М, С, Т, К, Н — все такие! Поможешь нам разобраться?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "fconl1-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали встретил в лесу МЕДВЕДЬ. С какой буквы начинается? Тали говорит: «С буквы П!»",
+        "qKey": "data.tasks.nrw_fconl1_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "М",
+            "correct": true,
+            "key": "data.tasks.nrw_fconl1_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "П",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl1_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Б",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl1_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fconl1-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали пробует петь букву М долго, как песню. Не получается. Значит М — это...?",
+        "qKey": "data.tasks.nrw_fconl1_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Гласная",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl1_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Согласная",
+            "correct": true,
+            "key": "data.tasks.nrw_fconl1_t2_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fconl1-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали ищет слово на букву С. Говорит: «Это Мышка!» Помоги найти правильное.",
+        "qKey": "data.tasks.nrw_fconl1_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Мышка",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl1_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Слон",
+            "correct": true,
+            "key": "data.tasks.nrw_fconl1_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Пчела",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl1_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fconl1-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "ПАУК, МУХА, ОСЁЛ, СОВА — у кого первая буква гласная?",
+        "qKey": "data.tasks.nrw_fconl1_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Паук",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl1_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Муха",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl1_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "Осёл",
+            "correct": true,
+            "key": "data.tasks.nrw_fconl1_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fconl1-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "МЕДВЕДЬ — первая буква?",
+        "qKey": "data.tasks.nrw_fconl1_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "М",
+            "correct": true,
+            "key": "data.tasks.nrw_fconl1_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "П",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl1_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "МЕДВЕДЬ — первая буква?",
+        "ky": "МЕДВЕДЬ — первая буква?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "forest-con-l2",
+    "title": "Буквы Т и К",
+    "subject": "reading_ru",
+    "world": "forest",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Т-Т-Т! Тигр идёт. К-К-К! Кот мурлычет!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Буквы Т и К — согласные. Слышишь — они короткие! Я их учу, но иногда путаю. Поможешь?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "fconl2-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали увидел полосатого хищника. Слово ТИГР — с какой буквы начинается?",
+        "qKey": "data.tasks.nrw_fconl2_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Т",
+            "correct": true,
+            "key": "data.tasks.nrw_fconl2_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "К",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl2_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Д",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl2_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fconl2-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали пробует петь букву К долго-долго. Ничего не выходит! Значит К — это...?",
+        "qKey": "data.tasks.nrw_fconl2_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Гласная",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl2_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Согласная",
+            "correct": true,
+            "key": "data.tasks.nrw_fconl2_t2_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fconl2-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали ищет животное на букву К. Говорит: «Это тигр!» Помоги.",
+        "qKey": "data.tasks.nrw_fconl2_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Тигр",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl2_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Крокодил",
+            "correct": true,
+            "key": "data.tasks.nrw_fconl2_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Дельфин",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl2_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fconl2-t4",
+        "type": "input",
+        "aba": false,
+        "q": "Тали нашёл пушистого зверька. Слово КОШКА — напиши первую букву!",
+        "qKey": "data.tasks.nrw_fconl2_t4_q",
+        "options": [],
+        "answer": null
+      },
+      {
+        "id": "fconl2-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "ТИГР — первая буква?",
+        "qKey": "data.tasks.nrw_fconl2_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Т",
+            "correct": true,
+            "key": "data.tasks.nrw_fconl2_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "К",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl2_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "ТИГР — первая буква?",
+        "ky": "ТИГР — первая буква?"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ]
+  },
+  {
+    "id": "forest-con-l3",
+    "title": "Буква Н",
+    "subject": "reading_ru",
+    "world": "forest",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "tali",
+        "text": "Буква Н — как в слове НОС! Ещё — НЕБО, НОРА!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Я собираю буквы в ранце! Уже пять согласных! Тали, а ты все запомнил?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "fconl3-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали нарисовал нос. Слово НОС — с какой буквы начинается?",
+        "qKey": "data.tasks.nrw_fconl3_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Н",
+            "correct": true,
+            "key": "data.tasks.nrw_fconl3_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "О",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl3_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Р",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl3_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fconl3-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Буква Н — гласная или согласная? Тали думает, что гласная, потому что «звучит мягко». Прав ли он?",
+        "qKey": "data.tasks.nrw_fconl3_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Гласная",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl3_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Согласная",
+            "correct": true,
+            "key": "data.tasks.nrw_fconl3_t2_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fconl3-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали ищет слово на Н. Нора, Небо, Арбуз — какое лишнее?",
+        "qKey": "data.tasks.nrw_fconl3_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Нора",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl3_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Небо",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl3_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Арбуз",
+            "correct": true,
+            "key": "data.tasks.nrw_fconl3_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fconl3-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Шпион подменил первую букву в слове НОГА на другую. Получилось РОГА. Какую букву поставил шпион?",
+        "qKey": "data.tasks.nrw_fconl3_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Р",
+            "correct": true,
+            "key": "data.tasks.nrw_fconl3_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Л",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl3_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "М",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl3_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fconl3-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "НОС — первая буква?",
+        "qKey": "data.tasks.nrw_fconl3_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Н",
+            "correct": true,
+            "key": "data.tasks.nrw_fconl3_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "Р",
+            "correct": false,
+            "key": "data.tasks.nrw_fconl3_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "НОС — первая буква?",
+        "ky": "НОС — первая буква?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "forest-syl-l1",
+    "title": "Слоги МА, МО, МУ",
+    "subject": "reading_ru",
+    "world": "forest",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "М + А = МА! Вот что такое слог! Слышишь: МА-МА?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Слог — это кусочек слова. МА-МА — два слога! Тали считает: «В слове МАМА — три слога!» Правда ли это?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "fsyll1-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали строит слово. Первый кирпичик поёт: «Ммм-Ааа!» Какой это слог?",
+        "qKey": "data.tasks.nrw_fsyll1_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "МА",
+            "correct": true,
+            "key": "data.tasks.nrw_fsyll1_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "МО",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll1_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "МУ",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll1_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fsyll1-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали слышит «МУ-МУ» за забором. Говорит: «Это кот!» Прав?",
+        "qKey": "data.tasks.nrw_fsyll1_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Кот",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll1_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Корова",
+            "correct": true,
+            "key": "data.tasks.nrw_fsyll1_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "Собака",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll1_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fsyll1-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали хлопает на каждый слог в слове МА-МА. Говорит: «Три хлопка!» Проверь.",
+        "qKey": "data.tasks.nrw_fsyll1_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "1",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll1_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "2",
+            "correct": true,
+            "key": "data.tasks.nrw_fsyll1_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "3",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll1_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fsyll1-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали сложил два кирпичика: МА + МА. Какое слово?",
+        "qKey": "data.tasks.nrw_fsyll1_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "МАМА",
+            "correct": true,
+            "key": "data.tasks.nrw_fsyll1_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "МОЛО",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll1_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "МУКА",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll1_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fsyll1-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Покажи слог МА:",
+        "qKey": "data.tasks.nrw_fsyll1_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "МА",
+            "correct": true,
+            "key": "data.tasks.nrw_fsyll1_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "МО",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll1_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "Покажи слог МА:",
+        "ky": "Покажи слог МА:"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "forest-syl-l2",
+    "title": "Слоги СА, СО, СУ",
+    "subject": "reading_ru",
+    "world": "forest",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "tali",
+        "text": "Ёжик показывает Тали слоги на С: СА, СО, СУ. Повтори за ним!"
+      },
+      {
+        "speaker": "npc",
+        "text": "СА — как в САНИ, СО — как в СОВА, СУ — как в СУМКА. Учимся слышать С!"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "fsyll2-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали слышит звук «Ссс-Ооо!» Какой слог он слышит?",
+        "qKey": "data.tasks.nrw_fsyll2_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "СА",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll2_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "СО",
+            "correct": true,
+            "key": "data.tasks.nrw_fsyll2_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "СУ",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll2_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fsyll2-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали хлопает: СА-СА. Сколько хлопков?",
+        "qKey": "data.tasks.nrw_fsyll2_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "1",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll2_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "2",
+            "correct": true,
+            "key": "data.tasks.nrw_fsyll2_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "3",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll2_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fsyll2-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали летит на сове. СО-ВА — сколько слогов в имени его транспорта?",
+        "qKey": "data.tasks.nrw_fsyll2_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "1",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll2_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "2",
+            "correct": true,
+            "key": "data.tasks.nrw_fsyll2_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "3",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll2_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fsyll2-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали слепил снеговика из слогов СА + НИ. Какое слово?",
+        "qKey": "data.tasks.nrw_fsyll2_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "САНИ",
+            "correct": true,
+            "key": "data.tasks.nrw_fsyll2_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "СОНЯ",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll2_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "СОВА",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll2_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fsyll2-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Покажи слог СО:",
+        "qKey": "data.tasks.nrw_fsyll2_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "СО",
+            "correct": true,
+            "key": "data.tasks.nrw_fsyll2_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "СА",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll2_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "Покажи слог СО:",
+        "ky": "Покажи слог СО:"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "forest-syl-l3",
+    "title": "Слог НА и повторение",
+    "subject": "reading_ru",
+    "world": "forest",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Слово НОРА — это НО + РА. Два слога!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Отличная работа! Ты умеешь делить слова на слоги — даже лучше меня! Я иногда всё ещё сбиваюсь на длинных словах."
+      }
+    ],
+    "tasks": [
+      {
+        "id": "fsyll3-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали услышал слог «Нн-Аа!» Какой кирпичик он поймал?",
+        "qKey": "data.tasks.nrw_fsyll3_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "МА",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll3_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "НА",
+            "correct": true,
+            "key": "data.tasks.nrw_fsyll3_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "СА",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll3_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fsyll3-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Лиса пригласила Тали в НО-РУ. Сколько слогов в слове НОРА?",
+        "qKey": "data.tasks.nrw_fsyll3_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "1",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll3_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "2",
+            "correct": true,
+            "key": "data.tasks.nrw_fsyll3_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "3",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll3_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fsyll3-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали запускает ракету РА-КЕ-ТА. Какой первый слог улетает?",
+        "qKey": "data.tasks.nrw_fsyll3_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "РА",
+            "correct": true,
+            "key": "data.tasks.nrw_fsyll3_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "НА",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll3_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "КЕ",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll3_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fsyll3-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали строит слово: первый кирпичик НО-, второй нужно найти. Какое слово получится?",
+        "qKey": "data.tasks.nrw_fsyll3_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "НО-ГА",
+            "correct": true,
+            "key": "data.tasks.nrw_fsyll3_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "МО-РЕ",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll3_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "СО-ЛЬ",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll3_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "fsyll3-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Покажи слог НА:",
+        "qKey": "data.tasks.nrw_fsyll3_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "НА",
+            "correct": true,
+            "key": "data.tasks.nrw_fsyll3_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "СА",
+            "correct": false,
+            "key": "data.tasks.nrw_fsyll3_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "Покажи слог НА:",
+        "ky": "Покажи слог НА:"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "garden-col-l1",
+    "title": "Красный, синий, зелёный",
+    "subject": "logic",
+    "world": "garden",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Добро пожаловать в мой сад! Я готовлю радугу-флажки на праздник, но перепутала все цвета!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Цвета помогают описывать всё вокруг! Но я тоже иногда путаюсь — помоги нам с Тарой разобраться?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "gcoll1-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали нашёл в саду маленькую красную ягоду. Что это?",
+        "qKey": "data.tasks.nrw_gcoll1_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Клубника",
+            "correct": true,
+            "key": "data.tasks.nrw_gcoll1_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Черника",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll1_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Баклажан",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll1_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gcoll1-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали красит рисунок. Что из этого НЕ красное?",
+        "qKey": "data.tasks.nrw_gcoll1_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Яблоко",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll1_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Помидор",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll1_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "Солнце",
+            "correct": true,
+            "key": "data.tasks.nrw_gcoll1_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gcoll1-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали прыгает по болоту: «Лягушка — красная!» Правда?",
+        "qKey": "data.tasks.nrw_gcoll1_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Да",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll1_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Нет, лягушка зелёная!",
+            "correct": true,
+            "key": "data.tasks.nrw_gcoll1_t3_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gcoll1-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали смотрит на небо днём. Какого оно цвета? Тали говорит: «Красное!» Прав ли он?",
+        "qKey": "data.tasks.nrw_gcoll1_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Да, красное",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll1_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Нет — небо синее!",
+            "correct": true,
+            "key": "data.tasks.nrw_gcoll1_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "Зелёное, как трава",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll1_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gcoll1-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Клубника — какого цвета?",
+        "qKey": "data.tasks.nrw_gcoll1_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Красный",
+            "correct": true,
+            "key": "data.tasks.nrw_gcoll1_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "Синий",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll1_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "Клубника — какого цвета?",
+        "ky": "Клубника — какого цвета?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "garden-col-l2",
+    "title": "Жёлтый, оранжевый и размеры",
+    "subject": "logic",
+    "world": "garden",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "tali",
+        "text": "Жёлтые бананы, оранжевые апельсины — всё такое яркое!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Я маленькая, но умная! Черепахи очень умные! Тали, а ты знаешь чем жёлтый отличается от оранжевого?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "gcoll2-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали видит в поле огромный цветок, который всегда смотрит на солнце. Подсолнух — какого цвета?",
+        "qKey": "data.tasks.nrw_gcoll2_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Красный",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll2_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Жёлтый",
+            "correct": true,
+            "key": "data.tasks.nrw_gcoll2_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Синий",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll2_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gcoll2-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали — юный художник. Он смешал красную и жёлтую краску. Что получилось?",
+        "qKey": "data.tasks.nrw_gcoll2_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Зелёный",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll2_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Оранжевый",
+            "correct": true,
+            "key": "data.tasks.nrw_gcoll2_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "Фиолетовый",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll2_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gcoll2-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали берёт фиолетовый овощ — баклажан. Правда, что баклажан фиолетовый?",
+        "qKey": "data.tasks.nrw_gcoll2_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Да!",
+            "correct": true,
+            "key": "data.tasks.nrw_gcoll2_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll2_t3_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gcoll2-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали раскрашивает небо жёлтой кисточкой. Что он рисует?",
+        "qKey": "data.tasks.nrw_gcoll2_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Солнце",
+            "correct": true,
+            "key": "data.tasks.nrw_gcoll2_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Траву",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll2_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "Ягоду",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll2_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gcoll2-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Подсолнух — какого цвета?",
+        "qKey": "data.tasks.nrw_gcoll2_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Жёлтый",
+            "correct": true,
+            "key": "data.tasks.nrw_gcoll2_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "Красный",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll2_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "Подсолнух — какого цвета?",
+        "ky": "Подсолнух — какого цвета?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "garden-col-l3",
+    "title": "Белый, чёрный и повторение",
+    "subject": "logic",
+    "world": "garden",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Мы знаем столько цветов! Белый снег, чёрная ночь!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Молодец! Теперь ты знаешь все основные цвета — даже больше меня знаешь!"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "gcoll3-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали смотрит про Арктику. Там огромный зверь. «Он синий!» — говорит Тали. Какого цвета полярный медведь?",
+        "qKey": "data.tasks.nrw_gcoll3_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Белый",
+            "correct": true,
+            "key": "data.tasks.nrw_gcoll3_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Синий",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll3_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Красный",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll3_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gcoll3-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали снова в лаборатории красок! Синий + Жёлтый = ?",
+        "qKey": "data.tasks.nrw_gcoll3_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Красный",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll3_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Зелёный",
+            "correct": true,
+            "key": "data.tasks.nrw_gcoll3_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "Оранжевый",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll3_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gcoll3-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали делает коллаж из чёрных предметов. Что туда НЕ попадёт?",
+        "qKey": "data.tasks.nrw_gcoll3_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Уголь",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll3_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Ночное небо",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll3_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Молоко",
+            "correct": true,
+            "key": "data.tasks.nrw_gcoll3_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gcoll3-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали получил загадку: «Я чёрно-белый, живу в Антарктиде и отлично плаваю». Кто это?",
+        "qKey": "data.tasks.nrw_gcoll3_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Дельфин",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll3_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Пингвин 🐧",
+            "correct": true,
+            "key": "data.tasks.nrw_gcoll3_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "Белый медведь",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll3_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gcoll3-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Полярный медведь — белый или чёрный?",
+        "qKey": "data.tasks.nrw_gcoll3_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Белый",
+            "correct": true,
+            "key": "data.tasks.nrw_gcoll3_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "Чёрный",
+            "correct": false,
+            "key": "data.tasks.nrw_gcoll3_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "Полярный медведь — белый или чёрный?",
+        "ky": "Полярный медведь — белый или чёрный?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "garden-anim-l1",
+    "title": "Домашние животные",
+    "subject": "logic",
+    "world": "garden",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "В моём саду живут домашние животные! Тали, ты знаешь, кто они?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Домашние животные живут рядом с людьми! Но я иногда путаю домашних и диких. Проверь меня?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "ganiml1-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали зашёл на ферму и говорит: «Молоко даёт кот!» Прав ли он?",
+        "qKey": "data.tasks.nrw_ganiml1_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Кот",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml1_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Корова",
+            "correct": true,
+            "key": "data.tasks.nrw_ganiml1_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Собака",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml1_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ganiml1-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали говорит: «Собака — дикое животное!» Как ты ответишь?",
+        "qKey": "data.tasks.nrw_ganiml1_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Да, живёт в лесу",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml1_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Нет, она домашняя!",
+            "correct": true,
+            "key": "data.tasks.nrw_ganiml1_t2_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ganiml1-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали получил голосовое сообщение: «Мр-р-р… Мяу! Я поймал мышку!» Кто прислал?",
+        "qKey": "data.tasks.nrw_ganiml1_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Собака",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml1_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Кот",
+            "correct": true,
+            "key": "data.tasks.nrw_ganiml1_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Корова",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml1_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ganiml1-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали составляет список жителей своего дома. Кто туда точно попадёт?",
+        "qKey": "data.tasks.nrw_ganiml1_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Волк",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml1_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Кот",
+            "correct": true,
+            "key": "data.tasks.nrw_ganiml1_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "Лиса",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml1_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ganiml1-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Кошка — домашнее животное?",
+        "qKey": "data.tasks.nrw_ganiml1_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Да",
+            "correct": true,
+            "key": "data.tasks.nrw_ganiml1_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml1_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "Кошка — домашнее животное?",
+        "ky": "Кошка — домашнее животное?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "garden-anim-l2",
+    "title": "Дикие животные",
+    "subject": "logic",
+    "world": "garden",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "tali",
+        "text": "Дикие звери живут в лесу и степи! К ним не подходим!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Волк и медведь — дикие! А мои соседи коровы — домашние! Тали, а лев — дикий или домашний?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "ganiml2-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали видит следы медведя. «Медведь живёт в море!» — говорит он. Где правда?",
+        "qKey": "data.tasks.nrw_ganiml2_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "В доме",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml2_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "В лесу",
+            "correct": true,
+            "key": "data.tasks.nrw_ganiml2_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "В море",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml2_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ganiml2-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?",
+        "qKey": "data.tasks.nrw_ganiml2_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Да, лев — домашний",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml2_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Нет, лев — дикий!",
+            "correct": true,
+            "key": "data.tasks.nrw_ganiml2_t2_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ganiml2-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали нашёл рыжий пушистый след в лесу. Кто это был?",
+        "qKey": "data.tasks.nrw_ganiml2_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Волк",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml2_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Лиса",
+            "correct": true,
+            "key": "data.tasks.nrw_ganiml2_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Медведь",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml2_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ganiml2-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?",
+        "qKey": "data.tasks.nrw_ganiml2_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Волк",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml2_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Лиса",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml2_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "Корова",
+            "correct": true,
+            "key": "data.tasks.nrw_ganiml2_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ganiml2-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Лиса — дикое животное?",
+        "qKey": "data.tasks.nrw_ganiml2_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Да",
+            "correct": true,
+            "key": "data.tasks.nrw_ganiml2_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml2_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "Лиса — дикое животное?",
+        "ky": "Лиса — дикое животное?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "garden-anim-l3",
+    "title": "Рыбы, птицы и лапки",
+    "subject": "logic",
+    "world": "garden",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Рыбы в воде, птицы в небе — у каждого свой дом!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Кошки ходят на четырёх лапах! А птицы летают! Тали, а ты умеешь летать? «Нет... но очень хочу научиться!»"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "ganiml3-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали — подводный исследователь! Он нашёл рыбку. Где живёт рыба?",
+        "qKey": "data.tasks.nrw_ganiml3_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "На суше",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml3_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "В воде",
+            "correct": true,
+            "key": "data.tasks.nrw_ganiml3_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "В небе",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml3_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ganiml3-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали ищет животное, которое умеет и летать, и плавать. «Это кот!» — думает он. Прав?",
+        "qKey": "data.tasks.nrw_ganiml3_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Кот",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml3_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Утка",
+            "correct": true,
+            "key": "data.tasks.nrw_ganiml3_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "Собака",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml3_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ganiml3-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали описывает животное: «Плавает, есть плавники, никогда не издаёт звук». Кто это?",
+        "qKey": "data.tasks.nrw_ganiml3_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Рыба",
+            "correct": true,
+            "key": "data.tasks.nrw_ganiml3_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Кит 🐋",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml3_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Краб 🦀",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml3_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ganiml3-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали в бинокль видит существо с крыльями и клювом. Оно поёт. Кто это?",
+        "qKey": "data.tasks.nrw_ganiml3_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Летучая мышь 🦇",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml3_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Птица 🐦",
+            "correct": true,
+            "key": "data.tasks.nrw_ganiml3_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "Белка 🐿️",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml3_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ganiml3-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Рыба живёт...?",
+        "qKey": "data.tasks.nrw_ganiml3_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "В воде",
+            "correct": true,
+            "key": "data.tasks.nrw_ganiml3_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "На суше",
+            "correct": false,
+            "key": "data.tasks.nrw_ganiml3_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "Рыба живёт…?",
+        "ky": "Рыба живёт…?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "garden-seas-l1",
+    "title": "Осень и зима",
+    "subject": "logic",
+    "world": "garden",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Осень пришла — листья падают! А потом придёт зима!"
+      },
+      {
+        "speaker": "tali",
+        "text": "В году четыре времени года. Каждое особенное! Но я всегда путаю, какое когда наступает. Поможешь мне запомнить?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "gseasl1-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали идёт по парку, слышит хруст. Листья летят с деревьев. «Это лето!» — говорит Тали. Какое время года?",
+        "qKey": "data.tasks.nrw_gseasl1_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Осень",
+            "correct": true,
+            "key": "data.tasks.nrw_gseasl1_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Весна",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl1_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Лето",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl1_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gseasl1-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали просыпается и видит белое покрывало везде. Что происходит зимой?",
+        "qKey": "data.tasks.nrw_gseasl1_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Жарко и цветут цветы",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl1_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Идёт снег",
+            "correct": true,
+            "key": "data.tasks.nrw_gseasl1_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "Падают листья",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl1_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gseasl1-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали хочет слепить снеговика! Когда это возможно?",
+        "qKey": "data.tasks.nrw_gseasl1_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Лето",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl1_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Зима",
+            "correct": true,
+            "key": "data.tasks.nrw_gseasl1_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Весна",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl1_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gseasl1-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали считает: осень, зима, весна, лето. «Всего три!» — говорит он. Сколько на самом деле?",
+        "qKey": "data.tasks.nrw_gseasl1_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "2",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl1_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "3",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl1_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "4",
+            "correct": true,
+            "key": "data.tasks.nrw_gseasl1_t4_c"
+          }
+        ],
+        "answer": null
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "garden-seas-l2",
+    "title": "Весна",
+    "subject": "logic",
+    "world": "garden",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "tali",
+        "text": "Весна! Снег тает, птицы возвращаются! Всё расцветает!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Весной я выхожу из зимней спячки! Как хорошо! Тали, скажи — после зимы что наступает?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "gseasl2-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали слышит кап-кап: с крыши течёт. Снег тает. «Это зима!» — думает он. Какое время года?",
+        "qKey": "data.tasks.nrw_gseasl2_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Зима",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl2_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Весна",
+            "correct": true,
+            "key": "data.tasks.nrw_gseasl2_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Осень",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl2_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gseasl2-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали составляет цепочку: Осень → Зима → ??? Какое время года следующее?",
+        "qKey": "data.tasks.nrw_gseasl2_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Осень",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl2_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Весна",
+            "correct": true,
+            "key": "data.tasks.nrw_gseasl2_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "Лето",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl2_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gseasl2-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали слышит знакомую песню в небе — птицы вернулись! Когда птицы прилетают из тёплых стран?",
+        "qKey": "data.tasks.nrw_gseasl2_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Зима",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl2_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Весна",
+            "correct": true,
+            "key": "data.tasks.nrw_gseasl2_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Осень",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl2_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gseasl2-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали продолжает цепочку: Зима → Весна → ??? Что после весны?",
+        "qKey": "data.tasks.nrw_gseasl2_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Осень",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl2_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Зима",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl2_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "Лето",
+            "correct": true,
+            "key": "data.tasks.nrw_gseasl2_t4_c"
+          }
+        ],
+        "answer": null
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "garden-seas-l3",
+    "title": "Лето и повторение",
+    "subject": "logic",
+    "world": "garden",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Лето! Солнечно и тепло! Можно купаться!"
+      },
+      {
+        "speaker": "tali",
+        "text": "После лета снова приходит осень — и всё повторяется! Я запомнил всю цепочку! Хочешь проверить меня?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "gseasl3-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали надевает шорты и идёт купаться! Яркое солнце, жара. Какое время года?",
+        "qKey": "data.tasks.nrw_gseasl3_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Зима",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl3_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Лето",
+            "correct": true,
+            "key": "data.tasks.nrw_gseasl3_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Осень",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl3_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gseasl3-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали хочет поплавать в реке. Когда это самое приятное?",
+        "qKey": "data.tasks.nrw_gseasl3_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Зима",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl3_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Лето",
+            "correct": true,
+            "key": "data.tasks.nrw_gseasl3_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "Осень",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl3_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gseasl3-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали крутит колесо: Зима → Весна → Лето → Осень → ??? Что дальше?",
+        "qKey": "data.tasks.nrw_gseasl3_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Зима",
+            "correct": true,
+            "key": "data.tasks.nrw_gseasl3_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Весна",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl3_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Лето",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl3_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "gseasl3-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали помогает бабушке собирать яблоки с деревьев. Когда это происходит?",
+        "qKey": "data.tasks.nrw_gseasl3_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Весна",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl3_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Осень",
+            "correct": true,
+            "key": "data.tasks.nrw_gseasl3_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "Зима",
+            "correct": false,
+            "key": "data.tasks.nrw_gseasl3_t4_c"
+          }
+        ],
+        "answer": null
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "island-abc-l1",
+    "title": "Буквы A и B",
+    "subject": "reading",
+    "world": "island",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Squawk! Добро пожаловать на Английский остров! Я Пит!"
+      },
+      {
+        "speaker": "tali",
+        "text": "В английском алфавите 26 букв! Я знаю первые две — A и B. Хотя... иногда путаю. Поможешь мне?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "iabcl1-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали встречает в болоте зелёное чудовище. «Это Bear — медведь!» — говорит он. Но зверь начинается на A. Кто это?",
+        "qKey": "data.tasks.nrw_iabcl1_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Alligator 🐊",
+            "correct": true,
+            "key": "data.tasks.nrw_iabcl1_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Bear 🐻",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl1_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Cat 🐱",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl1_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "iabcl1-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Tali берёт BALL и говорит: «BALL начинается на A!» Он прав?",
+        "qKey": "data.tasks.nrw_iabcl1_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Yes!",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl1_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "No, it starts with B",
+            "correct": true,
+            "key": "data.tasks.nrw_iabcl1_t2_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "iabcl1-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Шпион спрятался в слове, которое НЕ начинается на B. Найди его!",
+        "qKey": "data.tasks.nrw_iabcl1_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Ball ⚽",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl1_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Banana 🍌",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl1_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Apple 🍎",
+            "correct": true,
+            "key": "data.tasks.nrw_iabcl1_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "iabcl1-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали расставляет буквы: A, B, C. Какая первая в алфавите?",
+        "qKey": "data.tasks.nrw_iabcl1_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "A",
+            "correct": true,
+            "key": "data.tasks.nrw_iabcl1_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "B",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl1_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "C",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl1_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "iabcl1-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "ALLIGATOR — first letter?",
+        "qKey": "data.tasks.nrw_iabcl1_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "A",
+            "correct": true,
+            "key": "data.tasks.nrw_iabcl1_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "B",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl1_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "ALLIGATOR — first letter?",
+        "ky": "ALLIGATOR — first letter?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "island-abc-l2",
+    "title": "Буквы C и D",
+    "subject": "reading",
+    "world": "island",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "tali",
+        "text": "Отлично! Теперь учим C и D!"
+      },
+      {
+        "speaker": "npc",
+        "text": "C — Coconut (кокос)! D — Dolphin (дельфин)! Squawk! Тали, а с чего начинается DINOSAUR?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "iabcl2-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Tali видит огромное животное с длинной шеей. Начинается на C. Что это?",
+        "qKey": "data.tasks.nrw_iabcl2_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Camel 🐪",
+            "correct": true,
+            "key": "data.tasks.nrw_iabcl2_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Dog 🐶",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl2_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Elephant 🐘",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl2_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "iabcl2-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали говорит: «DINOSAUR начинается на C!» Прав ли он?",
+        "qKey": "data.tasks.nrw_iabcl2_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Да",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl2_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Нет, на D",
+            "correct": true,
+            "key": "data.tasks.nrw_iabcl2_t2_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "iabcl2-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Шпион спрятал слово, которое НЕ начинается на D. Найди его!",
+        "qKey": "data.tasks.nrw_iabcl2_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Dog 🐶",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl2_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Duck 🦆",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl2_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Cat 🐱",
+            "correct": true,
+            "key": "data.tasks.nrw_iabcl2_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "iabcl2-t4",
+        "type": "input",
+        "aba": false,
+        "q": "Тали видит утку на пруду! Какая первая буква у DUCK?",
+        "qKey": "data.tasks.nrw_iabcl2_t4_q",
+        "options": [],
+        "answer": null
+      },
+      {
+        "id": "iabcl2-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "DOG — first letter?",
+        "qKey": "data.tasks.nrw_iabcl2_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "D",
+            "correct": true,
+            "key": "data.tasks.nrw_iabcl2_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "C",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl2_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "ELEPHANT — first letter?",
+        "ky": "ELEPHANT — first letter?"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ]
+  },
+  {
+    "id": "island-abc-l3",
+    "title": "Буквы E и F",
+    "subject": "reading",
+    "world": "island",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "E — Egg (яйцо)! F — Frog (лягушка)!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Ты знаешь 6 букв: A, B, C, D, E, F! Это больше, чем я знал в твоём возрасте!"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "iabcl3-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали собирается в поездку. Берёт большую серую игрушку — начинается на E. Что это?",
+        "qKey": "data.tasks.nrw_iabcl3_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Elephant 🐘",
+            "correct": true,
+            "key": "data.tasks.nrw_iabcl3_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Giraffe 🦒",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl3_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Hippo 🦛",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl3_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "iabcl3-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали нашёл двух друзей: FOX и FROG. Оба начинаются на F?",
+        "qKey": "data.tasks.nrw_iabcl3_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Yes!",
+            "correct": true,
+            "key": "data.tasks.nrw_iabcl3_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "No",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl3_t2_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "iabcl3-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали сортирует буквы: D, E, F. Какая последняя?",
+        "qKey": "data.tasks.nrw_iabcl3_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "D",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl3_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "E",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl3_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "F",
+            "correct": true,
+            "key": "data.tasks.nrw_iabcl3_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "iabcl3-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали готовит. Он использует EGG. С какой буквы начинается EGG?",
+        "qKey": "data.tasks.nrw_iabcl3_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "E",
+            "correct": true,
+            "key": "data.tasks.nrw_iabcl3_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "F",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl3_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "A",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl3_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "iabcl3-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "FOX — first letter?",
+        "qKey": "data.tasks.nrw_iabcl3_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "F",
+            "correct": true,
+            "key": "data.tasks.nrw_iabcl3_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "E",
+            "correct": false,
+            "key": "data.tasks.nrw_iabcl3_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "FOX — first letter?",
+        "ky": "FOX — first letter?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "island-col-l1",
+    "title": "Красный, синий, зелёный",
+    "subject": "reading",
+    "world": "island",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Посмотри на все цвета! Red, Blue, Green!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Цвета описывают мир! Я учу их по-английски — иногда путаю. Поможешь?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "icoll1-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали слышит сирену: едет большая RED truck. Какого она цвета по-английски?",
+        "qKey": "data.tasks.nrw_icoll1_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Red",
+            "correct": true,
+            "key": "data.tasks.nrw_icoll1_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Blue",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll1_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Green",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll1_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "icoll1-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали берёт BLUE bag. Что туда НЕ положишь?",
+        "qKey": "data.tasks.nrw_icoll1_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "The sky ☁️",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll1_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Blueberry 🫐",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll1_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "Banana 🍌",
+            "correct": true,
+            "key": "data.tasks.nrw_icoll1_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "icoll1-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали бежит по траве. Is grass GREEN?",
+        "qKey": "data.tasks.nrw_icoll1_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Yes, green!",
+            "correct": true,
+            "key": "data.tasks.nrw_icoll1_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "No",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll1_t3_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "icoll1-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Роботу-повару нужен один RED ингредиент. Что подойдёт?",
+        "qKey": "data.tasks.nrw_icoll1_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Lemon 🍋",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll1_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Strawberry 🍓",
+            "correct": true,
+            "key": "data.tasks.nrw_icoll1_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "Blueberry 🫐",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll1_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "icoll1-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "The fire truck is...?",
+        "qKey": "data.tasks.nrw_icoll1_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Red",
+            "correct": true,
+            "key": "data.tasks.nrw_icoll1_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "Blue",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll1_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "The fire truck is…?",
+        "ky": "The fire truck is…?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "island-col-l2",
+    "title": "Жёлтый и оранжевый",
+    "subject": "reading",
+    "world": "island",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "tali",
+        "text": "Yellow sun! Orange fruit! Видишь?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Жёлтые бананы — мои любимые! Squawk! Тали, а тыква — это yellow или orange?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "icoll2-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали видит на рынке круглый ORANGE овощ для Хэллоуина. «Это blueberry!» — говорит он. Что это на самом деле?",
+        "qKey": "data.tasks.nrw_icoll2_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Pumpkin 🎃",
+            "correct": true,
+            "key": "data.tasks.nrw_icoll2_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Blueberry 🫐",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll2_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Tomato 🍅",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll2_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "icoll2-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали смешивает краски: Red + Blue = ?",
+        "qKey": "data.tasks.nrw_icoll2_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Green",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll2_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Purple",
+            "correct": true,
+            "key": "data.tasks.nrw_icoll2_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "Orange",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll2_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "icoll2-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали считает YELLOW вещи: lemon 🍋, banana 🍌, tomato 🍅, sunflower 🌻. Сколько жёлтых?",
+        "qKey": "data.tasks.nrw_icoll2_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "2",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll2_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "3",
+            "correct": true,
+            "key": "data.tasks.nrw_icoll2_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "4",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll2_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "icoll2-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали говорит: «All grapes are green!» Он прав?",
+        "qKey": "data.tasks.nrw_icoll2_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Yes",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll2_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "No, grapes can be purple too!",
+            "correct": true,
+            "key": "data.tasks.nrw_icoll2_t4_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "icoll2-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "The pumpkin is...?",
+        "qKey": "data.tasks.nrw_icoll2_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Orange",
+            "correct": true,
+            "key": "data.tasks.nrw_icoll2_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "Blue",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll2_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "The pumpkin is…?",
+        "ky": "The pumpkin is…?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "island-col-l3",
+    "title": "Повторение цветов",
+    "subject": "reading",
+    "world": "island",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "White snow! Black night! Сколько цветов!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Wonderful! Ты знаешь все основные цвета по-английски — всё лучше и лучше с каждым уроком!"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "icoll3-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали видит в Арктике большого пушистого зверя. «He is black!» — говорит Тали. Какого цвета полярный медведь?",
+        "qKey": "data.tasks.nrw_icoll3_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "White",
+            "correct": true,
+            "key": "data.tasks.nrw_icoll3_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Black",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll3_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Red",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll3_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "icoll3-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали — paint scientist: Yellow + Blue = ?",
+        "qKey": "data.tasks.nrw_icoll3_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Red",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll3_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Green",
+            "correct": true,
+            "key": "data.tasks.nrw_icoll3_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "Orange",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll3_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "icoll3-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали охотится за чёрными вещами. Один «шпион» не чёрный — найди!",
+        "qKey": "data.tasks.nrw_icoll3_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Coal ⬛",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll3_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Raven 🐦‍⬛",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll3_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Snow ❄️",
+            "correct": true,
+            "key": "data.tasks.nrw_icoll3_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "icoll3-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали видит животное: чёрно-белое, живёт на холоде, плавает отлично. Кто это?",
+        "qKey": "data.tasks.nrw_icoll3_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Seal 🦭",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll3_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Penguin 🐧",
+            "correct": true,
+            "key": "data.tasks.nrw_icoll3_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "Dolphin 🐬",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll3_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "icoll3-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "The polar bear is...?",
+        "qKey": "data.tasks.nrw_icoll3_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "White",
+            "correct": true,
+            "key": "data.tasks.nrw_icoll3_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "Black",
+            "correct": false,
+            "key": "data.tasks.nrw_icoll3_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "The polar bear is…?",
+        "ky": "The polar bear is…?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "island-anim-l1",
+    "title": "Кот и собака",
+    "subject": "reading",
+    "world": "island",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "CAT! DOG! Мои друзья на острове! Squawk!"
+      },
+      {
+        "speaker": "tali",
+        "text": "По-английски: cat = кот, dog = собака! Легко! Хотя... как звучит собака по-английски? Напомни мне?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "ianiml1-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали слышит у двери: WOOF-WOOF! «Это кот!» — говорит он. Кто стучится?",
+        "qKey": "data.tasks.nrw_ianiml1_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Cat 🐱",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml1_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Dog 🐶",
+            "correct": true,
+            "key": "data.tasks.nrw_ianiml1_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Cow 🐄",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml1_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ianiml1-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "A dog says WOOF. A cat says MEOW. Does a cat say WOOF?",
+        "qKey": "data.tasks.nrw_ianiml1_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "No",
+            "correct": true,
+            "key": "data.tasks.nrw_ianiml1_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Yes!",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml1_t2_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ianiml1-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали получает сообщение: «I say MEOW, I have whiskers.» Кто прислал?",
+        "qKey": "data.tasks.nrw_ianiml1_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Dog 🐶",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml1_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Cat 🐱",
+            "correct": true,
+            "key": "data.tasks.nrw_ianiml1_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Rabbit 🐰",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml1_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ianiml1-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали собирает домашних животных: cat и dog. Кто лишний?",
+        "qKey": "data.tasks.nrw_ianiml1_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Wolf 🐺",
+            "correct": true,
+            "key": "data.tasks.nrw_ianiml1_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Cat 🐱",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml1_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "Dog 🐶",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml1_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ianiml1-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "A dog says...?",
+        "qKey": "data.tasks.nrw_ianiml1_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Woof!",
+            "correct": true,
+            "key": "data.tasks.nrw_ianiml1_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "Meow!",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml1_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "A dog says…?",
+        "ky": "A dog says…?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "island-anim-l2",
+    "title": "Птица и рыба",
+    "subject": "reading",
+    "world": "island",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "tali",
+        "text": "BIRD умеет летать! FISH умеет плавать!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Я птица! Я умею летать И говорить! Squawk! Тали, а ты умеешь летать?"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "ianiml2-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали наблюдает, как птица взлетает. Как bird движется в небе?",
+        "qKey": "data.tasks.nrw_ianiml2_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Swim",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml2_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Fly",
+            "correct": true,
+            "key": "data.tasks.nrw_ianiml2_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Run",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml2_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ianiml2-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали бросил игрушечную рыбку в аквариум. Where does a fish live?",
+        "qKey": "data.tasks.nrw_ianiml2_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "In the sky",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml2_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "In water",
+            "correct": true,
+            "key": "data.tasks.nrw_ianiml2_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "In a tree 🌳",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml2_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ianiml2-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали сравнивает лягушку и рыбу. Лягушка умеет кое-что, чего рыба не может! Что?",
+        "qKey": "data.tasks.nrw_ianiml2_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Swim",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml2_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Jump",
+            "correct": true,
+            "key": "data.tasks.nrw_ianiml2_t3_b"
+          },
+          {
+            "id": "c",
+            "text": "Bark 🐕",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml2_t3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ianiml2-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали говорит: «All birds can fly!» Его робот-друг не согласен. Тали прав?",
+        "qKey": "data.tasks.nrw_ianiml2_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Yes!",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml2_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "No — penguins can't fly!",
+            "correct": true,
+            "key": "data.tasks.nrw_ianiml2_t4_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ianiml2-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Birds...?",
+        "qKey": "data.tasks.nrw_ianiml2_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Fly",
+            "correct": true,
+            "key": "data.tasks.nrw_ianiml2_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "Swim",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml2_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "Birds…?",
+        "ky": "Birds…?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  },
+  {
+    "id": "island-anim-l3",
+    "title": "Повторение животных",
+    "subject": "reading",
+    "world": "island",
+    "source": "rw56",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "COW says Moo! Мы выучили cat, dog, bird, fish, cow!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Ты знаешь 5 слов животных по-английски! Amazing! Это больше, чем я знал сначала!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Привет! Я Лео из Города чисел — ворота откроются, если угадаем код из чисел 11–15. Поможешь?"
+      },
+      {
+        "speaker": "tali",
+        "text": "После 10 идут 11, 12, 13, 14, 15! Я пробую, но иногда сбиваюсь. Ты поможешь мне проверить?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Молодец! Теперь числа 16–20. Они идут подряд!"
+      },
+      {
+        "speaker": "tali",
+        "text": "17 между 16 и 18! Я запомнил, хотя поначалу путался. Проверь, всё ли я правильно понял?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Сравниваем числа! Какое больше: 14 или 17?"
+      },
+      {
+        "speaker": "tali",
+        "text": "17 больше 14! Я запомнил: чем правее на числовой линии, тем больше! Теперь я хочу доказать, что научился. Проверишь меня?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Сложение — это когда объединяем! 3 + 4 = ?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я пробовал считать на пальцах, но у меня лапы! Помоги мне проверить мои ответы?"
+      },
+      {
+        "speaker": "npc",
+        "text": "До десятка! Сколько нужно добавить к 7, чтобы получить 10?"
+      },
+      {
+        "speaker": "tali",
+        "text": "7 + 3 = 10! Я запомнил этот секрет: смотрю, сколько не хватает до 10. Но с другими числами ещё путаюсь — проверишь меня?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Сложение с 10! 10 + 5 = ?"
+      },
+      {
+        "speaker": "tali",
+        "text": "10 + 5 = 15! Это я знаю точно! Хочу доказать, что стал лучше считать. Проверишь?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Вычитание — убираем часть. 7 − 3 = ?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Представь 7 яблок. Съели 3. Сколько осталось? Тали считает на лапах... и говорит: «Осталось 3!»"
+      },
+      {
+        "speaker": "npc",
+        "text": "Вычитаем из 10! 10 − 3 = ?"
+      },
+      {
+        "speaker": "tali",
+        "text": "10 − 3 = 7! Я выучил специальные пары! Хочу показать — проверь, правильно ли я их запомнил?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Смешанные примеры! 5 + 4 − 3 = ?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Сначала сложи, потом вычти! Я пробовал, но часто забываю порядок. Поможешь проверить мои ответы?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Привет! Я Маша! Буквы А, О, У — гласные!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Гласные можно петь: А-А-А! Я знаю, что в слове УТКА первая буква У. Но в других словах иногда путаюсь. Поможешь?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Буквы Я, Ю, Е, Ё — тоже гласные! Они делают согласные мягкими."
+      },
+      {
+        "speaker": "tali",
+        "text": "В слове ЮЛА первая буква Ю! Я только что это выучил. Проверь, правильно ли я запомнил!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Мягкость согласных! КОН — твёрдый, а в КОНЬ — мягкий!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Буква Ь показывает мягкость. НОС — твёрдый, НОЛЬ — мягкий! Тали говорит: «Я думаю, что Ь — это тоже гласная!» Правда?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Читаем слова! К-О-Т — КОТ. По слогам!"
+      },
+      {
+        "speaker": "tali",
+        "text": "К-О-Т — КОТ! Д-О-М — ДОМ! Читаю слова по буквам. Иногда путаю буквы местами — поможешь?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Слова СТОЛ и СТУЛ похожи. Прочитай внимательно!"
+      },
+      {
+        "speaker": "tali",
+        "text": "ТРА-ВА — два слога. КНИ-ГА — два слога! Тали говорит: «СТОЛ и СТУЛ — одно и то же слово!» Прав ли он?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Читаем предложения! Смотри: с большой буквы и знак в конце."
+      },
+      {
+        "speaker": "tali",
+        "text": "Тали говорит: «КОТ БЕЖИТ — тут два предложения!» Правда? Нет — это одно предложение с точкой в конце!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Заглавная буква! Имена и начало предложения пишут с большой буквы."
+      },
+      {
+        "speaker": "tali",
+        "text": "Маша, Москва, Тали — с большой! Тали говорит: «Значит, слово «кот» тоже надо писать с большой буквы — ведь это имя животного?»"
+      },
+      {
+        "speaker": "npc",
+        "text": "Знаки препинания! В конце предложения ставим точку или вопросительный знак."
+      },
+      {
+        "speaker": "tali",
+        "text": "«Кто это?» — вопрос. «Мама дома.» — утверждение. Тали говорит: «После вопроса всегда нужна точка!» Правда?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Вопросы КТО? и ЧТО? Кто бежит? Что растёт?"
+      },
+      {
+        "speaker": "tali",
+        "text": "КТО — про людей и животных. ЧТО — про предметы! Тали говорит: «Про облако нужно спрашивать КТО?» Правда?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Привет! Я Кеша! Ручка, тетрадь, учебник — школьные принадлежности!"
+      },
+      {
+        "speaker": "tali",
+        "text": "В школе мы учимся. В классе — парты и доска! Тали говорит: «Я думаю, что линейка — не школьная принадлежность!» Правда?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Уроки бывают разные: математика, чтение, физкультура!"
+      },
+      {
+        "speaker": "tali",
+        "text": "На физкультуре бегаем, на рисовании рисуем! Тали говорит: «На физкультуре мы решаем задачки!» Правда?"
+      },
+      {
+        "speaker": "npc",
+        "text": "На физкультуре бегаем, на рисовании рисуем! Что тебе нравится больше?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я люблю и то и другое! На физкультуре прыгаю, а на рисовании — рисую динозавров. Помоги разобраться!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Деревья — дуб, берёза, ель. У них ствол и листья!"
+      },
+      {
+        "speaker": "tali",
+        "text": "У дуба жёлуди, у берёзы — белая кора, у ели — иголки. Помоги запомнить!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Животные бывают домашние и дикие. Корова — домашняя, а медведь — дикий!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Домашние живут рядом с людьми. Дикие — в лесу и саванне. Давай проверим!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Погода бывает разная: солнце, дождь, снег! Что надеть — зависит от погоды."
+      },
+      {
+        "speaker": "tali",
+        "text": "В дождь — зонт, в снег — куртку. И природу береги: не мусори в лесу!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Органы чувств: глаза видят, уши слышат, нос чувствует запахи!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Руки трогают, язык чувствует вкус. Всё важно!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Здоровье — это спорт, зарядка, правильное питание!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Фрукты и овощи полезны. Сладкое — понемногу!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Безопасность: не разговаривай с незнакомцами!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Переходи дорогу на зелёный свет. Будь осторожен!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Привет! Я Поли! Буквы G, H, I, J — учим дальше!"
+      },
+      {
+        "speaker": "tali",
+        "text": "G — giraffe (жираф), H — house (дом). Я их выучил! Хотя... G и J иногда путаю. Поможешь?"
+      },
+      {
+        "speaker": "npc",
+        "text": "K — kitten (котёнок), L — lion (лев). Запоминаю!"
+      },
+      {
+        "speaker": "tali",
+        "text": "M — moon (луна), N — night (ночь). С какой буквы начинается MOON?"
+      },
+      {
+        "speaker": "npc",
+        "text": "O — orange (апельсин), P — parrot (попугай). Почти половина алфавита!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Q — queen (королева), R — rain (дождь)! Тали, а с какой буквы QUEEN?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Числа по-английски: one, two, three, four, five!"
+      },
+      {
+        "speaker": "tali",
+        "text": "1 = one, 2 = two. Считаю по-английски! Но иногда путаю three и four. Поможешь?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Six, seven, eight, nine, ten!"
+      },
+      {
+        "speaker": "tali",
+        "text": "6 = six, 10 = ten! Продолжаем! Тали говорит: «Eight — это девять!» Правда?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Простые примеры по-английски! Six minus three? Three plus four?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Six minus three = three! Three plus four = seven! Отлично!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Hello! Hi! Good morning!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Hello — привет! Я использую это слово всё время! Но Тали говорит: «Good morning — это «до свидания»!» Правда?"
+      },
+      {
+        "speaker": "npc",
+        "text": "My name is Polly! What is your name?"
+      },
+      {
+        "speaker": "tali",
+        "text": "My name is Tali! А ещё можно сказать: I am Tali. Как правильно спросить имя?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank you — спасибо! Please — пожалуйста!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Вежливые слова важны на любом языке! Тали спрашивает: «Thank you — это «привет»?» Прав ли он?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Привет! Я орёл Арчи! Я умею считать до ста, но сегодня запутался в десятках — помоги мне разобраться?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я тоже немного путаюсь! Арчи, давай вместе спросим у нашего друга. Он точно знает, как считать десятками!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Арчи, смотри: в числе 47 есть 4 десятка и 7 единиц. Но я никак не могу понять — а в числе 25 сколько десятков?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Хм, давай попросим помочь! Я тоже хочу разобраться с разрядами — мне нужно пересчитать свои запасы жёлудей."
+      },
+      {
+        "speaker": "npc",
+        "text": "Теперь я хочу научиться сравнивать большие числа. Тали, у тебя 82 ракушки, а у меня 78 перьев. Кто из нас собрал больше?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я думаю, я! Но погоди — давай спросим у нашего друга, чтобы точно. Мне кажется, я немного запутался…"
+      },
+      {
+        "speaker": "npc",
+        "text": "Арчи, мне нужна помощь! Я хочу купить 20 бананов и ещё 30 кокосов. Это 50 штук? Или 23? Я совсем запутался с нулями!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Хм, мне тоже сложно! Давай вместе разберёмся — у нас ведь есть умный друг!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Задача! У меня 28 желудей, Тали дал ещё 5. Сколько стало?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я думаю… 213? Нет, подожди, я посчитаю по-другому. 28 + 2 = 30, и ещё 3… Кажется, 33? Но я не уверен — проверь меня!"
+      },
+      {
+        "speaker": "npc",
+        "text": "У меня было 65 ракушек. Я отдал 23 Арчи в подарок. Арчи говорит, у меня осталось 48. А я думаю, 42. Кто прав?!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я думаю, я прав! Но давай всё-таки проверим у нашего друга…"
+      },
+      {
+        "speaker": "npc",
+        "text": "Арчи, я купил 4 пары носков (да, динозавры носят носки!). Это сколько носков? Я думаю, 6? Нет, 4+4=8? Помоги!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Умножение на 2 — это удвоение! Четыре пары — это 4 × 2. Давай посчитаем вместе с нашим другом!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Я заметил кое-что классное: ответ на умножение на 5 всегда заканчивается на 0 или 5! Это правда или я придумал?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Хм, интересно! Давай проверим на заданиях — вдруг Тали открыл великий математический секрет!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, у тебя три кармана, в каждом по 7 монет. Сколько монет всего?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Три кармана по семь… Я думаю, это 3 + 7 = 10? Нет, подожди, это же умножение! 3 × 7… Помоги мне!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Привет! Я Маша! Тали, хочу научить тебя различать твёрдые и мягкие согласные. Но сама я немного путаюсь с некоторыми словами — поможешь разобраться?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Конечно! Я, честно говоря, думал, что «твёрдый» — это когда буква сделана из камня. Оказывается, нет? Расскажи!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Маша, я написал слово «КОН» в записке. Маша смеётся и говорит, что я написал неправильно. Что не так?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, тут нужен мягкий знак! Без него слово «конь» превращается во что-то другое. Объясним нашему другу?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Маша, я прочитал слово ЛИМОН и у меня язык завязался в узел! Это Л мягкая или твёрдая?"
+      },
+      {
+        "speaker": "tali",
+        "text": "О, отличный вопрос! Лимон, лев, люди — тут Л мягкая. А вот ЛАМПА — твёрдая. Чувствуешь разницу?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Маша, я слышал про «существительное», но это звучит страшно. Это что — существо? Как монстр?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Хаха! Почти! Существительное — это слово, которое называет предмет или существо: КОТ, СТОЛ, НЕБО. Давай Тали поможем разобраться!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, глагол — это слово-действие! БЕЖИТ, ЧИТАЕТ, СПИТ. Что делает кот?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Мяукает! Это глагол? Подожди, а МЯУКАНЬЕ — это тоже глагол? Я запутался…"
+      },
+      {
+        "speaker": "npc",
+        "text": "Маша, я написал в сочинении: «Тали — динозавр». Маша говорит, что это скучно. Надо добавить прилагательное!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Тали — ЗЕЛЁНЫЙ, ВЕСЁЛЫЙ, УМНЫЙ динозавр! Прилагательное отвечает на вопрос КАКОЙ? Попробуем вместе?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Маша, я написал: «Бежит». Это предложение?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Почти! Но чего не хватает — КТО бежит? Подлежащее! «Кот бежит» — вот настоящее предложение. Поможем Тали разобраться?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, кроме главных членов, есть ещё второстепенные — они поясняют и украшают предложение!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Как приправы к еде? Без них можно, но с ними вкуснее?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Отличное сравнение! Именно так!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Маша, я написал: «Красивый бежит кот быстро». Это правильно?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Хм, слова есть, но они не связаны правильно! Слова в предложении должны «дружить» друг с другом — согласовываться. Поможем Тали исправить?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я посадил семечко, а оно не растёт! Может, я что-то неправильно делаю? Расскажи мне про растения — я ничего не знаю!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, растению нужен корень, стебель, листья и вода. Я видел с высоты много растений, но в деталях не разбираюсь. Объясни нам!"
+      },
+      {
+        "speaker": "npc",
+        "text": "ФОТО-СИНТЕЗ. Это звучит как название фокуса! Растение фотографирует солнце?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Хаха! Нет, но почти так же волшебно. Расскажи нам, как растения делают еду из света!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Арчи, я купил на рынке морковь. Это фрукт?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, нет! Морковь — это овощ, и она растёт под землёй. А яблоко — фрукт, растёт на дереве. Давай разберёмся вместе!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Арчи, я млекопитающее?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Хм, Тали — ты динозавр. А динозавры откладывали яйца! Но я не уверен, к какой группе ты относишься. Расскажи нам про млекопитающих — мы разберёмся!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Я птица! Я эксперт по птицам. Задавайте любые вопросы!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Арчи, а пингвин — это птица? Он же не летает!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Хм… это хороший вопрос. Я, честно, немного сомневаюсь…"
+      },
+      {
+        "speaker": "npc",
+        "text": "Арчи, у паука сколько ног? Я думаю, шесть — как у всех насекомых!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Хм, подожди. Паук — это точно насекомое? Я тоже не уверен. Давай проверим!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Арчи, зачем людям кости? Я бы хотел быть мягким, как подушка!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, без костей ты бы растёкся по полу! Кости — это опора. Расскажи нам, как работает скелет!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Арчи, сердце — это что делает? Я слышу «бум-бум» у себя в груди!"
+      },
+      {
+        "speaker": "tali",
+        "text": "О, это интересно! Я знаю, что сердце важное, но точно не помню зачем. Расскажи нам!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Арчи, я ел только печенье три дня подряд. Почему мне плохо?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали! Тело нужно кормить правильно — овощи, фрукты, белок. Печенье — это не еда на три дня! Расскажи нам, что полезно есть."
+      },
+      {
+        "speaker": "npc",
+        "text": "Hello! Меня зовут Поли! Тали, ты знаешь дни недели по-английски?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Monday — понедельник, это я знаю! А дальше… Tuesday? Wednesday? Я путаюсь начиная с четверга! Помоги мне!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Поли, сегодня понедельник. Значит вчера было воскресенье? Yesterday was Sunday?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Точно! Ты быстро учишься! А завтра — tomorrow — будет вторник, Tuesday!"
+      },
+      {
+        "speaker": "npc",
+        "text": "What day is it today? — Это вопрос «Какой сегодня день?»"
+      },
+      {
+        "speaker": "tali",
+        "text": "On Monday we have math! По понедельникам у нас математика. Поли, а у тебя есть расписание?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Please и Thank you — самые важные слова! Тали, ты знаешь их?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Please — пожалуйста! Thank you — спасибо! Но я иногда путаю, когда что говорить. Помоги мне!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Поли, я случайно наступил тебе на лапу. Мне сказать «Please» или что-то другое?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Sorry! Когда виноват — говоришь Sorry. А когда хочешь пройти или потревожить — Excuse me. Разница важна!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Can I? — так спрашивают разрешение. You can't — так говорят «нельзя»."
+      },
+      {
+        "speaker": "tali",
+        "text": "Can I eat this sandwich? — Можно мне съесть этот бутерброд?"
+      },
+      {
+        "speaker": "npc",
+        "text": "No, you can't — это МОЙ бутерброд, Тали!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Поли, я хочу описать наш класс по-английски, но не знаю слова! Desk — это что?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Desk — парта! Chair — стул, board — доска, book — книга. Запоминай — я помогу!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, какой у тебя любимый школьный предмет?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Math — математика! Хотя нет, Art — рисование! Нет, подожди, PE — физкультура! Я не могу выбрать!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Поли, учитель спросил меня что-то, а я не понял! Как сказать «я не понимаю»?"
+      },
+      {
+        "speaker": "tali",
+        "text": "I don't understand — я не понимаю. Или можно спросить: Can you help me? — Можешь помочь?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Я хочу посчитать, сколько чешуек у дракона на картинке! Там явно больше ста… может, тысяча?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Тысяча — это огромное число! Но мы с тобой вместе разберёмся: 100, 200, 300… идём к тысяче!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я смотрю на число 247 и пытаюсь понять — 2 сотни, 4 десятка и 7 единиц? Или я неправильно раскладываю?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, ты правильно думаешь! Давай проверим на заданиях — помоги мне убедиться, что я тоже понял правило."
+      },
+      {
+        "speaker": "tali",
+        "text": "356 и 298 — какое больше? Я хочу сказать 298, потому что там цифры интереснее… но это же неправильный подход?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Хаха! Нет, Тали. Сначала смотри на сотни — 3 больше 2, значит 356 больше. Давай закрепим!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Мне сказали, что умножение на 4 — это «удвоить дважды». Я попробовал: 4 × 5 = удвоить 5 = 10, удвоить 10 = 20. Правильно?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, это отличное открытие! Ты нашёл хитрый способ. Давай проверим его в заданиях!"
+      },
+      {
+        "speaker": "npc",
+        "text": "7 × 8 — это самый трудный пример для меня! Я всегда забываю ответ. Кто-нибудь придумал способ запомнить?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Есть мнемоника: 5, 6, 7, 8 — пять шесть семь восемь! 56 = 7 × 8. Попробуй!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я заметил кое-что про таблицу на 9: 9×1=9, 9×2=18, 9×3=27… Сумма цифр в ответе всегда равна 9! Это правда или я придумал?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, это настоящее математическое открытие! Проверь на заданиях — это действительно работает?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Деление — это как умножение наоборот? Если 2 × 3 = 6, то 6 ÷ 2 = 3? Я правильно понял?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, именно! Деление и умножение — лучшие друзья. Давай проверим твою идею на задачах!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Хочу поделить 28 печенек на 4 тарелки поровну. Я думаю, по 7. Но я не уверен — помоги проверить!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, проверим! 4 × 7 = 28? Да! Значит, ты прав. Деление всегда проверяется умножением."
+      },
+      {
+        "speaker": "tali",
+        "text": "Если я знаю 7 × 6 = 42, значит я автоматически знаю 42 ÷ 7 = 6 и 42 ÷ 6 = 7? Одно знание — три факта?!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, именно! Ты открыл главный секрет таблицы умножения. Проверим на задачах!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Я слышал про «род» существительных. Это что — у слов есть пол? Слово «стол» — мальчик, а слово «книга» — девочка?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Почти! В русском языке три рода: мужской (он), женский (она) и средний (оно). Давай разберёмся — это не так страшно, как кажется!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Ладно, мужской и женский я понял. Но СРЕДНИЙ — это что? Между мужским и женским?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Хорошая мысль! Средний — это слова с окончанием -о, -е: ОКНО, МОРЕ, СОЛНЦЕ. Они отвечают на «оно моё». Давай проверим!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я написал «синяя небо». Почему все смеются? Небо же красивое!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, небо среднего рода — СИНЕЕ небо, а не «синяя»! Прилагательное меняется по роду вместе с существительным. Разберёмся?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Я пишу в дневнике прямо сейчас. Какое время использовать — «Тали пишет» или «Тали писал»?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Прямо сейчас — значит настоящее время! «Тали пишет» — что делает прямо сейчас."
+      },
+      {
+        "speaker": "npc",
+        "text": "Я хочу написать про вчера: «Тали гулял в лесу». Правильно? Или «Тали гуляет»?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Вчера — это прошедшее время! «Тали гулял» — верно. Суффикс -Л это признак прошедшего."
+      },
+      {
+        "speaker": "tali",
+        "text": "1-е лицо — это «я»? Значит когда я говорю «я иду» — это первое лицо? А когда говорю «ты идёшь» — второе?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, ты сам разобрался! Да: я (1-е), ты (2-е), он/она (3-е). Проверим?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Красный шар, красная роза, красное яблоко… Одно слово «красный» — три разных формы! Почему?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Потому что прилагательное согласуется с существительным в роде! Шар — он (красный). Роза — она (красная). Яблоко — оно (красное)."
+      },
+      {
+        "speaker": "tali",
+        "text": "Я БОЛЬШОЙ. Слон БОЛЬШЕ меня. А кит — САМЫЙ БОЛЬШОЙ! Это и есть степени сравнения?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, ты сам привёл идеальный пример! Положительная — большой, сравнительная — больше, превосходная — самый большой."
+      },
+      {
+        "speaker": "npc",
+        "text": "ВЕСЁЛЫЙ — ГРУСТНЫЙ. БОЛЬШОЙ — МАЛЕНЬКИЙ. Это антонимы — противоположные слова! Тали это открыл в пять лет!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Отличное открытие! Давай проверим — ты знаешь все антонимы?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я потерялся! Солнце встаёт там — это восток? Или запад? Я всегда путаю!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, запомни: солнце встаёт на востоке, садится на западе. Компас поможет с севером и югом!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Глобус — это шарик с картой? Я хочу такой! Но почему карта плоская, а глобус круглый?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Глобус — точная копия формы Земли (шар). Карта — это как если раскатать апельсин скалкой: немного искажается, зато плоская и удобная!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Бишкек — это столица Кыргызстана? Я живу в столице! Это круто?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Очень круто! Столица — главный город страны. Москва — столица России, Париж — Франции, Лондон — Великобритании. А ты живёшь в Бишкеке!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Я налил воду в лужу, а через день она исчезла! Куда она ушла?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Вода испарилась — поднялась в небо! Это первый шаг круговорота воды. Потом она вернётся дождём. Расскажем Тали весь путь?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Нефть, газ, уголь — их достают из земли. Но как там оказалась нефть? Земля её сделала?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Почти! Нефть и уголь образовались из остатков древних живых существ за миллионы лет. Тали, это ископаемые в буквальном смысле — нужно откопать!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я слышал про Красную книгу. Это книга с красными страницами? Или что-то важное?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, это очень важная книга! В ней — список животных и растений, которым грозит исчезновение. Красный цвет — это сигнал опасности."
+      },
+      {
+        "speaker": "tali",
+        "text": "Лес — это экосистема? Но там же просто деревья и животные…"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, они все связаны! Деревья кормят белок, белки растаскивают семена, семена вырастают в деревья. Убери одно звено — рухнет вся цепь!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Трава → заяц → лиса. Это значит: трава кормит зайца, заяц кормит лису?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Именно! Это цепь питания. Каждое звено зависит от предыдущего. Тали, ты понял самое главное!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Люди — часть природы? Мы ведь строим города и заводы…"
+      },
+      {
+        "speaker": "npc",
+        "text": "Да, Тали! Человек — часть экосистемы. И наши действия влияют на всю природу — как положительно, так и отрицательно."
+      },
+      {
+        "speaker": "tali",
+        "text": "I am happy! You are smart! He is funny! Я пытаюсь запомнить, когда am, когда is, когда are. Помоги!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, запомни просто: am — только с I, is — с he/she/it, are — с you/we/they. Проверим?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Если «He is tall» — он высокий, то «He is not tall» — он не высокий? Просто добавить NOT?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Именно! Not ставится после am/is/are. И ещё есть сокращения: isn't, aren't. Давай попрактикуемся!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Чтобы задать вопрос, нужно поставить am/is/are в начало? «Are you ready?» — правильно?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, ты снова прав! Am I? Is he? Are you? — глагол to be переходит в начало вопроса."
+      },
+      {
+        "speaker": "tali",
+        "text": "I like apples! I drink water! Я уже знаю несколько слов про еду. Но что такое «juice»? И «porridge»?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Juice — сок! Porridge — каша. Тали, ты пьёшь сок каждое утро — теперь знаешь, как это по-английски!"
+      },
+      {
+        "speaker": "tali",
+        "text": "I like pizza! I don't like broccoli! Это самые важные фразы в жизни!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Хаха, Тали! А я люблю брокколи. Вкусы разные! Do you like…? Yes, I do! No, I don't!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Can I have some water, please? — Так просят воду вежливо?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Именно! И не забудь «please» — без него получается грубо. Table manners — правила поведения за столом — важны везде!"
+      },
+      {
+        "speaker": "tali",
+        "text": "У меня нет режима дня. Я просыпаюсь когда хочу, ем когда хочу…"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, daily routine — распорядок дня — помогает быть продуктивным! Wake up, eat breakfast, go to school. Попробуй!"
+      },
+      {
+        "speaker": "npc",
+        "text": "What time is it? — Который час? Мне всегда трудно читать время по-английски!"
+      },
+      {
+        "speaker": "tali",
+        "text": "«It's seven o'clock» — семь часов. «Half past three» — половина четвёртого (3:30). Давай потренируемся!"
+      },
+      {
+        "speaker": "tali",
+        "text": "I always eat breakfast. I never wake up early. I sometimes do homework. Это наречия частоты?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Именно! Always — всегда, usually — обычно, sometimes — иногда, never — никогда. Тали, ты уже знаешь их!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Привет! Я только что нашёл старую карту сокровищ. На ней написано: «Клад зарыт в 3 475 шагах от дуба». Я уже прошёл три тысячи шагов и не могу понять — далеко ли ещё? Помоги мне разобраться с большими числами!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, не волнуйся. Большие числа — как слоёный пирог: сначала тысячи, потом сотни, потом десятки, потом единицы. Давайте вместе покажем Тали!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Digit, мне нужна помощь! Я записал номер сейфа с сокровищами: 6 253. Но я забыл, что означает каждая цифра. Если я введу неправильно — сейф не откроется!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Спокойно, Тали. Разряды — как замочная скважина: у каждой цифры своё место и своя роль. Давайте вместе поможем Тали открыть сейф!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я нашёл два клада! В первом 8 450 монет, во втором — 8 540. Я хочу взять тот, что побольше, но не могу решить — они ведь такие похожие!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, сравнение чисел — как гонка: смотришь сначала на тысячи, потом на сотни, и так далее. Первый, кто «выбежит вперёд» — и есть большее число!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Digit, я открыл пекарню для динозавров! Сегодня испёк 213 булочек. Завтра — столько же, и послезавтра тоже. Но я не знаю, сколько всего получится за три дня. Умножение в столбик — это слишком страшно!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, давай я покажу тебе хитрость: умножаем каждый разряд отдельно, снизу вверх. Это как складывать этажи дома — по одному, и не страшно!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Строительная бригада динозавров кладёт 1 346 кирпичей в день. Мне нужно заказать кирпичи на 5 дней, но цифры такие большие... Digit, я боюсь, что ошибусь и закажу мало!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, для больших чисел столбик — лучший друг. Умножаем каждый разряд и не забываем про перенос. Погнали вместе!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Это уже совсем страшно — умножать большое на большое! 236 × 12... Я даже не знаю, с чего начать. Digit, ты точно уверен, что я справлюсь?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, главный секрет: умножаем сначала на единицы, потом на десятки — и сдвигаем второй результат на один шаг влево. Две строчки, потом складываем. Ты справишься, я в тебя верю!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Digit, у меня проблема! Я разрезал пиццу для вечеринки — на 4 части. Съел одну. Как теперь записать, сколько я съел? Целую пиццу — нет, но и ноль — тоже нет..."
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, ты только что открыл дроби! «Одна часть из четырёх» — это и есть дробь 1/4. Числитель — сколько взял, знаменатель — на сколько частей разрезали!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Digit, я делю яблоко на 4 части. Но... одна часть получилась больше остальных. Это всё равно дробь 1/4?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Нет, Тали! Это важнейшее правило дробей: части должны быть РАВНЫМИ. Иначе дробь просто не работает. Давай нарежем заново — аккуратно!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Мы с другом делили пиццу: я взял 3/8, он взял 5/8. Он говорит, что у него больше. Я не верю — ведь числа одинаковые, только 3 и 5 разные!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, ты почти разгадал правило! Когда знаменатели одинаковые — просто смотри на числители: у кого больше числитель, у того больше дробь. Это как соревнование!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Привет, я Слово! Сегодня Тали написал в дневнике: «Я хожу в школу. Ты ходишь в школу. Он ходить в школу.» Что-то не так в третьем предложении — Тали не заметил ошибку!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Правда? Мне казалось всё правильно... Объясните, пожалуйста!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Слово, я пишу пьесу про динозавров! Там есть такая реплика: «Мы петь вместе!» Звучит красиво, правда?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, «мы петь» — это не спряжение! Нужно изменить глагол по лицу. «Мы поём» — вот как звучит правильно. Давай исправим пьесу вместе!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Слово, я почти закончил пьесу! Но последняя реплика не получается: «Мы бежит к финишу!» Звучит как будто что-то не то..."
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, ты чувствуешь ошибку — это хороший знак! Теперь нужно определить спряжение глагола и подобрать правильное окончание. Ты уже почти всё умеешь!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Слово, я запутался в падежах! «Кот лежит» и «Я вижу кота» — почему «кот» в одном случае, а «кота» в другом?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, это два разных падежа! Именительный отвечает на «кто?» — это подлежащее, хозяин предложения. Винительный — «кого? что?» — это объект действия. Давай разберёмся!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Слово, мне нужно написать другу письмо! «Я отправил письмо мама» — правильно? Что-то режет слух..."
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, ты чувствуешь — «мама» здесь не подходит! После «отправил кому?» нужен дательный падеж: «маме». А «не хватает кого?» — родительный: «мамы». Давай разберём оба!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Слово, последние два падежа! Творительный и предложный — самые загадочные названия. «Творительный» — это потому что что-то творишь?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Почти угадал, Тали! Творительный — «творить с помощью чего-то». «Пишу карандашом» — творительный. А предложный — потому что он всегда употребляется С ПРЕДЛОГОМ. Никогда без него!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Слово, я прочитал рассказ «Солнце зашло. Стало темно. Птицы умолкли». Очень короткий. О чём он вообще? Непонятно!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, даже короткий текст имеет тему! Эти три предложения вместе рисуют картину. Закрой глаза — что ты видишь? Это и есть тема!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я прочитал текст про ежа: «Ёж свернулся в клубок. Иголки торчат во все стороны. Никто не тронет ежа.» Слово, что тут главная мысль? Их же три предложения — и каждое важное!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, главная мысль — это не одно из предложений, а то, что автор хотел сказать всем текстом. Зачем написан этот текст? Что читатель должен понять?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Слово, я читал про Машу, которая искала грибы. «Потом позвала сестру. Наконец набрали корзину. Сначала нашла гриб.» Что-то не так с порядком — голова кружится!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, порядок событий в тексте — это последовательность! Слова «сначала», «потом», «наконец» — маяки, которые показывают, что за чем идёт. Давай восстановим порядок!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Привет! Я Spark — новый друг Тали на Английском острове! Тали только что написал по-английски: «She go to school every day.» Я понял, что что-то не так — но не могу объяснить почему!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я старался! Разве «go» — неправильно?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Spark, мне нужно сказать, что кот не ест рыбу. Я написал: «The cat not eats fish.» Правильно?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, почти! В Present Simple отрицание строится через don't или doesn't — не просто «not». С he/she/it — doesn't, с остальными — don't. Попробуем снова!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Spark, как спросить по-английски: «Она говорит по-французски?» Я написал: «She speak French?» Звучит как-то коротко..."
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, для вопроса нам нужен вспомогательный глагол — Does! Он «прыгает» в начало. «Does she speak French?» Попробуем!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Spark, вчера я залез на гору. Как сказать по-английски? «Yesterday we climb the mountain.»"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, это прошедшее время — Past Simple! Правильные глаголы получают окончание -ed. «We climbed» — вот как!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Spark, я написал в дневнике: «Last night I haved a strange dream.» Правильно?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, «have» — неправильный глагол! У него особая форма прошедшего времени — «had». Такие глаголы нужно учить наизусть, они не добавляют -ed!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Spark, я пишу рассказ про Анну: «Last Saturday, Anna meet her friends and they watch a film.» Правильно?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, два глагола — и оба в неверной форме! Meet неправильный, watch правильный. Давай исправим вместе — и твой рассказ станет отличным!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Spark, я хочу спросить тебя: любишь ли ты мороженое? Я написал: «You like ice cream?» Правильно?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, не хватает вспомогательного глагола! «Do you like ice cream?» — вот вопрос, на который можно ответить «Yes» или «No». Таких вопросов у нас сегодня много!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Spark, я потерял свою шляпу! Как спросить: где она? Написал «What is my hat?» — но это не про место..."
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, «What» — это «что», а тебе нужно «где» — это «Where»! Вопросительные слова — это как ключи: каждый открывает свой замок. Разберём их все!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Spark, ты спросил: «Do you like cats?» Я ответил: «Yes, I likes.» Правильно?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, в кратком ответе мы повторяем вспомогательный глагол — do или does, did! «Yes, I do.» Кратко, точно, правильно!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Привет! Я Friendly — проводник по Городу социальных навыков. Сегодня Тали пытается открыть тяжёлую дверь с пакетами в лапах — и никак не может. Он стоит уже пять минут и краснеет. Что ему нужно сделать?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я не хочу просить помощи — это неловко..."
+      },
+      {
+        "speaker": "tali",
+        "text": "Friendly, мне нужен ластик у соседа по парте. Я сказал: «Дай ластик!» Он дал, но как-то хмуро... Почему?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, «Дай ластик» — это приказ, не просьба! Слово «пожалуйста» и правильная интонация превращают требование в приглашение к сотрудничеству. Попробуем по-другому?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Friendly, у меня сегодня было три ситуации, когда нужна была помощь. Я не знал, как справиться с каждой... Разбери их со мной?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Конечно! Разбор реальных ситуаций — лучший способ научиться. Погнали!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Friendly, сегодня мой друг пришёл в школу с опущенными плечами и тихим голосом. Я не знал, что сказать... Это грусть?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, ты уже умеешь читать эмоции по внешним знакам — это важный навык! Опущенные плечи, тихий голос — да, это признаки грусти. Давай разберём, как правильно реагировать."
+      },
+      {
+        "speaker": "tali",
+        "text": "Friendly, брат сломал мою модель динозавра! Я так злюсь, что хочу что-нибудь бросить. Как мне справиться с этим?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, злость — нормальная эмоция! Но важно выражать её безопасно. Расскажи брату словами, как тебе больно — это гораздо эффективнее, чем бросать вещи."
+      },
+      {
+        "speaker": "tali",
+        "text": "Friendly, я зашёл в класс и увидел сюрприз на своей парте! Глаза открылись широко, рот приоткрылся... Что это было?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, это удивление! Оно бывает приятным (как твой сюрприз) и неприятным. А спокойствие — это противоположность: ровное дыхание, расслабленные плечи, мысли без паники."
+      },
+      {
+        "speaker": "tali",
+        "text": "Friendly, в столовой длинная очередь. Друг машет мне из середины очереди и зовёт вперёд. Все смотрят..."
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, это непростой момент! Друг хочет помочь, но проталкивание нарушает права тех, кто ждёт. Уважение к очереди — это уважение к людям. Как поступить?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Friendly, трое моих друзей хотят одновременно кататься на моём самокате. Я не знаю, как разделить честно — кто-то обидится!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, справедливость — это не всегда «поровну», это когда всем понятны правила и все с ними согласны. Давай придумаем решение вместе!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Friendly, во время настольной игры я заметил, что один игрок подглядывает в карты! Что делать — ругаться или молчать?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Тали, правила игры — это договор между всеми участниками. Нарушение правил называется нечестной игрой. Не нужно ругаться — нужно спокойно назвать проблему и предложить решение."
+      }
+    ],
+    "tasks": [
+      {
+        "id": "ianiml3-t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали видит пингвина в аквариуме. Что эта птица НЕ умеет делать?",
+        "qKey": "data.tasks.nrw_ianiml3_t1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Swim",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml3_t1_a"
+          },
+          {
+            "id": "b",
+            "text": "Walk",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml3_t1_b"
+          },
+          {
+            "id": "c",
+            "text": "Fly",
+            "correct": true,
+            "key": "data.tasks.nrw_ianiml3_t1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ianiml3-t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали получает загадку: «I have a trunk. I am the biggest land animal.»",
+        "qKey": "data.tasks.nrw_ianiml3_t2_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Hippo 🦛",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml3_t2_a"
+          },
+          {
+            "id": "b",
+            "text": "Elephant 🐘",
+            "correct": true,
+            "key": "data.tasks.nrw_ianiml3_t2_b"
+          },
+          {
+            "id": "c",
+            "text": "Rhino 🦏",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml3_t2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ianiml3-t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "Тали считает лапы: у кошки 4, у птицы 2. У кого больше?",
+        "qKey": "data.tasks.nrw_ianiml3_t3_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Cat 🐱",
+            "correct": true,
+            "key": "data.tasks.nrw_ianiml3_t3_a"
+          },
+          {
+            "id": "b",
+            "text": "Bird 🐦",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml3_t3_b"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ianiml3-t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "q": "На космическом корабле Тали — только летающие животные. Кто должен остаться на земле (не летит)?",
+        "qKey": "data.tasks.nrw_ianiml3_t4_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Eagle 🦅",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml3_t4_a"
+          },
+          {
+            "id": "b",
+            "text": "Parrot 🦜",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml3_t4_b"
+          },
+          {
+            "id": "c",
+            "text": "Penguin 🐧",
+            "correct": true,
+            "key": "data.tasks.nrw_ianiml3_t4_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "ianiml3-a1",
+        "type": "multiple_choice",
+        "aba": true,
+        "q": "Can a penguin fly?",
+        "qKey": "data.tasks.nrw_ianiml3_a1_q",
+        "options": [
+          {
+            "id": "a",
+            "text": "Yes",
+            "correct": false,
+            "key": "data.tasks.nrw_ianiml3_a1_a"
+          },
+          {
+            "id": "b",
+            "text": "No",
+            "correct": true,
+            "key": "data.tasks.nrw_ianiml3_a1_b"
+          }
+        ],
+        "answer": null,
+        "en": "Can a penguin fly?",
+        "ky": "Can a penguin fly?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ]
+  }
+]

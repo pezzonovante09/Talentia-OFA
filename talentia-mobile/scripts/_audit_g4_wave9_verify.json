@@ -1,0 +1,1344 @@
+{
+  "g4Count": 36,
+  "legacyCount": 15,
+  "total": 51,
+  "factIssues": [],
+  "enkyScan": [
+    {
+      "id": "g4m-md-l1",
+      "title": "Чтение больших чисел",
+      "world": "g4math",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 1,
+      "longIds": [
+        "g4m-md-l1-t2"
+      ],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4m-md-l1-t4",
+          "answer": "Двадцать пять тысяч шестьсот",
+          "answerRu": "Двадцать пять тысяч шестьсот",
+          "q": "Экспедиция Тали прошла 25 600 шагов за неделю. Исследователь записал это число в дневник. Как правильно его прочитать?"
+        }
+      ]
+    },
+    {
+      "id": "g4m-md-l2",
+      "title": "Разряды числа",
+      "world": "g4math",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4m-md-l2-t4",
+          "answer": "5 039",
+          "answerRu": "5 039",
+          "q": "Шифровальщик Тали закодировал число: «5 тысяч, 0 сотен, 3 десятка, 9 единиц». Теперь нужно его расшифровать. Что это за "
+        }
+      ]
+    },
+    {
+      "id": "g4m-md-l3",
+      "title": "Сравнение чисел",
+      "world": "g4math",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4m-md-l3-t4",
+          "answer": "Да",
+          "answerRu": "Да",
+          "q": "Два поезда соревнуются в длине маршрута: первый проехал 12 375 км, второй — 12 735 км. Тали болеет за второй. Прав ли он"
+        }
+      ]
+    },
+    {
+      "id": "g4m-cm-l1",
+      "title": "Основы умножения",
+      "world": "g4math",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4m-cm-l1-t4",
+          "answer": "Нет, правильно 884",
+          "answerRu": "Нет, правильно 884",
+          "q": "Посмотри на пример в столбик: 221 × 4. Тали уже написал ответ «864». Верен ли он?"
+        }
+      ]
+    },
+    {
+      "id": "g4m-cm-l2",
+      "title": "Многозначное × однозначное",
+      "world": "g4math",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4m-cm-l2-t4",
+          "answer": "<",
+          "answerRu": "<",
+          "q": "Digit даёт Тали задачку: 4 135 × 7 ○ 29 000. Какой знак поставить? Напиши < или = или >"
+        }
+      ]
+    },
+    {
+      "id": "g4m-cm-l3",
+      "title": "Многозначное × многозначное",
+      "world": "g4math",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4m-cm-l3-t4",
+          "answer": "Два",
+          "answerRu": "Два",
+          "q": "Тали хочет понять: сколько промежуточных произведений получится в столбике при умножении 527 × 15?"
+        }
+      ]
+    },
+    {
+      "id": "g4m-fr-l1",
+      "title": "Что такое дробь?",
+      "world": "g4math",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4m-fr-l1-t4",
+          "answer": "Да, верно",
+          "answerRu": "Да, верно",
+          "q": "Тали взял 1 дольку из шоколадки, разломленной на 6 равных долей. Верно ли, что он взял 1/6 шоколадки?"
+        }
+      ]
+    },
+    {
+      "id": "g4m-fr-l2",
+      "title": "Равные части",
+      "world": "g4math",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4m-fr-l2-t4",
+          "answer": "5",
+          "answerRu": "5",
+          "q": "Круг поделён на 5 равных секторов. Сколько таких секторов нужно, чтобы собрать целый круг?"
+        }
+      ]
+    },
+    {
+      "id": "g4m-fr-l3",
+      "title": "Сравнение дробей",
+      "world": "g4math",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4m-fr-l3-t4",
+          "answer": "Digit",
+          "answerRu": "Digit",
+          "q": "Тали и Digit сравнивают 3/4 и 3/7. Числители одинаковые — 3 и 3. Тали говорит: «Значит дроби равные!» Но Digit не соглаш"
+        }
+      ]
+    },
+    {
+      "id": "g4r-conj-l1",
+      "title": "Я, ты, он/она",
+      "world": "g4rus",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "fill_blank"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4r-conj-l1-t3",
+          "answer": null,
+          "q": "В «Мальчик идёт по улице» глагол «идёт» стоит в _ лице."
+        }
+      ]
+    },
+    {
+      "id": "g4r-conj-l2",
+      "title": "Мы, вы, они",
+      "world": "g4rus",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4r-conj-l2-t4",
+          "answer": "идут",
+          "answerRu": "идут",
+          "q": "В пьесе Тали отряд рыцарей-динозавров отправился в поход. «Они ___ через лес». Вставь глагол «идти» в правильной форме."
+        }
+      ]
+    },
+    {
+      "id": "g4r-conj-l3",
+      "title": "Смешанная практика",
+      "world": "g4rus",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4r-conj-l3-t4",
+          "answer": "По",
+          "answerRu": "По",
+          "q": "По какому признаку определяют спряжение глагола в неопределённой форме?"
+        }
+      ]
+    },
+    {
+      "id": "g4r-cases-l1",
+      "title": "Именительный и Винительный",
+      "world": "g4rus",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "fill_blank"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4r-cases-l1-t3",
+          "answer": null,
+          "q": "После «Я вижу» нужно: _"
+        }
+      ]
+    },
+    {
+      "id": "g4r-cases-l2",
+      "title": "Родительный и Дательный",
+      "world": "g4rus",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4r-cases-l2-t4",
+          "answer": "маме",
+          "answerRu": "маме",
+          "q": "Почтальон-динозавр разносит письма: «Отправить письмо ___ (мама).» Поставь слово в правильный падеж."
+        }
+      ]
+    },
+    {
+      "id": "g4r-cases-l3",
+      "title": "Творительный и Предложный",
+      "world": "g4rus",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4r-cases-l3-t4",
+          "answer": "Творительный (5-й)",
+          "answerRu": "Творительный (5-й)",
+          "q": "Назови все 6 падежей русского языка по порядку. Какой стоит на пятом месте?"
+        }
+      ]
+    },
+    {
+      "id": "g4r-text-l1",
+      "title": "Прочитай и ответь",
+      "world": "g4rus",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4r-text-l1-t4",
+          "answer": "завязка (начало)",
+          "answerRu": "завязка (начало)",
+          "q": "Тали пишет рассказ о котёнке. Называет первую часть «оглавление». Слово говорит, что название неверное. Как правильно на"
+        }
+      ]
+    },
+    {
+      "id": "g4r-text-l2",
+      "title": "Главная мысль",
+      "world": "g4rus",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4r-text-l2-t4",
+          "answer": "Нет",
+          "answerRu": "Нет",
+          "q": "Слово спрашивает Тали: «Где чаще всего прячется главная мысль рассказа?» Тали говорит: «Только в середине!» Верно ли?"
+        }
+      ]
+    },
+    {
+      "id": "g4r-text-l3",
+      "title": "Детали и последовательность",
+      "world": "g4rus",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4r-text-l3-t4",
+          "answer": "Потом…",
+          "answerRu": "Потом…",
+          "q": "Тали пишет инструкцию для друга: «Потом налей воду. Сначала возьми стакан. Наконец размешай.» Слово говорит, что шаги пе"
+        }
+      ]
+    },
+    {
+      "id": "g4e-pres-l1",
+      "title": "He / She / It",
+      "world": "g4eng",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "fill_blank",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4e-pres-l1-t3",
+          "answer": null,
+          "q": "My little brother _ pizza."
+        },
+        {
+          "id": "g4e-pres-l1-t4",
+          "answer": "I",
+          "answerRu": "I",
+          "q": "Тали смотрит на список: I, he, she, it. «Все они добавляют -s к глаголу!» — говорит он. Spark качает головой. Кто из это"
+        }
+      ]
+    },
+    {
+      "id": "g4e-pres-l2",
+      "title": "Отрицание",
+      "world": "g4eng",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4e-pres-l2-t4",
+          "answer": "They don't watch TV in the evening",
+          "answerRu": "They don't watch TV in the evening",
+          "q": "«They watch TV in the evening.» → Сделай отрицательным."
+        }
+      ]
+    },
+    {
+      "id": "g4e-pres-l3",
+      "title": "Вопросы",
+      "world": "g4eng",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4e-pres-l3-t4",
+          "answer": "Is",
+          "answerRu": "Is",
+          "q": "Тали спрашивает про музей: «___ the museum open on Mondays?» Какое слово начинает этот вопрос?"
+        }
+      ]
+    },
+    {
+      "id": "g4e-past-l1",
+      "title": "Правильные глаголы",
+      "world": "g4eng",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4e-past-l1-t4",
+          "answer": "played",
+          "answerRu": "played",
+          "q": "«They play in the park every day.» → «Yesterday they ___…»"
+        }
+      ]
+    },
+    {
+      "id": "g4e-past-l2",
+      "title": "Неправильные глаголы",
+      "world": "g4eng",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4e-past-l2-t4",
+          "answer": "walk",
+          "answerRu": "walk",
+          "q": "Тали смотрит на список глаголов: bring, think, walk, see. Он говорит: «Все они неправильные!» Какой на самом деле правил"
+        }
+      ]
+    },
+    {
+      "id": "g4e-past-l3",
+      "title": "Смешанная практика",
+      "world": "g4eng",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4e-past-l3-t4",
+          "answer": "She didn't write a letter yesterday",
+          "answerRu": "She didn't write a letter yesterday",
+          "q": "«She wrote a letter yesterday.» → Сделай отрицательным."
+        }
+      ]
+    },
+    {
+      "id": "g4e-quest-l1",
+      "title": "Да/нет вопросы",
+      "world": "g4eng",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4e-quest-l1-t4",
+          "answer": "Do",
+          "answerRu": "Do",
+          "q": "Инопланетянин приземлился и задаёт вопрос: «___ humans sleep at night?» Какое слово начинает вопрос?"
+        }
+      ]
+    },
+    {
+      "id": "g4e-quest-l2",
+      "title": "Вопросы с вопросительным словом",
+      "world": "g4eng",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [
+        "ky_intro_generic_stub"
+      ],
+      "answers": [
+        {
+          "id": "g4e-quest-l2-t4",
+          "answer": "Why",
+          "answerRu": "Why",
+          "q": "«___ do you come to school by bike?» — хочешь узнать причину."
+        }
+      ]
+    },
+    {
+      "id": "g4e-quest-l3",
+      "title": "Краткие ответы",
+      "world": "g4eng",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4e-quest-l3-t4",
+          "answer": "Yes, they do.",
+          "answerRu": "Yes, they do.",
+          "q": "Ведущий викторины: «Do birds fly?» — какой модельный краткий ответ?"
+        }
+      ]
+    },
+    {
+      "id": "g4s-help-l1",
+      "title": "Когда просить помощи",
+      "world": "g4social",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4s-help-l1-t4",
+          "answer": "Нет",
+          "answerRu": "Нет",
+          "q": "Тали первый раз едет в новый район и не знает дороги. Он говорит: «Буду ехать наугад — не хочу спрашивать, это стыдно.» "
+        }
+      ]
+    },
+    {
+      "id": "g4s-help-l2",
+      "title": "Как вежливо попросить",
+      "world": "g4social",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [
+        "ky_intro_generic_stub"
+      ],
+      "answers": [
+        {
+          "id": "g4s-help-l2-t4",
+          "answer": "пожалуйста",
+          "answerRu": "пожалуйста",
+          "q": "Тали спрашивает Friendly: «Какое слово делает просьбу вежливой почти как волшебство?» Friendly улыбается. Тали думает, ч"
+        }
+      ]
+    },
+    {
+      "id": "g4s-help-l3",
+      "title": "Практика ситуаций",
+      "world": "g4social",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4s-help-l3-t4",
+          "answer": "Подойти",
+          "answerRu": "Подойти",
+          "q": "Учитель объяснил тему, но Тали не понял. Тали говорит: «Подниму руку прямо сейчас и перебью!» Friendly морщится. Как луч"
+        }
+      ]
+    },
+    {
+      "id": "g4s-emo-l1",
+      "title": "Радость и грусть",
+      "world": "g4social",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4s-emo-l1-t4",
+          "answer": "Радость",
+          "answerRu": "Радость",
+          "q": "Поднятые уголки губ, блеск в глазах — это какая эмоция?"
+        }
+      ]
+    },
+    {
+      "id": "g4s-emo-l2",
+      "title": "Злость и страх",
+      "world": "g4social",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "fill_blank"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4s-emo-l2-t3",
+          "answer": null,
+          "q": "Страх — избежать угрозу; злость — желание _"
+        }
+      ]
+    },
+    {
+      "id": "g4s-emo-l3",
+      "title": "Удивление и спокойствие",
+      "world": "g4social",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4s-emo-l3-t4",
+          "answer": "Приятное: неожиданный комплимент; неприятное: плохая оценка, которую не ждал",
+          "answerRu": "Приятное: неожиданный комплимент; неприятное: плохая оценка, которую не ждал",
+          "q": "Удивление бывает приятным и неприятным. Пример каждого:"
+        }
+      ]
+    },
+    {
+      "id": "g4s-turn-l1",
+      "title": "Ждём своей очереди",
+      "world": "g4social",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4s-turn-l1-t4",
+          "answer": "Договориться",
+          "answerRu": "Договориться",
+          "q": "Игра в настольный хоккей: как честно определить, чья сейчас очередь ходить?"
+        }
+      ]
+    },
+    {
+      "id": "g4s-turn-l2",
+      "title": "Делимся и справедливость",
+      "world": "g4social",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4s-turn-l2-t4",
+          "answer": "Принимает",
+          "answerRu": "Принимает",
+          "q": "Команда решила большинством голосов играть в прятки, а Тали хотел футбол. Что делает Тали?"
+        }
+      ]
+    },
+    {
+      "id": "g4s-turn-l3",
+      "title": "Игры с правилами",
+      "world": "g4social",
+      "taskCount": 4,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "g4s-turn-l3-t4",
+          "answer": "Сначала нужно договориться со всеми",
+          "answerRu": "Сначала нужно договориться со всеми",
+          "q": "Тали предлагает новое правило для известной игры, чтобы было честнее. Friendly спрашивает: «С чего начать?» Тали говорит"
+        }
+      ]
+    },
+    {
+      "id": "jungle-add-1",
+      "title": "Считаем фрукты с Рексом",
+      "world": "jungle",
+      "taskCount": 0,
+      "types": [],
+      "hasProductive": false,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": []
+    },
+    {
+      "id": "jungle-add-2",
+      "title": "Складываем фрукты",
+      "world": "jungle",
+      "taskCount": 0,
+      "types": [],
+      "hasProductive": false,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": []
+    },
+    {
+      "id": "jungle-aba-showcase",
+      "title": "Практика АВА (микс)",
+      "world": "jungle",
+      "taskCount": 0,
+      "types": [],
+      "hasProductive": false,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": []
+    },
+    {
+      "id": "jungle-sub-1",
+      "title": "Рекс делится фруктами",
+      "world": "jungle",
+      "taskCount": 0,
+      "types": [],
+      "hasProductive": false,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": []
+    },
+    {
+      "id": "jungle-sub-2",
+      "title": "Отнимаем числа",
+      "world": "jungle",
+      "taskCount": 0,
+      "types": [],
+      "hasProductive": false,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": []
+    },
+    {
+      "id": "jungle-compare-1",
+      "title": "Какая кучка больше?",
+      "world": "jungle",
+      "taskCount": 3,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "jungle-cmp-1-t3",
+          "answer": "Да",
+          "answerRu": "Да",
+          "q": "6 больше, чем 5?"
+        }
+      ]
+    },
+    {
+      "id": "canyon-words-1",
+      "title": "Наскальные рисунки",
+      "world": "canyon",
+      "taskCount": 3,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "canyon-w1-t3",
+          "answer": "Красный",
+          "answerRu": "Красный",
+          "q": "Какое слово говорит «красный»?"
+        }
+      ]
+    },
+    {
+      "id": "canyon-words-2",
+      "title": "Письмо Диппи",
+      "world": "canyon",
+      "taskCount": 1,
+      "types": [
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "canyon-w2-t2",
+          "answer": "Зелёная",
+          "answerRu": "Зелёная",
+          "q": "Какого цвета трава?"
+        }
+      ]
+    },
+    {
+      "id": "canyon-sent-1",
+      "title": "Карта каньона",
+      "world": "canyon",
+      "taskCount": 2,
+      "types": [
+        "multiple_choice",
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "canyon-s1-t3",
+          "answer": "Да",
+          "answerRu": "Да",
+          "q": "Большая собака бежит быстро. Собака большая?"
+        }
+      ]
+    },
+    {
+      "id": "lab-animals-1",
+      "title": "Коллекция Спайка",
+      "world": "lab",
+      "taskCount": 1,
+      "types": [
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "lab-an-1-t3",
+          "answer": "4",
+          "answerRu": "4",
+          "q": "Сколько ног у кошки?"
+        }
+      ]
+    },
+    {
+      "id": "lab-animals-2",
+      "title": "Ещё о животных",
+      "world": "lab",
+      "taskCount": 1,
+      "types": [
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "lab-an-2-t2",
+          "answer": "Рыба",
+          "answerRu": "Рыба",
+          "q": "Кто живёт в воде и плавает? Напиши животное."
+        }
+      ]
+    },
+    {
+      "id": "lab-physics-1",
+      "title": "Большой опыт",
+      "world": "lab",
+      "taskCount": 2,
+      "types": [
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "lab-ph-1-t3",
+          "answer": "Равновесие",
+          "answerRu": "Равновесие",
+          "q": "Обе чаши на одном уровне. Как называется это состояние? Напиши одно слово."
+        },
+        {
+          "id": "lab-ph-1-t4",
+          "answer": "Вправо",
+          "answerRu": "Вправо",
+          "q": "Весы наклонились вправо. Куда «перевесила» чаша? Напиши: Влево / Вправо / Ровно."
+        }
+      ]
+    },
+    {
+      "id": "space-planets-1",
+      "title": "Звёздная карта Стелы",
+      "world": "space",
+      "taskCount": 1,
+      "types": [
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "space-pl-1-t3",
+          "answer": "8",
+          "answerRu": "8",
+          "q": "Сколько планет в Солнечной системе?"
+        }
+      ]
+    },
+    {
+      "id": "space-planets-2",
+      "title": "Исследуем планеты",
+      "world": "space",
+      "taskCount": 1,
+      "types": [
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "space-pl-2-t2",
+          "answer": "Юпитер",
+          "answerRu": "Юпитер",
+          "q": "Какая планета самая большая?"
+        }
+      ]
+    },
+    {
+      "id": "space-solar-1",
+      "title": "Путешествие по космосу",
+      "world": "space",
+      "taskCount": 1,
+      "types": [
+        "input"
+      ],
+      "hasProductive": true,
+      "longPromptCount": 0,
+      "longIds": [],
+      "flags": [],
+      "answers": [
+        {
+          "id": "space-sol-1-t3",
+          "answer": "орбита",
+          "answerRu": "орбита",
+          "q": "Как называется путь планеты вокруг Солнца?"
+        }
+      ]
+    }
+  ],
+  "mdChecks": [
+    {
+      "id": "g4m-fr-l1",
+      "tasks": [
+        {
+          "id": "g4m-fr-l1-t1",
+          "type": "multiple_choice",
+          "q": "Тали разрезал пиццу ровно на 4 части и съел одну. Какую дробь пиццы он съел?",
+          "correct": [
+            "1/4"
+          ]
+        },
+        {
+          "id": "g4m-fr-l1-t2",
+          "type": "multiple_choice",
+          "q": "Digit закрасил 3 части из 8 на полоске бумаги и написал дробь «8/3». Тали смотрит и говорит: «Что-то здесь не так!» Тали прав — запись неверная. Как правильно з",
+          "correct": [
+            "3/8"
+          ]
+        },
+        {
+          "id": "g4m-fr-l1-t3",
+          "type": "multiple_choice",
+          "q": "Тали объясняет Digit, что такое знаменатель: «Это сколько частей мы взяли!» Но Тали снова ошибся — перепутал числитель и знаменатель. Что на самом деле показыва",
+          "correct": [
+            "Сколько равных частей содержит целое"
+          ]
+        },
+        {
+          "id": "g4m-fr-l1-t4",
+          "type": "input",
+          "q": "Тали взял 1 дольку из шоколадки, разломленной на 6 равных долей. Верно ли, что он взял 1/6 шоколадки?",
+          "correct": [],
+          "answer": "Да, верно"
+        }
+      ]
+    },
+    {
+      "id": "g4m-fr-l2",
+      "tasks": [
+        {
+          "id": "g4m-fr-l2-t1",
+          "type": "multiple_choice",
+          "q": "Тали разрезал яблоко на 4 части и записал: «Одна часть — это 4/1». Digit смотрит на запись с удивлением. Как правильно записать одну часть из четырёх?",
+          "correct": [
+            "1/4"
+          ]
+        },
+        {
+          "id": "g4m-fr-l2-t2",
+          "type": "multiple_choice",
+          "q": "Digit закрасил 3 клетки из 9 в прямоугольнике. Какая дробь показывает закрашенную часть?",
+          "correct": [
+            "3/9"
+          ]
+        },
+        {
+          "id": "g4m-fr-l2-t3",
+          "type": "multiple_choice",
+          "q": "Тали разрезал торт пополам (1/2), а Digit разрезал такой же торт на четыре части и взял две (2/4). Кто получил больше торта?",
+          "correct": [
+            "Они получили поровну, это равные дроби"
+          ]
+        },
+        {
+          "id": "g4m-fr-l2-t4",
+          "type": "input",
+          "q": "Круг поделён на 5 равных секторов. Сколько таких секторов нужно, чтобы собрать целый круг?",
+          "correct": [],
+          "answer": "5"
+        }
+      ]
+    },
+    {
+      "id": "g4m-fr-l3",
+      "tasks": [
+        {
+          "id": "g4m-fr-l3-t1",
+          "type": "multiple_choice",
+          "q": "Тали взял 3/8 пиццы, его друг — 5/8 той же пиццы. Тали спорит: «Мы взяли одинаково — ведь восьмёрки одинаковые!» Кто на самом деле взял больше?",
+          "correct": [
+            "Друг Тали взял больше (5/8 > 3/8)"
+          ]
+        },
+        {
+          "id": "g4m-fr-l3-t2",
+          "type": "multiple_choice",
+          "q": "Digit записал: 2/5 ○ 4/5. Какой знак нужно поставить?",
+          "correct": [
+            "< (меньше)"
+          ]
+        },
+        {
+          "id": "g4m-fr-l3-t3",
+          "type": "multiple_choice",
+          "q": "Тали пытается расставить три дроби по порядку от наименьшей: 1/4, 3/4, 2/4. Он написал: «3/4, 2/4, 1/4» — от наибольшей. Исправь порядок: от наименьшей к наибол",
+          "correct": [
+            "1/4, 2/4, 3/4"
+          ]
+        },
+        {
+          "id": "g4m-fr-l3-t4",
+          "type": "input",
+          "q": "Тали и Digit сравнивают 3/4 и 3/7. Числители одинаковые — 3 и 3. Тали говорит: «Значит дроби равные!» Но Digit не соглашается. Кто прав?",
+          "correct": [],
+          "answer": "Digit"
+        }
+      ]
+    },
+    {
+      "id": "g4m-cm-l2",
+      "tasks": [
+        {
+          "id": "g4m-cm-l2-t1",
+          "type": "multiple_choice",
+          "q": "Тали заказывает кирпичи: 1 346 в день × 5 дней. Он прикинул «примерно пять тысяч», но поставщик говорит цифру другую. Помоги Тали: 1 346 × 5 = ?",
+          "correct": [
+            "6 730"
+          ]
+        },
+        {
+          "id": "g4m-cm-l2-t2",
+          "type": "multiple_choice",
+          "q": "Фермер Тали собрал 2 417 яблок с одного сада. У него три таких же сада. Сколько яблок всего? 2 417 × 3 = ?",
+          "correct": [
+            "7 251"
+          ]
+        },
+        {
+          "id": "g4m-cm-l2-t3",
+          "type": "multiple_choice",
+          "q": "В космическом корабле Тали 3 208 болтов. Для экспедиции нужно ещё 6 таких же кораблей. Болтов нужно: 3 208 × 6 = ?",
+          "correct": [
+            "19 248"
+          ]
+        },
+        {
+          "id": "g4m-cm-l2-t4",
+          "type": "input",
+          "q": "Digit даёт Тали задачку: 4 135 × 7 ○ 29 000. Какой знак поставить? Напиши < или = или >",
+          "correct": [],
+          "answer": "<"
+        }
+      ]
+    },
+    {
+      "id": "g4e-quest-l2",
+      "tasks": [
+        {
+          "id": "g4e-quest-l2-t1",
+          "type": "multiple_choice",
+          "q": "Тали хочет узнать, где его шляпа: написал «What is my hat?» Spark говорит: «Тали, не \"what\", а...» Какое слово нужно?",
+          "correct": [
+            "Where (где)"
+          ]
+        },
+        {
+          "id": "g4e-quest-l2-t2",
+          "type": "multiple_choice",
+          "q": "«___ is your best friend?» — хочешь узнать имя человека. Какое слово?",
+          "correct": [
+            "Who"
+          ]
+        },
+        {
+          "id": "g4e-quest-l2-t3",
+          "type": "multiple_choice",
+          "q": "Ты ищешь рюкзак Тали. «___ is my bag?» (Who / Where / Why)",
+          "correct": [
+            "Where"
+          ]
+        },
+        {
+          "id": "g4e-quest-l2-t4",
+          "type": "input",
+          "q": "«___ do you come to school by bike?» — хочешь узнать причину.",
+          "correct": [],
+          "answer": "Why"
+        }
+      ]
+    },
+    {
+      "id": "g4s-help-l2",
+      "tasks": [
+        {
+          "id": "g4s-help-l2-t1",
+          "type": "multiple_choice",
+          "q": "«Дай мне ластик!» vs. «Можешь одолжить ластик, пожалуйста?» Какой вариант вежливее?",
+          "correct": [
+            "Второй — вежливый вопрос, а не приказ"
+          ]
+        },
+        {
+          "id": "g4s-help-l2-t2",
+          "type": "multiple_choice",
+          "q": "Тали хочет попросить незнакомого взрослого о помощи. С какой фразы лучше начать?",
+          "correct": [
+            "«Извините, не подскажете…»"
+          ]
+        },
+        {
+          "id": "g4s-help-l2-t3",
+          "type": "multiple_choice",
+          "q": "Друг помог Тали решить задачу. Что обязательно нужно сделать после?",
+          "correct": [
+            "Поблагодарить"
+          ]
+        },
+        {
+          "id": "g4s-help-l2-t4",
+          "type": "input",
+          "q": "Тали спрашивает Friendly: «Какое слово делает просьбу вежливой почти как волшебство?» Friendly улыбается. Тали думает, что это «сейчас же». Поправь Тали!",
+          "correct": [],
+          "answer": "пожалуйста"
+        }
+      ]
+    },
+    {
+      "id": "g4s-emo-l2",
+      "tasks": [
+        {
+          "id": "g4s-emo-l2-t1",
+          "type": "multiple_choice",
+          "q": "Тали злится на брата и хочет бросить вещь. Friendly останавливает его. Какой способ выразить злость безопасен для обоих?",
+          "correct": [
+            "Сказать, что обидно, и предложить исправить вместе"
+          ]
+        },
+        {
+          "id": "g4s-emo-l2-t2",
+          "type": "multiple_choice",
+          "q": "Перед выступлением на сцене сердце бьётся быстро и хочется убежать. Как называется эта эмоция?",
+          "correct": [
+            "Волнение и страх"
+          ]
+        },
+        {
+          "id": "g4s-emo-l2-t3",
+          "type": "fill_blank",
+          "q": "Страх — избежать угрозу; злость — желание _",
+          "correct": [
+            "изменить несправедливость"
+          ]
+        },
+        {
+          "id": "g4s-emo-l2-t4",
+          "type": "multiple_choice",
+          "q": "Тали прочитал: «Петя закричал и бросил тетрадь». Friendly спрашивает: «Тали, что Петя испытывал и что ему лучше было сделать?» Тали говорит: «Он был рад!» Это в",
+          "correct": [
+            "Нет — он испытывал злость; лучше — остановиться и объяснить словами"
+          ]
+        }
+      ]
+    }
+  ],
+  "mdHasQuestL2": true
+}

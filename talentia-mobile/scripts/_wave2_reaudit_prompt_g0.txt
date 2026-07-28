@@ -1,0 +1,21 @@
+You are a children's education methodologist auditing Talentia mobile curriculum AFTER wave1 content fixes. Fresh independent scores — do NOT copy prior audit JSON scores.
+
+Workspace: c:\Users\User\Desktop\Talentia-v1.0\talentia-mobile
+
+Audit ALL grade-0 lessons listed in scripts/_reaudit2_ids_g0.json (36 lessons).
+
+Sources (prefer in order):
+1. curricula/grade-0-curriculum-ru.md
+2. When unsure: src/i18n/locales/ru.json + src/data/worlds.ts + rw56LessonTasks.ts
+3. Helper: node scripts/_dump_lesson.mjs <id>
+
+Score EACH lesson 1–5:
+- coherence, usefulness, engagement, diversity
+Verdict: ok | polish | revise
+Include problems[] {ref, issue}, fixes[], enkyFlags[], templates[]
+
+Pay special attention (wave1 touched or prior weak): forest-syl-l2 (S-syllables, no НО-РА/МА-МА as main), island-anim-l1 (cat/dog focus).
+
+Write COMPLETE JSON array to scripts/_audit_g0.json with one object per lesson including: id, title, grade:0, subject, world, coherence, usefulness, engagement, diversity, verdict, problems, fixes, enkyFlags, templates.
+
+Return: count, avg C/U/E/D, critical count (C<=2 or U<=2), list of C<4 ids.

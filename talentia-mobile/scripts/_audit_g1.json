@@ -1,0 +1,732 @@
+[
+  {
+    "id": "g1m-c20-l1",
+    "grade": 1,
+    "subject": "math",
+    "world": "g1math",
+    "title": "Числа 11–15",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "intro2+tasks", "issue": "Урок заявлен как ряд 11–15, но intro-2 и 3 из 5 заданий — сравнение больше/меньше (тема l3); мало идентификации/соседей в диапазоне."},
+      {"ref": "tasks", "issue": "Все 5 заданий multiple_choice; нет input или упорядочивания."}
+    ],
+    "fixes": [
+      "Добавить «соседи 13» / продолжи ряд 11–15 без сравнения.",
+      "Оставить 1–2 сравнения; остальное — назови/пропуск в ряду."
+    ],
+    "enkyFlags": [],
+    "templates": ["comparison_story", "sequence_gap", "all_multiple_choice", "tali_wrong_claim"]
+  },
+  {
+    "id": "g1m-c20-l2",
+    "grade": 1,
+    "subject": "math",
+    "world": "g1math",
+    "title": "Числа 16–20",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "t4", "issue": "Формулировка «Прав?» при вариантах-числах 17/18/20 — смешение да/нет и выбора числа."},
+      {"ref": "tasks", "issue": "Все MC; закрепление ряда 16–20 слабое (1 gap + сравнения)."}
+    ],
+    "fixes": [
+      "t4: «Какое число между 17 и 19?» без «Прав?».",
+      "Добавить «соседи 18» или продолжение ряда."
+    ],
+    "enkyFlags": [],
+    "templates": ["tali_wrong_claim", "question_format_mismatch", "all_multiple_choice", "sequence_gap"]
+  },
+  {
+    "id": "g1m-c20-l3",
+    "grade": 1,
+    "subject": "math",
+    "world": "g1math",
+    "title": "Сравнение чисел",
+    "coherence": 5,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "tasks", "issue": "Только MC; нет явного выбора знака > < = или input большего числа."}
+    ],
+    "fixes": [
+      "Одно задание: знак между 14 и 17 или input «какое больше»."
+    ],
+    "enkyFlags": [],
+    "templates": ["comparison_story", "tali_wrong_claim", "equal_sets", "all_multiple_choice"]
+  },
+  {
+    "id": "g1m-add-l1",
+    "grade": 1,
+    "subject": "math",
+    "world": "g1math",
+    "title": "Сложение до 10",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "tasks", "issue": "Все MC; нет записи суммы input (3+4=)."}
+    ],
+    "fixes": [
+      "Заменить одно задание на input суммы."
+    ],
+    "enkyFlags": [],
+    "templates": ["story_add", "bare_sum", "tali_wrong_claim", "all_multiple_choice"]
+  },
+  {
+    "id": "g1m-add-l2",
+    "grade": 1,
+    "subject": "math",
+    "world": "g1math",
+    "title": "До десятка",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "intro2+t3", "issue": "Тема n+?=10, но intro-2 и t3 — сложение с 10 (10+3), это следующий урок g1m-add-l3."},
+      {"ref": "t1", "issue": "«Прав?» при вариантах «Нужно 3/4/5» — формат да/нет vs число."},
+      {"ref": "tasks", "issue": "Все MC; нет input «сколько до 10»."}
+    ],
+    "fixes": [
+      "Убрать/перенести 10+n в g1m-add-l3; здесь только дополнение до 10.",
+      "Одно input: «8+?=10»."
+    ],
+    "enkyFlags": [],
+    "templates": ["make_ten", "ten_plus_units_bleed", "tali_wrong_claim", "question_format_mismatch", "all_multiple_choice"]
+  },
+  {
+    "id": "g1m-add-l3",
+    "grade": 1,
+    "subject": "math",
+    "world": "g1math",
+    "title": "Сложение с 10",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "tasks", "issue": "Все MC; стратегия «через 10» в t3 есть, но нет записи ответа."}
+    ],
+    "fixes": [
+      "Одно input: 10+8 или 9+7."
+    ],
+    "enkyFlags": [],
+    "templates": ["ten_plus", "bridge_to_ten", "tali_wrong_claim", "all_multiple_choice"]
+  },
+  {
+    "id": "g1m-sub-l1",
+    "grade": 1,
+    "subject": "math",
+    "world": "g1math",
+    "title": "Вычитание до 10",
+    "coherence": 4,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "t1", "issue": "«Это правильно?» при вариантах-числах 3/4/5 — ребёнок выбирает остаток, а не да/нет."},
+      {"ref": "tasks", "issue": "Все MC."}
+    ],
+    "fixes": [
+      "t1: «Сколько осталось?» без «правильно?».",
+      "Одно input: 7−3."
+    ],
+    "enkyFlags": [],
+    "templates": ["story_sub", "tali_wrong_claim", "question_format_mismatch", "all_multiple_choice"]
+  },
+  {
+    "id": "g1m-sub-l2",
+    "grade": 1,
+    "subject": "math",
+    "world": "g1math",
+    "title": "Вычитание из 10",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "tasks", "issue": "Все MC; пары из 10 хорошо, но нет input."}
+    ],
+    "fixes": [
+      "Одно input: 10−6."
+    ],
+    "enkyFlags": [],
+    "templates": ["sub_from_ten", "tali_wrong_claim", "all_multiple_choice"]
+  },
+  {
+    "id": "g1m-sub-l3",
+    "grade": 1,
+    "subject": "math",
+    "world": "g1math",
+    "title": "Смешанные примеры",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "tasks", "issue": "Все MC; порядок действий объяснён, нет записи цепочки."}
+    ],
+    "fixes": [
+      "Одно input смешанного примера (5+4−3)."
+    ],
+    "enkyFlags": [],
+    "templates": ["mixed_ops", "check_inverse", "tali_wrong_claim", "all_multiple_choice"]
+  },
+  {
+    "id": "g1r-vow-l1",
+    "grade": 1,
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "title": "Буквы А, О, У",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "intro2", "issue": "Intro-2 про Я/Ю/Е/Ё и мягкость — тема следующего урока, не А/О/У."},
+      {"ref": "tasks", "issue": "Все MC; нет выбора/ввода буквы А/О/У."}
+    ],
+    "fixes": [
+      "Заменить intro-2 на различение А/О/У в словах.",
+      "Одно задание: первая буква слова (input У/О/А)."
+    ],
+    "enkyFlags": [],
+    "templates": ["vowel_id", "tali_wrong_claim", "intro_next_lesson_bleed", "all_multiple_choice"]
+  },
+  {
+    "id": "g1r-vow-l2",
+    "grade": 1,
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "title": "Я, Ю, Е, Ё",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      {"ref": "tasks", "issue": "Все MC; буквы-ответы — intentional RU letter targets across locales."}
+    ],
+    "fixes": [
+      "Опционально: input первой буквы ЮЛА/ЁЖИК."
+    ],
+    "enkyFlags": [],
+    "templates": ["iotated_vowel", "tali_wrong_claim", "word_onset", "all_multiple_choice"]
+  },
+  {
+    "id": "g1r-vow-l3",
+    "grade": 1,
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "title": "Мягкость согласных",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      {"ref": "tasks", "issue": "Все MC; Ь — intentional RU target."}
+    ],
+    "fixes": [
+      "Опционально: input «есть Ь?» Да/Нет для СОЛЬ/МЯЧ."
+    ],
+    "enkyFlags": [],
+    "templates": ["soft_sign", "tali_wrong_claim", "minimal_pair", "all_multiple_choice"]
+  },
+  {
+    "id": "g1r-wrd-l1",
+    "grade": 1,
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "title": "Читаем слова",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      {"ref": "tasks", "issue": "Все MC; ответы-слова — intentional RU wordforms."}
+    ],
+    "fixes": [
+      "Одно input: собери КОТ/ДОМ."
+    ],
+    "enkyFlags": [],
+    "templates": ["letter_blend", "anagram_distract", "all_multiple_choice"]
+  },
+  {
+    "id": "g1r-wrd-l2",
+    "grade": 1,
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "title": "Слоги",
+    "coherence": 4,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "t1+dialog", "issue": "Заголовок «Слоги», но t1 и часть диалога — различение СТОЛ/СТУЛ (близость написания), не счёт слогов."},
+      {"ref": "tasks", "issue": "Все MC."}
+    ],
+    "fixes": [
+      "t1 заменить на счёт слогов или переименовать фокус урока.",
+      "Опционально: input числа слогов в МАЛИНА."
+    ],
+    "enkyFlags": [],
+    "templates": ["near_words", "syllable_count", "tali_wrong_claim", "all_multiple_choice"]
+  },
+  {
+    "id": "g1r-wrd-l3",
+    "grade": 1,
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "title": "Предложения",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "dialog tali", "issue": "Тали о себе в 3-м лице: «Тали говорит: …» — ломает роль ученика."},
+      {"ref": "tasks", "issue": "Сильное пересечение с g1r-grm-l1/l2 (заглавная, знаки); все MC."}
+    ],
+    "fixes": [
+      "Переписать реплику Тали от 1-го лица.",
+      "Сфокусировать на границах предложения; детали орфографии оставить grm."
+    ],
+    "enkyFlags": [],
+    "templates": ["sentence_bounds", "capital_start", "end_punct", "tali_third_person", "topic_overlap_grm"]
+  },
+  {
+    "id": "g1r-grm-l1",
+    "grade": 1,
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "title": "Заглавная буква",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      {"ref": "t3", "issue": "Варианты — русские предложения (intentional RU orthography targets; не enky-баг)."}
+    ],
+    "fixes": [
+      "Опционально: input «маша» → «Маша»."
+    ],
+    "enkyFlags": [],
+    "templates": ["capital_names", "tali_wrong_claim", "sentence_fix", "all_multiple_choice"]
+  },
+  {
+    "id": "g1r-grm-l2",
+    "grade": 1,
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "title": "Знаки препинания",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      {"ref": "tasks", "issue": "Все MC; знаки .?! общие (punct whitelist)."}
+    ],
+    "fixes": [
+      "Опционально: input знака для «Где медведь»."
+    ],
+    "enkyFlags": [],
+    "templates": ["end_punct", "tali_wrong_claim", "all_multiple_choice"]
+  },
+  {
+    "id": "g1r-grm-l3",
+    "grade": 1,
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "title": "Вопросы кто? что?",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      {"ref": "tasks", "issue": "Ответы КТО?/ЧТО? — intentional RU grammar targets across locales."}
+    ],
+    "fixes": [
+      "Опционально: input КТО/ЧТО."
+    ],
+    "enkyFlags": [],
+    "templates": ["who_what", "tali_wrong_claim", "all_multiple_choice"]
+  },
+  {
+    "id": "g1w-sch-l1",
+    "grade": 1,
+    "subject": "logic",
+    "world": "g1world",
+    "title": "Школьные принадлежности",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "intro2+t4", "issue": "Intro-2 и t4 уходят в «класс/парты/доска» (тема l2), пока урок про принадлежности."},
+      {"ref": "t4 options KY", "issue": "KY=RU на дистракторах «Бассейн»/«Плита» при переведённом EN и KY для верного варианта."}
+    ],
+    "fixes": [
+      "Intro-2 и t4: портфель/пенал/линейка.",
+      "Перевести KY для g1w_schl1_q4_a/c."
+    ],
+    "enkyFlags": [
+      "ky=ru: data.tasks.g1w_schl1_q4_a (Бассейн)",
+      "ky=ru: data.tasks.g1w_schl1_q4_c (Плита)"
+    ],
+    "templates": ["school_supplies", "tali_wrong_claim", "intro_next_lesson_bleed", "all_multiple_choice"]
+  },
+  {
+    "id": "g1w-sch-l2",
+    "grade": 1,
+    "subject": "logic",
+    "world": "g1world",
+    "title": "Класс и уроки",
+    "coherence": 4,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "intro2+t1+aba", "issue": "Сильный уклон в физкультуру/рисование (тема l3); меньше про класс как пространство/расписание."},
+      {"ref": "tasks", "issue": "Все MC; Математика/Музыка — cognates (не флаг)."}
+    ],
+    "fixes": [
+      "Добавить 1 задание про парту/доску/длительность урока; PE/art оставить 1–2.",
+      "Опционально: input названия урока."
+    ],
+    "enkyFlags": [],
+    "templates": ["lesson_types", "tali_wrong_claim", "pe_art_bleed", "all_multiple_choice"]
+  },
+  {
+    "id": "g1w-sch-l3",
+    "grade": 1,
+    "subject": "logic",
+    "world": "g1world",
+    "title": "Физкультура и рисование",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "ok",
+    "problems": [
+      {"ref": "t4", "issue": "Input «Правда?» → «Нет» — ок, но бинарно."}
+    ],
+    "fixes": [
+      "Оставить MC+input как есть."
+    ],
+    "enkyFlags": [],
+    "templates": ["pe_vs_art", "tali_wrong_claim", "mc_plus_input"]
+  },
+  {
+    "id": "g1w-nat-l1",
+    "grade": 1,
+    "subject": "logic",
+    "world": "g1world",
+    "title": "Деревья",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "ok",
+    "problems": [],
+    "fixes": [],
+    "enkyFlags": [],
+    "templates": ["tree_parts", "conifer_deciduous", "mc_plus_input"]
+  },
+  {
+    "id": "g1w-nat-l2",
+    "grade": 1,
+    "subject": "logic",
+    "world": "g1world",
+    "title": "Животные",
+    "coherence": 5,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "critical",
+    "problems": [
+      {"ref": "en/ky locales", "issue": "Банк RW56 nrw_ganiml2_*: почти все stems/options EN и KY — кириллица (EN=RU или EN Cyrillic stub); в EN/KY UI урок нечитаем."},
+      {"ref": "wiring", "issue": "tasks: RW56_LESSON_TASKS['garden-anim-l2'] — наследие другого мира; не rewritten bank как nat-l1/l3."},
+      {"ref": "tasks", "issue": "Все MC."}
+    ],
+    "fixes": [
+      "Перевести EN/KY для nrw_ganiml2 t1–t4 (+ABA).",
+      "Или перенести на G1W_NAT_L2_TASKS в g1worldRewrittenTasks.ts."
+    ],
+    "enkyFlags": [
+      "en=ru/Cyrillic + ky=ru: nrw_ganiml2_t1–t4 questions/options",
+      "en=ru + ky=ru: nrw_ganiml2_a1 ABA"
+    ],
+    "templates": ["wild_vs_domestic", "odd_one_out", "tali_wrong_claim", "all_multiple_choice", "rw56_enky_stub"]
+  },
+  {
+    "id": "g1w-nat-l3",
+    "grade": 1,
+    "subject": "logic",
+    "world": "g1world",
+    "title": "Погода",
+    "coherence": 4,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "ok",
+    "problems": [
+      {"ref": "intro2+t4", "issue": "«Береги природу» смежно с погодой; t4 input «Да» бинарен."}
+    ],
+    "fixes": [
+      "Опционально: MC «не мусорить» vs дистракторы; intro-2 короче."
+    ],
+    "enkyFlags": [],
+    "templates": ["weather_dress", "nature_care", "mc_plus_input"]
+  },
+  {
+    "id": "g1w-bdy-l1",
+    "grade": 1,
+    "subject": "logic",
+    "world": "g1world",
+    "title": "Органы чувств",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "ok",
+    "problems": [],
+    "fixes": [],
+    "enkyFlags": [],
+    "templates": ["sense_organs", "mc_plus_input", "aba_simple"]
+  },
+  {
+    "id": "g1w-bdy-l2",
+    "grade": 1,
+    "subject": "logic",
+    "world": "g1world",
+    "title": "Здоровье",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "dialog vs intro1", "issue": "Диалог — спорт/еда; intro-1 — скелет/мышцы; связь держит в основном t4."},
+      {"ref": "t4", "issue": "Input answer «Скелет (кости)» — скобки/альтернативы хрупки для 1 класса."}
+    ],
+    "fixes": [
+      "Выровнять intro под спорт+сон+еда или явно связать мышцы/кости.",
+      "t4 answer: «скелет» или «кости» (без скобок)."
+    ],
+    "enkyFlags": [],
+    "templates": ["healthy_habits", "skeleton_input", "intro_skew", "aba_simple"]
+  },
+  {
+    "id": "g1w-bdy-l3",
+    "grade": 1,
+    "subject": "logic",
+    "world": "g1world",
+    "title": "Безопасность",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "t4", "issue": "Input «Посмотреть налево и направо» — длинная фраза для набора в 1 классе."}
+    ],
+    "fixes": [
+      "Укоротить до «налево и направо» или MC."
+    ],
+    "enkyFlags": [],
+    "templates": ["traffic_light", "stranger_safety", "long_input_phrase", "aba_simple"]
+  },
+  {
+    "id": "g1e-abc-l1",
+    "grade": 1,
+    "subject": "reading",
+    "world": "g1eng",
+    "title": "Буквы G–J",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 5,
+    "verdict": "ok",
+    "problems": [],
+    "fixes": [],
+    "enkyFlags": [],
+    "templates": ["letter_onset", "fill_blank", "tali_wrong_input", "intentional_EN_letters"]
+  },
+  {
+    "id": "g1e-abc-l2",
+    "grade": 1,
+    "subject": "reading",
+    "world": "g1eng",
+    "title": "Буквы K–N",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "ok",
+    "problems": [],
+    "fixes": [],
+    "enkyFlags": [],
+    "templates": ["letter_onset", "tali_wrong_input", "intentional_EN_letters"]
+  },
+  {
+    "id": "g1e-abc-l3",
+    "grade": 1,
+    "subject": "reading",
+    "world": "g1eng",
+    "title": "Буквы O–R",
+    "coherence": 4,
+    "usefulness": 5,
+    "engagement": 3,
+    "diversity": 4,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "dialog tali", "issue": "«Тали, а с какой буквы QUEEN?» — самообращение / смешение ролей."},
+      {"ref": "intro2", "issue": "«Половина пути» — мотивация без нового содержания по O–R."}
+    ],
+    "fixes": [
+      "Тали: «С какой буквы QUEEN? Проверь меня!» без обращения к себе."
+    ],
+    "enkyFlags": [],
+    "templates": ["letter_onset", "tali_self_address", "intentional_EN_letters"]
+  },
+  {
+    "id": "g1e-num-l1",
+    "grade": 1,
+    "subject": "reading",
+    "world": "g1eng",
+    "title": "Числа 1–5",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "ok",
+    "problems": [],
+    "fixes": [],
+    "enkyFlags": [],
+    "templates": ["en_number_words", "digit_map", "tali_wrong_claim", "intentional_EN_targets"]
+  },
+  {
+    "id": "g1e-num-l2",
+    "grade": 1,
+    "subject": "reading",
+    "world": "g1eng",
+    "title": "Числа 6–10",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "ok",
+    "problems": [],
+    "fixes": [],
+    "enkyFlags": [],
+    "templates": ["en_number_words", "digit_map", "intentional_EN_targets"]
+  },
+  {
+    "id": "g1e-num-l3",
+    "grade": 1,
+    "subject": "reading",
+    "world": "g1eng",
+    "title": "Простые примеры",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "t3+t4", "issue": "Заголовок «примеры», но t3 — «число после 9», t4 — просто слово eight по картинке; мало арифметики в EN words."}
+    ],
+    "fixes": [
+      "Заменить t3/t4 на ещё один plus/minus с ответом словом (five/two)."
+    ],
+    "enkyFlags": [],
+    "templates": ["en_arith_words", "count_stars_input", "intentional_EN_targets"]
+  },
+  {
+    "id": "g1e-grt-l1",
+    "grade": 1,
+    "subject": "reading",
+    "world": "g1eng",
+    "title": "Приветствия",
+    "coherence": 4,
+    "usefulness": 5,
+    "engagement": 3,
+    "diversity": 4,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "dialog tali", "issue": "«Но Тали говорит: …» — 3-е лицо о себе."},
+      {"ref": "t2+t3", "issue": "Goodbye / Good night — прощания/ночь, шире «приветствий» в заголовке."}
+    ],
+    "fixes": [
+      "Реплика от 1-го лица.",
+      "Оставить goodbye как соседний акт или уточнить title «Hello & goodbye»."
+    ],
+    "enkyFlags": [],
+    "templates": ["greetings", "tali_third_person", "mc_plus_input"]
+  },
+  {
+    "id": "g1e-grt-l2",
+    "grade": 1,
+    "subject": "reading",
+    "world": "g1eng",
+    "title": "Меня зовут",
+    "coherence": 4,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "ok",
+    "problems": [
+      {"ref": "t4", "issue": "I ___ seven — возраст/am; смежно с представлением, но не имя."}
+    ],
+    "fixes": [
+      "Опционально: input «My name is ___» или оставить am как be-practice."
+    ],
+    "enkyFlags": [],
+    "templates": ["my_name_is", "be_am_is_are", "intentional_EN_phrases"]
+  },
+  {
+    "id": "g1e-grt-l3",
+    "grade": 1,
+    "subject": "reading",
+    "world": "g1eng",
+    "title": "Спасибо и пожалуйста",
+    "coherence": 3,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "polish",
+    "problems": [
+      {"ref": "intro2+t1+t2", "issue": "2 из 4 заданий и intro-2 — How are you?, не thank/please; заголовок недовыполнен."}
+    ],
+    "fixes": [
+      "Сделать 2 задания на Thank you/Please; How are you — максимум одно.",
+      "Или переименовать урок в «Вежливые фразы»."
+    ],
+    "enkyFlags": [],
+    "templates": ["polite_words", "how_are_you_bleed", "mc_plus_input"]
+  }
+]

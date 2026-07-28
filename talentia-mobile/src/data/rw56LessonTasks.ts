@@ -1135,12 +1135,12 @@ export const RW56_LESSON_TASKS = {
       {
         "id": "a",
         "textKey": "data.tasks.nrw_iabcl2_t2_a",
-        "correct": true
+        "correct": false
       },
       {
         "id": "b",
         "textKey": "data.tasks.nrw_iabcl2_t2_b",
-        "correct": false
+        "correct": true
       }
     ]
   },
@@ -1711,12 +1711,12 @@ export const RW56_LESSON_TASKS = {
       {
         "id": "a",
         "textKey": "data.tasks.nrw_ianiml1_t4_a",
-        "correct": false
+        "correct": true
       },
       {
         "id": "b",
         "textKey": "data.tasks.nrw_ianiml1_t4_b",
-        "correct": true
+        "correct": false
       },
       {
         "id": "c",
@@ -2020,12 +2020,12 @@ export const RW56_LESSON_TASKS = {
       {
         "id": "a",
         "textKey": "data.tasks.nrw_gcoll1_t3_a",
-        "correct": true
+        "correct": false
       },
       {
         "id": "b",
         "textKey": "data.tasks.nrw_gcoll1_t3_b",
-        "correct": false
+        "correct": true
       }
     ]
   },

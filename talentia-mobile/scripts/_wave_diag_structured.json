@@ -1,0 +1,882 @@
+{
+  "sevenCurrent": {
+    "g2r-sp-l1": {
+      "id": "g2r-sp-l1",
+      "tasks": [
+        {
+          "taskId": "g2rspl1t1",
+          "type": "multiple_choice",
+          "qKey": "g2r_noun_question",
+          "qRu": "На какой вопрос отвечает существительное?",
+          "qEn": "What question does the noun answer?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Кто? Что?",
+              "en": "Who? What?",
+              "correct": true,
+              "key": "g2r_opt_kto_chto"
+            }
+          ]
+        },
+        {
+          "taskId": "g2rspl1t2",
+          "type": "multiple_choice",
+          "qKey": "g2r_kot_noun",
+          "qRu": "Тали говорит: «КОТ — это существительное!» Он прав?",
+          "qEn": "Tali says: “CAT is a noun!” Is he right?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Да",
+              "en": "Yes",
+              "correct": true,
+              "key": "opt_yes"
+            }
+          ]
+        },
+        {
+          "taskId": "g2rspl1t3",
+          "type": "multiple_choice",
+          "qKey": "g2r_beg_noun",
+          "qRu": "Тали смотрит на слово БЕЖИТ и думает: «Это существительное!» Он прав?",
+          "qEn": "Tali looks at the word RUNS and thinks: “This is a noun!” Is he right?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Да",
+              "en": "Yes",
+              "correct": false,
+              "key": "opt_yes"
+            }
+          ]
+        },
+        {
+          "taskId": "g2rspl1t4",
+          "type": "input",
+          "qKey": "g2r_which_is_noun",
+          "qRu": "Напиши существительное из списка: Книга / Сидит / Красивый",
+          "qEn": "Write the noun from the list: Book / Sits / Beautiful",
+          "answer": "Книга",
+          "options": []
+        },
+        {
+          "taskId": "g2rspl2t1",
+          "type": "multiple_choice",
+          "qKey": "g2r_verb_question",
+          "qRu": "На какой вопрос отвечает глагол?",
+          "qEn": "What question does the verb answer?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Кто? Что?",
+              "en": "Who? What?",
+              "correct": false,
+              "key": "g2r_opt_kto_chto"
+            }
+          ]
+        },
+        {
+          "taskId": "g2rspl2t2",
+          "type": "multiple_choice",
+          "qKey": "g2r_idet_verb",
+          "qRu": "Тали говорит: «ИДЁТ — это глагол!» Он прав?",
+          "qEn": "Tali says: “ИДЁТ is a verb!” Is he right?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Да",
+              "en": "Yes",
+              "correct": true,
+              "key": "opt_yes"
+            }
+          ]
+        }
+      ]
+    },
+    "g2s-bdy-l3": {
+      "id": "g2s-bdy-l3",
+      "tasks": [
+        {
+          "taskId": "g2sbdyl3t1",
+          "type": "multiple_choice",
+          "qKey": "g2s_vitamins_in",
+          "qRu": "Тали ел только печенье. В каких продуктах больше всего витаминов, которых ему не хватает?",
+          "qEn": "Which foods have a lot of vitamins?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Фрукты и овощи",
+              "en": "Fruits and vegetables",
+              "correct": true,
+              "key": "g2s_opt_fruits_veg"
+            }
+          ]
+        },
+        {
+          "taskId": "g2sbdyl3t2",
+          "type": "multiple_choice",
+          "qKey": "g2s_protein_in",
+          "qRu": "Арчи хочет стать сильнее. В каких продуктах больше всего белка?",
+          "qEn": "Which foods have the most protein?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Мясо и яйца",
+              "en": "Meat and eggs",
+              "correct": true,
+              "key": "g2s_opt_meat_eggs"
+            }
+          ]
+        },
+        {
+          "taskId": "g2sbdyl3t3",
+          "type": "multiple_choice",
+          "qKey": "g2s_water_daily",
+          "qRu": "Тали спрашивает: «Нужно ли пить воду каждый день?»",
+          "qEn": "How much water should I drink per day?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Да",
+              "en": "Yes",
+              "correct": true,
+              "key": "opt_yes"
+            }
+          ]
+        },
+        {
+          "taskId": "g2sbdyl3t4",
+          "type": "input",
+          "qKey": "g2s_sport_good",
+          "qRu": "Арчи не хочет делать зарядку. Зачем нужны зарядка и спорт? Напиши одно слово (например: мышцы).",
+          "qEn": "Archie does not want to exercise. Why do we need exercise and sport? Write one word (e.g. muscles).",
+          "answer": "мышцы",
+          "options": []
+        },
+        {
+          "taskId": "g2edaysl1t1",
+          "type": "multiple_choice",
+          "qKey": "g2e_monday_ru",
+          "qRu": "Понедельник по-английски:",
+          "qEn": "Monday in English:",
+          "answer": null,
+          "options": [
+            {
+              "text": "Monday",
+              "en": "Monday",
+              "correct": true,
+              "key": "g2e_opt_monday"
+            }
+          ]
+        }
+      ]
+    },
+    "g3w-eco-l1": {
+      "id": "g3w-eco-l1",
+      "tasks": [
+        {
+          "taskId": "g3wecol1t1",
+          "type": "multiple_choice",
+          "qKey": "g3w_ecol1_q1",
+          "qRu": "Если вырубить все деревья в лесу, что произойдёт с его жителями?",
+          "qEn": "If all the trees in a forest are cut down, what happens to its inhabitants?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Ничего не изменится",
+              "en": "Nothing will change",
+              "correct": false,
+              "key": "g3w_ecol1_q1_a"
+            }
+          ]
+        },
+        {
+          "taskId": "g3wecol1t2",
+          "type": "multiple_choice",
+          "qKey": "g3w_ecol1_q2",
+          "qRu": "Рыбы, лягушки и водоросли в пруду зависят друг от друга. Как называется такая система?",
+          "qEn": "Fish, frogs and algae in a pond depend on each other. What is this called?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Экосистема",
+              "en": "Ecosystem",
+              "correct": true,
+              "key": "g3w_ecol1_q2_a"
+            }
+          ]
+        },
+        {
+          "taskId": "g3wecol1t3",
+          "type": "multiple_choice",
+          "qKey": "g3w_ecol1_q3",
+          "qRu": "Если исчезнут пчёлы, что случится с растениями?",
+          "qEn": "If bees disappear, what happens to plants?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Ничего, пчёлы не важны",
+              "en": "Nothing — bees are not important",
+              "correct": false,
+              "key": "g3w_ecol1_q3_a"
+            }
+          ]
+        },
+        {
+          "taskId": "g3wecol1t4",
+          "type": "input",
+          "qKey": "g3w_ecol1_q4",
+          "qRu": "Что из перечисленного — экосистема? Библиотека, аквариум с рыбками, завод. Напиши ответ.",
+          "qEn": "Which of these is an ecosystem? A library, a fish aquarium, a factory. Write the answer.",
+          "answer": "Аквариум с рыбками",
+          "options": []
+        },
+        {
+          "taskId": "g3wecol2t1",
+          "type": "multiple_choice",
+          "qKey": "g3w_ecol2_q1",
+          "qRu": "Трава → заяц → лиса. Как называется такая последовательность?",
+          "qEn": "Grass → hare → fox. What is this sequence called?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Цепь питания",
+              "en": "A food chain",
+              "correct": true,
+              "key": "g3w_ecol2_q1_a"
+            }
+          ]
+        },
+        {
+          "taskId": "g3wecol2t2",
+          "type": "multiple_choice",
+          "qKey": "g3w_ecol2_q2",
+          "qRu": "Кто стоит в начале почти любой цепи питания?",
+          "qEn": "Who is at the start of almost every food chain?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Хищник",
+              "en": "A predator",
+              "correct": false,
+              "key": "g3w_ecol2_q2_a"
+            }
+          ]
+        }
+      ]
+    },
+    "g1e-num-l2": {
+      "id": "g1e-num-l2",
+      "tasks": [
+        {
+          "taskId": "g1enuml2t1",
+          "type": "multiple_choice",
+          "qKey": "g1e_7_in_en",
+          "qRu": "Как по-английски «семь»?",
+          "qEn": "7 in English:",
+          "answer": null,
+          "options": [
+            {
+              "text": "six",
+              "en": "six",
+              "correct": false,
+              "key": "g1e_opt_six"
+            }
+          ]
+        },
+        {
+          "taskId": "g1enuml2t2",
+          "type": "multiple_choice",
+          "qKey": "g1e_nine_in_num",
+          "qRu": "Сколько это — NINE?",
+          "qEn": "9 in English:",
+          "answer": null,
+          "options": [
+            {
+              "text": "7",
+              "en": "7",
+              "correct": false,
+              "key": "opt_seven"
+            }
+          ]
+        },
+        {
+          "taskId": "g1enuml2t3",
+          "type": "multiple_choice",
+          "qKey": "g1e_10_in_en",
+          "qRu": "Как по-английски «десять»?",
+          "qEn": "10 in English:",
+          "answer": null,
+          "options": [
+            {
+              "text": "nine",
+              "en": "nine",
+              "correct": false,
+              "key": "g1e_opt_nine"
+            }
+          ]
+        },
+        {
+          "taskId": "g1enuml2t4",
+          "type": "input",
+          "qKey": "g1e_vosem_en",
+          "qRu": "Как по-английски написать число 8? (словом)",
+          "qEn": "How do you write the number 8 in English? (as a word)",
+          "answer": "eight",
+          "options": []
+        },
+        {
+          "taskId": "g1enuml3t1",
+          "type": "multiple_choice",
+          "qKey": "g1e_six_minus_three",
+          "qRu": "6 − 3 =? (по-английски)",
+          "qEn": "6 3",
+          "answer": null,
+          "options": [
+            {
+              "text": "two",
+              "en": "two",
+              "correct": false,
+              "key": "g1e_opt_two"
+            }
+          ]
+        },
+        {
+          "taskId": "g1enuml3t2",
+          "type": "multiple_choice",
+          "qKey": "g1e_three_plus_four",
+          "qRu": "3 + 4 =? (по-английски)",
+          "qEn": "3 4",
+          "answer": null,
+          "options": [
+            {
+              "text": "six",
+              "en": "six",
+              "correct": false,
+              "key": "g1e_opt_six"
+            }
+          ]
+        }
+      ]
+    },
+    "g2s-ani-l3": {
+      "id": "g2s-ani-l3",
+      "tasks": [
+        {
+          "taskId": "g2sanil3t1",
+          "type": "multiple_choice",
+          "qKey": "g2s_fish_breathes",
+          "qRu": "Рыба дышит с помощью:",
+          "qEn": "The fish breathes:",
+          "answer": null,
+          "options": [
+            {
+              "text": "Жабр",
+              "en": "gills",
+              "correct": true,
+              "key": "g2s_opt_gills"
+            }
+          ]
+        },
+        {
+          "taskId": "g2sanil3t2",
+          "type": "multiple_choice",
+          "qKey": "g2s_anil3_q2",
+          "qRu": "Тали думает, что у насекомого 6 ног. Арчи говорит 8. Кто прав?",
+          "qEn": "Tali thinks insects have 6 legs. Archie says 8. Who is right?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Тали прав — у насекомых 6 ног",
+              "en": "Tali is right — insects have 6 legs.",
+              "correct": true,
+              "key": "g2s_anil3_q2_a"
+            }
+          ]
+        },
+        {
+          "taskId": "g2sanil3t3",
+          "type": "multiple_choice",
+          "qKey": "g2s_spider_insect",
+          "qRu": "Тали утверждает: «Паук — это насекомое!» Арчи теперь знает ответ. Прав ли Тали?",
+          "qEn": "Is a spider an insect?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Да",
+              "en": "Yes",
+              "correct": false,
+              "key": "opt_yes"
+            }
+          ]
+        },
+        {
+          "taskId": "g2sanil3t4",
+          "type": "input",
+          "qKey": "g2s_anil3_q4",
+          "qRu": "Чем дышит рыба? (напиши одним словом)",
+          "qEn": "What does a fish breathe with? (one word)",
+          "answer": "жабрами",
+          "options": []
+        },
+        {
+          "taskId": "g2sbdyl1t1",
+          "type": "multiple_choice",
+          "qKey": "g2s_skeleton_function",
+          "qRu": "Тали хочет понять: для чего нужен скелет?",
+          "qEn": "The skeleton is needed for:",
+          "answer": null,
+          "options": [
+            {
+              "text": "Опора тела и защита органов",
+              "en": "body support",
+              "correct": true,
+              "key": "g2s_opt_support"
+            }
+          ]
+        },
+        {
+          "taskId": "g2sbdyl1t2",
+          "type": "multiple_choice",
+          "qKey": "g2s_muscles_do",
+          "qRu": "Арчи спрашивает: мышцы нужны для того, чтобы…",
+          "qEn": "Muscles are needed for:",
+          "answer": null,
+          "options": [
+            {
+              "text": "Двигаться",
+              "en": "body movement",
+              "correct": true,
+              "key": "g2s_opt_move_body"
+            }
+          ]
+        }
+      ]
+    },
+    "g2e-phr-l3": {
+      "id": "g2e-phr-l3",
+      "tasks": [
+        {
+          "taskId": "g2ephrl3t1",
+          "type": "multiple_choice",
+          "qKey": "g2e_phr3_q1",
+          "qRu": "«Can I…?» используют, чтобы:",
+          "qEn": "“Can I…?” is used to:",
+          "answer": null,
+          "options": [
+            {
+              "text": "Спросить разрешение",
+              "en": "Ask for permission",
+              "correct": true,
+              "key": "g2e_phr3_q1_a"
+            }
+          ]
+        },
+        {
+          "taskId": "g2ephrl3t2",
+          "type": "multiple_choice",
+          "qKey": "g2e_phr3_q2",
+          "qRu": "«You can’t» по-русски:",
+          "qEn": "What does “You can’t” mean?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Тебе нельзя",
+              "en": "You are not allowed",
+              "correct": true,
+              "key": "g2e_phr3_q2_a"
+            }
+          ]
+        },
+        {
+          "taskId": "g2ephrl3t3",
+          "type": "multiple_choice",
+          "qKey": "g2e_phr3_q3",
+          "qRu": "Тали хочет войти в комнату. Как он спросит?",
+          "qEn": "Tali wants to enter the room. How will he ask?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Can I come in?",
+              "en": "Can I come in?",
+              "correct": true,
+              "key": "g2e_phr3_q3_a"
+            }
+          ]
+        },
+        {
+          "taskId": "g2ephrl3t4",
+          "type": "input",
+          "qKey": "g2e_phr3_q4",
+          "qRu": "Переведи на русский: «No, you can’t eat my sandwich!»",
+          "qEn": "What does this mean in Russian: “No, you can’t eat my sandwich!”",
+          "answer": "Нет, тебе нельзя есть мой бутерброд",
+          "options": []
+        },
+        {
+          "taskId": "g2eschl1t1",
+          "type": "multiple_choice",
+          "qKey": "g2e_book_en",
+          "qRu": "Книга по-английски:",
+          "qEn": "Book in English:",
+          "answer": null,
+          "options": [
+            {
+              "text": "book",
+              "en": "book",
+              "correct": true,
+              "key": "g2e_opt_book"
+            }
+          ]
+        }
+      ]
+    },
+    "g4m-cm-l2": {
+      "id": "g4m-cm-l2",
+      "tasks": [
+        {
+          "taskId": "g4m-cm-l2-t1",
+          "type": "multiple_choice",
+          "qKey": "g4m_cm2_q1",
+          "qRu": "Тали заказывает кирпичи: 1 346 в день × 5 дней. Он прикинул «примерно пять тысяч», но поставщик говорит цифру другую. Помоги Тали: 1 346 × 5 = ?",
+          "qEn": "Tali orders bricks: 1,346 a day × 5 days. Help Tali: 1,346 × 5 = ?",
+          "answer": null,
+          "options": [
+            {
+              "text": "5 730",
+              "en": "5,730",
+              "correct": false,
+              "key": "g4m_cm2_q1_a"
+            }
+          ]
+        },
+        {
+          "taskId": "g4m-cm-l2-t2",
+          "type": "multiple_choice",
+          "qKey": "g4m_cm2_q2",
+          "qRu": "Фермер Тали собрал 2 417 яблок с одного сада. У него три таких же сада. Сколько яблок всего? 2 417 × 3 = ?",
+          "qEn": "Tali picked 2,417 apples from one orchard. He has three such orchards. How many apples in total? 2,417 × 3 = ?",
+          "answer": null,
+          "options": [
+            {
+              "text": "7 251",
+              "en": "7,251",
+              "correct": true,
+              "key": "g4m_cm2_q2_a"
+            }
+          ]
+        },
+        {
+          "taskId": "g4m-cm-l2-t3",
+          "type": "multiple_choice",
+          "qKey": "g4m_cm2_q3",
+          "qRu": "В космическом корабле Тали 3 208 болтов. Для экспедиции нужно ещё 6 таких же кораблей. Болтов нужно: 3 208 × 6 = ?",
+          "qEn": "Tali’s spaceship has 3,208 bolts. For the expedition he needs 6 more ships like this. Bolts needed: 3,208 × 6 = ?",
+          "answer": null,
+          "options": [
+            {
+              "text": "18 248",
+              "en": "18,248",
+              "correct": false,
+              "key": "g4m_cm2_q3_a"
+            }
+          ]
+        },
+        {
+          "taskId": "g4m-cm-l2-t4",
+          "type": "input",
+          "qKey": "g4m_cm2_q4",
+          "qRu": "Digit даёт Тали задачку: 4 135 × 7 ○ 29 000. Какой знак поставить? Напиши < или = или >",
+          "qEn": "Digit asks Tali: 4,135 × 7 ○ 29,000. Which sign? Write < or = or >",
+          "answer": "<",
+          "options": []
+        },
+        {
+          "taskId": "g4m-cm-l3-t1",
+          "type": "multiple_choice",
+          "qKey": "g4m_cm3_q1",
+          "qRu": "Тали открыл завод: 236 деталей в час × 12 часов. Он подсчитал «2 732». Digit говорит, что в одном из промежуточных умножений Тали ошибся. Найди правильный ответ: 236 × 12 = ?",
+          "qEn": "Tali’s factory: 236 parts per hour × 12 hours. He got “2,732”. Find the correct answer: 236 × 12 = ?",
+          "answer": null,
+          "options": [
+            {
+              "text": "2 732",
+              "en": "2,732",
+              "correct": false,
+              "key": "g4m_cm3_q1_a"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "threeReview": {
+    "g2s-bdy-l1": {
+      "id": "g2s-bdy-l1",
+      "tasks": [
+        {
+          "taskId": "g2sbdyl1t1",
+          "type": "multiple_choice",
+          "qKey": "g2s_skeleton_function",
+          "qRu": "Тали хочет понять: для чего нужен скелет?",
+          "qEn": "The skeleton is needed for:",
+          "answer": null,
+          "options": [
+            {
+              "text": "Опора тела и защита органов",
+              "en": "body support",
+              "correct": true,
+              "key": "g2s_opt_support"
+            }
+          ]
+        },
+        {
+          "taskId": "g2sbdyl1t2",
+          "type": "multiple_choice",
+          "qKey": "g2s_muscles_do",
+          "qRu": "Арчи спрашивает: мышцы нужны для того, чтобы…",
+          "qEn": "Muscles are needed for:",
+          "answer": null,
+          "options": [
+            {
+              "text": "Двигаться",
+              "en": "body movement",
+              "correct": true,
+              "key": "g2s_opt_move_body"
+            }
+          ]
+        },
+        {
+          "taskId": "g2sbdyl1t3",
+          "type": "multiple_choice",
+          "qKey": "g2s_bdyl1_q3",
+          "qRu": "Тали задаёт провокационный вопрос: «Без мышц человек мог бы двигаться?»",
+          "qEn": "Tali asks a tricky question: \"Could a person move without muscles?\"",
+          "answer": null,
+          "options": [
+            {
+              "text": "Да",
+              "en": "Yes",
+              "correct": false,
+              "key": "opt_yes"
+            }
+          ]
+        },
+        {
+          "taskId": "g2sbdyl1t4",
+          "type": "input",
+          "qKey": "g2s_biggest_bone",
+          "qRu": "Какая кость самая длинная в теле человека?",
+          "qEn": "Which bone is the longest?",
+          "answer": "Бедренная",
+          "options": []
+        },
+        {
+          "taskId": "g2sbdyl2t1",
+          "type": "multiple_choice",
+          "qKey": "g2s_heart_does",
+          "qRu": "Тали спрашивает: что делает сердце?",
+          "qEn": "What does the heart do?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Перекачивать кровь",
+              "en": "Pumps blood",
+              "correct": true,
+              "key": "g2s_opt_pumps_blood"
+            }
+          ]
+        },
+        {
+          "taskId": "g2sbdyl2t2",
+          "type": "multiple_choice",
+          "qKey": "g2s_lungs_do",
+          "qRu": "Для чего нужны лёгкие?",
+          "qEn": "What are lungs for?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Для зрения",
+              "en": "For seeing",
+              "correct": false,
+              "key": "g2s_opt_see_f"
+            }
+          ]
+        }
+      ]
+    },
+    "g2s-bdy-l2": {
+      "id": "g2s-bdy-l2",
+      "tasks": [
+        {
+          "taskId": "g2sbdyl2t1",
+          "type": "multiple_choice",
+          "qKey": "g2s_heart_does",
+          "qRu": "Тали спрашивает: что делает сердце?",
+          "qEn": "What does the heart do?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Перекачивать кровь",
+              "en": "Pumps blood",
+              "correct": true,
+              "key": "g2s_opt_pumps_blood"
+            }
+          ]
+        },
+        {
+          "taskId": "g2sbdyl2t2",
+          "type": "multiple_choice",
+          "qKey": "g2s_lungs_do",
+          "qRu": "Для чего нужны лёгкие?",
+          "qEn": "What are lungs for?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Для зрения",
+              "en": "For seeing",
+              "correct": false,
+              "key": "g2s_opt_see_f"
+            }
+          ]
+        },
+        {
+          "taskId": "g2sbdyl2t3",
+          "type": "multiple_choice",
+          "qKey": "g2s_bdyl2_q3",
+          "qRu": "Арчи думает, что желудок отвечает за дыхание. Тали не согласен. Кто прав?",
+          "qEn": "Archie thinks the stomach is for breathing. Tali disagrees. Who is right?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Арчи прав",
+              "en": "Archie is right.",
+              "correct": false,
+              "key": "g2s_bdyl2_q3_a"
+            }
+          ]
+        },
+        {
+          "taskId": "g2sbdyl2t4",
+          "type": "input",
+          "qKey": "g2s_bdyl2_q4",
+          "qRu": "Что контролирует мозг?",
+          "qEn": "What does the brain control?",
+          "answer": "Всё",
+          "options": []
+        },
+        {
+          "taskId": "g2sbdyl3t1",
+          "type": "multiple_choice",
+          "qKey": "g2s_vitamins_in",
+          "qRu": "Тали ел только печенье. В каких продуктах больше всего витаминов, которых ему не хватает?",
+          "qEn": "Which foods have a lot of vitamins?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Фрукты и овощи",
+              "en": "Fruits and vegetables",
+              "correct": true,
+              "key": "g2s_opt_fruits_veg"
+            }
+          ]
+        },
+        {
+          "taskId": "g2sbdyl3t2",
+          "type": "multiple_choice",
+          "qKey": "g2s_protein_in",
+          "qRu": "Арчи хочет стать сильнее. В каких продуктах больше всего белка?",
+          "qEn": "Which foods have the most protein?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Мясо и яйца",
+              "en": "Meat and eggs",
+              "correct": true,
+              "key": "g2s_opt_meat_eggs"
+            }
+          ]
+        }
+      ]
+    },
+    "g2r-sent-l1": {
+      "id": "g2r-sent-l1",
+      "tasks": [
+        {
+          "taskId": "g2rsentl1t1",
+          "type": "multiple_choice",
+          "qKey": "g2r_statement_type",
+          "qRu": "Тали написал «Бежит». Не хватает подлежащего. Какое слово подойдёт?",
+          "qEn": "Tali wrote “Бежит”. A subject is missing. Which word fits?",
+          "answer": null,
+          "options": [
+            {
+              "text": "Кот",
+              "en": "Cat (Кот)",
+              "correct": true,
+              "key": "g2r_sentl1_t1_a"
+            }
+          ]
+        },
+        {
+          "taskId": "g2rsentl1t2",
+          "type": "multiple_choice",
+          "qKey": "g2r_sentl1_q2",
+          "qRu": "В предложении «Кот сидит» — найди подлежащее. Тали думает, что это «сидит».",
+          "qEn": "In “The cat is sitting”, find the subject. Tali thinks it’s “sitting”.",
+          "answer": null,
+          "options": [
+            {
+              "text": "КОТ — подлежащее",
+              "en": "CAT is the subject.",
+              "correct": true,
+              "key": "g2r_sentl1_q2_a"
+            }
+          ]
+        },
+        {
+          "taskId": "g2rsentl1t3",
+          "type": "multiple_choice",
+          "qKey": "g2r_exclaim_type",
+          "qRu": "Подлежащее отвечает на вопрос:",
+          "qEn": "The subject answers the question:",
+          "answer": null,
+          "options": [
+            {
+              "text": "Кто? Что?",
+              "en": "Who? What?",
+              "correct": true,
+              "key": "g2r_opt_kto_chto"
+            }
+          ]
+        },
+        {
+          "taskId": "g2rsentl1t4",
+          "type": "input",
+          "qKey": "g2r_sentl1_predicate_q",
+          "qRu": "В предложении «Кот сидит» сказуемое — это:",
+          "qEn": "In the sentence “The cat is sitting” the predicate is:",
+          "answer": "Сидит",
+          "options": []
+        },
+        {
+          "taskId": "g2rsentl2t1",
+          "type": "multiple_choice",
+          "qKey": "g2r_sentl2_q1",
+          "qRu": "В предложении «Пушистый кот бежит» слово ПУШИСТЫЙ — это…",
+          "qEn": "In “A fluffy cat runs”, the word FLUFFY is…",
+          "answer": null,
+          "options": [
+            {
+              "text": "Определение",
+              "en": "Attribute (modifier)",
+              "correct": true,
+              "key": "g2r_opt_opred"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

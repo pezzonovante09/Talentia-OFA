@@ -1,0 +1,906 @@
+
+======== meadow-c5-l1 INLINE/MISSING ========
+
+======== meadow-c5-l2 INLINE/MISSING ========
+
+======== meadow-c5-l3 INLINE/MISSING ========
+
+======== meadow-c10-l1 INLINE/MISSING ========
+
+======== meadow-c10-l2 INLINE/MISSING ========
+
+======== meadow-c10-l3 INLINE/MISSING ========
+
+======== meadow-sh-l1 INLINE/MISSING ========
+
+======== meadow-sh-l2 INLINE/MISSING ========
+
+======== meadow-sh-l3 INLINE/MISSING ========
+
+======== forest-v-l1 RW56 ========
+  fvl1-t1 <multiple_choice> Q: Тали хочет купить огромный полосатый фрукт, начинающийся на А. Он говорит: «Наверное, это огурец?» Прав ли Тали?
+  a <undefined> Q: ?
+      a [✓] Арбуз
+  b <undefined> Q: ?
+      b     Огурец
+  c <undefined> Q: ?
+      c     Банан
+  fvl1-t2 <multiple_choice> Q: Тали пишет маме: «МАМА». Есть ли в этом слове буква А?
+  a <undefined> Q: ?
+      a [✓] Да, и не одна!
+  b <undefined> Q: ?
+      b     Нет
+  fvl1-t3 <multiple_choice> Q: Тали решил петь в лесу. Какой звук тянется дольше всего: А, М или Т?
+  a <undefined> Q: ?
+      a [✓] А
+  b <undefined> Q: ?
+      b     М
+  c <undefined> Q: ?
+      c     Т
+  fvl1-t4 <multiple_choice> Q: Шпион спрятал букву А в одном из слов. В каком слове её НЕТ — там шпион не прятался!
+  a <undefined> Q: ?
+      a     Аист
+  b <undefined> Q: ?
+      b     Арбуз
+  c <undefined> Q: ?
+      c [✓] Слон
+  fvl1-a1 <multiple_choice> Q: АРБУЗ — первая буква?
+  a <undefined> Q: ?
+      a [✓] А
+  b <undefined> [ABA] Q: ?
+      b     О
+
+======== forest-v-l2 RW56 ========
+  fvl2-t1 <multiple_choice> Q: Тали видит пушистое белое пятно в небе. «Это начинается на О... наверное, астероид?» Что это на самом деле?
+  a <undefined> Q: ?
+      a     Астероид
+  b <undefined> Q: ?
+      b [✓] Облако
+  c <undefined> Q: ?
+      c     Утка
+  fvl2-t2 <multiple_choice> Q: Тали живёт в ДОМе. Какая буква — гласная, которую можно петь?
+  a <undefined> Q: ?
+      a     Д
+  b <undefined> Q: ?
+      b [✓] О
+  c <undefined> Q: ?
+      c     М
+  fvl2-t3 <multiple_choice> Q: Детектив Тали проверяет слово УТКА. Он говорит: «Тут две буквы У!» Прав?
+  a <undefined> Q: ?
+      a [✓] Одна
+  b <undefined> Q: ?
+      b     Две
+  c <undefined> Q: ?
+      c     Три
+  fvl2-t4 <multiple_choice> Q: Тали ищет слово без О и без У. Он думает, что это «Утка». Прав ли он?
+  a <undefined> Q: ?
+      a     Осёл
+  b <undefined> Q: ?
+      b     Утка
+  c <undefined> Q: ?
+      c [✓] Апельсин
+  fvl2-a1 <multiple_choice> Q: ОБЛАКО — первая буква?
+  a <undefined> Q: ?
+      a [✓] О
+  b <undefined> [ABA] Q: ?
+      b     У
+
+======== forest-v-l3 RW56 ========
+  fvl3-t1 <multiple_choice> Q: Тали играет в прятки со словами. ИГРА — с какой буквы начинается? Тали говорит: «С буквы А!»
+  a <undefined> Q: ?
+      a [✓] И
+  b <undefined> Q: ?
+      b     Э
+  c <undefined> Q: ?
+      c     А
+  fvl3-t2 <multiple_choice> Q: Тали плывёт в море и видит КИТа. Какая гласная «живёт» в слове КИТ?
+  a <undefined> Q: ?
+      a     К
+  b <undefined> Q: ?
+      b [✓] И
+  c <undefined> Q: ?
+      c     Т
+  fvl3-t3 <multiple_choice> Q: Слово ЭКРАН — с какой гласной начинается?
+  a <undefined> Q: ?
+      a [✓] Э
+  b <undefined> Q: ?
+      b     И
+  c <undefined> Q: ?
+      c     О
+  fvl3-t4 <multiple_choice> Q: Тали читает слово ЛЕС. Какой звук тянется и поётся?
+  a <undefined> Q: ?
+      a     Л
+  b <undefined> Q: ?
+      b [✓] Е
+  c <undefined> Q: ?
+      c     С
+  fvl3-a1 <multiple_choice> Q: ИГРА — первая буква?
+  a <undefined> Q: ?
+      a [✓] И
+  b <undefined> [ABA] Q: ?
+      b     Э
+
+======== forest-con-l1 RW56 ========
+  fconl1-t1 <multiple_choice> Q: Тали встретил в лесу МЕДВЕДЬ. С какой буквы начинается? Тали говорит: «С буквы П!»
+  a <undefined> Q: ?
+      a [✓] М
+  b <undefined> Q: ?
+      b     П
+  c <undefined> Q: ?
+      c     Б
+  fconl1-t2 <multiple_choice> Q: Тали пробует петь букву М долго, как песню. Не получается. Значит М — это...?
+  a <undefined> Q: ?
+      a     Гласная
+  b <undefined> Q: ?
+      b [✓] Согласная
+  fconl1-t3 <multiple_choice> Q: Тали ищет слово на букву С. Говорит: «Это Мышка!» Помоги найти правильное.
+  a <undefined> Q: ?
+      a     Мышка
+  b <undefined> Q: ?
+      b [✓] Слон
+  c <undefined> Q: ?
+      c     Пчела
+  fconl1-t4 <multiple_choice> Q: ПАУК, МУХА, ОСЁЛ, СОВА — у кого первая буква гласная?
+  a <undefined> Q: ?
+      a     Паук
+  b <undefined> Q: ?
+      b     Муха
+  c <undefined> Q: ?
+      c [✓] Осёл
+  fconl1-a1 <multiple_choice> Q: МЕДВЕДЬ — первая буква?
+  a <undefined> Q: ?
+      a [✓] М
+  b <undefined> [ABA] Q: ?
+      b     П
+
+======== forest-con-l2 RW56 ========
+  fconl2-t1 <multiple_choice> Q: Тали увидел полосатого хищника. Слово ТИГР — с какой буквы начинается?
+  a <undefined> Q: ?
+      a [✓] Т
+  b <undefined> Q: ?
+      b     К
+  c <undefined> Q: ?
+      c     Д
+  fconl2-t2 <multiple_choice> Q: Тали пробует петь букву К долго-долго. Ничего не выходит! Значит К — это...?
+  a <undefined> Q: ?
+      a     Гласная
+  b <undefined> Q: ?
+      b [✓] Согласная
+  fconl2-t3 <multiple_choice> Q: Тали ищет животное на букву К. Говорит: «Это тигр!» Помоги.
+  a <undefined> Q: ?
+      a     Тигр
+  b <undefined> Q: ?
+      b [✓] Крокодил
+  c <undefined> Q: ?
+      c     Дельфин
+  fconl2-t4 <input> Q: Тали нашёл пушистого зверька. Слово КОШКА — напиши первую букву!
+      answer: К
+  fconl2-a1 <multiple_choice> Q: ТИГР — первая буква?
+  a <undefined> Q: ?
+      a [✓] Т
+  b <undefined> [ABA] Q: ?
+      b     К
+
+======== forest-con-l3 RW56 ========
+  fconl3-t1 <multiple_choice> Q: Тали нарисовал нос. Слово НОС — с какой буквы начинается?
+  a <undefined> Q: ?
+      a [✓] Н
+  b <undefined> Q: ?
+      b     О
+  c <undefined> Q: ?
+      c     Р
+  fconl3-t2 <multiple_choice> Q: Буква Н — гласная или согласная? Тали думает, что гласная, потому что «звучит мягко». Прав ли он?
+  a <undefined> Q: ?
+      a     Гласная
+  b <undefined> Q: ?
+      b [✓] Согласная
+  fconl3-t3 <multiple_choice> Q: Тали ищет слово на Н. Нора, Небо, Арбуз — какое лишнее?
+  a <undefined> Q: ?
+      a     Нора
+  b <undefined> Q: ?
+      b     Небо
+  c <undefined> Q: ?
+      c [✓] Арбуз
+  fconl3-t4 <multiple_choice> Q: Шпион подменил первую букву в слове НОГА на другую. Получилось РОГА. Какую букву поставил шпион?
+  a <undefined> Q: ?
+      a [✓] Р
+  b <undefined> Q: ?
+      b     Л
+  c <undefined> Q: ?
+      c     М
+  fconl3-a1 <multiple_choice> Q: НОС — первая буква?
+  a <undefined> Q: ?
+      a [✓] Н
+  b <undefined> [ABA] Q: ?
+      b     Р
+
+======== forest-syl-l1 RW56 ========
+  fsyll1-t1 <multiple_choice> Q: Тали строит слово. Первый кирпичик поёт: «Ммм-Ааа!» Какой это слог?
+  a <undefined> Q: ?
+      a [✓] МА
+  b <undefined> Q: ?
+      b     МО
+  c <undefined> Q: ?
+      c     МУ
+  fsyll1-t2 <multiple_choice> Q: Тали слышит «МУ-МУ» за забором. Говорит: «Это кот!» Прав?
+  a <undefined> Q: ?
+      a     Кот
+  b <undefined> Q: ?
+      b [✓] Корова
+  c <undefined> Q: ?
+      c     Собака
+  fsyll1-t3 <multiple_choice> Q: Тали хлопает на каждый слог в слове МА-МА. Говорит: «Три хлопка!» Проверь.
+  a <undefined> Q: ?
+      a     1
+  b <undefined> Q: ?
+      b [✓] 2
+  c <undefined> Q: ?
+      c     3
+  fsyll1-t4 <multiple_choice> Q: Тали сложил два кирпичика: МА + МА. Какое слово?
+  a <undefined> Q: ?
+      a [✓] МАМА
+  b <undefined> Q: ?
+      b     МОЛО
+  c <undefined> Q: ?
+      c     МУКА
+  fsyll1-a1 <multiple_choice> Q: Покажи слог МА:
+  a <undefined> Q: ?
+      a [✓] МА
+  b <undefined> [ABA] Q: ?
+      b     МО
+
+======== forest-syl-l2 RW56 ========
+  fsyll2-t1 <multiple_choice> Q: Тали слышит звук «Ссс-Ооо!» Какой слог он слышит?
+  a <undefined> Q: ?
+      a     СА
+  b <undefined> Q: ?
+      b [✓] СО
+  c <undefined> Q: ?
+      c     СУ
+  fsyll2-t2 <multiple_choice> Q: Тали хлопает: СА-СА. Сколько хлопков?
+  a <undefined> Q: ?
+      a     1
+  b <undefined> Q: ?
+      b [✓] 2
+  c <undefined> Q: ?
+      c     3
+  fsyll2-t3 <multiple_choice> Q: Тали летит на сове. СО-ВА — сколько слогов в имени его транспорта?
+  a <undefined> Q: ?
+      a     1
+  b <undefined> Q: ?
+      b [✓] 2
+  c <undefined> Q: ?
+      c     3
+  fsyll2-t4 <multiple_choice> Q: Тали слепил снеговика из слогов СА + НИ. Какое слово?
+  a <undefined> Q: ?
+      a [✓] САНИ
+  b <undefined> Q: ?
+      b     СОНЯ
+  c <undefined> Q: ?
+      c     СОВА
+  fsyll2-a1 <multiple_choice> Q: Покажи слог СО:
+  a <undefined> Q: ?
+      a [✓] СО
+  b <undefined> [ABA] Q: ?
+      b     СА
+
+======== forest-syl-l3 RW56 ========
+  fsyll3-t1 <multiple_choice> Q: Тали услышал слог «Нн-Аа!» Какой кирпичик он поймал?
+  a <undefined> Q: ?
+      a     МА
+  b <undefined> Q: ?
+      b [✓] НА
+  c <undefined> Q: ?
+      c     СА
+  fsyll3-t2 <multiple_choice> Q: Лиса пригласила Тали в НО-РУ. Сколько слогов в слове НОРА?
+  a <undefined> Q: ?
+      a     1
+  b <undefined> Q: ?
+      b [✓] 2
+  c <undefined> Q: ?
+      c     3
+  fsyll3-t3 <multiple_choice> Q: Тали запускает ракету РА-КЕ-ТА. Какой первый слог улетает?
+  a <undefined> Q: ?
+      a [✓] РА
+  b <undefined> Q: ?
+      b     НА
+  c <undefined> Q: ?
+      c     КЕ
+  fsyll3-t4 <multiple_choice> Q: Тали строит слово: первый кирпичик НО-, второй нужно найти. Какое слово получится?
+  a <undefined> Q: ?
+      a [✓] НО-ГА
+  b <undefined> Q: ?
+      b     МО-РЕ
+  c <undefined> Q: ?
+      c     СО-ЛЬ
+  fsyll3-a1 <multiple_choice> Q: Покажи слог НА:
+  a <undefined> Q: ?
+      a [✓] НА
+  b <undefined> [ABA] Q: ?
+      b     СА
+
+======== garden-col-l1 RW56 ========
+  gcoll1-t1 <multiple_choice> Q: Тали нашёл в саду маленькую красную ягоду. Что это?
+  a <undefined> Q: ?
+      a [✓] Клубника
+  b <undefined> Q: ?
+      b     Черника
+  c <undefined> Q: ?
+      c     Баклажан
+  gcoll1-t2 <multiple_choice> Q: Тали красит рисунок. Что из этого НЕ красное?
+  a <undefined> Q: ?
+      a     Яблоко
+  b <undefined> Q: ?
+      b     Помидор
+  c <undefined> Q: ?
+      c [✓] Солнце
+  gcoll1-t3 <multiple_choice> Q: Тали прыгает по болоту: «Лягушка — красная!» Правда?
+  a <undefined> Q: ?
+      a     Да
+  b <undefined> Q: ?
+      b [✓] Нет, лягушка зелёная!
+  gcoll1-t4 <multiple_choice> Q: Тали смотрит на небо днём. Какого оно цвета? Тали говорит: «Красное!» Прав ли он?
+  a <undefined> Q: ?
+      a     Да, красное
+  b <undefined> Q: ?
+      b [✓] Нет — небо синее!
+  c <undefined> Q: ?
+      c     Зелёное, как трава
+  gcoll1-a1 <multiple_choice> Q: Клубника — какого цвета?
+  a <undefined> Q: ?
+      a [✓] Красный
+  b <undefined> [ABA] Q: ?
+      b     Синий
+
+======== garden-col-l2 RW56 ========
+  gcoll2-t1 <multiple_choice> Q: Тали видит в поле огромный цветок, который всегда смотрит на солнце. Подсолнух — какого цвета?
+  a <undefined> Q: ?
+      a     Красный
+  b <undefined> Q: ?
+      b [✓] Жёлтый
+  c <undefined> Q: ?
+      c     Синий
+  gcoll2-t2 <multiple_choice> Q: Тали — юный художник. Он смешал красную и жёлтую краску. Что получилось?
+  a <undefined> Q: ?
+      a     Зелёный
+  b <undefined> Q: ?
+      b [✓] Оранжевый
+  c <undefined> Q: ?
+      c     Фиолетовый
+  gcoll2-t3 <multiple_choice> Q: Тали берёт фиолетовый овощ — баклажан. Правда, что баклажан фиолетовый?
+  a <undefined> Q: ?
+      a [✓] Да!
+  b <undefined> Q: ?
+      b     Нет
+  gcoll2-t4 <multiple_choice> Q: Тали раскрашивает небо жёлтой кисточкой. Что он рисует?
+  a <undefined> Q: ?
+      a [✓] Солнце
+  b <undefined> Q: ?
+      b     Траву
+  c <undefined> Q: ?
+      c     Ягоду
+  gcoll2-a1 <multiple_choice> Q: Подсолнух — какого цвета?
+  a <undefined> Q: ?
+      a [✓] Жёлтый
+  b <undefined> [ABA] Q: ?
+      b     Красный
+
+======== garden-col-l3 RW56 ========
+  gcoll3-t1 <multiple_choice> Q: Тали смотрит про Арктику. Там огромный зверь. «Он синий!» — говорит Тали. Какого цвета полярный медведь?
+  a <undefined> Q: ?
+      a [✓] Белый
+  b <undefined> Q: ?
+      b     Синий
+  c <undefined> Q: ?
+      c     Красный
+  gcoll3-t2 <multiple_choice> Q: Тали снова в лаборатории красок! Синий + Жёлтый = ?
+  a <undefined> Q: ?
+      a     Красный
+  b <undefined> Q: ?
+      b [✓] Зелёный
+  c <undefined> Q: ?
+      c     Оранжевый
+  gcoll3-t3 <multiple_choice> Q: Тали делает коллаж из чёрных предметов. Что туда НЕ попадёт?
+  a <undefined> Q: ?
+      a     Уголь
+  b <undefined> Q: ?
+      b     Ночное небо
+  c <undefined> Q: ?
+      c [✓] Молоко
+  gcoll3-t4 <multiple_choice> Q: Тали получил загадку: «Я чёрно-белый, живу в Антарктиде и отлично плаваю». Кто это?
+  a <undefined> Q: ?
+      a     Дельфин
+  b <undefined> Q: ?
+      b [✓] Пингвин 🐧
+  c <undefined> Q: ?
+      c     Белый медведь
+  gcoll3-a1 <multiple_choice> Q: Полярный медведь — белый или чёрный?
+  a <undefined> Q: ?
+      a [✓] Белый
+  b <undefined> [ABA] Q: ?
+      b     Чёрный
+
+======== garden-anim-l1 RW56 ========
+  ganiml1-t1 <multiple_choice> Q: Тали зашёл на ферму и говорит: «Молоко даёт кот!» Прав ли он?
+  a <undefined> Q: ?
+      a     Кот
+  b <undefined> Q: ?
+      b [✓] Корова
+  c <undefined> Q: ?
+      c     Собака
+  ganiml1-t2 <multiple_choice> Q: Тали говорит: «Собака — дикое животное!» Как ты ответишь?
+  a <undefined> Q: ?
+      a     Да, живёт в лесу
+  b <undefined> Q: ?
+      b [✓] Нет, она домашняя!
+  ganiml1-t3 <multiple_choice> Q: Тали получил голосовое сообщение: «Мр-р-р… Мяу! Я поймал мышку!» Кто прислал?
+  a <undefined> Q: ?
+      a     Собака
+  b <undefined> Q: ?
+      b [✓] Кот
+  c <undefined> Q: ?
+      c     Корова
+  ganiml1-t4 <multiple_choice> Q: Тали составляет список жителей своего дома. Кто туда точно попадёт?
+  a <undefined> Q: ?
+      a     Волк
+  b <undefined> Q: ?
+      b [✓] Кот
+  c <undefined> Q: ?
+      c     Лиса
+  ganiml1-a1 <multiple_choice> Q: Кошка — домашнее животное?
+  a <undefined> Q: ?
+      a [✓] Да
+  b <undefined> [ABA] Q: ?
+      b     Нет
+
+======== garden-anim-l2 RW56 ========
+  ganiml2-t1 <multiple_choice> Q: Тали видит следы медведя. «Медведь живёт в море!» — говорит он. Где правда?
+  a <undefined> Q: ?
+      a     В доме
+  b <undefined> Q: ?
+      b [✓] В лесу
+  c <undefined> Q: ?
+      c     В море
+  ganiml2-t2 <multiple_choice> Q: Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?
+  a <undefined> Q: ?
+      a     Да, лев — домашний
+  b <undefined> Q: ?
+      b [✓] Нет, лев — дикий!
+  ganiml2-t3 <multiple_choice> Q: Тали нашёл рыжий пушистый след в лесу. Кто это был?
+  a <undefined> Q: ?
+      a     Волк
+  b <undefined> Q: ?
+      b [✓] Лиса
+  c <undefined> Q: ?
+      c     Медведь
+  ganiml2-t4 <multiple_choice> Q: Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?
+  a <undefined> Q: ?
+      a     Волк
+  b <undefined> Q: ?
+      b     Лиса
+  c <undefined> Q: ?
+      c [✓] Корова
+  ganiml2-a1 <multiple_choice> Q: Лиса — дикое животное?
+  a <undefined> Q: ?
+      a [✓] Да
+  b <undefined> [ABA] Q: ?
+      b     Нет
+
+======== garden-anim-l3 RW56 ========
+  ganiml3-t1 <multiple_choice> Q: Тали — подводный исследователь! Он нашёл рыбку. Где живёт рыба?
+  a <undefined> Q: ?
+      a     На суше
+  b <undefined> Q: ?
+      b [✓] В воде
+  c <undefined> Q: ?
+      c     В небе
+  ganiml3-t2 <multiple_choice> Q: Тали ищет животное, которое умеет и летать, и плавать. «Это кот!» — думает он. Прав?
+  a <undefined> Q: ?
+      a     Кот
+  b <undefined> Q: ?
+      b [✓] Утка
+  c <undefined> Q: ?
+      c     Собака
+  ganiml3-t3 <multiple_choice> Q: Тали описывает животное: «Плавает, есть плавники, никогда не издаёт звук». Кто это?
+  a <undefined> Q: ?
+      a [✓] Рыба
+  b <undefined> Q: ?
+      b     Кит 🐋
+  c <undefined> Q: ?
+      c     Краб 🦀
+  ganiml3-t4 <multiple_choice> Q: Тали в бинокль видит существо с крыльями и клювом. Оно поёт. Кто это?
+  a <undefined> Q: ?
+      a     Летучая мышь 🦇
+  b <undefined> Q: ?
+      b [✓] Птица 🐦
+  c <undefined> Q: ?
+      c     Белка 🐿️
+  ganiml3-a1 <multiple_choice> Q: Рыба живёт...?
+  a <undefined> Q: ?
+      a [✓] В воде
+  b <undefined> [ABA] Q: ?
+      b     На суше
+
+======== garden-seas-l1 RW56 ========
+  gseasl1-t1 <multiple_choice> Q: Тали идёт по парку, слышит хруст. Листья летят с деревьев. «Это лето!» — говорит Тали. Какое время года?
+  a <undefined> Q: ?
+      a [✓] Осень
+  b <undefined> Q: ?
+      b     Весна
+  c <undefined> Q: ?
+      c     Лето
+  gseasl1-t2 <multiple_choice> Q: Тали просыпается и видит белое покрывало везде. Что происходит зимой?
+  a <undefined> Q: ?
+      a     Жарко и цветут цветы
+  b <undefined> Q: ?
+      b [✓] Идёт снег
+  c <undefined> Q: ?
+      c     Падают листья
+  gseasl1-t3 <multiple_choice> Q: Тали хочет слепить снеговика! Когда это возможно?
+  a <undefined> Q: ?
+      a     Лето
+  b <undefined> Q: ?
+      b [✓] Зима
+  c <undefined> Q: ?
+      c     Весна
+  gseasl1-t4 <multiple_choice> Q: Тали считает: осень, зима, весна, лето. «Всего три!» — говорит он. Сколько на самом деле?
+  a <undefined> Q: ?
+      a     2
+  b <undefined> Q: ?
+      b     3
+  c <undefined> Q: ?
+      c [✓] 4
+
+======== garden-seas-l2 RW56 ========
+  gseasl2-t1 <multiple_choice> Q: Тали слышит кап-кап: с крыши течёт. Снег тает. «Это зима!» — думает он. Какое время года?
+  a <undefined> Q: ?
+      a     Зима
+  b <undefined> Q: ?
+      b [✓] Весна
+  c <undefined> Q: ?
+      c     Осень
+  gseasl2-t2 <multiple_choice> Q: Тали составляет цепочку: Осень → Зима → ??? Какое время года следующее?
+  a <undefined> Q: ?
+      a     Осень
+  b <undefined> Q: ?
+      b [✓] Весна
+  c <undefined> Q: ?
+      c     Лето
+  gseasl2-t3 <multiple_choice> Q: Тали слышит знакомую песню в небе — птицы вернулись! Когда птицы прилетают из тёплых стран?
+  a <undefined> Q: ?
+      a     Зима
+  b <undefined> Q: ?
+      b [✓] Весна
+  c <undefined> Q: ?
+      c     Осень
+  gseasl2-t4 <multiple_choice> Q: Тали продолжает цепочку: Зима → Весна → ??? Что после весны?
+  a <undefined> Q: ?
+      a     Осень
+  b <undefined> Q: ?
+      b     Зима
+  c <undefined> Q: ?
+      c [✓] Лето
+
+======== garden-seas-l3 RW56 ========
+  gseasl3-t1 <multiple_choice> Q: Тали надевает шорты и идёт купаться! Яркое солнце, жара. Какое время года?
+  a <undefined> Q: ?
+      a     Зима
+  b <undefined> Q: ?
+      b [✓] Лето
+  c <undefined> Q: ?
+      c     Осень
+  gseasl3-t2 <multiple_choice> Q: Тали хочет поплавать в реке. Когда это самое приятное?
+  a <undefined> Q: ?
+      a     Зима
+  b <undefined> Q: ?
+      b [✓] Лето
+  c <undefined> Q: ?
+      c     Осень
+  gseasl3-t3 <multiple_choice> Q: Тали крутит колесо: Зима → Весна → Лето → Осень → ??? Что дальше?
+  a <undefined> Q: ?
+      a [✓] Зима
+  b <undefined> Q: ?
+      b     Весна
+  c <undefined> Q: ?
+      c     Лето
+  gseasl3-t4 <multiple_choice> Q: Тали помогает бабушке собирать яблоки с деревьев. Когда это происходит?
+  a <undefined> Q: ?
+      a     Весна
+  b <undefined> Q: ?
+      b [✓] Осень
+  c <undefined> Q: ?
+      c     Зима
+
+======== island-abc-l1 RW56 ========
+  iabcl1-t1 <multiple_choice> Q: Тали встречает в болоте зелёное чудовище. «Это Bear — медведь!» — говорит он. Но зверь начинается на A. Кто это?
+  a <undefined> Q: ?
+      a [✓] Alligator 🐊
+  b <undefined> Q: ?
+      b     Bear 🐻
+  c <undefined> Q: ?
+      c     Cat 🐱
+  iabcl1-t2 <multiple_choice> Q: Tali берёт BALL и говорит: «BALL начинается на A!» Он прав?
+  a <undefined> Q: ?
+      a     Yes!
+  b <undefined> Q: ?
+      b [✓] No, it starts with B
+  iabcl1-t3 <multiple_choice> Q: Шпион спрятался в слове, которое НЕ начинается на B. Найди его!
+  a <undefined> Q: ?
+      a     Ball ⚽
+  b <undefined> Q: ?
+      b     Banana 🍌
+  c <undefined> Q: ?
+      c [✓] Apple 🍎
+  iabcl1-t4 <multiple_choice> Q: Тали расставляет буквы: A, B, C. Какая первая в алфавите?
+  a <undefined> Q: ?
+      a [✓] A
+  b <undefined> Q: ?
+      b     B
+  c <undefined> Q: ?
+      c     C
+  iabcl1-a1 <multiple_choice> Q: ALLIGATOR — first letter?
+  a <undefined> Q: ?
+      a [✓] A
+  b <undefined> [ABA] Q: ?
+      b     B
+
+======== island-abc-l2 RW56 ========
+  iabcl2-t1 <multiple_choice> Q: Tali видит огромное животное с длинной шеей. Начинается на C. Что это?
+  a <undefined> Q: ?
+      a [✓] Camel 🐪
+  b <undefined> Q: ?
+      b     Dog 🐶
+  c <undefined> Q: ?
+      c     Elephant 🐘
+  iabcl2-t2 <multiple_choice> Q: Тали говорит: «DINOSAUR начинается на C!» Прав ли он?
+  a <undefined> Q: ?
+      a     Да
+  b <undefined> Q: ?
+      b [✓] Нет, на D
+  iabcl2-t3 <multiple_choice> Q: Шпион спрятал слово, которое НЕ начинается на D. Найди его!
+  a <undefined> Q: ?
+      a     Dog 🐶
+  b <undefined> Q: ?
+      b     Duck 🦆
+  c <undefined> Q: ?
+      c [✓] Cat 🐱
+  iabcl2-t4 <input> Q: Тали видит утку на пруду! Какая первая буква у DUCK?
+      answer: D
+  iabcl2-a1 <multiple_choice> Q: DOG — first letter?
+  a <undefined> Q: ?
+      a [✓] D
+  b <undefined> [ABA] Q: ?
+      b     C
+
+======== island-abc-l3 RW56 ========
+  iabcl3-t1 <multiple_choice> Q: Тали собирается в поездку. Берёт большую серую игрушку — начинается на E. Что это?
+  a <undefined> Q: ?
+      a [✓] Elephant 🐘
+  b <undefined> Q: ?
+      b     Giraffe 🦒
+  c <undefined> Q: ?
+      c     Hippo 🦛
+  iabcl3-t2 <multiple_choice> Q: Тали нашёл двух друзей: FOX и FROG. Оба начинаются на F?
+  a <undefined> Q: ?
+      a [✓] Yes!
+  b <undefined> Q: ?
+      b     No
+  iabcl3-t3 <multiple_choice> Q: Тали сортирует буквы: D, E, F. Какая последняя?
+  a <undefined> Q: ?
+      a     D
+  b <undefined> Q: ?
+      b     E
+  c <undefined> Q: ?
+      c [✓] F
+  iabcl3-t4 <multiple_choice> Q: Тали готовит. Он использует EGG. С какой буквы начинается EGG?
+  a <undefined> Q: ?
+      a [✓] E
+  b <undefined> Q: ?
+      b     F
+  c <undefined> Q: ?
+      c     A
+  iabcl3-a1 <multiple_choice> Q: FOX — first letter?
+  a <undefined> Q: ?
+      a [✓] F
+  b <undefined> [ABA] Q: ?
+      b     E
+
+======== island-col-l1 RW56 ========
+  icoll1-t1 <multiple_choice> Q: Тали слышит сирену: едет большая RED truck. Какого она цвета по-английски?
+  a <undefined> Q: ?
+      a [✓] Red
+  b <undefined> Q: ?
+      b     Blue
+  c <undefined> Q: ?
+      c     Green
+  icoll1-t2 <multiple_choice> Q: Тали берёт BLUE bag. Что туда НЕ положишь?
+  a <undefined> Q: ?
+      a     The sky ☁️
+  b <undefined> Q: ?
+      b     Blueberry 🫐
+  c <undefined> Q: ?
+      c [✓] Banana 🍌
+  icoll1-t3 <multiple_choice> Q: Тали бежит по траве. Is grass GREEN?
+  a <undefined> Q: ?
+      a [✓] Yes, green!
+  b <undefined> Q: ?
+      b     No
+  icoll1-t4 <multiple_choice> Q: Роботу-повару нужен один RED ингредиент. Что подойдёт?
+  a <undefined> Q: ?
+      a     Lemon 🍋
+  b <undefined> Q: ?
+      b [✓] Strawberry 🍓
+  c <undefined> Q: ?
+      c     Blueberry 🫐
+  icoll1-a1 <multiple_choice> Q: The fire truck is...?
+  a <undefined> Q: ?
+      a [✓] Red
+  b <undefined> [ABA] Q: ?
+      b     Blue
+
+======== island-col-l2 RW56 ========
+  icoll2-t1 <multiple_choice> Q: Тали видит на рынке круглый ORANGE овощ для Хэллоуина. «Это blueberry!» — говорит он. Что это на самом деле?
+  a <undefined> Q: ?
+      a [✓] Pumpkin 🎃
+  b <undefined> Q: ?
+      b     Blueberry 🫐
+  c <undefined> Q: ?
+      c     Tomato 🍅
+  icoll2-t2 <multiple_choice> Q: Тали смешивает краски: Red + Blue = ?
+  a <undefined> Q: ?
+      a     Green
+  b <undefined> Q: ?
+      b [✓] Purple
+  c <undefined> Q: ?
+      c     Orange
+  icoll2-t3 <multiple_choice> Q: Тали считает YELLOW вещи: lemon 🍋, banana 🍌, tomato 🍅, sunflower 🌻. Сколько жёлтых?
+  a <undefined> Q: ?
+      a     2
+  b <undefined> Q: ?
+      b [✓] 3
+  c <undefined> Q: ?
+      c     4
+  icoll2-t4 <multiple_choice> Q: Тали говорит: «All grapes are green!» Он прав?
+  a <undefined> Q: ?
+      a     Yes
+  b <undefined> Q: ?
+      b [✓] No, grapes can be purple too!
+  icoll2-a1 <multiple_choice> Q: The pumpkin is...?
+  a <undefined> Q: ?
+      a [✓] Orange
+  b <undefined> [ABA] Q: ?
+      b     Blue
+
+======== island-col-l3 RW56 ========
+  icoll3-t1 <multiple_choice> Q: Тали видит в Арктике большого пушистого зверя. «He is black!» — говорит Тали. Какого цвета полярный медведь?
+  a <undefined> Q: ?
+      a [✓] White
+  b <undefined> Q: ?
+      b     Black
+  c <undefined> Q: ?
+      c     Red
+  icoll3-t2 <multiple_choice> Q: Тали — paint scientist: Yellow + Blue = ?
+  a <undefined> Q: ?
+      a     Red
+  b <undefined> Q: ?
+      b [✓] Green
+  c <undefined> Q: ?
+      c     Orange
+  icoll3-t3 <multiple_choice> Q: Тали охотится за чёрными вещами. Один «шпион» не чёрный — найди!
+  a <undefined> Q: ?
+      a     Coal ⬛
+  b <undefined> Q: ?
+      b     Raven 🐦‍⬛
+  c <undefined> Q: ?
+      c [✓] Snow ❄️
+  icoll3-t4 <multiple_choice> Q: Тали видит животное: чёрно-белое, живёт на холоде, плавает отлично. Кто это?
+  a <undefined> Q: ?
+      a     Seal 🦭
+  b <undefined> Q: ?
+      b [✓] Penguin 🐧
+  c <undefined> Q: ?
+      c     Dolphin 🐬
+  icoll3-a1 <multiple_choice> Q: The polar bear is...?
+  a <undefined> Q: ?
+      a [✓] White
+  b <undefined> [ABA] Q: ?
+      b     Black
+
+======== island-anim-l1 RW56 ========
+  ianiml1-t1 <multiple_choice> Q: Тали слышит у двери: WOOF-WOOF! «Это кот!» — говорит он. Кто стучится?
+  a <undefined> Q: ?
+      a     Cat 🐱
+  b <undefined> Q: ?
+      b [✓] Dog 🐶
+  c <undefined> Q: ?
+      c     Cow 🐄
+  ianiml1-t2 <multiple_choice> Q: A dog says WOOF. A cat says MEOW. Does a cat say WOOF?
+  a <undefined> Q: ?
+      a [✓] No
+  b <undefined> Q: ?
+      b     Yes!
+  ianiml1-t3 <multiple_choice> Q: Тали получает сообщение: «I say MEOW, I have whiskers.» Кто прислал?
+  a <undefined> Q: ?
+      a     Dog 🐶
+  b <undefined> Q: ?
+      b [✓] Cat 🐱
+  c <undefined> Q: ?
+      c     Rabbit 🐰
+  ianiml1-t4 <multiple_choice> Q: Тали собирает домашних животных: cat и dog. Кто лишний?
+  a <undefined> Q: ?
+      a [✓] Wolf 🐺
+  b <undefined> Q: ?
+      b     Cat 🐱
+  c <undefined> Q: ?
+      c     Dog 🐶
+  ianiml1-a1 <multiple_choice> Q: A dog says...?
+  a <undefined> Q: ?
+      a [✓] Woof!
+  b <undefined> [ABA] Q: ?
+      b     Meow!
+
+======== island-anim-l2 RW56 ========
+  ianiml2-t1 <multiple_choice> Q: Тали наблюдает, как птица взлетает. Как bird движется в небе?
+  a <undefined> Q: ?
+      a     Swim
+  b <undefined> Q: ?
+      b [✓] Fly
+  c <undefined> Q: ?
+      c     Run
+  ianiml2-t2 <multiple_choice> Q: Тали бросил игрушечную рыбку в аквариум. Where does a fish live?
+  a <undefined> Q: ?
+      a     In the sky
+  b <undefined> Q: ?
+      b [✓] In water
+  c <undefined> Q: ?
+      c     In a tree 🌳
+  ianiml2-t3 <multiple_choice> Q: Тали сравнивает лягушку и рыбу. Лягушка умеет кое-что, чего рыба не может! Что?
+  a <undefined> Q: ?
+      a     Swim
+  b <undefined> Q: ?
+      b [✓] Jump
+  c <undefined> Q: ?
+      c     Bark 🐕
+  ianiml2-t4 <multiple_choice> Q: Тали говорит: «All birds can fly!» Его робот-друг не согласен. Тали прав?
+  a <undefined> Q: ?
+      a     Yes!
+  b <undefined> Q: ?
+      b [✓] No — penguins can't fly!
+  ianiml2-a1 <multiple_choice> Q: Birds...?
+  a <undefined> Q: ?
+      a [✓] Fly
+  b <undefined> [ABA] Q: ?
+      b     Swim
+
+======== island-anim-l3 RW56 ========
+  ianiml3-t1 <multiple_choice> Q: Тали видит пингвина в аквариуме. Что эта птица НЕ умеет делать?
+  a <undefined> Q: ?
+      a     Swim
+  b <undefined> Q: ?
+      b     Walk
+  c <undefined> Q: ?
+      c [✓] Fly
+  ianiml3-t2 <multiple_choice> Q: Тали получает загадку: «I have a trunk. I am the biggest land animal.»
+  a <undefined> Q: ?
+      a     Hippo 🦛
+  b <undefined> Q: ?
+      b [✓] Elephant 🐘
+  c <undefined> Q: ?
+      c     Rhino 🦏
+  ianiml3-t3 <multiple_choice> Q: Тали считает лапы: у кошки 4, у птицы 2. У кого больше?
+  a <undefined> Q: ?
+      a [✓] Cat 🐱
+  b <undefined> Q: ?
+      b     Bird 🐦
+  ianiml3-t4 <multiple_choice> Q: На космическом корабле Тали — только летающие животные. Кто должен остаться на земле (не летит)?
+  a <undefined> Q: ?
+      a     Eagle 🦅
+  b <undefined> Q: ?
+      b     Parrot 🦜
+  c <undefined> Q: ?
+      c [✓] Penguin 🐧
+  ianiml3-a1 <multiple_choice> Q: Can a penguin fly?
+  a <undefined> Q: ?
+      a     Yes
+  b <undefined> [ABA] Q: ?
+      b [✓] No

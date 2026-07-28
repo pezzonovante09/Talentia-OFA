@@ -1,0 +1,843 @@
+[
+  {
+    "id": "g3m-1000-l1",
+    "title": "Тысячи",
+    "grade": 3,
+    "subject": "math",
+    "world": "g3math",
+    "coherence": 4,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "keep_polish",
+    "problems": [
+      { "ref": "t1–t2", "issue": "Два MC подряд «n×100» с одной и той же структурой; мало нарастания к тысяче." },
+      { "ref": "t3", "issue": "100×7 — чистое умножение; слабо закрепляет состав тысячи / «сколько сотен в N»." }
+    ],
+    "fixes": [
+      "t2 → «сколько сотен до тысячи» / состав 1000.",
+      "t3 → «Сколько сотен в 700?» вместо голого 100×7."
+    ],
+    "enkyFlags": [],
+    "templates": ["hundreds_blocks", "story_mc", "compose_thousand"]
+  },
+  {
+    "id": "g3m-1000-l2",
+    "title": "Разряды",
+    "grade": 3,
+    "subject": "math",
+    "world": "g3math",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "light_revise",
+    "problems": [
+      { "ref": "t4", "issue": "fill_blank «самое большое из 398/403/389» — сравнение, не разрядный навык (тема соседнего урока)." },
+      { "ref": "types", "issue": "3 input + 1 fill_blank — нет MC на извлечение разряда." },
+      { "ref": "dialog EN/KY", "issue": "EN/KY dialog — rule dump («Place values…»), без детективного сюжета RU." }
+    ],
+    "fixes": [
+      "t4 → MC «какая цифра в разряде сотен/десятков у 403?» (сохранить 403 как якорь).",
+      "Добавить 1 MC на извлечение разряда.",
+      "KY intro titles + intro0.body: перевести; KY t3 stem без RU «сотни/десятки»."
+    ],
+    "enkyFlags": [
+      "KY intro0.title === RU «Разбираем число 247!»",
+      "KY intro1.title === RU «Число 356»",
+      "KY intro0.body === RU Cyrillic place-value text",
+      "KY t3 stem RU-leak «Запиши число: 2 сотни…»"
+    ],
+    "templates": ["place_value_extract", "compose_number", "compare_as_fill_blank"]
+  },
+  {
+    "id": "g3m-1000-l3",
+    "title": "Сравнение",
+    "grade": 3,
+    "subject": "math",
+    "world": "g3math",
+    "coherence": 2,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "light_revise",
+    "problems": [
+      { "ref": "dialog EN/KY", "issue": "CRITICAL: tip «More digits — bigger number!» / «Разряддар көп — сан чоң!» неверен для 356 vs 298 (оба трёхзначные); в RU правильно: смотри на сотни." }
+    ],
+    "fixes": [
+      "EN/KY dialog: «Compare hundreds first: 3>2 → 356>298»."
+    ],
+    "enkyFlags": [
+      "EN/KY dialog wrong place-value tip («More digits — bigger number»)."
+    ],
+    "templates": ["compare_mc", "inequality_symbol", "true_false_claim"]
+  },
+  {
+    "id": "g3m-tab-l1",
+    "title": "Таблица на 4 и 6",
+    "grade": 3,
+    "subject": "math",
+    "world": "g3math",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "light_revise",
+    "problems": [
+      { "ref": "types", "issue": "Все 4 задания — input; нет MC/проверки стратегии «удвоить дважды» из диалога." },
+      { "ref": "EN/KY stems", "issue": "Сюжетные условия только в RU; EN/KY — голые «4 × 6 =?»." }
+    ],
+    "fixes": [
+      "1 MC на стратегию удвоения (4×5 через 10→20).",
+      "Перенести сюжетные stems в EN/KY хотя бы в 2 задачах."
+    ],
+    "enkyFlags": [
+      "EN/KY t1–t4: голые уравнения без контекста при богатом RU."
+    ],
+    "templates": ["times_table_drill", "bare_equation", "all_input"]
+  },
+  {
+    "id": "g3m-tab-l2",
+    "title": "Таблица на 7 и 8",
+    "grade": 3,
+    "subject": "math",
+    "world": "g3math",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "light_revise",
+    "problems": [
+      { "ref": "types", "issue": "Только input; мнемоника 7×8=56 из диалога не проверяется заданием." },
+      { "ref": "EN/KY stems", "issue": "Сюжет RU потерян в EN/KY (голые произведения)." }
+    ],
+    "fixes": [
+      "Добавить MC: «7×8=? / мнемоника 56».",
+      "Сохранить хотя бы 1–2 сюжетных stems в EN/KY."
+    ],
+    "enkyFlags": [
+      "EN/KY t1–t4: голые уравнения без контекста."
+    ],
+    "templates": ["times_table_drill", "bare_equation", "mnemonic_unused"]
+  },
+  {
+    "id": "g3m-tab-l3",
+    "title": "Таблица на 9",
+    "grade": 3,
+    "subject": "math",
+    "world": "g3math",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "accept",
+    "problems": [
+      { "ref": "t1–t3 EN", "issue": "Голые уравнения; правило суммы цифр проверяется только в t4." }
+    ],
+    "fixes": [
+      "В t2/t3 EN добавить подсказку «check digit sum = 9»."
+    ],
+    "enkyFlags": [
+      "EN t4 stem flattened vs RU (сюжет Тали сплющен до «9×6=54. Right?»)."
+    ],
+    "templates": ["nines_digit_sum", "times_table_drill", "claim_check_mc"]
+  },
+  {
+    "id": "g3m-div-l1",
+    "title": "Деление на 2 и 3",
+    "grade": 3,
+    "subject": "math",
+    "world": "g3math",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "accept",
+    "problems": [
+      { "ref": "t1/t4", "issue": "Оба MC — «поровну / сколько каждому» с похожей структурой." }
+    ],
+    "fixes": [
+      "Один MC оставить сюжетным, второй — выбор частного без повтора формата."
+    ],
+    "enkyFlags": [],
+    "templates": ["equal_share_story", "mc_plus_input", "division_check"]
+  },
+  {
+    "id": "g3m-div-l2",
+    "title": "Деление на 4 и 5",
+    "grade": 3,
+    "subject": "math",
+    "world": "g3math",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "light_revise",
+    "problems": [
+      { "ref": "title vs t3", "issue": "Урок «на 4 и 5», но t3 — 7÷2 (остаток); смещает фокус делителей." },
+      { "ref": "types", "issue": "Все 4 — input; остаток лучше закрепить MC с выбором «частное+остаток»." },
+      { "ref": "answer format", "issue": "Hardcoded «3 остаток 1» / «3 остаток 2» — EN/KY могут ждать «3 remainder 1» / KY-форму." }
+    ],
+    "fixes": [
+      "t3 → 17÷4 или 23÷5, чтобы держаться 4/5.",
+      "1 MC на выбор верной пары (частное, остаток).",
+      "acceptedAnswers мультиязычные; KY intro0.title перевести."
+    ],
+    "enkyFlags": [
+      "KY intro0.title === RU «Деление с остатком».",
+      "Input answers RU-locked («3 остаток 1»)."
+    ],
+    "templates": ["division_with_remainder", "all_input", "divisor_focus"]
+  },
+  {
+    "id": "g3m-div-l3",
+    "title": "Связь умножения и деления",
+    "grade": 3,
+    "subject": "math",
+    "world": "g3math",
+    "coherence": 4,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "keep_polish",
+    "problems": [
+      { "ref": "t1/t3 EN", "issue": "Часть stems сплющена до «25÷5=?» без явной связки «обратная к умножению»." }
+    ],
+    "fixes": [
+      "Во все input явно: «if a×b=c then c÷b=?».",
+      "Intro title: «One fact — three equations»."
+    ],
+    "enkyFlags": [],
+    "templates": ["fact_family", "inverse_ops", "mc_plus_input"]
+  },
+  {
+    "id": "g3r-gen-l1",
+    "title": "Мужской и женский род",
+    "grade": 3,
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "coherence": 4,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "keep_polish",
+    "problems": [
+      { "ref": "dialog EN", "issue": "EN-диалог смещает акцент на «adjective ending», хотя урок про род существительных." },
+      { "ref": "t4 answer", "issue": "Hardcoded «Он» — ок для RU-морфологии; EN/KY могут ждать He/Ал без acceptedAnswers." }
+    ],
+    "fixes": [
+      "EN dialog: держать фокус на he/she для существительных (стол/книга).",
+      "acceptedAnswers: Он | He | Ал (он)."
+    ],
+    "enkyFlags": [],
+    "templates": ["gender_mc", "pronoun_probe", "fill_blank"]
+  },
+  {
+    "id": "g3r-gen-l2",
+    "title": "Средний род",
+    "grade": 3,
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "accept",
+    "problems": [
+      { "ref": "t3 opts", "issue": "МОЛОКО/КОШКА/СТОЛ в EN/KY без gloss — intentional RU wordform targets; EN-ребёнку легче с подписью." }
+    ],
+    "fixes": [
+      "EN opts: «Молоко (milk)» и т.п.; KY оставить RU-форму + краткий gloss."
+    ],
+    "enkyFlags": [
+      "EN/KY t3 options === RU wordforms (intentional morphology targets; EN glosses missing)."
+    ],
+    "templates": ["neuter_probe", "pronoun_оно", "wordform_mc"]
+  },
+  {
+    "id": "g3r-gen-l3",
+    "title": "Род прилагательных",
+    "grade": 3,
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "light_revise",
+    "problems": [
+      { "ref": "overlap", "issue": "Сильно дублирует g3r-adj-l1 (согласование adj↔noun); два урока почти об одном навыке." },
+      { "ref": "dialog/intro EN/KY", "issue": "EN/KY dialog — rule dump; intro body теряет ключевые RU-окончания БОЛЬШОЙ/БОЛЬШАЯ/БОЛЬШОЕ (остаётся «big table…»)." },
+      { "ref": "t1–t2 opts", "issue": "EN/KY options = RU wordforms без gloss — whitelist OK, но EN intro не готовит к окончаниям." }
+    ],
+    "fixes": [
+      "EN/KY intro: показать БОЛЬШОЙ / БОЛЬШАЯ / БОЛЬШОЕ с gloss.",
+      "Развести фокус с adj-l1 (здесь — почему окончание; там — вопрос «какой?» / форма)."
+    ],
+    "enkyFlags": [
+      "EN/KY dialog flattened vs RU story («синяя небо»).",
+      "EN/KY intro0.body loses RU ending paradigm.",
+      "EN/KY t1–t2 options === RU wordforms (intentional; gloss missing)."
+    ],
+    "templates": ["adj_gender_agree", "ending_choice", "overlap_adj_l1"]
+  },
+  {
+    "id": "g3r-verb-l1",
+    "title": "Настоящее время",
+    "grade": 3,
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "coherence": 4,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "accept",
+    "problems": [
+      { "ref": "t4 answer", "issue": "Hardcoded «Пишет» — узкий target при открытом stem «какое слово»." }
+    ],
+    "fixes": [
+      "Уточнить stem: «глагол «писать» в наст. вр., 3 л.»; acceptedAnswers: пишет | Пишет."
+    ],
+    "enkyFlags": [],
+    "templates": ["tense_mc", "spy_verb", "present_probe"]
+  },
+  {
+    "id": "g3r-verb-l2",
+    "title": "Прошедшее время",
+    "grade": 3,
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "accept",
+    "problems": [
+      { "ref": "t1/t3 KY opts", "issue": "KY options === RU verb forms — intentional morphology targets (whitelist)." }
+    ],
+    "fixes": [
+      "KY: оставить RU-формы + краткий gloss в скобках."
+    ],
+    "enkyFlags": [
+      "KY t1/t3 options === RU verbforms (intentional)."
+    ],
+    "templates": ["past_tense_mc", "gender_in_past", "suffix_l"]
+  },
+  {
+    "id": "g3r-verb-l3",
+    "title": "Лицо глагола",
+    "grade": 3,
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "light_revise",
+    "problems": [
+      { "ref": "t3 EN/KY opts", "issue": "Опции переведены («You will solve») вместо RU-форм Решу/Решишь/Решит — ломает тренировку лица для EN/KY." },
+      { "ref": "dialog EN/KY", "issue": "EN/KY dialog — rule dump vs живой диалог RU про «я иду / ты идёшь»." },
+      { "ref": "t4 answer", "issue": "Hardcoded «гуляют» — intentional RU wordform; EN stem partially RU." }
+    ],
+    "fixes": [
+      "EN/KY t3: показать Решу / Решишь / Решит (+ gloss), не английские парафразы.",
+      "Восстановить сюжетный dialog EN/KY."
+    ],
+    "enkyFlags": [
+      "EN/KY t3 options translated away from RU person endings.",
+      "EN/KY dialog flattened to grammar dump."
+    ],
+    "templates": ["verb_person", "conjugation_mc", "produce_3pl"]
+  },
+  {
+    "id": "g3r-adj-l1",
+    "title": "Согласование",
+    "grade": 3,
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "coherence": 3,
+    "usefulness": 3,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "light_revise",
+    "problems": [
+      { "ref": "overlap", "issue": "Почти тот же навык, что g3r-gen-l3 (род прилагательных / согласование)." },
+      { "ref": "t3 EN/KY", "issue": "EN/KY варианты сплющены до «Tall tree (neuter -ое)» vs «wrong» — не видно контраста высокий/высокое." },
+      { "ref": "dialog EN/KY", "issue": "EN/KY — rule dump без мини-истории RU." }
+    ],
+    "fixes": [
+      "Развести с gen-l3: здесь вопрос «какой?» + выбор формы; там — объяснение рода.",
+      "EN/KY t3: показать Высокое дерево / Высокий дерево с gloss."
+    ],
+    "enkyFlags": [
+      "EN/KY t3 loses RU ending contrast.",
+      "EN/KY dialog flattened."
+    ],
+    "templates": ["adj_question_word", "agree_form_mc", "overlap_gen_l3"]
+  },
+  {
+    "id": "g3r-adj-l2",
+    "title": "Степени сравнения",
+    "grade": 3,
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "keep_polish",
+    "problems": [
+      { "ref": "t3 EN/KY", "issue": "✓ «the most interesting» / «эң кызыктуу» — уводит от RU превосходной «самая интересная»." },
+      { "ref": "t4 answer", "issue": "Hardcoded «Медленнее» — EN stem ждёт comparative slot; KY может ждать «жайыраак»." },
+      { "ref": "dialog EN/KY", "issue": "Rule dump vs живой пример Тали/слон/кит." }
+    ],
+    "fixes": [
+      "EN/KY t3: держать RU «самая интересная» + gloss.",
+      "acceptedAnswers: Медленнее | slower | жайыраак (если L1) / оставить RU target явно."
+    ],
+    "enkyFlags": [
+      "EN/KY t3 options leave RU superlative paradigm.",
+      "KY t2 fill_blank stem keeps БЫСТРЫЙ (intentional RU lemma)."
+    ],
+    "templates": ["comparative_mc", "superlative_pick", "fill_blank_degree"]
+  },
+  {
+    "id": "g3r-adj-l3",
+    "title": "Антонимы",
+    "grade": 3,
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "coherence": 4,
+    "usefulness": 5,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "keep_polish",
+    "problems": [
+      { "ref": "t1–t2", "issue": "Два однотипных «антоним к слову X» подряд." },
+      { "ref": "KY t2 opts", "issue": "KY options Холодный/Мягкий/Сухой без gloss (EN имеет gloss)." },
+      { "ref": "dialog tali EN/KY", "issue": "Вторая реплика сплющена до «Words with opposite meanings!»." }
+    ],
+    "fixes": [
+      "Один MC заменить на контекстную пару в предложении.",
+      "KY opts: RU + gloss; восстановить живой dialog."
+    ],
+    "enkyFlags": [
+      "KY t2 options missing glosses present in EN.",
+      "EN/KY dialog.tali flattened."
+    ],
+    "templates": ["antonym_mc", "pair_check", "sentence_gap"]
+  },
+  {
+    "id": "g3w-geo-l1",
+    "title": "Стороны света",
+    "grade": 3,
+    "subject": "logic",
+    "world": "g3world",
+    "coherence": 4,
+    "usefulness": 5,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "keep_polish",
+    "problems": [
+      { "ref": "dialog EN/KY", "issue": "Rule dump vs более живой RU-диалог." },
+      { "ref": "t4 answer", "issue": "Hardcoded «Восток» — EN stem ждёт East." }
+    ],
+    "fixes": [
+      "acceptedAnswers: Восток | East | Чыгыш.",
+      "Чуть оживить EN/KY dialog."
+    ],
+    "enkyFlags": [
+      "Input answer RU-locked («Восток»)."
+    ],
+    "templates": ["cardinal_directions", "sunrise_east", "face_north_right"]
+  },
+  {
+    "id": "g3w-geo-l2",
+    "title": "Карта и глобус",
+    "grade": 3,
+    "subject": "logic",
+    "world": "g3world",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "accept",
+    "problems": [
+      { "ref": "dialog EN/KY", "issue": "Сжатый rule dump; задачи при этом сильные (масштаб, цвета)." }
+    ],
+    "fixes": [
+      "Восстановить мини-сюжет Тали в EN/KY dialog."
+    ],
+    "enkyFlags": [],
+    "templates": ["map_vs_globe", "map_colors", "scale_1_100000"]
+  },
+  {
+    "id": "g3w-geo-l3",
+    "title": "Страны и столицы",
+    "grade": 3,
+    "subject": "logic",
+    "world": "g3world",
+    "coherence": 2,
+    "usefulness": 3,
+    "engagement": 2,
+    "diversity": 2,
+    "verdict": "light_revise",
+    "problems": [
+      { "ref": "t4 EN/KY", "issue": "CRITICAL: EN/KY stem «Capital of Kyrgyzstan:» спрашивает столицу, а hardcoded answer = «Кыргызстана» (страна) — инверсия вопроса/ответа vs RU." },
+      { "ref": "KY t1–t3", "issue": "KY stems всё ещё RU («Столица России:» / «Столица Франции:»)." },
+      { "ref": "tasks", "issue": "Три однотипных «столица X» + потеря Эйфелевой башни в EN t2; низкая вовлечённость." },
+      { "ref": "dialog EN/KY", "issue": "Потерян личный сюжет Бишкек/Тали из RU." }
+    ],
+    "fixes": [
+      "EN/KY t4: «Bishkek is the capital of which country?» + acceptedAnswers Кыргызстан(а) | Kyrgyzstan.",
+      "Перевести KY stems; вернуть контекст Эйфелевой башни в EN t2.",
+      "Восстановить Bishkek story в EN/KY dialog."
+    ],
+    "enkyFlags": [
+      "CRITICAL EN/KY t4 stem inverted vs answer «Кыргызстана».",
+      "KY t1–t3 stems === RU.",
+      "EN/KY dialog loses Bishkek personalization."
+    ],
+    "templates": ["capital_drill", "inverted_stem_bug", "local_anchor_bishkek"]
+  },
+  {
+    "id": "g3w-nat-l1",
+    "title": "Круговорот воды",
+    "grade": 3,
+    "subject": "logic",
+    "world": "g3world",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "accept",
+    "problems": [
+      { "ref": "t4 answer", "issue": "Hardcoded «Испарение» — EN stem ждёт Evaporation." }
+    ],
+    "fixes": [
+      "acceptedAnswers: Испарение | Evaporation | Буулануу."
+    ],
+    "enkyFlags": [
+      "Input answer RU-locked («Испарение»)."
+    ],
+    "templates": ["water_cycle_steps", "evaporation_first", "cycle_loop"]
+  },
+  {
+    "id": "g3w-nat-l2",
+    "title": "Полезные ископаемые",
+    "grade": 3,
+    "subject": "logic",
+    "world": "g3world",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "accept",
+    "problems": [
+      { "ref": "t4 answer", "issue": "Hardcoded «Строительные» — короткий ответ при EN stem «what kind of mineral»." }
+    ],
+    "fixes": [
+      "Уточнить stem/answer: «строительные полезные ископаемые» + EN Building minerals."
+    ],
+    "enkyFlags": [
+      "Input answer RU-locked («Строительные»)."
+    ],
+    "templates": ["fossil_fuels", "ore_to_metal", "mineral_class"]
+  },
+  {
+    "id": "g3w-nat-l3",
+    "title": "Охрана природы",
+    "grade": 3,
+    "subject": "logic",
+    "world": "g3world",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "accept",
+    "problems": [
+      { "ref": "overlap", "issue": "Тематически близко к g3w-eco-l3 (охрана / человек и природа)." }
+    ],
+    "fixes": [
+      "eco-l3 держать на действиях человека; nat-l3 — на институтах (Красная книга, заповедник)."
+    ],
+    "enkyFlags": [],
+    "templates": ["red_book", "nature_reserve", "anti_example_input"]
+  },
+  {
+    "id": "g3w-eco-l1",
+    "title": "Экосистема",
+    "grade": 3,
+    "subject": "logic",
+    "world": "g3world",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "accept",
+    "problems": [
+      { "ref": "KY intro/opts", "issue": "KY intro0.title «Экосистема!» и часть opts = RU loanwords — допустимо как термины." }
+    ],
+    "fixes": [
+      "KY title можно оставить как термин или дать «Экожүйө»."
+    ],
+    "enkyFlags": [
+      "KY intro0.title === RU «Экосистема!» (term loan)."
+    ],
+    "templates": ["ecosystem_def", "bee_pollination", "aquarium_example"]
+  },
+  {
+    "id": "g3w-eco-l2",
+    "title": "Цепи питания",
+    "grade": 3,
+    "subject": "logic",
+    "world": "g3world",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "accept",
+    "problems": [
+      { "ref": "t4 answer", "issue": "Hardcoded «Дуб» — EN «producer» ок conceptually; KY может ждать «Эмен»." }
+    ],
+    "fixes": [
+      "acceptedAnswers: Дуб | Oak | Эмен."
+    ],
+    "enkyFlags": [
+      "Input answer RU-locked («Дуб»)."
+    ],
+    "templates": ["food_chain", "producer_first", "remove_link"]
+  },
+  {
+    "id": "g3w-eco-l3",
+    "title": "Человек и природа",
+    "grade": 3,
+    "subject": "logic",
+    "world": "g3world",
+    "coherence": 4,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "accept",
+    "problems": [
+      { "ref": "overlap", "issue": "Пересекается с nat-l3 (Красная книга / охрана)." },
+      { "ref": "t2 EN", "issue": "Stem сплющен до «What is poaching?» — потерян сюжетный якорь «браконьер»." }
+    ],
+    "fixes": [
+      "Держать eco-l3 на действиях/последствиях; nat-l3 на институтах.",
+      "EN t2: вернуть «A poacher hunts illegally…»."
+    ],
+    "enkyFlags": [],
+    "templates": ["rare_species", "poaching", "pollution_victim"]
+  },
+  {
+    "id": "g3e-tobe-l1",
+    "title": "am, is, are",
+    "grade": 3,
+    "subject": "reading",
+    "world": "g3eng",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "keep_polish",
+    "problems": [
+      { "ref": "t4 EN", "issue": "Stem уже содержит ответ: «Write… “I am happy”» при answer «I am happy» — circular." },
+      { "ref": "t1–t2 EN/KY", "issue": "Сюжет RU сплющен; KY stems с RU-leak «Какое слово?»." }
+    ],
+    "fixes": [
+      "EN t4: «Translate: Я счастлив» без готовой фразы.",
+      "KY stems: кыргызские инструкции без RU."
+    ],
+    "enkyFlags": [
+      "EN t4 circular stem contains answer.",
+      "KY t1–t3 RU-leak «Какое слово?» / «Am используется с»."
+    ],
+    "templates": ["am_is_are_gap", "pronoun_rule", "produce_iam"]
+  },
+  {
+    "id": "g3e-tobe-l2",
+    "title": "Отрицание",
+    "grade": 3,
+    "subject": "reading",
+    "world": "g3eng",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "accept",
+    "problems": [
+      { "ref": "engagement", "issue": "Сухой drill без сильного сюжета — но навык отрабатывается чисто." }
+    ],
+    "fixes": [
+      "Добавить 1 мини-контекст (опоздание / рост) в dialog."
+    ],
+    "enkyFlags": [],
+    "templates": ["be_negative", "isnt_contraction", "full_negative_input"]
+  },
+  {
+    "id": "g3e-tobe-l3",
+    "title": "Вопросы",
+    "grade": 3,
+    "subject": "reading",
+    "world": "g3eng",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "accept",
+    "problems": [
+      { "ref": "t1–t3", "issue": "Однотипные inversion drills — ок для навыка, мало вариации." }
+    ],
+    "fixes": [
+      "Один reverse: ответ Yes, they are → вопрос."
+    ],
+    "enkyFlags": [],
+    "templates": ["be_question_inversion", "match_answer", "produce_are_they"]
+  },
+  {
+    "id": "g3e-food-l1",
+    "title": "Еда и напитки",
+    "grade": 3,
+    "subject": "reading",
+    "world": "g3eng",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 4,
+    "verdict": "keep_polish",
+    "problems": [
+      { "ref": "t1 EN", "issue": "«Juice means: Juice / fruit drink (сок)» — мягкая тавтология; gloss спасает слабо." },
+      { "ref": "t4 answer", "issue": "Hardcoded «Воду» при EN stem — EN/KY ждут water / суу." }
+    ],
+    "fixes": [
+      "EN meaning-check: L1-only или picture, без повтора EN-слова в ✓.",
+      "acceptedAnswers: Воду | water | суу."
+    ],
+    "enkyFlags": [
+      "Input answer RU-locked («Воду»)."
+    ],
+    "templates": ["vocab_gloss", "drinks_vs_food_fill_blank", "comprehension_input"]
+  },
+  {
+    "id": "g3e-food-l2",
+    "title": "I like / I don't like",
+    "grade": 3,
+    "subject": "reading",
+    "world": "g3eng",
+    "coherence": 2,
+    "usefulness": 3,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "light_revise",
+    "problems": [
+      { "ref": "dialog EN", "issue": "CRITICAL: EN dialog.tali = KY-текст «мага жагат / мага жакпайт» — locale contamination; npc сплющен vs RU (нет Do you like…?)." },
+      { "ref": "t1 EN", "issue": "«What does “I like apples” mean?» → ✓ «I like apples» — тавтология в EN locale." }
+    ],
+    "fixes": [
+      "EN dialog.tali: English + RU gloss (мне нравится / не нравится).",
+      "EN t1 options: L1 paraphrases (I enjoy apples / I dislike…), не повтор фразы."
+    ],
+    "enkyFlags": [
+      "EN dialog.g3e_foodl2_0 === KY («мага жагат / мага жакпайт»).",
+      "EN t1 meaning-check tautology (I like apples → I like apples)."
+    ],
+    "templates": ["like_dont_like", "meaning_check", "produce_phrase"]
+  },
+  {
+    "id": "g3e-food-l3",
+    "title": "За столом",
+    "grade": 3,
+    "subject": "reading",
+    "world": "g3eng",
+    "coherence": 5,
+    "usefulness": 5,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "accept",
+    "problems": [
+      { "ref": "t1–t2", "issue": "Похожие «о чём просит» — можно один заменить на выбор вежливой формы." }
+    ],
+    "fixes": [
+      "MC: Can I have… please? vs Give me…"
+    ],
+    "enkyFlags": [],
+    "templates": ["polite_request", "pass_the_salt", "delicious"]
+  },
+  {
+    "id": "g3e-daily-l1",
+    "title": "Распорядок дня",
+    "grade": 3,
+    "subject": "reading",
+    "world": "g3eng",
+    "coherence": 3,
+    "usefulness": 3,
+    "engagement": 3,
+    "diversity": 4,
+    "verdict": "light_revise",
+    "problems": [
+      { "ref": "t4 answer", "issue": "answer=«Завтракать» hardcoded RU при EN stem «Eat breakfast is:»." },
+      { "ref": "dialog EN", "issue": "EN dialog generic («tell me what you do») — не про vocab Wake up / breakfast из RU." },
+      { "ref": "KY stems", "issue": "KY t1–t2 перевёрнуты («Ойгонуу англисче») vs RU meaning-check; t4 RU-leak «Eat breakfast — это:»." }
+    ],
+    "fixes": [
+      "answerKey по локали: Завтракать | to eat breakfast | эртең мененки тамак жеш.",
+      "Выровнять dialog EN с routine vocabulary; починить KY stems."
+    ],
+    "enkyFlags": [
+      "KY t4 stem RU-leak «Eat breakfast — это:».",
+      "Input answer RU-locked («Завтракать»).",
+      "KY t1–t2 task direction flipped vs RU."
+    ],
+    "templates": ["daily_routine_vocab", "preposition_at_fill_blank", "meaning_check"]
+  },
+  {
+    "id": "g3e-daily-l2",
+    "title": "Время",
+    "grade": 3,
+    "subject": "reading",
+    "world": "g3eng",
+    "coherence": 3,
+    "usefulness": 5,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "keep_polish",
+    "problems": [
+      { "ref": "dialog EN", "issue": "EN уходит в «What time do you get up?» вместо обучения half past / quarter past." },
+      { "ref": "t1–t3", "issue": "Однотипные clock-phrase → digital time." }
+    ],
+    "fixes": [
+      "EN dialog: объяснить half past / quarter past.",
+      "Один reverse task: 3:30 → half past three."
+    ],
+    "enkyFlags": [
+      "EN dialog topic drift (get up vs telling time)."
+    ],
+    "templates": ["half_past", "quarter_past", "what_time_is_it"]
+  },
+  {
+    "id": "g3e-daily-l3",
+    "title": "Частота",
+    "grade": 3,
+    "subject": "reading",
+    "world": "g3eng",
+    "coherence": 2,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "light_revise",
+    "problems": [
+      { "ref": "t4 EN", "issue": "CRITICAL: stem «“I am never late” in English is:» уже содержит ответ; answer hardcoded «I am never late» — circular в EN." },
+      { "ref": "t1–t3", "issue": "Три recognition MC без production до финала; нет проверки позиции наречия из intro1." }
+    ],
+    "fixes": [
+      "EN t4: «Translate: Я никогда не опаздываю» (без готовой EN-фразы).",
+      "1 MC на порядок: I ___ brush / I brush ___ always."
+    ],
+    "enkyFlags": [
+      "CRITICAL EN t4 circular stem contains answer «I am never late».",
+      "EN intro0.body bilingual scale with RU glosses (intentional teaching text)."
+    ],
+    "templates": ["frequency_adverbs", "order_scale", "produce_never"]
+  }
+]

@@ -1,0 +1,918 @@
+[
+  {
+    "id": "g1m-c20-l1",
+    "title": "Числа 11–15",
+    "subject": "math",
+    "world": "g1math",
+    "keyCount": 7,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1m-c20-l2",
+    "title": "Числа 16–20",
+    "subject": "math",
+    "world": "g1math",
+    "keyCount": 7,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1m-c20-l3",
+    "title": "Сравнение чисел",
+    "subject": "math",
+    "world": "g1math",
+    "keyCount": 8,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1m-add-l1",
+    "title": "Сложение до 10",
+    "subject": "math",
+    "world": "g1math",
+    "keyCount": 7,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1m-add-l2",
+    "title": "До десятка",
+    "subject": "math",
+    "world": "g1math",
+    "keyCount": 7,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1m-add-l3",
+    "title": "Сложение с 10",
+    "subject": "math",
+    "world": "g1math",
+    "keyCount": 8,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1m-sub-l1",
+    "title": "Вычитание до 10",
+    "subject": "math",
+    "world": "g1math",
+    "keyCount": 7,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1m-sub-l2",
+    "title": "Вычитание из 10",
+    "subject": "math",
+    "world": "g1math",
+    "keyCount": 7,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1m-sub-l3",
+    "title": "Смешанные примеры",
+    "subject": "math",
+    "world": "g1math",
+    "keyCount": 10,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1r-vow-l1",
+    "title": "Буквы А, О, У",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "keyCount": 7,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1r-vow-l2",
+    "title": "Я, Ю, Е, Ё",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "keyCount": 7,
+    "types": [],
+    "flagCount": 2,
+    "flags": [
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.lessons.g1rVowL2",
+        "ru": "Я, Ю, Е, Ё",
+        "whitelistHint": null
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.lessons.g1rVowL2",
+        "ru": "Я, Ю, Е, Ё",
+        "whitelistHint": null
+      }
+    ]
+  },
+  {
+    "id": "g1r-vow-l3",
+    "title": "Мягкость согласных",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "keyCount": 8,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1r-wrd-l1",
+    "title": "Читаем слова",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "keyCount": 7,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1r-wrd-l2",
+    "title": "Слоги",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "keyCount": 7,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1r-wrd-l3",
+    "title": "Предложения",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "keyCount": 8,
+    "types": [],
+    "flagCount": 1,
+    "flags": [
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.topics.g1rGram",
+        "ru": "Грамматика",
+        "whitelistHint": null
+      }
+    ]
+  },
+  {
+    "id": "g1r-grm-l1",
+    "title": "Заглавная буква",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "keyCount": 7,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1r-grm-l2",
+    "title": "Знаки препинания",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "keyCount": 7,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1r-grm-l3",
+    "title": "Вопросы кто? что?",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "keyCount": 10,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1w-sch-l1",
+    "title": "Школьные принадлежности",
+    "subject": "logic",
+    "world": "g1world",
+    "keyCount": 7,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1w-sch-l2",
+    "title": "Класс и уроки",
+    "subject": "logic",
+    "world": "g1world",
+    "keyCount": 7,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1w-sch-l3",
+    "title": "Физкультура и рисование",
+    "subject": "logic",
+    "world": "g1world",
+    "keyCount": 21,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1w-nat-l1",
+    "title": "Деревья",
+    "subject": "logic",
+    "world": "g1world",
+    "keyCount": 20,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1w-nat-l2",
+    "title": "Животные",
+    "subject": "logic",
+    "world": "g1world",
+    "keyCount": 7,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1w-nat-l3",
+    "title": "Погода",
+    "subject": "logic",
+    "world": "g1world",
+    "keyCount": 21,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1w-bdy-l1",
+    "title": "Органы чувств",
+    "subject": "logic",
+    "world": "g1world",
+    "keyCount": 17,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1w-bdy-l2",
+    "title": "Здоровье",
+    "subject": "logic",
+    "world": "g1world",
+    "keyCount": 23,
+    "types": [],
+    "flagCount": 1,
+    "flags": [
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1w_bdyl2_opt_chips",
+        "ru": "Чипсы",
+        "whitelistHint": null
+      }
+    ]
+  },
+  {
+    "id": "g1w-bdy-l3",
+    "title": "Безопасность",
+    "subject": "logic",
+    "world": "g1world",
+    "keyCount": 24,
+    "types": [],
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g1e-abc-l1",
+    "title": "Буквы G–J",
+    "subject": "reading",
+    "world": "g1eng",
+    "keyCount": 15,
+    "types": [
+      "multiple_choice",
+      "fill_blank",
+      "input"
+    ],
+    "flagCount": 9,
+    "flags": [
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_G",
+        "ru": "G",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_G",
+        "ru": "G",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_H",
+        "ru": "H",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_H",
+        "ru": "H",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_I",
+        "ru": "I",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_I",
+        "ru": "I",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_abcl1_fb_sent",
+        "ru": "Ice starts with _",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_J",
+        "ru": "J",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_J",
+        "ru": "J",
+        "whitelistHint": "cognate?"
+      }
+    ]
+  },
+  {
+    "id": "g1e-abc-l2",
+    "title": "Буквы K–N",
+    "subject": "reading",
+    "world": "g1eng",
+    "keyCount": 15,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "flagCount": 8,
+    "flags": [
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_K",
+        "ru": "K",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_K",
+        "ru": "K",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_L",
+        "ru": "L",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_L",
+        "ru": "L",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_M",
+        "ru": "M",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_M",
+        "ru": "M",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_N",
+        "ru": "N",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_N",
+        "ru": "N",
+        "whitelistHint": "cognate?"
+      }
+    ]
+  },
+  {
+    "id": "g1e-abc-l3",
+    "title": "Буквы O–R",
+    "subject": "reading",
+    "world": "g1eng",
+    "keyCount": 16,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "flagCount": 8,
+    "flags": [
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_O",
+        "ru": "O",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_O",
+        "ru": "O",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_P",
+        "ru": "P",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_P",
+        "ru": "P",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_Q",
+        "ru": "Q",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_Q",
+        "ru": "Q",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_R",
+        "ru": "R",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_R",
+        "ru": "R",
+        "whitelistHint": "cognate?"
+      }
+    ]
+  },
+  {
+    "id": "g1e-num-l1",
+    "title": "Числа 1–5",
+    "subject": "reading",
+    "world": "g1eng",
+    "keyCount": 19,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "flagCount": 6,
+    "flags": [
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.intro.g1e_numl1_1_b",
+        "ru": "Five fingers on one hand!",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_two",
+        "ru": "two",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_three",
+        "ru": "three",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_four",
+        "ru": "four",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_five",
+        "ru": "five",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_six",
+        "ru": "six",
+        "whitelistHint": "cognate?"
+      }
+    ]
+  },
+  {
+    "id": "g1e-num-l2",
+    "title": "Числа 6–10",
+    "subject": "reading",
+    "world": "g1eng",
+    "keyCount": 20,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "flagCount": 8,
+    "flags": [
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.intro.g1e_numl2_0_b",
+        "ru": "Six, seven, eight, nine, ten!",
+        "whitelistHint": null
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.intro.g1e_numl2_0_b",
+        "ru": "Six, seven, eight, nine, ten!",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_six",
+        "ru": "six",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_seven",
+        "ru": "seven",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_eight",
+        "ru": "eight",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_nine",
+        "ru": "nine",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_ten",
+        "ru": "ten",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_eleven",
+        "ru": "eleven",
+        "whitelistHint": null
+      }
+    ]
+  },
+  {
+    "id": "g1e-num-l3",
+    "title": "Простые примеры",
+    "subject": "reading",
+    "world": "g1eng",
+    "keyCount": 21,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "flagCount": 10,
+    "flags": [
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.intro.g1e_numl3_1_b",
+        "ru": "Numbers help us count!",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_two",
+        "ru": "two",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_three",
+        "ru": "three",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_four",
+        "ru": "four",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_six",
+        "ru": "six",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_seven",
+        "ru": "seven",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_eight",
+        "ru": "eight",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_nine",
+        "ru": "nine",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_ten",
+        "ru": "ten",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_eleven",
+        "ru": "eleven",
+        "whitelistHint": null
+      }
+    ]
+  },
+  {
+    "id": "g1e-grt-l1",
+    "title": "Приветствия",
+    "subject": "reading",
+    "world": "g1eng",
+    "keyCount": 19,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "flagCount": 8,
+    "flags": [
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_good_morning",
+        "ru": "Good morning",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_good_night",
+        "ru": "Good night",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_goodbye",
+        "ru": "Goodbye",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_hello",
+        "ru": "Hello",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_sorry",
+        "ru": "Sorry",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_morning_time",
+        "ru": "in the morning",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_noon_time",
+        "ru": "at noon",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_night_time",
+        "ru": "at night",
+        "whitelistHint": null
+      }
+    ]
+  },
+  {
+    "id": "g1e-grt-l2",
+    "title": "Меня зовут",
+    "subject": "reading",
+    "world": "g1eng",
+    "keyCount": 20,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "flagCount": 20,
+    "flags": [
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.dialog.g1e_grtl2_0",
+        "ru": "My name is Polly! What is your name?",
+        "whitelistHint": null
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.dialog.g1e_grtl2_0",
+        "ru": "My name is Polly! What is your name?",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.intro.g1e_grtl2_1_b",
+        "ru": "My name is... What is your name?",
+        "whitelistHint": null
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.intro.g1e_grtl2_1_b",
+        "ru": "My name is... What is your name?",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_am",
+        "ru": "am",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_am",
+        "ru": "am",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_is",
+        "ru": "is",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_is",
+        "ru": "is",
+        "whitelistHint": "cognate?"
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_are",
+        "ru": "are",
+        "whitelistHint": null
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_are",
+        "ru": "are",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_i_am",
+        "ru": "I am...",
+        "whitelistHint": null
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_i_am",
+        "ru": "I am...",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_my_name_is",
+        "ru": "My name is",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_hello_i",
+        "ru": "Hello, I...",
+        "whitelistHint": null
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_hello_i",
+        "ru": "Hello, I...",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_how_old_are_you_en",
+        "ru": "How old are you?",
+        "whitelistHint": null
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_how_old_are_you_en",
+        "ru": "How old are you?",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_what_is_your_name_en",
+        "ru": "What is your name?",
+        "whitelistHint": null
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.tasks.g1e_opt_what_is_your_name_en",
+        "ru": "What is your name?",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_goodbye",
+        "ru": "Goodbye",
+        "whitelistHint": null
+      }
+    ]
+  },
+  {
+    "id": "g1e-grt-l3",
+    "title": "Спасибо и пожалуйста",
+    "subject": "reading",
+    "world": "g1eng",
+    "keyCount": 22,
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "flagCount": 5,
+    "flags": [
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.intro.g1e_grtl3_1_t",
+        "ru": "How are you?",
+        "whitelistHint": null
+      },
+      {
+        "kind": "KY_EQ_RU",
+        "key": "data.intro.g1e_grtl3_1_t",
+        "ru": "How are you?",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_fine_thanks",
+        "ru": "Fine, thanks",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_goodbye",
+        "ru": "Goodbye",
+        "whitelistHint": null
+      },
+      {
+        "kind": "EN_EQ_RU",
+        "key": "data.tasks.g1e_opt_my_name_is",
+        "ru": "My name is",
+        "whitelistHint": null
+      }
+    ]
+  }
+]

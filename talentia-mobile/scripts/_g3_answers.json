@@ -1,0 +1,314 @@
+[
+  {
+    "id": "g3m-1000-l1",
+    "task": "g3m1000l1t3",
+    "type": "input",
+    "ansLit": "700"
+  },
+  {
+    "id": "g3m-1000-l2",
+    "task": "g3m1000l2t1",
+    "type": "input",
+    "ansLit": "3"
+  },
+  {
+    "id": "g3m-1000-l2",
+    "task": "g3m1000l2t2",
+    "type": "input",
+    "ansLit": "5"
+  },
+  {
+    "id": "g3m-1000-l2",
+    "task": "g3m1000l2t3",
+    "type": "input",
+    "ansLit": "235"
+  },
+  {
+    "id": "g3m-1000-l3",
+    "task": "g3m1000l3t4",
+    "type": "input",
+    "ansLit": "703"
+  },
+  {
+    "id": "g3m-tab-l1",
+    "task": "g3mtabl1t1",
+    "type": "input",
+    "ansLit": "24"
+  },
+  {
+    "id": "g3m-tab-l1",
+    "task": "g3mtabl1t2",
+    "type": "input",
+    "ansLit": "32"
+  },
+  {
+    "id": "g3m-tab-l1",
+    "task": "g3mtabl1t3",
+    "type": "input",
+    "ansLit": "42"
+  },
+  {
+    "id": "g3m-tab-l1",
+    "task": "g3mtabl1t4",
+    "type": "input",
+    "ansLit": "54"
+  },
+  {
+    "id": "g3m-tab-l2",
+    "task": "g3mtabl2t1",
+    "type": "input",
+    "ansLit": "35"
+  },
+  {
+    "id": "g3m-tab-l2",
+    "task": "g3mtabl2t2",
+    "type": "input",
+    "ansLit": "56"
+  },
+  {
+    "id": "g3m-tab-l2",
+    "task": "g3mtabl2t3",
+    "type": "input",
+    "ansLit": "48"
+  },
+  {
+    "id": "g3m-tab-l2",
+    "task": "g3mtabl2t4",
+    "type": "input",
+    "ansLit": "72"
+  },
+  {
+    "id": "g3m-tab-l3",
+    "task": "g3mtabl3t1",
+    "type": "input",
+    "ansLit": "36"
+  },
+  {
+    "id": "g3m-tab-l3",
+    "task": "g3mtabl3t2",
+    "type": "input",
+    "ansLit": "63"
+  },
+  {
+    "id": "g3m-tab-l3",
+    "task": "g3mtabl3t3",
+    "type": "input",
+    "ansLit": "81"
+  },
+  {
+    "id": "g3m-div-l1",
+    "task": "g3mdivl1t2",
+    "type": "input",
+    "ansLit": "5"
+  },
+  {
+    "id": "g3m-div-l1",
+    "task": "g3mdivl1t3",
+    "type": "input",
+    "ansLit": "4"
+  },
+  {
+    "id": "g3m-div-l2",
+    "task": "g3mdivl2t1",
+    "type": "input",
+    "ansLit": "5"
+  },
+  {
+    "id": "g3m-div-l2",
+    "task": "g3mdivl2t2",
+    "type": "input",
+    "ansLit": "7"
+  },
+  {
+    "id": "g3m-div-l2",
+    "task": "g3mdivl2t3",
+    "type": "input",
+    "ansLit": "3 остаток 1"
+  },
+  {
+    "id": "g3m-div-l2",
+    "task": "g3mdivl2t4",
+    "type": "input",
+    "ansLit": "3 остаток 2"
+  },
+  {
+    "id": "g3m-div-l3",
+    "task": "g3mdivl3t1",
+    "type": "input",
+    "ansLit": "5"
+  },
+  {
+    "id": "g3m-div-l3",
+    "task": "g3mdivl3t3",
+    "type": "input",
+    "ansLit": "3"
+  },
+  {
+    "id": "g3m-div-l3",
+    "task": "g3mdivl3t4",
+    "type": "input",
+    "ansLit": "7"
+  },
+  {
+    "id": "g3r-gen-l1",
+    "task": "g3rgenl1t4",
+    "type": "input",
+    "ansLit": "Он"
+  },
+  {
+    "id": "g3r-gen-l2",
+    "task": "g3rgenl2t4",
+    "type": "input",
+    "ansLit": "Оно"
+  },
+  {
+    "id": "g3r-gen-l3",
+    "task": "g3rgenl3t4",
+    "type": "input",
+    "ansLit": "Интересная"
+  },
+  {
+    "id": "g3r-verb-l1",
+    "task": "g3rverbl1t4",
+    "type": "input",
+    "ansLit": "Пишет"
+  },
+  {
+    "id": "g3r-verb-l2",
+    "task": "g3rverbl2t4",
+    "type": "input",
+    "ansLit": "Она читала"
+  },
+  {
+    "id": "g3r-verb-l3",
+    "task": "g3rverbl3t4",
+    "type": "input",
+    "ansLit": "гуляют"
+  },
+  {
+    "id": "g3r-adj-l1",
+    "task": "g3radjl1t4",
+    "type": "input",
+    "ansLit": "Красивый закат"
+  },
+  {
+    "id": "g3r-adj-l2",
+    "task": "g3radjl2t4",
+    "type": "input",
+    "ansLit": "Медленнее"
+  },
+  {
+    "id": "g3r-adj-l3",
+    "task": "g3radjl3t4",
+    "type": "input",
+    "ansLit": "короткие"
+  },
+  {
+    "id": "g3w-geo-l1",
+    "task": "g3wgeol1t4",
+    "type": "input",
+    "ansLit": "Восток"
+  },
+  {
+    "id": "g3w-geo-l2",
+    "task": "g3wgeol2t4",
+    "type": "input",
+    "ansLit": "6"
+  },
+  {
+    "id": "g3w-geo-l3",
+    "task": "g3wgeol3t4",
+    "type": "input",
+    "ansLit": "Кыргызстана"
+  },
+  {
+    "id": "g3w-nat-l1",
+    "task": "g3wnatl1t4",
+    "type": "input",
+    "ansLit": "Испарение"
+  },
+  {
+    "id": "g3w-nat-l2",
+    "task": "g3wnatl2t4",
+    "type": "input",
+    "ansLit": "Строительные"
+  },
+  {
+    "id": "g3w-nat-l3",
+    "task": "g3wnatl3t4",
+    "type": "input",
+    "ansLit": "Выброс мусора в лесу"
+  },
+  {
+    "id": "g3w-eco-l1",
+    "task": "g3wecol1t4",
+    "type": "input",
+    "ansLit": "Аквариум с рыбками"
+  },
+  {
+    "id": "g3w-eco-l2",
+    "task": "g3wecol2t4",
+    "type": "input",
+    "ansLit": "Дуб"
+  },
+  {
+    "id": "g3w-eco-l3",
+    "task": "g3wecol3t4",
+    "type": "input",
+    "ansLit": "Рыбы и водные животные"
+  },
+  {
+    "id": "g3e-tobe-l1",
+    "task": "g3etobel1t4",
+    "type": "input",
+    "ansLit": "I am happy"
+  },
+  {
+    "id": "g3e-tobe-l2",
+    "task": "g3etobel2t4",
+    "type": "input",
+    "ansLit": "He is not late"
+  },
+  {
+    "id": "g3e-tobe-l3",
+    "task": "g3etobel3t4",
+    "type": "input",
+    "ansLit": "Are they home?"
+  },
+  {
+    "id": "g3e-food-l1",
+    "task": "g3efoodl1t4",
+    "type": "input",
+    "ansLit": "Воду"
+  },
+  {
+    "id": "g3e-food-l2",
+    "task": "g3efoodl2t4",
+    "type": "input",
+    "ansLit": "I don't like soup"
+  },
+  {
+    "id": "g3e-food-l3",
+    "task": "g3efoodl3t4",
+    "type": "input",
+    "ansLit": "No, thank you"
+  },
+  {
+    "id": "g3e-daily-l1",
+    "task": "g3edailyl1t4",
+    "type": "input",
+    "ansLit": "Завтракать"
+  },
+  {
+    "id": "g3e-daily-l2",
+    "task": "g3edailyl2t4",
+    "type": "input",
+    "ansLit": "What time is it?"
+  },
+  {
+    "id": "g3e-daily-l3",
+    "task": "g3edailyl3t4",
+    "type": "input",
+    "ansLit": "I am never late"
+  }
+]

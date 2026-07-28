@@ -1,0 +1,168 @@
+﻿
+######## g4e-pres-l1 (worlds.ts lines 3414-3427)
+  [dialog npc] ╨Я╤А╨╕╨▓╨╡╤В! ╨п Spark тАФ ╨╜╨╛╨▓╤Л╨╣ ╨┤╤А╤Г╨│ ╨в╨░╨╗╨╕ ╨╜╨░ ╨Р╨╜╨│╨╗╨╕╨╣╤Б╨║╨╛╨╝ ╨╛╤Б╤В╤А╨╛╨▓╨╡! ╨в╨░╨╗╨╕ ╤В╨╛╨╗╤М╨║╨╛ ╤З╤В╨╛ ╨╜╨░╨┐╨╕╤Б╨░╨╗ ╨┐╨╛-╨░╨╜╨│╨╗╨╕╨╣╤Б╨║╨╕: ┬лShe go to school every day.┬╗ ╨п ╨┐╨╛╨╜╤П╨╗, ╤З╤В╨╛ ╤З╤В╨╛-╤В╨╛ ╨╜╨╡ ╤В╨░╨║ тАФ ╨╜╨╛ ╨╜╨╡ ╨╝╨╛╨│╤Г ╨╛╨▒╤К╤П╤Б╨╜╨╕╤В╤М ╨┐╨╛╤З╨╡╨╝╤Г!
+  [dialog tali] ╨п ╤Б╤В╨░╤А╨░╨╗╤Б╤П! ╨а╨░╨╖╨▓╨╡ ┬лgo┬╗ тАФ ╨╜╨╡╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╨╛?
+  [intro] He, She, It тАФ ╨┤╨╛╨▒╨░╨▓╨╗╤П╨╡╨╝ -s! :: ╨Т Present Simple ╤Б ╤В╤А╨╡╤В╤М╨╕╨╝ ╨╗╨╕╤Ж╨╛╨╝ ╨╡╨┤╨╕╨╜╤Б╤В╨▓╨╡╨╜╨╜╨╛╨│╨╛ ╤З╨╕╤Б╨╗╨░ (he/she/it) ╨│╨╗╨░╨│╨╛╨╗ ╨┐╨╛╨╗╤Г╤З╨░╨╡╤В ╨╛╨║╨╛╨╜╤З╨░╨╜╨╕╨╡ -s ╨╕╨╗╨╕ -es. ┬лShe goes┬╗, ┬лHe reads┬╗, ┬лIt works┬╗.
+  [intro] ╨в╨░╨╗╨╕ goes, not go! :: ╨Х╤Б╨╗╨╕ ╨▒╤Л ╨╝╤Л ╨│╨╛╨▓╨╛╤А╨╕╨╗╨╕ ╨╛ ╨в╨░╨╗╨╕: ┬лTali goes to school┬╗ тАФ ╤Б -s! ╨Э╨╛ ┬лI go┬╗, ┬лYou go┬╗, ┬лWe go┬╗, ┬лThey go┬╗ тАФ ╨▒╨╡╨╖ -s.
+  L3424 g4e-pres-l1-t1 <multiple_choice> Q: ╨в╨░╨╗╨╕ ╨╜╨░╨┐╨╕╤Б╨░╨╗: ┬лShe go to school every day.┬╗ Spark ╨│╨╛╨▓╨╛╤А╨╕╤В, ╤З╤В╨╛ ╨╛╤И╨╕╨▒╨║╨░ ╨▓ ╨│╨╗╨░╨│╨╛╨╗╨╡. ╨Ъ╨░╨║ ╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╨╛?
+      a     go   {g4e_pres_q1_a}
+      b [тЬУ] goes   {g4e_pres_q1_b}
+      c     is go   {g4e_pres_q1_c}
+  L3425 g4e-pres-l1-t2 <multiple_choice> Q: ╨Ъ╨░╨╢╨┤╨╛╨╡ ╤Г╤В╤А╨╛ ╤А╨╛╨▒╨╛╤В ╨в╨░╨╗╨╕ ╨┐╤А╨╛╤Б╤Л╨┐╨░╨╡╤В╤Б╤П ╨╕ ╨▓╤Л╨┐╨╛╨╗╨╜╤П╨╡╤В ╨╖╨░╨┤╨░╤З╨╕. ┬лEvery morning, the robot wakes up and ___ its tasks.┬╗ (do / does / doing)
+      a     do   {g4e_pres_q2_a}
+      b [тЬУ] does   {g4e_pres_q2_b}
+      c     doing   {g4e_pres_q2_c}
+  L3426 g4e-pres-l1-t3 <fill_blank> Q: My little brother _ pizza.
+  L3427 g4e-pres-l1-t4 <input> Q: ╨в╨░╨╗╨╕ ╤Б╨╝╨╛╤В╤А╨╕╤В ╨╜╨░ ╤Б╨┐╨╕╤Б╨╛╨║: I, he, she, it. ┬л╨Т╤Б╨╡ ╨╛╨╜╨╕ ╨┤╨╛╨▒╨░╨▓╨╗╤П╤О╤В -s ╨║ ╨│╨╗╨░╨│╨╛╨╗╤Г!┬╗ тАФ ╨│╨╛╨▓╨╛╤А╨╕╤В ╨╛╨╜. Spark ╨║╨░╤З╨░╨╡╤В ╨│╨╛╨╗╨╛╨▓╨╛╨╣. ╨Ъ╤В╨╛ ╨╕╨╖ ╤Н╤В╨╛╨│╨╛ ╤Б╨┐╨╕╤Б╨║╨░ ╨Э╨Х ╨┤╨╛╨▒╨░╨▓╨╗╤П╨╡╤В -s?
+
+######## g4e-pres-l2 (worlds.ts lines 3429-3442)
+  [dialog tali] Spark, ╨╝╨╜╨╡ ╨╜╤Г╨╢╨╜╨╛ ╤Б╨║╨░╨╖╨░╤В╤М, ╤З╤В╨╛ ╨║╨╛╤В ╨╜╨╡ ╨╡╤Б╤В ╤А╤Л╨▒╤Г. ╨п ╨╜╨░╨┐╨╕╤Б╨░╨╗: ┬лThe cat not eats fish.┬╗ ╨Я╤А╨░╨▓╨╕╨╗╤М╨╜╨╛?
+  [dialog npc] ╨в╨░╨╗╨╕, ╨┐╨╛╤З╤В╨╕! ╨Т Present Simple ╨╛╤В╤А╨╕╤Ж╨░╨╜╨╕╨╡ ╤Б╤В╤А╨╛╨╕╤В╤Б╤П ╤З╨╡╤А╨╡╨╖ don't ╨╕╨╗╨╕ doesn't тАФ ╨╜╨╡ ╨┐╤А╨╛╤Б╤В╨╛ ┬лnot┬╗. ╨б he/she/it тАФ doesn't, ╤Б ╨╛╤Б╤В╨░╨╗╤М╨╜╤Л╨╝╨╕ тАФ don't. ╨Я╨╛╨┐╤А╨╛╨▒╤Г╨╡╨╝ ╤Б╨╜╨╛╨▓╨░!
+  [intro] ╨Ю╤В╤А╨╕╤Ж╨░╨╜╨╕╨╡ ╤З╨╡╤А╨╡╨╖ don't / doesn't! :: ┬лShe doesn't eat fish┬╗ тАФ ╨╜╨╡ ┬лnot eats┬╗! ╨Ф╨╗╤П he/she/it ╨╕╤Б╨┐╨╛╨╗╤М╨╖╤Г╨╡╨╝ doesn't, ╨┤╨╗╤П ╨╛╤Б╤В╨░╨╗╤М╨╜╤Л╤Е тАФ don't.
+  [intro] ╨Ы╨╛╨▓╤Г╤И╨║╨░! :: ╨Я╨╛╤Б╨╗╨╡ doesn't ╨│╨╗╨░╨│╨╛╨╗ ╤Б╤В╨╛╨╕╤В ╨▓ ╨▒╨░╨╖╨╛╨▓╨╛╨╣ ╤Д╨╛╤А╨╝╨╡ (╨▒╨╡╨╖ -s): ┬лShe doesn't EAT┬╗ тАФ ╨╜╨╡ ┬лShe doesn't EATS┬╗!
+  L3439 g4e-pres-l2-t1 <multiple_choice> Q: ╨в╨░╨╗╨╕ ╨╜╨░╨┐╨╕╤Б╨░╨╗: ┬лThe cat not eats fish тАФ only milk!┬╗ Spark ╨│╨╛╨▓╨╛╤А╨╕╤В, ╤З╤В╨╛ ╨╜╤Г╨╢╨╜╨╛ doesn't. ╨Ш╤Б╨┐╤А╨░╨▓╤М ╨в╨░╨╗╨╕!
+      a     The cat not eats fish   {g4e_pres2_q1_a}
+      b [тЬУ] The cat doesn't eat fish   {g4e_pres2_q1_b}
+      c     The cat not eat fish   {g4e_pres2_q1_c}
+  L3440 g4e-pres-l2-t2 <multiple_choice> Q: ┬лHe plays football.┬╗ тЖТ ┬лHe ___ football.┬╗ ╨Ъ╨░╨║╨░╤П ╨╛╤В╤А╨╕╤Ж╨░╤В╨╡╨╗╤М╨╜╨░╤П ╤Д╨╛╤А╨╝╨░ ╨▓╨╡╤А╨╜╨░?
+      a     don't play   {g4e_pres2_q2_a}
+      b [тЬУ] doesn't play   {g4e_pres2_q2_b}
+      c     not plays   {g4e_pres2_q2_c}
+  L3441 g4e-pres-l2-t3 <multiple_choice> Q: ╨в╨░╨╗╨╕ ╨╜╨░╨┐╨╕╤Б╨░╨╗ ╨╛╤В╤А╨╕╤Ж╨░╨╜╨╕╨╡: ┬лShe don't like cold weather.┬╗ Spark ╨│╨╛╨▓╨╛╤А╨╕╤В: ┬л╨в╨░╨╗╨╕, ╨╛╤И╨╕╨▒╨║╨░! ╨б she ╨╜╤Г╨╢╨╜╨╛...┬╗
+      a     don't like (╨╛╤Б╤В╨░╨▓╨╕╤В╤М ╨║╨░╨║ ╨╡╤Б╤В╤М)   {g4e_pres2_q3_a}
+      b [тЬУ] doesn't like   {g4e_pres2_q3_b}
+      c     not like   {g4e_pres2_q3_c}
+  L3442 g4e-pres-l2-t4 <input> Q: ┬лThey watch TV in the evening.┬╗ тЖТ ╨б╨┤╨╡╨╗╨░╨╣ ╨╛╤В╤А╨╕╤Ж╨░╤В╨╡╨╗╤М╨╜╤Л╨╝.
+
+######## g4e-pres-l3 (worlds.ts lines 3444-3458)
+  [dialog tali] Spark, ╨║╨░╨║ ╤Б╨┐╤А╨╛╤Б╨╕╤В╤М ╨┐╨╛-╨░╨╜╨│╨╗╨╕╨╣╤Б╨║╨╕: ┬л╨Ю╨╜╨░ ╨│╨╛╨▓╨╛╤А╨╕╤В ╨┐╨╛-╤Д╤А╨░╨╜╤Ж╤Г╨╖╤Б╨║╨╕?┬╗ ╨п ╨╜╨░╨┐╨╕╤Б╨░╨╗: ┬лShe speak French?┬╗ ╨Ч╨▓╤Г╤З╨╕╤В ╨║╨░╨║-╤В╨╛ ╨║╨╛╤А╨╛╤В╨║╨╛...
+  [dialog npc] ╨в╨░╨╗╨╕, ╨┤╨╗╤П ╨▓╨╛╨┐╤А╨╛╤Б╨░ ╨╜╨░╨╝ ╨╜╤Г╨╢╨╡╨╜ ╨▓╤Б╨┐╨╛╨╝╨╛╨│╨░╤В╨╡╨╗╤М╨╜╤Л╨╣ ╨│╨╗╨░╨│╨╛╨╗ тАФ Does! ╨Ю╨╜ ┬л╨┐╤А╤Л╨│╨░╨╡╤В┬╗ ╨▓ ╨╜╨░╤З╨░╨╗╨╛. ┬лDoes she speak French?┬╗ ╨Я╨╛╨┐╤А╨╛╨▒╤Г╨╡╨╝!
+  [intro] Does / Do ╨▓ ╨╜╨░╤З╨░╨╗╨╛ ╨▓╨╛╨┐╤А╨╛╤Б╨░! :: ┬лDoes she speak French?┬╗ тАФ Does ╨┤╨╗╤П he/she/it, Do тАФ ╨┤╨╗╤П ╨╛╤Б╤В╨░╨╗╤М╨╜╤Л╤Е. ╨Ю╤Б╨╜╨╛╨▓╨╜╨╛╨╣ ╨│╨╗╨░╨│╨╛╨╗ ╤Б╨╜╨╛╨▓╨░ ╨▒╨╡╨╖ -s!
+  [intro] ╨Я╨╛╤А╤П╨┤╨╛╨║ ╤Б╨╗╨╛╨▓ :: ╨Т╨╛╨┐╤А╨╛╤Б: Does/Do + ╨┐╨╛╨┤╨╗╨╡╨╢╨░╤Й╨╡╨╡ + ╨│╨╗╨░╨│╨╛╨╗ (╨▒╨╡╨╖ -s) + ╨╛╤Б╤В╨░╨╗╤М╨╜╨╛╨╡? ┬лDoes Tom read books?┬╗
+  L3454 g4e-pres-l3-t1 <multiple_choice> Q: ╨в╨░╨╗╨╕ ╨╜╨░╨┐╨╕╤Б╨░╨╗ ╨▓╨╛╨┐╤А╨╛╤Б: ┬лShe speak French?┬╗ Spark ╨│╨╛╨▓╨╛╤А╨╕╤В, ╤З╤В╨╛ ╨╜╤Г╨╢╨╡╨╜ ╨▓╤Б╨┐╨╛╨╝╨╛╨│╨░╤В╨╡╨╗╤М╨╜╤Л╨╣ ╨│╨╗╨░╨│╨╛╨╗. ╨Ъ╨░╨║ ╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╨╛?
+      a     Do she speak French?   {g4e_pres3_q1_a}
+      b [тЬУ] Does she speak French?   {g4e_pres3_q1_b}
+      c     Is she speak French?   {g4e_pres3_q1_c}
+  L3455 g4e-pres-l3-t2 <multiple_choice> Q: ┬лTom reads books.┬╗ тЖТ ╨б╨┤╨╡╨╗╨░╨╣ ╨▓╨╛╨┐╤А╨╛╤Б: ┬л___ Tom read books?┬╗
+      a [тЬУ] Does Tom read books?   {g4e_pres3_q2_a}
+      b     Do Tom reads books?   {g4e_pres3_q2_b}
+      c     Tom reads books?   {g4e_pres3_q2_c}
+  L3456 g4e-pres-l3-t3 <multiple_choice> Q: ┬л___ your parents work on weekends?┬╗
+      a [тЬУ] Do   {g4e_pres3_q3_a}
+      b     Does   {g4e_pres3_q3_b}
+      c     Are   {g4e_pres3_q3_c}
+  L3457 g4e-pres-l3-t4 <input> Q: ╨в╨░╨╗╨╕ ╤Б╨┐╤А╨░╤И╨╕╨▓╨░╨╡╤В ╨┐╤А╨╛ ╨╝╤Г╨╖╨╡╨╣: ┬л___ the museum open on Mondays?┬╗ ╨Ъ╨░╨║╨╛╨╡ ╤Б╨╗╨╛╨▓╨╛ ╨╜╨░╤З╨╕╨╜╨░╨╡╤В ╤Н╤В╨╛╤В ╨▓╨╛╨┐╤А╨╛╤Б?
+
+######## g4e-past-l1 (worlds.ts lines 3461-3474)
+  [dialog tali] Spark, ╨▓╤З╨╡╤А╨░ ╤П ╨╖╨░╨╗╨╡╨╖ ╨╜╨░ ╨│╨╛╤А╤Г. ╨Ъ╨░╨║ ╤Б╨║╨░╨╖╨░╤В╤М ╨┐╨╛-╨░╨╜╨│╨╗╨╕╨╣╤Б╨║╨╕? ┬лYesterday we climb the mountain.┬╗
+  [dialog npc] ╨в╨░╨╗╨╕, ╤Н╤В╨╛ ╨┐╤А╨╛╤И╨╡╨┤╤И╨╡╨╡ ╨▓╤А╨╡╨╝╤П тАФ Past Simple! ╨Я╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╡ ╨│╨╗╨░╨│╨╛╨╗╤Л ╨┐╨╛╨╗╤Г╤З╨░╤О╤В ╨╛╨║╨╛╨╜╤З╨░╨╜╨╕╨╡ -ed. ┬лWe climbed┬╗ тАФ ╨▓╨╛╤В ╨║╨░╨║!
+  [intro] Past Simple = ╨│╨╗╨░╨│╨╛╨╗ + -ed! :: ╨Я╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╡ ╨│╨╗╨░╨│╨╛╨╗╤Л: climb тЖТ climbed, walk тЖТ walked, play тЖТ played. ╨н╤В╨╛ ╨╛╤Б╨╜╨╛╨▓╨╜╨╛╨╡ ╨┐╤А╨░╨▓╨╕╨╗╨╛!
+  [intro] ╨Ю╤А╤Д╨╛╨│╤А╨░╤Д╨╕╤З╨╡╤Б╨║╨╕╨╡ ╨╗╨╛╨▓╤Г╤И╨║╨╕! :: ╨У╨╗╨░╨│╨╛╨╗ ╨╜╨░ -e: arrive тЖТ arrived (╨╜╨╡ arriveed). ╨У╨╗╨░╨│╨╛╨╗ ╨╜╨░ ╤Б╨╛╨│╨╗╨░╤Б╨╜╤Г╤О ╨┐╨╛╤Б╨╗╨╡ ╤Г╨┤╨░╤А╨╜╨╛╨╣ ╨│╨╗╨░╤Б╨╜╨╛╨╣: stop тЖТ stopped (╨┤╨▓╨╛╨╣╨╜╨░╤П ╨┐)!
+  L3471 g4e-past-l1-t1 <multiple_choice> Q: ╨в╨░╨╗╨╕ ╨╜╨░╨┐╨╕╤Б╨░╨╗: ┬лYesterday we climb the mountain.┬╗ Spark ╨│╨╛╨▓╨╛╤А╨╕╤В: ┬л╨в╨░╨╗╨╕, ╨┤╨╛╨▒╨░╨▓╤М -ed!┬╗ ╨Ъ╨░╨║ ╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╨╛?
+      a     climb   {g4e_past_q1_a}
+      b [тЬУ] climbed   {g4e_past_q1_b}
+      c     was climb   {g4e_past_q1_c}
+  L3472 g4e-past-l1-t2 <multiple_choice> Q: ┬лShe ___ her room before the guests arrived.┬╗ (clean / cleans / cleaned)
+      a     clean   {g4e_past_q2_a}
+      b [тЬУ] cleaned   {g4e_past_q2_b}
+      c     cleans   {g4e_past_q2_c}
+  L3473 g4e-past-l1-t3 <multiple_choice> Q: ╨Я╤А╨░╨▓╨╕╨╗╤М╨╜╨░╤П ╤Д╨╛╤А╨╝╨░ Past Simple ╨╛╤В ┬лto open┬╗:
+      a [тЬУ] opened   {g4e_past_q3_a}
+      b     openned   {g4e_past_q3_b}
+      c     did opened   {g4e_past_q3_c}
+  L3474 g4e-past-l1-t4 <input> Q: ┬лThey play in the park every day.┬╗ тЖТ ┬лYesterday they ___тАж┬╗
+
+######## g4e-past-l2 (worlds.ts lines 3476-3489)
+  [dialog tali] Spark, ╤П ╨╜╨░╨┐╨╕╤Б╨░╨╗ ╨▓ ╨┤╨╜╨╡╨▓╨╜╨╕╨║╨╡: ┬лLast night I haved a strange dream.┬╗ ╨Я╤А╨░╨▓╨╕╨╗╤М╨╜╨╛?
+  [dialog npc] ╨в╨░╨╗╨╕, ┬лhave┬╗ тАФ ╨╜╨╡╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╣ ╨│╨╗╨░╨│╨╛╨╗! ╨г ╨╜╨╡╨│╨╛ ╨╛╤Б╨╛╨▒╨░╤П ╤Д╨╛╤А╨╝╨░ ╨┐╤А╨╛╤И╨╡╨┤╤И╨╡╨│╨╛ ╨▓╤А╨╡╨╝╨╡╨╜╨╕ тАФ ┬лhad┬╗. ╨в╨░╨║╨╕╨╡ ╨│╨╗╨░╨│╨╛╨╗╤Л ╨╜╤Г╨╢╨╜╨╛ ╤Г╤З╨╕╤В╤М ╨╜╨░╨╕╨╖╤Г╤Б╤В╤М, ╨╛╨╜╨╕ ╨╜╨╡ ╨┤╨╛╨▒╨░╨▓╨╗╤П╤О╤В -ed!
+  [intro] ╨Э╨╡╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╡ ╨│╨╗╨░╨│╨╛╨╗╤Л тАФ ╨╛╤Б╨╛╨▒╤Л╨╡! :: go тЖТ went, have тЖТ had, see тЖТ saw, make тЖТ made. ╨Э╨╕╨║╨░╨║╨╕╤Е -ed, ╤В╨╛╨╗╤М╨║╨╛ ╨╖╨░╨┐╨╛╨╝╨╕╨╜╨░╨╜╨╕╨╡!
+  [intro] ╨б╨░╨╝╤Л╨╡ ╨▓╨░╨╢╨╜╤Л╨╡! :: go/went, come/came, take/took, make/made, see/saw, give/gave, get/got. ╨г╤З╨╕ ╨┐╨╛ ╨┐╨░╤А╨░╨╝!
+  L3486 g4e-past-l2-t1 <multiple_choice> Q: ╨в╨░╨╗╨╕ ╨╜╨░╨┐╨╕╤Б╨░╨╗: ┬лLast night I haved a strange dream.┬╗ Spark ╨│╨╛╨▓╨╛╤А╨╕╤В: ┬лhave┬╗ тАФ ╨╜╨╡╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╣! ╨Ъ╨░╨║ ╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╨╛?
+      a     have   {g4e_past2_q1_a}
+      b [тЬУ] had   {g4e_past2_q1_b}
+      c     haved   {g4e_past2_q1_c}
+  L3487 g4e-past-l2-t2 <multiple_choice> Q: ╨Т╨╛╨╗╤И╨╡╨▒╨╜╨╕╨║ ╨┐╤А╨╛╨╝╨░╤Е╨╜╤Г╨╗╤Б╤П: ┬лThe wizard ___ a rabbit, not a dragon!┬╗ (maked / made / make)
+      a     maked   {g4e_past2_q2_a}
+      b [тЬУ] made   {g4e_past2_q2_b}
+      c     make   {g4e_past2_q2_c}
+  L3488 g4e-past-l2-t3 <multiple_choice> Q: Past Simple ╨╛╤В ┬лgo┬╗:
+      a     goed   {g4e_past2_q3_a}
+      b [тЬУ] went   {g4e_past2_q3_b}
+      c     gone   {g4e_past2_q3_c}
+  L3489 g4e-past-l2-t4 <input> Q: ╨в╨░╨╗╨╕ ╤Б╨╝╨╛╤В╤А╨╕╤В ╨╜╨░ ╤Б╨┐╨╕╤Б╨╛╨║ ╨│╨╗╨░╨│╨╛╨╗╨╛╨▓: bring, think, walk, see. ╨Ю╨╜ ╨│╨╛╨▓╨╛╤А╨╕╤В: ┬л╨Т╤Б╨╡ ╨╛╨╜╨╕ ╨╜╨╡╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╡!┬╗ ╨Ъ╨░╨║╨╛╨╣ ╨╜╨░ ╤Б╨░╨╝╨╛╨╝ ╨┤╨╡╨╗╨╡ ╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╣ (╨┐╤А╨╛╤Б╤В╨╛ ╨┤╨╛╨▒╨░╨▓╨╗╤П╨╡╤В -ed)?
+
+######## g4e-past-l3 (worlds.ts lines 3491-3505)
+  [dialog tali] Spark, ╤П ╨┐╨╕╤И╤Г ╤А╨░╤Б╤Б╨║╨░╨╖ ╨┐╤А╨╛ ╨Р╨╜╨╜╤Г: ┬лLast Saturday, Anna meet her friends and they watch a film.┬╗ ╨Я╤А╨░╨▓╨╕╨╗╤М╨╜╨╛?
+  [dialog npc] ╨в╨░╨╗╨╕, ╨┤╨▓╨░ ╨│╨╗╨░╨│╨╛╨╗╨░ тАФ ╨╕ ╨╛╨▒╨░ ╨▓ ╨╜╨╡╨▓╨╡╤А╨╜╨╛╨╣ ╤Д╨╛╤А╨╝╨╡! Meet ╨╜╨╡╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╣, watch ╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╣. ╨Ф╨░╨▓╨░╨╣ ╨╕╤Б╨┐╤А╨░╨▓╨╕╨╝ ╨▓╨╝╨╡╤Б╤В╨╡ тАФ ╨╕ ╤В╨▓╨╛╨╣ ╤А╨░╤Б╤Б╨║╨░╨╖ ╤Б╤В╨░╨╜╨╡╤В ╨╛╤В╨╗╨╕╤З╨╜╤Л╨╝!
+  [intro] ╨б╨╝╨╡╤И╨╕╨▓╨░╨╡╨╝ ╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╡ ╨╕ ╨╜╨╡╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╡! :: ╨Т ╨╛╨┤╨╜╨╛╨╝ ╤В╨╡╨║╤Б╤В╨╡ ╨╝╨╛╨│╤Г╤В ╨▒╤Л╤В╤М ╨╛╨▒╨░ ╨▓╨╕╨┤╨░: ┬лShe walked to the store and bought milk┬╗. Walked тАФ ╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╣, bought тАФ ╨╜╨╡╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╣ (buyтЖТbought).
+  [intro] ╨Ъ╨░╨║ ╨╜╨░╨╣╤В╨╕ ╨╛╤И╨╕╨▒╨║╤Г :: ╨г╨▓╨╕╨┤╨╡╨╗ ┬лbuyed┬╗, ┬лgoed┬╗, ┬лmaked┬╗ тАФ ╤Н╤В╨╛ ╨╛╤И╨╕╨▒╨║╨░ ╨╜╨╡╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╨╛╨│╨╛ ╨│╨╗╨░╨│╨╛╨╗╨░. ╨г╨▓╨╕╨┤╨╡╨╗ ╨▒╨╡╨╖ -ed ╤Г ╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╨╛╨│╨╛ ╨▓ ╨┐╤А╨╛╤И╨╡╨┤╤И╨╡╨╝ тАФ ╤В╨╛╨╢╨╡ ╨╛╤И╨╕╨▒╨║╨░.
+  L3501 g4e-past-l3-t1 <multiple_choice> Q: ╨в╨░╨╗╨╕ ╨╜╨░╨┐╨╕╤Б╨░╨╗: ┬лAnna meet her friends and they watch a film.┬╗ Spark ╨▓╨╕╨┤╨╕╤В ╨┤╨▓╨╡ ╨╛╤И╨╕╨▒╨║╨╕. ╨Ъ╨░╨║ ╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╨╛?
+      a     meet / watched   {g4e_past3_q1_a}
+      b [тЬУ] met / watched   {g4e_past3_q1_b}
+      c     met / watch   {g4e_past3_q1_c}
+  L3502 g4e-past-l3-t2 <multiple_choice> Q: ╨Э╨░╨╣╨┤╨╕ ╨╛╤И╨╕╨▒╨║╤Г: ┬лHe buyed a new bicycle last week.┬╗
+      a [тЬУ] ╨╜╨╡╨▓╨╡╤А╨╜╨╛╨╡ ╨╛╨║╨╛╨╜╤З╨░╨╜╨╕╨╡ тАФ ╨╜╤Г╨╢╨╜╨╛ ┬лbought┬╗   {g4e_past3_q2_a}
+      b     ╨╜╨╡╨▓╨╡╤А╨╜╤Л╨╣ ╨░╤А╤В╨╕╨║╨╗╤М   {g4e_past3_q2_b}
+      c     ╨╜╨╡╨▓╨╡╤А╨╜╤Л╨╣ ╨┐╤А╨╡╨┤╨╗╨╛╨│   {g4e_past3_q2_c}
+  L3503 g4e-past-l3-t3 <multiple_choice> Q: ┬лThe explorers ___ the cave and ___ gold inside.┬╗ (entered/found / enter/find / entered/find)
+      a     enter / find   {g4e_past3_q3_a}
+      b     entered / find   {g4e_past3_q3_b}
+      c [тЬУ] entered / found   {g4e_past3_q3_c}
+  L3504 g4e-past-l3-t4 <input> Q: ┬лShe wrote a letter yesterday.┬╗ тЖТ ╨б╨┤╨╡╨╗╨░╨╣ ╨╛╤В╤А╨╕╤Ж╨░╤В╨╡╨╗╤М╨╜╤Л╨╝.
+
+######## g4e-quest-l1 (worlds.ts lines 3508-3521)
+  [dialog tali] Spark, ╤П ╤Е╨╛╤З╤Г ╤Б╨┐╤А╨╛╤Б╨╕╤В╤М ╤В╨╡╨▒╤П: ╨╗╤О╨▒╨╕╤И╤М ╨╗╨╕ ╤В╤Л ╨╝╨╛╤А╨╛╨╢╨╡╨╜╨╛╨╡? ╨п ╨╜╨░╨┐╨╕╤Б╨░╨╗: ┬лYou like ice cream?┬╗ ╨Я╤А╨░╨▓╨╕╨╗╤М╨╜╨╛?
+  [dialog npc] ╨в╨░╨╗╨╕, ╨╜╨╡ ╤Е╨▓╨░╤В╨░╨╡╤В ╨▓╤Б╨┐╨╛╨╝╨╛╨│╨░╤В╨╡╨╗╤М╨╜╨╛╨│╨╛ ╨│╨╗╨░╨│╨╛╨╗╨░! ┬лDo you like ice cream?┬╗ тАФ ╨▓╨╛╤В ╨▓╨╛╨┐╤А╨╛╤Б, ╨╜╨░ ╨║╨╛╤В╨╛╤А╤Л╨╣ ╨╝╨╛╨╢╨╜╨╛ ╨╛╤В╨▓╨╡╤В╨╕╤В╤М ┬лYes┬╗ ╨╕╨╗╨╕ ┬лNo┬╗. ╨в╨░╨║╨╕╤Е ╨▓╨╛╨┐╤А╨╛╤Б╨╛╨▓ ╤Г ╨╜╨░╤Б ╤Б╨╡╨│╨╛╨┤╨╜╤П ╨╝╨╜╨╛╨│╨╛!
+  [intro] ╨Э╤Г╨╢╨╡╨╜ ╨╗╨╕ Do ╨▓ ╨▓╨╛╨┐╤А╨╛╤Б╨╡? :: ╨Т ╨║╨╛╤А╨╛╤В╨║╨╛╨╝ ╨░╨╜╨│╨╗╨╕╨╣╤Б╨║╨╛╨╝ ╨▓╨╛╨┐╤А╨╛╤Б╨╡ Yes/No ╨┐╨╛╤З╤В╨╕ ╨▓╤Б╨╡╨│╨┤╨░ ╨╜╤Г╨╢╨╡╨╜ ╨▓╤Б╨┐╨╛╨╝╨╛╨│╨░╤В╨╡╨╗╤М╨╜╤Л╨╣ ╨│╨╗╨░╨│╨╛╨╗ do/does: ┬лDo you like ice cream?┬╗, ╨░ ╨╜╨╡ ╨┐╤А╨╛╤Б╤В╨╛ ╤Б╨╗╨╛╨▓╨░ ╨┐╨╛╨┤╤А╤П╨┤.
+  [intro] ╨з╤В╨╛ ╤В╨░╨║╨╛╨╡ Yes/No questions? :: ╨н╤В╨╛ ╨▓╨╛╨┐╤А╨╛╤Б╤Л, ╨╜╨░ ╨║╨╛╤В╨╛╤А╤Л╨╡ ╨╝╨╛╨╢╨╜╨╛ ╨╛╤В╨▓╨╡╤В╨╕╤В╤М ┬лYes┬╗ ╨╕╨╗╨╕ ┬лNo┬╗; ╨╛╨╜╨╕ ╨╜╨░╤З╨╕╨╜╨░╤О╤В╤Б╤П ╤Б ╨▓╤Б╨┐╨╛╨╝╨╛╨│╨░╤В╨╡╨╗╤М╨╜╨╛╨│╨╛ ╨│╨╗╨░╨│╨╛╨╗╨░ ╨╕ ╨╖╨░╨┤╨░╤О╤В ╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╣ ╨┐╨╛╤А╤П╨┤╨╛╨║ ╤Б╨╗╨╛╨▓.
+  L3518 g4e-quest-l1-t1 <multiple_choice> Q: ┬л___ you like ice cream?┬╗ (Are / Do / Does)
+      a     Are   {g4e_quest_q1_a}
+      b [тЬУ] Do   {g4e_quest_q1_b}
+      c     Does   {g4e_quest_q1_c}
+  L3519 g4e-quest-l1-t2 <multiple_choice> Q: ╨Ъ╨░╨║╨╛╨╣ ╨▓╨╛╨┐╤А╨╛╤Б ╨╝╨╛╨╢╨╜╨╛ ╨╖╨░╨║╨╛╨╜╤З╨╕╤В╤М ╨╛╤В╨▓╨╡╤В╨╛╨╝ ┬лYes┬╗ ╨╕╨╗╨╕ ┬лNo┬╗?
+      a [тЬУ] Do you like ice cream?   {g4e_quest_q2_a}
+      b     What you like ice cream?   {g4e_quest_q2_b}
+      c     Where you like ice cream?   {g4e_quest_q2_c}
+  L3520 g4e-quest-l1-t3 <multiple_choice> Q: ╨в╨░╨╗╨╕ ╤Б╨┐╤А╨░╤И╨╕╨▓╨░╨╡╤В ╨┐╤А╨╛ ╤Б╨╡╤Б╤В╤А╤Г: ┬лDo your sister go to the same school?┬╗ Spark ╨│╨╛╨▓╨╛╤А╨╕╤В, ╤З╤В╨╛ ╨┐╨╛╨╝╨╛╤Й╨╜╨╕╨║ ╨▓╤Л╨▒╤А╨░╨╜ ╨╜╨╡╨▓╨╡╤А╨╜╨╛. ╨Ъ╨░╨║ ╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╨╛?
+      a     Do   {g4e_quest_q3_a}
+      b     Are   {g4e_quest_q3_b}
+      c [тЬУ] Does   {g4e_quest_q3_c}
+  L3521 g4e-quest-l1-t4 <input> Q: ╨Ш╨╜╨╛╨┐╨╗╨░╨╜╨╡╤В╤П╨╜╨╕╨╜ ╨┐╤А╨╕╨╖╨╡╨╝╨╗╨╕╨╗╤Б╤П ╨╕ ╨╖╨░╨┤╨░╤С╤В ╨▓╨╛╨┐╤А╨╛╤Б: ┬л___ humans sleep at night?┬╗ ╨Ъ╨░╨║╨╛╨╡ ╤Б╨╗╨╛╨▓╨╛ ╨╜╨░╤З╨╕╨╜╨░╨╡╤В ╨▓╨╛╨┐╤А╨╛╤Б?
+
+######## g4e-quest-l2 (worlds.ts lines 3523-3536)
+  [dialog tali] Spark, ╤П ╨┐╨╛╤В╨╡╤А╤П╨╗ ╤Б╨▓╨╛╤О ╤И╨╗╤П╨┐╤Г! ╨Ъ╨░╨║ ╤Б╨┐╤А╨╛╤Б╨╕╤В╤М: ╨│╨┤╨╡ ╨╛╨╜╨░? ╨Э╨░╨┐╨╕╤Б╨░╨╗ ┬лWhat is my hat?┬╗ тАФ ╨╜╨╛ ╤Н╤В╨╛ ╨╜╨╡ ╨┐╤А╨╛ ╨╝╨╡╤Б╤В╨╛...
+  [dialog npc] ╨в╨░╨╗╨╕, ┬лWhat┬╗ тАФ ╤Н╤В╨╛ ┬л╤З╤В╨╛┬╗, ╨░ ╤В╨╡╨▒╨╡ ╨╜╤Г╨╢╨╜╨╛ ┬л╨│╨┤╨╡┬╗ тАФ ╤Н╤В╨╛ ┬лWhere┬╗! ╨Т╨╛╨┐╤А╨╛╤Б╨╕╤В╨╡╨╗╤М╨╜╤Л╨╡ ╤Б╨╗╨╛╨▓╨░ тАФ ╤Н╤В╨╛ ╨║╨░╨║ ╨║╨╗╤О╤З╨╕: ╨║╨░╨╢╨┤╤Л╨╣ ╨╛╤В╨║╤А╤Л╨▓╨░╨╡╤В ╤Б╨▓╨╛╨╣ ╨╖╨░╨╝╨╛╨║. ╨а╨░╨╖╨▒╨╡╤А╤С╨╝ ╨╕╤Е ╨▓╤Б╨╡!
+  [intro] What ╨╕╨╗╨╕ Where? :: ┬лWhat┬╗ ╤Б╨┐╤А╨░╤И╨╕╨▓╨░╨╡╤В ┬л╤З╤В╨╛?┬╗, ┬лWhere┬╗ тАФ ┬л╨│╨┤╨╡?┬╗. ╨Х╤Б╨╗╨╕ ╨╜╤Г╨╢╨╜╨╛ ╨╝╨╡╤Б╤В╨╛, ╨▒╨╡╤А╨╕ Where тАФ ╨╕ ╤Б╨╝╤Л╤Б╨╗ ╨▓╨╛╨┐╤А╨╛╤Б╨░ ╨▒╤Г╨┤╨╡╤В ╨▓╨╡╤А╨╜╤Л╨╝.
+  [intro] ╨Т╨╛╨┐╤А╨╛╤Б╨╕╤В╨╡╨╗╤М╨╜╤Л╨╡ ╤Б╨╗╨╛╨▓╨░ тАФ ╨║╨░╨║ ╨║╨╗╤О╤З╨╕ :: Who, What, Where, When, Why, How тАФ ╤Г ╨║╨░╨╢╨┤╨╛╨│╨╛ ╤Б╨▓╨╛╤С ╨╖╨╜╨░╤З╨╡╨╜╨╕╨╡. ╨Я╨╡╤А╨╡╨┐╤Г╤В╨░╨╗ ╤Б╨╗╨╛╨▓╨╛ тАФ ╨┐╨╛╨╗╤Г╤З╨╕╨╗╤Б╤П ╨┤╤А╤Г╨│╨╛╨╣ ╤Б╨╝╤Л╤Б╨╗; ╤А╨░╨╖╨▒╨╡╤А╤С╨╝ ╨║╨░╨╢╨┤╤Л╨╣ ╤В╨╕╨┐.
+  L3533 g4e-quest-l2-t1 <multiple_choice> Q: ╨в╨░╨╗╨╕ ╤Е╨╛╤З╨╡╤В ╤Г╨╖╨╜╨░╤В╤М, ╨│╨┤╨╡ ╨╡╨│╨╛ ╤И╨╗╤П╨┐╨░: ╨╜╨░╨┐╨╕╤Б╨░╨╗ ┬лWhat is my hat?┬╗ Spark ╨│╨╛╨▓╨╛╤А╨╕╤В: ┬л╨в╨░╨╗╨╕, ╨╜╨╡ "what", ╨░...┬╗ ╨Ъ╨░╨║╨╛╨╡ ╤Б╨╗╨╛╨▓╨╛ ╨╜╤Г╨╢╨╜╨╛?
+      a     What (╤З╤В╨╛)   {g4e_quest2_q1_a}
+      b     When (╨║╨╛╨│╨┤╨░)   {g4e_quest2_q1_b}
+      c [тЬУ] Where (╨│╨┤╨╡)   {g4e_quest2_q1_c}
+  L3534 g4e-quest-l2-t2 <multiple_choice> Q: ┬л___ is your best friend?┬╗ тАФ ╤Е╨╛╤З╨╡╤И╤М ╤Г╨╖╨╜╨░╤В╤М ╨╕╨╝╤П ╤З╨╡╨╗╨╛╨▓╨╡╨║╨░. ╨Ъ╨░╨║╨╛╨╡ ╤Б╨╗╨╛╨▓╨╛?
+      a [тЬУ] Who   {g4e_quest2_q2_a}
+      b     Where   {g4e_quest2_q2_b}
+      c     What   {g4e_quest2_q2_c}
+  L3535 g4e-quest-l2-t3 <multiple_choice> Q: ╨в╤Л ╨╕╤Й╨╡╤И╤М ╤А╤О╨║╨╖╨░╨║ ╨в╨░╨╗╨╕. ┬л___ is my bag?┬╗ (Who / Where / Why)
+      a     What   {g4e_quest2_q3_a}
+      b     Who   {g4e_quest2_q3_b}
+      c [тЬУ] Where   {g4e_quest2_q3_c}
+  L3536 g4e-quest-l2-t4 <input> Q: ┬л___ do you come to school by bike?┬╗ тАФ ╤Е╨╛╤З╨╡╤И╤М ╤Г╨╖╨╜╨░╤В╤М ╨┐╤А╨╕╤З╨╕╨╜╤Г.
+
+######## g4e-quest-l3 (worlds.ts lines 3538-3560)
+  [dialog tali] Spark, ╤В╤Л ╤Б╨┐╤А╨╛╤Б╨╕╨╗: ┬лDo you like cats?┬╗ ╨п ╨╛╤В╨▓╨╡╤В╨╕╨╗: ┬лYes, I likes.┬╗ ╨Я╤А╨░╨▓╨╕╨╗╤М╨╜╨╛?
+  [dialog npc] ╨в╨░╨╗╨╕, ╨▓ ╨║╤А╨░╤В╨║╨╛╨╝ ╨╛╤В╨▓╨╡╤В╨╡ ╨╝╤Л ╨┐╨╛╨▓╤В╨╛╤А╤П╨╡╨╝ ╨▓╤Б╨┐╨╛╨╝╨╛╨│╨░╤В╨╡╨╗╤М╨╜╤Л╨╣ ╨│╨╗╨░╨│╨╛╨╗ тАФ do ╨╕╨╗╨╕ does, did! ┬лYes, I do.┬╗ ╨Ъ╤А╨░╤В╨║╨╛, ╤В╨╛╤З╨╜╨╛, ╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╨╛!
+  [intro] ╨Ъ╤А╨░╤В╨║╨╕╨╣ ╨╛╤В╨▓╨╡╤В ╨▒╨╡╨╖ ╨╛╤И╨╕╨▒╨║╨╕ :: ╨Т ╨╛╤В╨▓╨╡╤В╨╡ ╨┐╨╛╨▓╤В╨╛╤А╤П╨╡╨╝ ╤В╨╛╤В ╨╢╨╡ ╨▓╤Б╨┐╨╛╨╝╨╛╨│╨░╤В╨╡╨╗╤М╨╜╤Л╨╣ ╨│╨╗╨░╨│╨╛╨╗: Yes, I do. No, she doesn't тАФ ╨▒╨╡╨╖ ╨╗╨╕╤И╨╜╨╡╨│╨╛ -s ╨╜╨░ ╨╛╤Б╨╜╨╛╨▓╨╜╨╛╨╝ ╨│╨╗╨░╨│╨╛╨╗╨╡.
+  [intro] ╨б╨╛╨│╨╗╨░╤Б╤Г╨╣ ╨▓╤Б╨┐╨╛╨╝╨╛╨│╨░╤В╨╡╨╗╤М╨╜╤Л╨╣ ╨│╨╗╨░╨│╨╛╨╗ :: Do/does/did ╨▓ ╨▓╨╛╨┐╤А╨╛╤Б╨╡ тЖТ ╤В╨╛╤В ╨╢╨╡ do/does/did ╨▓ ╨║╨╛╤А╨╛╤В╨║╨╛╨╝ ╨╛╤В╨▓╨╡╤В╨╡. ╨в╨░╨║ ╨╛╤В╨▓╨╡╤В ╨╖╨▓╤Г╤З╨╕╤В ╨╡╤Б╤В╨╡╤Б╤В╨▓╨╡╨╜╨╜╨╛ ╨╕ ╨│╤А╨░╨╝╨╝╨░╤В╨╕╤З╨╡╤Б╨║╨╕ ╨▓╨╡╤А╨╜╨╛.
+  L3548 g4e-quest-l3-t1 <multiple_choice> Q: ╨в╨░╨╗╨╕ ╨╛╤В╨▓╨╡╤В╨╕╨╗: ┬лDo you like cats?┬╗ тЖТ ┬лYes, I likes.┬╗ Spark ╨│╨╛╨▓╨╛╤А╨╕╤В: ┬л╨Э╨╡╤В, ╨в╨░╨╗╨╕, ╨║╤А╨░╤В╨║╨╕╨╣ ╨╛╤В╨▓╨╡╤В тАФ ╤Н╤В╨╛...┬╗
+      a     Yes, I does.   {g4e_quest3_q1_a}
+      b [тЬУ] Yes, I do.   {g4e_quest3_q1_b}
+      c     Yes, I am.   {g4e_quest3_q1_c}
+  L3549 g4e-quest-l3-t2 <multiple_choice> Q: ┬лDoes he play chess?┬╗ тЖТ ┬лNo, ___.┬╗
+      a [тЬУ] No, he doesn't.   {g4e_quest3_q2_a}
+      b     No, he don't.   {g4e_quest3_q2_b}
+      c     No, he not.   {g4e_quest3_q2_c}
+  L3550 g4e-quest-l3-t3 <multiple_choice> Q: ╨в╨░╨╗╨╕ ╨╛╤В╨▓╨╡╤З╨░╨╡╤В: ┬лDid they visit the museum?┬╗ тЖТ ┬лYes, they are.┬╗ Spark ╨│╨╛╨▓╨╛╤А╨╕╤В: ┬л╨Э╨╡╤В! ╨Т╨╛╨┐╤А╨╛╤Б ╤Б Did тАФ ╨╛╤В╨▓╨╡╤В ╤В╨╛╨╢╨╡ ╤Б...┬╗
+      a     Yes, they is.   {g4e_quest3_q3_a}
+      b     Yes, they are.   {g4e_quest3_q3_b}
+      c [тЬУ] Yes, they did.   {g4e_quest3_q3_c}
+  L3551 g4e-quest-l3-t4 <input> Q: ╨Т╨╡╨┤╤Г╤Й╨╕╨╣ ╨▓╨╕╨║╤В╨╛╤А╨╕╨╜╤Л: ┬лDo birds fly?┬╗ тАФ ╨║╨░╨║╨╛╨╣ ╨╝╨╛╨┤╨╡╨╗╤М╨╜╤Л╨╣ ╨║╤А╨░╤В╨║╨╕╨╣ ╨╛╤В╨▓╨╡╤В?

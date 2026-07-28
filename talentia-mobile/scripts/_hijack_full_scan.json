@@ -1,0 +1,534 @@
+{
+  "scanned": 51,
+  "hitLessons": 5,
+  "hits": [
+    {
+      "id": "g3r-adj-l1",
+      "kind": "questionKey",
+      "key": "g3r_size_adj_examples",
+      "issue": "size_adj_key_but_RU_degree",
+      "ru": "Как образуется сравнительная степень от БЫСТРЫЙ?",
+      "en": "Which words are size adjectives?",
+      "ky": " Какие слова — прилагательные размера?",
+      "phase34": true,
+      "pilotD": false
+    },
+    {
+      "id": "g3r-adj-l1",
+      "kind": "questionKey",
+      "key": "g3r_adj_for_fem",
+      "issue": "fem_adj_key_but_RU_comparative",
+      "ru": "Черепаха медленная. Улитка ___ черепахи. Нужна сравнительная степень:",
+      "en": "What is the form of the feminine adjective?",
+      "ky": " Какая форма прилагательного для женского рода?",
+      "phase34": true,
+      "pilotD": false
+    },
+    {
+      "id": "g3r-adj-l2",
+      "kind": "questionKey",
+      "key": "g3r_size_adj_examples",
+      "issue": "size_adj_key_but_RU_degree",
+      "ru": "Как образуется сравнительная степень от БЫСТРЫЙ?",
+      "en": "Which words are size adjectives?",
+      "ky": " Какие слова — прилагательные размера?",
+      "phase34": true,
+      "pilotD": false
+    },
+    {
+      "id": "g3r-adj-l2",
+      "kind": "questionKey",
+      "key": "g3r_adj_for_fem",
+      "issue": "fem_adj_key_but_RU_comparative",
+      "ru": "Черепаха медленная. Улитка ___ черепахи. Нужна сравнительная степень:",
+      "en": "What is the form of the feminine adjective?",
+      "ky": " Какая форма прилагательного для женского рода?",
+      "phase34": true,
+      "pilotD": false
+    },
+    {
+      "id": "g3e-tobe-l2",
+      "kind": "questionKey",
+      "key": "g3e_we_blank_ready",
+      "issue": "affirmative_blank_key_but_RU_question_form",
+      "ru": "«We are ready» → «___ we ready?»",
+      "en": "We ___ ready. What word?",
+      "ky": " We ___ ready. Какое слово?",
+      "phase34": true,
+      "pilotD": false
+    },
+    {
+      "id": "g3e-tobe-l2",
+      "kind": "ru_en_form",
+      "key": "g3e_we_blank_ready",
+      "issue": "RU_question_inversion_EN_affirmative_blank",
+      "ru": "«We are ready» → «___ we ready?»",
+      "en": "We ___ ready. What word?",
+      "ky": " We ___ ready. Какое слово?",
+      "phase34": true,
+      "pilotD": false
+    },
+    {
+      "id": "g3e-tobe-l2",
+      "kind": "questionKey",
+      "key": "g3e_they_blank_students",
+      "issue": "affirmative_blank_key_but_RU_question_form",
+      "ru": "«They are students.» → Вопрос:",
+      "en": "They ___ students. What word?",
+      "ky": " They ___ students. Какое слово?",
+      "phase34": true,
+      "pilotD": false
+    },
+    {
+      "id": "g3e-tobe-l2",
+      "kind": "questionKey",
+      "key": "g3e_are_they_question",
+      "issue": "are_they_key_but_RU_about_she",
+      "ru": "Правильный вопрос к ответу «Yes, she is»:",
+      "en": "Question to \"They are\":",
+      "ky": " Вопрос к «They are»:",
+      "phase34": true,
+      "pilotD": false
+    },
+    {
+      "id": "g3e-tobe-l2",
+      "kind": "questionKey",
+      "key": "g3e_are_we_question",
+      "issue": "are_we_key_but_RU_about_they_home",
+      "ru": "«Они дома?» по-английски:",
+      "en": "Question to \"We are\":",
+      "ky": " Вопрос к «We are»:",
+      "phase34": true,
+      "pilotD": false
+    },
+    {
+      "id": "g3e-tobe-l3",
+      "kind": "questionKey",
+      "key": "g3e_we_blank_ready",
+      "issue": "affirmative_blank_key_but_RU_question_form",
+      "ru": "«We are ready» → «___ we ready?»",
+      "en": "We ___ ready. What word?",
+      "ky": " We ___ ready. Какое слово?",
+      "phase34": true,
+      "pilotD": false
+    },
+    {
+      "id": "g3e-tobe-l3",
+      "kind": "ru_en_form",
+      "key": "g3e_we_blank_ready",
+      "issue": "RU_question_inversion_EN_affirmative_blank",
+      "ru": "«We are ready» → «___ we ready?»",
+      "en": "We ___ ready. What word?",
+      "ky": " We ___ ready. Какое слово?",
+      "phase34": true,
+      "pilotD": false
+    },
+    {
+      "id": "g3e-tobe-l3",
+      "kind": "questionKey",
+      "key": "g3e_they_blank_students",
+      "issue": "affirmative_blank_key_but_RU_question_form",
+      "ru": "«They are students.» → Вопрос:",
+      "en": "They ___ students. What word?",
+      "ky": " They ___ students. Какое слово?",
+      "phase34": true,
+      "pilotD": false
+    },
+    {
+      "id": "g3e-tobe-l3",
+      "kind": "questionKey",
+      "key": "g3e_are_they_question",
+      "issue": "are_they_key_but_RU_about_she",
+      "ru": "Правильный вопрос к ответу «Yes, she is»:",
+      "en": "Question to \"They are\":",
+      "ky": " Вопрос к «They are»:",
+      "phase34": true,
+      "pilotD": false
+    },
+    {
+      "id": "g3e-tobe-l3",
+      "kind": "questionKey",
+      "key": "g3e_are_we_question",
+      "issue": "are_we_key_but_RU_about_they_home",
+      "ru": "«Они дома?» по-английски:",
+      "en": "Question to \"We are\":",
+      "ky": " Вопрос к «We are»:",
+      "phase34": true,
+      "pilotD": false
+    },
+    {
+      "id": "g3w-nat-l3",
+      "kind": "questionKey",
+      "key": "g3w_protect_nature_how",
+      "issue": "protect_how_key_but_RU_why_red_book",
+      "ru": "Зачем создали Красную книгу?",
+      "en": "How to protect nature?",
+      "ky": " Табиятты кантип коргоо керек?",
+      "phase34": false,
+      "pilotD": false
+    },
+    {
+      "id": "g3w-nat-l3",
+      "kind": "ru_en_wh_clash",
+      "key": "g3w_protect_nature_how",
+      "issue": "RU_asks_why_EN_asks_how",
+      "ru": "Зачем создали Красную книгу?",
+      "en": "How to protect nature?",
+      "ky": " Табиятты кантип коргоо керек?",
+      "phase34": false,
+      "pilotD": false
+    },
+    {
+      "id": "g3w-nat-l3",
+      "kind": "questionKey",
+      "key": "g3w_red_book_is",
+      "issue": "red_book_key_but_RU_about_trees",
+      "ru": "Деревья в городе дают:",
+      "en": "Red Book:",
+      "ky": " Красная книга — это:",
+      "phase34": false,
+      "pilotD": false
+    },
+    {
+      "id": "g3w-nat-l3",
+      "kind": "ru_en_topic",
+      "key": "g3w_red_book_is",
+      "issue": "RU_trees_EN_redbook_or_recycle",
+      "ru": "Деревья в городе дают:",
+      "en": "Red Book:",
+      "ky": " Красная книга — это:",
+      "phase34": false,
+      "pilotD": false
+    },
+    {
+      "id": "g3w-nat-l3",
+      "kind": "optionKey",
+      "key": "g3w_opt_recycle",
+      "issue": "opt_recycle_holds_redbook_answer",
+      "ru": "Чтобы защитить редких животных и растения",
+      "en": "sort and recycle",
+      "phase34": false,
+      "pilotD": false
+    },
+    {
+      "id": "g3w-nat-l3",
+      "kind": "optionKey",
+      "key": "g3w_opt_burn_trash",
+      "issue": "opt_burn_trash_holds_library",
+      "ru": "Чтобы красиво выглядеть в библиотеке",
+      "en": "burn rubbish",
+      "phase34": false,
+      "pilotD": false
+    },
+    {
+      "id": "g3w-nat-l3",
+      "kind": "optionKey",
+      "key": "g3w_opt_cut_trees",
+      "issue": "opt_cut_trees_holds_weather",
+      "ru": "Чтобы записывать погоду",
+      "en": "cut down trees",
+      "phase34": false,
+      "pilotD": false
+    },
+    {
+      "id": "g3w-nat-l3",
+      "kind": "optionKey",
+      "key": "g3w_opt_endangered",
+      "issue": "opt_endangered_holds_oxygen",
+      "ru": "Кислород, тень и очищают воздух",
+      "en": "endangered species",
+      "phase34": false,
+      "pilotD": false
+    },
+    {
+      "id": "g3w-nat-l3",
+      "kind": "optionKey",
+      "key": "g3w_opt_extinct",
+      "issue": "opt_extinct_holds_beauty",
+      "ru": "Только красоту",
+      "en": "extinct species",
+      "phase34": false,
+      "pilotD": false
+    },
+    {
+      "id": "g3w-nat-l3",
+      "kind": "optionKey",
+      "key": "g3w_opt_recipe_book",
+      "issue": "opt_recipe_holds_problems",
+      "ru": "Только проблемы",
+      "en": "recipe book",
+      "phase34": false,
+      "pilotD": false
+    }
+  ],
+  "byLesson": {
+    "g3r-adj-l1": [
+      {
+        "id": "g3r-adj-l1",
+        "kind": "questionKey",
+        "key": "g3r_size_adj_examples",
+        "issue": "size_adj_key_but_RU_degree",
+        "ru": "Как образуется сравнительная степень от БЫСТРЫЙ?",
+        "en": "Which words are size adjectives?",
+        "ky": " Какие слова — прилагательные размера?",
+        "phase34": true,
+        "pilotD": false
+      },
+      {
+        "id": "g3r-adj-l1",
+        "kind": "questionKey",
+        "key": "g3r_adj_for_fem",
+        "issue": "fem_adj_key_but_RU_comparative",
+        "ru": "Черепаха медленная. Улитка ___ черепахи. Нужна сравнительная степень:",
+        "en": "What is the form of the feminine adjective?",
+        "ky": " Какая форма прилагательного для женского рода?",
+        "phase34": true,
+        "pilotD": false
+      }
+    ],
+    "g3r-adj-l2": [
+      {
+        "id": "g3r-adj-l2",
+        "kind": "questionKey",
+        "key": "g3r_size_adj_examples",
+        "issue": "size_adj_key_but_RU_degree",
+        "ru": "Как образуется сравнительная степень от БЫСТРЫЙ?",
+        "en": "Which words are size adjectives?",
+        "ky": " Какие слова — прилагательные размера?",
+        "phase34": true,
+        "pilotD": false
+      },
+      {
+        "id": "g3r-adj-l2",
+        "kind": "questionKey",
+        "key": "g3r_adj_for_fem",
+        "issue": "fem_adj_key_but_RU_comparative",
+        "ru": "Черепаха медленная. Улитка ___ черепахи. Нужна сравнительная степень:",
+        "en": "What is the form of the feminine adjective?",
+        "ky": " Какая форма прилагательного для женского рода?",
+        "phase34": true,
+        "pilotD": false
+      }
+    ],
+    "g3e-tobe-l2": [
+      {
+        "id": "g3e-tobe-l2",
+        "kind": "questionKey",
+        "key": "g3e_we_blank_ready",
+        "issue": "affirmative_blank_key_but_RU_question_form",
+        "ru": "«We are ready» → «___ we ready?»",
+        "en": "We ___ ready. What word?",
+        "ky": " We ___ ready. Какое слово?",
+        "phase34": true,
+        "pilotD": false
+      },
+      {
+        "id": "g3e-tobe-l2",
+        "kind": "ru_en_form",
+        "key": "g3e_we_blank_ready",
+        "issue": "RU_question_inversion_EN_affirmative_blank",
+        "ru": "«We are ready» → «___ we ready?»",
+        "en": "We ___ ready. What word?",
+        "ky": " We ___ ready. Какое слово?",
+        "phase34": true,
+        "pilotD": false
+      },
+      {
+        "id": "g3e-tobe-l2",
+        "kind": "questionKey",
+        "key": "g3e_they_blank_students",
+        "issue": "affirmative_blank_key_but_RU_question_form",
+        "ru": "«They are students.» → Вопрос:",
+        "en": "They ___ students. What word?",
+        "ky": " They ___ students. Какое слово?",
+        "phase34": true,
+        "pilotD": false
+      },
+      {
+        "id": "g3e-tobe-l2",
+        "kind": "questionKey",
+        "key": "g3e_are_they_question",
+        "issue": "are_they_key_but_RU_about_she",
+        "ru": "Правильный вопрос к ответу «Yes, she is»:",
+        "en": "Question to \"They are\":",
+        "ky": " Вопрос к «They are»:",
+        "phase34": true,
+        "pilotD": false
+      },
+      {
+        "id": "g3e-tobe-l2",
+        "kind": "questionKey",
+        "key": "g3e_are_we_question",
+        "issue": "are_we_key_but_RU_about_they_home",
+        "ru": "«Они дома?» по-английски:",
+        "en": "Question to \"We are\":",
+        "ky": " Вопрос к «We are»:",
+        "phase34": true,
+        "pilotD": false
+      }
+    ],
+    "g3e-tobe-l3": [
+      {
+        "id": "g3e-tobe-l3",
+        "kind": "questionKey",
+        "key": "g3e_we_blank_ready",
+        "issue": "affirmative_blank_key_but_RU_question_form",
+        "ru": "«We are ready» → «___ we ready?»",
+        "en": "We ___ ready. What word?",
+        "ky": " We ___ ready. Какое слово?",
+        "phase34": true,
+        "pilotD": false
+      },
+      {
+        "id": "g3e-tobe-l3",
+        "kind": "ru_en_form",
+        "key": "g3e_we_blank_ready",
+        "issue": "RU_question_inversion_EN_affirmative_blank",
+        "ru": "«We are ready» → «___ we ready?»",
+        "en": "We ___ ready. What word?",
+        "ky": " We ___ ready. Какое слово?",
+        "phase34": true,
+        "pilotD": false
+      },
+      {
+        "id": "g3e-tobe-l3",
+        "kind": "questionKey",
+        "key": "g3e_they_blank_students",
+        "issue": "affirmative_blank_key_but_RU_question_form",
+        "ru": "«They are students.» → Вопрос:",
+        "en": "They ___ students. What word?",
+        "ky": " They ___ students. Какое слово?",
+        "phase34": true,
+        "pilotD": false
+      },
+      {
+        "id": "g3e-tobe-l3",
+        "kind": "questionKey",
+        "key": "g3e_are_they_question",
+        "issue": "are_they_key_but_RU_about_she",
+        "ru": "Правильный вопрос к ответу «Yes, she is»:",
+        "en": "Question to \"They are\":",
+        "ky": " Вопрос к «They are»:",
+        "phase34": true,
+        "pilotD": false
+      },
+      {
+        "id": "g3e-tobe-l3",
+        "kind": "questionKey",
+        "key": "g3e_are_we_question",
+        "issue": "are_we_key_but_RU_about_they_home",
+        "ru": "«Они дома?» по-английски:",
+        "en": "Question to \"We are\":",
+        "ky": " Вопрос к «We are»:",
+        "phase34": true,
+        "pilotD": false
+      }
+    ],
+    "g3w-nat-l3": [
+      {
+        "id": "g3w-nat-l3",
+        "kind": "questionKey",
+        "key": "g3w_protect_nature_how",
+        "issue": "protect_how_key_but_RU_why_red_book",
+        "ru": "Зачем создали Красную книгу?",
+        "en": "How to protect nature?",
+        "ky": " Табиятты кантип коргоо керек?",
+        "phase34": false,
+        "pilotD": false
+      },
+      {
+        "id": "g3w-nat-l3",
+        "kind": "ru_en_wh_clash",
+        "key": "g3w_protect_nature_how",
+        "issue": "RU_asks_why_EN_asks_how",
+        "ru": "Зачем создали Красную книгу?",
+        "en": "How to protect nature?",
+        "ky": " Табиятты кантип коргоо керек?",
+        "phase34": false,
+        "pilotD": false
+      },
+      {
+        "id": "g3w-nat-l3",
+        "kind": "questionKey",
+        "key": "g3w_red_book_is",
+        "issue": "red_book_key_but_RU_about_trees",
+        "ru": "Деревья в городе дают:",
+        "en": "Red Book:",
+        "ky": " Красная книга — это:",
+        "phase34": false,
+        "pilotD": false
+      },
+      {
+        "id": "g3w-nat-l3",
+        "kind": "ru_en_topic",
+        "key": "g3w_red_book_is",
+        "issue": "RU_trees_EN_redbook_or_recycle",
+        "ru": "Деревья в городе дают:",
+        "en": "Red Book:",
+        "ky": " Красная книга — это:",
+        "phase34": false,
+        "pilotD": false
+      },
+      {
+        "id": "g3w-nat-l3",
+        "kind": "optionKey",
+        "key": "g3w_opt_recycle",
+        "issue": "opt_recycle_holds_redbook_answer",
+        "ru": "Чтобы защитить редких животных и растения",
+        "en": "sort and recycle",
+        "phase34": false,
+        "pilotD": false
+      },
+      {
+        "id": "g3w-nat-l3",
+        "kind": "optionKey",
+        "key": "g3w_opt_burn_trash",
+        "issue": "opt_burn_trash_holds_library",
+        "ru": "Чтобы красиво выглядеть в библиотеке",
+        "en": "burn rubbish",
+        "phase34": false,
+        "pilotD": false
+      },
+      {
+        "id": "g3w-nat-l3",
+        "kind": "optionKey",
+        "key": "g3w_opt_cut_trees",
+        "issue": "opt_cut_trees_holds_weather",
+        "ru": "Чтобы записывать погоду",
+        "en": "cut down trees",
+        "phase34": false,
+        "pilotD": false
+      },
+      {
+        "id": "g3w-nat-l3",
+        "kind": "optionKey",
+        "key": "g3w_opt_endangered",
+        "issue": "opt_endangered_holds_oxygen",
+        "ru": "Кислород, тень и очищают воздух",
+        "en": "endangered species",
+        "phase34": false,
+        "pilotD": false
+      },
+      {
+        "id": "g3w-nat-l3",
+        "kind": "optionKey",
+        "key": "g3w_opt_extinct",
+        "issue": "opt_extinct_holds_beauty",
+        "ru": "Только красоту",
+        "en": "extinct species",
+        "phase34": false,
+        "pilotD": false
+      },
+      {
+        "id": "g3w-nat-l3",
+        "kind": "optionKey",
+        "key": "g3w_opt_recipe_book",
+        "issue": "opt_recipe_holds_problems",
+        "ru": "Только проблемы",
+        "en": "recipe book",
+        "phase34": false,
+        "pilotD": false
+      }
+    ]
+  }
+}

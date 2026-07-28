@@ -1,0 +1,924 @@
+{
+  "count": 233,
+  "byLesson": {
+    "g3m-1000-l1": [
+      "opt_en:data.tasks.opt_200",
+      "opt_ky:data.tasks.opt_200",
+      "opt_en:data.tasks.opt_300",
+      "opt_ky:data.tasks.opt_300",
+      "opt_en:data.tasks.opt_400",
+      "opt_ky:data.tasks.opt_400",
+      "opt_en:data.tasks.opt_400",
+      "opt_ky:data.tasks.opt_400",
+      "opt_en:data.tasks.opt_500",
+      "opt_ky:data.tasks.opt_500",
+      "opt_en:data.tasks.opt_600",
+      "opt_ky:data.tasks.opt_600",
+      "opt_en:data.tasks.opt_five",
+      "opt_ky:data.tasks.opt_five",
+      "opt_en:data.tasks.opt_eight",
+      "opt_ky:data.tasks.opt_eight",
+      "opt_en:data.tasks.opt_ten",
+      "opt_ky:data.tasks.opt_ten"
+    ],
+    "g3m-1000-l2": [
+      "opt_en:data.tasks.opt_398",
+      "opt_ky:data.tasks.opt_398",
+      "opt_en:data.tasks.opt_403",
+      "opt_ky:data.tasks.opt_403",
+      "opt_en:data.tasks.opt_389",
+      "opt_ky:data.tasks.opt_389"
+    ],
+    "g3m-1000-l3": [
+      "opt_en:data.tasks.g3m_cmp_opt_356",
+      "opt_ky:data.tasks.g3m_cmp_opt_356",
+      "opt_en:data.tasks.g3m_cmp_opt_298",
+      "opt_ky:data.tasks.g3m_cmp_opt_298",
+      "opt_en:data.tasks.g3m_cmp_opt_gt",
+      "opt_ky:data.tasks.g3m_cmp_opt_gt",
+      "opt_en:data.tasks.g3m_cmp_opt_lt",
+      "opt_ky:data.tasks.g3m_cmp_opt_lt",
+      "opt_en:data.tasks.g3m_cmp_opt_eq",
+      "opt_ky:data.tasks.g3m_cmp_opt_eq"
+    ],
+    "g3m-div-l3": [
+      "opt_en:data.tasks.g3m_div_l3_q2_a",
+      "opt_ky:data.tasks.g3m_div_l3_q2_a",
+      "opt_en:data.tasks.g3m_div_l3_q2_b",
+      "opt_ky:data.tasks.g3m_div_l3_q2_b",
+      "opt_en:data.tasks.g3m_div_l3_q2_c",
+      "opt_ky:data.tasks.g3m_div_l3_q2_c"
+    ],
+    "g3r-gen-l1": [
+      "opt_en:data.tasks.g3r_opt_muzhskoy",
+      "opt_ky:data.tasks.g3r_opt_muzhskoy",
+      "opt_en:data.tasks.g3r_opt_zhenskiy",
+      "opt_ky:data.tasks.g3r_opt_zhenskiy",
+      "opt_en:data.tasks.g3r_opt_sredniy",
+      "opt_ky:data.tasks.g3r_opt_sredniy",
+      "opt_en:data.tasks.g3r_opt_on",
+      "opt_ky:data.tasks.g3r_opt_on",
+      "opt_en:data.tasks.g3r_opt_ona",
+      "opt_ky:data.tasks.g3r_opt_ona",
+      "opt_en:data.tasks.g3r_opt_ono",
+      "opt_ky:data.tasks.g3r_opt_ono"
+    ],
+    "g3r-gen-l2": [
+      "opt_en:data.tasks.g3r_opt_muzhskoy",
+      "opt_ky:data.tasks.g3r_opt_muzhskoy",
+      "opt_en:data.tasks.g3r_opt_zhenskiy",
+      "opt_ky:data.tasks.g3r_opt_zhenskiy",
+      "opt_en:data.tasks.g3r_opt_sredniy",
+      "opt_ky:data.tasks.g3r_opt_sredniy",
+      "opt_en:data.tasks.g3r_opt_on",
+      "opt_ky:data.tasks.g3r_opt_on",
+      "opt_en:data.tasks.g3r_opt_ona",
+      "opt_ky:data.tasks.g3r_opt_ona",
+      "opt_en:data.tasks.g3r_opt_ono",
+      "opt_ky:data.tasks.g3r_opt_ono",
+      "opt_en:data.tasks.g3r_genl2_q3_a",
+      "opt_ky:data.tasks.g3r_genl2_q3_a",
+      "opt_en:data.tasks.g3r_genl2_q3_b",
+      "opt_ky:data.tasks.g3r_genl2_q3_b",
+      "opt_en:data.tasks.g3r_genl2_q3_c",
+      "opt_ky:data.tasks.g3r_genl2_q3_c"
+    ],
+    "g3r-gen-l3": [
+      "opt_en:data.tasks.g3r_genl3_q1_a",
+      "opt_ky:data.tasks.g3r_genl3_q1_a",
+      "opt_en:data.tasks.g3r_genl3_q1_b",
+      "opt_ky:data.tasks.g3r_genl3_q1_b",
+      "opt_en:data.tasks.g3r_genl3_q1_c",
+      "opt_ky:data.tasks.g3r_genl3_q1_c",
+      "opt_en:data.tasks.g3r_genl3_q2_a",
+      "opt_ky:data.tasks.g3r_genl3_q2_a",
+      "opt_en:data.tasks.g3r_genl3_q2_b",
+      "opt_ky:data.tasks.g3r_genl3_q2_b",
+      "opt_en:data.tasks.g3r_genl3_q2_c",
+      "opt_ky:data.tasks.g3r_genl3_q2_c",
+      "opt_en:data.tasks.g3r_genl3_q3_a",
+      "opt_en:data.tasks.g3r_genl3_q3_b",
+      "opt_en:data.tasks.g3r_genl3_q3_c"
+    ],
+    "g3r-verb-l1": [
+      "opt_en:data.tasks.g3r_opt_chto_delal",
+      "opt_ky:data.tasks.g3r_opt_chto_delal",
+      "opt_en:data.tasks.g3r_opt_chto_delaet",
+      "opt_ky:data.tasks.g3r_opt_chto_delaet",
+      "opt_en:data.tasks.g3r_opt_chto_budet",
+      "opt_ky:data.tasks.g3r_opt_chto_budet"
+    ],
+    "g3r-verb-l2": [
+      "opt_en:data.tasks.g3r_verbl2_q1_a",
+      "opt_ky:data.tasks.g3r_verbl2_q1_a",
+      "opt_en:data.tasks.g3r_verbl2_q1_b",
+      "opt_ky:data.tasks.g3r_verbl2_q1_b",
+      "opt_en:data.tasks.g3r_verbl2_q1_c",
+      "opt_ky:data.tasks.g3r_verbl2_q1_c",
+      "opt_en:data.tasks.g3r_verbl2_q3_a",
+      "opt_ky:data.tasks.g3r_verbl2_q3_a",
+      "opt_en:data.tasks.g3r_verbl2_q3_b",
+      "opt_ky:data.tasks.g3r_verbl2_q3_b",
+      "opt_en:data.tasks.g3r_verbl2_q3_c",
+      "opt_ky:data.tasks.g3r_verbl2_q3_c"
+    ],
+    "g3r-verb-l3": [
+      "opt_en:data.tasks.g3r_verbl3_q1_a",
+      "opt_ky:data.tasks.g3r_verbl3_q1_a",
+      "opt_en:data.tasks.g3r_verbl3_q1_b",
+      "opt_ky:data.tasks.g3r_verbl3_q1_b",
+      "opt_en:data.tasks.g3r_verbl3_q1_c",
+      "opt_ky:data.tasks.g3r_verbl3_q1_c",
+      "opt_en:data.tasks.g3r_verbl3_q2_a",
+      "opt_en:data.tasks.g3r_verbl3_q2_b",
+      "opt_en:data.tasks.g3r_verbl3_q2_c"
+    ],
+    "g3r-adj-l1": [
+      "opt_en:data.tasks.g3r_opt_krasny",
+      "opt_ky:data.tasks.g3r_opt_krasny",
+      "opt_en:data.tasks.g3r_opt_krasnaya",
+      "opt_ky:data.tasks.g3r_opt_krasnaya",
+      "opt_en:data.tasks.g3r_opt_krasnoe",
+      "opt_ky:data.tasks.g3r_opt_krasnoe",
+      "opt_en:data.tasks.g3r_adjl1_q3_a",
+      "opt_en:data.tasks.g3r_adjl1_q3_b",
+      "opt_ky:data.tasks.g3r_adjl1_q3_b"
+    ],
+    "g3r-adj-l2": [
+      "opt_en:data.tasks.g3r_adjl2_q2_a",
+      "opt_ky:data.tasks.g3r_adjl2_q2_a",
+      "opt_en:data.tasks.g3r_adjl2_q2_b",
+      "opt_ky:data.tasks.g3r_adjl2_q2_b",
+      "opt_en:data.tasks.g3r_adjl2_q2_c",
+      "opt_ky:data.tasks.g3r_adjl2_q2_c"
+    ],
+    "g3r-adj-l3": [
+      "opt_en:data.tasks.g3r_adjl3_q1_a",
+      "opt_ky:data.tasks.g3r_adjl3_q1_a",
+      "opt_en:data.tasks.g3r_adjl3_q1_b",
+      "opt_ky:data.tasks.g3r_adjl3_q1_b",
+      "opt_en:data.tasks.g3r_adjl3_q1_c",
+      "opt_ky:data.tasks.g3r_adjl3_q1_c",
+      "opt_en:data.tasks.g3r_adjl3_q2_a",
+      "opt_ky:data.tasks.g3r_adjl3_q2_a",
+      "opt_en:data.tasks.g3r_adjl3_q2_b",
+      "opt_ky:data.tasks.g3r_adjl3_q2_b",
+      "opt_en:data.tasks.g3r_adjl3_q2_c",
+      "opt_ky:data.tasks.g3r_adjl3_q2_c",
+      "opt_en:data.tasks.g3r_adjl3_q3_a",
+      "opt_ky:data.tasks.g3r_adjl3_q3_a",
+      "opt_en:data.tasks.g3r_adjl3_q3_b",
+      "opt_ky:data.tasks.g3r_adjl3_q3_b",
+      "opt_en:data.tasks.g3r_adjl3_q3_c",
+      "opt_ky:data.tasks.g3r_adjl3_q3_c"
+    ],
+    "g3w-geo-l3": [
+      "opt_ky:data.tasks.g3w_opt_moscow",
+      "opt_ky:data.tasks.g3w_opt_spb",
+      "opt_ky:data.tasks.g3w_opt_novosibirsk",
+      "opt_ky:data.tasks.g3w_opt_london",
+      "opt_ky:data.tasks.g3w_opt_paris",
+      "opt_ky:data.tasks.g3w_opt_berlin",
+      "opt_ky:data.tasks.g3w_opt_london",
+      "opt_ky:data.tasks.g3w_opt_paris",
+      "opt_ky:data.tasks.g3w_opt_berlin"
+    ],
+    "g3w-eco-l1": [
+      "opt_ky:data.tasks.g3w_ecol1_q2_a",
+      "opt_ky:data.tasks.g3w_ecol1_q2_c"
+    ],
+    "g3e-tobe-l1": [
+      "opt_en:data.tasks.g1e_opt_am",
+      "opt_ky:data.tasks.g1e_opt_am",
+      "opt_en:data.tasks.g1e_opt_is",
+      "opt_ky:data.tasks.g1e_opt_is",
+      "opt_en:data.tasks.g1e_opt_are",
+      "opt_ky:data.tasks.g1e_opt_are",
+      "opt_en:data.tasks.g1e_opt_am",
+      "opt_ky:data.tasks.g1e_opt_am",
+      "opt_en:data.tasks.g1e_opt_is",
+      "opt_ky:data.tasks.g1e_opt_is",
+      "opt_en:data.tasks.g1e_opt_are",
+      "opt_ky:data.tasks.g1e_opt_are",
+      "opt_en:data.tasks.g3e_opt_I_pron",
+      "opt_ky:data.tasks.g3e_opt_I_pron",
+      "opt_en:data.tasks.g3e_opt_you_pron",
+      "opt_en:data.tasks.g3e_opt_he_pron",
+      "opt_ky:data.tasks.g3e_opt_he_pron"
+    ],
+    "g3e-tobe-l2": [
+      "opt_en:data.tasks.g3e_tobel2_opt_is_not",
+      "opt_ky:data.tasks.g3e_tobel2_opt_is_not",
+      "opt_en:data.tasks.g3e_tobel2_opt_not_is",
+      "opt_ky:data.tasks.g3e_tobel2_opt_not_is",
+      "opt_en:data.tasks.g3e_tobel2_opt_am_not",
+      "opt_ky:data.tasks.g3e_tobel2_opt_am_not",
+      "opt_en:data.tasks.g3e_tobel2_opt_isnt",
+      "opt_ky:data.tasks.g3e_tobel2_opt_isnt",
+      "opt_en:data.tasks.g3e_tobel2_opt_arent",
+      "opt_ky:data.tasks.g3e_tobel2_opt_arent",
+      "opt_en:data.tasks.g3e_tobel2_opt_amnt",
+      "opt_ky:data.tasks.g3e_tobel2_opt_amnt"
+    ],
+    "g3e-tobe-l3": [
+      "opt_en:data.tasks.g1e_opt_am",
+      "opt_ky:data.tasks.g1e_opt_am",
+      "opt_en:data.tasks.g1e_opt_is",
+      "opt_ky:data.tasks.g1e_opt_is",
+      "opt_en:data.tasks.g1e_opt_are",
+      "opt_ky:data.tasks.g1e_opt_are",
+      "opt_en:data.tasks.g3e_opt_q_am_they",
+      "opt_ky:data.tasks.g3e_opt_q_am_they",
+      "opt_en:data.tasks.g3e_opt_q_is_they",
+      "opt_ky:data.tasks.g3e_opt_q_is_they",
+      "opt_en:data.tasks.g3e_opt_q_are_they",
+      "opt_ky:data.tasks.g3e_opt_q_are_they"
+    ],
+    "g3e-food-l2": [
+      "opt_en:data.tasks.g3e_foodl2_q3_a",
+      "opt_ky:data.tasks.g3e_foodl2_q3_a",
+      "opt_en:data.tasks.g3e_foodl2_q3_b",
+      "opt_ky:data.tasks.g3e_foodl2_q3_b",
+      "opt_en:data.tasks.g3e_foodl2_q3_c",
+      "opt_ky:data.tasks.g3e_foodl2_q3_c"
+    ],
+    "g3e-daily-l1": [
+      "opt_en:data.tasks.g3e_opt_at_correct",
+      "opt_ky:data.tasks.g3e_opt_at_correct",
+      "opt_en:data.tasks.g3e_opt_in_correct",
+      "opt_ky:data.tasks.g3e_opt_in_correct",
+      "opt_en:data.tasks.g3e_opt_on_correct",
+      "opt_ky:data.tasks.g3e_opt_on_correct"
+    ],
+    "g3e-daily-l2": [
+      "opt_en:data.tasks.g3e_daily2_q1_a",
+      "opt_ky:data.tasks.g3e_daily2_q1_a",
+      "opt_en:data.tasks.g3e_daily2_q1_b",
+      "opt_ky:data.tasks.g3e_daily2_q1_b",
+      "opt_en:data.tasks.g3e_daily2_q1_c",
+      "opt_ky:data.tasks.g3e_daily2_q1_c",
+      "opt_en:data.tasks.g3e_daily2_q2_a",
+      "opt_ky:data.tasks.g3e_daily2_q2_a",
+      "opt_en:data.tasks.g3e_daily2_q2_b",
+      "opt_ky:data.tasks.g3e_daily2_q2_b",
+      "opt_en:data.tasks.g3e_daily2_q2_c",
+      "opt_ky:data.tasks.g3e_daily2_q2_c",
+      "opt_en:data.tasks.g3e_daily2_q3_a",
+      "opt_ky:data.tasks.g3e_daily2_q3_a",
+      "opt_en:data.tasks.g3e_daily2_q3_b",
+      "opt_ky:data.tasks.g3e_daily2_q3_b",
+      "opt_en:data.tasks.g3e_daily2_q3_c",
+      "opt_ky:data.tasks.g3e_daily2_q3_c"
+    ],
+    "g3e-daily-l3": [
+      "opt_en:data.tasks.g3e_daily3_q2_a",
+      "opt_ky:data.tasks.g3e_daily3_q2_a",
+      "opt_en:data.tasks.g3e_daily3_q2_b",
+      "opt_ky:data.tasks.g3e_daily3_q2_b",
+      "opt_en:data.tasks.g3e_daily3_q2_c",
+      "opt_ky:data.tasks.g3e_daily3_q2_c"
+    ]
+  },
+  "sample": [
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t1",
+      "kind": "opt_en",
+      "key": "data.tasks.opt_200",
+      "en": "200",
+      "ru": "200"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t1",
+      "kind": "opt_ky",
+      "key": "data.tasks.opt_200",
+      "ky": "200",
+      "ru": "200"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t1",
+      "kind": "opt_en",
+      "key": "data.tasks.opt_300",
+      "en": "300",
+      "ru": "300"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t1",
+      "kind": "opt_ky",
+      "key": "data.tasks.opt_300",
+      "ky": "300",
+      "ru": "300"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t1",
+      "kind": "opt_en",
+      "key": "data.tasks.opt_400",
+      "en": "400",
+      "ru": "400"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t1",
+      "kind": "opt_ky",
+      "key": "data.tasks.opt_400",
+      "ky": "400",
+      "ru": "400"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t2",
+      "kind": "opt_en",
+      "key": "data.tasks.opt_400",
+      "en": "400",
+      "ru": "400"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.opt_400",
+      "ky": "400",
+      "ru": "400"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t2",
+      "kind": "opt_en",
+      "key": "data.tasks.opt_500",
+      "en": "500",
+      "ru": "500"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.opt_500",
+      "ky": "500",
+      "ru": "500"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t2",
+      "kind": "opt_en",
+      "key": "data.tasks.opt_600",
+      "en": "600",
+      "ru": "600"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.opt_600",
+      "ky": "600",
+      "ru": "600"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t4",
+      "kind": "opt_en",
+      "key": "data.tasks.opt_five",
+      "en": "5",
+      "ru": "5"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t4",
+      "kind": "opt_ky",
+      "key": "data.tasks.opt_five",
+      "ky": "5",
+      "ru": "5"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t4",
+      "kind": "opt_en",
+      "key": "data.tasks.opt_eight",
+      "en": "8",
+      "ru": "8"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t4",
+      "kind": "opt_ky",
+      "key": "data.tasks.opt_eight",
+      "ky": "8",
+      "ru": "8"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t4",
+      "kind": "opt_en",
+      "key": "data.tasks.opt_ten",
+      "en": "10",
+      "ru": "10"
+    },
+    {
+      "id": "g3m-1000-l1",
+      "task": "g3m1000l1t4",
+      "kind": "opt_ky",
+      "key": "data.tasks.opt_ten",
+      "ky": "10",
+      "ru": "10"
+    },
+    {
+      "id": "g3m-1000-l2",
+      "task": "g3m1000l2t4",
+      "kind": "opt_en",
+      "key": "data.tasks.opt_398",
+      "en": "398",
+      "ru": "398"
+    },
+    {
+      "id": "g3m-1000-l2",
+      "task": "g3m1000l2t4",
+      "kind": "opt_ky",
+      "key": "data.tasks.opt_398",
+      "ky": "398",
+      "ru": "398"
+    },
+    {
+      "id": "g3m-1000-l2",
+      "task": "g3m1000l2t4",
+      "kind": "opt_en",
+      "key": "data.tasks.opt_403",
+      "en": "403",
+      "ru": "403"
+    },
+    {
+      "id": "g3m-1000-l2",
+      "task": "g3m1000l2t4",
+      "kind": "opt_ky",
+      "key": "data.tasks.opt_403",
+      "ky": "403",
+      "ru": "403"
+    },
+    {
+      "id": "g3m-1000-l2",
+      "task": "g3m1000l2t4",
+      "kind": "opt_en",
+      "key": "data.tasks.opt_389",
+      "en": "389",
+      "ru": "389"
+    },
+    {
+      "id": "g3m-1000-l2",
+      "task": "g3m1000l2t4",
+      "kind": "opt_ky",
+      "key": "data.tasks.opt_389",
+      "ky": "389",
+      "ru": "389"
+    },
+    {
+      "id": "g3m-1000-l3",
+      "task": "g3m1000l3t1",
+      "kind": "opt_en",
+      "key": "data.tasks.g3m_cmp_opt_356",
+      "en": "356",
+      "ru": "356"
+    },
+    {
+      "id": "g3m-1000-l3",
+      "task": "g3m1000l3t1",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3m_cmp_opt_356",
+      "ky": "356",
+      "ru": "356"
+    },
+    {
+      "id": "g3m-1000-l3",
+      "task": "g3m1000l3t1",
+      "kind": "opt_en",
+      "key": "data.tasks.g3m_cmp_opt_298",
+      "en": "298",
+      "ru": "298"
+    },
+    {
+      "id": "g3m-1000-l3",
+      "task": "g3m1000l3t1",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3m_cmp_opt_298",
+      "ky": "298",
+      "ru": "298"
+    },
+    {
+      "id": "g3m-1000-l3",
+      "task": "g3m1000l3t2",
+      "kind": "opt_en",
+      "key": "data.tasks.g3m_cmp_opt_gt",
+      "en": ">",
+      "ru": ">"
+    },
+    {
+      "id": "g3m-1000-l3",
+      "task": "g3m1000l3t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3m_cmp_opt_gt",
+      "ky": ">",
+      "ru": ">"
+    },
+    {
+      "id": "g3m-1000-l3",
+      "task": "g3m1000l3t2",
+      "kind": "opt_en",
+      "key": "data.tasks.g3m_cmp_opt_lt",
+      "en": "<",
+      "ru": "<"
+    },
+    {
+      "id": "g3m-1000-l3",
+      "task": "g3m1000l3t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3m_cmp_opt_lt",
+      "ky": "<",
+      "ru": "<"
+    },
+    {
+      "id": "g3m-1000-l3",
+      "task": "g3m1000l3t2",
+      "kind": "opt_en",
+      "key": "data.tasks.g3m_cmp_opt_eq",
+      "en": "=",
+      "ru": "="
+    },
+    {
+      "id": "g3m-1000-l3",
+      "task": "g3m1000l3t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3m_cmp_opt_eq",
+      "ky": "=",
+      "ru": "="
+    },
+    {
+      "id": "g3m-div-l3",
+      "task": "g3mdivl3t2",
+      "kind": "opt_en",
+      "key": "data.tasks.g3m_div_l3_q2_a",
+      "en": "7",
+      "ru": "7"
+    },
+    {
+      "id": "g3m-div-l3",
+      "task": "g3mdivl3t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3m_div_l3_q2_a",
+      "ky": "7",
+      "ru": "7"
+    },
+    {
+      "id": "g3m-div-l3",
+      "task": "g3mdivl3t2",
+      "kind": "opt_en",
+      "key": "data.tasks.g3m_div_l3_q2_b",
+      "en": "9",
+      "ru": "9"
+    },
+    {
+      "id": "g3m-div-l3",
+      "task": "g3mdivl3t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3m_div_l3_q2_b",
+      "ky": "9",
+      "ru": "9"
+    },
+    {
+      "id": "g3m-div-l3",
+      "task": "g3mdivl3t2",
+      "kind": "opt_en",
+      "key": "data.tasks.g3m_div_l3_q2_c",
+      "en": "5",
+      "ru": "5"
+    },
+    {
+      "id": "g3m-div-l3",
+      "task": "g3mdivl3t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3m_div_l3_q2_c",
+      "ky": "5",
+      "ru": "5"
+    },
+    {
+      "id": "g3r-gen-l1",
+      "task": "g3rgenl1t1",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_opt_muzhskoy",
+      "en": "Мужской",
+      "ru": "Мужской"
+    },
+    {
+      "id": "g3r-gen-l1",
+      "task": "g3rgenl1t1",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_opt_muzhskoy",
+      "ky": "Мужской",
+      "ru": "Мужской"
+    },
+    {
+      "id": "g3r-gen-l1",
+      "task": "g3rgenl1t1",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_opt_zhenskiy",
+      "en": "Женский",
+      "ru": "Женский"
+    },
+    {
+      "id": "g3r-gen-l1",
+      "task": "g3rgenl1t1",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_opt_zhenskiy",
+      "ky": "Женский",
+      "ru": "Женский"
+    },
+    {
+      "id": "g3r-gen-l1",
+      "task": "g3rgenl1t1",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_opt_sredniy",
+      "en": "Средний",
+      "ru": "Средний"
+    },
+    {
+      "id": "g3r-gen-l1",
+      "task": "g3rgenl1t1",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_opt_sredniy",
+      "ky": "Средний",
+      "ru": "Средний"
+    },
+    {
+      "id": "g3r-gen-l1",
+      "task": "g3rgenl1t2",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_opt_on",
+      "en": "Он",
+      "ru": "Он"
+    },
+    {
+      "id": "g3r-gen-l1",
+      "task": "g3rgenl1t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_opt_on",
+      "ky": "Он",
+      "ru": "Он"
+    },
+    {
+      "id": "g3r-gen-l1",
+      "task": "g3rgenl1t2",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_opt_ona",
+      "en": "Она",
+      "ru": "Она"
+    },
+    {
+      "id": "g3r-gen-l1",
+      "task": "g3rgenl1t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_opt_ona",
+      "ky": "Она",
+      "ru": "Она"
+    },
+    {
+      "id": "g3r-gen-l1",
+      "task": "g3rgenl1t2",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_opt_ono",
+      "en": "Оно",
+      "ru": "Оно"
+    },
+    {
+      "id": "g3r-gen-l1",
+      "task": "g3rgenl1t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_opt_ono",
+      "ky": "Оно",
+      "ru": "Оно"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t1",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_opt_muzhskoy",
+      "en": "Мужской",
+      "ru": "Мужской"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t1",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_opt_muzhskoy",
+      "ky": "Мужской",
+      "ru": "Мужской"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t1",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_opt_zhenskiy",
+      "en": "Женский",
+      "ru": "Женский"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t1",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_opt_zhenskiy",
+      "ky": "Женский",
+      "ru": "Женский"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t1",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_opt_sredniy",
+      "en": "Средний",
+      "ru": "Средний"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t1",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_opt_sredniy",
+      "ky": "Средний",
+      "ru": "Средний"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t2",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_opt_on",
+      "en": "Он",
+      "ru": "Он"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_opt_on",
+      "ky": "Он",
+      "ru": "Он"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t2",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_opt_ona",
+      "en": "Она",
+      "ru": "Она"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_opt_ona",
+      "ky": "Она",
+      "ru": "Она"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t2",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_opt_ono",
+      "en": "Оно",
+      "ru": "Оно"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_opt_ono",
+      "ky": "Оно",
+      "ru": "Оно"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t3",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_genl2_q3_a",
+      "en": "Молоко",
+      "ru": "Молоко"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t3",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_genl2_q3_a",
+      "ky": "Молоко",
+      "ru": "Молоко"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t3",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_genl2_q3_b",
+      "en": "Кошка",
+      "ru": "Кошка"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t3",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_genl2_q3_b",
+      "ky": "Кошка",
+      "ru": "Кошка"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t3",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_genl2_q3_c",
+      "en": "Стол",
+      "ru": "Стол"
+    },
+    {
+      "id": "g3r-gen-l2",
+      "task": "g3rgenl2t3",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_genl2_q3_c",
+      "ky": "Стол",
+      "ru": "Стол"
+    },
+    {
+      "id": "g3r-gen-l3",
+      "task": "g3rgenl3t1",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_genl3_q1_a",
+      "en": "Высокий дом",
+      "ru": "Высокий дом"
+    },
+    {
+      "id": "g3r-gen-l3",
+      "task": "g3rgenl3t1",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_genl3_q1_a",
+      "ky": "Высокий дом",
+      "ru": "Высокий дом"
+    },
+    {
+      "id": "g3r-gen-l3",
+      "task": "g3rgenl3t1",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_genl3_q1_b",
+      "en": "Высокая дом",
+      "ru": "Высокая дом"
+    },
+    {
+      "id": "g3r-gen-l3",
+      "task": "g3rgenl3t1",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_genl3_q1_b",
+      "ky": "Высокая дом",
+      "ru": "Высокая дом"
+    },
+    {
+      "id": "g3r-gen-l3",
+      "task": "g3rgenl3t1",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_genl3_q1_c",
+      "en": "Высокое дом",
+      "ru": "Высокое дом"
+    },
+    {
+      "id": "g3r-gen-l3",
+      "task": "g3rgenl3t1",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_genl3_q1_c",
+      "ky": "Высокое дом",
+      "ru": "Высокое дом"
+    },
+    {
+      "id": "g3r-gen-l3",
+      "task": "g3rgenl3t2",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_genl3_q2_a",
+      "en": "Синяя птица",
+      "ru": "Синяя птица"
+    },
+    {
+      "id": "g3r-gen-l3",
+      "task": "g3rgenl3t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_genl3_q2_a",
+      "ky": "Синяя птица",
+      "ru": "Синяя птица"
+    },
+    {
+      "id": "g3r-gen-l3",
+      "task": "g3rgenl3t2",
+      "kind": "opt_en",
+      "key": "data.tasks.g3r_genl3_q2_b",
+      "en": "Синий птица",
+      "ru": "Синий птица"
+    },
+    {
+      "id": "g3r-gen-l3",
+      "task": "g3rgenl3t2",
+      "kind": "opt_ky",
+      "key": "data.tasks.g3r_genl3_q2_b",
+      "ky": "Синий птица",
+      "ru": "Синий птица"
+    }
+  ]
+}

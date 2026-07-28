@@ -1,0 +1,5725 @@
+[
+  {
+    "id": "g1m-c20-l1",
+    "title": "Числа 11–15",
+    "subject": "math",
+    "world": "g1math",
+    "source": "G1M_C20_L1_TASKS←forest-v-l1",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Привет! Я Лео из Города чисел — ворота откроются, если угадаем код из чисел 11–15. Поможешь?"
+      },
+      {
+        "speaker": "tali",
+        "text": "После 10 идут 11, 12, 13, 14, 15! Я пробую, но иногда сбиваюсь. Ты поможешь мне проверить?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Числа 11–15!",
+        "body": "После 10 идут 11, 12, 13, 14, 15. Считай дальше от десяти! Тали хочет это запомнить вместе с тобой."
+      },
+      {
+        "title": "Сравниваем числа!",
+        "body": "Какое число больше: 12 или 15? 15 больше! Тали иногда путает, у которого больше — помоги ему!"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1m_c20l1_q2_a",
+      "ky=ru stub: data.tasks.g1m_c20l1_q2_b",
+      "ky=ru stub: data.tasks.g1m_c20l1_q2_c",
+      "ky=ru stub: data.tasks.g1m_c20l1_q3_a",
+      "ky=ru stub: data.tasks.g1m_c20l1_q3_b",
+      "ky=ru stub: data.tasks.g1m_c20l1_q3_c",
+      "ky=ru stub: data.tasks.g1m_c20l1_q5_a",
+      "ky=ru stub: data.tasks.g1m_c20l1_q5_b"
+    ],
+    "curriculum": "`g1m-c20-l1`\n\n**Диалог:**\n- **Персонаж:** Привет! Я Лео из Города чисел — ворота откроются, если угадаем код из чисел 11–15. Поможешь?\n- **Тали:** После 10 идут 11, 12, 13, 14, 15! Я пробую, но иногда сбиваюсь. Ты поможешь мне проверить?\n\n**Интро (объяснения перед заданиями):**\n1. **Числа 11–15!** — После 10 идут 11, 12, 13, 14, 15. Считай дальше от десяти! Тали хочет это запомнить вместе с тобой.\n2. **Сравниваем числа!** — Какое число больше: 12 или 15? 15 больше! Тали иногда путает, у которого больше — помоги ему!\n\n**Задания:**\n1. **multiple_choice** — На складе Города чисел 13 ящиков. Это больше, чем 15?\n\n   Варианты ответа:\n   - `a`: Да, 13 больше 15\n   - `b`: Нет — 13 меньше 15! ✓\n   - `c`: Они одинаковые\n2. **multiple_choice** — Лео задаёт код: какое число стоит между 12 и 14?\n\n   Варианты ответа:\n   - `a`: 11\n   - `b`: 13 ✓\n   - `c`: 15\n3. **multiple_choice** — Ряд: 11, 12, __, 14, 15. Что пропущено? Тали говорит: «Здесь должно быть 11!»\n\n   Варианты ответа:\n   - `a`: 11\n   - `b`: 13 ✓\n   - `c`: 16\n4. **multiple_choice** — В Городе чисел 15 фонарей и 12 скамеек. Чего больше?\n\n   Варианты ответа:\n   - `a`: Фонарей (15) ✓\n   - `b`: Скамеек (12)\n   - `c`: Поровну\n5. **multiple_choice** · **[ABA]** · _special_aba_ — Какое число больше: 11 или 14?\n\n   Варианты ответа:\n   - `a`: 11\n   - `b`: 14 ✓\n\n##### Урок: Числа 16–20\n",
+    "tasks": [
+      {
+        "id": "g1m_c20l1_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "На складе Города чисел 13 ящиков. Это больше, чем 15?",
+        "qKey": "data.tasks.g1m_c20l1_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Да, 13 больше 15",
+            "key": "data.tasks.g1m_c20l1_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — 13 меньше 15!",
+            "key": "data.tasks.g1m_c20l1_q1_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Они одинаковые",
+            "key": "data.tasks.g1m_c20l1_q1_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_c20l1_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Лео задаёт код: какое число стоит между 12 и 14?",
+        "qKey": "data.tasks.g1m_c20l1_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "11",
+            "key": "data.tasks.g1m_c20l1_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "13",
+            "key": "data.tasks.g1m_c20l1_q2_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "15",
+            "key": "data.tasks.g1m_c20l1_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_c20l1_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Ряд: 11, 12, __, 14, 15. Что пропущено? Тали говорит: «Здесь должно быть 11!»",
+        "qKey": "data.tasks.g1m_c20l1_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "11",
+            "key": "data.tasks.g1m_c20l1_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "13",
+            "key": "data.tasks.g1m_c20l1_q3_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "16",
+            "key": "data.tasks.g1m_c20l1_q3_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_c20l1_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "В Городе чисел 15 фонарей и 12 скамеек. Чего больше?",
+        "qKey": "data.tasks.g1m_c20l1_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Фонарей (15)",
+            "key": "data.tasks.g1m_c20l1_q4_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Скамеек (12)",
+            "key": "data.tasks.g1m_c20l1_q4_b",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Поровну",
+            "key": "data.tasks.g1m_c20l1_q4_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_c20l1_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "Какое число больше: 11 или 14?",
+        "qKey": "data.tasks.g1m_c20l1_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "11",
+            "key": "data.tasks.g1m_c20l1_q5_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "14",
+            "key": "data.tasks.g1m_c20l1_q5_b",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-c20-l2",
+    "title": "Числа 16–20",
+    "subject": "math",
+    "world": "g1math",
+    "source": "G1M_C20_L2_TASKS←forest-v-l2",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Молодец! Теперь числа 16–20. Они идут подряд!"
+      },
+      {
+        "speaker": "tali",
+        "text": "17 между 16 и 18! Я запомнил, хотя поначалу путался. Проверь, всё ли я правильно понял?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Числа 16–20!",
+        "body": "16, 17, 18, 19, 20 — последние числа второго десятка!"
+      },
+      {
+        "title": "Между 16 и 18",
+        "body": "Какое число между 16 и 18? Правильно — 17! Тали специально учил это место, потому что раньше путался."
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1m_c20l2_q2_a",
+      "ky=ru stub: data.tasks.g1m_c20l2_q2_b",
+      "ky=ru stub: data.tasks.g1m_c20l2_q2_c",
+      "ky=ru stub: data.tasks.g1m_c20l2_q4_a",
+      "ky=ru stub: data.tasks.g1m_c20l2_q4_b",
+      "ky=ru stub: data.tasks.g1m_c20l2_q4_c",
+      "ky=ru stub: data.tasks.g1m_c20l2_q5_a",
+      "ky=ru stub: data.tasks.g1m_c20l2_q5_b"
+    ],
+    "curriculum": "`g1m-c20-l2`\n\n**Диалог:**\n- **Персонаж:** Молодец! Теперь числа 16–20. Они идут подряд!\n- **Тали:** 17 между 16 и 18! Я запомнил, хотя поначалу путался. Проверь, всё ли я правильно понял?\n\n**Интро (объяснения перед заданиями):**\n1. **Числа 16–20!** — 16, 17, 18, 19, 20 — последние числа второго десятка!\n2. **Между 16 и 18** — Какое число между 16 и 18? Правильно — 17! Тали специально учил это место, потому что раньше путался.\n\n**Задания:**\n1. **multiple_choice** — В Городе чисел 18 домов. Тали говорит: «18 — это меньше, чем 16!» Прав ли он?\n\n   Варианты ответа:\n   - `a`: Да, Тали прав\n   - `b`: Нет — 18 больше 16! ✓\n   - `c`: Они одинаковые\n2. **multiple_choice** — Ряд: 16, __, 18, 19, 20. Какое число пропущено?\n\n   Варианты ответа:\n   - `a`: 15\n   - `b`: 17 ✓\n   - `c`: 21\n3. **multiple_choice** — Тали считает жителей дома: на этаже 19 квартир. Следующий дом — 20 квартир. В каком больше?\n\n   Варианты ответа:\n   - `a`: В первом (19)\n   - `b`: Во втором (20) ✓\n   - `c`: Одинаково\n4. **multiple_choice** — Нужно выбрать число между 17 и 19. Тали думает: «Это 20!» Прав?\n\n   Варианты ответа:\n   - `a`: 17\n   - `b`: 18 ✓\n   - `c`: 20\n5. **multiple_choice** · **[ABA]** · _special_aba_ — Какое число больше: 16 или 20?\n\n   Варианты ответа:\n   - `a`: 16\n   - `b`: 20 ✓\n\n##### Урок: Сравнение чисел\n",
+    "tasks": [
+      {
+        "id": "g1m_c20l2_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "В Городе чисел 18 домов. Тали говорит: «18 — это меньше, чем 16!» Прав ли он?",
+        "qKey": "data.tasks.g1m_c20l2_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Да, Тали прав",
+            "key": "data.tasks.g1m_c20l2_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — 18 больше 16!",
+            "key": "data.tasks.g1m_c20l2_q1_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Они одинаковые",
+            "key": "data.tasks.g1m_c20l2_q1_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_c20l2_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Ряд: 16, __, 18, 19, 20. Какое число пропущено?",
+        "qKey": "data.tasks.g1m_c20l2_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "15",
+            "key": "data.tasks.g1m_c20l2_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "17",
+            "key": "data.tasks.g1m_c20l2_q2_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "21",
+            "key": "data.tasks.g1m_c20l2_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_c20l2_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали считает жителей дома: на этаже 19 квартир. Следующий дом — 20 квартир. В каком больше?",
+        "qKey": "data.tasks.g1m_c20l2_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "В первом (19)",
+            "key": "data.tasks.g1m_c20l2_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Во втором (20)",
+            "key": "data.tasks.g1m_c20l2_q3_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Одинаково",
+            "key": "data.tasks.g1m_c20l2_q3_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_c20l2_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Нужно выбрать число между 17 и 19. Тали думает: «Это 20!» Прав?",
+        "qKey": "data.tasks.g1m_c20l2_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "17",
+            "key": "data.tasks.g1m_c20l2_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "18",
+            "key": "data.tasks.g1m_c20l2_q4_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "20",
+            "key": "data.tasks.g1m_c20l2_q4_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_c20l2_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "Какое число больше: 16 или 20?",
+        "qKey": "data.tasks.g1m_c20l2_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "16",
+            "key": "data.tasks.g1m_c20l2_q5_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "20",
+            "key": "data.tasks.g1m_c20l2_q5_b",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-c20-l3",
+    "title": "Сравнение чисел",
+    "subject": "math",
+    "world": "g1math",
+    "source": "G1M_C20_L3_TASKS←forest-v-l3",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Сравниваем числа! Какое больше: 14 или 17?"
+      },
+      {
+        "speaker": "tali",
+        "text": "17 больше 14! Я запомнил: чем правее на числовой линии, тем больше! Теперь я хочу доказать, что научился. Проверишь меня?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Сравнение чисел!",
+        "body": "14 и 17 — какое меньше? 14 меньше 17!"
+      },
+      {
+        "title": "Равные числа",
+        "body": "20 и 20 — они равны! Знак = значит «равно»."
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1m_c20l3_q2_a",
+      "ky=ru stub: data.tasks.g1m_c20l3_q2_b",
+      "ky=ru stub: data.tasks.g1m_c20l3_q2_c",
+      "ky=ru stub: data.tasks.g1m_c20l3_q5_a",
+      "ky=ru stub: data.tasks.g1m_c20l3_q5_b"
+    ],
+    "curriculum": "`g1m-c20-l3`\n\n**Диалог:**\n- **Персонаж:** Сравниваем числа! Какое больше: 14 или 17?\n- **Тали:** 17 больше 14! Я запомнил: чем правее на числовой линии, тем больше! Теперь я хочу доказать, что научился. Проверишь меня?\n\n**Интро (объяснения перед заданиями):**\n1. **Сравнение чисел!** — 14 и 17 — какое меньше? 14 меньше 17!\n2. **Равные числа** — 20 и 20 — они равны! Знак = значит «равно».\n\n**Задания:**\n1. **multiple_choice** — У Лео 14 монет, у Тали 17. Тали говорит: «У Лео больше!» Прав?\n\n   Варианты ответа:\n   - `a`: Да, у Лео больше\n   - `b`: Нет — у Тали (17) больше! ✓\n   - `c`: Поровну\n2. **multiple_choice** — Ряд чисел: 14, 15, 16, 17, 18, 19, 20. Какое наименьшее?\n\n   Варианты ответа:\n   - `a`: 14 ✓\n   - `b`: 17\n   - `c`: 20\n3. **multiple_choice** — Два числа: 20 и 20. Тали говорит: «Они неравные — одно больше!» Прав ли он?\n\n   Варианты ответа:\n   - `a`: Да, одно больше\n   - `b`: Нет — они равны! ✓\n4. **multiple_choice** — В Городе чисел есть улица 15-я и улица 18-я. Какая дальше от начала?\n\n   Варианты ответа:\n   - `a`: 15-я\n   - `b`: 18-я ✓\n   - `c`: Одинаково\n5. **multiple_choice** · **[ABA]** · _special_aba_ — Какое число меньше: 13 или 19?\n\n   Варианты ответа:\n   - `a`: 13 ✓\n   - `b`: 19\n\n#### Тема: Сложение\n\n- id темы: `g1m-add` · Математика\n\n##### Урок: Сложение до 10\n",
+    "tasks": [
+      {
+        "id": "g1m_c20l3_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "У Лео 14 монет, у Тали 17. Тали говорит: «У Лео больше!» Прав?",
+        "qKey": "data.tasks.g1m_c20l3_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Да, у Лео больше",
+            "key": "data.tasks.g1m_c20l3_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — у Тали (17) больше!",
+            "key": "data.tasks.g1m_c20l3_q1_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Поровну",
+            "key": "data.tasks.g1m_c20l3_q1_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_c20l3_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Ряд чисел: 14, 15, 16, 17, 18, 19, 20. Какое наименьшее?",
+        "qKey": "data.tasks.g1m_c20l3_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "14",
+            "key": "data.tasks.g1m_c20l3_q2_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "17",
+            "key": "data.tasks.g1m_c20l3_q2_b",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "20",
+            "key": "data.tasks.g1m_c20l3_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_c20l3_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Два числа: 20 и 20. Тали говорит: «Они неравные — одно больше!» Прав ли он?",
+        "qKey": "data.tasks.g1m_c20l3_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Да, одно больше",
+            "key": "data.tasks.g1m_c20l3_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — они равны!",
+            "key": "data.tasks.g1m_c20l3_q3_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1m_c20l3_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "В Городе чисел есть улица 15-я и улица 18-я. Какая дальше от начала?",
+        "qKey": "data.tasks.g1m_c20l3_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "15-я",
+            "key": "data.tasks.g1m_c20l3_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "18-я",
+            "key": "data.tasks.g1m_c20l3_q4_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Одинаково",
+            "key": "data.tasks.g1m_c20l3_q4_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_c20l3_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "Какое число меньше: 13 или 19?",
+        "qKey": "data.tasks.g1m_c20l3_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "13",
+            "key": "data.tasks.g1m_c20l3_q5_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "19",
+            "key": "data.tasks.g1m_c20l3_q5_b",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-add-l1",
+    "title": "Сложение до 10",
+    "subject": "math",
+    "world": "g1math",
+    "source": "G1M_ADD_L1_TASKS←forest-con-l1",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Сложение — это когда объединяем! 3 + 4 = ?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я пробовал считать на пальцах, но у меня лапы! Помоги мне проверить мои ответы?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Сложение до 10!",
+        "body": "3 + 4 = 7. Считай на пальцах или в уме!"
+      },
+      {
+        "title": "Яблоки и груши",
+        "body": "3 яблока + 4 груши = 7 фруктов!"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1m_addl1_q1_a",
+      "ky=ru stub: data.tasks.g1m_addl1_q1_b",
+      "ky=ru stub: data.tasks.g1m_addl1_q1_c",
+      "ky=ru stub: data.tasks.g1m_addl1_q2_a",
+      "ky=ru stub: data.tasks.g1m_addl1_q2_b",
+      "ky=ru stub: data.tasks.g1m_addl1_q2_c",
+      "ky=ru stub: data.tasks.g1m_addl1_q3",
+      "ky=ru stub: data.tasks.g1m_addl1_q3_a",
+      "ky=ru stub: data.tasks.g1m_addl1_q3_b",
+      "ky=ru stub: data.tasks.g1m_addl1_q3_c",
+      "ky=ru stub: data.tasks.g1m_addl1_q4_a",
+      "ky=ru stub: data.tasks.g1m_addl1_q4_b",
+      "ky=ru stub: data.tasks.g1m_addl1_q4_c",
+      "ky=ru stub: data.tasks.g1m_addl1_q5",
+      "ky=ru stub: data.tasks.g1m_addl1_q5_a",
+      "ky=ru stub: data.tasks.g1m_addl1_q5_b"
+    ],
+    "curriculum": "`g1m-add-l1`\n\n**Диалог:**\n- **Персонаж:** Сложение — это когда объединяем! 3 + 4 = ?\n- **Тали:** Я пробовал считать на пальцах, но у меня лапы! Помоги мне проверить мои ответы?\n\n**Интро (объяснения перед заданиями):**\n1. **Сложение до 10!** — 3 + 4 = 7. Считай на пальцах или в уме!\n2. **Яблоки и груши** — 3 яблока + 4 груши = 7 фруктов!\n\n**Задания:**\n1. **multiple_choice** — У Тали 2 яблока, Лео дал ещё 3. Сколько всего?\n\n   Варианты ответа:\n   - `a`: 4\n   - `b`: 5 ✓\n   - `c`: 6\n2. **multiple_choice** — В кармане 3 монеты, нашёл ещё 3. Сколько стало?\n\n   Варианты ответа:\n   - `a`: 5\n   - `b`: 6 ✓\n   - `c`: 7\n3. **multiple_choice** — 4 + 3 = ?\n\n   Варианты ответа:\n   - `a`: 6\n   - `b`: 7 ✓\n   - `c`: 8\n4. **multiple_choice** — На лавочке 5 птиц. Прилетели ещё 3. Сколько стало?\n\n   Варианты ответа:\n   - `a`: 7\n   - `b`: 8 ✓\n   - `c`: 9\n5. **multiple_choice** · **[ABA]** · _special_aba_ — 1 + 4 = ?\n\n   Варианты ответа:\n   - `a`: 4\n   - `b`: 5 ✓\n\n##### Урок: До десятка\n",
+    "tasks": [
+      {
+        "id": "g1m_addl1_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "У Тали 2 яблока, Лео дал ещё 3. Сколько всего?",
+        "qKey": "data.tasks.g1m_addl1_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "4",
+            "key": "data.tasks.g1m_addl1_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "5",
+            "key": "data.tasks.g1m_addl1_q1_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "6",
+            "key": "data.tasks.g1m_addl1_q1_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_addl1_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "В кармане 3 монеты, нашёл ещё 3. Сколько стало?",
+        "qKey": "data.tasks.g1m_addl1_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "5",
+            "key": "data.tasks.g1m_addl1_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "6",
+            "key": "data.tasks.g1m_addl1_q2_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "7",
+            "key": "data.tasks.g1m_addl1_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_addl1_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "4 + 3 = ?",
+        "qKey": "data.tasks.g1m_addl1_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "6",
+            "key": "data.tasks.g1m_addl1_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "7",
+            "key": "data.tasks.g1m_addl1_q3_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "8",
+            "key": "data.tasks.g1m_addl1_q3_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_addl1_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "На лавочке 5 птиц. Прилетели ещё 3. Сколько стало?",
+        "qKey": "data.tasks.g1m_addl1_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "7",
+            "key": "data.tasks.g1m_addl1_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "8",
+            "key": "data.tasks.g1m_addl1_q4_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "9",
+            "key": "data.tasks.g1m_addl1_q4_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_addl1_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "1 + 4 = ?",
+        "qKey": "data.tasks.g1m_addl1_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "4",
+            "key": "data.tasks.g1m_addl1_q5_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "5",
+            "key": "data.tasks.g1m_addl1_q5_b",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-add-l2",
+    "title": "До десятка",
+    "subject": "math",
+    "world": "g1math",
+    "source": "G1M_ADD_L2_TASKS←forest-con-l2",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "До десятка! Сколько нужно добавить к 7, чтобы получить 10?"
+      },
+      {
+        "speaker": "tali",
+        "text": "7 + 3 = 10! Я запомнил этот секрет: смотрю, сколько не хватает до 10. Но с другими числами ещё путаюсь — проверишь меня?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "До десятка!",
+        "body": "7 +? = 10. Нужно добавить 3!"
+      },
+      {
+        "title": "Сложение с 10",
+        "body": "10 + 3 = 13. К десятку добавляем единицы!"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1m_addl2_q2_a",
+      "ky=ru stub: data.tasks.g1m_addl2_q2_b",
+      "ky=ru stub: data.tasks.g1m_addl2_q2_c",
+      "ky=ru stub: data.tasks.g1m_addl2_q3_a",
+      "ky=ru stub: data.tasks.g1m_addl2_q3_b",
+      "ky=ru stub: data.tasks.g1m_addl2_q3_c",
+      "ky=ru stub: data.tasks.g1m_addl2_q4_a",
+      "ky=ru stub: data.tasks.g1m_addl2_q4_b",
+      "ky=ru stub: data.tasks.g1m_addl2_q4_c",
+      "ky=ru stub: data.tasks.g1m_addl2_q5",
+      "ky=ru stub: data.tasks.g1m_addl2_q5_a",
+      "ky=ru stub: data.tasks.g1m_addl2_q5_b"
+    ],
+    "curriculum": "`g1m-add-l2`\n\n**Диалог:**\n- **Персонаж:** До десятка! Сколько нужно добавить к 7, чтобы получить 10?\n- **Тали:** 7 + 3 = 10! Я запомнил этот секрет: смотрю, сколько не хватает до 10. Но с другими числами ещё путаюсь — проверишь меня?\n\n**Интро (объяснения перед заданиями):**\n1. **До десятка!** — 7 +? = 10. Нужно добавить 3!\n2. **Сложение с 10** — 10 + 3 = 13. К десятку добавляем единицы!\n\n**Задания:**\n1. **multiple_choice** — Тали собирает 10 звёздочек. У него есть 6. Он думает: «Нужно найти ещё 5!» Прав?\n\n   Варианты ответа:\n   - `a`: Нужно 3\n   - `b`: Нужно 4 ✓\n   - `c`: Нужно 5\n2. **multiple_choice** — 8 + ? = 10. Тали говорит: «Нужно добавить 3!»\n\n   Варианты ответа:\n   - `a`: 1\n   - `b`: 2 ✓\n   - `c`: 3\n3. **multiple_choice** — 10 + 3 = ? Тали думает: «К десятку добавляем три — получится 14!»\n\n   Варианты ответа:\n   - `a`: 12\n   - `b`: 13 ✓\n   - `c`: 14\n4. **multiple_choice** — 5 + ? = 10. Сколько не хватает?\n\n   Варианты ответа:\n   - `a`: 4\n   - `b`: 5 ✓\n   - `c`: 6\n5. **multiple_choice** · **[ABA]** · _special_aba_ — 7 + ? = 10\n\n   Варианты ответа:\n   - `a`: 3 ✓\n   - `b`: 4\n\n##### Урок: Сложение с 10\n",
+    "tasks": [
+      {
+        "id": "g1m_addl2_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали собирает 10 звёздочек. У него есть 6. Он думает: «Нужно найти ещё 5!» Прав?",
+        "qKey": "data.tasks.g1m_addl2_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Нужно 3",
+            "key": "data.tasks.g1m_addl2_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нужно 4",
+            "key": "data.tasks.g1m_addl2_q1_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Нужно 5",
+            "key": "data.tasks.g1m_addl2_q1_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_addl2_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "8 + ? = 10. Тали говорит: «Нужно добавить 3!»",
+        "qKey": "data.tasks.g1m_addl2_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "1",
+            "key": "data.tasks.g1m_addl2_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "2",
+            "key": "data.tasks.g1m_addl2_q2_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "3",
+            "key": "data.tasks.g1m_addl2_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_addl2_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "10 + 3 = ? Тали думает: «К десятку добавляем три — получится 14!»",
+        "qKey": "data.tasks.g1m_addl2_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "12",
+            "key": "data.tasks.g1m_addl2_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "13",
+            "key": "data.tasks.g1m_addl2_q3_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "14",
+            "key": "data.tasks.g1m_addl2_q3_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_addl2_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "5 + ? = 10. Сколько не хватает?",
+        "qKey": "data.tasks.g1m_addl2_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "4",
+            "key": "data.tasks.g1m_addl2_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "5",
+            "key": "data.tasks.g1m_addl2_q4_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "6",
+            "key": "data.tasks.g1m_addl2_q4_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_addl2_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "7 + ? = 10",
+        "qKey": "data.tasks.g1m_addl2_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "3",
+            "key": "data.tasks.g1m_addl2_q5_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "4",
+            "key": "data.tasks.g1m_addl2_q5_b",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-add-l3",
+    "title": "Сложение с 10",
+    "subject": "math",
+    "world": "g1math",
+    "source": "G1M_ADD_L3_TASKS←forest-con-l3",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Сложение с 10! 10 + 5 = ?"
+      },
+      {
+        "speaker": "tali",
+        "text": "10 + 5 = 15! Это я знаю точно! Хочу доказать, что стал лучше считать. Проверишь?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Сложение с 10!",
+        "body": "10 + 5 = 15, 10 + 8 = 18. Легко!"
+      },
+      {
+        "title": "Большие примеры",
+        "body": "9 + 7 = 16. Разбей: 9 + 1 = 10, ещё 6 = 16!"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1m_addl3_q1_a",
+      "ky=ru stub: data.tasks.g1m_addl3_q1_b",
+      "ky=ru stub: data.tasks.g1m_addl3_q1_c",
+      "ky=ru stub: data.tasks.g1m_addl3_q2",
+      "ky=ru stub: data.tasks.g1m_addl3_q2_a",
+      "ky=ru stub: data.tasks.g1m_addl3_q2_b",
+      "ky=ru stub: data.tasks.g1m_addl3_q2_c",
+      "ky=ru stub: data.tasks.g1m_addl3_q3_a",
+      "ky=ru stub: data.tasks.g1m_addl3_q3_b",
+      "ky=ru stub: data.tasks.g1m_addl3_q3_c",
+      "ky=ru stub: data.tasks.g1m_addl3_q4_a",
+      "ky=ru stub: data.tasks.g1m_addl3_q4_b",
+      "ky=ru stub: data.tasks.g1m_addl3_q4_c",
+      "ky=ru stub: data.tasks.g1m_addl3_q5",
+      "ky=ru stub: data.tasks.g1m_addl3_q5_a",
+      "ky=ru stub: data.tasks.g1m_addl3_q5_b"
+    ],
+    "curriculum": "`g1m-add-l3`\n\n**Диалог:**\n- **Персонаж:** Сложение с 10! 10 + 5 = ?\n- **Тали:** 10 + 5 = 15! Это я знаю точно! Хочу доказать, что стал лучше считать. Проверишь?\n\n**Интро (объяснения перед заданиями):**\n1. **Сложение с 10!** — 10 + 5 = 15, 10 + 8 = 18. Легко!\n2. **Большие примеры** — 9 + 7 = 16. Разбей: 9 + 1 = 10, ещё 6 = 16!\n\n**Задания:**\n1. **multiple_choice** — 10 + 7 = ? Тали уверенно говорит: «18!»\n\n   Варианты ответа:\n   - `a`: 16\n   - `b`: 17 ✓\n   - `c`: 18\n2. **multiple_choice** — 10 + 4 = ?\n\n   Варианты ответа:\n   - `a`: 13\n   - `b`: 14 ✓\n   - `c`: 15\n3. **multiple_choice** — 9 + 7 = ? Лео подсказывает: «Сначала 9 + 1 = 10, потом...»\n\n   Варианты ответа:\n   - `a`: 15\n   - `b`: 16 ✓\n   - `c`: 17\n4. **multiple_choice** — 10 + 9 = ? Тали говорит: «Это 20!»\n\n   Варианты ответа:\n   - `a`: 18\n   - `b`: 19 ✓\n   - `c`: 20\n5. **multiple_choice** · **[ABA]** · _special_aba_ — 10 + 5 = ?\n\n   Варианты ответа:\n   - `a`: 14\n   - `b`: 15 ✓\n\n#### Тема: Вычитание\n\n- id темы: `g1m-sub` · Математика\n\n##### Урок: Вычитание до 10\n",
+    "tasks": [
+      {
+        "id": "g1m_addl3_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "10 + 7 = ? Тали уверенно говорит: «18!»",
+        "qKey": "data.tasks.g1m_addl3_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "16",
+            "key": "data.tasks.g1m_addl3_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "17",
+            "key": "data.tasks.g1m_addl3_q1_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "18",
+            "key": "data.tasks.g1m_addl3_q1_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_addl3_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "10 + 4 = ?",
+        "qKey": "data.tasks.g1m_addl3_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "13",
+            "key": "data.tasks.g1m_addl3_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "14",
+            "key": "data.tasks.g1m_addl3_q2_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "15",
+            "key": "data.tasks.g1m_addl3_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_addl3_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "9 + 7 = ? Лео подсказывает: «Сначала 9 + 1 = 10, потом...»",
+        "qKey": "data.tasks.g1m_addl3_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "15",
+            "key": "data.tasks.g1m_addl3_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "16",
+            "key": "data.tasks.g1m_addl3_q3_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "17",
+            "key": "data.tasks.g1m_addl3_q3_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_addl3_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "10 + 9 = ? Тали говорит: «Это 20!»",
+        "qKey": "data.tasks.g1m_addl3_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "18",
+            "key": "data.tasks.g1m_addl3_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "19",
+            "key": "data.tasks.g1m_addl3_q4_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "20",
+            "key": "data.tasks.g1m_addl3_q4_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_addl3_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "10 + 5 = ?",
+        "qKey": "data.tasks.g1m_addl3_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "14",
+            "key": "data.tasks.g1m_addl3_q5_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "15",
+            "key": "data.tasks.g1m_addl3_q5_b",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-sub-l1",
+    "title": "Вычитание до 10",
+    "subject": "math",
+    "world": "g1math",
+    "source": "G1M_SUB_L1_TASKS←forest-syl-l1",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Вычитание — убираем часть. 7 − 3 = ?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Представь 7 яблок. Съели 3. Сколько осталось? Тали считает на лапах... и говорит: «Осталось 3!»"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Вычитание до 10!",
+        "body": "7 − 3 = 4. Убери 3 из 7 — останется 4!"
+      },
+      {
+        "title": "Проверка",
+        "body": "Сложение и вычитание — обратные действия!"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1m_subl1_q1_a",
+      "ky=ru stub: data.tasks.g1m_subl1_q1_b",
+      "ky=ru stub: data.tasks.g1m_subl1_q1_c",
+      "ky=ru stub: data.tasks.g1m_subl1_q2_a",
+      "ky=ru stub: data.tasks.g1m_subl1_q2_b",
+      "ky=ru stub: data.tasks.g1m_subl1_q2_c",
+      "ky=ru stub: data.tasks.g1m_subl1_q3_a",
+      "ky=ru stub: data.tasks.g1m_subl1_q3_b",
+      "ky=ru stub: data.tasks.g1m_subl1_q3_c",
+      "ky=ru stub: data.tasks.g1m_subl1_q4_a",
+      "ky=ru stub: data.tasks.g1m_subl1_q4_b",
+      "ky=ru stub: data.tasks.g1m_subl1_q4_c",
+      "ky=ru stub: data.tasks.g1m_subl1_q5",
+      "ky=ru stub: data.tasks.g1m_subl1_q5_a",
+      "ky=ru stub: data.tasks.g1m_subl1_q5_b"
+    ],
+    "curriculum": "`g1m-sub-l1`\n\n**Диалог:**\n- **Персонаж:** Вычитание — убираем часть. 7 − 3 = ?\n- **Тали:** Представь 7 яблок. Съели 3. Сколько осталось? Тали считает на лапах... и говорит: «Осталось 3!»\n\n**Интро (объяснения перед заданиями):**\n1. **Вычитание до 10!** — 7 − 3 = 4. Убери 3 из 7 — останется 4!\n2. **Проверка** — Сложение и вычитание — обратные действия!\n\n**Задания:**\n1. **multiple_choice** — У Тали 7 яблок, он съел 3. Тали говорит: «Осталось 3!» Это правильно?\n\n   Варианты ответа:\n   - `a`: 3\n   - `b`: 4 ✓\n   - `c`: 5\n2. **multiple_choice** — 8 − 5 = ? Тали думает: «Это 4!»\n\n   Варианты ответа:\n   - `a`: 2\n   - `b`: 3 ✓\n   - `c`: 4\n3. **multiple_choice** — У Лео 9 монет. Он потратил 4. Сколько осталось?\n\n   Варианты ответа:\n   - `a`: 4\n   - `b`: 5 ✓\n   - `c`: 6\n4. **multiple_choice** — 6 − 2 = ? Тали говорит: «Это то же самое, что 6 − 3, поэтому 3!»\n\n   Варианты ответа:\n   - `a`: 3\n   - `b`: 4 ✓\n   - `c`: 5\n5. **multiple_choice** · **[ABA]** · _special_aba_ — 7 − 3 = ?\n\n   Варианты ответа:\n   - `a`: 3\n   - `b`: 4 ✓\n\n##### Урок: Вычитание из 10\n",
+    "tasks": [
+      {
+        "id": "g1m_subl1_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "У Тали 7 яблок, он съел 3. Тали говорит: «Осталось 3!» Это правильно?",
+        "qKey": "data.tasks.g1m_subl1_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "3",
+            "key": "data.tasks.g1m_subl1_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "4",
+            "key": "data.tasks.g1m_subl1_q1_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "5",
+            "key": "data.tasks.g1m_subl1_q1_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_subl1_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "8 − 5 = ? Тали думает: «Это 4!»",
+        "qKey": "data.tasks.g1m_subl1_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "2",
+            "key": "data.tasks.g1m_subl1_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "3",
+            "key": "data.tasks.g1m_subl1_q2_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "4",
+            "key": "data.tasks.g1m_subl1_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_subl1_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "У Лео 9 монет. Он потратил 4. Сколько осталось?",
+        "qKey": "data.tasks.g1m_subl1_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "4",
+            "key": "data.tasks.g1m_subl1_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "5",
+            "key": "data.tasks.g1m_subl1_q3_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "6",
+            "key": "data.tasks.g1m_subl1_q3_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_subl1_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "6 − 2 = ? Тали говорит: «Это то же самое, что 6 − 3, поэтому 3!»",
+        "qKey": "data.tasks.g1m_subl1_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "3",
+            "key": "data.tasks.g1m_subl1_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "4",
+            "key": "data.tasks.g1m_subl1_q4_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "5",
+            "key": "data.tasks.g1m_subl1_q4_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_subl1_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "7 − 3 = ?",
+        "qKey": "data.tasks.g1m_subl1_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "3",
+            "key": "data.tasks.g1m_subl1_q5_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "4",
+            "key": "data.tasks.g1m_subl1_q5_b",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-sub-l2",
+    "title": "Вычитание из 10",
+    "subject": "math",
+    "world": "g1math",
+    "source": "G1M_SUB_L2_TASKS←forest-syl-l2",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Вычитаем из 10! 10 − 3 = ?"
+      },
+      {
+        "speaker": "tali",
+        "text": "10 − 3 = 7! Я выучил специальные пары! Хочу показать — проверь, правильно ли я их запомнил?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Вычитание из 10!",
+        "body": "10 − 3 = 7. Запомни пары: 10−3=7, 10−7=3!"
+      },
+      {
+        "title": "Ещё примеры",
+        "body": "10 − 5 = 5, 10 − 1 = 9!"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1m_subl2_q1_a",
+      "ky=ru stub: data.tasks.g1m_subl2_q1_b",
+      "ky=ru stub: data.tasks.g1m_subl2_q1_c",
+      "ky=ru stub: data.tasks.g1m_subl2_q2_a",
+      "ky=ru stub: data.tasks.g1m_subl2_q2_b",
+      "ky=ru stub: data.tasks.g1m_subl2_q2_c",
+      "ky=ru stub: data.tasks.g1m_subl2_q3",
+      "ky=ru stub: data.tasks.g1m_subl2_q3_a",
+      "ky=ru stub: data.tasks.g1m_subl2_q3_b",
+      "ky=ru stub: data.tasks.g1m_subl2_q3_c",
+      "ky=ru stub: data.tasks.g1m_subl2_q4_a",
+      "ky=ru stub: data.tasks.g1m_subl2_q4_b",
+      "ky=ru stub: data.tasks.g1m_subl2_q4_c",
+      "ky=ru stub: data.tasks.g1m_subl2_q5",
+      "ky=ru stub: data.tasks.g1m_subl2_q5_a",
+      "ky=ru stub: data.tasks.g1m_subl2_q5_b"
+    ],
+    "curriculum": "`g1m-sub-l2`\n\n**Диалог:**\n- **Персонаж:** Вычитаем из 10! 10 − 3 = ?\n- **Тали:** 10 − 3 = 7! Я выучил специальные пары! Хочу показать — проверь, правильно ли я их запомнил?\n\n**Интро (объяснения перед заданиями):**\n1. **Вычитание из 10!** — 10 − 3 = 7. Запомни пары: 10−3=7, 10−7=3!\n2. **Ещё примеры** — 10 − 5 = 5, 10 − 1 = 9!\n\n**Задания:**\n1. **multiple_choice** — 10 − 4 = ? Тали говорит: «Это 5!»\n\n   Варианты ответа:\n   - `a`: 5\n   - `b`: 6 ✓\n   - `c`: 7\n2. **multiple_choice** — 10 − 7 = ? Тали думает: «Это 4!»\n\n   Варианты ответа:\n   - `a`: 2\n   - `b`: 3 ✓\n   - `c`: 4\n3. **multiple_choice** — 10 − 5 = ?\n\n   Варианты ответа:\n   - `a`: 4\n   - `b`: 5 ✓\n   - `c`: 6\n4. **multiple_choice** — Тали говорит: «10 − 1 = 8!» Правда?\n\n   Варианты ответа:\n   - `a`: 8\n   - `b`: 9 ✓\n   - `c`: 10\n5. **multiple_choice** · **[ABA]** · _special_aba_ — 10 − 3 = ?\n\n   Варианты ответа:\n   - `a`: 6\n   - `b`: 7 ✓\n\n##### Урок: Смешанные примеры\n",
+    "tasks": [
+      {
+        "id": "g1m_subl2_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "10 − 4 = ? Тали говорит: «Это 5!»",
+        "qKey": "data.tasks.g1m_subl2_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "5",
+            "key": "data.tasks.g1m_subl2_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "6",
+            "key": "data.tasks.g1m_subl2_q1_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "7",
+            "key": "data.tasks.g1m_subl2_q1_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_subl2_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "10 − 7 = ? Тали думает: «Это 4!»",
+        "qKey": "data.tasks.g1m_subl2_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "2",
+            "key": "data.tasks.g1m_subl2_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "3",
+            "key": "data.tasks.g1m_subl2_q2_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "4",
+            "key": "data.tasks.g1m_subl2_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_subl2_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "10 − 5 = ?",
+        "qKey": "data.tasks.g1m_subl2_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "4",
+            "key": "data.tasks.g1m_subl2_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "5",
+            "key": "data.tasks.g1m_subl2_q3_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "6",
+            "key": "data.tasks.g1m_subl2_q3_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_subl2_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали говорит: «10 − 1 = 8!» Правда?",
+        "qKey": "data.tasks.g1m_subl2_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "8",
+            "key": "data.tasks.g1m_subl2_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "9",
+            "key": "data.tasks.g1m_subl2_q4_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "10",
+            "key": "data.tasks.g1m_subl2_q4_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_subl2_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "10 − 3 = ?",
+        "qKey": "data.tasks.g1m_subl2_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "6",
+            "key": "data.tasks.g1m_subl2_q5_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "7",
+            "key": "data.tasks.g1m_subl2_q5_b",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1m-sub-l3",
+    "title": "Смешанные примеры",
+    "subject": "math",
+    "world": "g1math",
+    "source": "G1M_SUB_L3_TASKS←forest-syl-l3",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Смешанные примеры! 5 + 4 − 3 = ?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Сначала сложи, потом вычти! Я пробовал, но часто забываю порядок. Поможешь проверить мои ответы?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Смешанные примеры!",
+        "body": "5 + 4 − 3 =? Сначала сложи: 5+4=9, потом вычти: 9−3=6!"
+      },
+      {
+        "title": "Проверяем",
+        "body": "7 − 2 = 5. Верно? Да! 5 + 2 = 7."
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1m_subl3_q1_a",
+      "ky=ru stub: data.tasks.g1m_subl3_q1_b",
+      "ky=ru stub: data.tasks.g1m_subl3_q1_c",
+      "ky=ru stub: data.tasks.g1m_subl3_q2_a",
+      "ky=ru stub: data.tasks.g1m_subl3_q2_b",
+      "ky=ru stub: data.tasks.g1m_subl3_q2_c",
+      "ky=ru stub: data.tasks.g1m_subl3_q4_a",
+      "ky=ru stub: data.tasks.g1m_subl3_q4_b",
+      "ky=ru stub: data.tasks.g1m_subl3_q4_c",
+      "ky=ru stub: data.tasks.g1m_subl3_q5",
+      "ky=ru stub: data.tasks.g1m_subl3_q5_a",
+      "ky=ru stub: data.tasks.g1m_subl3_q5_b"
+    ],
+    "curriculum": "`g1m-sub-l3`\n\n**Диалог:**\n- **Персонаж:** Смешанные примеры! 5 + 4 − 3 = ?\n- **Тали:** Сначала сложи, потом вычти! Я пробовал, но часто забываю порядок. Поможешь проверить мои ответы?\n\n**Интро (объяснения перед заданиями):**\n1. **Смешанные примеры!** — 5 + 4 − 3 =? Сначала сложи: 5+4=9, потом вычти: 9−3=6!\n2. **Проверяем** — 7 − 2 = 5. Верно? Да! 5 + 2 = 7.\n\n**Задания:**\n1. **multiple_choice** — 5 + 4 − 3 = ? Сначала сложи, потом вычти!\n\n   Варианты ответа:\n   - `a`: 5\n   - `b`: 6 ✓\n   - `c`: 7\n2. **multiple_choice** — 8 − 3 + 2 = ? Тали: «Это 5!»\n\n   Варианты ответа:\n   - `a`: 5\n   - `b`: 7 ✓\n   - `c`: 9\n3. **multiple_choice** — Проверка: 7 − 2 = 5, потому что 5 + 2 = 7. Верно?\n\n   Варианты ответа:\n   - `a`: Да, верно ✓\n   - `b`: Нет\n4. **multiple_choice** — 6 + 3 − 4 = ? Тали считает: «Это 6!»\n\n   Варианты ответа:\n   - `a`: 4\n   - `b`: 5 ✓\n   - `c`: 6\n5. **multiple_choice** · **[ABA]** · _special_aba_ — 4 + 5 − 3 = ?\n\n   Варианты ответа:\n   - `a`: 5\n   - `b`: 6 ✓\n\n---\n\n### Деревня букв\n\n**Мир:** `g1rus` · возраст: `7`\n\n*Читай слова и учи грамматику с Машей!*\n\n#### Тема: Гласные буквы\n\n- id темы: `g1r-vowels` · Русский язык\n\n##### Урок: Буквы А, О, У\n",
+    "tasks": [
+      {
+        "id": "g1m_subl3_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "5 + 4 − 3 = ? Сначала сложи, потом вычти!",
+        "qKey": "data.tasks.g1m_subl3_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "5",
+            "key": "data.tasks.g1m_subl3_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "6",
+            "key": "data.tasks.g1m_subl3_q1_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "7",
+            "key": "data.tasks.g1m_subl3_q1_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_subl3_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "8 − 3 + 2 = ? Тали: «Это 5!»",
+        "qKey": "data.tasks.g1m_subl3_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "5",
+            "key": "data.tasks.g1m_subl3_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "7",
+            "key": "data.tasks.g1m_subl3_q2_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "9",
+            "key": "data.tasks.g1m_subl3_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_subl3_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Проверка: 7 − 2 = 5, потому что 5 + 2 = 7. Верно?",
+        "qKey": "data.tasks.g1m_subl3_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Да, верно",
+            "key": "data.tasks.g1m_subl3_q3_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "key": "data.tasks.g1m_subl3_q3_b",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_subl3_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "6 + 3 − 4 = ? Тали считает: «Это 6!»",
+        "qKey": "data.tasks.g1m_subl3_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "4",
+            "key": "data.tasks.g1m_subl3_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "5",
+            "key": "data.tasks.g1m_subl3_q4_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "6",
+            "key": "data.tasks.g1m_subl3_q4_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1m_subl3_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "4 + 5 − 3 = ?",
+        "qKey": "data.tasks.g1m_subl3_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "5",
+            "key": "data.tasks.g1m_subl3_q5_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "6",
+            "key": "data.tasks.g1m_subl3_q5_b",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-vow-l1",
+    "title": "Буквы А, О, У",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "source": "G1R_VOW_L1_TASKS←island-abc-l1",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Привет! Я Маша! Буквы А, О, У — гласные!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Гласные можно петь: А-А-А! Я знаю, что в слове УТКА первая буква У. Но в других словах иногда путаюсь. Поможешь?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Буквы А, О, У!",
+        "body": "Гласные можно петь! В слове УТКА первая буква У!"
+      },
+      {
+        "title": "Мягкость",
+        "body": "Я, Ю, Е, Ё делают согласные мягкими. КОНЬ — мягкое Н!"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [],
+    "curriculum": "`g1r-vow-l1`\n\n**Диалог:**\n- **Персонаж:** Привет! Я Маша! Буквы А, О, У — гласные!\n- **Тали:** Гласные можно петь: А-А-А! Я знаю, что в слове УТКА первая буква У. Но в других словах иногда путаюсь. Поможешь?\n\n**Интро (объяснения перед заданиями):**\n1. **Буквы А, О, У!** — Гласные можно петь! В слове УТКА первая буква У!\n2. **Мягкость** — Я, Ю, Е, Ё делают согласные мягкими. КОНЬ — мягкое Н!\n\n**Задания:**\n1. **multiple_choice** — В слове ОСЕНЬ первая буква — гласная или согласная? Тали говорит: «Там согласная!» Прав?\n\n   Варианты ответа:\n   - `a`: Тали прав — согласная\n   - `b`: Нет — О гласная! ✓\n2. **multiple_choice** — В слове УХО есть буква А?\n\n   Варианты ответа:\n   - `a`: Да\n   - `b`: Нет — только У и О ✓\n3. **multiple_choice** — Найди слово, где первая буква — У:\n\n   Варианты ответа:\n   - `a`: Аист\n   - `b`: Утка ✓\n   - `c`: Олень\n4. **multiple_choice** — Тали говорит: «В слове МАМА нет гласных!» Правда?\n\n   Варианты ответа:\n   - `a`: Правда\n   - `b`: Нет — есть две А! ✓\n5. **multiple_choice** · **[ABA]** · _special_aba_ — В слове «ОСА» первая буква — гласная?\n\n   Варианты ответа:\n   - `a`: Да ✓\n   - `b`: Нет\n\n##### Урок: Я, Ю, Е, Ё\n",
+    "tasks": [
+      {
+        "id": "g1r_vowl1_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "В слове ОСЕНЬ первая буква — гласная или согласная? Тали говорит: «Там согласная!» Прав?",
+        "qKey": "data.tasks.g1r_vowl1_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Тали прав — согласная",
+            "key": "data.tasks.g1r_vowl1_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — О гласная!",
+            "key": "data.tasks.g1r_vowl1_q1_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_vowl1_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "В слове УХО есть буква А?",
+        "qKey": "data.tasks.g1r_vowl1_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Да",
+            "key": "data.tasks.g1r_vowl1_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — только У и О",
+            "key": "data.tasks.g1r_vowl1_q2_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_vowl1_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Найди слово, где первая буква — У:",
+        "qKey": "data.tasks.g1r_vowl1_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Аист",
+            "key": "data.tasks.g1r_vowl1_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Утка",
+            "key": "data.tasks.g1r_vowl1_q3_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Олень",
+            "key": "data.tasks.g1r_vowl1_q3_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1r_vowl1_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали говорит: «В слове МАМА нет гласных!» Правда?",
+        "qKey": "data.tasks.g1r_vowl1_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Правда",
+            "key": "data.tasks.g1r_vowl1_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — есть две А!",
+            "key": "data.tasks.g1r_vowl1_q4_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_vowl1_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "В слове «ОСА» первая буква — гласная?",
+        "qKey": "data.tasks.g1r_vowl1_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Да",
+            "key": "data.tasks.g1r_vowl1_q5_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "key": "data.tasks.g1r_vowl1_q5_b",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-vow-l2",
+    "title": "Я, Ю, Е, Ё",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "source": "G1R_VOW_L2_TASKS←island-abc-l2",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Буквы Я, Ю, Е, Ё — тоже гласные! Они делают согласные мягкими."
+      },
+      {
+        "speaker": "tali",
+        "text": "В слове ЮЛА первая буква Ю! Я только что это выучил. Проверь, правильно ли я запомнил!"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Буквы Я, Ю, Е, Ё!",
+        "body": "В слове ЮЛА первая Ю. В слове ЕЛЬ первая Е!"
+      },
+      {
+        "title": "Пара А—Я",
+        "body": "А — твёрдая, Я — мягкая. Мама — Мая!"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "en=ru Cyrillic: data.tasks.g1r_vowl2_q1_a",
+      "ky=ru stub: data.tasks.g1r_vowl2_q1_a",
+      "en=ru Cyrillic: data.tasks.g1r_vowl2_q1_b",
+      "ky=ru stub: data.tasks.g1r_vowl2_q1_b",
+      "en=ru Cyrillic: data.tasks.g1r_vowl2_q1_c",
+      "ky=ru stub: data.tasks.g1r_vowl2_q1_c",
+      "en=ru Cyrillic: data.tasks.g1r_vowl2_q4_a",
+      "ky=ru stub: data.tasks.g1r_vowl2_q4_a",
+      "en=ru Cyrillic: data.tasks.g1r_vowl2_q4_b",
+      "ky=ru stub: data.tasks.g1r_vowl2_q4_b",
+      "en=ru Cyrillic: data.tasks.g1r_vowl2_q4_c",
+      "ky=ru stub: data.tasks.g1r_vowl2_q4_c",
+      "en=ru Cyrillic: data.tasks.g1r_vowl2_q5_a",
+      "ky=ru stub: data.tasks.g1r_vowl2_q5_a",
+      "en=ru Cyrillic: data.tasks.g1r_vowl2_q5_b",
+      "ky=ru stub: data.tasks.g1r_vowl2_q5_b"
+    ],
+    "curriculum": "`g1r-vow-l2`\n\n**Диалог:**\n- **Персонаж:** Буквы Я, Ю, Е, Ё — тоже гласные! Они делают согласные мягкими.\n- **Тали:** В слове ЮЛА первая буква Ю! Я только что это выучил. Проверь, правильно ли я запомнил!\n\n**Интро (объяснения перед заданиями):**\n1. **Буквы Я, Ю, Е, Ё!** — В слове ЮЛА первая Ю. В слове ЕЛЬ первая Е!\n2. **Пара А—Я** — А — твёрдая, Я — мягкая. Мама — Мая!\n\n**Задания:**\n1. **multiple_choice** — В слове ЕЛЬ первая буква — это:\n\n   Варианты ответа:\n   - `a`: Я\n   - `b`: Е ✓\n   - `c`: Ю\n2. **multiple_choice** — Тали говорит: «Буква Я — это то же самое, что буква А!» Правда?\n\n   Варианты ответа:\n   - `a`: Правда\n   - `b`: Нет — Я делает согласную мягкой, А нет ✓\n3. **multiple_choice** — Найди слово, которое начинается на Ю:\n\n   Варианты ответа:\n   - `a`: Ель\n   - `b`: Юла ✓\n   - `c`: Яблоко\n4. **multiple_choice** — В слове ЁЖИК первая буква — это:\n\n   Варианты ответа:\n   - `a`: Е\n   - `b`: Ё ✓\n   - `c`: Ю\n5. **multiple_choice** · **[ABA]** · _special_aba_ — ЮЛА — первая буква:\n\n   Варианты ответа:\n   - `a`: Ю ✓\n   - `b`: Я\n\n##### Урок: Мягкость согласных\n",
+    "tasks": [
+      {
+        "id": "g1r_vowl2_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "В слове ЕЛЬ первая буква — это:",
+        "qKey": "data.tasks.g1r_vowl2_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Я",
+            "key": "data.tasks.g1r_vowl2_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Е",
+            "key": "data.tasks.g1r_vowl2_q1_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Ю",
+            "key": "data.tasks.g1r_vowl2_q1_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1r_vowl2_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали говорит: «Буква Я — это то же самое, что буква А!» Правда?",
+        "qKey": "data.tasks.g1r_vowl2_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Правда",
+            "key": "data.tasks.g1r_vowl2_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — Я делает согласную мягкой, А нет",
+            "key": "data.tasks.g1r_vowl2_q2_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_vowl2_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Найди слово, которое начинается на Ю:",
+        "qKey": "data.tasks.g1r_vowl2_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Ель",
+            "key": "data.tasks.g1r_vowl2_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Юла",
+            "key": "data.tasks.g1r_vowl2_q3_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Яблоко",
+            "key": "data.tasks.g1r_vowl2_q3_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1r_vowl2_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "В слове ЁЖИК первая буква — это:",
+        "qKey": "data.tasks.g1r_vowl2_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Е",
+            "key": "data.tasks.g1r_vowl2_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Ё",
+            "key": "data.tasks.g1r_vowl2_q4_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Ю",
+            "key": "data.tasks.g1r_vowl2_q4_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1r_vowl2_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "ЮЛА — первая буква:",
+        "qKey": "data.tasks.g1r_vowl2_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Ю",
+            "key": "data.tasks.g1r_vowl2_q5_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Я",
+            "key": "data.tasks.g1r_vowl2_q5_b",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-vow-l3",
+    "title": "Мягкость согласных",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "source": "G1R_VOW_L3_TASKS←island-abc-l3",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Мягкость согласных! КОН — твёрдый, а в КОНЬ — мягкий!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Буква Ь показывает мягкость. НОС — твёрдый, НОЛЬ — мягкий! Тали говорит: «Я думаю, что Ь — это тоже гласная!» Правда?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Мягкость! Ь",
+        "body": "КОН — твёрдый, КОНЬ — мягкий. Ь показывает мягкость!"
+      },
+      {
+        "title": "10 гласных",
+        "body": "А, О, У, И, Э, Я, Ю, Е, Ё — 10 гласных букв!"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "en=ru Cyrillic: data.tasks.g1r_vowl3_q2_a",
+      "ky=ru stub: data.tasks.g1r_vowl3_q2_a",
+      "en=ru Cyrillic: data.tasks.g1r_vowl3_q2_b",
+      "ky=ru stub: data.tasks.g1r_vowl3_q2_b",
+      "en=ru Cyrillic: data.tasks.g1r_vowl3_q2_c",
+      "ky=ru stub: data.tasks.g1r_vowl3_q2_c"
+    ],
+    "curriculum": "`g1r-vow-l3`\n\n**Диалог:**\n- **Персонаж:** Мягкость согласных! КОН — твёрдый, а в КОНЬ — мягкий!\n- **Тали:** Буква Ь показывает мягкость. НОС — твёрдый, НОЛЬ — мягкий! Тали говорит: «Я думаю, что Ь — это тоже гласная!» Правда?\n\n**Интро (объяснения перед заданиями):**\n1. **Мягкость! Ь** — КОН — твёрдый, КОНЬ — мягкий. Ь показывает мягкость!\n2. **10 гласных** — А, О, У, И, Э, Я, Ю, Е, Ё — 10 гласных букв!\n\n**Задания:**\n1. **multiple_choice** — Тали говорит: «Ь — это гласная, потому что стоит после согласной!» Прав ли он?\n\n   Варианты ответа:\n   - `a`: Тали прав\n   - `b`: Нет — Ь не гласная, она не обозначает звук ✓\n2. **multiple_choice** — В слове КОНЬ последняя буква — это:\n\n   Варианты ответа:\n   - `a`: Н\n   - `b`: Ь ✓\n   - `c`: О\n3. **multiple_choice** — Чем отличаются ДЕНЬ и ДЕН? (с мягким знаком и без)\n\n   Варианты ответа:\n   - `a`: Ничем — это одно и то же\n   - `b`: Ь меняет произношение — это разные слова ✓\n4. **multiple_choice** — В слове МЯЧ есть мягкий знак?\n\n   Варианты ответа:\n   - `a`: Да\n   - `b`: Нет ✓\n   - `c`: Только в конце\n5. **multiple_choice** · **[ABA]** · _special_aba_ — В слове СОЛЬ есть мягкий знак?\n\n   Варианты ответа:\n   - `a`: Да ✓\n   - `b`: Нет\n\n#### Тема: Читаем слова\n\n- id темы: `g1r-words` · Русский язык\n\n##### Урок: Читаем слова\n",
+    "tasks": [
+      {
+        "id": "g1r_vowl3_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали говорит: «Ь — это гласная, потому что стоит после согласной!» Прав ли он?",
+        "qKey": "data.tasks.g1r_vowl3_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "key": "data.tasks.g1r_vowl3_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — Ь не гласная, она не обозначает звук",
+            "key": "data.tasks.g1r_vowl3_q1_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_vowl3_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "В слове КОНЬ последняя буква — это:",
+        "qKey": "data.tasks.g1r_vowl3_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Н",
+            "key": "data.tasks.g1r_vowl3_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Ь",
+            "key": "data.tasks.g1r_vowl3_q2_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "О",
+            "key": "data.tasks.g1r_vowl3_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1r_vowl3_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Чем отличаются ДЕНЬ и ДЕН? (с мягким знаком и без)",
+        "qKey": "data.tasks.g1r_vowl3_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Ничем — это одно и то же",
+            "key": "data.tasks.g1r_vowl3_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Ь меняет произношение — это разные слова",
+            "key": "data.tasks.g1r_vowl3_q3_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_vowl3_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "В слове МЯЧ есть мягкий знак?",
+        "qKey": "data.tasks.g1r_vowl3_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Да",
+            "key": "data.tasks.g1r_vowl3_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "key": "data.tasks.g1r_vowl3_q4_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Только в конце",
+            "key": "data.tasks.g1r_vowl3_q4_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1r_vowl3_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "В слове СОЛЬ есть мягкий знак?",
+        "qKey": "data.tasks.g1r_vowl3_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Да",
+            "key": "data.tasks.g1r_vowl3_q5_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "key": "data.tasks.g1r_vowl3_q5_b",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-wrd-l1",
+    "title": "Читаем слова",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "source": "G1R_WRD_L1_TASKS←island-col-l1",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Читаем слова! К-О-Т — КОТ. По слогам!"
+      },
+      {
+        "speaker": "tali",
+        "text": "К-О-Т — КОТ! Д-О-М — ДОМ! Читаю слова по буквам. Иногда путаю буквы местами — поможешь?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Читаем слова!",
+        "body": "К-О-Т — КОТ. Читай по слогам!"
+      },
+      {
+        "title": "Читаем вместе",
+        "body": "С-О-М — СОМ. М-А-М-А — МАМА. Собери слово из букв!"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "en=ru Cyrillic: data.tasks.g1r_wrdl1_q1_a",
+      "ky=ru stub: data.tasks.g1r_wrdl1_q1_a",
+      "en=ru Cyrillic: data.tasks.g1r_wrdl1_q1_b",
+      "ky=ru stub: data.tasks.g1r_wrdl1_q1_b",
+      "en=ru Cyrillic: data.tasks.g1r_wrdl1_q2_a",
+      "ky=ru stub: data.tasks.g1r_wrdl1_q2_a",
+      "en=ru Cyrillic: data.tasks.g1r_wrdl1_q2_b",
+      "ky=ru stub: data.tasks.g1r_wrdl1_q2_b",
+      "en=ru Cyrillic: data.tasks.g1r_wrdl1_q2_c",
+      "ky=ru stub: data.tasks.g1r_wrdl1_q2_c",
+      "en=ru Cyrillic: data.tasks.g1r_wrdl1_q3_a",
+      "ky=ru stub: data.tasks.g1r_wrdl1_q3_a",
+      "en=ru Cyrillic: data.tasks.g1r_wrdl1_q3_b",
+      "ky=ru stub: data.tasks.g1r_wrdl1_q3_b",
+      "en=ru Cyrillic: data.tasks.g1r_wrdl1_q3_c",
+      "ky=ru stub: data.tasks.g1r_wrdl1_q3_c",
+      "en=ru Cyrillic: data.tasks.g1r_wrdl1_q4_a",
+      "ky=ru stub: data.tasks.g1r_wrdl1_q4_a",
+      "en=ru Cyrillic: data.tasks.g1r_wrdl1_q4_b",
+      "ky=ru stub: data.tasks.g1r_wrdl1_q4_b",
+      "en=ru Cyrillic: data.tasks.g1r_wrdl1_q5_a",
+      "ky=ru stub: data.tasks.g1r_wrdl1_q5_a",
+      "en=ru Cyrillic: data.tasks.g1r_wrdl1_q5_b",
+      "ky=ru stub: data.tasks.g1r_wrdl1_q5_b"
+    ],
+    "curriculum": "`g1r-wrd-l1`\n\n**Диалог:**\n- **Персонаж:** Читаем слова! К-О-Т — КОТ. По слогам!\n- **Тали:** К-О-Т — КОТ! Д-О-М — ДОМ! Читаю слова по буквам. Иногда путаю буквы местами — поможешь?\n\n**Интро (объяснения перед заданиями):**\n1. **Читаем слова!** — К-О-Т — КОТ. Читай по слогам!\n2. **Читаем вместе** — С-О-М — СОМ. М-А-М-А — МАМА. Собери слово из букв!\n\n**Задания:**\n1. **multiple_choice** — Прочитай по буквам: К-О-Т. Какое это слово?\n\n   Варианты ответа:\n   - `a`: ТОК\n   - `b`: КОТ ✓\n2. **multiple_choice** — Собери слово из букв: М-А-М-А\n\n   Варианты ответа:\n   - `a`: МАМ\n   - `b`: МАМА ✓\n   - `c`: АМАМ\n3. **multiple_choice** — Д-О-М — это какое слово?\n\n   Варианты ответа:\n   - `a`: ДОМ ✓\n   - `b`: МОД\n   - `c`: ОМД\n4. **multiple_choice** — Прочитай: Р-Ы-Б-А. Какое слово получилось?\n\n   Варианты ответа:\n   - `a`: БАРЫ\n   - `b`: РЫБА ✓\n5. **multiple_choice** · **[ABA]** · _special_aba_ — Какое слово читается С-О-М?\n\n   Варианты ответа:\n   - `a`: СОМ ✓\n   - `b`: МОС\n\n##### Урок: Слоги\n",
+    "tasks": [
+      {
+        "id": "g1r_wrdl1_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Прочитай по буквам: К-О-Т. Какое это слово?",
+        "qKey": "data.tasks.g1r_wrdl1_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "ТОК",
+            "key": "data.tasks.g1r_wrdl1_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "КОТ",
+            "key": "data.tasks.g1r_wrdl1_q1_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_wrdl1_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Собери слово из букв: М-А-М-А",
+        "qKey": "data.tasks.g1r_wrdl1_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "МАМ",
+            "key": "data.tasks.g1r_wrdl1_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "МАМА",
+            "key": "data.tasks.g1r_wrdl1_q2_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "АМАМ",
+            "key": "data.tasks.g1r_wrdl1_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1r_wrdl1_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Д-О-М — это какое слово?",
+        "qKey": "data.tasks.g1r_wrdl1_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "ДОМ",
+            "key": "data.tasks.g1r_wrdl1_q3_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "МОД",
+            "key": "data.tasks.g1r_wrdl1_q3_b",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "ОМД",
+            "key": "data.tasks.g1r_wrdl1_q3_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1r_wrdl1_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Прочитай: Р-Ы-Б-А. Какое слово получилось?",
+        "qKey": "data.tasks.g1r_wrdl1_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "БАРЫ",
+            "key": "data.tasks.g1r_wrdl1_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "РЫБА",
+            "key": "data.tasks.g1r_wrdl1_q4_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_wrdl1_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "Какое слово читается С-О-М?",
+        "qKey": "data.tasks.g1r_wrdl1_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "СОМ",
+            "key": "data.tasks.g1r_wrdl1_q5_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "МОС",
+            "key": "data.tasks.g1r_wrdl1_q5_b",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-wrd-l2",
+    "title": "Слоги",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "source": "G1R_WRD_L2_TASKS←island-col-l2",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Слова СТОЛ и СТУЛ похожи. Прочитай внимательно!"
+      },
+      {
+        "speaker": "tali",
+        "text": "ТРА-ВА — два слога. КНИ-ГА — два слога! Тали говорит: «СТОЛ и СТУЛ — одно и то же слово!» Прав ли он?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Слова похожи",
+        "body": "СТОЛ и СТУЛ — разная одна буква! Читай внимательно!"
+      },
+      {
+        "title": "Слоги в словах",
+        "body": "ТРА-ВА — два слога. КНИ-ГА — два слога!"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1r_wrdl2_q2_a",
+      "ky=ru stub: data.tasks.g1r_wrdl2_q2_b",
+      "ky=ru stub: data.tasks.g1r_wrdl2_q2_c",
+      "ky=ru stub: data.tasks.g1r_wrdl2_q4_a",
+      "ky=ru stub: data.tasks.g1r_wrdl2_q4_b",
+      "ky=ru stub: data.tasks.g1r_wrdl2_q4_c",
+      "ky=ru stub: data.tasks.g1r_wrdl2_q5_a",
+      "ky=ru stub: data.tasks.g1r_wrdl2_q5_b"
+    ],
+    "curriculum": "`g1r-wrd-l2`\n\n**Диалог:**\n- **Персонаж:** Слова СТОЛ и СТУЛ похожи. Прочитай внимательно!\n- **Тали:** ТРА-ВА — два слога. КНИ-ГА — два слога! Тали говорит: «СТОЛ и СТУЛ — одно и то же слово!» Прав ли он?\n\n**Интро (объяснения перед заданиями):**\n1. **Слова похожи** — СТОЛ и СТУЛ — разная одна буква! Читай внимательно!\n2. **Слоги в словах** — ТРА-ВА — два слога. КНИ-ГА — два слога!\n\n**Задания:**\n1. **multiple_choice** — Тали говорит: «СТОЛ и СТУЛ — одно слово, просто написано по-разному!» Прав?\n\n   Варианты ответа:\n   - `a`: Тали прав\n   - `b`: Нет — это разные слова ✓\n2. **multiple_choice** — Сколько слогов в слове ТРА-ВА?\n\n   Варианты ответа:\n   - `a`: 1\n   - `b`: 2 ✓\n   - `c`: 3\n3. **multiple_choice** — Найди слово с двумя слогами:\n\n   Варианты ответа:\n   - `a`: КОТ\n   - `b`: КНИ-ГА ✓\n   - `c`: ЛЕС\n4. **multiple_choice** — Тали хлопает на каждый слог: МА-ЛИ-НА. Сколько хлопков?\n\n   Варианты ответа:\n   - `a`: 2\n   - `b`: 3 ✓\n   - `c`: 4\n5. **multiple_choice** · **[ABA]** · _special_aba_ — КНИ-ГА — сколько слогов?\n\n   Варианты ответа:\n   - `a`: 1\n   - `b`: 2 ✓\n\n##### Урок: Предложения\n",
+    "tasks": [
+      {
+        "id": "g1r_wrdl2_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали говорит: «СТОЛ и СТУЛ — одно слово, просто написано по-разному!» Прав?",
+        "qKey": "data.tasks.g1r_wrdl2_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "key": "data.tasks.g1r_wrdl2_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — это разные слова",
+            "key": "data.tasks.g1r_wrdl2_q1_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_wrdl2_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Сколько слогов в слове ТРА-ВА?",
+        "qKey": "data.tasks.g1r_wrdl2_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "1",
+            "key": "data.tasks.g1r_wrdl2_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "2",
+            "key": "data.tasks.g1r_wrdl2_q2_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "3",
+            "key": "data.tasks.g1r_wrdl2_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1r_wrdl2_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Найди слово с двумя слогами:",
+        "qKey": "data.tasks.g1r_wrdl2_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "КОТ",
+            "key": "data.tasks.g1r_wrdl2_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "КНИ-ГА",
+            "key": "data.tasks.g1r_wrdl2_q3_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "ЛЕС",
+            "key": "data.tasks.g1r_wrdl2_q3_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1r_wrdl2_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали хлопает на каждый слог: МА-ЛИ-НА. Сколько хлопков?",
+        "qKey": "data.tasks.g1r_wrdl2_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "2",
+            "key": "data.tasks.g1r_wrdl2_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "3",
+            "key": "data.tasks.g1r_wrdl2_q4_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "4",
+            "key": "data.tasks.g1r_wrdl2_q4_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1r_wrdl2_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "КНИ-ГА — сколько слогов?",
+        "qKey": "data.tasks.g1r_wrdl2_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "1",
+            "key": "data.tasks.g1r_wrdl2_q5_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "2",
+            "key": "data.tasks.g1r_wrdl2_q5_b",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-wrd-l3",
+    "title": "Предложения",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "source": "G1R_WRD_L3_TASKS←island-col-l3",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Читаем предложения! Смотри: с большой буквы и знак в конце."
+      },
+      {
+        "speaker": "tali",
+        "text": "Тали говорит: «КОТ БЕЖИТ — тут два предложения!» Правда? Нет — это одно предложение с точкой в конце!"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Предложения!",
+        "body": "Предложение выражает мысль. Начинается с большой буквы!"
+      },
+      {
+        "title": "Конец предложения",
+        "body": "В конце — точка, вопросительный или восклицательный знак!"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [],
+    "curriculum": "`g1r-wrd-l3`\n\n**Диалог:**\n- **Персонаж:** Читаем предложения! Смотри: с большой буквы и знак в конце.\n- **Тали:** Тали говорит: «КОТ БЕЖИТ — тут два предложения!» Правда? Нет — это одно предложение с точкой в конце!\n\n**Интро (объяснения перед заданиями):**\n1. **Предложения!** — Предложение выражает мысль. Начинается с большой буквы!\n2. **Конец предложения** — В конце — точка, вопросительный или восклицательный знак!\n\n**Задания:**\n1. **multiple_choice** — Тали говорит: «КОТ БЕЖИТ — это два предложения!» Прав?\n\n   Варианты ответа:\n   - `a`: Тали прав\n   - `b`: Нет — это одно предложение ✓\n2. **multiple_choice** — Предложение начинается с...\n\n   Варианты ответа:\n   - `a`: Маленькой буквы\n   - `b`: Большой буквы ✓\n3. **multiple_choice** — В конце вопросительного предложения ставим...\n\n   Варианты ответа:\n   - `a`: Точку\n   - `b`: Вопросительный знак ✓\n   - `c`: Восклицательный знак\n4. **multiple_choice** — «мама варит суп» — что нужно исправить?\n\n   Варианты ответа:\n   - `a`: Всё верно\n   - `b`: Написать «Мама» с большой буквы ✓\n5. **multiple_choice** · **[ABA]** · _special_aba_ — Предложение «Кот пьёт молоко» — в конце нужна...\n\n   Варианты ответа:\n   - `a`: Точка ✓\n   - `b`: Запятая\n\n#### Тема: Грамматика\n\n- id темы: `g1r-gram` · Русский язык\n\n##### Урок: Заглавная буква\n",
+    "tasks": [
+      {
+        "id": "g1r_wrdl3_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали говорит: «КОТ БЕЖИТ — это два предложения!» Прав?",
+        "qKey": "data.tasks.g1r_wrdl3_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "key": "data.tasks.g1r_wrdl3_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — это одно предложение",
+            "key": "data.tasks.g1r_wrdl3_q1_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_wrdl3_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Предложение начинается с...",
+        "qKey": "data.tasks.g1r_wrdl3_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Маленькой буквы",
+            "key": "data.tasks.g1r_wrdl3_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Большой буквы",
+            "key": "data.tasks.g1r_wrdl3_q2_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_wrdl3_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "В конце вопросительного предложения ставим...",
+        "qKey": "data.tasks.g1r_wrdl3_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Точку",
+            "key": "data.tasks.g1r_wrdl3_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Вопросительный знак",
+            "key": "data.tasks.g1r_wrdl3_q3_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Восклицательный знак",
+            "key": "data.tasks.g1r_wrdl3_q3_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1r_wrdl3_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "«мама варит суп» — что нужно исправить?",
+        "qKey": "data.tasks.g1r_wrdl3_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Всё верно",
+            "key": "data.tasks.g1r_wrdl3_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Написать «Мама» с большой буквы",
+            "key": "data.tasks.g1r_wrdl3_q4_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_wrdl3_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "Предложение «Кот пьёт молоко» — в конце нужна...",
+        "qKey": "data.tasks.g1r_wrdl3_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Точка",
+            "key": "data.tasks.g1r_wrdl3_q5_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Запятая",
+            "key": "data.tasks.g1r_wrdl3_q5_b",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-grm-l1",
+    "title": "Заглавная буква",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "source": "G1R_GRM_L1_TASKS←island-anim-l1",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Заглавная буква! Имена и начало предложения пишут с большой буквы."
+      },
+      {
+        "speaker": "tali",
+        "text": "Маша, Москва, Тали — с большой! Тали говорит: «Значит, слово «кот» тоже надо писать с большой буквы — ведь это имя животного?»"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Заглавная буква!",
+        "body": "Имена, клички, начало предложения — с большой буквы!"
+      },
+      {
+        "title": "Примеры",
+        "body": "Маша, Москва, Тали — пишем с большой буквы!"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "en=ru Cyrillic: data.tasks.g1r_grml1_q3_a",
+      "ky=ru stub: data.tasks.g1r_grml1_q3_a",
+      "en=ru Cyrillic: data.tasks.g1r_grml1_q3_b",
+      "ky=ru stub: data.tasks.g1r_grml1_q3_b"
+    ],
+    "curriculum": "`g1r-grm-l1`\n\n**Диалог:**\n- **Персонаж:** Заглавная буква! Имена и начало предложения пишут с большой буквы.\n- **Тали:** Маша, Москва, Тали — с большой! Тали говорит: «Значит, слово «кот» тоже надо писать с большой буквы — ведь это имя животного?»\n\n**Интро (объяснения перед заданиями):**\n1. **Заглавная буква!** — Имена, клички, начало предложения — с большой буквы!\n2. **Примеры** — Маша, Москва, Тали — пишем с большой буквы!\n\n**Задания:**\n1. **multiple_choice** — Тали говорит: «Слово «кот» надо писать с большой буквы — это ведь имя!» Прав ли он?\n\n   Варианты ответа:\n   - `a`: Тали прав\n   - `b`: Нет — «кот» не имя, а название животного ✓\n2. **multiple_choice** — Что нужно писать с большой буквы?\n\n   Варианты ответа:\n   - `a`: Все существительные\n   - `b`: Имена людей и клички животных ✓\n   - `c`: Все слова\n3. **multiple_choice** — Как правильно написать: «я живу в москве» или «Я живу в Москве»?\n\n   Варианты ответа:\n   - `a`: я живу в москве\n   - `b`: Я живу в Москве ✓\n4. **multiple_choice** — Тали пишет письмо: «привет, маша!» Что нужно исправить?\n\n   Варианты ответа:\n   - `a`: Всё верно\n   - `b`: «Привет» и «Маша» с большой буквы ✓\n5. **multiple_choice** · **[ABA]** · _special_aba_ — Имена пишутся с большой буквы?\n\n   Варианты ответа:\n   - `a`: Да ✓\n   - `b`: Нет\n\n##### Урок: Знаки препинания\n",
+    "tasks": [
+      {
+        "id": "g1r_grml1_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали говорит: «Слово «кот» надо писать с большой буквы — это ведь имя!» Прав ли он?",
+        "qKey": "data.tasks.g1r_grml1_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "key": "data.tasks.g1r_grml1_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — «кот» не имя, а название животного",
+            "key": "data.tasks.g1r_grml1_q1_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_grml1_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Что нужно писать с большой буквы?",
+        "qKey": "data.tasks.g1r_grml1_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Все существительные",
+            "key": "data.tasks.g1r_grml1_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Имена людей и клички животных",
+            "key": "data.tasks.g1r_grml1_q2_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Все слова",
+            "key": "data.tasks.g1r_grml1_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1r_grml1_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Как правильно написать: «я живу в москве» или «Я живу в Москве»?",
+        "qKey": "data.tasks.g1r_grml1_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "я живу в москве",
+            "key": "data.tasks.g1r_grml1_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Я живу в Москве",
+            "key": "data.tasks.g1r_grml1_q3_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_grml1_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали пишет письмо: «привет, маша!» Что нужно исправить?",
+        "qKey": "data.tasks.g1r_grml1_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Всё верно",
+            "key": "data.tasks.g1r_grml1_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "«Привет» и «Маша» с большой буквы",
+            "key": "data.tasks.g1r_grml1_q4_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_grml1_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "Имена пишутся с большой буквы?",
+        "qKey": "data.tasks.g1r_grml1_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Да",
+            "key": "data.tasks.g1r_grml1_q5_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "key": "data.tasks.g1r_grml1_q5_b",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-grm-l2",
+    "title": "Знаки препинания",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "source": "G1R_GRM_L2_TASKS←island-anim-l2",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Знаки препинания! В конце предложения ставим точку или вопросительный знак."
+      },
+      {
+        "speaker": "tali",
+        "text": "«Кто это?» — вопрос. «Мама дома.» — утверждение. Тали говорит: «После вопроса всегда нужна точка!» Правда?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Знаки препинания!",
+        "body": "Точка — в конце. Вопросительный знак — в вопросе!"
+      },
+      {
+        "title": "Точка и вопросительный",
+        "body": "Кто это? — вопрос. Мама дома. — утверждение."
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1r_grml2_q2_a",
+      "ky=ru stub: data.tasks.g1r_grml2_q2_b",
+      "ky=ru stub: data.tasks.g1r_grml2_q2_c",
+      "ky=ru stub: data.tasks.g1r_grml2_q3_a",
+      "ky=ru stub: data.tasks.g1r_grml2_q3_b",
+      "ky=ru stub: data.tasks.g1r_grml2_q3_c",
+      "ky=ru stub: data.tasks.g1r_grml2_q4_a",
+      "ky=ru stub: data.tasks.g1r_grml2_q4_b",
+      "ky=ru stub: data.tasks.g1r_grml2_q4_c",
+      "ky=ru stub: data.tasks.g1r_grml2_q5_a",
+      "ky=ru stub: data.tasks.g1r_grml2_q5_b"
+    ],
+    "curriculum": "`g1r-grm-l2`\n\n**Диалог:**\n- **Персонаж:** Знаки препинания! В конце предложения ставим точку или вопросительный знак.\n- **Тали:** «Кто это?» — вопрос. «Мама дома.» — утверждение. Тали говорит: «После вопроса всегда нужна точка!» Правда?\n\n**Интро (объяснения перед заданиями):**\n1. **Знаки препинания!** — Точка — в конце. Вопросительный знак — в вопросе!\n2. **Точка и вопросительный** — Кто это? — вопрос. Мама дома. — утверждение.\n\n**Задания:**\n1. **multiple_choice** — Тали говорит: «После вопроса нужна точка!» Прав ли он?\n\n   Варианты ответа:\n   - `a`: Тали прав\n   - `b`: Нет — после вопроса нужен ? ✓\n2. **multiple_choice** — «Мама дома» — какой знак в конце?\n\n   Варианты ответа:\n   - `a`: ?\n   - `b`: . ✓\n   - `c`: !\n3. **multiple_choice** — «Ура! Каникулы!» — какой знак в конце?\n\n   Варианты ответа:\n   - `a`: .\n   - `b`: ?\n   - `c`: ! ✓\n4. **multiple_choice** — «Где живёт медведь» — какой знак нужен?\n\n   Варианты ответа:\n   - `a`: .\n   - `b`: ? ✓\n   - `c`: !\n5. **multiple_choice** · **[ABA]** · _special_aba_ — В конце вопроса ставим:\n\n   Варианты ответа:\n   - `a`: ? ✓\n   - `b`: .\n\n##### Урок: Вопросы кто? что?\n",
+    "tasks": [
+      {
+        "id": "g1r_grml2_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали говорит: «После вопроса нужна точка!» Прав ли он?",
+        "qKey": "data.tasks.g1r_grml2_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "key": "data.tasks.g1r_grml2_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — после вопроса нужен ?",
+            "key": "data.tasks.g1r_grml2_q1_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_grml2_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "«Мама дома» — какой знак в конце?",
+        "qKey": "data.tasks.g1r_grml2_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "?",
+            "key": "data.tasks.g1r_grml2_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": ".",
+            "key": "data.tasks.g1r_grml2_q2_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "!",
+            "key": "data.tasks.g1r_grml2_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1r_grml2_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "«Ура! Каникулы!» — какой знак в конце?",
+        "qKey": "data.tasks.g1r_grml2_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": ".",
+            "key": "data.tasks.g1r_grml2_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "?",
+            "key": "data.tasks.g1r_grml2_q3_b",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "!",
+            "key": "data.tasks.g1r_grml2_q3_c",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_grml2_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "«Где живёт медведь» — какой знак нужен?",
+        "qKey": "data.tasks.g1r_grml2_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": ".",
+            "key": "data.tasks.g1r_grml2_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "?",
+            "key": "data.tasks.g1r_grml2_q4_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "!",
+            "key": "data.tasks.g1r_grml2_q4_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1r_grml2_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "В конце вопроса ставим:",
+        "qKey": "data.tasks.g1r_grml2_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "?",
+            "key": "data.tasks.g1r_grml2_q5_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": ".",
+            "key": "data.tasks.g1r_grml2_q5_b",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1r-grm-l3",
+    "title": "Вопросы кто? что?",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "source": "G1R_GRM_L3_TASKS←island-anim-l3",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Вопросы КТО? и ЧТО? Кто бежит? Что растёт?"
+      },
+      {
+        "speaker": "tali",
+        "text": "КТО — про людей и животных. ЧТО — про предметы! Тали говорит: «Про облако нужно спрашивать КТО?» Правда?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Вопросы КТО? ЧТО?",
+        "body": "КТО — про людей и животных. ЧТО — про предметы!"
+      },
+      {
+        "title": "Примеры вопросов",
+        "body": "Кто бежит? Что растёт? Кто поёт?"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "en=ru Cyrillic: data.tasks.g1r_grml3_q2_a",
+      "ky=ru stub: data.tasks.g1r_grml3_q2_a",
+      "en=ru Cyrillic: data.tasks.g1r_grml3_q2_b",
+      "ky=ru stub: data.tasks.g1r_grml3_q2_b",
+      "en=ru Cyrillic: data.tasks.g1r_grml3_q3_a",
+      "ky=ru stub: data.tasks.g1r_grml3_q3_a",
+      "en=ru Cyrillic: data.tasks.g1r_grml3_q3_b",
+      "ky=ru stub: data.tasks.g1r_grml3_q3_b",
+      "en=ru Cyrillic: data.tasks.g1r_grml3_q4_a",
+      "ky=ru stub: data.tasks.g1r_grml3_q4_a",
+      "en=ru Cyrillic: data.tasks.g1r_grml3_q4_b",
+      "ky=ru stub: data.tasks.g1r_grml3_q4_b",
+      "en=ru Cyrillic: data.tasks.g1r_grml3_q5_a",
+      "ky=ru stub: data.tasks.g1r_grml3_q5_a",
+      "en=ru Cyrillic: data.tasks.g1r_grml3_q5_b",
+      "ky=ru stub: data.tasks.g1r_grml3_q5_b"
+    ],
+    "curriculum": "`g1r-grm-l3`\n\n**Диалог:**\n- **Персонаж:** Вопросы КТО? и ЧТО? Кто бежит? Что растёт?\n- **Тали:** КТО — про людей и животных. ЧТО — про предметы! Тали говорит: «Про облако нужно спрашивать КТО?» Правда?\n\n**Интро (объяснения перед заданиями):**\n1. **Вопросы КТО? ЧТО?** — КТО — про людей и животных. ЧТО — про предметы!\n2. **Примеры вопросов** — Кто бежит? Что растёт? Кто поёт?\n\n**Задания:**\n1. **multiple_choice** — Тали говорит: «Про облако — КТО?» Прав ли он?\n\n   Варианты ответа:\n   - `a`: Тали прав\n   - `b`: Нет — облако это предмет, поэтому ЧТО? ✓\n2. **multiple_choice** — Про собаку спрашиваем...\n\n   Варианты ответа:\n   - `a`: ЧТО?\n   - `b`: КТО? ✓\n3. **multiple_choice** — Про книгу спрашиваем...\n\n   Варианты ответа:\n   - `a`: КТО?\n   - `b`: ЧТО? ✓\n4. **multiple_choice** — «___ прыгает?» — про зайца. Какое слово?\n\n   Варианты ответа:\n   - `a`: ЧТО\n   - `b`: КТО ✓\n5. **multiple_choice** · **[ABA]** · _special_aba_ — Про дерево спрашиваем:\n\n   Варианты ответа:\n   - `a`: КТО?\n   - `b`: ЧТО? ✓\n\n---\n\n### Парк знаний\n\n**Мир:** `g1world` · возраст: `7`\n\n*Школа, природа и здоровье с Кешей!*\n\n#### Тема: Школа\n\n- id темы: `g1w-school` · Логика\n\n##### Урок: Школьные принадлежности\n",
+    "tasks": [
+      {
+        "id": "g1r_grml3_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали говорит: «Про облако — КТО?» Прав ли он?",
+        "qKey": "data.tasks.g1r_grml3_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "key": "data.tasks.g1r_grml3_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — облако это предмет, поэтому ЧТО?",
+            "key": "data.tasks.g1r_grml3_q1_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_grml3_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Про собаку спрашиваем...",
+        "qKey": "data.tasks.g1r_grml3_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "ЧТО?",
+            "key": "data.tasks.g1r_grml3_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "КТО?",
+            "key": "data.tasks.g1r_grml3_q2_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_grml3_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Про книгу спрашиваем...",
+        "qKey": "data.tasks.g1r_grml3_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "КТО?",
+            "key": "data.tasks.g1r_grml3_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "ЧТО?",
+            "key": "data.tasks.g1r_grml3_q3_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_grml3_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "«___ прыгает?» — про зайца. Какое слово?",
+        "qKey": "data.tasks.g1r_grml3_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "ЧТО",
+            "key": "data.tasks.g1r_grml3_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "КТО",
+            "key": "data.tasks.g1r_grml3_q4_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1r_grml3_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "Про дерево спрашиваем:",
+        "qKey": "data.tasks.g1r_grml3_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "КТО?",
+            "key": "data.tasks.g1r_grml3_q5_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "ЧТО?",
+            "key": "data.tasks.g1r_grml3_q5_b",
+            "correct": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1w-sch-l1",
+    "title": "Школьные принадлежности",
+    "subject": "logic",
+    "world": "g1world",
+    "source": "G1W_SCH_L1_TASKS←garden-col-l1",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Привет! Я Кеша! Ручка, тетрадь, учебник — школьные принадлежности!"
+      },
+      {
+        "speaker": "tali",
+        "text": "В школе мы учимся. В классе — парты и доска! Тали говорит: «Я думаю, что линейка — не школьная принадлежность!» Правда?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Школьные принадлежности!",
+        "body": "Ручка, тетрадь, учебник, пенал — что лежит в портфеле!"
+      },
+      {
+        "title": "Класс и уроки",
+        "body": "В классе — парты, доска, учитель. Урок длится 45 минут!"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1w_schl1_q4_a",
+      "ky=ru stub: data.tasks.g1w_schl1_q4_c"
+    ],
+    "curriculum": "`g1w-sch-l1`\n\n**Диалог:**\n- **Персонаж:** Привет! Я Кеша! Ручка, тетрадь, учебник — школьные принадлежности!\n- **Тали:** В школе мы учимся. В классе — парты и доска! Тали говорит: «Я думаю, что линейка — не школьная принадлежность!» Правда?\n\n**Интро (объяснения перед заданиями):**\n1. **Школьные принадлежности!** — Ручка, тетрадь, учебник, пенал — что лежит в портфеле!\n2. **Класс и уроки** — В классе — парты, доска, учитель. Урок длится 45 минут!\n\n**Задания:**\n1. **multiple_choice** — Тали говорит: «Линейка — не школьная принадлежность!» Прав ли он?\n\n   Варианты ответа:\n   - `a`: Тали прав\n   - `b`: Нет — линейка нужна на уроках ✓\n2. **multiple_choice** — Что лежит в портфеле?\n\n   Варианты ответа:\n   - `a`: Кастрюля и сковородка\n   - `b`: Ручка, тетрадь, учебник ✓\n   - `c`: Подушка и одеяло\n3. **multiple_choice** — Тали хочет писать на уроке. Что ему нужно?\n\n   Варианты ответа:\n   - `a`: Ложка\n   - `b`: Ручка ✓\n   - `c`: Молоток\n4. **multiple_choice** — В классе есть... Тали говорит: «Бассейн!»\n\n   Варианты ответа:\n   - `a`: Бассейн\n   - `b`: Парты и доска ✓\n   - `c`: Плита\n5. **multiple_choice** · **[ABA]** · _special_aba_ — Тетрадь — школьная принадлежность?\n\n   Варианты ответа:\n   - `a`: Да ✓\n   - `b`: Нет\n\n##### Урок: Класс и уроки\n",
+    "tasks": [
+      {
+        "id": "g1w_schl1_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали говорит: «Линейка — не школьная принадлежность!» Прав ли он?",
+        "qKey": "data.tasks.g1w_schl1_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "key": "data.tasks.g1w_schl1_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — линейка нужна на уроках",
+            "key": "data.tasks.g1w_schl1_q1_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1w_schl1_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Что лежит в портфеле?",
+        "qKey": "data.tasks.g1w_schl1_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Кастрюля и сковородка",
+            "key": "data.tasks.g1w_schl1_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Ручка, тетрадь, учебник",
+            "key": "data.tasks.g1w_schl1_q2_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Подушка и одеяло",
+            "key": "data.tasks.g1w_schl1_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1w_schl1_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали хочет писать на уроке. Что ему нужно?",
+        "qKey": "data.tasks.g1w_schl1_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Ложка",
+            "key": "data.tasks.g1w_schl1_q3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Ручка",
+            "key": "data.tasks.g1w_schl1_q3_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Молоток",
+            "key": "data.tasks.g1w_schl1_q3_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1w_schl1_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "В классе есть... Тали говорит: «Бассейн!»",
+        "qKey": "data.tasks.g1w_schl1_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Бассейн",
+            "key": "data.tasks.g1w_schl1_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Парты и доска",
+            "key": "data.tasks.g1w_schl1_q4_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Плита",
+            "key": "data.tasks.g1w_schl1_q4_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1w_schl1_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "Тетрадь — школьная принадлежность?",
+        "qKey": "data.tasks.g1w_schl1_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Да",
+            "key": "data.tasks.g1w_schl1_q5_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "key": "data.tasks.g1w_schl1_q5_b",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1w-sch-l2",
+    "title": "Класс и уроки",
+    "subject": "logic",
+    "world": "g1world",
+    "source": "G1W_SCH_L2_TASKS←garden-col-l2",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Уроки бывают разные: математика, чтение, физкультура!"
+      },
+      {
+        "speaker": "tali",
+        "text": "На физкультуре бегаем, на рисовании рисуем! Тали говорит: «На физкультуре мы решаем задачки!» Правда?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Уроки в школе!",
+        "body": "Математика, чтение, русский, физкультура, рисование!"
+      },
+      {
+        "title": "Физкультура и рисование",
+        "body": "На физкультуре бегаем и прыгаем. На рисовании — рисуем!"
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1w_schl2_q2_a",
+      "ky=ru stub: data.tasks.g1w_schl2_q3_a",
+      "ky=ru stub: data.tasks.g1w_schl2_q3_c",
+      "ky=ru stub: data.tasks.g1w_schl2_q4_a",
+      "ky=ru stub: data.tasks.g1w_schl2_q4_b"
+    ],
+    "curriculum": "`g1w-sch-l2`\n\n**Диалог:**\n- **Персонаж:** Уроки бывают разные: математика, чтение, физкультура!\n- **Тали:** На физкультуре бегаем, на рисовании рисуем! Тали говорит: «На физкультуре мы решаем задачки!» Правда?\n\n**Интро (объяснения перед заданиями):**\n1. **Уроки в школе!** — Математика, чтение, русский, физкультура, рисование!\n2. **Физкультура и рисование** — На физкультуре бегаем и прыгаем. На рисовании — рисуем!\n\n**Задания:**\n1. **multiple_choice** — Тали говорит: «На физкультуре решаем задачки!» Прав ли он?\n\n   Варианты ответа:\n   - `a`: Тали прав\n   - `b`: Нет — на физкультуре бегаем и прыгаем ✓\n2. **multiple_choice** — На каком уроке мы рисуем?\n\n   Варианты ответа:\n   - `a`: Математика\n   - `b`: Рисование ✓\n   - `c`: Чтение\n3. **multiple_choice** — На каком уроке считаем и решаем примеры?\n\n   Варианты ответа:\n   - `a`: Математика ✓\n   - `b`: Физкультура\n   - `c`: Музыка\n4. **multiple_choice** — Тали любит петь. Какой урок ему понравится больше всего?\n\n   Варианты ответа:\n   - `a`: Математика\n   - `b`: Музыка ✓\n   - `c`: Физкультура\n5. **multiple_choice** · **[ABA]** · _special_aba_ — На физкультуре мы...\n\n   Варианты ответа:\n   - `a`: Бегаем и прыгаем ✓\n   - `b`: Читаем книги\n\n##### Урок: Физкультура и рисование\n",
+    "tasks": [
+      {
+        "id": "g1w_schl2_t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали говорит: «На физкультуре решаем задачки!» Прав ли он?",
+        "qKey": "data.tasks.g1w_schl2_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Тали прав",
+            "key": "data.tasks.g1w_schl2_q1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет — на физкультуре бегаем и прыгаем",
+            "key": "data.tasks.g1w_schl2_q1_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1w_schl2_t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "На каком уроке мы рисуем?",
+        "qKey": "data.tasks.g1w_schl2_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Математика",
+            "key": "data.tasks.g1w_schl2_q2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Рисование",
+            "key": "data.tasks.g1w_schl2_q2_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Чтение",
+            "key": "data.tasks.g1w_schl2_q2_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1w_schl2_t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "На каком уроке считаем и решаем примеры?",
+        "qKey": "data.tasks.g1w_schl2_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Математика",
+            "key": "data.tasks.g1w_schl2_q3_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Физкультура",
+            "key": "data.tasks.g1w_schl2_q3_b",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Музыка",
+            "key": "data.tasks.g1w_schl2_q3_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1w_schl2_t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали любит петь. Какой урок ему понравится больше всего?",
+        "qKey": "data.tasks.g1w_schl2_q4",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Математика",
+            "key": "data.tasks.g1w_schl2_q4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Музыка",
+            "key": "data.tasks.g1w_schl2_q4_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Физкультура",
+            "key": "data.tasks.g1w_schl2_q4_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1w_schl2_t5",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "На физкультуре мы...",
+        "qKey": "data.tasks.g1w_schl2_q5",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Бегаем и прыгаем",
+            "key": "data.tasks.g1w_schl2_q5_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Читаем книги",
+            "key": "data.tasks.g1w_schl2_q5_b",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1w-sch-l3",
+    "title": "Физкультура и рисование",
+    "subject": "logic",
+    "world": "g1world",
+    "source": "G1W_SCH_L3_TASKS",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "На физкультуре бегаем, на рисовании рисуем! Что тебе нравится больше?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Я люблю и то и другое! На физкультуре прыгаю, а на рисовании — рисую динозавров. Помоги разобраться!"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Физкультура",
+        "body": "На физкультуре мы бегаем, прыгаем и играем в мяч. Это спорт в школе!"
+      },
+      {
+        "title": "Рисование",
+        "body": "На рисовании мы рисуем красками и карандашами. Тут нужна кисть, а не мяч!"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4,
+    "missing": [],
+    "enkyFlags": [],
+    "curriculum": "`g1w-sch-l3`\n\n**Диалог:**\n- **Персонаж:** На физкультуре бегаем, на рисовании рисуем! Что тебе нравится больше?\n- **Тали:** Я люблю и то и другое! На физкультуре прыгаю, а на рисовании — рисую динозавров. Помоги разобраться!\n\n**Интро (объяснения перед заданиями):**\n1. **Физкультура** — На физкультуре мы бегаем, прыгаем и играем в мяч. Это спорт в школе!\n2. **Рисование** — На рисовании мы рисуем красками и карандашами. Тут нужна кисть, а не мяч!\n\n**Задания:**\n1. **multiple_choice** — На физкультуре Тали обычно…\n\n   Варианты ответа:\n   - `a`: Бегает и прыгает ✓\n   - `b`: Читает учебник\n   - `c`: Спит\n2. **multiple_choice** — На рисовании Тали…\n\n   Варианты ответа:\n   - `a`: Рисует красками ✓\n   - `b`: Прыгает через скакалку\n   - `c`: Считает примеры\n3. **multiple_choice** — Что нужно для игры в мяч на физкультуре?\n\n   Варианты ответа:\n   - `a`: Мяч ✓\n   - `b`: Кисть\n   - `c`: Книга\n4. **input** — Тали говорит: «На рисовании мы бегаем!» Правда? _(ответ: Нет)_\n\n#### Тема: Природа\n\n- id темы: `g1w-nature` · Логика\n\n##### Урок: Деревья\n",
+    "tasks": [
+      {
+        "id": "g1wschl3t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "На физкультуре Тали обычно…",
+        "qKey": "data.tasks.g1w_schl3_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Бегает и прыгает",
+            "key": "data.tasks.g1w_schl3_opt_run",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Читает учебник",
+            "key": "data.tasks.g1w_schl3_opt_read",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Спит",
+            "key": "data.tasks.g1w_schl3_opt_sleep",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wschl3t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "На рисовании Тали…",
+        "qKey": "data.tasks.g1w_schl3_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Рисует красками",
+            "key": "data.tasks.g1w_schl3_opt_paint",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Прыгает через скакалку",
+            "key": "data.tasks.g1w_schl3_opt_jump",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Считает примеры",
+            "key": "data.tasks.g1w_schl3_opt_count",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wschl3t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Что нужно для игры в мяч на физкультуре?",
+        "qKey": "data.tasks.g1w_schl3_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Мяч",
+            "key": "data.tasks.g1w_schl3_opt_ball",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Кисть",
+            "key": "data.tasks.g1w_schl3_opt_brush",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Книга",
+            "key": "data.tasks.g1w_schl3_opt_book",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wschl3t4",
+        "type": "input",
+        "audience": null,
+        "q": "Тали говорит: «На рисовании мы бегаем!» Правда?",
+        "qKey": "data.tasks.g1w_schl3_q4",
+        "answer": null,
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g1w-nat-l1",
+    "title": "Деревья",
+    "subject": "logic",
+    "world": "g1world",
+    "source": "G1W_NAT_L1_TASKS",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Деревья — дуб, берёза, ель. У них ствол и листья!"
+      },
+      {
+        "speaker": "tali",
+        "text": "У дуба жёлуди, у берёзы — белая кора, у ели — иголки. Помоги запомнить!"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Деревья!",
+        "body": "Дуб, берёза, ель — у них ствол, ветки, листья!"
+      },
+      {
+        "title": "Хвойные и лиственные",
+        "body": "Ель — хвойная (иголки). Берёза и дуб — лиственные (листья)."
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4,
+    "missing": [],
+    "enkyFlags": [],
+    "curriculum": "`g1w-nat-l1`\n\n**Диалог:**\n- **Персонаж:** Деревья — дуб, берёза, ель. У них ствол и листья!\n- **Тали:** У дуба жёлуди, у берёзы — белая кора, у ели — иголки. Помоги запомнить!\n\n**Интро (объяснения перед заданиями):**\n1. **Деревья!** — Дуб, берёза, ель — у них ствол, ветки, листья!\n2. **Хвойные и лиственные** — Ель — хвойная (иголки). Берёза и дуб — лиственные (листья).\n\n**Задания:**\n1. **multiple_choice** — Какое из этих — дерево?\n\n   Варианты ответа:\n   - `a`: Дуб ✓\n   - `b`: Роза\n   - `c`: Гриб\n2. **multiple_choice** — Толстая «нога» дерева — это…\n\n   Варианты ответа:\n   - `a`: Ствол ✓\n   - `b`: Корень (под землёй)\n   - `c`: Цветок\n3. **multiple_choice** — Какое дерево хвойное (с иголками)?\n\n   Варианты ответа:\n   - `a`: Ель ✓\n   - `b`: Берёза\n   - `c`: Клён\n4. **input** — У берёзы летом на ветках… _(ответ: Листья)_\n\n##### Урок: Животные\n",
+    "tasks": [
+      {
+        "id": "g1wnatl1t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Какое из этих — дерево?",
+        "qKey": "data.tasks.g1w_natl1_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Дуб",
+            "key": "data.tasks.g1w_natl1_opt_oak",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Роза",
+            "key": "data.tasks.g1w_natl1_opt_rose",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Гриб",
+            "key": "data.tasks.g1w_natl1_opt_mushroom",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wnatl1t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Толстая «нога» дерева — это…",
+        "qKey": "data.tasks.g1w_natl1_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Ствол",
+            "key": "data.tasks.g1w_natl1_opt_trunk",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Корень (под землёй)",
+            "key": "data.tasks.g1w_natl1_opt_root",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Цветок",
+            "key": "data.tasks.g1w_natl1_opt_flower",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wnatl1t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Какое дерево хвойное (с иголками)?",
+        "qKey": "data.tasks.g1w_natl1_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Ель",
+            "key": "data.tasks.g1w_natl1_opt_fir",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Берёза",
+            "key": "data.tasks.g1w_natl1_opt_birch",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Клён",
+            "key": "data.tasks.g1w_natl1_opt_maple",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wnatl1t4",
+        "type": "input",
+        "audience": null,
+        "q": "У берёзы летом на ветках…",
+        "qKey": "data.tasks.g1w_natl1_q4",
+        "answer": null,
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g1w-nat-l2",
+    "title": "Животные",
+    "subject": "logic",
+    "world": "g1world",
+    "source": "RW56:garden-anim-l2",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Животные бывают домашние и дикие. Корова — домашняя, а медведь — дикий!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Домашние живут рядом с людьми. Дикие — в лесу и саванне. Давай проверим!"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Домашние и дикие",
+        "body": "Домашние: корова, собака, кот. Дикие: медведь, лев, лиса."
+      },
+      {
+        "title": "Где живут?",
+        "body": "Дикие животные живут в лесу и саванне. Домашние — рядом с человеком."
+      }
+    ],
+    "types": [
+      "multiple_choice"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_t1_a",
+      "ky=ru stub: data.tasks.nrw_ganiml2_t1_a",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_t1_b",
+      "ky=ru stub: data.tasks.nrw_ganiml2_t1_b",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_t1_c",
+      "ky=ru stub: data.tasks.nrw_ganiml2_t1_c",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_t2_q",
+      "ky=ru stub: data.tasks.nrw_ganiml2_t2_q",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_t2_a",
+      "ky=ru stub: data.tasks.nrw_ganiml2_t2_a",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_t2_b",
+      "ky=ru stub: data.tasks.nrw_ganiml2_t2_b",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_t3_q",
+      "ky=ru stub: data.tasks.nrw_ganiml2_t3_q",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_t3_a",
+      "ky=ru stub: data.tasks.nrw_ganiml2_t3_a",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_t3_b",
+      "ky=ru stub: data.tasks.nrw_ganiml2_t3_b",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_t3_c",
+      "ky=ru stub: data.tasks.nrw_ganiml2_t3_c",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_t4_q",
+      "ky=ru stub: data.tasks.nrw_ganiml2_t4_q",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_t4_a",
+      "ky=ru stub: data.tasks.nrw_ganiml2_t4_a",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_t4_b",
+      "ky=ru stub: data.tasks.nrw_ganiml2_t4_b",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_t4_c",
+      "ky=ru stub: data.tasks.nrw_ganiml2_t4_c",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_a1_q",
+      "ky=ru stub: data.tasks.nrw_ganiml2_a1_q",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_a1_a",
+      "ky=ru stub: data.tasks.nrw_ganiml2_a1_a",
+      "en=ru Cyrillic: data.tasks.nrw_ganiml2_a1_b",
+      "ky=ru stub: data.tasks.nrw_ganiml2_a1_b"
+    ],
+    "curriculum": "`g1w-nat-l2`\n\n**Диалог:**\n- **Персонаж:** Животные бывают домашние и дикие. Корова — домашняя, а медведь — дикий!\n- **Тали:** Домашние живут рядом с людьми. Дикие — в лесу и саванне. Давай проверим!\n\n**Интро (объяснения перед заданиями):**\n1. **Домашние и дикие** — Домашние: корова, собака, кот. Дикие: медведь, лев, лиса.\n2. **Где живут?** — Дикие животные живут в лесу и саванне. Домашние — рядом с человеком.\n\n**Задания:**\n1. **multiple_choice** — Тали видит следы медведя. «Медведь живёт в море!» — говорит он. Где правда?\n\n   Варианты ответа:\n   - `a`: В доме\n   - `b`: В лесу ✓\n   - `c`: В море\n2. **multiple_choice** — Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?\n\n   Варианты ответа:\n   - `a`: Да, лев — домашний\n   - `b`: Нет, лев — дикий! ✓\n3. **multiple_choice** — Тали нашёл рыжий пушистый след в лесу. Кто это был?\n\n   Варианты ответа:\n   - `a`: Волк\n   - `b`: Лиса ✓\n   - `c`: Медведь\n4. **multiple_choice** — Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?\n\n   Варианты ответа:\n   - `a`: Волк\n   - `b`: Лиса\n   - `c`: Корова ✓\n5. **multiple_choice** · **[ABA]** · _special_aba_ — Лиса — дикое животное?\n\n   Варианты ответа:\n   - `a`: Да ✓\n   - `b`: Нет\n\n##### Урок: Погода\n",
+    "tasks": [
+      {
+        "id": "ganiml2-t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали видит следы медведя. «Медведь живёт в море!» — говорит он. Где правда?",
+        "qKey": "data.tasks.nrw_ganiml2_t1_q",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "В доме",
+            "key": "data.tasks.nrw_ganiml2_t1_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "В лесу",
+            "key": "data.tasks.nrw_ganiml2_t1_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "В море",
+            "key": "data.tasks.nrw_ganiml2_t1_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "ganiml2-t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?",
+        "qKey": "data.tasks.nrw_ganiml2_t2_q",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Да, лев — домашний",
+            "key": "data.tasks.nrw_ganiml2_t2_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Нет, лев — дикий!",
+            "key": "data.tasks.nrw_ganiml2_t2_b",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "ganiml2-t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали нашёл рыжий пушистый след в лесу. Кто это был?",
+        "qKey": "data.tasks.nrw_ganiml2_t3_q",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Волк",
+            "key": "data.tasks.nrw_ganiml2_t3_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Лиса",
+            "key": "data.tasks.nrw_ganiml2_t3_b",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Медведь",
+            "key": "data.tasks.nrw_ganiml2_t3_c",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "ganiml2-t4",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?",
+        "qKey": "data.tasks.nrw_ganiml2_t4_q",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Волк",
+            "key": "data.tasks.nrw_ganiml2_t4_a",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Лиса",
+            "key": "data.tasks.nrw_ganiml2_t4_b",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Корова",
+            "key": "data.tasks.nrw_ganiml2_t4_c",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "ganiml2-a1",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "Лиса — дикое животное?",
+        "qKey": "data.tasks.nrw_ganiml2_a1_q",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Да",
+            "key": "data.tasks.nrw_ganiml2_a1_a",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Нет",
+            "key": "data.tasks.nrw_ganiml2_a1_b",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1w-nat-l3",
+    "title": "Погода",
+    "subject": "logic",
+    "world": "g1world",
+    "source": "G1W_NAT_L3_TASKS",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Погода бывает разная: солнце, дождь, снег! Что надеть — зависит от погоды."
+      },
+      {
+        "speaker": "tali",
+        "text": "В дождь — зонт, в снег — куртку. И природу береги: не мусори в лесу!"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Погода",
+        "body": "Солнце, дождь, снег, ветер — это погода. От неё зависит, что надеть."
+      },
+      {
+        "title": "Береги природу",
+        "body": "Не мусори в лесу и парке. Природа — наш общий дом!"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4,
+    "missing": [],
+    "enkyFlags": [],
+    "curriculum": "`g1w-nat-l3`\n\n**Диалог:**\n- **Персонаж:** Погода бывает разная: солнце, дождь, снег! Что надеть — зависит от погоды.\n- **Тали:** В дождь — зонт, в снег — куртку. И природу береги: не мусори в лесу!\n\n**Интро (объяснения перед заданиями):**\n1. **Погода** — Солнце, дождь, снег, ветер — это погода. От неё зависит, что надеть.\n2. **Береги природу** — Не мусори в лесу и парке. Природа — наш общий дом!\n\n**Задания:**\n1. **multiple_choice** — Какая погода тёплая и яркая?\n\n   Варианты ответа:\n   - `a`: Солнечно ✓\n   - `b`: Снег\n   - `c`: Дождь\n2. **multiple_choice** — На улице снег. Что надеть?\n\n   Варианты ответа:\n   - `a`: Тёплую куртку ✓\n   - `b`: Купальник\n   - `c`: Сандалии\n3. **multiple_choice** — Идёт дождь. Что взять с собой?\n\n   Варианты ответа:\n   - `a`: Зонт ✓\n   - `b`: Санки\n   - `c`: Веер\n4. **input** — Нужно ли беречь природу — не мусорить в лесу? _(ответ: Да)_\n\n#### Тема: Тело и здоровье\n\n- id темы: `g1w-body` · Логика\n\n##### Урок: Органы чувств\n",
+    "tasks": [
+      {
+        "id": "g1wnatl3t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Какая погода тёплая и яркая?",
+        "qKey": "data.tasks.g1w_natl3_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Солнечно",
+            "key": "data.tasks.g1w_natl3_opt_sun",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Снег",
+            "key": "data.tasks.g1w_natl3_opt_snow",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Дождь",
+            "key": "data.tasks.g1w_natl3_opt_rain",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wnatl3t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "На улице снег. Что надеть?",
+        "qKey": "data.tasks.g1w_natl3_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Тёплую куртку",
+            "key": "data.tasks.g1w_natl3_opt_coat",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Купальник",
+            "key": "data.tasks.g1w_natl3_opt_swimsuit",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Сандалии",
+            "key": "data.tasks.g1w_natl3_opt_sandals",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wnatl3t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Идёт дождь. Что взять с собой?",
+        "qKey": "data.tasks.g1w_natl3_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Зонт",
+            "key": "data.tasks.g1w_natl3_opt_umbrella",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Санки",
+            "key": "data.tasks.g1w_natl3_opt_sled",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Веер",
+            "key": "data.tasks.g1w_natl3_opt_fan",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wnatl3t4",
+        "type": "input",
+        "audience": null,
+        "q": "Нужно ли беречь природу — не мусорить в лесу?",
+        "qKey": "data.tasks.g1w_natl3_q4",
+        "answer": null,
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g1w-bdy-l1",
+    "title": "Органы чувств",
+    "subject": "logic",
+    "world": "g1world",
+    "source": "G1W_BDY_L1_TASKS",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Органы чувств: глаза видят, уши слышат, нос чувствует запахи!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Руки трогают, язык чувствует вкус. Всё важно!"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Органы чувств!",
+        "body": "Глаза видят, уши слышат, нос чувствует запахи, руки трогают!"
+      },
+      {
+        "title": "Вкус и язык",
+        "body": "Языком мы пробуем на вкус: сладкое, кислое, солёное. Это тоже орган чувств!"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [],
+    "curriculum": "`g1w-bdy-l1`\n\n**Диалог:**\n- **Персонаж:** Органы чувств: глаза видят, уши слышат, нос чувствует запахи!\n- **Тали:** Руки трогают, язык чувствует вкус. Всё важно!\n\n**Интро (объяснения перед заданиями):**\n1. **Органы чувств!** — Глаза видят, уши слышат, нос чувствует запахи, руки трогают!\n2. **Вкус и язык** — Языком мы пробуем на вкус: сладкое, кислое, солёное. Это тоже орган чувств!\n\n**Задания:**\n1. **multiple_choice** — Чем мы видим?\n\n   Варианты ответа:\n   - `a`: Глаза ✓\n   - `b`: Уши\n   - `c`: Нос\n2. **multiple_choice** — Чем мы слышим?\n\n   Варианты ответа:\n   - `a`: Уши ✓\n   - `b`: Глаза\n   - `c`: Язык\n3. **multiple_choice** — Чем мы нюхаем?\n\n   Варианты ответа:\n   - `a`: Нос ✓\n   - `b`: Руки\n   - `c`: Глаза\n4. **input** — Чем мы пробуем на вкус? _(ответ: Язык)_\n5. **multiple_choice** · **[ABA]** · _special_aba_ — Чем смотрим на картинку?\n\n   Варианты ответа:\n   - `a`: Глаза ✓\n   - `b`: Уши\n\n##### Урок: Здоровье\n",
+    "tasks": [
+      {
+        "id": "g1wbdyl1t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Чем мы видим?",
+        "qKey": "data.tasks.g1w_bdyl1_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Глаза",
+            "key": "data.tasks.g1w_bdy_opt_eyes",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Уши",
+            "key": "data.tasks.g1w_bdy_opt_ears",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Нос",
+            "key": "data.tasks.g1w_bdy_opt_nose",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wbdyl1t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Чем мы слышим?",
+        "qKey": "data.tasks.g1w_bdyl1_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Уши",
+            "key": "data.tasks.g1w_bdy_opt_ears",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Глаза",
+            "key": "data.tasks.g1w_bdy_opt_eyes",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Язык",
+            "key": "data.tasks.g1w_bdy_opt_tongue",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wbdyl1t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Чем мы нюхаем?",
+        "qKey": "data.tasks.g1w_bdyl1_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Нос",
+            "key": "data.tasks.g1w_bdy_opt_nose",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Руки",
+            "key": "data.tasks.g1w_bdy_opt_hands",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Глаза",
+            "key": "data.tasks.g1w_bdy_opt_eyes",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wbdyl1t4",
+        "type": "input",
+        "audience": null,
+        "q": "Чем мы пробуем на вкус?",
+        "qKey": "data.tasks.g1w_bdyl1_q4",
+        "answer": null,
+        "options": []
+      },
+      {
+        "id": "g1wbdyl1a1",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "Чем смотрим на картинку?",
+        "qKey": "data.tasks.g1w_bdyl1_a1",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Глаза",
+            "key": "data.tasks.g1w_bdy_opt_eyes",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Уши",
+            "key": "data.tasks.g1w_bdy_opt_ears",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1w-bdy-l2",
+    "title": "Здоровье",
+    "subject": "logic",
+    "world": "g1world",
+    "source": "G1W_BDY_L2_TASKS",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Здоровье — это спорт, зарядка, правильное питание!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Фрукты и овощи полезны. Сладкое — понемногу!"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Скелет и мышцы!",
+        "body": "Кости — опора. Мышцы помогают двигаться!"
+      },
+      {
+        "title": "Здоровый сон",
+        "body": "Сон — это когда тело отдыхает. Спи 9–10 часов!"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1w_bdyl2_opt_chips"
+    ],
+    "curriculum": "`g1w-bdy-l2`\n\n**Диалог:**\n- **Персонаж:** Здоровье — это спорт, зарядка, правильное питание!\n- **Тали:** Фрукты и овощи полезны. Сладкое — понемногу!\n\n**Интро (объяснения перед заданиями):**\n1. **Скелет и мышцы!** — Кости — опора. Мышцы помогают двигаться!\n2. **Здоровый сон** — Сон — это когда тело отдыхает. Спи 9–10 часов!\n\n**Задания:**\n1. **multiple_choice** — Что помогает мышцам быть сильными?\n\n   Варианты ответа:\n   - `a`: Зарядка и спорт ✓\n   - `b`: Только конфеты\n   - `c`: Сидеть у телевизора\n2. **multiple_choice** — Какая еда полезная?\n\n   Варианты ответа:\n   - `a`: Фрукты и овощи ✓\n   - `b`: Чипсы\n   - `c`: Газировка\n3. **multiple_choice** — Сколько примерно нужно спать школьнику?\n\n   Варианты ответа:\n   - `a`: Около 9–10 часов ✓\n   - `b`: 2 часа\n   - `c`: Не спать всю ночь\n4. **input** — Что держит тело прямо, как опора? _(ответ: Скелет (кости))_\n5. **multiple_choice** · **[ABA]** · _special_aba_ — Нужно ли делать зарядку?\n\n   Варианты ответа:\n   - `a`: Да ✓\n   - `b`: Нет\n\n##### Урок: Безопасность\n",
+    "tasks": [
+      {
+        "id": "g1wbdyl2t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Что помогает мышцам быть сильными?",
+        "qKey": "data.tasks.g1w_bdyl2_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Зарядка и спорт",
+            "key": "data.tasks.g1w_bdyl2_opt_exercise",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Только конфеты",
+            "key": "data.tasks.g1w_bdyl2_opt_candy",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Сидеть у телевизора",
+            "key": "data.tasks.g1w_bdyl2_opt_tv",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wbdyl2t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Какая еда полезная?",
+        "qKey": "data.tasks.g1w_bdyl2_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Фрукты и овощи",
+            "key": "data.tasks.g1w_bdyl2_opt_fruit",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Чипсы",
+            "key": "data.tasks.g1w_bdyl2_opt_chips",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Газировка",
+            "key": "data.tasks.g1w_bdyl2_opt_soda",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wbdyl2t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Сколько примерно нужно спать школьнику?",
+        "qKey": "data.tasks.g1w_bdyl2_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Около 9–10 часов",
+            "key": "data.tasks.g1w_bdyl2_opt_sleep",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "2 часа",
+            "key": "data.tasks.g1w_bdyl2_opt_2h",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Не спать всю ночь",
+            "key": "data.tasks.g1w_bdyl2_opt_allnight",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wbdyl2t4",
+        "type": "input",
+        "audience": null,
+        "q": "Что держит тело прямо, как опора?",
+        "qKey": "data.tasks.g1w_bdyl2_q4",
+        "answer": null,
+        "options": []
+      },
+      {
+        "id": "g1wbdyl2a1",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "Нужно ли делать зарядку?",
+        "qKey": "data.tasks.g1w_bdyl2_a1",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Да",
+            "key": "data.tasks.opt_yes",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Нет",
+            "key": "data.tasks.opt_no",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1w-bdy-l3",
+    "title": "Безопасность",
+    "subject": "logic",
+    "world": "g1world",
+    "source": "G1W_BDY_L3_TASKS",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Безопасность: не разговаривай с незнакомцами!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Переходи дорогу на зелёный свет. Будь осторожен!"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Безопасность!",
+        "body": "Не разговаривай с незнакомцами! Не открывай дверь чужим!"
+      },
+      {
+        "title": "Правила на дороге",
+        "body": "Переходи на зелёный! Смотри по сторонам!"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5,
+    "missing": [],
+    "enkyFlags": [],
+    "curriculum": "`g1w-bdy-l3`\n\n**Диалог:**\n- **Персонаж:** Безопасность: не разговаривай с незнакомцами!\n- **Тали:** Переходи дорогу на зелёный свет. Будь осторожен!\n\n**Интро (объяснения перед заданиями):**\n1. **Безопасность!** — Не разговаривай с незнакомцами! Не открывай дверь чужим!\n2. **Правила на дороге** — Переходи на зелёный! Смотри по сторонам!\n\n**Задания:**\n1. **multiple_choice** — На какой сигнал светофора можно переходить дорогу?\n\n   Варианты ответа:\n   - `a`: Зелёный ✓\n   - `b`: Красный\n   - `c`: Жёлтый\n2. **multiple_choice** — Незнакомый человек у двери. Что делать?\n\n   Варианты ответа:\n   - `a`: Позвать взрослого / не открывать ✓\n   - `b`: Сразу открыть дверь\n   - `c`: Спрятаться под кровать\n3. **multiple_choice** — Ты потерялся в магазине. К кому обратиться?\n\n   Варианты ответа:\n   - `a`: К продавцу или охране ✓\n   - `b`: К любому незнакомцу\n   - `c`: Искать выход одному\n4. **input** — Перед переходом дороги нужно… _(ответ: Посмотреть налево и направо)_\n5. **multiple_choice** · **[ABA]** · _special_aba_ — Какой свет светофора — можно идти?\n\n   Варианты ответа:\n   - `a`: Зелёный ✓\n   - `b`: Красный\n\n---\n\n### Порт английского\n\n**Мир:** `g1eng` · возраст: `7`\n\n*Буквы G–R и приветствия с Поли!*\n\n#### Тема: Буквы G–R\n\n- id темы: `g1e-abc` · Английский язык\n\n##### Урок: Буквы G–J\n",
+    "tasks": [
+      {
+        "id": "g1wbdyl3t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "На какой сигнал светофора можно переходить дорогу?",
+        "qKey": "data.tasks.g1w_bdyl3_q1",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Зелёный",
+            "key": "data.tasks.g1w_bdyl3_opt_green",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Красный",
+            "key": "data.tasks.g1w_bdyl3_opt_red",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Жёлтый",
+            "key": "data.tasks.g1w_bdyl3_opt_yellow",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wbdyl3t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Незнакомый человек у двери. Что делать?",
+        "qKey": "data.tasks.g1w_bdyl3_q2",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Позвать взрослого / не открывать",
+            "key": "data.tasks.g1w_bdyl3_opt_parent",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Сразу открыть дверь",
+            "key": "data.tasks.g1w_bdyl3_opt_open",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Спрятаться под кровать",
+            "key": "data.tasks.g1w_bdyl3_opt_hide",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wbdyl3t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Ты потерялся в магазине. К кому обратиться?",
+        "qKey": "data.tasks.g1w_bdyl3_q3",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "К продавцу или охране",
+            "key": "data.tasks.g1w_bdyl3_opt_police",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "К любому незнакомцу",
+            "key": "data.tasks.g1w_bdyl3_opt_stranger",
+            "correct": false
+          },
+          {
+            "id": "?",
+            "text": "Искать выход одному",
+            "key": "data.tasks.g1w_bdyl3_opt_alone",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1wbdyl3t4",
+        "type": "input",
+        "audience": null,
+        "q": "Перед переходом дороги нужно…",
+        "qKey": "data.tasks.g1w_bdyl3_q4",
+        "answer": null,
+        "options": []
+      },
+      {
+        "id": "g1wbdyl3a1",
+        "type": "multiple_choice",
+        "audience": "special_aba",
+        "q": "Какой свет светофора — можно идти?",
+        "qKey": "data.tasks.g1w_bdyl3_a1",
+        "answer": null,
+        "options": [
+          {
+            "id": "?",
+            "text": "Зелёный",
+            "key": "data.tasks.g1w_bdyl3_opt_green",
+            "correct": true
+          },
+          {
+            "id": "?",
+            "text": "Красный",
+            "key": "data.tasks.g1w_bdyl3_opt_red",
+            "correct": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g1e-abc-l1",
+    "title": "Буквы G–J",
+    "subject": "reading",
+    "world": "g1eng",
+    "source": "inline",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Привет! Я Поли! Буквы G, H, I, J — учим дальше!"
+      },
+      {
+        "speaker": "tali",
+        "text": "G — giraffe (жираф), H — house (дом). Я их выучил! Хотя... G и J иногда путаю. Поможешь?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Буквы G, H, I, J!",
+        "body": "G — goat (коза), H — house (дом). Учим английский!"
+      },
+      {
+        "title": "Продолжаем алфавит",
+        "body": "I — ice (лёд), J — juice (сок)!"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "fill_blank",
+      "input"
+    ],
+    "taskCount": 4,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1e_opt_G",
+      "ky=ru stub: data.tasks.g1e_opt_H",
+      "ky=ru stub: data.tasks.g1e_opt_I",
+      "ky=ru stub: data.tasks.g1e_opt_J"
+    ],
+    "curriculum": "`g1e-abc-l1`\n\n**Диалог:**\n- **Персонаж:** Привет! Я Поли! Буквы G, H, I, J — учим дальше!\n- **Тали:** G — giraffe (жираф), H — house (дом). Я их выучил! Хотя... G и J иногда путаю. Поможешь?\n\n**Интро (объяснения перед заданиями):**\n1. **Буквы G, H, I, J!** — G — goat (коза), H — house (дом). Учим английский!\n2. **Продолжаем алфавит** — I — ice (лёд), J — juice (сок)!\n\n**Задания:**\n1. **multiple_choice** — С какой буквы начинается GOAT?\n\n   Варианты ответа:\n   - `a`: G ✓\n   - `b`: H\n   - `c`: I\n2. **multiple_choice** — С какой буквы начинается HAPPY?\n\n   Варианты ответа:\n   - `a`: G\n   - `b`: H ✓\n   - `c`: I\n3. **fill_blank** — Ice starts with _\n\n   Предложение: Ice starts with _\n   Варианты вставки:\n   - `fb-a`: H\n   - `fb-b`: I ✓\n   - `fb-c`: J\n4. **input** — С какой буквы начинается JELLY? Тали говорит: «С G!» _(ответ: J)_\n\n##### Урок: Буквы K–N\n",
+    "tasks": [
+      {
+        "id": "g1eabcl1t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "С какой буквы начинается GOAT?",
+        "qKey": "data.tasks.g1e_G_for",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "G",
+            "key": "data.tasks.g1e_opt_G",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "H",
+            "key": "data.tasks.g1e_opt_H",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "I",
+            "key": "data.tasks.g1e_opt_I",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1eabcl1t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "С какой буквы начинается HAPPY?",
+        "qKey": "data.tasks.g1e_happy_starts",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "G",
+            "key": "data.tasks.g1e_opt_G",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "H",
+            "key": "data.tasks.g1e_opt_H",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "I",
+            "key": "data.tasks.g1e_opt_I",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1eabcl1t3",
+        "type": "fill_blank",
+        "audience": null,
+        "q": "Ice starts with _",
+        "qKey": "data.tasks.g1e_abcl1_fb_sent",
+        "answer": null,
+        "options": [
+          {
+            "id": "fb-a",
+            "text": "H",
+            "key": "data.tasks.g1e_opt_H",
+            "correct": false
+          },
+          {
+            "id": "fb-b",
+            "text": "I",
+            "key": "data.tasks.g1e_opt_I",
+            "correct": true
+          },
+          {
+            "id": "fb-c",
+            "text": "J",
+            "key": "data.tasks.g1e_opt_J",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1eabcl1t4",
+        "type": "input",
+        "audience": null,
+        "q": "С какой буквы начинается JELLY? Тали говорит: «С G!»",
+        "qKey": "data.tasks.g1e_J_for",
+        "answer": "J",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-abc-l2",
+    "title": "Буквы K–N",
+    "subject": "reading",
+    "world": "g1eng",
+    "source": "inline",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "K — kitten (котёнок), L — lion (лев). Запоминаю!"
+      },
+      {
+        "speaker": "tali",
+        "text": "M — moon (луна), N — night (ночь). С какой буквы начинается MOON?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Буквы K, L, M, N!",
+        "body": "K — kitten, L — lion. Запоминай!"
+      },
+      {
+        "title": "Луна и ночь",
+        "body": "M — moon (луна), N — night (ночь)."
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1e_opt_K",
+      "ky=ru stub: data.tasks.g1e_opt_L",
+      "ky=ru stub: data.tasks.g1e_opt_M",
+      "ky=ru stub: data.tasks.g1e_opt_N"
+    ],
+    "curriculum": "`g1e-abc-l2`\n\n**Диалог:**\n- **Персонаж:** K — kitten (котёнок), L — lion (лев). Запоминаю!\n- **Тали:** M — moon (луна), N — night (ночь). С какой буквы начинается MOON?\n\n**Интро (объяснения перед заданиями):**\n1. **Буквы K, L, M, N!** — K — kitten, L — lion. Запоминай!\n2. **Луна и ночь** — M — moon (луна), N — night (ночь).\n\n**Задания:**\n1. **multiple_choice** — С какой буквы начинается KITE?\n\n   Варианты ответа:\n   - `a`: K ✓\n   - `b`: L\n   - `c`: M\n2. **multiple_choice** — С какой буквы начинается LAMP?\n\n   Варианты ответа:\n   - `a`: K\n   - `b`: L ✓\n   - `c`: N\n3. **multiple_choice** — С какой буквы начинается MOON?\n\n   Варианты ответа:\n   - `a`: K\n   - `b`: M ✓\n   - `c`: N\n4. **input** — С какой буквы начинается NOSE? Тали говорит: «С M!» _(ответ: N)_\n\n##### Урок: Буквы O–R\n",
+    "tasks": [
+      {
+        "id": "g1eabcl2t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "С какой буквы начинается KITE?",
+        "qKey": "data.tasks.g1e_K_for",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "K",
+            "key": "data.tasks.g1e_opt_K",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "L",
+            "key": "data.tasks.g1e_opt_L",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "M",
+            "key": "data.tasks.g1e_opt_M",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1eabcl2t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "С какой буквы начинается LAMP?",
+        "qKey": "data.tasks.g1e_starts_with_L",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "K",
+            "key": "data.tasks.g1e_opt_K",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "L",
+            "key": "data.tasks.g1e_opt_L",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "N",
+            "key": "data.tasks.g1e_opt_N",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1eabcl2t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "С какой буквы начинается MOON?",
+        "qKey": "data.tasks.g1e_M_for",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "K",
+            "key": "data.tasks.g1e_opt_K",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "M",
+            "key": "data.tasks.g1e_opt_M",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "N",
+            "key": "data.tasks.g1e_opt_N",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1eabcl2t4",
+        "type": "input",
+        "audience": null,
+        "q": "С какой буквы начинается NOSE? Тали говорит: «С M!»",
+        "qKey": "data.tasks.g1e_N_for",
+        "answer": "N",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-abc-l3",
+    "title": "Буквы O–R",
+    "subject": "reading",
+    "world": "g1eng",
+    "source": "inline",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "O — orange (апельсин), P — parrot (попугай). Почти половина алфавита!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Q — queen (королева), R — rain (дождь)! Тали, а с какой буквы QUEEN?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Буквы O, P, Q, R!",
+        "body": "O — orange, P — parrot. Почти половина алфавита!"
+      },
+      {
+        "title": "Половина пути!",
+        "body": "Ты знаешь буквы до R! Осталось ещё!"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1e_opt_O",
+      "ky=ru stub: data.tasks.g1e_opt_P",
+      "ky=ru stub: data.tasks.g1e_opt_Q",
+      "ky=ru stub: data.tasks.g1e_opt_R"
+    ],
+    "curriculum": "`g1e-abc-l3`\n\n**Диалог:**\n- **Персонаж:** O — orange (апельсин), P — parrot (попугай). Почти половина алфавита!\n- **Тали:** Q — queen (королева), R — rain (дождь)! Тали, а с какой буквы QUEEN?\n\n**Интро (объяснения перед заданиями):**\n1. **Буквы O, P, Q, R!** — O — orange, P — parrot. Почти половина алфавита!\n2. **Половина пути!** — Ты знаешь буквы до R! Осталось ещё!\n\n**Задания:**\n1. **multiple_choice** — С какой буквы начинается ORANGE?\n\n   Варианты ответа:\n   - `a`: O ✓\n   - `b`: P\n   - `c`: Q\n2. **multiple_choice** — С какой буквы начинается PARROT?\n\n   Варианты ответа:\n   - `a`: O\n   - `b`: P ✓\n   - `c`: Q\n3. **multiple_choice** — С какой буквы начинается QUEEN?\n\n   Варианты ответа:\n   - `a`: O\n   - `b`: Q ✓\n   - `c`: R\n4. **input** — С какой буквы начинается RAIN? _(ответ: R)_\n\n#### Тема: Числа по-английски\n\n- id темы: `g1e-nums` · Английский язык\n\n##### Урок: Числа 1–5\n",
+    "tasks": [
+      {
+        "id": "g1eabcl3t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "С какой буквы начинается ORANGE?",
+        "qKey": "data.tasks.g1e_O_for",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "O",
+            "key": "data.tasks.g1e_opt_O",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "P",
+            "key": "data.tasks.g1e_opt_P",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Q",
+            "key": "data.tasks.g1e_opt_Q",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1eabcl3t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "С какой буквы начинается PARROT?",
+        "qKey": "data.tasks.g1e_P_for",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "O",
+            "key": "data.tasks.g1e_opt_O",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "P",
+            "key": "data.tasks.g1e_opt_P",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Q",
+            "key": "data.tasks.g1e_opt_Q",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1eabcl3t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "С какой буквы начинается QUEEN?",
+        "qKey": "data.tasks.g1e_starts_with_Q",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "O",
+            "key": "data.tasks.g1e_opt_O",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Q",
+            "key": "data.tasks.g1e_opt_Q",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "R",
+            "key": "data.tasks.g1e_opt_R",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1eabcl3t4",
+        "type": "input",
+        "audience": null,
+        "q": "С какой буквы начинается RAIN?",
+        "qKey": "data.tasks.g1e_R_for",
+        "answer": "R",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-num-l1",
+    "title": "Числа 1–5",
+    "subject": "reading",
+    "world": "g1eng",
+    "source": "inline",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Числа по-английски: one, two, three, four, five!"
+      },
+      {
+        "speaker": "tali",
+        "text": "1 = one, 2 = two. Считаю по-английски! Но иногда путаю three и four. Поможешь?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Числа 1–5!",
+        "body": "One, two, three, four, five — считай по-английски!"
+      },
+      {
+        "title": "Пять пальцев",
+        "body": "Five fingers on one hand!"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.opt_one",
+      "ky=ru stub: data.tasks.opt_two",
+      "ky=ru stub: data.tasks.opt_three"
+    ],
+    "curriculum": "`g1e-num-l1`\n\n**Диалог:**\n- **Персонаж:** Числа по-английски: one, two, three, four, five!\n- **Тали:** 1 = one, 2 = two. Считаю по-английски! Но иногда путаю three и four. Поможешь?\n\n**Интро (объяснения перед заданиями):**\n1. **Числа 1–5!** — One, two, three, four, five — считай по-английски!\n2. **Пять пальцев** — Five fingers on one hand!\n\n**Задания:**\n1. **multiple_choice** — Как по-английски «три»?\n\n   Варианты ответа:\n   - `a`: two\n   - `b`: three ✓\n   - `c`: four\n2. **multiple_choice** — Сколько это — TWO?\n\n   Варианты ответа:\n   - `a`: 1\n   - `b`: 2 ✓\n   - `c`: 3\n3. **multiple_choice** — Как по-английски «четыре»? Тали говорит: «Five!»\n\n   Варианты ответа:\n   - `a`: four ✓\n   - `b`: five\n   - `c`: six\n4. **input** — Как по-английски «пять»? _(ответ: five)_\n\n##### Урок: Числа 6–10\n",
+    "tasks": [
+      {
+        "id": "g1enuml1t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Как по-английски «три»?",
+        "qKey": "data.tasks.g1e_three_cats",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "two",
+            "key": "data.tasks.g1e_opt_two",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "three",
+            "key": "data.tasks.g1e_opt_three",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "four",
+            "key": "data.tasks.g1e_opt_four",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1enuml1t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Сколько это — TWO?",
+        "qKey": "data.tasks.g1e_two_in_num",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "1",
+            "key": "data.tasks.opt_one",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "2",
+            "key": "data.tasks.opt_two",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "3",
+            "key": "data.tasks.opt_three",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1enuml1t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Как по-английски «четыре»? Тали говорит: «Five!»",
+        "qKey": "data.tasks.g1e_four_plus_one",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "four",
+            "key": "data.tasks.g1e_opt_four",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "five",
+            "key": "data.tasks.g1e_opt_five",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "six",
+            "key": "data.tasks.g1e_opt_six",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1enuml1t4",
+        "type": "input",
+        "audience": null,
+        "q": "Как по-английски «пять»?",
+        "qKey": "data.tasks.g1e_pyat_en",
+        "answer": "five",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-num-l2",
+    "title": "Числа 6–10",
+    "subject": "reading",
+    "world": "g1eng",
+    "source": "inline",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Six, seven, eight, nine, ten!"
+      },
+      {
+        "speaker": "tali",
+        "text": "6 = six, 10 = ten! Продолжаем! Тали говорит: «Eight — это девять!» Правда?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Числа 6–10!",
+        "body": "Six, seven, eight, nine, ten!"
+      },
+      {
+        "title": "Считаем дальше",
+        "body": "Ten — десять! Самое важное число!"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.opt_seven",
+      "ky=ru stub: data.tasks.opt_eight",
+      "ky=ru stub: data.tasks.opt_nine"
+    ],
+    "curriculum": "`g1e-num-l2`\n\n**Диалог:**\n- **Персонаж:** Six, seven, eight, nine, ten!\n- **Тали:** 6 = six, 10 = ten! Продолжаем! Тали говорит: «Eight — это девять!» Правда?\n\n**Интро (объяснения перед заданиями):**\n1. **Числа 6–10!** — Six, seven, eight, nine, ten!\n2. **Считаем дальше** — Ten — десять! Самое важное число!\n\n**Задания:**\n1. **multiple_choice** — Как по-английски «семь»?\n\n   Варианты ответа:\n   - `a`: six\n   - `b`: seven ✓\n   - `c`: eight\n2. **multiple_choice** — Сколько это — NINE?\n\n   Варианты ответа:\n   - `a`: 7\n   - `b`: 8\n   - `c`: 9 ✓\n3. **multiple_choice** — Как по-английски «десять»?\n\n   Варианты ответа:\n   - `a`: nine\n   - `b`: ten ✓\n   - `c`: eleven\n4. **input** — Как по-английски написать число 8? (словом) _(ответ: eight)_\n\n##### Урок: Простые примеры\n",
+    "tasks": [
+      {
+        "id": "g1enuml2t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Как по-английски «семь»?",
+        "qKey": "data.tasks.g1e_7_in_en",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "six",
+            "key": "data.tasks.g1e_opt_six",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "seven",
+            "key": "data.tasks.g1e_opt_seven",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "eight",
+            "key": "data.tasks.g1e_opt_eight",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1enuml2t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Сколько это — NINE?",
+        "qKey": "data.tasks.g1e_nine_in_num",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "7",
+            "key": "data.tasks.opt_seven",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "8",
+            "key": "data.tasks.opt_eight",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "9",
+            "key": "data.tasks.opt_nine",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1enuml2t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Как по-английски «десять»?",
+        "qKey": "data.tasks.g1e_10_in_en",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "nine",
+            "key": "data.tasks.g1e_opt_nine",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "ten",
+            "key": "data.tasks.g1e_opt_ten",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "eleven",
+            "key": "data.tasks.g1e_opt_eleven",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1enuml2t4",
+        "type": "input",
+        "audience": null,
+        "q": "Как по-английски написать число 8? (словом)",
+        "qKey": "data.tasks.g1e_vosem_en",
+        "answer": "eight",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-num-l3",
+    "title": "Простые примеры",
+    "subject": "reading",
+    "world": "g1eng",
+    "source": "inline",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Простые примеры по-английски! Six minus three? Three plus four?"
+      },
+      {
+        "speaker": "tali",
+        "text": "Six minus three = three! Three plus four = seven! Отлично!"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Простые примеры!",
+        "body": "Six minus three = three! Three plus four = seven! Считай по-английски!"
+      },
+      {
+        "title": "Проверка",
+        "body": "Numbers help us count!"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4,
+    "missing": [],
+    "enkyFlags": [],
+    "curriculum": "`g1e-num-l3`\n\n**Диалог:**\n- **Персонаж:** Простые примеры по-английски! Six minus three? Three plus four?\n- **Тали:** Six minus three = three! Three plus four = seven! Отлично!\n\n**Интро (объяснения перед заданиями):**\n1. **Простые примеры!** — Six minus three = three! Three plus four = seven! Считай по-английски!\n2. **Проверка** — Numbers help us count!\n\n**Задания:**\n1. **multiple_choice** — 6 − 3 =? (по-английски)\n\n   Варианты ответа:\n   - `a`: two\n   - `b`: three ✓\n   - `c`: four\n2. **multiple_choice** — 3 + 4 =? (по-английски)\n\n   Варианты ответа:\n   - `a`: six\n   - `b`: seven ✓\n   - `c`: eight\n3. **multiple_choice** — Какое число после 9?\n\n   Варианты ответа:\n   - `a`: nine\n   - `b`: ten ✓\n   - `c`: eleven\n4. **input** — Сколько звёзд? (8 ★) — по-английски _(ответ: eight)_\n\n#### Тема: Приветствия\n\n- id темы: `g1e-greet` · Английский язык\n\n##### Урок: Приветствия\n",
+    "tasks": [
+      {
+        "id": "g1enuml3t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "6 − 3 =? (по-английски)",
+        "qKey": "data.tasks.g1e_six_minus_three",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "two",
+            "key": "data.tasks.g1e_opt_two",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "three",
+            "key": "data.tasks.g1e_opt_three",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "four",
+            "key": "data.tasks.g1e_opt_four",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1enuml3t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "3 + 4 =? (по-английски)",
+        "qKey": "data.tasks.g1e_three_plus_four",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "six",
+            "key": "data.tasks.g1e_opt_six",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "seven",
+            "key": "data.tasks.g1e_opt_seven",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "eight",
+            "key": "data.tasks.g1e_opt_eight",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1enuml3t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Какое число после 9?",
+        "qKey": "data.tasks.g1e_after_nine",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "nine",
+            "key": "data.tasks.g1e_opt_nine",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "ten",
+            "key": "data.tasks.g1e_opt_ten",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "eleven",
+            "key": "data.tasks.g1e_opt_eleven",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1enuml3t4",
+        "type": "input",
+        "audience": null,
+        "q": "Сколько звёзд? (8 ★) — по-английски",
+        "qKey": "data.tasks.g1e_how_many_8stars",
+        "answer": "eight",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-grt-l1",
+    "title": "Приветствия",
+    "subject": "reading",
+    "world": "g1eng",
+    "source": "inline",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Hello! Hi! Good morning!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Hello — привет! Я использую это слово всё время! Но Тали говорит: «Good morning — это «до свидания»!» Правда?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Приветствия!",
+        "body": "Hello! Hi! Good morning! — привет!"
+      },
+      {
+        "title": "Когда говорить",
+        "body": "Hello — когда встречаешь. Good morning — утром!"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4,
+    "missing": [],
+    "enkyFlags": [],
+    "curriculum": "`g1e-grt-l1`\n\n**Диалог:**\n- **Персонаж:** Hello! Hi! Good morning!\n- **Тали:** Hello — привет! Я использую это слово всё время! Но Тали говорит: «Good morning — это «до свидания»!» Правда?\n\n**Интро (объяснения перед заданиями):**\n1. **Приветствия!** — Hello! Hi! Good morning! — привет!\n2. **Когда говорить** — Hello — когда встречаешь. Good morning — утром!\n\n**Задания:**\n1. **multiple_choice** — Утром, входя в класс, говорят:\n\n   Варианты ответа:\n   - `a`: Good morning ✓\n   - `b`: Good night\n   - `c`: Goodbye\n2. **multiple_choice** — Что сказать при прощании?\n\n   Варианты ответа:\n   - `a`: Hello\n   - `b`: Goodbye ✓\n   - `c`: Sorry\n3. **multiple_choice** — Good night — когда говорят?\n\n   Варианты ответа:\n   - `a`: in the morning\n   - `b`: at noon\n   - `c`: at night ✓\n4. **input** — Hi означает: _(ответ: Привет)_\n\n##### Урок: Меня зовут\n",
+    "tasks": [
+      {
+        "id": "g1egrtl1t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Утром, входя в класс, говорят:",
+        "qKey": "data.tasks.g1e_morning_greeting",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Good morning",
+            "key": "data.tasks.g1e_opt_good_morning",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Good night",
+            "key": "data.tasks.g1e_opt_good_night",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Goodbye",
+            "key": "data.tasks.g1e_opt_goodbye",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1egrtl1t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Что сказать при прощании?",
+        "qKey": "data.tasks.g1e_when_leaving",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Hello",
+            "key": "data.tasks.g1e_opt_hello",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Goodbye",
+            "key": "data.tasks.g1e_opt_goodbye",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Sorry",
+            "key": "data.tasks.g1e_opt_sorry",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1egrtl1t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Good night — когда говорят?",
+        "qKey": "data.tasks.g1e_good_night_for",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "in the morning",
+            "key": "data.tasks.g1e_opt_morning_time",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "at noon",
+            "key": "data.tasks.g1e_opt_noon_time",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "at night",
+            "key": "data.tasks.g1e_opt_night_time",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "id": "g1egrtl1t4",
+        "type": "input",
+        "audience": null,
+        "q": "Hi означает:",
+        "qKey": "data.tasks.g1e_hi_means",
+        "answer": "Привет",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-grt-l2",
+    "title": "Меня зовут",
+    "subject": "reading",
+    "world": "g1eng",
+    "source": "inline",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "My name is Polly! What is your name?"
+      },
+      {
+        "speaker": "tali",
+        "text": "My name is Tali! А ещё можно сказать: I am Tali. Как правильно спросить имя?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Меня зовут",
+        "body": "My name is Polly. I am Tali. Так мы представляемся!"
+      },
+      {
+        "title": "Представляемся",
+        "body": "My name is... What is your name?"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4,
+    "missing": [],
+    "enkyFlags": [
+      "ky=ru stub: data.tasks.g1e_opt_am",
+      "ky=ru stub: data.tasks.g1e_opt_is",
+      "ky=ru stub: data.tasks.g1e_opt_are",
+      "ky=ru stub: data.tasks.g1e_opt_i_am",
+      "ky=ru stub: data.tasks.g1e_opt_hello_i",
+      "ky=ru stub: data.tasks.g1e_opt_how_old_are_you_en",
+      "ky=ru stub: data.tasks.g1e_opt_what_is_your_name_en"
+    ],
+    "curriculum": "`g1e-grt-l2`\n\n**Диалог:**\n- **Персонаж:** My name is Polly! What is your name?\n- **Тали:** My name is Tali! А ещё можно сказать: I am Tali. Как правильно спросить имя?\n\n**Интро (объяснения перед заданиями):**\n1. **Меня зовут** — My name is Polly. I am Tali. Так мы представляемся!\n2. **Представляемся** — My name is... What is your name?\n\n**Задания:**\n1. **multiple_choice** — Закончи фразу: My name ___ Polly.\n\n   Варианты ответа:\n   - `a`: am\n   - `b`: is ✓\n   - `c`: are\n2. **multiple_choice** — «Меня зовут» по-английски:\n\n   Варианты ответа:\n   - `a`: I am...\n   - `b`: My name is ✓\n   - `c`: Hello, I...\n3. **multiple_choice** — Как по-английски спросить «Как тебя зовут?»\n\n   Варианты ответа:\n   - `a`: How old are you?\n   - `b`: What is your name? ✓\n   - `c`: Goodbye\n4. **input** — Закончи: I ___ seven. _(ответ: am)_\n\n##### Урок: Спасибо и пожалуйста\n",
+    "tasks": [
+      {
+        "id": "g1egrtl2t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Закончи фразу: My name ___ Polly.",
+        "qKey": "data.tasks.g1e_my_name_blank",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "am",
+            "key": "data.tasks.g1e_opt_am",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "is",
+            "key": "data.tasks.g1e_opt_is",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "are",
+            "key": "data.tasks.g1e_opt_are",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1egrtl2t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "«Меня зовут» по-английски:",
+        "qKey": "data.tasks.g1e_menya_zovut",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "I am...",
+            "key": "data.tasks.g1e_opt_i_am",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "My name is",
+            "key": "data.tasks.g1e_opt_my_name_is",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Hello, I...",
+            "key": "data.tasks.g1e_opt_hello_i",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1egrtl2t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Как по-английски спросить «Как тебя зовут?»",
+        "qKey": "data.tasks.g1e_what_is_your_name",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "How old are you?",
+            "key": "data.tasks.g1e_opt_how_old_are_you_en",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "What is your name?",
+            "key": "data.tasks.g1e_opt_what_is_your_name_en",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Goodbye",
+            "key": "data.tasks.g1e_opt_goodbye",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1egrtl2t4",
+        "type": "input",
+        "audience": null,
+        "q": "Закончи: I ___ seven.",
+        "qKey": "data.tasks.g1e_i_blank_seven",
+        "answer": "am",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g1e-grt-l3",
+    "title": "Спасибо и пожалуйста",
+    "subject": "reading",
+    "world": "g1eng",
+    "source": "inline",
+    "dialog": [
+      {
+        "speaker": "npc",
+        "text": "Thank you — спасибо! Please — пожалуйста!"
+      },
+      {
+        "speaker": "tali",
+        "text": "Вежливые слова важны на любом языке! Тали спрашивает: «Thank you — это «привет»?» Прав ли он?"
+      }
+    ],
+    "intro": [
+      {
+        "title": "Thank you и Please",
+        "body": "Thank you — спасибо! Please — пожалуйста!"
+      },
+      {
+        "title": "How are you?",
+        "body": "How are you? — Как дела? Fine, thanks! — Хорошо, спасибо!"
+      }
+    ],
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4,
+    "missing": [],
+    "enkyFlags": [],
+    "curriculum": "`g1e-grt-l3`\n\n**Диалог:**\n- **Персонаж:** Thank you — спасибо! Please — пожалуйста!\n- **Тали:** Вежливые слова важны на любом языке! Тали спрашивает: «Thank you — это «привет»?» Прав ли он?\n\n**Интро (объяснения перед заданиями):**\n1. **Thank you и Please** — Thank you — спасибо! Please — пожалуйста!\n2. **How are you?** — How are you? — Как дела? Fine, thanks! — Хорошо, спасибо!\n\n**Задания:**\n1. **multiple_choice** — «How are you?» означает:\n\n   Варианты ответа:\n   - `a`: Как дела? ✓\n   - `b`: Пока\n   - `c`: Привет\n2. **multiple_choice** — Лучший ответ на «How are you?»:\n\n   Варианты ответа:\n   - `a`: Fine, thanks ✓\n   - `b`: Goodbye\n   - `c`: My name is\n3. **multiple_choice** — Thank you означает:\n\n   Варианты ответа:\n   - `a`: Пожалуйста\n   - `b`: Спасибо ✓\n   - `c`: Привет\n4. **input** — Please означает: _(ответ: Пожалуйста)_\n\n---\n",
+    "tasks": [
+      {
+        "id": "g1egrtl3t1",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "«How are you?» означает:",
+        "qKey": "data.tasks.g1e_how_are_you_means",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Как дела?",
+            "key": "data.tasks.g1e_opt_kak_dela",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Пока",
+            "key": "data.tasks.g1e_opt_poka",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "Привет",
+            "key": "data.tasks.g1e_opt_privet",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1egrtl3t2",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Лучший ответ на «How are you?»:",
+        "qKey": "data.tasks.g1e_best_reply_how",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Fine, thanks",
+            "key": "data.tasks.g1e_opt_fine_thanks",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "text": "Goodbye",
+            "key": "data.tasks.g1e_opt_goodbye",
+            "correct": false
+          },
+          {
+            "id": "c",
+            "text": "My name is",
+            "key": "data.tasks.g1e_opt_my_name_is",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1egrtl3t3",
+        "type": "multiple_choice",
+        "audience": null,
+        "q": "Thank you означает:",
+        "qKey": "data.tasks.g1e_thank_you_means",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Пожалуйста",
+            "key": "data.tasks.g1e_opt_pozhaluista",
+            "correct": false
+          },
+          {
+            "id": "b",
+            "text": "Спасибо",
+            "key": "data.tasks.g1e_opt_spasibo",
+            "correct": true
+          },
+          {
+            "id": "c",
+            "text": "Привет",
+            "key": "data.tasks.g1e_opt_privet",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "id": "g1egrtl3t4",
+        "type": "input",
+        "audience": null,
+        "q": "Please означает:",
+        "qKey": "data.tasks.g1e_please_means",
+        "answer": "Пожалуйста",
+        "options": []
+      }
+    ]
+  }
+]

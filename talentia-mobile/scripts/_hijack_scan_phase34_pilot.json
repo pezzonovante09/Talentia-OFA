@@ -1,0 +1,81 @@
+{
+  "scannedIds": 50,
+  "hitCount": 3,
+  "hits": [
+    {
+      "id": "g3e-tobe-l3",
+      "taskId": "g3etobel3t1",
+      "qKey": "data.tasks.g3e_we_blank_ready",
+      "qRu": "«We are ready» → «___ we ready?»",
+      "qEn": "We ___ ready. What word?",
+      "issues": [
+        "RU_question_form_EN_old_affirmative_key"
+      ],
+      "optRu": [
+        "am"
+      ],
+      "optEn": [
+        "am"
+      ],
+      "inPilotD": false,
+      "inPhase34": true
+    },
+    {
+      "id": "g4",
+      "error": "lesson block not found in worlds.ts"
+    },
+    {
+      "id": "g4e-pres-l1",
+      "taskId": "g4e-pres-l1-t1",
+      "qKey": "data.tasks.g4e_pres_q1",
+      "qRu": "Тали написал: «She go to school every day.» Spark говорит, что ошибка в глаголе. Как правильно?",
+      "qEn": "Choose: She ___ to school every day.",
+      "issues": [
+        "RU_question_vs_EN_affirmative_blank"
+      ],
+      "optRu": [
+        "go"
+      ],
+      "optEn": [
+        "go"
+      ],
+      "inPilotD": true,
+      "inPhase34": false
+    }
+  ],
+  "evidence": {
+    "g3e-tobe-l3": {
+      "id": "g3e-tobe-l3",
+      "tasks": [
+        {
+          "key": "data.tasks.g3e_we_blank_ready",
+          "ru": "«We are ready» → «___ we ready?»",
+          "en": "We ___ ready. What word?",
+          "ky": " We ___ ready. Какое слово?"
+        }
+      ]
+    },
+    "g3w-nat-l3": {
+      "id": "g3w-nat-l3",
+      "tasks": [
+        {
+          "key": "data.tasks.g3w_protect_nature_how",
+          "ru": "Зачем создали Красную книгу?",
+          "en": "How to protect nature?",
+          "ky": " Табиятты кантип коргоо керек?"
+        }
+      ]
+    },
+    "g3r-adj-l2": {
+      "id": "g3r-adj-l2",
+      "tasks": [
+        {
+          "key": "data.tasks.g3r_adjl2_q1",
+          "ru": "Слон говорит: «Я большой!» Жираф: «А я ___ тебя!» Сравнительная степень:",
+          "en": "Elephant: “I’m big!” Giraffe: “And I’m ___ you!” Comparative degree:",
+          "ky": "Пил: «Мен чоңмун!» Жираф: «А мен сенен ___!» Салыштырма даража:"
+        }
+      ]
+    }
+  }
+}

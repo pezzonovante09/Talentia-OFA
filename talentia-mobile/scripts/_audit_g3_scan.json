@@ -1,0 +1,1027 @@
+[
+  {
+    "id": "g3m-1000-l1",
+    "types": "multiple_choice,multiple_choice,input,multiple_choice",
+    "diversity": 2,
+    "flags": [],
+    "dialogEN": "I want to count how many scales the dragon in the picture has! Clearly more than a hundred… maybe a thousand? | A thousand is a huge number! But together we’ll figure it out: 100, 200, 300… heading to",
+    "dialogKY": "Сүрөттөгү ажыдаардын канча кабырчыгы бар экенин санагым келет! Ачык жүздөн көп… балким миңби? | Миң — абдан чоң сан! Бирок чогуу түшүнөбүз: 100, 200, 300… миңге барабыз!",
+    "intros": [
+      {
+        "tRU": "Числа до 1000!",
+        "tEN": "Numbers up to 1000!",
+        "tKY": "1000гө чейинки сандар!"
+      },
+      {
+        "tRU": "Три разряда",
+        "tEN": "Three places",
+        "tKY": "Сандагы үч разряд"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Тали считает чешуйки блоками по 100. У него 3 блока. Сколько чешуек?\" EN=\"Tali counts scales in blocks of 100. He has 3 bloc\" ✓300",
+      "  2.multiple_choice RU=\"На складе 5 ящиков, в каждом по 100 предметов. Сколько предметов всего\" EN=\"In the warehouse there are 5 boxes with 100 items \" ✓500",
+      "  3.input RU=\"Тали нашёл волшебника, который умножает всё на 7. Он взял 100 и начал \" EN=\"Tali found a wizard who multiplies everything by 7\"",
+      "  4.multiple_choice RU=\"Тали копил монеты по 100 штук. Когда у него стала тысяча, сколько стоп\" EN=\"Tali saved coins in stacks of 100. When he reached\" ✓10"
+    ]
+  },
+  {
+    "id": "g3m-1000-l2",
+    "types": "input,input,input,fill_blank",
+    "diversity": 2,
+    "flags": [
+      "intro0.title KY===RU: Разбираем число 247!",
+      "intro1.title KY===RU: Число 356",
+      "t2 EN stem flattened: EN=\"How many tens are in 456?\" vs RU len 58"
+    ],
+    "dialogEN": "Place values: units, tens, hundreds! | 247 = 2 hundreds, 4 tens, 7 units!",
+    "dialogKY": "Разряддар: бирдиктер, ондуктар, жүздүктөр! | 247 = 2 жүздүк, 4 ондук, 7 бирдик!",
+    "intros": [
+      {
+        "tRU": "Разбираем число 247!",
+        "tEN": "Breaking down 247!",
+        "tKY": "Разбираем число 247!"
+      },
+      {
+        "tRU": "Число 356",
+        "tEN": "The number 356",
+        "tKY": "Число 356"
+      }
+    ],
+    "taskLines": [
+      "  1.input RU=\"Детектив Тали изучает число 347 под лупой. Сколько сотен он насчитал?\" EN=\"How many hundreds are there among 347?\"",
+      "  2.input RU=\"В числе 456 спрятались десятки. Сколько их там притаилось?\" EN=\"How many tens are in 456?\"",
+      "  3.input RU=\"Тали собирает число из запчастей: 2 сотни, 3 десятка и 5 единиц. Что п\" EN=\"Write down the number: 2 hundreds, 3 tens, 5 units\"",
+      "  4.fill_blank RU=\"Самое большое число из 398, 403, 389 — это _\" EN=\"The largest of 398, 403, 389 is _\""
+    ]
+  },
+  {
+    "id": "g3m-1000-l3",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [],
+    "dialogEN": "356 and 298 - which is larger? I want to say 298 because the numbers are more interesting there... but is this the wrong approach? | 356 > 298. More digits — bigger number!",
+    "dialogKY": "356 жана 298 - кайсынысы чоңураак? 298 деп айткым келет, анткени ал жакта сандар кызыктуураак... бирок бул туура эмес мамилеби? | 356 > 298. Разряддар көп — сан чоң!",
+    "intros": [
+      {
+        "tRU": "Сравнение трёхзначных!",
+        "tEN": "Comparing three-digit numbers!",
+        "tKY": "Үч орундуу салыштыруу!"
+      },
+      {
+        "tRU": "Больше разрядов — больше число",
+        "tEN": "More digits, bigger number",
+        "tKY": "Көбүрөөк цифралар - көбүрөөк сан"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Какое число больше: 356 или 298?\" EN=\"Which number is greater: 356 or 298?\" ✓356",
+      "  2.multiple_choice RU=\"Сравни: 450 ___ 405\" EN=\"Compare: 450 ___ 405\" ✓>",
+      "  3.multiple_choice RU=\"Тали говорит: «512 = 521». Прав ли он?\" EN=\"Tali says: \"512 = 521\". Is he right?\" ✓Нет",
+      "  4.input RU=\"Какое число меньше: 703 или 730?\" EN=\"Which number is smaller: 703 or 730?\""
+    ]
+  },
+  {
+    "id": "g3m-tab-l1",
+    "types": "input,input,input,input",
+    "diversity": 1,
+    "flags": [
+      "t1 EN stem flattened: EN=\"4 × 6 =?\" vs RU len 64",
+      "t2 EN stem flattened: EN=\"4 × 8 =?\" vs RU len 94",
+      "t3 EN stem flattened: EN=\"6 × 7 =?\" vs RU len 70",
+      "t4 EN stem flattened: EN=\"6 × 9 =?\" vs RU len 99"
+    ],
+    "dialogEN": "Times tables for 4 and 6! 4 x 5 = 20, 6 x 7 = 42! | Multiplying by 4 — double and double again!",
+    "dialogKY": "4 жана 6га таблица! 4 × 5 = 20, 6 × 7 = 42! | 4кө көбөйтүү — эки жолу эки эсе!",
+    "intros": [
+      {
+        "tRU": "Таблица на 4 и 6!",
+        "tEN": "Times tables for 4 and 6!",
+        "tKY": "4 жана 6га таблица!"
+      },
+      {
+        "tRU": "Шестёрка",
+        "tEN": "Six",
+        "tKY": "Алты"
+      }
+    ],
+    "taskLines": [
+      "  1.input RU=\"У осьминога 4 друга, у каждого по 6 рук. Тали считает: 4 × 6 = ?\" EN=\"4 × 6 =?\"",
+      "  2.input RU=\"Паук сплёл 4 паутины, в каждой 8 узелков. Сколько узелков завязал труд\" EN=\"4 × 8 =?\"",
+      "  3.input RU=\"На каждой из 6 полок по 7 книг. Тали считает всю библиотеку: 6 × 7 = ?\" EN=\"6 × 7 =?\"",
+      "  4.input RU=\"Пчела облетела 6 цветков и собрала с каждого по 9 капель нектара. Тали\" EN=\"6 × 9 =?\""
+    ]
+  },
+  {
+    "id": "g3m-tab-l2",
+    "types": "input,input,input,input",
+    "diversity": 1,
+    "flags": [
+      "t1 EN stem flattened: EN=\"7 × 5 =?\" vs RU len 52",
+      "t2 EN stem flattened: EN=\"7 × 8 =?\" vs RU len 71",
+      "t3 EN stem flattened: EN=\"8 × 6 =?\" vs RU len 59",
+      "t4 EN stem flattened: EN=\"8 × 9 =?\" vs RU len 82"
+    ],
+    "dialogEN": "Times tables for 7 and 8! Harder, but you can do it! | 7 x 8 = 56! Remember this pair!",
+    "dialogKY": "7 жана 8ге таблица! Кыйыныраак, бирок жасай аласың! | 7 × 8 = 56! Бул жупту жатта!",
+    "intros": [
+      {
+        "tRU": "Таблица на 7 и 8!",
+        "tEN": "Times tables for 7 and 8!",
+        "tKY": "7 жана 8ге таблица!"
+      },
+      {
+        "tRU": "Восьмёрка",
+        "tEN": "Eight",
+        "tKY": "Сегиз"
+      }
+    ],
+    "taskLines": [
+      "  1.input RU=\"Неделя — 7 дней. За 5 недель сколько дней? 7 × 5 = ?\" EN=\"7 × 5 =?\"",
+      "  2.input RU=\"Осьминог купил 7 тетрадей по 8 листов. Тали помогает считать: 7 × 8 = \" EN=\"7 × 8 =?\"",
+      "  3.input RU=\"В 8 корзинах по 6 яблок. Тали готовится к пирогу: 8 × 6 = ?\" EN=\"8 × 6 =?\"",
+      "  4.input RU=\"Стадо из 8 коров даёт по 9 литров молока. Сколько литров получит ферме\" EN=\"8 × 9 =?\""
+    ]
+  },
+  {
+    "id": "g3m-tab-l3",
+    "types": "input,input,input,multiple_choice",
+    "diversity": 2,
+    "flags": [
+      "t1 EN stem flattened: EN=\"9 × 4 =?\" vs RU len 59",
+      "t2 EN stem flattened: EN=\"9 × 7 =?\" vs RU len 56",
+      "t3 EN stem flattened: EN=\"9 × 9 =?\" vs RU len 75",
+      "t4 EN stem flattened: EN=\"9 × 6 = 54. Right?\" vs RU len 80"
+    ],
+    "dialogEN": "I noticed something about the table for 9: 9x1=9, 9x2=18, 9x3=27... The sum of the digits in the answer is always 9! Is this true or did I make it up? | The digits of any multiple of 9 always add up t",
+    "dialogKY": "Мен 9 үчүн таблицадан бир нерсени байкадым: 9x1=9, 9x2=18, 9x3=27... Жооптогу цифралардын суммасы дайыма 9! Бул чынбы же мен ойлоп таптымбы? | 9дун жообундагы цифралардын суммасы дайыма 9! 9 × 5 = 45!",
+    "intros": [
+      {
+        "tRU": "Таблица на 9!",
+        "tEN": "Times table for 9!",
+        "tKY": "9га таблица!"
+      },
+      {
+        "tRU": "Девятка — красивое число",
+        "tEN": "Nine",
+        "tKY": "Тогуз"
+      }
+    ],
+    "taskLines": [
+      "  1.input RU=\"Кот прожил 4 из своих 9 жизней. Но сейчас важнее: 9 × 4 = ?\" EN=\"9 × 4 =?\"",
+      "  2.input RU=\"На 9 ёлках по 7 шишек. Белка хочет знать итог: 9 × 7 = ?\" EN=\"9 × 7 =?\"",
+      "  3.input RU=\"Магический квадрат: 9 рядов по 9 клеток. Сколько клеток на доске? 9 × \" EN=\"9 × 9 =?\"",
+      "  4.multiple_choice RU=\"Тали утверждает: «9 × 6 = 54!» И добавляет: «5+4=9 — правило работает!\" EN=\"9 × 6 = 54. Right?\" ✓Да, 54 и 5+4=9 — всё верно"
+    ]
+  },
+  {
+    "id": "g3m-div-l1",
+    "types": "multiple_choice,input,input,multiple_choice",
+    "diversity": 2,
+    "flags": [],
+    "dialogEN": "Division is the opposite of multiplication! 6 / 2 = 3 because 2 x 3 = 6! | We divide equally. 8 / 4 = 2!",
+    "dialogKY": "Бөлүү — көбөйтүүнүн тескери амалы! 6 ÷ 2 = 3, анткени 2 × 3 = 6! | Бирдей бөлөбүз. 8 ÷ 4 = 2!",
+    "intros": [
+      {
+        "tRU": "Деление — обратное умножению!",
+        "tEN": "Division — share equally!",
+        "tKY": "Деление — делим поровну!"
+      },
+      {
+        "tRU": "Делим поровну",
+        "tEN": "Check it",
+        "tKY": "Проверка"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Два друга нашли 6 монет и хотят разделить поровну. Тали говорит: «По 3\" EN=\"Two friends found 6 coins and want to share them e\" ✓По 3 монеты",
+      "  2.input RU=\"Мама испекла 10 пирожков и честно раздала двоим детям. Сколько достало\" EN=\"Mum baked 10 pies and shared them fairly between t\"",
+      "  3.input RU=\"12 карандашей в 3 коробки поровну. Сколько в каждой? 12 ÷ 3 = ?\" EN=\"12 pencils need to be put into 3 equal boxes. How \"",
+      "  4.multiple_choice RU=\"Капитан разделил 9 матросов на 3 вахты поровну. Тали считает: «По 3 ма\" EN=\"The captain divided 9 sailors into 3 equal watches\" ✓По 3 матроса"
+    ]
+  },
+  {
+    "id": "g3m-div-l2",
+    "types": "input,input,input,input",
+    "diversity": 1,
+    "flags": [
+      "intro0.title KY===RU: Деление с остатком"
+    ],
+    "dialogEN": "I want to divide 28 cookies equally among 4 plates. I think 7 each. But I’m not sure - help me check! | Division and multiplication are friends!",
+    "dialogKY": "28 печеньени 4 тарелкага бирдей бөлгүм келет. Ар бири 7ден деп ойлойм. Бирок мен ишенбейм - текшерүүгө жардам бериңиз! | Бөлүү жана көбөйтүү — достор!",
+    "intros": [
+      {
+        "tRU": "Деление с остатком",
+        "tEN": "Division with a remainder",
+        "tKY": "Деление с остатком"
+      },
+      {
+        "tRU": "Остаток меньше делителя",
+        "tEN": "Finding the remainder",
+        "tKY": "Калдыкты кантип табуу керек?"
+      }
+    ],
+    "taskLines": [
+      "  1.input RU=\"20 звёздочек в 4 конверта поровну. Сколько в каждом? 20 ÷ 4 = ?\" EN=\"20 stars were placed into 4 equal envelopes. How m\"",
+      "  2.input RU=\"28 печенек на 4 тарелки. Тали думает по 7 — проверь его! 28 ÷ 4 = ?\" EN=\"28 biscuits were shared equally between 4 plates. \"",
+      "  3.input RU=\"Тали делит 7 яблок на 2 друзей поровну. Сколько получит каждый и сколь\" EN=\"Tali shares 7 apples between 2 friends equally. Ho\"",
+      "  4.input RU=\"17 карандашей разложили по 5 в коробки. Сколько полных коробок и сколь\" EN=\"17 pencils are packed 5 per box. How many full box\""
+    ]
+  },
+  {
+    "id": "g3m-div-l3",
+    "types": "input,multiple_choice,input,input",
+    "diversity": 2,
+    "flags": [
+      "t1 EN stem flattened: EN=\"25 ÷ 5 =?\" vs RU len 56"
+    ],
+    "dialogEN": "If I know 7 × 6 = 42, does that mean I automatically know 42 ÷ 7 = 6 and 42 ÷ 6 = 7? One knowledge - three facts?! | Check division with multiplication!",
+    "dialogKY": "Эгерде мен 7 × 6 = 42 деп билсем, бул мен автоматтык түрдө 42 ÷ 7 = 6 жана 42 ÷ 6 = 7ди билем дегенди билдиреби? Бир билим – үч факты?! | Бөлүүнү көбөйтүү менен текшер!",
+    "intros": [
+      {
+        "tRU": "Одно знание — три факта!",
+        "tEN": "Dividing bigger numbers",
+        "tKY": "Деление больших чисел"
+      },
+      {
+        "tRU": "Проверяй деление",
+        "tEN": "Check division",
+        "tKY": "Проверка деления"
+      }
+    ],
+    "taskLines": [
+      "  1.input RU=\"Знаешь, что 5 × 5 = 25? Реши обратную задачу: 25 ÷ 5 = ?\" EN=\"25 ÷ 5 =?\"",
+      "  2.multiple_choice RU=\"Тали знает, что 9 × 5 = 45. Значит, 45 ÷ 5 = ?\" EN=\"If 9 × 5 = 45, what is 45 ÷ 5? Multiplication and \" ✓9",
+      "  3.input RU=\"Раз 3 × 10 = 30, то 30 ÷ 10 = ?\" EN=\"30 ÷ 10 =?\"",
+      "  4.input RU=\"Финальный уровень от Тали: если 7 × 6 = 42, то 42 ÷ 6 = ?\" EN=\"Final level! Use the connection: if 7 × 6 = 42, th\""
+    ]
+  },
+  {
+    "id": "g3r-gen-l1",
+    "types": "multiple_choice,multiple_choice,fill_blank,input",
+    "diversity": 3,
+    "flags": [],
+    "dialogEN": "Masculine and feminine gender! Table — he, book — she! | The gender of a noun determines the adjective ending!",
+    "dialogKY": "Эркек жана ургаачы жынысы! Стол — ол (эр.), китеп — ол (аял.)! | Зат атоочтун жынысы сын атоочтун жалгоочун аныктайт!",
+    "intros": [
+      {
+        "tRU": "Мужской и женский род!",
+        "tEN": "Masculine and feminine gender!",
+        "tKY": "Эркек жана ургаачы жынысы!"
+      },
+      {
+        "tRU": "Подставляй местоимение!",
+        "tEN": "Gender and endings",
+        "tKY": "Жынысы жана жалгоочтор"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Тали говорит про слово ДОМ: «Это ОН!» Какой это род?\" EN=\"Tali says about the word HOME (ДОМ): “It is HE!” W\" ✓Мужской",
+      "  2.multiple_choice RU=\"Слово СТОЛ — с каким местоимением дружит?\" EN=\"The word TABLE (СТОЛ) — which pronoun does it go w\" ✓Он",
+      "  3.fill_blank RU=\"Стол — это _ род.\" EN=\"A table is _ gender.\"",
+      "  4.input RU=\"Тали говорит: «Я рыцарь мужского рода!» Какое местоимение — боевой кли\" EN=\"Tali says: “I am a masculine-gender knight!” Which\""
+    ]
+  },
+  {
+    "id": "g3r-gen-l2",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [
+      "t3 opt a KY===RU: Молоко",
+      "t3 opt a EN===RU (no gloss?): Молоко",
+      "t3 opt b KY===RU: Кошка",
+      "t3 opt b EN===RU (no gloss?): Кошка",
+      "t3 opt c KY===RU: Стол",
+      "t3 opt c EN===RU (no gloss?): Стол"
+    ],
+    "dialogEN": "Neuter gender: window, sea, happiness — it! | Ending -о, -е often for neuter gender!",
+    "dialogKY": "Орто жынысы: терезе, деңиз, бакыт — ол (орто ж.)! | -о, -е жалгоочтору орто жынысында көп!",
+    "intros": [
+      {
+        "tRU": "Средний род!",
+        "tEN": "Neuter gender!",
+        "tKY": "Орто жынысы!"
+      },
+      {
+        "tRU": "Проверяй: «оно моё»",
+        "tEN": "Endings -о, -е",
+        "tKY": "-о, -е жалгоочтору"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Тали смотрит на слово ОКНО: «оно моё». Какой у ОКНО род?\" EN=\"Tali looks at the word ОКНО: “оно моё”. What gende\" ✓Средний",
+      "  2.multiple_choice RU=\"СОЛНЦЕ — какой род? Подставь местоимение: «___ моё»?\" EN=\"СОЛНЦЕ — what gender? Choose the pronoun: “___ моё\" ✓Оно",
+      "  3.multiple_choice RU=\"Среди слов МОЛОКО, КОШКА, СТОЛ найди слово среднего рода.\" EN=\"Among МОЛОКО, КОШКА, СТОЛ find the neuter-gender w\" ✓Молоко",
+      "  4.input RU=\"Какое местоимение «дружит» со словами среднего рода: ПОЛЕ, НЕБО, ДЕРЕВ\" EN=\"Which pronoun goes with neuter words: ПОЛЕ, НЕБО, \""
+    ]
+  },
+  {
+    "id": "g3r-gen-l3",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [
+      "t1 opt a KY===RU: Высокий дом",
+      "t1 opt a EN===RU (no gloss?): Высокий дом",
+      "t1 opt b KY===RU: Высокая дом",
+      "t1 opt b EN===RU (no gloss?): Высокая дом",
+      "t1 opt c KY===RU: Высокое дом",
+      "t1 opt c EN===RU (no gloss?): Высокое дом",
+      "t2 opt a KY===RU: Синяя птица",
+      "t2 opt a EN===RU (no gloss?): Синяя птица",
+      "t2 opt b KY===RU: Синий птица",
+      "t2 opt b EN===RU (no gloss?): Синий птица",
+      "t2 opt c KY===RU: Синее птица",
+      "t2 opt c EN===RU (no gloss?): Синее птица"
+    ],
+    "dialogEN": "Gender of adjectives: big table, big book, big window! | An adjective agrees with the noun in gender!",
+    "dialogKY": "Сын атоочтордун жынысы: чоң стол, чоң китеп, чоң терезе! | Сын атооч зат атооч менен жынысы жагынан макулдашат!",
+    "intros": [
+      {
+        "tRU": "Род прилагательных!",
+        "tEN": "Gender of adjectives!",
+        "tKY": "Сын атоочтордун жынысы!"
+      },
+      {
+        "tRU": "Согласование",
+        "tEN": "Agreement",
+        "tKY": "Макулдашуу"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Тали пишет про ДОМ. «Высокий дом» или «Высокое дом»?\" EN=\"Tali writes about ДОМ. Is it «Высокий дом» or «Выс\" ✓Высокий дом",
+      "  2.multiple_choice RU=\"«Синяя птица» или «Синий птица»? Птица — женский род, значит:\" EN=\"«Синяя птица» or «Синий птица»? Птица is feminine,\" ✓Синяя птица",
+      "  3.multiple_choice RU=\"Тали пишет про МОЛОКО. «ТЁПЛОЕ молоко» — почему такое окончание?\" EN=\"Tali writes about МОЛОКО. Why «ТЁПЛОЕ молоко»?\" ✓Потому что МОЛОКО — среднего рода",
+      "  4.input RU=\"Подбери прилагательное к слову КНИГА: интересный, интересная или интер\" EN=\"Choose the adjective for КНИГА: интересный, интере\""
+    ]
+  },
+  {
+    "id": "g3r-verb-l1",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [],
+    "dialogEN": "Verb in present tense: I read, you read! | Endings change by person and number!",
+    "dialogKY": "Учур чактагы этиш: мен окуйм, сен окуйсуң! | Жалгоочтор жакка жана санга жараша өзгөрөт!",
+    "intros": [
+      {
+        "tRU": "Настоящее время!",
+        "tEN": "Present tense!",
+        "tKY": "Учур чак!"
+      },
+      {
+        "tRU": "Три лица",
+        "tEN": "Persons of the verb",
+        "tKY": "Этиштин жактары"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Репортёр ведёт прямой эфир прямо сейчас. «Мальчик ___ по улице». Какой\" EN=\"A reporter is live on air. “The boy ___ along the \" ✓Идёт (настоящее)",
+      "  2.multiple_choice RU=\"Глагол в настоящем времени отвечает на вопрос:\" EN=\"A present-tense verb answers the question:\" ✓Что делает?",
+      "  3.multiple_choice RU=\"Найди «шпиона» — глагол в настоящем времени среди слов: ЧИТАЛ, ЧИТАЕТ,\" EN=\"Find the “spy” — the present-tense verb among: CHI\" ✓ЧИТАЕТ (настоящее)",
+      "  4.input RU=\"Тали пишет дневник о событиях прямо сейчас. Какое слово он использует?\" EN=\"Tali is writing a diary about events right now. Wh\""
+    ]
+  },
+  {
+    "id": "g3r-verb-l2",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [
+      "t1 opt a KY===RU: Гулял",
+      "t1 opt b KY===RU: Гуляю",
+      "t1 opt c KY===RU: Погуляю",
+      "t3 opt a KY===RU: Побежит",
+      "t3 opt b KY===RU: Бежит",
+      "t3 opt c KY===RU: Побежал"
+    ],
+    "dialogEN": "Past tense: read (m.), read (f.), read (n.)! | Suffix -л and ending by gender!",
+    "dialogKY": "Өткөн чак: окуду (эр.), окуду (аял.), окуду (орто)! | -л суффикси жана жыныска жараша жалгооч!",
+    "intros": [
+      {
+        "tRU": "Прошедшее время!",
+        "tEN": "Past tense!",
+        "tKY": "Өткөн чак!"
+      },
+      {
+        "tRU": "Примеры",
+        "tEN": "Examples",
+        "tKY": "Мисалдар"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Дедушка рассказывает о вчерашнем дне. «Я ___ в лесу». Какой глагол?\" EN=\"Grandpa talks about yesterday: “I ___ in the fores\" ✓Гулял",
+      "  2.multiple_choice RU=\"ЧИТАЛ — это какое время?\" EN=\"ЧИТАЛ (read, past) — which tense is it?\" ✓Прошедшее",
+      "  3.multiple_choice RU=\"Выбери глагол в прошедшем времени: ПОБЕЖИТ, БЕЖИТ, ПОБЕЖАЛ.\" EN=\"Pick the past-tense verb: WILL RUN, RUNS, RAN.\" ✓Побежал",
+      "  4.input RU=\"Тали узнал: в прошедшем времени глагол меняется по роду. Как скажем пр\" EN=\"Tali learned: in the past tense the verb changes b\""
+    ]
+  },
+  {
+    "id": "g3r-verb-l3",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [
+      "t1 opt a KY===RU: Полечу",
+      "t1 opt a EN===RU (no gloss?): Полечу",
+      "t1 opt b KY===RU: Полетишь",
+      "t1 opt b EN===RU (no gloss?): Полетишь",
+      "t1 opt c KY===RU: Полетит",
+      "t1 opt c EN===RU (no gloss?): Полетит"
+    ],
+    "dialogEN": "Person of the verb: 1st (I, we), 2nd (you), 3rd (he, she, it, they)! | I go — 1st person. He goes — 3rd person!",
+    "dialogKY": "Этиштин жагы: 1-жак (мен, биз), 2-жак (сен), 3-жак (ал, алар)! | Мен барам — 1-жак. Ал барат — 3-жак!",
+    "intros": [
+      {
+        "tRU": "Лицо глагола!",
+        "tEN": "Person of the verb!",
+        "tKY": "Этиштин жагы!"
+      },
+      {
+        "tRU": "Окончания меняются",
+        "tEN": "Conjugation",
+        "tKY": "Жактоо"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Тали мечтает: «Я ___ в космос!» Глагол в 1-м лице:\" EN=\"Tali dreams: “I ___ into space!” Verb in the 1st p\" ✓Полечу",
+      "  2.multiple_choice RU=\"Слово «читаю» — какое лицо? Подсказка: «я читаю»\" EN=\"The word «читаю» — which person? Hint: «я читаю»\" ✓1-е лицо (я)",
+      "  3.multiple_choice RU=\"Учитель говорит ученику: «Ты ___ задачу». 2-е лицо глагола «решить»:\" EN=\"A teacher tells a student: “You ___ the problem.” \" ✓Решишь (2-е лицо)",
+      "  4.input RU=\"«Они ___ в парке» — 3-е лицо множественного числа глагола «гулять»:\" EN=\"«Они ___ в парке» — 3rd person plural of «гулять»:\""
+    ]
+  },
+  {
+    "id": "g3r-adj-l1",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [],
+    "dialogEN": "Agreement of adjective with noun! | Red ball, red rose, red apple!",
+    "dialogKY": "Сын атоочтун зат атооч менен макулдашуусу! | Кызыл топ, кызыл раймайлы, кызыл алма!",
+    "intros": [
+      {
+        "tRU": "Согласование!",
+        "tEN": "Agreement!",
+        "tKY": "Макулдашуу!"
+      },
+      {
+        "tRU": "Правило",
+        "tEN": "Gender and number",
+        "tKY": "Жынысы жана саны"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Художник рисует дом. «Дом какой?» — это вопрос к прилагательному или с\" EN=\"An artist draws a house. “What kind of house?” — i\" ✓К прилагательному",
+      "  2.multiple_choice RU=\"«___ шар» — прилагательное КРАСНЫЙ. Какая форма нужна?\" EN=\"“___ ball” — adjective RED (КРАСНЫЙ). Which form i\" ✓Красный",
+      "  3.multiple_choice RU=\"«Высокое дерево» или «высокий дерево»? ДЕРЕВО — средний род.\" EN=\"“Tall tree” or “tall tree (wrong ending)”? TREE (Д\" ✓Высокое дерево (ср.р. — «-ое»)",
+      "  4.input RU=\"«КРАСИВЫЙ закат» или «красивое закат»? ЗАКАТ — мужской род.\" EN=\"“BEAUTIFUL sunset” or “beautiful sunset (wrong)”? \""
+    ]
+  },
+  {
+    "id": "g3r-adj-l2",
+    "types": "multiple_choice,fill_blank,multiple_choice,input",
+    "diversity": 3,
+    "flags": [],
+    "dialogEN": "Degrees of comparison: big — bigger — biggest! | Beautiful — more beautiful — most beautiful!",
+    "dialogKY": "Салыштыруу даражалары: чоң — чоңураак — эң чоң! | Сулуу — сулуураак — эң сулуу!",
+    "intros": [
+      {
+        "tRU": "Степени сравнения!",
+        "tEN": "Degrees of comparison!",
+        "tKY": "Салыштыруу даражалары!"
+      },
+      {
+        "tRU": "Сравнительная и превосходная",
+        "tEN": "Comparative and superlative",
+        "tKY": "Салыштырма жана эң жогорку даража"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Слон говорит: «Я большой!» Жираф: «А я ___ тебя!» Сравнительная степен\" EN=\"Elephant: “I’m big!” Giraffe: “And I’m ___ you!” C\" ✓Больше",
+      "  2.fill_blank RU=\"Сравнительная степень от БЫСТРЫЙ: _\" EN=\"Comparative of БЫСТРЫЙ: _\"",
+      "  3.multiple_choice RU=\"«Это самая интересная книга» — выдели превосходную степень:\" EN=\"“This is the most interesting book” — pick the sup\" ✓Самая интересная",
+      "  4.input RU=\"Черепаха медленная. Улитка ___ черепахи. Напиши сравнительную степень.\" EN=\"The turtle is slow. The snail is ___ than the turt\""
+    ]
+  },
+  {
+    "id": "g3r-adj-l3",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [
+      "t2 opt a KY===RU: Холодный",
+      "t2 opt b KY===RU: Мягкий",
+      "t2 opt c KY===RU: Сухой",
+      "t3 opt a KY===RU: Высокий – длинный",
+      "t3 opt b KY===RU: Широкий – узкий",
+      "t3 opt c KY===RU: Старый – взрослый"
+    ],
+    "dialogEN": "ВЕСЁЛЫЙ — ГРУСТНЫЙ. БОЛЬШОЙ — МАЛЕНЬКИЙ. Those are antonyms — opposite words! Tali discovered this at five! | Words with opposite meanings!",
+    "dialogKY": "ВЕСЁЛЫЙ — ГРУСТНЫЙ. БОЛЬШОЙ — МАЛЕНЬКИЙ. Бул антонимдер — карама-каршы сөздөр! Тали муну беш жашында ачкан! | Маанилери карама-каршы сөздөр!",
+    "intros": [
+      {
+        "tRU": "Антонимы!",
+        "tEN": "Antonyms!",
+        "tKY": "Антонимдер!"
+      },
+      {
+        "tRU": "Противоположности",
+        "tEN": "Opposites",
+        "tKY": "Карама-каршылар"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Антоним к слову ВЕСЁЛЫЙ:\" EN=\"The antonym of ВЕСЁЛЫЙ is:\" ✓Грустный",
+      "  2.multiple_choice RU=\"Антоним к слову ТЁПЛЫЙ:\" EN=\"The antonym of ТЁПЛЫЙ is:\" ✓Холодный",
+      "  3.multiple_choice RU=\"Пара антонимов — как день и ночь. Выбери настоящую пару:\" EN=\"An antonym pair is like day and night. Choose the \" ✓Широкий – узкий",
+      "  4.input RU=\"«Летом дни длинные, а зимой — ___»:\" EN=\"“In summer the days are long, and in winter they a\""
+    ]
+  },
+  {
+    "id": "g3w-geo-l1",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [],
+    "dialogEN": "Cardinal directions: north, south, east, west! | A compass shows direction!",
+    "dialogKY": "Компас тарабы: түндүк, түштүк, чыгыш, батыш! | Компас багытты көрсөтөт!",
+    "intros": [
+      {
+        "tRU": "Стороны света!",
+        "tEN": "Cardinal directions!",
+        "tKY": "Компас тарабы!"
+      },
+      {
+        "tRU": "Компас",
+        "tEN": "Map",
+        "tKY": "Карта"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Компас показывает четыре направления. Какие — основные?\" EN=\"A compass shows four directions. Which are the mai\" ✓Север, юг, запад и восток",
+      "  2.multiple_choice RU=\"Тали идёт навстречу восходящему солнцу. В какую сторону он движется?\" EN=\"Tali walks toward the rising sun. Which way is he \" ✓На восток",
+      "  3.multiple_choice RU=\"На карте «север» сверху. Где находится «юг»?\" EN=\"On a map, “north” is at the top. Where is “south”?\" ✓Снизу",
+      "  4.input RU=\"Тали встал лицом на север. Что справа?\" EN=\"Tali faces north. What is on his right?\""
+    ]
+  },
+  {
+    "id": "g3w-geo-l2",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [],
+    "dialogEN": "Map and globe — a model of the Earth! | Countries and oceans are on the map!",
+    "dialogKY": "Карта жана глобус — Жердин модели! | Картада өлкөлөр жана океандар бар!",
+    "intros": [
+      {
+        "tRU": "Глобус и карта!",
+        "tEN": "Map and globe!",
+        "tKY": "Карта жана глобус!"
+      },
+      {
+        "tRU": "Синее и зелёное",
+        "tEN": "Model of the Earth",
+        "tKY": "Жердин модели"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Тали спрашивает: чем карта отличается от глобуса?\" EN=\"Tali asks: how is a map different from a globe?\" ✓Карта плоская, глобус объёмный",
+      "  2.multiple_choice RU=\"На карте синим обозначены моря и океаны, а зелёным — что?\" EN=\"On a map, blue marks seas and oceans. What does gr\" ✓Суша (материки и острова)",
+      "  3.multiple_choice RU=\"Масштаб 1:100 000 означает:\" EN=\"A scale of 1:100 000 means:\" ✓1 см на карте = 1 км на местности (100 000 см)",
+      "  4.input RU=\"Сколько материков на планете Земля?\" EN=\"How many continents are there on planet Earth?\""
+    ]
+  },
+  {
+    "id": "g3w-geo-l3",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [
+      "t1 Q KY===RU: Столица России:",
+      "t1 opt a KY===RU: Москва",
+      "t1 opt b KY===RU: Санкт-Петербург",
+      "t1 opt c KY===RU: Новосибирск",
+      "t2 opt a KY===RU: Лондон",
+      "t2 opt b KY===RU: Париж",
+      "t2 opt c KY===RU: Берлин",
+      "t3 Q KY===RU: Столица Великобритании:",
+      "t3 opt a KY===RU: Лондон",
+      "t3 opt b KY===RU: Париж",
+      "t3 opt c KY===RU: Берлин"
+    ],
+    "dialogEN": "Countries and capitals! Russia — Moscow, France — Paris! | Every country has a capital!",
+    "dialogKY": "Өлкөлөр жана борбор шаарлар! Россия — Москва, Франция — Париж! | Ар бир өлкөнүн борбор шаары бар!",
+    "intros": [
+      {
+        "tRU": "Страны и столицы!",
+        "tEN": "Countries and capitals!",
+        "tKY": "Өлкөлөр жана борбор шаарлар!"
+      },
+      {
+        "tRU": "Тали из Бишкека",
+        "tEN": "Capital",
+        "tKY": "Борбор шаар"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Столица России:\" EN=\"The capital of Russia\" ✓Москва",
+      "  2.multiple_choice RU=\"Эйфелева башня стоит в столице Франции. Это:\" EN=\"Capital of France:\" ✓Париж",
+      "  3.multiple_choice RU=\"Столица Великобритании:\" EN=\"Capital of the United Kingdom:\" ✓Лондон",
+      "  4.input RU=\"Тали живёт в Бишкеке. Бишкек — столица какой страны?\" EN=\"Capital of Kyrgyzstan:\""
+    ]
+  },
+  {
+    "id": "g3w-nat-l1",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [
+      "t1 opt c KY===RU: Фотосинтез"
+    ],
+    "dialogEN": "The water cycle: evaporation, clouds, rain! | Water moves constantly in nature!",
+    "dialogKY": "Суунун айлануусу: буулануу, булуттар, жаан! | Суу жаратылышта дайыма кыймылдайт!",
+    "intros": [
+      {
+        "tRU": "Круговорот воды!",
+        "tEN": "The water cycle!",
+        "tKY": "Суунун айлануусу!"
+      },
+      {
+        "tRU": "Вода везде",
+        "tEN": "Water in nature",
+        "tKY": "Жаратылыштагы суу"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Тали смотрит на лужу — она исчезла. Это первый шаг круговорота воды. К\" EN=\"Tali looks at a puddle — it disappeared. That is t\" ✓Испарение",
+      "  2.multiple_choice RU=\"Водяной пар поднялся и охладился. Во что он превратился?\" EN=\"Water vapor rose and cooled. What did it turn into\" ✓В облака (капельки воды)",
+      "  3.multiple_choice RU=\"Облака набрали тяжесть. Что происходит дальше?\" EN=\"The clouds got heavy. What happens next?\" ✓Осадки (дождь или снег)",
+      "  4.input RU=\"Вода упала в реку и снова нагрелась солнцем. Какой шаг повторится?\" EN=\"Water flowed into the river and was heated by the \""
+    ]
+  },
+  {
+    "id": "g3w-nat-l2",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [],
+    "dialogEN": "Natural resources: oil, gas, coal! | They are extracted from the ground!",
+    "dialogKY": "Пайдалуу казылмалар: нефть, газ, көмүр! | Алар жерден казылат!",
+    "intros": [
+      {
+        "tRU": "Полезные ископаемые!",
+        "tEN": "Natural resources!",
+        "tKY": "Пайдалуу казылма байлыктар!"
+      },
+      {
+        "tRU": "Откуда они?",
+        "tEN": "Extraction",
+        "tKY": "Казуу"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Уголь, нефть и газ образовались из остатков древних живых существ. Как\" EN=\"Coal, oil and gas formed from the remains of ancie\" ✓Горючие",
+      "  2.multiple_choice RU=\"Для чего добывают и используют нефть?\" EN=\"What is oil extracted and used for?\" ✓Топливо и энергия (бензин, керосин)",
+      "  3.multiple_choice RU=\"Железная руда — полезное ископаемое. Что из неё производят?\" EN=\"Iron ore is a mineral. What is made from it?\" ✓Металл (железо, сталь)",
+      "  4.input RU=\"Гранит — очень твёрдая горная порода. К каким ископаемым он относится?\" EN=\"Granite is a very hard rock. What kind of mineral \""
+    ]
+  },
+  {
+    "id": "g3w-nat-l3",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [],
+    "dialogEN": "Protecting nature is our duty! | Protect the forest, water, animals!",
+    "dialogKY": "Жаратылышты коргоо — биздин милдет! | Токойду, сууну, жаныбарларды корго!",
+    "intros": [
+      {
+        "tRU": "Охрана природы!",
+        "tEN": "Protecting nature!",
+        "tKY": "Жаратылышты коргоо!"
+      },
+      {
+        "tRU": "Мы часть природы",
+        "tEN": "Ecology",
+        "tKY": "Экология"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Зачем создали Красную книгу?\" EN=\"Why was the Red Book created?\" ✓Чтобы защитить редких животных и растения",
+      "  2.multiple_choice RU=\"В заповеднике нельзя охотиться и рубить деревья. Зачем нужны заповедни\" EN=\"In a nature reserve you must not hunt or cut trees\" ✓Чтобы сохранить природные экосистемы",
+      "  3.multiple_choice RU=\"Деревья в городе дают:\" EN=\"Trees in the city give us:\" ✓Кислород, тень и очищают воздух",
+      "  4.input RU=\"Какой поступок НЕ помогает охране природы?\" EN=\"Which action does NOT help protect nature?\""
+    ]
+  },
+  {
+    "id": "g3w-eco-l1",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [
+      "intro0.title KY===RU: Экосистема!",
+      "t2 opt a KY===RU: Экосистема",
+      "t2 opt c KY===RU: Завод"
+    ],
+    "dialogEN": "An ecosystem is a community of living organisms! | Forest, meadow, pond — different ecosystems!",
+    "dialogKY": "Экосистема — жандуу организмдердин жамааты! | Токой, жайлоо, көлмө — ар кандай экосистемалар!",
+    "intros": [
+      {
+        "tRU": "Экосистема!",
+        "tEN": "Ecosystem!",
+        "tKY": "Экосистема!"
+      },
+      {
+        "tRU": "Всё связано",
+        "tEN": "Examples",
+        "tKY": "Мисалдар"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Если вырубить все деревья в лесу, что произойдёт с его жителями?\" EN=\"If all the trees in a forest are cut down, what ha\" ✓Исчезнут животные, потеряется среда обитания",
+      "  2.multiple_choice RU=\"Рыбы, лягушки и водоросли в пруду зависят друг от друга. Как называетс\" EN=\"Fish, frogs and algae in a pond depend on each oth\" ✓Экосистема",
+      "  3.multiple_choice RU=\"Если исчезнут пчёлы, что случится с растениями?\" EN=\"If bees disappear, what happens to plants?\" ✓Многие растения не смогут опыляться и плодоносить",
+      "  4.input RU=\"Что из перечисленного — экосистема? Библиотека, аквариум с рыбками, за\" EN=\"Which of these is an ecosystem? A library, a fish \""
+    ]
+  },
+  {
+    "id": "g3w-eco-l2",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [
+      "t1 opt b KY===RU: Расписание",
+      "t1 opt c KY===RU: Карта"
+    ],
+    "dialogEN": "Food chains: plant — hare — wolf! | Everyone eats something or someone!",
+    "dialogKY": "Тамактануу чынжырлары: өсүмдүк — коён — карышкыр! | Ар бири бирдемени же кимдир бирөөнү жейт!",
+    "intros": [
+      {
+        "tRU": "Цепи питания!",
+        "tEN": "Food chains!",
+        "tKY": "Тамактануу чынжырлары!"
+      },
+      {
+        "tRU": "Начало цепи",
+        "tEN": "Connections in nature",
+        "tKY": "Жаратылыштагы байланыштар"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Трава → заяц → лиса. Как называется такая последовательность?\" EN=\"Grass → hare → fox. What is this sequence called?\" ✓Цепь питания",
+      "  2.multiple_choice RU=\"Кто стоит в начале почти любой цепи питания?\" EN=\"Who is at the start of almost every food chain?\" ✓Растение",
+      "  3.multiple_choice RU=\"Если в лесу исчезнут все зайцы, что случится с лисами?\" EN=\"If all hares disappear from the forest, what happe\" ✓Лисам не хватит еды",
+      "  4.input RU=\"В цепи: дуб → гусеница → синица → ястреб. Кто «производитель» — начало\" EN=\"Food chain: oak → caterpillar → tit → hawk. Who is\""
+    ]
+  },
+  {
+    "id": "g3w-eco-l3",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [
+      "t2 EN stem flattened: EN=\"What is poaching?\" vs RU len 54"
+    ],
+    "dialogEN": "People and nature. We are part of the ecosystem! | Our actions affect nature!",
+    "dialogKY": "Адам жана жаратылыш. Биз экосистеманын бөлүгүбүз! | Биздин аракеттер жаратылышка таасир этет!",
+    "intros": [
+      {
+        "tRU": "Человек и природа!",
+        "tEN": "People and nature!",
+        "tKY": "Адам жана жаратылыш!"
+      },
+      {
+        "tRU": "Выбор за нами",
+        "tEN": "Protect nature",
+        "tKY": "Жаратылышты корго"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Амурский тигр занесён в Красную книгу. Что значит «редкий вид»?\" EN=\"The Amur tiger is in the Red Book. What does “rare\" ✓Вид, которому грозит исчезновение",
+      "  2.multiple_choice RU=\"Браконьер охотится незаконно. Что такое браконьерство?\" EN=\"What is poaching?\" ✓Незаконная охота или ловля",
+      "  3.multiple_choice RU=\"Дети посадили цветы и сделали кормушки для птиц. Как называются такие \" EN=\"Children planted flowers and built bird feeders. W\" ✓Охрана природы",
+      "  4.input RU=\"Фабрика сливает отходы в реку. Кто пострадает в первую очередь?\" EN=\"A factory pours waste into a river. Who suffers fi\""
+    ]
+  },
+  {
+    "id": "g3e-tobe-l1",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [
+      "t1 EN stem flattened: EN=\"I ___ happy. What word?\" vs RU len 52"
+    ],
+    "dialogEN": "The verb to be: I am, you are, he/she/it is! | Am with I, is with he/she/it, are with you/we/they!",
+    "dialogKY": "To be этиши: I am, you are, he/she/it is! | Am — I менен, is — he/she/it менен, are — you/we/they менен!",
+    "intros": [
+      {
+        "tRU": "Глагол to be!",
+        "tEN": "The verb to be!",
+        "tKY": "To be этиши!"
+      },
+      {
+        "tRU": "Примеры",
+        "tEN": "Examples",
+        "tKY": "Мисалдар"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"«I ___ happy today!» Тали не уверен: am, is или are?\" EN=\"I ___ happy. What word?\" ✓am",
+      "  2.multiple_choice RU=\"«You ___ my best friend.»\" EN=\"You ___ smart. What word?\" ✓are",
+      "  3.multiple_choice RU=\"С каким местоимением используется «am»?\" EN=\"Am is used with:\" ✓I",
+      "  4.input RU=\"Напиши по-английски: «Я счастлив» (I ___ happy — полная фраза)\" EN=\"Write in English: “I am happy” (full phrase)\""
+    ]
+  },
+  {
+    "id": "g3e-tobe-l2",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [],
+    "dialogEN": "Negation: I am not, he is not, they are not! | Not goes after am, is, are!",
+    "dialogKY": "Терс форма: I am not, he is not, they are not! | Not — am, is, are кийинен жазылат!",
+    "intros": [
+      {
+        "tRU": "Отрицание!",
+        "tEN": "Negation!",
+        "tKY": "Терс форма!"
+      },
+      {
+        "tRU": "Сокращения",
+        "tEN": "Contractions",
+        "tKY": "Кыскартылган формалар"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"«He ___ tall» — сделай отрицание (He is tall → …):\" EN=\"\"He ___ tall\" — make it negative (He is tall → …):\" ✓is not",
+      "  2.multiple_choice RU=\"Сокращение для «is not»:\" EN=\"The short form of \"is not\":\" ✓isn't",
+      "  3.multiple_choice RU=\"«It isn't big» — это правильное отрицание?\" EN=\"\"It isn't big\" — is this a correct negative?\" ✓Да",
+      "  4.input RU=\"«He is late» → отрицание (полностью):\" EN=\"\"He is late\" → full negative form:\""
+    ]
+  },
+  {
+    "id": "g3e-tobe-l3",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [],
+    "dialogEN": "Questions: Am I? Is he? Are you? | Am, is, are go at the start of a question!",
+    "dialogKY": "Суроолор: Am I? Is he? Are you? | Am, is, are суроонун башына жазылат!",
+    "intros": [
+      {
+        "tRU": "Вопросы!",
+        "tEN": "Questions!",
+        "tKY": "Суроолор!"
+      },
+      {
+        "tRU": "Порядок слов",
+        "tEN": "Word order",
+        "tKY": "Сөз тартиби"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"«We are ready» → вопрос: «___ we ready?» Какой глагол в начале?\" EN=\"“We are ready” → question: “___ we ready?” Which v\" ✓are",
+      "  2.multiple_choice RU=\"«They are students.» → правильный вопрос:\" EN=\"“They are students.” → the correct question is:\" ✓Are they students?",
+      "  3.multiple_choice RU=\"Правильный вопрос к ответу «Yes, she is»:\" EN=\"The correct question for the answer “Yes, she is”:\" ✓Is she tired?",
+      "  4.input RU=\"«Они дома?» по-английски (полный вопрос):\" EN=\"How do you ask “Are they home?” in English (full q\""
+    ]
+  },
+  {
+    "id": "g3e-food-l1",
+    "types": "multiple_choice,multiple_choice,fill_blank,input",
+    "diversity": 3,
+    "flags": [],
+    "dialogEN": "Food and drinks: apple, bread, milk, water! | Juice means сок! Porridge means каша. Tali, you drink juice every morning — now you know the English words!",
+    "dialogKY": "Тамак жана суусундуктар: apple, bread, milk, water! | Food — тамак. Drink — суусундук!",
+    "intros": [
+      {
+        "tRU": "Еда и напитки!",
+        "tEN": "Food and drinks!",
+        "tKY": "Тамак жана суусундуктар!"
+      },
+      {
+        "tRU": "Food / Drink",
+        "tEN": "Examples",
+        "tKY": "Мисалдар"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Juice — это:\" EN=\"“Juice” means:\" ✓Сок",
+      "  2.multiple_choice RU=\"Porridge — это:\" EN=\"“Porridge” means:\" ✓Каша",
+      "  3.fill_blank RU=\"Tea, coffee, milk — все эти слова это _\" EN=\"Tea, coffee, milk — these words are all _\"",
+      "  4.input RU=\"«I drink water every day» — что пьёт этот человек?\" EN=\"“I drink water every day” — what does this person \""
+    ]
+  },
+  {
+    "id": "g3e-food-l2",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [],
+    "dialogEN": "I like / I don't like — мага жагат / мага жакпайт! | I like pizza. I do not like broccoli!",
+    "dialogKY": "I like / I don't like — мага жагат / мага жакпайт! | I like pizza. I do not like broccoli!",
+    "intros": [
+      {
+        "tRU": "I like / I don't like!",
+        "tEN": "I like / I do not like!",
+        "tKY": "I like / I do not like!"
+      },
+      {
+        "tRU": "Вопрос",
+        "tEN": "Questions",
+        "tKY": "Суроолор"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"«I like apples!» — Маша это говорит. Что это значит?\" EN=\"Masha says: “I like apples!” What does it mean?\" ✓Мне нравятся яблоки",
+      "  2.multiple_choice RU=\"«I don’t like onions» — Ваня морщится. Onions — это:\" EN=\"“I don’t like onions” — Vanya frowns. “Onions” mea\" ✓Лук",
+      "  3.multiple_choice RU=\"Как сказать «Мне нравится шоколад» по-английски?\" EN=\"How do you say “I like chocolate” in English?\" ✓I like chocolate",
+      "  4.input RU=\"Другу не нравится суп. Как он скажет?\" EN=\"A friend does not like soup. What will he say?\""
+    ]
+  },
+  {
+    "id": "g3e-food-l3",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [],
+    "dialogEN": "At the table: Can I have some water? Thank you! | Table manners — table etiquette!",
+    "dialogKY": "Дасторкон үстүндө: Can I have some water? Thank you! | Table manners — дасторкон этикети!",
+    "intros": [
+      {
+        "tRU": "За столом!",
+        "tEN": "At the table!",
+        "tKY": "Дасторкон үстүндө!"
+      },
+      {
+        "tRU": "Вежливость",
+        "tEN": "Politeness",
+        "tKY": "Сылыктык"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"«Can I have some bread, please?» — о чём просит человек?\" EN=\"“Can I have some bread, please?” — what is the per\" ✓Немного хлеба",
+      "  2.multiple_choice RU=\"«Pass me the salt, please» — о чём просит человек?\" EN=\"“Pass me the salt, please” — what is the person as\" ✓Передать соль",
+      "  3.multiple_choice RU=\"«It’s delicious!» — гость говорит это про еду. Что он чувствует?\" EN=\"A guest says “It’s delicious!” about the food. Wha\" ✓Еда вкусная",
+      "  4.input RU=\"Как вежливо отказаться от добавки?\" EN=\"How do you politely refuse more food?\""
+    ]
+  },
+  {
+    "id": "g3e-daily-l1",
+    "types": "multiple_choice,multiple_choice,fill_blank,input",
+    "diversity": 3,
+    "flags": [],
+    "dialogEN": "Hello! Today we are talking about the daily routine. | Tell me what you do every day!",
+    "dialogKY": "Салам! Бүгүн күндөлүк тартип жөнүндө сүйлөшөбүз. | Мага ар күнү эмне кылаарыңды айт!",
+    "intros": [
+      {
+        "tRU": "Daily routine!",
+        "tEN": "My day",
+        "tKY": "Менин күнүм"
+      },
+      {
+        "tRU": "Глаголы действия",
+        "tEN": "Action verbs",
+        "tKY": "Иш-аракет этиштери"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"Будильник звонит в 7 утра. «Wake up» — это:\" EN=\"The alarm rings at 7 a.m. “Wake up” means:\" ✓Просыпаться",
+      "  2.multiple_choice RU=\"После завтрака Том чистит зубы. «Brush teeth» — это:\" EN=\"After breakfast Tom cleans his teeth. “Brush teeth\" ✓Чистить зубы",
+      "  3.fill_blank RU=\"I wake up _ 7.\" EN=\"I wake up _ 7.\"",
+      "  4.input RU=\"«Eat breakfast» — это:\" EN=\"Eat breakfast is:\""
+    ]
+  },
+  {
+    "id": "g3e-daily-l2",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [],
+    "dialogEN": "Great! Now let's talk about time. | What time do you get up?",
+    "dialogKY": "Мыкты! Азыр убакыт жөнүндө сүйлөшөлү. | Саат канчада ойгоносуң?",
+    "intros": [
+      {
+        "tRU": "Который час?",
+        "tEN": "What time is it?",
+        "tKY": "Саат канча?"
+      },
+      {
+        "tRU": "Части дня",
+        "tEN": "Morning, afternoon, evening",
+        "tKY": "Таң, күн, кеч"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"«Half past three» — это:\" EN=\"“Half past three” means:\" ✓3:30",
+      "  2.multiple_choice RU=\"«Quarter past eight» — это:\" EN=\"“Quarter past eight” means:\" ✓8:15",
+      "  3.multiple_choice RU=\"«It’s five o’clock» — который час?\" EN=\"“It’s five o’clock” — what time is it?\" ✓5:00",
+      "  4.input RU=\"Как спросить «Который час?» по-английски?\" EN=\"How do you ask “What time is it?” in English?\""
+    ]
+  },
+  {
+    "id": "g3e-daily-l3",
+    "types": "multiple_choice,multiple_choice,multiple_choice,input",
+    "diversity": 2,
+    "flags": [],
+    "dialogEN": "I always eat breakfast. I never wake up early. I sometimes do homework. Are these frequency adverbs? | Exactly! Always — всегда, usually — обычно, sometimes — иногда, never — никогда. Tali, you alread",
+    "dialogKY": "I always eat breakfast. I never wake up early. I sometimes do homework. Бул жыштык тактоочторубу? | Так ошондой! Always — ар дайым, usually — адатта, sometimes — кээде, never — эч качан. Тали, сен бул",
+    "intros": [
+      {
+        "tRU": "Наречия частоты!",
+        "tEN": "Frequency adverbs!",
+        "tKY": "Жыштык тактоочтору!"
+      },
+      {
+        "tRU": "Место в предложении",
+        "tEN": "Place in the sentence",
+        "tKY": "Сүйлөмдөгү орду"
+      }
+    ],
+    "taskLines": [
+      "  1.multiple_choice RU=\"«I always brush my teeth» — «always» означает:\" EN=\"“I always brush my teeth” — “always” means:\" ✓Всегда",
+      "  2.multiple_choice RU=\"Расставь по убыванию частоты:\" EN=\"Put in order from most to least frequent:\" ✓Always, usually, sometimes, never",
+      "  3.multiple_choice RU=\"«She sometimes plays football» — как часто она играет?\" EN=\"“She sometimes plays football” — how often does sh\" ✓Иногда",
+      "  4.input RU=\"«Я никогда не опаздываю» по-английски:\" EN=\"“I am never late” in English is:\""
+    ]
+  }
+]

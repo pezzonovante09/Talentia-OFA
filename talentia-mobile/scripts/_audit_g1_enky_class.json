@@ -1,0 +1,1309 @@
+{
+  "g1m-c20-l1": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l1_q2_a",
+        "reason": "numeric/punct",
+        "rv": "11"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l1_q2_b",
+        "reason": "numeric/punct",
+        "rv": "13"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l1_q2_c",
+        "reason": "numeric/punct",
+        "rv": "15"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l1_q3_a",
+        "reason": "numeric/punct",
+        "rv": "11"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l1_q3_b",
+        "reason": "numeric/punct",
+        "rv": "13"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l1_q3_c",
+        "reason": "numeric/punct",
+        "rv": "16"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l1_q5_a",
+        "reason": "numeric/punct",
+        "rv": "11"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l1_q5_b",
+        "reason": "numeric/punct",
+        "rv": "14"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 8
+  },
+  "g1m-c20-l2": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l2_q2_a",
+        "reason": "numeric/punct",
+        "rv": "15"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l2_q2_b",
+        "reason": "numeric/punct",
+        "rv": "17"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l2_q2_c",
+        "reason": "numeric/punct",
+        "rv": "21"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l2_q4_a",
+        "reason": "numeric/punct",
+        "rv": "17"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l2_q4_b",
+        "reason": "numeric/punct",
+        "rv": "18"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l2_q4_c",
+        "reason": "numeric/punct",
+        "rv": "20"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l2_q5_a",
+        "reason": "numeric/punct",
+        "rv": "16"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l2_q5_b",
+        "reason": "numeric/punct",
+        "rv": "20"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 8
+  },
+  "g1m-c20-l3": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l3_q2_a",
+        "reason": "numeric/punct",
+        "rv": "14"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l3_q2_b",
+        "reason": "numeric/punct",
+        "rv": "17"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l3_q2_c",
+        "reason": "numeric/punct",
+        "rv": "20"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l3_q5_a",
+        "reason": "numeric/punct",
+        "rv": "13"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_c20l3_q5_b",
+        "reason": "numeric/punct",
+        "rv": "19"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 5
+  },
+  "g1m-add-l1": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl1_q1_a",
+        "reason": "numeric/punct",
+        "rv": "4"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl1_q1_b",
+        "reason": "numeric/punct",
+        "rv": "5"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl1_q1_c",
+        "reason": "numeric/punct",
+        "rv": "6"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl1_q2_a",
+        "reason": "numeric/punct",
+        "rv": "5"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl1_q2_b",
+        "reason": "numeric/punct",
+        "rv": "6"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl1_q2_c",
+        "reason": "numeric/punct",
+        "rv": "7"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl1_q3",
+        "reason": "numeric/punct",
+        "rv": "4 + 3 = ?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl1_q3_a",
+        "reason": "numeric/punct",
+        "rv": "6"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 16
+  },
+  "g1m-add-l2": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl2_q2_a",
+        "reason": "numeric/punct",
+        "rv": "1"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl2_q2_b",
+        "reason": "numeric/punct",
+        "rv": "2"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl2_q2_c",
+        "reason": "numeric/punct",
+        "rv": "3"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl2_q3_a",
+        "reason": "numeric/punct",
+        "rv": "12"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl2_q3_b",
+        "reason": "numeric/punct",
+        "rv": "13"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl2_q3_c",
+        "reason": "numeric/punct",
+        "rv": "14"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl2_q4_a",
+        "reason": "numeric/punct",
+        "rv": "4"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl2_q4_b",
+        "reason": "numeric/punct",
+        "rv": "5"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 12
+  },
+  "g1m-add-l3": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl3_q1_a",
+        "reason": "numeric/punct",
+        "rv": "16"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl3_q1_b",
+        "reason": "numeric/punct",
+        "rv": "17"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl3_q1_c",
+        "reason": "numeric/punct",
+        "rv": "18"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl3_q2",
+        "reason": "numeric/punct",
+        "rv": "10 + 4 = ?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl3_q2_a",
+        "reason": "numeric/punct",
+        "rv": "13"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl3_q2_b",
+        "reason": "numeric/punct",
+        "rv": "14"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl3_q2_c",
+        "reason": "numeric/punct",
+        "rv": "15"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_addl3_q3_a",
+        "reason": "numeric/punct",
+        "rv": "15"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 16
+  },
+  "g1m-sub-l1": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl1_q1_a",
+        "reason": "numeric/punct",
+        "rv": "3"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl1_q1_b",
+        "reason": "numeric/punct",
+        "rv": "4"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl1_q1_c",
+        "reason": "numeric/punct",
+        "rv": "5"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl1_q2_a",
+        "reason": "numeric/punct",
+        "rv": "2"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl1_q2_b",
+        "reason": "numeric/punct",
+        "rv": "3"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl1_q2_c",
+        "reason": "numeric/punct",
+        "rv": "4"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl1_q3_a",
+        "reason": "numeric/punct",
+        "rv": "4"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl1_q3_b",
+        "reason": "numeric/punct",
+        "rv": "5"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 15
+  },
+  "g1m-sub-l2": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl2_q1_a",
+        "reason": "numeric/punct",
+        "rv": "5"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl2_q1_b",
+        "reason": "numeric/punct",
+        "rv": "6"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl2_q1_c",
+        "reason": "numeric/punct",
+        "rv": "7"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl2_q2_a",
+        "reason": "numeric/punct",
+        "rv": "2"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl2_q2_b",
+        "reason": "numeric/punct",
+        "rv": "3"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl2_q2_c",
+        "reason": "numeric/punct",
+        "rv": "4"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl2_q3",
+        "reason": "numericish_eq",
+        "rv": "10 − 5 = ?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl2_q3_a",
+        "reason": "numeric/punct",
+        "rv": "4"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 16
+  },
+  "g1m-sub-l3": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl3_q1_a",
+        "reason": "numeric/punct",
+        "rv": "5"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl3_q1_b",
+        "reason": "numeric/punct",
+        "rv": "6"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl3_q1_c",
+        "reason": "numeric/punct",
+        "rv": "7"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl3_q2_a",
+        "reason": "numeric/punct",
+        "rv": "5"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl3_q2_b",
+        "reason": "numeric/punct",
+        "rv": "7"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl3_q2_c",
+        "reason": "numeric/punct",
+        "rv": "9"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl3_q4_a",
+        "reason": "numeric/punct",
+        "rv": "4"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1m_subl3_q4_b",
+        "reason": "numeric/punct",
+        "rv": "5"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 12
+  },
+  "g1r-vow-l2": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_vowl2_q1_a",
+        "reason": "intentional_RU_wordform",
+        "rv": "Я"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_vowl2_q1_a",
+        "reason": "intentional_RU_wordform",
+        "rv": "Я"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_vowl2_q1_b",
+        "reason": "intentional_RU_wordform",
+        "rv": "Е"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_vowl2_q1_b",
+        "reason": "intentional_RU_wordform",
+        "rv": "Е"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_vowl2_q1_c",
+        "reason": "intentional_RU_wordform",
+        "rv": "Ю"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_vowl2_q1_c",
+        "reason": "intentional_RU_wordform",
+        "rv": "Ю"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_vowl2_q4_a",
+        "reason": "intentional_RU_wordform",
+        "rv": "Е"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_vowl2_q4_a",
+        "reason": "intentional_RU_wordform",
+        "rv": "Е"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 16
+  },
+  "g1r-vow-l3": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_vowl3_q2_a",
+        "reason": "intentional_RU_wordform",
+        "rv": "Н"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_vowl3_q2_a",
+        "reason": "intentional_RU_wordform",
+        "rv": "Н"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_vowl3_q2_b",
+        "reason": "intentional_RU_wordform",
+        "rv": "Ь"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_vowl3_q2_b",
+        "reason": "intentional_RU_wordform",
+        "rv": "Ь"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_vowl3_q2_c",
+        "reason": "intentional_RU_wordform",
+        "rv": "О"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_vowl3_q2_c",
+        "reason": "intentional_RU_wordform",
+        "rv": "О"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 6
+  },
+  "g1r-wrd-l1": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_wrdl1_q1_a",
+        "reason": "intentional_RU_wordform",
+        "rv": "ТОК"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_wrdl1_q1_a",
+        "reason": "intentional_RU_wordform",
+        "rv": "ТОК"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_wrdl1_q1_b",
+        "reason": "intentional_RU_wordform",
+        "rv": "КОТ"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_wrdl1_q1_b",
+        "reason": "intentional_RU_wordform",
+        "rv": "КОТ"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_wrdl1_q2_a",
+        "reason": "intentional_RU_wordform",
+        "rv": "МАМ"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_wrdl1_q2_a",
+        "reason": "intentional_RU_wordform",
+        "rv": "МАМ"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_wrdl1_q2_b",
+        "reason": "intentional_RU_wordform",
+        "rv": "МАМА"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_wrdl1_q2_b",
+        "reason": "intentional_RU_wordform",
+        "rv": "МАМА"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 24
+  },
+  "g1r-wrd-l2": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1r_wrdl2_q2_a",
+        "reason": "numeric/punct",
+        "rv": "1"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_wrdl2_q2_b",
+        "reason": "numeric/punct",
+        "rv": "2"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_wrdl2_q2_c",
+        "reason": "numeric/punct",
+        "rv": "3"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_wrdl2_q4_a",
+        "reason": "numeric/punct",
+        "rv": "2"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_wrdl2_q4_b",
+        "reason": "numeric/punct",
+        "rv": "3"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_wrdl2_q4_c",
+        "reason": "numeric/punct",
+        "rv": "4"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_wrdl2_q5_a",
+        "reason": "numeric/punct",
+        "rv": "1"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_wrdl2_q5_b",
+        "reason": "numeric/punct",
+        "rv": "2"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 8
+  },
+  "g1r-grm-l1": {
+    "kept": [
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_grml1_q3_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "я живу в москве",
+        "ev": "я живу в москве",
+        "kv": "я живу в москве"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml1_q3_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "я живу в москве",
+        "ev": "я живу в москве",
+        "kv": "я живу в москве"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_grml1_q3_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Я живу в Москве",
+        "ev": "Я живу в Москве",
+        "kv": "Я живу в Москве"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml1_q3_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Я живу в Москве",
+        "ev": "Я живу в Москве",
+        "kv": "Я живу в Москве"
+      }
+    ],
+    "droppedSample": [],
+    "keptN": 4,
+    "droppedN": 0
+  },
+  "g1r-grm-l2": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml2_q2_a",
+        "reason": "numeric/punct",
+        "rv": "?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml2_q2_b",
+        "reason": "numeric/punct",
+        "rv": "."
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml2_q2_c",
+        "reason": "numeric/punct",
+        "rv": "!"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml2_q3_a",
+        "reason": "numeric/punct",
+        "rv": "."
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml2_q3_b",
+        "reason": "numeric/punct",
+        "rv": "?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml2_q3_c",
+        "reason": "numeric/punct",
+        "rv": "!"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml2_q4_a",
+        "reason": "numeric/punct",
+        "rv": "."
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml2_q4_b",
+        "reason": "numeric/punct",
+        "rv": "?"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 11
+  },
+  "g1r-grm-l3": {
+    "kept": [
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_grml3_q2_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "ЧТО?",
+        "ev": "ЧТО?",
+        "kv": "ЧТО?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml3_q2_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "ЧТО?",
+        "ev": "ЧТО?",
+        "kv": "ЧТО?"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_grml3_q2_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "КТО?",
+        "ev": "КТО?",
+        "kv": "КТО?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml3_q2_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "КТО?",
+        "ev": "КТО?",
+        "kv": "КТО?"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_grml3_q3_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "КТО?",
+        "ev": "КТО?",
+        "kv": "КТО?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml3_q3_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "КТО?",
+        "ev": "КТО?",
+        "kv": "КТО?"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_grml3_q3_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "ЧТО?",
+        "ev": "ЧТО?",
+        "kv": "ЧТО?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml3_q3_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "ЧТО?",
+        "ev": "ЧТО?",
+        "kv": "ЧТО?"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_grml3_q5_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "КТО?",
+        "ev": "КТО?",
+        "kv": "КТО?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml3_q5_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "КТО?",
+        "ev": "КТО?",
+        "kv": "КТО?"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_grml3_q5_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "ЧТО?",
+        "ev": "ЧТО?",
+        "kv": "ЧТО?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml3_q5_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "ЧТО?",
+        "ev": "ЧТО?",
+        "kv": "ЧТО?"
+      }
+    ],
+    "droppedSample": [
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_grml3_q4_a",
+        "reason": "intentional_RU_wordform",
+        "rv": "ЧТО"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml3_q4_a",
+        "reason": "intentional_RU_wordform",
+        "rv": "ЧТО"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.g1r_grml3_q4_b",
+        "reason": "intentional_RU_wordform",
+        "rv": "КТО"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1r_grml3_q4_b",
+        "reason": "intentional_RU_wordform",
+        "rv": "КТО"
+      }
+    ],
+    "keptN": 12,
+    "droppedN": 4
+  },
+  "g1w-sch-l1": {
+    "kept": [
+      {
+        "f": "ky=ru stub: data.tasks.g1w_schl1_q4_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Бассейн",
+        "ev": "A swimming pool",
+        "kv": "Бассейн"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1w_schl1_q4_c",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Плита",
+        "ev": "A stove",
+        "kv": "Плита"
+      }
+    ],
+    "droppedSample": [],
+    "keptN": 2,
+    "droppedN": 0
+  },
+  "g1w-sch-l2": {
+    "kept": [
+      {
+        "f": "ky=ru stub: data.tasks.g1w_schl2_q2_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Математика",
+        "ev": "Math",
+        "kv": "Математика"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1w_schl2_q3_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Математика",
+        "ev": "Math",
+        "kv": "Математика"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1w_schl2_q3_c",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Музыка",
+        "ev": "Music",
+        "kv": "Музыка"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1w_schl2_q4_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Математика",
+        "ev": "Math",
+        "kv": "Математика"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1w_schl2_q4_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Музыка",
+        "ev": "Music",
+        "kv": "Музыка"
+      }
+    ],
+    "droppedSample": [],
+    "keptN": 5,
+    "droppedN": 0
+  },
+  "g1w-nat-l2": {
+    "kept": [
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_t1_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "В доме",
+        "ev": "В доме",
+        "kv": "В доме"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_t1_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "В доме",
+        "ev": "В доме",
+        "kv": "В доме"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_t1_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "В лесу",
+        "ev": "В лесу",
+        "kv": "В лесу"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_t1_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "В лесу",
+        "ev": "В лесу",
+        "kv": "В лесу"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_t1_c",
+        "keep": true,
+        "reason": "real?",
+        "rv": "В море",
+        "ev": "В море",
+        "kv": "В море"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_t1_c",
+        "keep": true,
+        "reason": "real?",
+        "rv": "В море",
+        "ev": "В море",
+        "kv": "В море"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_t2_q",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?",
+        "ev": "Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?",
+        "kv": "Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_t2_q",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?",
+        "ev": "Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?",
+        "kv": "Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_t2_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Да, лев — домашний",
+        "ev": "Да, лев — домашний",
+        "kv": "Да, лев — домашний"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_t2_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Да, лев — домашний",
+        "ev": "Да, лев — домашний",
+        "kv": "Да, лев — домашний"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_t2_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Нет, лев — дикий!",
+        "ev": "Нет, лев — дикий!",
+        "kv": "Нет, лев — дикий!"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_t2_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Нет, лев — дикий!",
+        "ev": "Нет, лев — дикий!",
+        "kv": "Нет, лев — дикий!"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_t3_q",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Тали нашёл рыжий пушистый след в лесу. Кто это был?",
+        "ev": "Тали нашёл рыжий пушистый след в лесу. Кто это был?",
+        "kv": "Тали нашёл рыжий пушистый след в лесу. Кто это был?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_t3_q",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Тали нашёл рыжий пушистый след в лесу. Кто это был?",
+        "ev": "Тали нашёл рыжий пушистый след в лесу. Кто это был?",
+        "kv": "Тали нашёл рыжий пушистый след в лесу. Кто это был?"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_t3_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Волк",
+        "ev": "Волк",
+        "kv": "Волк"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_t3_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Волк",
+        "ev": "Волк",
+        "kv": "Волк"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_t3_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Лиса",
+        "ev": "Лиса",
+        "kv": "Лиса"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_t3_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Лиса",
+        "ev": "Лиса",
+        "kv": "Лиса"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_t3_c",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Медведь",
+        "ev": "Медведь",
+        "kv": "Медведь"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_t3_c",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Медведь",
+        "ev": "Медведь",
+        "kv": "Медведь"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_t4_q",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?",
+        "ev": "Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?",
+        "kv": "Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_t4_q",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?",
+        "ev": "Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?",
+        "kv": "Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_t4_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Волк",
+        "ev": "Волк",
+        "kv": "Волк"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_t4_a",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Волк",
+        "ev": "Волк",
+        "kv": "Волк"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_t4_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Лиса",
+        "ev": "Лиса",
+        "kv": "Лиса"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_t4_b",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Лиса",
+        "ev": "Лиса",
+        "kv": "Лиса"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_t4_c",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Корова",
+        "ev": "Корова",
+        "kv": "Корова"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_t4_c",
+        "keep": true,
+        "reason": "real?",
+        "rv": "Корова",
+        "ev": "Корова",
+        "kv": "Корова"
+      }
+    ],
+    "droppedSample": [
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_a1_q",
+        "reason": "aba_ky_copies_ru",
+        "rv": "Лиса — дикое животное?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_a1_q",
+        "reason": "aba_ky_copies_ru",
+        "rv": "Лиса — дикое животное?"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_a1_a",
+        "reason": "aba_ky_copies_ru",
+        "rv": "Да"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_a1_a",
+        "reason": "aba_ky_copies_ru",
+        "rv": "Да"
+      },
+      {
+        "f": "en=ru Cyrillic: data.tasks.nrw_ganiml2_a1_b",
+        "reason": "aba_ky_copies_ru",
+        "rv": "Нет"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.nrw_ganiml2_a1_b",
+        "reason": "aba_ky_copies_ru",
+        "rv": "Нет"
+      }
+    ],
+    "keptN": 28,
+    "droppedN": 6
+  },
+  "g1w-bdy-l2": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1w_bdyl2_opt_chips",
+        "reason": "cognate",
+        "rv": "Чипсы"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 1
+  },
+  "g1e-abc-l1": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_G",
+        "reason": "intentional_EN_target",
+        "rv": "G"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_H",
+        "reason": "intentional_EN_target",
+        "rv": "H"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_I",
+        "reason": "intentional_EN_target",
+        "rv": "I"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_J",
+        "reason": "intentional_EN_target",
+        "rv": "J"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 4
+  },
+  "g1e-abc-l2": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_K",
+        "reason": "intentional_EN_target",
+        "rv": "K"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_L",
+        "reason": "intentional_EN_target",
+        "rv": "L"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_M",
+        "reason": "intentional_EN_target",
+        "rv": "M"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_N",
+        "reason": "intentional_EN_target",
+        "rv": "N"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 4
+  },
+  "g1e-abc-l3": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_O",
+        "reason": "intentional_EN_target",
+        "rv": "O"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_P",
+        "reason": "intentional_EN_target",
+        "rv": "P"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_Q",
+        "reason": "intentional_EN_target",
+        "rv": "Q"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_R",
+        "reason": "intentional_EN_target",
+        "rv": "R"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 4
+  },
+  "g1e-num-l1": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.opt_one",
+        "reason": "numeric/punct",
+        "rv": "1"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.opt_two",
+        "reason": "numeric/punct",
+        "rv": "2"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.opt_three",
+        "reason": "numeric/punct",
+        "rv": "3"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 3
+  },
+  "g1e-num-l2": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.opt_seven",
+        "reason": "numeric/punct",
+        "rv": "7"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.opt_eight",
+        "reason": "numeric/punct",
+        "rv": "8"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.opt_nine",
+        "reason": "numeric/punct",
+        "rv": "9"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 3
+  },
+  "g1e-grt-l2": {
+    "kept": [],
+    "droppedSample": [
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_am",
+        "reason": "intentional_EN_target",
+        "rv": "am"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_is",
+        "reason": "intentional_EN_target",
+        "rv": "is"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_are",
+        "reason": "intentional_EN_target",
+        "rv": "are"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_i_am",
+        "reason": "intentional_EN_target",
+        "rv": "I am..."
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_hello_i",
+        "reason": "intentional_EN_target",
+        "rv": "Hello, I..."
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_how_old_are_you_en",
+        "reason": "intentional_EN_target",
+        "rv": "How old are you?"
+      },
+      {
+        "f": "ky=ru stub: data.tasks.g1e_opt_what_is_your_name_en",
+        "reason": "intentional_EN_target",
+        "rv": "What is your name?"
+      }
+    ],
+    "keptN": 0,
+    "droppedN": 7
+  }
+}

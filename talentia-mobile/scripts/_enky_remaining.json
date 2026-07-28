@@ -1,0 +1,262 @@
+[
+  {
+    "id": "g2m-add2-l1",
+    "key": "intro.g2m_add2l1_0_t",
+    "flags": [
+      "en_stub"
+    ],
+    "r": "Складываем десятки!",
+    "e": "Adding tens!",
+    "y": "Ондуктарды кошолу!"
+  },
+  {
+    "id": "g2m-times-l1",
+    "key": "dialog.g2m_timesl1_1",
+    "flags": [
+      "en_stub"
+    ],
+    "r": "Умножение на 2 — это удвоение! Четыре пары — это 4 × 2. Давай посчитаем вместе с нашим другом!",
+    "e": "Multiplying by 2 is doubling! Four pairs is 4 × 2. Let’s count together with our friend!",
+    "y": "2ге көбөйтүү — эки эсе кылуу! Төрт жуп — бул 4 × 2. Досубуз менен чогуу санайлы!"
+  },
+  {
+    "id": "g2m-times-l2",
+    "key": "intro.g2m_timesl2_0_t",
+    "flags": [
+      "en_stub"
+    ],
+    "r": "Умножение на 5!",
+    "e": "Multiplying by 5!",
+    "y": "5ке көбөйтүү!"
+  },
+  {
+    "id": "g2m-times-l3",
+    "key": "intro.g2m_timesl3_0_t",
+    "flags": [
+      "en_stub"
+    ],
+    "r": "Умножение на 3!",
+    "e": "Multiplying by 3!",
+    "y": "3кө көбөйтүү!"
+  },
+  {
+    "id": "g2e-phr-l1",
+    "key": "intro.g2e_phrl1_1_b",
+    "flags": [
+      "en_stub"
+    ],
+    "r": "Вежливые слова важны на любом языке!",
+    "e": "Polite words matter in any language!",
+    "y": "Сылык сөздөр кайсы тилде болбосун маанилүү!"
+  },
+  {
+    "id": "g2e-phr-l1",
+    "key": "tasks.g2e_phrl1_opt_spasibo",
+    "flags": [
+      "ky_eq_ru"
+    ],
+    "r": "Спасибо",
+    "e": "Спасибо",
+    "y": "Спасибо"
+  },
+  {
+    "id": "g2e-phr-l1",
+    "key": "tasks.g2e_phrl1_opt_pozh",
+    "flags": [
+      "ky_eq_ru"
+    ],
+    "r": "Пожалуйста",
+    "e": "Пожалуйста",
+    "y": "Пожалуйста"
+  },
+  {
+    "id": "g2e-phr-l1",
+    "key": "tasks.g2e_phrl1_opt_privet",
+    "flags": [
+      "ky_eq_ru"
+    ],
+    "r": "Привет",
+    "e": "Привет",
+    "y": "Привет"
+  },
+  {
+    "id": "g2e-sch-l1",
+    "key": "intro.g2e_schl1_0_t",
+    "flags": [
+      "en_stub"
+    ],
+    "r": "В классе!",
+    "e": "In the classroom!",
+    "y": "Класста!"
+  },
+  {
+    "id": "g2e-sch-l1",
+    "key": "intro.g2e_schl1_1_b",
+    "flags": [
+      "en_stub"
+    ],
+    "r": "Classroom — класс. School — школа. Вот наш мир по-английски!",
+    "e": "Classroom — класс. School — школа. That’s our world in English!",
+    "y": "Classroom — класс. School — мектеп. Бул биздин дүйнө англисче!"
+  },
+  {
+    "id": "g3m-1000-l1",
+    "key": "dialog.g3m_1000l1_1",
+    "flags": [
+      "en_stub"
+    ],
+    "r": "Тысяча — это огромное число! Но мы с тобой вместе разберёмся: 100, 200, 300… идём к тысяче!",
+    "e": "A thousand is a huge number! But together we’ll figure it out: 100, 200, 300… heading to a thousand!",
+    "y": "Миң — абдан чоң сан! Бирок чогуу түшүнөбүз: 100, 200, 300… миңге барабыз!"
+  },
+  {
+    "id": "g3m-1000-l1",
+    "key": "intro.g3m_1000l1_0_t",
+    "flags": [
+      "en_stub"
+    ],
+    "r": "Числа до 1000!",
+    "e": "Numbers up to 1000!",
+    "y": "1000гө чейинки сандар!"
+  },
+  {
+    "id": "g3m-1000-l1",
+    "key": "intro.g3m_1000l1_0_b",
+    "flags": [
+      "en_stub"
+    ],
+    "r": "Сотни: 100, 200, 300… 1000 — тысяча. В трёхзначном числе есть разряд сотен: 347 = 3 сотни + 4 десятка + 7 единиц.",
+    "e": "Hundreds: 100, 200… 1000 is a thousand. Three-digit numbers have a hundreds place.",
+    "y": "Жүздүктөр: 100, 200, 300… 1000 — миң. Үч орундуу санда жүздүк разряды бар: 347 = 3 жүздүк + 4 ондук + 7 бирдик."
+  },
+  {
+    "id": "g2r-sh-l3",
+    "key": "intro.g2r_shl3_0_t",
+    "flags": [
+      "ky_eq_ru"
+    ],
+    "r": "Ль, Лю, Ле!",
+    "e": "Ль, Лю, Ле!",
+    "y": "Ль, Лю, Ле!"
+  },
+  {
+    "id": "g2s-ani-l2",
+    "key": "intro.g2s_anil2_1_b",
+    "flags": [
+      "en_short"
+    ],
+    "r": "Пингвин и страус — птицы, но не летают. Главное — перья и клюв, а не умение летать.",
+    "e": "Birds lay eggs. Many can fly!",
+    "y": "Куштар жумуртка тууйт. Көпчүлүгү уча алат!"
+  },
+  {
+    "id": "g3r-adj-l3",
+    "key": "intro.g3r_adjl3_0_b",
+    "flags": [
+      "en_short"
+    ],
+    "r": "Слова с противоположным смыслом: большой — маленький, горячий — холодный.",
+    "e": "Big — small. Hot — cold!",
+    "y": "Чоң — кичине. Ысык — суук!"
+  },
+  {
+    "id": "g3r-adj-l3",
+    "key": "tasks.g3r_adjl3_q1_a",
+    "flags": [
+      "ky_eq_ru"
+    ],
+    "r": "Грустный",
+    "e": "Грустный (sad)",
+    "y": "Грустный"
+  },
+  {
+    "id": "g3r-adj-l3",
+    "key": "tasks.g3r_adjl3_q1_b",
+    "flags": [
+      "ky_eq_ru"
+    ],
+    "r": "Радостный",
+    "e": "Радостный (joyful)",
+    "y": "Радостный"
+  },
+  {
+    "id": "g3r-adj-l3",
+    "key": "tasks.g3r_adjl3_q1_c",
+    "flags": [
+      "ky_eq_ru"
+    ],
+    "r": "Смешной",
+    "e": "Смешной (funny)",
+    "y": "Смешной"
+  },
+  {
+    "id": "g3r-gen-l3",
+    "key": "tasks.g3r_genl3_q1_a",
+    "flags": [
+      "ky_eq_ru"
+    ],
+    "r": "Высокий дом",
+    "e": "Высокий дом",
+    "y": "Высокий дом"
+  },
+  {
+    "id": "g3r-gen-l3",
+    "key": "tasks.g3r_genl3_q1_b",
+    "flags": [
+      "ky_eq_ru"
+    ],
+    "r": "Высокая дом",
+    "e": "Высокая дом",
+    "y": "Высокая дом"
+  },
+  {
+    "id": "g3r-gen-l3",
+    "key": "tasks.g3r_genl3_q1_c",
+    "flags": [
+      "ky_eq_ru"
+    ],
+    "r": "Высокое дом",
+    "e": "Высокое дом",
+    "y": "Высокое дом"
+  },
+  {
+    "id": "g3r-verb-l3",
+    "key": "tasks.g3r_verbl3_q1_a",
+    "flags": [
+      "ky_eq_ru"
+    ],
+    "r": "Полечу",
+    "e": "Полечу",
+    "y": "Полечу"
+  },
+  {
+    "id": "g3r-verb-l3",
+    "key": "tasks.g3r_verbl3_q1_b",
+    "flags": [
+      "ky_eq_ru"
+    ],
+    "r": "Полетишь",
+    "e": "Полетишь",
+    "y": "Полетишь"
+  },
+  {
+    "id": "g3r-verb-l3",
+    "key": "tasks.g3r_verbl3_q1_c",
+    "flags": [
+      "ky_eq_ru"
+    ],
+    "r": "Полетит",
+    "e": "Полетит",
+    "y": "Полетит"
+  },
+  {
+    "id": "g2e-days-l1",
+    "key": "intro.g2e_daysl1_1_b",
+    "flags": [
+      "en_short"
+    ],
+    "r": "Mon-Tue-Wed-Thu-Fri — рабочие дни. Sat-Sun — выходные. Тали, повторяй вслух!",
+    "e": "Seven days in a week!",
+    "y": "Бир жумада жети күн!"
+  }
+]

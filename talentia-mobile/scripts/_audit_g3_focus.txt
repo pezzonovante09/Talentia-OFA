@@ -1,0 +1,161 @@
+﻿Wrote 36 lessons to _audit_g3_live_tasks.json
+
+======== g3e-tobe-l3 ========
+TITLE ╨Т╨╛╨┐╤А╨╛╤Б╤Л
+
+[g3etobel3t1] multiple_choice
+  Q RU: ┬лWe are ready┬╗ тЖТ ╨▓╨╛╨┐╤А╨╛╤Б: ┬л___ we ready?┬╗ ╨Ъ╨░╨║╨╛╨╣ ╨│╨╗╨░╨│╨╛╨╗ ╨▓ ╨╜╨░╤З╨░╨╗╨╡?
+  Q EN: тАЬWe are readyтАЭ тЖТ question: тАЬ___ we ready?тАЭ Which verb goes first?
+  Q KY: ┬лWe are ready┬╗ тЖТ ╤Б╤Г╤А╨╛╨╛: ┬л___ we ready?┬╗ ╨С╨░╤И╤Л╨╜╨░ ╨║╨░╨╣╤Б╤Л ╨│╨╗╨░╨│╨╛╨╗?
+  a   RU:am | EN:am
+  b   RU:is | EN:is
+  c тЬУ RU:are | EN:are
+
+[g3etobel3t2] multiple_choice
+  Q RU: ┬лThey are students.┬╗ тЖТ ╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╣ ╨▓╨╛╨┐╤А╨╛╤Б:
+  Q EN: тАЬThey are students.тАЭ тЖТ the correct question is:
+  Q KY: ┬лThey are students.┬╗ тЖТ ╤В╤Г╤Г╤А╨░ ╤Б╤Г╤А╨╛╨╛:
+  a   RU:Am they students? | EN:Am they students?
+  b   RU:Is they students? | EN:Is they students?
+  c тЬУ RU:Are they students? | EN:Are they students?
+
+[g3etobel3t3] multiple_choice
+  Q RU: ╨Я╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╣ ╨▓╨╛╨┐╤А╨╛╤Б ╨║ ╨╛╤В╨▓╨╡╤В╤Г ┬лYes, she is┬╗:
+  Q EN: The correct question for the answer тАЬYes, she isтАЭ:
+  Q KY: ┬лYes, she is┬╗ ╨╢╨╛╨╛╨▒╤Г╨╜╨░ ╤В╤Г╤Г╤А╨░ ╤Б╤Г╤А╨╛╨╛:
+  a тЬУ RU:Is she tired? | EN:Is she tired?
+  b   RU:Are she tired? | EN:Are she tired?
+  c   RU:Am she tired? | EN:Am she tired?
+
+[g3etobel3t4] input
+  Q RU: ┬л╨Ю╨╜╨╕ ╨┤╨╛╨╝╨░?┬╗ ╨┐╨╛-╨░╨╜╨│╨╗╨╕╨╣╤Б╨║╨╕ (╨┐╨╛╨╗╨╜╤Л╨╣ ╨▓╨╛╨┐╤А╨╛╤Б):
+  Q EN: How do you ask тАЬAre they home?тАЭ in English (full question):
+  Q KY: ┬л╨Р╨╗╨░╤А ╥п╨╣╨┤╙й╨▒╥п?┬╗ ╨░╨╜╨│╨╗╨╕╤Б╤З╨╡ (╤В╨╛╨╗╤Г╨║ ╤Б╤Г╤А╨╛╨╛):
+
+======== g3w-nat-l3 ========
+TITLE ╨Ю╤Е╤А╨░╨╜╨░ ╨┐╤А╨╕╤А╨╛╨┤╤Л
+
+[g3wnatl3t1] multiple_choice
+  Q RU: ╨Ч╨░╤З╨╡╨╝ ╤Б╨╛╨╖╨┤╨░╨╗╨╕ ╨Ъ╤А╨░╤Б╨╜╤Г╤О ╨║╨╜╨╕╨│╤Г?
+  Q EN: Why was the Red Book created?
+  Q KY: ╨Ъ╤Л╨╖╤Л╨╗ ╨║╨╕╤В╨╡╨┐ ╤Н╨╝╨╜╨╡ ╥п╤З╥п╨╜ ╤В╥п╨╖╥п╨╗╨│╙й╨╜?
+  a тЬУ RU:╨з╤В╨╛╨▒╤Л ╨╖╨░╤Й╨╕╤В╨╕╤В╤М ╤А╨╡╨┤╨║╨╕╤Е ╨╢╨╕╨▓╨╛╤В╨╜╤Л╤Е ╨╕ ╤А╨░╤Б╤В╨╡╨╜╨╕╤П | EN:To protect rare animals and plants
+  b   RU:╨з╤В╨╛╨▒╤Л ╨║╤А╨░╤Б╨╕╨▓╨╛ ╨▓╤Л╨│╨╗╤П╨┤╨╡╤В╤М ╨▓ ╨▒╨╕╨▒╨╗╨╕╨╛╤В╨╡╨║╨╡ | EN:To look nice in a library
+  c   RU:╨з╤В╨╛╨▒╤Л ╨╖╨░╨┐╨╕╤Б╤Л╨▓╨░╤В╤М ╨┐╨╛╨│╨╛╨┤╤Г | EN:To record the weather
+
+[g3wnatl3t2] multiple_choice
+  Q RU: ╨Т ╨╖╨░╨┐╨╛╨▓╨╡╨┤╨╜╨╕╨║╨╡ ╨╜╨╡╨╗╤М╨╖╤П ╨╛╤Е╨╛╤В╨╕╤В╤М╤Б╤П ╨╕ ╤А╤Г╨▒╨╕╤В╤М ╨┤╨╡╤А╨╡╨▓╤М╤П. ╨Ч╨░╤З╨╡╨╝ ╨╜╤Г╨╢╨╜╤Л ╨╖╨░╨┐╨╛╨▓╨╡╨┤╨╜╨╕╨║╨╕?
+  Q EN: In a nature reserve you must not hunt or cut trees. Why do we need reserves?
+  Q KY: ╨Ч╨░╨┐╨╛╨▓╨╡╨┤╨╜╨╕╨║╤В╨╡ ╨░╥г╤З╤Л╨╗╤Л╨║ ╨║╤Л╨╗╤Г╤Г╨│╨░ ╨╢╨░╨╜╨░ ╨┤╨░╤А╨░╨║╤В╨░╤А╨┤╤Л ╨║╤Л╤О╤Г╨│╨░ ╨▒╨╛╨╗╨▒╨╛╨╣╤В. ╨Ч╨░╨┐╨╛╨▓╨╡╨┤╨╜╨╕╨║╤В╨╡╤А ╤Н╨╝╨╜╨╡╨│╨╡ ╨║╨╡╤А╨╡╨║?
+  a тЬУ RU:╨з╤В╨╛╨▒╤Л ╤Б╨╛╤Е╤А╨░╨╜╨╕╤В╤М ╨┐╤А╨╕╤А╨╛╨┤╨╜╤Л╨╡ ╤Н╨║╨╛╤Б╨╕╤Б╤В╨╡╨╝╤Л | EN:To preserve natural ecosystems.
+  b   RU:╨з╤В╨╛╨▒╤Л ╤В╤Г╤А╨╕╤Б╤В╤Л ╨╛╤В╨┤╤Л╤Е╨░╨╗╨╕ | EN:So tourists can relax.
+  c   RU:╨з╤В╨╛╨▒╤Л ╨┤╨╛╨▒╤Л╨▓╨░╤В╤М ╤А╨╡╤Б╤Г╤А╤Б╤Л | EN:To extract resources.
+
+[g3wnatl3t3] multiple_choice
+  Q RU: ╨Ф╨╡╤А╨╡╨▓╤М╤П ╨▓ ╨│╨╛╤А╨╛╨┤╨╡ ╨┤╨░╤О╤В:
+  Q EN: Trees in the city give us:
+  Q KY: ╨и╨░╨░╤А╨┤╨░╨│╤Л ╨┤╨░╤А╨░╨║╤В╨░╤А ╨▒╨╡╤А╨╡╤В:
+  a тЬУ RU:╨Ъ╨╕╤Б╨╗╨╛╤А╨╛╨┤, ╤В╨╡╨╜╤М ╨╕ ╨╛╤З╨╕╤Й╨░╤О╤В ╨▓╨╛╨╖╨┤╤Г╤Е | EN:Oxygen, shade, and cleaner air
+  b   RU:╨в╨╛╨╗╤М╨║╨╛ ╨║╤А╨░╤Б╨╛╤В╤Г | EN:Only beauty
+  c   RU:╨в╨╛╨╗╤М╨║╨╛ ╨┐╤А╨╛╨▒╨╗╨╡╨╝╤Л | EN:Only problems
+
+[g3wnatl3t4] input
+  Q RU: ╨Ъ╨░╨║╨╛╨╣ ╨┐╨╛╤Б╤В╤Г╨┐╨╛╨║ ╨Э╨Х ╨┐╨╛╨╝╨╛╨│╨░╨╡╤В ╨╛╤Е╤А╨░╨╜╨╡ ╨┐╤А╨╕╤А╨╛╨┤╤Л?
+  Q EN: Which action does NOT help protect nature?
+  Q KY: ╨Ъ╨░╨╣╤Б╤Л ╨░╤А╨░╨║╨╡╤В ╨╢╨░╤А╨░╤В╤Л╨╗╤Л╤И╤В╤Л ╨║╨╛╤А╨│╨╛╨╛╨│╨╛ ╨Ц╨Р╨а╨Ф╨Р╨Ь ╨С╨Х╨а╨С╨Х╨Щ╨в?
+
+======== g3r-adj-l2 ========
+TITLE ╨б╤В╨╡╨┐╨╡╨╜╨╕ ╤Б╤А╨░╨▓╨╜╨╡╨╜╨╕╤П
+
+[g3radjl2t1] multiple_choice
+  Q RU: ╨б╨╗╨╛╨╜ ╨│╨╛╨▓╨╛╤А╨╕╤В: ┬л╨п ╨▒╨╛╨╗╤М╤И╨╛╨╣!┬╗ ╨Ц╨╕╤А╨░╤Д: ┬л╨Р ╤П ___ ╤В╨╡╨▒╤П!┬╗ ╨б╤А╨░╨▓╨╜╨╕╤В╨╡╨╗╤М╨╜╨░╤П ╤Б╤В╨╡╨┐╨╡╨╜╤М:
+  Q EN: Elephant: тАЬIтАЩm big!тАЭ Giraffe: тАЬAnd IтАЩm ___ you!тАЭ Comparative degree:
+  Q KY: ╨Я╨╕╨╗: ┬л╨Ь╨╡╨╜ ╤З╨╛╥г╨╝╤Г╨╜!┬╗ ╨Ц╨╕╤А╨░╤Д: ┬л╨Р ╨╝╨╡╨╜ ╤Б╨╡╨╜╨╡╨╜ ___!┬╗ ╨б╨░╨╗╤Л╤И╤В╤Л╤А╨╝╨░ ╨┤╨░╤А╨░╨╢╨░:
+  a   RU:╨С╨╛╨╗╤М╤И╨╕╨╣ | EN:bigger (bigger than)
+  b тЬУ RU:╨С╨╛╨╗╤М╤И╨╡ | EN:more
+  c   RU:╨б╨░╨╝╤Л╨╣ ╨▒╨╛╨╗╤М╤И╨╛╨╣ | EN:the biggest
+
+[g3radjl2t2] multiple_choice
+  Q RU: ╨Ъ╨░╨║ ╨╛╨▒╤А╨░╨╖╤Г╨╡╤В╤Б╤П ╤Б╤А╨░╨▓╨╜╨╕╤В╨╡╨╗╤М╨╜╨░╤П ╤Б╤В╨╡╨┐╨╡╨╜╤М ╨╛╤В ╨С╨л╨б╨в╨а╨л╨Щ?
+  Q EN: How do you form the comparative of ╨С╨л╨б╨в╨а╨л╨Щ (fast)?
+  Q KY: ╨С╨л╨б╨в╨а╨л╨Щ ╤Б╙й╨╖╥п╨╜╙й╨╜ ╤Б╨░╨╗╤Л╤И╤В╤Л╤А╨╝╨░ ╨┤╨░╤А╨░╨╢╨░ ╨║╨░╨╜╤В╨╕╨┐ ╨╢╨░╤Б╨░╨╗╨░╤В?
+  a тЬУ RU:╨С╤Л╤Б╤В╤А╨╡╨╡ | EN:╨С╤Л╤Б╤В╤А╨╡╨╡
+  b   RU:╨б╨░╨╝╤Л╨╣ ╨▒╤Л╤Б╤В╤А╤Л╨╣ | EN:╨б╨░╨╝╤Л╨╣ ╨▒╤Л╤Б╤В╤А╤Л╨╣
+  c   RU:╨С╤Л╤Б╤В╤А╨╡╨╣╤И╨╕╨╣ | EN:╨С╤Л╤Б╤В╤А╨╡╨╣╤И╨╕╨╣
+
+[g3radjl2t3] multiple_choice
+  Q RU: ┬л╨н╤В╨╛ ╤Б╨░╨╝╨░╤П ╨╕╨╜╤В╨╡╤А╨╡╤Б╨╜╨░╤П ╨║╨╜╨╕╨│╨░┬╗ тАФ ╨▓╤Л╨┤╨╡╨╗╨╕ ╨┐╤А╨╡╨▓╨╛╤Б╤Е╨╛╨┤╨╜╤Г╤О ╤Б╤В╨╡╨┐╨╡╨╜╤М:
+  Q EN: тАЬThis is the most interesting bookтАЭ тАФ pick the superlative:
+  Q KY: ┬л╨С╤Г╨╗ ╤Н╥г ╨║╤Л╨╖╤Л╨║╤В╤Г╤Г ╨║╨╕╤В╨╡╨┐┬╗ тАФ ╤Н╥г ╨╢╨╛╨│╨╛╤А╨║╤Г ╨┤╨░╤А╨░╨╢╨░╨╜╤Л ╤В╨░╨╜╨┤╨░:
+  a тЬУ RU:╨б╨░╨╝╨░╤П ╨╕╨╜╤В╨╡╤А╨╡╤Б╨╜╨░╤П | EN:the most interesting
+  b   RU:╨Ш╨╜╤В╨╡╤А╨╡╤Б╨╜╨░╤П | EN:interesting
+  c   RU:╨Ш╨╜╤В╨╡╤А╨╡╤Б╨╜╨╡╨╡ | EN:more interesting
+
+[g3radjl2t4] input
+  Q RU: ╨з╨╡╤А╨╡╨┐╨░╤Е╨░ ╨╝╨╡╨┤╨╗╨╡╨╜╨╜╨░╤П. ╨г╨╗╨╕╤В╨║╨░ ___ ╤З╨╡╤А╨╡╨┐╨░╤Е╨╕. ╨Э╨░╨┐╨╕╤И╨╕ ╤Б╤А╨░╨▓╨╜╨╕╤В╨╡╨╗╤М╨╜╤Г╤О ╤Б╤В╨╡╨┐╨╡╨╜╤М.
+  Q EN: The turtle is slow. The snail is ___ than the turtle. Write the comparative.
+  Q KY: ╨в╨░╤И╨▒╨░╨║╨░ ╨╢╨░╨╣. ╥о╨╗╥п╨╗╨┤╥п╨║ ╤В╨░╤И╨▒╨░╨║╨░╨┤╨░╨╜ ___. ╨б╨░╨╗╤Л╤И╤В╤Л╤А╨╝╨░ ╨┤╨░╤А╨░╨╢╨░╨╜╤Л ╨╢╨░╨╖.
+
+======== g3w-eco-l1 ========
+TITLE ╨н╨║╨╛╤Б╨╕╤Б╤В╨╡╨╝╨░
+
+[g3wecol1t1] multiple_choice
+  Q RU: ╨Х╤Б╨╗╨╕ ╨▓╤Л╤А╤Г╨▒╨╕╤В╤М ╨▓╤Б╨╡ ╨┤╨╡╤А╨╡╨▓╤М╤П ╨▓ ╨╗╨╡╤Б╤Г, ╤З╤В╨╛ ╨┐╤А╨╛╨╕╨╖╨╛╨╣╨┤╤С╤В ╤Б ╨╡╨│╨╛ ╨╢╨╕╤В╨╡╨╗╤П╨╝╨╕?
+  Q EN: If all the trees in a forest are cut down, what happens to its inhabitants?
+  Q KY: ╨н╨│╨╡╤А ╤В╨╛╨║╨╛╨╣╨┤╨╛╨│╤Г ╨▒╨░╤А╨┤╤Л╨║ ╨┤╨░╤А╨░╨║╤В╨░╤А╨┤╤Л ╨║╤Л╨╣╤Б╨░, ╨░╨╜╤Л╨╜ ╤В╤Г╤А╨│╤Г╨╜╨┤╨░╤А╤Л╨╜╨░ ╤Н╨╝╨╜╨╡ ╨▒╨╛╨╗╨╛╤В?
+  a   RU:╨Э╨╕╤З╨╡╨│╨╛ ╨╜╨╡ ╨╕╨╖╨╝╨╡╨╜╨╕╤В╤Б╤П | EN:Nothing will change
+  b тЬУ RU:╨Ш╤Б╤З╨╡╨╖╨╜╤Г╤В ╨╢╨╕╨▓╨╛╤В╨╜╤Л╨╡, ╨┐╨╛╤В╨╡╤А╤П╨╡╤В╤Б╤П ╤Б╤А╨╡╨┤╨░ ╨╛╨▒╨╕╤В╨░╨╜╨╕╤П | EN:Animals will disappear and their habitat will be lost
+  c   RU:╨Я╨╛╤П╨▓╨╕╤В╤Б╤П ╨▒╨╛╨╗╤М╤И╨╡ ╨╢╨╕╨▓╨╛╤В╨╜╤Л╤Е | EN:There will be more animals
+
+[g3wecol1t2] multiple_choice
+  Q RU: ╨а╤Л╨▒╤Л, ╨╗╤П╨│╤Г╤И╨║╨╕ ╨╕ ╨▓╨╛╨┤╨╛╤А╨╛╤Б╨╗╨╕ ╨▓ ╨┐╤А╤Г╨┤╤Г ╨╖╨░╨▓╨╕╤Б╤П╤В ╨┤╤А╤Г╨│ ╨╛╤В ╨┤╤А╤Г╨│╨░. ╨Ъ╨░╨║ ╨╜╨░╨╖╤Л╨▓╨░╨╡╤В╤Б╤П ╤В╨░╨║╨░╤П ╤Б╨╕╤Б╤В╨╡╨╝╨░?
+  Q EN: Fish, frogs and algae in a pond depend on each other. What is this called?
+  Q KY: ╨Ъ╙й╨╗╨╝╙й╨┤╙й╨│╥п ╨▒╨░╨╗╤Л╨║╤В╨░╤А, ╨▒╨░╨░╨║╨░╨╗╨░╤А ╨╢╨░╨╜╨░ ╤Б╤Г╤Г ╙й╤Б╥п╨╝╨┤╥п╨║╤В╙й╤А╥п ╨▒╨╕╤А╨╕-╨▒╨╕╤А╨╕╨╜╨╡ ╨║╙й╨╖ ╨║╨░╤А╨░╨╜╨┤╤Л. ╨С╤Г╨│╨░ ╨║╨░╨╜╨┤╨░╨╣ ╨┤╨╡╨┐ ╨░╨╣╤В╤Л╤И╨░╤В?
+  a тЬУ RU:╨н╨║╨╛╤Б╨╕╤Б╤В╨╡╨╝╨░ | EN:Ecosystem
+  b   RU:╨С╨╕╨▒╨╗╨╕╨╛╤В╨╡╨║╨░ | EN:Library
+  c   RU:╨Ч╨░╨▓╨╛╨┤ | EN:Factory
+
+[g3wecol1t3] multiple_choice
+  Q RU: ╨Х╤Б╨╗╨╕ ╨╕╤Б╤З╨╡╨╖╨╜╤Г╤В ╨┐╤З╤С╨╗╤Л, ╤З╤В╨╛ ╤Б╨╗╤Г╤З╨╕╤В╤Б╤П ╤Б ╤А╨░╤Б╤В╨╡╨╜╨╕╤П╨╝╨╕?
+  Q EN: If bees disappear, what happens to plants?
+  Q KY: ╨н╨│╨╡╤А ╨░╨░╤А╤Л╨╗╨░╤А ╨╢╨╛╨║ ╨▒╨╛╨╗╤Б╨╛, ╙й╤Б╥п╨╝╨┤╥п╨║╤В╙й╤А╨│╙й ╤Н╨╝╨╜╨╡ ╨▒╨╛╨╗╨╛╤В?
+  a   RU:╨Э╨╕╤З╨╡╨│╨╛, ╨┐╤З╤С╨╗╤Л ╨╜╨╡ ╨▓╨░╨╢╨╜╤Л | EN:Nothing тАФ bees are not important
+  b тЬУ RU:╨Ь╨╜╨╛╨│╨╕╨╡ ╤А╨░╤Б╤В╨╡╨╜╨╕╤П ╨╜╨╡ ╤Б╨╝╨╛╨│╤Г╤В ╨╛╨┐╤Л╨╗╤П╤В╤М╤Б╤П ╨╕ ╨┐╨╗╨╛╨┤╨╛╨╜╨╛╤Б╨╕╤В╤М | EN:Many plants will not be able to pollinate and bear fruit
+  c   RU:╨а╨░╤Б╤В╨╡╨╜╨╕╨╣ ╤Б╤В╨░╨╜╨╡╤В ╨▒╨╛╨╗╤М╤И╨╡ | EN:There will be more plants
+
+[g3wecol1t4] input
+  Q RU: ╨з╤В╨╛ ╨╕╨╖ ╨┐╨╡╤А╨╡╤З╨╕╤Б╨╗╨╡╨╜╨╜╨╛╨│╨╛ тАФ ╤Н╨║╨╛╤Б╨╕╤Б╤В╨╡╨╝╨░? ╨С╨╕╨▒╨╗╨╕╨╛╤В╨╡╨║╨░, ╨░╨║╨▓╨░╤А╨╕╤Г╨╝ ╤Б ╤А╤Л╨▒╨║╨░╨╝╨╕, ╨╖╨░╨▓╨╛╨┤. ╨Э╨░╨┐╨╕╤И╨╕ ╨╛╤В╨▓╨╡╤В.
+  Q EN: Which of these is an ecosystem? A library, a fish aquarium, a factory. Write the answer.
+  Q KY: ╨в╙й╨╝╙й╨╜╨║╥п╨╗╙й╤А╨┤╥п╨╜ ╨║╨░╨╣╤Б╤Л╨╜╤Л╤Б╤Л ╤Н╨║╨╛╤Б╨╕╤Б╤В╨╡╨╝╨░? ╨Ъ╨╕╤В╨╡╨┐╨║╨░╨╜╨░, ╨▒╨░╨╗╤Л╨║╤В╤Г╤Г ╨░╨║╨▓╨░╤А╨╕╤Г╨╝, ╨╖╨░╨▓╨╛╨┤. ╨Ц╨╛╨╛╨┐╤В╤Г ╨╢╨░╨╖.
+
+======== g3e-tobe-l1 ========
+TITLE am, is, are
+
+[g3etobel1t1] multiple_choice
+  Q RU: ┬лI ___ happy today!┬╗ ╨в╨░╨╗╨╕ ╨╜╨╡ ╤Г╨▓╨╡╤А╨╡╨╜: am, is ╨╕╨╗╨╕ are?
+  Q EN: I ___ happy. What word?
+  Q KY:  I ___ happy. ╨Ъ╨░╨║╨╛╨╡ ╤Б╨╗╨╛╨▓╨╛?
+  a тЬУ RU:am | EN:am
+  b   RU:is | EN:is
+  c   RU:are | EN:are
+
+[g3etobel1t2] multiple_choice
+  Q RU: ┬лYou ___ my best friend.┬╗
+  Q EN: You ___ smart. What word?
+  Q KY:  You ___ smart. ╨Ъ╨░╨║╨╛╨╡ ╤Б╨╗╨╛╨▓╨╛?
+  a   RU:am | EN:am
+  b   RU:is | EN:is
+  c тЬУ RU:are | EN:are
+
+[g3etobel1t3] multiple_choice
+  Q RU: ╨б ╨║╨░╨║╨╕╨╝ ╨╝╨╡╤Б╤В╨╛╨╕╨╝╨╡╨╜╨╕╨╡╨╝ ╨╕╤Б╨┐╨╛╨╗╤М╨╖╤Г╨╡╤В╤Б╤П ┬лam┬╗?
+  Q EN: Am is used with:
+  Q KY:  Am ╨╕╤Б╨┐╨╛╨╗╤М╨╖╤Г╨╡╤В╤Б╤П ╤Б:
+  a тЬУ RU:I | EN:I
+  b   RU:you | EN:you
+  c   RU:he | EN:he
+
+[g3etobel1t4] input
+  Q RU: ╨Э╨░╨┐╨╕╤И╨╕ ╨┐╨╛-╨░╨╜╨│╨╗╨╕╨╣╤Б╨║╨╕: ┬л╨п ╤Б╤З╨░╤Б╤В╨╗╨╕╨▓┬╗ (I ___ happy тАФ ╨┐╨╛╨╗╨╜╨░╤П ╤Д╤А╨░╨╖╨░)
+  Q EN: Write in English: тАЬI am happyтАЭ (full phrase)
+  Q KY: ╨Р╨╜╨│╨╗╨╕╤Б╤З╨╡ ╨╢╨░╨╖: ┬л╨Ь╨╡╨╜ ╨▒╨░╨║╤В╤Л╨╗╤Г╤Г╨╝╤Г╨╜┬╗ (I am happy тАФ ╤В╨╛╨╗╤Г╨║ ╤Д╤А╨░╨╖╨░)

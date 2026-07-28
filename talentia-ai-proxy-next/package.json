@@ -1,34 +1,74 @@
 {
+
   "name": "talentia-ai-proxy-next",
+
   "version": "0.1.0",
+
   "private": true,
+
+  "engines": {
+
+    "node": "24.x"
+
+  },
+
   "scripts": {
+
     "dev": "next dev",
+
     "build": "next build",
+
     "start": "next start",
+
     "lint": "eslint",
+
     "typecheck": "tsc --noEmit",
+
     "test": "vitest run"
+
   },
+
   "dependencies": {
+
     "@sentry/nextjs": "^10.65.0",
+
     "@supabase/supabase-js": "^2.97.0",
+
     "@upstash/ratelimit": "^2.0.8",
+
     "@upstash/redis": "^1.37.0",
+
     "next": "16.1.6",
+
     "react": "19.2.3",
+
     "react-dom": "19.2.3",
+
     "talentia-monorepo": "file:..",
+
     "zod": "^4.3.6"
+
   },
+
   "devDependencies": {
-    "@types/node": "^20",
+
+    "@types/node": "^24.13.3",
+
     "@types/react": "^19",
+
     "@types/react-dom": "^19",
+
     "babel-plugin-react-compiler": "1.0.0",
+
     "eslint": "^9",
+
     "eslint-config-next": "16.1.6",
+
     "typescript": "^5",
+
     "vitest": "^4.1.10"
+
   }
+
 }
+

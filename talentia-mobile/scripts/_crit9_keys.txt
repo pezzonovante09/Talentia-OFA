@@ -1,0 +1,607 @@
+tasks.pre_story_3apples_more_1
+ RU У Тали 3 яблока, у зайца 1. Тали говорит: «У нас поровну!» Правда?
+ EN Tali has 3 apples, the hare has 1. Who has more?
+ KY Талинин 3 алмасы бар, коёндун 1. Кимдин көбүрөөк?
+tasks.pre_story_6fish_7fish_which_more
+ RU В красном аквариуме 6 рыбок, в синем 7. В каком больше?
+ EN There are 6 fish in the red tank and 7 in the blue one. Which has more?
+ KY Кызыл аквариумда 6 балык, көк аквариумда 7. Кайсынысында көбүрөөк?
+tasks.pre_which_has_4_corners
+ RU У какой фигуры 4 угла?
+ EN Which shape has 4 corners?
+ KY Кайсы фигурада 4 бурч бар?
+tasks.mshl2_rect_in_room_q
+ RU Что больше всего похоже на прямоугольник: мяч, книга или дверь?
+ EN Which is most like a rectangle: a ball, a book, or a door?
+ KY Кайсысы тик бурчтукка көбүрөөк окшош: топ, китеп же эшик?
+intro.g2r_spl3_0_t
+ RU Прилагательное — признак!
+ EN An adjective is a quality!
+ KY Сын атооч — белги!
+intro.g2r_spl3_0_b
+ RU КРАСНЫЙ шар, БОЛЬШОЙ слон, ВЕСЁЛЫЙ Тали. Отвечает на вопрос КАКОЙ? КАКАЯ? КАКОЕ?
+ EN Subject and predicate — the main members!
+ KY Ээ жана баяндооч — негизги мүчөлөр!
+intro.g2r_spl3_1_t
+ RU Прилагательное украшает!
+ EN Word connections
+ KY Сөздөр арасындагы байланыш
+intro.g2r_spl3_1_b
+ RU Без прилагательных всё серо и скучно. С ними — ярко и живо!
+ EN Words in a sentence are connected by meaning!
+ KY Сүйлөмдөгү сөздөр маани жагынан байланышкан!
+intro.g2s_bdyl3_0_t
+ RU Питание — топливо для тела!
+ EN Sport!
+ KY Спорт!
+intro.g2s_bdyl3_0_b
+ RU Овощи и фрукты дают витамины. Мясо и яйца — белок (строительный материал). Каши — энергия. Сладкое — только понемногу!
+ EN Morning exercises, running, swimming — strengthen the body!
+ KY Эртеңки машыгуу, чуркоо, сүзүү — денени чыңдайт!
+tasks.g2s_water_daily
+ RU Тали спрашивает: «Нужно ли пить воду каждый день?»
+ EN How much water should I drink per day?
+ KY  Күнүнө канча суу ичүү керек?
+tasks.g2s_vitamins_in
+ RU Тали ел только печенье. В каких продуктах больше всего витаминов, которых ему не хватает?
+ EN Which foods have a lot of vitamins?
+ KY  В каких продуктах много витаминов?
+tasks.g2s_protein_in
+ RU Арчи хочет стать сильнее. В каких продуктах больше всего белка?
+ EN Which foods have the most protein?
+ KY  В каких продуктах больше всего белка?
+dialog.g3m_1000l3_0
+ RU 356 и 298 — какое больше? Я хочу сказать 298, потому что там цифры интереснее… но это же неправильный подход?
+ EN 356 and 298 - which is larger? I want to say 298 because the numbers are more interesting there... but is this the wrong approach?
+ KY 356 жана 298 - кайсынысы чоңураак? 298 деп айткым келет, анткени ал жакта сандар кызыктуураак... бирок бул туура эмес мамилеби?
+dialog.g3m_1000l3_1
+ RU Хаха! Нет, Тали. Сначала смотри на сотни — 3 больше 2, значит 356 больше. Давай закрепим!
+ EN 356 > 298. More digits — bigger number!
+ KY 356 > 298. Разряддар көп — сан чоң!
+intro.g3m_1000l3_1_t
+ RU Больше разрядов — больше число
+ EN More digits, bigger number
+ KY Көбүрөөк цифралар - көбүрөөк сан
+intro.g3m_1000l3_1_b
+ RU Трёхзначное всегда больше двузначного. У трёхзначных — сравни сотни, потом десятки.
+ EN Any three-digit beats a two-digit. Among three-digit, compare hundreds first.
+ KY Трёхзначное больше двузначного. Среди трёхзначных — сначала сотни, потом десятки и единицы.
+dialog.g3e_foodl2_0
+ RU I like pizza! I don't like broccoli! Это самые важные фразы в жизни!
+ EN I like / I don't like — мага жагат / мага жакпайт!
+ KY I like / I don't like — мага жагат / мага жакпайт!
+dialog.g3e_foodl2_1
+ RU Хаха, Тали! А я люблю брокколи. Вкусы разные! Do you like…? Yes, I do! No, I don't!
+ EN I like pizza. I do not like broccoli!
+ KY I like pizza. I do not like broccoli!
+tasks.g3e_food2_q1_a
+ RU Мне нравятся яблоки
+ EN I like apples
+ KY Мага алма жагат
+
+==== g3e-daily-l3 @ 227198
+id: 'g3e-daily-l3', topicId: 'g3e-daily', titleKey: 'data.lessons.g3eDailyL3',
+          dialog: [{ speaker: 'tali', textKey: 'data.dialog.g3e_dailyl3_0' }, { speaker: 'npc', textKey: 'data.dialog.g3e_dailyl3_1' }],
+          intro: [{ titleKey: 'data.intro.g3e_dailyl3_0_t', bodyKey: 'data.intro.g3e_dailyl3_0_b', emoji: '' }, { titleKey: 'data.intro.g3e_dailyl3_1_t', bodyKey: 'data.intro.g3e_dailyl3_1_b', emoji: '' }],
+          tasks: [
+            { id: 'g3edailyl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g3e_daily3_q1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3e_daily3_q1_a', correct: true }, { id: 'b', textKey: 'data.tasks.g3e_daily3_q1_b', correct: false }, { id: 'c', textKey: 'data.tasks.g3e_daily3_q1_c', correct: false }] },
+            { id: 'g3edailyl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g3e_daily3_q2', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3e_daily3_q2_a', correct: true }, { id: 'b', textKey: 'data.tasks.g3e_daily3_q2_b', correct: false }, { id: 'c', textKey: 'data.tasks.g3e_daily3_q2_c', correct: false }] },
+            { id: 'g3edailyl3t3', type: 'multiple_choice', questionKey: 'data.tasks.g3e_daily3_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g3e_daily3_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g3e_daily3_q3_b', correct: true }, { id: 'c', textKey: 'data.tasks.g3e_
+
+==== g3w-geo-l3 @ 202693
+id: 'g3w-geo-l3', topicId: 'g3w-geo', titleKey: 'data.lessons.g3wGeoL3',
+          dialog: [{ speaker: 'npc', textKey: 'data.dialog.g3w_geol3_0' }, { speaker: 'tali', textKey: 'data.dialog.g3w_geol3_1' }],
+          intro: [{ titleKey: 'data.intro.g3w_geol3_0_t', bodyKey: 'data.intro.g3w_geol3_0_b', emoji: '' }, { titleKey: 'data.intro.g3w_geol3_1_t', bodyKey: 'data.intro.g3w_geol3_1_b', emoji: '' }],
+          tasks: [
+            { id: 'g3wgeol3t1', type: 'multiple_choice', questionKey: 'data.tasks.g3w_russia_capital', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_moscow', correct: true }, { id: 'b', textKey: 'data.tasks.g3w_opt_spb', correct: false }, { id: 'c', textKey: 'data.tasks.g3w_opt_novosibirsk', correct: false }] },
+            { id: 'g3wgeol3t2', type: 'multiple_choice', questionKey: 'data.tasks.g3w_france_capital', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_london', correct: false }, { id: 'b', textKey: 'data.tasks.g3w_opt_paris', correct: true }, { id: 'c', textKey: 'data.tasks.g3w_opt_berlin', correct: false }] },
+            { id: 'g3wgeol3t3', type: 'multiple_choice', questionKey: 'data.tasks.g3w_uk_capital', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g3w_opt_london', correct: true }, { id: 'b', textKey: 'data.tasks.g3w_opt_paris', correct: false }, { id: 'c', textKey: 'data.tasks.g3w_opt_berlin', correct:
+
+==== meadow-c10-l3 @ 65242
+id: 'meadow-c10-l3',
+  topicId: 'meadow-count10',
+  titleKey: 'data.lessons.meadowC10L3',
+  reward: { xp: 30 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.meadow_c10l3_0' },
+    { speaker: 'tali', textKey: 'data.dialog.meadow_c10l3_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.meadow_c10l3_0_t', bodyKey: 'data.intro.meadow_c10l3_0_b', emoji: '🔢' },
+    { titleKey: 'data.intro.meadow_c10l3_1_t', bodyKey: 'data.intro.meadow_c10l3_1_b', emoji: '🧩' },
+  ],
+  tasks: [
+    { id: 'mc10l3-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_pattern_2_4_6_8', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'b', textKey: 'data.tasks.opt_ten', correct: true }, { id: 'c', textKey: 'data.tasks.opt_seven', correct: false }] },
+    { id: 'mc10l3-t2', type: 'multiple_choice', questionKey: 'data.tasks.pre_story_cubes_6plus4', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'b', textKey: 'data.tasks.opt_ten', correct: true }, { id: 'c', textKey: 'data.tasks.opt_eleven', correct: false }] },
+    {
+      id: 'mc10l3-t3',
+      type: 'multiple_choice',
+      questionKey: 'data.tasks.pre_mc10l3_apples_baskets_more',
+      difficulty: 2,
+      options: [
+        { id: 'a', textKey: 'data.tasks.pre_opt_left_basket_6_apples', correct: true },
+        { id: 'b', textKey: 'data.tasks.pre_opt_r
+
+==== jungle-aba-showcase @ 10458
+id: 'jungle-aba-showcase',
+            topicId: 'jungle-addition',
+            titleKey: 'data.lessons.jungleAbaShowcase',
+            reward: { xp: 25 },
+            abaTokensPerPiece: 5,
+            tasks: [
+              {
+                id: 'jungle-aba-t0',
+                type: 'multiple_choice',
+                questionKey: 'data.tasks.aba_demo_std_warmup',
+                difficulty: 1,
+                visualCount: 3,
+                visualEmoji: '🍌',
+                options: [
+                  { id: 'opt-2', textKey: 'data.tasks.opt_two', correct: false },
+                  { id: 'opt-3', textKey: 'data.tasks.opt_three', correct: true },
+                  { id: 'opt-4', textKey: 'data.tasks.opt_four', correct: false },
+                ],
+              },
+              {
+                id: 'jungle-aba-ip1',
+                type: 'image_point',
+                audience: 'special_aba',
+                questionKey: 'data.tasks.aba_demo_ip_q',
+                difficulty: 1,
+                skippable: true,
+                imageKey: 'aba_scene_fruit',
+                hotspots: [
+                  { id: 'h-a', labelKey: 'data.tasks.aba_demo_ip_q', correct: true, x: 0.28, y: 0.5 },
+                  { id: 'h-b', labelKey: 'data.tasks.aba_demo_ip_q2', correct: false, x: 0.72, y: 0.5 },
+                ],
+              },
+              {
+                id: 'jungle-aba-ip2',
+
+
+==== g1w-nat-l2 @ 102036
+id: 'g1w-nat-l2', topicId: 'g1w-nature', titleKey: 'data.lessons.g1wNatL2',
+          dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1w_natl2_0' }, { speaker: 'tali', textKey: 'data.dialog.g1w_natl2_1' }],
+          intro: [{ titleKey: 'data.intro.g1w_natl2_0_t', bodyKey: 'data.intro.g1w_natl2_0_b', emoji: '' }, { titleKey: 'data.intro.g1w_natl2_1_t', bodyKey: 'data.intro.g1w_natl2_1_b', emoji: '' }],
+          tasks: RW56_LESSON_TASKS['garden-anim-l2'], },
+        { id: 'g1w-nat-l3', topicId: 'g1w-nature', titleKey: 'data.lessons.g1wNatL3',
+          dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1w_natl3_0' }, { speaker: 'tali', textKey: 'data.dialog.g1w_natl3_1' }],
+          intro: [{ titleKey: 'data.intro.g1w_natl3_0_t', bodyKey: 'data.intro.g1w_natl3_0_b', emoji: '' }, { titleKey: 'data.intro.g1w_natl3_1_t', bodyKey: 'data.intro.g1w_natl3_1_b', emoji: '' }],
+          tasks: G1W_NAT_L3_TASKS, },
+      ] },
+      { id: 'g1w-body', worldId: 'g1world', titleKey: 'data.topics.g1wBody', subject: 'logic', lessons: [
+        { id: 'g1w-bdy-l1', topicId: 'g1w-body', titleKey: 'data.lessons.g1wBdyL1',
+          dialog: [{ speaker: 'npc', textKey: 'data.dialog.g1w_bdyl1_0' }, { speaker: 'tali', textKey: 'data.dialog.g1w_bdyl1_1' }],
+          intro: [{ titleKey: 'data.intro.g1w_bdyl1_0_t', bodyKey: 'data.intro.g1w_bdyl1_0_b', emoji: '' }, { titleKey: 'data.intro.g1w_bdyl1_1_t
+
+==== island-abc-l2 @ 85480
+id: 'island-abc-l2',
+  topicId: 'island-abc',
+  titleKey: 'data.lessons.islandAbcL2',
+  reward: { xp: 20 },
+  dialog: [
+    { speaker: 'tali', textKey: 'data.dialog.island_abcl2_0' },
+    { speaker: 'npc', textKey: 'data.dialog.island_abcl2_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.island_abcl2_0_t', bodyKey: 'data.intro.island_abcl2_0_b', emoji: '🦕' },
+    { titleKey: 'data.intro.island_abcl2_1_t', bodyKey: 'data.intro.island_abcl2_1_b', emoji: '🐘' },
+  ],
+  tasks: RW56_LESSON_TASKS['island-abc-l2'],
+},
+          {
+  id: 'island-abc-l3',
+  topicId: 'island-abc',
+  titleKey: 'data.lessons.islandAbcL3',
+  reward: { xp: 25 },
+  dialog: [
+    { speaker: 'npc', textKey: 'data.dialog.island_abcl3_0' },
+    { speaker: 'tali', textKey: 'data.dialog.island_abcl3_1' },
+  ],
+  intro: [
+    { titleKey: 'data.intro.island_abcl3_0_t', bodyKey: 'data.intro.island_abcl3_0_b', emoji: '🌌' },
+    { titleKey: 'data.intro.island_abcl3_1_t', bodyKey: 'data.intro.island_abcl3_1_b', emoji: '🦛' },
+  ],
+  tasks: RW56_LESSON_TASKS['island-abc-l3'],
+},
+        ],
+      },
+      {
+        id: 'island-colors',
+        worldId: 'island',
+        titleKey: 'data.topics.islandColors',
+        subject: 'reading',
+        lessons: [
+          {
+  id: 'island-col-l1',
+  topicId: 'island-colors',
+  titleKey: 'data.lessons.islandColL1',
+  reward: { xp: 20 },
+  dialog: [
+    { speaker: 'npc', textKey: '
+
+==== nrw_ganiml2 keys
+nrw_ganiml1_t1_a
+ RU Кот
+ EN Кот
+ KY Кот
+nrw_ganiml1_t1_b
+ RU Корова
+ EN Корова
+ KY Корова
+nrw_ganiml1_t1_c
+ RU Собака
+ EN Собака
+ KY Собака
+nrw_ganiml1_t1_q
+ RU Тали зашёл на ферму и говорит: «Молоко даёт кот!» Прав ли он?
+ EN Тали зашёл на ферму и увидел животное с большим выменем. Кто даёт молоко?
+ KY Тали зашёл на ферму и увидел животное с большим выменем. Кто даёт молоко?
+nrw_ganiml1_t2_a
+ RU Да, живёт в лесу
+ EN Да, живёт в лесу
+ KY Да, живёт в лесу
+nrw_ganiml1_t2_b
+ RU Нет, она домашняя!
+ EN Нет, она домашняя!
+ KY Нет, она домашняя!
+nrw_ganiml1_t2_q
+ RU Тали говорит: «Собака — дикое животное!» Как ты ответишь?
+ EN Tali asks: «Is a dog a wild animal?» How will you answer?
+ KY Тали сурайт: «Ит — жапайы жаныбарбы?» Сен кандай жооп бересиң?
+nrw_ganiml1_t3_a
+ RU Собака
+ EN Собака
+ KY Собака
+nrw_ganiml1_t3_b
+ RU Кот
+ EN Кот
+ KY Кот
+nrw_ganiml1_t3_c
+ RU Корова
+ EN Корова
+ KY Корова
+nrw_ganiml1_t3_q
+ RU Тали получил голосовое сообщение: «Мр-р-р… Мяу! Я поймал мышку!» Кто прислал?
+ EN Тали получил голосовое сообщение: «Мр-р-р… Мяу! Я поймал мышку!» Кто прислал?
+ KY Тали получил голосовое сообщение: «Мр-р-р… Мяу! Я поймал мышку!» Кто прислал?
+nrw_ganiml1_t4_a
+ RU Волк
+ EN Волк
+ KY Волк
+nrw_ganiml1_t4_b
+ RU Кот
+ EN Кот
+ KY Кот
+nrw_ganiml1_t4_c
+ RU Лиса
+ EN Лиса
+ KY Лиса
+nrw_ganiml1_t4_q
+ RU Тали составляет список жителей своего дома. Кто туда точно попадёт?
+ EN Тали составляет список жителей своего дома. Кто туда точно попадёт?
+ KY Тали составляет список жителей своего дома. Кто туда точно попадёт?
+nrw_ganiml1_a1_a
+ RU Да
+ EN Да
+ KY Да
+nrw_ganiml1_a1_b
+ RU Нет
+ EN Нет
+ KY Нет
+nrw_ganiml1_a1_q
+ RU Кошка — домашнее животное?
+ EN Кошка — домашнее животное?
+ KY Кошка — домашнее животное?
+nrw_ganiml2_t1_a
+ RU В доме
+ EN В доме
+ KY В доме
+nrw_ganiml2_t1_b
+ RU В лесу
+ EN В лесу
+ KY В лесу
+nrw_ganiml2_t1_c
+ RU В море
+ EN В море
+ KY В море
+nrw_ganiml2_t1_q
+ RU Тали видит следы медведя. «Медведь живёт в море!» — говорит он. Где правда?
+ EN Тали отправился в экспедицию и увидел следы медведя. Где живёт медведь?
+ KY Тали отправился в экспедицию и увидел следы медведя. Где живёт медведь?
+nrw_ganiml2_t2_a
+ RU Да, лев — домашний
+ EN Да, лев — домашний
+ KY Да, лев — домашний
+nrw_ganiml2_t2_b
+ RU Нет, лев — дикий!
+ EN Нет, лев — дикий!
+ KY Нет, лев — дикий!
+nrw_ganiml2_t2_q
+ RU Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?
+ EN Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?
+ KY Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?
+nrw_ganiml2_t3_a
+ RU Волк
+ EN Волк
+ KY Волк
+nrw_ganiml2_t3_b
+ RU Лиса
+ EN Лиса
+ KY Лиса
+nrw_ganiml2_t3_c
+ RU Медведь
+ EN Медведь
+ KY Медведь
+nrw_ganiml2_t3_q
+ RU Тали нашёл рыжий пушистый след в лесу. Кто это был?
+ EN Тали нашёл рыжий пушистый след в лесу. Кто это был?
+ KY Тали нашёл рыжий пушистый след в лесу. Кто это был?
+nrw_ganiml2_t4_a
+ RU Волк
+ EN Волк
+ KY Волк
+nrw_ganiml2_t4_b
+ RU Лиса
+ EN Лиса
+ KY Лиса
+nrw_ganiml2_t4_c
+ RU Корова
+ EN Корова
+ KY Корова
+nrw_ganiml2_t4_q
+ RU Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?
+ EN Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?
+ KY Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?
+nrw_ganiml2_a1_a
+ RU Да
+ EN Да
+ KY Да
+nrw_ganiml2_a1_b
+ RU Нет
+ EN Нет
+ KY Нет
+nrw_ganiml2_a1_q
+ RU Лиса — дикое животное?
+ EN Лиса — дикое животное?
+ KY Лиса — дикое животное?
+nrw_ganiml3_t1_a
+ RU На суше
+ EN На суше
+ KY На суше
+nrw_ganiml3_t1_b
+ RU В воде
+ EN В воде
+ KY В воде
+nrw_ganiml3_t1_c
+ RU В небе
+ EN В небе
+ KY В небе
+nrw_ganiml3_t1_q
+ RU Тали — подводный исследователь! Он нашёл рыбку. Где живёт рыба?
+ EN Тали подводный исследователь! Он нашёл рыбку. Где живёт рыба?
+ KY Тали подводный исследователь! Он нашёл рыбку. Где живёт рыба?
+nrw_ganiml3_t2_a
+ RU Кот
+ EN Кот
+ KY Кот
+nrw_ganiml3_t2_b
+ RU Утка
+ EN Утка
+ KY Утка
+nrw_ganiml3_t2_c
+ RU Собака
+ EN Собака
+ KY Собака
+nrw_ganiml3_t2_q
+ RU Тали ищет животное, которое умеет и летать, и плавать. «Это кот!» — думает он. Прав?
+ EN Тали ищет животное, которое умеет и летать, и плавать. Кто это?
+ KY Тали ищет животное, которое умеет и летать, и плавать. Кто это?
+nrw_ganiml3_t3_a
+ RU Рыба
+ EN Рыба
+ KY Рыба
+nrw_ganiml3_t3_b
+ RU Кит 🐋
+ EN Кит 🐋
+ KY Кит 🐋
+nrw_ganiml3_t3_c
+ RU Краб 🦀
+ EN Краб 🦀
+ KY Краб 🦀
+nrw_ganiml3_t3_q
+ RU Тали описывает животное: «Плавает, есть плавники, никогда не издаёт звук». Кто это?
+ EN Тали описывает загадочное животное: «Плавает, есть плавники, никогда не издаёт звук». Кто это?
+ KY Тали описывает загадочное животное: «Плавает, есть плавники, никогда не издаёт звук». Кто это?
+nrw_ganiml3_t4_a
+ RU Летучая мышь 🦇
+ EN Летучая мышь 🦇
+ KY Летучая мышь 🦇
+nrw_ganiml3_t4_b
+ RU Птица 🐦
+ EN Птица 🐦
+ KY Птица 🐦
+nrw_ganiml3_t4_c
+ RU Белка 🐿️
+ EN Белка 🐿️
+ KY Белка 🐿️
+nrw_ganiml3_t4_q
+ RU Тали в бинокль видит существо с крыльями и клювом. Оно поёт. Кто это?
+ EN Тали смотрит в бинокль на дерево. Там сидит существо с крыльями и клювом. Оно умеет петь. Кто это?
+ KY Тали смотрит в бинокль на дерево. Там сидит существо с крыльями и клювом. Оно умеет петь. Кто это?
+nrw_ganiml3_a1_a
+ RU В воде
+ EN В воде
+ KY В воде
+nrw_ganiml3_a1_b
+ RU На суше
+ EN На суше
+ KY На суше
+nrw_ganiml3_a1_q
+ RU Рыба живёт...?
+ EN Рыба живёт…?
+ KY Рыба живёт…?
+task g3w_opt_bishkek
+ RU Кыргызстана
+ EN Bishkek
+ KY Бишкек
+task g3w_geol1t1_a
+ RU Только север и юг
+ EN North and south only
+ KY Түндүк жана түштүк гана
+task g3w_geol1t1_b
+ RU Север, юг, запад и восток
+ EN North, south, west and east
+ KY Түндүк, түштүк, батыш жана чыгыш
+task g3w_geol1t1_c
+ RU Север и восток
+ EN North and east
+ KY Түндүк жана чыгыш
+task g3w_geol1t2_a
+ RU На восток
+ EN To the east
+ KY Чыгышка
+task g3w_geol1t2_b
+ RU На запад
+ EN To the west
+ KY Батышка
+task g3w_geol1t2_c
+ RU На юг
+ EN To the south
+ KY Түштүккө
+task g3w_geol1t3_a
+ RU Слева
+ EN On the left
+ KY Солдо
+task g3w_geol1t3_b
+ RU Снизу
+ EN At the bottom (south on the map)
+ KY Ылдыда (картанын түштүгүндө)
+task g3w_geol1t3_c
+ RU Справа
+ EN On the right
+ KY Оңдо
+task g3w_geol1t4_a
+ RU Восток
+ EN East
+ KY Чыгыш
+task g3w_geol1t4_b
+ RU Юг
+ EN South
+ KY Түштүк
+task g3w_geol1t4_c
+ RU Запад
+ EN West
+ KY Батыш
+task g3w_geol2t1_a
+ RU Карта плоская, глобус объёмный
+ EN A map is flat, a globe is three-dimensional
+ KY Карта жалпак, глобус үч өлчөмдүү
+task g3w_geol2t1_b
+ RU Они одинаковые
+ EN A map and a globe are the same
+ KY Карта менен глобус бирдей
+task g3w_geol2t1_c
+ RU Глобус плоский, карта объёмная
+ EN A globe is flat, a map is three-dimensional
+ KY Глобус жалпак, карта үч өлчөмдүү
+task g3w_geol2t2_a
+ RU Горы
+ EN Mountains
+ KY Тоолор
+task g3w_geol2t2_b
+ RU Суша (материки и острова)
+ EN Land (continents and islands)
+ KY Кургак (материктер жана аралдар)
+task g3w_geol2t2_c
+ RU Только пустыни
+ EN Only deserts
+ KY Чөлдөр гана
+task g3w_geol2t3_a
+ RU 1 см на карте = 1 км на местности (100 000 см)
+ EN 1 cm on the map = 1 km on the ground (100 000 cm)
+ KY Картада 1 см = жерде 1 км (100 000 см)
+task g3w_geol2t3_b
+ RU На карте 100 000 материков
+ EN There are 100 000 continents on the map
+ KY Картада 100 000 материк бар
+task g3w_geol2t3_c
+ RU Расстояние всегда 100 000 км
+ EN The distance in kilometres is always 100 000
+ KY Аралык дайыма 100 000 километр
+task g3w_geol2t4_a
+ RU 5
+ EN 4
+ KY 4
+task g3w_geol2t4_b
+ RU 6
+ EN 5
+ KY 5
+task g3w_geol2t4_c
+ RU 7
+ EN 6
+ KY 6
+task g3e_daily3_q1
+ RU «I always brush my teeth» — «always» означает:
+ EN “I always brush my teeth” — “always” means:
+ KY «I always brush my teeth» — «always» эмнени билдирет:
+task g3e_daily3_q1_a
+ RU Всегда
+ EN All the time / every time (всегда)
+ KY Ар дайым
+task g3e_daily3_q1_b
+ RU Иногда
+ EN Sometimes (иногда)
+ KY Кээде
+task g3e_daily3_q1_c
+ RU Никогда
+ EN Never (никогда)
+ KY Эч качан
+task g3e_daily3_q2
+ RU Расставь по убыванию частоты:
+ EN Put in order from most to least frequent:
+ KY Жыштыгы боюнча кемүү тартибинде жайгаштыр:
+task g3e_daily3_q2_a
+ RU Always, usually, sometimes, never
+ EN Always, usually, sometimes, never
+ KY Always, usually, sometimes, never
+task g3e_daily3_q2_b
+ RU Never, sometimes, usually, always
+ EN Never, sometimes, usually, always
+ KY Never, sometimes, usually, always
+task g3e_daily3_q2_c
+ RU Sometimes, always, never, usually
+ EN Sometimes, always, never, usually
+ KY Sometimes, always, never, usually
+task g3e_daily3_q3
+ RU «She sometimes plays football» — как часто она играет?
+ EN “She sometimes plays football” — how often does she play?
+ KY «She sometimes plays football» — ал канчалык көп ойнойт?
+task g3e_daily3_q3_a
+ RU Всегда
+ EN Always
+ KY Ар дайым
+task g3e_daily3_q3_b
+ RU Иногда
+ EN Sometimes
+ KY Кээде
+task g3e_daily3_q3_c
+ RU Никогда
+ EN Never
+ KY Эч качан
+task g3e_daily3_q4
+ RU «Я никогда не опаздываю» по-английски:
+ EN “I am never late” in English is:
+ KY «Мен эч качан кечикпейм» англисче:
+task g3e_daily3_q4_a
+ RU I am never late
+ EN I am never late
+ KY I am never late
+task g3e_daily3_q4_b
+ RU I am sometimes late
+ EN I am sometimes late
+ KY I am sometimes late
+task g3e_daily3_q4_c
+ RU I am always late
+ EN I am always late
+ KY I am always late

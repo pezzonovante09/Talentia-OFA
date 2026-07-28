@@ -1,0 +1,16 @@
+﻿
+######## g2e-days-l1 (worlds.ts lines 2650-2657)
+  [dialog npc] Hello! ╨Ь╨╡╨╜╤П ╨╖╨╛╨▓╤Г╤В ╨Я╨╛╨╗╨╕! ╨в╨░╨╗╨╕, ╤В╤Л ╨╖╨╜╨░╨╡╤И╤М ╨┤╨╜╨╕ ╨╜╨╡╨┤╨╡╨╗╨╕ ╨┐╨╛-╨░╨╜╨│╨╗╨╕╨╣╤Б╨║╨╕?
+  [dialog tali] Monday тАФ ╨┐╨╛╨╜╨╡╨┤╨╡╨╗╤М╨╜╨╕╨║, ╤Н╤В╨╛ ╤П ╨╖╨╜╨░╤О! ╨Р ╨┤╨░╨╗╤М╤И╨╡тАж Tuesday? Wednesday? ╨п ╨┐╤Г╤В╨░╤О╤Б╤М ╨╜╨░╤З╨╕╨╜╨░╤П ╤Б ╤З╨╡╤В╨▓╨╡╤А╨│╨░! ╨Я╨╛╨╝╨╛╨│╨╕ ╨╝╨╜╨╡!
+  [intro] ╨Ф╨╜╨╕ ╨╜╨╡╨┤╨╡╨╗╨╕! :: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday. ╨Ш╤Е ╤Б╨╡╨╝╤М!
+  [intro] ╨Ч╨░╨┐╨╛╨╝╨╜╨╕ ╨┐╨╛-╨┐╨╛╤А╤П╨┤╨║╤Г :: Mon-Tue-Wed-Thu-Fri тАФ ╤А╨░╨▒╨╛╤З╨╕╨╡ ╨┤╨╜╨╕. Sat-Sun тАФ ╨▓╤Л╤Е╨╛╨┤╨╜╤Л╨╡. ╨в╨░╨╗╨╕, ╨┐╨╛╨▓╤В╨╛╤А╤П╨╣ ╨▓╤Б╨╗╤Г╤Е!
+  L2654 g2edaysl1t1 <multiple_choice> Q: ╨Я╨╛╨╜╨╡╨┤╨╡╨╗╤М╨╜╨╕╨║ ╨┐╨╛-╨░╨╜╨│╨╗╨╕╨╣╤Б╨║╨╕:
+      a [тЬУ] Monday   {g2e_opt_monday}
+      b     Tuesday   {g2e_opt_tuesday}
+      c     Wednesday   {g2e_opt_wednesday}
+  L2655 g2edaysl1t2 <multiple_choice> Q: ╨Т╤В╨╛╤А╨╜╨╕╨║ ╨┐╨╛-╨░╨╜╨│╨╗╨╕╨╣╤Б╨║╨╕:
+      a     Monday   {g2e_opt_monday}
+      b [тЬУ] Tuesday   {g2e_opt_tuesday}
+      c     Wednesday   {g2e_opt_wednesday}
+  L2656 g2edaysl1t3 <fill_blank> Q: ╨б╤А╨╡╨┤╨░ ╨┐╨╛-╨░╨╜╨│╨╗╨╕╨╣╤Б╨║╨╕ тАФ _
+  L2657 g2edaysl1t4 <input> Q: ╨в╨░╨╗╨╕ ╨╖╨░╨┐╤Г╤В╨░╨╗╤Б╤П! ╨Я╨╛╤Б╨╗╨╡ ╨┐╨╛╨╜╨╡╨┤╨╡╨╗╤М╨╜╨╕╨║╨░ ╨╕╨┤╤С╤В:

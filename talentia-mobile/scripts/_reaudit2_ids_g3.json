@@ -1,0 +1,396 @@
+[
+  {
+    "id": "g3m-1000-l1",
+    "title": "Тысячи",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3m-1000-l2",
+    "title": "Разряды",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "input",
+      "multiple_choice"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3m-1000-l3",
+    "title": "Сравнение",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3m-tab-l1",
+    "title": "Таблица на 4 и 6",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3m-tab-l2",
+    "title": "Таблица на 7 и 8",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3m-tab-l3",
+    "title": "Таблица на 9",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "input",
+      "multiple_choice"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3m-div-l1",
+    "title": "Деление на 2 и 3",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3m-div-l2",
+    "title": "Деление на 4 и 5",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3m-div-l3",
+    "title": "Связь умножения и деления",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "input",
+      "multiple_choice"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3r-gen-l1",
+    "title": "Мужской и женский род",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "fill_blank",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3r-gen-l2",
+    "title": "Средний род",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3r-gen-l3",
+    "title": "Род прилагательных",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3r-verb-l1",
+    "title": "Настоящее время",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3r-verb-l2",
+    "title": "Прошедшее время",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3r-verb-l3",
+    "title": "Лицо глагола",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3r-adj-l1",
+    "title": "Согласование",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3r-adj-l2",
+    "title": "Степени сравнения",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3r-adj-l3",
+    "title": "Антонимы",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3w-geo-l1",
+    "title": "Стороны света",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3w-geo-l2",
+    "title": "Карта и глобус",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3w-geo-l3",
+    "title": "Страны и столицы",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3w-nat-l1",
+    "title": "Круговорот воды",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3w-nat-l2",
+    "title": "Полезные ископаемые",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3w-nat-l3",
+    "title": "Охрана природы",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3w-eco-l1",
+    "title": "Экосистема",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3w-eco-l2",
+    "title": "Цепи питания",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3w-eco-l3",
+    "title": "Человек и природа",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3e-tobe-l1",
+    "title": "am, is, are",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3e-tobe-l2",
+    "title": "Отрицание",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3e-tobe-l3",
+    "title": "Вопросы",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3e-food-l1",
+    "title": "Еда и напитки",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3e-food-l2",
+    "title": "I like / I don't like",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3e-food-l3",
+    "title": "За столом",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3e-daily-l1",
+    "title": "Распорядок дня",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3e-daily-l2",
+    "title": "Время",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g3e-daily-l3",
+    "title": "Частота",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  }
+]

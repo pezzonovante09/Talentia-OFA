@@ -1,0 +1,1835 @@
+
+######## g2m-100-l1 (L2371-2379)
+  [dialog npc] RU: Привет! Я орёл Арчи! Я умею считать до ста, но сегодня запутался в десятках — помоги мне разобраться?
+             EN: Hi! I’m eagle Archie! I can count to a hundred, but today I’m mixed up about tens — can you help me figure it out?
+             KY: Салам! Мен бүркүт Арчимин! Жүзгө чейин санай алам, бирок бүгүн ондуктарда чаташтым — түшүнүүгө жардам бересиңби?
+  [dialog tali] RU: Я тоже немного путаюсь! Арчи, давай вместе спросим у нашего друга. Он точно знает, как считать десятками!
+             EN: I’m a bit confused too! Archie, let’s ask our friend together. He definitely knows how to count by tens!
+             KY: Мен да бир аз чаташам! Арчи, досубузга чогуу сурайлы. Ал ондоп саноону так билет!
+  [intro] RU: Десятки — это удобно! :: Считать десятками быстрее, чем по одному. 10, 20, 30 — как коробки по 10 штук. Арчи хочет сложить свои перья в коробки — поможем ему посчитать?
+          EN: Tens make counting easier! :: Count in tens: 10, 20, 30… Like boxes of 10 — quicker!
+          KY: Ондуктар саноону жеңилдетет! :: Ондоп саноо: 10, 20, 30… 10дон турган кутучалардай — андай тезирээк!
+  [intro] RU: Сотня — десять десятков! :: 100 = десять раз по 10. Арчи говорит, что это «почти бесконечность» — но мы-то знаем, что это просто сотня!
+          EN: A hundred is ten tens :: 100 is 10 × 10. That's a hundred — a key number!
+          KY: Жүз — бул он ондук :: 100 — бул 10 × 10. Бул жүз — маанилүү сан!
+  L2375 g2m100l1t1 <multiple_choice>
+    Q RU: Тали пытается помочь Арчи: «Три коробки по 10 перьев — это… 30? Или 13?» Тали запутался! Кто прав?
+    Q EN: Tali tries to help Archie: “Three boxes of 10 feathers — is that… 30? Or 13?” Tali is confused! Who is right?
+    Q KY: Тали Арчиге жардам берүүгө аракет кылат: «Үч кутуда ар биринде 10 жүн — бул… 30бу? Же 13пү?» Тали чаташты! Ким туура?
+      a     RU:13 | EN:13 | KY:13
+      b [✓] RU:30 | EN:30 | KY:30
+      c     RU:Оба неправы | EN:Both are wrong | KY:Экөө тең туура эмес
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:13 | EN:13 | KY:13
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:30 | EN:30 | KY:30
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Оба неправы | EN:Both are wrong | KY:Экөө тең туура эмес
+  L2376 g2m100l1t2 <multiple_choice>
+    Q RU: Арчи летел над полем и насчитал 7 стогов сена. В каждом стогу ровно 10 мышей. Сколько мышей всего?
+    Q EN: Archie flew over a field and counted 7 haystacks. In each stack there are exactly 10 mice. How many mice in total?
+    Q KY: Арчи талаанын үстүнөн учуп, 7 чөп дөбөсүн санады. Ар бир дөбөдө так 10 чычкан бар. Жалпы канча чычкан?
+      a     RU:60 | EN:60 | KY:60
+      b [✓] RU:70 | EN:70 | KY:70
+      c     RU:80 | EN:80 | KY:80
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:60 | EN:60 | KY:60
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:70 | EN:70 | KY:70
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:80 | EN:80 | KY:80
+  L2377 g2m100l1t3 <input>
+    Q RU: Тали хочет собрать ровно 50 ракушек для своей коллекции. Он уже нашёл 5 коробок по 10. Хватит? 10 × 5 = ?
+    Q EN: Tali wants exactly 50 shells for his collection. He already found 5 boxes of 10. Is that enough? 10 × 5 = ?
+    Q KY: Тали коллекциясына так 50 кабыкча чогулткусу келет. Ал мурунтан 10дон турган 5 куту тапты. Жетиштүүбү? 10 × 5 = ?
+  L2378 g2m100l1t4 <multiple_choice>
+    Q RU: Арчи хвастается: «Сто — это пять десятков!» Тали говорит: «Нет, десять!» Кто из них прав?
+    Q EN: Archie brags: “A hundred is five tens!” Tali says: “No, ten!” Who is right?
+    Q KY: Арчи мактанат: «Жүз — бул беш ондук!» Тали: «Жок, он!» дейт. Ким туура?
+      a     RU:5 | EN:5 | KY:5
+      b [✓] RU:10 | EN:10 | KY:10
+      c     RU:20 | EN:20 | KY:20
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:5 | EN:5 | KY:5
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:10 | EN:10 | KY:10
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:20 | EN:20 | KY:20
+
+######## g2m-100-l2 (L2380-2388)
+  [dialog npc] RU: Арчи, смотри: в числе 47 есть 4 десятка и 7 единиц. Но я никак не могу понять — а в числе 25 сколько десятков?
+             EN: Place values: units and tens. 25 = 2 tens and 5 units!
+             KY: Разряддар: бирдиктер жана ондуктар. 25 = 2 ондук жана 5 бирдик!
+  [dialog tali] RU: Хм, давай попросим помочь! Я тоже хочу разобраться с разрядами — мне нужно пересчитать свои запасы жёлудей.
+             EN: Correct! The number 47 is 4 tens and 7 units!
+             KY: Туура! 47 саны — 4 ондук жана 7 бирдик!
+  [intro] RU: Разряды: единицы и десятки! :: В числе 25 справа стоит 5 — это единицы, слева 2 — это десятки. Значит: 25 = 20 + 5. Вот и весь секрет!
+          EN: Ones and tens! :: In a two-digit number: ones on the right, tens on the left. 25 = 2 tens and 5 ones.
+          KY: Разряды: единицы и десятки! :: В двузначном числе справа — единицы, слева — десятки. 25 = 2 десятка и 5 единиц.
+  [intro] RU: Число 47 :: 47 = 40 + 7. Четыре десятка и семь единиц — как четыре полных кошелька и ещё семь монет.
+          EN: Breaking down 47 :: 47 = 40 + 7. Four tens and seven ones — that's 47!
+          KY: Разбираем число 47 :: 47 = 40 + 7. Четыре десятка и семь единиц — всего 47!
+  L2384 g2m100l2t1 <input>
+    Q RU: Тали разложил свои камушки: в одну кучку 3 десятка, в другую 6 единиц. Какое число у него получилось?
+    Q EN: Tali sorted his pebbles: 3 tens in one pile, 6 ones in another. What number did he get?
+    Q KY: Тали таштарды бөлдү: бир үймөктө 3 ондук, экинчисинде 6 бирдик. Кандай сан чыкты?
+  L2385 g2m100l2t2 <multiple_choice>
+    Q RU: Какое число самое большое: 37, 42 или 29?
+    Q EN: Which number is the largest: 37, 42, or 29?
+    Q KY: Кайсы сан эң чоң: 37, 42 же 29?
+      a     RU:37 | EN:37 | KY:37
+      b [✓] RU:42 | EN:42 | KY:42
+      c     RU:29 | EN:29 | KY:29
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:37 | EN:37 | KY:37
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:42 | EN:42 | KY:42
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:29 | EN:29 | KY:29
+  L2386 g2m100l2t3 <input>
+    Q RU: Детектив Тали расследует число 48. Сколько десятков он нашёл в этом числе?
+    Q EN: Detective Tali investigates the number 48. How many tens are in it?
+    Q KY: Детектив Тали 48 санын изилдейт. Анда канча ондук бар?
+  L2387 g2m100l2t4 <input>
+    Q RU: Сколько единиц в числе 37?
+    Q EN: How many ones (units) are in 37?
+    Q KY: 37 санында канча бирдик бар?
+
+######## g2m-100-l3 (L2389-2399)
+  [dialog npc] RU: Теперь я хочу научиться сравнивать большие числа. Тали, у тебя 82 ракушки, а у меня 78 перьев. Кто из нас собрал больше?
+             EN: Now I want to learn to compare big numbers. Tali, you have 82 shells and I have 78 feathers. Who collected more?
+             KY: Эми мен чоң сандарды салыштырууну үйрөнгүм келет. Тали, сенде 82 кабыкча бар, менде 78 жүн. Кимибиз көбүрөөк чогултту?
+  [dialog tali] RU: Я думаю, я! Но погоди — давай спросим у нашего друга, чтобы точно. Мне кажется, я немного запутался…
+             EN: I think I did! But wait — let’s ask our friend to be sure. I feel a bit mixed up…
+             KY: Менимче мен! Бирок күт — так болуу үчүн досубузга сурайлы. Бир аз чаташкандаймын…
+  [intro] RU: Сравниваем числа до 100! :: Сначала смотри на десятки: у кого больше — тот выиграл! Если десятки одинаковые — смотри на единицы. 82 > 78, потому что 8 десятков > 7 десятков.
+          EN: Comparing numbers up to 100! :: First, look at the tens: whoever has more wins! If the tens are the same, look at the ones. 82 > 78 because 8 tens > 7 tens.
+          KY: 100гө чейинки сандарды салыштырабыз! :: Биринчиден, ондуктарды караңыз: кимде көбүрөөк болсо, ошол жеңет! Эгер ондуктар бирдей болсо, аларды карагыла. 82 > 78, анткени 8 он > 7 ондук.
+  [intro] RU: 99 — самое большое двузначное! :: После 99 идёт 100 — уже трёхзначное. Арчи называет 99 «королём двузначных чисел».
+          EN: You're doing great! :: You can count to 100 and understand place value. Well done!
+          KY: Сен эң жакшы! :: Сен 100гө чейин санайсың жана разряддарды түшүнөсүң. Жарайсың!
+  L2393 g2m100l3t1 <input>
+    Q RU: Арчи летит к самому большому двузначному числу. Оно стоит прямо перед 100. Что это за число?
+    Q EN: Archie flies toward the biggest two-digit number. It stands right before 100. What number is that?
+    Q KY: Арчи эң чоң эки орундуу санга учат. Ал 100дүн алдында турат. Бул кайсы сан?
+  L2394 g2m100l3t2 <multiple_choice>
+    Q RU: Тали нашёл 82 ракушки, Арчи — 78 перьев. Тали говорит «я нашёл больше!», Арчи не верит. Кто прав?
+    Q EN: Tali found 82 shells, Archie — 78 feathers. Tali says “I found more!” Archie doesn’t believe him. Who is right?
+    Q KY: Тали 82 кабыкча тапты, Арчи — 78 жүн. Тали «мен көбүрөөк таптым!» дейт, Арчи ишенбейт. Ким туура?
+      a     RU:Арчи нашёл больше (78 > 82) | EN:Archie found more (78 > 82) | KY:Арчи көбүрөөк тапты (78 > 82)
+      b [✓] RU:Тали нашёл больше (82 > 78) | EN:Tali found more (82 > 78) | KY:Тали көбүрөөк тапты (82 > 78)
+      c     RU:У них поровну | EN:They found the same amount | KY:Экөөндө бирдей
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Арчи нашёл больше (78 > 82) | EN:Archie found more (78 > 82) | KY:Арчи көбүрөөк тапты (78 > 82)
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Тали нашёл больше (82 > 78) | EN:Tali found more (82 > 78) | KY:Тали көбүрөөк тапты (82 > 78)
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:У них поровну | EN:They found the same amount | KY:Экөөндө бирдей
+  L2395 g2m100l3t3 <input>
+    Q RU: Сколько десятков в числе 90?
+    Q EN: How many tens are in the number 90?
+    Q KY: 90 санында канча ондук бар?
+  L2396 g2m100l3t4 <input>
+    Q RU: Тали записал число: «пять десятков и шесть единиц». Что это за число?
+    Q EN: Tali wrote a number: “five tens and six ones.” What number is that?
+    Q KY: Тали санды жазды: «беш ондук жана алты бирдик». Бул кайсы сан?
+
+######## g2m-add2-l1 (L2400-2408)
+  [dialog npc] RU: Арчи, мне нужна помощь! Я хочу купить 20 бананов и ещё 30 кокосов. Это 50 штук? Или 23? Я совсем запутался с нулями!
+             EN: Archie, I need help! I want to buy 20 bananas and 30 more coconuts. Is that 50 pieces? Or 23? I’m totally mixed up with the zeros!
+             KY: Арчи, мага жардам керек! Мен 20 банан жана дагы 30 кокос алгым келет. Бул 50бү? Же 23пү? Нөлдөр менен толук чаташтым!
+  [dialog tali] RU: Хм, мне тоже сложно! Давай вместе разберёмся — у нас ведь есть умный друг!
+             EN: Hmm, it’s hard for me too! Let’s figure it out together — we have a smart friend!
+             KY: Хм, мага да кыйын! Чогуу түшүнөлу — бизде акылдуу дос бар!
+  [intro] RU: Складываем десятки! :: 20 + 30: смотри только на десятки: 2 + 3 = 5, добавь нолик → 50. Нули «не мешают», они просто показывают, что это десятки!
+          EN: Adding tens! :: 20 + 30: 2 tens + 3 tens = 5 tens = 50.
+          KY: Ондуктарды кошолу! :: 20 + 30: 2 десятка + 3 = 5 десятков, то есть 50.
+  [intro] RU: Проверяй себя! :: 40 + 50 = 90. Правда? Да: 4 + 5 = 9, добавь 0 → 90.
+          EN: Tip :: For two-digit numbers: add tens and ones separately, then combine.
+          KY: Проверка :: Двузначные: десятки отдельно, единицы отдельно, потом сложи.
+  L2404 g2madd2l1t1 <input>
+    Q RU: Тали покупает 20 бананов и 30 кокосов. Он говорит: «Это 23 штуки!» Нет, Тали! Подсчитай правильно: 20 + 30 = ?
+    Q EN: Tali buys 20 bananas and 30 coconuts. He says: “That’s 23 pieces!” No, Tali! Count correctly: 20 + 30 = ?
+    Q KY: Тали 20 банан жана 30 кокос алат. Ал: «Бул 23 даана!» дейт. Жок, Тали! Туура сана: 20 + 30 = ?
+  L2405 g2madd2l1t2 <input>
+    Q RU: 40 + 50 = ?
+    Q EN: 40 + 50 =?
+    Q KY:  40 + 50 =?
+  L2406 g2madd2l1t3 <multiple_choice>
+    Q RU: Арчи летел 30 км утром и ещё сколько-то вечером. Всего получилось 100 км. Сколько он летел вечером?
+    Q EN: Archie flew 30 km in the morning and some more in the evening. Altogether it was 100 km. How far did he fly in the evening?
+    Q KY: Арчи эртең менен 30 км учуп, кечинде дагы учкан. Жалпысынан 100 км болду. Кечинде канча учкан?
+      a     RU:60 | EN:60 | KY:60
+      b [✓] RU:70 | EN:70 | KY:70
+      c     RU:80 | EN:80 | KY:80
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:60 | EN:60 | KY:60
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:70 | EN:70 | KY:70
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:80 | EN:80 | KY:80
+  L2407 g2madd2l1t4 <input>
+    Q RU: 60 + 40 = ?
+    Q EN: 60 + 40 =?
+    Q KY:  60 + 40 =?
+
+######## g2m-add2-l2 (L2409-2417)
+  [dialog npc] RU: Задача! У меня 28 желудей, Тали дал ещё 5. Сколько стало?
+             EN: Addition crossing a ten! 28 + 5 =?
+             KY: Ондуктан өтүп кошуу! 28 + 5 =?
+  [dialog tali] RU: Я думаю… 213? Нет, подожди, я посчитаю по-другому. 28 + 2 = 30, и ещё 3… Кажется, 33? Но я не уверен — проверь меня!
+             EN: 28 + 2 = 30, plus 3 = 33! You did it!
+             KY: 28 + 2 = 30, дагы 3 = 33! Жасадың!
+  [intro] RU: Переход через десяток! :: 28 + 5: сначала добери до 30 (нужно 2), остаток 3 добавь: 30 + 3 = 33. Тали правильно думал!
+          EN: Carrying to the next ten! :: 28 + 5: 28 + 2 = 30, then + 3 = 33. Reach a round ten first!
+          KY: Сложение с переходом через десяток! :: 28 + 5: 28 + 2 = 30, потом + 3 = 33. Сначала добери до круглого десятка!
+  [intro] RU: Ещё пример :: 36 + 7: 36 + 4 = 40, ещё + 3 = 43. Всегда «допрыгивай» до круглого числа!
+          EN: Another example :: 36 + 7: 36 + 4 = 40, then + 3 = 43.
+          KY: Ещё пример :: 36 + 7: 36 + 4 = 40, ещё + 3 = 43.
+  L2413 g2madd2l2t1 <multiple_choice>
+    Q RU: 28 + 5 = ? (сначала добери до 30!)
+    Q EN: 28 + 5 = ? (bridge up to 30 first!)
+    Q KY: 28 + 5 = ? (алдынча 30го жеткир!)
+      a [✓] RU:33 | EN:33 | KY:33
+      b     RU:213 | EN:213 | KY:213
+      c     RU:35 | EN:35 | KY:35
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:33 | EN:33 | KY:33
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:213 | EN:213 | KY:213
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:35 | EN:35 | KY:35
+  L2414 g2madd2l2t2 <input>
+    Q RU: 36 + 7 = ? (допрыгни до 40)
+    Q EN: 36 + 7 = ? (jump to 40 first)
+    Q KY: 36 + 7 = ? (алдынча 40ка жет)
+  L2415 g2madd2l2t3 <multiple_choice>
+    Q RU: 19 + 4: какой первый шаг «до круглого»?
+    Q EN: 19 + 4: what is the first step to the round ten?
+    Q KY: 19 + 4: тегерек ондукка карай биринчи кадам кайсы?
+      a [✓] RU:19 + 1 = 20, потом + 3 | EN:19 + 1 = 20, then + 3 | KY:19 + 1 = 20, андан соң + 3
+      b     RU:сразу 19 + 4 без шагов | EN:add 19 + 4 in one jump with no steps | KY:кадамсыз эле 19 + 4
+      c     RU:19 + 9 = 28 | EN:19 + 9 = 28 | KY:19 + 9 = 28
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:19 + 1 = 20, потом + 3 | EN:19 + 1 = 20, then + 3 | KY:19 + 1 = 20, андан соң + 3
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:сразу 19 + 4 без шагов | EN:add 19 + 4 in one jump with no steps | KY:кадамсыз эле 19 + 4
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:19 + 9 = 28 | EN:19 + 9 = 28 | KY:19 + 9 = 28
+  L2416 g2madd2l2t4 <input>
+    Q RU: 47 + 8 = ?
+    Q EN: 47 + 8 = ?
+    Q KY: 47 + 8 = ?
+
+######## g2m-add2-l3 (L2418-2428)
+  [dialog npc] RU: У меня было 65 ракушек. Я отдал 23 Арчи в подарок. Арчи говорит, у меня осталось 48. А я думаю, 42. Кто прав?!
+             EN: I had 65 shells. I gave 23 to Archie as a gift. Archie says I have 48 left. I think it’s 42. Who is right?!
+             KY: Менде 65 кабыкча бар эле. Арчиге белекке 23үн бердим. Арчи менде 48 калды дейт. Мен 42 деп ойлойм. Ким туура?!
+  [dialog tali] RU: Я думаю, я прав! Но давай всё-таки проверим у нашего друга…
+             EN: I think I’m right! But let’s still check with our friend…
+             KY: Менимче мен туурамын! Бирок дагы деле досубуз менен текшерели…
+  [intro] RU: Вычитание двузначных! :: 65 − 23: единицы 5−3=2, десятки 6−2=4 → 42. Тали прав!
+          EN: Two-digit addition by place! :: 65 − 23: ones 5−3=2, tens 6−2=4 → 42. Tali is right!
+          KY: Сложение двузначных по разрядам! :: 65 − 23: бирдиктер 5−3=2, ондуктар 6−2=4 → 42. Тали туура!
+  [intro] RU: С переходом :: 80 − 47: сложнее, но есть приём: 80 − 40 = 40, 40 − 7 = 33.
+          EN: With objects :: 80 − 47: more difficult, but there is a trick: 80 − 40 = 40, 40 − 7 = 33.
+          KY: Пример с предметами :: 80 − 47: кыйыныраак, бирок бир айла бар: 80 − 40 = 40, 40 − 7 = 33.
+  L2422 g2madd2l3t1 <input>
+    Q RU: 65 − 23 = ? (Тали прав?)
+    Q EN: 65 − 23 = ? (Is Tali right?)
+    Q KY:  65 − 23 =?
+  L2423 g2madd2l3t2 <input>
+    Q RU: 80 − 47 = ?
+    Q EN: 80 − 47 =?
+    Q KY:  80 − 47 =?
+  L2424 g2madd2l3t3 <multiple_choice>
+    Q RU: Было 30 яблок, Тали отдал 13 Арчи. Сколько осталось?
+    Q EN: There were 30 apples; Tali gave 13 to Archie. How many are left?
+    Q KY: 30 алма бар эле, Тали Арчиге 13үн берди. Канчасы калды?
+      a [✓] RU:17 | EN:17 | KY:17
+      b     RU:18 | EN:18 | KY:18
+      c     RU:43 | EN:43 | KY:43
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:17 | EN:17 | KY:17
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:18 | EN:18 | KY:18
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:43 | EN:43 | KY:43
+  L2425 g2madd2l3t4 <input>
+    Q RU: 91 − 38 = ?
+    Q EN: 91 − 38 = ?
+    Q KY: 91 − 38 = ?
+
+######## g2m-times-l1 (L2429-2437)
+  [dialog npc] RU: Арчи, я купил 4 пары носков (да, динозавры носят носки!). Это сколько носков? Я думаю, 6? Нет, 4+4=8? Помоги!
+             EN: Archie, I bought 4 pairs of socks (yes, dinosaurs wear socks!). How many socks is that? I think 6? No, 4+4=8? Help!
+             KY: Арчи, мен 4 жуп байпак алдым (ооба, динозаврлар байпак кийет!). Бул канча байпак? Менимче 6бы? Жок, 4+4=8би? Жардам бер!
+  [dialog tali] RU: Умножение на 2 — это удвоение! Четыре пары — это 4 × 2. Давай посчитаем вместе с нашим другом!
+             EN: Multiplying by 2 is doubling! Four pairs is 4 × 2. Let’s count together with our friend!
+             KY: 2ге көбөйтүү — эки эсе кылуу! Төрт жуп — бул 4 × 2. Досубуз менен чогуу санайлы!
+  [intro] RU: Умножение на 2 — удвоение! :: 2 × 4 — «четыре два раза»: 4+4=8. Умножить на 2 — просто удвоить число!
+          EN: Times 2 is doubling! :: 2 × 3 means 3 twice: 3+3=6. Times 2 doubles the number.
+          KY: Умножение на 2 — это удвоение! :: 2 × 3 — «три два раза»: 3+3=6. Умножить на 2 — удвоить число.
+  [intro] RU: Два ряда :: 2 × 5: два ряда по пять — 5+5=10. Легко!
+          EN: Two rows of four :: 2 × 4: two rows of 4 — 4+4=8.
+          KY: Два ряда по четыре :: 2 × 4: два ряда по 4 — 4+4=8.
+  L2433 g2mtimesl1t1 <input>
+    Q RU: Тали купил 4 пары носков. 2 × 4 = ? Сколько носков всего?
+    Q EN: Tali bought 4 pairs of socks. 2 × 4 = ? How many socks in total?
+    Q KY: Тали 4 жуп байпак алды. 2 × 4 = ? Жалпы канча байпак?
+  L2434 g2mtimesl1t2 <input>
+    Q RU: 2 × 7 = ?
+    Q EN: 2 × 7 =?
+    Q KY:  2 × 7 =?
+  L2435 g2mtimesl1t3 <input>
+    Q RU: 2 × 9 = ?
+    Q EN: 2 × 9 =?
+    Q KY:  2 × 9 =?
+  L2436 g2mtimesl1t4 <multiple_choice>
+    Q RU: Арчи утверждает: «2 × 6 = 14!» Тали не верит. Кто прав?
+    Q EN: Archie states, “2 x 6 = 14!” Tali doesn't believe it. Who's right?
+    Q KY: Арчи мындай дейт: "2 x 6 = 14!" Тали буга ишенбейт. Ким туура?
+      a     RU:Арчи прав: 2 × 6 = 14 | EN:Archie is right: 2 × 6 = 14 | KY:Арчи туура: 2 × 6 = 14
+      b [✓] RU:Тали прав, что не верит: 2 × 6 = 12 | EN:Tali is right to doubt: 2 × 6 = 12 | KY:Тали туура шектенет: 2 × 6 = 12
+      c     RU:Оба ошибаются: 2 × 6 = 16 | EN:Both are wrong: 2 × 6 = 16 | KY:Экөө тең жаңылышат: 2 × 6 = 16
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Арчи прав: 2 × 6 = 14 | EN:Archie is right: 2 × 6 = 14 | KY:Арчи туура: 2 × 6 = 14
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Тали прав, что не верит: 2 × 6 = 12 | EN:Tali is right to doubt: 2 × 6 = 12 | KY:Тали туура шектенет: 2 × 6 = 12
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Оба ошибаются: 2 × 6 = 16 | EN:Both are wrong: 2 × 6 = 16 | KY:Экөө тең жаңылышат: 2 × 6 = 16
+
+######## g2m-times-l2 (L2438-2446)
+  [dialog npc] RU: Я заметил кое-что классное: ответ на умножение на 5 всегда заканчивается на 0 или 5! Это правда или я придумал?
+             EN: I noticed something cool: answers when multiplying by 5 always end in 0 or 5! Is that true or did I make it up?
+             KY: Мен сонун нерсе байкадым: 5ке көбөйтүүдө жооп ар дайым 0 же 5 менен бүтөт! Бул чынбы же мен ойлоп таптымбы?
+  [dialog tali] RU: Хм, интересно! Давай проверим на заданиях — вдруг Тали открыл великий математический секрет!
+             EN: Hmm, interesting! Let’s check on the tasks — maybe Tali discovered a great math secret!
+             KY: Хм, кызык! Тапшырмаларда текшерели — балким Тали чоң математикалык сырды ачкандыр!
+  [intro] RU: Умножение на 5! :: 5 × 2 = 10, 5 × 3 = 15, 5 × 4 = 20. Тали прав — ответ всегда на 0 или 5! Это настоящий секрет таблицы умножения.
+          EN: Multiplying by 5! :: 5 × 2 = 10, 5 × 3 = 15, 5 × 4 = 20. Tali is right — the answer always ends in 0 or 5! A real times-table secret.
+          KY: 5ке көбөйтүү! :: 5 × 2 = 10, 5 × 3 = 15, 5 × 4 = 20. Тали туура — жооп ар дайым 0 же 5 менен бүтөт! Чыныгы таблица сыры.
+  [intro] RU: Пятёрки везде :: 5 × 6 = 30, 5 × 7 = 35. Проверяй: последняя цифра 0 или 5 — значит, правильно!
+          EN: Fives :: 5 × 6 = 30, 5 × 7 = 35. Check: last digit 0 or 5 — then it’s correct!
+          KY: Бештер :: 5 × 6 = 30, 5 × 7 = 35. Текшер: акыркы цифра 0 же 5 — демек туура!
+  L2442 g2mtimesl2t1 <input>
+    Q RU: 5 × 3 = ?
+    Q EN: 5 × 3 =?
+    Q KY:  5 × 3 =?
+  L2443 g2mtimesl2t2 <input>
+    Q RU: 5 × 6 = ?
+    Q EN: 5 × 6 =?
+    Q KY:  5 × 6 =?
+  L2444 g2mtimesl2t3 <input>
+    Q RU: 5 × 8 = ?
+    Q EN: 5 × 8 =?
+    Q KY:  5 × 8 =?
+  L2445 g2mtimesl2t4 <multiple_choice>
+    Q RU: Тали говорит: «5 × 9 = 46!» Арчи смеётся и объясняет, почему Тали неправ. Что ответил Арчи?
+    Q EN: Tali says: “5 × 9 = 46!” Archie laughs and explains why Tali is wrong. What did Archie say?
+    Q KY: Тали мындай дейт: "5 × 9 = 46!" Арчи күлүп, Талинин эмне үчүн туура эмес экенин түшүндүрөт. Арчи эмне деди?
+      a     RU:Тали прав, 46 — верно | EN:Tali is right, 46 is correct | KY:Тали туура, 46 — туура
+      b [✓] RU:Нет, 5 × 9 = 45, и это заканчивается на 5 — всё по правилу! | EN:No, 5 × 9 = 45, and it ends in 5 — the rule works! | KY:Жок, 5 × 9 = 45, жана ал 5ке бүтөт — эреже иштейт!
+      c     RU:5 × 9 = 50 | EN:5 × 9 = 50 | KY:5 × 9 = 50
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Тали прав, 46 — верно | EN:Tali is right, 46 is correct | KY:Тали туура, 46 — туура
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Нет, 5 × 9 = 45, и это заканчивается на 5 — всё по правилу! | EN:No, 5 × 9 = 45, and it ends in 5 — the rule works! | KY:Жок, 5 × 9 = 45, жана ал 5ке бүтөт — эреже иштейт!
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:5 × 9 = 50 | EN:5 × 9 = 50 | KY:5 × 9 = 50
+
+######## g2m-times-l3 (L2447-2463)
+  [dialog npc] RU: Тали, у тебя три кармана, в каждом по 7 монет. Сколько монет всего?
+             EN: Tali, you have three pockets with 7 coins in each. How many coins in total?
+             KY: Тали, сенин үч чөнтөгүң бар, ар биринде 7 тыйын. Жалпы канча тыйын?
+  [dialog tali] RU: Три кармана по семь… Я думаю, это 3 + 7 = 10? Нет, подожди, это же умножение! 3 × 7… Помоги мне!
+             EN: Three pockets of seven... I think that's 3 + 7 = 10? No, wait, that's multiplication! 3 × 7... Help me!
+             KY: Жетиден үч чөнтөк... Менимче бул 3 + 7 = 10? Жок, күтө тур, бул көбөйтүү! 3 × 7... Мага жардам бер!
+  [intro] RU: Умножение на 3! :: 3 × 7 = 21. Три группы по семь: 7+7+7=21. Можно считать сложением, но умножение быстрее!
+          EN: Multiplying by 3! :: 3 × 7 = 21. Three groups of seven: 7+7+7=21. You can count it as addition, but multiplication is faster!
+          KY: 3кө көбөйтүү! :: 3 × 7 = 21. Жетиден турган үч топ: 7+7+7=21. Сиз аны кошуу катары эсептей аласыз, бирок көбөйтүү ылдамыраак!
+  [intro] RU: Тройка — три группы :: 3 × 4 = 12, 3 × 6 = 18, 3 × 9 = 27.
+          EN: Three :: 3 × 4 = 12, 3 × 6 = 18, 3 × 9 = 27.
+          KY: Үч :: 3 × 4 = 12, 3 × 6 = 18, 3 × 9 = 27.
+  L2451 g2mtimesl3t1 <input>
+    Q RU: 3 × 7 = ? (Сколько монет у Тали?)
+    Q EN: 3 × 7 = ? (How many coins does Tali have?)
+    Q KY: 3 × 7 = ? (Талинин канча тыйыны бар?)
+  L2452 g2mtimesl3t2 <input>
+    Q RU: У Тали три кармана по 4 монеты. 3 × 4 = ?
+    Q EN: Tali has three pockets with 4 coins each. 3 × 4 = ?
+    Q KY: Талинин үч чөнтөгүндө ар биринде 4 тыйын. 3 × 4 = ?
+  L2453 g2mtimesl3t3 <fill_blank>
+    Q RU: 3 × 9 = _
+    Q EN: 3 × 9 = _
+    Q KY: 3 × 9 = _
+      opt RU:<MISSING:fb-a> | EN:<MISSING:fb-a> | KY:<MISSING:fb-a>
+      opt RU:24 | EN:24 | KY:24
+      opt RU:<MISSING:fb-b> | EN:<MISSING:fb-b> | KY:<MISSING:fb-b>
+      opt RU:27 | EN:27 | KY:27
+      opt RU:<MISSING:fb-c> | EN:<MISSING:fb-c> | KY:<MISSING:fb-c>
+      opt RU:36 | EN:36 | KY:36
+  L2454 g2mtimesl3t4 <multiple_choice>
+    Q RU: Арчи считает: «3 × 8 = 24!» — Тали говорит: «Нет, 26!» Кто из них прав?
+    Q EN: Archie counts: “3 × 8 = 24!” — Tali says: “No, 26!” Who is right?
+    Q KY: Арчи санайт: «3 × 8 = 24!» — Тали: «Жок, 26!» дейт. Ким туура?
+      a     RU:Тали прав (26) | EN:Tali is right (26) | KY:Тали туура (26)
+      b [✓] RU:Арчи прав (24) | EN:Archie is right (24) | KY:Арчи туура (24)
+      c     RU:Оба неправы | EN:Both are wrong | KY:Экөө тең туура эмес
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Тали прав (26) | EN:Tali is right (26) | KY:Тали туура (26)
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Арчи прав (24) | EN:Archie is right (24) | KY:Арчи туура (24)
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Оба неправы | EN:Both are wrong | KY:Экөө тең туура эмес
+
+######## g2r-sh-l1 (L2464-2472)
+  [dialog npc] RU: Привет! Я Маша! Тали, хочу научить тебя различать твёрдые и мягкие согласные. Но сама я немного путаюсь с некоторыми словами — поможешь разобраться?
+             EN: Hi! I’m Masha! Tali, I want to teach you hard and soft consonants — but I get mixed up on some words. Can you help?
+             KY: Салам! Мен Машамын! Тали, сага катуу жана жумшак үнсүздөрдү үйрөткүм келет — бирок кээ бир сөздөрдө өзүм чаташам. Жардам бересиңби?
+  [dialog tali] RU: Конечно! Я, честно говоря, думал, что «твёрдый» — это когда буква сделана из камня. Оказывается, нет? Расскажи!
+             EN: Sure! I honestly thought “hard” meant the letter was made of stone. Apparently not? Tell me!
+             KY: Албетте! Чындыгында мен «катуу» дегенди тамга таштан жасалган деп ойлогом. Ошентпейт экенби? Айтчы!
+  [intro] RU: Твёрдые согласные! :: Согласный твёрдый, если после него стоит А, О, У, Ы или Э. ЛА, ЛО, ЛУ — твёрдые! Тали, запомни: не камень, а звучание!
+          EN: Hard consonants! :: A consonant is hard if А, О, У, Ы or Э comes after it. ЛА, ЛО, ЛУ — hard! Remember: it’s about the sound, not stone.
+          KY: Катуу үнсүздөр! :: А, О, У алдындагы Л, Р, М катуу. ЛА, ЛО, ЛУ!
+  [intro] RU: Твёрдые и мягкие :: ЛА — твёрдая Л, ЛИ — мягкая Л. Буква после согласного всё меняет!
+          EN: Hard and soft :: ЛА — hard Л, ЛИ — soft Л. The letter after the consonant changes everything!
+          KY: Катуу жана жумшак :: ЛА катуу, ЛИ жумшак. Тамга көрсөтөт!
+  L2468 g2rshl1t1 <multiple_choice>
+    Q RU: Тали читает слово НОС и задаётся вопросом: «Н здесь твёрдая или мягкая?» Помоги ему!
+    Q EN: Tali reads the word НОС and asks: “Is Н hard or soft here?” Help him!
+    Q KY: Тали НОС сөзүн окуп: «Н бул жерде катуубу же жумшакпы?» деп сурайт. Жардам бер!
+      a     RU:Мягкий | EN:Soft | KY:Жумшак
+      b [✓] RU:Твёрдый | EN:Hard | KY:Катуу
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Мягкий | EN:Soft | KY:Жумшак
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Твёрдый | EN:Hard | KY:Катуу
+  L2469 g2rshl1t2 <multiple_choice>
+    Q RU: Маша говорит: «Буква Ж в любом слове всегда твёрдая — исключений нет!» Тали не верит. А ты?
+    Q EN: Masha says: “The letter Ж is always hard in every word — no exceptions!” Tali doesn’t believe it. Do you?
+    Q KY: Маша: «Ж тамгасы ар дайым катуу — өзгөчө жок!» Тали ишенбейт. Сенче?
+      a [✓] RU:Да | EN:Yes | KY:Ооба
+      b     RU:Нет | EN:No | KY:Жок
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Да | EN:Yes | KY:Ооба
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Нет | EN:No | KY:Жок
+  L2470 g2rshl1t3 <fill_blank>
+    Q RU: Всегда твёрдый согласный: _
+    Q EN: Always a hard consonant: _
+    Q KY: Ар дайым катуу үнсүз: _
+      opt RU:<MISSING:fb-a> | EN:<MISSING:fb-a> | KY:<MISSING:fb-a>
+      opt RU:Ж | EN:Ж | KY:Ж
+      opt RU:<MISSING:fb-b> | EN:<MISSING:fb-b> | KY:<MISSING:fb-b>
+      opt RU:Л | EN:Л | KY:Л
+      opt RU:<MISSING:fb-c> | EN:<MISSING:fb-c> | KY:<MISSING:fb-c>
+      opt RU:Н | EN:Н | KY:Н
+  L2471 g2rshl1t4 <input>
+    Q RU: В слове НОС две согласные. Тали говорит: «Обе твёрдые!» Сколько твёрдых согласных в слове НОС?
+    Q EN: The word НОС has two consonants. Tali says: “Both are hard!” How many hard consonants are in НОС?
+    Q KY: НОС сөзүндө эки үнсүз бар. Тали: «Экөө тең катуу!» дейт. НОС сөзүндө канча катуу үнсүз бар?
+
+######## g2r-sh-l2 (L2473-2481)
+  [dialog tali] RU: Маша, я написал слово «КОН» в записке. Маша смеётся и говорит, что я написал неправильно. Что не так?
+             EN: Masha, I wrote «КОН» in a note. Masha laughs and says it’s wrong. What’s wrong?
+             KY: Маша, мен жазууга «КОН» деп жаздым. Маша күлүп, туура эмес деп жатат. Эмне туура эмес?
+  [dialog npc] RU: Тали, тут нужен мягкий знак! Без него слово «конь» превращается во что-то другое. Объясним нашему другу?
+             EN: Tali, you need the soft sign! Without it, «конь» turns into something else. Shall we explain?
+             KY: Тали, бул жерде жумшак белги керек! Ансыз «конь» башка нерсеге айланат. Досубузга түшүндүрөлүбү?
+  [intro] RU: Мягкий знак Ь! :: КОНЬ, СОЛЬ, МАТЬ — Ь делает согласную мягкой! Без него: КОН, СОЛ, МАТ — совсем другие слова или бессмыслица.
+          EN: Soft sign Ь! :: Конь, соль, мать — Ь at the end makes the consonant soft!
+          KY: Жумшак белги Ь! :: Конь, соль, мать — аягындагы Ь үнсүздү жумшартат!
+  [intro] RU: Ь — не звук! :: Ь не произносится сам по себе — он только «смягчает» соседа слева.
+          EN: Ь is not a sound :: Ь does not represent a sound. Only softness!
+          KY: Ь — үн эмес :: Ь үндү билдирбейт. Жумшактыкты гана!
+  L2477 g2rshl2t1 <multiple_choice>
+    Q RU: Тали написал «КОН». Маша говорит, нужно «КОНЬ». Как правильно написать слово про лошадь?
+    Q EN: Tali wrote «КОН». Masha says it should be «КОНЬ». How do you spell the word for horse?
+    Q KY: Тали «КОН» деп жазды. Маша «КОНЬ» болушу керек дейт. Ат сөзүн кантип жазабыз?
+      a     RU:КОН | EN:КОН | KY:КОН
+      b [✓] RU:КОНЬ | EN:КОНЬ | KY:КОНЬ
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:КОН | EN:КОН | KY:КОН
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:КОНЬ | EN:КОНЬ | KY:КОНЬ
+  L2478 g2rshl2t2 <multiple_choice>
+    Q RU: Что делает мягкий знак в слове?
+    Q EN: What does the soft sign do in a word?
+    Q KY: Жумшак белги сөздө эмне кылат?
+      a [✓] RU:Смягчает предыдущую согласную | EN:Softens the previous consonant | KY:Мурунку үнсүздү жумшартат
+      b     RU:Делает согласную твёрдой | EN:Makes the consonant hard | KY:Үнсүздү катуу кылат
+      c     RU:Ничего не делает | EN:Does nothing | KY:Эч нерсе кылбайт
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Смягчает предыдущую согласную | EN:Softens the previous consonant | KY:Мурунку үнсүздү жумшартат
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Делает согласную твёрдой | EN:Makes the consonant hard | KY:Үнсүздү катуу кылат
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Ничего не делает | EN:Does nothing | KY:Эч нерсе кылбайт
+  L2479 g2rshl2t3 <fill_blank>
+    Q RU: Правильно: _ (с мягким знаком)
+    Q EN: Correct: _ (with a soft sign)
+    Q KY: Туура: _ (жумшак белги менен)
+      opt RU:<MISSING:fb-a> | EN:<MISSING:fb-a> | KY:<MISSING:fb-a>
+      opt RU:КОН | EN:КОН | KY:КОН
+      opt RU:<MISSING:fb-b> | EN:<MISSING:fb-b> | KY:<MISSING:fb-b>
+      opt RU:КОНЬ | EN:КОНЬ | KY:КОНЬ
+  L2480 g2rshl2t4 <input>
+    Q RU: Мягкий знак может стоять между двумя согласными (например: ПИСЬМО). Это правда?
+    Q EN: The soft sign can stand between two consonants (e.g. ПИСЬМО). Is that true?
+    Q KY: Жумшак белги эки үнсүздүн ортосунда тура алат (мис.: ПИСЬМО). Бул чынбы?
+
+######## g2r-sh-l3 (L2482-2492)
+  [dialog npc] RU: Маша, я прочитал слово ЛИМОН и у меня язык завязался в узел! Это Л мягкая или твёрдая?
+             EN: Masha, I read the word ЛИМОН and my tongue got tied in a knot! Is Л soft or hard here?
+             KY: Маша, мен ЛИМОН сөзүн окуп, тилим түйүлүп калды! Бул жерде Л жумшакпы же катуубу?
+  [dialog tali] RU: О, отличный вопрос! Лимон, лев, люди — тут Л мягкая. А вот ЛАМПА — твёрдая. Чувствуешь разницу?
+             EN: Great question! In lemon, lion, people — Л is soft. But in ЛАМПА it’s hard. Can you feel the difference?
+             KY: Сонун суроо! Лимон, арстан, адамдар — бул жерде Л жумшак. Ал эми ЛАМПАда — катуу. Айырманы сезесиңби?
+  [intro] RU: Ль, Лю, Ле! :: ЛЮБОВЬ, ЛИМОН, ЛЕВ — Л мягкая перед Я, Ю, Е, И! Попробуй: ЛИ-МОН, ЛЕВ.
+          EN: Ль, Лю, Ле! :: Любовь, лимон, лев — Л is soft before Я, Ю, Е!
+          KY: Ль, Лю, Ле! :: Любовь, лимон, лев — Л, Я, Ю, Е алдында жумшак!
+  [intro] RU: Проверяй себя! :: ЛА, ЛО, ЛУ — твёрдые. ЛИ, ЛЕ, ЛЮ, ЛЯ — мягкие. Просто смотри на следующую букву!
+          EN: Check :: You know hard and soft consonants!
+          KY: Текшерүү :: Сен катуу жана жумшак үнсүздөрдү билесиң!
+  L2486 g2rshl3t1 <multiple_choice>
+    Q RU: В слове ЛИМОН: слог ЛИ делает согласный Л мягким?
+    Q EN: In ЛИМОН, does the syllable ЛИ make L soft?
+    Q KY: ЛИМОН сөзүндө ЛИ мууну Л тыбышын жумшак кылабы?
+      a [✓] RU:Да | EN:Yes | KY:Ооба
+      b     RU:Нет | EN:No | KY:Жок
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Да | EN:Yes | KY:Ооба
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Нет | EN:No | KY:Жок
+  L2487 g2rshl3t2 <multiple_choice>
+    Q RU: Тали читает: ЛУЖА. Слог ЛУ — какой здесь Л?
+    Q EN: Tali reads: ЛУЖА. In the syllable ЛУ, is Л soft or hard?
+    Q KY: Тали окуйт: ЛУЖА. ЛУ муунунда Л кандай — жумшак же катуу?
+      a     RU:Мягкий | EN:Soft | KY:Жумшак
+      b [✓] RU:Твёрдый | EN:Hard | KY:Катуу
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Мягкий | EN:Soft | KY:Жумшак
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Твёрдый | EN:Hard | KY:Катуу
+  L2488 g2rshl3t3 <multiple_choice>
+    Q RU: Маша написала: ЛЕТО. Слог ЛЕ делает Л…
+    Q EN: Masha wrote: ЛЕТО. Does the syllable ЛЕ make Л soft or hard?
+    Q KY: Маша жазды: ЛЕТО. ЛЕ мууну Л тыбышын жумшакпы же катуубу кылат?
+      a [✓] RU:Мягкий | EN:Soft | KY:Жумшак
+      b     RU:Твёрдый | EN:Hard | KY:Катуу
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Мягкий | EN:Soft | KY:Жумшак
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Твёрдый | EN:Hard | KY:Катуу
+  L2489 g2rshl3t4 <input>
+    Q RU: Тали читает ЛАМПА. Слог ЛА — какой Л?
+    Q EN: Tali reads ЛАМПА. In the syllable ЛА, is Л soft or hard?
+    Q KY: Тали ЛАМПАны окуйт. ЛА муунунда Л кандай — жумшакпы же катуубу?
+
+######## g2r-sp-l1 (L2493-2501)
+  [dialog npc] RU: Маша, я слышал про «существительное», но это звучит страшно. Это что — существо? Как монстр?
+             EN: Noun — who? what? Table, mum, sun!
+             KY: Зат атооч — ким? эмне? Стол, апа, күн!
+  [dialog tali] RU: Хаха! Почти! Существительное — это слово, которое называет предмет или существо: КОТ, СТОЛ, НЕБО. Давай Тали поможем разобраться!
+             EN: A noun names an object or person!
+             KY: Зат атооч буюм же адамды атайт!
+  [intro] RU: Существительное — кто? что? :: СТОЛ, МАМА, НЕБО — отвечают на вопрос КТО? или ЧТО? Это и есть существительные!
+          EN: Noun! :: A noun answers who? what? Table, mum, sun!
+          KY: Зат атооч! :: Зат атооч ким? эмне? суроосуна жооп берет. Стол, апа, күн!
+  [intro] RU: Существительное — это название! :: Каждый предмет, животное, человек — существительное. КОТ, КНИГА, ДРУЖБА.
+          EN: Names :: A noun names an object or person!
+          KY: Аттар :: Зат атооч буюм же адамды атайт!
+  L2497 g2rspl1t1 <multiple_choice>
+    Q RU: На какой вопрос отвечает существительное?
+    Q EN: What question does the noun answer?
+    Q KY:  Зат атооч кайсы суроого жооп берет?
+      a [✓] RU:Кто? Что? | EN:Who? What? | KY:Ким? Эмне?
+      b     RU:Что делает? | EN:What does it do? | KY:Эмне кылат?
+      c     RU:Какой? | EN:Which? | KY:Кандай?
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Кто? Что? | EN:Who? What? | KY:Ким? Эмне?
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Что делает? | EN:What does it do? | KY:Эмне кылат?
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Какой? | EN:Which? | KY:Кандай?
+  L2498 g2rspl1t2 <multiple_choice>
+    Q RU: Тали говорит: «КОТ — это существительное!» Он прав?
+    Q EN: Tali says: “CAT is a noun!” Is he right?
+    Q KY: Тали айтат: «КОТ — зат атооч!» Ал туурабы?
+      a [✓] RU:Да | EN:Yes | KY:Ооба
+      b     RU:Нет | EN:No | KY:Жок
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Да | EN:Yes | KY:Ооба
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Нет | EN:No | KY:Жок
+  L2499 g2rspl1t3 <multiple_choice>
+    Q RU: Тали смотрит на слово БЕЖИТ и думает: «Это существительное!» Он прав?
+    Q EN: Tali looks at the word RUNS and thinks: “This is a noun!” Is he right?
+    Q KY: Тали БЕЖИТ сөзүнө карап: «Бул зат атооч!» дейт. Ал туурабы?
+      a     RU:Да | EN:Yes | KY:Ооба
+      b [✓] RU:Нет | EN:No | KY:Жок
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Да | EN:Yes | KY:Ооба
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Нет | EN:No | KY:Жок
+  L2500 g2rspl1t4 <input>
+    Q RU: Напиши существительное из списка: Книга / Сидит / Красивый
+    Q EN: Write the noun from the list: Book / Sits / Beautiful
+    Q KY: Тизменин ичинен зат атоочту жаз: Книга / Сидит / Красивый
+
+######## g2r-sp-l2 (L2502-2510)
+  [dialog npc] RU: Тали, глагол — это слово-действие! БЕЖИТ, ЧИТАЕТ, СПИТ. Что делает кот?
+             EN: Tali, a verb is an action word! БЕЖИТ, ЧИТАЕТ, СПИТ. What does the cat do?
+             KY: Тали, этиш — иш-аракет сөзү! БЕЖИТ, ЧИТАЕТ, СПИТ. Мышык эмне кылат?
+  [dialog tali] RU: Мяукает! Это глагол? Подожди, а МЯУКАНЬЕ — это тоже глагол? Я запутался…
+             EN: It meows! Is that a verb? Wait — is МЯУКАНЬЕ also a verb? I’m confused…
+             KY: Мяулайт! Бул этишпи? Күт — МЯУКАНЬЕ да этишпи? Мен чаташтым…
+  [intro] RU: Глагол — действие! :: БЕЖИТ, ЧИТАЕТ, СПИТ — что делает? Это глаголы. МЯУКАНЬЕ — это что? Значит существительное!
+          EN: A verb is an action! :: A verb answers what does it do? Runs, reads, sleeps!
+          KY: Этиш! :: Этиш эмне кылат? деген суроого жооп берет. Чуркайт, окуйт, уктайт!
+  [intro] RU: Тали, запомни! :: Глагол всегда отвечает на вопрос ЧТО ДЕЛАЕТ? ЧТО ДЕЛАЛ? ЧТО СДЕЛАЕТ?
+          EN: Action :: A verb is an action. The cat meows!
+          KY: Иш-аракет :: Этиш — иш-аракет. Мышык мяулайт!
+  L2506 g2rspl2t1 <multiple_choice>
+    Q RU: На какой вопрос отвечает глагол?
+    Q EN: What question does the verb answer?
+    Q KY:  Этиш кайсы суроого жооп берет?
+      a     RU:Кто? Что? | EN:Who? What? | KY:Ким? Эмне?
+      b [✓] RU:Что делает? | EN:What does it do? | KY:Эмне кылат?
+      c     RU:Какой? | EN:Which? | KY:Кандай?
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Кто? Что? | EN:Who? What? | KY:Ким? Эмне?
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Что делает? | EN:What does it do? | KY:Эмне кылат?
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Какой? | EN:Which? | KY:Кандай?
+  L2507 g2rspl2t2 <multiple_choice>
+    Q RU: Тали говорит: «ИДЁТ — это глагол!» Он прав?
+    Q EN: Tali says: “ИДЁТ is a verb!” Is he right?
+    Q KY: Тали дейт: «ИДЁТ — бул этиш!» Ал туурабы?
+      a [✓] RU:Да | EN:Yes | KY:Ооба
+      b     RU:Нет | EN:No | KY:Жок
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Да | EN:Yes | KY:Ооба
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Нет | EN:No | KY:Жок
+  L2508 g2rspl2t3 <multiple_choice>
+    Q RU: Какое слово из списка является глаголом?
+    Q EN: Which word from the list is a verb?
+    Q KY: Тизмедеги кайсы сөз — этиш?
+      a     RU:Кошка | EN:Кошка | KY:Кошка
+      b [✓] RU:Сидит | EN:Сидит | KY:Сидит
+      c     RU:Красивый | EN:Красивый | KY:Красивый
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Кошка | EN:Кошка | KY:Кошка
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Сидит | EN:Сидит | KY:Сидит
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Красивый | EN:Красивый | KY:Красивый
+  L2509 g2rspl2t4 <input>
+    Q RU: Тали задаёт вопрос: «Глагол меняется по временам — был, есть, будет?» Это правда?
+    Q EN: Tali asks: “Does a verb change by tense — was, is, will be?” Is that true?
+    Q KY: Тали сурайт: «Этиш мезгил боюнча өзгөрөбү — болгон, бар, болот?» Бул чынбы?
+
+######## g2r-sp-l3 (L2511-2521)
+  [dialog npc] RU: Маша, я написал в сочинении: «Тали — динозавр». Маша говорит, что это скучно. Надо добавить прилагательное!
+             EN: Masha, I wrote in my essay: “Tali is a dinosaur.” Masha says that’s boring. We need to add an adjective!
+             KY: Маша, мен сочинениеге жаздым: «Тали — динозавр». Маша бул кызыксыз дейт. Сын атооч кошуу керек!
+  [dialog tali] RU: Тали — ЗЕЛЁНЫЙ, ВЕСЁЛЫЙ, УМНЫЙ динозавр! Прилагательное отвечает на вопрос КАКОЙ? Попробуем вместе?
+             EN: Tali is a ЗЕЛЁНЫЙ, ВЕСЁЛЫЙ, УМНЫЙ dinosaur! An adjective answers КАКОЙ? Shall we try together?
+             KY: Тали — ЗЕЛЁНЫЙ, ВЕСЁЛЫЙ, УМНЫЙ динозавр! Сын атооч КАКОЙ? суроосуна жооп берет. Чогуу аракет кылалыбы?
+  [intro] RU: Прилагательное — признак! :: КРАСНЫЙ шар, БОЛЬШОЙ слон, ВЕСЁЛЫЙ Тали. Отвечает на вопрос КАКОЙ? КАКАЯ? КАКОЕ?
+          EN: An adjective is a quality! :: Subject and predicate — the main members!
+          KY: Сын атооч — белги! :: Ээ жана баяндооч — негизги мүчөлөр!
+  [intro] RU: Прилагательное украшает! :: Без прилагательных всё серо и скучно. С ними — ярко и живо!
+          EN: Word connections :: Words in a sentence are connected by meaning!
+          KY: Сөздөр арасындагы байланыш :: Сүйлөмдөгү сөздөр маани жагынан байланышкан!
+  L2515 g2rspl3t1 <multiple_choice>
+    Q RU: На какой вопрос отвечает прилагательное?
+    Q EN: What question does the adjective answer?
+    Q KY:  Сын атооч кайсы суроого жооп берет?
+      a     RU:Кто? Что? | EN:Who? What? | KY:Ким? Эмне?
+      b     RU:Что делает? | EN:What does it do? | KY:Эмне кылат?
+      c [✓] RU:Какой? | EN:Which? | KY:Кандай?
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Кто? Что? | EN:Who? What? | KY:Ким? Эмне?
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Что делает? | EN:What does it do? | KY:Эмне кылат?
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Какой? | EN:Which? | KY:Кандай?
+  L2516 g2rspl3t2 <multiple_choice>
+    Q RU: Тали говорит: «КРАСИВЫЙ — это прилагательное!» Он прав?
+    Q EN: Tali says: “КРАСИВЫЙ is an adjective!” Is he right?
+    Q KY: Тали дейт: «КРАСИВЫЙ — бул сын атооч!» Ал туурабы?
+      a [✓] RU:Да | EN:Yes | KY:Ооба
+      b     RU:Нет | EN:No | KY:Жок
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Да | EN:Yes | KY:Ооба
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Нет | EN:No | KY:Жок
+  L2517 g2rspl3t3 <multiple_choice>
+    Q RU: Какое из слов — прилагательное?
+    Q EN: Which of these words is an adjective?
+    Q KY: Кайсы сөз — сын атооч?
+      a     RU:Сидит | EN:Сидит | KY:Сидит
+      b     RU:Кошка | EN:Кошка | KY:Кошка
+      c [✓] RU:Белый | EN:Белый | KY:Белый
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Сидит | EN:Сидит | KY:Сидит
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Кошка | EN:Кошка | KY:Кошка
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Белый | EN:Белый | KY:Белый
+  L2518 g2rspl3t4 <input>
+    Q RU: Прилагательное описывает признак чего?
+    Q EN: An adjective describes a feature of what?
+    Q KY: Сын атооч эмненин белгисин сүрөттөйт?
+
+######## g2r-sent-l1 (L2522-2530)
+  [dialog npc] RU: Маша, я написал: «Бежит». Это предложение?
+             EN: Subject and predicate — the main sentence members!
+             KY: Ээ жана баяндооч — сүйлөмдүн негизги мүчөлөрү!
+  [dialog tali] RU: Почти! Но чего не хватает — КТО бежит? Подлежащее! «Кот бежит» — вот настоящее предложение. Поможем Тали разобраться?
+             EN: Who? What? — subject. What does it do? — predicate!
+             KY: Ким? Эмне? — ээ. Эмне кылат? — баяндооч!
+  [intro] RU: Подлежащее и сказуемое! :: КТО? ЧТО? — подлежащее. ЧТО ДЕЛАЕТ? — сказуемое. «Мама готовит»: МАМА — подлежащее, ГОТОВИТ — сказуемое.
+          EN: Subject and predicate! :: Who? What? — subject. What does it do? — predicate!
+          KY: Ээ жана баяндооч! :: Ким? Эмне? — ээ. Эмне кылат? — баяндооч!
+  [intro] RU: Главные члены :: Без них предложение неполное. Как без колёс — машина никуда не едет!
+          EN: Example :: Mum is cooking. Mum — subject, is cooking — predicate!
+          KY: Мисал :: Апа тамак бышырып жатат. Апа — ээ, бышырып жатат — баяндооч!
+  L2526 g2rsentl1t1 <multiple_choice>
+    Q RU: Тали написал «Бежит». Не хватает подлежащего. Какое слово подойдёт?
+    Q EN: Tali wrote “Бежит”. A subject is missing. Which word fits?
+    Q KY: Тали «Бежит» деп жазды. Ээ жетишпейт. Кайсы сөз ылайык?
+      a [✓] RU:Кот | EN:Cat (Кот) | KY:Кот
+      b     RU:Бежит | EN:Runs (Бежит) | KY:Бежит
+      c     RU:Быстро | EN:Quickly (Быстро) | KY:Быстро
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Кот | EN:Cat (Кот) | KY:Кот
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Бежит | EN:Runs (Бежит) | KY:Бежит
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Быстро | EN:Quickly (Быстро) | KY:Быстро
+  L2527 g2rsentl1t2 <multiple_choice>
+    Q RU: В предложении «Кот сидит» — найди подлежащее. Тали думает, что это «сидит».
+    Q EN: In “The cat is sitting”, find the subject. Tali thinks it’s “sitting”.
+    Q KY: «Мышык отурат» деген сүйлөмдө теманы табыңыз. Тали бул «отурат» деп эсептейт.
+      a [✓] RU:КОТ — подлежащее | EN:CAT is the subject. | KY:МЫШЫК — тема.
+      b     RU:СИДИТ — подлежащее (Тали прав) | EN:SITTING is the subject (that’s what Tali thinks). | KY:ОТУРАТ — тема (Тали ошондой деп ойлойт).
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:КОТ — подлежащее | EN:CAT is the subject. | KY:МЫШЫК — тема.
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:СИДИТ — подлежащее (Тали прав) | EN:SITTING is the subject (that’s what Tali thinks). | KY:ОТУРАТ — тема (Тали ошондой деп ойлойт).
+  L2528 g2rsentl1t3 <multiple_choice>
+    Q RU: Подлежащее отвечает на вопрос:
+    Q EN: The subject answers the question:
+    Q KY: Тема суроого жооп берет:
+      a [✓] RU:Кто? Что? | EN:Who? What? | KY:Ким? Эмне?
+      b     RU:Что делает? | EN:What does it do? | KY:Эмне кылат?
+      c     RU:Какой? | EN:Which? | KY:Кандай?
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Кто? Что? | EN:Who? What? | KY:Ким? Эмне?
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Что делает? | EN:What does it do? | KY:Эмне кылат?
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Какой? | EN:Which? | KY:Кандай?
+  L2529 g2rsentl1t4 <input>
+    Q RU: В предложении «Кот сидит» сказуемое — это:
+    Q EN: In the sentence “The cat is sitting” the predicate is:
+    Q KY: "Мышык отурат" сүйлөмүндө предикат:
+
+######## g2r-sent-l2 (L2531-2539)
+  [dialog npc] RU: Тали, кроме главных членов, есть ещё второстепенные — они поясняют и украшают предложение!
+             EN: Secondary members: modifier, object, adverbial!
+             KY: Экинчи даражадагы мүчөлөр: аныктооч, толуктооч, бышыктооч!
+  [dialog tali] RU: Как приправы к еде? Без них можно, но с ними вкуснее?
+             EN: They clarify the main members of the sentence!
+             KY: Алар сүйлөмдүн негизги мүчөлөрүн тактайт!
+  [dialog npc] RU: Отличное сравнение! Именно так!
+             EN: Great comparison! Exactly!
+             KY: Сонун салыштыруу! Эле ушундай!
+  [intro] RU: Второстепенные члены! :: Определение, дополнение, обстоятельство — они поясняют главные члены. «Кот БЫСТРО бежит» — БЫСТРО это обстоятельство!
+          EN: Sentence members! :: Modifier, object, adverbial — secondary members!
+          KY: Сүйлөм мүчөлөрү! :: Аныктооч, толуктооч, бышыктооч — экинчи даражадагы мүчөлөр!
+  [intro] RU: Поясняют! :: Без второстепенных: «Кот ест». С ними: «Пушистый кот быстро ест вкусную рыбу». Разница чувствуется!
+          EN: They clarify :: They clarify the main members!
+          KY: Алар тактайт :: Алар негизги мүчөлөрдү тактайт!
+  L2535 g2rsentl2t1 <multiple_choice>
+    Q RU: В предложении «Пушистый кот бежит» слово ПУШИСТЫЙ — это…
+    Q EN: In “A fluffy cat runs”, the word FLUFFY is…
+    Q KY: «Пушистый кот бежит» сүйлөмүндө ПУШИСТЫЙ сөзү — бул…
+      a [✓] RU:Определение (какой?) | EN:Attribute / modifier (what kind?) | KY:Аныктама (кандай?)
+      b     RU:Дополнение (кого? что?) | EN:Object (whom? what?) | KY:Толуктооч (кимди? эмнени?)
+      c     RU:Обстоятельство (как? где?) | EN:Adverbial (how? where?) | KY:Жагдай (кантип? кайда?)
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Определение (какой?) | EN:Attribute / modifier (what kind?) | KY:Аныктама (кандай?)
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Дополнение (кого? что?) | EN:Object (whom? what?) | KY:Толуктооч (кимди? эмнени?)
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Обстоятельство (как? где?) | EN:Adverbial (how? where?) | KY:Жагдай (кантип? кайда?)
+  L2536 g2rsentl2t2 <multiple_choice>
+    Q RU: В предложении «Кот ест рыбу» слово РЫБУ — это…
+    Q EN: In “The cat eats fish”, the word FISH is…
+    Q KY: «Кот ест рыбу» сүйлөмүндө РЫБУ сөзү — бул…
+      a     RU:Определение (какой?) | EN:Attribute / modifier (what kind?) | KY:Аныктама (кандай?)
+      b [✓] RU:Дополнение (кого? что?) | EN:Object (whom? what?) | KY:Толуктооч (кимди? эмнени?)
+      c     RU:Обстоятельство (как? где?) | EN:Adverbial (how? where?) | KY:Жагдай (кантип? кайда?)
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Определение (какой?) | EN:Attribute / modifier (what kind?) | KY:Аныктама (кандай?)
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Дополнение (кого? что?) | EN:Object (whom? what?) | KY:Толуктооч (кимди? эмнени?)
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Обстоятельство (как? где?) | EN:Adverbial (how? where?) | KY:Жагдай (кантип? кайда?)
+  L2537 g2rsentl2t3 <fill_blank>
+    Q RU: В «Кот БЫСТРО бежит» слово БЫСТРО — это _ .
+    Q EN: In “The cat runs QUICKLY”, QUICKLY is _ .
+    Q KY: «Кот БЫСТРО бежит» сүйлөмүндө БЫСТРО — бул _ .
+      opt RU:<MISSING:fb-a> | EN:<MISSING:fb-a> | KY:<MISSING:fb-a>
+      opt RU:Определение (какой?) | EN:Attribute / modifier (what kind?) | KY:Аныктама (кандай?)
+      opt RU:<MISSING:fb-b> | EN:<MISSING:fb-b> | KY:<MISSING:fb-b>
+      opt RU:Дополнение (кого? что?) | EN:Object (whom? what?) | KY:Толуктооч (кимди? эмнени?)
+      opt RU:<MISSING:fb-c> | EN:<MISSING:fb-c> | KY:<MISSING:fb-c>
+      opt RU:Обстоятельство (как? где?) | EN:Adverbial (how? where?) | KY:Жагдай (кантип? кайда?)
+  L2538 g2rsentl2t4 <input>
+    Q RU: В предложении «Пушистый кот быстро ест вкусную рыбу» слово БЫСТРО — какой второстепенный член? (одно слово)
+    Q EN: In “A fluffy cat quickly eats tasty fish”, what secondary part is QUICKLY? (one word: Attribute / Object / Adverbial)
+    Q KY: «Пушистый кот быстро ест вкусную рыбу» сүйлөмүндө БЫСТРО — кайсы мүчө? (бир сөз)
+
+######## g2r-sent-l3 (L2540-2556)
+  [dialog npc] RU: Маша, я написал: «Красивый бежит кот быстро». Это правильно?
+             EN: Word connections in a sentence. Agreement!
+             KY: Сүйлөмдөгү сөздөр арасындагы байланыш. Макулдашуу!
+  [dialog tali] RU: Хм, слова есть, но они не связаны правильно! Слова в предложении должны «дружить» друг с другом — согласовываться. Поможем Тали исправить?
+             EN: An adjective agrees with the noun in gender!
+             KY: Сын атооч зат атооч менен жынысы жагынан макулдашат!
+  [intro] RU: Согласование! :: КРАСНЫЙ шар — прилагательное согласуется с существительным в роде. «КРАСНЫЙ шар» — верно. «КРАСНАЯ шар» — неверно!
+          EN: Word agreement! :: Words agree with each other in gender and number!
+          KY: Сөздөрдүн макулдашуусу! :: Сөздөр жынысы жана сандык жагынан макулдашат!
+  [intro] RU: Слова — друзья :: Слова в предложении связаны по смыслу и по форме. «Мальчик идёт» — правильно. «Мальчик идут» — нет!
+          EN: Agreement :: Red ball — masculine. Red rose — feminine!
+          KY: Макулдашуу :: Кызыл топ — эркек жынысы. Кызыл раймайлы — ургаачы жынысы!
+  L2544 g2rsentl3t1 <multiple_choice>
+    Q RU: Тали написал: «Красивый бежит кот быстро». Как правильно?
+    Q EN: Tali wrote: «Красивый бежит кот быстро». Which is correct?
+    Q KY: Тали жазды: «Красивый бежит кот быстро». Туурасы кайсы?
+      a [✓] RU:Красивый кот бежит быстро | EN:Красивый кот бежит быстро | KY:Красивый кот бежит быстро
+      b     RU:Красивый бежит кот быстро | EN:Красивый бежит кот быстро | KY:Красивый бежит кот быстро
+      c     RU:Бежит красивый быстро кот | EN:Бежит красивый быстро кот | KY:Бежит красивый быстро кот
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Красивый кот бежит быстро | EN:Красивый кот бежит быстро | KY:Красивый кот бежит быстро
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Красивый бежит кот быстро | EN:Красивый бежит кот быстро | KY:Красивый бежит кот быстро
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Бежит красивый быстро кот | EN:Бежит красивый быстро кот | KY:Бежит красивый быстро кот
+  L2545 g2rsentl3t2 <multiple_choice>
+    Q RU: Выбери правильное сочетание:
+    Q EN: Choose the correct combination:
+    Q KY: Туура айкашты танда:
+      a [✓] RU:мальчик идёт | EN:мальчик идёт | KY:мальчик идёт
+      b     RU:мальчик идут | EN:мальчик идут | KY:мальчик идут
+      c     RU:мальчики идёт | EN:мальчики идёт | KY:мальчики идёт
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:мальчик идёт | EN:мальчик идёт | KY:мальчик идёт
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:мальчик идут | EN:мальчик идут | KY:мальчик идут
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:мальчики идёт | EN:мальчики идёт | KY:мальчики идёт
+  L2546 g2rsentl3t3 <multiple_choice>
+    Q RU: Выбери правильное сочетание слов:
+    Q EN: Choose the correct word combination:
+    Q KY: Туура сөз айкашын танда:
+      a [✓] RU:красный шар | EN:красный шар | KY:красный шар
+      b     RU:красная шар | EN:красная шар | KY:красная шар
+      c     RU:мальчик идут | EN:мальчик идут | KY:мальчик идут
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:красный шар | EN:красный шар | KY:красный шар
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:красная шар | EN:красная шар | KY:красная шар
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:мальчик идут | EN:мальчик идут | KY:мальчик идут
+  L2547 g2rsentl3t4 <input>
+    Q RU: Тали написал: «мама готовит обед.» Маша говорит, что предложение начинается с маленькой буквы — это ошибка. Как правильно?
+    Q EN: Which sentence is written correctly?
+    Q KY:  Какое предложение написано правильно?
+
+######## g2s-plt-l1 (L2557-2565)
+  [dialog tali] RU: Я посадил семечко, а оно не растёт! Может, я что-то неправильно делаю? Расскажи мне про растения — я ничего не знаю!
+             EN: I planted a seed, but it won’t grow! Maybe I’m doing something wrong? Tell me about plants — I know nothing!
+             KY: Мен үрөн отургуздум, бирок өспөй жатат! Балким бирдеме туура эмес кылып жатам? Өсүмдүктөр жөнүндө айт — эч нерсе билбейм!
+  [dialog npc] RU: Тали, растению нужен корень, стебель, листья и вода. Я видел с высоты много растений, но в деталях не разбираюсь. Объясни нам!
+             EN: Tali, a plant needs a root, a stem, leaves and water. I’ve seen many plants from above, but I don’t know the details. Explain to us!
+             KY: Тали, өсүмдүккө тамыр, сабак, жалбырактар жана суу керек. Мен бийиктиктен көп өсүмдүктөрдү көрдүм, бирок майда-чүйдөсүн билбейм. Бизге түшүндүр!
+  [intro] RU: Части растения! :: Корень, стебель, листья, цветок — вот из чего состоит растение. Каждая часть нужна!
+          EN: Parts of a plant! :: Root, stem, leaves, flower — parts of a plant!
+          KY: Өсүмдүктүн бөлүктөрү! :: Тамыр, сабак, жалбырактар, гүл — өсүмдүктүн бөлүктөрү!
+  [intro] RU: Корень и листья :: Корень пьёт воду из земли. Листья ловят солнечный свет. Без одного — растение погибнет.
+          EN: Root and leaves :: Root is in the soil. Leaves reach towards the sun!
+          KY: Тамыр жана жалбырактар :: Тамыр топурактa. Жалбырактар күнгө умтулат!
+  L2561 g2spltl1t1 <multiple_choice>
+    Q RU: Тали поливает цветок, но вода утекает в землю. «Зря лью!» — говорит он. Для чего корень поглощает воду?
+    Q EN: Tali waters a flower, but the water sinks into the ground. “I’m pouring for nothing!” he says. Why does the root take in water?
+    Q KY: Тали гүлдү сугарат, бирок суу жерге сиңип кетет. «Бекер куюп жатам!» дейт ал. Тамыр сууну эмне үчүн сиңирет?
+      a [✓] RU:Для воды и питания | EN:For water and nutrients | KY:суу жана тамак
+      b     RU:Для фотосинтеза | EN:For photosynthesis | KY:фотосинтез
+      c     RU:Только для красоты | EN:Only for beauty | KY:гүлдөр
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Для воды и питания | EN:For water and nutrients | KY:суу жана тамак
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Для фотосинтеза | EN:For photosynthesis | KY:фотосинтез
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Только для красоты | EN:Only for beauty | KY:гүлдөр
+  L2562 g2spltl1t2 <multiple_choice>
+    Q RU: Арчи видит листья и спрашивает: зачем они нужны?
+    Q EN: Archie sees the leaves and asks: what are they for?
+    Q KY: Арчи жалбырактарды көрүп сурайт: алар эмне үчүн керек?
+      a     RU:Для воды и питания | EN:For water and nutrients | KY:суу жана тамак
+      b [✓] RU:Для фотосинтеза | EN:For photosynthesis | KY:фотосинтез
+      c     RU:Только для красоты | EN:Only for beauty | KY:гүлдөр
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Для воды и питания | EN:For water and nutrients | KY:суу жана тамак
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Для фотосинтеза | EN:For photosynthesis | KY:фотосинтез
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Только для красоты | EN:Only for beauty | KY:гүлдөр
+  L2563 g2spltl1t3 <fill_blank>
+    Q RU: Порядок роста растения: семя → ___ → растение → цветок
+    Q EN: Plant growth order: seed → ___ → plant → flower
+    Q KY: Өсүмдүктүн өсүү тартиби: үрөн → ___ → өсүмдүк → гүл
+      opt RU:<MISSING:fb-a> | EN:<MISSING:fb-a> | KY:<MISSING:fb-a>
+      opt RU:камень | EN:stone | KY:таш
+      opt RU:<MISSING:fb-b> | EN:<MISSING:fb-b> | KY:<MISSING:fb-b>
+      opt RU:росток | EN:sprout | KY:өркүн
+      opt RU:<MISSING:fb-c> | EN:<MISSING:fb-c> | KY:<MISSING:fb-c>
+      opt RU:книга | EN:book | KY:китеп
+  L2564 g2spltl1t4 <input>
+    Q RU: Тали считает части растения: корень, стебель, листья, цветок, плод. Сколько он насчитал?
+    Q EN: How many main parts does a plant have?
+    Q KY: Өсүмдүктүн негизги бөлүктөрү канча?
+
+######## g2s-plt-l2 (L2566-2574)
+  [dialog npc] RU: ФОТО-СИНТЕЗ. Это звучит как название фокуса! Растение фотографирует солнце?
+             EN: Photosynthesis — a plant breathes and feeds using sunlight!
+             KY: Фотосинтез — өсүмдүк күн жарыгы аркылуу дем алып, тамактанат!
+  [dialog tali] RU: Хаха! Нет, но почти так же волшебно. Расскажи нам, как растения делают еду из света!
+             EN: Leaves absorb light and make nutrients!
+             KY: Жалбырактар жарыкты сиңирип, азыктуу заттарды жасайт!
+  [intro] RU: Фотосинтез — это магия природы! :: Листья поглощают солнечный свет + берут воду + углекислый газ → делают сахар и кислород. Настоящая фабрика!
+          EN: Photosynthesis! :: A plant absorbs light and makes nutrients!
+          KY: Фотосинтез! :: Өсүмдүк жарыкты сиңирип, азыктуу заттарды жасайт!
+  [intro] RU: Солнце — источник энергии :: Без солнца — нет фотосинтеза — нет еды — нет жизни. Вот почему растения тянутся к свету!
+          EN: Sun and leaves :: Leaves are a nutrition factory!
+          KY: Күн жана жалбырактар :: Жалбырактар — тамактануу фабрикасы!
+  L2570 g2spltl2t1 <multiple_choice>
+    Q RU: Тали поставил цветок в тёмный шкаф. Арчи говорит: «Плохая идея!» Почему?
+    Q EN: Tali put a flower in a dark cupboard. Archie says: “Bad idea!” Why?
+    Q KY: Тали гүлдү караңгы шкафка койду. Арчи: «Жаман идея!» — эмнеге?
+      a [✓] RU:В темноте нет фотосинтеза — растение не сможет питаться | EN:In the dark there’s no photosynthesis — the plant can’t feed itself. | KY:Караңгуда фотосинтез болбойт — өсүмдүк өзүн багып албайт.
+      b     RU:В шкафу слишком тепло | EN:It’s too warm in the cupboard. | KY:Шкафта өтө ысык.
+      c     RU:Всё в порядке, растению не нужен свет | EN:It’s fine — plants don’t need light. | KY:Бардыгы жакшы — өсүмдүккө жарык керек эмес.
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:В темноте нет фотосинтеза — растение не сможет питаться | EN:In the dark there’s no photosynthesis — the plant can’t feed itself. | KY:Караңгуда фотосинтез болбойт — өсүмдүк өзүн багып албайт.
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:В шкафу слишком тепло | EN:It’s too warm in the cupboard. | KY:Шкафта өтө ысык.
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Всё в порядке, растению не нужен свет | EN:It’s fine — plants don’t need light. | KY:Бардыгы жакшы — өсүмдүккө жарык керек эмес.
+  L2571 g2spltl2t2 <multiple_choice>
+    Q RU: Что нужно растению для фотосинтеза? Тали перечисляет: «свет, вода и… и… что ещё?»
+    Q EN: Photosynthesis requires:
+    Q KY:  Для фотосинтеза нужны:
+      a [✓] RU:Свет, вода, углекислый газ | EN:light, water, CO2 | KY:жарык, суу, СО2
+      b     RU:Только вода | EN:water only | KY:суу гана
+      c     RU:Только свет | EN:sunlight only | KY:жарык гана
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Свет, вода, углекислый газ | EN:light, water, CO2 | KY:жарык, суу, СО2
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Только вода | EN:water only | KY:суу гана
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Только свет | EN:sunlight only | KY:жарык гана
+  L2572 g2spltl2t3 <fill_blank>
+    Q RU: Растения выделяют кислород — это правда? _
+    Q EN: Do plants release oxygen? _
+    Q KY: Өсүмдүктөр кычкылтек бөлүп чыгарабы? _
+      opt RU:<MISSING:fb-a> | EN:<MISSING:fb-a> | KY:<MISSING:fb-a>
+      opt RU:Да | EN:Yes | KY:Ооба
+      opt RU:<MISSING:fb-b> | EN:<MISSING:fb-b> | KY:<MISSING:fb-b>
+      opt RU:Нет | EN:No | KY:Жок
+  L2573 g2spltl2t4 <input>
+    Q RU: Где в растении происходит фотосинтез?
+    Q EN: Where in the plant does photosynthesis happen?
+    Q KY: Өсүмдүктө фотосинтез кайда жүрөт?
+
+######## g2s-plt-l3 (L2575-2585)
+  [dialog tali] RU: Арчи, я купил на рынке морковь. Это фрукт?
+             EN: Vegetables and fruit — the fruits of plants!
+             KY: Жашылчалар жана мөмөлөр — өсүмдүктөрдүн жемиши!
+  [dialog npc] RU: Тали, нет! Морковь — это овощ, и она растёт под землёй. А яблоко — фрукт, растёт на дереве. Давай разберёмся вместе!
+             EN: Carrot is a root vegetable, apple is a fruit!
+             KY: Сабиз — тамыр жашылчасы, алма — мөмө!
+  [intro] RU: Овощи и фрукты! :: Морковь — корнеплод, растёт в земле. Яблоко — фрукт, растёт на дереве. Помидор — плод (хотя все называют его овощем!).
+          EN: Vegetables and fruit! :: Carrot is a root vegetable. Apple is a fruit. Tomato is a vegetable!
+          KY: Жашылчалар жана мөмөлөр! :: Сабиз — тамыр жашылчасы. Алма — мөмө. Помидор — жашылча!
+  [intro] RU: Где растёт? :: Овощи — на грядке или в земле. Фрукты — на деревьях и кустах.
+          EN: Fruits :: Vegetables grow in the soil or in beds. Fruits — on trees!
+          KY: Мөмөлөр :: Жашылчалар топурактa же сеп жерде өсөт. Мөмөлөр — дарактарда!
+  L2579 g2spltl3t1 <multiple_choice>
+    Q RU: Тали купил морковь. Это овощ или фрукт?
+    Q EN: Tali bought a carrot. Is it a vegetable or a fruit?
+    Q KY: Тали сабиз сатып алды. Бул жашылчабы же жемишби?
+      a [✓] RU:Овощ | EN:Vegetable | KY:Жашылча
+      b     RU:Фрукт | EN:Fruit | KY:Жемиш
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Овощ | EN:Vegetable | KY:Жашылча
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Фрукт | EN:Fruit | KY:Жемиш
+  L2580 g2spltl3t2 <multiple_choice>
+    Q RU: Арчи держит яблоко. Это овощ или фрукт?
+    Q EN: Archie holds an apple. Is it a vegetable or a fruit?
+    Q KY: Арчи алма кармап турат. Бул жашылчабы же жемишби?
+      a     RU:Овощ | EN:Vegetable | KY:Жашылча
+      b [✓] RU:Фрукт | EN:Fruit | KY:Жемиш
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Овощ | EN:Vegetable | KY:Жашылча
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Фрукт | EN:Fruit | KY:Жемиш
+  L2581 g2spltl3t3 <multiple_choice>
+    Q RU: Тали видит шпинат и говорит: «Это плод!» Арчи сомневается. Что такое шпинат?
+    Q EN: Spinach — what part of the plant is it?
+    Q KY:  Шпинат — өсүмдүктүн кайсы бөлүгү?
+      a     RU:Корень (клубень) | EN:root | KY:тамыр
+      b     RU:Плод | EN:fruit | KY:мөмө
+      c [✓] RU:Лист | EN:leaf | KY:жалбырак
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Корень (клубень) | EN:root | KY:тамыр
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Плод | EN:fruit | KY:мөмө
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Лист | EN:leaf | KY:жалбырак
+  L2582 g2spltl3t4 <input>
+    Q RU: Картофель растёт под землёй. Какая это часть растения?
+    Q EN: Potatoes — what part of the plant?
+    Q KY:  Картошка — өсүмдүктүн кайсы бөлүгү?
+
+######## g2s-ani-l1 (L2586-2594)
+  [dialog tali] RU: Арчи, я млекопитающее?
+             EN: Archie, am I a mammal?
+             KY: Арчи, мен сүт эмүүчүмүнбү?
+  [dialog npc] RU: Хм, Тали — ты динозавр. А динозавры откладывали яйца! Но я не уверен, к какой группе ты относишься. Расскажи нам про млекопитающих — мы разберёмся!
+             EN: Hmm, Tali — you’re a dinosaur. And dinosaurs laid eggs! But I’m not sure which group you belong to. Tell us about mammals — we’ll figure it out!
+             KY: Хм, Тали — сен динозаврсың. Ал эми динозаврлар жумуртка туушкан! Бирок сен кайсы топко кирериңе ишенбейм. Бизге сүт эмүүчүлөр жөнүндө айт — түшүнөбүз!
+  [intro] RU: Млекопитающие! :: Кормят детёнышей молоком. Тёплокровные, обычно с шерстью. Собака, кошка, слон, кит — млекопитающие.
+          EN: Mammals! :: They feed their young with milk. Dog, cat, elephant!
+          KY: Сүт эмүүчүлөр! :: Балдарын сүт менен тамактандырышат. Ит, мышык, пил!
+  [intro] RU: Главный признак :: Молоко для детёнышей! Это и есть главное отличие.
+          EN: Examples :: Mammals are warm-blooded and have fur!
+          KY: Мисалдар :: Сүт эмүүчүлөр — жылуу кандуу, жүндүү!
+  L2590 g2sanil1t1 <multiple_choice>
+    Q RU: Кто из перечисленных — млекопитающее?
+    Q EN: Who is the mammal?
+    Q KY: Тизмедегилердин кайсынысы — сүт эмүүчү?
+      a [✓] RU:Собака | EN:dog | KY:ит
+      b     RU:Орёл | EN:eagle | KY:бүркүт
+      c     RU:Лягушка | EN:frog | KY:бака
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Собака | EN:dog | KY:ит
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Орёл | EN:eagle | KY:бүркүт
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Лягушка | EN:frog | KY:бака
+  L2591 g2sanil1t2 <multiple_choice>
+    Q RU: Тали спрашивает: «Главный признак млекопитающих — что?» Арчи говорит: «Откладывают яйца!» Тали не верит. Кто прав?
+    Q EN: Tali asks: “The main feature of mammals is what?” Archie says: “They lay eggs!” Tali doesn’t believe it. Who is right?
+    Q KY: Тали сурайт: «Сүт эмүүчүлөрдүн негизги белгиси — эмне?» Арчи: «Жумуртка туушат!» дейт. Тали ишенбейт. Ким туура?
+      a     RU:Арчи прав — откладывают яйца | EN:Archie is right (they lay eggs) | KY:Арчи туура (жумуртка туушат)
+      b [✓] RU:Тали прав — кормят детёнышей молоком | EN:Tali is right to doubt (they feed with milk) | KY:Тали туура шектенет (сүт менен багышат)
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Арчи прав — откладывают яйца | EN:Archie is right (they lay eggs) | KY:Арчи туура (жумуртка туушат)
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Тали прав — кормят детёнышей молоком | EN:Tali is right to doubt (they feed with milk) | KY:Тали туура шектенет (сүт менен багышат)
+  L2592 g2sanil1t3 <sorting>
+    Q RU: Разложи: млекопитающие и остальные
+    Q EN: Break it down: mammals and the rest
+    Q KY: Жаныбарларды топторго бөл:
+  L2593 g2sanil1t4 <input>
+    Q RU: Летучая мышь — млекопитающее?
+    Q EN: Is a bat a mammal?
+    Q KY: Жаргалак — сүт эмүүчүбү?
+
+######## g2s-ani-l2 (L2595-2603)
+  [dialog npc] RU: Я птица! Я эксперт по птицам. Задавайте любые вопросы!
+             EN: Birds — feathers, beak, they fly!
+             KY: Куштар — жүндөр, тумшук, учат!
+  [dialog tali] RU: Арчи, а пингвин — это птица? Он же не летает!
+             EN: Sparrow, eagle, penguin — birds!
+             KY: Торгой, бүркүт, пингвин — куштар!
+  [dialog npc] RU: Хм… это хороший вопрос. Я, честно, немного сомневаюсь…
+             EN: Hmm… that’s a good question. Honestly, I’m a little unsure…
+             KY: Хм… бул жакшы суроо. Чындыгында, мен бир аз күмөн катары калдым…
+  [intro] RU: Птицы! :: Перья, клюв, два крыла — вот главные признаки птицы. Воробей, орёл, пингвин — все птицы!
+          EN: Birds! :: Feathers, beak, they fly! Sparrow, eagle, penguin!
+          KY: Куштар! :: Жүндөр, тумшук, учат! Торгой, бүркүт, пингвин!
+  [intro] RU: Не все летают :: Пингвин и страус — птицы, но не летают. Главное — перья и клюв, а не умение летать.
+          EN: Features :: Penguins and ostriches are birds, but they don’t fly. What matters is feathers and a beak — not flying.
+          KY: Өзгөчөлүктөрү :: Пингвин жана төөкуш — куштар, бирок уча алышпайт. Негизгиси — жүн жана тумшук, учуу эмес.
+  L2599 g2sanil2t1 <multiple_choice>
+    Q RU: Кто из перечисленных — птица?
+    Q EN: Who is the bird?
+    Q KY: Тизмедегилердин кайсынысы — куш?
+      a [✓] RU:Воробей | EN:sparrow | KY:торгой
+      b     RU:Летучая мышь | EN:bat | KY:жаргалак
+      c     RU:Рыба | EN:fish | KY:балык
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Воробей | EN:sparrow | KY:торгой
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Летучая мышь | EN:bat | KY:жаргалак
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Рыба | EN:fish | KY:балык
+  L2600 g2sanil2t2 <multiple_choice>
+    Q RU: Главный признак птиц — это:
+    Q EN: The main feature of birds is:
+    Q KY: Куштардын негизги белгиси:
+      a [✓] RU:Перья | EN:Has feathers | KY:Жүнү бар
+      b     RU:Шерсть | EN:Has fur | KY:Жүнү (териси) бар
+      c     RU:Чешуя | EN:Has scales | KY:Кабырчыгы бар
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Перья | EN:Has feathers | KY:Жүнү бар
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Шерсть | EN:Has fur | KY:Жүнү (териси) бар
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Чешуя | EN:Has scales | KY:Кабырчыгы бар
+  L2601 g2sanil2t3 <multiple_choice>
+    Q RU: Тали спрашивает: «Пингвин — птица или нет?» Арчи сомневается. Помоги им!
+    Q EN: Tali asks: “Is a penguin a bird or not?” Archie is unsure. Help them!
+    Q KY: Тали сурайт: «Пингвин — кушпу же жокпу?» Арчи күмөн санап жатат. Аларга жардам бер!
+      a [✓] RU:Да | EN:Yes | KY:Ооба
+      b     RU:Нет | EN:No | KY:Жок
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Да | EN:Yes | KY:Ооба
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Нет | EN:No | KY:Жок
+  L2602 g2sanil2t4 <input>
+    Q RU: Все ли птицы умеют летать?
+    Q EN: Do all birds fly?
+    Q KY: Бардык куштар учабы?
+
+######## g2s-ani-l3 (L2604-2614)
+  [dialog npc] RU: Арчи, у паука сколько ног? Я думаю, шесть — как у всех насекомых!
+             EN: Archie, how many legs does a spider have? I think six — like all insects!
+             KY: Арчи, жөргөмүштүн канча буту бар? Менимче алты — бардык курт-кумурскалардай!
+  [dialog tali] RU: Хм, подожди. Паук — это точно насекомое? Я тоже не уверен. Давай проверим!
+             EN: Hmm, wait. Is a spider really an insect? I’m not sure either. Let’s check!
+             KY: Хм, күт. Жөргөмүш чын эле курт-кумурскабы? Мен да ишенбейм. Текшерели!
+  [intro] RU: Рыбы и насекомые! :: Рыбы дышат жабрами, живут в воде. Насекомые — 6 ног (не 8!). Паук — не насекомое, у него 8 ног, он паукообразный.
+          EN: Fish and insects! :: Fish breathe with gills and live in water. Insects have 6 legs (not 8!). A spider is not an insect — it has 8 legs.
+          KY: Балыктар жана курт-кумурскалар! :: Балыктар желбезек менен дем алып, сууда жашайт. Курт-кумурскалардын 6 буту бар (8 эмес!). Жөргөмүш — курт-кумурска эмес, анын 8 буту бар.
+  [intro] RU: Считай ноги! :: 6 ног = насекомое (бабочка, муравей). 8 ног = паукообразное (паук, скорпион).
+          EN: Examples :: Pike, carp — fish. Butterfly, ant — insects!
+          KY: Мисалдар :: Чортон, сазан — балыктар. Көпөлөк, кумурска — курт-кумурскалар!
+  L2608 g2sanil3t1 <multiple_choice>
+    Q RU: Рыба дышит с помощью:
+    Q EN: The fish breathes:
+    Q KY: Балык эмненин жардамы менен дем алат:
+      a [✓] RU:Жабр | EN:gills | KY:желбезеги менен
+      b     RU:Лёгких | EN:lungs | KY:өпкөсү менен
+      c     RU:Кожи | EN:skin | KY:терисинен
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Жабр | EN:gills | KY:желбезеги менен
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Лёгких | EN:lungs | KY:өпкөсү менен
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Кожи | EN:skin | KY:терисинен
+  L2609 g2sanil3t2 <multiple_choice>
+    Q RU: Тали думает, что у насекомого 6 ног. Арчи говорит 8. Кто прав?
+    Q EN: Tali thinks an insect has 6 legs. Archie says 8. Who is right?
+    Q KY: Тали курт-кумурсканын 6 буту бар деп ойлойт. Арчи 8 дейт. Ким туура?
+      a [✓] RU:Тали прав — у насекомых 6 ног | EN:Tali is right (6 legs) | KY:Тали туура (6 бут)
+      b     RU:Арчи прав — у насекомых 8 ног | EN:Archie is right (8 legs) | KY:Арчи туура (8 бут)
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Тали прав — у насекомых 6 ног | EN:Tali is right (6 legs) | KY:Тали туура (6 бут)
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Арчи прав — у насекомых 8 ног | EN:Archie is right (8 legs) | KY:Арчи туура (8 бут)
+  L2610 g2sanil3t3 <multiple_choice>
+    Q RU: Тали утверждает: «Паук — это насекомое!» Арчи теперь знает ответ. Прав ли Тали?
+    Q EN: Tali claims: “A spider is an insect!” Archie now knows the answer. Is Tali right?
+    Q KY: Тали ырастоодо: «Жөргөмүш — курт-кумурска!» Арчи эми жоопту билет. Тали туурабы?
+      a     RU:Да | EN:Yes | KY:Ооба
+      b [✓] RU:Нет | EN:No | KY:Жок
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Да | EN:Yes | KY:Ооба
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Нет | EN:No | KY:Жок
+  L2611 g2sanil3t4 <input>
+    Q RU: Чем дышит рыба? (напиши одним словом)
+    Q EN: What do fish breathe with? (one word)
+    Q KY: Балыктар эмне менен дем алат? (бир сөз)
+
+######## g2s-bdy-l1 (L2615-2623)
+  [dialog tali] RU: Арчи, зачем людям кости? Я бы хотел быть мягким, как подушка!
+             EN: Archie, why do people need bones? I’d rather be soft like a pillow!
+             KY: Арчи, адамдарга сөөк эмне үчүн керек? Мен жаздыктай жумшак болгум келет!
+  [dialog npc] RU: Тали, без костей ты бы растёкся по полу! Кости — это опора. Расскажи нам, как работает скелет!
+             EN: Tali, without bones you’d melt onto the floor! Bones are support. Tell us how the skeleton works!
+             KY: Тали, сөөксүз жерге жайылып калат элең! Сөөктөр — таяныч. Скелет кандай иштээрин айт!
+  [intro] RU: Скелет — опора тела! :: Кости держат форму и защищают внутренние органы. Без скелета мы бы были как желе!
+          EN: Skeleton and muscles! :: Bones are support. Muscles help us move!
+          KY: Скелет жана булчуңдар! :: Сөөктөр — таяныч. Булчуңдар кыймылдоого жардам берет!
+  [intro] RU: Мышцы двигают :: Мышцы прикреплены к костям и двигают ими. Хочешь поднять руку — мышца сокращается!
+          EN: Organs :: Heart, lungs, stomach — inside the body!
+          KY: Органдар :: Жүрөк, өпкө, ашказан — денеде!
+  L2619 g2sbdyl1t1 <multiple_choice>
+    Q RU: Тали хочет понять: для чего нужен скелет?
+    Q EN: Tali wants to understand: what is the skeleton for?
+    Q KY: Тали түшүнгүсү келет: скелет эмне үчүн керек?
+      a [✓] RU:Опора тела и защита органов | EN:Body support and organ protection | KY:Дененин таянычы жана органдарды коргоо
+      b     RU:Для пищеварения | EN:digestion | KY:тамак сиңирүү
+      c     RU:Для дыхания | EN:breathing | KY:дем алуу
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Опора тела и защита органов | EN:Body support and organ protection | KY:Дененин таянычы жана органдарды коргоо
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Для пищеварения | EN:digestion | KY:тамак сиңирүү
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Для дыхания | EN:breathing | KY:дем алуу
+  L2620 g2sbdyl1t2 <multiple_choice>
+    Q RU: Арчи спрашивает: мышцы нужны для того, чтобы…
+    Q EN: Archie asks: muscles are needed so that…
+    Q KY: Арчи сурайт: булчуңдар эмне үчүн керек…
+      a [✓] RU:Двигаться | EN:To move the body | KY:Денени кыймылдатүү үчүн
+      b     RU:Переваривать пищу | EN:For digestion | KY:Тамак сиңирүү үчүн
+      c     RU:Дышать | EN:For breathing | KY:Дем алуу үчүн
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Двигаться | EN:To move the body | KY:Денени кыймылдатүү үчүн
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Переваривать пищу | EN:For digestion | KY:Тамак сиңирүү үчүн
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Дышать | EN:For breathing | KY:Дем алуу үчүн
+  L2621 g2sbdyl1t3 <multiple_choice>
+    Q RU: Тали задаёт провокационный вопрос: «Без мышц человек мог бы двигаться?»
+    Q EN: Tali asks a tricky question: “Could a person move without muscles?”
+    Q KY: Тали арандаткыч суроо берет: «Булчуңсуз адам кыймылдай алабы?»
+      a     RU:Да | EN:Yes | KY:Ооба
+      b [✓] RU:Нет | EN:No | KY:Жок
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Да | EN:Yes | KY:Ооба
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Нет | EN:No | KY:Жок
+  L2622 g2sbdyl1t4 <input>
+    Q RU: Какая кость самая длинная в теле человека?
+    Q EN: What is the biggest bone in the human body?
+    Q KY: Адамдын эң чоң сөөгү кайсы?
+
+######## g2s-bdy-l2 (L2624-2632)
+  [dialog npc] RU: Арчи, сердце — это что делает? Я слышу «бум-бум» у себя в груди!
+             EN: Archie, what does the heart do? I hear “boom-boom” in my chest!
+             KY: Арчи, жүрөк эмне кылат? Мен көкүрөгүмдөн «бум-бум» угам!
+  [dialog tali] RU: О, это интересно! Я знаю, что сердце важное, но точно не помню зачем. Расскажи нам!
+             EN: Oh, that’s interesting! I know the heart is important, but I don’t remember exactly why. Tell us!
+             KY: Оо, бул кызык! Жүрөк маанилүү экенин билем, бирок эмне үчүн экенин так эстебейм. Айтып бер!
+  [intro] RU: Органы — каждый на своём месте! :: Сердце перекачивает кровь. Лёгкие отвечают за дыхание. Желудок переваривает пищу.
+          EN: Organs — each in its place! :: Heart, lungs, stomach — each organ has its own job inside the body.
+          KY: Органдар — ар бири өз ордунда! :: Жүрөк, өпкө, ашказан — ар бир органдын денеде өз иши бар.
+  [intro] RU: Команда органов :: Все органы работают вместе, как команда. Один не работает — всем плохо.
+          EN: Each organ’s job :: The heart pumps blood, lungs help us breathe, the stomach digests food.
+          KY: Ар бир органдын иши :: Жүрөк кан айдатат, өпкө дем алууга жардам берет, ашказан тамакты сиңирет.
+  L2628 g2sbdyl2t1 <multiple_choice>
+    Q RU: Тали спрашивает: что делает сердце?
+    Q EN: What does the heart do?
+    Q KY: Тали сурайт: жүрөк эмне кылат?
+      a [✓] RU:Перекачивать кровь | EN:Pumps blood | KY:Кан айдайт
+      b     RU:Переваривает еду | EN:Digests food | KY:Тамакты сиңирет
+      c     RU:Помогает дышать | EN:Helps with breathing | KY:Дем алууга жардам берет
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Перекачивать кровь | EN:Pumps blood | KY:Кан айдайт
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Переваривает еду | EN:Digests food | KY:Тамакты сиңирет
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Помогает дышать | EN:Helps with breathing | KY:Дем алууга жардам берет
+  L2629 g2sbdyl2t2 <multiple_choice>
+    Q RU: Для чего нужны лёгкие?
+    Q EN: What are the lungs for?
+    Q KY: Өпкө эмне үчүн керек?
+      a     RU:Для зрения | EN:For seeing | KY:Көрүү үчүн
+      b [✓] RU:Для дыхания | EN:For breathing | KY:Дем алуу үчүн
+      c     RU:Для пищеварения | EN:For digestion | KY:Тамак сиңирүү үчүн
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Для зрения | EN:For seeing | KY:Көрүү үчүн
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Для дыхания | EN:For breathing | KY:Дем алуу үчүн
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Для пищеварения | EN:For digestion | KY:Тамак сиңирүү үчүн
+  L2630 g2sbdyl2t3 <multiple_choice>
+    Q RU: Арчи думает, что желудок отвечает за дыхание. Тали не согласен. Кто прав?
+    Q EN: Archie thinks the stomach is responsible for breathing. Tali disagrees. Who is right?
+    Q KY: Арчи ашказан дем алууга жооптуу деп ойлойт. Тали макул эмес. Ким туура?
+      a     RU:Арчи прав | EN:Archie is right | KY:Арчи туура
+      b [✓] RU:Тали прав — желудок для пищеварения | EN:Tali is right | KY:Тали туура
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Арчи прав | EN:Archie is right | KY:Арчи туура
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Тали прав — желудок для пищеварения | EN:Tali is right | KY:Тали туура
+  L2631 g2sbdyl2t4 <input>
+    Q RU: Что контролирует мозг?
+    Q EN: Which organs in the body are important?
+    Q KY: Денедеги органдардын кайсынысы маанилүү?
+
+######## g2s-bdy-l3 (L2633-2649)
+  [dialog tali] RU: Арчи, я ел только печенье три дня подряд. Почему мне плохо?
+             EN: Eating well and doing sport — keys to health!
+             KY: Туура тамактануу жана спорт — ден соолуктун ачкычы!
+  [dialog npc] RU: Тали! Тело нужно кормить правильно — овощи, фрукты, белок. Печенье — это не еда на три дня! Расскажи нам, что полезно есть.
+             EN: Eat vegetables, do exercise!
+             KY: Жашылча же, дене тарбия кыл!
+  [intro] RU: Питание — топливо для тела! :: Овощи и фрукты дают витамины. Мясо и яйца — белок (строительный материал). Каши — энергия. Сладкое — только понемногу!
+          EN: Sport! :: Morning exercises, running, swimming — strengthen the body!
+          KY: Спорт! :: Эртеңки машыгуу, чуркоо, сүзүү — денени чыңдайт!
+  [intro] RU: Спорт — сила! :: Зарядка, бег, плавание укрепляют мышцы и сердце. Движение — жизнь!
+          EN: Movement :: Movement is life! Do physical exercise!
+          KY: Кыймыл :: Кыймыл — жашоо! Дене тарбия менен машык!
+  L2637 g2sbdyl3t1 <multiple_choice>
+    Q RU: Тали ел только печенье. В каких продуктах больше всего витаминов, которых ему не хватает?
+    Q EN: Which foods have a lot of vitamins?
+    Q KY:  В каких продуктах много витаминов?
+      a [✓] RU:Фрукты и овощи | EN:Fruits and vegetables | KY:Мөмөлөр жана жашылчалар
+      b     RU:Конфеты | EN:Sweets | KY:Конфет
+      c     RU:Чипсы | EN:Crisps | KY:Чипсы
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Фрукты и овощи | EN:Fruits and vegetables | KY:Мөмөлөр жана жашылчалар
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Конфеты | EN:Sweets | KY:Конфет
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Чипсы | EN:Crisps | KY:Чипсы
+  L2638 g2sbdyl3t2 <multiple_choice>
+    Q RU: Арчи хочет стать сильнее. В каких продуктах больше всего белка?
+    Q EN: Which foods have the most protein?
+    Q KY:  В каких продуктах больше всего белка?
+      a [✓] RU:Мясо и яйца | EN:Meat and eggs | KY:Эт жана жумуртка
+      b     RU:Сладости | EN:Sugary foods | KY:Таттуулар
+      c     RU:Только вода | EN:Water only | KY:Суу гана
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Мясо и яйца | EN:Meat and eggs | KY:Эт жана жумуртка
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Сладости | EN:Sugary foods | KY:Таттуулар
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Только вода | EN:Water only | KY:Суу гана
+  L2639 g2sbdyl3t3 <multiple_choice>
+    Q RU: Тали спрашивает: «Нужно ли пить воду каждый день?»
+    Q EN: How much water should I drink per day?
+    Q KY:  Күнүнө канча суу ичүү керек?
+      a [✓] RU:Да | EN:Yes | KY:Ооба
+      b     RU:Нет | EN:No | KY:Жок
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Да | EN:Yes | KY:Ооба
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Нет | EN:No | KY:Жок
+  L2640 g2sbdyl3t4 <input>
+    Q RU: Арчи не хочет делать зарядку. Зачем нужны зарядка и спорт? Напиши одно слово (например: мышцы).
+    Q EN: Archie does not want to exercise. Why do we need exercise and sport? Write one word (e.g. muscles).
+    Q KY: Арчи зарядка жасоону каалабайт. Зарядка жана спорт эмнеге керек? Бир сөз жаз (мис.: мышцы).
+
+######## g2e-days-l1 (L2650-2658)
+  [dialog npc] RU: Hello! Меня зовут Поли! Тали, ты знаешь дни недели по-английски?
+             EN: Days of the week: Monday, Tuesday, Wednesday...
+             KY: Жума күндөрү: Monday, Tuesday, Wednesday...
+  [dialog tali] RU: Monday — понедельник, это я знаю! А дальше… Tuesday? Wednesday? Я путаюсь начиная с четверга! Помоги мне!
+             EN: Monday is the first day of the week. There are seven days in a week!
+             KY: Monday — дүйшөмбү. Жумада жети күн!
+  [intro] RU: Дни недели! :: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday. Их семь!
+          EN: Days of the week! :: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday!
+          KY: Жума күндөрү! :: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday!
+  [intro] RU: Запомни по-порядку :: Mon-Tue-Wed-Thu-Fri — рабочие дни. Sat-Sun — выходные. Тали, повторяй вслух!
+          EN: Seven days :: Mon-Tue-Wed-Thu-Fri — weekdays. Sat-Sun — weekend. Tali, say them out loud!
+          KY: Жети күн :: Бир жумада жети күн!
+  L2654 g2edaysl1t1 <multiple_choice>
+    Q RU: Понедельник по-английски:
+    Q EN: Monday in English:
+    Q KY: Дүйшөмбү англисче:
+      a [✓] RU:Monday | EN:Monday | KY:Monday
+      b     RU:Tuesday | EN:Tuesday | KY:Tuesday
+      c     RU:Wednesday | EN:Wednesday | KY:Wednesday
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Monday | EN:Monday | KY:Monday
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Tuesday | EN:Tuesday | KY:Tuesday
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Wednesday | EN:Wednesday | KY:Wednesday
+  L2655 g2edaysl1t2 <multiple_choice>
+    Q RU: Вторник по-английски:
+    Q EN: Tuesday in English:
+    Q KY: Шейшемби англисче:
+      a     RU:Monday | EN:Monday | KY:Monday
+      b [✓] RU:Tuesday | EN:Tuesday | KY:Tuesday
+      c     RU:Wednesday | EN:Wednesday | KY:Wednesday
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Monday | EN:Monday | KY:Monday
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Tuesday | EN:Tuesday | KY:Tuesday
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Wednesday | EN:Wednesday | KY:Wednesday
+  L2656 g2edaysl1t3 <fill_blank>
+    Q RU: Среда по-английски — _
+    Q EN: Wednesday in English - _
+    Q KY: Шаршемби англисче — _
+      opt RU:<MISSING:fb-a> | EN:<MISSING:fb-a> | KY:<MISSING:fb-a>
+      opt RU:Monday | EN:Monday | KY:Monday
+      opt RU:<MISSING:fb-b> | EN:<MISSING:fb-b> | KY:<MISSING:fb-b>
+      opt RU:Tuesday | EN:Tuesday | KY:Tuesday
+      opt RU:<MISSING:fb-c> | EN:<MISSING:fb-c> | KY:<MISSING:fb-c>
+      opt RU:Wednesday | EN:Wednesday | KY:Wednesday
+  L2657 g2edaysl1t4 <input>
+    Q RU: Тали запутался! После понедельника идёт:
+    Q EN: Continue the pattern: What is the day after Monday?
+    Q KY: Тали чаташты! Дүйшөмбүдөн кийин кайсы күн келет? (англисче жаз)
+
+######## g2e-days-l2 (L2659-2667)
+  [dialog npc] RU: Поли, сегодня понедельник. Значит вчера было воскресенье? Yesterday was Sunday?
+             EN: Yesterday is the day before today. Tomorrow is the day after today!
+             KY: Yesterday — кечөө. Tomorrow — эртең!
+  [dialog tali] RU: Точно! Ты быстро учишься! А завтра — tomorrow — будет вторник, Tuesday!
+             EN: Today is Monday. Yesterday was Sunday!
+             KY: Today is Monday. Yesterday was Sunday!
+  [intro] RU: Yesterday / Tomorrow! :: Yesterday — вчера. Today — сегодня. Tomorrow — завтра. «Today is Monday → Yesterday was Sunday → Tomorrow is Tuesday»
+          EN: Yesterday and tomorrow! :: Yesterday — the day before today. Tomorrow — the day after today!
+          KY: Кечөө жана эртең! :: Yesterday — кечөө. Tomorrow — эртең!
+  [intro] RU: Выходные :: Saturday и Sunday — выходные дни. Поли особенно их любит!
+          EN: Today :: Today is Monday. Yesterday was Sunday!
+          KY: Бүгүн :: Today is Monday. Yesterday was Sunday!
+  L2663 g2edaysl2t1 <multiple_choice>
+    Q RU: Today is Monday. Yesterday was…
+    Q EN: Today is Monday. Yesterday was…
+    Q KY: Today is Monday. Yesterday was…
+      a [✓] RU:Sunday | EN:Sunday | KY:Sunday
+      b     RU:Tuesday | EN:Tuesday | KY:Tuesday
+      c     RU:Monday | EN:Monday | KY:Monday
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Sunday | EN:Sunday | KY:Sunday
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Tuesday | EN:Tuesday | KY:Tuesday
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Monday | EN:Monday | KY:Monday
+  L2664 g2edaysl2t2 <multiple_choice>
+    Q RU: Today is Monday. Tomorrow is…
+    Q EN: Today is Monday. Tomorrow is…
+    Q KY: Today is Monday. Tomorrow is…
+      a     RU:Sunday | EN:Sunday | KY:Sunday
+      b [✓] RU:Tuesday | EN:Tuesday | KY:Tuesday
+      c     RU:Monday | EN:Monday | KY:Monday
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Sunday | EN:Sunday | KY:Sunday
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Tuesday | EN:Tuesday | KY:Tuesday
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Monday | EN:Monday | KY:Monday
+  L2665 g2edaysl2t3 <multiple_choice>
+    Q RU: «Yesterday» по-русски:
+    Q EN: "Yesterday" in Russian:
+    Q KY: «Yesterday» орусча:
+      a [✓] RU:Вчера | EN:Вчера | KY:Вчера
+      b     RU:Сегодня | EN:Сегодня | KY:Сегодня
+      c     RU:Завтра | EN:Завтра | KY:Завтра
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Вчера | EN:Вчера | KY:Вчера
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Сегодня | EN:Сегодня | KY:Сегодня
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Завтра | EN:Завтра | KY:Завтра
+  L2666 g2edaysl2t4 <input>
+    Q RU: «Tomorrow» по-русски:
+    Q EN: "Tomorrow" in Russian:
+    Q KY: «Tomorrow» орусча:
+
+######## g2e-days-l3 (L2668-2678)
+  [dialog npc] RU: What day is it today? — Это вопрос «Какой сегодня день?»
+             EN: Timetable: What day is it today?
+             KY: Жадыбал: What day is it today?
+  [dialog tali] RU: On Monday we have math! По понедельникам у нас математика. Поли, а у тебя есть расписание?
+             EN: On Monday we have math. Weekly timetable!
+             KY: On Monday we have math. Жумалык жадыбал!
+  [intro] RU: Расписание! :: What day is it today? — Какой сегодня день? On Monday we have math — По понедельникам у нас математика.
+          EN: Timetable! :: What day is it today? On Monday we have math!
+          KY: Жадыбал! :: What day is it today? On Monday we have math!
+  [intro] RU: Предлог ON :: On Monday, on Tuesday — с днями недели используем ON.
+          EN: The week :: Weekly timetable!
+          KY: Жума :: Жумалык жадыбал!
+  L2672 g2edaysl3t1 <multiple_choice>
+    Q RU: On Tuesday we have ___ . Какой предмет?
+    Q EN: On Tuesday we have ___ . Which subject?
+    Q KY: On Tuesday we have ___ . Кайсы сабак?
+      a     RU:Math | EN:Math | KY:Math
+      b [✓] RU:Music | EN:Music | KY:Music
+      c     RU:Art | EN:Art | KY:Art
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Math | EN:Math | KY:Math
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Music | EN:Music | KY:Music
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Art | EN:Art | KY:Art
+  L2673 g2edaysl3t2 <multiple_choice>
+    Q RU: “On ___ we have PE.” Какой день недели?
+    Q EN: “On ___ we have PE.” Which day?
+    Q KY: “On ___ we have PE.” Кайсы күн?
+      a     RU:Monday | EN:Monday | KY:Monday
+      b [✓] RU:Friday | EN:Friday | KY:Friday
+      c     RU:Sunday | EN:Sunday | KY:Sunday
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Monday | EN:Monday | KY:Monday
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Friday | EN:Friday | KY:Friday
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Sunday | EN:Sunday | KY:Sunday
+  L2674 g2edaysl3t3 <fill_blank>
+    Q RU: We go to school ___ Monday.
+    Q EN: We go to school ___ Monday.
+    Q KY: We go to school ___ Monday.
+      opt RU:<MISSING:fb-a> | EN:<MISSING:fb-a> | KY:<MISSING:fb-a>
+      opt RU:On | EN:On | KY:On
+      opt RU:<MISSING:fb-b> | EN:<MISSING:fb-b> | KY:<MISSING:fb-b>
+      opt RU:In | EN:In | KY:In
+      opt RU:<MISSING:fb-c> | EN:<MISSING:fb-c> | KY:<MISSING:fb-c>
+      opt RU:At | EN:At | KY:At
+  L2675 g2edaysl3t4 <input>
+    Q RU: Напиши целиком: On Friday we have art.
+    Q EN: Write the full phrase: On Friday we have art.
+    Q KY: Толук жаз: On Friday we have art.
+
+######## g2e-phr-l1 (L2679-2687)
+  [dialog npc] RU: Please и Thank you — самые важные слова! Тали, ты знаешь их?
+             EN: Please and Thank you are the most important words! Tali, do you know them?
+             KY: Please жана Thank you — эң маанилүү сөздөр! Тали, сен билесиңби?
+  [dialog tali] RU: Please — пожалуйста! Thank you — спасибо! Но я иногда путаю, когда что говорить. Помоги мне!
+             EN: Please — пожалуйста! Thank you — спасибо! But I sometimes mix up when to say which. Help me!
+             KY: Please — сураныч! Thank you — рахмат! Бирок качан кайсыны айтууну кээде чаташтырам. Жардам бер!
+  [intro] RU: Please и Thank you! :: Please — пожалуйста (просьба). Thank you — спасибо (благодарность). You're welcome — пожалуйста (ответ на спасибо).
+          EN: Please and Thank you! :: Please — a polite request. Thank you — gratitude. You're welcome — a reply to thank you.
+          KY: Please жана Thank you! :: Please — сураныч. Thank you — рахмат!
+  [intro] RU: Вежливость на английском :: Вежливые слова важны на любом языке!
+          EN: Politeness :: Polite words matter in any language!
+          KY: Сылыктык :: Сылык сөздөр кайсы тилде болбосун маанилүү!
+  L2683 g2ephrl1t1 <multiple_choice>
+    Q RU: «Thank you» по-русски:
+    Q EN: "Thank you" in Russian:
+    Q KY: «Thank you» орусча кандай?
+      a [✓] RU:Спасибо | EN:Спасибо | KY:Спасибо
+      b     RU:Пожалуйста | EN:Пожалуйста | KY:Пожалуйста
+      c     RU:Привет | EN:Привет | KY:Привет
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Спасибо | EN:Спасибо | KY:Спасибо
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Пожалуйста | EN:Пожалуйста | KY:Пожалуйста
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Привет | EN:Привет | KY:Привет
+  L2684 g2ephrl1t2 <multiple_choice>
+    Q RU: «Please» по-русски:
+    Q EN: "Please" in Russian:
+    Q KY: «Please» орусча кандай?
+      a     RU:Спасибо | EN:Спасибо | KY:Спасибо
+      b [✓] RU:Пожалуйста | EN:Пожалуйста | KY:Пожалуйста
+      c     RU:До свидания | EN:До свидания | KY:До свидания
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Спасибо | EN:Спасибо | KY:Спасибо
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Пожалуйста | EN:Пожалуйста | KY:Пожалуйста
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:До свидания | EN:До свидания | KY:До свидания
+  L2685 g2ephrl1t3 <fill_blank>
+    Q RU: Ответ на Thank you — _
+    Q EN: A reply to Thank you is _
+    Q KY: Thank you жообу — _
+      opt RU:<MISSING:fb-a> | EN:<MISSING:fb-a> | KY:<MISSING:fb-a>
+      opt RU:You're welcome! | EN:You're welcome! | KY:You're welcome!
+      opt RU:<MISSING:fb-b> | EN:<MISSING:fb-b> | KY:<MISSING:fb-b>
+      opt RU:Please! | EN:Please! | KY:Please!
+      opt RU:<MISSING:fb-c> | EN:<MISSING:fb-c> | KY:<MISSING:fb-c>
+      opt RU:Goodbye! | EN:Goodbye! | KY:Goodbye!
+  L2686 g2ephrl1t4 <input>
+    Q RU: «Thank you very much» означает:
+    Q EN: "Thank you very much" means:
+    Q KY: «Thank you very much» дегени:
+
+######## g2e-phr-l2 (L2688-2696)
+  [dialog npc] RU: Поли, я случайно наступил тебе на лапу. Мне сказать «Please» или что-то другое?
+             EN: Excuse me — sorry! Sorry — I apologise!
+             KY: Excuse me — кечиресиз! Sorry — кечирим суранам!
+  [dialog tali] RU: Sorry! Когда виноват — говоришь Sorry. А когда хочешь пройти или потревожить — Excuse me. Разница важна!
+             EN: When you are in the way — Excuse me. When you are at fault — Sorry!
+             KY: Тоскоол болсоң — Excuse me. Күнөөлүү болсоң — Sorry!
+  [intro] RU: Excuse me и Sorry! :: Excuse me — извините (когда мешаешь, хочешь пройти). Sorry — прости (когда виноват, сделал что-то плохое).
+          EN: Excuse me and Sorry! :: Excuse me — when you are in the way. Sorry — when you are at fault!
+          KY: Excuse me жана Sorry! :: Excuse me — тоскоол болгондо. Sorry — күнөөлүү болгондо!
+  [intro] RU: Разница :: Поли наступил на ногу → Sorry. Поли хочет пройти → Excuse me.
+          EN: When to say them :: Excuse me — to get past. Sorry — if you step on someone's foot!
+          KY: Качан айтуу керек :: Excuse me — өтүп кетүү үчүн. Sorry — буттарына баскан болсо!
+  L2692 g2ephrl2t1 <multiple_choice>
+    Q RU: «Sorry» по-русски:
+    Q EN: What does “Sorry” mean?
+    Q KY: «Sorry» деген эмнени билдирет?
+      a [✓] RU:Прости / Извини | EN:An apology (I am sorry) | KY:Кечир / Кечиресиз
+      b     RU:Пожалуйста | EN:Please | KY:Сураныч
+      c     RU:Спасибо | EN:Thank you | KY:Рахмат
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Прости / Извини | EN:An apology (I am sorry) | KY:Кечир / Кечиресиз
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Пожалуйста | EN:Please | KY:Сураныч
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Спасибо | EN:Thank you | KY:Рахмат
+  L2693 g2ephrl2t2 <multiple_choice>
+    Q RU: Тали хочет пройти мимо Поли. Что он скажет?
+    Q EN: Tali wants to walk past Polly. What will he say?
+    Q KY: Тали Полинин жанынан өткүсү келет. Ал эмне дейт?
+      a [✓] RU:Excuse me | EN:Excuse me | KY:Excuse me
+      b     RU:Sorry | EN:Sorry | KY:Sorry
+      c     RU:Please | EN:Please | KY:Please
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Excuse me | EN:Excuse me | KY:Excuse me
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Sorry | EN:Sorry | KY:Sorry
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Please | EN:Please | KY:Please
+  L2694 g2ephrl2t3 <multiple_choice>
+    Q RU: Как ответить на «Sorry»?
+    Q EN: How do you reply to “Sorry”?
+    Q KY: «Sorry» дегенге кантип жооп бересиң?
+      a [✓] RU:It's OK / That's alright | EN:It's OK / That's alright | KY:It's OK / That's alright
+      b     RU:Please | EN:Please | KY:Please
+      c     RU:Thank you | EN:Thank you | KY:Thank you
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:It's OK / That's alright | EN:It's OK / That's alright | KY:It's OK / That's alright
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Please | EN:Please | KY:Please
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Thank you | EN:Thank you | KY:Thank you
+  L2695 g2ephrl2t4 <input>
+    Q RU: Тали снова наступил на лапу Поли. Это уже второй раз! Он говорит «I'm sorry» и «Sorry» — это одно и то же?
+    Q EN: Tali stepped on Polly’s paw again — the second time! He asks if “I’m sorry” and “Sorry” mean the same thing.
+    Q KY: Тали Полинин бутун кайра басты — экинчи жолу! Ал «I’m sorry» менен «Sorry» бир эле деп сурайт.
+
+######## g2e-phr-l3 (L2697-2707)
+  [dialog npc] RU: Can I? — так спрашивают разрешение. You can't — так говорят «нельзя».
+             EN: Can I? — May I? You can't — No, you can't!
+             KY: Can I? — Болобу? You can't — Болбойт!
+  [dialog tali] RU: Can I eat this sandwich? — Можно мне съесть этот бутерброд?
+             EN: Ask for permission: Can I go?
+             KY: Уруксат сура: Can I go?
+  [dialog npc] RU: No, you can't — это МОЙ бутерброд, Тали!
+             EN: No, you can't — this is MY sandwich, Tali!
+             KY: Жок, болбойт — бул МЕНИН тостум, Тали!
+  [intro] RU: Can I? You can't! :: Can I go? — Можно выйти? You can't run here — Здесь нельзя бегать.
+          EN: Can I? You cannot! :: Can I? — Болобу? You can't — Болбойт!
+          KY: Can I? You cannot! :: Can I? — Болобу? You can't — Болбойт!
+  [intro] RU: Разрешение :: Can I… — вежливый вопрос. Yes, you can — можно. No, you can't — нельзя.
+          EN: Permission :: Can I go? — Can I leave?
+          KY: Уруксат :: Can I go? — Чыксам болобу?
+  L2701 g2ephrl3t1 <multiple_choice>
+    Q RU: «Can I…?» используют, чтобы:
+    Q EN: “Can I…?” is used to:
+    Q KY: «Can I…?» эмне үчүн колдонулат:
+      a [✓] RU:Спросить разрешение | EN:Ask for permission | KY:Уруксат суроо үчүн
+      b     RU:Извиниться | EN:Apologize | KY:Кечирим суроо үчүн
+      c     RU:Попрощаться | EN:Say goodbye | KY:Коштошуу үчүн
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Спросить разрешение | EN:Ask for permission | KY:Уруксат суроо үчүн
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Извиниться | EN:Apologize | KY:Кечирим суроо үчүн
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Попрощаться | EN:Say goodbye | KY:Коштошуу үчүн
+  L2702 g2ephrl3t2 <multiple_choice>
+    Q RU: «You can’t» по-русски:
+    Q EN: What does “You can’t” mean?
+    Q KY: «You can’t» эмнени билдирет?
+      a [✓] RU:Тебе нельзя | EN:You are not allowed | KY:Сага болбойт
+      b     RU:Можно мне? | EN:May I? | KY:Мага болобу?
+      c     RU:Спасибо | EN:Thank you | KY:Рахмат
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Тебе нельзя | EN:You are not allowed | KY:Сага болбойт
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Можно мне? | EN:May I? | KY:Мага болобу?
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Спасибо | EN:Thank you | KY:Рахмат
+  L2703 g2ephrl3t3 <multiple_choice>
+    Q RU: Тали хочет войти в комнату. Как он спросит?
+    Q EN: Tali wants to enter the room. How will he ask?
+    Q KY: Тали бөлмөгө киргиси келет. Ал кантип сурайт?
+      a [✓] RU:Can I come in? | EN:Can I come in? | KY:Can I come in?
+      b     RU:You can't come in | EN:You can't come in | KY:You can't come in
+      c     RU:Thank you for coming in | EN:Thank you for coming in | KY:Thank you for coming in
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Can I come in? | EN:Can I come in? | KY:Can I come in?
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:You can't come in | EN:You can't come in | KY:You can't come in
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Thank you for coming in | EN:Thank you for coming in | KY:Thank you for coming in
+  L2704 g2ephrl3t4 <input>
+    Q RU: Переведи на русский: «No, you can’t eat my sandwich!»
+    Q EN: What does this mean in Russian: “No, you can’t eat my sandwich!”
+    Q KY: Орусчага котор: «No, you can’t eat my sandwich!»
+
+######## g2e-sch-l1 (L2708-2716)
+  [dialog npc] RU: Поли, я хочу описать наш класс по-английски, но не знаю слова! Desk — это что?
+             EN: Polly, I want to describe our classroom in English, but I don’t know the words! What is a desk?
+             KY: Поли, мен классыбызды англисче сүрөттөгүм келет, бирок сөздөрдү билбейм! Desk деген эмне?
+  [dialog tali] RU: Desk — парта! Chair — стул, board — доска, book — книга. Запоминай — я помогу!
+             EN: Desk — парта! Chair — стул, board — доска, book — книга. Remember — I’ll help!
+             KY: Desk — парта! Chair — отургуч, board — такта, book — китеп. Эстеп кал — мен жардам берем!
+  [intro] RU: В классе! :: Desk — парта, chair — стул, board — доска, book — книга, pen — ручка.
+          EN: In the classroom! :: Desk — парта, chair — отургуч, board — тактасы, book — китеп!
+          KY: Класста! :: Desk — парта, chair — отургуч, board — тактасы, book — китеп!
+  [intro] RU: Classroom :: Classroom — класс. School — школа. Вот наш мир по-английски!
+          EN: Classroom :: Classroom — класс. School — школа. That’s our world in English!
+          KY: Класс :: Classroom — класс. School — мектеп. Бул биздин дүйнө англисче!
+  L2712 g2eschl1t1 <multiple_choice>
+    Q RU: Книга по-английски:
+    Q EN: Book in English:
+    Q KY:  Китеп англисче:
+      a [✓] RU:book | EN:book | KY:book
+      b     RU:pen | EN:pen | KY:pen
+      c     RU:desk | EN:desk | KY:desk
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:book | EN:book | KY:book
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:pen | EN:pen | KY:pen
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:desk | EN:desk | KY:desk
+  L2713 g2eschl1t2 <multiple_choice>
+    Q RU: Ручка по-английски:
+    Q EN: Pen in English:
+    Q KY:  Калем англисче:
+      a     RU:book | EN:book | KY:book
+      b [✓] RU:pen | EN:pen | KY:pen
+      c     RU:board | EN:board | KY:board
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:book | EN:book | KY:book
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:pen | EN:pen | KY:pen
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:board | EN:board | KY:board
+  L2714 g2eschl1t3 <multiple_choice>
+    Q RU: Стул по-английски:
+    Q EN: Chair in English:
+    Q KY:  Отургуч англисче:
+      a     RU:desk | EN:desk | KY:desk
+      b [✓] RU:chair | EN:chair | KY:chair
+      c     RU:board | EN:board | KY:board
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:desk | EN:desk | KY:desk
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:chair | EN:chair | KY:chair
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:board | EN:board | KY:board
+  L2715 g2eschl1t4 <input>
+    Q RU: Доска по-английски:
+    Q EN: Board (classroom) in English:
+    Q KY:  Такта англисче:
+
+######## g2e-sch-l2 (L2717-2725)
+  [dialog npc] RU: Тали, какой у тебя любимый школьный предмет?
+             EN: School subjects: Math, Reading, PE!
+             KY: Мектеп предметтери: Math, Reading, PE!
+  [dialog tali] RU: Math — математика! Хотя нет, Art — рисование! Нет, подожди, PE — физкультура! Я не могу выбрать!
+             EN: PE — Physical Education — physical training!
+             KY: PE — Physical Education — дене тарбия!
+  [intro] RU: Школьные предметы! :: Math — математика, Art — рисование, PE — физкультура (Physical Education), Science — наука, English — английский.
+          EN: School subjects! :: Math, Reading, PE (Physical Education)!
+          KY: Мектеп предметтери! :: Math, Reading, PE (Physical Education)!
+  [intro] RU: PE — это важно! :: PE = Physical Education. На PE бегают, прыгают и играют в команде.
+          EN: PE :: PE — Physical Education — physical training!
+          KY: PE :: PE — Physical Education — дене тарбия!
+  L2721 g2eschl2t1 <multiple_choice>
+    Q RU: Математика по-английски:
+    Q EN: Mathematics in English:
+    Q KY: Математика англисче:
+      a [✓] RU:Math | EN:Math | KY:Math
+      b     RU:Music | EN:Music | KY:Music
+      c     RU:Art | EN:Art | KY:Art
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Math | EN:Math | KY:Math
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Music | EN:Music | KY:Music
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Art | EN:Art | KY:Art
+  L2722 g2eschl2t2 <multiple_choice>
+    Q RU: Рисование по-английски:
+    Q EN: Drawing in English:
+    Q KY: Сүрөт тартуу англисче:
+      a     RU:Math | EN:Math | KY:Math
+      b     RU:Music | EN:Music | KY:Music
+      c [✓] RU:Art | EN:Art | KY:Art
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:Math | EN:Math | KY:Math
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Music | EN:Music | KY:Music
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Art | EN:Art | KY:Art
+  L2723 g2eschl2t3 <multiple_choice>
+    Q RU: Физкультура по-английски:
+    Q EN: Physical Education in English:
+    Q KY: Дене тарбия англисче:
+      a [✓] RU:PE | EN:PE | KY:PE
+      b     RU:Science | EN:Science | KY:Science
+      c     RU:History | EN:History | KY:History
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:PE | EN:PE | KY:PE
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Science | EN:Science | KY:Science
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:History | EN:History | KY:History
+  L2724 g2eschl2t4 <input>
+    Q RU: Английский язык по-английски:
+    Q EN: English to English:
+    Q KY: Англис тили англисче:
+
+######## g2e-sch-l3 (L2726-2745)
+  [dialog npc] RU: Поли, учитель спросил меня что-то, а я не понял! Как сказать «я не понимаю»?
+             EN: School phrases: May I come in? I don't understand.
+             KY: Мектеп сүйлөмдөрү: May I come in? I don't understand.
+  [dialog tali] RU: I don't understand — я не понимаю. Или можно спросить: Can you help me? — Можешь помочь?
+             EN: Can you help me? — Can you help me?
+             KY: Can you help me? — Мага жардам бере аласыңбы?
+  [intro] RU: Школьные фразы! :: May I come in? — Можно войти? I don't understand — я не понимаю. Can you help me? — Можешь помочь?
+          EN: School phrases! :: May I come in? I do not understand. Can you help me?
+          KY: Мектеп сүйлөмдөрү! :: May I come in? I do not understand. Can you help me?
+  [intro] RU: Не бойся спрашивать! :: Спросить «Can you help me?» — это смелость, не слабость. Так говорит Поли!
+          EN: Help :: Can you help me? — Can you help me?
+          KY: Жардам :: Can you help me? — Мага жардам бере аласыңбы?
+  L2730 g2eschl3t1 <multiple_choice>
+    Q RU: «Я не понимаю» по-английски:
+    Q EN: "I don't understand" in English:
+    Q KY: «Мен түшүнбөйм» англисче:
+      a [✓] RU:I don't understand | EN:I don't understand | KY:I don't understand
+      b     RU:Can you help me? | EN:Can you help me? | KY:Can you help me?
+      c     RU:Hello! | EN:Hello! | KY:Hello!
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:I don't understand | EN:I don't understand | KY:I don't understand
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Can you help me? | EN:Can you help me? | KY:Can you help me?
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Hello! | EN:Hello! | KY:Hello!
+  L2731 g2eschl3t2 <multiple_choice>
+    Q RU: «Можешь помочь?» по-английски:
+    Q EN: "Can you help me?" in English:
+    Q KY: «Жардам бересиңби?» англисче:
+      a     RU:I don't understand | EN:I don't understand | KY:I don't understand
+      b [✓] RU:Can you help me? | EN:Can you help me? | KY:Can you help me?
+      c     RU:Goodbye! | EN:Goodbye! | KY:Goodbye!
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:I don't understand | EN:I don't understand | KY:I don't understand
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Can you help me? | EN:Can you help me? | KY:Can you help me?
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Goodbye! | EN:Goodbye! | KY:Goodbye!
+  L2732 g2eschl3t3 <multiple_choice>
+    Q RU: «Можно войти?» по-английски:
+    Q EN: "May I come in?" in English:
+    Q KY: «Кирсем болобу?» англисче:
+      a [✓] RU:May I come in? | EN:May I come in? | KY:May I come in?
+      b     RU:Thank you! | EN:Thank you! | KY:Thank you!
+      c     RU:Hello! | EN:Hello! | KY:Hello!
+      opt RU:<MISSING:a> | EN:<MISSING:a> | KY:<MISSING:a>
+      opt RU:May I come in? | EN:May I come in? | KY:May I come in?
+      opt RU:<MISSING:b> | EN:<MISSING:b> | KY:<MISSING:b>
+      opt RU:Thank you! | EN:Thank you! | KY:Thank you!
+      opt RU:<MISSING:c> | EN:<MISSING:c> | KY:<MISSING:c>
+      opt RU:Hello! | EN:Hello! | KY:Hello!
+  L2733 g2eschl3t4 <input>
+    Q RU: Учитель спросил, а Тали не понял. Что сказать?
+    Q EN: The teacher asked, and Tali didn't understand. What should he say?
+    Q KY: Мугалим сурады, Тали түшүнгөн жок. Эмне деш керек?

@@ -1,0 +1,154 @@
+
+==== g2e-days-l1 ====
+
+######## g2e-days-l1 (worlds.ts lines 2650-2657)
+  [dialog npc] Hello! Меня зовут Поли! Тали, ты знаешь дни недели по-английски?
+  [dialog tali] Monday — понедельник, это я знаю! А дальше… Tuesday? Wednesday? Я путаюсь начиная с четверга! Помоги мне!
+  [intro] Дни недели! :: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday. Их семь!
+  [intro] Запомни по-порядку :: Mon-Tue-Wed-Thu-Fri — рабочие дни. Sat-Sun — выходные. Тали, повторяй вслух!
+  L2654 g2edaysl1t1 <multiple_choice> Q: Понедельник по-английски:
+      a [✓] Monday   {g2e_opt_monday}
+      b     Tuesday   {g2e_opt_tuesday}
+      c     Wednesday   {g2e_opt_wednesday}
+  L2655 g2edaysl1t2 <multiple_choice> Q: Вторник по-английски:
+      a     Monday   {g2e_opt_monday}
+      b [✓] Tuesday   {g2e_opt_tuesday}
+      c     Wednesday   {g2e_opt_wednesday}
+  L2656 g2edaysl1t3 <fill_blank> Q: Среда по-английски — _
+  L2657 g2edaysl1t4 <input> Q: Тали запутался! После понедельника идёт:
+
+==== g2e-sch-l2 ====
+
+######## g2e-sch-l2 (worlds.ts lines 2717-2724)
+  [dialog npc] Тали, какой у тебя любимый школьный предмет?
+  [dialog tali] Math — математика! Хотя нет, Art — рисование! Нет, подожди, PE — физкультура! Я не могу выбрать!
+  [intro] Школьные предметы! :: Math — математика, Art — рисование, PE — физкультура (Physical Education), Science — наука, English — английский.
+  [intro] PE — это важно! :: PE = Physical Education. На PE бегают, прыгают и играют в команде.
+  L2721 g2eschl2t1 <multiple_choice> Q: Математика по-английски:
+      a [✓] Math   {g2e_opt_maths}
+      b     Music   {g2e_opt_music}
+      c     Art   {g2e_opt_art}
+  L2722 g2eschl2t2 <multiple_choice> Q: Рисование по-английски:
+      a     Math   {g2e_opt_maths}
+      b     Music   {g2e_opt_music}
+      c [✓] Art   {g2e_opt_art}
+  L2723 g2eschl2t3 <multiple_choice> Q: Физкультура по-английски:
+      a [✓] PE   {g2e_opt_pe}
+      b     Science   {g2e_opt_science}
+      c     History   {g2e_opt_history}
+  L2724 g2eschl2t4 <input> Q: Английский язык по-английски:
+
+==== g2r-sh-l1 ====
+
+######## g2r-sh-l1 (worlds.ts lines 2464-2471)
+  [dialog npc] Привет! Я Маша! Тали, хочу научить тебя различать твёрдые и мягкие согласные. Но сама я немного путаюсь с некоторыми словами — поможешь разобраться?
+  [dialog tali] Конечно! Я, честно говоря, думал, что «твёрдый» — это когда буква сделана из камня. Оказывается, нет? Расскажи!
+  [intro] Твёрдые согласные! :: Согласный твёрдый, если после него стоит А, О, У, Ы или Э. ЛА, ЛО, ЛУ — твёрдые! Тали, запомни: не камень, а звучание!
+  [intro] Твёрдые и мягкие :: ЛА — твёрдая Л, ЛИ — мягкая Л. Буква после согласного всё меняет!
+  L2468 g2rshl1t1 <multiple_choice> Q: Тали читает слово НОС и задаётся вопросом: «Н здесь твёрдая или мягкая?» Помоги ему!
+      a     Мягкий   {opt_soft}
+      b [✓] Твёрдый   {opt_hard}
+  L2469 g2rshl1t2 <multiple_choice> Q: Маша говорит: «Буква Ж в любом слове всегда твёрдая — исключений нет!» Тали не верит. А ты?
+      a [✓] Да   {opt_yes}
+      b     Нет   {opt_no}
+  L2470 g2rshl1t3 <fill_blank> Q: Всегда твёрдый согласный: _
+  L2471 g2rshl1t4 <input> Q: В слове НОС две согласные. Тали говорит: «Обе твёрдые!» Сколько твёрдых согласных в слове НОС?
+
+==== g2m-100-l3 ====
+
+######## g2m-100-l3 (worlds.ts lines 2389-2397)
+  [dialog npc] Теперь я хочу научиться сравнивать большие числа. Тали, у тебя 82 ракушки, а у меня 78 перьев. Кто из нас собрал больше?
+  [dialog tali] Я думаю, я! Но погоди — давай спросим у нашего друга, чтобы точно. Мне кажется, я немного запутался…
+  [intro] Сравниваем числа до 100! :: Сначала смотри на десятки: у кого больше — тот выиграл! Если десятки одинаковые — смотри на единицы. 82 > 78, потому что 8 десятков > 7 десятков.
+  [intro] 99 — самое большое двузначное! :: После 99 идёт 100 — уже трёхзначное. Арчи называет 99 «королём двузначных чисел».
+  L2393 g2m100l3t1 <input> Q: Арчи летит к самому большому двузначному числу. Оно стоит прямо перед 100. Что это за число?
+  L2394 g2m100l3t2 <multiple_choice> Q: Тали нашёл 82 ракушки, Арчи — 78 перьев. Тали говорит «я нашёл больше!», Арчи не верит. Кто прав?
+      a     Арчи нашёл больше (78 > 82)   {g2m_100l3_q2_a}
+      b [✓] Тали нашёл больше (82 > 78)   {g2m_100l3_q2_b}
+      c     У них поровну   {g2m_100l3_q2_c}
+  L2395 g2m100l3t3 <input> Q: Сколько десятков в числе 90?
+  L2396 g2m100l3t4 <input> Q: Тали записал число: «пять десятков и шесть единиц». Что это за число?
+
+==== g3e-food-l2 ====
+
+######## g3e-food-l2 (worlds.ts lines 3063-3070)
+  [dialog tali] I like pizza! I don't like broccoli! Это самые важные фразы в жизни!
+  [dialog npc] Хаха, Тали! А я люблю брокколи. Вкусы разные! Do you like…? Yes, I do! No, I don't!
+  [intro] I like / I don't like! :: I like pizza (мне нравится). I don't like broccoli (мне не нравится).
+  [intro] Вопрос :: Do you like pizza? Yes, I do! No, I don't!
+  L3067 g3efoodl2t1 <multiple_choice> Q: «I like apples!» — Маша это говорит. Что это значит?
+      a [✓] Мне нравятся яблоки   {g3e_food2_q1_a}
+      b     Я не люблю яблоки   {g3e_food2_q1_b}
+      c     Я — яблоко   {g3e_food2_q1_c}
+  L3068 g3efoodl2t2 <multiple_choice> Q: «I don’t like onions» — Ваня морщится. Onions — это:
+      a [✓] Лук   {g3e_food2_q2_a}
+      b     Суп   {g3e_food2_q2_b}
+      c     Яблоки   {g3e_food2_q2_c}
+  L3069 g3efoodl2t3 <multiple_choice> Q: Как сказать «Мне нравится шоколад» по-английски?
+      a [✓] I like chocolate   {g3e_foodl2_q3_a}
+      b     I don't like chocolate   {g3e_foodl2_q3_b}
+      c     I am chocolate   {g3e_foodl2_q3_c}
+  L3070 g3efoodl2t4 <input> Q: Другу не нравится суп. Как он скажет?
+
+==== g3e-daily-l3 ====
+
+######## g3e-daily-l3 (worlds.ts lines 3101-3119)
+  [dialog tali] I always eat breakfast. I never wake up early. I sometimes do homework. Это наречия частоты?
+  [dialog npc] Именно! Always — всегда, usually — обычно, sometimes — иногда, never — никогда. Тали, ты уже знаешь их!
+  [intro] Наречия частоты! :: Always (всегда) → usually (обычно) → sometimes (иногда) → never (никогда).
+  [intro] Место в предложении :: Обычно стоят перед основным глаголом: I always brush my teeth.
+  L3105 g3edailyl3t1 <multiple_choice> Q: «I always brush my teeth» — «always» означает:
+      a [✓] Всегда   {g3e_daily3_q1_a}
+      b     Иногда   {g3e_daily3_q1_b}
+      c     Никогда   {g3e_daily3_q1_c}
+  L3106 g3edailyl3t2 <multiple_choice> Q: Расставь по убыванию частоты:
+      a [✓] Always, usually, sometimes, never   {g3e_daily3_q2_a}
+      b     Never, sometimes, usually, always   {g3e_daily3_q2_b}
+      c     Sometimes, always, never, usually   {g3e_daily3_q2_c}
+  L3107 g3edailyl3t3 <multiple_choice> Q: «She sometimes plays football» — как часто она играет?
+      a     Всегда   {g3e_daily3_q3_a}
+      b [✓] Иногда   {g3e_daily3_q3_b}
+      c     Никогда   {g3e_daily3_q3_c}
+  L3108 g3edailyl3t4 <input> Q: «Я никогда не опаздываю» по-английски:
+
+==== KEY CHECKS ====
+g2e_opt_monday
+  RU: Monday
+  EN: Monday
+  KY: Monday
+g2e_opt_music
+  RU: Music
+  EN: Music
+  KY: Music
+g2r_nos_consonant
+  RU: Тали читает слово НОС и задаётся вопросом: «Н здесь твёрдая или мягкая?» Помоги ему!
+  EN: Tali reads the word НОС and asks: “Is Н hard or soft here?” Help him!
+  KY: Тали НОС сөзүн окуп: «Н бул жерде катуубу же жумшакпы?» деп сурайт. Жардам бер!
+g2r_zha_hard
+  RU: Маша говорит: «Буква Ж в любом слове всегда твёрдая — исключений нет!» Тали не верит. А ты?
+  EN: Masha says: “The letter Ж is always hard in every word — no exceptions!” Tali doesn’t believe it. Do you?
+  KY: Маша: «Ж тамгасы ар дайым катуу — өзгөчө жок!» Тали ишенбейт. Сенче?
+g2r_la_is_what
+  RU: Тали читает ЛАМПА. Слог ЛА — какой Л?
+  EN: Tali reads ЛАМПА. In the syllable ЛА, is Л soft or hard?
+  KY: Тали ЛАМПАны окуйт. ЛА муунунда Л кандай — жумшакпы же катуубу?
+g2m_smallest_78_82_91
+  RU: Тали нашёл 82 ракушки, Арчи — 78 перьев. Тали говорит «я нашёл больше!», Арчи не верит. Кто прав?
+  EN: Tali found 82 shells, Archie — 78 feathers. Tali says “I found more!” Archie doesn’t believe him. Who is right?
+  KY: Тали 82 кабыкча тапты, Арчи — 78 жүн. Тали «мен көбүрөөк таптым!» дейт, Арчи ишенбейт. Ким туура?
+g3e_food2_q2_a
+  RU: Лук
+  EN: Onion / onions (лук)
+  KY: Пияз
+g3e_daily3_q1_a
+  RU: Всегда
+  EN: Always (всегда)
+  KY: Ар дайым
+g2s_heart_does
+  RU: Тали спрашивает: что делает сердце?
+  EN: What does the heart do?
+  KY: Тали сурайт: жүрөк эмне кылат?
+g2e_board_en
+  RU: Доска по-английски:
+  EN: Board (classroom) in English:
+  KY:  Такта англисче:

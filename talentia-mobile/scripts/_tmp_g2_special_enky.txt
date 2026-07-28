@@ -1,0 +1,21 @@
+﻿node : [eval]:23
+C:\Users\User\AppData\Local\Temp\ps-script-0206b9c8-808f-4c0d-990f-18b4c97edafe.ps1:78 знак:1
++ node -e "
++ ~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([eval]:23:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  let start=-1; for(let i=0;i<lines.length;i++) if(new RegExp(" id: "+id+" topicId:\).test(lines[i])){start=i;break;}
+                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+SyntaxError: Invalid or unexpected token
+    at makeContextifyScript (node:internal/vm:185:14)
+    at compileScript (node:internal/process/execution:386:10)
+    at node:internal/process/execution:450:25
+    at [eval]-wrapper:6:24
+    at runScriptInContext (node:internal/process/execution:447:60)
+    at evalFunction (node:internal/process/execution:87:30)
+    at evalScript (node:internal/process/execution:99:3)
+    at node:internal/main/eval_string:74:3
+
+Node.js v22.14.0

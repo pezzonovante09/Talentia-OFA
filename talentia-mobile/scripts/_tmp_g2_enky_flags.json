@@ -1,0 +1,248 @@
+[
+  {
+    "id": "g2m-100-l1",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2m-100-l2",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2m-100-l3",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2m-add2-l1",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2m-add2-l2",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2m-add2-l3",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2m-times-l1",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2m-times-l2",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2m-times-l3",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2r-sh-l1",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2r-sh-l2",
+    "flagCount": 8,
+    "flags": [
+      "dialog EN=RU data.tasks.g2r_opt_konj: КОНЬ",
+      "dialog KY=RU data.tasks.g2r_opt_konj: КОНЬ",
+      "dialog EN=RU data.tasks.g2r_opt_konj: КОНЬ",
+      "dialog KY=RU data.tasks.g2r_opt_konj: КОНЬ",
+      "g2rshl2t1 opt KY=RU: КОН",
+      "g2rshl2t1 opt KY=RU: КОНЬ",
+      "g2rshl2t3 opt KY=RU: КОН",
+      "g2rshl2t3 opt KY=RU: КОНЬ"
+    ]
+  },
+  {
+    "id": "g2r-sh-l3",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2r-sp-l1",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2r-sp-l2",
+    "flagCount": 9,
+    "flags": [
+      "dialog EN=RU data.tasks.g2r_opt_koshka: Кошка",
+      "dialog KY=RU data.tasks.g2r_opt_koshka: Кошка",
+      "dialog EN=RU data.tasks.g2r_opt_sidit: Сидит",
+      "dialog KY=RU data.tasks.g2r_opt_sidit: Сидит",
+      "dialog EN=RU data.tasks.g2r_opt_krasivyi: Красивый",
+      "dialog KY=RU data.tasks.g2r_opt_krasivyi: Красивый",
+      "g2rspl2t3 opt KY=RU: Кошка",
+      "g2rspl2t3 opt KY=RU: Сидит",
+      "g2rspl2t3 opt KY=RU: Красивый"
+    ]
+  },
+  {
+    "id": "g2r-sp-l3",
+    "flagCount": 9,
+    "flags": [
+      "dialog EN=RU data.tasks.g2r_opt_sidit: Сидит",
+      "dialog KY=RU data.tasks.g2r_opt_sidit: Сидит",
+      "dialog EN=RU data.tasks.g2r_opt_koshka: Кошка",
+      "dialog KY=RU data.tasks.g2r_opt_koshka: Кошка",
+      "dialog EN=RU data.tasks.g2r_opt_belyi: Белый",
+      "dialog KY=RU data.tasks.g2r_opt_belyi: Белый",
+      "g2rspl3t3 opt KY=RU: Сидит",
+      "g2rspl3t3 opt KY=RU: Кошка",
+      "g2rspl3t3 opt KY=RU: Белый"
+    ]
+  },
+  {
+    "id": "g2r-sent-l1",
+    "flagCount": 5,
+    "flags": [
+      "dialog KY=RU data.tasks.g2r_sentl1_t1_b: Бежит",
+      "dialog KY=RU data.tasks.g2r_sentl1_t1_c: Быстро",
+      "g2rsentl1t1 opt KY=RU: Кот",
+      "g2rsentl1t1 opt KY=RU: Бежит",
+      "g2rsentl1t1 opt KY=RU: Быстро"
+    ]
+  },
+  {
+    "id": "g2r-sent-l2",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2r-sent-l3",
+    "flagCount": 27,
+    "flags": [
+      "dialog EN=RU data.tasks.g2r_sentl3_q1_a: Красивый кот бежит быстро",
+      "dialog KY=RU data.tasks.g2r_sentl3_q1_a: Красивый кот бежит быстро",
+      "dialog EN=RU data.tasks.g2r_sentl3_q1_b: Красивый бежит кот быстро",
+      "dialog KY=RU data.tasks.g2r_sentl3_q1_b: Красивый бежит кот быстро",
+      "dialog EN=RU data.tasks.g2r_sentl3_q1_c: Бежит красивый быстро кот",
+      "dialog KY=RU data.tasks.g2r_sentl3_q1_c: Бежит красивый быстро кот",
+      "dialog EN=RU data.tasks.g2r_sentl3_opt_boy_go: мальчик идёт",
+      "dialog KY=RU data.tasks.g2r_sentl3_opt_boy_go: мальчик идёт",
+      "dialog EN=RU data.tasks.g2r_sentl3_opt_boy_go_bad: мальчик идут",
+      "dialog KY=RU data.tasks.g2r_sentl3_opt_boy_go_bad: мальчик идут",
+      "dialog EN=RU data.tasks.g2r_sentl3_opt_boys_go_bad: мальчики идёт",
+      "dialog KY=RU data.tasks.g2r_sentl3_opt_boys_go_bad: мальчики идёт",
+      "dialog EN=RU data.tasks.g2r_sentl3_opt_red_ball: красный шар",
+      "dialog KY=RU data.tasks.g2r_sentl3_opt_red_ball: красный шар",
+      "dialog EN=RU data.tasks.g2r_sentl3_opt_red_ball_bad: красная шар",
+      "dialog KY=RU data.tasks.g2r_sentl3_opt_red_ball_bad: красная шар",
+      "dialog EN=RU data.tasks.g2r_sentl3_opt_boy_go_bad: мальчик идут",
+      "dialog KY=RU data.tasks.g2r_sentl3_opt_boy_go_bad: мальчик идут",
+      "g2rsentl3t1 opt KY=RU: Красивый кот бежит быстро",
+      "g2rsentl3t1 opt KY=RU: Красивый бежит кот быстро",
+      "g2rsentl3t1 opt KY=RU: Бежит красивый быстро кот",
+      "g2rsentl3t2 opt KY=RU: мальчик идёт",
+      "g2rsentl3t2 opt KY=RU: мальчик идут",
+      "g2rsentl3t2 opt KY=RU: мальчики идёт",
+      "g2rsentl3t3 opt KY=RU: красный шар",
+      "g2rsentl3t3 opt KY=RU: красная шар",
+      "g2rsentl3t3 opt KY=RU: мальчик идут"
+    ]
+  },
+  {
+    "id": "g2s-plt-l1",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2s-plt-l2",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2s-plt-l3",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2s-ani-l1",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2s-ani-l2",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2s-ani-l3",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2s-bdy-l1",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2s-bdy-l2",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2s-bdy-l3",
+    "flagCount": 2,
+    "flags": [
+      "dialog KY=RU data.tasks.g2s_opt_chips: Чипсы",
+      "g2sbdyl3t1 opt KY=RU: Чипсы"
+    ]
+  },
+  {
+    "id": "g2e-days-l1",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2e-days-l2",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2e-days-l3",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2e-phr-l1",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2e-phr-l2",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2e-phr-l3",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2e-sch-l1",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2e-sch-l2",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "id": "g2e-sch-l3",
+    "flagCount": 0,
+    "flags": []
+  }
+]

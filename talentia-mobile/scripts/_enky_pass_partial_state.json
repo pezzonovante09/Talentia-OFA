@@ -1,0 +1,45 @@
+{
+  "tasks": [
+    "g2e_opt_monday",
+    "g2e_opt_tuesday",
+    "g2e_opt_wednesday",
+    "g2e_opt_thursday",
+    "g2e_opt_friday",
+    "g2e_opt_saturday",
+    "g2e_opt_sunday",
+    "g2e_opt_music",
+    "g2e_opt_art",
+    "g2e_opt_science",
+    "g2e_opt_history",
+    "g2e_opt_english",
+    "g2e_monday_ru",
+    "g2e_tuesday_ru",
+    "g2e_daysl1_fb_sent",
+    "g2e_after_monday",
+    "g2e_math_in_en",
+    "g2e_art_in_en",
+    "g2e_pe_in_en",
+    "g2e_english_subject",
+    "g2r_nos_consonant",
+    "g2r_zha_hard",
+    "g2r_kon_konj",
+    "g2r_soft_sign_role",
+    "g2r_soft_sign_between",
+    "g3e_food2_q2_a",
+    "g3e_food2_q2_b",
+    "g3e_food2_q2_c",
+    "g3e_daily3_q1_a",
+    "g3e_daily3_q1_b",
+    "g3e_daily3_q1_c"
+  ],
+  "dialog": [
+    "g2r_shl1_0",
+    "g2r_shl1_1",
+    "g2r_shl2_0",
+    "g2r_shl2_1"
+  ],
+  "intro": [
+    "g2r_shl1_0_b",
+    "g2r_shl1_1_b"
+  ]
+}

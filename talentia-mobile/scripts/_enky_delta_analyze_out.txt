@@ -1,0 +1,448 @@
+﻿{
+  "counts": {
+    "after4": 50,
+    "after5": 77,
+    "new": 36,
+    "cleared": 9
+  },
+  "bucketSizes": {
+    "wave2_touched": 1,
+    "ky_eq_ru_cluster": 13,
+    "positive_noise": 13,
+    "real_new_issue": 8,
+    "other": 1
+  },
+  "buckets": {
+    "wave2_touched": [
+      {
+        "id": "g4r-text-l3",
+        "cats": [
+          "ky_eq_ru_or_ru_leak"
+        ],
+        "flags": [
+          "ky_eq_ru:data.tasks.g4r_text3_q2_a",
+          "ky_eq_ru:data.tasks.g4r_text3_q2_b"
+        ],
+        "wave2": true
+      }
+    ],
+    "ky_eq_ru_cluster": [
+      {
+        "id": "canyon-sent-1",
+        "cats": [
+          "ky_eq_ru_or_ru_leak"
+        ],
+        "flags": [
+          "ky_eq_ru:data.tasks.opt_mira"
+        ],
+        "wave2": false
+      },
+      {
+        "id": "forest-v-l1",
+        "cats": [
+          "ky_eq_ru_or_ru_leak"
+        ],
+        "flags": [
+          "en/ky nrw_fvl1_t*_q ╤З╨░╤Б╤В╨╕╤З╨╜╨╛ ╨╛╤Б╤В╨░╤О╤В╤Б╤П ╨╜╨░ ╤А╤Г╤Б╤Б╨║╨╛╨╝ (╨┤╨╗╤П reading_ru ╨┤╨╛╨┐╤Г╤Б╤В╨╕╨╝╨╛, ╨╜╨╛ EN-╨╗╨╛╨║╨░╨╗╤М ╨╜╨╡╨┐╨╛╨╗╨╜╨░╤П)."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3e-food-l2",
+        "cats": [
+          "ky_eq_ru_or_ru_leak",
+          "en_circular_gloss"
+        ],
+        "flags": [
+          "EN circular meaning items; KY/RU translational items OK."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g4r-cases-l1",
+        "cats": [
+          "ky_eq_ru_or_ru_leak"
+        ],
+        "flags": [
+          "ky_eq_ru:data.tasks.g4r_cases_q3_a",
+          "ky_eq_ru:data.tasks.g4r_cases_q3_b"
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g4r-cases-l2",
+        "cats": [
+          "ky_eq_ru_or_ru_leak"
+        ],
+        "flags": [
+          "ky_eq_ru:data.tasks.g4r_cases2_q1_a",
+          "ky_eq_ru:data.tasks.g4r_cases2_q1_b"
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g4r-cases-l3",
+        "cats": [
+          "ky_eq_ru_or_ru_leak"
+        ],
+        "flags": [
+          "ky_eq_ru:data.tasks.g4r_cases3_q1_a",
+          "ky_eq_ru:data.tasks.g4r_cases3_q1_b"
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g4r-conj-l1",
+        "cats": [
+          "ky_eq_ru_or_ru_leak"
+        ],
+        "flags": [
+          "ky_eq_ru:data.tasks.g4r_conj_q2_a",
+          "ky_eq_ru:data.tasks.g4r_conj_q2_b"
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g4r-conj-l2",
+        "cats": [
+          "ky_eq_ru_or_ru_leak"
+        ],
+        "flags": [
+          "ky_eq_ru:data.tasks.g4r_conj2_q1_a",
+          "ky_eq_ru:data.tasks.g4r_conj2_q1_b"
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g4r-conj-l3",
+        "cats": [
+          "ky_eq_ru_or_ru_leak"
+        ],
+        "flags": [
+          "ky_eq_ru:data.tasks.g4r_conj3_q2_a",
+          "ky_eq_ru:data.tasks.g4r_conj3_q2_b"
+        ],
+        "wave2": false
+      },
+      {
+        "id": "jungle-sub-1",
+        "cats": [
+          "ky_eq_ru_or_ru_leak"
+        ],
+        "flags": [
+          "ky_eq_ru:data.tasks.aba_jungleSub_q2"
+        ],
+        "wave2": false
+      },
+      {
+        "id": "space-planets-1",
+        "cats": [
+          "ky_eq_ru_or_ru_leak"
+        ],
+        "flags": [
+          "ky_eq_ru:data.tasks.opt_mars",
+          "ky_eq_ru:data.tasks.opt_jupiter"
+        ],
+        "wave2": false
+      },
+      {
+        "id": "space-planets-2",
+        "cats": [
+          "ky_eq_ru_or_ru_leak"
+        ],
+        "flags": [
+          "ky_eq_ru:data.tasks.opt_mercury",
+          "ky_eq_ru:data.tasks.opt_mars"
+        ],
+        "wave2": false
+      },
+      {
+        "id": "space-solar-1",
+        "cats": [
+          "ky_eq_ru_or_ru_leak"
+        ],
+        "flags": [
+          "ky_eq_ru:data.tasks.opt_mars",
+          "ky_eq_ru:data.tasks.opt_mercury"
+        ],
+        "wave2": false
+      }
+    ],
+    "positive_noise": [
+      {
+        "id": "g3e-daily-l2",
+        "cats": [
+          "positive_or_neutral_note"
+        ],
+        "flags": [
+          "Task stems EN/KY aligned; dialog EN weaker."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3e-food-l3",
+        "cats": [
+          "positive_or_neutral_note"
+        ],
+        "flags": [
+          "EN/KY aligned on requests / delicious / pass the salt."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3e-tobe-l2",
+        "cats": [
+          "ky_eq_ru_or_ru_leak",
+          "positive_or_neutral_note"
+        ],
+        "flags": [
+          "EN/KY well aligned with RU."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3m-div-l1",
+        "cats": [
+          "positive_or_neutral_note"
+        ],
+        "flags": [
+          "EN/KY ╤Е╨╛╤А╨╛╤И╨╛ ╨┤╨╡╤А╨╢╨░╤В ╤Б╤О╨╢╨╡╤В (╨╝╨╛╨╜╨╡╤В╤Л, ╨┐╨╕╤А╨╛╨╢╨║╨╕, ╨╝╨░╤В╤А╨╛╤Б╤Л)."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3m-div-l2",
+        "cats": [
+          "positive_or_neutral_note"
+        ],
+        "flags": [
+          "EN stems aligned; answer format risk same across locales."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3r-adj-l3",
+        "cats": [
+          "ky_eq_ru_or_ru_leak",
+          "positive_or_neutral_note"
+        ],
+        "flags": [
+          "EN/KY often keep RU antonym lexemes тАФ OK for Russian vocabulary lesson.",
+          "t2 EN adds (cold)/(soft) glosses тАФ good pattern to extend."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3r-gen-l3",
+        "cats": [
+          "positive_or_neutral_note"
+        ],
+        "flags": [
+          "EN options = RU phrases (╨Т╤Л╤Б╨╛╨║╨╕╨╣ ╨┤╨╛╨╝тАж) тАФ intentional for form recognition.",
+          "KY partly translates explanations (t3) while keeping forms."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3r-verb-l3",
+        "cats": [
+          "positive_or_neutral_note"
+        ],
+        "flags": [
+          "EN t1тАУt2 options = RU forms; t3 glosses person in EN тАФ mixed but topic-aligned."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3w-eco-l2",
+        "cats": [
+          "ky_eq_ru_or_ru_leak",
+          "positive_or_neutral_note"
+        ],
+        "flags": [
+          "KY t1 options ┬л╨а╨░╤Б╨┐╨╕╤Б╨░╨╜╨╕╨╡┬╗, ┬л╨Ъ╨░╤А╤В╨░┬╗ = RU copies.",
+          "EN aligned (food chain, producer, hareтЖТfox)."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3w-eco-l3",
+        "cats": [
+          "positive_or_neutral_note"
+        ],
+        "flags": [
+          "EN/KY aligned on rare species / poaching / conservation actions."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3w-geo-l1",
+        "cats": [
+          "positive_or_neutral_note"
+        ],
+        "flags": [
+          "EN/KY aligned (compass, rising sun, map south, right-of-north)."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3w-geo-l2",
+        "cats": [
+          "positive_or_neutral_note"
+        ],
+        "flags": [
+          "EN/KY well aligned on map vs globe / scale / colors."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3w-nat-l2",
+        "cats": [
+          "positive_or_neutral_note"
+        ],
+        "flags": [
+          "EN/KY aligned (combustible, fuel uses, ironтЖТmetal)."
+        ],
+        "wave2": false
+      }
+    ],
+    "real_new_issue": [
+      {
+        "id": "g2m-100-l1",
+        "cats": [
+          "en_bare_formula"
+        ],
+        "flags": [
+          "en_bare_formula:g2m_10x3/10x7/10x5"
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g2m-times-l1",
+        "cats": [
+          "en_bare_formula"
+        ],
+        "flags": [
+          "en_bare_formula:g2m_2x4"
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g2m-times-l3",
+        "cats": [
+          "en_bare_formula"
+        ],
+        "flags": [
+          "en_bare_formula:g2m_3x4"
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g2s-plt-l3",
+        "cats": [
+          "answer_hardcoded_RU"
+        ],
+        "flags": [
+          "answer_hardcoded_RU:╨Ъ╨╛╤А╨╡╨╜╤М (╨║╨╗╤Г╨▒╨╡╨╜╤М)"
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3e-daily-l3",
+        "cats": [
+          "real_mismatch"
+        ],
+        "flags": [
+          "EN dialog topic drift (story day тЙа frequency).",
+          "Task Q EN/KY otherwise aligned."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3m-1000-l3",
+        "cats": [
+          "real_mismatch"
+        ],
+        "flags": [
+          "EN dialog wrong place-value tip."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3m-div-l3",
+        "cats": [
+          "en_bare_formula"
+        ],
+        "flags": [
+          "EN t1 bare; t2/t4 ╨╛╨║."
+        ],
+        "wave2": false
+      },
+      {
+        "id": "g3m-tab-l3",
+        "cats": [
+          "en_bare_formula"
+        ],
+        "flags": [
+          "EN t1тАУt3 bare; t4 ╨╗╤Г╤З╤И╨╡ ╨▓╤Л╤А╨╛╨▓╨╜╨╡╨╜."
+        ],
+        "wave2": false
+      }
+    ],
+    "other": [
+      {
+        "id": "g1w-nat-l2",
+        "cats": [
+          "other"
+        ],
+        "flags": [
+          "[object Object]"
+        ],
+        "wave2": false
+      }
+    ]
+  },
+  "sampleBefore": [
+    {
+      "id": "canyon-sent-1",
+      "beforeFlags": [],
+      "afterFlags": [
+        "ky_eq_ru:data.tasks.opt_mira"
+      ]
+    },
+    {
+      "id": "forest-v-l1",
+      "beforeFlags": [],
+      "afterFlags": [
+        "en/ky nrw_fvl1_t*_q ╤З╨░╤Б╤В╨╕╤З╨╜╨╛ ╨╛╤Б╤В╨░╤О╤В╤Б╤П ╨╜╨░ ╤А╤Г╤Б╤Б╨║╨╛╨╝ (╨┤╨╗╤П reading_ru ╨┤╨╛╨┐╤Г╤Б╤В╨╕╨╝╨╛, ╨╜╨╛ EN-╨╗╨╛╨║╨░╨╗╤М ╨╜╨╡╨┐╨╛╨╗╨╜╨░╤П)."
+      ]
+    },
+    {
+      "id": "g1w-nat-l2",
+      "beforeFlags": [],
+      "afterFlags": [
+        {
+          "ref": "tasks",
+          "issue": "Shared RW56 keys nrw_ganiml2_* тАФ ╨╗╤О╨▒╤Л╨╡ ╨┐╤А╨░╨▓╨║╨╕ EN/KY ╨▒╤М╤О╤В ╨╕ preschool garden-anim-l2."
+        }
+      ]
+    },
+    {
+      "id": "g2m-100-l1",
+      "beforeFlags": [],
+      "afterFlags": [
+        "en_bare_formula:g2m_10x3/10x7/10x5"
+      ]
+    },
+    {
+      "id": "g2m-times-l1",
+      "beforeFlags": [],
+      "afterFlags": [
+        "en_bare_formula:g2m_2x4"
+      ]
+    }
+  ]
+}
+
+--- g4s-emo-l2 tasks ---
+{ id: 'g4s-emo-l2-t1', type: 'multiple_choice', questionKey: 'data.tasks.g4s_emo2_q1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4s_emo2_q1_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4s_emo2_q1_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4s_emo2_q1_c', correct: false }

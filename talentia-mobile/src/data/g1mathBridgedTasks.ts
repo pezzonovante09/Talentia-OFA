@@ -100,7 +100,7 @@ function patchG1mSubL3(raw: AnyTask[]): AnyTask[] {
   const t = cloneTasks(raw);
   const p = 'g1m_subl3';
   shrinkToTwoMc(t[2], p, 3);
-  setOnlyCorrect(t[2], 'b');
+  setOnlyCorrect(t[2], 'a'); // проверка 7−2=5 верна
   setOnlyCorrect(t[3], 'b');
   setOnlyCorrect(t[4], 'b');
   return t;

@@ -1,0 +1,822 @@
+[
+  {
+    "id": "meadow-c5-l1",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Один, два, три",
+    "coherence": 4,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "revise",
+    "problems": [
+      { "ref": "mc5l1-t4", "issue": "WRONG-ANSWER (EN/KY): question localized («Who has more?» / «Кимдин көбүрөөк?») but hardcoded answer is RU «У Тали больше» — English/Kyrgyz typing cannot match" },
+      { "ref": "lesson", "issue": "Core tasks reuse Tali-wrong correction frame; ABA plain visual count is fine" }
+    ],
+    "fixes": [
+      "Switch t4 to MC «У кого больше?» or numeric answer «3»; if keeping input, localize accepted answers",
+      "Keep visualCount on t1"
+    ],
+    "enkyFlags": ["input_answer_ru_only:mc5l1-t4"],
+    "templates": ["tali_wrong", "count_visual", "next_number", "simple_add", "compare_input"]
+  },
+  {
+    "id": "meadow-c5-l2",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Четыре и пять",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "mc5l2-t3", "issue": "«How many more to 5» is slightly ahead of pure 4–5 naming but still on-theme" }
+    ],
+    "fixes": [
+      "Optional: one pure «show 5» visual before how-many-more"
+    ],
+    "enkyFlags": [],
+    "templates": ["tali_wrong", "count_visual", "sequence_gap", "how_many_more", "add_input"]
+  },
+  {
+    "id": "meadow-c5-l3",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Больше или меньше",
+    "coherence": 5,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 4,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "mc5l3-t4", "issue": "Input answer «4» for Tali’s false «equal» claim — child must infer to type the bigger number; prompt could be clearer" }
+    ],
+    "fixes": [
+      "Rephrase t4 to «Какое число больше — напиши его» keeping answer «4»"
+    ],
+    "enkyFlags": [],
+    "templates": ["compare_baskets", "compare_sides", "fill_blank_equal", "bigger_number_input", "aba_bigger"]
+  },
+  {
+    "id": "meadow-c10-l1",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Шесть и семь",
+    "coherence": 4,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "revise",
+    "problems": [
+      { "ref": "mc10l1-t4", "issue": "WRONG-ANSWER (EN/KY): Q asks which tank has more in EN/KY, but answer is hardcoded «В синем» — localized answers like «blue» / «көк» fail" },
+      { "ref": "mc10l1-t2", "issue": "Compare with spatial distractor («куст ближе») — good logic stretch, slightly busy for intro to 6–7" }
+    ],
+    "fixes": [
+      "Accept localized answers or switch to MC «в синем / в красном»",
+      "Keep compare as stretch after a pure 6–7 count"
+    ],
+    "enkyFlags": ["input_answer_ru_only:mc10l1-t4"],
+    "templates": ["tali_wrong", "count_robots", "compare_sets", "how_many_more", "which_more_input"]
+  },
+  {
+    "id": "meadow-c10-l2",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Восемь, девять, десять",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "mc10l2-t1", "issue": "9−2 subtraction while title is naming 8–10 — useful but not pure naming" }
+    ],
+    "fixes": [
+      "Add one pure count-to-8/9/10 visual if subtraction feels early"
+    ],
+    "enkyFlags": [],
+    "templates": ["subtract_story", "sequence_gap", "count_stars", "double_four_input", "after_number_aba"]
+  },
+  {
+    "id": "meadow-c10-l3",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Сравниваем числа",
+    "coherence": 2,
+    "usefulness": 3,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "revise",
+    "problems": [
+      { "ref": "mc10l3-t1", "issue": "Even pattern 2,4,6,8,… is skip-counting, not compare — weak title alignment" },
+      { "ref": "mc10l3-t2", "issue": "Sum 6+4 rather than compare — only t3/ABA truly compare" }
+    ],
+    "fixes": [
+      "Replace t1 with direct compare (7 vs 3 / 9 vs 6)",
+      "Keep one sum only if labeled «всего», else swap for «где больше»"
+    ],
+    "enkyFlags": [],
+    "templates": ["even_pattern", "sum_boxes", "compare_baskets", "between_input", "aba_bigger"]
+  },
+  {
+    "id": "meadow-sh-l1",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Круг и квадрат",
+    "coherence": 4,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "revise",
+    "problems": [
+      { "ref": "mshl1-t4", "issue": "WRONG-ANSWER (EN/KY): answer hardcoded «Квадрат» while EN/KY ask for shape name — «Square»/«Чарчы» rejected; also rectangle has 4 corners" },
+      { "ref": "mshl1-t1", "issue": "KY question still identical to RU («Что из этого круглое?»)" }
+    ],
+    "fixes": [
+      "Accept Square/Чарчы/Квадрат; or MC shape pick",
+      "Translate mshl1-t1 KY stem"
+    ],
+    "enkyFlags": ["ky_eq_ru_question:mshl1-t1", "input_answer_ru_only:mshl1-t4"],
+    "templates": ["shape_real_world", "true_false_corners", "count_sides", "name_shape_input", "aba_shape"]
+  },
+  {
+    "id": "meadow-sh-l2",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Треугольник и прямоугольник",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "revise",
+    "problems": [
+      { "ref": "mshl2-t4", "issue": "WRONG-ANSWER RISK: asks мяч/книга/дверь → only «Книга» accepted, but intro and t2/ABA teach дверь as rectangle — both book and door are valid; EN/KY also need Book/Door/китеп/эшик" },
+      { "ref": "mshl2-t3", "issue": "«4 угла» → прямоугольник; square also has 4 corners (not offered)" }
+    ],
+    "fixes": [
+      "Accept Книга and Дверь (and EN/KY synonyms), or ask «что НЕ прямоугольник» (мяч)",
+      "Align intro examples with a single expected answer"
+    ],
+    "enkyFlags": ["input_answer_ru_only:mshl2-t4", "ambiguous_correct:mshl2-t4"],
+    "templates": ["count_sides", "door_shape", "four_corners", "most_like_rect_input", "aba_yes_no"]
+  },
+  {
+    "id": "meadow-sh-l3",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Нахожу фигуры",
+    "coherence": 3,
+    "usefulness": 3,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "polish",
+    "problems": [
+      { "ref": "mshl3-t2", "issue": "Repeats «сколько сторон у треугольника» from meadow-sh-l2 — low new learning" },
+      { "ref": "mshl3-t3", "issue": "Odd-one-out апельсин is engaging but light on geometry" },
+      { "ref": "mshl3-t4", "issue": "Input «Круг» may fail EN «Circle» / KY «Тегерек» if checker is literal RU-only" }
+    ],
+    "fixes": [
+      "Replace t2 with find-in-scene or classify mixed shapes",
+      "Localize accepted input answers for t4"
+    ],
+    "enkyFlags": ["input_answer_ru_only:mshl3-t4"],
+    "templates": ["riddle_shape", "repeat_sides", "odd_one_out", "no_corners_input", "aba_corners"]
+  },
+  {
+    "id": "forest-v-l1",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Буква А",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 5,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      { "ref": "lesson", "issue": "All main tasks multiple_choice — no write/trace/input for letter А" }
+    ],
+    "fixes": [
+      "Add one input/trace: write А / first letter of АРБУЗ"
+    ],
+    "enkyFlags": [],
+    "templates": ["tali_wrong_fruit", "letter_in_word", "vowel_sing", "spy_no_letter", "aba_first_letter"]
+  },
+  {
+    "id": "forest-v-l2",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Буквы О и У",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      { "ref": "fvl2-t3", "issue": "Options «одна/две У» are counts not letters — labels can confuse without clear framing" },
+      { "ref": "lesson", "issue": "MC-only; no production of О/У" }
+    ],
+    "fixes": [
+      "Label options clearly as counts of letter У",
+      "Add input: first letter of ОБЛАКО or УТКА"
+    ],
+    "enkyFlags": [],
+    "templates": ["guess_word_O", "vowel_in_DOM", "count_letter_U", "word_without_OU", "aba_first_letter"]
+  },
+  {
+    "id": "forest-v-l3",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Буквы И и Э",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "fvl3-t4", "issue": "ЛЕС highlights Е — fine vowel stretch but lesson title is И/Э" },
+      { "ref": "lesson", "issue": "MC-only diversity" }
+    ],
+    "fixes": [
+      "Optional input: first letter of ИГРА / ЭКРАН"
+    ],
+    "enkyFlags": [],
+    "templates": ["word_starts_I", "vowel_in_KIT", "word_starts_E", "singable_sound", "aba_first_letter"]
+  },
+  {
+    "id": "forest-con-l1",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Буквы М и С",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "lesson", "issue": "MC-only; consonant vs vowel concept is strong" }
+    ],
+    "fixes": [
+      "Add input first letter of МЕДВЕДЬ or СЛОН"
+    ],
+    "enkyFlags": [],
+    "templates": ["word_starts_M", "consonant_not_sing", "word_starts_S", "first_letter_vowel_odd", "aba_first_letter"]
+  },
+  {
+    "id": "forest-con-l2",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Буквы Т и К",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "lesson", "issue": "Strong letter focus; only one input (КОШКА→К)" }
+    ],
+    "fixes": [
+      "Optional second input for ТИГР"
+    ],
+    "enkyFlags": [],
+    "templates": ["word_starts_T", "consonant_K", "word_starts_K", "input_first_letter_K", "aba_first_letter"]
+  },
+  {
+    "id": "forest-con-l3",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Буква Н",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "lesson", "issue": "Single-letter lesson still MC-only (spy swap is a nice mechanic)" }
+    ],
+    "fixes": [
+      "Add input: first letter of НОС"
+    ],
+    "enkyFlags": [],
+    "templates": ["word_starts_N", "consonant_not_vowel", "odd_word_no_N", "spy_swap_letter", "aba_first_letter"]
+  },
+  {
+    "id": "forest-syl-l1",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Слоги МА, МО, МУ",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "lesson", "issue": "MC-only syllable work; ABA is show-syllable" }
+    ],
+    "fixes": [
+      "Optional clap/input build МА+МА"
+    ],
+    "enkyFlags": [],
+    "templates": ["hear_syllable", "animal_sound_MU", "clap_syllables", "build_MAMA", "aba_show_syllable"]
+  },
+  {
+    "id": "forest-syl-l2",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Слоги СА, СО, СУ",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "lesson", "issue": "Parallel structure to syl-l1 — good scaffold, low format diversity; stays on S-syllables" }
+    ],
+    "fixes": [
+      "Vary one task to drag/build syllables"
+    ],
+    "enkyFlags": [],
+    "templates": ["hear_syllable_SO", "clap_SASA", "syllables_in_SOVA", "build_SANI", "aba_show_syllable"]
+  },
+  {
+    "id": "forest-syl-l3",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Слог НА и повторение",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      { "ref": "fsyll3-t1", "issue": "EN and KY still copy full RU prose question (instructional stem, not just syllable target)" },
+      { "ref": "fsyll3-t3", "issue": "EN and KY still copy full RU prose question (РА-КЕ-ТА)" },
+      { "ref": "lesson", "issue": "Review lesson still MC-only" }
+    ],
+    "fixes": [
+      "Translate t1/t3 stems to EN/KY while keeping Cyrillic syllable targets",
+      "Add mixed review input across МА/СА/НА"
+    ],
+    "enkyFlags": [
+      "ky_eq_ru_question:fsyll3-t1",
+      "ky_eq_ru_question:fsyll3-t3",
+      "en_eq_ru_question:fsyll3-t1",
+      "en_eq_ru_question:fsyll3-t3"
+    ],
+    "templates": ["hear_NA", "syllables_NORA", "first_syllable_RAKETA", "build_NOGA", "aba_show_syllable"]
+  },
+  {
+    "id": "garden-col-l1",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Красный, синий, зелёный",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      { "ref": "lesson", "issue": "MC-only color ID" },
+      { "ref": "gcoll1-a1", "issue": "ABA/EN/KY question still RU («Клубника — какого цвета?»)" }
+    ],
+    "fixes": [
+      "Translate ABA + option stems; add sort/paint mechanic or input color name"
+    ],
+    "enkyFlags": [
+      "ky_eq_ru_question:gcoll1-a1",
+      "en_eq_ru_question:gcoll1-a1",
+      "aba_ky_eq_ru:gcoll1-a1",
+      "aba_en_eq_ru:gcoll1-a1"
+    ],
+    "templates": ["red_berry", "not_red", "frog_not_red", "sky_not_red", "aba_color"]
+  },
+  {
+    "id": "garden-col-l2",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Жёлтый, оранжевый, фиолетовый",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      { "ref": "gcoll2-t2", "issue": "EN and KY still copy RU paint-mix question stem" },
+      { "ref": "gcoll2-a1", "issue": "ABA still RU in EN/KY" },
+      { "ref": "lesson", "issue": "MC-only; mixing + color ID is coherent with title" }
+    ],
+    "fixes": [
+      "Localize t2 + ABA stems (keep color cognates as needed)"
+    ],
+    "enkyFlags": [
+      "ky_eq_ru_question:gcoll2-t2",
+      "en_eq_ru_question:gcoll2-t2",
+      "ky_eq_ru_question:gcoll2-a1",
+      "en_eq_ru_question:gcoll2-a1",
+      "aba_ky_eq_ru:gcoll2-a1",
+      "aba_en_eq_ru:gcoll2-a1"
+    ],
+    "templates": ["sunflower_yellow", "mix_to_orange", "eggplant_purple", "paint_sun", "aba_color"]
+  },
+  {
+    "id": "garden-col-l3",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Белый, чёрный и повторение",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      { "ref": "gcoll3-t2", "issue": "EN/KY still RU for paint-mix question" },
+      { "ref": "gcoll3-t3", "issue": "EN/KY still RU" },
+      { "ref": "gcoll3-t4", "issue": "EN/KY still RU for penguin riddle" },
+      { "ref": "gcoll3-a1", "issue": "ABA still RU in EN/KY" }
+    ],
+    "fixes": [
+      "Localize t2–t4 + ABA stems"
+    ],
+    "enkyFlags": [
+      "ky_eq_ru_question:gcoll3-t2",
+      "en_eq_ru_question:gcoll3-t2",
+      "ky_eq_ru_question:gcoll3-t3",
+      "en_eq_ru_question:gcoll3-t3",
+      "ky_eq_ru_question:gcoll3-t4",
+      "en_eq_ru_question:gcoll3-t4",
+      "ky_eq_ru_question:gcoll3-a1",
+      "en_eq_ru_question:gcoll3-a1",
+      "aba_ky_eq_ru:gcoll3-a1",
+      "aba_en_eq_ru:gcoll3-a1"
+    ],
+    "templates": ["polar_bear_white", "blue_plus_yellow", "not_black_collage", "penguin_riddle", "aba_white_black"]
+  },
+  {
+    "id": "garden-anim-l1",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Домашние животные",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      { "ref": "ganiml1-t3", "issue": "EN/KY still RU" },
+      { "ref": "ganiml1-t4", "issue": "EN/KY still RU" },
+      { "ref": "ganiml1-a1", "issue": "ABA still RU in EN/KY" }
+    ],
+    "fixes": [
+      "Localize t3–t4 + ABA"
+    ],
+    "enkyFlags": [
+      "ky_eq_ru_question:ganiml1-t3",
+      "en_eq_ru_question:ganiml1-t3",
+      "ky_eq_ru_question:ganiml1-t4",
+      "en_eq_ru_question:ganiml1-t4",
+      "ky_eq_ru_question:ganiml1-a1",
+      "en_eq_ru_question:ganiml1-a1",
+      "aba_ky_eq_ru:ganiml1-a1",
+      "aba_en_eq_ru:ganiml1-a1"
+    ],
+    "templates": ["farm_sound", "dog_not_wild", "meow_sender", "home_animals_list", "aba_yes_no"]
+  },
+  {
+    "id": "garden-anim-l2",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Дикие животные",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      { "ref": "ganiml2-t2", "issue": "EN/KY still RU" },
+      { "ref": "ganiml2-t3", "issue": "EN/KY still RU" },
+      { "ref": "ganiml2-t4", "issue": "EN/KY still RU" },
+      { "ref": "ganiml2-a1", "issue": "ABA still RU in EN/KY" }
+    ],
+    "fixes": [
+      "Localize t2–t4 + ABA"
+    ],
+    "enkyFlags": [
+      "ky_eq_ru_question:ganiml2-t2",
+      "en_eq_ru_question:ganiml2-t2",
+      "ky_eq_ru_question:ganiml2-t3",
+      "en_eq_ru_question:ganiml2-t3",
+      "ky_eq_ru_question:ganiml2-t4",
+      "en_eq_ru_question:ganiml2-t4",
+      "ky_eq_ru_question:ganiml2-a1",
+      "en_eq_ru_question:ganiml2-a1",
+      "aba_ky_eq_ru:ganiml2-a1",
+      "aba_en_eq_ru:ganiml2-a1"
+    ],
+    "templates": ["bear_habitat", "lion_not_pet", "fluffy_trace", "odd_one_cow", "aba_yes_no"]
+  },
+  {
+    "id": "garden-anim-l3",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Рыбы, птицы и лапки",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "ganiml3-t3", "issue": "«Никогда не издаёт звук» for fish is a soft overclaim; whale distractor is fine pedagogically" },
+      { "ref": "lesson", "issue": "MC-only habitat/feature focus; intro mentions paw-count but no paw task" }
+    ],
+    "fixes": [
+      "Soften t3 to «живёт в воде, есть плавники»",
+      "Optional count paws/wings input"
+    ],
+    "enkyFlags": [],
+    "templates": ["fish_in_water", "duck_flies_swims", "silent_swimmer", "binoculars_bird", "aba_habitat"]
+  },
+  {
+    "id": "garden-seas-l1",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Осень и зима",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "lesson", "issue": "Only 4 MC tasks, no ABA, no input — format thin" },
+      { "ref": "gseasl1-t4", "issue": "Counts four seasons while lesson is autumn/winter — mild scope creep (still useful)" }
+    ],
+    "fixes": [
+      "Add ABA season pick or one input season name"
+    ],
+    "enkyFlags": [],
+    "templates": ["leaves_fall", "snow_covers", "snowman_when", "count_seasons"]
+  },
+  {
+    "id": "garden-seas-l2",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Весна",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      { "ref": "gseasl2-t2", "issue": "EN/KY still copy RU season-chain question" },
+      { "ref": "lesson", "issue": "Four MC chain tasks — coherent but repetitive format" }
+    ],
+    "fixes": [
+      "Localize t2; add picture-match or ABA"
+    ],
+    "enkyFlags": [
+      "ky_eq_ru_question:gseasl2-t2",
+      "en_eq_ru_question:gseasl2-t2"
+    ],
+    "templates": ["melt_drip", "season_chain", "birds_return", "after_spring"]
+  },
+  {
+    "id": "garden-seas-l3",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Лето и повторение",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      { "ref": "gseasl3-t1", "issue": "EN/KY still copy RU summer question" },
+      { "ref": "lesson", "issue": "MC-only cycle review; apple picking in autumn is good cross-check" }
+    ],
+    "fixes": [
+      "Localize t1; optional full-year order input"
+    ],
+    "enkyFlags": [
+      "ky_eq_ru_question:gseasl3-t1",
+      "en_eq_ru_question:gseasl3-t1"
+    ],
+    "templates": ["summer_swim", "best_swim_time", "season_wheel", "apple_harvest_autumn"]
+  },
+  {
+    "id": "island-abc-l1",
+    "grade": 0,
+    "subject": "reading",
+    "world": "island",
+    "title": "Буквы A и B",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "lesson", "issue": "MC-only; RU framing + EN letter targets intentional" }
+    ],
+    "fixes": [
+      "Add write/input first letter of BALL"
+    ],
+    "enkyFlags": [],
+    "templates": ["starts_with_A", "BALL_not_A", "spy_not_B", "alphabet_first", "aba_first_letter"]
+  },
+  {
+    "id": "island-abc-l2",
+    "grade": 0,
+    "subject": "reading",
+    "world": "island",
+    "title": "Буквы C и D",
+    "coherence": 2,
+    "usefulness": 3,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "revise",
+    "problems": [
+      { "ref": "iabcl2-a1", "issue": "WRONG LETTER (ABA): base keys teach DOG→D/C, but abaTextOverrides.* set ELEPHANT→E/D — ABA track teaches E (belongs in E–F) and diverges from C/D lesson" },
+      { "ref": "nrw_iabcl2_t3", "issue": "ABA overrides for standard keys ask «NOT start with F» (Fish/Frog/Egg) while lesson is C–D — latent mismatch if overrides ever apply beyond a1" },
+      { "ref": "nrw_iabcl2_t2", "issue": "ABA EN override «Does DINOSAUR start with D?» with Yes/No keeps correct:false on Yes — would mark No as correct (wrong-answer) if that override is shown" }
+    ],
+    "fixes": [
+      "Align abaTextOverrides.* nrw_iabcl2_a1_* with DOG / D / C",
+      "Fix ABA t2/t3 overrides to stay on C–D and match correct flags"
+    ],
+    "enkyFlags": [
+      "wrong_en_letter:aba_ELEPHANT_vs_DOG",
+      "wrong_en_letter:aba_t3_asks_F",
+      "aba_en_wrong_answer_risk:iabcl2-t2"
+    ],
+    "templates": ["starts_with_C", "dinosaur_not_C", "spy_not_D", "input_DUCK_D", "aba_first_letter"]
+  },
+  {
+    "id": "island-abc-l3",
+    "grade": 0,
+    "subject": "reading",
+    "world": "island",
+    "title": "Буквы E и F",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "lesson", "issue": "MC-only; ELEPHANT correctly lives here (contrast with l2 ABA misplace)" }
+    ],
+    "fixes": [
+      "Optional input first letter of FOX/EGG"
+    ],
+    "enkyFlags": [],
+    "templates": ["elephant_E", "FOX_FROG_F", "last_of_DEF", "EGG_starts_E", "aba_FOX"]
+  },
+  {
+    "id": "island-col-l1",
+    "grade": 0,
+    "subject": "reading",
+    "world": "island",
+    "title": "Красный, синий, зелёный",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "lesson", "issue": "EN color words with RU narration — intentional bilingual; MC-only" }
+    ],
+    "fixes": [
+      "Add say/type RED/BLUE/GREEN once"
+    ],
+    "enkyFlags": [],
+    "templates": ["red_truck", "blue_bag_not", "grass_GREEN", "red_ingredient", "aba_firetruck"]
+  },
+  {
+    "id": "island-col-l2",
+    "grade": 0,
+    "subject": "reading",
+    "world": "island",
+    "title": "Жёлтый и оранжевый",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "polish",
+    "problems": [
+      { "ref": "icoll2-t2", "issue": "Red+Blue=Purple leaves yellow/orange theme" },
+      { "ref": "icoll2-t4", "issue": "Grapes purple/green is useful color stretch but not yellow/orange" },
+      { "ref": "lesson", "issue": "MC-only" }
+    ],
+    "fixes": [
+      "Prefer Red+Yellow=Orange to match lesson title"
+    ],
+    "enkyFlags": [],
+    "templates": ["pumpkin_ORANGE", "mix_purple", "count_YELLOW", "grapes_not_all_green", "aba_pumpkin"]
+  },
+  {
+    "id": "island-col-l3",
+    "grade": 0,
+    "subject": "reading",
+    "world": "island",
+    "title": "Повторение цветов",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "lesson", "issue": "MC-only review; mirrors garden-col-l3 themes in English" }
+    ],
+    "fixes": [
+      "Optional mixed EN color input"
+    ],
+    "enkyFlags": [],
+    "templates": ["polar_WHITE", "yellow_plus_blue", "not_black_spy", "penguin_riddle", "aba_polar"]
+  },
+  {
+    "id": "island-anim-l1",
+    "grade": 0,
+    "subject": "reading",
+    "world": "island",
+    "title": "Кот и собака",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "lesson", "issue": "MC-only EN animal vocab; cat/dog focus is clear" }
+    ],
+    "fixes": [
+      "Optional type WOOF/MEOW"
+    ],
+    "enkyFlags": [],
+    "templates": ["woof_not_cat", "cat_not_woof", "meow_sender", "wolf_odd_one", "aba_woof"]
+  },
+  {
+    "id": "island-anim-l2",
+    "grade": 0,
+    "subject": "reading",
+    "world": "island",
+    "title": "Птица и рыба",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "ianiml2-a1", "issue": "ABA «Birds… Fly» slightly oversimplifies after t4 penguin exception — OK for ABA simplicity" },
+      { "ref": "lesson", "issue": "MC-only; penguin exception is good stretch" }
+    ],
+    "fixes": [
+      "Optional habitat input"
+    ],
+    "enkyFlags": [],
+    "templates": ["bird_fly", "fish_water", "frog_vs_fish", "not_all_birds_fly", "aba_birds_fly"]
+  },
+  {
+    "id": "island-anim-l3",
+    "grade": 0,
+    "subject": "reading",
+    "world": "island",
+    "title": "Повторение животных",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "ok",
+    "problems": [
+      { "ref": "ianiml3-t2", "issue": "Elephant riddle is engaging but outside cat/dog/bird/fish/cow vocab set from intro" },
+      { "ref": "lesson", "issue": "MC-only review" }
+    ],
+    "fixes": [
+      "Swap elephant for cow/MOO review to match intro word list, or keep as stretch"
+    ],
+    "enkyFlags": [],
+    "templates": ["penguin_cant_fly", "elephant_riddle", "more_paws", "flying_club", "aba_penguin_fly"]
+  }
+]

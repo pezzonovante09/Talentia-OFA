@@ -1,0 +1,484 @@
+[
+  {
+    "id": "meadow-sh-l1",
+    "world": "meadow",
+    "subject": "math",
+    "flags": [
+      {
+        "ref": "mshl1-t1",
+        "issue": "ky_eq_ru_question",
+        "text": "Что из этого круглое?"
+      }
+    ]
+  },
+  {
+    "id": "forest-v-l1",
+    "world": "forest",
+    "subject": "reading_ru",
+    "flags": [
+      {
+        "ref": "fvl1-t3",
+        "issue": "ky_eq_ru_question",
+        "text": "Тали решил петь в лесу. Какой звук тянется дольше всего: А, М или Т?"
+      },
+      {
+        "ref": "fvl1-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "АРБУЗ — первая буква?"
+      }
+    ]
+  },
+  {
+    "id": "forest-v-l2",
+    "world": "forest",
+    "subject": "reading_ru",
+    "flags": [
+      {
+        "ref": "fvl2-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "ОБЛАКО — первая буква?"
+      }
+    ]
+  },
+  {
+    "id": "forest-v-l3",
+    "world": "forest",
+    "subject": "reading_ru",
+    "flags": [
+      {
+        "ref": "fvl3-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "ИГРА — первая буква?"
+      }
+    ]
+  },
+  {
+    "id": "forest-con-l1",
+    "world": "forest",
+    "subject": "reading_ru",
+    "flags": [
+      {
+        "ref": "fconl1-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "МЕДВЕДЬ — первая буква?"
+      }
+    ]
+  },
+  {
+    "id": "forest-con-l2",
+    "world": "forest",
+    "subject": "reading_ru",
+    "flags": [
+      {
+        "ref": "fconl2-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "ТИГР — первая буква?"
+      }
+    ]
+  },
+  {
+    "id": "forest-con-l3",
+    "world": "forest",
+    "subject": "reading_ru",
+    "flags": [
+      {
+        "ref": "fconl3-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "НОС — первая буква?"
+      }
+    ]
+  },
+  {
+    "id": "forest-syl-l1",
+    "world": "forest",
+    "subject": "reading_ru",
+    "flags": [
+      {
+        "ref": "fsyll1-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "Покажи слог МА:"
+      },
+      {
+        "ref": "fsyll1-a1",
+        "issue": "aba_ky_eq_ru",
+        "text": "Покажи слог МА:"
+      },
+      {
+        "ref": "fsyll1-a1",
+        "issue": "aba_en_eq_ru",
+        "text": "Покажи слог МА:"
+      }
+    ]
+  },
+  {
+    "id": "forest-syl-l2",
+    "world": "forest",
+    "subject": "reading_ru",
+    "flags": [
+      {
+        "ref": "fsyll2-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "Покажи слог СО:"
+      },
+      {
+        "ref": "fsyll2-a1",
+        "issue": "aba_ky_eq_ru",
+        "text": "Покажи слог СО:"
+      },
+      {
+        "ref": "fsyll2-a1",
+        "issue": "aba_en_eq_ru",
+        "text": "Покажи слог СО:"
+      }
+    ]
+  },
+  {
+    "id": "forest-syl-l3",
+    "world": "forest",
+    "subject": "reading_ru",
+    "flags": [
+      {
+        "ref": "fsyll3-t1",
+        "issue": "ky_eq_ru_question",
+        "text": "Тали услышал слог «Нн-Аа!» Какой кирпичик он поймал?"
+      },
+      {
+        "ref": "fsyll3-t3",
+        "issue": "ky_eq_ru_question",
+        "text": "Тали запускает ракету РА-КЕ-ТА. Какой первый слог улетает?"
+      },
+      {
+        "ref": "fsyll3-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "Покажи слог НА:"
+      },
+      {
+        "ref": "fsyll3-a1",
+        "issue": "aba_ky_eq_ru",
+        "text": "Покажи слог НА:"
+      },
+      {
+        "ref": "fsyll3-a1",
+        "issue": "aba_en_eq_ru",
+        "text": "Покажи слог НА:"
+      }
+    ]
+  },
+  {
+    "id": "garden-col-l1",
+    "world": "garden",
+    "subject": "logic",
+    "flags": [
+      {
+        "ref": "gcoll1-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "Клубника — какого цвета?"
+      },
+      {
+        "ref": "gcoll1-a1",
+        "issue": "en_eq_ru_question",
+        "text": "Клубника — какого цвета?"
+      },
+      {
+        "ref": "gcoll1-a1",
+        "issue": "aba_ky_eq_ru",
+        "text": "Клубника — какого цвета?"
+      },
+      {
+        "ref": "gcoll1-a1",
+        "issue": "aba_en_eq_ru",
+        "text": "Клубника — какого цвета?"
+      }
+    ]
+  },
+  {
+    "id": "garden-col-l2",
+    "world": "garden",
+    "subject": "logic",
+    "flags": [
+      {
+        "ref": "gcoll2-t2",
+        "issue": "ky_eq_ru_question",
+        "text": "Тали — юный художник. Он смешал красную и жёлтую краску. Что получилось?"
+      },
+      {
+        "ref": "gcoll2-t2",
+        "issue": "en_eq_ru_question",
+        "text": "Тали — юный художник. Он смешал красную и жёлтую краску. Что получилось?"
+      },
+      {
+        "ref": "gcoll2-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "Подсолнух — какого цвета?"
+      },
+      {
+        "ref": "gcoll2-a1",
+        "issue": "en_eq_ru_question",
+        "text": "Подсолнух — какого цвета?"
+      },
+      {
+        "ref": "gcoll2-a1",
+        "issue": "aba_ky_eq_ru",
+        "text": "Подсолнух — какого цвета?"
+      },
+      {
+        "ref": "gcoll2-a1",
+        "issue": "aba_en_eq_ru",
+        "text": "Подсолнух — какого цвета?"
+      }
+    ]
+  },
+  {
+    "id": "garden-col-l3",
+    "world": "garden",
+    "subject": "logic",
+    "flags": [
+      {
+        "ref": "gcoll3-t2",
+        "issue": "ky_eq_ru_question",
+        "text": "Тали снова в лаборатории красок! Синий + Жёлтый = ?"
+      },
+      {
+        "ref": "gcoll3-t2",
+        "issue": "en_eq_ru_question",
+        "text": "Тали снова в лаборатории красок! Синий + Жёлтый = ?"
+      },
+      {
+        "ref": "gcoll3-t3",
+        "issue": "ky_eq_ru_question",
+        "text": "Тали делает коллаж из чёрных предметов. Что туда НЕ попадёт?"
+      },
+      {
+        "ref": "gcoll3-t3",
+        "issue": "en_eq_ru_question",
+        "text": "Тали делает коллаж из чёрных предметов. Что туда НЕ попадёт?"
+      },
+      {
+        "ref": "gcoll3-t4",
+        "issue": "ky_eq_ru_question",
+        "text": "Тали получил загадку: «Я чёрно-белый, живу в Антарктиде и отлично плаваю». Кто это?"
+      },
+      {
+        "ref": "gcoll3-t4",
+        "issue": "en_eq_ru_question",
+        "text": "Тали получил загадку: «Я чёрно-белый, живу в Антарктиде и отлично плаваю». Кто это?"
+      },
+      {
+        "ref": "gcoll3-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "Полярный медведь — белый или чёрный?"
+      },
+      {
+        "ref": "gcoll3-a1",
+        "issue": "en_eq_ru_question",
+        "text": "Полярный медведь — белый или чёрный?"
+      },
+      {
+        "ref": "gcoll3-a1",
+        "issue": "aba_ky_eq_ru",
+        "text": "Полярный медведь — белый или чёрный?"
+      },
+      {
+        "ref": "gcoll3-a1",
+        "issue": "aba_en_eq_ru",
+        "text": "Полярный медведь — белый или чёрный?"
+      }
+    ]
+  },
+  {
+    "id": "garden-anim-l1",
+    "world": "garden",
+    "subject": "logic",
+    "flags": [
+      {
+        "ref": "ganiml1-t3",
+        "issue": "ky_eq_ru_question",
+        "text": "Тали получил голосовое сообщение: «Мр-р-р… Мяу! Я поймал мышку!» Кто прислал?"
+      },
+      {
+        "ref": "ganiml1-t3",
+        "issue": "en_eq_ru_question",
+        "text": "Тали получил голосовое сообщение: «Мр-р-р… Мяу! Я поймал мышку!» Кто прислал?"
+      },
+      {
+        "ref": "ganiml1-t4",
+        "issue": "ky_eq_ru_question",
+        "text": "Тали составляет список жителей своего дома. Кто туда точно попадёт?"
+      },
+      {
+        "ref": "ganiml1-t4",
+        "issue": "en_eq_ru_question",
+        "text": "Тали составляет список жителей своего дома. Кто туда точно попадёт?"
+      },
+      {
+        "ref": "ganiml1-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "Кошка — домашнее животное?"
+      },
+      {
+        "ref": "ganiml1-a1",
+        "issue": "en_eq_ru_question",
+        "text": "Кошка — домашнее животное?"
+      },
+      {
+        "ref": "ganiml1-a1",
+        "issue": "aba_ky_eq_ru",
+        "text": "Кошка — домашнее животное?"
+      },
+      {
+        "ref": "ganiml1-a1",
+        "issue": "aba_en_eq_ru",
+        "text": "Кошка — домашнее животное?"
+      }
+    ]
+  },
+  {
+    "id": "garden-anim-l2",
+    "world": "garden",
+    "subject": "logic",
+    "flags": [
+      {
+        "ref": "ganiml2-t2",
+        "issue": "ky_eq_ru_question",
+        "text": "Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?"
+      },
+      {
+        "ref": "ganiml2-t2",
+        "issue": "en_eq_ru_question",
+        "text": "Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?"
+      },
+      {
+        "ref": "ganiml2-t3",
+        "issue": "ky_eq_ru_question",
+        "text": "Тали нашёл рыжий пушистый след в лесу. Кто это был?"
+      },
+      {
+        "ref": "ganiml2-t3",
+        "issue": "en_eq_ru_question",
+        "text": "Тали нашёл рыжий пушистый след в лесу. Кто это был?"
+      },
+      {
+        "ref": "ganiml2-t4",
+        "issue": "ky_eq_ru_question",
+        "text": "Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?"
+      },
+      {
+        "ref": "ganiml2-t4",
+        "issue": "en_eq_ru_question",
+        "text": "Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?"
+      },
+      {
+        "ref": "ganiml2-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "Лиса — дикое животное?"
+      },
+      {
+        "ref": "ganiml2-a1",
+        "issue": "en_eq_ru_question",
+        "text": "Лиса — дикое животное?"
+      },
+      {
+        "ref": "ganiml2-a1",
+        "issue": "aba_ky_eq_ru",
+        "text": "Лиса — дикое животное?"
+      },
+      {
+        "ref": "ganiml2-a1",
+        "issue": "aba_en_eq_ru",
+        "text": "Лиса — дикое животное?"
+      }
+    ]
+  },
+  {
+    "id": "garden-seas-l2",
+    "world": "garden",
+    "subject": "logic",
+    "flags": [
+      {
+        "ref": "gseasl2-t2",
+        "issue": "ky_eq_ru_question",
+        "text": "Тали составляет цепочку: Осень → Зима → ??? Какое время года следующее?"
+      },
+      {
+        "ref": "gseasl2-t2",
+        "issue": "en_eq_ru_question",
+        "text": "Тали составляет цепочку: Осень → Зима → ??? Какое время года следующее?"
+      }
+    ]
+  },
+  {
+    "id": "garden-seas-l3",
+    "world": "garden",
+    "subject": "logic",
+    "flags": [
+      {
+        "ref": "gseasl3-t1",
+        "issue": "ky_eq_ru_question",
+        "text": "Тали надевает шорты и идёт купаться! Яркое солнце, жара. Какое время года?"
+      },
+      {
+        "ref": "gseasl3-t1",
+        "issue": "en_eq_ru_question",
+        "text": "Тали надевает шорты и идёт купаться! Яркое солнце, жара. Какое время года?"
+      }
+    ]
+  },
+  {
+    "id": "island-abc-l1",
+    "world": "island",
+    "subject": "reading",
+    "flags": [
+      {
+        "ref": "iabcl1-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "ALLIGATOR — first letter?"
+      }
+    ]
+  },
+  {
+    "id": "island-abc-l2",
+    "world": "island",
+    "subject": "reading",
+    "flags": [
+      {
+        "ref": "iabcl2-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "DOG — first letter?"
+      }
+    ]
+  },
+  {
+    "id": "island-abc-l3",
+    "world": "island",
+    "subject": "reading",
+    "flags": [
+      {
+        "ref": "iabcl3-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "FOX — first letter?"
+      }
+    ]
+  },
+  {
+    "id": "island-anim-l3",
+    "world": "island",
+    "subject": "reading",
+    "flags": [
+      {
+        "ref": "dialog",
+        "issue": "ky_eq_ru_dialog",
+        "text": "My name is Polly! What is your name?"
+      },
+      {
+        "ref": "ianiml3-a1",
+        "issue": "ky_eq_ru_question",
+        "text": "Can a penguin fly?"
+      },
+      {
+        "ref": "ianiml3-a1",
+        "issue": "aba_ky_eq_ru",
+        "text": "Can a penguin fly?"
+      }
+    ]
+  }
+]

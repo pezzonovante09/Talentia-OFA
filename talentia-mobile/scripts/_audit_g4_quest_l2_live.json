@@ -1,0 +1,146 @@
+{
+  "id": "g4e-quest-l2",
+  "dialogRu": [
+    "Spark, я потерял свою шляпу! Как спросить: где она? Написал «What is my hat?» — но это не про место...",
+    "Тали, «What» — это «что», а тебе нужно «где» — это «Where»! Вопросительные слова — это как ключи: каждый открывает свой замок. Разберём их все!",
+    "What (что)",
+    "When (когда)",
+    "Where (где)",
+    "Who",
+    "Where",
+    "What",
+    "What",
+    "Who",
+    "Where"
+  ],
+  "dialogEn": [
+    "Spark, I lost my hat! How do I ask where it is? I wrote “What is my hat?” — but that’s not about place…",
+    "Tali, “What” means “what,” but you need “where” — that’s “Where”! Question words are like keys: each opens its own lock. Let’s look at them all!",
+    "What",
+    "When",
+    "Where",
+    "Who",
+    "Where",
+    "What",
+    "What",
+    "Who",
+    "Where"
+  ],
+  "dialogKy": [
+    "Spark, мен шляпамды жоготуп алдым! Ал кайда экенин кантип сурайм? «What is my hat?» деп жаздым — бирок бул жер жөнүндө эмес…",
+    "Тали, «What» — бул «эмне», сага болсо «кайда» керек — бул «Where»! Суроо сөздөрү — ачкычтай: ар бири өз кулпусун ачат. Кел, баарын карап чыгалы!",
+    "What (эмне)",
+    "When (качан)",
+    "Where (кайда)",
+    "Who",
+    "Where",
+    "What",
+    "What",
+    "Who",
+    "Where"
+  ],
+  "introRu": [
+    "Вопросы с вопросительным словом",
+    "What или Where?",
+    "Вопросительные слова — как ключи",
+    "«What» спрашивает «что?», «Where» — «где?». Если нужно место, бери Where — и смысл вопроса будет верным.",
+    "Who, What, Where, When, Why, How — у каждого своё значение. Перепутал слово — получился другой смысл; разберём каждый тип."
+  ],
+  "introEn": [
+    "Wh-questions",
+    "What or Where?",
+    "Question words are like keys",
+    "“What” asks “what?”, “Where” asks “where?”. If you need a place, take Where - and the meaning of the question will be correct.",
+    "Read the full prompt, then pick an answer. Tap Help if you need a hint."
+  ],
+  "introKy": [
+    "Wh-суроолор",
+    "Эмне же кайда?",
+    "Суроо сөздөрү ачкыч сыяктуу",
+    "Биз «Wh-суроолор» сабагы үчүн негизгисин кайталап, мисал көрөбүз.",
+    "Тапшырманы аягына чейин оку, жоопту тандап ал. Эгер бир нерсе түшүнүксүз болсо — «Жардам» баскычын бас."
+  ],
+  "t4": {
+    "id": "g4e-quest-l2-t4",
+    "type": "input",
+    "audience": "main",
+    "questionKey": "data.tasks.g4e_quest2_q4",
+    "qRu": "«___ do you come to school by bike?» — хочешь узнать причину.",
+    "qEn": "“___ do you come to school by bike?” — you want the reason. Write the question word.",
+    "qKy": "«___ do you come to school by bike?» — себебин билгиң келет. Суроо сөзүн жаз.",
+    "answer": "Why",
+    "correctAnswerKey": null,
+    "answerRu": "Why",
+    "answerEn": null,
+    "answerKy": null,
+    "options": []
+  },
+  "mainTasks": [
+    {
+      "id": "g4e-quest-l2-t1",
+      "type": "multiple_choice",
+      "qRu": "Тали хочет узнать, где его шляпа: написал «What is my hat?» Spark говорит: «Тали, не \"what\", а...» Какое слово нужно?",
+      "qEn": "Tali wants to know where his hat is. He wrote “What is my hat?” Spark says: “Not what — try…” Which word fits?",
+      "qKy": "Тали шляпасы кайда экенин билгиси келет. Ал «What is my hat?» деп жазды. Spark: «What эмес…» Кайсы сөз керек?",
+      "answer": null,
+      "answerEn": null,
+      "answerKy": null,
+      "correctOpts": [
+        {
+          "ru": "Where (где)",
+          "en": "Where",
+          "ky": "Where (кайда)"
+        }
+      ]
+    },
+    {
+      "id": "g4e-quest-l2-t2",
+      "type": "multiple_choice",
+      "qRu": "«___ is your best friend?» — хочешь узнать имя человека. Какое слово?",
+      "qEn": "“___ is your best friend?” — you want the person’s name. Which word?",
+      "qKy": "«___ is your best friend?» — адамдын атын билгиң келет. Кайсы сөз?",
+      "answer": null,
+      "answerEn": null,
+      "answerKy": null,
+      "correctOpts": [
+        {
+          "ru": "Who",
+          "en": "Who",
+          "ky": "Who"
+        }
+      ]
+    },
+    {
+      "id": "g4e-quest-l2-t3",
+      "type": "multiple_choice",
+      "qRu": "Ты ищешь рюкзак Тали. «___ is my bag?» (Who / Where / Why)",
+      "qEn": "You’re looking for Tali’s bag. “___ is my bag?” (Who / Where / Why)",
+      "qKy": "Талинин рюкзагын издеп жатасың. «___ is my bag?» (Who / Where / Why)",
+      "answer": null,
+      "answerEn": null,
+      "answerKy": null,
+      "correctOpts": [
+        {
+          "ru": "Where",
+          "en": "Where",
+          "ky": "Where"
+        }
+      ]
+    },
+    {
+      "id": "g4e-quest-l2-t4",
+      "type": "input",
+      "qRu": "«___ do you come to school by bike?» — хочешь узнать причину.",
+      "qEn": "“___ do you come to school by bike?” — you want the reason. Write the question word.",
+      "qKy": "«___ do you come to school by bike?» — себебин билгиң келет. Суроо сөзүн жаз.",
+      "answer": "Why",
+      "answerRu": "Why",
+      "answerEn": null,
+      "answerKy": null,
+      "correctOpts": []
+    }
+  ],
+  "flags": [
+    "ky_intro_generic_stub"
+  ]
+}

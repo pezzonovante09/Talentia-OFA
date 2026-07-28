@@ -1,0 +1,1830 @@
+[
+  {
+    "id": "g2e-days-l1",
+    "flags": [],
+    "tasks": [
+      {
+        "id": "g2edaysl1t1",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "Понедельник по-английски:",
+          "en": "Monday in English:",
+          "ky": "Дүйшөмбү англисче:"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Monday",
+            "key": "data.tasks.g2e_opt_monday"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Tuesday",
+            "en": "Tuesday",
+            "ky": "Tuesday",
+            "key": "data.tasks.g2e_opt_tuesday"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Wednesday",
+            "en": "Wednesday",
+            "ky": "Wednesday",
+            "key": "data.tasks.g2e_opt_wednesday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Monday",
+            "key": "data.tasks.g2e_opt_monday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Tuesday",
+            "en": "Tuesday",
+            "ky": "Tuesday",
+            "key": "data.tasks.g2e_opt_tuesday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Wednesday",
+            "en": "Wednesday",
+            "ky": "Wednesday",
+            "key": "data.tasks.g2e_opt_wednesday"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2edaysl1t2",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "Вторник по-английски:",
+          "en": "Tuesday in English:",
+          "ky": "Шейшемби англисче:"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Monday",
+            "key": "data.tasks.g2e_opt_monday"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Tuesday",
+            "en": "Tuesday",
+            "ky": "Tuesday",
+            "key": "data.tasks.g2e_opt_tuesday"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Wednesday",
+            "en": "Wednesday",
+            "ky": "Wednesday",
+            "key": "data.tasks.g2e_opt_wednesday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Monday",
+            "key": "data.tasks.g2e_opt_monday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Tuesday",
+            "en": "Tuesday",
+            "ky": "Tuesday",
+            "key": "data.tasks.g2e_opt_tuesday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Wednesday",
+            "en": "Wednesday",
+            "ky": "Wednesday",
+            "key": "data.tasks.g2e_opt_wednesday"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2edaysl1t3",
+        "type": "fill_blank",
+        "q": {
+          "ru": "Среда по-английски — _",
+          "en": "Wednesday in English - _",
+          "ky": "Шаршемби англисче — _"
+        },
+        "opts": [
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Monday",
+            "key": "data.tasks.g2e_opt_monday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Tuesday",
+            "en": "Tuesday",
+            "ky": "Tuesday",
+            "key": "data.tasks.g2e_opt_tuesday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Wednesday",
+            "en": "Wednesday",
+            "ky": "Wednesday",
+            "key": "data.tasks.g2e_opt_wednesday"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2edaysl1t4",
+        "type": "input",
+        "q": {
+          "ru": "Тали запутался! После понедельника идёт:",
+          "en": "Continue the pattern: What is the day after Monday?",
+          "ky": "Тали чаташты! Дүйшөмбүдөн кийин кайсы күн келет? (англисче жаз)"
+        },
+        "opts": [],
+        "answer": null
+      }
+    ]
+  },
+  {
+    "id": "g2e-days-l2",
+    "flags": [],
+    "tasks": [
+      {
+        "id": "g2edaysl2t1",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "Today is Monday. Yesterday was…",
+          "en": "Today is Monday. Yesterday was…",
+          "ky": "Today is Monday. Yesterday was…"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Sunday",
+            "en": "Sunday",
+            "ky": "Sunday",
+            "key": "data.tasks.g2e_yd_opt_sunday"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Tuesday",
+            "en": "Tuesday",
+            "ky": "Tuesday",
+            "key": "data.tasks.g2e_yd_opt_tuesday"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Monday",
+            "key": "data.tasks.g2e_yd_opt_monday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Sunday",
+            "en": "Sunday",
+            "ky": "Sunday",
+            "key": "data.tasks.g2e_yd_opt_sunday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Tuesday",
+            "en": "Tuesday",
+            "ky": "Tuesday",
+            "key": "data.tasks.g2e_yd_opt_tuesday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Monday",
+            "key": "data.tasks.g2e_yd_opt_monday"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2edaysl2t2",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "Today is Monday. Tomorrow is…",
+          "en": "Today is Monday. Tomorrow is…",
+          "ky": "Today is Monday. Tomorrow is…"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Sunday",
+            "en": "Sunday",
+            "ky": "Sunday",
+            "key": "data.tasks.g2e_yd_opt_sunday"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Tuesday",
+            "en": "Tuesday",
+            "ky": "Tuesday",
+            "key": "data.tasks.g2e_yd_opt_tuesday"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Monday",
+            "key": "data.tasks.g2e_yd_opt_monday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Sunday",
+            "en": "Sunday",
+            "ky": "Sunday",
+            "key": "data.tasks.g2e_yd_opt_sunday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Tuesday",
+            "en": "Tuesday",
+            "ky": "Tuesday",
+            "key": "data.tasks.g2e_yd_opt_tuesday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Monday",
+            "key": "data.tasks.g2e_yd_opt_monday"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2edaysl2t3",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "«Yesterday» по-русски:",
+          "en": "\"Yesterday\" in Russian:",
+          "ky": "«Yesterday» орусча:"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Вчера",
+            "en": "Вчера",
+            "ky": "Вчера",
+            "key": "data.tasks.g2e_yd_opt_vchera"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Сегодня",
+            "en": "Сегодня",
+            "ky": "Сегодня",
+            "key": "data.tasks.g2e_yd_opt_segodnya"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Завтра",
+            "en": "Завтра",
+            "ky": "Завтра",
+            "key": "data.tasks.g2e_yd_opt_zavtra"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Вчера",
+            "en": "Вчера",
+            "ky": "Вчера",
+            "key": "data.tasks.g2e_yd_opt_vchera"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Сегодня",
+            "en": "Сегодня",
+            "ky": "Сегодня",
+            "key": "data.tasks.g2e_yd_opt_segodnya"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Завтра",
+            "en": "Завтра",
+            "ky": "Завтра",
+            "key": "data.tasks.g2e_yd_opt_zavtra"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2edaysl2t4",
+        "type": "input",
+        "q": {
+          "ru": "«Tomorrow» по-русски:",
+          "en": "\"Tomorrow\" in Russian:",
+          "ky": "«Tomorrow» орусча:"
+        },
+        "opts": [],
+        "answer": null
+      }
+    ]
+  },
+  {
+    "id": "g2e-days-l3",
+    "flags": [],
+    "tasks": [
+      {
+        "id": "g2edaysl3t1",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "On Tuesday we have ___ . Какой предмет?",
+          "en": "On Tuesday we have ___ . Which subject?",
+          "ky": "On Tuesday we have ___ . Кайсы сабак?"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Math",
+            "en": "Math",
+            "ky": "Math",
+            "key": "data.tasks.g2e_opt_maths"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Music",
+            "en": "Music",
+            "ky": "Music",
+            "key": "data.tasks.g2e_opt_music"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Art",
+            "en": "Art",
+            "ky": "Art",
+            "key": "data.tasks.g2e_opt_art"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Math",
+            "en": "Math",
+            "ky": "Math",
+            "key": "data.tasks.g2e_opt_maths"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Music",
+            "en": "Music",
+            "ky": "Music",
+            "key": "data.tasks.g2e_opt_music"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Art",
+            "en": "Art",
+            "ky": "Art",
+            "key": "data.tasks.g2e_opt_art"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2edaysl3t2",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "“On ___ we have PE.” Какой день недели?",
+          "en": "“On ___ we have PE.” Which day?",
+          "ky": "“On ___ we have PE.” Кайсы күн?"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Monday",
+            "key": "data.tasks.g2e_opt_day_monday"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Friday",
+            "en": "Friday",
+            "ky": "Friday",
+            "key": "data.tasks.g2e_opt_day_friday"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Sunday",
+            "en": "Sunday",
+            "ky": "Sunday",
+            "key": "data.tasks.g2e_opt_day_sunday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Monday",
+            "key": "data.tasks.g2e_opt_day_monday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Friday",
+            "en": "Friday",
+            "ky": "Friday",
+            "key": "data.tasks.g2e_opt_day_friday"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Sunday",
+            "en": "Sunday",
+            "ky": "Sunday",
+            "key": "data.tasks.g2e_opt_day_sunday"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2edaysl3t3",
+        "type": "fill_blank",
+        "q": {
+          "ru": "We go to school ___ Monday.",
+          "en": "We go to school ___ Monday.",
+          "ky": "We go to school ___ Monday."
+        },
+        "opts": [
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "On",
+            "en": "On",
+            "ky": "On",
+            "key": "data.tasks.g2e_opt_on"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "In",
+            "en": "In",
+            "ky": "In",
+            "key": "data.tasks.g2e_opt_in"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "At",
+            "en": "At",
+            "ky": "At",
+            "key": "data.tasks.g2e_opt_at"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2edaysl3t4",
+        "type": "input",
+        "q": {
+          "ru": "Напиши целиком: On Friday we have art.",
+          "en": "Write the full phrase: On Friday we have art.",
+          "ky": "Толук жаз: On Friday we have art."
+        },
+        "opts": [],
+        "answer": null
+      }
+    ]
+  },
+  {
+    "id": "g2e-phr-l1",
+    "flags": [],
+    "tasks": [
+      {
+        "id": "g2ephrl1t1",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "«Thank you» по-русски:",
+          "en": "\"Thank you\" in Russian:",
+          "ky": "«Thank you» орусча кандай?"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Спасибо",
+            "en": "Спасибо",
+            "ky": "Спасибо",
+            "key": "data.tasks.g2e_phrl1_opt_spasibo"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Пожалуйста",
+            "en": "Пожалуйста",
+            "ky": "Пожалуйста",
+            "key": "data.tasks.g2e_phrl1_opt_pozh"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Привет",
+            "en": "Привет",
+            "ky": "Привет",
+            "key": "data.tasks.g2e_phrl1_opt_privet"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Спасибо",
+            "en": "Спасибо",
+            "ky": "Спасибо",
+            "key": "data.tasks.g2e_phrl1_opt_spasibo"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Пожалуйста",
+            "en": "Пожалуйста",
+            "ky": "Пожалуйста",
+            "key": "data.tasks.g2e_phrl1_opt_pozh"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Привет",
+            "en": "Привет",
+            "ky": "Привет",
+            "key": "data.tasks.g2e_phrl1_opt_privet"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2ephrl1t2",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "«Please» по-русски:",
+          "en": "\"Please\" in Russian:",
+          "ky": "«Please» орусча кандай?"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Спасибо",
+            "en": "Спасибо",
+            "ky": "Спасибо",
+            "key": "data.tasks.g2e_phrl1_opt_spasibo"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Пожалуйста",
+            "en": "Пожалуйста",
+            "ky": "Пожалуйста",
+            "key": "data.tasks.g2e_phrl1_opt_pozh"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "До свидания",
+            "en": "До свидания",
+            "ky": "До свидания",
+            "key": "data.tasks.g2e_phrl1_opt_posvid"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Спасибо",
+            "en": "Спасибо",
+            "ky": "Спасибо",
+            "key": "data.tasks.g2e_phrl1_opt_spasibo"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Пожалуйста",
+            "en": "Пожалуйста",
+            "ky": "Пожалуйста",
+            "key": "data.tasks.g2e_phrl1_opt_pozh"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "До свидания",
+            "en": "До свидания",
+            "ky": "До свидания",
+            "key": "data.tasks.g2e_phrl1_opt_posvid"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2ephrl1t3",
+        "type": "fill_blank",
+        "q": {
+          "ru": "Ответ на Thank you — _",
+          "en": "A reply to Thank you is _",
+          "ky": "Thank you жообу — _"
+        },
+        "opts": [
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "You're welcome!",
+            "en": "You're welcome!",
+            "ky": "You're welcome!",
+            "key": "data.tasks.g2e_phrl1_opt_welcome"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Please!",
+            "en": "Please!",
+            "ky": "Please!",
+            "key": "data.tasks.g2e_phrl1_opt_please"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Goodbye!",
+            "en": "Goodbye!",
+            "ky": "Goodbye!",
+            "key": "data.tasks.g2e_phrl1_opt_goodbye"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2ephrl1t4",
+        "type": "input",
+        "q": {
+          "ru": "«Thank you very much» означает:",
+          "en": "\"Thank you very much\" means:",
+          "ky": "«Thank you very much» дегени:"
+        },
+        "opts": [],
+        "answer": null
+      }
+    ]
+  },
+  {
+    "id": "g2e-phr-l2",
+    "flags": [
+      {
+        "ref": "g2ephrl2t1.b",
+        "kind": "ky_option_fully_translated",
+        "EN": "Please",
+        "KY": "Сураныч"
+      },
+      {
+        "ref": "g2ephrl2t1.c",
+        "kind": "ky_option_fully_translated",
+        "EN": "Thank you",
+        "KY": "Рахмат"
+      },
+      {
+        "ref": "g2ephrl2t1.fbopt",
+        "kind": "ky_fb_opt_translated",
+        "EN": "Please",
+        "KY": "Сураныч",
+        "key": "data.tasks.g2e_phr2_q1_b"
+      },
+      {
+        "ref": "g2ephrl2t1.fbopt",
+        "kind": "ky_fb_opt_translated",
+        "EN": "Thank you",
+        "KY": "Рахмат",
+        "key": "data.tasks.g2e_phr2_q1_c"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "g2ephrl2t1",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "«Sorry» по-русски:",
+          "en": "What does “Sorry” mean?",
+          "ky": "«Sorry» деген эмнени билдирет?"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Прости / Извини",
+            "en": "An apology (I am sorry)",
+            "ky": "Кечир / Кечиресиз",
+            "key": "data.tasks.g2e_phr2_q1_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Пожалуйста",
+            "en": "Please",
+            "ky": "Сураныч",
+            "key": "data.tasks.g2e_phr2_q1_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Спасибо",
+            "en": "Thank you",
+            "ky": "Рахмат",
+            "key": "data.tasks.g2e_phr2_q1_c"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Прости / Извини",
+            "en": "An apology (I am sorry)",
+            "ky": "Кечир / Кечиресиз",
+            "key": "data.tasks.g2e_phr2_q1_a"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Пожалуйста",
+            "en": "Please",
+            "ky": "Сураныч",
+            "key": "data.tasks.g2e_phr2_q1_b"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Спасибо",
+            "en": "Thank you",
+            "ky": "Рахмат",
+            "key": "data.tasks.g2e_phr2_q1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2ephrl2t2",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "Тали хочет пройти мимо Поли. Что он скажет?",
+          "en": "Tali wants to walk past Polly. What will he say?",
+          "ky": "Тали Полинин жанынан өткүсү келет. Ал эмне дейт?"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Excuse me",
+            "en": "Excuse me",
+            "ky": "Excuse me",
+            "key": "data.tasks.g2e_phr2_q2_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Sorry",
+            "en": "Sorry",
+            "ky": "Sorry",
+            "key": "data.tasks.g2e_phr2_q2_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Please",
+            "en": "Please",
+            "ky": "Please",
+            "key": "data.tasks.g2e_phr2_q2_c"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Excuse me",
+            "en": "Excuse me",
+            "ky": "Excuse me",
+            "key": "data.tasks.g2e_phr2_q2_a"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Sorry",
+            "en": "Sorry",
+            "ky": "Sorry",
+            "key": "data.tasks.g2e_phr2_q2_b"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Please",
+            "en": "Please",
+            "ky": "Please",
+            "key": "data.tasks.g2e_phr2_q2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2ephrl2t3",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "Как ответить на «Sorry»?",
+          "en": "How do you reply to “Sorry”?",
+          "ky": "«Sorry» дегенге кантип жооп бересиң?"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "It's OK / That's alright",
+            "en": "It's OK / That's alright",
+            "ky": "It's OK / That's alright",
+            "key": "data.tasks.g2e_phr2_q3_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Please",
+            "en": "Please",
+            "ky": "Please",
+            "key": "data.tasks.g2e_phr2_q3_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Thank you",
+            "en": "Thank you",
+            "ky": "Thank you",
+            "key": "data.tasks.g2e_phr2_q3_c"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "It's OK / That's alright",
+            "en": "It's OK / That's alright",
+            "ky": "It's OK / That's alright",
+            "key": "data.tasks.g2e_phr2_q3_a"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Please",
+            "en": "Please",
+            "ky": "Please",
+            "key": "data.tasks.g2e_phr2_q3_b"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Thank you",
+            "en": "Thank you",
+            "ky": "Thank you",
+            "key": "data.tasks.g2e_phr2_q3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2ephrl2t4",
+        "type": "input",
+        "q": {
+          "ru": "Тали снова наступил на лапу Поли. Это уже второй раз! Он говорит «I'm sorry» и «Sorry» — это одно и то же?",
+          "en": "Tali stepped on Polly’s paw again — the second time! He asks if “I’m sorry” and “Sorry” mean the same thing.",
+          "ky": "Тали Полинин бутун кайра басты — экинчи жолу! Ал «I’m sorry» менен «Sorry» бир эле деп сурайт."
+        },
+        "opts": [],
+        "answer": null
+      }
+    ]
+  },
+  {
+    "id": "g2e-phr-l3",
+    "flags": [
+      {
+        "ref": "g2ephrl3t1.a",
+        "kind": "ky_translates_en_target",
+        "EN": "Ask for permission",
+        "KY": "Уруксат суроо үчүн",
+        "RU": "Спросить разрешение"
+      },
+      {
+        "ref": "g2ephrl3t1.a",
+        "kind": "ky_option_fully_translated",
+        "EN": "Ask for permission",
+        "KY": "Уруксат суроо үчүн"
+      },
+      {
+        "ref": "g2ephrl3t1.b",
+        "kind": "ky_option_fully_translated",
+        "EN": "Apologize",
+        "KY": "Кечирим суроо үчүн"
+      },
+      {
+        "ref": "g2ephrl3t1.c",
+        "kind": "ky_option_fully_translated",
+        "EN": "Say goodbye",
+        "KY": "Коштошуу үчүн"
+      },
+      {
+        "ref": "g2ephrl3t1.fbopt",
+        "kind": "ky_fb_opt_translated",
+        "EN": "Ask for permission",
+        "KY": "Уруксат суроо үчүн",
+        "key": "data.tasks.g2e_phr3_q1_a"
+      },
+      {
+        "ref": "g2ephrl3t1.fbopt",
+        "kind": "ky_fb_opt_translated",
+        "EN": "Apologize",
+        "KY": "Кечирим суроо үчүн",
+        "key": "data.tasks.g2e_phr3_q1_b"
+      },
+      {
+        "ref": "g2ephrl3t1.fbopt",
+        "kind": "ky_fb_opt_translated",
+        "EN": "Say goodbye",
+        "KY": "Коштошуу үчүн",
+        "key": "data.tasks.g2e_phr3_q1_c"
+      },
+      {
+        "ref": "g2ephrl3t2.a",
+        "kind": "ky_translates_en_target",
+        "EN": "You are not allowed",
+        "KY": "Сага болбойт",
+        "RU": "Тебе нельзя"
+      },
+      {
+        "ref": "g2ephrl3t2.a",
+        "kind": "ky_option_fully_translated",
+        "EN": "You are not allowed",
+        "KY": "Сага болбойт"
+      },
+      {
+        "ref": "g2ephrl3t2.b",
+        "kind": "ky_option_fully_translated",
+        "EN": "May I?",
+        "KY": "Мага болобу?"
+      },
+      {
+        "ref": "g2ephrl3t2.c",
+        "kind": "ky_option_fully_translated",
+        "EN": "Thank you",
+        "KY": "Рахмат"
+      },
+      {
+        "ref": "g2ephrl3t2.fbopt",
+        "kind": "ky_fb_opt_translated",
+        "EN": "You are not allowed",
+        "KY": "Сага болбойт",
+        "key": "data.tasks.g2e_phr3_q2_a"
+      },
+      {
+        "ref": "g2ephrl3t2.fbopt",
+        "kind": "ky_fb_opt_translated",
+        "EN": "May I?",
+        "KY": "Мага болобу?",
+        "key": "data.tasks.g2e_phr3_q2_b"
+      },
+      {
+        "ref": "g2ephrl3t2.fbopt",
+        "kind": "ky_fb_opt_translated",
+        "EN": "Thank you",
+        "KY": "Рахмат",
+        "key": "data.tasks.g2e_phr3_q2_c"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "g2ephrl3t1",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "«Can I…?» используют, чтобы:",
+          "en": "“Can I…?” is used to:",
+          "ky": "«Can I…?» эмне үчүн колдонулат:"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Спросить разрешение",
+            "en": "Ask for permission",
+            "ky": "Уруксат суроо үчүн",
+            "key": "data.tasks.g2e_phr3_q1_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Извиниться",
+            "en": "Apologize",
+            "ky": "Кечирим суроо үчүн",
+            "key": "data.tasks.g2e_phr3_q1_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Попрощаться",
+            "en": "Say goodbye",
+            "ky": "Коштошуу үчүн",
+            "key": "data.tasks.g2e_phr3_q1_c"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Спросить разрешение",
+            "en": "Ask for permission",
+            "ky": "Уруксат суроо үчүн",
+            "key": "data.tasks.g2e_phr3_q1_a"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Извиниться",
+            "en": "Apologize",
+            "ky": "Кечирим суроо үчүн",
+            "key": "data.tasks.g2e_phr3_q1_b"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Попрощаться",
+            "en": "Say goodbye",
+            "ky": "Коштошуу үчүн",
+            "key": "data.tasks.g2e_phr3_q1_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2ephrl3t2",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "«You can’t» по-русски:",
+          "en": "What does “You can’t” mean?",
+          "ky": "«You can’t» эмнени билдирет?"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Тебе нельзя",
+            "en": "You are not allowed",
+            "ky": "Сага болбойт",
+            "key": "data.tasks.g2e_phr3_q2_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Можно мне?",
+            "en": "May I?",
+            "ky": "Мага болобу?",
+            "key": "data.tasks.g2e_phr3_q2_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Спасибо",
+            "en": "Thank you",
+            "ky": "Рахмат",
+            "key": "data.tasks.g2e_phr3_q2_c"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Тебе нельзя",
+            "en": "You are not allowed",
+            "ky": "Сага болбойт",
+            "key": "data.tasks.g2e_phr3_q2_a"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Можно мне?",
+            "en": "May I?",
+            "ky": "Мага болобу?",
+            "key": "data.tasks.g2e_phr3_q2_b"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Спасибо",
+            "en": "Thank you",
+            "ky": "Рахмат",
+            "key": "data.tasks.g2e_phr3_q2_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2ephrl3t3",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "Тали хочет войти в комнату. Как он спросит?",
+          "en": "Tali wants to enter the room. How will he ask?",
+          "ky": "Тали бөлмөгө киргиси келет. Ал кантип сурайт?"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Can I come in?",
+            "en": "Can I come in?",
+            "ky": "Can I come in?",
+            "key": "data.tasks.g2e_phr3_q3_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "You can't come in",
+            "en": "You can't come in",
+            "ky": "You can't come in",
+            "key": "data.tasks.g2e_phr3_q3_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Thank you for coming in",
+            "en": "Thank you for coming in",
+            "ky": "Thank you for coming in",
+            "key": "data.tasks.g2e_phr3_q3_c"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Can I come in?",
+            "en": "Can I come in?",
+            "ky": "Can I come in?",
+            "key": "data.tasks.g2e_phr3_q3_a"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "You can't come in",
+            "en": "You can't come in",
+            "ky": "You can't come in",
+            "key": "data.tasks.g2e_phr3_q3_b"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Thank you for coming in",
+            "en": "Thank you for coming in",
+            "ky": "Thank you for coming in",
+            "key": "data.tasks.g2e_phr3_q3_c"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2ephrl3t4",
+        "type": "input",
+        "q": {
+          "ru": "Переведи на русский: «No, you can’t eat my sandwich!»",
+          "en": "What does this mean in Russian: “No, you can’t eat my sandwich!”",
+          "ky": "Орусчага котор: «No, you can’t eat my sandwich!»"
+        },
+        "opts": [],
+        "answer": null
+      }
+    ]
+  },
+  {
+    "id": "g2e-sch-l1",
+    "flags": [],
+    "tasks": [
+      {
+        "id": "g2eschl1t1",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "Книга по-английски:",
+          "en": "Book in English:",
+          "ky": " Китеп англисче:"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "book",
+            "en": "book",
+            "ky": "book",
+            "key": "data.tasks.g2e_opt_book"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "pen",
+            "en": "pen",
+            "ky": "pen",
+            "key": "data.tasks.g2e_opt_pen"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "desk",
+            "en": "desk",
+            "ky": "desk",
+            "key": "data.tasks.g2e_opt_desk"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "book",
+            "en": "book",
+            "ky": "book",
+            "key": "data.tasks.g2e_opt_book"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "pen",
+            "en": "pen",
+            "ky": "pen",
+            "key": "data.tasks.g2e_opt_pen"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "desk",
+            "en": "desk",
+            "ky": "desk",
+            "key": "data.tasks.g2e_opt_desk"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2eschl1t2",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "Ручка по-английски:",
+          "en": "Pen in English:",
+          "ky": " Калем англисче:"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "book",
+            "en": "book",
+            "ky": "book",
+            "key": "data.tasks.g2e_opt_book"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "pen",
+            "en": "pen",
+            "ky": "pen",
+            "key": "data.tasks.g2e_opt_pen"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "board",
+            "en": "board",
+            "ky": "board",
+            "key": "data.tasks.g2e_opt_board"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "book",
+            "en": "book",
+            "ky": "book",
+            "key": "data.tasks.g2e_opt_book"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "pen",
+            "en": "pen",
+            "ky": "pen",
+            "key": "data.tasks.g2e_opt_pen"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "board",
+            "en": "board",
+            "ky": "board",
+            "key": "data.tasks.g2e_opt_board"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2eschl1t3",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "Стул по-английски:",
+          "en": "Chair in English:",
+          "ky": " Отургуч англисче:"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "desk",
+            "en": "desk",
+            "ky": "desk",
+            "key": "data.tasks.g2e_opt_desk"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "chair",
+            "en": "chair",
+            "ky": "chair",
+            "key": "data.tasks.g2e_opt_chair"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "board",
+            "en": "board",
+            "ky": "board",
+            "key": "data.tasks.g2e_opt_board"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "desk",
+            "en": "desk",
+            "ky": "desk",
+            "key": "data.tasks.g2e_opt_desk"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "chair",
+            "en": "chair",
+            "ky": "chair",
+            "key": "data.tasks.g2e_opt_chair"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "board",
+            "en": "board",
+            "ky": "board",
+            "key": "data.tasks.g2e_opt_board"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2eschl1t4",
+        "type": "input",
+        "q": {
+          "ru": "Доска по-английски:",
+          "en": "Board (classroom) in English:",
+          "ky": " Такта англисче:"
+        },
+        "opts": [],
+        "answer": null
+      }
+    ]
+  },
+  {
+    "id": "g2e-sch-l2",
+    "flags": [],
+    "tasks": [
+      {
+        "id": "g2eschl2t1",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "Математика по-английски:",
+          "en": "Mathematics in English:",
+          "ky": "Математика англисче:"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Math",
+            "en": "Math",
+            "ky": "Math",
+            "key": "data.tasks.g2e_opt_maths"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Music",
+            "en": "Music",
+            "ky": "Music",
+            "key": "data.tasks.g2e_opt_music"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Art",
+            "en": "Art",
+            "ky": "Art",
+            "key": "data.tasks.g2e_opt_art"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Math",
+            "en": "Math",
+            "ky": "Math",
+            "key": "data.tasks.g2e_opt_maths"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Music",
+            "en": "Music",
+            "ky": "Music",
+            "key": "data.tasks.g2e_opt_music"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Art",
+            "en": "Art",
+            "ky": "Art",
+            "key": "data.tasks.g2e_opt_art"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2eschl2t2",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "Рисование по-английски:",
+          "en": "Drawing in English:",
+          "ky": "Сүрөт тартуу англисче:"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Math",
+            "en": "Math",
+            "ky": "Math",
+            "key": "data.tasks.g2e_opt_maths"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Music",
+            "en": "Music",
+            "ky": "Music",
+            "key": "data.tasks.g2e_opt_music"
+          },
+          {
+            "id": "c",
+            "correct": true,
+            "ru": "Art",
+            "en": "Art",
+            "ky": "Art",
+            "key": "data.tasks.g2e_opt_art"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Math",
+            "en": "Math",
+            "ky": "Math",
+            "key": "data.tasks.g2e_opt_maths"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Music",
+            "en": "Music",
+            "ky": "Music",
+            "key": "data.tasks.g2e_opt_music"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Art",
+            "en": "Art",
+            "ky": "Art",
+            "key": "data.tasks.g2e_opt_art"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2eschl2t3",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "Физкультура по-английски:",
+          "en": "Physical Education in English:",
+          "ky": "Дене тарбия англисче:"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "PE",
+            "en": "PE",
+            "ky": "PE",
+            "key": "data.tasks.g2e_opt_pe"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Science",
+            "en": "Science",
+            "ky": "Science",
+            "key": "data.tasks.g2e_opt_science"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "History",
+            "en": "History",
+            "ky": "History",
+            "key": "data.tasks.g2e_opt_history"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "PE",
+            "en": "PE",
+            "ky": "PE",
+            "key": "data.tasks.g2e_opt_pe"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Science",
+            "en": "Science",
+            "ky": "Science",
+            "key": "data.tasks.g2e_opt_science"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "History",
+            "en": "History",
+            "ky": "History",
+            "key": "data.tasks.g2e_opt_history"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2eschl2t4",
+        "type": "input",
+        "q": {
+          "ru": "Английский язык по-английски:",
+          "en": "English to English:",
+          "ky": "Англис тили англисче:"
+        },
+        "opts": [],
+        "answer": null
+      }
+    ]
+  },
+  {
+    "id": "g2e-sch-l3",
+    "flags": [
+      {
+        "ref": "data.dialog.g2e_schl3_1",
+        "kind": "en_dialog_stub_vs_ru",
+        "EN": "Can you help me? — Can you help me?",
+        "RU": "I don't understand — я не понимаю. Или можно спросить: Can you help me? — Можешь"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "g2eschl3t1",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "«Я не понимаю» по-английски:",
+          "en": "\"I don't understand\" in English:",
+          "ky": "«Мен түшүнбөйм» англисче:"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "I don't understand",
+            "en": "I don't understand",
+            "ky": "I don't understand",
+            "key": "data.tasks.g2e_sch3_opt_idont"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Can you help me?",
+            "en": "Can you help me?",
+            "ky": "Can you help me?",
+            "key": "data.tasks.g2e_sch3_opt_help"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Hello!",
+            "en": "Hello!",
+            "ky": "Hello!",
+            "key": "data.tasks.g2e_sch3_opt_hello"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "I don't understand",
+            "en": "I don't understand",
+            "ky": "I don't understand",
+            "key": "data.tasks.g2e_sch3_opt_idont"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Can you help me?",
+            "en": "Can you help me?",
+            "ky": "Can you help me?",
+            "key": "data.tasks.g2e_sch3_opt_help"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Hello!",
+            "en": "Hello!",
+            "ky": "Hello!",
+            "key": "data.tasks.g2e_sch3_opt_hello"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2eschl3t2",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "«Можешь помочь?» по-английски:",
+          "en": "\"Can you help me?\" in English:",
+          "ky": "«Жардам бересиңби?» англисче:"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "I don't understand",
+            "en": "I don't understand",
+            "ky": "I don't understand",
+            "key": "data.tasks.g2e_sch3_opt_idont"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Can you help me?",
+            "en": "Can you help me?",
+            "ky": "Can you help me?",
+            "key": "data.tasks.g2e_sch3_opt_help"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Goodbye!",
+            "en": "Goodbye!",
+            "ky": "Goodbye!",
+            "key": "data.tasks.g2e_sch3_opt_bye"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "I don't understand",
+            "en": "I don't understand",
+            "ky": "I don't understand",
+            "key": "data.tasks.g2e_sch3_opt_idont"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Can you help me?",
+            "en": "Can you help me?",
+            "ky": "Can you help me?",
+            "key": "data.tasks.g2e_sch3_opt_help"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Goodbye!",
+            "en": "Goodbye!",
+            "ky": "Goodbye!",
+            "key": "data.tasks.g2e_sch3_opt_bye"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2eschl3t3",
+        "type": "multiple_choice",
+        "q": {
+          "ru": "«Можно войти?» по-английски:",
+          "en": "\"May I come in?\" in English:",
+          "ky": "«Кирсем болобу?» англисче:"
+        },
+        "opts": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "May I come in?",
+            "en": "May I come in?",
+            "ky": "May I come in?",
+            "key": "data.tasks.g2e_sch3_opt_may"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Thank you!",
+            "en": "Thank you!",
+            "ky": "Thank you!",
+            "key": "data.tasks.g2e_sch3_opt_thanks"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Hello!",
+            "en": "Hello!",
+            "ky": "Hello!",
+            "key": "data.tasks.g2e_sch3_opt_hello"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "May I come in?",
+            "en": "May I come in?",
+            "ky": "May I come in?",
+            "key": "data.tasks.g2e_sch3_opt_may"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Thank you!",
+            "en": "Thank you!",
+            "ky": "Thank you!",
+            "key": "data.tasks.g2e_sch3_opt_thanks"
+          },
+          {
+            "id": "fb",
+            "correct": null,
+            "ru": "Hello!",
+            "en": "Hello!",
+            "ky": "Hello!",
+            "key": "data.tasks.g2e_sch3_opt_hello"
+          }
+        ],
+        "answer": null
+      },
+      {
+        "id": "g2eschl3t4",
+        "type": "input",
+        "q": {
+          "ru": "Учитель спросил, а Тали не понял. Что сказать?",
+          "en": "The teacher asked, and Tali didn't understand. What should he say?",
+          "ky": "Мугалим сурады, Тали түшүнгөн жок. Эмне деш керек?"
+        },
+        "opts": [],
+        "answer": null
+      }
+    ]
+  }
+]

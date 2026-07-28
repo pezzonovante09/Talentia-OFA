@@ -1,0 +1,652 @@
+{
+  "summary": {
+    "ruKeys": 4197,
+    "enKeys": 4197,
+    "kyKeys": 4197,
+    "mismatchKeys": 70,
+    "okKeys": 4127,
+    "byCategory": {
+      "length_outlier": 34,
+      "option_set_inconsistent": 42
+    },
+    "generatedAt": "2026-07-28T10:13:30.428Z"
+  },
+  "mismatches": [
+    {
+      "key": "data.intro.g2m_add2l1_0_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "20 + 30: смотри только на десятки: 2 + 3 = 5, добавь нолик → 50. Нули «не мешают», они просто показывают, что это десятки!",
+      "en": "20 + 30: 2 tens + 3 tens = 5 tens = 50.",
+      "ky": "20 + 30: 2 ондук + 3 ондук = 5 ондук = 50."
+    },
+    {
+      "key": "data.tasks.g2r_opt_krasivyi",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Красивый",
+      "en": "Красивый (beautiful — adjective)",
+      "ky": "Красивый (сулуу — сын атооч)"
+    },
+    {
+      "key": "data.tasks.g2s_bdyl2_q3_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали прав — желудок для пищеварения",
+      "en": "Tali is right",
+      "ky": "Тали туура"
+    },
+    {
+      "key": "data.tasks.g2s_opt_femur",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Бедренная",
+      "en": "Femur (thigh bone)",
+      "ky": "Жамбаш сөөгү (бедренная)"
+    },
+    {
+      "key": "data.tasks.g2s_opt_move_body",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Двигаться",
+      "en": "To move the body",
+      "ky": "Денени кыймылдатүү үчүн"
+    },
+    {
+      "key": "data.tasks.g3r_adjl1_q3_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Высокий дерево",
+      "en": "Высокий дерево (wrong masculine ending)",
+      "ky": "Высокий дерево (туура эмес эркек род)"
+    },
+    {
+      "key": "data.tasks.g4e_quest3_q3",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали отвечает: «Did they visit the museum?» → «Yes, they are.» Spark говорит: «Нет! Вопрос с Did — ответ тоже с...»",
+      "en": "Choose: ___ is your school bag?",
+      "ky": " Choose: ___ is your school bag?"
+    },
+    {
+      "key": "data.tasks.g4e_quest3_q3_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Yes, they is.",
+      "en": "When",
+      "ky": "When"
+    },
+    {
+      "key": "data.tasks.g4e_quest3_q3_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Yes, they are.",
+      "en": "Who",
+      "ky": "Who"
+    },
+    {
+      "key": "data.tasks.g4e_quest3_q3_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Yes, they did.",
+      "en": "Where",
+      "ky": "Where"
+    },
+    {
+      "key": "data.tasks.g4e_quest_q3",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали спрашивает про сестру: «Do your sister go to the same school?» Spark говорит, что помощник выбран неверно. Как правильно?",
+      "en": "Choose: ___ is your favourite colour?",
+      "ky": " Choose: ___ is your favourite colour?"
+    },
+    {
+      "key": "data.tasks.g4e_quest_q3_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Do",
+      "en": "How",
+      "ky": "How"
+    },
+    {
+      "key": "data.tasks.g4e_quest_q3_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Are",
+      "en": "Where",
+      "ky": "Where"
+    },
+    {
+      "key": "data.tasks.g4e_quest_q3_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Does",
+      "en": "What",
+      "ky": "What"
+    },
+    {
+      "key": "data.tasks.g4e_quest_q4",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Инопланетянин приземлился и задаёт вопрос: «___ humans sleep at night?» Какое слово начинает вопрос?",
+      "en": "Choose: ___ did you go yesterday?",
+      "ky": " Choose: ___ did you go yesterday?"
+    },
+    {
+      "key": "data.tasks.g4e_quest_q4_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Are",
+      "en": "What",
+      "ky": "What"
+    },
+    {
+      "key": "data.tasks.g4e_quest_q4_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Do",
+      "en": "Where",
+      "ky": "Where"
+    },
+    {
+      "key": "data.tasks.g4e_quest_q4_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Is",
+      "en": "Who",
+      "ky": "Who"
+    },
+    {
+      "key": "data.tasks.g4s_help2_q1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "«Дай мне ластик!» vs. «Можешь одолжить ластик, пожалуйста?» Какой вариант вежливее?",
+      "en": "What does \"mutual assistance\" mean?",
+      "ky": " Что значит «взаимопомощь»?"
+    },
+    {
+      "key": "data.tasks.g4s_help2_q1_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Первый — он короткий и понятный",
+      "en": "Помогать только себе",
+      "ky": "Помогать только себе"
+    },
+    {
+      "key": "data.tasks.g4s_help2_q1_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Второй — вежливый вопрос, а не приказ",
+      "en": "Помогать друг другу",
+      "ky": "Помогать друг другу"
+    },
+    {
+      "key": "data.tasks.g4s_help2_q1_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Оба одинаково вежливые",
+      "en": "Просить помощи",
+      "ky": "Просить помощи"
+    },
+    {
+      "key": "data.tasks.g4s_help2_q3_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Ничего не говорить — и так понятно",
+      "en": "Не смотреть",
+      "ky": "Не смотреть"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Маша потеряла рюкзак на перемене. К кому ей сначала обратиться?",
+      "en": "Why help strangers?",
+      "ky": " Зачем помогают незнакомым?"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q1_a",
+      "categories": [
+        "length_outlier",
+        "option_set_inconsistent"
+      ],
+      "ru": "Сначала спорить с одноклассниками, кто взял",
+      "en": "Ради награды",
+      "ky": "Ради награды"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q1_b",
+      "categories": [
+        "length_outlier",
+        "option_set_inconsistent"
+      ],
+      "ru": "Сначала к учителю или в учительскую, потом действовать по указанию взрослых",
+      "en": "Из сочувствия и доброты",
+      "ky": "Из сочувствия и доброты"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q1_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Никуда не обращаться — само найдётся",
+      "en": "Из обязанности",
+      "ky": "Из обязанности"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q2",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Младший брат Тали плачет, но не говорит почему. Что поможет ему рассказать о своей проблеме?",
+      "en": "What is a volunteer?",
+      "ky": " Ыктыярчы деген эмне?"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q2_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Кричать: «Говори немедленно!»",
+      "en": "Помогает за деньги",
+      "ky": "Помогает за деньги"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q2_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Спокойно спросить и выслушать",
+      "en": "Помогает добровольно",
+      "ky": "Помогает добровольно"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q2_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Отвернуться — сам успокоится",
+      "en": "Просит помощи",
+      "ky": "Просит помощи"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q3",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали хочет помочь пожилой соседке донести сумку. Как правильно предложить помощь, чтобы не обидеть?",
+      "en": "How to react if you were helped?",
+      "ky": " Сага жардам бергенде кандай жооп берүү керек?"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q3_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "«Дай я сам — ты слабая»",
+      "en": "Промолчать",
+      "ky": "Промолчать"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q3_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "«Мне не нужна твоя помощь» (это чужая реплика, не предложение)",
+      "en": "Убежать",
+      "ky": "Убежать"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q3_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "«Могу помочь донести?»",
+      "en": "Сказать «спасибо»",
+      "ky": "Сказать «спасибо»"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q4",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Учитель объяснил тему, но Тали не понял. Тали говорит: «Подниму руку прямо сейчас и перебью!» Friendly морщится. Как лучше поступить?",
+      "en": "What should you do if you see that someone is ill?",
+      "ky": " Что делать, если видишь, что кому-то плохо?"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q4_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Перебить с места громко",
+      "en": "Не замечать",
+      "ky": "Не замечать"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q4_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Подойти после урока или поднять руку в подходящий момент",
+      "en": "Спросить: «Тебе помочь?»",
+      "ky": "Спросить: «Тебе помочь?»"
+    },
+    {
+      "key": "data.tasks.g4s_help3_q4_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Шептать на весь класс",
+      "en": "Позвать смотреть",
+      "ky": "Позвать смотреть"
+    },
+    {
+      "key": "data.tasks.g4s_help_q1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали стоит с пакетами перед тяжёлой дверью и говорит: «Сам справлюсь!» — и продолжает толкать её ногой. Это мудрое решение?",
+      "en": "What if a friend falls and gets hurt?",
+      "ky": " Что сделать, если друг упал и поранился?"
+    },
+    {
+      "key": "data.tasks.g4s_help_q1_a",
+      "categories": [
+        "length_outlier",
+        "option_set_inconsistent"
+      ],
+      "ru": "Да, надо всегда справляться самому",
+      "en": "Посмеяться",
+      "ky": "Посмеяться"
+    },
+    {
+      "key": "data.tasks.g4s_help_q1_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Нет — лучше попросить кого-то придержать дверь",
+      "en": "Помочь и позвать взрослого",
+      "ky": "Помочь и позвать взрослого"
+    },
+    {
+      "key": "data.tasks.g4s_help_q1_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Да, можно и дальше толкать ногой",
+      "en": "Уйти",
+      "ky": "Уйти"
+    },
+    {
+      "key": "data.tasks.g4s_help_q3",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Одноклассник не понимает задание, но молчит и расстраивается. Что ему стоит сделать?",
+      "en": "What does it mean to “help”?",
+      "ky": " Что значит «помогать»?"
+    },
+    {
+      "key": "data.tasks.g4s_help_q3_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Молчать и злиться дальше",
+      "en": "Делать всё за другого",
+      "ky": "Делать всё за другого"
+    },
+    {
+      "key": "data.tasks.g4s_help_q3_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Смеяться над собственной ошибкой",
+      "en": "Не обращать внимания",
+      "ky": "Не обращать внимания"
+    },
+    {
+      "key": "data.tasks.g4s_help_q3_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Сказать учителю или попросить одноклассника объяснить",
+      "en": "Поддерживать в нужный момент",
+      "ky": "Поддерживать в нужный момент"
+    },
+    {
+      "key": "data.tasks.g4s_help_q4",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали первый раз едет в новый район и не знает дороги. Он говорит: «Буду ехать наугад — не хочу спрашивать, это стыдно.» Согласен ли с ним Friendly?",
+      "en": "How do you feel about helping others?",
+      "ky": " Башкаларга жардам берип жатканда өзүңдү кандай сезесиң?"
+    },
+    {
+      "key": "data.tasks.g4s_help_q4_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Да, лучше разобраться самому",
+      "en": "Плохо",
+      "ky": "Плохо"
+    },
+    {
+      "key": "data.tasks.g4s_help_q4_b",
+      "categories": [
+        "length_outlier",
+        "option_set_inconsistent"
+      ],
+      "ru": "Нет — лучше спокойно спросить взрослого и назвать адрес",
+      "en": "Хорошо и радостно",
+      "ky": "Хорошо и радостно"
+    },
+    {
+      "key": "data.tasks.g4s_help_q4_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Да, просить помощи — это стыдно",
+      "en": "Никак",
+      "ky": "Никак"
+    },
+    {
+      "key": "data.tasks.g4s_turn2_q1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали не знает, как честно разделить самокат между тремя друзьями. Friendly предлагает варианты. Какой самый справедливый?",
+      "en": "Another is playing with a toy. What will you do?",
+      "ky": " Другой играет с игрушкой. Что сделаешь?"
+    },
+    {
+      "key": "data.tasks.g4s_turn2_q1_a",
+      "categories": [
+        "length_outlier",
+        "option_set_inconsistent"
+      ],
+      "ru": "Тали берёт самокат себе — он же хозяин",
+      "en": "Take it away",
+      "ky": "Тартып алуу"
+    },
+    {
+      "key": "data.tasks.g4s_turn2_q1_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "По очереди — каждому по одинаковому времени",
+      "en": "Wait or ask politely",
+      "ky": "Күтүү же сылыктык менен суроо"
+    },
+    {
+      "key": "data.tasks.g4s_turn2_q1_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Кто сильнее — тот и катается",
+      "en": "Cry",
+      "ky": "Ыйлоо"
+    },
+    {
+      "key": "data.tasks.g4s_turn2_q2",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Один ребёнок всегда берёт самый большой кусок пирога. Как объяснить ему про справедливость?",
+      "en": "What is a compromise?",
+      "ky": " Компромисс деген эмне?"
+    },
+    {
+      "key": "data.tasks.g4s_turn2_q2_a",
+      "categories": [
+        "length_outlier",
+        "option_set_inconsistent"
+      ],
+      "ru": "Решение, при котором всем понятно и никто не обижен — это и есть справедливость",
+      "en": "A solution for both sides",
+      "ky": "Эки тарап үчүн чечим"
+    },
+    {
+      "key": "data.tasks.g4s_turn2_q2_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Победа одного — это нормально",
+      "en": "One person's victory",
+      "ky": "Бир адамдын жеңиши"
+    },
+    {
+      "key": "data.tasks.g4s_turn2_q2_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Справедливость — это ссора",
+      "en": "An argument",
+      "ky": "Талаш"
+    },
+    {
+      "key": "data.tasks.g4s_turn2_q3_a",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Это слабость, уступать не надо",
+      "en": "Weakness",
+      "ky": "Алсыздык"
+    },
+    {
+      "key": "data.tasks.g4s_turn2_q3_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Это грубость в ответ на грубость",
+      "en": "Rudeness",
+      "ky": "Дөрөкөлүк"
+    },
+    {
+      "key": "data.tasks.g4s_turn2_q3_c",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Это решение, при котором каждая сторона чуть-чуть уступает ради общего блага",
+      "en": "Willingness to compromise",
+      "ky": "Ийкемдүүлүк"
+    },
+    {
+      "key": "data.tasks.g4s_turn3_q4_a",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Объявить — это правильно, Тали прав",
+      "en": "Shout",
+      "ky": "Кыйкыруу"
+    },
+    {
+      "key": "data.tasks.g4s_turn3_q4_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Сначала нужно поговорить со всеми участниками и получить согласие",
+      "en": "Talk and find a solution together",
+      "ky": "Сүйлөшүп, чечим табуу"
+    },
+    {
+      "key": "data.tasks.g4s_turn_q1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали собирается прыгнуть к другу в середину очереди. Friendly тихо останавливает его. Как правильно поступить?",
+      "en": "What does it mean to “wait your turn”?",
+      "ky": " Что значит «ждать своей очереди»?"
+    },
+    {
+      "key": "data.tasks.g4s_turn_q1_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Прыгнуть — друг же позвал!",
+      "en": "Take first",
+      "ky": "Биринчи алуу"
+    },
+    {
+      "key": "data.tasks.g4s_turn_q1_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Уважать право других на очередь и встать в конец",
+      "en": "Respect others and do not interrupt",
+      "ky": "Башкаларды урматтоо жана бөлбөө"
+    },
+    {
+      "key": "data.tasks.g4s_turn_q1_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Кричать, чтобы пропустили быстрее",
+      "en": "Shout louder",
+      "ky": "Катуураак кыйкыруу"
+    },
+    {
+      "key": "data.tasks.g4s_turn_q3_c",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Потому что это нарушает право других на уважение",
+      "en": "It shows respect",
+      "ky": "Бул урматтоонун белгиси"
+    },
+    {
+      "key": "data.tasks.g4s_turn_q4_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Договориться заранее и соблюдать порядок",
+      "en": "Raise your hand",
+      "ky": "Колду көтөрүү"
+    }
+  ]
+}

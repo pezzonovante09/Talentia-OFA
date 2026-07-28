@@ -1,0 +1,21 @@
+﻿node : [eval]:8
+C:\Users\User\AppData\Local\Temp\ps-script-2c3a1f58-96d7-4475-a509-32bfb90b7e23.ps1:78 знак:1
++ node -e "
++ ~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([eval]:8:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  const i=w.indexOf(" id: "+id+" \);
+                               ^^^^^
+
+SyntaxError: Invalid or unexpected token
+    at makeContextifyScript (node:internal/vm:185:14)
+    at compileScript (node:internal/process/execution:386:10)
+    at node:internal/process/execution:450:25
+    at [eval]-wrapper:6:24
+    at runScriptInContext (node:internal/process/execution:447:60)
+    at evalFunction (node:internal/process/execution:87:30)
+    at evalScript (node:internal/process/execution:99:3)
+    at node:internal/main/eval_string:74:3
+
+Node.js v22.14.0

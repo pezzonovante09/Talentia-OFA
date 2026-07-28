@@ -1,0 +1,15 @@
+﻿ky lessons 13 hits 47
+mc+input 124 pureMc 1 richer 13
+g4r-conj-l1 real=0 false=0 shared=3 e.g. KY="╤З╨╕╤В╨░╨╡╤И╤М" EN="╤З╨╕╤В╨░╨╡╤И╤М"
+g4r-conj-l2 real=0 false=0 shared=6 e.g. KY="╨Ь╤Л ╨┐╨╛╤С╨╝" EN="╨Ь╤Л ╨┐╨╛╤С╨╝"
+g4r-conj-l3 real=0 false=0 shared=6 e.g. KY="╨│╨╛╨▓╨╛╤А╨╕╤В╤М" EN="╨│╨╛╨▓╨╛╤А╨╕╤В╤М"
+g4r-cases-l1 real=3 false=0 shared=0 e.g. KY="╨╕╨╝╨╡╨╜╨╕╤В╨╡╨╗╤М╨╜╤Л╨╣: ┬л╨║╨╜╨╕╨│╨░┬╗" EN="nominative: ┬л╨║╨╜╨╕╨│╨░┬╗"
+g4r-cases-l2 real=6 false=0 shared=3 e.g. KY="╨Ъ╤В╨╛? ╨з╤В╨╛?" EN="╨Ъ╤В╨╛? ╨з╤В╨╛?"
+g4r-cases-l3 real=6 false=0 shared=0 e.g. KY="╨Я╤А╨╡╨┤╨╗╨╛╨╢╨╜╤Л╨╣: ┬л╨╛ ╨╗╨╡╤Б╨╡┬╗" EN="Prepositional: ┬л╨╛ ╨╗╨╡╤Б╨╡┬╗"
+g4r-text-l3 real=0 false=0 shared=3 e.g. KY="╤Б╨╜╨░╤З╨░╨╗╨░" EN="╤Б╨╜╨░╤З╨░╨╗╨░"
+jungle-aba-showcase real=2 false=0 shared=0 e.g. KY="╨░╨░╨░╨░" EN="aaaa"
+jungle-sub-1 real=1 false=0 shared=0 e.g. KY="8 ╨╝╨╕╨╜╤Г╤Б 3 =?" EN="8 minus 3 =?"
+canyon-sent-1 real=1 false=0 shared=0 e.g. KY="╨Ь╨╕╤А╨░" EN="Mira"
+space-planets-1 real=2 false=0 shared=0 e.g. KY="╨Ь╨░╤А╤Б" EN="Mars"
+space-planets-2 real=3 false=0 shared=0 e.g. KY="╨Ь╨╡╤А╨║╤Г╤А╨╕╨╣" EN="Mercury"
+space-solar-1 real=2 false=0 shared=0 e.g. KY="╨Ь╨░╤А╤Б" EN="Mars"

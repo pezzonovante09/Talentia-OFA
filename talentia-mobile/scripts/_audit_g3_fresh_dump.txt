@@ -1,0 +1,1271 @@
+
+######## g3m-1000-l1 — Тысячи [multiple_choice,input]
+  [dialog npc]
+    RU: Я хочу посчитать, сколько чешуек у дракона на картинке! Там явно больше ста… может, тысяча?
+    EN: Hello! Numbers up to 1000 — hundreds!
+    KY: Салам! 1000гө чейинки сандар — жүздүктөр!
+  [dialog tali]
+    RU: Тысяча — это огромное число! Но мы с тобой вместе разберёмся: 100, 200, 300… идём к тысяче!
+    EN: 100, 200, 300... Hundreds! 1000 — one thousand!
+    KY: 100, 200, 300... Жүздүктөр! 1000 — миң!
+  t1 <multiple_choice>
+    Q RU: Тали считает чешуйки блоками по 100. У него 3 блока. Сколько чешуек?
+    Q EN: 3 hundred is what number?
+    Q KY:  3 жүздүк — бул кайсы сан?
+    a   RU:200 | EN:200 | KY:200
+    b ✓ RU:300 | EN:300 | KY:300
+    c   RU:400 | EN:400 | KY:400
+  t2 <multiple_choice>
+    Q RU: На складе 5 ящиков, в каждом по 100 предметов. Сколько предметов всего?
+    Q EN: Five hundred is what number?
+    Q KY:  5 жүздүк — бул кайсы сан?
+    a   RU:400 | EN:400 | KY:400
+    b ✓ RU:500 | EN:500 | KY:500
+    c   RU:600 | EN:600 | KY:600
+  t3 <input>
+    Q RU: Тали нашёл волшебника, который умножает всё на 7. Он взял 100 и начал колдовать: 100 × 7 = ?
+    Q EN: 100 × 7 =?
+    Q KY:  100 × 7 =?
+  t4 <multiple_choice>
+    Q RU: Тали копил монеты по 100 штук. Когда у него стала тысяча, сколько стопок он насчитал?
+    Q EN: How many hundreds in a thousand?
+    Q KY:  Миңде канча жүздүк бар?
+    a   RU:5 | EN:5 | KY:5
+    b   RU:8 | EN:8 | KY:8
+    c ✓ RU:10 | EN:10 | KY:10
+  AUTOFLAGS:
+    - KY===RU (EN differs): intro0.title: «Числа до 1000!»
+
+######## g3m-1000-l2 — Разряды [input,multiple_choice]
+  [dialog tali]
+    RU: Я смотрю на число 247 и пытаюсь понять — 2 сотни, 4 десятка и 7 единиц? Или я неправильно раскладываю?
+    EN: Place values: units, tens, hundreds!
+    KY: Разряддар: бирдиктер, ондуктар, жүздүктөр!
+  [dialog npc]
+    RU: Тали, ты правильно думаешь! Давай проверим на заданиях — помоги мне убедиться, что я тоже понял правило.
+    EN: 247 = 2 hundreds, 4 tens, 7 units!
+    KY: 247 = 2 жүздүк, 4 ондук, 7 бирдик!
+  t1 <input>
+    Q RU: Детектив Тали изучает число 347 под лупой. Сколько сотен он насчитал?
+    Q EN: How many hundreds are there among 347?
+    Q KY:  347 санында канча жүздүк бар?
+  t2 <input>
+    Q RU: В числе 456 спрятались десятки. Сколько их там притаилось?
+    Q EN: How many dozen are 456?
+    Q KY:  456 санында канча ондук бар?
+  t3 <input>
+    Q RU: Тали собирает число из запчастей: 2 сотни, 3 десятка и 5 единиц. Что получилось?
+    Q EN: Write down the number: 2 hundreds, 3 tens, 5 units
+    Q KY:  Запиши число: 2 сотни, 3 десятка, 5 единиц
+  t4 <multiple_choice>
+    Q RU: Три числа поспорили, кто из них самый большой: 398, 403 и 389. Тали взялся их рассудить. Кто победил?
+    Q EN: Compare the numbers and pick the right answer: Which is the largest number: 398, 403 or 389?
+    Q KY: Сандарды салыштырып, туура жоопту танда: Какое число самое большое: 398, 403 или 389?
+    a   RU:398 | EN:398 | KY:398
+    b ✓ RU:403 | EN:403 | KY:403
+    c   RU:389 | EN:389 | KY:389
+  AUTOFLAGS:
+    - KY===RU (EN differs): intro0.title: «Разбираем число 247!»
+    - KY===RU (EN differs): intro1.title: «Число 356»
+
+######## g3m-1000-l3 — Сравнение [multiple_choice,input]
+  [dialog tali]
+    RU: 356 и 298 — какое больше? Я хочу сказать 298, потому что там цифры интереснее… но это же неправильный подход?
+    EN: 356 and 298 - which is larger? I want to say 298 because the numbers are more interesting there... but is this the wrong approach?
+    KY: 356 жана 298 - кайсынысы чоңураак? 298 деп айткым келет, анткени ал жакта сандар кызыктуураак... бирок бул туура эмес мамилеби?
+  [dialog npc]
+    RU: Хаха! Нет, Тали. Сначала смотри на сотни — 3 больше 2, значит 356 больше. Давай закрепим!
+    EN: 356 > 298. More digits — bigger number!
+    KY: 356 > 298. Разряддар көп — сан чоң!
+  t1 <multiple_choice>
+    Q RU: Какое число больше: 356 или 298?
+    Q EN: Which number is greater: 356 or 298?
+    Q KY: Кайсы сан чоңураак: 356 же 298?
+    a ✓ RU:356 | EN:356 | KY:356
+    b   RU:298 | EN:298 | KY:298
+  t2 <multiple_choice>
+    Q RU: Сравни: 450 ___ 405
+    Q EN: Compare: 450 ___ 405
+    Q KY: Салыштыр: 450 ___ 405
+    a ✓ RU:> | EN:> | KY:>
+    b   RU:< | EN:< | KY:<
+    c   RU:= | EN:= | KY:=
+  t3 <multiple_choice>
+    Q RU: Тали говорит: «512 = 521». Прав ли он?
+    Q EN: Tali says: "512 = 521". Is he right?
+    Q KY: Тали айтат: «512 = 521». Ал туурабы?
+    a   RU:Да | EN:Yes | KY:Ооба
+    b ✓ RU:Нет | EN:No | KY:Жок
+  t4 <input>
+    Q RU: Какое число меньше: 703 или 730?
+    Q EN: Which number is smaller: 703 or 730?
+    Q KY: Кайсы сан кичирээк: 703 же 730?
+
+######## g3m-tab-l1 — Таблица на 4 и 6 [input]
+  [dialog tali]
+    RU: Мне сказали, что умножение на 4 — это «удвоить дважды». Я попробовал: 4 × 5 = удвоить 5 = 10, удвоить 10 = 20. Правильно?
+    EN: Times tables for 4 and 6! 4 x 5 = 20, 6 x 7 = 42!
+    KY: 4 жана 6га таблица! 4 × 5 = 20, 6 × 7 = 42!
+  [dialog npc]
+    RU: Тали, это отличное открытие! Ты нашёл хитрый способ. Давай проверим его в заданиях!
+    EN: Multiplying by 4 — double and double again!
+    KY: 4кө көбөйтүү — эки жолу эки эсе!
+  t1 <input>
+    Q RU: У осьминога 4 друга, у каждого по 6 рук. Тали считает: 4 × 6 = ?
+    Q EN: 4 × 6 =?
+    Q KY:  4 × 6 =?
+  t2 <input>
+    Q RU: Паук сплёл 4 паутины, в каждой 8 узелков. Сколько узелков завязал трудолюбивый паук? 4 × 8 = ?
+    Q EN: 4 × 8 =?
+    Q KY:  4 × 8 =?
+  t3 <input>
+    Q RU: На каждой из 6 полок по 7 книг. Тали считает всю библиотеку: 6 × 7 = ?
+    Q EN: 6 × 7 =?
+    Q KY:  6 × 7 =?
+  t4 <input>
+    Q RU: Пчела облетела 6 цветков и собрала с каждого по 9 капель нектара. Тали хочет узнать итог: 6 × 9 = ?
+    Q EN: 6 × 9 =?
+    Q KY:  6 × 9 =?
+
+######## g3m-tab-l2 — Таблица на 7 и 8 [input]
+  [dialog npc]
+    RU: 7 × 8 — это самый трудный пример для меня! Я всегда забываю ответ. Кто-нибудь придумал способ запомнить?
+    EN: Times tables for 7 and 8! Harder, but you can do it!
+    KY: 7 жана 8ге таблица! Кыйыныраак, бирок жасай аласың!
+  [dialog tali]
+    RU: Есть мнемоника: 5, 6, 7, 8 — пять шесть семь восемь! 56 = 7 × 8. Попробуй!
+    EN: 7 x 8 = 56! Remember this pair!
+    KY: 7 × 8 = 56! Бул жупту жатта!
+  t1 <input>
+    Q RU: Неделя — 7 дней. За 5 недель сколько дней? 7 × 5 = ?
+    Q EN: 7 × 5 =?
+    Q KY:  7 × 5 =?
+  t2 <input>
+    Q RU: Осьминог купил 7 тетрадей по 8 листов. Тали помогает считать: 7 × 8 = ?
+    Q EN: 7 × 8 =?
+    Q KY:  7 × 8 =?
+  t3 <input>
+    Q RU: В 8 корзинах по 6 яблок. Тали готовится к пирогу: 8 × 6 = ?
+    Q EN: 8 × 6 =?
+    Q KY:  8 × 6 =?
+  t4 <input>
+    Q RU: Стадо из 8 коров даёт по 9 литров молока. Сколько литров получит фермер? 8 × 9 = ?
+    Q EN: 8 × 9 =?
+    Q KY:  8 × 9 =?
+
+######## g3m-tab-l3 — Таблица на 9 [input,multiple_choice]
+  [dialog tali]
+    RU: Я заметил кое-что про таблицу на 9: 9×1=9, 9×2=18, 9×3=27… Сумма цифр в ответе всегда равна 9! Это правда или я придумал?
+    EN: I noticed something about the table for 9: 9x1=9, 9x2=18, 9x3=27... The sum of the digits in the answer is always 9! Is this true or did I make it up?
+    KY: Мен 9 үчүн таблицадан бир нерсени байкадым: 9x1=9, 9x2=18, 9x3=27... Жооптогу цифралардын суммасы дайыма 9! Бул чынбы же мен ойлоп таптымбы?
+  [dialog npc]
+    RU: Тали, это настоящее математическое открытие! Проверь на заданиях — это действительно работает?
+    EN: The digits of any multiple of 9 always add up to 9! 9 x 5 = 45!
+    KY: 9дун жообундагы цифралардын суммасы дайыма 9! 9 × 5 = 45!
+  t1 <input>
+    Q RU: Кот прожил 4 из своих 9 жизней. Но сейчас важнее: 9 × 4 = ?
+    Q EN: 9 × 4 =?
+    Q KY:  9 × 4 =?
+  t2 <input>
+    Q RU: На 9 ёлках по 7 шишек. Белка хочет знать итог: 9 × 7 = ?
+    Q EN: 9 × 7 =?
+    Q KY:  9 × 7 =?
+  t3 <input>
+    Q RU: Магический квадрат: 9 рядов по 9 клеток. Сколько клеток на доске? 9 × 9 = ?
+    Q EN: 9 × 9 =?
+    Q KY:  9 × 9 =?
+  t4 <multiple_choice>
+    Q RU: Тали утверждает: «9 × 6 = 54!» И добавляет: «5+4=9 — правило работает!» Он прав?
+    Q EN: 9 × 6 = 54. Right?
+    Q KY:  9 × 6 = 54. Верно?
+    a   RU:Нет, 9 × 6 = 52 | EN:No, 9 × 6 = 52 | KY:Жок, 9 × 6 = 52
+    b ✓ RU:Да, 54 и 5+4=9 — всё верно | EN:Yes, 54 and 5+4=9 — all correct | KY:Ооба, 54 жана 5+4=9 — баары туура
+    c   RU:Нет, 9 × 6 = 56 | EN:No, 9 × 6 = 56 | KY:Жок, 9 × 6 = 56
+
+######## g3m-div-l1 — Деление на 2 и 3 [multiple_choice,input]
+  [dialog tali]
+    RU: Деление — это как умножение наоборот? Если 2 × 3 = 6, то 6 ÷ 2 = 3? Я правильно понял?
+    EN: Division is the opposite of multiplication! 6 / 2 = 3 because 2 x 3 = 6!
+    KY: Бөлүү — көбөйтүүнүн тескери амалы! 6 ÷ 2 = 3, анткени 2 × 3 = 6!
+  [dialog npc]
+    RU: Тали, именно! Деление и умножение — лучшие друзья. Давай проверим твою идею на задачах!
+    EN: We divide equally. 8 / 4 = 2!
+    KY: Бирдей бөлөбүз. 8 ÷ 4 = 2!
+  t1 <multiple_choice>
+    Q RU: Два друга нашли 6 монет и хотят разделить поровну. Тали говорит: «По 3 монеты каждому!» Прав ли он? 6 ÷ 2 = ?
+    Q EN: Two friends found 6 coins and want to share them equally. How many coins does each get? 6 ÷ 2 =?
+    Q KY: Эки дос 6 тыйын тапты жана бирдей бөлүштүрмөкчү. Ар бири канча тыйын алат? 6 ÷ 2 =?
+    a   RU:По 2 монеты | EN:2 coins | KY:2 тыйын
+    b ✓ RU:По 3 монеты | EN:3 coins | KY:3 тыйын
+    c   RU:По 4 монеты | EN:4 coins | KY:4 тыйын
+  t2 <input>
+    Q RU: Мама испекла 10 пирожков и честно раздала двоим детям. Сколько досталось каждому? 10 ÷ 2 = ?
+    Q EN: Mum baked 10 pies and shared them fairly between two children. How many pies did each child get? 10 ÷ 2 =?
+    Q KY: Апа 10 пирожок бышырды жана эки балага бирдей берди. Ар бирине канча пирожок тийди? 10 ÷ 2 =?
+  t3 <input>
+    Q RU: 12 карандашей в 3 коробки поровну. Сколько в каждой? 12 ÷ 3 = ?
+    Q EN: 12 pencils need to be put into 3 equal boxes. How many pencils in each? 12 ÷ 3 =?
+    Q KY: 12 карандашты 3 бирдей кутуга салуу керек. Ар биринде канча карандаш? 12 ÷ 3 =?
+  t4 <multiple_choice>
+    Q RU: Капитан разделил 9 матросов на 3 вахты поровну. Тали считает: «По 3 матроса!» Он прав? 9 ÷ 3 = ?
+    Q EN: The captain divided 9 sailors into 3 equal watches. How many sailors in each watch? 9 ÷ 3 =?
+    Q KY: Капитан 9 матросту 3 бирдей вахтага бөлдү. Ар бир вахтада канча матрос? 9 ÷ 3 =?
+    a   RU:По 2 матроса | EN:2 sailors | KY:2 матрос
+    b ✓ RU:По 3 матроса | EN:3 sailors | KY:3 матрос
+    c   RU:По 4 матроса | EN:4 sailors | KY:4 матрос
+
+######## g3m-div-l2 — Деление на 4 и 5 [input]
+  [dialog tali]
+    RU: Хочу поделить 28 печенек на 4 тарелки поровну. Я думаю, по 7. Но я не уверен — помоги проверить!
+    EN: I want to divide 28 cookies equally among 4 plates. I think 7 each. But I’m not sure - help me check!
+    KY: 28 печеньени 4 тарелкага бирдей бөлгүм келет. Ар бири 7ден деп ойлойм. Бирок мен ишенбейм - текшерүүгө жардам бериңиз!
+  [dialog npc]
+    RU: Тали, проверим! 4 × 7 = 28? Да! Значит, ты прав. Деление всегда проверяется умножением.
+    EN: Division and multiplication are friends!
+    KY: Бөлүү жана көбөйтүү — достор!
+  t1 <input>
+    Q RU: 20 звёздочек в 4 конверта поровну. Сколько в каждом? 20 ÷ 4 = ?
+    Q EN: 20 stars were placed into 4 equal envelopes. How many stars are in each? 20 ÷ 4 =?
+    Q KY: 20 жылдыз 4 бирдей конвертке салынды. Ар биринде канча жылдыз? 20 ÷ 4 =?
+  t2 <input>
+    Q RU: 28 печенек на 4 тарелки. Тали думает по 7 — проверь его! 28 ÷ 4 = ?
+    Q EN: 28 biscuits were shared equally between 4 plates. How many biscuits on each plate? 28 ÷ 4 =?
+    Q KY: 28 печенье 4 тарелкага бирдей бөлүндү. Ар бир тарелкада канча печенье? 28 ÷ 4 =?
+  t3 <input>
+    Q RU: Тали делит 7 яблок на 2 друзей поровну. Сколько получит каждый и сколько останется? 7 ÷ 2 = ? (частное и остаток)
+    Q EN: Tali shares 7 apples between 2 friends equally. How many does each get, and what is left over? 7 ÷ 2 = ? (quotient and remainder)
+    Q KY: Тали 7 алманы 2 досторуна бирдей бөлөт. Ар бирине канча тийет жана канча калат? 7 ÷ 2 = ? (бөлүнмө жана калдык)
+  t4 <input>
+    Q RU: 17 карандашей разложили по 5 в коробки. Сколько полных коробок и сколько карандашей останется? 17 ÷ 5 = ? (частное и остаток)
+    Q EN: 17 pencils are packed 5 per box. How many full boxes, and how many pencils are left? 17 ÷ 5 = ? (quotient and remainder)
+    Q KY: 17 карандашты кутуга 5тен салышат. Канча толук куту жана канча карандаш калат? 17 ÷ 5 = ? (бөлүнмө жана калдык)
+  AUTOFLAGS:
+    - KY===RU (EN differs): intro0.title: «Деление с остатком»
+
+######## g3m-div-l3 — Связь умножения и деления [input,multiple_choice]
+  [dialog tali]
+    RU: Если я знаю 7 × 6 = 42, значит я автоматически знаю 42 ÷ 7 = 6 и 42 ÷ 6 = 7? Одно знание — три факта?!
+    EN: If I know 7 × 6 = 42, does that mean I automatically know 42 ÷ 7 = 6 and 42 ÷ 6 = 7? One knowledge - three facts?!
+    KY: Эгерде мен 7 × 6 = 42 деп билсем, бул мен автоматтык түрдө 42 ÷ 7 = 6 жана 42 ÷ 6 = 7ди билем дегенди билдиреби? Бир билим – үч факты?!
+  [dialog npc]
+    RU: Тали, именно! Ты открыл главный секрет таблицы умножения. Проверим на задачах!
+    EN: Check division with multiplication!
+    KY: Бөлүүнү көбөйтүү менен текшер!
+  t1 <input>
+    Q RU: Знаешь, что 5 × 5 = 25? Реши обратную задачу: 25 ÷ 5 = ?
+    Q EN: 25 ÷ 5 =?
+    Q KY:  25 ÷ 5 =?
+  t2 <multiple_choice>
+    Q RU: Тали знает, что 9 × 5 = 45. Значит, 45 ÷ 5 = ?
+    Q EN: If 9 × 5 = 45, what is 45 ÷ 5? Multiplication and division are best friends!
+    Q KY: Эгер 9 × 5 = 45 болсо, 45 ÷ 5 эмнеге барабар? Көбөйтүү жана бөлүү — эң жакшы досторд!
+    a   RU:7 | EN:7 | KY:7
+    b ✓ RU:9 | EN:9 | KY:9
+    c   RU:5 | EN:5 | KY:5
+  t3 <input>
+    Q RU: Раз 3 × 10 = 30, то 30 ÷ 10 = ?
+    Q EN: 30 ÷ 10 =?
+    Q KY:  30 ÷ 10 =?
+  t4 <input>
+    Q RU: Финальный уровень от Тали: если 7 × 6 = 42, то 42 ÷ 6 = ?
+    Q EN: Final level! Use the connection: if 7 × 6 = 42, then 42 ÷ 6 =?
+    Q KY: Акыркы деңгээл! Байланышты колдон: эгер 7 × 6 = 42 болсо, 42 ÷ 6 =?
+
+######## g3r-gen-l1 — Мужской и женский род [multiple_choice,fill_blank,input]
+  [dialog npc]
+    RU: Я слышал про «род» существительных. Это что — у слов есть пол? Слово «стол» — мальчик, а слово «книга» — девочка?
+    EN: Masculine and feminine gender! Table — he, book — she!
+    KY: Эркек жана ургаачы жынысы! Стол — ол (эр.), китеп — ол (аял.)!
+  [dialog tali]
+    RU: Почти! В русском языке три рода: мужской (он), женский (она) и средний (оно). Давай разберёмся — это не так страшно, как кажется!
+    EN: The gender of a noun determines the adjective ending!
+    KY: Зат атоочтун жынысы сын атоочтун жалгоочун аныктайт!
+  t1 <multiple_choice>
+    Q RU: Тали говорит про слово ДОМ: «Это ОН!» Какой это род?
+    Q EN: Tali says about the word HOME (ДОМ): “It is HE!” What gender is that?
+    Q KY: Тали ҮЙ (ДОМ) сөзү жөнүндө: «Бул АЛ (он)!» Бул кайсы жыныс?
+    a ✓ RU:Мужской | EN:Masculine | KY:Эркек
+    b   RU:Женский | EN:Feminine | KY:Аял
+    c   RU:Средний | EN:Neuter | KY:Орто
+  t2 <multiple_choice>
+    Q RU: Слово СТОЛ — с каким местоимением дружит?
+    Q EN: The word TABLE (СТОЛ) — which pronoun does it go with?
+    Q KY: СТОЛ сөзү — кайсы ат атооч менен достошот?
+    a ✓ RU:Он | EN:He (он) | KY:Ал (он)
+    b   RU:Она | EN:She (она) | KY:Ал (она)
+    c   RU:Оно | EN:It (оно) | KY:Ал (оно)
+  t3 <fill_blank>
+    Q RU: Стол — это _ род.
+    Q EN: A table is _ gender.
+    Q KY: Стол — бул _ жыныс.
+  t4 <input>
+    Q RU: Тали говорит: «Я рыцарь мужского рода!» Какое местоимение — боевой клич мужского рода?
+    Q EN: Tali says: “I am a masculine-gender knight!” Which pronoun is the masculine battle cry?
+    Q KY: Тали: «Мен эркек жыныстагы рыцарьмын!» Эркек жыныстын урааны кайсы ат атооч?
+
+######## g3r-gen-l2 — Средний род [multiple_choice,input]
+  [dialog npc]
+    RU: Ладно, мужской и женский я понял. Но СРЕДНИЙ — это что? Между мужским и женским?
+    EN: Neuter gender: window, sea, happiness — it!
+    KY: Орто жынысы: терезе, деңиз, бакыт — ол (орто ж.)!
+  [dialog tali]
+    RU: Хорошая мысль! Средний — это слова с окончанием -о, -е: ОКНО, МОРЕ, СОЛНЦЕ. Они отвечают на «оно моё». Давай проверим!
+    EN: Ending -о, -е often for neuter gender!
+    KY: -о, -е жалгоочтору орто жынысында көп!
+  t1 <multiple_choice>
+    Q RU: Тали смотрит на слово ОКНО: «оно моё». Какой у ОКНО род?
+    Q EN: Tali looks at the word ОКНО: “оно моё”. What gender is ОКНО?
+    Q KY: Тали ОКНО деген сөзгө карайт: «оно моё». ОКНО кандай род?
+    a   RU:Мужской | EN:Masculine | KY:Эркек
+    b   RU:Женский | EN:Feminine | KY:Аял
+    c ✓ RU:Средний | EN:Neuter | KY:Орто
+  t2 <multiple_choice>
+    Q RU: СОЛНЦЕ — какой род? Подставь местоимение: «___ моё»?
+    Q EN: СОЛНЦЕ — what gender? Choose the pronoun: “___ моё”?
+    Q KY: СОЛНЦЕ — кандай род? Местоимениени кой: «___ моё»?
+    a   RU:Он | EN:He (он) | KY:Ал (он)
+    b   RU:Она | EN:She (она) | KY:Ал (она)
+    c ✓ RU:Оно | EN:It (оно) | KY:Ал (оно)
+  t3 <multiple_choice>
+    Q RU: Среди слов МОЛОКО, КОШКА, СТОЛ найди слово среднего рода.
+    Q EN: Among МОЛОКО, КОШКА, СТОЛ find the neuter-gender word.
+    Q KY: МОЛОКО, КОШКА, СТОЛ сөздөрүнүн ичинен орто роддогуну тап.
+    a ✓ RU:Молоко | EN:Молоко | KY:Молоко
+    b   RU:Кошка | EN:Кошка | KY:Кошка
+    c   RU:Стол | EN:Стол | KY:Стол
+  t4 <input>
+    Q RU: Какое местоимение «дружит» со словами среднего рода: ПОЛЕ, НЕБО, ДЕРЕВО?
+    Q EN: Which pronoun goes with neuter words: ПОЛЕ, НЕБО, ДЕРЕВО?
+    Q KY: Орто роддогу сөздөр менен кайсы местоимение «дос»: ПОЛЕ, НЕБО, ДЕРЕВО?
+  AUTOFLAGS:
+    - EN===RU (untranslated): t3.a: «Молоко»
+    - EN===RU (untranslated): t3.b: «Кошка»
+
+######## g3r-gen-l3 — Род прилагательных [multiple_choice,input]
+  [dialog tali]
+    RU: Я написал «синяя небо». Почему все смеются? Небо же красивое!
+    EN: Gender of adjectives: big table, big book, big window!
+    KY: Сын атоочтордун жынысы: чоң стол, чоң китеп, чоң терезе!
+  [dialog npc]
+    RU: Тали, небо среднего рода — СИНЕЕ небо, а не «синяя»! Прилагательное меняется по роду вместе с существительным. Разберёмся?
+    EN: An adjective agrees with the noun in gender!
+    KY: Сын атооч зат атооч менен жынысы жагынан макулдашат!
+  t1 <multiple_choice>
+    Q RU: Тали пишет про ДОМ. «Высокий дом» или «Высокое дом»?
+    Q EN: Tali writes about ДОМ. Is it «Высокий дом» or «Высокое дом»?
+    Q KY: Тали ДОМ жөнүндө жазат. «Высокий дом»би же «Высокое дом»би?
+    a ✓ RU:Высокий дом | EN:Высокий дом | KY:Высокий дом
+    b   RU:Высокая дом | EN:Высокая дом | KY:Высокая дом
+    c   RU:Высокое дом | EN:Высокое дом | KY:Высокое дом
+  t2 <multiple_choice>
+    Q RU: «Синяя птица» или «Синий птица»? Птица — женский род, значит:
+    Q EN: «Синяя птица» or «Синий птица»? Птица is feminine, so:
+    Q KY: «Синяя птица»би же «Синий птица»би? Птица — аял род, демек:
+    a ✓ RU:Синяя птица | EN:Синяя птица | KY:Синяя птица
+    b   RU:Синий птица | EN:Синий птица | KY:Синий птица
+    c   RU:Синее птица | EN:Синее птица | KY:Синее птица
+  t3 <multiple_choice>
+    Q RU: Тали пишет про МОЛОКО. «ТЁПЛОЕ молоко» — почему такое окончание?
+    Q EN: Tali writes about МОЛОКО. Why «ТЁПЛОЕ молоко»?
+    Q KY: Тали МОЛОКО жөнүндө жазат. Эмне үчүн «ТЁПЛОЕ молоко»?
+    a ✓ RU:Потому что МОЛОКО — среднего рода | EN:Потому что МОЛОКО — среднего рода | KY:Себеби МОЛОКО — орто роддо
+    b   RU:Потому что МОЛОКО — мужского рода | EN:Потому что МОЛОКО — мужского рода | KY:Себеби МОЛОКО — эркек роддо
+    c   RU:Просто так красивее | EN:Просто так красивее | KY:Жөн гана кооз угулат
+  t4 <input>
+    Q RU: Подбери прилагательное к слову КНИГА: интересный, интересная или интересное?
+    Q EN: Choose the adjective for КНИГА: интересный, интересная or интересное?
+    Q KY: КНИГА сөзүнө сын атоочту танда: интересный, интересная же интересное?
+  AUTOFLAGS:
+    - EN===RU (untranslated): t1.a: «Высокий дом»
+    - EN===RU (untranslated): t1.b: «Высокая дом»
+    - EN===RU (untranslated): t1.c: «Высокое дом»
+    - EN===RU (untranslated): t2.a: «Синяя птица»
+    - EN===RU (untranslated): t2.b: «Синий птица»
+    - EN===RU (untranslated): t2.c: «Синее птица»
+    - EN===RU (untranslated): t3.a: «Потому что МОЛОКО — среднего рода»
+    - EN===RU (untranslated): t3.b: «Потому что МОЛОКО — мужского рода»
+    - EN===RU (untranslated): t3.c: «Просто так красивее»
+
+######## g3r-verb-l1 — Настоящее время [multiple_choice,input]
+  [dialog npc]
+    RU: Я пишу в дневнике прямо сейчас. Какое время использовать — «Тали пишет» или «Тали писал»?
+    EN: Verb in present tense: I read, you read!
+    KY: Учур чактагы этиш: мен окуйм, сен окуйсуң!
+  [dialog tali]
+    RU: Прямо сейчас — значит настоящее время! «Тали пишет» — что делает прямо сейчас.
+    EN: Endings change by person and number!
+    KY: Жалгоочтор жакка жана санга жараша өзгөрөт!
+  t1 <multiple_choice>
+    Q RU: Репортёр ведёт прямой эфир прямо сейчас. «Мальчик ___ по улице». Какой глагол?
+    Q EN: A reporter is live on air. “The boy ___ along the street.” Which verb form?
+    Q KY: Репортер түз эфирде. «Бала көчө боюнча ___». Кайсы форма?
+    a   RU:Шёл (прошедшее) | EN:walked (past) | KY:басып кетти (өткөн)
+    b ✓ RU:Идёт (настоящее) | EN:walks / is walking (present) | KY:басат / жүрөт (азыркы)
+    c   RU:Пойдёт (будущее) | EN:will walk (future) | KY:басат (келечек)
+  t2 <multiple_choice>
+    Q RU: Глагол в настоящем времени отвечает на вопрос:
+    Q EN: A present-tense verb answers the question:
+    Q KY: Азыркы замандын этиши кайсы суроого жооп берет:
+    a   RU:Что делал? | EN:What did he do? | KY:Эмне кылды?
+    b ✓ RU:Что делает? | EN:What is he doing? | KY:Эмне кылат?
+    c   RU:Что будет делать? | EN:What will he do? | KY:Эмне кыла турган?
+  t3 <multiple_choice>
+    Q RU: Найди «шпиона» — глагол в настоящем времени среди слов: ЧИТАЛ, ЧИТАЕТ, ПРОЧИТАЕТ.
+    Q EN: Find the “spy” — the present-tense verb among: CHITAL, CHITAET, PROCHITAET.
+    Q KY: «Шпионду» тап — азыркы замандын этиши кайсы: ЧИТАЛ, ЧИТАЕТ, ПРОЧИТАЕТ.
+    a   RU:ЧИТАЛ (прошедшее) | EN:CHITAL — past tense | KY:ЧИТАЛ — өткөн заман
+    b ✓ RU:ЧИТАЕТ (настоящее) | EN:CHITAET — present tense | KY:ЧИТАЕТ — азыркы заман
+    c   RU:ПРОЧИТАЕТ (будущее) | EN:PROCHITAET — future tense | KY:ПРОЧИТАЕТ — келечек заман
+  t4 <input>
+    Q RU: Тали пишет дневник о событиях прямо сейчас. Какое слово он использует?
+    Q EN: Tali is writing a diary about events right now. Which word does he use?
+    Q KY: Тали азыр эле болуп жаткан окуялар жөнүндө күндөлүк жазат. Ал кайсы сөздү колдонот?
+
+######## g3r-verb-l2 — Прошедшее время [multiple_choice,input]
+  [dialog npc]
+    RU: Я хочу написать про вчера: «Тали гулял в лесу». Правильно? Или «Тали гуляет»?
+    EN: Past tense: read (m.), read (f.), read (n.)!
+    KY: Өткөн чак: окуду (эр.), окуду (аял.), окуду (орто)!
+  [dialog tali]
+    RU: Вчера — это прошедшее время! «Тали гулял» — верно. Суффикс -Л это признак прошедшего.
+    EN: Suffix -л and ending by gender!
+    KY: -л суффикси жана жыныска жараша жалгооч!
+  t1 <multiple_choice>
+    Q RU: Дедушка рассказывает о вчерашнем дне. «Я ___ в лесу». Какой глагол?
+    Q EN: Grandpa talks about yesterday: “I ___ in the forest.” Which verb fits?
+    Q KY: Чоңата кечээ жөнүндө айтат: «Мен токойдо ___». Кайсы этиш?
+    a ✓ RU:Гулял | EN:Walked (Гулял) | KY:Гулял
+    b   RU:Гуляю | EN:Walk (Гуляю) | KY:Гуляю
+    c   RU:Погуляю | EN:Will walk (Погуляю) | KY:Погуляю
+  t2 <multiple_choice>
+    Q RU: ЧИТАЛ — это какое время?
+    Q EN: ЧИТАЛ (read, past) — which tense is it?
+    Q KY: ЧИТАЛ — бул кайсы чак?
+    a   RU:Настоящее | EN:Present | KY:Азыркы
+    b ✓ RU:Прошедшее | EN:Past | KY:Өткөн
+    c   RU:Будущее | EN:Future | KY:Келечек
+  t3 <multiple_choice>
+    Q RU: Выбери глагол в прошедшем времени: ПОБЕЖИТ, БЕЖИТ, ПОБЕЖАЛ.
+    Q EN: Pick the past-tense verb: WILL RUN, RUNS, RAN.
+    Q KY: Өткөн чактагы этишти танда: ПОБЕЖИТ, БЕЖИТ, ПОБЕЖАЛ.
+    a   RU:Побежит | EN:Will run (Побежит) | KY:Побежит
+    b   RU:Бежит | EN:Runs (Бежит) | KY:Бежит
+    c ✓ RU:Побежал | EN:Ran (Побежал) | KY:Побежал
+  t4 <input>
+    Q RU: Тали узнал: в прошедшем времени глагол меняется по роду. Как скажем про девочку?
+    Q EN: Tali learned: in the past tense the verb changes by gender. How do we say it about a girl?
+    Q KY: Тали билди: өткөн заманда этиш жыныска жараша өзгөрөт. Кыз жөнүндө кантип айтасың?
+  AUTOFLAGS:
+    - KY===RU (EN differs): t1.a: «Гулял»
+    - KY===RU (EN differs): t1.b: «Гуляю»
+    - KY===RU (EN differs): t1.c: «Погуляю»
+    - KY===RU (EN differs): t3.a: «Побежит»
+    - KY===RU (EN differs): t3.b: «Бежит»
+    - KY===RU (EN differs): t3.c: «Побежал»
+
+######## g3r-verb-l3 — Лицо глагола [multiple_choice,input]
+  [dialog tali]
+    RU: 1-е лицо — это «я»? Значит когда я говорю «я иду» — это первое лицо? А когда говорю «ты идёшь» — второе?
+    EN: Person of the verb: 1st (I, we), 2nd (you), 3rd (he, she, it, they)!
+    KY: Этиштин жагы: 1-жак (мен, биз), 2-жак (сен), 3-жак (ал, алар)!
+  [dialog npc]
+    RU: Тали, ты сам разобрался! Да: я (1-е), ты (2-е), он/она (3-е). Проверим?
+    EN: I go — 1st person. He goes — 3rd person!
+    KY: Мен барам — 1-жак. Ал барат — 3-жак!
+  t1 <multiple_choice>
+    Q RU: Тали мечтает: «Я ___ в космос!» Глагол в 1-м лице:
+    Q EN: Tali dreams: “I ___ into space!” Verb in the 1st person:
+    Q KY: Тали кыялданат: «Мен космоско ___!» 1-жак этиш:
+    a ✓ RU:Полечу | EN:Полечу | KY:Полечу
+    b   RU:Полетишь | EN:Полетишь | KY:Полетишь
+    c   RU:Полетит | EN:Полетит | KY:Полетит
+  t2 <multiple_choice>
+    Q RU: Слово «читаю» — какое лицо? Подсказка: «я читаю»
+    Q EN: The word «читаю» — which person? Hint: «я читаю»
+    Q KY: «Читаю» сөзү — кайсы жак? Кеңеш: «я читаю»
+    a ✓ RU:1-е лицо (я) | EN:1-е лицо (я) | KY:1-жак (я)
+    b   RU:2-е лицо (ты) | EN:2-е лицо (ты) | KY:2-жак (ты)
+    c   RU:3-е лицо (он) | EN:3-е лицо (он) | KY:3-жак (он)
+  t3 <multiple_choice>
+    Q RU: Учитель говорит ученику: «Ты ___ задачу». 2-е лицо глагола «решить»:
+    Q EN: A teacher tells a student: “You ___ the problem.” 2nd person of «решить»:
+    Q KY: Мугалим окуучуга: «Сен маселени ___». «Решить» этишинин 2-жак:
+    a   RU:Решу (1-е лицо) | EN:I will solve (1st person) | KY:Мен чечем (1-жак)
+    b ✓ RU:Решишь (2-е лицо) | EN:You will solve (2nd person) | KY:Сен чечесиң (2-жак)
+    c   RU:Решит (3-е лицо) | EN:He/she will solve (3rd person) | KY:Ал чечет (3-жак)
+  t4 <input>
+    Q RU: «Они ___ в парке» — 3-е лицо множественного числа глагола «гулять»:
+    Q EN: «Они ___ в парке» — 3rd person plural of «гулять»:
+    Q KY: «Алар паркта ___» — «гулять» этишинин 3-жак көп түрү:
+  AUTOFLAGS:
+    - EN===RU (untranslated): t1.a: «Полечу»
+    - EN===RU (untranslated): t1.b: «Полетишь»
+    - EN===RU (untranslated): t1.c: «Полетит»
+    - EN===RU (untranslated): t2.a: «1-е лицо (я)»
+    - EN===RU (untranslated): t2.b: «2-е лицо (ты)»
+    - EN===RU (untranslated): t2.c: «3-е лицо (он)»
+
+######## g3r-adj-l1 — Согласование [multiple_choice,input]
+  [dialog npc]
+    RU: Красный шар, красная роза, красное яблоко… Одно слово «красный» — три разных формы! Почему?
+    EN: Agreement of adjective with noun!
+    KY: Сын атоочтун зат атооч менен макулдашуусу!
+  [dialog tali]
+    RU: Потому что прилагательное согласуется с существительным в роде! Шар — он (красный). Роза — она (красная). Яблоко — оно (красное).
+    EN: Red ball, red rose, red apple!
+    KY: Кызыл топ, кызыл раймайлы, кызыл алма!
+  t1 <multiple_choice>
+    Q RU: Художник рисует дом. «Дом какой?» — это вопрос к прилагательному или существительному?
+    Q EN: An artist draws a house. “What kind of house?” — is that a question to the adjective or to the noun?
+    Q KY: Сүрөтчү үй тартат. «Үй кандай?» — бул сын атоочкобы же зат атоочкобу?
+    a ✓ RU:К прилагательному | EN:To the adjective | KY:Сын атоочко
+    b   RU:К существительному | EN:To the noun | KY:Зат атоочко
+  t2 <multiple_choice>
+    Q RU: «___ шар» — прилагательное КРАСНЫЙ. Какая форма нужна?
+    Q EN: “___ ball” — adjective RED (КРАСНЫЙ). Which form is needed?
+    Q KY: «___ шар» — сын атооч КРАСНЫЙ. Кайсы форма керек?
+    a ✓ RU:Красный | EN:Red (masc. красный) | KY:Кызыл (красный)
+    b   RU:Красная | EN:Red (fem. красная) | KY:Кызыл (красная)
+    c   RU:Красное | EN:Red (neut. красное) | KY:Кызыл (красное)
+  t3 <multiple_choice>
+    Q RU: «Высокое дерево» или «высокий дерево»? ДЕРЕВО — средний род.
+    Q EN: “Tall tree” or “tall tree (wrong ending)”? TREE (ДЕРЕВО) is neuter.
+    Q KY: «Бийик дарак» же «бийик дарак (туура эмес)»? ДЕРЕВО — орто жыныс.
+    a ✓ RU:Высокое дерево (ср.р. — «-ое») | EN:Tall tree (neuter -ое) | KY:Бийик дарак (орто -ое)
+    b   RU:Высокий дерево | EN:Tall tree (wrong masc. ending) | KY:Бийик дарак (туура эмес)
+  t4 <input>
+    Q RU: «КРАСИВЫЙ закат» или «красивое закат»? ЗАКАТ — мужской род.
+    Q EN: “BEAUTIFUL sunset” or “beautiful sunset (wrong)”? SUNSET (ЗАКАТ) is masculine.
+    Q KY: «СУЛУУ күн батышы»бы же туура эмес формабы? ЗАКАТ — эркек жыныс.
+
+######## g3r-adj-l2 — Степени сравнения [multiple_choice,input]
+  [dialog tali]
+    RU: Я БОЛЬШОЙ. Слон БОЛЬШЕ меня. А кит — САМЫЙ БОЛЬШОЙ! Это и есть степени сравнения?
+    EN: Degrees of comparison: big — bigger — biggest!
+    KY: Салыштыруу даражалары: чоң — чоңураак — эң чоң!
+  [dialog npc]
+    RU: Тали, ты сам привёл идеальный пример! Положительная — большой, сравнительная — больше, превосходная — самый большой.
+    EN: Beautiful — more beautiful — most beautiful!
+    KY: Сулуу — сулуураак — эң сулуу!
+  t1 <multiple_choice>
+    Q RU: Слон говорит: «Я большой!» Жираф: «А я ___ тебя!» Сравнительная степень:
+    Q EN: Elephant: “I’m big!” Giraffe: “And I’m ___ you!” Comparative degree:
+    Q KY: Пил: «Мен чоңмун!» Жираф: «А мен сенен ___!» Салыштырма даража:
+    a   RU:Больший | EN:bigger (bigger than) | KY:чоңураак
+    b ✓ RU:Больше | EN:more | KY:көбүрөөк
+    c   RU:Самый большой | EN:the biggest | KY:эң чоң
+  t2 <multiple_choice>
+    Q RU: Как образуется сравнительная степень от БЫСТРЫЙ?
+    Q EN: How do you form the comparative of БЫСТРЫЙ (fast)?
+    Q KY: БЫСТРЫЙ сөзүнөн салыштырма даража кантип жасалат?
+    a ✓ RU:Быстрее | EN:Быстрее | KY:Быстрее
+    b   RU:Самый быстрый | EN:Самый быстрый | KY:Самый быстрый
+    c   RU:Быстрейший | EN:Быстрейший | KY:Быстрейший
+  t3 <multiple_choice>
+    Q RU: «Это самая интересная книга» — выдели превосходную степень:
+    Q EN: “This is the most interesting book” — pick the superlative:
+    Q KY: «Бул эң кызыктуу китеп» — эң жогорку даражаны танда:
+    a ✓ RU:Самая интересная | EN:the most interesting | KY:эң кызыктуу
+    b   RU:Интересная | EN:interesting | KY:ызыктуу
+    c   RU:Интереснее | EN:more interesting | KY:ызыктыураак
+  t4 <input>
+    Q RU: Черепаха медленная. Улитка ___ черепахи. Напиши сравнительную степень.
+    Q EN: The turtle is slow. The snail is ___ than the turtle. Write the comparative.
+    Q KY: Ташбака жай. Үлүлдүк ташбакадан ___. Салыштырма даражаны жаз.
+  AUTOFLAGS:
+    - EN===RU (untranslated): t2.a: «Быстрее»
+    - EN===RU (untranslated): t2.b: «Самый быстрый»
+    - EN===RU (untranslated): t2.c: «Быстрейший»
+
+######## g3r-adj-l3 — Антонимы [multiple_choice,input]
+  [dialog npc]
+    RU: ВЕСЁЛЫЙ — ГРУСТНЫЙ. БОЛЬШОЙ — МАЛЕНЬКИЙ. Это антонимы — противоположные слова! Тали это открыл в пять лет!
+    EN: Antonyms: big — small, hot — cold!
+    KY: Антонимдер: чоң — кичине, ысык — суук!
+  [dialog tali]
+    RU: Отличное открытие! Давай проверим — ты знаешь все антонимы?
+    EN: Words with opposite meanings!
+    KY: Маанилери карама-каршы сөздөр!
+  t1 <multiple_choice>
+    Q RU: Антоним к слову ВЕСЁЛЫЙ:
+    Q EN: The antonym of ВЕСЁЛЫЙ is:
+    Q KY: ВЕСЁЛЫЙ сөзүнүн антоними:
+    a ✓ RU:Грустный | EN:Грустный | KY:Грустный
+    b   RU:Радостный | EN:Радостный | KY:Радостный
+    c   RU:Смешной | EN:Смешной | KY:Смешной
+  t2 <multiple_choice>
+    Q RU: Антоним к слову ТЁПЛЫЙ:
+    Q EN: The antonym of ТЁПЛЫЙ is:
+    Q KY: ТЁПЛЫЙ сөзүнүн антоними:
+    a ✓ RU:Холодный | EN:Холодный (cold) | KY:Холодный
+    b   RU:Мягкий | EN:Мягкий (soft) | KY:Мягкий
+    c   RU:Сухой | EN:Сухой (dry) | KY:Сухой
+  t3 <multiple_choice>
+    Q RU: Пара антонимов — как день и ночь. Выбери настоящую пару:
+    Q EN: An antonym pair is like day and night. Choose the real pair:
+    Q KY: Антоним жупу — күндөй жана түн. Чыныгы жупту танда:
+    a   RU:Высокий – длинный | EN:Высокий – длинный | KY:Высокий – длинный
+    b ✓ RU:Широкий – узкий | EN:Широкий – узкий | KY:Широкий – узкий
+    c   RU:Старый – взрослый | EN:Старый – взрослый | KY:Старый – взрослый
+  t4 <input>
+    Q RU: «Летом дни длинные, а зимой — ___»:
+    Q EN: “In summer the days are long, and in winter they are ___”:
+    Q KY: «Жайында күндөр узун, кышында болсо ___»:
+  AUTOFLAGS:
+    - EN===RU (untranslated): t1.a: «Грустный»
+    - EN===RU (untranslated): t1.b: «Радостный»
+    - EN===RU (untranslated): t1.c: «Смешной»
+    - KY===RU (EN differs): t2.a: «Холодный»
+    - KY===RU (EN differs): t2.b: «Мягкий»
+    - KY===RU (EN differs): t2.c: «Сухой»
+    - EN===RU (untranslated): t3.a: «Высокий – длинный»
+    - EN===RU (untranslated): t3.b: «Широкий – узкий»
+    - EN===RU (untranslated): t3.c: «Старый – взрослый»
+
+######## g3w-geo-l1 — Стороны света [multiple_choice,input]
+  [dialog tali]
+    RU: Я потерялся! Солнце встаёт там — это восток? Или запад? Я всегда путаю!
+    EN: Cardinal directions: north, south, east, west!
+    KY: Компас тарабы: түндүк, түштүк, чыгыш, батыш!
+  [dialog npc]
+    RU: Тали, запомни: солнце встаёт на востоке, садится на западе. Компас поможет с севером и югом!
+    EN: A compass shows direction!
+    KY: Компас багытты көрсөтөт!
+  t1 <multiple_choice>
+    Q RU: Компас показывает четыре направления. Какие — основные?
+    Q EN: A compass shows four directions. Which are the main ones?
+    Q KY: Компас төрт багытты көрсөтөт. Негизгилери кайсы?
+    a   RU:Только север и юг | EN:North and south only | KY:Түндүк жана түштүк гана
+    b ✓ RU:Север, юг, запад и восток | EN:North, south, west and east | KY:Түндүк, түштүк, батыш жана чыгыш
+    c   RU:Север и восток | EN:North and east | KY:Түндүк жана чыгыш
+  t2 <multiple_choice>
+    Q RU: Тали идёт навстречу восходящему солнцу. В какую сторону он движется?
+    Q EN: Tali walks toward the rising sun. Which way is he going?
+    Q KY: Тали чыгып келе жаткан күнгө карап басат. Ал кайсы тарапка баратат?
+    a ✓ RU:На восток | EN:To the east | KY:Чыгышка
+    b   RU:На запад | EN:To the west | KY:Батышка
+    c   RU:На юг | EN:To the south | KY:Түштүккө
+  t3 <multiple_choice>
+    Q RU: На карте «север» сверху. Где находится «юг»?
+    Q EN: On a map, “north” is at the top. Where is “south”?
+    Q KY: Картада «түндүк» жогоруда. «Түштүк» кайда?
+    a   RU:Слева | EN:On the left | KY:Солдо
+    b ✓ RU:Снизу | EN:At the bottom (south on the map) | KY:Ылдыда (картанын түштүгүндө)
+    c   RU:Справа | EN:On the right | KY:Оңдо
+  t4 <input>
+    Q RU: Тали встал лицом на север. Что справа?
+    Q EN: Tali faces north. What is on his right?
+    Q KY: Тали түндүккө карап турду. Оң жагында эмне?
+
+######## g3w-geo-l2 — Карта и глобус [multiple_choice,input]
+  [dialog npc]
+    RU: Глобус — это шарик с картой? Я хочу такой! Но почему карта плоская, а глобус круглый?
+    EN: Map and globe — a model of the Earth!
+    KY: Карта жана глобус — Жердин модели!
+  [dialog tali]
+    RU: Глобус — точная копия формы Земли (шар). Карта — это как если раскатать апельсин скалкой: немного искажается, зато плоская и удобная!
+    EN: Countries and oceans are on the map!
+    KY: Картада өлкөлөр жана океандар бар!
+  t1 <multiple_choice>
+    Q RU: Тали спрашивает: чем карта отличается от глобуса?
+    Q EN: Tali asks: how is a map different from a globe?
+    Q KY: Тали сурайт: карта глобустан эмнеси менен айырмаланат?
+    a ✓ RU:Карта плоская, глобус объёмный | EN:A map is flat, a globe is three-dimensional | KY:Карта жалпак, глобус үч өлчөмдүү
+    b   RU:Они одинаковые | EN:A map and a globe are the same | KY:Карта менен глобус бирдей
+    c   RU:Глобус плоский, карта объёмная | EN:A globe is flat, a map is three-dimensional | KY:Глобус жалпак, карта үч өлчөмдүү
+  t2 <multiple_choice>
+    Q RU: На карте синим обозначены моря и океаны, а зелёным — что?
+    Q EN: On a map, blue marks seas and oceans. What does green mark?
+    Q KY: Картада көк түс деңиздерди жана океандарды белгилейт, жашыл болсо — эмнени?
+    a   RU:Горы | EN:Mountains | KY:Тоолор
+    b ✓ RU:Суша (материки и острова) | EN:Land (continents and islands) | KY:Кургак (материктер жана аралдар)
+    c   RU:Только пустыни | EN:Only deserts | KY:Чөлдөр гана
+  t3 <multiple_choice>
+    Q RU: Масштаб 1:100 000 означает:
+    Q EN: A scale of 1:100 000 means:
+    Q KY: 1:100 000 масштабы эмнени билдирет:
+    a ✓ RU:1 см на карте = 1 км на местности (100 000 см) | EN:1 cm on the map = 1 km on the ground (100 000 cm) | KY:Картада 1 см = жерде 1 км (100 000 см)
+    b   RU:На карте 100 000 материков | EN:There are 100 000 continents on the map | KY:Картада 100 000 материк бар
+    c   RU:Расстояние всегда 100 000 км | EN:The distance in kilometres is always 100 000 | KY:Аралык дайыма 100 000 километр
+  t4 <input>
+    Q RU: Сколько материков на планете Земля?
+    Q EN: How many continents are there on planet Earth?
+    Q KY: Жер планетасында канча материк бар?
+
+######## g3w-geo-l3 — Страны и столицы [multiple_choice,input]
+  [dialog npc]
+    RU: Бишкек — это столица Кыргызстана? Я живу в столице! Это круто?
+    EN: Countries and capitals! Russia — Moscow, France — Paris!
+    KY: Өлкөлөр жана борбор шаарлар! Россия — Москва, Франция — Париж!
+  [dialog tali]
+    RU: Очень круто! Столица — главный город страны. Москва — столица России, Париж — Франции, Лондон — Великобритании. А ты живёшь в Бишкеке!
+    EN: Every country has a capital!
+    KY: Ар бир өлкөнүн борбор шаары бар!
+  t1 <multiple_choice>
+    Q RU: Столица России:
+    Q EN: The capital of Russia
+    Q KY:  Столица России:
+    a ✓ RU:Москва | EN:Moscow | KY:Москва
+    b   RU:Санкт-Петербург | EN:Saint Petersburg | KY:Санкт-Петербург
+    c   RU:Новосибирск | EN:Novosibirsk | KY:Новосибирск
+  t2 <multiple_choice>
+    Q RU: Эйфелева башня стоит в столице Франции. Это:
+    Q EN: Capital of France:
+    Q KY:  Столица Франции:
+    a   RU:Лондон | EN:London | KY:Лондон
+    b ✓ RU:Париж | EN:Paris | KY:Париж
+    c   RU:Берлин | EN:Berlin | KY:Берлин
+  t3 <multiple_choice>
+    Q RU: Столица Великобритании:
+    Q EN: Capital of the United Kingdom:
+    Q KY:  Столица Великобритании:
+    a ✓ RU:Лондон | EN:London | KY:Лондон
+    b   RU:Париж | EN:Paris | KY:Париж
+    c   RU:Берлин | EN:Berlin | KY:Берлин
+  t4 <input>
+    Q RU: Тали живёт в Бишкеке. Бишкек — столица какой страны?
+    Q EN: Capital of Kyrgyzstan:
+    Q KY:  Столица Кыргызстана:
+  AUTOFLAGS:
+    - KY===RU (EN differs): t1.a: «Москва»
+    - KY===RU (EN differs): t1.b: «Санкт-Петербург»
+    - KY===RU (EN differs): t1.c: «Новосибирск»
+    - KY===RU (EN differs): t2.a: «Лондон»
+    - KY===RU (EN differs): t2.b: «Париж»
+    - KY===RU (EN differs): t2.c: «Берлин»
+    - KY===RU (EN differs): t3.a: «Лондон»
+    - KY===RU (EN differs): t3.b: «Париж»
+    - KY===RU (EN differs): t3.c: «Берлин»
+
+######## g3w-nat-l1 — Круговорот воды [multiple_choice,input]
+  [dialog npc]
+    RU: Я налил воду в лужу, а через день она исчезла! Куда она ушла?
+    EN: The water cycle: evaporation, clouds, rain!
+    KY: Суунун айлануусу: буулануу, булуттар, жаан!
+  [dialog tali]
+    RU: Вода испарилась — поднялась в небо! Это первый шаг круговорота воды. Потом она вернётся дождём. Расскажем Тали весь путь?
+    EN: Water moves constantly in nature!
+    KY: Суу жаратылышта дайыма кыймылдайт!
+  t1 <multiple_choice>
+    Q RU: Тали смотрит на лужу — она исчезла. Это первый шаг круговорота воды. Как он называется?
+    Q EN: Tali looks at a puddle — it disappeared. That is the first step of the water cycle. What is it called?
+    Q KY: Тали көлчүктү карайт — ал жоголду. Бул суу айлануусунун биринчи кадамы. Ал кандай аталат?
+    a ✓ RU:Испарение | EN:Evaporation | KY:Буулануу
+    b   RU:Замерзание | EN:Freezing | KY:Тоңуу
+    c   RU:Фотосинтез | EN:Photosynthesis | KY:Фотосинтез
+  t2 <multiple_choice>
+    Q RU: Водяной пар поднялся и охладился. Во что он превратился?
+    Q EN: Water vapor rose and cooled. What did it turn into?
+    Q KY: Суу буусу көтөрүлүп муздады. Ал эмнеге айланды?
+    a ✓ RU:В облака (капельки воды) | EN:Into clouds (water droplets) | KY:Булуттарга (суу тамчылары)
+    b   RU:В пыль | EN:Into dust | KY:Чаңга
+    c   RU:В дым | EN:Into smoke | KY:Түтүнгө
+  t3 <multiple_choice>
+    Q RU: Облака набрали тяжесть. Что происходит дальше?
+    Q EN: The clouds got heavy. What happens next?
+    Q KY: Булуттар оорлоду. Андан кийин эмне болот?
+    a ✓ RU:Осадки (дождь или снег) | EN:Precipitation (rain or snow) | KY:Жаан-чачын (жамгыр же кар)
+    b   RU:Облака исчезают | EN:Clouds disappear | KY:Булуттар жоголот
+    c   RU:Облака превращаются в землю | EN:Clouds turn into land | KY:Булуттар жерге айланат
+  t4 <input>
+    Q RU: Вода упала в реку и снова нагрелась солнцем. Какой шаг повторится?
+    Q EN: Water flowed into the river and was heated by the sun again. Which step repeats?
+    Q KY: Суу дарыяга агып, кайра күндүн жылытуусуна учурады. Кайсы кадам кайталанат?
+  AUTOFLAGS:
+    - KY===RU (EN differs): t1.c: «Фотосинтез»
+
+######## g3w-nat-l2 — Полезные ископаемые [multiple_choice,input]
+  [dialog tali]
+    RU: Нефть, газ, уголь — их достают из земли. Но как там оказалась нефть? Земля её сделала?
+    EN: Natural resources: oil, gas, coal!
+    KY: Пайдалуу казылмалар: нефть, газ, көмүр!
+  [dialog npc]
+    RU: Почти! Нефть и уголь образовались из остатков древних живых существ за миллионы лет. Тали, это ископаемые в буквальном смысле — нужно откопать!
+    EN: They are extracted from the ground!
+    KY: Алар жерден казылат!
+  t1 <multiple_choice>
+    Q RU: Уголь, нефть и газ образовались из остатков древних живых существ. Как называются такие полезные ископаемые?
+    Q EN: Coal, oil and gas formed from the remains of ancient living things. What are such minerals called?
+    Q KY: Көмүр, мунай жана газ байыркы тирүү жандыктардын калдыктарынан пайда болгон. Мындай кен байлыктар кандай аталат?
+    a ✓ RU:Горючие | EN:Combustible (fuel) | KY:Күйүүчү
+    b   RU:Металлические | EN:Metallic | KY:Металлдык
+    c   RU:Строительные | EN:Building materials | KY:Курулуш
+  t2 <multiple_choice>
+    Q RU: Для чего добывают и используют нефть?
+    Q EN: What is oil extracted and used for?
+    Q KY: Мунай эмне үчүн казылып, колдонулат?
+    a ✓ RU:Топливо и энергия (бензин, керосин) | EN:Fuel and energy (petrol, kerosene) | KY:Күйүүчү май жана энергия (бензин, керосин)
+    b   RU:Производство металла | EN:Metal production | KY:Металл өндүрүү
+    c   RU:Приготовление еды | EN:Cooking food | KY:Тамак жасоо
+  t3 <multiple_choice>
+    Q RU: Железная руда — полезное ископаемое. Что из неё производят?
+    Q EN: Iron ore is a mineral. What is made from it?
+    Q KY: Темир кени — кен байлык. Андан эмне жасалат?
+    a ✓ RU:Металл (железо, сталь) | EN:Metal (iron, steel) | KY:Металл (темир, болот)
+    b   RU:Горючие | EN:Combustible (fuel) | KY:Күйүүчү
+    c   RU:Пищевые | EN:Food | KY:Азык-түлүк
+  t4 <input>
+    Q RU: Гранит — очень твёрдая горная порода. К каким ископаемым он относится?
+    Q EN: Granite is a very hard rock. What kind of mineral is it?
+    Q KY: Гранит — абдан катуу тоо тек. Ал кайсы кен байлыкка кирет?
+
+######## g3w-nat-l3 — Охрана природы [multiple_choice,input]
+  [dialog tali]
+    RU: Я слышал про Красную книгу. Это книга с красными страницами? Или что-то важное?
+    EN: Protecting nature is our duty!
+    KY: Жаратылышты коргоо — биздин милдет!
+  [dialog npc]
+    RU: Тали, это очень важная книга! В ней — список животных и растений, которым грозит исчезновение. Красный цвет — это сигнал опасности.
+    EN: Protect the forest, water, animals!
+    KY: Токойду, сууну, жаныбарларды корго!
+  t1 <multiple_choice>
+    Q RU: Зачем создали Красную книгу?
+    Q EN: Why was the Red Book created?
+    Q KY: Кызыл китеп эмне үчүн түзүлгөн?
+    a ✓ RU:Чтобы защитить редких животных и растения | EN:To protect rare animals and plants | KY:Сейрек жаныбарларды жана өсүмдүктөрдү коргоо үчүн
+    b   RU:Чтобы красиво выглядеть в библиотеке | EN:To look nice in a library | KY:Китепканада кооз көрүнүү үчүн
+    c   RU:Чтобы записывать погоду | EN:To record the weather | KY:Аба ырайын жазып туруу үчүн
+  t2 <multiple_choice>
+    Q RU: В заповеднике нельзя охотиться и рубить деревья. Зачем нужны заповедники?
+    Q EN: In a nature reserve you must not hunt or cut trees. Why do we need reserves?
+    Q KY: Заповедникте аңчылык кылууга жана дарактарды кыюуга болбойт. Заповедниктер эмнеге керек?
+    a ✓ RU:Чтобы сохранить природные экосистемы | EN:To preserve natural ecosystems. | KY:Жаратылыш экосистемаларын сактоо үчүн.
+    b   RU:Чтобы туристы отдыхали | EN:So tourists can relax. | KY:Туристтер эс алышы үчүн.
+    c   RU:Чтобы добывать ресурсы | EN:To extract resources. | KY:Ресурстарды алуу үчүн.
+  t3 <multiple_choice>
+    Q RU: Деревья в городе дают:
+    Q EN: Trees in the city give us:
+    Q KY: Шаардагы дарактар берет:
+    a ✓ RU:Кислород, тень и очищают воздух | EN:Oxygen, shade, and cleaner air | KY:Кычкылтек, көлөкө жана таза аба
+    b   RU:Только красоту | EN:Only beauty | KY:Жалгыз сулуулукту
+    c   RU:Только проблемы | EN:Only problems | KY:Жалгыз көйгөйлөрдү
+  t4 <input>
+    Q RU: Какой поступок НЕ помогает охране природы?
+    Q EN: Which action does NOT help protect nature?
+    Q KY: Кайсы аракет жаратылышты коргоого ЖАРДАМ БЕРБЕЙТ?
+
+######## g3w-eco-l1 — Экосистема [multiple_choice,input]
+  [dialog tali]
+    RU: Лес — это экосистема? Но там же просто деревья и животные…
+    EN: An ecosystem is a community of living organisms!
+    KY: Экосистема — жандуу организмдердин жамааты!
+  [dialog npc]
+    RU: Тали, они все связаны! Деревья кормят белок, белки растаскивают семена, семена вырастают в деревья. Убери одно звено — рухнет вся цепь!
+    EN: Forest, meadow, pond — different ecosystems!
+    KY: Токой, жайлоо, көлмө — ар кандай экосистемалар!
+  t1 <multiple_choice>
+    Q RU: Если вырубить все деревья в лесу, что произойдёт с его жителями?
+    Q EN: If all the trees in a forest are cut down, what happens to its inhabitants?
+    Q KY: Эгер токойдогу бардык дарактарды кыйса, анын тургундарына эмне болот?
+    a   RU:Ничего не изменится | EN:Nothing will change | KY:Эч нерсе өзгөрбөйт
+    b ✓ RU:Исчезнут животные, потеряется среда обитания | EN:Animals will disappear and their habitat will be lost | KY:Жаныбарлар жок болот, жашоо чөйрөсү жоголот
+    c   RU:Появится больше животных | EN:There will be more animals | KY:Жаныбарлар көбөйөт
+  t2 <multiple_choice>
+    Q RU: Рыбы, лягушки и водоросли в пруду зависят друг от друга. Как называется такая система?
+    Q EN: Fish, frogs and algae in a pond depend on each other. What is this called?
+    Q KY: Көлмөдөгү балыктар, баакалар жана суу өсүмдүктөрү бири-бирине көз каранды. Буга кандай деп айтышат?
+    a ✓ RU:Экосистема | EN:Ecosystem | KY:Экосистема
+    b   RU:Библиотека | EN:Library | KY:Китепкана
+    c   RU:Завод | EN:Factory | KY:Завод
+  t3 <multiple_choice>
+    Q RU: Если исчезнут пчёлы, что случится с растениями?
+    Q EN: If bees disappear, what happens to plants?
+    Q KY: Эгер аарылар жок болсо, өсүмдүктөргө эмне болот?
+    a   RU:Ничего, пчёлы не важны | EN:Nothing — bees are not important | KY:Эч нерсе, аарылар маанилүү эмес
+    b ✓ RU:Многие растения не смогут опыляться и плодоносить | EN:Many plants will not be able to pollinate and bear fruit | KY:Көп өсүмдүктөр чаңдашып, жемиш бере албай калат
+    c   RU:Растений станет больше | EN:There will be more plants | KY:Өсүмдүктөр көбөйөт
+  t4 <input>
+    Q RU: Что из перечисленного — экосистема? Библиотека, аквариум с рыбками, завод. Напиши ответ.
+    Q EN: Which of these is an ecosystem? A library, a fish aquarium, a factory. Write the answer.
+    Q KY: Төмөнкүлөрдүн кайсынысы экосистема? Китепкана, балыктуу аквариум, завод. Жоопту жаз.
+  AUTOFLAGS:
+    - KY===RU (EN differs): intro0.title: «Экосистема!»
+    - KY===RU (EN differs): t2.a: «Экосистема»
+    - KY===RU (EN differs): t2.c: «Завод»
+
+######## g3w-eco-l2 — Цепи питания [multiple_choice,input]
+  [dialog tali]
+    RU: Трава → заяц → лиса. Это значит: трава кормит зайца, заяц кормит лису?
+    EN: Food chains: plant — hare — wolf!
+    KY: Тамактануу чынжырлары: өсүмдүк — коён — карышкыр!
+  [dialog npc]
+    RU: Именно! Это цепь питания. Каждое звено зависит от предыдущего. Тали, ты понял самое главное!
+    EN: Everyone eats something or someone!
+    KY: Ар бири бирдемени же кимдир бирөөнү жейт!
+  t1 <multiple_choice>
+    Q RU: Трава → заяц → лиса. Как называется такая последовательность?
+    Q EN: Grass → hare → fox. What is this sequence called?
+    Q KY: Чөп → коён → түлкү. Мындай ырааттуулук кандай аталат?
+    a ✓ RU:Цепь питания | EN:A food chain | KY:Тамак чынжыры
+    b   RU:Расписание | EN:A timetable | KY:Расписание
+    c   RU:Карта | EN:A map | KY:Карта
+  t2 <multiple_choice>
+    Q RU: Кто стоит в начале почти любой цепи питания?
+    Q EN: Who is at the start of almost every food chain?
+    Q KY: Дээрлик ар бир тамак чынжырынын башында ким турат?
+    a   RU:Хищник | EN:A predator | KY:Жырткыч
+    b ✓ RU:Растение | EN:A plant | KY:Өсүмдүк
+    c   RU:Гриб | EN:A mushroom | KY:Козу карын
+  t3 <multiple_choice>
+    Q RU: Если в лесу исчезнут все зайцы, что случится с лисами?
+    Q EN: If all hares disappear from the forest, what happens to foxes?
+    Q KY: Эгер токойдогу бардык коёндор жок болсо, түлкүлөргө эмне болот?
+    a   RU:Лисам станет лучше | EN:Foxes will do better. | KY:Түлкүлөргө жакшы болот.
+    b ✓ RU:Лисам не хватит еды | EN:Foxes won’t have enough food. | KY:Түлкүлөргө тамак жетишпейт.
+    c   RU:Ничего не изменится | EN:Nothing will change. | KY:Эч нерсе өзгөрбөйт.
+  t4 <input>
+    Q RU: В цепи: дуб → гусеница → синица → ястреб. Кто «производитель» — начало цепи?
+    Q EN: Food chain: oak → caterpillar → tit → hawk. Who is the producer?
+    Q KY: Тамак чынжыры: эмен → гусеница → чымчык → лачын. Ким өндүрүүчү?
+  AUTOFLAGS:
+    - KY===RU (EN differs): t1.b: «Расписание»
+    - KY===RU (EN differs): t1.c: «Карта»
+
+######## g3w-eco-l3 — Человек и природа [multiple_choice,input]
+  [dialog tali]
+    RU: Люди — часть природы? Мы ведь строим города и заводы…
+    EN: People and nature. We are part of the ecosystem!
+    KY: Адам жана жаратылыш. Биз экосистеманын бөлүгүбүз!
+  [dialog npc]
+    RU: Да, Тали! Человек — часть экосистемы. И наши действия влияют на всю природу — как положительно, так и отрицательно.
+    EN: Our actions affect nature!
+    KY: Биздин аракеттер жаратылышка таасир этет!
+  t1 <multiple_choice>
+    Q RU: Амурский тигр занесён в Красную книгу. Что значит «редкий вид»?
+    Q EN: The Amur tiger is in the Red Book. What does “rare species” mean?
+    Q KY: Амур жолборсу Кызыл китепте. «Сейрек түр» деген эмне?
+    a ✓ RU:Вид, которому грозит исчезновение | EN:A species threatened with extinction. | KY:Жок болуу коркунучундагы түр.
+    b   RU:Очень красивый вид | EN:A very beautiful species. | KY:Өтө кооз түр.
+    c   RU:Самый опасный вид | EN:The most dangerous species. | KY:Эң коркунучтуу түр.
+  t2 <multiple_choice>
+    Q RU: Браконьер охотится незаконно. Что такое браконьерство?
+    Q EN: What is poaching?
+    Q KY:  Мыйзамсыз аң уулоо деген эмне?
+    a ✓ RU:Незаконная охота или ловля | EN:Illegal hunting | KY:Мыйзамсыз аңчылык
+    b   RU:Разрешённая охота | EN:Legal hunting | KY:Уруксат берилген аңчылык
+    c   RU:Наблюдение за птицами | EN:Bird watching | KY:Куштарды байкоо
+  t3 <multiple_choice>
+    Q RU: Дети посадили цветы и сделали кормушки для птиц. Как называются такие действия?
+    Q EN: Children planted flowers and built bird feeders. What do we call such actions?
+    Q KY: Балдар гүл отургузуп, канаттуулар үчүн тамак қутусун жасашты. Бул кандай аракет?
+    a ✓ RU:Охрана природы | EN:Nature conservation. | KY:Жаратылышты коргоо.
+    b   RU:Браконьерство | EN:Poaching. | KY:Браконьердик.
+    c   RU:Загрязнение | EN:Pollution. | KY:Булгануу.
+  t4 <input>
+    Q RU: Фабрика сливает отходы в реку. Кто пострадает в первую очередь?
+    Q EN: A factory pours waste into a river. Who suffers first?
+    Q KY: Завод көлмөгө ағын төгөт. Эң биринчи ким зыян көрөт?
+
+######## g3e-tobe-l1 — am, is, are [multiple_choice,input]
+  [dialog tali]
+    RU: I am happy! You are smart! He is funny! Я пытаюсь запомнить, когда am, когда is, когда are. Помоги!
+    EN: The verb to be: I am, you are, he/she/it is!
+    KY: To be этиши: I am, you are, he/she/it is!
+  [dialog npc]
+    RU: Тали, запомни просто: am — только с I, is — с he/she/it, are — с you/we/they. Проверим?
+    EN: Am with I, is with he/she/it, are with you/we/they!
+    KY: Am — I менен, is — he/she/it менен, are — you/we/they менен!
+  t1 <multiple_choice>
+    Q RU: «I ___ happy today!» Тали не уверен: am, is или are?
+    Q EN: I ___ happy. What word?
+    Q KY:  I ___ happy. Какое слово?
+    a ✓ RU:am | EN:am | KY:am
+    b   RU:is | EN:is | KY:is
+    c   RU:are | EN:are | KY:are
+  t2 <multiple_choice>
+    Q RU: «You ___ my best friend.»
+    Q EN: You ___ smart. What word?
+    Q KY:  You ___ smart. Какое слово?
+    a   RU:am | EN:am | KY:am
+    b   RU:is | EN:is | KY:is
+    c ✓ RU:are | EN:are | KY:are
+  t3 <multiple_choice>
+    Q RU: С каким местоимением используется «am»?
+    Q EN: Am is used with:
+    Q KY:  Am используется с:
+    a ✓ RU:I | EN:I | KY:I
+    b   RU:you | EN:you | KY:сен
+    c   RU:he | EN:he | KY:he
+  t4 <input>
+    Q RU: Напиши по-английски: «Я счастлив» (I ___ happy — полная фраза)
+    Q EN: Write in English: “I am happy” (full phrase)
+    Q KY: Англисче жаз: «Мен бактылуумун» (I am happy — толук фраза)
+
+######## g3e-tobe-l2 — Отрицание [multiple_choice,input]
+  [dialog npc]
+    RU: Если «He is tall» — он высокий, то «He is not tall» — он не высокий? Просто добавить NOT?
+    EN: Negation: I am not, he is not, they are not!
+    KY: Терс форма: I am not, he is not, they are not!
+  [dialog tali]
+    RU: Именно! Not ставится после am/is/are. И ещё есть сокращения: isn't, aren't. Давай попрактикуемся!
+    EN: Not goes after am, is, are!
+    KY: Not — am, is, are кийинен жазылат!
+  t1 <multiple_choice>
+    Q RU: «He ___ tall» — сделай отрицание (He is tall → …):
+    Q EN: "He ___ tall" — make it negative (He is tall → …):
+    Q KY: «He ___ tall» — терс форманы жаса (He is tall → …):
+    a ✓ RU:is not | EN:is not | KY:is not
+    b   RU:not is | EN:not is | KY:not is
+    c   RU:am not | EN:am not | KY:am not
+  t2 <multiple_choice>
+    Q RU: Сокращение для «is not»:
+    Q EN: The short form of "is not":
+    Q KY: «is not» үчүн кыска форма:
+    a ✓ RU:isn't | EN:isn't | KY:isn't
+    b   RU:aren't | EN:aren't | KY:aren't
+    c   RU:amn't | EN:amn't | KY:amn't
+  t3 <multiple_choice>
+    Q RU: «It isn't big» — это правильное отрицание?
+    Q EN: "It isn't big" — is this a correct negative?
+    Q KY: «It isn't big» — бул туура терс формабы?
+    a ✓ RU:Да | EN:Yes | KY:Ооба
+    b   RU:Нет | EN:No | KY:Жок
+  t4 <input>
+    Q RU: «He is late» → отрицание (полностью):
+    Q EN: "He is late" → full negative form:
+    Q KY: «He is late» → толук терс форма:
+
+######## g3e-tobe-l3 — Вопросы [multiple_choice,input]
+  [dialog tali]
+    RU: Чтобы задать вопрос, нужно поставить am/is/are в начало? «Are you ready?» — правильно?
+    EN: Questions: Am I? Is he? Are you?
+    KY: Суроолор: Am I? Is he? Are you?
+  [dialog npc]
+    RU: Тали, ты снова прав! Am I? Is he? Are you? — глагол to be переходит в начало вопроса.
+    EN: Am, is, are go at the start of a question!
+    KY: Am, is, are суроонун башына жазылат!
+  t1 <multiple_choice>
+    Q RU: «We are ready» → вопрос: «___ we ready?» Какой глагол в начале?
+    Q EN: “We are ready” → question: “___ we ready?” Which verb goes first?
+    Q KY: «We are ready» → суроо: «___ we ready?» Башына кайсы глагол?
+    a   RU:am | EN:am | KY:am
+    b   RU:is | EN:is | KY:is
+    c ✓ RU:are | EN:are | KY:are
+  t2 <multiple_choice>
+    Q RU: «They are students.» → правильный вопрос:
+    Q EN: “They are students.” → the correct question is:
+    Q KY: «They are students.» → туура суроо:
+    a   RU:Am they students? | EN:Am they students? | KY:Am they students?
+    b   RU:Is they students? | EN:Is they students? | KY:Is they students?
+    c ✓ RU:Are they students? | EN:Are they students? | KY:Are they students?
+  t3 <multiple_choice>
+    Q RU: Правильный вопрос к ответу «Yes, she is»:
+    Q EN: The correct question for the answer “Yes, she is”:
+    Q KY: «Yes, she is» жообуна туура суроо:
+    a ✓ RU:Is she tired? | EN:Is she tired? | KY:Is she tired?
+    b   RU:Are she tired? | EN:Are she tired? | KY:Are she tired?
+    c   RU:Am she tired? | EN:Am she tired? | KY:Am she tired?
+  t4 <input>
+    Q RU: «Они дома?» по-английски (полный вопрос):
+    Q EN: How do you ask “Are they home?” in English (full question):
+    Q KY: «Алар үйдөбү?» англисче (толук суроо):
+
+######## g3e-food-l1 — Еда и напитки [multiple_choice,input]
+  [dialog tali]
+    RU: I like apples! I drink water! Я уже знаю несколько слов про еду. Но что такое «juice»? И «porridge»?
+    EN: Food and drinks: apple, bread, milk, water!
+    KY: Тамак жана суусундуктар: apple, bread, milk, water!
+  [dialog npc]
+    RU: Juice — сок! Porridge — каша. Тали, ты пьёшь сок каждое утро — теперь знаешь, как это по-английски!
+    EN: Juice — juice! Porridge — porridge. Tali, you drink juice every morning — now you know how to say it in English!
+    KY: Food — тамак. Drink — суусундук!
+  t1 <multiple_choice>
+    Q RU: Juice — это:
+    Q EN: “Juice” means:
+    Q KY: «Juice» — бул:
+    a ✓ RU:Сок | EN:Juice | KY:Шире
+    b   RU:Каша | EN:Porridge | KY:Ботко
+    c   RU:Молоко | EN:Milk | KY:Сүт
+  t2 <multiple_choice>
+    Q RU: Porridge — это:
+    Q EN: “Porridge” means:
+    Q KY: «Porridge» — бул:
+    a   RU:Молоко | EN:Milk | KY:Сүт
+    b ✓ RU:Каша | EN:Porridge | KY:Ботко
+    c   RU:Сок | EN:Juice | KY:Шире
+  t3 <multiple_choice>
+    Q RU: Tea, coffee, milk — все эти слова это:
+    Q EN: Tea, coffee, milk — these words are all:
+    Q KY: Tea, coffee, milk — бул сөздөрдүн баары:
+    a ✓ RU:Напитки | EN:Drinks. | KY:Ичкиликтер.
+    b   RU:Еда | EN:Food. | KY:Тамак.
+    c   RU:Фрукты | EN:Fruits. | KY:Жемиштер.
+  t4 <input>
+    Q RU: «I drink water every day» — что пьёт этот человек?
+    Q EN: “I drink water every day” — what does this person drink?
+    Q KY: «I drink water every day» — бул адам эмне ичет?
+
+######## g3e-food-l2 — I like / I don't like [multiple_choice,input]
+  [dialog tali]
+    RU: I like pizza! I don't like broccoli! Это самые важные фразы в жизни!
+    EN: I like / I don't like — мага жагат / мага жакпайт!
+    KY: I like / I don't like — мага жагат / мага жакпайт!
+  [dialog npc]
+    RU: Хаха, Тали! А я люблю брокколи. Вкусы разные! Do you like…? Yes, I do! No, I don't!
+    EN: I like pizza. I do not like broccoli!
+    KY: I like pizza. I do not like broccoli!
+  t1 <multiple_choice>
+    Q RU: «I like apples!» — Маша это говорит. Что это значит?
+    Q EN: Masha says: “I like apples!” What does it mean?
+    Q KY: Маша: «I like apples!» — дейт. Бул эмнени билдирет?
+    a ✓ RU:Мне нравятся яблоки | EN:I like apples | KY:Мага алма жагат
+    b   RU:Я не люблю яблоки | EN:I do not like apples | KY:Мен алманы жактырбайм
+    c   RU:Я — яблоко | EN:I am an apple | KY:Мен — алмамын
+  t2 <multiple_choice>
+    Q RU: «I don’t like onions» — Ваня морщится. Onions — это:
+    Q EN: “I don’t like onions” — Vanya frowns. “Onions” means:
+    Q KY: «I don’t like onions» — Ваня кабагын бүркөйт. «Onions» — бул:
+    a ✓ RU:Лук | EN:Onions | KY:Пияз
+    b   RU:Суп | EN:Soup | KY:Шорпо
+    c   RU:Яблоки | EN:Apples | KY:Алмалар
+  t3 <multiple_choice>
+    Q RU: Как сказать «Мне нравится шоколад» по-английски?
+    Q EN: How do you say “I like chocolate” in English?
+    Q KY: «Мага шоколад жагат» деп англисче кантип айтылат?
+    a ✓ RU:I like chocolate | EN:I like chocolate | KY:I like chocolate
+    b   RU:I don't like chocolate | EN:I don't like chocolate | KY:I don't like chocolate
+    c   RU:I am chocolate | EN:I am chocolate | KY:I am chocolate
+  t4 <input>
+    Q RU: Другу не нравится суп. Как он скажет?
+    Q EN: A friend does not like soup. What will he say?
+    Q KY: Досуна шорпо жакпайт. Ал эмне дейт?
+
+######## g3e-food-l3 — За столом [multiple_choice,input]
+  [dialog npc]
+    RU: Can I have some water, please? — Так просят воду вежливо?
+    EN: At the table: Can I have some water? Thank you!
+    KY: Дасторкон үстүндө: Can I have some water? Thank you!
+  [dialog tali]
+    RU: Именно! И не забудь «please» — без него получается грубо. Table manners — правила поведения за столом — важны везде!
+    EN: Table manners — table etiquette!
+    KY: Table manners — дасторкон этикети!
+  t1 <multiple_choice>
+    Q RU: «Can I have some bread, please?» — о чём просит человек?
+    Q EN: “Can I have some bread, please?” — what is the person asking for?
+    Q KY: «Can I have some bread, please?» — адам эмне сурап жатат?
+    a ✓ RU:Немного хлеба | EN:Some bread | KY:Бир аз нан
+    b   RU:Немного воды | EN:Some water | KY:Бир аз суу
+    c   RU:Немного сока | EN:Some juice | KY:Бир аз шире
+  t2 <multiple_choice>
+    Q RU: «Pass me the salt, please» — о чём просит человек?
+    Q EN: “Pass me the salt, please” — what is the person asking?
+    Q KY: «Pass me the salt, please» — адам эмне сурап жатат?
+    a ✓ RU:Передать соль | EN:To pass the salt | KY:Тузду узатууну
+    b   RU:Передать хлеб | EN:To pass the bread | KY:Нанды узатууну
+    c   RU:Передать воду | EN:To pass the water | KY:Сууну узатууну
+  t3 <multiple_choice>
+    Q RU: «It’s delicious!» — гость говорит это про еду. Что он чувствует?
+    Q EN: A guest says “It’s delicious!” about the food. What does he mean?
+    Q KY: Конок тамак жөнүндө «It’s delicious!» — дейт. Ал эмнени билдирет?
+    a ✓ RU:Еда вкусная | EN:The food is tasty | KY:Тамак даамдуу
+    b   RU:Еда невкусная | EN:The food is not tasty | KY:Тамак даамсыз
+    c   RU:Он не голоден | EN:He is not hungry | KY:Ал ток
+  t4 <input>
+    Q RU: Как вежливо отказаться от добавки?
+    Q EN: How do you politely refuse more food?
+    Q KY: Кошумча тамактан кантип сылык баш тартса болот?
+
+######## g3e-daily-l1 — Распорядок дня [multiple_choice,input]
+  [dialog tali]
+    RU: У меня нет режима дня. Я просыпаюсь когда хочу, ем когда хочу…
+    EN: Hello! Today we are talking about the daily routine.
+    KY: Салам! Бүгүн күндөлүк тартип жөнүндө сүйлөшөбүз.
+  [dialog npc]
+    RU: Тали, daily routine — распорядок дня — помогает быть продуктивным! Wake up, eat breakfast, go to school. Попробуй!
+    EN: Tell me what you do every day!
+    KY: Мага ар күнү эмне кылаарыңды айт!
+  t1 <multiple_choice>
+    Q RU: Будильник звонит в 7 утра. «Wake up» — это:
+    Q EN: Wake up in English:
+    Q KY:  «Ойгонуу» англисче:
+    a ✓ RU:Просыпаться | EN:wake up | KY:ойгонуу
+    b   RU:Ложиться спать | EN:go to sleep | KY:уктоого баруу
+    c   RU:Обедать | EN:have lunch | KY:түшкү тамак жеу
+  t2 <multiple_choice>
+    Q RU: После завтрака Том чистит зубы. «Brush teeth» — это:
+    Q EN: "Brush your teeth" in English:
+    Q KY:  «Тишти тазалоо» англисче:
+    a ✓ RU:Чистить зубы | EN:brush teeth | KY:тиш тазалоо
+    b   RU:Завтракать | EN:eat breakfast | KY:эртең мамак жеу
+    c   RU:Принимать душ | EN:take a shower | KY:душ алуу
+  t3 <multiple_choice>
+    Q RU: «I wake up at 7» — какой предлог перед временем?
+    Q EN: "I wake up at 7" is the correct preposition:
+    Q KY:  «I wake up at 7» — правильный предлог:
+    a ✓ RU:at | EN:at | KY:at
+    b   RU:in | EN:in | KY:in
+    c   RU:on | EN:on | KY:on
+  t4 <input>
+    Q RU: «Eat breakfast» — это:
+    Q EN: Eat breakfast is:
+    Q KY:  Eat breakfast — это:
+
+######## g3e-daily-l2 — Время [multiple_choice,input]
+  [dialog npc]
+    RU: What time is it? — Который час? Мне всегда трудно читать время по-английски!
+    EN: Great! Now let's talk about time.
+    KY: Мыкты! Азыр убакыт жөнүндө сүйлөшөлү.
+  [dialog tali]
+    RU: «It's seven o'clock» — семь часов. «Half past three» — половина четвёртого (3:30). Давай потренируемся!
+    EN: What time do you get up?
+    KY: Саат канчада ойгоносуң?
+  t1 <multiple_choice>
+    Q RU: «Half past three» — это:
+    Q EN: “Half past three” means:
+    Q KY: «Half past three» — бул:
+    a ✓ RU:3:30 | EN:3:30 | KY:3:30
+    b   RU:3:15 | EN:3:15 | KY:3:15
+    c   RU:3:45 | EN:3:45 | KY:3:45
+  t2 <multiple_choice>
+    Q RU: «Quarter past eight» — это:
+    Q EN: “Quarter past eight” means:
+    Q KY: «Quarter past eight» — бул:
+    a   RU:8:30 | EN:8:30 | KY:8:30
+    b ✓ RU:8:15 | EN:8:15 | KY:8:15
+    c   RU:7:45 | EN:7:45 | KY:7:45
+  t3 <multiple_choice>
+    Q RU: «It’s five o’clock» — который час?
+    Q EN: “It’s five o’clock” — what time is it?
+    Q KY: «It’s five o’clock» — саат канча?
+    a ✓ RU:5:00 | EN:5:00 | KY:5:00
+    b   RU:5:30 | EN:5:30 | KY:5:30
+    c   RU:4:00 | EN:4:00 | KY:4:00
+  t4 <input>
+    Q RU: Как спросить «Который час?» по-английски?
+    Q EN: How do you ask “What time is it?” in English?
+    Q KY: «Саат канча?» деп англисче кантип суралат?
+
+######## g3e-daily-l3 — Частота [multiple_choice,input]
+  [dialog tali]
+    RU: I always eat breakfast. I never wake up early. I sometimes do homework. Это наречия частоты?
+    EN: Super! Let's make up a story about your day.
+    KY: Супер! Жазгыдай сенин күнүң жөнүндө аңгеме түзөлү.
+  [dialog npc]
+    RU: Именно! Always — всегда, usually — обычно, sometimes — иногда, never — никогда. Тали, ты уже знаешь их!
+    EN: Tell me in English what you do in the morning!
+    KY: Менге таңда эмне кылаарыңды англисче айт!
+  t1 <multiple_choice>
+    Q RU: «I always brush my teeth» — «always» означает:
+    Q EN: “I always brush my teeth” — “always” means:
+    Q KY: «I always brush my teeth» — «always» эмнени билдирет:
+    a ✓ RU:Всегда | EN:Always | KY:Ар дайым
+    b   RU:Иногда | EN:Sometimes | KY:Кээде
+    c   RU:Никогда | EN:Never | KY:Эч качан
+  t2 <multiple_choice>
+    Q RU: Расставь по убыванию частоты:
+    Q EN: Put in order from most to least frequent:
+    Q KY: Жыштыгы боюнча кемүү тартибинде жайгаштыр:
+    a ✓ RU:Always, usually, sometimes, never | EN:Always, usually, sometimes, never | KY:Always, usually, sometimes, never
+    b   RU:Never, sometimes, usually, always | EN:Never, sometimes, usually, always | KY:Never, sometimes, usually, always
+    c   RU:Sometimes, always, never, usually | EN:Sometimes, always, never, usually | KY:Sometimes, always, never, usually
+  t3 <multiple_choice>
+    Q RU: «She sometimes plays football» — как часто она играет?
+    Q EN: “She sometimes plays football” — how often does she play?
+    Q KY: «She sometimes plays football» — ал канчалык көп ойнойт?
+    a   RU:Всегда | EN:Always | KY:Ар дайым
+    b ✓ RU:Иногда | EN:Sometimes | KY:Кээде
+    c   RU:Никогда | EN:Never | KY:Эч качан
+  t4 <input>
+    Q RU: «Я никогда не опаздываю» по-английски:
+    Q EN: “I am never late” in English is:
+    Q KY: «Мен эч качан кечикпейм» англисче:

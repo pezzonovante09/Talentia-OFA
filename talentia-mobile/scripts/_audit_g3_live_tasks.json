@@ -1,0 +1,5763 @@
+[
+  {
+    "id": "g3m-1000-l1",
+    "title": "Тысячи",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "Я хочу посчитать, сколько чешуек у дракона на картинке! Там явно больше ста… может, тысяча?",
+        "en": "Hello! Numbers up to 1000 — hundreds!",
+        "ky": "Салам! 1000гө чейинки сандар — жүздүктөр!",
+        "key": "data.dialog.g3m_1000l1_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Тысяча — это огромное число! Но мы с тобой вместе разберёмся: 100, 200, 300… идём к тысяче!",
+        "en": "100, 200, 300... Hundreds! 1000 — one thousand!",
+        "ky": "100, 200, 300... Жүздүктөр! 1000 — миң!",
+        "key": "data.dialog.g3m_1000l1_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Числа до 1000!",
+        "bodyRu": "Сотни: 100, 200, 300… 1000 — тысяча. В трёхзначном числе есть разряд сотен: 347 = 3 сотни + 4 десятка + 7 единиц.",
+        "titleEn": "Numbers up to 1000!",
+        "bodyEn": "Hundreds: 100, 200… 1000 is a thousand. Three-digit numbers have a hundreds place."
+      },
+      {
+        "titleRu": "Три разряда",
+        "bodyRu": "Справа единицы, в центре десятки, слева сотни. Место цифры меняет её ценность!",
+        "titleEn": "Three places",
+        "bodyEn": "Ones, tens, hundreds — each digit's value depends on its place!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3m1000l1t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3m_3hundreds",
+        "qRu": "Тали считает чешуйки блоками по 100. У него 3 блока. Сколько чешуек?",
+        "qEn": "3 hundred is what number?",
+        "qKy": " 3 жүздүк — бул кайсы сан?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.opt_200",
+            "ru": "200",
+            "en": "200",
+            "ky": "200"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.opt_300",
+            "ru": "300",
+            "en": "300",
+            "ky": "300"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.opt_400",
+            "ru": "400",
+            "en": "400",
+            "ky": "400"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3m1000l1t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3m_5hundreds",
+        "qRu": "На складе 5 ящиков, в каждом по 100 предметов. Сколько предметов всего?",
+        "qEn": "Five hundred is what number?",
+        "qKy": " 5 жүздүк — бул кайсы сан?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.opt_400",
+            "ru": "400",
+            "en": "400",
+            "ky": "400"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.opt_500",
+            "ru": "500",
+            "en": "500",
+            "ky": "500"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.opt_600",
+            "ru": "600",
+            "en": "600",
+            "ky": "600"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3m1000l1t3",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_100x7",
+        "qRu": "Тали нашёл волшебника, который умножает всё на 7. Он взял 100 и начал колдовать: 100 × 7 = ?",
+        "qEn": "100 × 7 =?",
+        "qKy": " 100 × 7 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3m1000l1t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3m_how_hundreds_in_1000",
+        "qRu": "Тали копил монеты по 100 штук. Когда у него стала тысяча, сколько стопок он насчитал?",
+        "qEn": "How many hundreds in a thousand?",
+        "qKy": " Миңде канча жүздүк бар?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.opt_five",
+            "ru": "5",
+            "en": "5",
+            "ky": "5"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.opt_eight",
+            "ru": "8",
+            "en": "8",
+            "ky": "8"
+          },
+          {
+            "id": "c",
+            "correct": true,
+            "key": "data.tasks.opt_ten",
+            "ru": "10",
+            "en": "10",
+            "ky": "10"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3m-1000-l2",
+    "title": "Разряды",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "input",
+      "multiple_choice"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "Я смотрю на число 247 и пытаюсь понять — 2 сотни, 4 десятка и 7 единиц? Или я неправильно раскладываю?",
+        "en": "Place values: units, tens, hundreds!",
+        "ky": "Разряддар: бирдиктер, ондуктар, жүздүктөр!",
+        "key": "data.dialog.g3m_1000l2_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Тали, ты правильно думаешь! Давай проверим на заданиях — помоги мне убедиться, что я тоже понял правило.",
+        "en": "247 = 2 hundreds, 4 tens, 7 units!",
+        "ky": "247 = 2 жүздүк, 4 ондук, 7 бирдик!",
+        "key": "data.dialog.g3m_1000l2_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Разбираем число 247!",
+        "bodyRu": "247 = 200 + 40 + 7. Две сотни, четыре десятка, семь единиц. Тали, ты был прав!",
+        "titleEn": "Breaking down 247!",
+        "bodyEn": "247 = 200 + 40 + 7. Two hundreds, four tens, seven ones."
+      },
+      {
+        "titleRu": "Число 356",
+        "bodyRu": "356 = 300 + 50 + 6. Смотри на место каждой цифры — оно всё решает.",
+        "titleEn": "The number 356",
+        "bodyEn": "356 = 300 + 50 + 6. Look at each digit's place!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3m1000l2t1",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_hundreds_in_347",
+        "qRu": "Детектив Тали изучает число 347 под лупой. Сколько сотен он насчитал?",
+        "qEn": "How many hundreds are there among 347?",
+        "qKy": " 347 санында канча жүздүк бар?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3m1000l2t2",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_tens_in_456",
+        "qRu": "В числе 456 спрятались десятки. Сколько их там притаилось?",
+        "qEn": "How many dozen are 456?",
+        "qKy": " 456 санында канча ондук бар?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3m1000l2t3",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_num_2h_3t_5u",
+        "qRu": "Тали собирает число из запчастей: 2 сотни, 3 десятка и 5 единиц. Что получилось?",
+        "qEn": "Write down the number: 2 hundreds, 3 tens, 5 units",
+        "qKy": " Запиши число: 2 сотни, 3 десятка, 5 единиц",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3m1000l2t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3m_biggest_398_403_389",
+        "qRu": "Три числа поспорили, кто из них самый большой: 398, 403 и 389. Тали взялся их рассудить. Кто победил?",
+        "qEn": "Compare the numbers and pick the right answer: Which is the largest number: 398, 403 or 389?",
+        "qKy": "Сандарды салыштырып, туура жоопту танда: Какое число самое большое: 398, 403 или 389?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.opt_398",
+            "ru": "398",
+            "en": "398",
+            "ky": "398"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.opt_403",
+            "ru": "403",
+            "en": "403",
+            "ky": "403"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.opt_389",
+            "ru": "389",
+            "en": "389",
+            "ky": "389"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3m-1000-l3",
+    "title": "Сравнение",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "356 и 298 — какое больше? Я хочу сказать 298, потому что там цифры интереснее… но это же неправильный подход?",
+        "en": "356 and 298 - which is larger? I want to say 298 because the numbers are more interesting there... but is this the wrong approach?",
+        "ky": "356 жана 298 - кайсынысы чоңураак? 298 деп айткым келет, анткени ал жакта сандар кызыктуураак... бирок бул туура эмес мамилеби?",
+        "key": "data.dialog.g3m_1000l3_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Хаха! Нет, Тали. Сначала смотри на сотни — 3 больше 2, значит 356 больше. Давай закрепим!",
+        "en": "356 > 298. More digits — bigger number!",
+        "ky": "356 > 298. Разряддар көп — сан чоң!",
+        "key": "data.dialog.g3m_1000l3_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Сравнение трёхзначных!",
+        "bodyRu": "356 и 298: сначала сотни — 3 > 2, значит 356 больше. Единицы уже не важны!",
+        "titleEn": "Comparing three-digit numbers!",
+        "bodyEn": "356 vs 298: hundreds first — 3 > 2, so 356 is greater."
+      },
+      {
+        "titleRu": "Больше разрядов — больше число",
+        "bodyRu": "Трёхзначное всегда больше двузначного. У трёхзначных — сравни сотни, потом десятки.",
+        "titleEn": "More digits, bigger number",
+        "bodyEn": "Any three-digit beats a two-digit. Among three-digit, compare hundreds first."
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3m1000l3t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3m_cmp_q1",
+        "qRu": "Какое число больше: 356 или 298?",
+        "qEn": "Which number is greater: 356 or 298?",
+        "qKy": "Кайсы сан чоңураак: 356 же 298?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3m_cmp_opt_356",
+            "ru": "356",
+            "en": "356",
+            "ky": "356"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3m_cmp_opt_298",
+            "ru": "298",
+            "en": "298",
+            "ky": "298"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3m1000l3t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3m_cmp_q2",
+        "qRu": "Сравни: 450 ___ 405",
+        "qEn": "Compare: 450 ___ 405",
+        "qKy": "Салыштыр: 450 ___ 405",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3m_cmp_opt_gt",
+            "ru": ">",
+            "en": ">",
+            "ky": ">"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3m_cmp_opt_lt",
+            "ru": "<",
+            "en": "<",
+            "ky": "<"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3m_cmp_opt_eq",
+            "ru": "=",
+            "en": "=",
+            "ky": "="
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3m1000l3t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3m_cmp_q3",
+        "qRu": "Тали говорит: «512 = 521». Прав ли он?",
+        "qEn": "Tali says: \"512 = 521\". Is he right?",
+        "qKy": "Тали айтат: «512 = 521». Ал туурабы?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.opt_yes",
+            "ru": "Да",
+            "en": "Yes",
+            "ky": "Ооба"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.opt_no",
+            "ru": "Нет",
+            "en": "No",
+            "ky": "Жок"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3m1000l3t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_cmp_q4",
+        "qRu": "Какое число меньше: 703 или 730?",
+        "qEn": "Which number is smaller: 703 or 730?",
+        "qKy": "Кайсы сан кичирээк: 703 же 730?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3m-tab-l1",
+    "title": "Таблица на 4 и 6",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "Мне сказали, что умножение на 4 — это «удвоить дважды». Я попробовал: 4 × 5 = удвоить 5 = 10, удвоить 10 = 20. Правильно?",
+        "en": "Times tables for 4 and 6! 4 x 5 = 20, 6 x 7 = 42!",
+        "ky": "4 жана 6га таблица! 4 × 5 = 20, 6 × 7 = 42!",
+        "key": "data.dialog.g3m_tabl1_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Тали, это отличное открытие! Ты нашёл хитрый способ. Давай проверим его в заданиях!",
+        "en": "Multiplying by 4 — double and double again!",
+        "ky": "4кө көбөйтүү — эки жолу эки эсе!",
+        "key": "data.dialog.g3m_tabl1_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Таблица на 4 и 6!",
+        "bodyRu": "4 × 5 = 20 (удвоить 5 = 10, удвоить 10 = 20 — Тали был прав!). 6 × 7 = 42.",
+        "titleEn": "Times tables for 4 and 6!",
+        "bodyEn": "4 x 5 = 20, 6 x 7 = 42. Multiplying by 4 — double twice!"
+      },
+      {
+        "titleRu": "Шестёрка",
+        "bodyRu": "6 × 6 = 36 — запомни как «шесть шестёрок тридцать шесть»!",
+        "titleEn": "Six",
+        "bodyEn": "6 x 6 = 36!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3mtabl1t1",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_4x6",
+        "qRu": "У осьминога 4 друга, у каждого по 6 рук. Тали считает: 4 × 6 = ?",
+        "qEn": "4 × 6 =?",
+        "qKy": " 4 × 6 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mtabl1t2",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_4x8",
+        "qRu": "Паук сплёл 4 паутины, в каждой 8 узелков. Сколько узелков завязал трудолюбивый паук? 4 × 8 = ?",
+        "qEn": "4 × 8 =?",
+        "qKy": " 4 × 8 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mtabl1t3",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_6x7",
+        "qRu": "На каждой из 6 полок по 7 книг. Тали считает всю библиотеку: 6 × 7 = ?",
+        "qEn": "6 × 7 =?",
+        "qKy": " 6 × 7 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mtabl1t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_6x9",
+        "qRu": "Пчела облетела 6 цветков и собрала с каждого по 9 капель нектара. Тали хочет узнать итог: 6 × 9 = ?",
+        "qEn": "6 × 9 =?",
+        "qKy": " 6 × 9 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3m-tab-l2",
+    "title": "Таблица на 7 и 8",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "7 × 8 — это самый трудный пример для меня! Я всегда забываю ответ. Кто-нибудь придумал способ запомнить?",
+        "en": "Times tables for 7 and 8! Harder, but you can do it!",
+        "ky": "7 жана 8ге таблица! Кыйыныраак, бирок жасай аласың!",
+        "key": "data.dialog.g3m_tabl2_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Есть мнемоника: 5, 6, 7, 8 — пять шесть семь восемь! 56 = 7 × 8. Попробуй!",
+        "en": "7 x 8 = 56! Remember this pair!",
+        "ky": "7 × 8 = 56! Бул жупту жатта!",
+        "key": "data.dialog.g3m_tabl2_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Таблица на 7 и 8!",
+        "bodyRu": "7 × 8 = 56 — запомни: «пять шесть, семь восемь»! 7 × 7 = 49.",
+        "titleEn": "Times tables for 7 and 8!",
+        "bodyEn": "7 x 8 = 56 — remember it! 7 x 7 = 49!"
+      },
+      {
+        "titleRu": "Восьмёрка",
+        "bodyRu": "8 × 8 = 64 — «восемь восемь шестьдесят четыре». Запоминай парами!",
+        "titleEn": "Eight",
+        "bodyEn": "8 x 8 = 64!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3mtabl2t1",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_7x5",
+        "qRu": "Неделя — 7 дней. За 5 недель сколько дней? 7 × 5 = ?",
+        "qEn": "7 × 5 =?",
+        "qKy": " 7 × 5 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mtabl2t2",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_7x8",
+        "qRu": "Осьминог купил 7 тетрадей по 8 листов. Тали помогает считать: 7 × 8 = ?",
+        "qEn": "7 × 8 =?",
+        "qKy": " 7 × 8 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mtabl2t3",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_8x6",
+        "qRu": "В 8 корзинах по 6 яблок. Тали готовится к пирогу: 8 × 6 = ?",
+        "qEn": "8 × 6 =?",
+        "qKy": " 8 × 6 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mtabl2t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_8x9",
+        "qRu": "Стадо из 8 коров даёт по 9 литров молока. Сколько литров получит фермер? 8 × 9 = ?",
+        "qEn": "8 × 9 =?",
+        "qKy": " 8 × 9 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3m-tab-l3",
+    "title": "Таблица на 9",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "input",
+      "multiple_choice"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "Я заметил кое-что про таблицу на 9: 9×1=9, 9×2=18, 9×3=27… Сумма цифр в ответе всегда равна 9! Это правда или я придумал?",
+        "en": "I noticed something about the table for 9: 9x1=9, 9x2=18, 9x3=27... The sum of the digits in the answer is always 9! Is this true or did I make it up?",
+        "ky": "Мен 9 үчүн таблицадан бир нерсени байкадым: 9x1=9, 9x2=18, 9x3=27... Жооптогу цифралардын суммасы дайыма 9! Бул чынбы же мен ойлоп таптымбы?",
+        "key": "data.dialog.g3m_tabl3_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Тали, это настоящее математическое открытие! Проверь на заданиях — это действительно работает?",
+        "en": "The digits of any multiple of 9 always add up to 9! 9 x 5 = 45!",
+        "ky": "9дун жообундагы цифралардын суммасы дайыма 9! 9 × 5 = 45!",
+        "key": "data.dialog.g3m_tabl3_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Таблица на 9!",
+        "bodyRu": "Тали прав: 9×5=45, 4+5=9. 9×7=63, 6+3=9. Это не магия — это математика!",
+        "titleEn": "Times table for 9!",
+        "bodyEn": "9 x 5 = 45. The digits of any multiple of 9 always add up to 9!"
+      },
+      {
+        "titleRu": "Девятка — красивое число",
+        "bodyRu": "9×9=81, 8+1=9. Правило всегда работает!",
+        "titleEn": "Nine",
+        "bodyEn": "9 x 9 = 81!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3mtabl3t1",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_9x4",
+        "qRu": "Кот прожил 4 из своих 9 жизней. Но сейчас важнее: 9 × 4 = ?",
+        "qEn": "9 × 4 =?",
+        "qKy": " 9 × 4 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mtabl3t2",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_9x7",
+        "qRu": "На 9 ёлках по 7 шишек. Белка хочет знать итог: 9 × 7 = ?",
+        "qEn": "9 × 7 =?",
+        "qKy": " 9 × 7 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mtabl3t3",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_9x9",
+        "qRu": "Магический квадрат: 9 рядов по 9 клеток. Сколько клеток на доске? 9 × 9 = ?",
+        "qEn": "9 × 9 =?",
+        "qKy": " 9 × 9 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mtabl3t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3m_9x6_check",
+        "qRu": "Тали утверждает: «9 × 6 = 54!» И добавляет: «5+4=9 — правило работает!» Он прав?",
+        "qEn": "9 × 6 = 54. Right?",
+        "qKy": " 9 × 6 = 54. Верно?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3m_tabl3_q4_a",
+            "ru": "Нет, 9 × 6 = 52",
+            "en": "No, 9 × 6 = 52",
+            "ky": "Жок, 9 × 6 = 52"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3m_tabl3_q4_b",
+            "ru": "Да, 54 и 5+4=9 — всё верно",
+            "en": "Yes, 54 and 5+4=9 — all correct",
+            "ky": "Ооба, 54 жана 5+4=9 — баары туура"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3m_tabl3_q4_c",
+            "ru": "Нет, 9 × 6 = 56",
+            "en": "No, 9 × 6 = 56",
+            "ky": "Жок, 9 × 6 = 56"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3m-div-l1",
+    "title": "Деление на 2 и 3",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "Деление — это как умножение наоборот? Если 2 × 3 = 6, то 6 ÷ 2 = 3? Я правильно понял?",
+        "en": "Division is the opposite of multiplication! 6 / 2 = 3 because 2 x 3 = 6!",
+        "ky": "Бөлүү — көбөйтүүнүн тескери амалы! 6 ÷ 2 = 3, анткени 2 × 3 = 6!",
+        "key": "data.dialog.g3m_divl1_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Тали, именно! Деление и умножение — лучшие друзья. Давай проверим твою идею на задачах!",
+        "en": "We divide equally. 8 / 4 = 2!",
+        "ky": "Бирдей бөлөбүз. 8 ÷ 4 = 2!",
+        "key": "data.dialog.g3m_divl1_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Деление — обратное умножению!",
+        "bodyRu": "Тали прав: 6 ÷ 2 = 3, потому что 2 × 3 = 6. Проверяй деление умножением!",
+        "titleEn": "Division — share equally!",
+        "bodyEn": "Division undoes multiplication. 6 ÷ 2 = 3 because 2 × 3 = 6."
+      },
+      {
+        "titleRu": "Делим поровну",
+        "bodyRu": "8 ÷ 4 = 2. Проверка: 4 × 2 = 8. Всегда работает!",
+        "titleEn": "Check it",
+        "bodyEn": "8 ÷ 4 = 2. Check: 4 × 2 = 8."
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3mdivl1t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3m_div_l1_q1",
+        "qRu": "Два друга нашли 6 монет и хотят разделить поровну. Тали говорит: «По 3 монеты каждому!» Прав ли он? 6 ÷ 2 = ?",
+        "qEn": "Two friends found 6 coins and want to share them equally. How many coins does each get? 6 ÷ 2 =?",
+        "qKy": "Эки дос 6 тыйын тапты жана бирдей бөлүштүрмөкчү. Ар бири канча тыйын алат? 6 ÷ 2 =?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3m_div_l1_q1_a",
+            "ru": "По 2 монеты",
+            "en": "2 coins",
+            "ky": "2 тыйын"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3m_div_l1_q1_b",
+            "ru": "По 3 монеты",
+            "en": "3 coins",
+            "ky": "3 тыйын"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3m_div_l1_q1_c",
+            "ru": "По 4 монеты",
+            "en": "4 coins",
+            "ky": "4 тыйын"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mdivl1t2",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_div_l1_q2",
+        "qRu": "Мама испекла 10 пирожков и честно раздала двоим детям. Сколько досталось каждому? 10 ÷ 2 = ?",
+        "qEn": "Mum baked 10 pies and shared them fairly between two children. How many pies did each child get? 10 ÷ 2 =?",
+        "qKy": "Апа 10 пирожок бышырды жана эки балага бирдей берди. Ар бирине канча пирожок тийди? 10 ÷ 2 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mdivl1t3",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_div_l1_q3",
+        "qRu": "12 карандашей в 3 коробки поровну. Сколько в каждой? 12 ÷ 3 = ?",
+        "qEn": "12 pencils need to be put into 3 equal boxes. How many pencils in each? 12 ÷ 3 =?",
+        "qKy": "12 карандашты 3 бирдей кутуга салуу керек. Ар биринде канча карандаш? 12 ÷ 3 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mdivl1t4",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3m_div_l1_q4",
+        "qRu": "Капитан разделил 9 матросов на 3 вахты поровну. Тали считает: «По 3 матроса!» Он прав? 9 ÷ 3 = ?",
+        "qEn": "The captain divided 9 sailors into 3 equal watches. How many sailors in each watch? 9 ÷ 3 =?",
+        "qKy": "Капитан 9 матросту 3 бирдей вахтага бөлдү. Ар бир вахтада канча матрос? 9 ÷ 3 =?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3m_div_l1_q4_a",
+            "ru": "По 2 матроса",
+            "en": "2 sailors",
+            "ky": "2 матрос"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3m_div_l1_q4_b",
+            "ru": "По 3 матроса",
+            "en": "3 sailors",
+            "ky": "3 матрос"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3m_div_l1_q4_c",
+            "ru": "По 4 матроса",
+            "en": "4 sailors",
+            "ky": "4 матрос"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3m-div-l2",
+    "title": "Деление на 4 и 5",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "Хочу поделить 28 печенек на 4 тарелки поровну. Я думаю, по 7. Но я не уверен — помоги проверить!",
+        "en": "I want to divide 28 cookies equally among 4 plates. I think 7 each. But I’m not sure - help me check!",
+        "ky": "28 печеньени 4 тарелкага бирдей бөлгүм келет. Ар бири 7ден деп ойлойм. Бирок мен ишенбейм - текшерүүгө жардам бериңиз!",
+        "key": "data.dialog.g3m_divl2_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Тали, проверим! 4 × 7 = 28? Да! Значит, ты прав. Деление всегда проверяется умножением.",
+        "en": "Division and multiplication are friends!",
+        "ky": "Бөлүү жана көбөйтүү — достор!",
+        "key": "data.dialog.g3m_divl2_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Деление с остатком",
+        "bodyRu": "Иногда делится не ровно. 7 ÷ 2 = 3 (остаток 1). Проверка: 2 × 3 + 1 = 7.",
+        "titleEn": "Division with a remainder",
+        "bodyEn": "Sometimes there's a left-over. Example: 7 ÷ 2 = 3 (remainder 1)."
+      },
+      {
+        "titleRu": "Остаток меньше делителя",
+        "bodyRu": "Остаток всегда меньше числа, на которое делишь.",
+        "titleEn": "Finding the remainder",
+        "bodyEn": "Remainder = dividend − quotient × divisor. It's always less than the divisor."
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3mdivl2t1",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_div_l2_q1",
+        "qRu": "20 звёздочек в 4 конверта поровну. Сколько в каждом? 20 ÷ 4 = ?",
+        "qEn": "20 stars were placed into 4 equal envelopes. How many stars are in each? 20 ÷ 4 =?",
+        "qKy": "20 жылдыз 4 бирдей конвертке салынды. Ар биринде канча жылдыз? 20 ÷ 4 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mdivl2t2",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_div_l2_q2",
+        "qRu": "28 печенек на 4 тарелки. Тали думает по 7 — проверь его! 28 ÷ 4 = ?",
+        "qEn": "28 biscuits were shared equally between 4 plates. How many biscuits on each plate? 28 ÷ 4 =?",
+        "qKy": "28 печенье 4 тарелкага бирдей бөлүндү. Ар бир тарелкада канча печенье? 28 ÷ 4 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mdivl2t3",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_div_l2_q3",
+        "qRu": "Тали делит 7 яблок на 2 друзей поровну. Сколько получит каждый и сколько останется? 7 ÷ 2 = ? (частное и остаток)",
+        "qEn": "Tali shares 7 apples between 2 friends equally. How many does each get, and what is left over? 7 ÷ 2 = ? (quotient and remainder)",
+        "qKy": "Тали 7 алманы 2 досторуна бирдей бөлөт. Ар бирине канча тийет жана канча калат? 7 ÷ 2 = ? (бөлүнмө жана калдык)",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mdivl2t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_div_l2_q4",
+        "qRu": "17 карандашей разложили по 5 в коробки. Сколько полных коробок и сколько карандашей останется? 17 ÷ 5 = ? (частное и остаток)",
+        "qEn": "17 pencils are packed 5 per box. How many full boxes, and how many pencils are left? 17 ÷ 5 = ? (quotient and remainder)",
+        "qKy": "17 карандашты кутуга 5тен салышат. Канча толук куту жана канча карандаш калат? 17 ÷ 5 = ? (бөлүнмө жана калдык)",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3m-div-l3",
+    "title": "Связь умножения и деления",
+    "subject": "math",
+    "world": "g3math",
+    "types": [
+      "input",
+      "multiple_choice"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "Если я знаю 7 × 6 = 42, значит я автоматически знаю 42 ÷ 7 = 6 и 42 ÷ 6 = 7? Одно знание — три факта?!",
+        "en": "If I know 7 × 6 = 42, does that mean I automatically know 42 ÷ 7 = 6 and 42 ÷ 6 = 7? One knowledge - three facts?!",
+        "ky": "Эгерде мен 7 × 6 = 42 деп билсем, бул мен автоматтык түрдө 42 ÷ 7 = 6 жана 42 ÷ 6 = 7ди билем дегенди билдиреби? Бир билим – үч факты?!",
+        "key": "data.dialog.g3m_divl3_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Тали, именно! Ты открыл главный секрет таблицы умножения. Проверим на задачах!",
+        "en": "Check division with multiplication!",
+        "ky": "Бөлүүнү көбөйтүү менен текшер!",
+        "key": "data.dialog.g3m_divl3_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Одно знание — три факта!",
+        "bodyRu": "Тали прав: 7 × 6 = 42 → 42 ÷ 7 = 6 → 42 ÷ 6 = 7. Три в одном!",
+        "titleEn": "Dividing bigger numbers",
+        "bodyEn": "Big numbers — use long division, step by step."
+      },
+      {
+        "titleRu": "Проверяй деление",
+        "bodyRu": "Частное × делитель = делимое. Всегда!",
+        "titleEn": "Check division",
+        "bodyEn": "Quotient × divisor + remainder = dividend."
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3mdivl3t1",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_25div5",
+        "qRu": "Знаешь, что 5 × 5 = 25? Реши обратную задачу: 25 ÷ 5 = ?",
+        "qEn": "25 ÷ 5 =?",
+        "qKy": " 25 ÷ 5 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mdivl3t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3m_div_l3_q2",
+        "qRu": "Тали знает, что 9 × 5 = 45. Значит, 45 ÷ 5 = ?",
+        "qEn": "If 9 × 5 = 45, what is 45 ÷ 5? Multiplication and division are best friends!",
+        "qKy": "Эгер 9 × 5 = 45 болсо, 45 ÷ 5 эмнеге барабар? Көбөйтүү жана бөлүү — эң жакшы досторд!",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3m_div_l3_q2_a",
+            "ru": "7",
+            "en": "7",
+            "ky": "7"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3m_div_l3_q2_b",
+            "ru": "9",
+            "en": "9",
+            "ky": "9"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3m_div_l3_q2_c",
+            "ru": "5",
+            "en": "5",
+            "ky": "5"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mdivl3t3",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_30div10",
+        "qRu": "Раз 3 × 10 = 30, то 30 ÷ 10 = ?",
+        "qEn": "30 ÷ 10 =?",
+        "qKy": " 30 ÷ 10 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3mdivl3t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3m_div_l3_q4",
+        "qRu": "Финальный уровень от Тали: если 7 × 6 = 42, то 42 ÷ 6 = ?",
+        "qEn": "Final level! Use the connection: if 7 × 6 = 42, then 42 ÷ 6 =?",
+        "qKy": "Акыркы деңгээл! Байланышты колдон: эгер 7 × 6 = 42 болсо, 42 ÷ 6 =?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3r-gen-l1",
+    "title": "Мужской и женский род",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "fill_blank",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "Я слышал про «род» существительных. Это что — у слов есть пол? Слово «стол» — мальчик, а слово «книга» — девочка?",
+        "en": "Masculine and feminine gender! Table — he, book — she!",
+        "ky": "Эркек жана ургаачы жынысы! Стол — ол (эр.), китеп — ол (аял.)!",
+        "key": "data.dialog.g3r_genl1_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Почти! В русском языке три рода: мужской (он), женский (она) и средний (оно). Давай разберёмся — это не так страшно, как кажется!",
+        "en": "The gender of a noun determines the adjective ending!",
+        "ky": "Зат атоочтун жынысы сын атоочтун жалгоочун аныктайт!",
+        "key": "data.dialog.g3r_genl1_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Мужской и женский род!",
+        "bodyRu": "СТОЛ — он (мужской). КНИГА — она (женский). Проверяй местоимением: «он мой» или «она моя»?",
+        "titleEn": "Masculine and feminine gender!",
+        "bodyEn": "Table — he (m.), book — she (f.)!"
+      },
+      {
+        "titleRu": "Подставляй местоимение!",
+        "bodyRu": "Это главный приём. ДРУГ — «он мой друг» → мужской. КОШКА — «она моя кошка» → женский.",
+        "titleEn": "Gender and endings",
+        "bodyEn": "Gender determines the adjective ending!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3rgenl1t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_masc_question",
+        "qRu": "Тали говорит про слово ДОМ: «Это ОН!» Какой это род?",
+        "qEn": "Tali says about the word HOME (ДОМ): “It is HE!” What gender is that?",
+        "qKy": "Тали ҮЙ (ДОМ) сөзү жөнүндө: «Бул АЛ (он)!» Бул кайсы жыныс?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_opt_muzhskoy",
+            "ru": "Мужской",
+            "en": "Masculine",
+            "ky": "Эркек"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_opt_zhenskiy",
+            "ru": "Женский",
+            "en": "Feminine",
+            "ky": "Аял"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_opt_sredniy",
+            "ru": "Средний",
+            "en": "Neuter",
+            "ky": "Орто"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rgenl1t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_dom_gender",
+        "qRu": "Слово СТОЛ — с каким местоимением дружит?",
+        "qEn": "The word TABLE (СТОЛ) — which pronoun does it go with?",
+        "qKy": "СТОЛ сөзү — кайсы ат атооч менен достошот?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_opt_on",
+            "ru": "Он",
+            "en": "He (он)",
+            "ky": "Ал (он)"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_opt_ona",
+            "ru": "Она",
+            "en": "She (она)",
+            "ky": "Ал (она)"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_opt_ono",
+            "ru": "Оно",
+            "en": "It (оно)",
+            "ky": "Ал (оно)"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rgenl1t3",
+        "type": "fill_blank",
+        "aba": false,
+        "qKey": "data.tasks.g3r_genl1_fb_sent",
+        "qRu": "Стол — это _ род.",
+        "qEn": "A table is _ gender.",
+        "qKy": "Стол — бул _ жыныс.",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rgenl1t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3r_drug_gender",
+        "qRu": "Тали говорит: «Я рыцарь мужского рода!» Какое местоимение — боевой клич мужского рода?",
+        "qEn": "Tali says: “I am a masculine-gender knight!” Which pronoun is the masculine battle cry?",
+        "qKy": "Тали: «Мен эркек жыныстагы рыцарьмын!» Эркек жыныстын урааны кайсы ат атооч?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3r-gen-l2",
+    "title": "Средний род",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "Ладно, мужской и женский я понял. Но СРЕДНИЙ — это что? Между мужским и женским?",
+        "en": "Neuter gender: window, sea, happiness — it!",
+        "ky": "Орто жынысы: терезе, деңиз, бакыт — ол (орто ж.)!",
+        "key": "data.dialog.g3r_genl2_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Хорошая мысль! Средний — это слова с окончанием -о, -е: ОКНО, МОРЕ, СОЛНЦЕ. Они отвечают на «оно моё». Давай проверим!",
+        "en": "Ending -о, -е often for neuter gender!",
+        "ky": "-о, -е жалгоочтору орто жынысында көп!",
+        "key": "data.dialog.g3r_genl2_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Средний род!",
+        "bodyRu": "ОКНО (оно), МОРЕ (оно), СОЛНЦЕ (оно). Часто с окончаниями -о, -е.",
+        "titleEn": "Neuter gender!",
+        "bodyEn": "Window, sea, happiness — it (n.)!"
+      },
+      {
+        "titleRu": "Проверяй: «оно моё»",
+        "bodyRu": "ОКНО — «оно моё» → средний. СОЛНЦЕ — «оно моё» → средний.",
+        "titleEn": "Endings -о, -е",
+        "bodyEn": "Neuter gender often ends in -о, -е!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3rgenl2t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_genl2_q1",
+        "qRu": "Тали смотрит на слово ОКНО: «оно моё». Какой у ОКНО род?",
+        "qEn": "Tali looks at the word ОКНО: “оно моё”. What gender is ОКНО?",
+        "qKy": "Тали ОКНО деген сөзгө карайт: «оно моё». ОКНО кандай род?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3r_opt_muzhskoy",
+            "ru": "Мужской",
+            "en": "Masculine",
+            "ky": "Эркек"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_opt_zhenskiy",
+            "ru": "Женский",
+            "en": "Feminine",
+            "ky": "Аял"
+          },
+          {
+            "id": "c",
+            "correct": true,
+            "key": "data.tasks.g3r_opt_sredniy",
+            "ru": "Средний",
+            "en": "Neuter",
+            "ky": "Орто"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rgenl2t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_genl2_q2",
+        "qRu": "СОЛНЦЕ — какой род? Подставь местоимение: «___ моё»?",
+        "qEn": "СОЛНЦЕ — what gender? Choose the pronoun: “___ моё”?",
+        "qKy": "СОЛНЦЕ — кандай род? Местоимениени кой: «___ моё»?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3r_opt_on",
+            "ru": "Он",
+            "en": "He (он)",
+            "ky": "Ал (он)"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_opt_ona",
+            "ru": "Она",
+            "en": "She (она)",
+            "ky": "Ал (она)"
+          },
+          {
+            "id": "c",
+            "correct": true,
+            "key": "data.tasks.g3r_opt_ono",
+            "ru": "Оно",
+            "en": "It (оно)",
+            "ky": "Ал (оно)"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rgenl2t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_genl2_q3",
+        "qRu": "Среди слов МОЛОКО, КОШКА, СТОЛ найди слово среднего рода.",
+        "qEn": "Among МОЛОКО, КОШКА, СТОЛ find the neuter-gender word.",
+        "qKy": "МОЛОКО, КОШКА, СТОЛ сөздөрүнүн ичинен орто роддогуну тап.",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_genl2_q3_a",
+            "ru": "Молоко",
+            "en": "Молоко",
+            "ky": "Молоко"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_genl2_q3_b",
+            "ru": "Кошка",
+            "en": "Кошка",
+            "ky": "Кошка"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_genl2_q3_c",
+            "ru": "Стол",
+            "en": "Стол",
+            "ky": "Стол"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rgenl2t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3r_genl2_q4",
+        "qRu": "Какое местоимение «дружит» со словами среднего рода: ПОЛЕ, НЕБО, ДЕРЕВО?",
+        "qEn": "Which pronoun goes with neuter words: ПОЛЕ, НЕБО, ДЕРЕВО?",
+        "qKy": "Орто роддогу сөздөр менен кайсы местоимение «дос»: ПОЛЕ, НЕБО, ДЕРЕВО?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3r-gen-l3",
+    "title": "Род прилагательных",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "Я написал «синяя небо». Почему все смеются? Небо же красивое!",
+        "en": "Gender of adjectives: big table, big book, big window!",
+        "ky": "Сын атоочтордун жынысы: чоң стол, чоң китеп, чоң терезе!",
+        "key": "data.dialog.g3r_genl3_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Тали, небо среднего рода — СИНЕЕ небо, а не «синяя»! Прилагательное меняется по роду вместе с существительным. Разберёмся?",
+        "en": "An adjective agrees with the noun in gender!",
+        "ky": "Сын атооч зат атооч менен жынысы жагынан макулдашат!",
+        "key": "data.dialog.g3r_genl3_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Род прилагательных!",
+        "bodyRu": "БОЛЬШОЙ стол (м.р.), БОЛЬШАЯ книга (ж.р.), БОЛЬШОЕ окно (ср.р.)",
+        "titleEn": "Gender of adjectives!",
+        "bodyEn": "Big table, big book, big window!"
+      },
+      {
+        "titleRu": "Согласование",
+        "bodyRu": "Прилагательное «подстраивается» под существительное!",
+        "titleEn": "Agreement",
+        "bodyEn": "An adjective agrees with the noun!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3rgenl3t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_genl3_q1",
+        "qRu": "Тали пишет про ДОМ. «Высокий дом» или «Высокое дом»?",
+        "qEn": "Tali writes about ДОМ. Is it «Высокий дом» or «Высокое дом»?",
+        "qKy": "Тали ДОМ жөнүндө жазат. «Высокий дом»би же «Высокое дом»би?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_genl3_q1_a",
+            "ru": "Высокий дом",
+            "en": "Высокий дом",
+            "ky": "Высокий дом"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_genl3_q1_b",
+            "ru": "Высокая дом",
+            "en": "Высокая дом",
+            "ky": "Высокая дом"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_genl3_q1_c",
+            "ru": "Высокое дом",
+            "en": "Высокое дом",
+            "ky": "Высокое дом"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rgenl3t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_genl3_q2",
+        "qRu": "«Синяя птица» или «Синий птица»? Птица — женский род, значит:",
+        "qEn": "«Синяя птица» or «Синий птица»? Птица is feminine, so:",
+        "qKy": "«Синяя птица»би же «Синий птица»би? Птица — аял род, демек:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_genl3_q2_a",
+            "ru": "Синяя птица",
+            "en": "Синяя птица",
+            "ky": "Синяя птица"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_genl3_q2_b",
+            "ru": "Синий птица",
+            "en": "Синий птица",
+            "ky": "Синий птица"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_genl3_q2_c",
+            "ru": "Синее птица",
+            "en": "Синее птица",
+            "ky": "Синее птица"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rgenl3t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_genl3_q3",
+        "qRu": "Тали пишет про МОЛОКО. «ТЁПЛОЕ молоко» — почему такое окончание?",
+        "qEn": "Tali writes about МОЛОКО. Why «ТЁПЛОЕ молоко»?",
+        "qKy": "Тали МОЛОКО жөнүндө жазат. Эмне үчүн «ТЁПЛОЕ молоко»?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_genl3_q3_a",
+            "ru": "Потому что МОЛОКО — среднего рода",
+            "en": "Потому что МОЛОКО — среднего рода",
+            "ky": "Себеби МОЛОКО — орто роддо"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_genl3_q3_b",
+            "ru": "Потому что МОЛОКО — мужского рода",
+            "en": "Потому что МОЛОКО — мужского рода",
+            "ky": "Себеби МОЛОКО — эркек роддо"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_genl3_q3_c",
+            "ru": "Просто так красивее",
+            "en": "Просто так красивее",
+            "ky": "Жөн гана кооз угулат"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rgenl3t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3r_genl3_q4",
+        "qRu": "Подбери прилагательное к слову КНИГА: интересный, интересная или интересное?",
+        "qEn": "Choose the adjective for КНИГА: интересный, интересная or интересное?",
+        "qKy": "КНИГА сөзүнө сын атоочту танда: интересный, интересная же интересное?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3r-verb-l1",
+    "title": "Настоящее время",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "Я пишу в дневнике прямо сейчас. Какое время использовать — «Тали пишет» или «Тали писал»?",
+        "en": "Verb in present tense: I read, you read!",
+        "ky": "Учур чактагы этиш: мен окуйм, сен окуйсуң!",
+        "key": "data.dialog.g3r_verbl1_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Прямо сейчас — значит настоящее время! «Тали пишет» — что делает прямо сейчас.",
+        "en": "Endings change by person and number!",
+        "ky": "Жалгоочтор жакка жана санга жараша өзгөрөт!",
+        "key": "data.dialog.g3r_verbl1_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Настоящее время!",
+        "bodyRu": "Я читаю, ты читаешь, он читает — что происходит СЕЙЧАС.",
+        "titleEn": "Present tense!",
+        "bodyEn": "I read, you read, he reads. Endings change by person!"
+      },
+      {
+        "titleRu": "Три лица",
+        "bodyRu": "1-е: я (читаю). 2-е: ты (читаешь). 3-е: он/она/оно (читает).",
+        "titleEn": "Persons of the verb",
+        "bodyEn": "1st person: I, we. 2nd: you. 3rd: he, she, it, they!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3rverbl1t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_verbl1_q1",
+        "qRu": "Репортёр ведёт прямой эфир прямо сейчас. «Мальчик ___ по улице». Какой глагол?",
+        "qEn": "A reporter is live on air. “The boy ___ along the street.” Which verb form?",
+        "qKy": "Репортер түз эфирде. «Бала көчө боюнча ___». Кайсы форма?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl1_q1_a",
+            "ru": "Шёл (прошедшее)",
+            "en": "walked (past)",
+            "ky": "басып кетти (өткөн)"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3r_verbl1_q1_b",
+            "ru": "Идёт (настоящее)",
+            "en": "walks / is walking (present)",
+            "ky": "басат / жүрөт (азыркы)"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl1_q1_c",
+            "ru": "Пойдёт (будущее)",
+            "en": "will walk (future)",
+            "ky": "басат (келечек)"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rverbl1t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_verbl1_present_q",
+        "qRu": "Глагол в настоящем времени отвечает на вопрос:",
+        "qEn": "A present-tense verb answers the question:",
+        "qKy": "Азыркы замандын этиши кайсы суроого жооп берет:",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3r_opt_chto_delal",
+            "ru": "Что делал?",
+            "en": "What did he do?",
+            "ky": "Эмне кылды?"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3r_opt_chto_delaet",
+            "ru": "Что делает?",
+            "en": "What is he doing?",
+            "ky": "Эмне кылат?"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_opt_chto_budet",
+            "ru": "Что будет делать?",
+            "en": "What will he do?",
+            "ky": "Эмне кыла турган?"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rverbl1t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_verbl1_q3",
+        "qRu": "Найди «шпиона» — глагол в настоящем времени среди слов: ЧИТАЛ, ЧИТАЕТ, ПРОЧИТАЕТ.",
+        "qEn": "Find the “spy” — the present-tense verb among: CHITAL, CHITAET, PROCHITAET.",
+        "qKy": "«Шпионду» тап — азыркы замандын этиши кайсы: ЧИТАЛ, ЧИТАЕТ, ПРОЧИТАЕТ.",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl1_q3_a",
+            "ru": "ЧИТАЛ (прошедшее)",
+            "en": "CHITAL — past tense",
+            "ky": "ЧИТАЛ — өткөн заман"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3r_verbl1_q3_b",
+            "ru": "ЧИТАЕТ (настоящее)",
+            "en": "CHITAET — present tense",
+            "ky": "ЧИТАЕТ — азыркы заман"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl1_q3_c",
+            "ru": "ПРОЧИТАЕТ (будущее)",
+            "en": "PROCHITAET — future tense",
+            "ky": "ПРОЧИТАЕТ — келечек заман"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rverbl1t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3r_verbl1_present_input",
+        "qRu": "Тали пишет дневник о событиях прямо сейчас. Какое слово он использует?",
+        "qEn": "Tali is writing a diary about events right now. Which word does he use?",
+        "qKy": "Тали азыр эле болуп жаткан окуялар жөнүндө күндөлүк жазат. Ал кайсы сөздү колдонот?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3r-verb-l2",
+    "title": "Прошедшее время",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "Я хочу написать про вчера: «Тали гулял в лесу». Правильно? Или «Тали гуляет»?",
+        "en": "Past tense: read (m.), read (f.), read (n.)!",
+        "ky": "Өткөн чак: окуду (эр.), окуду (аял.), окуду (орто)!",
+        "key": "data.dialog.g3r_verbl2_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Вчера — это прошедшее время! «Тали гулял» — верно. Суффикс -Л это признак прошедшего.",
+        "en": "Suffix -л and ending by gender!",
+        "ky": "-л суффикси жана жыныска жараша жалгооч!",
+        "key": "data.dialog.g3r_verbl2_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Прошедшее время!",
+        "bodyRu": "Читал, читала, читало. Суффикс -Л! Род меняется: он читал, она читала.",
+        "titleEn": "Past tense!",
+        "bodyEn": "Read (m.), read (f.), read (n.). Suffix -л and ending by gender!"
+      },
+      {
+        "titleRu": "Примеры",
+        "bodyRu": "Я читал (мужской). Она читала (женский). Оно читало (средний).",
+        "titleEn": "Examples",
+        "bodyEn": "I read (m.). She read (f.). It read (n.)!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3rverbl2t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_past_question",
+        "qRu": "Дедушка рассказывает о вчерашнем дне. «Я ___ в лесу». Какой глагол?",
+        "qEn": "Grandpa talks about yesterday: “I ___ in the forest.” Which verb fits?",
+        "qKy": "Чоңата кечээ жөнүндө айтат: «Мен токойдо ___». Кайсы этиш?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_verbl2_q1_a",
+            "ru": "Гулял",
+            "en": "Walked (Гулял)",
+            "ky": "Гулял"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl2_q1_b",
+            "ru": "Гуляю",
+            "en": "Walk (Гуляю)",
+            "ky": "Гуляю"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl2_q1_c",
+            "ru": "Погуляю",
+            "en": "Will walk (Погуляю)",
+            "ky": "Погуляю"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rverbl2t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_verbl2_q2",
+        "qRu": "ЧИТАЛ — это какое время?",
+        "qEn": "ЧИТАЛ (read, past) — which tense is it?",
+        "qKy": "ЧИТАЛ — бул кайсы чак?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl2_q2_a",
+            "ru": "Настоящее",
+            "en": "Present",
+            "ky": "Азыркы"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3r_verbl2_q2_b",
+            "ru": "Прошедшее",
+            "en": "Past",
+            "ky": "Өткөн"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl2_q2_c",
+            "ru": "Будущее",
+            "en": "Future",
+            "ky": "Келечек"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rverbl2t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_which_past",
+        "qRu": "Выбери глагол в прошедшем времени: ПОБЕЖИТ, БЕЖИТ, ПОБЕЖАЛ.",
+        "qEn": "Pick the past-tense verb: WILL RUN, RUNS, RAN.",
+        "qKy": "Өткөн чактагы этишти танда: ПОБЕЖИТ, БЕЖИТ, ПОБЕЖАЛ.",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl2_q3_a",
+            "ru": "Побежит",
+            "en": "Will run (Побежит)",
+            "ky": "Побежит"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl2_q3_b",
+            "ru": "Бежит",
+            "en": "Runs (Бежит)",
+            "ky": "Бежит"
+          },
+          {
+            "id": "c",
+            "correct": true,
+            "key": "data.tasks.g3r_verbl2_q3_c",
+            "ru": "Побежал",
+            "en": "Ran (Побежал)",
+            "ky": "Побежал"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rverbl2t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3r_verbl2_q4",
+        "qRu": "Тали узнал: в прошедшем времени глагол меняется по роду. Как скажем про девочку?",
+        "qEn": "Tali learned: in the past tense the verb changes by gender. How do we say it about a girl?",
+        "qKy": "Тали билди: өткөн заманда этиш жыныска жараша өзгөрөт. Кыз жөнүндө кантип айтасың?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3r-verb-l3",
+    "title": "Лицо глагола",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "1-е лицо — это «я»? Значит когда я говорю «я иду» — это первое лицо? А когда говорю «ты идёшь» — второе?",
+        "en": "Person of the verb: 1st (I, we), 2nd (you), 3rd (he, she, it, they)!",
+        "ky": "Этиштин жагы: 1-жак (мен, биз), 2-жак (сен), 3-жак (ал, алар)!",
+        "key": "data.dialog.g3r_verbl3_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Тали, ты сам разобрался! Да: я (1-е), ты (2-е), он/она (3-е). Проверим?",
+        "en": "I go — 1st person. He goes — 3rd person!",
+        "ky": "Мен барам — 1-жак. Ал барат — 3-жак!",
+        "key": "data.dialog.g3r_verbl3_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Лицо глагола!",
+        "bodyRu": "1-е: я иду, мы идём. 2-е: ты идёшь, вы идёте. 3-е: он/она идёт, они идут.",
+        "titleEn": "Person of the verb!",
+        "bodyEn": "1st person: I go, we go. 2nd: you go. 3rd: he goes!"
+      },
+      {
+        "titleRu": "Окончания меняются",
+        "bodyRu": "По лицам и числам окончания разные. Это и называется спряжение.",
+        "titleEn": "Conjugation",
+        "bodyEn": "Endings change by person and number!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3rverbl3t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_person_q1",
+        "qRu": "Тали мечтает: «Я ___ в космос!» Глагол в 1-м лице:",
+        "qEn": "Tali dreams: “I ___ into space!” Verb in the 1st person:",
+        "qKy": "Тали кыялданат: «Мен космоско ___!» 1-жак этиш:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_verbl3_q1_a",
+            "ru": "Полечу",
+            "en": "Полечу",
+            "ky": "Полечу"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl3_q1_b",
+            "ru": "Полетишь",
+            "en": "Полетишь",
+            "ky": "Полетишь"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl3_q1_c",
+            "ru": "Полетит",
+            "en": "Полетит",
+            "ky": "Полетит"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rverbl3t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_person_q2",
+        "qRu": "Слово «читаю» — какое лицо? Подсказка: «я читаю»",
+        "qEn": "The word «читаю» — which person? Hint: «я читаю»",
+        "qKy": "«Читаю» сөзү — кайсы жак? Кеңеш: «я читаю»",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_verbl3_q2_a",
+            "ru": "1-е лицо (я)",
+            "en": "1-е лицо (я)",
+            "ky": "1-жак (я)"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl3_q2_b",
+            "ru": "2-е лицо (ты)",
+            "en": "2-е лицо (ты)",
+            "ky": "2-жак (ты)"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl3_q2_c",
+            "ru": "3-е лицо (он)",
+            "en": "3-е лицо (он)",
+            "ky": "3-жак (он)"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rverbl3t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_person_q3",
+        "qRu": "Учитель говорит ученику: «Ты ___ задачу». 2-е лицо глагола «решить»:",
+        "qEn": "A teacher tells a student: “You ___ the problem.” 2nd person of «решить»:",
+        "qKy": "Мугалим окуучуга: «Сен маселени ___». «Решить» этишинин 2-жак:",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl3_q3_a",
+            "ru": "Решу (1-е лицо)",
+            "en": "I will solve (1st person)",
+            "ky": "Мен чечем (1-жак)"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3r_verbl3_q3_b",
+            "ru": "Решишь (2-е лицо)",
+            "en": "You will solve (2nd person)",
+            "ky": "Сен чечесиң (2-жак)"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_verbl3_q3_c",
+            "ru": "Решит (3-е лицо)",
+            "en": "He/she will solve (3rd person)",
+            "ky": "Ал чечет (3-жак)"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3rverbl3t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3r_person_q4",
+        "qRu": "«Они ___ в парке» — 3-е лицо множественного числа глагола «гулять»:",
+        "qEn": "«Они ___ в парке» — 3rd person plural of «гулять»:",
+        "qKy": "«Алар паркта ___» — «гулять» этишинин 3-жак көп түрү:",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3r-adj-l1",
+    "title": "Согласование",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "Красный шар, красная роза, красное яблоко… Одно слово «красный» — три разных формы! Почему?",
+        "en": "Agreement of adjective with noun!",
+        "ky": "Сын атоочтун зат атооч менен макулдашуусу!",
+        "key": "data.dialog.g3r_adjl1_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Потому что прилагательное согласуется с существительным в роде! Шар — он (красный). Роза — она (красная). Яблоко — оно (красное).",
+        "en": "Red ball, red rose, red apple!",
+        "ky": "Кызыл топ, кызыл раймайлы, кызыл алма!",
+        "key": "data.dialog.g3r_adjl1_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Согласование!",
+        "bodyRu": "Красный шар (м.р.), красная роза (ж.р.), красное яблоко (ср.р.)!",
+        "titleEn": "Agreement!",
+        "bodyEn": "Red ball, red rose, red apple!"
+      },
+      {
+        "titleRu": "Правило",
+        "bodyRu": "Прилагательное в том же роде и числе, что и существительное.",
+        "titleEn": "Gender and number",
+        "bodyEn": "The adjective is in the same gender and number as the noun!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3radjl1t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_krasny_adj",
+        "qRu": "Художник рисует дом. «Дом какой?» — это вопрос к прилагательному или существительному?",
+        "qEn": "An artist draws a house. “What kind of house?” — is that a question to the adjective or to the noun?",
+        "qKy": "Сүрөтчү үй тартат. «Үй кандай?» — бул сын атоочкобы же зат атоочкобу?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_opt_to_adj",
+            "ru": "К прилагательному",
+            "en": "To the adjective",
+            "ky": "Сын атоочко"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_opt_to_noun",
+            "ru": "К существительному",
+            "en": "To the noun",
+            "ky": "Зат атоочко"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3radjl1t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_adj_color_examples",
+        "qRu": "«___ шар» — прилагательное КРАСНЫЙ. Какая форма нужна?",
+        "qEn": "“___ ball” — adjective RED (КРАСНЫЙ). Which form is needed?",
+        "qKy": "«___ шар» — сын атооч КРАСНЫЙ. Кайсы форма керек?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_opt_krasny",
+            "ru": "Красный",
+            "en": "Red (masc. красный)",
+            "ky": "Кызыл (красный)"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_opt_krasnaya",
+            "ru": "Красная",
+            "en": "Red (fem. красная)",
+            "ky": "Кызыл (красная)"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_opt_krasnoe",
+            "ru": "Красное",
+            "en": "Red (neut. красное)",
+            "ky": "Кызыл (красное)"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3radjl1t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_zeleny_dom_adj",
+        "qRu": "«Высокое дерево» или «высокий дерево»? ДЕРЕВО — средний род.",
+        "qEn": "“Tall tree” or “tall tree (wrong ending)”? TREE (ДЕРЕВО) is neuter.",
+        "qKy": "«Бийик дарак» же «бийик дарак (туура эмес)»? ДЕРЕВО — орто жыныс.",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_adjl1_q3_a",
+            "ru": "Высокое дерево (ср.р. — «-ое»)",
+            "en": "Tall tree (neuter -ое)",
+            "ky": "Бийик дарак (орто -ое)"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_adjl1_q3_b",
+            "ru": "Высокий дерево",
+            "en": "Tall tree (wrong masc. ending)",
+            "ky": "Бийик дарак (туура эмес)"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3radjl1t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3r_adj_for_masc",
+        "qRu": "«КРАСИВЫЙ закат» или «красивое закат»? ЗАКАТ — мужской род.",
+        "qEn": "“BEAUTIFUL sunset” or “beautiful sunset (wrong)”? SUNSET (ЗАКАТ) is masculine.",
+        "qKy": "«СУЛУУ күн батышы»бы же туура эмес формабы? ЗАКАТ — эркек жыныс.",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3r-adj-l2",
+    "title": "Степени сравнения",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "Я БОЛЬШОЙ. Слон БОЛЬШЕ меня. А кит — САМЫЙ БОЛЬШОЙ! Это и есть степени сравнения?",
+        "en": "Degrees of comparison: big — bigger — biggest!",
+        "ky": "Салыштыруу даражалары: чоң — чоңураак — эң чоң!",
+        "key": "data.dialog.g3r_adjl2_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Тали, ты сам привёл идеальный пример! Положительная — большой, сравнительная — больше, превосходная — самый большой.",
+        "en": "Beautiful — more beautiful — most beautiful!",
+        "ky": "Сулуу — сулуураак — эң сулуу!",
+        "key": "data.dialog.g3r_adjl2_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Степени сравнения!",
+        "bodyRu": "Большой → больше → самый большой. Три степени!",
+        "titleEn": "Degrees of comparison!",
+        "bodyEn": "Big — bigger — biggest!"
+      },
+      {
+        "titleRu": "Сравнительная и превосходная",
+        "bodyRu": "Красивый → красивее (сравн.) → красивейший / самый красивый (превосх.)",
+        "titleEn": "Comparative and superlative",
+        "bodyEn": "Beautiful — more beautiful — most beautiful!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3radjl2t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_adjl2_q1",
+        "qRu": "Слон говорит: «Я большой!» Жираф: «А я ___ тебя!» Сравнительная степень:",
+        "qEn": "Elephant: “I’m big!” Giraffe: “And I’m ___ you!” Comparative degree:",
+        "qKy": "Пил: «Мен чоңмун!» Жираф: «А мен сенен ___!» Салыштырма даража:",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3r_adjl2_q1_a",
+            "ru": "Больший",
+            "en": "bigger (bigger than)",
+            "ky": "чоңураак"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3r_adjl2_q1_b",
+            "ru": "Больше",
+            "en": "more",
+            "ky": "көбүрөөк"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_adjl2_q1_c",
+            "ru": "Самый большой",
+            "en": "the biggest",
+            "ky": "эң чоң"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3radjl2t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_adjl2_q2",
+        "qRu": "Как образуется сравнительная степень от БЫСТРЫЙ?",
+        "qEn": "How do you form the comparative of БЫСТРЫЙ (fast)?",
+        "qKy": "БЫСТРЫЙ сөзүнөн салыштырма даража кантип жасалат?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_adjl2_q2_a",
+            "ru": "Быстрее",
+            "en": "Быстрее",
+            "ky": "Быстрее"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_adjl2_q2_b",
+            "ru": "Самый быстрый",
+            "en": "Самый быстрый",
+            "ky": "Самый быстрый"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_adjl2_q2_c",
+            "ru": "Быстрейший",
+            "en": "Быстрейший",
+            "ky": "Быстрейший"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3radjl2t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_adjl2_q3",
+        "qRu": "«Это самая интересная книга» — выдели превосходную степень:",
+        "qEn": "“This is the most interesting book” — pick the superlative:",
+        "qKy": "«Бул эң кызыктуу китеп» — эң жогорку даражаны танда:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_adjl2_q3_a",
+            "ru": "Самая интересная",
+            "en": "the most interesting",
+            "ky": "эң кызыктуу"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_adjl2_q3_b",
+            "ru": "Интересная",
+            "en": "interesting",
+            "ky": "ызыктуу"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_adjl2_q3_c",
+            "ru": "Интереснее",
+            "en": "more interesting",
+            "ky": "ызыктыураак"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3radjl2t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3r_adjl2_q4",
+        "qRu": "Черепаха медленная. Улитка ___ черепахи. Напиши сравнительную степень.",
+        "qEn": "The turtle is slow. The snail is ___ than the turtle. Write the comparative.",
+        "qKy": "Ташбака жай. Үлүлдүк ташбакадан ___. Салыштырма даражаны жаз.",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3r-adj-l3",
+    "title": "Антонимы",
+    "subject": "reading_ru",
+    "world": "g3rus",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "ВЕСЁЛЫЙ — ГРУСТНЫЙ. БОЛЬШОЙ — МАЛЕНЬКИЙ. Это антонимы — противоположные слова! Тали это открыл в пять лет!",
+        "en": "Antonyms: big — small, hot — cold!",
+        "ky": "Антонимдер: чоң — кичине, ысык — суук!",
+        "key": "data.dialog.g3r_adjl3_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Отличное открытие! Давай проверим — ты знаешь все антонимы?",
+        "en": "Words with opposite meanings!",
+        "ky": "Маанилери карама-каршы сөздөр!",
+        "key": "data.dialog.g3r_adjl3_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Антонимы!",
+        "bodyRu": "Слова с противоположным смыслом: большой — маленький, горячий — холодный.",
+        "titleEn": "Antonyms!",
+        "bodyEn": "Big — small. Hot — cold!"
+      },
+      {
+        "titleRu": "Противоположности",
+        "bodyRu": "День — ночь, лето — зима, добрый — злой.",
+        "titleEn": "Opposites",
+        "bodyEn": "Antonyms are words with opposite meanings!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3radjl3t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_antonym_q1",
+        "qRu": "Антоним к слову ВЕСЁЛЫЙ:",
+        "qEn": "The antonym of ВЕСЁЛЫЙ is:",
+        "qKy": "ВЕСЁЛЫЙ сөзүнүн антоними:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_adjl3_q1_a",
+            "ru": "Грустный",
+            "en": "Грустный",
+            "ky": "Грустный"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_adjl3_q1_b",
+            "ru": "Радостный",
+            "en": "Радостный",
+            "ky": "Радостный"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_adjl3_q1_c",
+            "ru": "Смешной",
+            "en": "Смешной",
+            "ky": "Смешной"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3radjl3t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_antonym_q2",
+        "qRu": "Антоним к слову ТЁПЛЫЙ:",
+        "qEn": "The antonym of ТЁПЛЫЙ is:",
+        "qKy": "ТЁПЛЫЙ сөзүнүн антоними:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3r_antonym_q2_a",
+            "ru": "Холодный",
+            "en": "Холодный (cold)",
+            "ky": "Холодный"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3r_antonym_q2_b",
+            "ru": "Мягкий",
+            "en": "Мягкий (soft)",
+            "ky": "Мягкий"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_antonym_q2_c",
+            "ru": "Сухой",
+            "en": "Сухой (dry)",
+            "ky": "Сухой"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3radjl3t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3r_antonym_q3",
+        "qRu": "Пара антонимов — как день и ночь. Выбери настоящую пару:",
+        "qEn": "An antonym pair is like day and night. Choose the real pair:",
+        "qKy": "Антоним жупу — күндөй жана түн. Чыныгы жупту танда:",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3r_adjl3_q3_a",
+            "ru": "Высокий – длинный",
+            "en": "Высокий – длинный",
+            "ky": "Высокий – длинный"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3r_adjl3_q3_b",
+            "ru": "Широкий – узкий",
+            "en": "Широкий – узкий",
+            "ky": "Широкий – узкий"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3r_adjl3_q3_c",
+            "ru": "Старый – взрослый",
+            "en": "Старый – взрослый",
+            "ky": "Старый – взрослый"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3radjl3t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3r_antonym_q4",
+        "qRu": "«Летом дни длинные, а зимой — ___»:",
+        "qEn": "“In summer the days are long, and in winter they are ___”:",
+        "qKy": "«Жайында күндөр узун, кышында болсо ___»:",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3w-geo-l1",
+    "title": "Стороны света",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "Я потерялся! Солнце встаёт там — это восток? Или запад? Я всегда путаю!",
+        "en": "Cardinal directions: north, south, east, west!",
+        "ky": "Компас тарабы: түндүк, түштүк, чыгыш, батыш!",
+        "key": "data.dialog.g3w_geol1_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Тали, запомни: солнце встаёт на востоке, садится на западе. Компас поможет с севером и югом!",
+        "en": "A compass shows direction!",
+        "ky": "Компас багытты көрсөтөт!",
+        "key": "data.dialog.g3w_geol1_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Стороны света!",
+        "bodyRu": "Север, юг, восток, запад. Солнце встаёт на востоке, садится на западе.",
+        "titleEn": "Cardinal directions!",
+        "bodyEn": "North, south, east, west! A compass shows direction!"
+      },
+      {
+        "titleRu": "Компас",
+        "bodyRu": "Стрелка компаса показывает на север. Тали, запомни: если лицом на север — справа восток, слева запад, сзади юг.",
+        "titleEn": "Map",
+        "bodyEn": "A map is a flat representation of the Earth!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3wgeol1t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_compass_q1",
+        "qRu": "Компас показывает четыре направления. Какие — основные?",
+        "qEn": "A compass shows four directions. Which are the main ones?",
+        "qKy": "Компас төрт багытты көрсөтөт. Негизгилери кайсы?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3w_geol1t1_a",
+            "ru": "Только север и юг",
+            "en": "North and south only",
+            "ky": "Түндүк жана түштүк гана"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3w_geol1t1_b",
+            "ru": "Север, юг, запад и восток",
+            "en": "North, south, west and east",
+            "ky": "Түндүк, түштүк, батыш жана чыгыш"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_geol1t1_c",
+            "ru": "Север и восток",
+            "en": "North and east",
+            "ky": "Түндүк жана чыгыш"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wgeol1t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_compass_q2",
+        "qRu": "Тали идёт навстречу восходящему солнцу. В какую сторону он движется?",
+        "qEn": "Tali walks toward the rising sun. Which way is he going?",
+        "qKy": "Тали чыгып келе жаткан күнгө карап басат. Ал кайсы тарапка баратат?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_geol1t2_a",
+            "ru": "На восток",
+            "en": "To the east",
+            "ky": "Чыгышка"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_geol1t2_b",
+            "ru": "На запад",
+            "en": "To the west",
+            "ky": "Батышка"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_geol1t2_c",
+            "ru": "На юг",
+            "en": "To the south",
+            "ky": "Түштүккө"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wgeol1t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_compass_q3",
+        "qRu": "На карте «север» сверху. Где находится «юг»?",
+        "qEn": "On a map, “north” is at the top. Where is “south”?",
+        "qKy": "Картада «түндүк» жогоруда. «Түштүк» кайда?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3w_geol1t3_a",
+            "ru": "Слева",
+            "en": "On the left",
+            "ky": "Солдо"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3w_geol1t3_b",
+            "ru": "Снизу",
+            "en": "At the bottom (south on the map)",
+            "ky": "Ылдыда (картанын түштүгүндө)"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_geol1t3_c",
+            "ru": "Справа",
+            "en": "On the right",
+            "ky": "Оңдо"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wgeol1t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3w_compass_q4",
+        "qRu": "Тали встал лицом на север. Что справа?",
+        "qEn": "Tali faces north. What is on his right?",
+        "qKy": "Тали түндүккө карап турду. Оң жагында эмне?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3w-geo-l2",
+    "title": "Карта и глобус",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "Глобус — это шарик с картой? Я хочу такой! Но почему карта плоская, а глобус круглый?",
+        "en": "Map and globe — a model of the Earth!",
+        "ky": "Карта жана глобус — Жердин модели!",
+        "key": "data.dialog.g3w_geol2_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Глобус — точная копия формы Земли (шар). Карта — это как если раскатать апельсин скалкой: немного искажается, зато плоская и удобная!",
+        "en": "Countries and oceans are on the map!",
+        "ky": "Картада өлкөлөр жана океандар бар!",
+        "key": "data.dialog.g3w_geol2_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Глобус и карта!",
+        "bodyRu": "Глобус — шар, точная форма. Карта — плоская, удобная для использования.",
+        "titleEn": "Map and globe!",
+        "bodyEn": "A globe is a sphere. A map is flat!"
+      },
+      {
+        "titleRu": "Синее и зелёное",
+        "bodyRu": "На карте синий — вода (океаны, моря). Зелёный — суша.",
+        "titleEn": "Model of the Earth",
+        "bodyEn": "A globe is a small-scale model of the Earth!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3wgeol2t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_map_q1",
+        "qRu": "Тали спрашивает: чем карта отличается от глобуса?",
+        "qEn": "Tali asks: how is a map different from a globe?",
+        "qKy": "Тали сурайт: карта глобустан эмнеси менен айырмаланат?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_geol2t1_a",
+            "ru": "Карта плоская, глобус объёмный",
+            "en": "A map is flat, a globe is three-dimensional",
+            "ky": "Карта жалпак, глобус үч өлчөмдүү"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_geol2t1_b",
+            "ru": "Они одинаковые",
+            "en": "A map and a globe are the same",
+            "ky": "Карта менен глобус бирдей"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_geol2t1_c",
+            "ru": "Глобус плоский, карта объёмная",
+            "en": "A globe is flat, a map is three-dimensional",
+            "ky": "Глобус жалпак, карта үч өлчөмдүү"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wgeol2t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_map_q2",
+        "qRu": "На карте синим обозначены моря и океаны, а зелёным — что?",
+        "qEn": "On a map, blue marks seas and oceans. What does green mark?",
+        "qKy": "Картада көк түс деңиздерди жана океандарды белгилейт, жашыл болсо — эмнени?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3w_geol2t2_a",
+            "ru": "Горы",
+            "en": "Mountains",
+            "ky": "Тоолор"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3w_geol2t2_b",
+            "ru": "Суша (материки и острова)",
+            "en": "Land (continents and islands)",
+            "ky": "Кургак (материктер жана аралдар)"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_geol2t2_c",
+            "ru": "Только пустыни",
+            "en": "Only deserts",
+            "ky": "Чөлдөр гана"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wgeol2t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_map_q3",
+        "qRu": "Масштаб 1:100 000 означает:",
+        "qEn": "A scale of 1:100 000 means:",
+        "qKy": "1:100 000 масштабы эмнени билдирет:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_geol2t3_a",
+            "ru": "1 см на карте = 1 км на местности (100 000 см)",
+            "en": "1 cm on the map = 1 km on the ground (100 000 cm)",
+            "ky": "Картада 1 см = жерде 1 км (100 000 см)"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_geol2t3_b",
+            "ru": "На карте 100 000 материков",
+            "en": "There are 100 000 continents on the map",
+            "ky": "Картада 100 000 материк бар"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_geol2t3_c",
+            "ru": "Расстояние всегда 100 000 км",
+            "en": "The distance in kilometres is always 100 000",
+            "ky": "Аралык дайыма 100 000 километр"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wgeol2t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3w_map_q4",
+        "qRu": "Сколько материков на планете Земля?",
+        "qEn": "How many continents are there on planet Earth?",
+        "qKy": "Жер планетасында канча материк бар?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3w-geo-l3",
+    "title": "Страны и столицы",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "Бишкек — это столица Кыргызстана? Я живу в столице! Это круто?",
+        "en": "Countries and capitals! Russia — Moscow, France — Paris!",
+        "ky": "Өлкөлөр жана борбор шаарлар! Россия — Москва, Франция — Париж!",
+        "key": "data.dialog.g3w_geol3_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Очень круто! Столица — главный город страны. Москва — столица России, Париж — Франции, Лондон — Великобритании. А ты живёшь в Бишкеке!",
+        "en": "Every country has a capital!",
+        "ky": "Ар бир өлкөнүн борбор шаары бар!",
+        "key": "data.dialog.g3w_geol3_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Страны и столицы!",
+        "bodyRu": "Каждая страна имеет главный город — столицу. Россия → Москва, Франция → Париж.",
+        "titleEn": "Countries and capitals!",
+        "bodyEn": "Russia — Moscow. France — Paris. Every country has a capital!"
+      },
+      {
+        "titleRu": "Тали из Бишкека",
+        "bodyRu": "Бишкек — столица Кыргызстана. Тали, ты живёшь в истории!",
+        "titleEn": "Capital",
+        "bodyEn": "A capital is the main city of a country!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3wgeol3t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_russia_capital",
+        "qRu": "Столица России:",
+        "qEn": "The capital of Russia",
+        "qKy": " Столица России:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_opt_moscow",
+            "ru": "Москва",
+            "en": "Moscow",
+            "ky": "Москва"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_opt_spb",
+            "ru": "Санкт-Петербург",
+            "en": "Saint Petersburg",
+            "ky": "Санкт-Петербург"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_opt_novosibirsk",
+            "ru": "Новосибирск",
+            "en": "Novosibirsk",
+            "ky": "Новосибирск"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wgeol3t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_france_capital",
+        "qRu": "Эйфелева башня стоит в столице Франции. Это:",
+        "qEn": "Capital of France:",
+        "qKy": " Столица Франции:",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3w_opt_london",
+            "ru": "Лондон",
+            "en": "London",
+            "ky": "Лондон"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3w_opt_paris",
+            "ru": "Париж",
+            "en": "Paris",
+            "ky": "Париж"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_opt_berlin",
+            "ru": "Берлин",
+            "en": "Berlin",
+            "ky": "Берлин"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wgeol3t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_uk_capital",
+        "qRu": "Столица Великобритании:",
+        "qEn": "Capital of the United Kingdom:",
+        "qKy": " Столица Великобритании:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_opt_london",
+            "ru": "Лондон",
+            "en": "London",
+            "ky": "Лондон"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_opt_paris",
+            "ru": "Париж",
+            "en": "Paris",
+            "ky": "Париж"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_opt_berlin",
+            "ru": "Берлин",
+            "en": "Berlin",
+            "ky": "Берлин"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wgeol3t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3w_kyrgyzstan_capital",
+        "qRu": "Тали живёт в Бишкеке. Бишкек — столица какой страны?",
+        "qEn": "Capital of Kyrgyzstan:",
+        "qKy": " Столица Кыргызстана:",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3w-nat-l1",
+    "title": "Круговорот воды",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "Я налил воду в лужу, а через день она исчезла! Куда она ушла?",
+        "en": "The water cycle: evaporation, clouds, rain!",
+        "ky": "Суунун айлануусу: буулануу, булуттар, жаан!",
+        "key": "data.dialog.g3w_natl1_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Вода испарилась — поднялась в небо! Это первый шаг круговорота воды. Потом она вернётся дождём. Расскажем Тали весь путь?",
+        "en": "Water moves constantly in nature!",
+        "ky": "Суу жаратылышта дайыма кыймылдайт!",
+        "key": "data.dialog.g3w_natl1_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Круговорот воды!",
+        "bodyRu": "Испарение → пар поднимается → облака → дождь → реки → океан → снова испарение. Вечный круг!",
+        "titleEn": "The water cycle!",
+        "bodyEn": "Evaporation — clouds — rain — rivers — ocean!"
+      },
+      {
+        "titleRu": "Вода везде",
+        "bodyRu": "Та же вода, что падала на динозавров миллионы лет назад, сейчас в твоём стакане. Серьёзно!",
+        "titleEn": "Water in nature",
+        "bodyEn": "Water is constantly moving!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3wnatl1t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_water_cycle_steps",
+        "qRu": "Тали смотрит на лужу — она исчезла. Это первый шаг круговорота воды. Как он называется?",
+        "qEn": "Tali looks at a puddle — it disappeared. That is the first step of the water cycle. What is it called?",
+        "qKy": "Тали көлчүктү карайт — ал жоголду. Бул суу айлануусунун биринчи кадамы. Ал кандай аталат?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_opt_evaporation",
+            "ru": "Испарение",
+            "en": "Evaporation",
+            "ky": "Буулануу"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_opt_explosion",
+            "ru": "Замерзание",
+            "en": "Freezing",
+            "ky": "Тоңуу"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_opt_erosion",
+            "ru": "Фотосинтез",
+            "en": "Photosynthesis",
+            "ky": "Фотосинтез"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wnatl1t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_clouds_form_from",
+        "qRu": "Водяной пар поднялся и охладился. Во что он превратился?",
+        "qEn": "Water vapor rose and cooled. What did it turn into?",
+        "qKy": "Суу буусу көтөрүлүп муздады. Ал эмнеге айланды?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_opt_water_vapor",
+            "ru": "В облака (капельки воды)",
+            "en": "Into clouds (water droplets)",
+            "ky": "Булуттарга (суу тамчылары)"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_opt_dust",
+            "ru": "В пыль",
+            "en": "Into dust",
+            "ky": "Чаңга"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_opt_smoke",
+            "ru": "В дым",
+            "en": "Into smoke",
+            "ky": "Түтүнгө"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wnatl1t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_rain_comes_from",
+        "qRu": "Облака набрали тяжесть. Что происходит дальше?",
+        "qEn": "The clouds got heavy. What happens next?",
+        "qKy": "Булуттар оорлоду. Андан кийин эмне болот?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_opt_clouds",
+            "ru": "Осадки (дождь или снег)",
+            "en": "Precipitation (rain or snow)",
+            "ky": "Жаан-чачын (жамгыр же кар)"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_opt_rivers",
+            "ru": "Облака исчезают",
+            "en": "Clouds disappear",
+            "ky": "Булуттар жоголот"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_opt_sea",
+            "ru": "Облака превращаются в землю",
+            "en": "Clouds turn into land",
+            "ky": "Булуттар жерге айланат"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wnatl1t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3w_natl1_q4",
+        "qRu": "Вода упала в реку и снова нагрелась солнцем. Какой шаг повторится?",
+        "qEn": "Water flowed into the river and was heated by the sun again. Which step repeats?",
+        "qKy": "Суу дарыяга агып, кайра күндүн жылытуусуна учурады. Кайсы кадам кайталанат?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3w-nat-l2",
+    "title": "Полезные ископаемые",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "Нефть, газ, уголь — их достают из земли. Но как там оказалась нефть? Земля её сделала?",
+        "en": "Natural resources: oil, gas, coal!",
+        "ky": "Пайдалуу казылмалар: нефть, газ, көмүр!",
+        "key": "data.dialog.g3w_natl2_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Почти! Нефть и уголь образовались из остатков древних живых существ за миллионы лет. Тали, это ископаемые в буквальном смысле — нужно откопать!",
+        "en": "They are extracted from the ground!",
+        "ky": "Алар жерден казылат!",
+        "key": "data.dialog.g3w_natl2_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Полезные ископаемые!",
+        "bodyRu": "Нефть, газ, уголь — горючие ископаемые. Гранит, песок — строительные. Железная руда — металлическая.",
+        "titleEn": "Natural resources!",
+        "bodyEn": "Oil, gas, coal — extracted from the ground!"
+      },
+      {
+        "titleRu": "Откуда они?",
+        "bodyRu": "Из остатков древних организмов (уголь, нефть) или из горных пород (гранит).",
+        "titleEn": "Extraction",
+        "bodyEn": "Natural resources are the riches of the Earth!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3wnatl2t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_min_q1",
+        "qRu": "Уголь, нефть и газ образовались из остатков древних живых существ. Как называются такие полезные ископаемые?",
+        "qEn": "Coal, oil and gas formed from the remains of ancient living things. What are such minerals called?",
+        "qKy": "Көмүр, мунай жана газ байыркы тирүү жандыктардын калдыктарынан пайда болгон. Мындай кен байлыктар кандай аталат?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_min_opt_burn",
+            "ru": "Горючие",
+            "en": "Combustible (fuel)",
+            "ky": "Күйүүчү"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_min_opt_metalz",
+            "ru": "Металлические",
+            "en": "Metallic",
+            "ky": "Металлдык"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_min_opt_build",
+            "ru": "Строительные",
+            "en": "Building materials",
+            "ky": "Курулуш"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wnatl2t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_min_q2",
+        "qRu": "Для чего добывают и используют нефть?",
+        "qEn": "What is oil extracted and used for?",
+        "qKy": "Мунай эмне үчүн казылып, колдонулат?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_min_opt_fuel_use",
+            "ru": "Топливо и энергия (бензин, керосин)",
+            "en": "Fuel and energy (petrol, kerosene)",
+            "ky": "Күйүүчү май жана энергия (бензин, керосин)"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_min_opt_metal_make",
+            "ru": "Производство металла",
+            "en": "Metal production",
+            "ky": "Металл өндүрүү"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_min_opt_food_make",
+            "ru": "Приготовление еды",
+            "en": "Cooking food",
+            "ky": "Тамак жасоо"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wnatl2t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_min_q3",
+        "qRu": "Железная руда — полезное ископаемое. Что из неё производят?",
+        "qEn": "Iron ore is a mineral. What is made from it?",
+        "qKy": "Темир кени — кен байлык. Андан эмне жасалат?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_min_opt_metal_ore",
+            "ru": "Металл (железо, сталь)",
+            "en": "Metal (iron, steel)",
+            "ky": "Металл (темир, болот)"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_min_opt_burn",
+            "ru": "Горючие",
+            "en": "Combustible (fuel)",
+            "ky": "Күйүүчү"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_min_opt_foodz",
+            "ru": "Пищевые",
+            "en": "Food",
+            "ky": "Азык-түлүк"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wnatl2t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3w_min_q4",
+        "qRu": "Гранит — очень твёрдая горная порода. К каким ископаемым он относится?",
+        "qEn": "Granite is a very hard rock. What kind of mineral is it?",
+        "qKy": "Гранит — абдан катуу тоо тек. Ал кайсы кен байлыкка кирет?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3w-nat-l3",
+    "title": "Охрана природы",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "Я слышал про Красную книгу. Это книга с красными страницами? Или что-то важное?",
+        "en": "Protecting nature is our duty!",
+        "ky": "Жаратылышты коргоо — биздин милдет!",
+        "key": "data.dialog.g3w_natl3_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Тали, это очень важная книга! В ней — список животных и растений, которым грозит исчезновение. Красный цвет — это сигнал опасности.",
+        "en": "Protect the forest, water, animals!",
+        "ky": "Токойду, сууну, жаныбарларды корго!",
+        "key": "data.dialog.g3w_natl3_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Охрана природы!",
+        "bodyRu": "Красная книга, заповедники, раздельный сбор мусора — способы помочь природе.",
+        "titleEn": "Protecting nature!",
+        "bodyEn": "Protect the forest, water, animals! We are part of nature!"
+      },
+      {
+        "titleRu": "Мы часть природы",
+        "bodyRu": "Что мы делаем с природой, то возвращается к нам.",
+        "titleEn": "Ecology",
+        "bodyEn": "Protect nature!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3wnatl3t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_natl3_q1",
+        "qRu": "Зачем создали Красную книгу?",
+        "qEn": "Why was the Red Book created?",
+        "qKy": "Кызыл китеп эмне үчүн түзүлгөн?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_natl3_q1_a",
+            "ru": "Чтобы защитить редких животных и растения",
+            "en": "To protect rare animals and plants",
+            "ky": "Сейрек жаныбарларды жана өсүмдүктөрдү коргоо үчүн"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_natl3_q1_b",
+            "ru": "Чтобы красиво выглядеть в библиотеке",
+            "en": "To look nice in a library",
+            "ky": "Китепканада кооз көрүнүү үчүн"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_natl3_q1_c",
+            "ru": "Чтобы записывать погоду",
+            "en": "To record the weather",
+            "ky": "Аба ырайын жазып туруу үчүн"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wnatl3t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_natl3_q2",
+        "qRu": "В заповеднике нельзя охотиться и рубить деревья. Зачем нужны заповедники?",
+        "qEn": "In a nature reserve you must not hunt or cut trees. Why do we need reserves?",
+        "qKy": "Заповедникте аңчылык кылууга жана дарактарды кыюуга болбойт. Заповедниктер эмнеге керек?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_natl3_q2_a",
+            "ru": "Чтобы сохранить природные экосистемы",
+            "en": "To preserve natural ecosystems.",
+            "ky": "Жаратылыш экосистемаларын сактоо үчүн."
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_natl3_q2_b",
+            "ru": "Чтобы туристы отдыхали",
+            "en": "So tourists can relax.",
+            "ky": "Туристтер эс алышы үчүн."
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_natl3_q2_c",
+            "ru": "Чтобы добывать ресурсы",
+            "en": "To extract resources.",
+            "ky": "Ресурстарды алуу үчүн."
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wnatl3t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_natl3_q3",
+        "qRu": "Деревья в городе дают:",
+        "qEn": "Trees in the city give us:",
+        "qKy": "Шаардагы дарактар берет:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_natl3_q3_a",
+            "ru": "Кислород, тень и очищают воздух",
+            "en": "Oxygen, shade, and cleaner air",
+            "ky": "Кычкылтек, көлөкө жана таза аба"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_natl3_q3_b",
+            "ru": "Только красоту",
+            "en": "Only beauty",
+            "ky": "Жалгыз сулуулукту"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_natl3_q3_c",
+            "ru": "Только проблемы",
+            "en": "Only problems",
+            "ky": "Жалгыз көйгөйлөрдү"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wnatl3t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3w_natl3_q4",
+        "qRu": "Какой поступок НЕ помогает охране природы?",
+        "qEn": "Which action does NOT help protect nature?",
+        "qKy": "Кайсы аракет жаратылышты коргоого ЖАРДАМ БЕРБЕЙТ?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3w-eco-l1",
+    "title": "Экосистема",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "Лес — это экосистема? Но там же просто деревья и животные…",
+        "en": "An ecosystem is a community of living organisms!",
+        "ky": "Экосистема — жандуу организмдердин жамааты!",
+        "key": "data.dialog.g3w_ecol1_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Тали, они все связаны! Деревья кормят белок, белки растаскивают семена, семена вырастают в деревья. Убери одно звено — рухнет вся цепь!",
+        "en": "Forest, meadow, pond — different ecosystems!",
+        "ky": "Токой, жайлоо, көлмө — ар кандай экосистемалар!",
+        "key": "data.dialog.g3w_ecol1_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Экосистема!",
+        "bodyRu": "Сообщество живых организмов, связанных друг с другом. Лес, луг, пруд — всё экосистемы.",
+        "titleEn": "Ecosystem!",
+        "bodyEn": "A community of living organisms. Forest, meadow, pond!"
+      },
+      {
+        "titleRu": "Всё связано",
+        "bodyRu": "Убери один вид — изменится вся система. Вот почему важно беречь каждый вид.",
+        "titleEn": "Examples",
+        "bodyEn": "Different ecosystems — different inhabitants!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3wecol1t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_ecol1_q1",
+        "qRu": "Если вырубить все деревья в лесу, что произойдёт с его жителями?",
+        "qEn": "If all the trees in a forest are cut down, what happens to its inhabitants?",
+        "qKy": "Эгер токойдогу бардык дарактарды кыйса, анын тургундарына эмне болот?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol1_q1_a",
+            "ru": "Ничего не изменится",
+            "en": "Nothing will change",
+            "ky": "Эч нерсе өзгөрбөйт"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3w_ecol1_q1_b",
+            "ru": "Исчезнут животные, потеряется среда обитания",
+            "en": "Animals will disappear and their habitat will be lost",
+            "ky": "Жаныбарлар жок болот, жашоо чөйрөсү жоголот"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol1_q1_c",
+            "ru": "Появится больше животных",
+            "en": "There will be more animals",
+            "ky": "Жаныбарлар көбөйөт"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wecol1t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_ecol1_q2",
+        "qRu": "Рыбы, лягушки и водоросли в пруду зависят друг от друга. Как называется такая система?",
+        "qEn": "Fish, frogs and algae in a pond depend on each other. What is this called?",
+        "qKy": "Көлмөдөгү балыктар, баакалар жана суу өсүмдүктөрү бири-бирине көз каранды. Буга кандай деп айтышат?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_ecol1_q2_a",
+            "ru": "Экосистема",
+            "en": "Ecosystem",
+            "ky": "Экосистема"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol1_q2_b",
+            "ru": "Библиотека",
+            "en": "Library",
+            "ky": "Китепкана"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol1_q2_c",
+            "ru": "Завод",
+            "en": "Factory",
+            "ky": "Завод"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wecol1t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_ecol1_q3",
+        "qRu": "Если исчезнут пчёлы, что случится с растениями?",
+        "qEn": "If bees disappear, what happens to plants?",
+        "qKy": "Эгер аарылар жок болсо, өсүмдүктөргө эмне болот?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol1_q3_a",
+            "ru": "Ничего, пчёлы не важны",
+            "en": "Nothing — bees are not important",
+            "ky": "Эч нерсе, аарылар маанилүү эмес"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3w_ecol1_q3_b",
+            "ru": "Многие растения не смогут опыляться и плодоносить",
+            "en": "Many plants will not be able to pollinate and bear fruit",
+            "ky": "Көп өсүмдүктөр чаңдашып, жемиш бере албай калат"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol1_q3_c",
+            "ru": "Растений станет больше",
+            "en": "There will be more plants",
+            "ky": "Өсүмдүктөр көбөйөт"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wecol1t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3w_ecol1_q4",
+        "qRu": "Что из перечисленного — экосистема? Библиотека, аквариум с рыбками, завод. Напиши ответ.",
+        "qEn": "Which of these is an ecosystem? A library, a fish aquarium, a factory. Write the answer.",
+        "qKy": "Төмөнкүлөрдүн кайсынысы экосистема? Китепкана, балыктуу аквариум, завод. Жоопту жаз.",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3w-eco-l2",
+    "title": "Цепи питания",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "Трава → заяц → лиса. Это значит: трава кормит зайца, заяц кормит лису?",
+        "en": "Food chains: plant — hare — wolf!",
+        "ky": "Тамактануу чынжырлары: өсүмдүк — коён — карышкыр!",
+        "key": "data.dialog.g3w_ecol2_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Именно! Это цепь питания. Каждое звено зависит от предыдущего. Тали, ты понял самое главное!",
+        "en": "Everyone eats something or someone!",
+        "ky": "Ар бири бирдемени же кимдир бирөөнү жейт!",
+        "key": "data.dialog.g3w_ecol2_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Цепи питания!",
+        "bodyRu": "Растение → заяц → лиса → волк. Каждый питается предыдущим звеном.",
+        "titleEn": "Food chains!",
+        "bodyEn": "Plant — hare — wolf! Who eats what!"
+      },
+      {
+        "titleRu": "Начало цепи",
+        "bodyRu": "Почти всегда — растение. Оно производит энергию из солнца.",
+        "titleEn": "Connections in nature",
+        "bodyEn": "Everyone is part of the chain!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3wecol2t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_ecol2_q1",
+        "qRu": "Трава → заяц → лиса. Как называется такая последовательность?",
+        "qEn": "Grass → hare → fox. What is this sequence called?",
+        "qKy": "Чөп → коён → түлкү. Мындай ырааттуулук кандай аталат?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_ecol2_q1_a",
+            "ru": "Цепь питания",
+            "en": "A food chain",
+            "ky": "Тамак чынжыры"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol2_q1_b",
+            "ru": "Расписание",
+            "en": "A timetable",
+            "ky": "Расписание"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol2_q1_c",
+            "ru": "Карта",
+            "en": "A map",
+            "ky": "Карта"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wecol2t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_ecol2_q2",
+        "qRu": "Кто стоит в начале почти любой цепи питания?",
+        "qEn": "Who is at the start of almost every food chain?",
+        "qKy": "Дээрлик ар бир тамак чынжырынын башында ким турат?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol2_q2_a",
+            "ru": "Хищник",
+            "en": "A predator",
+            "ky": "Жырткыч"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3w_ecol2_q2_b",
+            "ru": "Растение",
+            "en": "A plant",
+            "ky": "Өсүмдүк"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol2_q2_c",
+            "ru": "Гриб",
+            "en": "A mushroom",
+            "ky": "Козу карын"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wecol2t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_ecol2_q3",
+        "qRu": "Если в лесу исчезнут все зайцы, что случится с лисами?",
+        "qEn": "If all hares disappear from the forest, what happens to foxes?",
+        "qKy": "Эгер токойдогу бардык коёндор жок болсо, түлкүлөргө эмне болот?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol2_q3_a",
+            "ru": "Лисам станет лучше",
+            "en": "Foxes will do better.",
+            "ky": "Түлкүлөргө жакшы болот."
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3w_ecol2_q3_b",
+            "ru": "Лисам не хватит еды",
+            "en": "Foxes won’t have enough food.",
+            "ky": "Түлкүлөргө тамак жетишпейт."
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol2_q3_c",
+            "ru": "Ничего не изменится",
+            "en": "Nothing will change.",
+            "ky": "Эч нерсе өзгөрбөйт."
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wecol2t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3w_ecol2_q4",
+        "qRu": "В цепи: дуб → гусеница → синица → ястреб. Кто «производитель» — начало цепи?",
+        "qEn": "Food chain: oak → caterpillar → tit → hawk. Who is the producer?",
+        "qKy": "Тамак чынжыры: эмен → гусеница → чымчык → лачын. Ким өндүрүүчү?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3w-eco-l3",
+    "title": "Человек и природа",
+    "subject": "logic",
+    "world": "g3world",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "Люди — часть природы? Мы ведь строим города и заводы…",
+        "en": "People and nature. We are part of the ecosystem!",
+        "ky": "Адам жана жаратылыш. Биз экосистеманын бөлүгүбүз!",
+        "key": "data.dialog.g3w_ecol3_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Да, Тали! Человек — часть экосистемы. И наши действия влияют на всю природу — как положительно, так и отрицательно.",
+        "en": "Our actions affect nature!",
+        "ky": "Биздин аракеттер жаратылышка таасир этет!",
+        "key": "data.dialog.g3w_ecol3_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Человек и природа!",
+        "bodyRu": "Мы часть экосистемы. Заводы, вырубка лесов — вред. Заповедники, сортировка мусора — польза.",
+        "titleEn": "People and nature!",
+        "bodyEn": "We are part of the ecosystem! Our actions affect nature!"
+      },
+      {
+        "titleRu": "Выбор за нами",
+        "bodyRu": "Каждый человек может помочь природе или навредить.",
+        "titleEn": "Protect nature",
+        "bodyEn": "Preserve nature for the future!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3wecol3t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_ecol3_q1",
+        "qRu": "Амурский тигр занесён в Красную книгу. Что значит «редкий вид»?",
+        "qEn": "The Amur tiger is in the Red Book. What does “rare species” mean?",
+        "qKy": "Амур жолборсу Кызыл китепте. «Сейрек түр» деген эмне?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_ecol3_q1_a",
+            "ru": "Вид, которому грозит исчезновение",
+            "en": "A species threatened with extinction.",
+            "ky": "Жок болуу коркунучундагы түр."
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol3_q1_b",
+            "ru": "Очень красивый вид",
+            "en": "A very beautiful species.",
+            "ky": "Өтө кооз түр."
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol3_q1_c",
+            "ru": "Самый опасный вид",
+            "en": "The most dangerous species.",
+            "ky": "Эң коркунучтуу түр."
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wecol3t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_poaching_is",
+        "qRu": "Браконьер охотится незаконно. Что такое браконьерство?",
+        "qEn": "What is poaching?",
+        "qKy": " Мыйзамсыз аң уулоо деген эмне?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_opt_illegal_hunting",
+            "ru": "Незаконная охота или ловля",
+            "en": "Illegal hunting",
+            "ky": "Мыйзамсыз аңчылык"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_opt_legal_hunting",
+            "ru": "Разрешённая охота",
+            "en": "Legal hunting",
+            "ky": "Уруксат берилген аңчылык"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_opt_bird_watching",
+            "ru": "Наблюдение за птицами",
+            "en": "Bird watching",
+            "ky": "Куштарды байкоо"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wecol3t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3w_ecol3_q3",
+        "qRu": "Дети посадили цветы и сделали кормушки для птиц. Как называются такие действия?",
+        "qEn": "Children planted flowers and built bird feeders. What do we call such actions?",
+        "qKy": "Балдар гүл отургузуп, канаттуулар үчүн тамак қутусун жасашты. Бул кандай аракет?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3w_ecol3_q3_a",
+            "ru": "Охрана природы",
+            "en": "Nature conservation.",
+            "ky": "Жаратылышты коргоо."
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol3_q3_b",
+            "ru": "Браконьерство",
+            "en": "Poaching.",
+            "ky": "Браконьердик."
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3w_ecol3_q3_c",
+            "ru": "Загрязнение",
+            "en": "Pollution.",
+            "ky": "Булгануу."
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3wecol3t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3w_ecol3_q4",
+        "qRu": "Фабрика сливает отходы в реку. Кто пострадает в первую очередь?",
+        "qEn": "A factory pours waste into a river. Who suffers first?",
+        "qKy": "Завод көлмөгө ағын төгөт. Эң биринчи ким зыян көрөт?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3e-tobe-l1",
+    "title": "am, is, are",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "I am happy! You are smart! He is funny! Я пытаюсь запомнить, когда am, когда is, когда are. Помоги!",
+        "en": "The verb to be: I am, you are, he/she/it is!",
+        "ky": "To be этиши: I am, you are, he/she/it is!",
+        "key": "data.dialog.g3e_tobel1_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Тали, запомни просто: am — только с I, is — с he/she/it, are — с you/we/they. Проверим?",
+        "en": "Am with I, is with he/she/it, are with you/we/they!",
+        "ky": "Am — I менен, is — he/she/it менен, are — you/we/they менен!",
+        "key": "data.dialog.g3e_tobel1_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Глагол to be!",
+        "bodyRu": "I am, you are, he/she/it is, we/they are. Am — только с I!",
+        "titleEn": "The verb to be!",
+        "bodyEn": "I am, you are, he/she/it is! Am with I, is with he/she/it!"
+      },
+      {
+        "titleRu": "Примеры",
+        "bodyRu": "I am happy. You are smart. He is funny. We are friends!",
+        "titleEn": "Examples",
+        "bodyEn": "I am happy. You are smart!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3etobel1t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_i_blank_happy",
+        "qRu": "«I ___ happy today!» Тали не уверен: am, is или are?",
+        "qEn": "I ___ happy. What word?",
+        "qKy": " I ___ happy. Какое слово?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g1e_opt_am",
+            "ru": "am",
+            "en": "am",
+            "ky": "am"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g1e_opt_is",
+            "ru": "is",
+            "en": "is",
+            "ky": "is"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g1e_opt_are",
+            "ru": "are",
+            "en": "are",
+            "ky": "are"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3etobel1t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_you_blank_smart",
+        "qRu": "«You ___ my best friend.»",
+        "qEn": "You ___ smart. What word?",
+        "qKy": " You ___ smart. Какое слово?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g1e_opt_am",
+            "ru": "am",
+            "en": "am",
+            "ky": "am"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g1e_opt_is",
+            "ru": "is",
+            "en": "is",
+            "ky": "is"
+          },
+          {
+            "id": "c",
+            "correct": true,
+            "key": "data.tasks.g1e_opt_are",
+            "ru": "are",
+            "en": "are",
+            "ky": "are"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3etobel1t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_am_used_with",
+        "qRu": "С каким местоимением используется «am»?",
+        "qEn": "Am is used with:",
+        "qKy": " Am используется с:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_opt_I_pron",
+            "ru": "I",
+            "en": "I",
+            "ky": "I"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_opt_you_pron",
+            "ru": "you",
+            "en": "you",
+            "ky": "сен"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_opt_he_pron",
+            "ru": "he",
+            "en": "he",
+            "ky": "he"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3etobel1t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3e_tobel1_q4",
+        "qRu": "Напиши по-английски: «Я счастлив» (I ___ happy — полная фраза)",
+        "qEn": "Write in English: “I am happy” (full phrase)",
+        "qKy": "Англисче жаз: «Мен бактылуумун» (I am happy — толук фраза)",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3e-tobe-l2",
+    "title": "Отрицание",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "Если «He is tall» — он высокий, то «He is not tall» — он не высокий? Просто добавить NOT?",
+        "en": "Negation: I am not, he is not, they are not!",
+        "ky": "Терс форма: I am not, he is not, they are not!",
+        "key": "data.dialog.g3e_tobel2_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Именно! Not ставится после am/is/are. И ещё есть сокращения: isn't, aren't. Давай попрактикуемся!",
+        "en": "Not goes after am, is, are!",
+        "ky": "Not — am, is, are кийинен жазылат!",
+        "key": "data.dialog.g3e_tobel2_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Отрицание!",
+        "bodyRu": "I am not, he is not (he isn't), they are not (they aren't). Not после глагола to be!",
+        "titleEn": "Negation!",
+        "bodyEn": "I am not, he is not, they are not. Not after am, is, are!"
+      },
+      {
+        "titleRu": "Сокращения",
+        "bodyRu": "is not = isn't, are not = aren't. В разговоре чаще используют сокращения.",
+        "titleEn": "Contractions",
+        "bodyEn": "I'm not, he isn't, they aren't!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3etobel2t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_tobel2_q1",
+        "qRu": "«He ___ tall» — сделай отрицание (He is tall → …):",
+        "qEn": "\"He ___ tall\" — make it negative (He is tall → …):",
+        "qKy": "«He ___ tall» — терс форманы жаса (He is tall → …):",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_tobel2_opt_is_not",
+            "ru": "is not",
+            "en": "is not",
+            "ky": "is not"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_tobel2_opt_not_is",
+            "ru": "not is",
+            "en": "not is",
+            "ky": "not is"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_tobel2_opt_am_not",
+            "ru": "am not",
+            "en": "am not",
+            "ky": "am not"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3etobel2t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_tobel2_q2",
+        "qRu": "Сокращение для «is not»:",
+        "qEn": "The short form of \"is not\":",
+        "qKy": "«is not» үчүн кыска форма:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_tobel2_opt_isnt",
+            "ru": "isn't",
+            "en": "isn't",
+            "ky": "isn't"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_tobel2_opt_arent",
+            "ru": "aren't",
+            "en": "aren't",
+            "ky": "aren't"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_tobel2_opt_amnt",
+            "ru": "amn't",
+            "en": "amn't",
+            "ky": "amn't"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3etobel2t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_tobel2_q3",
+        "qRu": "«It isn't big» — это правильное отрицание?",
+        "qEn": "\"It isn't big\" — is this a correct negative?",
+        "qKy": "«It isn't big» — бул туура терс формабы?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.opt_yes",
+            "ru": "Да",
+            "en": "Yes",
+            "ky": "Ооба"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.opt_no",
+            "ru": "Нет",
+            "en": "No",
+            "ky": "Жок"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3etobel2t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3e_tobel2_q4",
+        "qRu": "«He is late» → отрицание (полностью):",
+        "qEn": "\"He is late\" → full negative form:",
+        "qKy": "«He is late» → толук терс форма:",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3e-tobe-l3",
+    "title": "Вопросы",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "Чтобы задать вопрос, нужно поставить am/is/are в начало? «Are you ready?» — правильно?",
+        "en": "Questions: Am I? Is he? Are you?",
+        "ky": "Суроолор: Am I? Is he? Are you?",
+        "key": "data.dialog.g3e_tobel3_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Тали, ты снова прав! Am I? Is he? Are you? — глагол to be переходит в начало вопроса.",
+        "en": "Am, is, are go at the start of a question!",
+        "ky": "Am, is, are суроонун башына жазылат!",
+        "key": "data.dialog.g3e_tobel3_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Вопросы!",
+        "bodyRu": "Am I? Is he? Are you? Глагол to be ставится в начало вопроса.",
+        "titleEn": "Questions!",
+        "bodyEn": "Am I? Is he? Are you? Am, is, are come first!"
+      },
+      {
+        "titleRu": "Порядок слов",
+        "bodyRu": "Are you ready? Yes, I am! — краткий ответ повторяет глагол.",
+        "titleEn": "Word order",
+        "bodyEn": "Are you ready? Yes, I am!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3etobel3t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_tobel3_q1",
+        "qRu": "«We are ready» → вопрос: «___ we ready?» Какой глагол в начале?",
+        "qEn": "“We are ready” → question: “___ we ready?” Which verb goes first?",
+        "qKy": "«We are ready» → суроо: «___ we ready?» Башына кайсы глагол?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g1e_opt_am",
+            "ru": "am",
+            "en": "am",
+            "ky": "am"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g1e_opt_is",
+            "ru": "is",
+            "en": "is",
+            "ky": "is"
+          },
+          {
+            "id": "c",
+            "correct": true,
+            "key": "data.tasks.g1e_opt_are",
+            "ru": "are",
+            "en": "are",
+            "ky": "are"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3etobel3t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_tobel3_q2",
+        "qRu": "«They are students.» → правильный вопрос:",
+        "qEn": "“They are students.” → the correct question is:",
+        "qKy": "«They are students.» → туура суроо:",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3e_opt_q_am_they",
+            "ru": "Am they students?",
+            "en": "Am they students?",
+            "ky": "Am they students?"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_opt_q_is_they",
+            "ru": "Is they students?",
+            "en": "Is they students?",
+            "ky": "Is they students?"
+          },
+          {
+            "id": "c",
+            "correct": true,
+            "key": "data.tasks.g3e_opt_q_are_they",
+            "ru": "Are they students?",
+            "en": "Are they students?",
+            "ky": "Are they students?"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3etobel3t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_tobel3_q3",
+        "qRu": "Правильный вопрос к ответу «Yes, she is»:",
+        "qEn": "The correct question for the answer “Yes, she is”:",
+        "qKy": "«Yes, she is» жообуна туура суроо:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_tobel3_opt_is_she",
+            "ru": "Is she tired?",
+            "en": "Is she tired?",
+            "ky": "Is she tired?"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_tobel3_opt_are_she",
+            "ru": "Are she tired?",
+            "en": "Are she tired?",
+            "ky": "Are she tired?"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_tobel3_opt_am_she",
+            "ru": "Am she tired?",
+            "en": "Am she tired?",
+            "ky": "Am she tired?"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3etobel3t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3e_tobel3_q4",
+        "qRu": "«Они дома?» по-английски (полный вопрос):",
+        "qEn": "How do you ask “Are they home?” in English (full question):",
+        "qKy": "«Алар үйдөбү?» англисче (толук суроо):",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3e-food-l1",
+    "title": "Еда и напитки",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "I like apples! I drink water! Я уже знаю несколько слов про еду. Но что такое «juice»? И «porridge»?",
+        "en": "Food and drinks: apple, bread, milk, water!",
+        "ky": "Тамак жана суусундуктар: apple, bread, milk, water!",
+        "key": "data.dialog.g3e_foodl1_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Juice — сок! Porridge — каша. Тали, ты пьёшь сок каждое утро — теперь знаешь, как это по-английски!",
+        "en": "Juice — juice! Porridge — porridge. Tali, you drink juice every morning — now you know how to say it in English!",
+        "ky": "Food — тамак. Drink — суусундук!",
+        "key": "data.dialog.g3e_foodl1_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Еда и напитки!",
+        "bodyRu": "Apple (яблоко), bread (хлеб), milk (молоко), water (вода), juice (сок)!",
+        "titleEn": "Food and drinks!",
+        "bodyEn": "Apple, bread, milk, water. Food — тамак, drink — суусундук!"
+      },
+      {
+        "titleRu": "Food / Drink",
+        "bodyRu": "Food — еда. Drink — напиток. I eat food. I drink water!",
+        "titleEn": "Examples",
+        "bodyEn": "I like apples. I drink water!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3efoodl1t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_food1_q1",
+        "qRu": "Juice — это:",
+        "qEn": "“Juice” means:",
+        "qKy": "«Juice» — бул:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_food1_q1_a",
+            "ru": "Сок",
+            "en": "Juice",
+            "ky": "Шире"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_food1_q1_b",
+            "ru": "Каша",
+            "en": "Porridge",
+            "ky": "Ботко"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_food1_q1_c",
+            "ru": "Молоко",
+            "en": "Milk",
+            "ky": "Сүт"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3efoodl1t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_food1_q2",
+        "qRu": "Porridge — это:",
+        "qEn": "“Porridge” means:",
+        "qKy": "«Porridge» — бул:",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3e_food1_q2_a",
+            "ru": "Молоко",
+            "en": "Milk",
+            "ky": "Сүт"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3e_food1_q2_b",
+            "ru": "Каша",
+            "en": "Porridge",
+            "ky": "Ботко"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_food1_q2_c",
+            "ru": "Сок",
+            "en": "Juice",
+            "ky": "Шире"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3efoodl1t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_foodl1_q3",
+        "qRu": "Tea, coffee, milk — все эти слова это:",
+        "qEn": "Tea, coffee, milk — these words are all:",
+        "qKy": "Tea, coffee, milk — бул сөздөрдүн баары:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_foodl1_q3_a",
+            "ru": "Напитки",
+            "en": "Drinks.",
+            "ky": "Ичкиликтер."
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_foodl1_q3_b",
+            "ru": "Еда",
+            "en": "Food.",
+            "ky": "Тамак."
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_foodl1_q3_c",
+            "ru": "Фрукты",
+            "en": "Fruits.",
+            "ky": "Жемиштер."
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3efoodl1t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3e_food1_q4",
+        "qRu": "«I drink water every day» — что пьёт этот человек?",
+        "qEn": "“I drink water every day” — what does this person drink?",
+        "qKy": "«I drink water every day» — бул адам эмне ичет?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3e-food-l2",
+    "title": "I like / I don't like",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "I like pizza! I don't like broccoli! Это самые важные фразы в жизни!",
+        "en": "I like / I don't like — мага жагат / мага жакпайт!",
+        "ky": "I like / I don't like — мага жагат / мага жакпайт!",
+        "key": "data.dialog.g3e_foodl2_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Хаха, Тали! А я люблю брокколи. Вкусы разные! Do you like…? Yes, I do! No, I don't!",
+        "en": "I like pizza. I do not like broccoli!",
+        "ky": "I like pizza. I do not like broccoli!",
+        "key": "data.dialog.g3e_foodl2_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "I like / I don't like!",
+        "bodyRu": "I like pizza (мне нравится). I don't like broccoli (мне не нравится).",
+        "titleEn": "I like / I do not like!",
+        "bodyEn": "I like pizza. I don't like broccoli. I like it / I don't like it!"
+      },
+      {
+        "titleRu": "Вопрос",
+        "bodyRu": "Do you like pizza? Yes, I do! No, I don't!",
+        "titleEn": "Questions",
+        "bodyEn": "Do you like...? Yes, I do. No, I do not!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3efoodl2t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_food2_q1",
+        "qRu": "«I like apples!» — Маша это говорит. Что это значит?",
+        "qEn": "Masha says: “I like apples!” What does it mean?",
+        "qKy": "Маша: «I like apples!» — дейт. Бул эмнени билдирет?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_food2_q1_a",
+            "ru": "Мне нравятся яблоки",
+            "en": "I like apples",
+            "ky": "Мага алма жагат"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_food2_q1_b",
+            "ru": "Я не люблю яблоки",
+            "en": "I do not like apples",
+            "ky": "Мен алманы жактырбайм"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_food2_q1_c",
+            "ru": "Я — яблоко",
+            "en": "I am an apple",
+            "ky": "Мен — алмамын"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3efoodl2t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_food2_q2",
+        "qRu": "«I don’t like onions» — Ваня морщится. Onions — это:",
+        "qEn": "“I don’t like onions” — Vanya frowns. “Onions” means:",
+        "qKy": "«I don’t like onions» — Ваня кабагын бүркөйт. «Onions» — бул:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_food2_q2_a",
+            "ru": "Лук",
+            "en": "Onions",
+            "ky": "Пияз"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_food2_q2_b",
+            "ru": "Суп",
+            "en": "Soup",
+            "ky": "Шорпо"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_food2_q2_c",
+            "ru": "Яблоки",
+            "en": "Apples",
+            "ky": "Алмалар"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3efoodl2t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_foodl2_q3",
+        "qRu": "Как сказать «Мне нравится шоколад» по-английски?",
+        "qEn": "How do you say “I like chocolate” in English?",
+        "qKy": "«Мага шоколад жагат» деп англисче кантип айтылат?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_foodl2_q3_a",
+            "ru": "I like chocolate",
+            "en": "I like chocolate",
+            "ky": "I like chocolate"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_foodl2_q3_b",
+            "ru": "I don't like chocolate",
+            "en": "I don't like chocolate",
+            "ky": "I don't like chocolate"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_foodl2_q3_c",
+            "ru": "I am chocolate",
+            "en": "I am chocolate",
+            "ky": "I am chocolate"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3efoodl2t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3e_food2_q4",
+        "qRu": "Другу не нравится суп. Как он скажет?",
+        "qEn": "A friend does not like soup. What will he say?",
+        "qKy": "Досуна шорпо жакпайт. Ал эмне дейт?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3e-food-l3",
+    "title": "За столом",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "Can I have some water, please? — Так просят воду вежливо?",
+        "en": "At the table: Can I have some water? Thank you!",
+        "ky": "Дасторкон үстүндө: Can I have some water? Thank you!",
+        "key": "data.dialog.g3e_foodl3_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "Именно! И не забудь «please» — без него получается грубо. Table manners — правила поведения за столом — важны везде!",
+        "en": "Table manners — table etiquette!",
+        "ky": "Table manners — дасторкон этикети!",
+        "key": "data.dialog.g3e_foodl3_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "За столом!",
+        "bodyRu": "Can I have some…? — Можно мне…? Please! Thank you!",
+        "titleEn": "At the table!",
+        "bodyEn": "Can I have some water? Thank you! Table manners!"
+      },
+      {
+        "titleRu": "Вежливость",
+        "bodyRu": "Please. Thank you. You're welcome. Это работает в любой стране!",
+        "titleEn": "Politeness",
+        "bodyEn": "Please. Thank you. You are welcome!"
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3efoodl3t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_food3_q1",
+        "qRu": "«Can I have some bread, please?» — о чём просит человек?",
+        "qEn": "“Can I have some bread, please?” — what is the person asking for?",
+        "qKy": "«Can I have some bread, please?» — адам эмне сурап жатат?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_food3_q1_a",
+            "ru": "Немного хлеба",
+            "en": "Some bread",
+            "ky": "Бир аз нан"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_food3_q1_b",
+            "ru": "Немного воды",
+            "en": "Some water",
+            "ky": "Бир аз суу"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_food3_q1_c",
+            "ru": "Немного сока",
+            "en": "Some juice",
+            "ky": "Бир аз шире"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3efoodl3t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_food3_q2",
+        "qRu": "«Pass me the salt, please» — о чём просит человек?",
+        "qEn": "“Pass me the salt, please” — what is the person asking?",
+        "qKy": "«Pass me the salt, please» — адам эмне сурап жатат?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_food3_q2_a",
+            "ru": "Передать соль",
+            "en": "To pass the salt",
+            "ky": "Тузду узатууну"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_food3_q2_b",
+            "ru": "Передать хлеб",
+            "en": "To pass the bread",
+            "ky": "Нанды узатууну"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_food3_q2_c",
+            "ru": "Передать воду",
+            "en": "To pass the water",
+            "ky": "Сууну узатууну"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3efoodl3t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_food3_q3",
+        "qRu": "«It’s delicious!» — гость говорит это про еду. Что он чувствует?",
+        "qEn": "A guest says “It’s delicious!” about the food. What does he mean?",
+        "qKy": "Конок тамак жөнүндө «It’s delicious!» — дейт. Ал эмнени билдирет?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_food3_q3_a",
+            "ru": "Еда вкусная",
+            "en": "The food is tasty",
+            "ky": "Тамак даамдуу"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_food3_q3_b",
+            "ru": "Еда невкусная",
+            "en": "The food is not tasty",
+            "ky": "Тамак даамсыз"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_food3_q3_c",
+            "ru": "Он не голоден",
+            "en": "He is not hungry",
+            "ky": "Ал ток"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3efoodl3t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3e_food3_q4",
+        "qRu": "Как вежливо отказаться от добавки?",
+        "qEn": "How do you politely refuse more food?",
+        "qKy": "Кошумча тамактан кантип сылык баш тартса болот?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3e-daily-l1",
+    "title": "Распорядок дня",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "У меня нет режима дня. Я просыпаюсь когда хочу, ем когда хочу…",
+        "en": "Hello! Today we are talking about the daily routine.",
+        "ky": "Салам! Бүгүн күндөлүк тартип жөнүндө сүйлөшөбүз.",
+        "key": "data.dialog.g3e_dailyl1_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Тали, daily routine — распорядок дня — помогает быть продуктивным! Wake up, eat breakfast, go to school. Попробуй!",
+        "en": "Tell me what you do every day!",
+        "ky": "Мага ар күнү эмне кылаарыңды айт!",
+        "key": "data.dialog.g3e_dailyl1_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Daily routine!",
+        "bodyRu": "Wake up (просыпаться), eat breakfast (завтракать), go to school (идти в школу), do homework (делать уроки), go to bed (ложиться спать).",
+        "titleEn": "My day",
+        "bodyEn": "Everyone has a daily routine. In English it is called daily routine."
+      },
+      {
+        "titleRu": "Глаголы действия",
+        "bodyRu": "Используй эти глаголы для описания своего дня.",
+        "titleEn": "Action verbs",
+        "bodyEn": "Use: wake up, eat, go to school, play, sleep — to describe your day."
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3edailyl1t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_wake_up_en",
+        "qRu": "Будильник звонит в 7 утра. «Wake up» — это:",
+        "qEn": "Wake up in English:",
+        "qKy": " «Ойгонуу» англисче:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_opt_wake_up_f",
+            "ru": "Просыпаться",
+            "en": "wake up",
+            "ky": "ойгонуу"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_opt_go_sleep",
+            "ru": "Ложиться спать",
+            "en": "go to sleep",
+            "ky": "уктоого баруу"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_opt_have_lunch",
+            "ru": "Обедать",
+            "en": "have lunch",
+            "ky": "түшкү тамак жеу"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3edailyl1t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_brush_teeth_en",
+        "qRu": "После завтрака Том чистит зубы. «Brush teeth» — это:",
+        "qEn": "\"Brush your teeth\" in English:",
+        "qKy": " «Тишти тазалоо» англисче:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_opt_brush_teeth",
+            "ru": "Чистить зубы",
+            "en": "brush teeth",
+            "ky": "тиш тазалоо"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_opt_eat_breakfast",
+            "ru": "Завтракать",
+            "en": "eat breakfast",
+            "ky": "эртең мамак жеу"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_opt_take_shower",
+            "ru": "Принимать душ",
+            "en": "take a shower",
+            "ky": "душ алуу"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3edailyl1t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_i_wake_up_at_7",
+        "qRu": "«I wake up at 7» — какой предлог перед временем?",
+        "qEn": "\"I wake up at 7\" is the correct preposition:",
+        "qKy": " «I wake up at 7» — правильный предлог:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_opt_at_correct",
+            "ru": "at",
+            "en": "at",
+            "ky": "at"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_opt_in_correct",
+            "ru": "in",
+            "en": "in",
+            "ky": "in"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_opt_on_correct",
+            "ru": "on",
+            "en": "on",
+            "ky": "on"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3edailyl1t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3e_eat_breakfast_means",
+        "qRu": "«Eat breakfast» — это:",
+        "qEn": "Eat breakfast is:",
+        "qKy": " Eat breakfast — это:",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3e-daily-l2",
+    "title": "Время",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "npc",
+        "ru": "What time is it? — Который час? Мне всегда трудно читать время по-английски!",
+        "en": "Great! Now let's talk about time.",
+        "ky": "Мыкты! Азыр убакыт жөнүндө сүйлөшөлү.",
+        "key": "data.dialog.g3e_dailyl2_0"
+      },
+      {
+        "speaker": "tali",
+        "ru": "«It's seven o'clock» — семь часов. «Half past three» — половина четвёртого (3:30). Давай потренируемся!",
+        "en": "What time do you get up?",
+        "ky": "Саат канчада ойгоносуң?",
+        "key": "data.dialog.g3e_dailyl2_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Который час?",
+        "bodyRu": "It's 7 o'clock. Half past 3 = 3:30. Quarter past 8 = 8:15. Quarter to 8 = 7:45.",
+        "titleEn": "What time is it?",
+        "bodyEn": "What time is it? It is … o'clock. Half past, quarter past, quarter to."
+      },
+      {
+        "titleRu": "Части дня",
+        "bodyRu": "In the morning (утром), in the afternoon (днём), in the evening (вечером).",
+        "titleEn": "Morning, afternoon, evening",
+        "bodyEn": "in the morning, in the afternoon, in the evening."
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3edailyl2t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_daily2_q1",
+        "qRu": "«Half past three» — это:",
+        "qEn": "“Half past three” means:",
+        "qKy": "«Half past three» — бул:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_daily2_q1_a",
+            "ru": "3:30",
+            "en": "3:30",
+            "ky": "3:30"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_daily2_q1_b",
+            "ru": "3:15",
+            "en": "3:15",
+            "ky": "3:15"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_daily2_q1_c",
+            "ru": "3:45",
+            "en": "3:45",
+            "ky": "3:45"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3edailyl2t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_daily2_q2",
+        "qRu": "«Quarter past eight» — это:",
+        "qEn": "“Quarter past eight” means:",
+        "qKy": "«Quarter past eight» — бул:",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3e_daily2_q2_a",
+            "ru": "8:30",
+            "en": "8:30",
+            "ky": "8:30"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3e_daily2_q2_b",
+            "ru": "8:15",
+            "en": "8:15",
+            "ky": "8:15"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_daily2_q2_c",
+            "ru": "7:45",
+            "en": "7:45",
+            "ky": "7:45"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3edailyl2t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_daily2_q3",
+        "qRu": "«It’s five o’clock» — который час?",
+        "qEn": "“It’s five o’clock” — what time is it?",
+        "qKy": "«It’s five o’clock» — саат канча?",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_daily2_q3_a",
+            "ru": "5:00",
+            "en": "5:00",
+            "ky": "5:00"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_daily2_q3_b",
+            "ru": "5:30",
+            "en": "5:30",
+            "ky": "5:30"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_daily2_q3_c",
+            "ru": "4:00",
+            "en": "4:00",
+            "ky": "4:00"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3edailyl2t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3e_daily2_q4",
+        "qRu": "Как спросить «Который час?» по-английски?",
+        "qEn": "How do you ask “What time is it?” in English?",
+        "qKy": "«Саат канча?» деп англисче кантип суралат?",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  },
+  {
+    "id": "g3e-daily-l3",
+    "title": "Частота",
+    "subject": "reading",
+    "world": "g3eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "dialog": [
+      {
+        "speaker": "tali",
+        "ru": "I always eat breakfast. I never wake up early. I sometimes do homework. Это наречия частоты?",
+        "en": "Super! Let's make up a story about your day.",
+        "ky": "Супер! Жазгыдай сенин күнүң жөнүндө аңгеме түзөлү.",
+        "key": "data.dialog.g3e_dailyl3_0"
+      },
+      {
+        "speaker": "npc",
+        "ru": "Именно! Always — всегда, usually — обычно, sometimes — иногда, never — никогда. Тали, ты уже знаешь их!",
+        "en": "Tell me in English what you do in the morning!",
+        "ky": "Менге таңда эмне кылаарыңды англисче айт!",
+        "key": "data.dialog.g3e_dailyl3_1"
+      }
+    ],
+    "intros": [
+      {
+        "titleRu": "Наречия частоты!",
+        "bodyRu": "Always (всегда) → usually (обычно) → sometimes (иногда) → never (никогда).",
+        "titleEn": "My routine",
+        "bodyEn": "I wake up at 7. I eat breakfast. I go to school."
+      },
+      {
+        "titleRu": "Место в предложении",
+        "bodyRu": "Обычно стоят перед основным глаголом: I always brush my teeth.",
+        "titleEn": "Telling it in English",
+        "bodyEn": "Connect with: then, after that, finally."
+      }
+    ],
+    "tasks": [
+      {
+        "tid": "g3edailyl3t1",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_daily3_q1",
+        "qRu": "«I always brush my teeth» — «always» означает:",
+        "qEn": "“I always brush my teeth” — “always” means:",
+        "qKy": "«I always brush my teeth» — «always» эмнени билдирет:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_daily3_q1_a",
+            "ru": "Всегда",
+            "en": "Always",
+            "ky": "Ар дайым"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_daily3_q1_b",
+            "ru": "Иногда",
+            "en": "Sometimes",
+            "ky": "Кээде"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_daily3_q1_c",
+            "ru": "Никогда",
+            "en": "Never",
+            "ky": "Эч качан"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3edailyl3t2",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_daily3_q2",
+        "qRu": "Расставь по убыванию частоты:",
+        "qEn": "Put in order from most to least frequent:",
+        "qKy": "Жыштыгы боюнча кемүү тартибинде жайгаштыр:",
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "key": "data.tasks.g3e_daily3_q2_a",
+            "ru": "Always, usually, sometimes, never",
+            "en": "Always, usually, sometimes, never",
+            "ky": "Always, usually, sometimes, never"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "key": "data.tasks.g3e_daily3_q2_b",
+            "ru": "Never, sometimes, usually, always",
+            "en": "Never, sometimes, usually, always",
+            "ky": "Never, sometimes, usually, always"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_daily3_q2_c",
+            "ru": "Sometimes, always, never, usually",
+            "en": "Sometimes, always, never, usually",
+            "ky": "Sometimes, always, never, usually"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3edailyl3t3",
+        "type": "multiple_choice",
+        "aba": false,
+        "qKey": "data.tasks.g3e_daily3_q3",
+        "qRu": "«She sometimes plays football» — как часто она играет?",
+        "qEn": "“She sometimes plays football” — how often does she play?",
+        "qKy": "«She sometimes plays football» — ал канчалык көп ойнойт?",
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "key": "data.tasks.g3e_daily3_q3_a",
+            "ru": "Всегда",
+            "en": "Always",
+            "ky": "Ар дайым"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "key": "data.tasks.g3e_daily3_q3_b",
+            "ru": "Иногда",
+            "en": "Sometimes",
+            "ky": "Кээде"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "key": "data.tasks.g3e_daily3_q3_c",
+            "ru": "Никогда",
+            "en": "Never",
+            "ky": "Эч качан"
+          }
+        ],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      },
+      {
+        "tid": "g3edailyl3t4",
+        "type": "input",
+        "aba": false,
+        "qKey": "data.tasks.g3e_daily3_q4",
+        "qRu": "«Я никогда не опаздываю» по-английски:",
+        "qEn": "“I am never late” in English is:",
+        "qKy": "«Мен эч качан кечикпейм» англисче:",
+        "options": [],
+        "answerRu": null,
+        "answerEn": null,
+        "answerKy": null,
+        "answerKey": null
+      }
+    ]
+  }
+]

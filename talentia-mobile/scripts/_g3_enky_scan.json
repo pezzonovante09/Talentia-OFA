@@ -1,0 +1,202 @@
+{
+  "fillBlanks": [
+    {
+      "id": "g3m-1000-l2",
+      "task": "g3m1000l2t4",
+      "blanks": [
+        {
+          "oid": "fb-a",
+          "correct": false,
+          "ru": "398",
+          "en": "398",
+          "ky": "398"
+        },
+        {
+          "oid": "fb-b",
+          "correct": true,
+          "ru": "403",
+          "en": "403",
+          "ky": "403"
+        },
+        {
+          "oid": "fb-c",
+          "correct": false,
+          "ru": "389",
+          "en": "389",
+          "ky": "389"
+        }
+      ]
+    },
+    {
+      "id": "g3r-gen-l1",
+      "task": "g3rgenl1t3",
+      "blanks": [
+        {
+          "oid": "fb-a",
+          "correct": true,
+          "ru": "Мужской",
+          "en": "Masculine",
+          "ky": "Эркек"
+        },
+        {
+          "oid": "fb-b",
+          "correct": false,
+          "ru": "Женский",
+          "en": "Feminine",
+          "ky": "Аял"
+        },
+        {
+          "oid": "fb-c",
+          "correct": false,
+          "ru": "Средний",
+          "en": "Neuter",
+          "ky": "Орто"
+        }
+      ]
+    },
+    {
+      "id": "g3r-adj-l2",
+      "task": "g3radjl2t2",
+      "blanks": [
+        {
+          "oid": "fb-a",
+          "correct": true,
+          "ru": "Быстрее",
+          "en": "Быстрее",
+          "ky": "Быстрее"
+        },
+        {
+          "oid": "fb-b",
+          "correct": false,
+          "ru": "Самый быстрый",
+          "en": "Самый быстрый",
+          "ky": "Самый быстрый"
+        },
+        {
+          "oid": "fb-c",
+          "correct": false,
+          "ru": "Быстрейший",
+          "en": "Быстрейший",
+          "ky": "Быстрейший"
+        }
+      ]
+    },
+    {
+      "id": "g3e-food-l1",
+      "task": "g3efoodl1t3",
+      "blanks": [
+        {
+          "oid": "fb-a",
+          "correct": true,
+          "ru": "Напитки",
+          "en": "Drinks.",
+          "ky": "Ичкиликтер."
+        },
+        {
+          "oid": "fb-b",
+          "correct": false,
+          "ru": "Еда",
+          "en": "Food.",
+          "ky": "Тамак."
+        },
+        {
+          "oid": "fb-c",
+          "correct": false,
+          "ru": "Фрукты",
+          "en": "Fruits.",
+          "ky": "Жемиштер."
+        }
+      ]
+    },
+    {
+      "id": "g3e-daily-l1",
+      "task": "g3edailyl1t3",
+      "blanks": [
+        {
+          "oid": "fb-a",
+          "correct": true,
+          "ru": "at",
+          "en": "at",
+          "ky": "at"
+        },
+        {
+          "oid": "fb-b",
+          "correct": false,
+          "ru": "in",
+          "en": "in",
+          "ky": "in"
+        },
+        {
+          "oid": "fb-c",
+          "correct": false,
+          "ru": "on",
+          "en": "on",
+          "ky": "on"
+        }
+      ]
+    }
+  ],
+  "inputAnswers": [],
+  "flags": [
+    {
+      "id": "g3m-1000-l1",
+      "flag": "KY intro title === RU «Числа до 1000!»"
+    },
+    {
+      "id": "g3m-1000-l2",
+      "flag": "KY intro title === RU «Разбираем число 247!»"
+    },
+    {
+      "id": "g3m-1000-l2",
+      "flag": "KY intro title === RU «Число 356»"
+    },
+    {
+      "id": "g3m-1000-l2",
+      "flag": "KY RU-leak «Запиши» in Q of g3m1000l2t3"
+    },
+    {
+      "id": "g3m-tab-l3",
+      "flag": "KY RU-leak «Верно?» in Q of g3mtabl3t4"
+    },
+    {
+      "id": "g3m-div-l2",
+      "flag": "KY intro title === RU «Деление с остатком»"
+    },
+    {
+      "id": "g3r-gen-l3",
+      "flag": "EN opt === RU meta «Потому что МОЛОКО — среднего рода»"
+    },
+    {
+      "id": "g3r-gen-l3",
+      "flag": "EN opt === RU meta «Потому что МОЛОКО — мужского рода»"
+    },
+    {
+      "id": "g3w-geo-l3",
+      "flag": "KY Q === RU «Столица России:»"
+    },
+    {
+      "id": "g3w-geo-l3",
+      "flag": "KY Q === RU «Столица Великобритании:»"
+    },
+    {
+      "id": "g3w-eco-l1",
+      "flag": "KY intro title === RU «Экосистема!»"
+    },
+    {
+      "id": "g3e-food-l2",
+      "flag": "EN tautology risk ✓«Onions» for Q «“I don’t like onions” — Vanya frowns. “Onions” mea»"
+    },
+    {
+      "id": "g3e-food-l2",
+      "flag": "EN tautology risk ✓«I like chocolate» for Q «How do you say “I like chocolate” in English?»"
+    },
+    {
+      "id": "g3e-daily-l1",
+      "flag": "KY RU-leak « — это:» in Q of g3edailyl1t4"
+    },
+    {
+      "id": "g3e-daily-l3",
+      "flag": "EN tautology risk ✓«Always» for Q «“I always brush my teeth” — “always” means:»"
+    }
+  ]
+}

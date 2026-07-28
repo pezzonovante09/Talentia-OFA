@@ -1,0 +1,252 @@
+{
+  "scanned": 49,
+  "hits": [
+    {
+      "id": "g3e-tobe-l3",
+      "taskId": "g3etobel3t1",
+      "qKey": "data.tasks.g3e_we_blank_ready",
+      "issues": [
+        "RU_question_inversion_EN_affirmative_blank"
+      ],
+      "ru": "«We are ready» → «___ we ready?»",
+      "en": "We ___ ready. What word?",
+      "ky": " We ___ ready. Какое слово?",
+      "phase34": true,
+      "pilotD": false
+    },
+    {
+      "id": "g3w-nat-l3",
+      "taskId": "g3wnatl3t1",
+      "qKey": "data.tasks.g3w_protect_nature_how",
+      "issues": [
+        "RU_nature_rules_EN_recycle_or_redbook_stem",
+        "key_how_to_protect_but_RU_why_red_book"
+      ],
+      "ru": "Зачем создали Красную книгу?",
+      "en": "How to protect nature?",
+      "ky": " Табиятты кантип коргоо керек?",
+      "phase34": false,
+      "pilotD": false
+    }
+  ],
+  "full": {
+    "g3e-tobe-l3": {
+      "id": "g3e-tobe-l3",
+      "questions": [
+        {
+          "k": "data.tasks.g3e_we_blank_ready",
+          "ru": "«We are ready» → «___ we ready?»",
+          "en": "We ___ ready. What word?",
+          "ky": " We ___ ready. Какое слово?"
+        },
+        {
+          "k": "data.tasks.g3e_they_blank_students",
+          "ru": "«They are students.» → Вопрос:",
+          "en": "They ___ students. What word?",
+          "ky": " They ___ students. Какое слово?"
+        },
+        {
+          "k": "data.tasks.g3e_are_they_question",
+          "ru": "Правильный вопрос к ответу «Yes, she is»:",
+          "en": "Question to \"They are\":",
+          "ky": " Вопрос к «They are»:"
+        },
+        {
+          "k": "data.tasks.g3e_are_we_question",
+          "ru": "«Они дома?» по-английски:",
+          "en": "Question to \"We are\":",
+          "ky": " Вопрос к «We are»:"
+        },
+        {
+          "k": "data.tasks.g3e_food1_q1",
+          "ru": "Juice — это:",
+          "en": "“Juice” means:",
+          "ky": "«Juice» — бул:"
+        },
+        {
+          "k": "data.tasks.g3e_food1_q2",
+          "ru": "Porridge — это:",
+          "en": "“Porridge” means:",
+          "ky": "«Porridge» — бул:"
+        },
+        {
+          "k": "data.tasks.g3e_foodl1_q3",
+          "ru": "Tea, coffee, milk — все эти слова это:",
+          "en": "Tea, coffee, milk — these words are all:",
+          "ky": "Tea, coffee, milk — бул сөздөрдүн баары:"
+        }
+      ],
+      "sampleOpts": [
+        {
+          "k": "data.dialog.g3e_tobel3_0",
+          "ru": "Чтобы задать вопрос, нужно поставить am/is/are в начало? «Are you ready?» — правильно?",
+          "en": "Questions: Am I? Is he? Are you?"
+        },
+        {
+          "k": "data.dialog.g3e_tobel3_1",
+          "ru": "Тали, ты снова прав! Am I? Is he? Are you? — глагол to be переходит в начало вопроса.",
+          "en": "Am, is, are go at the start of a question!"
+        },
+        {
+          "k": "data.tasks.g1e_opt_am",
+          "ru": "am",
+          "en": "am"
+        },
+        {
+          "k": "data.tasks.g1e_opt_is",
+          "ru": "is",
+          "en": "is"
+        },
+        {
+          "k": "data.tasks.g1e_opt_are",
+          "ru": "are",
+          "en": "are"
+        },
+        {
+          "k": "data.tasks.g3e_opt_q_am_they",
+          "ru": "Am they students?",
+          "en": "Am they students?"
+        },
+        {
+          "k": "data.tasks.g3e_opt_q_is_they",
+          "ru": "Is they students?",
+          "en": "Is they students?"
+        },
+        {
+          "k": "data.tasks.g3e_opt_q_are_they",
+          "ru": "Are they students?",
+          "en": "Are they students?"
+        },
+        {
+          "k": "data.tasks.g3e_opt_are_they",
+          "ru": "Is she tired?",
+          "en": "Are they?"
+        },
+        {
+          "k": "data.tasks.g3e_opt_is_they",
+          "ru": "Are she tired?",
+          "en": "Is they?"
+        },
+        {
+          "k": "data.tasks.g3e_opt_am_they",
+          "ru": "Am she tired?",
+          "en": "Am they?"
+        },
+        {
+          "k": "data.dialog.g3e_foodl1_0",
+          "ru": "I like apples! I drink water! Я уже знаю несколько слов про еду. Но что такое «juice»? И «porridge»?",
+          "en": "Food and drinks: apple, bread, milk, water!"
+        }
+      ]
+    },
+    "g3w-nat-l3": {
+      "id": "g3w-nat-l3",
+      "questions": [
+        {
+          "k": "data.tasks.g3w_protect_nature_how",
+          "ru": "Зачем создали Красную книгу?",
+          "en": "How to protect nature?",
+          "ky": " Табиятты кантип коргоо керек?"
+        },
+        {
+          "k": "data.tasks.g3w_natl3_q2",
+          "ru": "В заповеднике нельзя охотиться и рубить деревья. Зачем нужны заповедники?",
+          "en": "In a reserve you can’t hunt or cut trees. Why do we need reserves?",
+          "ky": "Заповедникте атууга жана дарактарды кесүүгө болбойт. Заповедниктер эмне үчүн керек?"
+        },
+        {
+          "k": "data.tasks.g3w_red_book_is",
+          "ru": "Деревья в городе дают:",
+          "en": "Red Book:",
+          "ky": " Красная книга — это:"
+        },
+        {
+          "k": "data.tasks.g3w_natl3_q4",
+          "ru": "Какой поступок НЕ помогает охране природы?",
+          "en": "Which action does NOT help protect nature?",
+          "ky": "Кайсы аракет жаратылышты коргоого жардам бербейт?"
+        },
+        {
+          "k": "data.tasks.g3w_ecol1_q1",
+          "ru": "Если вырубить все деревья в лесу, что произойдёт с его жителями?",
+          "en": "If all the trees in a forest are cut down, what happens to its inhabitants?",
+          "ky": "Эгер токойдогу бардык дарактарды кыйса, анын тургундарына эмне болот?"
+        },
+        {
+          "k": "data.tasks.g3w_ecol1_q2",
+          "ru": "Рыбы, лягушки и водоросли в пруду зависят друг от друга. Как называется такая система?",
+          "en": "Fish, frogs and algae in a pond depend on each other. What is this called?",
+          "ky": "Көлмөдөгү балыктар, баакалар жана суу өсүмдүктөрү бири-бирине көз каранды. Буга кандай деп айтышат?"
+        },
+        {
+          "k": "data.tasks.g3w_ecol1_q3",
+          "ru": "Если исчезнут пчёлы, что случится с растениями?",
+          "en": "If bees disappear, what happens to plants?",
+          "ky": "Эгер аарылар жок болсо, өсүмдүктөргө эмне болот?"
+        }
+      ],
+      "sampleOpts": [
+        {
+          "k": "data.dialog.g3w_natl3_0",
+          "ru": "Я слышал про Красную книгу. Это книга с красными страницами? Или что-то важное?",
+          "en": "Protecting nature is our duty!"
+        },
+        {
+          "k": "data.dialog.g3w_natl3_1",
+          "ru": "Тали, это очень важная книга! В ней — список животных и растений, которым грозит исчезновение. Красный цвет — это сигнал опасности.",
+          "en": "Protect the forest, water, animals!"
+        },
+        {
+          "k": "data.tasks.g3w_opt_recycle",
+          "ru": "Чтобы защитить редких животных и растения",
+          "en": "sort and recycle"
+        },
+        {
+          "k": "data.tasks.g3w_opt_burn_trash",
+          "ru": "Чтобы красиво выглядеть в библиотеке",
+          "en": "burn rubbish"
+        },
+        {
+          "k": "data.tasks.g3w_opt_cut_trees",
+          "ru": "Чтобы записывать погоду",
+          "en": "cut down trees"
+        },
+        {
+          "k": "data.tasks.g3w_natl3_q2_a",
+          "ru": "Чтобы сохранить природные экосистемы",
+          "en": "To preserve natural ecosystems."
+        },
+        {
+          "k": "data.tasks.g3w_natl3_q2_b",
+          "ru": "Чтобы туристы отдыхали",
+          "en": "So tourists can relax."
+        },
+        {
+          "k": "data.tasks.g3w_natl3_q2_c",
+          "ru": "Чтобы добывать ресурсы",
+          "en": "To extract resources."
+        },
+        {
+          "k": "data.tasks.g3w_opt_endangered",
+          "ru": "Кислород, тень и очищают воздух",
+          "en": "endangered species"
+        },
+        {
+          "k": "data.tasks.g3w_opt_extinct",
+          "ru": "Только красоту",
+          "en": "extinct species"
+        },
+        {
+          "k": "data.tasks.g3w_opt_recipe_book",
+          "ru": "Только проблемы",
+          "en": "recipe book"
+        },
+        {
+          "k": "data.dialog.g3w_ecol1_0",
+          "ru": "Лес — это экосистема? Но там же просто деревья и животные…",
+          "en": "An ecosystem is a community of living organisms!"
+        }
+      ]
+    }
+  }
+}

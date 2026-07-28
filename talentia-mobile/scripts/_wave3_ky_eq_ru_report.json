@@ -1,0 +1,564 @@
+{
+  "totalFlagHits": 47,
+  "lessons": [
+    "canyon-sent-1",
+    "g4r-cases-l1",
+    "g4r-cases-l2",
+    "g4r-cases-l3",
+    "g4r-conj-l1",
+    "g4r-conj-l2",
+    "g4r-conj-l3",
+    "g4r-text-l3",
+    "jungle-aba-showcase",
+    "jungle-sub-1",
+    "space-planets-1",
+    "space-planets-2",
+    "space-solar-1"
+  ],
+  "byLesson": {
+    "g4r-conj-l1": {
+      "count": 3,
+      "real": 0,
+      "falsePos": 0,
+      "shared": 3,
+      "samples": [
+        {
+          "lesson": "g4r-conj-l1",
+          "key": "data.tasks.g4r_conj_q2_a",
+          "ru": "читаешь",
+          "en": "читаешь",
+          "ky": "читаешь",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-conj-l1",
+          "key": "data.tasks.g4r_conj_q2_b",
+          "ru": "читает",
+          "en": "читает",
+          "ky": "читает",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-conj-l1",
+          "key": "data.tasks.g4r_conj_q2_c",
+          "ru": "читали",
+          "en": "читали",
+          "ky": "читали",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        }
+      ]
+    },
+    "g4r-conj-l2": {
+      "count": 6,
+      "real": 0,
+      "falsePos": 0,
+      "shared": 6,
+      "samples": [
+        {
+          "lesson": "g4r-conj-l2",
+          "key": "data.tasks.g4r_conj2_q1_a",
+          "ru": "Мы поём",
+          "en": "Мы поём",
+          "ky": "Мы поём",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-conj-l2",
+          "key": "data.tasks.g4r_conj2_q1_b",
+          "ru": "Мы поёте",
+          "en": "Мы поёте",
+          "ky": "Мы поёте",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-conj-l2",
+          "key": "data.tasks.g4r_conj2_q1_c",
+          "ru": "Мы поют",
+          "en": "Мы поют",
+          "ky": "Мы поют",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-conj-l2",
+          "key": "data.tasks.g4r_conj2_q2_a",
+          "ru": "читают",
+          "en": "читают",
+          "ky": "читают",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-conj-l2",
+          "key": "data.tasks.g4r_conj2_q2_b",
+          "ru": "читает",
+          "en": "читает",
+          "ky": "читает",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-conj-l2",
+          "key": "data.tasks.g4r_conj2_q2_c",
+          "ru": "читали",
+          "en": "читали",
+          "ky": "читали",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        }
+      ]
+    },
+    "g4r-conj-l3": {
+      "count": 6,
+      "real": 0,
+      "falsePos": 0,
+      "shared": 6,
+      "samples": [
+        {
+          "lesson": "g4r-conj-l3",
+          "key": "data.tasks.g4r_conj3_q2_a",
+          "ru": "говорить",
+          "en": "говорить",
+          "ky": "говорить",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-conj-l3",
+          "key": "data.tasks.g4r_conj3_q2_b",
+          "ru": "писать",
+          "en": "писать",
+          "ky": "писать",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-conj-l3",
+          "key": "data.tasks.g4r_conj3_q2_c",
+          "ru": "читать",
+          "en": "читать",
+          "ky": "читать",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-conj-l3",
+          "key": "data.tasks.g4r_conj3_q3_a",
+          "ru": "бежит",
+          "en": "бежит",
+          "ky": "бежит",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-conj-l3",
+          "key": "data.tasks.g4r_conj3_q3_b",
+          "ru": "бежите",
+          "en": "бежите",
+          "ky": "бежите",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-conj-l3",
+          "key": "data.tasks.g4r_conj3_q3_c",
+          "ru": "бежим",
+          "en": "бежим",
+          "ky": "бежим",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        }
+      ]
+    },
+    "g4r-cases-l1": {
+      "count": 3,
+      "real": 3,
+      "falsePos": 0,
+      "shared": 0,
+      "samples": [
+        {
+          "lesson": "g4r-cases-l1",
+          "key": "data.tasks.g4r_cases_q3_a",
+          "ru": "именительный: «книга»",
+          "en": "nominative: «книга»",
+          "ky": "именительный: «книга»",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        },
+        {
+          "lesson": "g4r-cases-l1",
+          "key": "data.tasks.g4r_cases_q3_b",
+          "ru": "родительный: «книги»",
+          "en": "genitive: «книги»",
+          "ky": "родительный: «книги»",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        },
+        {
+          "lesson": "g4r-cases-l1",
+          "key": "data.tasks.g4r_cases_q3_c",
+          "ru": "винительный: «книгу»",
+          "en": "accusative: «книгу»",
+          "ky": "винительный: «книгу»",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        }
+      ]
+    },
+    "g4r-cases-l2": {
+      "count": 9,
+      "real": 6,
+      "falsePos": 0,
+      "shared": 3,
+      "samples": [
+        {
+          "lesson": "g4r-cases-l2",
+          "key": "data.tasks.g4r_cases2_q1_a",
+          "ru": "Кто? Что?",
+          "en": "Кто? Что?",
+          "ky": "Кто? Что?",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-cases-l2",
+          "key": "data.tasks.g4r_cases2_q1_b",
+          "ru": "Кого? Чего?",
+          "en": "Кого? Чего?",
+          "ky": "Кого? Чего?",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-cases-l2",
+          "key": "data.tasks.g4r_cases2_q1_c",
+          "ru": "Кому? Чему?",
+          "en": "Кому? Чему?",
+          "ky": "Кому? Чему?",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-cases-l2",
+          "key": "data.tasks.g4r_cases2_q2_a",
+          "ru": "Дательный: «собаке»",
+          "en": "Dative: «собаке»",
+          "ky": "Дательный: «собаке»",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        },
+        {
+          "lesson": "g4r-cases-l2",
+          "key": "data.tasks.g4r_cases2_q2_b",
+          "ru": "Именительный: «собака»",
+          "en": "Nominative: «собака»",
+          "ky": "Именительный: «собака»",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        },
+        {
+          "lesson": "g4r-cases-l2",
+          "key": "data.tasks.g4r_cases2_q2_c",
+          "ru": "Родительный: «собаки»",
+          "en": "Genitive: «собаки»",
+          "ky": "Родительный: «собаки»",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        }
+      ]
+    },
+    "g4r-cases-l3": {
+      "count": 6,
+      "real": 6,
+      "falsePos": 0,
+      "shared": 0,
+      "samples": [
+        {
+          "lesson": "g4r-cases-l3",
+          "key": "data.tasks.g4r_cases3_q1_a",
+          "ru": "Предложный: «о лесе»",
+          "en": "Prepositional: «о лесе»",
+          "ky": "Предложный: «о лесе»",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        },
+        {
+          "lesson": "g4r-cases-l3",
+          "key": "data.tasks.g4r_cases3_q1_b",
+          "ru": "Винительный: «о лес»",
+          "en": "Accusative: «о лес»",
+          "ky": "Винительный: «о лес»",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        },
+        {
+          "lesson": "g4r-cases-l3",
+          "key": "data.tasks.g4r_cases3_q1_c",
+          "ru": "Дательный: «о лесу»",
+          "en": "Dative: «о лесу»",
+          "ky": "Дательный: «о лесу»",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        },
+        {
+          "lesson": "g4r-cases-l3",
+          "key": "data.tasks.g4r_cases3_q2_a",
+          "ru": "художник (именительный)",
+          "en": "художник (nominative)",
+          "ky": "художник (именительный)",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        },
+        {
+          "lesson": "g4r-cases-l3",
+          "key": "data.tasks.g4r_cases3_q2_b",
+          "ru": "художником (творительный)",
+          "en": "художником (instrumental)",
+          "ky": "художником (творительный)",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        },
+        {
+          "lesson": "g4r-cases-l3",
+          "key": "data.tasks.g4r_cases3_q2_c",
+          "ru": "художнику (дательный)",
+          "en": "художнику (dative)",
+          "ky": "художнику (дательный)",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        }
+      ]
+    },
+    "g4r-text-l3": {
+      "count": 3,
+      "real": 0,
+      "falsePos": 0,
+      "shared": 3,
+      "samples": [
+        {
+          "lesson": "g4r-text-l3",
+          "key": "data.tasks.g4r_text3_q2_a",
+          "ru": "сначала",
+          "en": "сначала",
+          "ky": "сначала",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-text-l3",
+          "key": "data.tasks.g4r_text3_q2_b",
+          "ru": "наконец",
+          "en": "наконец",
+          "ky": "наконец",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        },
+        {
+          "lesson": "g4r-text-l3",
+          "key": "data.tasks.g4r_text3_q2_c",
+          "ru": "потом",
+          "en": "потом",
+          "ky": "потом",
+          "kyEqRu": true,
+          "enDiffers": false,
+          "verdict": "SHARED_TOKEN_OR_ALL_SAME"
+        }
+      ]
+    },
+    "jungle-aba-showcase": {
+      "count": 2,
+      "real": 2,
+      "falsePos": 0,
+      "shared": 0,
+      "samples": [
+        {
+          "lesson": "jungle-aba-showcase",
+          "key": "data.tasks.aba_demo_vi_sound",
+          "ru": "аааа",
+          "en": "aaaa",
+          "ky": "аааа",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        },
+        {
+          "lesson": "jungle-aba-showcase",
+          "key": "data.tasks.aba_demo_vi_sound2",
+          "ru": "мммм",
+          "en": "mmmm",
+          "ky": "мммм",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        }
+      ]
+    },
+    "jungle-sub-1": {
+      "count": 1,
+      "real": 1,
+      "falsePos": 0,
+      "shared": 0,
+      "samples": [
+        {
+          "lesson": "jungle-sub-1",
+          "key": "data.tasks.aba_jungleSub_q2",
+          "ru": "8 минус 3 =?",
+          "en": "8 minus 3 =?",
+          "ky": "8 минус 3 =?",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        }
+      ]
+    },
+    "canyon-sent-1": {
+      "count": 1,
+      "real": 1,
+      "falsePos": 0,
+      "shared": 0,
+      "samples": [
+        {
+          "lesson": "canyon-sent-1",
+          "key": "data.tasks.opt_mira",
+          "ru": "Мира",
+          "en": "Mira",
+          "ky": "Мира",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        }
+      ]
+    },
+    "space-planets-1": {
+      "count": 2,
+      "real": 2,
+      "falsePos": 0,
+      "shared": 0,
+      "samples": [
+        {
+          "lesson": "space-planets-1",
+          "key": "data.tasks.opt_mars",
+          "ru": "Марс",
+          "en": "Mars",
+          "ky": "Марс",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        },
+        {
+          "lesson": "space-planets-1",
+          "key": "data.tasks.opt_jupiter",
+          "ru": "Юпитер",
+          "en": "Jupiter",
+          "ky": "Юпитер",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        }
+      ]
+    },
+    "space-planets-2": {
+      "count": 3,
+      "real": 3,
+      "falsePos": 0,
+      "shared": 0,
+      "samples": [
+        {
+          "lesson": "space-planets-2",
+          "key": "data.tasks.opt_mercury",
+          "ru": "Меркурий",
+          "en": "Mercury",
+          "ky": "Меркурий",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        },
+        {
+          "lesson": "space-planets-2",
+          "key": "data.tasks.opt_mars",
+          "ru": "Марс",
+          "en": "Mars",
+          "ky": "Марс",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        },
+        {
+          "lesson": "space-planets-2",
+          "key": "data.tasks.opt_jupiter",
+          "ru": "Юпитер",
+          "en": "Jupiter",
+          "ky": "Юпитер",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        }
+      ]
+    },
+    "space-solar-1": {
+      "count": 2,
+      "real": 2,
+      "falsePos": 0,
+      "shared": 0,
+      "samples": [
+        {
+          "lesson": "space-solar-1",
+          "key": "data.tasks.opt_mars",
+          "ru": "Марс",
+          "en": "Mars",
+          "ky": "Марс",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        },
+        {
+          "lesson": "space-solar-1",
+          "key": "data.tasks.opt_mercury",
+          "ru": "Меркурий",
+          "en": "Mercury",
+          "ky": "Меркурий",
+          "kyEqRu": true,
+          "enDiffers": true,
+          "verdict": "REAL_KY_STUB"
+        }
+      ]
+    }
+  }
+}

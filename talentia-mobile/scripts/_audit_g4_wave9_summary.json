@@ -1,0 +1,176 @@
+{
+  "count": 51,
+  "averages": {
+    "coherence": 4.14,
+    "usefulness": 3.9,
+    "engagement": 3.92,
+    "diversity": 3.18,
+    "overall": 3.78
+  },
+  "verdictCounts": {
+    "needs_polish": 13,
+    "ok": 37,
+    "needs_rewrite": 1
+  },
+  "weakest": [
+    {
+      "id": "canyon-words-1",
+      "avg": 3,
+      "scores": "c3u3e3d3",
+      "verdict": "needs_polish",
+      "problems": [
+        {
+          "ref": "worlds.ts canyon-words-1",
+          "issue": "Короткий урок: 3 задания — мало для закрепления"
+        },
+        {
+          "ref": "canyon-words-1 tasks",
+          "issue": "Метаязыковой вопрос «Какое слово говорит …?» путает RU↔EN"
+        }
+      ]
+    },
+    {
+      "id": "jungle-add-2",
+      "avg": 3.25,
+      "scores": "c4u3e3d3",
+      "verdict": "needs_polish",
+      "problems": [
+        {
+          "ref": "worlds.ts jungle-add-2",
+          "issue": "Короткий урок: 3 задания — мало для закрепления"
+        }
+      ]
+    },
+    {
+      "id": "canyon-words-2",
+      "avg": 3.25,
+      "scores": "c3u3e3d4",
+      "verdict": "needs_polish",
+      "problems": [
+        {
+          "ref": "canyon-words-2 tasks",
+          "issue": "Метаязыковой вопрос «Какое слово говорит …?» путает RU↔EN"
+        }
+      ]
+    },
+    {
+      "id": "canyon-sent-1",
+      "avg": 3.25,
+      "scores": "c3u3e4d3",
+      "verdict": "needs_polish",
+      "problems": [
+        {
+          "ref": "worlds.ts canyon-sent-1",
+          "issue": "Короткий урок: 3 задания — мало для закрепления"
+        },
+        {
+          "ref": "canyon-sent-1 picture MC",
+          "issue": "Отсылка к картинке в MC без image support"
+        }
+      ]
+    },
+    {
+      "id": "g4r-conj-l3",
+      "avg": 3.5,
+      "scores": "c4u4e3d3",
+      "verdict": "ok",
+      "problems": []
+    },
+    {
+      "id": "jungle-add-1",
+      "avg": 3.5,
+      "scores": "c4u3e4d3",
+      "verdict": "needs_polish",
+      "problems": [
+        {
+          "ref": "worlds.ts jungle-add-1",
+          "issue": "Короткий урок: 3 задания — мало для закрепления"
+        },
+        {
+          "ref": "jungle-add-1-t3",
+          "issue": "Счёт («Сколько здесь…») без visualCount/visualEmoji"
+        }
+      ]
+    },
+    {
+      "id": "jungle-aba-showcase",
+      "avg": 3.5,
+      "scores": "c2u3e4d5",
+      "verdict": "needs_rewrite",
+      "problems": [
+        {
+          "ref": "worlds.ts jungle-aba-showcase",
+          "issue": "Витрина ABA-типов (23 заданий: 1 main + 22 ABA), не учебный урок с прогрессией навыка"
+        },
+        {
+          "ref": "jungle-aba-showcase dialog",
+          "issue": "Нет диалога/интро — резкий старт в микс типов"
+        }
+      ]
+    },
+    {
+      "id": "jungle-sub-1",
+      "avg": 3.5,
+      "scores": "c4u3e4d3",
+      "verdict": "needs_polish",
+      "problems": [
+        {
+          "ref": "worlds.ts jungle-sub-1",
+          "issue": "Короткий урок: 3 задания — мало для закрепления"
+        }
+      ]
+    }
+  ],
+  "criticals": [
+    {
+      "id": "jungle-aba-showcase",
+      "verdict": "needs_rewrite",
+      "coherence": 2,
+      "problems": [
+        {
+          "ref": "worlds.ts jungle-aba-showcase",
+          "issue": "Витрина ABA-типов (23 заданий: 1 main + 22 ABA), не учебный урок с прогрессией навыка"
+        },
+        {
+          "ref": "jungle-aba-showcase dialog",
+          "issue": "Нет диалога/интро — резкий старт в микс типов"
+        }
+      ]
+    }
+  ],
+  "questL2": {
+    "id": "g4e-quest-l2",
+    "grade": 4,
+    "subject": "english",
+    "world": "g4eng",
+    "title": "Вопросы с вопросительным словом",
+    "coherence": 5,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "needs_polish",
+    "problems": [
+      {
+        "ref": "ky.json data.intro.g4e_quest_l2_0_b",
+        "issue": "KY intro body — generic stub, не передаёт What/Where"
+      },
+      {
+        "ref": "en.json data.intro.g4e_quest_l2_1_b",
+        "issue": "EN intro#2 body — generic stub вместо Wh-words keys"
+      }
+    ],
+    "fixes": [
+      "Перевести KY intro body по смыслу RU (What/Where)",
+      "Перевести EN intro#2 по смыслу RU"
+    ],
+    "enkyFlags": [
+      "ky_intro_generic_stub",
+      "en_intro_generic_stub"
+    ],
+    "templates": [
+      "mc_plus_input",
+      "npc_tali_dialog_pair",
+      "why_bike_aligned"
+    ]
+  }
+}

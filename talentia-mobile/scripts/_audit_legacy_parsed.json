@@ -1,0 +1,1194 @@
+[
+  {
+    "id": "jungle-add-1",
+    "topicId": "jungle-addition",
+    "titleKey": "data.lessons.jungleAdd1",
+    "world": "jungle",
+    "titleRu": "Считаем фрукты с Рексом",
+    "titleEn": "Counting Fruits with Rex",
+    "types": [
+      "multiple_choice",
+      "multiple_choice",
+      "input",
+      "multiple_choice",
+      "multiple_choice"
+    ],
+    "uniqueTypes": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5,
+    "abaTaskCount": 2,
+    "hasDialog": true,
+    "hasIntro": true,
+    "questionKeys": [
+      "data.tasks.jungle_q_count_bananas",
+      "data.tasks.q_add_two_three",
+      "data.tasks.q_count_apples",
+      "data.tasks.aba_jungleAdd_q1",
+      "data.tasks.aba_jungleAdd_q2"
+    ],
+    "taskTexts": [
+      {
+        "key": "data.tasks.jungle_q_count_bananas",
+        "ru": "Сколько здесь бананов?",
+        "en": "How many bananas are there?"
+      },
+      {
+        "key": "data.tasks.q_add_two_three",
+        "ru": "Сколько будет 2 + 3?",
+        "en": "What is 2 + 3?"
+      },
+      {
+        "key": "data.tasks.q_count_apples",
+        "ru": "Сколько здесь яблок?",
+        "en": "How many apples are there?"
+      },
+      {
+        "key": "data.tasks.aba_jungleAdd_q1",
+        "ru": "СЧИТАЙ. Сколько бананов?",
+        "en": "COUNT. How many bananas?"
+      },
+      {
+        "key": "data.tasks.aba_jungleAdd_q2",
+        "ru": "2 и 3 вместе =?",
+        "en": "2 and 3 together =?"
+      }
+    ],
+    "dialogKeys": [
+      "data.dialog.jungle_add_1_0",
+      "data.dialog.jungle_add_1_1"
+    ],
+    "dialogTexts": [
+      {
+        "key": "data.dialog.jungle_add_1_0",
+        "ru": "Добро пожаловать в Джунгли чисел! Я Тали — твой динозаврик!",
+        "en": "Welcome to the Jungle of Numbers! I'm Tali, your dino buddy!"
+      },
+      {
+        "key": "data.dialog.jungle_add_1_1",
+        "ru": "РЫЫ! Привет! Я Рекс! Помоги мне посчитать бананы!",
+        "en": "ROAR! Hi! I'm Rex! Please help me count my bananas!"
+      }
+    ],
+    "blockPreview": "{\r\n            id: 'jungle-add-1',\r\n            topicId: 'jungle-addition',\r\n            titleKey: 'data.lessons.jungleAdd1',\r\n            reward: { xp: 30, item: 'banana_badge' },\r\n            dialog: [\r\n              { speaker: 'tali', textKey: 'data.dialog.jungle_add_1_0' },\r\n              { speaker: 'npc', textKey: 'data.dialog.jungle_add_1_1' },\r\n            ],\r\n            intro: [\r\n              { titleKey: 'data.intro.jungleAdd_0_title', bodyKey: 'data.intro.jungleAdd_0_body', emoji: '' "
+  },
+  {
+    "id": "jungle-add-2",
+    "topicId": "jungle-addition",
+    "titleKey": "data.lessons.jungleAdd2",
+    "world": "jungle",
+    "titleRu": "Складываем фрукты",
+    "titleEn": "Adding More Fruits",
+    "types": [
+      "multiple_choice",
+      "multiple_choice",
+      "input"
+    ],
+    "uniqueTypes": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 3,
+    "abaTaskCount": 0,
+    "hasDialog": true,
+    "hasIntro": false,
+    "questionKeys": [
+      "data.tasks.jungle_q_add_4_3",
+      "data.tasks.jungle_q_add_6_2",
+      "data.tasks.q_add_two_three"
+    ],
+    "taskTexts": [
+      {
+        "key": "data.tasks.jungle_q_add_4_3",
+        "ru": "У Рекса 4 манго и он нашёл ещё 3. Сколько всего?",
+        "en": "Rex has 4 mangoes and finds 3 more. How many total?"
+      },
+      {
+        "key": "data.tasks.jungle_q_add_6_2",
+        "ru": "У Рекса 6 ягод и он сорвал ещё 2. Сколько теперь?",
+        "en": "Rex has 6 berries and picks 2 more. How many now?"
+      },
+      {
+        "key": "data.tasks.q_add_two_three",
+        "ru": "Сколько будет 2 + 3?",
+        "en": "What is 2 + 3?"
+      }
+    ],
+    "dialogKeys": [
+      "data.dialog.jungle_add_2_0",
+      "data.dialog.jungle_add_2_1"
+    ],
+    "dialogTexts": [
+      {
+        "key": "data.dialog.jungle_add_2_0",
+        "ru": "Рекс хочет угостить друзей фруктами! Давай сложим их!",
+        "en": "Rex wants to share fruits with his friends! Let's add them up!"
+      },
+      {
+        "key": "data.dialog.jungle_add_2_1",
+        "ru": "Я нашёл ещё манго! Сколько у меня теперь?",
+        "en": "I found more mangoes! How many do I have now?"
+      }
+    ],
+    "blockPreview": "{\r\n            id: 'jungle-add-2',\r\n            topicId: 'jungle-addition',\r\n            titleKey: 'data.lessons.jungleAdd2',\r\n            reward: { xp: 35 },\r\n            dialog: [\r\n              { speaker: 'tali', textKey: 'data.dialog.jungle_add_2_0' },\r\n              { speaker: 'npc', textKey: 'data.dialog.jungle_add_2_1' },\r\n            ],\r\n            tasks: [\r\n              {\r\n                id: 'jungle-add-2-t1',\r\n                type: 'multiple_choice',\r\n                questionKey: 'd"
+  },
+  {
+    "id": "jungle-aba-showcase",
+    "topicId": "jungle-addition",
+    "titleKey": "data.lessons.jungleAbaShowcase",
+    "world": "jungle",
+    "titleRu": "Практика АВА (микс)",
+    "titleEn": "ABA practice mix",
+    "types": [
+      "multiple_choice",
+      "image_point",
+      "image_point",
+      "vocal_imitation",
+      "vocal_imitation",
+      "word_repetition",
+      "word_repetition",
+      "volume_control",
+      "volume_control",
+      "fill_blank",
+      "fill_blank",
+      "image_word_match",
+      "image_word_match",
+      "world_knowledge",
+      "world_knowledge",
+      "sorting",
+      "sorting",
+      "routine_chain",
+      "routine_chain",
+      "routine_chain",
+      "routine_chain",
+      "action_instruction",
+      "action_instruction"
+    ],
+    "uniqueTypes": [
+      "multiple_choice",
+      "image_point",
+      "vocal_imitation",
+      "word_repetition",
+      "volume_control",
+      "fill_blank",
+      "image_word_match",
+      "world_knowledge",
+      "sorting",
+      "routine_chain",
+      "action_instruction"
+    ],
+    "taskCount": 23,
+    "abaTaskCount": 22,
+    "hasDialog": false,
+    "hasIntro": false,
+    "questionKeys": [
+      "data.tasks.aba_demo_std_warmup",
+      "data.tasks.aba_demo_ip_q",
+      "data.tasks.aba_demo_ip_q2",
+      "data.tasks.aba_demo_vi_sound",
+      "data.tasks.aba_demo_vi_sound2",
+      "data.tasks.aba_demo_wr_word",
+      "data.tasks.aba_demo_wr_word2",
+      "data.tasks.aba_demo_vol_prompt",
+      "data.tasks.aba_demo_vol_prompt2",
+      "data.tasks.aba_demo_fb_sent",
+      "data.tasks.aba_demo_fb_sent2",
+      "data.tasks.aba_demo_iwm_word",
+      "data.tasks.aba_demo_iwm_word2",
+      "data.tasks.aba_demo_wk_q",
+      "data.tasks.aba_demo_wk_q2",
+      "data.tasks.aba_demo_sort_g1",
+      "data.tasks.aba_demo_sort_g1",
+      "data.tasks.aba_demo_routine_wet",
+      "data.tasks.aba_demo_routine_brush",
+      "data.tasks.aba_routine_wash_title",
+      "data.tasks.aba_routine_sleep_title",
+      "data.tasks.aba_demo_action_clap",
+      "data.tasks.aba_demo_action_jump"
+    ],
+    "taskTexts": [
+      {
+        "key": "data.tasks.aba_demo_std_warmup",
+        "ru": "Сколько бананов? (разминка)",
+        "en": "How many bananas? (warm-up)"
+      },
+      {
+        "key": "data.tasks.aba_demo_ip_q",
+        "ru": "УКАЖИ. Где яблоко?",
+        "en": "POINT. Where is the apple?"
+      },
+      {
+        "key": "data.tasks.aba_demo_ip_q2",
+        "ru": "УКАЖИ. Где банан?",
+        "en": "POINT. Where is the banana?"
+      },
+      {
+        "key": "data.tasks.aba_demo_vi_sound",
+        "ru": "аааа",
+        "en": "aaaa"
+      },
+      {
+        "key": "data.tasks.aba_demo_vi_sound2",
+        "ru": "мммм",
+        "en": "mmmm"
+      },
+      {
+        "key": "data.tasks.aba_demo_wr_word",
+        "ru": "солнце",
+        "en": "sun"
+      },
+      {
+        "key": "data.tasks.aba_demo_wr_word2",
+        "ru": "мама",
+        "en": "mama"
+      },
+      {
+        "key": "data.tasks.aba_demo_vol_prompt",
+        "ru": "Скажи своё имя громче!",
+        "en": "Say your name louder!"
+      },
+      {
+        "key": "data.tasks.aba_demo_vol_prompt2",
+        "ru": "Скажи «привет» тише.",
+        "en": "Say hello more quietly."
+      },
+      {
+        "key": "data.tasks.aba_demo_fb_sent",
+        "ru": "Кот _.",
+        "en": "The cat is _."
+      },
+      {
+        "key": "data.tasks.aba_demo_fb_sent2",
+        "ru": "Я вижу _ .",
+        "en": "I see a _ ."
+      },
+      {
+        "key": "data.tasks.aba_demo_iwm_word",
+        "ru": "солнце",
+        "en": "sun"
+      },
+      {
+        "key": "data.tasks.aba_demo_iwm_word2",
+        "ru": "луну",
+        "en": "moon"
+      },
+      {
+        "key": "data.tasks.aba_demo_wk_q",
+        "ru": "Где телевизор?",
+        "en": "Where is the TV?"
+      },
+      {
+        "key": "data.tasks.aba_demo_wk_q2",
+        "ru": "Где готовят еду?",
+        "en": "Where do we cook?"
+      },
+      {
+        "key": "data.tasks.aba_demo_sort_g1",
+        "ru": "Еда",
+        "en": "Food"
+      },
+      {
+        "key": "data.tasks.aba_demo_sort_g1",
+        "ru": "Еда",
+        "en": "Food"
+      },
+      {
+        "key": "data.tasks.aba_demo_routine_wet",
+        "ru": "Смочить щётку",
+        "en": "Wet the brush"
+      },
+      {
+        "key": "data.tasks.aba_demo_routine_brush",
+        "ru": "Чистить зубы",
+        "en": "Brush teeth"
+      },
+      {
+        "key": "data.tasks.aba_routine_wash_title",
+        "ru": "Моем руки",
+        "en": "Washing hands"
+      },
+      {
+        "key": "data.tasks.aba_routine_sleep_title",
+        "ru": "Ложимся спать",
+        "en": "Going to bed"
+      },
+      {
+        "key": "data.tasks.aba_demo_action_clap",
+        "ru": "Хлопай!",
+        "en": "Clap!"
+      },
+      {
+        "key": "data.tasks.aba_demo_action_jump",
+        "ru": "Прыгай!",
+        "en": "Jump!"
+      }
+    ],
+    "dialogKeys": [],
+    "dialogTexts": [],
+    "blockPreview": "{\r\n            id: 'jungle-aba-showcase',\r\n            topicId: 'jungle-addition',\r\n            titleKey: 'data.lessons.jungleAbaShowcase',\r\n            reward: { xp: 25 },\r\n            abaTokensPerPiece: 5,\r\n            tasks: [\r\n              {\r\n                id: 'jungle-aba-t0',\r\n                type: 'multiple_choice',\r\n                questionKey: 'data.tasks.aba_demo_std_warmup',\r\n                difficulty: 1,\r\n                visualCount: 3,\r\n                visualEmoji: '🍌',\r\n       "
+  },
+  {
+    "id": "jungle-sub-1",
+    "topicId": "jungle-subtraction",
+    "titleKey": "data.lessons.jungleSub1",
+    "world": "jungle",
+    "titleRu": "Рекс делится фруктами",
+    "titleEn": "Rex Shares His Fruits",
+    "types": [
+      "multiple_choice",
+      "multiple_choice",
+      "input",
+      "multiple_choice",
+      "multiple_choice"
+    ],
+    "uniqueTypes": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5,
+    "abaTaskCount": 2,
+    "hasDialog": true,
+    "hasIntro": true,
+    "questionKeys": [
+      "data.tasks.jungle_q_sub_5_2",
+      "data.tasks.jungle_q_sub_8_3",
+      "data.tasks.jungle_q_sub_10_4",
+      "data.tasks.aba_jungleSub_q1",
+      "data.tasks.aba_jungleSub_q2"
+    ],
+    "taskTexts": [
+      {
+        "key": "data.tasks.jungle_q_sub_5_2",
+        "ru": "У Рекса было 5 бананов, он съел 2. Сколько осталось?",
+        "en": "Rex had 5 bananas but ate 2. How many are left?"
+      },
+      {
+        "key": "data.tasks.jungle_q_sub_8_3",
+        "ru": "У Рекса было 8 манго. Он отдал 3 другу. Сколько осталось?",
+        "en": "Rex had 8 mangoes. He gave 3 to a friend. How many left?"
+      },
+      {
+        "key": "data.tasks.jungle_q_sub_10_4",
+        "ru": "10 - 4 =?",
+        "en": "10 - 4 =?"
+      },
+      {
+        "key": "data.tasks.aba_jungleSub_q1",
+        "ru": "БЫЛО 5. УБРАЛИ 2. ОСТАЛОСЬ?",
+        "en": "HAD 5. TOOK AWAY 2. LEFT?"
+      },
+      {
+        "key": "data.tasks.aba_jungleSub_q2",
+        "ru": "8 минус 3 =?",
+        "en": "8 minus 3 =?"
+      }
+    ],
+    "dialogKeys": [
+      "data.dialog.jungle_sub_1_0",
+      "data.dialog.jungle_sub_1_1"
+    ],
+    "dialogTexts": [
+      {
+        "key": "data.dialog.jungle_sub_1_0",
+        "ru": "Отлично считаешь! Теперь учимся вычитать!",
+        "en": "Great job counting! Now let's learn subtraction!"
+      },
+      {
+        "key": "data.dialog.jungle_sub_1_1",
+        "ru": "У меня было несколько бананов, но я съел пару… Сколько осталось?",
+        "en": "I had some bananas but I ate a few… How many are left?"
+      }
+    ],
+    "blockPreview": "{\r\n            id: 'jungle-sub-1',\r\n            topicId: 'jungle-subtraction',\r\n            titleKey: 'data.lessons.jungleSub1',\r\n            reward: { xp: 40, item: 'jungle_leaf' },\r\n            dialog: [\r\n              { speaker: 'tali', textKey: 'data.dialog.jungle_sub_1_0' },\r\n              { speaker: 'npc', textKey: 'data.dialog.jungle_sub_1_1' },\r\n            ],\r\n            intro: [\r\n              { titleKey: 'data.intro.jungleSub_0_title', bodyKey: 'data.intro.jungleSub_0_body', emoji: '"
+  },
+  {
+    "id": "jungle-sub-2",
+    "topicId": "jungle-subtraction",
+    "titleKey": "data.lessons.jungleSub2",
+    "world": "jungle",
+    "titleRu": "Отнимаем числа",
+    "titleEn": "Taking Away",
+    "types": [
+      "multiple_choice",
+      "input",
+      "multiple_choice",
+      "fill_blank"
+    ],
+    "uniqueTypes": [
+      "multiple_choice",
+      "input",
+      "fill_blank"
+    ],
+    "taskCount": 4,
+    "abaTaskCount": 0,
+    "hasDialog": true,
+    "hasIntro": false,
+    "questionKeys": [
+      "data.tasks.jungle_q_sub_9_4",
+      "data.tasks.q_missing_number",
+      "data.tasks.jungle_q_sub_10_4",
+      "data.tasks.jungle_sub2_fb_sent"
+    ],
+    "taskTexts": [
+      {
+        "key": "data.tasks.jungle_q_sub_9_4",
+        "ru": "9 - 4 =?",
+        "en": "9 - 4 =?"
+      },
+      {
+        "key": "data.tasks.q_missing_number",
+        "ru": "2, 4, __, 8. Какое число пропущено?",
+        "en": "2, 4, __, 8. What number is missing?"
+      },
+      {
+        "key": "data.tasks.jungle_q_sub_10_4",
+        "ru": "10 - 4 =?",
+        "en": "10 - 4 =?"
+      },
+      {
+        "key": "data.tasks.jungle_sub2_fb_sent",
+        "ru": "8 − 3 = _",
+        "en": "8 − 3 = _"
+      }
+    ],
+    "dialogKeys": [
+      "data.dialog.jungle_sub_2_0",
+      "data.dialog.jungle_sub_2_1"
+    ],
+    "dialogTexts": [
+      {
+        "key": "data.dialog.jungle_sub_2_0",
+        "ru": "Рекс становится настоящим математиком! Попробуем сложнее!",
+        "en": "Rex is getting better at math! Let's try harder problems!"
+      },
+      {
+        "key": "data.dialog.jungle_sub_2_1",
+        "ru": "Друзья взяли часть фруктов. Сколько у меня осталось?",
+        "en": "My friends took some fruit. How many do I have left?"
+      }
+    ],
+    "blockPreview": "{\r\n            id: 'jungle-sub-2',\r\n            topicId: 'jungle-subtraction',\r\n            titleKey: 'data.lessons.jungleSub2',\r\n            reward: { xp: 40 },\r\n            dialog: [\r\n              { speaker: 'tali', textKey: 'data.dialog.jungle_sub_2_0' },\r\n              { speaker: 'npc', textKey: 'data.dialog.jungle_sub_2_1' },\r\n            ],\r\n            tasks: [\r\n              {\r\n                id: 'jungle-sub-2-t1',\r\n                type: 'multiple_choice',\r\n                questionKey:"
+  },
+  {
+    "id": "jungle-compare-1",
+    "topicId": "jungle-comparison",
+    "titleKey": "data.lessons.jungleCompare1",
+    "world": "jungle",
+    "titleRu": "Какая кучка больше?",
+    "titleEn": "Which Pile is Bigger?",
+    "types": [
+      "multiple_choice",
+      "multiple_choice",
+      "input",
+      "multiple_choice",
+      "multiple_choice"
+    ],
+    "uniqueTypes": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5,
+    "abaTaskCount": 2,
+    "hasDialog": true,
+    "hasIntro": true,
+    "questionKeys": [
+      "data.tasks.jungle_q_bigger_7_4",
+      "data.tasks.jungle_q_smaller_3_9",
+      "data.tasks.jungle_q_6_gt_5",
+      "data.tasks.aba_jungleCmp_q1",
+      "data.tasks.aba_jungleCmp_q2"
+    ],
+    "taskTexts": [
+      {
+        "key": "data.tasks.jungle_q_bigger_7_4",
+        "ru": "Какое число больше: 7 или 4?",
+        "en": "Which number is bigger: 7 or 4?"
+      },
+      {
+        "key": "data.tasks.jungle_q_smaller_3_9",
+        "ru": "Какое число меньше: 3 или 9?",
+        "en": "Which number is smaller: 3 or 9?"
+      },
+      {
+        "key": "data.tasks.jungle_q_6_gt_5",
+        "ru": "6 больше, чем 5?",
+        "en": "Is 6 greater than 5?"
+      },
+      {
+        "key": "data.tasks.aba_jungleCmp_q1",
+        "ru": "7 или 4. БОЛЬШЕ — выбери.",
+        "en": "7 or 4. BIGGER — choose."
+      },
+      {
+        "key": "data.tasks.aba_jungleCmp_q2",
+        "ru": "3 или 9. МЕНЬШЕ — выбери.",
+        "en": "3 or 9. SMALLER — choose."
+      }
+    ],
+    "dialogKeys": [
+      "data.dialog.jungle_compare_1_0",
+      "data.dialog.jungle_compare_1_1"
+    ],
+    "dialogTexts": [
+      {
+        "key": "data.dialog.jungle_compare_1_0",
+        "ru": "Рекс нашёл две кучки камней. Давай сравним их!",
+        "en": "Rex found two piles of rocks. Let's compare them!"
+      },
+      {
+        "key": "data.dialog.jungle_compare_1_1",
+        "ru": "В какой кучке БОЛЬШЕ камней? Я не могу решить!",
+        "en": "Which pile has MORE rocks? I cannot decide!"
+      }
+    ],
+    "blockPreview": "{\r\n            id: 'jungle-compare-1',\r\n            topicId: 'jungle-comparison',\r\n            titleKey: 'data.lessons.jungleCompare1',\r\n            reward: { xp: 35, item: 'dino_egg_green' },\r\n            dialog: [\r\n              { speaker: 'tali', textKey: 'data.dialog.jungle_compare_1_0' },\r\n              { speaker: 'npc', textKey: 'data.dialog.jungle_compare_1_1' },\r\n            ],\r\n            intro: [\r\n              { titleKey: 'data.intro.jungleCmp_0_title', bodyKey: 'data.intro.jungleCmp"
+  },
+  {
+    "id": "canyon-words-1",
+    "topicId": "canyon-words",
+    "titleKey": "data.lessons.canyonWords1",
+    "world": "canyon",
+    "titleRu": "Наскальные рисунки",
+    "titleEn": "Cave Paintings",
+    "types": [
+      "multiple_choice",
+      "multiple_choice",
+      "input",
+      "multiple_choice",
+      "multiple_choice"
+    ],
+    "uniqueTypes": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5,
+    "abaTaskCount": 2,
+    "hasDialog": true,
+    "hasIntro": true,
+    "questionKeys": [
+      "data.tasks.canyon_q_word_dog",
+      "data.tasks.q_read_sun",
+      "data.tasks.canyon_q_word_red",
+      "data.tasks.aba_canyonWords_q1",
+      "data.tasks.aba_canyonWords_q2"
+    ],
+    "taskTexts": [
+      {
+        "key": "data.tasks.canyon_q_word_dog",
+        "ru": "Какое слово говорит «собака»?",
+        "en": "Which word says 'dog'?"
+      },
+      {
+        "key": "data.tasks.q_read_sun",
+        "ru": "Какое слово говорит «солнце»?",
+        "en": "Which word says 'sun'?"
+      },
+      {
+        "key": "data.tasks.canyon_q_word_red",
+        "ru": "Какое слово говорит «красный»?",
+        "en": "Which word says 'red'?"
+      },
+      {
+        "key": "data.tasks.aba_canyonWords_q1",
+        "ru": "НАЙДИ. Слово «dog» (собака) — где оно?",
+        "en": "FIND. The word 'dog' — which one is it?"
+      },
+      {
+        "key": "data.tasks.aba_canyonWords_q2",
+        "ru": "НАЙДИ. Слово «sun» (солнце) — где оно?",
+        "en": "FIND. The word 'sun' — which one is it?"
+      }
+    ],
+    "dialogKeys": [
+      "data.dialog.canyon_words_1_0",
+      "data.dialog.canyon_words_1_1"
+    ],
+    "dialogTexts": [
+      {
+        "key": "data.dialog.canyon_words_1_0",
+        "ru": "Добро пожаловать в Каньон слов! Здесь живёт Диппи!",
+        "en": "Welcome to Word Canyon! Dippy the dinosaur lives here!"
+      },
+      {
+        "key": "data.dialog.canyon_words_1_1",
+        "ru": "Привет! Я нашёл древние наскальные рисунки. Помоги прочитать!",
+        "en": "Hello! I found ancient cave paintings. Help me read them!"
+      }
+    ],
+    "blockPreview": "{\r\n            id: 'canyon-words-1',\r\n            topicId: 'canyon-words',\r\n            titleKey: 'data.lessons.canyonWords1',\r\n            reward: { xp: 30, item: 'canyon_gem' },\r\n            dialog: [\r\n              { speaker: 'tali', textKey: 'data.dialog.canyon_words_1_0' },\r\n              { speaker: 'npc', textKey: 'data.dialog.canyon_words_1_1' },\r\n            ],\r\n            intro: [\r\n              { titleKey: 'data.intro.canyonWords_0_title', bodyKey: 'data.intro.canyonWords_0_body', emo"
+  },
+  {
+    "id": "canyon-words-2",
+    "topicId": "canyon-words",
+    "titleKey": "data.lessons.canyonWords2",
+    "world": "canyon",
+    "titleRu": "Письмо Диппи",
+    "titleEn": "Dippy's Letter",
+    "types": [
+      "multiple_choice",
+      "input",
+      "multiple_choice",
+      "fill_blank"
+    ],
+    "uniqueTypes": [
+      "multiple_choice",
+      "input",
+      "fill_blank"
+    ],
+    "taskCount": 4,
+    "abaTaskCount": 0,
+    "hasDialog": true,
+    "hasIntro": false,
+    "questionKeys": [
+      "data.tasks.q_read_cat",
+      "data.tasks.canyon_q_color_grass",
+      "data.tasks.canyon_q_word_dog",
+      "data.tasks.canyon_w2_fb_sent"
+    ],
+    "taskTexts": [
+      {
+        "key": "data.tasks.q_read_cat",
+        "ru": "Какое слово говорит «кот»?",
+        "en": "Which word says 'cat'?"
+      },
+      {
+        "key": "data.tasks.canyon_q_color_grass",
+        "ru": "Какого цвета трава?",
+        "en": "What colour is grass?"
+      },
+      {
+        "key": "data.tasks.canyon_q_word_dog",
+        "ru": "Какое слово говорит «собака»?",
+        "en": "Which word says 'dog'?"
+      },
+      {
+        "key": "data.tasks.canyon_w2_fb_sent",
+        "ru": "Я вижу _. Это пёс.",
+        "en": "I see _. This is a dog."
+      }
+    ],
+    "dialogKeys": [
+      "data.dialog.canyon_words_2_0",
+      "data.dialog.canyon_words_2_1"
+    ],
+    "dialogTexts": [
+      {
+        "key": "data.dialog.canyon_words_2_0",
+        "ru": "Диппи получил письмо от далёкого друга!",
+        "en": "Dippy received a letter from a faraway friend!"
+      },
+      {
+        "key": "data.dialog.canyon_words_2_1",
+        "ru": "Ты поможешь мне прочитать эти слова? Я ещё учусь!",
+        "en": "Can you help me read these words? I am still learning!"
+      }
+    ],
+    "blockPreview": "{\r\n            id: 'canyon-words-2',\r\n            topicId: 'canyon-words',\r\n            titleKey: 'data.lessons.canyonWords2',\r\n            reward: { xp: 35 },\r\n            dialog: [\r\n              { speaker: 'tali', textKey: 'data.dialog.canyon_words_2_0' },\r\n              { speaker: 'npc', textKey: 'data.dialog.canyon_words_2_1' },\r\n            ],\r\n            tasks: [\r\n              {\r\n                id: 'canyon-w2-t1',\r\n                type: 'multiple_choice',\r\n                questionKey: "
+  },
+  {
+    "id": "canyon-sent-1",
+    "topicId": "canyon-sentences",
+    "titleKey": "data.lessons.canyonSent1",
+    "world": "canyon",
+    "titleRu": "Карта каньона",
+    "titleEn": "The Canyon Map",
+    "types": [
+      "multiple_choice",
+      "multiple_choice",
+      "input",
+      "multiple_choice",
+      "multiple_choice"
+    ],
+    "uniqueTypes": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5,
+    "abaTaskCount": 2,
+    "hasDialog": true,
+    "hasIntro": true,
+    "questionKeys": [
+      "data.tasks.q_story_character",
+      "data.tasks.q_match_picture",
+      "data.tasks.canyon_q_sentence_big_dog",
+      "data.tasks.aba_canyonSent_q1",
+      "data.tasks.aba_canyonSent_q2"
+    ],
+    "taskTexts": [
+      {
+        "key": "data.tasks.q_story_character",
+        "ru": "У Миры есть красный воздушный змей. У кого змей?",
+        "en": "Mira has a red kite. Who has the kite?"
+      },
+      {
+        "key": "data.tasks.q_match_picture",
+        "ru": "Какое слово подходит к картинке с собакой?",
+        "en": "Which word matches the picture of a dog?"
+      },
+      {
+        "key": "data.tasks.canyon_q_sentence_big_dog",
+        "ru": "Большая собака бежит быстро. Собака большая?",
+        "en": "The big dog runs fast. Is the dog big?"
+      },
+      {
+        "key": "data.tasks.aba_canyonSent_q1",
+        "ru": "ПРОЧИТАЙ. КТО? У кого есть змей?",
+        "en": "READ. WHO? Who has the kite?"
+      },
+      {
+        "key": "data.tasks.aba_canyonSent_q2",
+        "ru": "ВЫБЕРИ слово к картинке с собакой.",
+        "en": "CHOOSE the word for the dog picture."
+      }
+    ],
+    "dialogKeys": [
+      "data.dialog.canyon_sent_1_0",
+      "data.dialog.canyon_sent_1_1"
+    ],
+    "dialogTexts": [
+      {
+        "key": "data.dialog.canyon_sent_1_0",
+        "ru": "Теперь читаем целые предложения! У Диппи есть карта каньона!",
+        "en": "Now let's read whole sentences! Dippy has a canyon map!"
+      },
+      {
+        "key": "data.dialog.canyon_sent_1_1",
+        "ru": "На карте написаны указания. Ты можешь их прочитать?",
+        "en": "The map has directions written on it. Can you read them?"
+      }
+    ],
+    "blockPreview": "{\r\n            id: 'canyon-sent-1',\r\n            topicId: 'canyon-sentences',\r\n            titleKey: 'data.lessons.canyonSent1',\r\n            reward: { xp: 40, item: 'artifact_map' },\r\n            dialog: [\r\n              { speaker: 'tali', textKey: 'data.dialog.canyon_sent_1_0' },\r\n              { speaker: 'npc', textKey: 'data.dialog.canyon_sent_1_1' },\r\n            ],\r\n            intro: [\r\n              { titleKey: 'data.intro.canyonSent_0_title', bodyKey: 'data.intro.canyonSent_0_body', emo"
+  },
+  {
+    "id": "lab-animals-1",
+    "topicId": "lab-animals",
+    "titleKey": "data.lessons.labAnimals1",
+    "world": "lab",
+    "titleRu": "Коллекция Спайка",
+    "titleEn": "Spike's Animal Collection",
+    "types": [
+      "multiple_choice",
+      "multiple_choice",
+      "input",
+      "multiple_choice",
+      "multiple_choice"
+    ],
+    "uniqueTypes": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5,
+    "abaTaskCount": 2,
+    "hasDialog": true,
+    "hasIntro": true,
+    "questionKeys": [
+      "data.tasks.lab_q_water_animal",
+      "data.tasks.lab_q_fly_animal",
+      "data.tasks.lab_q_cat_legs",
+      "data.tasks.aba_labAnimals_q1",
+      "data.tasks.aba_labAnimals_q2"
+    ],
+    "taskTexts": [
+      {
+        "key": "data.tasks.lab_q_water_animal",
+        "ru": "Какое животное живёт в воде?",
+        "en": "Which animal lives in water?"
+      },
+      {
+        "key": "data.tasks.lab_q_fly_animal",
+        "ru": "Какое животное умеет летать?",
+        "en": "Which animal can fly?"
+      },
+      {
+        "key": "data.tasks.lab_q_cat_legs",
+        "ru": "Сколько ног у кошки?",
+        "en": "How many legs does a cat have?"
+      },
+      {
+        "key": "data.tasks.aba_labAnimals_q1",
+        "ru": "В ВОДЕ живёт — выбери.",
+        "en": "LIVES IN WATER — choose."
+      },
+      {
+        "key": "data.tasks.aba_labAnimals_q2",
+        "ru": "ЛЕТАЕТ — выбери.",
+        "en": "CAN FLY — choose."
+      }
+    ],
+    "dialogKeys": [
+      "data.dialog.lab_animals_1_0",
+      "data.dialog.lab_animals_1_1"
+    ],
+    "dialogTexts": [
+      {
+        "key": "data.dialog.lab_animals_1_0",
+        "ru": "Добро пожаловать в лабораторию Спайка! Древний вулкан активен!",
+        "en": "Welcome to Spike's Science Lab! The ancient volcano is active!"
+      },
+      {
+        "key": "data.dialog.lab_animals_1_1",
+        "ru": "ПРИВЕТСТВУЮ! Я Спайк! Изучаю животных. Учимся вместе!",
+        "en": "GREETINGS! I am Spike! I study animals. Let us learn together!"
+      }
+    ],
+    "blockPreview": "{\r\n            id: 'lab-animals-1',\r\n            topicId: 'lab-animals',\r\n            titleKey: 'data.lessons.labAnimals1',\r\n            reward: { xp: 35, item: 'spike_crystal' },\r\n            dialog: [\r\n              { speaker: 'tali', textKey: 'data.dialog.lab_animals_1_0' },\r\n              { speaker: 'npc', textKey: 'data.dialog.lab_animals_1_1' },\r\n            ],\r\n            intro: [\r\n              { titleKey: 'data.intro.labAnimals_0_title', bodyKey: 'data.intro.labAnimals_0_body', emoji: "
+  },
+  {
+    "id": "lab-animals-2",
+    "topicId": "lab-animals",
+    "titleKey": "data.lessons.labAnimals2",
+    "world": "lab",
+    "titleRu": "Ещё о животных",
+    "titleEn": "More Animal Facts",
+    "types": [
+      "multiple_choice",
+      "input",
+      "multiple_choice",
+      "sorting"
+    ],
+    "uniqueTypes": [
+      "multiple_choice",
+      "input",
+      "sorting"
+    ],
+    "taskCount": 4,
+    "abaTaskCount": 0,
+    "hasDialog": true,
+    "hasIntro": false,
+    "questionKeys": [
+      "data.tasks.lab_q_biggest_animal",
+      "data.tasks.lab_q_logic_pattern",
+      "data.tasks.lab_q_water_animal",
+      "data.tasks.lab_an2_sort_q"
+    ],
+    "taskTexts": [
+      {
+        "key": "data.tasks.lab_q_biggest_animal",
+        "ru": "Какое животное самое большое?",
+        "en": "Which is the biggest animal?"
+      },
+      {
+        "key": "data.tasks.lab_q_logic_pattern",
+        "ru": "Круг, квадрат, круг, квадрат… Что дальше?",
+        "en": "Circle, square, circle, square… What comes next?"
+      },
+      {
+        "key": "data.tasks.lab_q_water_animal",
+        "ru": "Какое животное живёт в воде?",
+        "en": "Which animal lives in water?"
+      },
+      {
+        "key": "data.tasks.lab_an2_sort_q",
+        "ru": "Разложи: кто живёт в воде, а кто на суше?",
+        "en": "Break it down: who lives in the water and who lives on land?"
+      }
+    ],
+    "dialogKeys": [
+      "data.dialog.lab_animals_2_0",
+      "data.dialog.lab_animals_2_1"
+    ],
+    "dialogTexts": [
+      {
+        "key": "data.dialog.lab_animals_2_0",
+        "ru": "У Спайка есть ещё интересные животные для нас!",
+        "en": "Spike has more fascinating animals to show us!"
+      },
+      {
+        "key": "data.dialog.lab_animals_2_1",
+        "ru": "Моя коллекция растёт! Ты можешь их определить?",
+        "en": "My collection keeps growing! Can you identify them?"
+      }
+    ],
+    "blockPreview": "{\r\n            id: 'lab-animals-2',\r\n            topicId: 'lab-animals',\r\n            titleKey: 'data.lessons.labAnimals2',\r\n            reward: { xp: 35, item: 'dino_egg_red' },\r\n            dialog: [\r\n              { speaker: 'tali', textKey: 'data.dialog.lab_animals_2_0' },\r\n              { speaker: 'npc', textKey: 'data.dialog.lab_animals_2_1' },\r\n            ],\r\n            tasks: [\r\n              {\r\n                id: 'lab-an-2-t1',\r\n                type: 'multiple_choice',\r\n             "
+  },
+  {
+    "id": "lab-physics-1",
+    "topicId": "lab-physics",
+    "titleKey": "data.lessons.labPhysics1",
+    "world": "lab",
+    "titleRu": "Большой опыт",
+    "titleEn": "The Big Experiment",
+    "types": [
+      "multiple_choice",
+      "multiple_choice",
+      "input",
+      "multiple_choice",
+      "multiple_choice"
+    ],
+    "uniqueTypes": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5,
+    "abaTaskCount": 2,
+    "hasDialog": true,
+    "hasIntro": true,
+    "questionKeys": [
+      "data.tasks.q_balance_scale",
+      "data.tasks.lab_q_triangle_sides",
+      "data.tasks.q_logic_pattern_shapes",
+      "data.tasks.aba_labPhysics_q1",
+      "data.tasks.aba_labPhysics_q2"
+    ],
+    "taskTexts": [
+      {
+        "key": "data.tasks.q_balance_scale",
+        "ru": "Левая сторона тяжелее. Что нужно сделать?",
+        "en": "The left side is heavier. What should we do?"
+      },
+      {
+        "key": "data.tasks.lab_q_triangle_sides",
+        "ru": "Сколько сторон у треугольника?",
+        "en": "How many sides does a triangle have?"
+      },
+      {
+        "key": "data.tasks.q_logic_pattern_shapes",
+        "ru": "Круг, квадрат, круг, квадрат, … Что дальше?",
+        "en": "Circle, square, circle, square, … What comes next?"
+      },
+      {
+        "key": "data.tasks.aba_labPhysics_q1",
+        "ru": "ТРЕУГОЛЬНИК — сколько сторон?",
+        "en": "TRIANGLE — how many sides?"
+      },
+      {
+        "key": "data.tasks.aba_labPhysics_q2",
+        "ru": "СЛЕДУЮЩИЙ: ○□○□... — что?",
+        "en": "NEXT IN PATTERN: ○□○□... — what?"
+      }
+    ],
+    "dialogKeys": [
+      "data.dialog.lab_physics_1_0",
+      "data.dialog.lab_physics_1_1"
+    ],
+    "dialogTexts": [
+      {
+        "key": "data.dialog.lab_physics_1_0",
+        "ru": "Теперь Спайк хочет провести опыт с весами!",
+        "en": "Now Spike wants to do a balance experiment!"
+      },
+      {
+        "key": "data.dialog.lab_physics_1_1",
+        "ru": "Наука удивительна! Смотри, что произойдёт, если добавить гирю!",
+        "en": "Science is amazing! Watch what happens when we add weight!"
+      }
+    ],
+    "blockPreview": "{\r\n            id: 'lab-physics-1',\r\n            topicId: 'lab-physics',\r\n            titleKey: 'data.lessons.labPhysics1',\r\n            reward: { xp: 45, item: 'dino_egg_blue' },\r\n            dialog: [\r\n              { speaker: 'tali', textKey: 'data.dialog.lab_physics_1_0' },\r\n              { speaker: 'npc', textKey: 'data.dialog.lab_physics_1_1' },\r\n            ],\r\n            intro: [\r\n              { titleKey: 'data.intro.labPhysics_0_title', bodyKey: 'data.intro.labPhysics_0_body', emoji: "
+  },
+  {
+    "id": "space-planets-1",
+    "topicId": "space-planets",
+    "titleKey": "data.lessons.spacePlanets1",
+    "world": "space",
+    "titleRu": "Звёздная карта Стелы",
+    "titleEn": "Stela's Star Map",
+    "types": [
+      "multiple_choice",
+      "multiple_choice",
+      "input",
+      "multiple_choice",
+      "multiple_choice"
+    ],
+    "uniqueTypes": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5,
+    "abaTaskCount": 2,
+    "hasDialog": true,
+    "hasIntro": true,
+    "questionKeys": [
+      "data.tasks.space_q_our_planet",
+      "data.tasks.space_q_solar_center",
+      "data.tasks.space_q_planet_count",
+      "data.tasks.aba_spacePlanets_q1",
+      "data.tasks.aba_spacePlanets_q2"
+    ],
+    "taskTexts": [
+      {
+        "key": "data.tasks.space_q_our_planet",
+        "ru": "На какой планете мы живём?",
+        "en": "Which planet do we live on?"
+      },
+      {
+        "key": "data.tasks.space_q_solar_center",
+        "ru": "Что находится в центре Солнечной системы?",
+        "en": "What is at the centre of our Solar System?"
+      },
+      {
+        "key": "data.tasks.space_q_planet_count",
+        "ru": "Сколько планет в Солнечной системе?",
+        "en": "How many planets are in our Solar System?"
+      },
+      {
+        "key": "data.tasks.aba_spacePlanets_q1",
+        "ru": "МЫ ЖИВЁМ НА — выбери планету.",
+        "en": "WE LIVE ON — choose a planet."
+      },
+      {
+        "key": "data.tasks.aba_spacePlanets_q2",
+        "ru": "В ЦЕНТРЕ СИСТЕМЫ — что?",
+        "en": "CENTRE OF THE SYSTEM — what?"
+      }
+    ],
+    "dialogKeys": [
+      "data.dialog.space_planets_1_0",
+      "data.dialog.space_planets_1_1"
+    ],
+    "dialogTexts": [
+      {
+        "key": "data.dialog.space_planets_1_0",
+        "ru": "Мы добрались до Космической долины! Смотри на звёзды!",
+        "en": "We made it to Space Valley! Look at all the stars!"
+      },
+      {
+        "key": "data.dialog.space_planets_1_1",
+        "ru": "Курлык! Я Стела! Я летаю между планетами! Хочешь узнать о них?",
+        "en": "Screech! I am Stela! I fly between planets! Want to learn?"
+      }
+    ],
+    "blockPreview": "{\r\n            id: 'space-planets-1',\r\n            topicId: 'space-planets',\r\n            titleKey: 'data.lessons.spacePlanets1',\r\n            reward: { xp: 45, item: 'star_fragment' },\r\n            dialog: [\r\n              { speaker: 'tali', textKey: 'data.dialog.space_planets_1_0' },\r\n              { speaker: 'npc', textKey: 'data.dialog.space_planets_1_1' },\r\n            ],\r\n            intro: [\r\n              { titleKey: 'data.intro.spacePlanets_0_title', bodyKey: 'data.intro.spacePlanets_0_"
+  },
+  {
+    "id": "space-planets-2",
+    "topicId": "space-planets",
+    "titleKey": "data.lessons.spacePlanets2",
+    "world": "space",
+    "titleRu": "Исследуем планеты",
+    "titleEn": "Planet Exploration",
+    "types": [
+      "multiple_choice",
+      "input",
+      "multiple_choice",
+      "input"
+    ],
+    "uniqueTypes": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4,
+    "abaTaskCount": 0,
+    "hasDialog": true,
+    "hasIntro": false,
+    "questionKeys": [
+      "data.tasks.space_q_closest_sun",
+      "data.tasks.space_q_largest_planet",
+      "data.tasks.space_q_our_planet",
+      "data.tasks.space_q_planet_count"
+    ],
+    "taskTexts": [
+      {
+        "key": "data.tasks.space_q_closest_sun",
+        "ru": "Какая планета ближайшая к Солнцу?",
+        "en": "Which planet is closest to the Sun?"
+      },
+      {
+        "key": "data.tasks.space_q_largest_planet",
+        "ru": "Какая планета самая большая?",
+        "en": "Which is the largest planet?"
+      },
+      {
+        "key": "data.tasks.space_q_our_planet",
+        "ru": "На какой планете мы живём?",
+        "en": "Which planet do we live on?"
+      },
+      {
+        "key": "data.tasks.space_q_planet_count",
+        "ru": "Сколько планет в Солнечной системе?",
+        "en": "How many planets are in our Solar System?"
+      }
+    ],
+    "dialogKeys": [
+      "data.dialog.space_planets_2_0",
+      "data.dialog.space_planets_2_1"
+    ],
+    "dialogTexts": [
+      {
+        "key": "data.dialog.space_planets_2_0",
+        "ru": "Стела покажет нам ещё планеты Солнечной системы!",
+        "en": "Stela wants to show us more planets in the solar system!"
+      },
+      {
+        "key": "data.dialog.space_planets_2_1",
+        "ru": "Каждая планета особенная! Смотри!",
+        "en": "Each planet is unique! Let me show you!"
+      }
+    ],
+    "blockPreview": "{\r\n            id: 'space-planets-2',\r\n            topicId: 'space-planets',\r\n            titleKey: 'data.lessons.spacePlanets2',\r\n            reward: { xp: 50 },\r\n            dialog: [\r\n              { speaker: 'tali', textKey: 'data.dialog.space_planets_2_0' },\r\n              { speaker: 'npc', textKey: 'data.dialog.space_planets_2_1' },\r\n            ],\r\n            tasks: [\r\n              {\r\n                id: 'space-pl-2-t1',\r\n                type: 'multiple_choice',\r\n                questio"
+  },
+  {
+    "id": "space-solar-1",
+    "topicId": "space-solar",
+    "titleKey": "data.lessons.spaceSolar1",
+    "world": "space",
+    "titleRu": "Путешествие по космосу",
+    "titleEn": "Journey Through Space",
+    "types": [
+      "multiple_choice",
+      "multiple_choice",
+      "input",
+      "multiple_choice",
+      "multiple_choice"
+    ],
+    "uniqueTypes": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 5,
+    "abaTaskCount": 2,
+    "hasDialog": true,
+    "hasIntro": true,
+    "questionKeys": [
+      "data.tasks.space_q_moon_orbits",
+      "data.tasks.space_q_day_cause",
+      "data.tasks.space_q_orbit_word",
+      "data.tasks.aba_spaceSolar_q1",
+      "data.tasks.aba_spaceSolar_q2"
+    ],
+    "taskTexts": [
+      {
+        "key": "data.tasks.space_q_moon_orbits",
+        "ru": "Вокруг чего вращается Луна?",
+        "en": "What does the Moon orbit around?"
+      },
+      {
+        "key": "data.tasks.space_q_day_cause",
+        "ru": "Что вызывает смену дня и ночи на Земле?",
+        "en": "What causes day and night on Earth?"
+      },
+      {
+        "key": "data.tasks.space_q_orbit_word",
+        "ru": "Как называется путь планеты вокруг Солнца?",
+        "en": "What do we call the path a planet travels around the Sun?"
+      },
+      {
+        "key": "data.tasks.aba_spaceSolar_q1",
+        "ru": "ПЛАНЕТ В СИСТЕМЕ — сколько?",
+        "en": "PLANETS IN THE SYSTEM — how many?"
+      },
+      {
+        "key": "data.tasks.aba_spaceSolar_q2",
+        "ru": "БЛИЖАЙШАЯ К СОЛНЦУ — выбери.",
+        "en": "CLOSEST TO THE SUN — choose."
+      }
+    ],
+    "dialogKeys": [
+      "data.dialog.space_solar_1_0",
+      "data.dialog.space_solar_1_1"
+    ],
+    "dialogTexts": [
+      {
+        "key": "data.dialog.space_solar_1_0",
+        "ru": "Исследуем всю Солнечную систему вместе со Стелой!",
+        "en": "Let's explore the whole solar system with Stela!"
+      },
+      {
+        "key": "data.dialog.space_solar_1_1",
+        "ru": "Вселенная ОГРОМНАЯ! Покажу тебе кое-что удивительное!",
+        "en": "The universe is HUGE! Let me show you something amazing!"
+      }
+    ],
+    "blockPreview": "{\r\n            id: 'space-solar-1',\r\n            topicId: 'space-solar',\r\n            titleKey: 'data.lessons.spaceSolar1',\r\n            reward: { xp: 55, item: 'artifact_map' },\r\n            dialog: [\r\n              { speaker: 'tali', textKey: 'data.dialog.space_solar_1_0' },\r\n              { speaker: 'npc', textKey: 'data.dialog.space_solar_1_1' },\r\n            ],\r\n            intro: [\r\n              { titleKey: 'data.intro.spaceSolar_0_title', bodyKey: 'data.intro.spaceSolar_0_body', emoji: '"
+  }
+]

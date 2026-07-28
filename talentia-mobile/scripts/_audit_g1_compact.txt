@@ -1,0 +1,833 @@
+count=36
+
+== g1m-c20-l1 | Числа 11–15 | types=multiple_choice | n=5 | enkyRaw=8
+  [npc] Привет! Я Лео из Города чисел — ворота откроются, если угадаем код из чисел 11–15. Поможешь?
+  [tali] После 10 идут 11, 12, 13, 14, 15! Я пробую, но иногда сбиваюсь. Ты поможешь мне проверить?
+  [intro] Числа 11–15! :: После 10 идут 11, 12, 13, 14, 15. Считай дальше от десяти! Тали хочет это запомнить вместе с тобой.
+  [intro] Сравниваем числа! :: Какое число больше: 12 или 15? 15 больше! Тали иногда путает, у которого больше — помоги ему!
+  t1 <multiple_choice> Q: На складе Города чисел 13 ящиков. Это больше, чем 15?
+      opts: Да, 13 больше 15 ; *Нет — 13 меньше 15! ; Они одинаковые
+  t2 <multiple_choice> Q: Лео задаёт код: какое число стоит между 12 и 14?
+      opts: 11 ; *13 ; 15
+  t3 <multiple_choice> Q: Ряд: 11, 12, __, 14, 15. Что пропущено? Тали говорит: «Здесь должно быть 11!»
+      opts: 11 ; *13 ; 16
+  t4 <multiple_choice> Q: В Городе чисел 15 фонарей и 12 скамеек. Чего больше?
+      opts: *Фонарей (15) ; Скамеек (12) ; Поровну
+  t5 <multiple_choice>[ABA] Q: Какое число больше: 11 или 14?
+      opts: 11 ; *14
+  ENKY:
+    - ky=ru stub: data.tasks.g1m_c20l1_q2_a
+    - ky=ru stub: data.tasks.g1m_c20l1_q2_b
+    - ky=ru stub: data.tasks.g1m_c20l1_q2_c
+    - ky=ru stub: data.tasks.g1m_c20l1_q3_a
+    - ky=ru stub: data.tasks.g1m_c20l1_q3_b
+    - ky=ru stub: data.tasks.g1m_c20l1_q3_c
+    - ky=ru stub: data.tasks.g1m_c20l1_q5_a
+    - ky=ru stub: data.tasks.g1m_c20l1_q5_b
+
+== g1m-c20-l2 | Числа 16–20 | types=multiple_choice | n=5 | enkyRaw=8
+  [npc] Молодец! Теперь числа 16–20. Они идут подряд!
+  [tali] 17 между 16 и 18! Я запомнил, хотя поначалу путался. Проверь, всё ли я правильно понял?
+  [intro] Числа 16–20! :: 16, 17, 18, 19, 20 — последние числа второго десятка!
+  [intro] Между 16 и 18 :: Какое число между 16 и 18? Правильно — 17! Тали специально учил это место, потому что раньше путался
+  t1 <multiple_choice> Q: В Городе чисел 18 домов. Тали говорит: «18 — это меньше, чем 16!» Прав ли он?
+      opts: Да, Тали прав ; *Нет — 18 больше 16! ; Они одинаковые
+  t2 <multiple_choice> Q: Ряд: 16, __, 18, 19, 20. Какое число пропущено?
+      opts: 15 ; *17 ; 21
+  t3 <multiple_choice> Q: Тали считает жителей дома: на этаже 19 квартир. Следующий дом — 20 квартир. В каком больше?
+      opts: В первом (19) ; *Во втором (20) ; Одинаково
+  t4 <multiple_choice> Q: Нужно выбрать число между 17 и 19. Тали думает: «Это 20!» Прав?
+      opts: 17 ; *18 ; 20
+  t5 <multiple_choice>[ABA] Q: Какое число больше: 16 или 20?
+      opts: 16 ; *20
+  ENKY:
+    - ky=ru stub: data.tasks.g1m_c20l2_q2_a
+    - ky=ru stub: data.tasks.g1m_c20l2_q2_b
+    - ky=ru stub: data.tasks.g1m_c20l2_q2_c
+    - ky=ru stub: data.tasks.g1m_c20l2_q4_a
+    - ky=ru stub: data.tasks.g1m_c20l2_q4_b
+    - ky=ru stub: data.tasks.g1m_c20l2_q4_c
+    - ky=ru stub: data.tasks.g1m_c20l2_q5_a
+    - ky=ru stub: data.tasks.g1m_c20l2_q5_b
+
+== g1m-c20-l3 | Сравнение чисел | types=multiple_choice | n=5 | enkyRaw=5
+  [npc] Сравниваем числа! Какое больше: 14 или 17?
+  [tali] 17 больше 14! Я запомнил: чем правее на числовой линии, тем больше! Теперь я хочу доказать, что научился. Проверишь меня
+  [intro] Сравнение чисел! :: 14 и 17 — какое меньше? 14 меньше 17!
+  [intro] Равные числа :: 20 и 20 — они равны! Знак = значит «равно».
+  t1 <multiple_choice> Q: У Лео 14 монет, у Тали 17. Тали говорит: «У Лео больше!» Прав?
+      opts: Да, у Лео больше ; *Нет — у Тали (17) больше! ; Поровну
+  t2 <multiple_choice> Q: Ряд чисел: 14, 15, 16, 17, 18, 19, 20. Какое наименьшее?
+      opts: *14 ; 17 ; 20
+  t3 <multiple_choice> Q: Два числа: 20 и 20. Тали говорит: «Они неравные — одно больше!» Прав ли он?
+      opts: Да, одно больше ; *Нет — они равны!
+  t4 <multiple_choice> Q: В Городе чисел есть улица 15-я и улица 18-я. Какая дальше от начала?
+      opts: 15-я ; *18-я ; Одинаково
+  t5 <multiple_choice>[ABA] Q: Какое число меньше: 13 или 19?
+      opts: *13 ; 19
+  ENKY:
+    - ky=ru stub: data.tasks.g1m_c20l3_q2_a
+    - ky=ru stub: data.tasks.g1m_c20l3_q2_b
+    - ky=ru stub: data.tasks.g1m_c20l3_q2_c
+    - ky=ru stub: data.tasks.g1m_c20l3_q5_a
+    - ky=ru stub: data.tasks.g1m_c20l3_q5_b
+
+== g1m-add-l1 | Сложение до 10 | types=multiple_choice | n=5 | enkyRaw=16
+  [npc] Сложение — это когда объединяем! 3 + 4 = ?
+  [tali] Я пробовал считать на пальцах, но у меня лапы! Помоги мне проверить мои ответы?
+  [intro] Сложение до 10! :: 3 + 4 = 7. Считай на пальцах или в уме!
+  [intro] Яблоки и груши :: 3 яблока + 4 груши = 7 фруктов!
+  t1 <multiple_choice> Q: У Тали 2 яблока, Лео дал ещё 3. Сколько всего?
+      opts: 4 ; *5 ; 6
+  t2 <multiple_choice> Q: В кармане 3 монеты, нашёл ещё 3. Сколько стало?
+      opts: 5 ; *6 ; 7
+  t3 <multiple_choice> Q: 4 + 3 = ?
+      opts: 6 ; *7 ; 8
+  t4 <multiple_choice> Q: На лавочке 5 птиц. Прилетели ещё 3. Сколько стало?
+      opts: 7 ; *8 ; 9
+  t5 <multiple_choice>[ABA] Q: 1 + 4 = ?
+      opts: 4 ; *5
+  ENKY:
+    - ky=ru stub: data.tasks.g1m_addl1_q1_a
+    - ky=ru stub: data.tasks.g1m_addl1_q1_b
+    - ky=ru stub: data.tasks.g1m_addl1_q1_c
+    - ky=ru stub: data.tasks.g1m_addl1_q2_a
+    - ky=ru stub: data.tasks.g1m_addl1_q2_b
+    - ky=ru stub: data.tasks.g1m_addl1_q2_c
+    - ky=ru stub: data.tasks.g1m_addl1_q3
+    - ky=ru stub: data.tasks.g1m_addl1_q3_a
+    - ky=ru stub: data.tasks.g1m_addl1_q3_b
+    - ky=ru stub: data.tasks.g1m_addl1_q3_c
+    - ky=ru stub: data.tasks.g1m_addl1_q4_a
+    - ky=ru stub: data.tasks.g1m_addl1_q4_b
+    - ky=ru stub: data.tasks.g1m_addl1_q4_c
+    - ky=ru stub: data.tasks.g1m_addl1_q5
+    - ky=ru stub: data.tasks.g1m_addl1_q5_a
+    - ky=ru stub: data.tasks.g1m_addl1_q5_b
+
+== g1m-add-l2 | До десятка | types=multiple_choice | n=5 | enkyRaw=12
+  [npc] До десятка! Сколько нужно добавить к 7, чтобы получить 10?
+  [tali] 7 + 3 = 10! Я запомнил этот секрет: смотрю, сколько не хватает до 10. Но с другими числами ещё путаюсь — проверишь меня?
+  [intro] До десятка! :: 7 +? = 10. Нужно добавить 3!
+  [intro] Сложение с 10 :: 10 + 3 = 13. К десятку добавляем единицы!
+  t1 <multiple_choice> Q: Тали собирает 10 звёздочек. У него есть 6. Он думает: «Нужно найти ещё 5!» Прав?
+      opts: Нужно 3 ; *Нужно 4 ; Нужно 5
+  t2 <multiple_choice> Q: 8 + ? = 10. Тали говорит: «Нужно добавить 3!»
+      opts: 1 ; *2 ; 3
+  t3 <multiple_choice> Q: 10 + 3 = ? Тали думает: «К десятку добавляем три — получится 14!»
+      opts: 12 ; *13 ; 14
+  t4 <multiple_choice> Q: 5 + ? = 10. Сколько не хватает?
+      opts: 4 ; *5 ; 6
+  t5 <multiple_choice>[ABA] Q: 7 + ? = 10
+      opts: *3 ; 4
+  ENKY:
+    - ky=ru stub: data.tasks.g1m_addl2_q2_a
+    - ky=ru stub: data.tasks.g1m_addl2_q2_b
+    - ky=ru stub: data.tasks.g1m_addl2_q2_c
+    - ky=ru stub: data.tasks.g1m_addl2_q3_a
+    - ky=ru stub: data.tasks.g1m_addl2_q3_b
+    - ky=ru stub: data.tasks.g1m_addl2_q3_c
+    - ky=ru stub: data.tasks.g1m_addl2_q4_a
+    - ky=ru stub: data.tasks.g1m_addl2_q4_b
+    - ky=ru stub: data.tasks.g1m_addl2_q4_c
+    - ky=ru stub: data.tasks.g1m_addl2_q5
+    - ky=ru stub: data.tasks.g1m_addl2_q5_a
+    - ky=ru stub: data.tasks.g1m_addl2_q5_b
+
+== g1m-add-l3 | Сложение с 10 | types=multiple_choice | n=5 | enkyRaw=16
+  [npc] Сложение с 10! 10 + 5 = ?
+  [tali] 10 + 5 = 15! Это я знаю точно! Хочу доказать, что стал лучше считать. Проверишь?
+  [intro] Сложение с 10! :: 10 + 5 = 15, 10 + 8 = 18. Легко!
+  [intro] Большие примеры :: 9 + 7 = 16. Разбей: 9 + 1 = 10, ещё 6 = 16!
+  t1 <multiple_choice> Q: 10 + 7 = ? Тали уверенно говорит: «18!»
+      opts: 16 ; *17 ; 18
+  t2 <multiple_choice> Q: 10 + 4 = ?
+      opts: 13 ; *14 ; 15
+  t3 <multiple_choice> Q: 9 + 7 = ? Лео подсказывает: «Сначала 9 + 1 = 10, потом...»
+      opts: 15 ; *16 ; 17
+  t4 <multiple_choice> Q: 10 + 9 = ? Тали говорит: «Это 20!»
+      opts: 18 ; *19 ; 20
+  t5 <multiple_choice>[ABA] Q: 10 + 5 = ?
+      opts: 14 ; *15
+  ENKY:
+    - ky=ru stub: data.tasks.g1m_addl3_q1_a
+    - ky=ru stub: data.tasks.g1m_addl3_q1_b
+    - ky=ru stub: data.tasks.g1m_addl3_q1_c
+    - ky=ru stub: data.tasks.g1m_addl3_q2
+    - ky=ru stub: data.tasks.g1m_addl3_q2_a
+    - ky=ru stub: data.tasks.g1m_addl3_q2_b
+    - ky=ru stub: data.tasks.g1m_addl3_q2_c
+    - ky=ru stub: data.tasks.g1m_addl3_q3_a
+    - ky=ru stub: data.tasks.g1m_addl3_q3_b
+    - ky=ru stub: data.tasks.g1m_addl3_q3_c
+    - ky=ru stub: data.tasks.g1m_addl3_q4_a
+    - ky=ru stub: data.tasks.g1m_addl3_q4_b
+    - ky=ru stub: data.tasks.g1m_addl3_q4_c
+    - ky=ru stub: data.tasks.g1m_addl3_q5
+    - ky=ru stub: data.tasks.g1m_addl3_q5_a
+    - ky=ru stub: data.tasks.g1m_addl3_q5_b
+
+== g1m-sub-l1 | Вычитание до 10 | types=multiple_choice | n=5 | enkyRaw=15
+  [npc] Вычитание — убираем часть. 7 − 3 = ?
+  [tali] Представь 7 яблок. Съели 3. Сколько осталось? Тали считает на лапах... и говорит: «Осталось 3!»
+  [intro] Вычитание до 10! :: 7 − 3 = 4. Убери 3 из 7 — останется 4!
+  [intro] Проверка :: Сложение и вычитание — обратные действия!
+  t1 <multiple_choice> Q: У Тали 7 яблок, он съел 3. Тали говорит: «Осталось 3!» Это правильно?
+      opts: 3 ; *4 ; 5
+  t2 <multiple_choice> Q: 8 − 5 = ? Тали думает: «Это 4!»
+      opts: 2 ; *3 ; 4
+  t3 <multiple_choice> Q: У Лео 9 монет. Он потратил 4. Сколько осталось?
+      opts: 4 ; *5 ; 6
+  t4 <multiple_choice> Q: 6 − 2 = ? Тали говорит: «Это то же самое, что 6 − 3, поэтому 3!»
+      opts: 3 ; *4 ; 5
+  t5 <multiple_choice>[ABA] Q: 7 − 3 = ?
+      opts: 3 ; *4
+  ENKY:
+    - ky=ru stub: data.tasks.g1m_subl1_q1_a
+    - ky=ru stub: data.tasks.g1m_subl1_q1_b
+    - ky=ru stub: data.tasks.g1m_subl1_q1_c
+    - ky=ru stub: data.tasks.g1m_subl1_q2_a
+    - ky=ru stub: data.tasks.g1m_subl1_q2_b
+    - ky=ru stub: data.tasks.g1m_subl1_q2_c
+    - ky=ru stub: data.tasks.g1m_subl1_q3_a
+    - ky=ru stub: data.tasks.g1m_subl1_q3_b
+    - ky=ru stub: data.tasks.g1m_subl1_q3_c
+    - ky=ru stub: data.tasks.g1m_subl1_q4_a
+    - ky=ru stub: data.tasks.g1m_subl1_q4_b
+    - ky=ru stub: data.tasks.g1m_subl1_q4_c
+    - ky=ru stub: data.tasks.g1m_subl1_q5
+    - ky=ru stub: data.tasks.g1m_subl1_q5_a
+    - ky=ru stub: data.tasks.g1m_subl1_q5_b
+
+== g1m-sub-l2 | Вычитание из 10 | types=multiple_choice | n=5 | enkyRaw=16
+  [npc] Вычитаем из 10! 10 − 3 = ?
+  [tali] 10 − 3 = 7! Я выучил специальные пары! Хочу показать — проверь, правильно ли я их запомнил?
+  [intro] Вычитание из 10! :: 10 − 3 = 7. Запомни пары: 10−3=7, 10−7=3!
+  [intro] Ещё примеры :: 10 − 5 = 5, 10 − 1 = 9!
+  t1 <multiple_choice> Q: 10 − 4 = ? Тали говорит: «Это 5!»
+      opts: 5 ; *6 ; 7
+  t2 <multiple_choice> Q: 10 − 7 = ? Тали думает: «Это 4!»
+      opts: 2 ; *3 ; 4
+  t3 <multiple_choice> Q: 10 − 5 = ?
+      opts: 4 ; *5 ; 6
+  t4 <multiple_choice> Q: Тали говорит: «10 − 1 = 8!» Правда?
+      opts: 8 ; *9 ; 10
+  t5 <multiple_choice>[ABA] Q: 10 − 3 = ?
+      opts: 6 ; *7
+  ENKY:
+    - ky=ru stub: data.tasks.g1m_subl2_q1_a
+    - ky=ru stub: data.tasks.g1m_subl2_q1_b
+    - ky=ru stub: data.tasks.g1m_subl2_q1_c
+    - ky=ru stub: data.tasks.g1m_subl2_q2_a
+    - ky=ru stub: data.tasks.g1m_subl2_q2_b
+    - ky=ru stub: data.tasks.g1m_subl2_q2_c
+    - ky=ru stub: data.tasks.g1m_subl2_q3
+    - ky=ru stub: data.tasks.g1m_subl2_q3_a
+    - ky=ru stub: data.tasks.g1m_subl2_q3_b
+    - ky=ru stub: data.tasks.g1m_subl2_q3_c
+    - ky=ru stub: data.tasks.g1m_subl2_q4_a
+    - ky=ru stub: data.tasks.g1m_subl2_q4_b
+    - ky=ru stub: data.tasks.g1m_subl2_q4_c
+    - ky=ru stub: data.tasks.g1m_subl2_q5
+    - ky=ru stub: data.tasks.g1m_subl2_q5_a
+    - ky=ru stub: data.tasks.g1m_subl2_q5_b
+
+== g1m-sub-l3 | Смешанные примеры | types=multiple_choice | n=5 | enkyRaw=12
+  [npc] Смешанные примеры! 5 + 4 − 3 = ?
+  [tali] Сначала сложи, потом вычти! Я пробовал, но часто забываю порядок. Поможешь проверить мои ответы?
+  [intro] Смешанные примеры! :: 5 + 4 − 3 =? Сначала сложи: 5+4=9, потом вычти: 9−3=6!
+  [intro] Проверяем :: 7 − 2 = 5. Верно? Да! 5 + 2 = 7.
+  t1 <multiple_choice> Q: 5 + 4 − 3 = ? Сначала сложи, потом вычти!
+      opts: 5 ; *6 ; 7
+  t2 <multiple_choice> Q: 8 − 3 + 2 = ? Тали: «Это 5!»
+      opts: 5 ; *7 ; 9
+  t3 <multiple_choice> Q: Проверка: 7 − 2 = 5, потому что 5 + 2 = 7. Верно?
+      opts: *Да, верно ; Нет
+  t4 <multiple_choice> Q: 6 + 3 − 4 = ? Тали считает: «Это 6!»
+      opts: 4 ; *5 ; 6
+  t5 <multiple_choice>[ABA] Q: 4 + 5 − 3 = ?
+      opts: 5 ; *6
+  ENKY:
+    - ky=ru stub: data.tasks.g1m_subl3_q1_a
+    - ky=ru stub: data.tasks.g1m_subl3_q1_b
+    - ky=ru stub: data.tasks.g1m_subl3_q1_c
+    - ky=ru stub: data.tasks.g1m_subl3_q2_a
+    - ky=ru stub: data.tasks.g1m_subl3_q2_b
+    - ky=ru stub: data.tasks.g1m_subl3_q2_c
+    - ky=ru stub: data.tasks.g1m_subl3_q4_a
+    - ky=ru stub: data.tasks.g1m_subl3_q4_b
+    - ky=ru stub: data.tasks.g1m_subl3_q4_c
+    - ky=ru stub: data.tasks.g1m_subl3_q5
+    - ky=ru stub: data.tasks.g1m_subl3_q5_a
+    - ky=ru stub: data.tasks.g1m_subl3_q5_b
+
+== g1r-vow-l1 | Буквы А, О, У | types=multiple_choice | n=5 | enkyRaw=0
+  [npc] Привет! Я Маша! Буквы А, О, У — гласные!
+  [tali] Гласные можно петь: А-А-А! Я знаю, что в слове УТКА первая буква У. Но в других словах иногда путаюсь. Поможешь?
+  [intro] Буквы А, О, У! :: Гласные можно петь! В слове УТКА первая буква У!
+  [intro] Мягкость :: Я, Ю, Е, Ё делают согласные мягкими. КОНЬ — мягкое Н!
+  t1 <multiple_choice> Q: В слове ОСЕНЬ первая буква — гласная или согласная? Тали говорит: «Там согласная!» Прав?
+      opts: Тали прав — согласная ; *Нет — О гласная!
+  t2 <multiple_choice> Q: В слове УХО есть буква А?
+      opts: Да ; *Нет — только У и О
+  t3 <multiple_choice> Q: Найди слово, где первая буква — У:
+      opts: Аист ; *Утка ; Олень
+  t4 <multiple_choice> Q: Тали говорит: «В слове МАМА нет гласных!» Правда?
+      opts: Правда ; *Нет — есть две А!
+  t5 <multiple_choice>[ABA] Q: В слове «ОСА» первая буква — гласная?
+      opts: *Да ; Нет
+
+== g1r-vow-l2 | Я, Ю, Е, Ё | types=multiple_choice | n=5 | enkyRaw=16
+  [npc] Буквы Я, Ю, Е, Ё — тоже гласные! Они делают согласные мягкими.
+  [tali] В слове ЮЛА первая буква Ю! Я только что это выучил. Проверь, правильно ли я запомнил!
+  [intro] Буквы Я, Ю, Е, Ё! :: В слове ЮЛА первая Ю. В слове ЕЛЬ первая Е!
+  [intro] Пара А—Я :: А — твёрдая, Я — мягкая. Мама — Мая!
+  t1 <multiple_choice> Q: В слове ЕЛЬ первая буква — это:
+      opts: Я ; *Е ; Ю
+  t2 <multiple_choice> Q: Тали говорит: «Буква Я — это то же самое, что буква А!» Правда?
+      opts: Правда ; *Нет — Я делает согласную мягкой, А нет
+  t3 <multiple_choice> Q: Найди слово, которое начинается на Ю:
+      opts: Ель ; *Юла ; Яблоко
+  t4 <multiple_choice> Q: В слове ЁЖИК первая буква — это:
+      opts: Е ; *Ё ; Ю
+  t5 <multiple_choice>[ABA] Q: ЮЛА — первая буква:
+      opts: *Ю ; Я
+  ENKY:
+    - en=ru Cyrillic: data.tasks.g1r_vowl2_q1_a
+    - ky=ru stub: data.tasks.g1r_vowl2_q1_a
+    - en=ru Cyrillic: data.tasks.g1r_vowl2_q1_b
+    - ky=ru stub: data.tasks.g1r_vowl2_q1_b
+    - en=ru Cyrillic: data.tasks.g1r_vowl2_q1_c
+    - ky=ru stub: data.tasks.g1r_vowl2_q1_c
+    - en=ru Cyrillic: data.tasks.g1r_vowl2_q4_a
+    - ky=ru stub: data.tasks.g1r_vowl2_q4_a
+    - en=ru Cyrillic: data.tasks.g1r_vowl2_q4_b
+    - ky=ru stub: data.tasks.g1r_vowl2_q4_b
+    - en=ru Cyrillic: data.tasks.g1r_vowl2_q4_c
+    - ky=ru stub: data.tasks.g1r_vowl2_q4_c
+    - en=ru Cyrillic: data.tasks.g1r_vowl2_q5_a
+    - ky=ru stub: data.tasks.g1r_vowl2_q5_a
+    - en=ru Cyrillic: data.tasks.g1r_vowl2_q5_b
+    - ky=ru stub: data.tasks.g1r_vowl2_q5_b
+
+== g1r-vow-l3 | Мягкость согласных | types=multiple_choice | n=5 | enkyRaw=6
+  [npc] Мягкость согласных! КОН — твёрдый, а в КОНЬ — мягкий!
+  [tali] Буква Ь показывает мягкость. НОС — твёрдый, НОЛЬ — мягкий! Тали говорит: «Я думаю, что Ь — это тоже гласная!» Правда?
+  [intro] Мягкость! Ь :: КОН — твёрдый, КОНЬ — мягкий. Ь показывает мягкость!
+  [intro] 10 гласных :: А, О, У, И, Э, Я, Ю, Е, Ё — 10 гласных букв!
+  t1 <multiple_choice> Q: Тали говорит: «Ь — это гласная, потому что стоит после согласной!» Прав ли он?
+      opts: Тали прав ; *Нет — Ь не гласная, она не обозначает звук
+  t2 <multiple_choice> Q: В слове КОНЬ последняя буква — это:
+      opts: Н ; *Ь ; О
+  t3 <multiple_choice> Q: Чем отличаются ДЕНЬ и ДЕН? (с мягким знаком и без)
+      opts: Ничем — это одно и то же ; *Ь меняет произношение — это разные слова
+  t4 <multiple_choice> Q: В слове МЯЧ есть мягкий знак?
+      opts: Да ; *Нет ; Только в конце
+  t5 <multiple_choice>[ABA] Q: В слове СОЛЬ есть мягкий знак?
+      opts: *Да ; Нет
+  ENKY:
+    - en=ru Cyrillic: data.tasks.g1r_vowl3_q2_a
+    - ky=ru stub: data.tasks.g1r_vowl3_q2_a
+    - en=ru Cyrillic: data.tasks.g1r_vowl3_q2_b
+    - ky=ru stub: data.tasks.g1r_vowl3_q2_b
+    - en=ru Cyrillic: data.tasks.g1r_vowl3_q2_c
+    - ky=ru stub: data.tasks.g1r_vowl3_q2_c
+
+== g1r-wrd-l1 | Читаем слова | types=multiple_choice | n=5 | enkyRaw=24
+  [npc] Читаем слова! К-О-Т — КОТ. По слогам!
+  [tali] К-О-Т — КОТ! Д-О-М — ДОМ! Читаю слова по буквам. Иногда путаю буквы местами — поможешь?
+  [intro] Читаем слова! :: К-О-Т — КОТ. Читай по слогам!
+  [intro] Читаем вместе :: С-О-М — СОМ. М-А-М-А — МАМА. Собери слово из букв!
+  t1 <multiple_choice> Q: Прочитай по буквам: К-О-Т. Какое это слово?
+      opts: ТОК ; *КОТ
+  t2 <multiple_choice> Q: Собери слово из букв: М-А-М-А
+      opts: МАМ ; *МАМА ; АМАМ
+  t3 <multiple_choice> Q: Д-О-М — это какое слово?
+      opts: *ДОМ ; МОД ; ОМД
+  t4 <multiple_choice> Q: Прочитай: Р-Ы-Б-А. Какое слово получилось?
+      opts: БАРЫ ; *РЫБА
+  t5 <multiple_choice>[ABA] Q: Какое слово читается С-О-М?
+      opts: *СОМ ; МОС
+  ENKY:
+    - en=ru Cyrillic: data.tasks.g1r_wrdl1_q1_a
+    - ky=ru stub: data.tasks.g1r_wrdl1_q1_a
+    - en=ru Cyrillic: data.tasks.g1r_wrdl1_q1_b
+    - ky=ru stub: data.tasks.g1r_wrdl1_q1_b
+    - en=ru Cyrillic: data.tasks.g1r_wrdl1_q2_a
+    - ky=ru stub: data.tasks.g1r_wrdl1_q2_a
+    - en=ru Cyrillic: data.tasks.g1r_wrdl1_q2_b
+    - ky=ru stub: data.tasks.g1r_wrdl1_q2_b
+    - en=ru Cyrillic: data.tasks.g1r_wrdl1_q2_c
+    - ky=ru stub: data.tasks.g1r_wrdl1_q2_c
+    - en=ru Cyrillic: data.tasks.g1r_wrdl1_q3_a
+    - ky=ru stub: data.tasks.g1r_wrdl1_q3_a
+    - en=ru Cyrillic: data.tasks.g1r_wrdl1_q3_b
+    - ky=ru stub: data.tasks.g1r_wrdl1_q3_b
+    - en=ru Cyrillic: data.tasks.g1r_wrdl1_q3_c
+    - ky=ru stub: data.tasks.g1r_wrdl1_q3_c
+    - en=ru Cyrillic: data.tasks.g1r_wrdl1_q4_a
+    - ky=ru stub: data.tasks.g1r_wrdl1_q4_a
+    - en=ru Cyrillic: data.tasks.g1r_wrdl1_q4_b
+    - ky=ru stub: data.tasks.g1r_wrdl1_q4_b
+    - en=ru Cyrillic: data.tasks.g1r_wrdl1_q5_a
+    - ky=ru stub: data.tasks.g1r_wrdl1_q5_a
+    - en=ru Cyrillic: data.tasks.g1r_wrdl1_q5_b
+    - ky=ru stub: data.tasks.g1r_wrdl1_q5_b
+
+== g1r-wrd-l2 | Слоги | types=multiple_choice | n=5 | enkyRaw=8
+  [npc] Слова СТОЛ и СТУЛ похожи. Прочитай внимательно!
+  [tali] ТРА-ВА — два слога. КНИ-ГА — два слога! Тали говорит: «СТОЛ и СТУЛ — одно и то же слово!» Прав ли он?
+  [intro] Слова похожи :: СТОЛ и СТУЛ — разная одна буква! Читай внимательно!
+  [intro] Слоги в словах :: ТРА-ВА — два слога. КНИ-ГА — два слога!
+  t1 <multiple_choice> Q: Тали говорит: «СТОЛ и СТУЛ — одно слово, просто написано по-разному!» Прав?
+      opts: Тали прав ; *Нет — это разные слова
+  t2 <multiple_choice> Q: Сколько слогов в слове ТРА-ВА?
+      opts: 1 ; *2 ; 3
+  t3 <multiple_choice> Q: Найди слово с двумя слогами:
+      opts: КОТ ; *КНИ-ГА ; ЛЕС
+  t4 <multiple_choice> Q: Тали хлопает на каждый слог: МА-ЛИ-НА. Сколько хлопков?
+      opts: 2 ; *3 ; 4
+  t5 <multiple_choice>[ABA] Q: КНИ-ГА — сколько слогов?
+      opts: 1 ; *2
+  ENKY:
+    - ky=ru stub: data.tasks.g1r_wrdl2_q2_a
+    - ky=ru stub: data.tasks.g1r_wrdl2_q2_b
+    - ky=ru stub: data.tasks.g1r_wrdl2_q2_c
+    - ky=ru stub: data.tasks.g1r_wrdl2_q4_a
+    - ky=ru stub: data.tasks.g1r_wrdl2_q4_b
+    - ky=ru stub: data.tasks.g1r_wrdl2_q4_c
+    - ky=ru stub: data.tasks.g1r_wrdl2_q5_a
+    - ky=ru stub: data.tasks.g1r_wrdl2_q5_b
+
+== g1r-wrd-l3 | Предложения | types=multiple_choice | n=5 | enkyRaw=0
+  [npc] Читаем предложения! Смотри: с большой буквы и знак в конце.
+  [tali] Тали говорит: «КОТ БЕЖИТ — тут два предложения!» Правда? Нет — это одно предложение с точкой в конце!
+  [intro] Предложения! :: Предложение выражает мысль. Начинается с большой буквы!
+  [intro] Конец предложения :: В конце — точка, вопросительный или восклицательный знак!
+  t1 <multiple_choice> Q: Тали говорит: «КОТ БЕЖИТ — это два предложения!» Прав?
+      opts: Тали прав ; *Нет — это одно предложение
+  t2 <multiple_choice> Q: Предложение начинается с...
+      opts: Маленькой буквы ; *Большой буквы
+  t3 <multiple_choice> Q: В конце вопросительного предложения ставим...
+      opts: Точку ; *Вопросительный знак ; Восклицательный знак
+  t4 <multiple_choice> Q: «мама варит суп» — что нужно исправить?
+      opts: Всё верно ; *Написать «Мама» с большой буквы
+  t5 <multiple_choice>[ABA] Q: Предложение «Кот пьёт молоко» — в конце нужна...
+      opts: *Точка ; Запятая
+
+== g1r-grm-l1 | Заглавная буква | types=multiple_choice | n=5 | enkyRaw=4
+  [npc] Заглавная буква! Имена и начало предложения пишут с большой буквы.
+  [tali] Маша, Москва, Тали — с большой! Тали говорит: «Значит, слово «кот» тоже надо писать с большой буквы — ведь это имя живот
+  [intro] Заглавная буква! :: Имена, клички, начало предложения — с большой буквы!
+  [intro] Примеры :: Маша, Москва, Тали — пишем с большой буквы!
+  t1 <multiple_choice> Q: Тали говорит: «Слово «кот» надо писать с большой буквы — это ведь имя!» Прав ли он?
+      opts: Тали прав ; *Нет — «кот» не имя, а название животного
+  t2 <multiple_choice> Q: Что нужно писать с большой буквы?
+      opts: Все существительные ; *Имена людей и клички животных ; Все слова
+  t3 <multiple_choice> Q: Как правильно написать: «я живу в москве» или «Я живу в Москве»?
+      opts: я живу в москве ; *Я живу в Москве
+  t4 <multiple_choice> Q: Тали пишет письмо: «привет, маша!» Что нужно исправить?
+      opts: Всё верно ; *«Привет» и «Маша» с большой буквы
+  t5 <multiple_choice>[ABA] Q: Имена пишутся с большой буквы?
+      opts: *Да ; Нет
+  ENKY:
+    - en=ru Cyrillic: data.tasks.g1r_grml1_q3_a
+    - ky=ru stub: data.tasks.g1r_grml1_q3_a
+    - en=ru Cyrillic: data.tasks.g1r_grml1_q3_b
+    - ky=ru stub: data.tasks.g1r_grml1_q3_b
+
+== g1r-grm-l2 | Знаки препинания | types=multiple_choice | n=5 | enkyRaw=11
+  [npc] Знаки препинания! В конце предложения ставим точку или вопросительный знак.
+  [tali] «Кто это?» — вопрос. «Мама дома.» — утверждение. Тали говорит: «После вопроса всегда нужна точка!» Правда?
+  [intro] Знаки препинания! :: Точка — в конце. Вопросительный знак — в вопросе!
+  [intro] Точка и вопросительный :: Кто это? — вопрос. Мама дома. — утверждение.
+  t1 <multiple_choice> Q: Тали говорит: «После вопроса нужна точка!» Прав ли он?
+      opts: Тали прав ; *Нет — после вопроса нужен ?
+  t2 <multiple_choice> Q: «Мама дома» — какой знак в конце?
+      opts: ? ; *. ; !
+  t3 <multiple_choice> Q: «Ура! Каникулы!» — какой знак в конце?
+      opts: . ; ? ; *!
+  t4 <multiple_choice> Q: «Где живёт медведь» — какой знак нужен?
+      opts: . ; *? ; !
+  t5 <multiple_choice>[ABA] Q: В конце вопроса ставим:
+      opts: *? ; .
+  ENKY:
+    - ky=ru stub: data.tasks.g1r_grml2_q2_a
+    - ky=ru stub: data.tasks.g1r_grml2_q2_b
+    - ky=ru stub: data.tasks.g1r_grml2_q2_c
+    - ky=ru stub: data.tasks.g1r_grml2_q3_a
+    - ky=ru stub: data.tasks.g1r_grml2_q3_b
+    - ky=ru stub: data.tasks.g1r_grml2_q3_c
+    - ky=ru stub: data.tasks.g1r_grml2_q4_a
+    - ky=ru stub: data.tasks.g1r_grml2_q4_b
+    - ky=ru stub: data.tasks.g1r_grml2_q4_c
+    - ky=ru stub: data.tasks.g1r_grml2_q5_a
+    - ky=ru stub: data.tasks.g1r_grml2_q5_b
+
+== g1r-grm-l3 | Вопросы кто? что? | types=multiple_choice | n=5 | enkyRaw=16
+  [npc] Вопросы КТО? и ЧТО? Кто бежит? Что растёт?
+  [tali] КТО — про людей и животных. ЧТО — про предметы! Тали говорит: «Про облако нужно спрашивать КТО?» Правда?
+  [intro] Вопросы КТО? ЧТО? :: КТО — про людей и животных. ЧТО — про предметы!
+  [intro] Примеры вопросов :: Кто бежит? Что растёт? Кто поёт?
+  t1 <multiple_choice> Q: Тали говорит: «Про облако — КТО?» Прав ли он?
+      opts: Тали прав ; *Нет — облако это предмет, поэтому ЧТО?
+  t2 <multiple_choice> Q: Про собаку спрашиваем...
+      opts: ЧТО? ; *КТО?
+  t3 <multiple_choice> Q: Про книгу спрашиваем...
+      opts: КТО? ; *ЧТО?
+  t4 <multiple_choice> Q: «___ прыгает?» — про зайца. Какое слово?
+      opts: ЧТО ; *КТО
+  t5 <multiple_choice>[ABA] Q: Про дерево спрашиваем:
+      opts: КТО? ; *ЧТО?
+  ENKY:
+    - en=ru Cyrillic: data.tasks.g1r_grml3_q2_a
+    - ky=ru stub: data.tasks.g1r_grml3_q2_a
+    - en=ru Cyrillic: data.tasks.g1r_grml3_q2_b
+    - ky=ru stub: data.tasks.g1r_grml3_q2_b
+    - en=ru Cyrillic: data.tasks.g1r_grml3_q3_a
+    - ky=ru stub: data.tasks.g1r_grml3_q3_a
+    - en=ru Cyrillic: data.tasks.g1r_grml3_q3_b
+    - ky=ru stub: data.tasks.g1r_grml3_q3_b
+    - en=ru Cyrillic: data.tasks.g1r_grml3_q4_a
+    - ky=ru stub: data.tasks.g1r_grml3_q4_a
+    - en=ru Cyrillic: data.tasks.g1r_grml3_q4_b
+    - ky=ru stub: data.tasks.g1r_grml3_q4_b
+    - en=ru Cyrillic: data.tasks.g1r_grml3_q5_a
+    - ky=ru stub: data.tasks.g1r_grml3_q5_a
+    - en=ru Cyrillic: data.tasks.g1r_grml3_q5_b
+    - ky=ru stub: data.tasks.g1r_grml3_q5_b
+
+== g1w-sch-l1 | Школьные принадлежности | types=multiple_choice | n=5 | enkyRaw=2
+  [npc] Привет! Я Кеша! Ручка, тетрадь, учебник — школьные принадлежности!
+  [tali] В школе мы учимся. В классе — парты и доска! Тали говорит: «Я думаю, что линейка — не школьная принадлежность!» Правда?
+  [intro] Школьные принадлежности! :: Ручка, тетрадь, учебник, пенал — что лежит в портфеле!
+  [intro] Класс и уроки :: В классе — парты, доска, учитель. Урок длится 45 минут!
+  t1 <multiple_choice> Q: Тали говорит: «Линейка — не школьная принадлежность!» Прав ли он?
+      opts: Тали прав ; *Нет — линейка нужна на уроках
+  t2 <multiple_choice> Q: Что лежит в портфеле?
+      opts: Кастрюля и сковородка ; *Ручка, тетрадь, учебник ; Подушка и одеяло
+  t3 <multiple_choice> Q: Тали хочет писать на уроке. Что ему нужно?
+      opts: Ложка ; *Ручка ; Молоток
+  t4 <multiple_choice> Q: В классе есть... Тали говорит: «Бассейн!»
+      opts: Бассейн ; *Парты и доска ; Плита
+  t5 <multiple_choice>[ABA] Q: Тетрадь — школьная принадлежность?
+      opts: *Да ; Нет
+  ENKY:
+    - ky=ru stub: data.tasks.g1w_schl1_q4_a
+    - ky=ru stub: data.tasks.g1w_schl1_q4_c
+
+== g1w-sch-l2 | Класс и уроки | types=multiple_choice | n=5 | enkyRaw=5
+  [npc] Уроки бывают разные: математика, чтение, физкультура!
+  [tali] На физкультуре бегаем, на рисовании рисуем! Тали говорит: «На физкультуре мы решаем задачки!» Правда?
+  [intro] Уроки в школе! :: Математика, чтение, русский, физкультура, рисование!
+  [intro] Физкультура и рисование :: На физкультуре бегаем и прыгаем. На рисовании — рисуем!
+  t1 <multiple_choice> Q: Тали говорит: «На физкультуре решаем задачки!» Прав ли он?
+      opts: Тали прав ; *Нет — на физкультуре бегаем и прыгаем
+  t2 <multiple_choice> Q: На каком уроке мы рисуем?
+      opts: Математика ; *Рисование ; Чтение
+  t3 <multiple_choice> Q: На каком уроке считаем и решаем примеры?
+      opts: *Математика ; Физкультура ; Музыка
+  t4 <multiple_choice> Q: Тали любит петь. Какой урок ему понравится больше всего?
+      opts: Математика ; *Музыка ; Физкультура
+  t5 <multiple_choice>[ABA] Q: На физкультуре мы...
+      opts: *Бегаем и прыгаем ; Читаем книги
+  ENKY:
+    - ky=ru stub: data.tasks.g1w_schl2_q2_a
+    - ky=ru stub: data.tasks.g1w_schl2_q3_a
+    - ky=ru stub: data.tasks.g1w_schl2_q3_c
+    - ky=ru stub: data.tasks.g1w_schl2_q4_a
+    - ky=ru stub: data.tasks.g1w_schl2_q4_b
+
+== g1w-sch-l3 | Физкультура и рисование | types=multiple_choice+input | n=4 | enkyRaw=0
+  [npc] На физкультуре бегаем, на рисовании рисуем! Что тебе нравится больше?
+  [tali] Я люблю и то и другое! На физкультуре прыгаю, а на рисовании — рисую динозавров. Помоги разобраться!
+  [intro] Физкультура :: На физкультуре мы бегаем, прыгаем и играем в мяч. Это спорт в школе!
+  [intro] Рисование :: На рисовании мы рисуем красками и карандашами. Тут нужна кисть, а не мяч!
+  t1 <multiple_choice> Q: На физкультуре Тали обычно…
+      opts: *Бегает и прыгает ; Читает учебник ; Спит
+  t2 <multiple_choice> Q: На рисовании Тали…
+      opts: *Рисует красками ; Прыгает через скакалку ; Считает примеры
+  t3 <multiple_choice> Q: Что нужно для игры в мяч на физкультуре?
+      opts: *Мяч ; Кисть ; Книга
+  t4 <input> Q: Тали говорит: «На рисовании мы бегаем!» Правда?
+
+== g1w-nat-l1 | Деревья | types=multiple_choice+input | n=4 | enkyRaw=0
+  [npc] Деревья — дуб, берёза, ель. У них ствол и листья!
+  [tali] У дуба жёлуди, у берёзы — белая кора, у ели — иголки. Помоги запомнить!
+  [intro] Деревья! :: Дуб, берёза, ель — у них ствол, ветки, листья!
+  [intro] Хвойные и лиственные :: Ель — хвойная (иголки). Берёза и дуб — лиственные (листья).
+  t1 <multiple_choice> Q: Какое из этих — дерево?
+      opts: *Дуб ; Роза ; Гриб
+  t2 <multiple_choice> Q: Толстая «нога» дерева — это…
+      opts: *Ствол ; Корень (под землёй) ; Цветок
+  t3 <multiple_choice> Q: Какое дерево хвойное (с иголками)?
+      opts: *Ель ; Берёза ; Клён
+  t4 <input> Q: У берёзы летом на ветках…
+
+== g1w-nat-l2 | Животные | types=multiple_choice | n=5 | enkyRaw=34
+  [npc] Животные бывают домашние и дикие. Корова — домашняя, а медведь — дикий!
+  [tali] Домашние живут рядом с людьми. Дикие — в лесу и саванне. Давай проверим!
+  [intro] Домашние и дикие :: Домашние: корова, собака, кот. Дикие: медведь, лев, лиса.
+  [intro] Где живут? :: Дикие животные живут в лесу и саванне. Домашние — рядом с человеком.
+  t1 <multiple_choice> Q: Тали видит следы медведя. «Медведь живёт в море!» — говорит он. Где правда?
+      opts: В доме ; *В лесу ; В море
+  t2 <multiple_choice> Q: Тали думает: «Лев похож на кошку — значит, он домашний!» Прав ли Тали?
+      opts: Да, лев — домашний ; *Нет, лев — дикий!
+  t3 <multiple_choice> Q: Тали нашёл рыжий пушистый след в лесу. Кто это был?
+      opts: Волк ; *Лиса ; Медведь
+  t4 <multiple_choice> Q: Тали составляет команду диких животных. Кто лишний: волк, лиса, медведь, корова?
+      opts: Волк ; Лиса ; *Корова
+  t5 <multiple_choice>[ABA] Q: Лиса — дикое животное?
+      opts: *Да ; Нет
+  ENKY:
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_t1_a
+    - ky=ru stub: data.tasks.nrw_ganiml2_t1_a
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_t1_b
+    - ky=ru stub: data.tasks.nrw_ganiml2_t1_b
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_t1_c
+    - ky=ru stub: data.tasks.nrw_ganiml2_t1_c
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_t2_q
+    - ky=ru stub: data.tasks.nrw_ganiml2_t2_q
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_t2_a
+    - ky=ru stub: data.tasks.nrw_ganiml2_t2_a
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_t2_b
+    - ky=ru stub: data.tasks.nrw_ganiml2_t2_b
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_t3_q
+    - ky=ru stub: data.tasks.nrw_ganiml2_t3_q
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_t3_a
+    - ky=ru stub: data.tasks.nrw_ganiml2_t3_a
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_t3_b
+    - ky=ru stub: data.tasks.nrw_ganiml2_t3_b
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_t3_c
+    - ky=ru stub: data.tasks.nrw_ganiml2_t3_c
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_t4_q
+    - ky=ru stub: data.tasks.nrw_ganiml2_t4_q
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_t4_a
+    - ky=ru stub: data.tasks.nrw_ganiml2_t4_a
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_t4_b
+    - ky=ru stub: data.tasks.nrw_ganiml2_t4_b
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_t4_c
+    - ky=ru stub: data.tasks.nrw_ganiml2_t4_c
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_a1_q
+    - ky=ru stub: data.tasks.nrw_ganiml2_a1_q
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_a1_a
+    - ky=ru stub: data.tasks.nrw_ganiml2_a1_a
+    - en=ru Cyrillic: data.tasks.nrw_ganiml2_a1_b
+    - ky=ru stub: data.tasks.nrw_ganiml2_a1_b
+
+== g1w-nat-l3 | Погода | types=multiple_choice+input | n=4 | enkyRaw=0
+  [npc] Погода бывает разная: солнце, дождь, снег! Что надеть — зависит от погоды.
+  [tali] В дождь — зонт, в снег — куртку. И природу береги: не мусори в лесу!
+  [intro] Погода :: Солнце, дождь, снег, ветер — это погода. От неё зависит, что надеть.
+  [intro] Береги природу :: Не мусори в лесу и парке. Природа — наш общий дом!
+  t1 <multiple_choice> Q: Какая погода тёплая и яркая?
+      opts: *Солнечно ; Снег ; Дождь
+  t2 <multiple_choice> Q: На улице снег. Что надеть?
+      opts: *Тёплую куртку ; Купальник ; Сандалии
+  t3 <multiple_choice> Q: Идёт дождь. Что взять с собой?
+      opts: *Зонт ; Санки ; Веер
+  t4 <input> Q: Нужно ли беречь природу — не мусорить в лесу?
+
+== g1w-bdy-l1 | Органы чувств | types=multiple_choice+input | n=5 | enkyRaw=0
+  [npc] Органы чувств: глаза видят, уши слышат, нос чувствует запахи!
+  [tali] Руки трогают, язык чувствует вкус. Всё важно!
+  [intro] Органы чувств! :: Глаза видят, уши слышат, нос чувствует запахи, руки трогают!
+  [intro] Вкус и язык :: Языком мы пробуем на вкус: сладкое, кислое, солёное. Это тоже орган чувств!
+  t1 <multiple_choice> Q: Чем мы видим?
+      opts: *Глаза ; Уши ; Нос
+  t2 <multiple_choice> Q: Чем мы слышим?
+      opts: *Уши ; Глаза ; Язык
+  t3 <multiple_choice> Q: Чем мы нюхаем?
+      opts: *Нос ; Руки ; Глаза
+  t4 <input> Q: Чем мы пробуем на вкус?
+  t5 <multiple_choice>[ABA] Q: Чем смотрим на картинку?
+      opts: *Глаза ; Уши
+
+== g1w-bdy-l2 | Здоровье | types=multiple_choice+input | n=5 | enkyRaw=1
+  [npc] Здоровье — это спорт, зарядка, правильное питание!
+  [tali] Фрукты и овощи полезны. Сладкое — понемногу!
+  [intro] Скелет и мышцы! :: Кости — опора. Мышцы помогают двигаться!
+  [intro] Здоровый сон :: Сон — это когда тело отдыхает. Спи 9–10 часов!
+  t1 <multiple_choice> Q: Что помогает мышцам быть сильными?
+      opts: *Зарядка и спорт ; Только конфеты ; Сидеть у телевизора
+  t2 <multiple_choice> Q: Какая еда полезная?
+      opts: *Фрукты и овощи ; Чипсы ; Газировка
+  t3 <multiple_choice> Q: Сколько примерно нужно спать школьнику?
+      opts: *Около 9–10 часов ; 2 часа ; Не спать всю ночь
+  t4 <input> Q: Что держит тело прямо, как опора?
+  t5 <multiple_choice>[ABA] Q: Нужно ли делать зарядку?
+      opts: *Да ; Нет
+  ENKY:
+    - ky=ru stub: data.tasks.g1w_bdyl2_opt_chips
+
+== g1w-bdy-l3 | Безопасность | types=multiple_choice+input | n=5 | enkyRaw=0
+  [npc] Безопасность: не разговаривай с незнакомцами!
+  [tali] Переходи дорогу на зелёный свет. Будь осторожен!
+  [intro] Безопасность! :: Не разговаривай с незнакомцами! Не открывай дверь чужим!
+  [intro] Правила на дороге :: Переходи на зелёный! Смотри по сторонам!
+  t1 <multiple_choice> Q: На какой сигнал светофора можно переходить дорогу?
+      opts: *Зелёный ; Красный ; Жёлтый
+  t2 <multiple_choice> Q: Незнакомый человек у двери. Что делать?
+      opts: *Позвать взрослого / не открывать ; Сразу открыть дверь ; Спрятаться под кровать
+  t3 <multiple_choice> Q: Ты потерялся в магазине. К кому обратиться?
+      opts: *К продавцу или охране ; К любому незнакомцу ; Искать выход одному
+  t4 <input> Q: Перед переходом дороги нужно…
+  t5 <multiple_choice>[ABA] Q: Какой свет светофора — можно идти?
+      opts: *Зелёный ; Красный
+
+== g1e-abc-l1 | Буквы G–J | types=multiple_choice+fill_blank+input | n=4 | enkyRaw=4
+  [npc] Привет! Я Поли! Буквы G, H, I, J — учим дальше!
+  [tali] G — giraffe (жираф), H — house (дом). Я их выучил! Хотя... G и J иногда путаю. Поможешь?
+  [intro] Буквы G, H, I, J! :: G — goat (коза), H — house (дом). Учим английский!
+  [intro] Продолжаем алфавит :: I — ice (лёд), J — juice (сок)!
+  t1 <multiple_choice> Q: С какой буквы начинается GOAT?
+      opts: *G ; H ; I
+  t2 <multiple_choice> Q: С какой буквы начинается HAPPY?
+      opts: G ; *H ; I
+  t3 <fill_blank> Q: Ice starts with _
+      opts: H ; *I ; J
+  t4 <input> Q: С какой буквы начинается JELLY? Тали говорит: «С G!»
+      answer: J
+  ENKY:
+    - ky=ru stub: data.tasks.g1e_opt_G
+    - ky=ru stub: data.tasks.g1e_opt_H
+    - ky=ru stub: data.tasks.g1e_opt_I
+    - ky=ru stub: data.tasks.g1e_opt_J
+
+== g1e-abc-l2 | Буквы K–N | types=multiple_choice+input | n=4 | enkyRaw=4
+  [npc] K — kitten (котёнок), L — lion (лев). Запоминаю!
+  [tali] M — moon (луна), N — night (ночь). С какой буквы начинается MOON?
+  [intro] Буквы K, L, M, N! :: K — kitten, L — lion. Запоминай!
+  [intro] Луна и ночь :: M — moon (луна), N — night (ночь).
+  t1 <multiple_choice> Q: С какой буквы начинается KITE?
+      opts: *K ; L ; M
+  t2 <multiple_choice> Q: С какой буквы начинается LAMP?
+      opts: K ; *L ; N
+  t3 <multiple_choice> Q: С какой буквы начинается MOON?
+      opts: K ; *M ; N
+  t4 <input> Q: С какой буквы начинается NOSE? Тали говорит: «С M!»
+      answer: N
+  ENKY:
+    - ky=ru stub: data.tasks.g1e_opt_K
+    - ky=ru stub: data.tasks.g1e_opt_L
+    - ky=ru stub: data.tasks.g1e_opt_M
+    - ky=ru stub: data.tasks.g1e_opt_N
+
+== g1e-abc-l3 | Буквы O–R | types=multiple_choice+input | n=4 | enkyRaw=4
+  [npc] O — orange (апельсин), P — parrot (попугай). Почти половина алфавита!
+  [tali] Q — queen (королева), R — rain (дождь)! Тали, а с какой буквы QUEEN?
+  [intro] Буквы O, P, Q, R! :: O — orange, P — parrot. Почти половина алфавита!
+  [intro] Половина пути! :: Ты знаешь буквы до R! Осталось ещё!
+  t1 <multiple_choice> Q: С какой буквы начинается ORANGE?
+      opts: *O ; P ; Q
+  t2 <multiple_choice> Q: С какой буквы начинается PARROT?
+      opts: O ; *P ; Q
+  t3 <multiple_choice> Q: С какой буквы начинается QUEEN?
+      opts: O ; *Q ; R
+  t4 <input> Q: С какой буквы начинается RAIN?
+      answer: R
+  ENKY:
+    - ky=ru stub: data.tasks.g1e_opt_O
+    - ky=ru stub: data.tasks.g1e_opt_P
+    - ky=ru stub: data.tasks.g1e_opt_Q
+    - ky=ru stub: data.tasks.g1e_opt_R
+
+== g1e-num-l1 | Числа 1–5 | types=multiple_choice+input | n=4 | enkyRaw=3
+  [npc] Числа по-английски: one, two, three, four, five!
+  [tali] 1 = one, 2 = two. Считаю по-английски! Но иногда путаю three и four. Поможешь?
+  [intro] Числа 1–5! :: One, two, three, four, five — считай по-английски!
+  [intro] Пять пальцев :: Five fingers on one hand!
+  t1 <multiple_choice> Q: Как по-английски «три»?
+      opts: two ; *three ; four
+  t2 <multiple_choice> Q: Сколько это — TWO?
+      opts: 1 ; *2 ; 3
+  t3 <multiple_choice> Q: Как по-английски «четыре»? Тали говорит: «Five!»
+      opts: *four ; five ; six
+  t4 <input> Q: Как по-английски «пять»?
+      answer: five
+  ENKY:
+    - ky=ru stub: data.tasks.opt_one
+    - ky=ru stub: data.tasks.opt_two
+    - ky=ru stub: data.tasks.opt_three
+
+== g1e-num-l2 | Числа 6–10 | types=multiple_choice+input | n=4 | enkyRaw=3
+  [npc] Six, seven, eight, nine, ten!
+  [tali] 6 = six, 10 = ten! Продолжаем! Тали говорит: «Eight — это девять!» Правда?
+  [intro] Числа 6–10! :: Six, seven, eight, nine, ten!
+  [intro] Считаем дальше :: Ten — десять! Самое важное число!
+  t1 <multiple_choice> Q: Как по-английски «семь»?
+      opts: six ; *seven ; eight
+  t2 <multiple_choice> Q: Сколько это — NINE?
+      opts: 7 ; 8 ; *9
+  t3 <multiple_choice> Q: Как по-английски «десять»?
+      opts: nine ; *ten ; eleven
+  t4 <input> Q: Как по-английски написать число 8? (словом)
+      answer: eight
+  ENKY:
+    - ky=ru stub: data.tasks.opt_seven
+    - ky=ru stub: data.tasks.opt_eight
+    - ky=ru stub: data.tasks.opt_nine
+
+== g1e-num-l3 | Простые примеры | types=multiple_choice+input | n=4 | enkyRaw=0
+  [npc] Простые примеры по-английски! Six minus three? Three plus four?
+  [tali] Six minus three = three! Three plus four = seven! Отлично!
+  [intro] Простые примеры! :: Six minus three = three! Three plus four = seven! Считай по-английски!
+  [intro] Проверка :: Numbers help us count!
+  t1 <multiple_choice> Q: 6 − 3 =? (по-английски)
+      opts: two ; *three ; four
+  t2 <multiple_choice> Q: 3 + 4 =? (по-английски)
+      opts: six ; *seven ; eight
+  t3 <multiple_choice> Q: Какое число после 9?
+      opts: nine ; *ten ; eleven
+  t4 <input> Q: Сколько звёзд? (8 ★) — по-английски
+      answer: eight
+
+== g1e-grt-l1 | Приветствия | types=multiple_choice+input | n=4 | enkyRaw=0
+  [npc] Hello! Hi! Good morning!
+  [tali] Hello — привет! Я использую это слово всё время! Но Тали говорит: «Good morning — это «до свидания»!» Правда?
+  [intro] Приветствия! :: Hello! Hi! Good morning! — привет!
+  [intro] Когда говорить :: Hello — когда встречаешь. Good morning — утром!
+  t1 <multiple_choice> Q: Утром, входя в класс, говорят:
+      opts: *Good morning ; Good night ; Goodbye
+  t2 <multiple_choice> Q: Что сказать при прощании?
+      opts: Hello ; *Goodbye ; Sorry
+  t3 <multiple_choice> Q: Good night — когда говорят?
+      opts: in the morning ; at noon ; *at night
+  t4 <input> Q: Hi означает:
+      answer: Привет
+
+== g1e-grt-l2 | Меня зовут | types=multiple_choice+input | n=4 | enkyRaw=7
+  [npc] My name is Polly! What is your name?
+  [tali] My name is Tali! А ещё можно сказать: I am Tali. Как правильно спросить имя?
+  [intro] Меня зовут :: My name is Polly. I am Tali. Так мы представляемся!
+  [intro] Представляемся :: My name is... What is your name?
+  t1 <multiple_choice> Q: Закончи фразу: My name ___ Polly.
+      opts: am ; *is ; are
+  t2 <multiple_choice> Q: «Меня зовут» по-английски:
+      opts: I am... ; *My name is ; Hello, I...
+  t3 <multiple_choice> Q: Как по-английски спросить «Как тебя зовут?»
+      opts: How old are you? ; *What is your name? ; Goodbye
+  t4 <input> Q: Закончи: I ___ seven.
+      answer: am
+  ENKY:
+    - ky=ru stub: data.tasks.g1e_opt_am
+    - ky=ru stub: data.tasks.g1e_opt_is
+    - ky=ru stub: data.tasks.g1e_opt_are
+    - ky=ru stub: data.tasks.g1e_opt_i_am
+    - ky=ru stub: data.tasks.g1e_opt_hello_i
+    - ky=ru stub: data.tasks.g1e_opt_how_old_are_you_en
+    - ky=ru stub: data.tasks.g1e_opt_what_is_your_name_en
+
+== g1e-grt-l3 | Спасибо и пожалуйста | types=multiple_choice+input | n=4 | enkyRaw=0
+  [npc] Thank you — спасибо! Please — пожалуйста!
+  [tali] Вежливые слова важны на любом языке! Тали спрашивает: «Thank you — это «привет»?» Прав ли он?
+  [intro] Thank you и Please :: Thank you — спасибо! Please — пожалуйста!
+  [intro] How are you? :: How are you? — Как дела? Fine, thanks! — Хорошо, спасибо!
+  t1 <multiple_choice> Q: «How are you?» означает:
+      opts: *Как дела? ; Пока ; Привет
+  t2 <multiple_choice> Q: Лучший ответ на «How are you?»:
+      opts: *Fine, thanks ; Goodbye ; My name is
+  t3 <multiple_choice> Q: Thank you означает:
+      opts: Пожалуйста ; *Спасибо ; Привет
+  t4 <input> Q: Please означает:
+      answer: Пожалуйста

@@ -1,0 +1,117 @@
+{
+  "g4m-md-l1": [],
+  "g4m-md-l2": [],
+  "g4m-md-l3": [],
+  "g4m-cm-l1": [],
+  "g4m-cm-l2": [],
+  "g4m-cm-l3": [],
+  "g4m-fr-l1": [],
+  "g4m-fr-l2": [],
+  "g4m-fr-l3": [],
+  "g4r-conj-l1": [
+    "ky_eq_ru:data.tasks.g4r_conj_q2_a",
+    "en_eq_ru:data.tasks.g4r_conj_q2_a",
+    "ky_eq_ru:data.tasks.g4r_conj_q2_b",
+    "en_eq_ru:data.tasks.g4r_conj_q2_b",
+    "ky_eq_ru:data.tasks.g4r_conj_q2_c",
+    "en_eq_ru:data.tasks.g4r_conj_q2_c"
+  ],
+  "g4r-conj-l2": [
+    "ky_eq_ru:data.tasks.g4r_conj2_q1_a",
+    "en_eq_ru:data.tasks.g4r_conj2_q1_a",
+    "ky_eq_ru:data.tasks.g4r_conj2_q1_b",
+    "en_eq_ru:data.tasks.g4r_conj2_q1_b",
+    "ky_eq_ru:data.tasks.g4r_conj2_q1_c",
+    "en_eq_ru:data.tasks.g4r_conj2_q1_c",
+    "ky_eq_ru:data.tasks.g4r_conj2_q2_a",
+    "en_eq_ru:data.tasks.g4r_conj2_q2_a",
+    "ky_eq_ru:data.tasks.g4r_conj2_q2_b",
+    "en_eq_ru:data.tasks.g4r_conj2_q2_b",
+    "ky_eq_ru:data.tasks.g4r_conj2_q2_c",
+    "en_eq_ru:data.tasks.g4r_conj2_q2_c"
+  ],
+  "g4r-conj-l3": [
+    "ky_eq_ru:data.tasks.g4r_conj3_q2_a",
+    "en_eq_ru:data.tasks.g4r_conj3_q2_a",
+    "ky_eq_ru:data.tasks.g4r_conj3_q2_b",
+    "en_eq_ru:data.tasks.g4r_conj3_q2_b",
+    "ky_eq_ru:data.tasks.g4r_conj3_q2_c",
+    "en_eq_ru:data.tasks.g4r_conj3_q2_c",
+    "ky_eq_ru:data.tasks.g4r_conj3_q3_a",
+    "en_eq_ru:data.tasks.g4r_conj3_q3_a",
+    "ky_eq_ru:data.tasks.g4r_conj3_q3_b",
+    "en_eq_ru:data.tasks.g4r_conj3_q3_b",
+    "ky_eq_ru:data.tasks.g4r_conj3_q3_c",
+    "en_eq_ru:data.tasks.g4r_conj3_q3_c"
+  ],
+  "g4r-cases-l1": [],
+  "g4r-cases-l2": [
+    "ky_eq_ru:data.tasks.g4r_cases2_q1_a",
+    "en_eq_ru:data.tasks.g4r_cases2_q1_a",
+    "ky_eq_ru:data.tasks.g4r_cases2_q1_b",
+    "en_eq_ru:data.tasks.g4r_cases2_q1_b",
+    "ky_eq_ru:data.tasks.g4r_cases2_q1_c",
+    "en_eq_ru:data.tasks.g4r_cases2_q1_c"
+  ],
+  "g4r-cases-l3": [
+    "ky_eq_ru:data.tasks.g4r_cases3_q2_b"
+  ],
+  "g4r-text-l1": [],
+  "g4r-text-l2": [],
+  "g4r-text-l3": [
+    "ky_eq_ru:data.tasks.g4r_text3_q2_a",
+    "en_eq_ru:data.tasks.g4r_text3_q2_a",
+    "ky_eq_ru:data.tasks.g4r_text3_q2_b",
+    "en_eq_ru:data.tasks.g4r_text3_q2_b",
+    "ky_eq_ru:data.tasks.g4r_text3_q2_c",
+    "en_eq_ru:data.tasks.g4r_text3_q2_c"
+  ],
+  "g4e-pres-l1": [],
+  "g4e-pres-l2": [],
+  "g4e-pres-l3": [],
+  "g4e-past-l1": [],
+  "g4e-past-l2": [],
+  "g4e-past-l3": [],
+  "g4e-quest-l1": [],
+  "g4e-quest-l2": [],
+  "g4e-quest-l3": [],
+  "g4s-help-l1": [],
+  "g4s-help-l2": [],
+  "g4s-help-l3": [],
+  "g4s-emo-l1": [],
+  "g4s-emo-l2": [],
+  "g4s-emo-l3": [],
+  "g4s-turn-l1": [],
+  "g4s-turn-l2": [],
+  "g4s-turn-l3": [],
+  "jungle-add-1": [],
+  "jungle-add-2": [],
+  "jungle-aba-showcase": [
+    "ky_eq_ru:data.tasks.aba_demo_vi_sound",
+    "ky_eq_ru:data.tasks.aba_demo_vi_sound2"
+  ],
+  "jungle-sub-1": [],
+  "jungle-sub-2": [],
+  "jungle-compare-1": [],
+  "canyon-words-1": [],
+  "canyon-words-2": [],
+  "canyon-sent-1": [
+    "ky_eq_ru:data.tasks.opt_mira"
+  ],
+  "lab-animals-1": [],
+  "lab-animals-2": [],
+  "lab-physics-1": [],
+  "space-planets-1": [
+    "ky_eq_ru:data.tasks.opt_mars",
+    "ky_eq_ru:data.tasks.opt_jupiter"
+  ],
+  "space-planets-2": [
+    "ky_eq_ru:data.tasks.opt_mercury",
+    "ky_eq_ru:data.tasks.opt_mars",
+    "ky_eq_ru:data.tasks.opt_jupiter"
+  ],
+  "space-solar-1": [
+    "ky_eq_ru:data.tasks.opt_mars",
+    "ky_eq_ru:data.tasks.opt_mercury"
+  ]
+}

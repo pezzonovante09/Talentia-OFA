@@ -1,0 +1,4096 @@
+[
+  {
+    "id": "g4m-md-l1",
+    "grade": 4,
+    "subject": "math",
+    "world": "g4math",
+    "title": "Чтение больших чисел",
+    "theme": "Многозначные числа",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 2,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4m_md_l1 / g4m_md_l1_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4m-md-l1 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      },
+      {
+        "ref": "g4m-md-l1 task2 prompt",
+        "issue": "Слишком длинный промпт (228 символов) для 9–10 лет"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4m-md-l1 task4",
+      "Сократить сюжетную обёртку, оставить 1 вопрос + 1 контекст"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "tali_error_frame",
+      "treasure_narrative",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали читает надпись на карте: «3 475». Он запыхался и говорит: «Это три тысячи сорок семь тысяч пять!» Тали явно запутался. Как читается это число на самом деле?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Триста сорок семьдесят пять",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Три тысячи четыреста семьдесят пять",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Тридцать четыре тысячи семьдесят пять",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "На складе у Digit лежат 12 080 апельсинов для праздника динозавров. Тали хочет написать на коробке «двенадцать тысяч восемьдесят», но не знает, как назвать это число правильно. Помоги ему: сколько здесь тысяч и сколько десятков?",
+        "options": [
+          {
+            "key": "a",
+            "text": "12 тысяч 8 десятков",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "12 тысяч 8 сотен",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "120 тысяч 80 единиц",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали разглядывает библиотеку Digit: «7 304 книги! Интересно, цифра 3 — это три тысячи?» Тали снова ошибается. В каком разряде стоит цифра 3 в числе 7 304?",
+        "options": [
+          {
+            "key": "a",
+            "text": "В разряде единиц",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "В разряде сотен",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "В разряде тысяч",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Экспедиция Тали прошла 25 600 шагов за неделю. Исследователь записал это число в дневник. Как правильно его прочитать? _(ответ: Двадцать пять тысяч шестьсот)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Привет! Я только что нашёл старую карту сокровищ. На ней написано: «Клад зарыт в 3 475 шагах от дуба». Я уже прошёл три тысячи шагов и не могу понять — далеко ли ещё? Помоги мне разобраться с большими числами!\n- **Digit:** Тали, не волнуйся. Большие числа — как слоёный пирог: сначала тысячи, потом сотни, потом десятки, потом единицы. Давайте вместе покажем Тали!",
+    "_intro": ""
+  },
+  {
+    "id": "g4m-md-l2",
+    "grade": 4,
+    "subject": "math",
+    "world": "g4math",
+    "title": "Разряды числа",
+    "theme": "Многозначные числа",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4m_md_l2 / g4m_md_l2_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4m-md-l2 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4m-md-l2 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "tali_error_frame",
+      "treasure_narrative",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали набирает код сейфа: число 6 253. Он говорит: «Цифра 2 здесь — это 2 тысячи!» Сейф не открывается. Что цифра 2 значит на самом деле в числе 6 253?",
+        "options": [
+          {
+            "key": "a",
+            "text": "2 тысячи",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "2 сотни (разряд сотен)",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "20 единиц",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Digit разложил число 9 070 на разрядные слагаемые для Тали. Какое представление верное?",
+        "options": [
+          {
+            "key": "a",
+            "text": "9 000 + 70",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "9 000 + 700",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "900 + 70",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "В числе 4 816 Тали ищет цифру 8. «Она в разряде тысяч — самая важная!» — решил он. Исправь Тали: в каком разряде стоит 8?",
+        "options": [
+          {
+            "key": "a",
+            "text": "В разряде единиц",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "В разряде сотен",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "В разряде десятков",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Шифровальщик Тали закодировал число: «5 тысяч, 0 сотен, 3 десятка, 9 единиц». Теперь нужно его расшифровать. Что это за число? _(ответ: 5 039)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Digit, мне нужна помощь! Я записал номер сейфа с сокровищами: 6 253. Но я забыл, что означает каждая цифра. Если я введу неправильно — сейф не откроется!\n- **Digit:** Спокойно, Тали. Разряды — как замочная скважина: у каждой цифры своё место и своя роль. Давайте вместе поможем Тали открыть сейф!",
+    "_intro": ""
+  },
+  {
+    "id": "g4m-md-l3",
+    "grade": 4,
+    "subject": "math",
+    "world": "g4math",
+    "title": "Сравнение чисел",
+    "theme": "Многозначные числа",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4m_md_l3 / g4m_md_l3_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4m-md-l3 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4m-md-l3 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "tali_error_frame",
+      "treasure_narrative",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали смотрит на два клада: 8 450 и 8 540 монет. Он говорит: «Они одинаковые — там и там восьмёрка в начале!» Тали торопится и не досматривает. Какой клад на самом деле больше?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Клад с 8 540 монетами",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Клад с 8 450 монетами",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Они равны",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Digit просит расставить числа по порядку — от наименьшего к наибольшему: 3 099, 3 900 и 3 009. Тали пытается, но запутался в нулях. Помоги ему!",
+        "options": [
+          {
+            "key": "a",
+            "text": "3 009, 3 099, 3 900",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "3 900, 3 099, 3 009",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "3 099, 3 009, 3 900",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали написал в дневнике: «5 008 > 5 080 — это правда, ведь у первого числа восьмёрка стоит в начале!» Верно ли его рассуждение?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Верно, Тали прав",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Неверно: 5 008 < 5 080",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Нельзя сравнить",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Два поезда соревнуются в длине маршрута: первый проехал 12 375 км, второй — 12 735 км. Тали болеет за второй. Прав ли он — второй действительно проехал больше? _(ответ: Да)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Я нашёл два клада! В первом 8 450 монет, во втором — 8 540. Я хочу взять тот, что побольше, но не могу решить — они ведь такие похожие!\n- **Digit:** Тали, сравнение чисел — как гонка: смотришь сначала на тысячи, потом на сотни, и так далее. Первый, кто «выбежит вперёд» — и есть большее число!",
+    "_intro": ""
+  },
+  {
+    "id": "g4m-cm-l1",
+    "grade": 4,
+    "subject": "math",
+    "world": "g4math",
+    "title": "Основы умножения",
+    "theme": "Умножение в столбик",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4m_cm_l1 / g4m_cm_l1_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4m-cm-l1 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4m-cm-l1 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "treasure_narrative",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Пекарня Тали работает три дня подряд: каждый день — 213 булочек. Тали считает в уме: «Это примерно шестьсот... или семьсот?» Помоги ему: 213 × 3 = ?",
+        "options": [
+          {
+            "key": "a",
+            "text": "609",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "639",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "669",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "В каждой упаковке Digit упаковал 124 карандаша. Тали заказал 4 упаковки для школы динозавров. Сколько карандашей приедет? 124 × 4 = ?",
+        "options": [
+          {
+            "key": "a",
+            "text": "486",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "496",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "516",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали считает звёзды в телескоп: каждую ночь видит 312 звёзд. За три ночи он записал в дневник «916». Но Digit говорит, что Тали ошибся. Найди правильный ответ: 312 × 3 = ?",
+        "options": [
+          {
+            "key": "a",
+            "text": "916",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "936",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "956",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Посмотри на пример в столбик: 221 × 4. Тали уже написал ответ «864». Верен ли он? _(ответ: Да, 864 верно)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Digit, я открыл пекарню для динозавров! Сегодня испёк 213 булочек. Завтра — столько же, и послезавтра тоже. Но я не знаю, сколько всего получится за три дня. Умножение в столбик — это слишком страшно!\n- **Digit:** Тали, давай я покажу тебе хитрость: умножаем каждый разряд отдельно, снизу вверх. Это как складывать этажи дома — по одному, и не страшно!",
+    "_intro": ""
+  },
+  {
+    "id": "g4m-cm-l2",
+    "grade": 4,
+    "subject": "math",
+    "world": "g4math",
+    "title": "Многозначное × однозначное",
+    "theme": "Умножение в столбик",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4m_cm_l2 / g4m_cm_l2_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4m-cm-l2 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4m-cm-l2 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "treasure_narrative",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали заказывает кирпичи: 1 346 в день × 5 дней. Он прикинул «примерно пять тысяч», но поставщик говорит цифру другую. Помоги Тали: 1 346 × 5 = ?",
+        "options": [
+          {
+            "key": "a",
+            "text": "5 730",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "6 730",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "7 230",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Фермер Тали собрал 2 417 яблок с одного сада. У него три таких же сада. Сколько яблок всего? 2 417 × 3 = ?",
+        "options": [
+          {
+            "key": "a",
+            "text": "7 251",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "7 351",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "7 451",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "В космическом корабле Тали 3 208 болтов. Для экспедиции нужно ещё 6 таких же кораблей. Болтов нужно: 3 208 × 6 = ?",
+        "options": [
+          {
+            "key": "a",
+            "text": "18 248",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "19 248",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "20 248 — вот это да!",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Digit даёт Тали задачку на прикидку: 4 135 × 7. Какой знак нужно поставить: 4 135 × 7 ○ 29 000? _(ответ: < (меньше))_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Строительная бригада динозавров кладёт 1 346 кирпичей в день. Мне нужно заказать кирпичи на 5 дней, но цифры такие большие... Digit, я боюсь, что ошибусь и закажу мало!\n- **Digit:** Тали, для больших чисел столбик — лучший друг. Умножаем каждый разряд и не забываем про перенос. Погнали вместе!",
+    "_intro": ""
+  },
+  {
+    "id": "g4m-cm-l3",
+    "grade": 4,
+    "subject": "math",
+    "world": "g4math",
+    "title": "Многозначное × многозначное",
+    "theme": "Умножение в столбик",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4m_cm_l3 / g4m_cm_l3_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4m-cm-l3 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4m-cm-l3 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "treasure_narrative",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали открыл завод: 236 деталей в час × 12 часов. Он подсчитал «2 732». Digit говорит, что в одном из промежуточных умножений Тали ошибся. Найди правильный ответ: 236 × 12 = ?",
+        "options": [
+          {
+            "key": "a",
+            "text": "2 732",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "2 832",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "3 032",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "В кинотеатре динозавров 345 мест. Всего прошёл 24 сеанса, и каждый раз — полный зал. Сколько всего зрителей посмотрели фильм? 345 × 24 = ?",
+        "options": [
+          {
+            "key": "a",
+            "text": "7 280",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "8 280",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "9 280",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Корабль Тали проплывает 418 км в сутки. За 13 суток экспедиции он преодолеет... 418 × 13 = ?",
+        "options": [
+          {
+            "key": "a",
+            "text": "5 034",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "5 434",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "5 834",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Тали хочет понять: сколько промежуточных произведений получится в столбике при умножении 527 × 15? _(ответ: Два)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Это уже совсем страшно — умножать большое на большое! 236 × 12... Я даже не знаю, с чего начать. Digit, ты точно уверен, что я справлюсь?\n- **Digit:** Тали, главный секрет: умножаем сначала на единицы, потом на десятки — и сдвигаем второй результат на один шаг влево. Две строчки, потом складываем. Ты справишься, я в тебя верю!",
+    "_intro": ""
+  },
+  {
+    "id": "g4m-fr-l1",
+    "grade": 4,
+    "subject": "math",
+    "world": "g4math",
+    "title": "Что такое дробь?",
+    "theme": "Дроби",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4m_fr_l1 / g4m_fr_l1_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4m-fr-l1 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4m-fr-l1 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "tali_error_frame",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали разрезал пиццу ровно на 4 части и съел одну. Какую дробь пиццы он съел?",
+        "options": [
+          {
+            "key": "a",
+            "text": "1/4",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "1/3",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "4/1",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Digit закрасил 3 части из 8 на полоске бумаги и написал дробь «8/3». Тали смотрит и говорит: «Что-то здесь не так!» Тали прав — запись неверная. Как правильно записать закрашенную часть?",
+        "options": [
+          {
+            "key": "a",
+            "text": "3/8",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "8/3",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "3/11",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали объясняет Digit, что такое знаменатель: «Это сколько частей мы взяли!» Но Тали снова ошибся — перепутал числитель и знаменатель. Что на самом деле показывает знаменатель (нижнее число)?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Сколько равных частей содержит целое",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Сколько частей взяли",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Сколько целых осталось",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Тали взял 1 дольку из шоколадки, разломленной на 6 равных долей. Верно ли, что он взял 1/6 шоколадки? _(ответ: Да, верно)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Digit, у меня проблема! Я разрезал пиццу для вечеринки — на 4 части. Съел одну. Как теперь записать, сколько я съел? Целую пиццу — нет, но и ноль — тоже нет...\n- **Digit:** Тали, ты только что открыл дроби! «Одна часть из четырёх» — это и есть дробь 1/4. Числитель — сколько взял, знаменатель — на сколько частей разрезали!",
+    "_intro": ""
+  },
+  {
+    "id": "g4m-fr-l2",
+    "grade": 4,
+    "subject": "math",
+    "world": "g4math",
+    "title": "Равные части",
+    "theme": "Дроби",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4m_fr_l2 / g4m_fr_l2_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4m-fr-l2 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4m-fr-l2 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали разрезал яблоко на 4 части и записал: «Одна часть — это 4/1». Digit смотрит на запись с удивлением. Как правильно записать одну часть из четырёх?",
+        "options": [
+          {
+            "key": "a",
+            "text": "1/4",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "4/1",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "1/2",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Digit закрасил 3 клетки из 9 в прямоугольнике. Какая дробь показывает закрашенную часть?",
+        "options": [
+          {
+            "key": "a",
+            "text": "3/9",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "9/3",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "1/3",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали разрезал торт пополам (1/2), а Digit разрезал такой же торт на четыре части и взял две (2/4). Кто получил больше торта?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Тали получил больше",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Они получили поровну, это равные дроби",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Digit получил больше",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Круг поделён на 5 равных секторов. Сколько таких секторов нужно, чтобы собрать целый круг? _(ответ: 4)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Digit, я делю яблоко на 4 части. Но... одна часть получилась больше остальных. Это всё равно дробь 1/4?\n- **Digit:** Нет, Тали! Это важнейшее правило дробей: части должны быть РАВНЫМИ. Иначе дробь просто не работает. Давай нарежем заново — аккуратно!",
+    "_intro": ""
+  },
+  {
+    "id": "g4m-fr-l3",
+    "grade": 4,
+    "subject": "math",
+    "world": "g4math",
+    "title": "Сравнение дробей",
+    "theme": "Дроби",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4m_fr_l3 / g4m_fr_l3_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4m-fr-l3 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4m-fr-l3 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали взял 3/8 пиццы, его друг — 5/8 той же пиццы. Тали спорит: «Мы взяли одинаково — ведь восьмёрки одинаковые!» Кто на самом деле взял больше?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Друг Тали взял больше (5/8 > 3/8)",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Тали взял больше",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Они взяли одинаково",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Digit записал: 2/5 ○ 4/5. Какой знак нужно поставить?",
+        "options": [
+          {
+            "key": "a",
+            "text": "< (меньше)",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "> (больше)",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "= (равно)",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали пытается расставить три дроби по порядку от наименьшей: 1/4, 3/4, 2/4. Он написал: «3/4, 2/4, 1/4» — от наибольшей. Исправь порядок: от наименьшей к наибольшей.",
+        "options": [
+          {
+            "key": "a",
+            "text": "1/4, 2/4, 3/4",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "1/4, 3/4, 2/4",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "3/4, 2/4, 1/4",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Тали и Digit сравнивают 3/4 и 3/7. Числители одинаковые — 3 и 3. Тали говорит: «Значит дроби равные!» Но Digit не соглашается. Кто прав? _(ответ: Digit)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Мы с другом делили пиццу: я взял 3/8, он взял 5/8. Он говорит, что у него больше. Я не верю — ведь числа одинаковые, только 3 и 5 разные!\n- **Digit:** Тали, ты почти разгадал правило! Когда знаменатели одинаковые — просто смотри на числители: у кого больше числитель, у того больше дробь. Это как соревнование!",
+    "_intro": ""
+  },
+  {
+    "id": "g4r-conj-l1",
+    "grade": 4,
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "title": "Я, ты, он/она",
+    "theme": "Спряжение глаголов",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4r_conj_l1 / g4r_conj_l1_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4r-conj-l1 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4r-conj-l1 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "tali_error_frame",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали написал: «Я хожу в школу каждый день.» Слово проверяет: правильно ли выбрана форма глагола?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Нет, надо «иду»",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Да, форма верна",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Нет, надо «хожал»",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Слово спрашивает Тали: как будет глагол «читать» для «ты»? Тали думает... Помоги ему!",
+        "options": [
+          {
+            "key": "a",
+            "text": "читаешь",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "читает",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "читали",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали читает вслух: «Мальчик идёт по улице». Слово хочет знать — в каком лице стоит глагол «идёт»? Тали говорит: «Во втором!» Прав ли Тали?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Да, Тали прав — это второе лицо",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Нет, это третье лицо единственного числа",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Нет, это первое лицо",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Детектив-грамматик нашёл ошибку: «Она пишет письмо и отправляю его.» Что неверно в этом предложении? _(ответ: Неверное)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Слово:** Привет, я Слово! Сегодня Тали написал в дневнике: «Я хожу в школу. Ты ходишь в школу. Он ходить в школу.» Что-то не так в третьем предложении — Тали не заметил ошибку!\n- **Тали:** Правда? Мне казалось всё правильно... Объясните, пожалуйста!",
+    "_intro": ""
+  },
+  {
+    "id": "g4r-conj-l2",
+    "grade": 4,
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "title": "Мы, вы, они",
+    "theme": "Спряжение глаголов",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4r_conj_l2 / g4r_conj_l2_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4r-conj-l2 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4r-conj-l2 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали написал в пьесе: «Мы петь вместе на сцене!» Слово говорит, что это не спряжённый глагол. Как правильно?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Мы поём",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Мы поёте",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Мы поют",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали меняет реплику в пьесе: «Он читает книгу» → «Они ___ книгу». Что изменится в глаголе?",
+        "options": [
+          {
+            "key": "a",
+            "text": "читают",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "читает",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "читали",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Слово задаёт Тали вопрос для пьесы: «Вы ___ правильный ответ?» (глагол «знать»). Тали написал «знаешь». Правильно ли?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Нет, правильно «знаете»",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Да, «знаешь» верно",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Нет, правильно «знают»",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "В пьесе Тали отряд рыцарей-динозавров отправился в поход. «Они ___ через лес». Вставь глагол «идти» в правильной форме. _(ответ: идут)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Слово, я пишу пьесу про динозавров! Там есть такая реплика: «Мы петь вместе!» Звучит красиво, правда?\n- **Слово:** Тали, «мы петь» — это не спряжение! Нужно изменить глагол по лицу. «Мы поём» — вот как звучит правильно. Давай исправим пьесу вместе!",
+    "_intro": ""
+  },
+  {
+    "id": "g4r-conj-l3",
+    "grade": 4,
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "title": "Смешанная практика",
+    "theme": "Спряжение глаголов",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4r_conj_l3 / g4r_conj_l3_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4r-conj-l3 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4r-conj-l3 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "tali_error_frame",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "К какому спряжению относится глагол «любить»?",
+        "options": [
+          {
+            "key": "a",
+            "text": "I спряжение",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "II спряжение",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "оба возможны",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Слово предлагает Тали найти глагол II спряжения: писать, говорить, читать, рисовать. Тали смотрит в список... Что выберешь ты?",
+        "options": [
+          {
+            "key": "a",
+            "text": "говорить",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "писать",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "читать",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали написал последнюю реплику пьесы: «Мы бежит к финишу!» Слово говорит, что форма глагола неверная. Исправь за Тали!",
+        "options": [
+          {
+            "key": "a",
+            "text": "бежит",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "бежите",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "бежим",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "По какому признаку определяют спряжение глагола в неопределённой форме? _(ответ: По)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Слово, я почти закончил пьесу! Но последняя реплика не получается: «Мы бежит к финишу!» Звучит как будто что-то не то...\n- **Слово:** Тали, ты чувствуешь ошибку — это хороший знак! Теперь нужно определить спряжение глагола и подобрать правильное окончание. Ты уже почти всё умеешь!",
+    "_intro": ""
+  },
+  {
+    "id": "g4r-cases-l1",
+    "grade": 4,
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "title": "Именительный и Винительный",
+    "theme": "Падежи существительных",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4r_cases_l1 / g4r_cases_l1_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4r-cases-l1 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4r-cases-l1 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "В предложении «Кот лежит на коврике» — слово «кот» стоит в каком падеже?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Именительный",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Винительный",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Дательный",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Слово просит найти подлежащее в предложении «Книга лежит на столе». Тали отвечает: «Подлежащее — \"столе\"!» Верно ли?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Нет, подлежащее «книга» — она в именительном падеже",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Да, Тали прав",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Подлежащего нет",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали составляет предложение: «Я вижу книга.» Слово говорит, что падеж неверный. Какую форму нужно использовать?",
+        "options": [
+          {
+            "key": "a",
+            "text": "именительный: «книга»",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "родительный: «книги»",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "винительный: «книгу»",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Чем именительный падеж отличается от винительного? Выбери верное объяснение. _(ответ: Винительный)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Слово, я запутался в падежах! «Кот лежит» и «Я вижу кота» — почему «кот» в одном случае, а «кота» в другом?\n- **Слово:** Тали, это два разных падежа! Именительный отвечает на «кто?» — это подлежащее, хозяин предложения. Винительный — «кого? что?» — это объект действия. Давай разберёмся!",
+    "_intro": ""
+  },
+  {
+    "id": "g4r-cases-l2",
+    "grade": 4,
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "title": "Родительный и Дательный",
+    "theme": "Падежи существительных",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4r_cases_l2 / g4r_cases_l2_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4r-cases-l2 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4r-cases-l2 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "На какой вопрос отвечает слово в родительном падеже?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Кто? Что?",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Кого? Чего?",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Кому? Чему?",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали написал письмо: «Я дал корм собака.» Слово говорит, что падеж неверный. «Дал кому?» — значит нужен...",
+        "options": [
+          {
+            "key": "a",
+            "text": "Дательный: «собаке»",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Именительный: «собака»",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Родительный: «собаки»",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали не дождался друга и написал: «Подожди — не хватает ___ (друг).» Какой падеж нужен?",
+        "options": [
+          {
+            "key": "a",
+            "text": "друг (именительный)",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "друга (родительный)",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "другу (дательный)",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Почтальон-динозавр разносит письма: «Отправить письмо ___ (мама).» Поставь слово в правильный падеж. _(ответ: маме)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Слово, мне нужно написать другу письмо! «Я отправил письмо мама» — правильно? Что-то режет слух...\n- **Слово:** Тали, ты чувствуешь — «мама» здесь не подходит! После «отправил кому?» нужен дательный падеж: «маме». А «не хватает кого?» — родительный: «мамы». Давай разберём оба!",
+    "_intro": ""
+  },
+  {
+    "id": "g4r-cases-l3",
+    "grade": 4,
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "title": "Творительный и Предложный",
+    "theme": "Падежи существительных",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4r_cases_l3 / g4r_cases_l3_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4r-cases-l3 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4r-cases-l3 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "tali_error_frame",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали написал: «Мы говорили о лес.» Слово смотрит и говорит: «Тали, здесь нужен предложный падеж — он всегда с предлогом!» Как правильно?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Предложный: «о лесе»",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Винительный: «о лес»",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Дательный: «о лесу»",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали рисует автопортрет и пишет подпись: «Я стал ___ (художник)». Какой падеж нужен после «стал»?",
+        "options": [
+          {
+            "key": "a",
+            "text": "художник (именительный)",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "художником (творительный)",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "художнику (дательный)",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Слово задаёт Тали вопрос: «Какой падеж никогда не употребляется без предлога?» Тали думает и говорит: «Дательный!» Прав ли Тали?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Да, Тали прав — дательный",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Нет, это предложный — только он всегда с предлогом",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Нет, это творительный",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Назови все 6 падежей русского языка по порядку. Какой стоит на пятом месте? _(ответ: Творительный (5-й))_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Слово, последние два падежа! Творительный и предложный — самые загадочные названия. «Творительный» — это потому что что-то творишь?\n- **Слово:** Почти угадал, Тали! Творительный — «творить с помощью чего-то». «Пишу карандашом» — творительный. А предложный — потому что он всегда употребляется С ПРЕДЛОГОМ. Никогда без него!",
+    "_intro": ""
+  },
+  {
+    "id": "g4r-text-l1",
+    "grade": 4,
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "title": "Прочитай и ответь",
+    "theme": "Чтение с пониманием",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4r_text_l1 / g4r_text_l1_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4r-text-l1 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4r-text-l1 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "tali_error_frame",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали читает: «Солнце зашло. Стало темно. Птицы умолкли.» Он говорит: «Этот текст о птицах!» Но Слово не соглашается. О чём на самом деле этот текст?",
+        "options": [
+          {
+            "key": "a",
+            "text": "О вечере и наступлении тишины после заката",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "О птицах, которые молчат",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "О школьном расписании",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Как называется последняя часть текста из трёх частей?",
+        "options": [
+          {
+            "key": "a",
+            "text": "завязка",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "концовка",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "титульный лист",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали читает: «Дождь шёл всю ночь, поэтому утром лужи блестели.» Какая связь между частями предложения?",
+        "options": [
+          {
+            "key": "a",
+            "text": "только перечисление",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "только описание",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "причина и следствие",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Тали пишет рассказ о котёнке. Называет первую часть «оглавление». Слово говорит, что название неверное. Как правильно называется первая часть рассказа? _(ответ: завязка (начало))_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Слово, я прочитал рассказ «Солнце зашло. Стало темно. Птицы умолкли». Очень короткий. О чём он вообще? Непонятно!\n- **Слово:** Тали, даже короткий текст имеет тему! Эти три предложения вместе рисуют картину. Закрой глаза — что ты видишь? Это и есть тема!",
+    "_intro": ""
+  },
+  {
+    "id": "g4r-text-l2",
+    "grade": 4,
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "title": "Главная мысль",
+    "theme": "Чтение с пониманием",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4r_text_l2 / g4r_text_l2_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4r-text-l2 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4r-text-l2 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Текст: «Ёж свернулся в клубок. Иголки торчат во все стороны. Никто не тронет ежа.» Главная мысль — это...",
+        "options": [
+          {
+            "key": "a",
+            "text": "Ёж защищается иголками",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Ёж всегда злой и не хочет общаться",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Иголки — это отдельный персонаж",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Как называется предложение, которое выражает главную мысль всего текста?",
+        "options": [
+          {
+            "key": "a",
+            "text": "любое предложение из текста",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "тезис — главная мысль в одном предложении",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "последнее слово текста",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали перемешал предложения своего рассказа о дожде. Какое должно быть первым, чтобы текст был связным?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Сначала пошёл дождь.",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Поэтому лужи блестели.",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Наконец стало темно.",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Слово спрашивает Тали: «Где чаще всего прячется главная мысль рассказа?» Тали говорит: «Только в середине!» Верно ли? _(ответ: Нет)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Я прочитал текст про ежа: «Ёж свернулся в клубок. Иголки торчат во все стороны. Никто не тронет ежа.» Слово, что тут главная мысль? Их же три предложения — и каждое важное!\n- **Слово:** Тали, главная мысль — это не одно из предложений, а то, что автор хотел сказать всем текстом. Зачем написан этот текст? Что читатель должен понять?",
+    "_intro": ""
+  },
+  {
+    "id": "g4r-text-l3",
+    "grade": 4,
+    "subject": "reading_ru",
+    "world": "g4rus",
+    "title": "Детали и последовательность",
+    "theme": "Чтение с пониманием",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4r_text_l3 / g4r_text_l3_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4r-text-l3 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4r-text-l3 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "tali_error_frame",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали прочитал: «Сначала Маша нашла гриб. Потом позвала сестру. Наконец они набрали полную корзину.» Он думает, что первым было «позвала сестру». Исправь Тали — что было самым первым?",
+        "options": [
+          {
+            "key": "a",
+            "text": "набрали корзину",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "позвала сестру",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "нашла гриб",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Слово просит найти слово-«маяк», которое указывает на последнее событие в цепочке. Какое это слово?",
+        "options": [
+          {
+            "key": "a",
+            "text": "сначала",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "наконец",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "потом",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали описывает любимый камень: «Он гладкий, серый, тёплый на ощупь и пахнет дождём.» Какой это тип текста?",
+        "options": [
+          {
+            "key": "a",
+            "text": "описание",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "повествование",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "рассуждение",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Тали пишет инструкцию для друга: «Потом налей воду. Сначала возьми стакан. Наконец размешай.» Слово говорит, что шаги перепутаны. Какое слово подскажет, что шаг НЕ первый? _(ответ: Потом…)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Слово, я читал про Машу, которая искала грибы. «Потом позвала сестру. Наконец набрали корзину. Сначала нашла гриб.» Что-то не так с порядком — голова кружится!\n- **Слово:** Тали, порядок событий в тексте — это последовательность! Слова «сначала», «потом», «наконец» — маяки, которые показывают, что за чем идёт. Давай восстановим порядок!",
+    "_intro": ""
+  },
+  {
+    "id": "g4e-pres-l1",
+    "grade": 4,
+    "subject": "english",
+    "world": "g4eng",
+    "title": "He / She / It",
+    "theme": "Present Simple",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4e_pres_l1 / g4e_pres_l1_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4e-pres-l1 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4e-pres-l1 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "tali_error_frame",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали написал: «She go to school every day.» Spark говорит, что ошибка в глаголе. Как правильно?",
+        "options": [
+          {
+            "key": "a",
+            "text": "go",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "goes",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "is go",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Каждое утро робот Тали просыпается и выполняет задачи. «Every morning, the robot wakes up and ___ its tasks.» (do / does / doing)",
+        "options": [
+          {
+            "key": "a",
+            "text": "do",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "does",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "doing",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "fill_blank",
+        "aba": false,
+        "prompt": "My little brother _ pizza.",
+        "options": [
+          {
+            "key": "fb-a",
+            "text": "love",
+            "correct": false
+          },
+          {
+            "key": "fb-b",
+            "text": "loves",
+            "correct": true
+          },
+          {
+            "key": "fb-c",
+            "text": "is loves",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Тали смотрит на список: I, he, she, it. «Все они добавляют -s к глаголу!» — говорит он. Spark качает головой. Кто из этого списка НЕ добавляет -s? _(ответ: I)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Spark:** Привет! Я Spark — новый друг Тали на Английском острове! Тали только что написал по-английски: «She go to school every day.» Я понял, что что-то не так — но не могу объяснить почему!\n- **Тали:** Я старался! Разве «go» — неправильно?",
+    "_intro": ""
+  },
+  {
+    "id": "g4e-pres-l2",
+    "grade": 4,
+    "subject": "english",
+    "world": "g4eng",
+    "title": "Отрицание",
+    "theme": "Present Simple",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4e_pres_l2 / g4e_pres_l2_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4e-pres-l2 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4e-pres-l2 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "tali_error_frame",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали написал: «The cat not eats fish — only milk!» Spark говорит, что нужно doesn't. Исправь Тали!",
+        "options": [
+          {
+            "key": "a",
+            "text": "The cat not eats fish",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "The cat doesn't eat fish",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "The cat not eat fish",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "«He plays football.» → «He ___ football.» Какая отрицательная форма верна?",
+        "options": [
+          {
+            "key": "a",
+            "text": "don't play",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "doesn't play",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "not plays",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали написал отрицание: «She don't like cold weather.» Spark говорит: «Тали, ошибка! С she нужно...»",
+        "options": [
+          {
+            "key": "a",
+            "text": "don't like (оставить как есть)",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "doesn't like",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "not like",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "«They watch TV in the evening.» → Сделай отрицательным. _(ответ: They don't watch TV in the evening)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Spark, мне нужно сказать, что кот не ест рыбу. Я написал: «The cat not eats fish.» Правильно?\n- **Spark:** Тали, почти! В Present Simple отрицание строится через don't или doesn't — не просто «not». С he/she/it — doesn't, с остальными — don't. Попробуем снова!",
+    "_intro": ""
+  },
+  {
+    "id": "g4e-pres-l3",
+    "grade": 4,
+    "subject": "english",
+    "world": "g4eng",
+    "title": "Вопросы",
+    "theme": "Present Simple",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4e_pres_l3 / g4e_pres_l3_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4e-pres-l3 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4e-pres-l3 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали написал вопрос: «She speak French?» Spark говорит, что нужен вспомогательный глагол. Как правильно?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Do she speak French?",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Does she speak French?",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Is she speak French?",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "«Tom reads books.» → Сделай вопрос: «___ Tom read books?»",
+        "options": [
+          {
+            "key": "a",
+            "text": "Does Tom read books?",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Do Tom reads books?",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Tom reads books?",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "«___ your parents work on weekends?»",
+        "options": [
+          {
+            "key": "a",
+            "text": "Do",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Does",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Are",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Тали спрашивает про музей: «___ the museum open on Mondays?» Какое слово начинает этот вопрос? _(ответ: Is)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Spark, как спросить по-английски: «Она говорит по-французски?» Я написал: «She speak French?» Звучит как-то коротко...\n- **Spark:** Тали, для вопроса нам нужен вспомогательный глагол — Does! Он «прыгает» в начало. «Does she speak French?» Попробуем!",
+    "_intro": ""
+  },
+  {
+    "id": "g4e-past-l1",
+    "grade": 4,
+    "subject": "english",
+    "world": "g4eng",
+    "title": "Правильные глаголы",
+    "theme": "Past Simple",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4e_past_l1 / g4e_past_l1_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4e-past-l1 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4e-past-l1 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали написал: «Yesterday we climb the mountain.» Spark говорит: «Тали, добавь -ed!» Как правильно?",
+        "options": [
+          {
+            "key": "a",
+            "text": "climb",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "climbed",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "was climb",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "«She ___ her room before the guests arrived.» (clean / cleans / cleaned)",
+        "options": [
+          {
+            "key": "a",
+            "text": "clean",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "cleaned",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "cleans",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Правильная форма Past Simple от «to open»:",
+        "options": [
+          {
+            "key": "a",
+            "text": "opened",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "openned",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "did opened",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "«They play in the park every day.» → «Yesterday they ___…» _(ответ: played)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Spark, вчера я залез на гору. Как сказать по-английски? «Yesterday we climb the mountain.»\n- **Spark:** Тали, это прошедшее время — Past Simple! Правильные глаголы получают окончание -ed. «We climbed» — вот как!",
+    "_intro": ""
+  },
+  {
+    "id": "g4e-past-l2",
+    "grade": 4,
+    "subject": "english",
+    "world": "g4eng",
+    "title": "Неправильные глаголы",
+    "theme": "Past Simple",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4e_past_l2 / g4e_past_l2_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4e-past-l2 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4e-past-l2 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "tali_error_frame",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали написал: «Last night I haved a strange dream.» Spark говорит: «have» — неправильный! Как правильно?",
+        "options": [
+          {
+            "key": "a",
+            "text": "have",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "had",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "haved",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Волшебник промахнулся: «The wizard ___ a rabbit, not a dragon!» (maked / made / make)",
+        "options": [
+          {
+            "key": "a",
+            "text": "maked",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "made",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "make",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Past Simple от «go»:",
+        "options": [
+          {
+            "key": "a",
+            "text": "goed",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "went",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "gone",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Тали смотрит на список глаголов: bring, think, walk, see. Он говорит: «Все они неправильные!» Какой на самом деле правильный (просто добавляет -ed)? _(ответ: walk)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Spark, я написал в дневнике: «Last night I haved a strange dream.» Правильно?\n- **Spark:** Тали, «have» — неправильный глагол! У него особая форма прошедшего времени — «had». Такие глаголы нужно учить наизусть, они не добавляют -ed!",
+    "_intro": ""
+  },
+  {
+    "id": "g4e-past-l3",
+    "grade": 4,
+    "subject": "english",
+    "world": "g4eng",
+    "title": "Смешанная практика",
+    "theme": "Past Simple",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4e_past_l3 / g4e_past_l3_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4e-past-l3 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4e-past-l3 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали написал: «Anna meet her friends and they watch a film.» Spark видит две ошибки. Как правильно?",
+        "options": [
+          {
+            "key": "a",
+            "text": "meet / watched",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "met / watched",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "met / watch",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Найди ошибку: «He buyed a new bicycle last week.»",
+        "options": [
+          {
+            "key": "a",
+            "text": "неверное окончание — нужно «bought»",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "неверный артикль",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "неверный предлог",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "«The explorers ___ the cave and ___ gold inside.» (entered/found / enter/find / entered/find)",
+        "options": [
+          {
+            "key": "a",
+            "text": "enter / find",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "entered / find",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "entered / found",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "«She wrote a letter yesterday.» → Сделай отрицательным. _(ответ: She didn't write a letter yesterday)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Spark, я пишу рассказ про Анну: «Last Saturday, Anna meet her friends and they watch a film.» Правильно?\n- **Spark:** Тали, два глагола — и оба в неверной форме! Meet неправильный, watch правильный. Давай исправим вместе — и твой рассказ станет отличным!",
+    "_intro": ""
+  },
+  {
+    "id": "g4e-quest-l1",
+    "grade": 4,
+    "subject": "english",
+    "world": "g4eng",
+    "title": "Да/нет вопросы",
+    "theme": "Вопросы",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4e_quest_l1 / g4e_quest_l1_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4e-quest-l1 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4e-quest-l1 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "«___ you like ice cream?» (Are / Do / Does)",
+        "options": [
+          {
+            "key": "a",
+            "text": "Are",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Do",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Does",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Какой вопрос можно закончить ответом «Yes» или «No»?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Do you like ice cream?",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "What you like ice cream?",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Where you like ice cream?",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали спрашивает про сестру: «Do your sister go to the same school?» Spark говорит, что помощник выбран неверно. Как правильно?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Do",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Are",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Does",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Инопланетянин приземлился и задаёт вопрос: «___ humans sleep at night?» Какое слово начинает вопрос? _(ответ: Do)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Spark, я хочу спросить тебя: любишь ли ты мороженое? Я написал: «You like ice cream?» Правильно?\n- **Spark:** Тали, не хватает вспомогательного глагола! «Do you like ice cream?» — вот вопрос, на который можно ответить «Yes» или «No». Таких вопросов у нас сегодня много!",
+    "_intro": ""
+  },
+  {
+    "id": "g4e-quest-l2",
+    "grade": 4,
+    "subject": "english",
+    "world": "g4eng",
+    "title": "Вопросы с вопросительным словом",
+    "theme": "Вопросы",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4e_quest_l2 / g4e_quest_l2_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4e-quest-l2 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4e-quest-l2 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали хочет узнать, где его шляпа: написал «What is my hat?» Spark говорит: «Тали, не \"what\", а...» Какое слово нужно?",
+        "options": [
+          {
+            "key": "a",
+            "text": "What (что)",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "When (когда)",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Where (где)",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "«___ is your best friend?» — хочешь узнать имя человека. Какое слово?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Who",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Where",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "What",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Ты ищешь рюкзак Тали. «___ is my bag?» (Who / Where / Why)",
+        "options": [
+          {
+            "key": "a",
+            "text": "What",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Who",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Where",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "«___ do you come to school by bike?» — хочешь узнать причину. _(ответ: Why)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Spark, я потерял свою шляпу! Как спросить: где она? Написал «What is my hat?» — но это не про место...\n- **Spark:** Тали, «What» — это «что», а тебе нужно «где» — это «Where»! Вопросительные слова — это как ключи: каждый открывает свой замок. Разберём их все!",
+    "_intro": ""
+  },
+  {
+    "id": "g4e-quest-l3",
+    "grade": 4,
+    "subject": "english",
+    "world": "g4eng",
+    "title": "Краткие ответы",
+    "theme": "Вопросы",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4e_quest_l3 / g4e_quest_l3_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4e-quest-l3 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4e-quest-l3 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "tali_error_frame",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали ответил: «Do you like cats?» → «Yes, I likes.» Spark говорит: «Нет, Тали, краткий ответ — это...»",
+        "options": [
+          {
+            "key": "a",
+            "text": "Yes, I does.",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Yes, I do.",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Yes, I am.",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "«Does he play chess?» → «No, ___.»",
+        "options": [
+          {
+            "key": "a",
+            "text": "No, he doesn't.",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "No, he don't.",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "No, he not.",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали отвечает: «Did they visit the museum?» → «Yes, they are.» Spark говорит: «Нет! Вопрос с Did — ответ тоже с...»",
+        "options": [
+          {
+            "key": "a",
+            "text": "Yes, they is.",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Yes, they are.",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Yes, they did.",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Ведущий викторины: «Do birds fly?» — какой модельный краткий ответ? _(ответ: Yes, they do.)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Spark, ты спросил: «Do you like cats?» Я ответил: «Yes, I likes.» Правильно?\n- **Spark:** Тали, в кратком ответе мы повторяем вспомогательный глагол — do или does, did! «Yes, I do.» Кратко, точно, правильно!",
+    "_intro": ""
+  },
+  {
+    "id": "g4s-help-l1",
+    "grade": 4,
+    "subject": "social",
+    "world": "g4social",
+    "title": "Когда просить помощи",
+    "theme": "Просьба о помощи",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4s_help_l1 / g4s_help_l1_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4s-help-l1 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4s-help-l1 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "tali_error_frame",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали стоит с пакетами перед тяжёлой дверью и говорит: «Сам справлюсь!» — и продолжает толкать её ногой. Это мудрое решение?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Да, надо всегда справляться самому",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Нет — лучше попросить кого-то придержать дверь",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Да, можно и дальше толкать ногой",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "На перемене друг случайно сломал игрушку Тали и сразу извинился. Как поступить мудрее всего?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Рассказать взрослому и вместе подумать, как починить или заменить",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Злиться молча и больше не разговаривать",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Отобрать у него чужую вещь «в отместку»",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Одноклассник не понимает задание, но молчит и расстраивается. Что ему стоит сделать?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Молчать и злиться дальше",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Смеяться над собственной ошибкой",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Сказать учителю или попросить одноклассника объяснить",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Тали первый раз едет в новый район и не знает дороги. Он говорит: «Буду ехать наугад — не хочу спрашивать, это стыдно.» Согласен ли с ним Friendly? _(ответ: Нет)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Friendly:** Привет! Я Friendly — проводник по Городу социальных навыков. Сегодня Тали пытается открыть тяжёлую дверь с пакетами в лапах — и никак не может. Он стоит уже пять минут и краснеет. Что ему нужно сделать?\n- **Тали:** Я не хочу просить помощи — это неловко...",
+    "_intro": ""
+  },
+  {
+    "id": "g4s-help-l2",
+    "grade": 4,
+    "subject": "social",
+    "world": "g4social",
+    "title": "Как вежливо попросить",
+    "theme": "Просьба о помощи",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4s_help_l2 / g4s_help_l2_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4s-help-l2 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4s-help-l2 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "«Дай мне ластик!» vs. «Можешь одолжить ластик, пожалуйста?» Какой вариант вежливее?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Первый — он короткий и понятный",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Второй — вежливый вопрос, а не приказ",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Оба одинаково вежливые",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали хочет попросить незнакомого взрослого о помощи. С какой фразы лучше начать?",
+        "options": [
+          {
+            "key": "a",
+            "text": "«Извините, не подскажете…»",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "«Эй, ты! Сделай!»",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Молча тянуть за рукав",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Друг помог Тали решить задачу. Что обязательно нужно сделать после?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Сделать вид, что не заметил",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Ничего не говорить — и так понятно",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Поблагодарить",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Тали спрашивает Friendly: «Какое слово делает просьбу вежливой почти как волшебство?» Friendly улыбается. Тали думает, что это «сейчас же». Поправь Тали! _(ответ: сейчас же)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Friendly, мне нужен ластик у соседа по парте. Я сказал: «Дай ластик!» Он дал, но как-то хмуро... Почему?\n- **Friendly:** Тали, «Дай ластик» — это приказ, не просьба! Слово «пожалуйста» и правильная интонация превращают требование в приглашение к сотрудничеству. Попробуем по-другому?",
+    "_intro": ""
+  },
+  {
+    "id": "g4s-help-l3",
+    "grade": 4,
+    "subject": "social",
+    "world": "g4social",
+    "title": "Практика ситуаций",
+    "theme": "Просьба о помощи",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4s_help_l3 / g4s_help_l3_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4s-help-l3 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4s-help-l3 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "tali_error_frame",
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Маша потеряла рюкзак на перемене. К кому ей сначала обратиться?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Сначала спорить с одноклассниками, кто взял",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Сначала к учителю или в учительскую, потом действовать по указанию взрослых",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Никуда не обращаться — само найдётся",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Младший брат Тали плачет, но не говорит почему. Что поможет ему рассказать о своей проблеме?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Кричать: «Говори немедленно!»",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Спокойно спросить и выслушать",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Отвернуться — сам успокоится",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали хочет помочь пожилой соседке донести сумку. Как правильно предложить помощь, чтобы не обидеть?",
+        "options": [
+          {
+            "key": "a",
+            "text": "«Дай я сам — ты слабая»",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "«Мне не нужна твоя помощь» (это чужая реплика, не предложение)",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "«Могу помочь донести?»",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Учитель объяснил тему, но Тали не понял. Тали говорит: «Подниму руку прямо сейчас и перебью!» Friendly морщится. Как лучше поступить? _(ответ: Подойти)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Friendly, у меня сегодня было три ситуации, когда нужна была помощь. Я не знал, как справиться с каждой... Разбери их со мной?\n- **Friendly:** Конечно! Разбор реальных ситуаций — лучший способ научиться. Погнали!",
+    "_intro": ""
+  },
+  {
+    "id": "g4s-emo-l1",
+    "grade": 4,
+    "subject": "social",
+    "world": "g4social",
+    "title": "Радость и грусть",
+    "theme": "Распознавание эмоций",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4s_emo_l1 / g4s_emo_l1_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4s-emo-l1 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4s-emo-l1 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Друг Тали пришёл с опущенными плечами и тихим голосом. Какую эмоцию он, скорее всего, испытывает?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Грусть",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Радость",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Злость",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Что у большинства людей вызывает настоящую радость?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Получить неожиданный подарок",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Потерять любимую вещь",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Скучать в очереди",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали видит грустящего друга и говорит: «Не грусти!» Friendly качает головой. Почему это не лучшая поддержка и что лучше сделать?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Это лучшая поддержка — слова помогают",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Лучше просто побыть рядом и поддержать молчанием или тихим словом",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Лучше уйти — не мешать",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Поднятые уголки губ, блеск в глазах — это какая эмоция? _(ответ: Радость)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Friendly, сегодня мой друг пришёл в школу с опущенными плечами и тихим голосом. Я не знал, что сказать... Это грусть?\n- **Friendly:** Тали, ты уже умеешь читать эмоции по внешним знакам — это важный навык! Опущенные плечи, тихий голос — да, это признаки грусти. Давай разберём, как правильно реагировать.",
+    "_intro": ""
+  },
+  {
+    "id": "g4s-emo-l2",
+    "grade": 4,
+    "subject": "social",
+    "world": "g4social",
+    "title": "Злость и страх",
+    "theme": "Распознавание эмоций",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4s_emo_l2 / g4s_emo_l2_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4s-emo-l2 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4s-emo-l2 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали злится на брата и хочет бросить вещь. Friendly останавливает его. Какой способ выразить злость безопасен для обоих?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Ударить брата",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Сказать, что обидно, и предложить исправить вместе",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Сломать его игрушку в ответ",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Перед выступлением на сцене сердце бьётся быстро и хочется убежать. Как называется эта эмоция?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Радость",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Волнение и страх",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Скука",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Чем злость отличается от страха?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Страх — реакция на угрозу, желание избежать; злость — реакция на несправедливость, желание изменить",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Это одно и то же чувство",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Злость всегда приятная",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Тали прочитал: «Петя закричал и бросил тетрадь». Friendly спрашивает: «Тали, что Петя испытывал и что ему лучше было сделать?» Тали говорит: «Он был рад!» Это верно? _(ответ: Да, он был рад)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Friendly, брат сломал мою модель динозавра! Я так злюсь, что хочу что-нибудь бросить. Как мне справиться с этим?\n- **Friendly:** Тали, злость — нормальная эмоция! Но важно выражать её безопасно. Расскажи брату словами, как тебе больно — это гораздо эффективнее, чем бросать вещи.",
+    "_intro": ""
+  },
+  {
+    "id": "g4s-emo-l3",
+    "grade": 4,
+    "subject": "social",
+    "world": "g4social",
+    "title": "Удивление и спокойствие",
+    "theme": "Распознавание эмоций",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4s_emo_l3 / g4s_emo_l3_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4s-emo-l3 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4s-emo-l3 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Широко открытые глаза и приоткрытый рот после сюрприза — это признаки какой эмоции?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Удивление",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Злость",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Равнодушие",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Что называют «спокойствием»?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Ровное, устойчивое внутреннее состояние",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Постоянная сонливость",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Только ощущение голода",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали замолчал посреди разговора и начал дышать глубоко. Friendly спрашивает: «Что он делает?» Тали говорит: «Хочет уснуть!» Исправь Тали.",
+        "options": [
+          {
+            "key": "a",
+            "text": "Да, он засыпает",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Нет — он пытается успокоиться и собраться с мыслями",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Нет — он убегает из разговора",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Удивление бывает приятным и неприятным. Пример каждого: _(ответ: Удивление бывает только неприятным)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Friendly, я зашёл в класс и увидел сюрприз на своей парте! Глаза открылись широко, рот приоткрылся... Что это было?\n- **Friendly:** Тали, это удивление! Оно бывает приятным (как твой сюрприз) и неприятным. А спокойствие — это противоположность: ровное дыхание, расслабленные плечи, мысли без паники.",
+    "_intro": ""
+  },
+  {
+    "id": "g4s-turn-l1",
+    "grade": 4,
+    "subject": "social",
+    "world": "g4social",
+    "title": "Ждём своей очереди",
+    "theme": "Очерёдность",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4s_turn_l1 / g4s_turn_l1_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4s-turn-l1 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4s-turn-l1 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали собирается прыгнуть к другу в середину очереди. Friendly тихо останавливает его. Как правильно поступить?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Прыгнуть — друг же позвал!",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Уважать право других на очередь и встать в конец",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Кричать, чтобы пропустили быстрее",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "На уроке все хотят ответить одновременно. Что нужно сделать, чтобы услышали каждого?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Поднять руку и ждать",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Толкнуть соседа, чтобы ответить первым",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Уйти из класса обиженным",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Почему нельзя проталкиваться в очереди, даже если очень торопишься?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Потому что это скучно",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Это неважно, если торопишься",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Потому что это нарушает право других на уважение",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Игра в настольный хоккей: как честно определить, чья сейчас очередь ходить? _(ответ: Договориться)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Friendly, в столовой длинная очередь. Друг машет мне из середины очереди и зовёт вперёд. Все смотрят...\n- **Friendly:** Тали, это непростой момент! Друг хочет помочь, но проталкивание нарушает права тех, кто ждёт. Уважение к очереди — это уважение к людям. Как поступить?",
+    "_intro": ""
+  },
+  {
+    "id": "g4s-turn-l2",
+    "grade": 4,
+    "subject": "social",
+    "world": "g4social",
+    "title": "Делимся и справедливость",
+    "theme": "Очерёдность",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4s_turn_l2 / g4s_turn_l2_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4s-turn-l2 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4s-turn-l2 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали не знает, как честно разделить самокат между тремя друзьями. Friendly предлагает варианты. Какой самый справедливый?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Тали берёт самокат себе — он же хозяин",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "По очереди — каждому по одинаковому времени",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Кто сильнее — тот и катается",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Один ребёнок всегда берёт самый большой кусок пирога. Как объяснить ему про справедливость?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Решение, при котором всем понятно и никто не обижен — это и есть справедливость",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Победа одного — это нормально",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Справедливость — это ссора",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Что такое «компромисс»?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Это слабость, уступать не надо",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Это грубость в ответ на грубость",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Это решение, при котором каждая сторона чуть-чуть уступает ради общего блага",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Команда решила большинством голосов играть в прятки, а Тали хотел футбол. Что делает Тали? _(ответ: Принимает)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Friendly, трое моих друзей хотят одновременно кататься на моём самокате. Я не знаю, как разделить честно — кто-то обидится!\n- **Friendly:** Тали, справедливость — это не всегда «поровну», это когда всем понятны правила и все с ними согласны. Давай придумаем решение вместе!",
+    "_intro": ""
+  },
+  {
+    "id": "g4s-turn-l3",
+    "grade": 4,
+    "subject": "social",
+    "world": "g4social",
+    "title": "Игры с правилами",
+    "theme": "Очерёдность",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 4,
+    "diversity": 2,
+    "verdict": "needs_rewrite",
+    "problems": [
+      {
+        "ref": "en.json data.dialog.g4s_turn_l3 / g4s_turn_l3_0",
+        "issue": "EN-диалог — заглушка «Hi! Lesson: «…»». We’ll review the key idea, then practice.»"
+      },
+      {
+        "ref": "g4s-turn-l3 task4",
+        "issue": "Нет отмеченного верного ответа ✓"
+      }
+    ],
+    "fixes": [
+      "Написать полноценный EN-диалог по смыслу RU (персонаж + Tali), без шаблона Hi! Lesson",
+      "Исправить ✓ в worlds.ts + ru.json (+en/ky) для g4s-turn-l3 task4"
+    ],
+    "enkyFlags": [
+      "en_dialog_stub"
+    ],
+    "templates": [
+      "en_dialog_stub_template"
+    ],
+    "_tasks": [
+      {
+        "n": 1,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали замечает, что игрок подглядывает. Тали хочет накричать. Friendly останавливает его. Что лучше сделать?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Накричать и перевернуть игру",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Молчать и терпеть",
+            "correct": true
+          },
+          {
+            "key": "c",
+            "text": "Спокойно сказать: «Давайте соблюдать правила»",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Зачем в играх вообще нужны правила?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Чтобы кто-то обязательно проиграл",
+            "correct": true
+          },
+          {
+            "key": "b",
+            "text": "Чтобы игра была честной и интересной для всех",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Чтобы никому не было весело",
+            "correct": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "type": "multiple_choice",
+        "aba": false,
+        "prompt": "Тали проиграл в шахматы и очень расстроен. Какая реакция будет уважительной?",
+        "options": [
+          {
+            "key": "a",
+            "text": "Смахнуть фигуры с доски",
+            "correct": false
+          },
+          {
+            "key": "b",
+            "text": "Молчать и дуться весь день",
+            "correct": false
+          },
+          {
+            "key": "c",
+            "text": "Пожать руку победителю и спросить, что можно улучшить",
+            "correct": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "type": "input",
+        "aba": false,
+        "prompt": "Тали предлагает новое правило для известной игры, чтобы было честнее. Friendly спрашивает: «С чего начать?» Тали говорит: «Просто объявить новое правило!» Почему Friendly не согласен? _(ответ: Сначала)_",
+        "options": []
+      }
+    ],
+    "_dialog": "- **Тали:** Friendly, во время настольной игры я заметил, что один игрок подглядывает в карты! Что делать — ругаться или молчать?\n- **Friendly:** Тали, правила игры — это договор между всеми участниками. Нарушение правил называется нечестной игрой. Не нужно ругаться — нужно спокойно назвать проблему и предложить решение.",
+    "_intro": ""
+  }
+]

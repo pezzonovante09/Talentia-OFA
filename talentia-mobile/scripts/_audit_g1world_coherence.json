@@ -1,0 +1,123 @@
+{
+  "meta": {
+    "generatedAt": "2026-07-26T17:10:00.000Z",
+    "rubric": "Original curriculum-audit coherence scale: 5=dialog→intro→tasks one story/terms; 4=minor skew; 3=one block off-topic; 1–2=tasks train a different lesson. Accept ≥4.",
+    "method": "Manual content review of resolved RU dialog/intro/task texts (not an auto-scorer). Keyword helper script used only as a first pass; sch-l1/l2 scored from locale texts because tasks are bridged banks.",
+    "lessonCount": 9,
+    "accepted": 9,
+    "rejected": 0,
+    "averageScore": 4.89
+  },
+  "planConfirmation": {
+    "g1w-sch-l1": {
+      "plan": "Не в объёме полного переписывания Фазы 4 (полировка). Диалог/интро/задания про принадлежности.",
+      "implemented": "Задания — bridged bank G1W_SCH_L1_TASKS из garden-col-l1 структуры, но ключи/тексты g1w_schl1_* про школу (линейка, портфель, ручка).",
+      "rewrite": "none_full_rewrite"
+    },
+    "g1w-sch-l2": {
+      "plan": "Не в объёме полного переписывания Фазы 4. Тема «Класс и уроки».",
+      "implemented": "G1W_SCH_L2_TASKS bridged; тексты g1w_schl2_* про уроки (физкультура/рисование/математика).",
+      "rewrite": "none_full_rewrite"
+    },
+    "g1w-sch-l3": {
+      "plan": "Переписать всё: диалог + интро + задания (вместо garden-col-l3).",
+      "implemented": "Новые dialog/intro + G1W_SCH_L3_TASKS (бег/рисование/мяч/кисть).",
+      "rewrite": "all"
+    },
+    "g1w-nat-l1": {
+      "plan": "Переписать всё: диалог + интро + задания про деревья.",
+      "implemented": "Новые dialog/intro + G1W_NAT_L1_TASKS (дуб/ствол/ель/листья).",
+      "rewrite": "all"
+    },
+    "g1w-nat-l2": {
+      "plan": "Оставить задания; переписать диалог + интро с погоды на животных.",
+      "implemented": "tasks: RW56 garden-anim-l2 (медведь/лев/лиса); dialog/intro про домашних/диких.",
+      "rewrite": "dialog_intro_only"
+    },
+    "g1w-nat-l3": {
+      "plan": "Новые задания про погоду + переписать диалог; береги природу — финал.",
+      "implemented": "Новые dialog/intro + G1W_NAT_L3_TASKS (солнце/куртка/зонт/мусор).",
+      "rewrite": "all"
+    },
+    "g1w-bdy-l1": {
+      "plan": "Оставить диалог; интро-2 про вкус; задания заново + ABA.",
+      "implemented": "Диалог органов чувств сохранён по смыслу; intro-2 «Вкус и язык»; G1W_BDY_L1_TASKS + special_aba.",
+      "rewrite": "intro2_and_tasks"
+    },
+    "g1w-bdy-l2": {
+      "plan": "Оставить диалог; задания заново (зарядка/еда/сон/скелет) + ABA.",
+      "implemented": "Диалог спорт/питание; intro-1 скелет + intro-2 сон; tasks + ABA. Intro-1 vs dialog — лёгкий перекос (score 4).",
+      "rewrite": "tasks"
+    },
+    "g1w-bdy-l3": {
+      "plan": "Оставить диалог/интро; задания заново + ABA.",
+      "implemented": "Диалог/интро безопасность; G1W_BDY_L3_TASKS (светофор/дверь/полиция/переход) + ABA.",
+      "rewrite": "tasks"
+    }
+  },
+  "lessons": [
+    {
+      "lessonId": "g1w-sch-l1",
+      "title": "Школьные принадлежности",
+      "score": 5,
+      "accepted": true,
+      "notes": "Диалог Кеши про ручку/тетрадь → intro портфель → задания про линейку/портфель/ручку/парты. Связка держится."
+    },
+    {
+      "lessonId": "g1w-sch-l2",
+      "title": "Класс и уроки",
+      "score": 5,
+      "accepted": true,
+      "notes": "Диалог про разные уроки → intro список уроков → задания «на физкультуре не задачки», рисование/математика/музыка."
+    },
+    {
+      "lessonId": "g1w-sch-l3",
+      "title": "Физкультура и рисование",
+      "score": 5,
+      "accepted": true,
+      "notes": "Полная перепись: dialog/intro про PE/art; tasks бег/рисовать/мяч vs кисть. Нет garden-col остатков."
+    },
+    {
+      "lessonId": "g1w-nat-l1",
+      "title": "Деревья",
+      "score": 5,
+      "accepted": true,
+      "notes": "Dialog дуб/берёза/ель → intro хвойные/лиственные → tasks дерево/ствол/ель/листья. Не копия garden-anim-l1."
+    },
+    {
+      "lessonId": "g1w-nat-l2",
+      "title": "Животные",
+      "score": 5,
+      "accepted": true,
+      "notes": "Dialog/intro про домашних и диких (не погода); tasks garden-anim-l2 (медведь/лев/лиса/корова) совпадают с темой."
+    },
+    {
+      "lessonId": "g1w-nat-l3",
+      "title": "Погода",
+      "score": 5,
+      "accepted": true,
+      "notes": "Dialog погода+что надеть+береги природу; tasks солнце/куртка/зонт/не мусори. Не рыбы/птицы."
+    },
+    {
+      "lessonId": "g1w-bdy-l1",
+      "title": "Органы чувств",
+      "score": 5,
+      "accepted": true,
+      "notes": "Dialog глаза/уши/нос; intro-2 вкус; tasks чем видим/слышим/нюхаем + язык; есть ABA. Не сезоны."
+    },
+    {
+      "lessonId": "g1w-bdy-l2",
+      "title": "Здоровье",
+      "score": 4,
+      "accepted": true,
+      "notes": "Dialog спорт/питание; tasks зарядка/фрукты/сон/скелет + ABA. Intro-1 «Скелет» при sports-диалоге — лёгкий перекос, но t4 закрывает intro-1 (как в плане)."
+    },
+    {
+      "lessonId": "g1w-bdy-l3",
+      "title": "Безопасность",
+      "score": 5,
+      "accepted": true,
+      "notes": "Dialog/intro незнакомцы+зелёный свет; tasks светофор/дверь/полиция/посмотри налево-направо + ABA. Не лето/сезоны."
+    }
+  ]
+}

@@ -1,0 +1,1122 @@
+[
+  {
+    "key": "opt_20",
+    "ru": "Оба неправы",
+    "en": "20",
+    "expected": "20",
+    "uses": [
+      {
+        "lesson": "g2m-100-l1",
+        "correct": false,
+        "line": 2336
+      },
+      {
+        "lesson": "g2m-100-l1",
+        "correct": false,
+        "line": 2339
+      }
+    ]
+  },
+  {
+    "key": "opt_40",
+    "ru": "Тали прав, 46 — верно",
+    "en": "40",
+    "expected": "40",
+    "uses": [
+      {
+        "lesson": "g2m-100-l1",
+        "correct": false,
+        "line": 2336
+      },
+      {
+        "lesson": "g2m-times-l2",
+        "correct": false,
+        "line": 2406
+      }
+    ]
+  },
+  {
+    "key": "opt_37",
+    "ru": "8 десятков (Арчи прав)",
+    "en": "8 tens",
+    "expected": "37",
+    "uses": [
+      {
+        "lesson": "g2m-100-l2",
+        "correct": false,
+        "line": 2346
+      }
+    ]
+  },
+  {
+    "key": "opt_42",
+    "ru": "4 десятка",
+    "en": "4 tens",
+    "expected": "42",
+    "uses": [
+      {
+        "lesson": "g2m-100-l2",
+        "correct": true,
+        "line": 2346
+      }
+    ]
+  },
+  {
+    "key": "opt_29",
+    "ru": "48 десятков",
+    "en": "48 tens",
+    "expected": "29",
+    "uses": [
+      {
+        "lesson": "g2m-100-l2",
+        "correct": false,
+        "line": 2346
+      }
+    ]
+  },
+  {
+    "key": "opt_78",
+    "ru": "Арчи нашёл больше (78 > 82)",
+    "en": "Archi (78 > 82)",
+    "expected": "78",
+    "uses": [
+      {
+        "lesson": "g2m-100-l3",
+        "correct": true,
+        "line": 2355
+      }
+    ]
+  },
+  {
+    "key": "opt_82",
+    "ru": "Тали нашёл больше (82 > 78)",
+    "en": "Tali (82 > 78)",
+    "expected": "82",
+    "uses": [
+      {
+        "lesson": "g2m-100-l3",
+        "correct": false,
+        "line": 2355
+      }
+    ]
+  },
+  {
+    "key": "opt_91",
+    "ru": "У них поровну",
+    "en": "They are equal",
+    "expected": "91",
+    "uses": [
+      {
+        "lesson": "g2m-100-l3",
+        "correct": false,
+        "line": 2355
+      }
+    ]
+  },
+  {
+    "key": "opt_19",
+    "ru": "43",
+    "en": "19",
+    "expected": "19",
+    "uses": [
+      {
+        "lesson": "g2m-add2-l3",
+        "correct": false,
+        "line": 2385
+      }
+    ]
+  },
+  {
+    "key": "opt_10",
+    "ru": "Арчи прав (14)",
+    "en": "10",
+    "expected": "10",
+    "uses": [
+      {
+        "lesson": "g2m-times-l1",
+        "correct": false,
+        "line": 2397
+      }
+    ]
+  },
+  {
+    "key": "opt_12",
+    "ru": "Saturday",
+    "en": "12",
+    "expected": "12",
+    "uses": [
+      {
+        "lesson": "g2m-times-l1",
+        "correct": true,
+        "line": 2397
+      },
+      {
+        "lesson": "g2e-days-l3",
+        "correct": true,
+        "line": 2635
+      }
+    ]
+  },
+  {
+    "key": "opt_14",
+    "ru": "2 × 6 = 16",
+    "en": "14",
+    "expected": "14",
+    "uses": [
+      {
+        "lesson": "g2m-times-l1",
+        "correct": false,
+        "line": 2397
+      }
+    ]
+  },
+  {
+    "key": "opt_45",
+    "ru": "Нет, 5 × 9 = 45, и это заканчивается на 5 — всё по правилу!",
+    "en": "45",
+    "expected": "45",
+    "uses": [
+      {
+        "lesson": "g2m-times-l2",
+        "correct": true,
+        "line": 2406
+      }
+    ]
+  },
+  {
+    "key": "opt_50",
+    "ru": "5 × 9 = 50",
+    "en": "50",
+    "expected": "50",
+    "uses": [
+      {
+        "lesson": "g2m-times-l2",
+        "correct": false,
+        "line": 2406
+      }
+    ]
+  },
+  {
+    "key": "opt_22",
+    "ru": "Тали прав (26)",
+    "en": "22",
+    "expected": "22",
+    "uses": [
+      {
+        "lesson": "g2m-times-l3",
+        "correct": false,
+        "line": 2415
+      }
+    ]
+  },
+  {
+    "key": "opt_24",
+    "ru": "Арчи прав (24)",
+    "en": "24",
+    "expected": "24",
+    "uses": [
+      {
+        "lesson": "g2m-times-l3",
+        "correct": true,
+        "line": 2415
+      }
+    ]
+  },
+  {
+    "key": "opt_26",
+    "ru": "Оба неправы",
+    "en": "26",
+    "expected": "26",
+    "uses": [
+      {
+        "lesson": "g2m-times-l3",
+        "correct": false,
+        "line": 2415
+      }
+    ]
+  },
+  {
+    "key": "opt_11",
+    "ru": "Thursday",
+    "en": "11",
+    "expected": "11",
+    "uses": [
+      {
+        "lesson": "g2e-days-l3",
+        "correct": false,
+        "line": 2635
+      }
+    ]
+  },
+  {
+    "key": "g2e_opt_yes_he_are",
+    "ru": "Нет, тебе нельзя есть мой бутерброд",
+    "en": "Yes, he are.",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g2e-phr-l3",
+        "correct": false,
+        "line": 2665
+      }
+    ]
+  },
+  {
+    "key": "opt_52",
+    "ru": "Нет, 9 × 6 = 52",
+    "en": "No, 9 × 6 = 52",
+    "expected": "52",
+    "uses": [
+      {
+        "lesson": "g3m-tab-l3",
+        "correct": false,
+        "line": 2761
+      }
+    ]
+  },
+  {
+    "key": "opt_54",
+    "ru": "Да, 54 и 5+4=9 — всё верно",
+    "en": "Yes, correct",
+    "expected": "54",
+    "uses": [
+      {
+        "lesson": "g3m-tab-l3",
+        "correct": true,
+        "line": 2761
+      }
+    ]
+  },
+  {
+    "key": "opt_56",
+    "ru": "Нет, 9 × 6 = 56",
+    "en": "No, 9 × 6 = 56",
+    "expected": "56",
+    "uses": [
+      {
+        "lesson": "g3m-tab-l3",
+        "correct": false,
+        "line": 2761
+      }
+    ]
+  },
+  {
+    "key": "g3w_geol2t4_a",
+    "ru": "5",
+    "en": "4",
+    "expected": "4",
+    "uses": [
+      {
+        "lesson": "g3w-geo-l2",
+        "correct": false,
+        "line": 2909
+      }
+    ]
+  },
+  {
+    "key": "g3w_geol2t4_b",
+    "ru": "6",
+    "en": "5",
+    "expected": "5",
+    "uses": [
+      {
+        "lesson": "g3w-geo-l2",
+        "correct": true,
+        "line": 2909
+      }
+    ]
+  },
+  {
+    "key": "g3w_geol2t4_c",
+    "ru": "7",
+    "en": "6",
+    "expected": "6",
+    "uses": [
+      {
+        "lesson": "g3w-geo-l2",
+        "correct": false,
+        "line": 2909
+      }
+    ]
+  },
+  {
+    "key": "g3w_opt_recycle",
+    "ru": "Чтобы защитить редких животных и растения",
+    "en": "sort and recycle",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g3w-nat-l3",
+        "correct": true,
+        "line": 2944
+      }
+    ]
+  },
+  {
+    "key": "g3w_opt_burn_trash",
+    "ru": "Чтобы красиво выглядеть в библиотеке",
+    "en": "burn rubbish",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g3w-nat-l3",
+        "correct": false,
+        "line": 2944
+      }
+    ]
+  },
+  {
+    "key": "g3w_opt_endangered",
+    "ru": "Кислород, тень и очищают воздух",
+    "en": "endangered species",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g3w-nat-l3",
+        "correct": true,
+        "line": 2946
+      }
+    ]
+  },
+  {
+    "key": "g3w_opt_math_calc",
+    "ru": "Исчезнут животные, потеряется среда обитания",
+    "en": "mathematical calculations",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g3w-eco-l1",
+        "correct": true,
+        "line": 2955
+      }
+    ]
+  },
+  {
+    "key": "g3w_opt_leave_tap_on",
+    "ru": "Многие растения не смогут опыляться и плодоносить",
+    "en": "Leave the tap running",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g3w-eco-l1",
+        "correct": true,
+        "line": 2957
+      }
+    ]
+  },
+  {
+    "key": "g3e_opt_tv_ru",
+    "ru": "Always, usually, sometimes, never",
+    "en": "TV",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g3e-daily-l3",
+        "correct": true,
+        "line": 3067
+      }
+    ]
+  },
+  {
+    "key": "g3e_opt_football_ru",
+    "ru": "Never, sometimes, usually, always",
+    "en": "football",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g3e-daily-l3",
+        "correct": false,
+        "line": 3067
+      }
+    ]
+  },
+  {
+    "key": "g3e_opt_book_ru",
+    "ru": "Sometimes, always, never, usually",
+    "en": "book",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g3e-daily-l3",
+        "correct": false,
+        "line": 3067
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm_q1_a",
+    "ru": "609",
+    "en": "90",
+    "expected": "90",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l1",
+        "correct": false,
+        "line": 3138
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm_q1_b",
+    "ru": "639",
+    "en": "100",
+    "expected": "100",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l1",
+        "correct": true,
+        "line": 3138
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm_q1_c",
+    "ru": "669",
+    "en": "110",
+    "expected": "110",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l1",
+        "correct": false,
+        "line": 3138
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm_q2_a",
+    "ru": "486",
+    "en": "12",
+    "expected": "12",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l1",
+        "correct": true,
+        "line": 3139
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm_q2_b",
+    "ru": "496",
+    "en": "11",
+    "expected": "11",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l1",
+        "correct": false,
+        "line": 3139
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm_q2_c",
+    "ru": "516",
+    "en": "13",
+    "expected": "13",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l1",
+        "correct": false,
+        "line": 3139
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm_q3_a",
+    "ru": "916",
+    "en": "165",
+    "expected": "165",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l1",
+        "correct": false,
+        "line": 3140
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm_q3_b",
+    "ru": "936",
+    "en": "175",
+    "expected": "175",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l1",
+        "correct": false,
+        "line": 3140
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm_q3_c",
+    "ru": "956",
+    "en": "180",
+    "expected": "180",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l1",
+        "correct": true,
+        "line": 3140
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm2_q1_a",
+    "ru": "5 730",
+    "en": "134",
+    "expected": "134",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l2",
+        "correct": true,
+        "line": 3153
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm2_q1_b",
+    "ru": "6 730",
+    "en": "144",
+    "expected": "144",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l2",
+        "correct": false,
+        "line": 3153
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm2_q1_c",
+    "ru": "7 230",
+    "en": "154",
+    "expected": "154",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l2",
+        "correct": false,
+        "line": 3153
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm2_q2_a",
+    "ru": "7 251",
+    "en": "20",
+    "expected": "20",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l2",
+        "correct": false,
+        "line": 3154
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm2_q2_b",
+    "ru": "7 351",
+    "en": "19",
+    "expected": "19",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l2",
+        "correct": true,
+        "line": 3154
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm2_q2_c",
+    "ru": "7 451",
+    "en": "21",
+    "expected": "21",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l2",
+        "correct": false,
+        "line": 3154
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm2_q3_a",
+    "ru": "18 248",
+    "en": "156",
+    "expected": "156",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l2",
+        "correct": false,
+        "line": 3155
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm2_q3_b",
+    "ru": "19 248",
+    "en": "160",
+    "expected": "160",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l2",
+        "correct": false,
+        "line": 3155
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm2_q3_c",
+    "ru": "20 248 — вот это да!",
+    "en": "162",
+    "expected": "162",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l2",
+        "correct": true,
+        "line": 3155
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm2_q4_a",
+    "ru": "< (меньше)",
+    "en": "26",
+    "expected": "26",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l2",
+        "correct": true,
+        "line": 3156
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm2_q4_b",
+    "ru": "= (равно)",
+    "en": "28",
+    "expected": "28",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l2",
+        "correct": false,
+        "line": 3156
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm2_q4_c",
+    "ru": "> (больше)",
+    "en": "30",
+    "expected": "30",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l2",
+        "correct": false,
+        "line": 3156
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm3_q1_a",
+    "ru": "2 732",
+    "en": "142",
+    "expected": "142",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l3",
+        "correct": true,
+        "line": 3168
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm3_q1_b",
+    "ru": "2 832",
+    "en": "152",
+    "expected": "152",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l3",
+        "correct": false,
+        "line": 3168
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm3_q1_c",
+    "ru": "3 032",
+    "en": "162",
+    "expected": "162",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l3",
+        "correct": false,
+        "line": 3168
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm3_q2_a",
+    "ru": "7 280",
+    "en": "30",
+    "expected": "30",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l3",
+        "correct": false,
+        "line": 3169
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm3_q2_b",
+    "ru": "8 280",
+    "en": "29",
+    "expected": "29",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l3",
+        "correct": true,
+        "line": 3169
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm3_q2_c",
+    "ru": "9 280",
+    "en": "31",
+    "expected": "31",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l3",
+        "correct": false,
+        "line": 3169
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm3_q3_a",
+    "ru": "5 034",
+    "en": "206",
+    "expected": "206",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l3",
+        "correct": false,
+        "line": 3170
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm3_q3_b",
+    "ru": "5 434",
+    "en": "212",
+    "expected": "212",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l3",
+        "correct": false,
+        "line": 3170
+      }
+    ]
+  },
+  {
+    "key": "g4m_cm3_q3_c",
+    "ru": "5 834",
+    "en": "216",
+    "expected": "216",
+    "uses": [
+      {
+        "lesson": "g4m-cm-l3",
+        "correct": true,
+        "line": 3170
+      }
+    ]
+  },
+  {
+    "key": "g4e_pres2_q4_a",
+    "ru": "They don't watch TV in the evening.",
+    "en": "clean",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4e-pres-l2",
+        "correct": true,
+        "line": 3403
+      }
+    ]
+  },
+  {
+    "key": "g4e_pres2_q4_b",
+    "ru": "They doesn't watch TV in the evening.",
+    "en": "cleans",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4e-pres-l2",
+        "correct": false,
+        "line": 3403
+      }
+    ]
+  },
+  {
+    "key": "g4e_pres2_q4_c",
+    "ru": "They not watch TV in the evening.",
+    "en": "cleaning",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4e-pres-l2",
+        "correct": false,
+        "line": 3403
+      }
+    ]
+  },
+  {
+    "key": "g4e_past3_q2_a",
+    "ru": "неверное окончание — нужно «bought»",
+    "en": "solve",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4e-past-l3",
+        "correct": true,
+        "line": 3463
+      }
+    ]
+  },
+  {
+    "key": "g4e_past3_q4_a",
+    "ru": "She wrote not a letter yesterday.",
+    "en": "come",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4e-past-l3",
+        "correct": false,
+        "line": 3465
+      }
+    ]
+  },
+  {
+    "key": "g4e_past3_q4_b",
+    "ru": "She didn't write a letter yesterday.",
+    "en": "came",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4e-past-l3",
+        "correct": true,
+        "line": 3465
+      }
+    ]
+  },
+  {
+    "key": "g4e_past3_q4_c",
+    "ru": "She doesn't write a letter yesterday.",
+    "en": "comes",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4e-past-l3",
+        "correct": false,
+        "line": 3465
+      }
+    ]
+  },
+  {
+    "key": "g4s_turn_q1_c",
+    "ru": "Кричать, чтобы пропустили быстрее",
+    "en": "Shout louder",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4s-turn-l1",
+        "correct": false,
+        "line": 3626
+      }
+    ]
+  },
+  {
+    "key": "g4s_turn_q2_b",
+    "ru": "Толкнуть соседа, чтобы ответить первым",
+    "en": "Push",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4s-turn-l1",
+        "correct": false,
+        "line": 3627
+      }
+    ]
+  },
+  {
+    "key": "g4s_turn_q3_c",
+    "ru": "Потому что это нарушает право других на уважение",
+    "en": "It shows respect",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4s-turn-l1",
+        "correct": true,
+        "line": 3628
+      }
+    ]
+  },
+  {
+    "key": "g4s_turn_q4_b",
+    "ru": "Договориться заранее и соблюдать порядок",
+    "en": "Raise your hand",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4s-turn-l1",
+        "correct": true,
+        "line": 3629
+      }
+    ]
+  },
+  {
+    "key": "g4s_turn2_q1_a",
+    "ru": "Тали берёт самокат себе — он же хозяин",
+    "en": "Take it away",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4s-turn-l2",
+        "correct": false,
+        "line": 3641
+      }
+    ]
+  },
+  {
+    "key": "g4s_turn2_q1_b",
+    "ru": "По очереди — каждому по одинаковому времени",
+    "en": "Wait or ask politely",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4s-turn-l2",
+        "correct": true,
+        "line": 3641
+      }
+    ]
+  },
+  {
+    "key": "g4s_turn2_q2_a",
+    "ru": "Решение, при котором всем понятно и никто не обижен — это и есть справедливость",
+    "en": "A solution for both sides",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4s-turn-l2",
+        "correct": true,
+        "line": 3642
+      }
+    ]
+  },
+  {
+    "key": "g4s_turn2_q3_b",
+    "ru": "Это грубость в ответ на грубость",
+    "en": "Rudeness",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4s-turn-l2",
+        "correct": false,
+        "line": 3643
+      }
+    ]
+  },
+  {
+    "key": "g4s_turn2_q3_c",
+    "ru": "Это решение, при котором каждая сторона чуть-чуть уступает ради общего блага",
+    "en": "Willingness to compromise",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4s-turn-l2",
+        "correct": true,
+        "line": 3643
+      }
+    ]
+  },
+  {
+    "key": "g4s_turn2_q4_b",
+    "ru": "Принимает решение команды и играет в прятки",
+    "en": "Accept the team decision",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4s-turn-l2",
+        "correct": true,
+        "line": 3644
+      }
+    ]
+  },
+  {
+    "key": "g4s_turn3_q1_c",
+    "ru": "Спокойно сказать: «Давайте соблюдать правила»",
+    "en": "It is not beneficial",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4s-turn-l3",
+        "correct": false,
+        "line": 3656
+      }
+    ]
+  },
+  {
+    "key": "g4s_turn3_q2_a",
+    "ru": "Чтобы кто-то обязательно проиграл",
+    "en": "Argument",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4s-turn-l3",
+        "correct": true,
+        "line": 3657
+      }
+    ]
+  },
+  {
+    "key": "g4s_turn3_q2_b",
+    "ru": "Чтобы игра была честной и интересной для всех",
+    "en": "Dialogue",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4s-turn-l3",
+        "correct": false,
+        "line": 3657
+      }
+    ]
+  },
+  {
+    "key": "g4s_turn3_q3_c",
+    "ru": "Пожать руку победителю и спросить, что можно улучшить",
+    "en": "Discuss calmly",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4s-turn-l3",
+        "correct": true,
+        "line": 3658
+      }
+    ]
+  },
+  {
+    "key": "g4s_turn3_q4_a",
+    "ru": "Объявить — это правильно, Тали прав",
+    "en": "Shout",
+    "expected": null,
+    "uses": [
+      {
+        "lesson": "g4s-turn-l3",
+        "correct": false,
+        "line": 3659
+      }
+    ]
+  }
+]

@@ -1,0 +1,318 @@
+[
+  {
+    "id": "g1m-c20-l1",
+    "title": "Числа 11–15",
+    "subject": "math",
+    "world": "g1math",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1m-c20-l2",
+    "title": "Числа 16–20",
+    "subject": "math",
+    "world": "g1math",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1m-c20-l3",
+    "title": "Сравнение чисел",
+    "subject": "math",
+    "world": "g1math",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1m-add-l1",
+    "title": "Сложение до 10",
+    "subject": "math",
+    "world": "g1math",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1m-add-l2",
+    "title": "До десятка",
+    "subject": "math",
+    "world": "g1math",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1m-add-l3",
+    "title": "Сложение с 10",
+    "subject": "math",
+    "world": "g1math",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1m-sub-l1",
+    "title": "Вычитание до 10",
+    "subject": "math",
+    "world": "g1math",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1m-sub-l2",
+    "title": "Вычитание из 10",
+    "subject": "math",
+    "world": "g1math",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1m-sub-l3",
+    "title": "Смешанные примеры",
+    "subject": "math",
+    "world": "g1math",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1r-vow-l1",
+    "title": "Буквы А, О, У",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1r-vow-l2",
+    "title": "Я, Ю, Е, Ё",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1r-vow-l3",
+    "title": "Мягкость согласных",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1r-wrd-l1",
+    "title": "Читаем слова",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1r-wrd-l2",
+    "title": "Слоги",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1r-wrd-l3",
+    "title": "Предложения",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1r-grm-l1",
+    "title": "Заглавная буква",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1r-grm-l2",
+    "title": "Знаки препинания",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1r-grm-l3",
+    "title": "Вопросы кто? что?",
+    "subject": "reading_ru",
+    "world": "g1rus",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1w-sch-l1",
+    "title": "Школьные принадлежности",
+    "subject": "logic",
+    "world": "g1world",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1w-sch-l2",
+    "title": "Класс и уроки",
+    "subject": "logic",
+    "world": "g1world",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1w-sch-l3",
+    "title": "Физкультура и рисование",
+    "subject": "logic",
+    "world": "g1world",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1w-nat-l1",
+    "title": "Деревья",
+    "subject": "logic",
+    "world": "g1world",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1w-nat-l2",
+    "title": "Животные",
+    "subject": "logic",
+    "world": "g1world",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1w-nat-l3",
+    "title": "Погода",
+    "subject": "logic",
+    "world": "g1world",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1w-bdy-l1",
+    "title": "Органы чувств",
+    "subject": "logic",
+    "world": "g1world",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1w-bdy-l2",
+    "title": "Здоровье",
+    "subject": "logic",
+    "world": "g1world",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1w-bdy-l3",
+    "title": "Безопасность",
+    "subject": "logic",
+    "world": "g1world",
+    "types": [],
+    "taskCount": 0
+  },
+  {
+    "id": "g1e-abc-l1",
+    "title": "Буквы G–J",
+    "subject": "reading",
+    "world": "g1eng",
+    "types": [
+      "multiple_choice",
+      "fill_blank",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g1e-abc-l2",
+    "title": "Буквы K–N",
+    "subject": "reading",
+    "world": "g1eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g1e-abc-l3",
+    "title": "Буквы O–R",
+    "subject": "reading",
+    "world": "g1eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g1e-num-l1",
+    "title": "Числа 1–5",
+    "subject": "reading",
+    "world": "g1eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g1e-num-l2",
+    "title": "Числа 6–10",
+    "subject": "reading",
+    "world": "g1eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g1e-num-l3",
+    "title": "Простые примеры",
+    "subject": "reading",
+    "world": "g1eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g1e-grt-l1",
+    "title": "Приветствия",
+    "subject": "reading",
+    "world": "g1eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g1e-grt-l2",
+    "title": "Меня зовут",
+    "subject": "reading",
+    "world": "g1eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  },
+  {
+    "id": "g1e-grt-l3",
+    "title": "Спасибо и пожалуйста",
+    "subject": "reading",
+    "world": "g1eng",
+    "types": [
+      "multiple_choice",
+      "input"
+    ],
+    "taskCount": 4
+  }
+]

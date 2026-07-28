@@ -1,0 +1,3629 @@
+[
+  {
+    "id": "g2m-100-l1",
+    "tasks": [
+      {
+        "id": "g2m100l1t1",
+        "type": "multiple_choice",
+        "qKey": "g2m_10x3",
+        "qRu": "Тали пытается помочь Арчи: «Три коробки по 10 перьев — это… 30? Или 13?» Тали запутался! Кто прав?",
+        "qEn": "10 × 3 =?",
+        "qKy": " 10 × 3 =?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "13",
+            "en": "13",
+            "ky": "13",
+            "key": "g2m_100l1_q1_a"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "30",
+            "en": "30",
+            "ky": "30",
+            "key": "opt_30"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Оба неправы",
+            "en": "Both are wrong",
+            "ky": "Экөө тең туура эмес",
+            "key": "g2m_100l1_q1_c"
+          }
+        ]
+      },
+      {
+        "id": "g2m100l1t2",
+        "type": "multiple_choice",
+        "qKey": "g2m_10x7",
+        "qRu": "Арчи летел над полем и насчитал 7 стогов сена. В каждом стогу ровно 10 мышей. Сколько мышей всего?",
+        "qEn": "10 × 7 =?",
+        "qKy": " 10 × 7 =?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "60",
+            "en": "60",
+            "ky": "60",
+            "key": "opt_60"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "70",
+            "en": "70",
+            "ky": "70",
+            "key": "opt_70"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "80",
+            "en": "80",
+            "ky": "80",
+            "key": "opt_80"
+          }
+        ]
+      },
+      {
+        "id": "g2m100l1t3",
+        "type": "input",
+        "qKey": "g2m_10x5",
+        "qRu": "Тали хочет собрать ровно 50 ракушек для своей коллекции. Он уже нашёл 5 коробок по 10. Хватит? 10 × 5 = ?",
+        "qEn": "10 × 5 =?",
+        "qKy": " 10 × 5 =?",
+        "answer": "50",
+        "options": []
+      },
+      {
+        "id": "g2m100l1t4",
+        "type": "multiple_choice",
+        "qKey": "g2m_how_many_tens_in_100",
+        "qRu": "Арчи хвастается: «Сто — это пять десятков!» Тали говорит: «Нет, десять!» Кто из них прав?",
+        "qEn": "How many tens in a hundred?",
+        "qKy": " Жүздө канча ондук бар?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "5",
+            "en": "5",
+            "ky": "5",
+            "key": "opt_five"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "10",
+            "en": "10",
+            "ky": "10",
+            "key": "opt_ten"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "20",
+            "en": "20",
+            "ky": "20",
+            "key": "opt_20"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g2m-100-l2",
+    "tasks": [
+      {
+        "id": "g2m100l2t1",
+        "type": "input",
+        "qKey": "g2m_compose_3t_6u",
+        "qRu": "Тали разложил свои камушки: в одну кучку 3 десятка, в другую 6 единиц. Какое число у него получилось?",
+        "qEn": "Tali sorted his pebbles: 3 tens in one pile, 6 ones in another. What number did he get?",
+        "qKy": "Тали таштарды бөлдү: бир үймөктө 3 ондук, экинчисинде 6 бирдик. Кандай сан чыкты?",
+        "answer": "36",
+        "options": []
+      },
+      {
+        "id": "g2m100l2t2",
+        "type": "multiple_choice",
+        "qKey": "g2m_biggest_37_42_29",
+        "qRu": "Какое число самое большое: 37, 42 или 29?",
+        "qEn": "Which number is the largest: 37, 42, or 29?",
+        "qKy": "Кайсы сан эң чоң: 37, 42 же 29?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "37",
+            "en": "37",
+            "ky": "37",
+            "key": "opt_37"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "42",
+            "en": "42",
+            "ky": "42",
+            "key": "opt_42"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "29",
+            "en": "29",
+            "ky": "29",
+            "key": "opt_29"
+          }
+        ]
+      },
+      {
+        "id": "g2m100l2t3",
+        "type": "input",
+        "qKey": "g2m_tens_in_48",
+        "qRu": "Детектив Тали расследует число 48. Сколько десятков он нашёл в этом числе?",
+        "qEn": "Detective Tali investigates the number 48. How many tens are in it?",
+        "qKy": "Детектив Тали 48 санын изилдейт. Анда канча ондук бар?",
+        "answer": "4",
+        "options": []
+      },
+      {
+        "id": "g2m100l2t4",
+        "type": "input",
+        "qKey": "g2m_units_in_37",
+        "qRu": "Сколько единиц в числе 37?",
+        "qEn": "How many ones (units) are in 37?",
+        "qKy": "37 санында канча бирдик бар?",
+        "answer": "7",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2m-100-l3",
+    "tasks": [
+      {
+        "id": "g2m100l3t1",
+        "type": "input",
+        "qKey": "g2m_before_100",
+        "qRu": "Арчи летит к самому большому двузначному числу. Оно стоит прямо перед 100. Что это за число?",
+        "qEn": "What is the number before 100?",
+        "qKy": " Какое число перед 100?",
+        "answer": "99",
+        "options": []
+      },
+      {
+        "id": "g2m100l3t2",
+        "type": "multiple_choice",
+        "qKey": "g2m_smallest_78_82_91",
+        "qRu": "Тали нашёл 82 ракушки, Арчи — 78 перьев. Тали говорит «я нашёл больше!», Арчи не верит. Кто прав?",
+        "qEn": "Compare the numbers and pick the right answer: Which is the smallest number: 78, 82 or 91?",
+        "qKy": "Сандарды салыштырып, туура жоопту танда: Какое число самое маленькое: 78, 82 или 91?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Арчи нашёл больше (78 > 82)",
+            "en": "Archie found more (78 > 82)",
+            "ky": "Арчи көбүрөөк тапты (78 > 82)",
+            "key": "g2m_100l3_q2_a"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Тали нашёл больше (82 > 78)",
+            "en": "Tali found more (82 > 78)",
+            "ky": "Тали көбүрөөк тапты (82 > 78)",
+            "key": "g2m_100l3_q2_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "У них поровну",
+            "en": "They found the same amount",
+            "ky": "Экөөндө бирдей",
+            "key": "g2m_100l3_q2_c"
+          }
+        ]
+      },
+      {
+        "id": "g2m100l3t3",
+        "type": "input",
+        "qKey": "g2m_tens_in_90",
+        "qRu": "Сколько десятков в числе 90?",
+        "qEn": "How many tens are there in the number 90?",
+        "qKy": " 90 санында канча ондук бар?",
+        "answer": "9",
+        "options": []
+      },
+      {
+        "id": "g2m100l3t4",
+        "type": "input",
+        "qKey": "g2m_num_5tens_6units",
+        "qRu": "Тали записал число: «пять десятков и шесть единиц». Что это за число?",
+        "qEn": "Write down the number: 5 tens and 6 units",
+        "qKy": " Запиши число: 5 десятков и 6 единиц",
+        "answer": "56",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2m-add2-l1",
+    "tasks": [
+      {
+        "id": "g2madd2l1t1",
+        "type": "input",
+        "qKey": "g2m_20plus30",
+        "qRu": "Тали покупает 20 бананов и 30 кокосов. Он говорит: «Это 23 штуки!» Нет, Тали! Подсчитай правильно: 20 + 30 = ?",
+        "qEn": "20 + 30 =?",
+        "qKy": " 20 + 30 =?",
+        "answer": "50",
+        "options": []
+      },
+      {
+        "id": "g2madd2l1t2",
+        "type": "input",
+        "qKey": "g2m_40plus50",
+        "qRu": "40 + 50 = ?",
+        "qEn": "40 + 50 =?",
+        "qKy": " 40 + 50 =?",
+        "answer": "90",
+        "options": []
+      },
+      {
+        "id": "g2madd2l1t3",
+        "type": "multiple_choice",
+        "qKey": "g2m_30plus_eq100",
+        "qRu": "Арчи летел 30 км утром и ещё сколько-то вечером. Всего получилось 100 км. Сколько он летел вечером?",
+        "qEn": "30 +? = 100. What number is missing?",
+        "qKy": " 30 +? = 100. Какое число пропущено?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "60",
+            "en": "60",
+            "ky": "60",
+            "key": "opt_60"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "70",
+            "en": "70",
+            "ky": "70",
+            "key": "opt_70"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "80",
+            "en": "80",
+            "ky": "80",
+            "key": "opt_80"
+          }
+        ]
+      },
+      {
+        "id": "g2madd2l1t4",
+        "type": "input",
+        "qKey": "g2m_60plus40",
+        "qRu": "60 + 40 = ?",
+        "qEn": "60 + 40 =?",
+        "qKy": " 60 + 40 =?",
+        "answer": "100",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2m-add2-l2",
+    "tasks": [
+      {
+        "id": "g2madd2l2t1",
+        "type": "multiple_choice",
+        "qKey": "g2m_28plus5",
+        "qRu": "28 + 5 = ? (сначала добери до 30!)",
+        "qEn": "28 + 5 = ? (bridge up to 30 first!)",
+        "qKy": "28 + 5 = ? (алдынча 30го жеткир!)",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "33",
+            "en": "33",
+            "ky": "33",
+            "key": "g2m_opt_33"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "213",
+            "en": "213",
+            "ky": "213",
+            "key": "g2m_opt_213"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "35",
+            "en": "35",
+            "ky": "35",
+            "key": "g2m_opt_35"
+          }
+        ]
+      },
+      {
+        "id": "g2madd2l2t2",
+        "type": "input",
+        "qKey": "g2m_36plus7",
+        "qRu": "36 + 7 = ? (допрыгни до 40)",
+        "qEn": "36 + 7 = ? (jump to 40 first)",
+        "qKy": "36 + 7 = ? (алдынча 40ка жет)",
+        "answer": "43",
+        "options": []
+      },
+      {
+        "id": "g2madd2l2t3",
+        "type": "multiple_choice",
+        "qKey": "g2m_19plus4_step",
+        "qRu": "19 + 4: какой первый шаг «до круглого»?",
+        "qEn": "19 + 4: what is the first step to the round ten?",
+        "qKy": "19 + 4: тегерек ондукка карай биринчи кадам кайсы?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "19 + 1 = 20, потом + 3",
+            "en": "19 + 1 = 20, then + 3",
+            "ky": "19 + 1 = 20, андан соң + 3",
+            "key": "g2m_opt_19plus1"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "сразу 19 + 4 без шагов",
+            "en": "add 19 + 4 in one jump with no steps",
+            "ky": "кадамсыз эле 19 + 4",
+            "key": "g2m_opt_19plus4_all"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "19 + 9 = 28",
+            "en": "19 + 9 = 28",
+            "ky": "19 + 9 = 28",
+            "key": "g2m_opt_19plus9"
+          }
+        ]
+      },
+      {
+        "id": "g2madd2l2t4",
+        "type": "input",
+        "qKey": "g2m_47plus8",
+        "qRu": "47 + 8 = ?",
+        "qEn": "47 + 8 = ?",
+        "qKy": "47 + 8 = ?",
+        "answer": "55",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2m-add2-l3",
+    "tasks": [
+      {
+        "id": "g2madd2l3t1",
+        "type": "input",
+        "qKey": "g2m_sub_65minus23",
+        "qRu": "65 − 23 = ? (Тали прав?)",
+        "qEn": "65 − 23 =?",
+        "qKy": " 65 − 23 =?",
+        "answer": "42",
+        "options": []
+      },
+      {
+        "id": "g2madd2l3t2",
+        "type": "input",
+        "qKey": "g2m_sub_80minus47",
+        "qRu": "80 − 47 = ?",
+        "qEn": "80 − 47 =?",
+        "qKy": " 80 − 47 =?",
+        "answer": "33",
+        "options": []
+      },
+      {
+        "id": "g2madd2l3t3",
+        "type": "multiple_choice",
+        "qKey": "g2m_word_apples_30_give_13",
+        "qRu": "Было 30 яблок, Тали отдал 13 Арчи. Сколько осталось?",
+        "qEn": "There were 30 apples, they gave 13. How many are left?",
+        "qKy": " 30 алма болду, 13үн берди. Канчасы калды?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "17",
+            "en": "17",
+            "ky": "17",
+            "key": "opt_17"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "18",
+            "en": "18",
+            "ky": "18",
+            "key": "opt_18"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "43",
+            "en": "43",
+            "ky": "43",
+            "key": "g2m_add2l3_q3_c"
+          }
+        ]
+      },
+      {
+        "id": "g2madd2l3t4",
+        "type": "input",
+        "qKey": "g2m_word_45plus27",
+        "qRu": "91 − 38 = ?",
+        "qEn": "91 − 38 = ?",
+        "qKy": "91 − 38 = ?",
+        "answer": "53",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2m-times-l1",
+    "tasks": [
+      {
+        "id": "g2mtimesl1t1",
+        "type": "input",
+        "qKey": "g2m_2x4",
+        "qRu": "Тали купил 4 пары носков. 2 × 4 = ? Сколько носков всего?",
+        "qEn": "2 × 4 =?",
+        "qKy": " 2 × 4 =?",
+        "answer": "8",
+        "options": []
+      },
+      {
+        "id": "g2mtimesl1t2",
+        "type": "input",
+        "qKey": "g2m_2x7",
+        "qRu": "2 × 7 = ?",
+        "qEn": "2 × 7 =?",
+        "qKy": " 2 × 7 =?",
+        "answer": "14",
+        "options": []
+      },
+      {
+        "id": "g2mtimesl1t3",
+        "type": "input",
+        "qKey": "g2m_2x9",
+        "qRu": "2 × 9 = ?",
+        "qEn": "2 × 9 =?",
+        "qKy": " 2 × 9 =?",
+        "answer": "18",
+        "options": []
+      },
+      {
+        "id": "g2mtimesl1t4",
+        "type": "multiple_choice",
+        "qKey": "g2m_2x6_check",
+        "qRu": "Арчи утверждает: «2 × 6 = 14!» Тали не верит. Кто прав?",
+        "qEn": "Archie states, “2 x 6 = 14!” Tali doesn't believe it. Who's right?",
+        "qKy": "Арчи мындай дейт: \"2 x 6 = 14!\" Тали буга ишенбейт. Ким туура?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Арчи прав: 2 × 6 = 14",
+            "en": "Archie is right: 2 × 6 = 14",
+            "ky": "Арчи туура: 2 × 6 = 14",
+            "key": "g2m_timesl1_q4_a"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Тали прав, что не верит: 2 × 6 = 12",
+            "en": "Tali is right to doubt: 2 × 6 = 12",
+            "ky": "Тали туура шектенет: 2 × 6 = 12",
+            "key": "g2m_timesl1_q4_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Оба ошибаются: 2 × 6 = 16",
+            "en": "Both are wrong: 2 × 6 = 16",
+            "ky": "Экөө тең жаңылышат: 2 × 6 = 16",
+            "key": "g2m_timesl1_q4_c"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g2m-times-l2",
+    "tasks": [
+      {
+        "id": "g2mtimesl2t1",
+        "type": "input",
+        "qKey": "g2m_5x3",
+        "qRu": "5 × 3 = ?",
+        "qEn": "5 × 3 =?",
+        "qKy": " 5 × 3 =?",
+        "answer": "15",
+        "options": []
+      },
+      {
+        "id": "g2mtimesl2t2",
+        "type": "input",
+        "qKey": "g2m_5x6",
+        "qRu": "5 × 6 = ?",
+        "qEn": "5 × 6 =?",
+        "qKy": " 5 × 6 =?",
+        "answer": "30",
+        "options": []
+      },
+      {
+        "id": "g2mtimesl2t3",
+        "type": "input",
+        "qKey": "g2m_5x8",
+        "qRu": "5 × 8 = ?",
+        "qEn": "5 × 8 =?",
+        "qKy": " 5 × 8 =?",
+        "answer": "40",
+        "options": []
+      },
+      {
+        "id": "g2mtimesl2t4",
+        "type": "multiple_choice",
+        "qKey": "g2m_5x9_check",
+        "qRu": "Тали говорит: «5 × 9 = 46!» Арчи смеётся и объясняет, почему Тали неправ. Что ответил Арчи?",
+        "qEn": "Tali says: “5 × 9 = 46!” Archie laughs and explains why Tali is wrong. What did Archie say?",
+        "qKy": "Тали мындай дейт: \"5 × 9 = 46!\" Арчи күлүп, Талинин эмне үчүн туура эмес экенин түшүндүрөт. Арчи эмне деди?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Тали прав, 46 — верно",
+            "en": "Tali is right, 46 is correct",
+            "ky": "Тали туура, 46 — туура",
+            "key": "g2m_timesl2_q4_a"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Нет, 5 × 9 = 45, и это заканчивается на 5 — всё по правилу!",
+            "en": "No, 5 × 9 = 45, and it ends in 5 — the rule works!",
+            "ky": "Жок, 5 × 9 = 45, жана ал 5ке бүтөт — эреже иштейт!",
+            "key": "g2m_timesl2_q4_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "5 × 9 = 50",
+            "en": "5 × 9 = 50",
+            "ky": "5 × 9 = 50",
+            "key": "g2m_timesl2_q4_c"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g2m-times-l3",
+    "tasks": [
+      {
+        "id": "g2mtimesl3t1",
+        "type": "input",
+        "qKey": "g2m_3x4",
+        "qRu": "У Тали три кармана по 4 монеты. 3 × 4 = ?",
+        "qEn": "3 × 4 =?",
+        "qKy": " 3 × 4 =?",
+        "answer": "12",
+        "options": []
+      },
+      {
+        "id": "g2mtimesl3t2",
+        "type": "input",
+        "qKey": "g2m_3x7",
+        "qRu": "3 × 7 = ? (Сколько монет у Тали?)",
+        "qEn": "3 × 7 =?",
+        "qKy": " 3 × 7 =?",
+        "answer": "21",
+        "options": []
+      },
+      {
+        "id": "g2mtimesl3t3",
+        "type": "input",
+        "qKey": "g2m_3x9",
+        "qRu": "3 × 9 = ?",
+        "qEn": "3 × 9 =?",
+        "qKy": " 3 × 9 =?",
+        "answer": "27",
+        "options": []
+      },
+      {
+        "id": "g2mtimesl3t4",
+        "type": "multiple_choice",
+        "qKey": "g2m_3x8_check",
+        "qRu": "Арчи считает: «3 × 8 = 24!» — Тали говорит: «Нет, 26!» Кто из них прав?",
+        "qEn": "3 × 8 = 24. Right?",
+        "qKy": " 3 × 8 = 24. Верно?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Тали прав (26)",
+            "en": "Tali is right (26)",
+            "ky": "Тали туура (26)",
+            "key": "g2m_timesl3_q4_a"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Арчи прав (24)",
+            "en": "Archie is right (24)",
+            "ky": "Арчи туура (24)",
+            "key": "g2m_timesl3_q4_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Оба неправы",
+            "en": "Both are wrong",
+            "ky": "Экөө тең туура эмес",
+            "key": "g2m_timesl3_q4_c"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "g2r-sh-l1",
+    "tasks": [
+      {
+        "id": "g2rshl1t1",
+        "type": "multiple_choice",
+        "qKey": "g2r_nos_consonant",
+        "qRu": "Тали читает слово НОС и задаётся вопросом: «Н здесь твёрдая или мягкая?» Помоги ему!",
+        "qEn": "Consonant H in the word NOSE:",
+        "qKy": " НОС сөзүндөгү Н тамгасы:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Мягкий",
+            "en": "Soft",
+            "ky": "Жумшак",
+            "key": "opt_soft"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Твёрдый",
+            "en": "Hard",
+            "ky": "Катуу",
+            "key": "opt_hard"
+          }
+        ]
+      },
+      {
+        "id": "g2rshl1t2",
+        "type": "multiple_choice",
+        "qKey": "g2r_zha_hard",
+        "qRu": "Маша говорит: «Буква Ж в любом слове всегда твёрдая — исключений нет!» Тали не верит. А ты?",
+        "qEn": "Is the letter F always solid?",
+        "qKy": " Буква Ж всегда твёрдая?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Да",
+            "en": "Yes",
+            "ky": "Ооба",
+            "key": "opt_yes"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Нет",
+            "en": "No",
+            "ky": "Жок",
+            "key": "opt_no"
+          }
+        ]
+      },
+      {
+        "id": "g2rshl1t3",
+        "type": "fill_blank",
+        "qKey": "g2r_shl1_fb_sent",
+        "qRu": "Всегда твёрдый согласный: _",
+        "qEn": "Always a hard consonant: _",
+        "qKy": "Ар дайым катуу үнсүз: _",
+        "answer": null,
+        "options": []
+      },
+      {
+        "id": "g2rshl1t4",
+        "type": "input",
+        "qKey": "g2r_hard_consonants_count",
+        "qRu": "В слове НОС две согласные. Тали говорит: «Обе твёрдые!» Сколько твёрдых согласных в слове НОС?",
+        "qEn": "The word НОС has two consonants. Tali says: “Both are hard!” How many hard consonants are in НОС?",
+        "qKy": "НОС сөзүндө эки үнсүз бар. Тали: «Экөө тең катуу!» дейт. НОС сөзүндө канча катуу үнсүз бар?",
+        "answer": "2",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2r-sh-l2",
+    "tasks": [
+      {
+        "id": "g2rshl2t1",
+        "type": "multiple_choice",
+        "qKey": "g2r_kon_konj",
+        "qRu": "Тали написал «КОН». Маша говорит, нужно «КОНЬ». Как правильно написать слово про лошадь?",
+        "qEn": "Which is correct: horse or horse?",
+        "qKy": " Кайсынысы туура: кон же конь?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "КОН",
+            "en": "кон",
+            "ky": "кон",
+            "key": "g2r_opt_kon"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "КОНЬ",
+            "en": "конь",
+            "ky": "конь",
+            "key": "g2r_opt_konj"
+          }
+        ]
+      },
+      {
+        "id": "g2rshl2t2",
+        "type": "multiple_choice",
+        "qKey": "g2r_soft_sign_role",
+        "qRu": "Что делает мягкий знак в слове?",
+        "qEn": "What does a soft sign do?",
+        "qKy": " Что делает мягкий знак?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Смягчает предыдущую согласную",
+            "en": "смягчает",
+            "ky": "смягчает",
+            "key": "g2r_opt_softens"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Делает согласную твёрдой",
+            "en": "делает твёрдым",
+            "ky": "делает твёрдым",
+            "key": "g2r_opt_hardens"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Ничего не делает",
+            "en": "ничего",
+            "ky": "ничего",
+            "key": "g2r_opt_no_role"
+          }
+        ]
+      },
+      {
+        "id": "g2rshl2t3",
+        "type": "fill_blank",
+        "qKey": "g2r_shl2_fb_sent",
+        "qRu": "Правильно: _ (с мягким знаком)",
+        "qEn": "Correct: _ (with a soft sign)",
+        "qKy": "Туура: _ (жумшак белги менен)",
+        "answer": null,
+        "options": []
+      },
+      {
+        "id": "g2rshl2t4",
+        "type": "input",
+        "qKey": "g2r_soft_sign_between",
+        "qRu": "Мягкий знак может стоять между двумя согласными (например: ПИСЬМО). Это правда?",
+        "qEn": "Can a soft sign stand between consonants?",
+        "qKy": " Мягкий знак может стоять между согласными?",
+        "answer": "Да",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2r-sh-l3",
+    "tasks": [
+      {
+        "id": "g2rshl3t1",
+        "type": "multiple_choice",
+        "qKey": "g2r_li_is_soft",
+        "qRu": "В слове ЛИМОН: слог ЛИ делает согласный Л мягким?",
+        "qEn": "In ЛИМОН, does the syllable ЛИ make L soft?",
+        "qKy": "ЛИМОН сөзүндө ЛИ мууну Л тыбышын жумшак кылабы?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Да",
+            "en": "Yes",
+            "ky": "Ооба",
+            "key": "opt_yes"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Нет",
+            "en": "No",
+            "ky": "Жок",
+            "key": "opt_no"
+          }
+        ]
+      },
+      {
+        "id": "g2rshl3t2",
+        "type": "multiple_choice",
+        "qKey": "g2r_lu_is_hard",
+        "qRu": "Тали читает: ЛУЖА. Слог ЛУ — какой здесь Л?",
+        "qEn": "Tali reads: LUZHA. In the syllable LU, is L soft or hard?",
+        "qKy": "Тали окуйт: ЛУЖА. ЛУ муунунда Л кандай — жумшак же катуу?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Мягкий",
+            "en": "Soft",
+            "ky": "Жумшак",
+            "key": "opt_soft"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Твёрдый",
+            "en": "Hard",
+            "ky": "Катуу",
+            "key": "opt_hard"
+          }
+        ]
+      },
+      {
+        "id": "g2rshl3t3",
+        "type": "multiple_choice",
+        "qKey": "g2r_le_is_what",
+        "qRu": "Маша написала: ЛЕТО. Слог ЛЕ делает Л…",
+        "qEn": "Is the syllable LE soft or hard?",
+        "qKy": " Слог ЛЕ — мягкий или твёрдый?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Мягкий",
+            "en": "Soft",
+            "ky": "Жумшак",
+            "key": "opt_soft"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Твёрдый",
+            "en": "Hard",
+            "ky": "Катуу",
+            "key": "opt_hard"
+          }
+        ]
+      },
+      {
+        "id": "g2rshl3t4",
+        "type": "input",
+        "qKey": "g2r_la_is_what",
+        "qRu": "Тали читает ЛАМПА. Слог ЛА — какой Л?",
+        "qEn": "Is the PA syllable soft or hard?",
+        "qKy": " Слог ЛА — мягкий или твёрдый?",
+        "answer": "Твёрдый",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2r-sp-l1",
+    "tasks": [
+      {
+        "id": "g2rspl1t1",
+        "type": "multiple_choice",
+        "qKey": "g2r_noun_question",
+        "qRu": "На какой вопрос отвечает существительное?",
+        "qEn": "What question does the noun answer?",
+        "qKy": " Зат атооч кайсы суроого жооп берет?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Кто? Что?",
+            "en": "Who? What?",
+            "ky": "Ким? Эмне?",
+            "key": "g2r_opt_kto_chto"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Что делает?",
+            "en": "What does it do?",
+            "ky": "Эмне кылат?",
+            "key": "g2r_opt_chto_delaet"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Какой?",
+            "en": "Which?",
+            "ky": "Кандай?",
+            "key": "g2r_opt_kakoy"
+          }
+        ]
+      },
+      {
+        "id": "g2rspl1t2",
+        "type": "multiple_choice",
+        "qKey": "g2r_kot_noun",
+        "qRu": "Тали говорит: «КОТ — это существительное!» Он прав?",
+        "qEn": "Tali says: “CAT is a noun!” Is he right?",
+        "qKy": "Тали айтат: «КОТ — зат атооч!» Ал туурабы?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Да",
+            "en": "Yes",
+            "ky": "Ооба",
+            "key": "opt_yes"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Нет",
+            "en": "No",
+            "ky": "Жок",
+            "key": "opt_no"
+          }
+        ]
+      },
+      {
+        "id": "g2rspl1t3",
+        "type": "multiple_choice",
+        "qKey": "g2r_beg_noun",
+        "qRu": "Тали смотрит на слово БЕЖИТ и думает: «Это существительное!» Он прав?",
+        "qEn": "Tali looks at the word RUNS and thinks: “This is a noun!” Is he right?",
+        "qKy": "Тали БЕЖИТ сөзүнө карап: «Бул зат атооч!» дейт. Ал туурабы?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Да",
+            "en": "Yes",
+            "ky": "Ооба",
+            "key": "opt_yes"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Нет",
+            "en": "No",
+            "ky": "Жок",
+            "key": "opt_no"
+          }
+        ]
+      },
+      {
+        "id": "g2rspl1t4",
+        "type": "input",
+        "qKey": "g2r_which_is_noun",
+        "qRu": "Напиши существительное из списка: Книга / Сидит / Красивый",
+        "qEn": "Write the noun from the list: Book / Sits / Beautiful",
+        "qKy": "Тизменин ичинен зат атоочту жаз: Книга / Сидит / Красивый",
+        "answer": "Книга",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2r-sp-l2",
+    "tasks": [
+      {
+        "id": "g2rspl2t1",
+        "type": "multiple_choice",
+        "qKey": "g2r_verb_question",
+        "qRu": "На какой вопрос отвечает глагол?",
+        "qEn": "What question does the verb answer?",
+        "qKy": " Этиш кайсы суроого жооп берет?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Кто? Что?",
+            "en": "Who? What?",
+            "ky": "Ким? Эмне?",
+            "key": "g2r_opt_kto_chto"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Что делает?",
+            "en": "What does it do?",
+            "ky": "Эмне кылат?",
+            "key": "g2r_opt_chto_delaet"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Какой?",
+            "en": "Which?",
+            "ky": "Кандай?",
+            "key": "g2r_opt_kakoy"
+          }
+        ]
+      },
+      {
+        "id": "g2rspl2t2",
+        "type": "multiple_choice",
+        "qKey": "g2r_idet_verb",
+        "qRu": "Тали говорит: «ИДЁТ — это глагол!» Он прав?",
+        "qEn": "Tali says: “ИДЁТ is a verb!” Is he right?",
+        "qKy": "Тали: «ИДЁТ — бул глагол!» дейт. Ал туурабы?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Да",
+            "en": "Yes",
+            "ky": "Ооба",
+            "key": "opt_yes"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Нет",
+            "en": "No",
+            "ky": "Жок",
+            "key": "opt_no"
+          }
+        ]
+      },
+      {
+        "id": "g2rspl2t3",
+        "type": "multiple_choice",
+        "qKey": "g2r_which_is_verb",
+        "qRu": "Какое слово из списка является глаголом?",
+        "qEn": "What word is a verb?",
+        "qKy": " Какое слово — глагол?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Кошка",
+            "en": "cat",
+            "ky": "Мышык",
+            "key": "g2r_opt_koshka"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Сидит",
+            "en": "sits",
+            "ky": "Отурат",
+            "key": "g2r_opt_sidit"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Красивый",
+            "en": "красивый",
+            "ky": "красивый",
+            "key": "g2r_opt_krasivyi"
+          }
+        ]
+      },
+      {
+        "id": "g2rspl2t4",
+        "type": "input",
+        "qKey": "g2r_verb_changes_time",
+        "qRu": "Тали задаёт вопрос: «Глагол меняется по временам — был, есть, будет?» Это правда?",
+        "qEn": "Does the verb change over time?",
+        "qKy": " Глагол меняется по временам?",
+        "answer": "Да",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2r-sp-l3",
+    "tasks": [
+      {
+        "id": "g2rspl3t1",
+        "type": "multiple_choice",
+        "qKey": "g2r_adj_question",
+        "qRu": "На какой вопрос отвечает прилагательное?",
+        "qEn": "What question does the adjective answer?",
+        "qKy": " Сын атооч кайсы суроого жооп берет?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Кто? Что?",
+            "en": "Who? What?",
+            "ky": "Ким? Эмне?",
+            "key": "g2r_opt_kto_chto"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Что делает?",
+            "en": "What does it do?",
+            "ky": "Эмне кылат?",
+            "key": "g2r_opt_chto_delaet"
+          },
+          {
+            "id": "c",
+            "correct": true,
+            "ru": "Какой?",
+            "en": "Which?",
+            "ky": "Кандай?",
+            "key": "g2r_opt_kakoy"
+          }
+        ]
+      },
+      {
+        "id": "g2rspl3t2",
+        "type": "multiple_choice",
+        "qKey": "g2r_krasivyi_adj",
+        "qRu": "Тали говорит: «КРАСИВЫЙ — это прилагательное!» Он прав?",
+        "qEn": "Is the word BEAUTIFUL an adjective?",
+        "qKy": " КРАСИВЫЙ сөзү сын атоочпу?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Да",
+            "en": "Yes",
+            "ky": "Ооба",
+            "key": "opt_yes"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Нет",
+            "en": "No",
+            "ky": "Жок",
+            "key": "opt_no"
+          }
+        ]
+      },
+      {
+        "id": "g2rspl3t3",
+        "type": "multiple_choice",
+        "qKey": "g2r_which_is_adj",
+        "qRu": "Какое из слов — прилагательное?",
+        "qEn": "Which word is an adjective?",
+        "qKy": " Какое слово — прилагательное?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Сидит",
+            "en": "sits",
+            "ky": "Отурат",
+            "key": "g2r_opt_sidit"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Кошка",
+            "en": "cat",
+            "ky": "Мышык",
+            "key": "g2r_opt_koshka"
+          },
+          {
+            "id": "c",
+            "correct": true,
+            "ru": "Белый",
+            "en": "white",
+            "ky": "Ак",
+            "key": "g2r_opt_belyi"
+          }
+        ]
+      },
+      {
+        "id": "g2rspl3t4",
+        "type": "input",
+        "qKey": "g2r_adj_describes",
+        "qRu": "Прилагательное описывает признак чего?",
+        "qEn": "The adjective describes:",
+        "qKy": " Прилагательное описывает:",
+        "answer": "Признак предмета",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2r-sent-l1",
+    "tasks": [
+      {
+        "id": "g2rsentl1t1",
+        "type": "multiple_choice",
+        "qKey": "g2r_statement_type",
+        "qRu": "Тали написал «Бежит». Не хватает подлежащего. Какое слово подойдёт?",
+        "qEn": "Tali wrote “Бежит”. A subject is missing. Which word fits?",
+        "qKy": "Тали «Бежит» деп жазды. Ээ жетишпейт. Кайсы сөз ылайык?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Кот",
+            "en": "Cat (Кот)",
+            "ky": "Кот",
+            "key": "g2r_sentl1_t1_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Бежит",
+            "en": "Runs (Бежит)",
+            "ky": "Бежит",
+            "key": "g2r_sentl1_t1_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Быстро",
+            "en": "Quickly (Быстро)",
+            "ky": "Быстро",
+            "key": "g2r_sentl1_t1_c"
+          }
+        ]
+      },
+      {
+        "id": "g2rsentl1t2",
+        "type": "multiple_choice",
+        "qKey": "g2r_sentl1_q2",
+        "qRu": "В предложении «Кот сидит» — найди подлежащее. Тали думает, что это «сидит».",
+        "qEn": "In “The cat is sitting”, find the subject. Tali thinks it’s “sitting”.",
+        "qKy": "«Мышык отурат» деген сүйлөмдө теманы табыңыз. Тали бул «отурат» деп эсептейт.",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "КОТ — подлежащее",
+            "en": "CAT is the subject.",
+            "ky": "МЫШЫК — тема.",
+            "key": "g2r_sentl1_q2_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "СИДИТ — подлежащее (Тали прав)",
+            "en": "SITTING is the subject (that’s what Tali thinks).",
+            "ky": "ОТУРАТ — тема (Тали ошондой деп ойлойт).",
+            "key": "g2r_sentl1_q2_b"
+          }
+        ]
+      },
+      {
+        "id": "g2rsentl1t3",
+        "type": "multiple_choice",
+        "qKey": "g2r_exclaim_type",
+        "qRu": "Подлежащее отвечает на вопрос:",
+        "qEn": "The subject answers the question:",
+        "qKy": "Тема суроого жооп берет:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Кто? Что?",
+            "en": "Who? What?",
+            "ky": "Ким? Эмне?",
+            "key": "g2r_opt_kto_chto"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Что делает?",
+            "en": "What does it do?",
+            "ky": "Эмне кылат?",
+            "key": "g2r_opt_chto_delaet"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Какой?",
+            "en": "Which?",
+            "ky": "Кандай?",
+            "key": "g2r_opt_kakoy"
+          }
+        ]
+      },
+      {
+        "id": "g2rsentl1t4",
+        "type": "input",
+        "qKey": "g2r_sentl1_predicate_q",
+        "qRu": "В предложении «Кот сидит» сказуемое — это:",
+        "qEn": "In the sentence “The cat is sitting” the predicate is:",
+        "qKy": "\"Мышык отурат\" сүйлөмүндө предикат:",
+        "answer": "Сидит",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2r-sent-l2",
+    "tasks": [
+      {
+        "id": "g2rsentl2t1",
+        "type": "multiple_choice",
+        "qKey": "g2r_sentl2_q1",
+        "qRu": "В предложении «Пушистый кот бежит» слово ПУШИСТЫЙ — это…",
+        "qEn": "In “A fluffy cat runs”, the word FLUFFY is…",
+        "qKy": "«Пушистый кот бежит» сүйлөмүндө ПУШИСТЫЙ сөзү — бул…",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Определение",
+            "en": "Attribute (modifier)",
+            "ky": "Аныктама",
+            "key": "g2r_opt_opred"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Дополнение",
+            "en": "Object",
+            "ky": "Толуктооч",
+            "key": "g2r_opt_dopol"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Обстоятельство",
+            "en": "Adverbial",
+            "ky": "Жагдай",
+            "key": "g2r_opt_obst"
+          }
+        ]
+      },
+      {
+        "id": "g2rsentl2t2",
+        "type": "multiple_choice",
+        "qKey": "g2r_sentl2_q2",
+        "qRu": "В предложении «Кот ест рыбу» слово РЫБУ — это…",
+        "qEn": "In “The cat eats fish”, the word FISH is…",
+        "qKy": "«Кот ест рыбу» сүйлөмүндө РЫБУ сөзү — бул…",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Определение",
+            "en": "Attribute (modifier)",
+            "ky": "Аныктама",
+            "key": "g2r_opt_opred"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Дополнение",
+            "en": "Object",
+            "ky": "Толуктооч",
+            "key": "g2r_opt_dopol"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Обстоятельство",
+            "en": "Adverbial",
+            "ky": "Жагдай",
+            "key": "g2r_opt_obst"
+          }
+        ]
+      },
+      {
+        "id": "g2rsentl2t3",
+        "type": "multiple_choice",
+        "qKey": "g2r_sentl2_q3",
+        "qRu": "В предложении «Кот БЫСТРО бежит» слово БЫСТРО — это…",
+        "qEn": "In “The cat runs QUICKLY”, the word QUICKLY is…",
+        "qKy": "«Кот БЫСТРО бежит» сүйлөмүндө БЫСТРО сөзү — бул…",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Определение",
+            "en": "Attribute (modifier)",
+            "ky": "Аныктама",
+            "key": "g2r_opt_opred"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Дополнение",
+            "en": "Object",
+            "ky": "Толуктооч",
+            "key": "g2r_opt_dopol"
+          },
+          {
+            "id": "c",
+            "correct": true,
+            "ru": "Обстоятельство",
+            "en": "Adverbial",
+            "ky": "Жагдай",
+            "key": "g2r_opt_obst"
+          }
+        ]
+      },
+      {
+        "id": "g2rsentl2t4",
+        "type": "input",
+        "qKey": "g2r_sentl2_q4",
+        "qRu": "В предложении «Пушистый кот быстро ест вкусную рыбу» слово БЫСТРО — какой второстепенный член? (напиши: Определение / Дополнение / Обстоятельство)",
+        "qEn": "In “A fluffy cat quickly eats tasty fish”, what secondary part is QUICKLY? (Attribute / Object / Adverbial)",
+        "qKy": "«Пушистый кот быстро ест вкусную рыбу» сүйлөмүндө БЫСТРО — кайсы мүчө? (Аныктама / Толуктооч / Жагдай)",
+        "answer": "Обстоятельство",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2r-sent-l3",
+    "tasks": [
+      {
+        "id": "g2rsentl3t1",
+        "type": "multiple_choice",
+        "qKey": "g2r_sentl3_q1",
+        "qRu": "Тали написал: «Красивый бежит кот быстро». Как правильно?",
+        "qEn": "Tali wrote: «Красивый бежит кот быстро». Which is correct?",
+        "qKy": "Тали жазды: «Красивый бежит кот быстро». Туурасы кайсы?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Красивый кот бежит быстро",
+            "en": "Красивый кот бежит быстро",
+            "ky": "Красивый кот бежит быстро",
+            "key": "g2r_sentl3_q1_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Красивый бежит кот быстро",
+            "en": "Красивый бежит кот быстро",
+            "ky": "Красивый бежит кот быстро",
+            "key": "g2r_sentl3_q1_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Бежит красивый быстро кот",
+            "en": "Бежит красивый быстро кот",
+            "ky": "Бежит красивый быстро кот",
+            "key": "g2r_sentl3_q1_c"
+          }
+        ]
+      },
+      {
+        "id": "g2rsentl3t2",
+        "type": "multiple_choice",
+        "qKey": "g2r_sentl3_q2",
+        "qRu": "Выбери правильное сочетание:",
+        "qEn": "Choose the correct combination:",
+        "qKy": "Туура айкашты танда:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "мальчик идёт",
+            "en": "мальчик идёт",
+            "ky": "мальчик идёт",
+            "key": "g2r_sentl3_opt_boy_go"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "мальчик идут",
+            "en": "мальчик идут",
+            "ky": "мальчик идут",
+            "key": "g2r_sentl3_opt_boy_go_bad"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "мальчики идёт",
+            "en": "мальчики идёт",
+            "ky": "мальчики идёт",
+            "key": "g2r_sentl3_opt_boys_go_bad"
+          }
+        ]
+      },
+      {
+        "id": "g2rsentl3t3",
+        "type": "multiple_choice",
+        "qKey": "g2r_sentl3_q3",
+        "qRu": "Выбери правильное сочетание слов:",
+        "qEn": "Choose the correct word combination:",
+        "qKy": "Туура сөз айкашын танда:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "красный шар",
+            "en": "красный шар",
+            "ky": "красный шар",
+            "key": "g2r_sentl3_opt_red_ball"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "красная шар",
+            "en": "красная шар",
+            "ky": "красная шар",
+            "key": "g2r_sentl3_opt_red_ball_bad"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "мальчик идут",
+            "en": "мальчик идут",
+            "ky": "мальчик идут",
+            "key": "g2r_sentl3_opt_boy_go_bad"
+          }
+        ]
+      },
+      {
+        "id": "g2rsentl3t4",
+        "type": "input",
+        "qKey": "g2r_which_correct_sent",
+        "qRu": "Тали написал: «мама готовит обед.» Маша говорит, что предложение начинается с маленькой буквы — это ошибка. Как правильно?",
+        "qEn": "Which sentence is written correctly?",
+        "qKy": " Какое предложение написано правильно?",
+        "answer": "Мама готовит обед.",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2s-plt-l1",
+    "tasks": [
+      {
+        "id": "g2spltl1t1",
+        "type": "multiple_choice",
+        "qKey": "g2s_root_function",
+        "qRu": "Тали поливает цветок, но вода утекает в землю. «Зря лью!» — говорит он. Для чего корень поглощает воду?",
+        "qEn": "The root of the plant is needed for:",
+        "qKy": " Корень растения нужен для:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Для воды и питания",
+            "en": "water and food",
+            "ky": "суу жана тамак",
+            "key": "g2s_opt_water_food"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Для фотосинтеза",
+            "en": "photosynthesis",
+            "ky": "фотосинтез",
+            "key": "g2s_opt_photosyn"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Только для красоты",
+            "en": "flowers",
+            "ky": "гүлдөр",
+            "key": "g2s_opt_flowers"
+          }
+        ]
+      },
+      {
+        "id": "g2spltl1t2",
+        "type": "multiple_choice",
+        "qKey": "g2s_leaf_function",
+        "qRu": "Арчи видит листья и спрашивает: зачем они нужны?",
+        "qEn": "The leaves are needed for:",
+        "qKy": " Листья нужны для:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Для воды и питания",
+            "en": "water and food",
+            "ky": "суу жана тамак",
+            "key": "g2s_opt_water_food"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Для фотосинтеза",
+            "en": "photosynthesis",
+            "ky": "фотосинтез",
+            "key": "g2s_opt_photosyn"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Только для красоты",
+            "en": "flowers",
+            "ky": "гүлдөр",
+            "key": "g2s_opt_flowers"
+          }
+        ]
+      },
+      {
+        "id": "g2spltl1t3",
+        "type": "fill_blank",
+        "qKey": "g2s_pltl1_fb_sent",
+        "qRu": "Порядок роста растения: семя → ___ → растение → цветок",
+        "qEn": "Plant growth order: seed → ___ → plant → flower",
+        "qKy": "Өсүмдүктүн өсүү тартиби: урук → ___ → өсүмдүк → гүл",
+        "answer": null,
+        "options": []
+      },
+      {
+        "id": "g2spltl1t4",
+        "type": "input",
+        "qKey": "g2s_plant_parts_count",
+        "qRu": "Тали считает части растения: корень, стебель, листья, цветок, плод. Сколько он насчитал?",
+        "qEn": "How many main parts does the plant have?",
+        "qKy": " Өсүмдүктүн канча негизги бөлүгү бар?",
+        "answer": "5",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2s-plt-l2",
+    "tasks": [
+      {
+        "id": "g2spltl2t1",
+        "type": "multiple_choice",
+        "qKey": "g2s_pltl2_q1",
+        "qRu": "Тали поставил цветок в тёмный шкаф. Арчи говорит: «Плохая идея!» Почему?",
+        "qEn": "Tali put a flower in a dark cupboard. Archie says: “Bad idea!” Why?",
+        "qKy": "Тали гүлдү караңгы шкафка койду. Арчи: «Жаман идея!» — эмнеге?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "В темноте нет фотосинтеза — растение не сможет питаться",
+            "en": "In the dark there’s no photosynthesis — the plant can’t feed itself.",
+            "ky": "Караңгуда фотосинтез болбойт — өсүмдүк өзүн багып албайт.",
+            "key": "g2s_pltl2_q1_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "В шкафу слишком тепло",
+            "en": "It’s too warm in the cupboard.",
+            "ky": "Шкафта өтө ысык.",
+            "key": "g2s_pltl2_q1_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Всё в порядке, растению не нужен свет",
+            "en": "It’s fine — plants don’t need light.",
+            "ky": "Бардыгы жакшы — өсүмдүккө жарык керек эмес.",
+            "key": "g2s_pltl2_q1_c"
+          }
+        ]
+      },
+      {
+        "id": "g2spltl2t2",
+        "type": "multiple_choice",
+        "qKey": "g2s_photosyn_needs",
+        "qRu": "Что нужно растению для фотосинтеза? Тали перечисляет: «свет, вода и… и… что ещё?»",
+        "qEn": "Photosynthesis requires:",
+        "qKy": " Для фотосинтеза нужны:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Свет, вода, углекислый газ",
+            "en": "light, water, CO2",
+            "ky": "жарык, суу, СО2",
+            "key": "g2s_opt_sun_water_co2"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Только вода",
+            "en": "water only",
+            "ky": "суу гана",
+            "key": "g2s_opt_only_water"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Только свет",
+            "en": "sunlight only",
+            "ky": "жарык гана",
+            "key": "g2s_opt_only_sun"
+          }
+        ]
+      },
+      {
+        "id": "g2spltl2t3",
+        "type": "multiple_choice",
+        "qKey": "g2s_plants_make_oxygen",
+        "qRu": "Тали восклицает: «Растения дышат и выделяют кислород — значит, они помогают нам дышать?!» Это правда?",
+        "qEn": "Do plants release oxygen?",
+        "qKy": " Растения выделяют кислород?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Да",
+            "en": "Yes",
+            "ky": "Ооба",
+            "key": "opt_yes"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Нет",
+            "en": "No",
+            "ky": "Жок",
+            "key": "opt_no"
+          }
+        ]
+      },
+      {
+        "id": "g2spltl2t4",
+        "type": "input",
+        "qKey": "g2s_seed_grows_into",
+        "qRu": "Где в растении происходит фотосинтез?",
+        "qEn": "From the seed grows:",
+        "qKy": " Из семени вырастает:",
+        "answer": "В листьях",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2s-plt-l3",
+    "tasks": [
+      {
+        "id": "g2spltl3t1",
+        "type": "multiple_choice",
+        "qKey": "g2s_carrot_part",
+        "qRu": "Тали купил морковь. Это овощ или фрукт?",
+        "qEn": "Tali bought a carrot. Is it a vegetable or a fruit?",
+        "qKy": "Тали сабиз сатып алды. Бул жашылчабы же жемишби?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Овощ",
+            "en": "Vegetable",
+            "ky": "Жашылча",
+            "key": "g2s_opt_veg_cat"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Фрукт",
+            "en": "Fruit",
+            "ky": "Жемиш",
+            "key": "g2s_opt_fruit_cat"
+          }
+        ]
+      },
+      {
+        "id": "g2spltl3t2",
+        "type": "multiple_choice",
+        "qKey": "g2s_tomato_part",
+        "qRu": "Арчи держит яблоко. Это овощ или фрукт?",
+        "qEn": "Archie holds an apple. Is it a vegetable or a fruit?",
+        "qKy": "Арчи алма кармап турат. Бул жашылчабы же жемишби?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Овощ",
+            "en": "Vegetable",
+            "ky": "Жашылча",
+            "key": "g2s_opt_veg_cat"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Фрукт",
+            "en": "Fruit",
+            "ky": "Жемиш",
+            "key": "g2s_opt_fruit_cat"
+          }
+        ]
+      },
+      {
+        "id": "g2spltl3t3",
+        "type": "multiple_choice",
+        "qKey": "g2s_spinach_part",
+        "qRu": "Тали видит шпинат и говорит: «Это плод!» Арчи сомневается. Что такое шпинат?",
+        "qEn": "Spinach — what part of the plant is it?",
+        "qKy": " Шпинат — өсүмдүктүн кайсы бөлүгү?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Корень (клубень)",
+            "en": "root",
+            "ky": "тамыр",
+            "key": "g2s_opt_root_p"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Плод",
+            "en": "fruit",
+            "ky": "мөмө",
+            "key": "g2s_opt_fruit_p"
+          },
+          {
+            "id": "c",
+            "correct": true,
+            "ru": "Лист",
+            "en": "leaf",
+            "ky": "жалбырак",
+            "key": "g2s_opt_leaf_p"
+          }
+        ]
+      },
+      {
+        "id": "g2spltl3t4",
+        "type": "input",
+        "qKey": "g2s_potato_part",
+        "qRu": "Картофель растёт под землёй. Какая это часть растения?",
+        "qEn": "Potatoes — what part of the plant?",
+        "qKy": " Картошка — өсүмдүктүн кайсы бөлүгү?",
+        "answer": "Корень (клубень)",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2s-ani-l1",
+    "tasks": [
+      {
+        "id": "g2sanil1t1",
+        "type": "multiple_choice",
+        "qKey": "g2s_mammal_is",
+        "qRu": "Кто из перечисленных — млекопитающее?",
+        "qEn": "Who is the mammal?",
+        "qKy": " Кто млекопитающее?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Собака",
+            "en": "dog",
+            "ky": "ит",
+            "key": "g2s_opt_dog_cl"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Орёл",
+            "en": "eagle",
+            "ky": "бүркүт",
+            "key": "g2s_opt_eagle_cl"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Лягушка",
+            "en": "frog",
+            "ky": "бака",
+            "key": "g2s_opt_frog_cl"
+          }
+        ]
+      },
+      {
+        "id": "g2sanil1t2",
+        "type": "multiple_choice",
+        "qKey": "g2s_anil1_q2",
+        "qRu": "Тали спрашивает: «Главный признак млекопитающих — что?» Арчи говорит: «Откладывают яйца!» Тали не верит. Кто прав?",
+        "qEn": "Tali asks: “What’s the main sign of mammals?” Archie says: “They lay eggs!” Who is right?",
+        "qKy": "Тали сурайт: «Сүт эмүүчүлөрдүн негизги белгиси эмне?» Арчи: «Жумуртка туударат!» Ким туура?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Арчи прав — откладывают яйца",
+            "en": "Archie is right — they lay eggs.",
+            "ky": "Арчи туура — алар жумуртка туударат.",
+            "key": "g2s_anil1_q2_a"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Тали прав — кормят детёнышей молоком",
+            "en": "Tali is right — they feed their babies milk.",
+            "ky": "Тали туура — балдарына сүт менен тамактандырат.",
+            "key": "g2s_anil1_q2_b"
+          }
+        ]
+      },
+      {
+        "id": "g2sanil1t3",
+        "type": "sorting",
+        "qKey": "g2s_anil1_sort_q",
+        "qRu": "Разложи: млекопитающие и остальные",
+        "qEn": "Break it down: mammals and the rest",
+        "qKy": "Аны бөлгүлө: сүт эмүүчүлөр жана калгандары",
+        "answer": null,
+        "options": []
+      },
+      {
+        "id": "g2sanil1t4",
+        "type": "input",
+        "qKey": "g2s_bat_mammal",
+        "qRu": "Летучая мышь — млекопитающее?",
+        "qEn": "Is a bat a mammal?",
+        "qKy": " Летучая мышь — млекопитающее?",
+        "answer": "Да",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2s-ani-l2",
+    "tasks": [
+      {
+        "id": "g2sanil2t1",
+        "type": "multiple_choice",
+        "qKey": "g2s_bird_is",
+        "qRu": "Кто из перечисленных — птица?",
+        "qEn": "Who is the bird?",
+        "qKy": " Кто птица?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Воробей",
+            "en": "sparrow",
+            "ky": "торгой",
+            "key": "g2s_opt_sparrow_cl"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Летучая мышь",
+            "en": "bat",
+            "ky": "жаргалак",
+            "key": "g2s_opt_bat_cl"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Рыба",
+            "en": "fish",
+            "ky": "балык",
+            "key": "g2s_opt_fish_cl"
+          }
+        ]
+      },
+      {
+        "id": "g2sanil2t2",
+        "type": "multiple_choice",
+        "qKey": "g2s_bird_feature",
+        "qRu": "Главный признак птиц — это:",
+        "qEn": "Feature of birds:",
+        "qKy": " Признак птиц:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Перья",
+            "en": "feathers",
+            "ky": "жүндөр",
+            "key": "g2s_opt_has_feathers"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Шерсть",
+            "en": "fur",
+            "ky": "жүн",
+            "key": "g2s_opt_has_fur"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Чешуя",
+            "en": "scales",
+            "ky": "кабыршак",
+            "key": "g2s_opt_has_scales"
+          }
+        ]
+      },
+      {
+        "id": "g2sanil2t3",
+        "type": "multiple_choice",
+        "qKey": "g2s_penguin_bird",
+        "qRu": "Тали спрашивает: «Пингвин — птица или нет?» Арчи сомневается. Помоги им!",
+        "qEn": "Is a penguin a bird?",
+        "qKy": " Пингвин — птица?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Да",
+            "en": "Yes",
+            "ky": "Ооба",
+            "key": "opt_yes"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Нет",
+            "en": "No",
+            "ky": "Жок",
+            "key": "opt_no"
+          }
+        ]
+      },
+      {
+        "id": "g2sanil2t4",
+        "type": "input",
+        "qKey": "g2s_all_birds_fly",
+        "qRu": "Все ли птицы умеют летать?",
+        "qEn": "Can all birds fly?",
+        "qKy": " Все птицы умеют летать?",
+        "answer": "Нет",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2s-ani-l3",
+    "tasks": [
+      {
+        "id": "g2sanil3t1",
+        "type": "multiple_choice",
+        "qKey": "g2s_fish_breathes",
+        "qRu": "Рыба дышит с помощью:",
+        "qEn": "The fish breathes:",
+        "qKy": " Рыба дышит:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Жабр",
+            "en": "gills",
+            "ky": "желбезеги менен",
+            "key": "g2s_opt_gills"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Лёгких",
+            "en": "lungs",
+            "ky": "өпкөсү менен",
+            "key": "g2s_opt_lungs"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Кожи",
+            "en": "skin",
+            "ky": "терисинен",
+            "key": "g2s_opt_skin"
+          }
+        ]
+      },
+      {
+        "id": "g2sanil3t2",
+        "type": "multiple_choice",
+        "qKey": "g2s_anil3_q2",
+        "qRu": "Тали думает, что у насекомого 6 ног. Арчи говорит 8. Кто прав?",
+        "qEn": "Tali thinks insects have 6 legs. Archie says 8. Who is right?",
+        "qKy": "Тали жөрмөлүктөрдүн 6 буту бар деп ойлойт. Арчи 8 дейт. Ким туура?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Тали прав — у насекомых 6 ног",
+            "en": "Tali is right — insects have 6 legs.",
+            "ky": "Тали туура — жөрмөлүктөрдүн 6 буту бар.",
+            "key": "g2s_anil3_q2_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Арчи прав — у насекомых 8 ног",
+            "en": "Archie is right — insects have 8 legs.",
+            "ky": "Арчи туура — жөрмөлүктөрдүн 8 буту бар.",
+            "key": "g2s_anil3_q2_b"
+          }
+        ]
+      },
+      {
+        "id": "g2sanil3t3",
+        "type": "multiple_choice",
+        "qKey": "g2s_spider_insect",
+        "qRu": "Тали утверждает: «Паук — это насекомое!» Арчи теперь знает ответ. Прав ли Тали?",
+        "qEn": "Is a spider an insect?",
+        "qKy": " Паук — насекомое?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Да",
+            "en": "Yes",
+            "ky": "Ооба",
+            "key": "opt_yes"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Нет",
+            "en": "No",
+            "ky": "Жок",
+            "key": "opt_no"
+          }
+        ]
+      },
+      {
+        "id": "g2sanil3t4",
+        "type": "input",
+        "qKey": "g2s_anil3_q4",
+        "qRu": "Чем дышит рыба? (напиши одним словом)",
+        "qEn": "What does a fish breathe with? (one word)",
+        "qKy": "Балык эмне менен дем алат? (бир сөз)",
+        "answer": "жабрами",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2s-bdy-l1",
+    "tasks": [
+      {
+        "id": "g2sbdyl1t1",
+        "type": "multiple_choice",
+        "qKey": "g2s_skeleton_function",
+        "qRu": "Тали хочет понять: для чего нужен скелет?",
+        "qEn": "The skeleton is needed for:",
+        "qKy": " Скелет нужен для:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Опора тела и защита органов",
+            "en": "body support",
+            "ky": "денени кармоо",
+            "key": "g2s_opt_support"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Для пищеварения",
+            "en": "digestion",
+            "ky": "тамак сиңирүү",
+            "key": "g2s_opt_digestion"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Для дыхания",
+            "en": "breathing",
+            "ky": "дем алуу",
+            "key": "g2s_opt_breathing"
+          }
+        ]
+      },
+      {
+        "id": "g2sbdyl1t2",
+        "type": "multiple_choice",
+        "qKey": "g2s_muscles_do",
+        "qRu": "Арчи спрашивает: мышцы нужны для того, чтобы…",
+        "qEn": "Muscles are needed for:",
+        "qKy": " Мышцы нужны для:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Двигаться",
+            "en": "body movement",
+            "ky": "дененин кыймылы",
+            "key": "g2s_opt_move_body"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Переваривать пищу",
+            "en": "digesting",
+            "ky": "тамак сиңиртүүнүн",
+            "key": "g2s_opt_digest"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Дышать",
+            "en": "breathing",
+            "ky": "дем алуунун",
+            "key": "g2s_opt_breathe"
+          }
+        ]
+      },
+      {
+        "id": "g2sbdyl1t3",
+        "type": "multiple_choice",
+        "qKey": "g2s_bdyl1_q3",
+        "qRu": "Тали задаёт провокационный вопрос: «Без мышц человек мог бы двигаться?»",
+        "qEn": "Tali asks a tricky question: \"Could a person move without muscles?\"",
+        "qKy": "Тали кызык суроо берет: «Булчуңсуз адам кыймылдай алабы?»",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Да",
+            "en": "Yes",
+            "ky": "Ооба",
+            "key": "opt_yes"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Нет",
+            "en": "No",
+            "ky": "Жок",
+            "key": "opt_no"
+          }
+        ]
+      },
+      {
+        "id": "g2sbdyl1t4",
+        "type": "input",
+        "qKey": "g2s_biggest_bone",
+        "qRu": "Какая кость самая длинная в теле человека?",
+        "qEn": "Which bone is the longest?",
+        "qKy": " Какая кость самая длинная?",
+        "answer": "Бедренная",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2s-bdy-l2",
+    "tasks": [
+      {
+        "id": "g2sbdyl2t1",
+        "type": "multiple_choice",
+        "qKey": "g2s_heart_does",
+        "qRu": "Тали спрашивает: что делает сердце?",
+        "qEn": "What does the heart do?",
+        "qKy": " Что делает сердце?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Перекачивать кровь",
+            "en": "Pumps blood",
+            "ky": "Кан айдайт",
+            "key": "g2s_opt_pumps_blood"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Переваривает еду",
+            "en": "Digests food",
+            "ky": "Тамакты сиңирет",
+            "key": "g2s_opt_digests"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Помогает дышать",
+            "en": "Helps with breathing",
+            "ky": "Дем алууга жардам берет",
+            "key": "g2s_opt_breathes"
+          }
+        ]
+      },
+      {
+        "id": "g2sbdyl2t2",
+        "type": "multiple_choice",
+        "qKey": "g2s_lungs_do",
+        "qRu": "Для чего нужны лёгкие?",
+        "qEn": "What are lungs for?",
+        "qKy": " Для чего нужны лёгкие?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Для зрения",
+            "en": "For seeing",
+            "ky": "Көрүү үчүн",
+            "key": "g2s_opt_see_f"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Для дыхания",
+            "en": "For breathing",
+            "ky": "Дем алуу үчүн",
+            "key": "g2s_opt_breathe_f"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Для пищеварения",
+            "en": "For digestion",
+            "ky": "Тамак сиңирүү үчүн",
+            "key": "g2s_opt_digest_f"
+          }
+        ]
+      },
+      {
+        "id": "g2sbdyl2t3",
+        "type": "multiple_choice",
+        "qKey": "g2s_bdyl2_q3",
+        "qRu": "Арчи думает, что желудок отвечает за дыхание. Тали не согласен. Кто прав?",
+        "qEn": "Archie thinks the stomach is for breathing. Tali disagrees. Who is right?",
+        "qKy": "Арчи аштын дем алуу үчүн экенин ойлойт. Тали макул эмес. Ким туура?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Арчи прав",
+            "en": "Archie is right.",
+            "ky": "Арчи туура.",
+            "key": "g2s_bdyl2_q3_a"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Тали прав — желудок для пищеварения",
+            "en": "Tali is right — the stomach digests food.",
+            "ky": "Тали туура — аш тамакты сиңирет.",
+            "key": "g2s_bdyl2_q3_b"
+          }
+        ]
+      },
+      {
+        "id": "g2sbdyl2t4",
+        "type": "input",
+        "qKey": "g2s_bdyl2_q4",
+        "qRu": "Что контролирует мозг?",
+        "qEn": "What does the brain control?",
+        "qKy": "Мээнде кандай функция бар?",
+        "answer": "Всё",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2s-bdy-l3",
+    "tasks": [
+      {
+        "id": "g2sbdyl3t1",
+        "type": "multiple_choice",
+        "qKey": "g2s_vitamins_in",
+        "qRu": "Тали ел только печенье. В каких продуктах больше всего витаминов, которых ему не хватает?",
+        "qEn": "Which foods have a lot of vitamins?",
+        "qKy": " В каких продуктах много витаминов?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Фрукты и овощи",
+            "en": "Fruits and vegetables",
+            "ky": "Мөмөлөр жана жашылчалар",
+            "key": "g2s_opt_fruits_veg"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Конфеты",
+            "en": "Sweets",
+            "ky": "Конфет",
+            "key": "g2s_opt_candy"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Чипсы",
+            "en": "Crisps",
+            "ky": "Чипсы",
+            "key": "g2s_opt_chips"
+          }
+        ]
+      },
+      {
+        "id": "g2sbdyl3t2",
+        "type": "multiple_choice",
+        "qKey": "g2s_protein_in",
+        "qRu": "Арчи хочет стать сильнее. В каких продуктах больше всего белка?",
+        "qEn": "Which foods have the most protein?",
+        "qKy": " В каких продуктах больше всего белка?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Мясо и яйца",
+            "en": "Meat and eggs",
+            "ky": "Эт жана жумуртка",
+            "key": "g2s_opt_meat_eggs"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Сладости",
+            "en": "Sugary foods",
+            "ky": "Таттуулар",
+            "key": "g2s_opt_sugar_food"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Только вода",
+            "en": "Water only",
+            "ky": "Суу гана",
+            "key": "g2s_opt_water_only"
+          }
+        ]
+      },
+      {
+        "id": "g2sbdyl3t3",
+        "type": "multiple_choice",
+        "qKey": "g2s_water_daily",
+        "qRu": "Тали спрашивает: «Нужно ли пить воду каждый день?»",
+        "qEn": "How much water should I drink per day?",
+        "qKy": " Күнүнө канча суу ичүү керек?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Да",
+            "en": "Yes",
+            "ky": "Ооба",
+            "key": "opt_yes"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Нет",
+            "en": "No",
+            "ky": "Жок",
+            "key": "opt_no"
+          }
+        ]
+      },
+      {
+        "id": "g2sbdyl3t4",
+        "type": "input",
+        "qKey": "g2s_sport_good",
+        "qRu": "Арчи не хочет делать зарядку. Зачем нужны зарядка и спорт? Напиши одно слово (например: мышцы).",
+        "qEn": "Archie does not want to exercise. Why do we need exercise and sport? Write one word (e.g. muscles).",
+        "qKy": "Арчи зарядка жасоону каалабайт. Зарядка жана спорт эмнеге керек? Бир сөз жаз (мис.: мышцы).",
+        "answer": "мышцы",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2e-days-l1",
+    "tasks": [
+      {
+        "id": "g2edaysl1t1",
+        "type": "multiple_choice",
+        "qKey": "g2e_monday_ru",
+        "qRu": "Понедельник по-английски:",
+        "qEn": "Monday in English:",
+        "qKy": " Дүйшөмбү англисче:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Дүйшөмбү",
+            "key": "g2e_opt_monday"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Tuesday",
+            "en": "Tuesday",
+            "ky": "Шейшемби",
+            "key": "g2e_opt_tuesday"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Wednesday",
+            "en": "Wednesday",
+            "ky": "Шаршемби",
+            "key": "g2e_opt_wednesday"
+          }
+        ]
+      },
+      {
+        "id": "g2edaysl1t2",
+        "type": "multiple_choice",
+        "qKey": "g2e_tuesday_ru",
+        "qRu": "Вторник по-английски:",
+        "qEn": "Tuesday in English:",
+        "qKy": " Шейшемби англисче:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Дүйшөмбү",
+            "key": "g2e_opt_monday"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Tuesday",
+            "en": "Tuesday",
+            "ky": "Шейшемби",
+            "key": "g2e_opt_tuesday"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Wednesday",
+            "en": "Wednesday",
+            "ky": "Шаршемби",
+            "key": "g2e_opt_wednesday"
+          }
+        ]
+      },
+      {
+        "id": "g2edaysl1t3",
+        "type": "fill_blank",
+        "qKey": "g2e_daysl1_fb_sent",
+        "qRu": "Среда по-английски — _",
+        "qEn": "Wednesday in English - _",
+        "qKy": "Шаршемби англис тилинде - _",
+        "answer": null,
+        "options": []
+      },
+      {
+        "id": "g2edaysl1t4",
+        "type": "input",
+        "qKey": "g2e_after_monday",
+        "qRu": "Тали запутался! После понедельника идёт:",
+        "qEn": "Continue the pattern: What is the day after Monday?",
+        "qKy": "Улантманы улант: Какой день после понедельника?",
+        "answer": "Tuesday",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2e-days-l2",
+    "tasks": [
+      {
+        "id": "g2edaysl2t1",
+        "type": "multiple_choice",
+        "qKey": "g2e_yd_q1",
+        "qRu": "Today is Monday. Yesterday was…",
+        "qEn": "Today is Monday. Yesterday was…",
+        "qKy": "Today is Monday. Yesterday was…",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Sunday",
+            "en": "Sunday",
+            "ky": "Sunday",
+            "key": "g2e_yd_opt_sunday"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Tuesday",
+            "en": "Tuesday",
+            "ky": "Tuesday",
+            "key": "g2e_yd_opt_tuesday"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Monday",
+            "key": "g2e_yd_opt_monday"
+          }
+        ]
+      },
+      {
+        "id": "g2edaysl2t2",
+        "type": "multiple_choice",
+        "qKey": "g2e_yd_q2",
+        "qRu": "Today is Monday. Tomorrow is…",
+        "qEn": "Today is Monday. Tomorrow is…",
+        "qKy": "Today is Monday. Tomorrow is…",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Sunday",
+            "en": "Sunday",
+            "ky": "Sunday",
+            "key": "g2e_yd_opt_sunday"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Tuesday",
+            "en": "Tuesday",
+            "ky": "Tuesday",
+            "key": "g2e_yd_opt_tuesday"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Monday",
+            "key": "g2e_yd_opt_monday"
+          }
+        ]
+      },
+      {
+        "id": "g2edaysl2t3",
+        "type": "multiple_choice",
+        "qKey": "g2e_yd_q3",
+        "qRu": "«Yesterday» по-русски:",
+        "qEn": "\"Yesterday\" in Russian:",
+        "qKy": "«Yesterday» орусча:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Вчера",
+            "en": "Вчера",
+            "ky": "Вчера",
+            "key": "g2e_yd_opt_vchera"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Сегодня",
+            "en": "Сегодня",
+            "ky": "Сегодня",
+            "key": "g2e_yd_opt_segodnya"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Завтра",
+            "en": "Завтра",
+            "ky": "Завтра",
+            "key": "g2e_yd_opt_zavtra"
+          }
+        ]
+      },
+      {
+        "id": "g2edaysl2t4",
+        "type": "input",
+        "qKey": "g2e_yd_q4",
+        "qRu": "«Tomorrow» по-русски:",
+        "qEn": "\"Tomorrow\" in Russian:",
+        "qKy": "«Tomorrow» орусча:",
+        "answer": "Завтра",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2e-days-l3",
+    "tasks": [
+      {
+        "id": "g2edaysl3t1",
+        "type": "multiple_choice",
+        "qKey": "g2e_days3_q1",
+        "qRu": "On Monday we have ___ . Какой предмет?",
+        "qEn": "On Monday we have ___ . Which subject?",
+        "qKy": "On Monday we have ___ . Кайсы сабак?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Math",
+            "en": "Math",
+            "ky": "Math",
+            "key": "g2e_opt_maths"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Music",
+            "en": "Music",
+            "ky": "Музыка",
+            "key": "g2e_opt_music"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Art",
+            "en": "Art",
+            "ky": "Сүрөт",
+            "key": "g2e_opt_art"
+          }
+        ]
+      },
+      {
+        "id": "g2edaysl3t2",
+        "type": "multiple_choice",
+        "qKey": "g2e_days3_q2",
+        "qRu": "“On ___ we have math.” Какой день недели?",
+        "qEn": "“On ___ we have math.” Which day?",
+        "qKy": "“On ___ we have math.” Кайсы күн?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Monday",
+            "en": "Monday",
+            "ky": "Monday",
+            "key": "g2e_opt_day_monday"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Sunday",
+            "en": "Sunday",
+            "ky": "Sunday",
+            "key": "g2e_opt_day_sunday"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Saturday",
+            "en": "Saturday",
+            "ky": "Saturday",
+            "key": "g2e_opt_day_saturday"
+          }
+        ]
+      },
+      {
+        "id": "g2edaysl3t3",
+        "type": "multiple_choice",
+        "qKey": "g2e_days3_q3",
+        "qRu": "Какой предлог ставим перед днём недели: ___ Monday?",
+        "qEn": "Which preposition goes before a weekday: ___ Monday?",
+        "qKy": "Жума күнүнүн алдында кайсы предлог: ___ Monday?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "On",
+            "en": "On",
+            "ky": "On",
+            "key": "g2e_opt_on"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "In",
+            "en": "In",
+            "ky": "In",
+            "key": "g2e_opt_in"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "At",
+            "en": "At",
+            "ky": "At",
+            "key": "g2e_opt_at"
+          }
+        ]
+      },
+      {
+        "id": "g2edaysl3t4",
+        "type": "input",
+        "qKey": "g2e_days3_q4",
+        "qRu": "Дополни: On ___ we have math.",
+        "qEn": "Complete: On ___ we have math.",
+        "qKy": "Толукта: On ___ we have math.",
+        "answer": "Monday",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2e-phr-l1",
+    "tasks": [
+      {
+        "id": "g2ephrl1t1",
+        "type": "multiple_choice",
+        "qKey": "g2e_phrl1_q1",
+        "qRu": "«Thank you» по-русски:",
+        "qEn": "\"Thank you\" in Russian:",
+        "qKy": "«Thank you» орусча кандай?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Спасибо",
+            "en": "Спасибо",
+            "ky": "Спасибо",
+            "key": "g2e_phrl1_opt_spasibo"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Пожалуйста",
+            "en": "Пожалуйста",
+            "ky": "Пожалуйста",
+            "key": "g2e_phrl1_opt_pozh"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Привет",
+            "en": "Привет",
+            "ky": "Привет",
+            "key": "g2e_phrl1_opt_privet"
+          }
+        ]
+      },
+      {
+        "id": "g2ephrl1t2",
+        "type": "multiple_choice",
+        "qKey": "g2e_phrl1_q2",
+        "qRu": "«Please» по-русски:",
+        "qEn": "\"Please\" in Russian:",
+        "qKy": "«Please» орусча кандай?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Спасибо",
+            "en": "Спасибо",
+            "ky": "Спасибо",
+            "key": "g2e_phrl1_opt_spasibo"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Пожалуйста",
+            "en": "Пожалуйста",
+            "ky": "Пожалуйста",
+            "key": "g2e_phrl1_opt_pozh"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "До свидания",
+            "en": "До свидания",
+            "ky": "До свидания",
+            "key": "g2e_phrl1_opt_posvid"
+          }
+        ]
+      },
+      {
+        "id": "g2ephrl1t3",
+        "type": "fill_blank",
+        "qKey": "g2e_phrl1_fb_sent",
+        "qRu": "Ответ на Thank you — _",
+        "qEn": "A reply to Thank you is _",
+        "qKy": "Thank you жообу — _",
+        "answer": null,
+        "options": []
+      },
+      {
+        "id": "g2ephrl1t4",
+        "type": "input",
+        "qKey": "g2e_phrl1_q4",
+        "qRu": "«Thank you very much» означает:",
+        "qEn": "\"Thank you very much\" means:",
+        "qKy": "«Thank you very much» дегени:",
+        "answer": "Большое спасибо",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2e-phr-l2",
+    "tasks": [
+      {
+        "id": "g2ephrl2t1",
+        "type": "multiple_choice",
+        "qKey": "g2e_phr2_q1",
+        "qRu": "«Sorry» по-русски:",
+        "qEn": "What does “Sorry” mean?",
+        "qKy": "«Sorry» деген эмнени билдирет?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Прости / Извини",
+            "en": "An apology (I am sorry)",
+            "ky": "Кечир / Кечиресиз",
+            "key": "g2e_phr2_q1_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Пожалуйста",
+            "en": "Please",
+            "ky": "Сураныч",
+            "key": "g2e_phr2_q1_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Спасибо",
+            "en": "Thank you",
+            "ky": "Рахмат",
+            "key": "g2e_phr2_q1_c"
+          }
+        ]
+      },
+      {
+        "id": "g2ephrl2t2",
+        "type": "multiple_choice",
+        "qKey": "g2e_phr2_q2",
+        "qRu": "Тали хочет пройти мимо Поли. Что он скажет?",
+        "qEn": "Tali wants to walk past Polly. What will he say?",
+        "qKy": "Тали Полинин жанынан өткүсү келет. Ал эмне дейт?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Excuse me",
+            "en": "Excuse me",
+            "ky": "Excuse me",
+            "key": "g2e_phr2_q2_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Sorry",
+            "en": "Sorry",
+            "ky": "Sorry",
+            "key": "g2e_phr2_q2_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Please",
+            "en": "Please",
+            "ky": "Please",
+            "key": "g2e_phr2_q2_c"
+          }
+        ]
+      },
+      {
+        "id": "g2ephrl2t3",
+        "type": "multiple_choice",
+        "qKey": "g2e_phr2_q3",
+        "qRu": "Как ответить на «Sorry»?",
+        "qEn": "How do you reply to “Sorry”?",
+        "qKy": "«Sorry» дегенге кантип жооп бересиң?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "It's OK / That's alright",
+            "en": "It's OK / That's alright",
+            "ky": "It's OK / That's alright",
+            "key": "g2e_phr2_q3_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Please",
+            "en": "Please",
+            "ky": "Please",
+            "key": "g2e_phr2_q3_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Thank you",
+            "en": "Thank you",
+            "ky": "Thank you",
+            "key": "g2e_phr2_q3_c"
+          }
+        ]
+      },
+      {
+        "id": "g2ephrl2t4",
+        "type": "input",
+        "qKey": "g2e_phrl2_q4",
+        "qRu": "Тали снова наступил на лапу Поли. Это уже второй раз! Он говорит «I'm sorry» и «Sorry» — это одно и то же?",
+        "qEn": "Tali stepped on Polly’s paw again — the second time! He asks if “I’m sorry” and “Sorry” mean the same thing.",
+        "qKy": "Тали Полинин бутун кайра басты — экинчи жолу! Ал «I’m sorry» менен «Sorry» бир эле деп сурайт.",
+        "answer": "Да, оба означают прости",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2e-phr-l3",
+    "tasks": [
+      {
+        "id": "g2ephrl3t1",
+        "type": "multiple_choice",
+        "qKey": "g2e_phr3_q1",
+        "qRu": "«Can I…?» используют, чтобы:",
+        "qEn": "“Can I…?” is used to:",
+        "qKy": "«Can I…?» эмне үчүн колдонулат:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Спросить разрешение",
+            "en": "Ask for permission",
+            "ky": "Уруксат суроо үчүн",
+            "key": "g2e_phr3_q1_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Извиниться",
+            "en": "Apologize",
+            "ky": "Кечирим суроо үчүн",
+            "key": "g2e_phr3_q1_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Попрощаться",
+            "en": "Say goodbye",
+            "ky": "Коштошуу үчүн",
+            "key": "g2e_phr3_q1_c"
+          }
+        ]
+      },
+      {
+        "id": "g2ephrl3t2",
+        "type": "multiple_choice",
+        "qKey": "g2e_phr3_q2",
+        "qRu": "«You can’t» по-русски:",
+        "qEn": "What does “You can’t” mean?",
+        "qKy": "«You can’t» эмнени билдирет?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Тебе нельзя",
+            "en": "You are not allowed",
+            "ky": "Сага болбойт",
+            "key": "g2e_phr3_q2_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Можно мне?",
+            "en": "May I?",
+            "ky": "Мага болобу?",
+            "key": "g2e_phr3_q2_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Спасибо",
+            "en": "Thank you",
+            "ky": "Рахмат",
+            "key": "g2e_phr3_q2_c"
+          }
+        ]
+      },
+      {
+        "id": "g2ephrl3t3",
+        "type": "multiple_choice",
+        "qKey": "g2e_phr3_q3",
+        "qRu": "Тали хочет войти в комнату. Как он спросит?",
+        "qEn": "Tali wants to enter the room. How will he ask?",
+        "qKy": "Тали бөлмөгө киргиси келет. Ал кантип сурайт?",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Can I come in?",
+            "en": "Can I come in?",
+            "ky": "Can I come in?",
+            "key": "g2e_phr3_q3_a"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "You can't come in",
+            "en": "You can't come in",
+            "ky": "You can't come in",
+            "key": "g2e_phr3_q3_b"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Thank you for coming in",
+            "en": "Thank you for coming in",
+            "ky": "Thank you for coming in",
+            "key": "g2e_phr3_q3_c"
+          }
+        ]
+      },
+      {
+        "id": "g2ephrl3t4",
+        "type": "input",
+        "qKey": "g2e_phr3_q4",
+        "qRu": "Переведи на русский: «No, you can’t eat my sandwich!»",
+        "qEn": "What does this mean in Russian: “No, you can’t eat my sandwich!”",
+        "qKy": "Орусчага котор: «No, you can’t eat my sandwich!»",
+        "answer": "Нет, тебе нельзя есть мой бутерброд",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2e-sch-l1",
+    "tasks": [
+      {
+        "id": "g2eschl1t1",
+        "type": "multiple_choice",
+        "qKey": "g2e_book_en",
+        "qRu": "Книга по-английски:",
+        "qEn": "Book in English:",
+        "qKy": " Китеп англисче:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "book",
+            "en": "book",
+            "ky": "book",
+            "key": "g2e_opt_book"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "pen",
+            "en": "pen",
+            "ky": "pen",
+            "key": "g2e_opt_pen"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "desk",
+            "en": "desk",
+            "ky": "desk",
+            "key": "g2e_opt_desk"
+          }
+        ]
+      },
+      {
+        "id": "g2eschl1t2",
+        "type": "multiple_choice",
+        "qKey": "g2e_pen_en",
+        "qRu": "Ручка по-английски:",
+        "qEn": "Pen in English:",
+        "qKy": " Калем англисче:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "book",
+            "en": "book",
+            "ky": "book",
+            "key": "g2e_opt_book"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "pen",
+            "en": "pen",
+            "ky": "pen",
+            "key": "g2e_opt_pen"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "board",
+            "en": "board",
+            "ky": "board",
+            "key": "g2e_opt_board"
+          }
+        ]
+      },
+      {
+        "id": "g2eschl1t3",
+        "type": "multiple_choice",
+        "qKey": "g2e_chair_en",
+        "qRu": "Стул по-английски:",
+        "qEn": "Chair in English:",
+        "qKy": " Отургуч англисче:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "desk",
+            "en": "desk",
+            "ky": "desk",
+            "key": "g2e_opt_desk"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "chair",
+            "en": "chair",
+            "ky": "chair",
+            "key": "g2e_opt_chair"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "board",
+            "en": "board",
+            "ky": "board",
+            "key": "g2e_opt_board"
+          }
+        ]
+      },
+      {
+        "id": "g2eschl1t4",
+        "type": "input",
+        "qKey": "g2e_board_en",
+        "qRu": "Доска по-английски:",
+        "qEn": "English board:",
+        "qKy": " Такта англисче:",
+        "answer": "board",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2e-sch-l2",
+    "tasks": [
+      {
+        "id": "g2eschl2t1",
+        "type": "multiple_choice",
+        "qKey": "g2e_math_in_en",
+        "qRu": "Математика по-английски:",
+        "qEn": "Mathematics in English:",
+        "qKy": " Математика англисче:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "Math",
+            "en": "Math",
+            "ky": "Math",
+            "key": "g2e_opt_maths"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Music",
+            "en": "Music",
+            "ky": "Музыка",
+            "key": "g2e_opt_music"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Art",
+            "en": "Art",
+            "ky": "Сүрөт",
+            "key": "g2e_opt_art"
+          }
+        ]
+      },
+      {
+        "id": "g2eschl2t2",
+        "type": "multiple_choice",
+        "qKey": "g2e_art_in_en",
+        "qRu": "Рисование по-английски:",
+        "qEn": "Drawing in English:",
+        "qKy": " Сүрөт тартуу англисче:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "Math",
+            "en": "Math",
+            "ky": "Math",
+            "key": "g2e_opt_maths"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Music",
+            "en": "Music",
+            "ky": "Музыка",
+            "key": "g2e_opt_music"
+          },
+          {
+            "id": "c",
+            "correct": true,
+            "ru": "Art",
+            "en": "Art",
+            "ky": "Сүрөт",
+            "key": "g2e_opt_art"
+          }
+        ]
+      },
+      {
+        "id": "g2eschl2t3",
+        "type": "multiple_choice",
+        "qKey": "g2e_pe_in_en",
+        "qRu": "Физкультура по-английски:",
+        "qEn": "Physical Education in English:",
+        "qKy": " Дене тарбия англисче:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "PE",
+            "en": "PE",
+            "ky": "PE",
+            "key": "g2e_opt_pe"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Science",
+            "en": "Science",
+            "ky": "Илим",
+            "key": "g2e_opt_science"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "History",
+            "en": "History",
+            "ky": "Тарых",
+            "key": "g2e_opt_history"
+          }
+        ]
+      },
+      {
+        "id": "g2eschl2t4",
+        "type": "input",
+        "qKey": "g2e_english_subject",
+        "qRu": "Английский язык по-английски:",
+        "qEn": "English to English:",
+        "qKy": " Англис тили англисче:",
+        "answer": "English",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "g2e-sch-l3",
+    "tasks": [
+      {
+        "id": "g2eschl3t1",
+        "type": "multiple_choice",
+        "qKey": "g2e_sch3_q1",
+        "qRu": "«Я не понимаю» по-английски:",
+        "qEn": "\"I don't understand\" in English:",
+        "qKy": "«Мен түшүнбөйм» англисче:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "I don't understand",
+            "en": "I don't understand",
+            "ky": "I don't understand",
+            "key": "g2e_sch3_opt_idont"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Can you help me?",
+            "en": "Can you help me?",
+            "ky": "Can you help me?",
+            "key": "g2e_sch3_opt_help"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Hello!",
+            "en": "Hello!",
+            "ky": "Hello!",
+            "key": "g2e_sch3_opt_hello"
+          }
+        ]
+      },
+      {
+        "id": "g2eschl3t2",
+        "type": "multiple_choice",
+        "qKey": "g2e_sch3_q2",
+        "qRu": "«Можешь помочь?» по-английски:",
+        "qEn": "\"Can you help me?\" in English:",
+        "qKy": "«Жардам бересиңби?» англисче:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": false,
+            "ru": "I don't understand",
+            "en": "I don't understand",
+            "ky": "I don't understand",
+            "key": "g2e_sch3_opt_idont"
+          },
+          {
+            "id": "b",
+            "correct": true,
+            "ru": "Can you help me?",
+            "en": "Can you help me?",
+            "ky": "Can you help me?",
+            "key": "g2e_sch3_opt_help"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Goodbye!",
+            "en": "Goodbye!",
+            "ky": "Goodbye!",
+            "key": "g2e_sch3_opt_bye"
+          }
+        ]
+      },
+      {
+        "id": "g2eschl3t3",
+        "type": "multiple_choice",
+        "qKey": "g2e_sch3_q3",
+        "qRu": "«Можно войти?» по-английски:",
+        "qEn": "\"May I come in?\" in English:",
+        "qKy": "«Кирсем болобу?» англисче:",
+        "answer": null,
+        "options": [
+          {
+            "id": "a",
+            "correct": true,
+            "ru": "May I come in?",
+            "en": "May I come in?",
+            "ky": "May I come in?",
+            "key": "g2e_sch3_opt_may"
+          },
+          {
+            "id": "b",
+            "correct": false,
+            "ru": "Thank you!",
+            "en": "Thank you!",
+            "ky": "Thank you!",
+            "key": "g2e_sch3_opt_thanks"
+          },
+          {
+            "id": "c",
+            "correct": false,
+            "ru": "Hello!",
+            "en": "Hello!",
+            "ky": "Hello!",
+            "key": "g2e_sch3_opt_hello"
+          }
+        ]
+      },
+      {
+        "id": "g2eschl3t4",
+        "type": "input",
+        "qKey": "g2e_sch3_q4",
+        "qRu": "Учитель спросил, а Тали не понял. Что сказать?",
+        "qEn": "The teacher asked, and Tali didn't understand. What should he say?",
+        "qKy": "Мугалим сурады, Тали түшүнгөн жок. Эмне деш керек?",
+        "answer": "I don",
+        "options": []
+      }
+    ]
+  }
+]

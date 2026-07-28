@@ -1,0 +1,1262 @@
+[
+  {
+    "id": "meadow-c5-l1",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Один, два, три",
+    "coherence": 2,
+    "usefulness": 1,
+    "engagement": 3,
+    "diversity": 1,
+    "verdict": "Сюжет про счёт живой, но верный ответ «Кто? Что?» убивает пользу урока.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-c5-l1 / task1",
+        "issue": "Верный ответ помечен как «Кто? Что?» вместо 3 — к вопросу «сколько котят?»."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-c5-l1 / task3",
+        "issue": "Дистрактор «Кто? Что?» в арифметике 1+2."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-c5-l1 / task5",
+        "issue": "ABA: снова «Кто? Что?» вместо числа."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-c5-l1",
+        "issue": "Все 5 заданий — multiple_choice; нет пересчёта/показа пальцев."
+      }
+    ],
+    "fixes": [
+      "task1: верный ответ b→c (3); a/b/c = 1 / 2 / 3",
+      "task3 и ABA: убрать «Кто? Что?», заменить на соседние числа",
+      "Добавить 1 задание count_visual или show_fingers (покажи 3)"
+    ],
+    "enkyFlags": [
+      "EN dialog упрощён vs RU (нет морковок/пикника) — лёгкий dialog/intro mismatch между локалями"
+    ],
+    "templates": [
+      "multiple_choice:count_verify_tali",
+      "multiple_choice:next_number",
+      "multiple_choice:simple_add",
+      "multiple_choice:compare_amounts",
+      "multiple_choice:aba_count"
+    ]
+  },
+  {
+    "id": "meadow-c5-l2",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Четыре и пять",
+    "coherence": 3,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "Тема 4–5 ясна, но task3 с верным «Кто? Что?» вместо 2 — критический брак.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-c5-l2 / task3",
+        "issue": "Нужно ещё 2 морковки (5−3), а ✓ стоит на «Кто? Что?»."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-c5-l2",
+        "issue": "Снова только MC; нет манипуляции «досчитай до 5»."
+      }
+    ],
+    "fixes": [
+      "task3: варианты 1 / 2 / 3, верный 2",
+      "Заменить одно MC на fill_gap ряда 1…5 или drag_count"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:count_visual",
+      "multiple_choice:number_sequence_gap",
+      "multiple_choice:how_many_more",
+      "multiple_choice:simple_add",
+      "multiple_choice:aba_count"
+    ]
+  },
+  {
+    "id": "meadow-c5-l3",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Больше или меньше",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "Сравнение работает по возрасту; формулировка task4 размыта, механика однообразна.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-c5-l3 / task4",
+        "issue": "Вопрос «как на самом деле?» при «они одинаковые» — варианты 1/4/Одинаковые без явного «что больше?»."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-c5-l3",
+        "issue": "All-MC; нет визуального выбора кучек без цифр."
+      }
+    ],
+    "fixes": [
+      "task4: «Какое число больше — 1 или 4?» → 1 / 4 / одинаковые",
+      "1 задание: две картинки без цифр — «где больше?»"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:compare_sets",
+      "multiple_choice:compare_sets",
+      "multiple_choice:equal_sets",
+      "multiple_choice:compare_digits",
+      "multiple_choice:aba_which_bigger"
+    ]
+  },
+  {
+    "id": "meadow-c10-l1",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Шесть и семь",
+    "coherence": 3,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "Интро 5+2 хорошее, но снова «Кто? Что?» как «верный» ответ на how-many-more.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-c10-l1 / task3",
+        "issue": "7−5=2, ✓ на «Кто? Что?»."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-c10-l1 / task2",
+        "issue": "Сравнение 6 vs 4 — тема урока 6–7, ок как review, но уводит от счёта 6–7."
+      }
+    ],
+    "fixes": [
+      "task3: 1 / 2 / 3, верный 2",
+      "task2 заменить на «сосчитай 7 утят» или gap 5,6,_,8"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:count_visual",
+      "multiple_choice:compare_sets",
+      "multiple_choice:how_many_more",
+      "multiple_choice:compare_sets",
+      "multiple_choice:aba_count"
+    ]
+  },
+  {
+    "id": "meadow-c10-l2",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Восемь, девять, десять",
+    "coherence": 2,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "Задания по 8–10 в целом полезны; интро противоречит само себе про «однозначное».",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-c10-l2 / intro2",
+        "issue": "«Десять — самое большое однозначное» — ложь; диалог верно говорит про девять."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-c10-l2 / dialog",
+        "issue": "Диалог: «девять — самое большое однозначное»; интро2 спорит с диалогом."
+      }
+    ],
+    "fixes": [
+      "intro2: «Десять = 5+5, два знака; самое большое однозначное — 9»",
+      "Оставить вычитание/сложение лапок — это сильные задания"
+    ],
+    "enkyFlags": [
+      "EN meadow_c10l2_1 корректно про nine/ten digits — лучше RU intro"
+    ],
+    "templates": [
+      "multiple_choice:subtract",
+      "multiple_choice:sequence_gap",
+      "multiple_choice:count_visual",
+      "multiple_choice:add_parts",
+      "multiple_choice:aba_next_number"
+    ]
+  },
+  {
+    "id": "meadow-c10-l3",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Сравниваем числа",
+    "coherence": 2,
+    "usefulness": 3,
+    "engagement": 2,
+    "diversity": 3,
+    "verdict": "Название — сравнение, а task1 — угадываемый чётный паттерн, task2 — сумма.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-c10-l3 / task1",
+        "issue": "Паттерн 2,4,6,8 — pattern-guessable; не сравнение."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-c10-l3 / task2",
+        "issue": "«Сколько всего?» = сложение, не compare."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-c10-l3",
+        "issue": "All-MC; слабая связка dialog→intro→tasks."
+      }
+    ],
+    "fixes": [
+      "task1→ «7 и 3 — что больше?»",
+      "task2→ «6 vs 4 — где больше?» (без суммы) или вынести сумму в отдельный урок"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:even_pattern",
+      "multiple_choice:add_totals",
+      "multiple_choice:compare_sets",
+      "multiple_choice:between_numbers",
+      "multiple_choice:aba_which_bigger"
+    ]
+  },
+  {
+    "id": "meadow-sh-l1",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Круг и квадрат",
+    "coherence": 2,
+    "usefulness": 1,
+    "engagement": 2,
+    "diversity": 2,
+    "verdict": "Диалог про фигуры ок, но task2 с «к прилагательному/существительному» — чужой предмет.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-sh-l1 / task2",
+        "issue": "«У круга есть углы?» — варианты про части речи, не Да/Нет."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-sh-l1",
+        "issue": "All-MC; нет «обведи/покажи круг»."
+      }
+    ],
+    "fixes": [
+      "task2: Да / Нет (верный Нет)",
+      "Добавить match_shape_to_object (мяч→круг)"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:shape_example",
+      "multiple_choice:WRONG_grammar_leak",
+      "multiple_choice:count_sides",
+      "multiple_choice:count_corners",
+      "multiple_choice:aba_shape"
+    ]
+  },
+  {
+    "id": "meadow-sh-l2",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Треугольник и прямоугольник",
+    "coherence": 2,
+    "usefulness": 3,
+    "engagement": 2,
+    "diversity": 2,
+    "verdict": "Мало треугольника/прямоугольника: task1 и task3 про квадрат с прошлого урока.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-sh-l2 / task1",
+        "issue": "«Сколько сторон у квадрата?» — не тема урока."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-sh-l2 / task3",
+        "issue": "Снова углы квадрата; треугольник почти не тренируется."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-sh-l2 / task4",
+        "issue": "«Игральная кость» = куб, не квадрат — путает 2D/3D."
+      }
+    ],
+    "fixes": [
+      "task1: «Сколько углов у треугольника?» → 3",
+      "task3: «Крыша дома — какая фигура?» → треугольник",
+      "task4: квадрат vs книга(прямоугольник) vs мяч — без куба"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:square_review",
+      "multiple_choice:rect_example",
+      "multiple_choice:square_corners",
+      "multiple_choice:shape_analogy",
+      "multiple_choice:aba_yesno_shape"
+    ]
+  },
+  {
+    "id": "meadow-sh-l3",
+    "grade": 0,
+    "subject": "math",
+    "world": "meadow",
+    "title": "Нахожу фигуры",
+    "coherence": 4,
+    "usefulness": 3,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "Загадка и «лишнее» живые; дистрактор «Кто? Что?» снова портит счёт сторон.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-sh-l3 / task2",
+        "issue": "Вариант «Кто? Что?» вместо 2 сторон."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / meadow-sh-l3",
+        "issue": "Только MC; нет поиска фигуры на сцене."
+      }
+    ],
+    "fixes": [
+      "task2: 2 / 3 / 4",
+      "Одно задание find_in_scene: окно/тарелка/крыша"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:riddle_shape",
+      "multiple_choice:count_sides",
+      "multiple_choice:odd_one_out",
+      "multiple_choice:no_corners",
+      "multiple_choice:aba_count_corners"
+    ]
+  },
+  {
+    "id": "forest-v-l1",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Буква А",
+    "coherence": 3,
+    "usefulness": 3,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "Игровой шпион/пение сильные; ключ task2 про МАМА логически перевёрнут.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / forest-v-l1 / task2",
+        "issue": "Тали: «нет А» — правда? ✓ «Да, и не одна!» отвечает на другой вопрос; должно быть «Нет, А есть (две)»."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / forest-v-l1 / intro1",
+        "issue": "«33 буквы» — лишняя нагрузка для 5–6 на первом уроке А."
+      }
+    ],
+    "fixes": [
+      "task2: варианты «Прав — А нет» / «Неправ — в МАМА две А» (верный второй)",
+      "Убрать число 33 из intro или вынести в конец темы"
+    ],
+    "enkyFlags": [
+      "EN forest_vl1_* держит кириллицу А — ок для RU-урока"
+    ],
+    "templates": [
+      "multiple_choice:initial_letter",
+      "multiple_choice:letter_presence",
+      "multiple_choice:vowel_stretch",
+      "multiple_choice:letter_absent",
+      "multiple_choice:aba_first_letter"
+    ]
+  },
+  {
+    "id": "forest-v-l2",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Буквы О и У",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "Хороший возраст-fit: артикуляция + поиск гласной в слове.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / forest-v-l2 / task4",
+        "issue": "«Слово без О и У» — Апельсин ок, но формулировка длинная для ABA-соседства."
+      }
+    ],
+    "fixes": [
+      "Сократить stem task4: «В каком слове нет О и нет У?»",
+      "Опционально: input первой буквы УТКА"
+    ],
+    "enkyFlags": [
+      "EN forest_vl2 с О/У кириллицей — ок"
+    ],
+    "templates": [
+      "multiple_choice:initial_letter",
+      "multiple_choice:find_vowel",
+      "multiple_choice:count_letter",
+      "multiple_choice:letter_absent",
+      "multiple_choice:aba_first_letter"
+    ]
+  },
+  {
+    "id": "forest-v-l3",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Буквы И и Э",
+    "coherence": 3,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "И/Э тренируются, но task4 тянет Е из ЛЕС до изучения этой буквы.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / forest-v-l3 / task4",
+        "issue": "В ЛЕС гласная Е — не И/Э; тема урока размыта."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / forest-v-l3",
+        "issue": "All-MC, соседние уроки гласных похожи по шаблону."
+      }
+    ],
+    "fixes": [
+      "task4: «В КИТ какая гласная?» или «ЭХО — первая буква?»",
+      "Разнообразить: clap/sing И vs согласная"
+    ],
+    "enkyFlags": [
+      "EN forest_vl3_1: АИСТ кириллица — ок"
+    ],
+    "templates": [
+      "multiple_choice:initial_letter",
+      "multiple_choice:find_vowel",
+      "multiple_choice:initial_vowel",
+      "multiple_choice:vowel_in_word",
+      "multiple_choice:aba_first_letter"
+    ]
+  },
+  {
+    "id": "forest-con-l1",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Буквы М и С",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "Чётко вводит согласные через «не поётся»; возраст-fit хороший.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / forest-con-l1 / task4",
+        "issue": "«Первая гласная» — возврат к гласным; ок как contrast, но не М/С."
+      }
+    ],
+    "fixes": [
+      "task4 заменить на «Слон/Мышка — кто на С?» или «М vs С в начале»",
+      "Оставить vowel/consonant contrast в ABA или отдельном review"
+    ],
+    "enkyFlags": [
+      "EN forest_conl1 кириллица М/С — ок"
+    ],
+    "templates": [
+      "multiple_choice:initial_letter",
+      "multiple_choice:vowel_vs_consonant",
+      "multiple_choice:initial_letter",
+      "multiple_choice:odd_initial_vowel",
+      "multiple_choice:aba_first_letter"
+    ]
+  },
+  {
+    "id": "forest-con-l2",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Буквы Т и К",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 4,
+    "verdict": "Единственный input в блоке согласных — заметный плюс к diversity.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / forest-con-l2 / task4",
+        "issue": "Дублирование ответа в тексте «*(ответ: К)* _(ответ: К)_» — шум экспорта."
+      }
+    ],
+    "fixes": [
+      "Почистить дубль метки ответа в MD/данных",
+      "ABA можно сделать match Т/К к картинкам"
+    ],
+    "enkyFlags": [
+      "EN forest_conl2_0: смесь «Т-Т-Т! Tiger… К-К-К!» — кириллица+EN ок для RU phonics"
+    ],
+    "templates": [
+      "multiple_choice:initial_letter",
+      "multiple_choice:vowel_vs_consonant",
+      "multiple_choice:initial_letter",
+      "input:first_letter",
+      "multiple_choice:aba_first_letter"
+    ]
+  },
+  {
+    "id": "forest-con-l3",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Буква Н",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "Шпион НОГА→РОГА — сильная механика замены буквы для 5–6.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / forest-con-l3",
+        "issue": "Всё ещё MC-heavy; input был только в соседнем уроке."
+      }
+    ],
+    "fixes": [
+      "Добавить input: первая буква НОС",
+      "Можно слог-prep: Н+А в конце intro (уже намёк есть)"
+    ],
+    "enkyFlags": [
+      "EN forest_conl3_0 почти калька с RU словами НОС/НЕБО/НОРА"
+    ],
+    "templates": [
+      "multiple_choice:initial_letter",
+      "multiple_choice:vowel_vs_consonant",
+      "multiple_choice:odd_one_out",
+      "multiple_choice:letter_swap_spy",
+      "multiple_choice:aba_first_letter"
+    ]
+  },
+  {
+    "id": "forest-syl-l1",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Слоги МА, МО, МУ",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "Слог как «кирпичик» + хлопки — сильная ABA-совместимая рамка.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / forest-syl-l1 / task2",
+        "issue": "МУ-МУ→корова — больше мир животных, чем чтение слога."
+      }
+    ],
+    "fixes": [
+      "task2: «Какой слог в МУ-МУ?» → МУ / МО / МА",
+      "Животное оставить как flavor в stem, не как целевой навык"
+    ],
+    "enkyFlags": [
+      "EN forest_syll1 с МА — ок"
+    ],
+    "templates": [
+      "multiple_choice:identify_syllable",
+      "multiple_choice:sound_to_animal",
+      "multiple_choice:count_syllables",
+      "multiple_choice:blend_syllables",
+      "multiple_choice:aba_show_syllable"
+    ]
+  },
+  {
+    "id": "forest-syl-l2",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Слоги СА, СО, СУ",
+    "coherence": 3,
+    "usefulness": 3,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "Тема С-слогов, но task2 снова МА-МА; диалог уже тащит НОРА до урока НА.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / forest-syl-l2 / task2",
+        "issue": "Хлопки МА-МА — копипаст с прошлого урока, не СА/СО/СУ."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / forest-syl-l2 / dialog",
+        "issue": "Ёжик про НО-РА до темы НА — прыжок вперёд."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / forest-syl-l2",
+        "issue": "Паттерн заданий почти идентичен syl-l1 → низкая diversity vs neighbor."
+      }
+    ],
+    "fixes": [
+      "task2: хлопки СО-ВА",
+      "dialog: убрать Нора или заменить на СОВА"
+    ],
+    "enkyFlags": [
+      "EN forest_syll2_* кириллица СА/СО/Нора; KY syll2_0 почти как RU"
+    ],
+    "templates": [
+      "multiple_choice:identify_syllable",
+      "multiple_choice:count_syllables",
+      "multiple_choice:count_syllables",
+      "multiple_choice:blend_syllables",
+      "multiple_choice:aba_show_syllable"
+    ]
+  },
+  {
+    "id": "forest-syl-l3",
+    "grade": 0,
+    "subject": "reading_ru",
+    "world": "forest",
+    "title": "Слог НА и повторение",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "Хороший review-урок; ракета РА-КЕ-ТА чуть выше, но приемлемо с дефисами.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / forest-syl-l3 / task3",
+        "issue": "РА-КЕ-ТА — 3 слога, сложнее МА/СА; нужна опора голосом взрослого."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / forest-syl-l3 / task4",
+        "issue": "«Какое слово получится?» при готовом НО-ГА — скорее выбор продолжения, чем сборка."
+      }
+    ],
+    "fixes": [
+      "task3 оставить с озвучкой слогов",
+      "task4: собрать НО+РА / НО+ГА из двух плиток (drag)"
+    ],
+    "enkyFlags": [
+      "EN forest_syll3_0 НОРА кириллица"
+    ],
+    "templates": [
+      "multiple_choice:identify_syllable",
+      "multiple_choice:count_syllables",
+      "multiple_choice:first_syllable",
+      "multiple_choice:complete_word",
+      "multiple_choice:aba_show_syllable"
+    ]
+  },
+  {
+    "id": "garden-col-l1",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Красный, синий, зелёный",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "Ключ «лягушка красная = Да» ошибочен; оранжевая морковь вне заявленных RGB.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-col-l1 / task3",
+        "issue": "«Лягушка — красная?» ✓ Да — неверно; b «зелёная» должно быть верным."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-col-l1 / task4",
+        "issue": "Оранжевый/морковка — цвет не из intro RGB."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-col-l1",
+        "issue": "All-MC; нет «покажи красное» на картинке."
+      }
+    ],
+    "fixes": [
+      "task3: ✓ на «Нет, лягушка зелёная»",
+      "task4: синий объект (небо/черника) вместо оранжевого",
+      "ABA оставить клубнику — ок"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:color_object",
+      "multiple_choice:not_this_color",
+      "multiple_choice:true_false_color",
+      "multiple_choice:riddle_color",
+      "multiple_choice:aba_color"
+    ]
+  },
+  {
+    "id": "garden-col-l2",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Жёлтый, оранжевый и размеры",
+    "coherence": 2,
+    "usefulness": 3,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "Интро про большой/маленький есть, заданий на размер — ноль.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-col-l2 / intro2",
+        "issue": "Размеры заявлены, в tasks не тренируются."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-col-l2 / task3",
+        "issue": "Баклажан/фиолетовый — вне жёлтый/оранжевый."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-col-l2 / dialog",
+        "issue": "«Чем жёлтый отличается от оранжевого?» — tasks почти не отвечают сравнением."
+      }
+    ],
+    "fixes": [
+      "1–2 задания: слон vs муравей / большой–маленький",
+      "task3 заменить на «банан — yellow или orange?»"
+    ],
+    "enkyFlags": [
+      "EN garden_coll2_1 про turtles clever — слабее связи с цветами, чем RU"
+    ],
+    "templates": [
+      "multiple_choice:color_object",
+      "multiple_choice:mix_colors",
+      "multiple_choice:true_false_color",
+      "multiple_choice:color_object",
+      "multiple_choice:aba_color"
+    ]
+  },
+  {
+    "id": "garden-col-l3",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Белый, чёрный и повторение",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "Сильный review: смешение красок + загадка пингвина.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-col-l3",
+        "issue": "All-MC; сосед garden-col похож шаблоном."
+      }
+    ],
+    "fixes": [
+      "Добавить sort_two_bins: белое/чёрное",
+      "Оставить пингвина — высокая engagement"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:color_object",
+      "multiple_choice:mix_colors",
+      "multiple_choice:odd_one_out",
+      "multiple_choice:riddle_animal_color",
+      "multiple_choice:aba_color"
+    ]
+  },
+  {
+    "id": "garden-anim-l1",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Домашние животные",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "Классика для 5–6: молоко/мяу/домашние vs дикие — ясно и полезно.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-anim-l1",
+        "issue": "All-MC; мало «по звуку/по месту» без текста."
+      }
+    ],
+    "fixes": [
+      "Одно audio_match: мяу/гав → кот/собака",
+      "Ок оставить yes/no ABA"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:who_gives",
+      "multiple_choice:domestic_vs_wild",
+      "multiple_choice:sound_to_animal",
+      "multiple_choice:odd_one_out",
+      "multiple_choice:aba_yesno"
+    ]
+  },
+  {
+    "id": "garden-anim-l2",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Дикие животные",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "Зеркало к l1; лишний «корова» — хорошая проверка категории.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-anim-l2",
+        "issue": "Шаблон почти = anim-l1 → diversity vs neighbor низкая."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-anim-l2 / task3",
+        "issue": "«Рыжий след»→лиса угадываемо по стереотипу без картинки."
+      }
+    ],
+    "fixes": [
+      "Добавить habitat_match (лес/дом/море)",
+      "task3 с картинкой следа/хвоста, не только текстом"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:habitat",
+      "multiple_choice:domestic_vs_wild",
+      "multiple_choice:identify_animal",
+      "multiple_choice:odd_one_out",
+      "multiple_choice:aba_yesno"
+    ]
+  },
+  {
+    "id": "garden-anim-l3",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Рыбы, птицы и лапки",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "Среда обитания + лапки — логичный шаг; «рыба никогда не издаёт звук» спорно.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-anim-l3 / task3",
+        "issue": "«Никогда не издаёт звук» — фактически неточно; путает с китом."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-anim-l3 / dialog",
+        "issue": "Тали говорит о себе в 3 лице — мелкий стиль."
+      }
+    ],
+    "fixes": [
+      "task3: «Живёт в воде, есть плавники, дышит жабрами» → рыба",
+      "Починить реплику Тали на «я»"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:habitat",
+      "multiple_choice:can_do",
+      "multiple_choice:riddle_animal",
+      "multiple_choice:features",
+      "multiple_choice:aba_habitat"
+    ]
+  },
+  {
+    "id": "garden-seas-l1",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Осень и зима",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "Признаки сезонов ясные; всего 4 MC без ABA — короче соседей.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-seas-l1 / task4",
+        "issue": "«Сколько времён года?» — скорее счёт, не признаки осени/зимы."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-seas-l1",
+        "issue": "Нет ABA; all-MC."
+      }
+    ],
+    "fixes": [
+      "task4: «Листья падают — осень или зима?»",
+      "Добавить ABA: «Снег — зима?» Да/Нет"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:season_from_clue",
+      "multiple_choice:season_feature",
+      "multiple_choice:when_possible",
+      "multiple_choice:count_seasons"
+    ]
+  },
+  {
+    "id": "garden-seas-l2",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Весна",
+    "coherence": 4,
+    "usefulness": 3,
+    "engagement": 2,
+    "diversity": 1,
+    "verdict": "Цепочки Осень→Зима→??? pattern-guessable; сухо и однообразно.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-seas-l2 / task2",
+        "issue": "Последовательность сезонов — угадывается без понимания весны."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-seas-l2 / task4",
+        "issue": "Та же механика цепочки, что task2."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-seas-l2",
+        "issue": "4×MC, низкая diversity vs seas-l1/l3."
+      }
+    ],
+    "fixes": [
+      "Заменить цепочки на признаки: почки/проталины/скворечник",
+      "Одно задание sort: зима vs весна картинки"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:season_from_clue",
+      "multiple_choice:season_sequence",
+      "multiple_choice:season_feature",
+      "multiple_choice:season_sequence"
+    ]
+  },
+  {
+    "id": "garden-seas-l3",
+    "grade": 0,
+    "subject": "logic",
+    "world": "garden",
+    "title": "Лето и повторение",
+    "coherence": 4,
+    "usefulness": 3,
+    "engagement": 2,
+    "diversity": 2,
+    "verdict": "task1 и task2 почти дублируют «купаться = лето».",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-seas-l3 / task1",
+        "issue": "Купание/жара → лето."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-seas-l3 / task2",
+        "issue": "Снова купание → лето — дубль."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / garden-seas-l3 / task3",
+        "issue": "Колесо сезонов снова pattern-guessable."
+      }
+    ],
+    "fixes": [
+      "task2: ягоды/каникулы/длинный день без «купаться»",
+      "task3: «После лета?» без полной цепочки на экране"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:season_from_clue",
+      "multiple_choice:season_from_clue",
+      "multiple_choice:season_cycle",
+      "multiple_choice:season_from_clue"
+    ]
+  },
+  {
+    "id": "island-abc-l1",
+    "grade": 0,
+    "subject": "english",
+    "world": "island",
+    "title": "Буквы A и B",
+    "coherence": 3,
+    "usefulness": 3,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "A/B ок, но task3 про C раньше времени; всё MC.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / island-abc-l1 / task3",
+        "issue": "«Не на C» — буква C ещё не цель урока A/B."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / island-abc-l1",
+        "issue": "All-MC; нет trace/say letter."
+      }
+    ],
+    "fixes": [
+      "task3: «Не начинается на A» среди Ant/Ball/Apple или «Ball starts with?»",
+      "Добавить input: first letter of Ball"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:initial_letter_en",
+      "multiple_choice:true_false_initial",
+      "multiple_choice:not_initial",
+      "multiple_choice:alphabet_order",
+      "multiple_choice:aba_first_letter"
+    ]
+  },
+  {
+    "id": "island-abc-l2",
+    "grade": 0,
+    "subject": "english",
+    "world": "island",
+    "title": "Буквы C и D",
+    "coherence": 2,
+    "usefulness": 1,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "Критично: DINOSAUR «starts with C» помечен Yes; ABA про E вне темы.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / island-abc-l2 / task2",
+        "issue": "DINOSAUR на D, но ✓ Yes (на C) — неверный ключ."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / island-abc-l2 / task3",
+        "issue": "Слова на F — тема следующего урока."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / island-abc-l2 / task5",
+        "issue": "ABA ELEPHANT → E, не C/D."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / island-abc-l2 / task4",
+        "issue": "input DUCK ок; дубль метки ответа."
+      }
+    ],
+    "fixes": [
+      "task2: ✓ No, it starts with D",
+      "task3: not on C среди Cat/Dog/Egg или Camel/Dog/Ball",
+      "ABA: DOLPHIN / DOG first letter D vs C"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:initial_letter_en",
+      "multiple_choice:true_false_initial",
+      "multiple_choice:not_initial",
+      "input:first_letter",
+      "multiple_choice:aba_first_letter"
+    ]
+  },
+  {
+    "id": "island-abc-l3",
+    "grade": 0,
+    "subject": "english",
+    "world": "island",
+    "title": "Буквы E и F",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "Самый чистый ABC-урок острова: E/F без ложных ключей.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / island-abc-l3",
+        "issue": "All-MC снова; input был только в l2."
+      }
+    ],
+    "fixes": [
+      "Добавить input: first letter of Egg/Fox",
+      "Можно letter_order A–F как финал темы"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:initial_letter_en",
+      "multiple_choice:true_false_initial",
+      "multiple_choice:alphabet_order",
+      "multiple_choice:initial_letter_en",
+      "multiple_choice:aba_first_letter"
+    ]
+  },
+  {
+    "id": "island-col-l1",
+    "grade": 0,
+    "subject": "english",
+    "world": "island",
+    "title": "Красный, синий, зелёный",
+    "coherence": 3,
+    "usefulness": 3,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "Лексика red/blue/green есть; task1 stem vs options плохо стыкуются.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / island-col-l1 / task1",
+        "issue": "«Red — это зелёный?» Прав? Варианты Red/Blue/Green — не Yes/No; ребёнок угадывает ярлык."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / island-col-l1 / task2",
+        "issue": "«Что НЕ положишь в BLUE bag» — небо нельзя «положить»; странная инструкция."
+      }
+    ],
+    "fixes": [
+      "task1: Yes/No или «What does RED mean?» → red/green/blue с RU gloss",
+      "task2: «Which is NOT blue?» sky / blueberry / banana"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:color_word_en",
+      "multiple_choice:odd_one_out_color",
+      "multiple_choice:yesno_color",
+      "multiple_choice:color_object",
+      "multiple_choice:aba_color_en"
+    ]
+  },
+  {
+    "id": "island-col-l2",
+    "grade": 0,
+    "subject": "english",
+    "world": "island",
+    "title": "Жёлтый и оранжевый",
+    "coherence": 3,
+    "usefulness": 3,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "Pumpkin/orange ок; смешение Red+Blue и виноград уводят от yellow/orange.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / island-col-l2 / task2",
+        "issue": "Red+Blue=Purple — не yellow/orange."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / island-col-l2 / task4",
+        "issue": "«All grapes are green» — тонко для EN-новичков 5–6."
+      }
+    ],
+    "fixes": [
+      "task2: Yellow+Red=? → Orange",
+      "task4: «Is a banana yellow?» Yes/No"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:color_object_en",
+      "multiple_choice:mix_colors",
+      "multiple_choice:count_color",
+      "multiple_choice:true_false_color",
+      "multiple_choice:aba_color_en"
+    ]
+  },
+  {
+    "id": "island-col-l3",
+    "grade": 0,
+    "subject": "english",
+    "world": "island",
+    "title": "Повторение цветов",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "Параллель garden-col-l3 на EN — полезный review, мало новой механики.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / island-col-l3",
+        "issue": "Почти клон garden-col-l3 → diversity между мирами низкая."
+      }
+    ],
+    "fixes": [
+      "Добавить listen_and_choose: слово «white»→картинка",
+      "ABA ок"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:color_object_en",
+      "multiple_choice:mix_colors",
+      "multiple_choice:odd_one_out",
+      "multiple_choice:riddle_animal",
+      "multiple_choice:aba_color_en"
+    ]
+  },
+  {
+    "id": "island-anim-l1",
+    "grade": 0,
+    "subject": "english",
+    "world": "island",
+    "title": "Кот и собака",
+    "coherence": 3,
+    "usefulness": 3,
+    "engagement": 3,
+    "diversity": 2,
+    "verdict": "Meow/Woof в яблочко; rabbit tail и «дикая команда» — оффтоп.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / island-anim-l1 / task2",
+        "issue": "Кролик/хвост — не cat/dog лексика урока."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / island-anim-l1 / task4",
+        "issue": "Wild team — логика сада, не EN cat/dog."
+      }
+    ],
+    "fixes": [
+      "task2: «Dog says Woof?» Yes/No",
+      "task4: Cat/Dog/Cow — кто говорит Meow?"
+    ],
+    "enkyFlags": [
+      "EN island_animl1_1: «cat = кот, dog = собака» — кириллица в EN диалоге (bilingual gloss; KY уже мышык/ит)"
+    ],
+    "templates": [
+      "multiple_choice:sound_to_animal_en",
+      "multiple_choice:yesno_fact",
+      "multiple_choice:riddle_animal",
+      "multiple_choice:odd_one_out",
+      "multiple_choice:aba_animal_sound"
+    ]
+  },
+  {
+    "id": "island-anim-l2",
+    "grade": 0,
+    "subject": "english",
+    "world": "island",
+    "title": "Птица и рыба",
+    "coherence": 4,
+    "usefulness": 4,
+    "engagement": 4,
+    "diversity": 3,
+    "verdict": "Fly/swim/habitat сильные; пингвин vs «all birds fly» — отличный challenge.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / island-anim-l2 / task5",
+        "issue": "ABA «Birds… Fly» упрощает сразу после task4 про пингвинов — лёгкий конфликт сообщений."
+      }
+    ],
+    "fixes": [
+      "ABA: «Fish live in… water/sky»",
+      "Или ABA: «Can a penguin fly? No»"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:verb_motion",
+      "multiple_choice:habitat_en",
+      "multiple_choice:can_do",
+      "multiple_choice:true_false_exception",
+      "multiple_choice:aba_verb"
+    ]
+  },
+  {
+    "id": "island-anim-l3",
+    "grade": 0,
+    "subject": "english",
+    "world": "island",
+    "title": "Повторение животных",
+    "coherence": 2,
+    "usefulness": 2,
+    "engagement": 3,
+    "diversity": 3,
+    "verdict": "Слон вне выученных 5 слов; «остаться» с ✓ penguin среди летающих — инверсия ключа.",
+    "problems": [
+      {
+        "ref": "grade-0-curriculum-ru.md / island-anim-l3 / task2",
+        "issue": "Elephant не в intro (cat/dog/bird/fish/cow)."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / island-anim-l3 / task4",
+        "issue": "«Только летающие… кто должен остаться?» ✓ Penguin — логика перевёрнута (пингвин как раз лишний)."
+      },
+      {
+        "ref": "grade-0-curriculum-ru.md / island-anim-l3 / task3",
+        "issue": "Счёт лап — математика/логика, слабый EN review."
+      }
+    ],
+    "fixes": [
+      "task2: «I say MOO» → Cow",
+      "task4: «Кто лишний / кто должен уйти?» ✓ Penguin ИЛИ ✓ Eagle/Parrot при «остаться»",
+      "task3: Match animal→sound (cow/cat/dog)"
+    ],
+    "enkyFlags": [],
+    "templates": [
+      "multiple_choice:can_do",
+      "multiple_choice:riddle_animal_en",
+      "multiple_choice:compare_legs",
+      "multiple_choice:odd_one_out_fly",
+      "multiple_choice:aba_yesno"
+    ]
+  }
+]

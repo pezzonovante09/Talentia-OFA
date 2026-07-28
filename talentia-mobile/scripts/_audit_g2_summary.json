@@ -1,0 +1,156 @@
+{
+  "count": 36,
+  "avgs": {
+    "coherence": 4.25,
+    "usefulness": 4.75,
+    "engagement": 3.69,
+    "diversity": 2.72
+  },
+  "critical": [
+    "g2e-days-l1"
+  ],
+  "coherence_lt_4": [
+    "g2m-100-l3",
+    "g2m-add2-l3",
+    "g2r-sh-l3",
+    "g2s-bdy-l3",
+    "g2e-days-l1",
+    "g2e-sch-l2"
+  ],
+  "wave3_check": {
+    "g2m-times-l3": {
+      "id": "g2m-times-l3",
+      "title": "Умножение на 3",
+      "grade": 2,
+      "subject": "math",
+      "world": "g2math",
+      "coherence": 5,
+      "usefulness": 5,
+      "engagement": 4,
+      "diversity": 4,
+      "verdict": "accept",
+      "problems": [
+        {
+          "ref": "EN-t4",
+          "issue": "EN-Q t4 урезано до «3×8=24. Right?» — теряется спор Арчи/Тали (24 vs 26)."
+        }
+      ],
+      "fixes": [
+        "EN-Q t4: восстановить «Archie says 24, Tali says 26 — who is right?»"
+      ],
+      "enkyFlags": [
+        "en_q_simplified:t4"
+      ],
+      "templates": [
+        "wave3_fixed_3x7_coins",
+        "fill_blank_product",
+        "who_is_right_product",
+        "groups_of_three"
+      ]
+    },
+    "g2r-sent-l2": {
+      "id": "g2r-sent-l2",
+      "title": "Члены предложения",
+      "grade": 2,
+      "subject": "reading_ru",
+      "world": "g2rus",
+      "coherence": 5,
+      "usefulness": 5,
+      "engagement": 4,
+      "diversity": 4,
+      "verdict": "accept",
+      "problems": [
+        {
+          "ref": "EN-t4 answer",
+          "issue": "RU-ответ «Обстоятельство», EN просит Attribute/Object/Adverbial — нужна согласованная проверка ответа по локали."
+        },
+        {
+          "ref": "KY-q",
+          "issue": "KY-вопросы оставляют русские примеры («Пушистый кот…») — ок для русистики, но термины смешаны."
+        }
+      ],
+      "fixes": [
+        "Локализовать accepted answers для EN (Adverbial) / KY (Жагдай/Бышыктооч)."
+      ],
+      "enkyFlags": [
+        "input_answer_locale_hardcoded_ru:Обстоятельство"
+      ],
+      "templates": [
+        "wave3_fixed_secondary_parts",
+        "hinted_pos_options",
+        "fill_blank_member",
+        "short_input_term"
+      ]
+    },
+    "g2e-days-l3": {
+      "id": "g2e-days-l3",
+      "title": "Расписание",
+      "grade": 2,
+      "subject": "reading",
+      "world": "g2eng",
+      "coherence": 4,
+      "usefulness": 5,
+      "engagement": 4,
+      "diversity": 4,
+      "verdict": "keep_polish",
+      "problems": [
+        {
+          "ref": "KY opts subjects",
+          "issue": "KY: Music→Музыка, Art→Сүрөт при вопросе на English gap-fill — ломает выбор английского слова (как в days-l1)."
+        },
+        {
+          "ref": "title KY",
+          "issue": "KY title == RU «Расписание»."
+        }
+      ],
+      "fixes": [
+        "KY g2e_opt_music/art оставить Music/Art в этом уроке (или отдельные keys для глосс vs targets)."
+      ],
+      "enkyFlags": [
+        "ky_translates_english_subject_targets:music_art",
+        "title_ky_eq_ru"
+      ],
+      "templates": [
+        "wave3_fixed_schedule_variety",
+        "on_preposition_fill",
+        "full_phrase_input",
+        "tue_music_fri_pe"
+      ]
+    },
+    "g2s-plt-l2": {
+      "id": "g2s-plt-l2",
+      "title": "Фотосинтез",
+      "grade": 2,
+      "subject": "logic",
+      "world": "g2sci",
+      "coherence": 5,
+      "usefulness": 5,
+      "engagement": 4,
+      "diversity": 4,
+      "verdict": "accept",
+      "problems": [
+        {
+          "ref": "KY title",
+          "issue": "lesson title KY==RU «Фотосинтез» — мелочь."
+        },
+        {
+          "ref": "t4 answer locale",
+          "issue": "answer hardcoded «В листьях»; EN/KY Q синхронизированы (Where in the plant… / Өсүмдүктө…), но проверка ответа может требовать локальных вариантов."
+        }
+      ],
+      "fixes": [
+        "Accepted answers: EN «In the leaves» / KY «Жалбырактарда» (или оставить RU при UI на RU)."
+      ],
+      "enkyFlags": [
+        "title_ky_eq_ru",
+        "input_answer_hardcoded_ru:В_листьях"
+      ],
+      "templates": [
+        "wave3_fixed_photosynthesis_locus",
+        "dark_cupboard_story",
+        "fill_blank_yes_no",
+        "needs_trio_mc"
+      ]
+    }
+  }
+}

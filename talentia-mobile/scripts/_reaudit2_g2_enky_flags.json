@@ -1,0 +1,142 @@
+[
+  {
+    "id": "g2m-100-l2",
+    "key": "data.intro.g2m_100l2_0_t",
+    "issue": "KY==RU"
+  },
+  {
+    "id": "g2m-add2-l2",
+    "key": "data.intro.g2m_add2l2_1_t",
+    "issue": "KY==RU"
+  },
+  {
+    "id": "g2r-sh-l3",
+    "key": "data.lessons.g2rShL3",
+    "issue": "EN==RU cyrillic"
+  },
+  {
+    "id": "g2r-sh-l3",
+    "key": "data.lessons.g2rShL3",
+    "issue": "KY==RU"
+  },
+  {
+    "id": "g2r-sh-l3",
+    "key": "data.intro.g2r_shl3_0_t",
+    "issue": "EN==RU cyrillic"
+  },
+  {
+    "id": "g2r-sh-l3",
+    "key": "data.intro.g2r_shl3_0_t",
+    "issue": "KY==RU"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_q1_a",
+    "issue": "EN==RU cyrillic"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_q1_a",
+    "issue": "KY==RU"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_q1_b",
+    "issue": "EN==RU cyrillic"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_q1_b",
+    "issue": "KY==RU"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_q1_c",
+    "issue": "EN==RU cyrillic"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_q1_c",
+    "issue": "KY==RU"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_opt_boy_go",
+    "issue": "EN==RU cyrillic"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_opt_boy_go",
+    "issue": "KY==RU"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_opt_boy_go_bad",
+    "issue": "EN==RU cyrillic"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_opt_boy_go_bad",
+    "issue": "KY==RU"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_opt_boys_go_bad",
+    "issue": "EN==RU cyrillic"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_opt_boys_go_bad",
+    "issue": "KY==RU"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_opt_red_ball",
+    "issue": "EN==RU cyrillic"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_opt_red_ball",
+    "issue": "KY==RU"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_opt_red_ball_bad",
+    "issue": "EN==RU cyrillic"
+  },
+  {
+    "id": "g2r-sent-l3",
+    "key": "data.tasks.g2r_sentl3_opt_red_ball_bad",
+    "issue": "KY==RU"
+  },
+  {
+    "id": "g2s-plt-l2",
+    "key": "data.lessons.g2sPltL2",
+    "issue": "KY==RU"
+  },
+  {
+    "id": "g2e-days-l3",
+    "key": "data.lessons.g2eDaysL3",
+    "issue": "KY==RU"
+  },
+  {
+    "id": "g2e-phr-l1",
+    "key": "data.tasks.g2e_phrl1_opt_pozh",
+    "issue": "EN==RU cyrillic"
+  },
+  {
+    "id": "g2e-phr-l1",
+    "key": "data.tasks.g2e_phrl1_opt_pozh",
+    "issue": "KY==RU"
+  },
+  {
+    "id": "g2e-phr-l1",
+    "key": "data.tasks.g2e_phrl1_opt_posvid",
+    "issue": "EN==RU cyrillic"
+  },
+  {
+    "id": "g2e-phr-l1",
+    "key": "data.tasks.g2e_phrl1_opt_posvid",
+    "issue": "KY==RU"
+  }
+]

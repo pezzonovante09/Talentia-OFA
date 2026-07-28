@@ -1,0 +1,40 @@
+﻿after4 enky 50 after5 77 new 36 cleared 9 persistent 41
+\n=== NEW enky ids ===
+canyon-sent-1	C3	ky_eq_ru:data.tasks.opt_mira
+forest-v-l1	C5	en/ky nrw_fvl1_t*_q ╤З╨░╤Б╤В╨╕╤З╨╜╨╛ ╨╛╤Б╤В╨░╤О╤В╤Б╤П ╨╜╨░ ╤А╤Г╤Б╤Б╨║╨╛╨╝ (╨┤╨╗╤П reading_ru ╨┤╨╛╨┐╤Г╤Б╤В╨╕╨╝╨╛, ╨╜╨╛ EN-╨╗╨╛╨║╨░╨╗╤М ╨╜╨╡╨┐╨╛╨╗╨╜╨░╤П).
+g1w-nat-l2	C4	[object Object]
+g2m-100-l1	C4	en_bare_formula:g2m_10x3/10x7/10x5
+g2m-times-l1	C4	en_bare_formula:g2m_2x4
+g2m-times-l3	C3	en_bare_formula:g2m_3x4
+g2s-plt-l3	C4	answer_hardcoded_RU:╨Ъ╨╛╤А╨╡╨╜╤М (╨║╨╗╤Г╨▒╨╡╨╜╤М)
+g3e-daily-l2	C5	Task stems EN/KY aligned; dialog EN weaker.
+g3e-daily-l3	C4	EN dialog topic drift (story day тЙа frequency). | Task Q EN/KY otherwise aligned.
+g3e-food-l2	C4	EN circular meaning items; KY/RU translational items OK.
+g3e-food-l3	C5	EN/KY aligned on requests / delicious / pass the salt.
+g3e-tobe-l2	C5	EN/KY well aligned with RU.
+g3m-1000-l3	C4	EN dialog wrong place-value tip.
+g3m-div-l1	C5	EN/KY ╤Е╨╛╤А╨╛╤И╨╛ ╨┤╨╡╤А╨╢╨░╤В ╤Б╤О╨╢╨╡╤В (╨╝╨╛╨╜╨╡╤В╤Л, ╨┐╨╕╤А╨╛╨╢╨║╨╕, ╨╝╨░╤В╤А╨╛╤Б╤Л).
+g3m-div-l2	C4	EN stems aligned; answer format risk same across locales.
+g3m-div-l3	C5	EN t1 bare; t2/t4 ╨╛╨║.
+g3m-tab-l3	C5	EN t1тАУt3 bare; t4 ╨╗╤Г╤З╤И╨╡ ╨▓╤Л╤А╨╛╨▓╨╜╨╡╨╜.
+g3r-adj-l3	C5	EN/KY often keep RU antonym lexemes тАФ OK for Russian vocabulary lesson. | t2 EN adds (cold)/(soft) glosses тАФ good pattern to extend.
+g3r-gen-l3	C5	EN options = RU phrases (╨Т╤Л╤Б╨╛╨║╨╕╨╣ ╨┤╨╛╨╝тАж) тАФ intentional for form recognition. | KY partly translates explanations (t3) while keeping forms.
+g3r-verb-l3	C5	EN t1тАУt2 options = RU forms; t3 glosses person in EN тАФ mixed but topic-aligned.
+g3w-eco-l2	C5	KY t1 options ┬л╨а╨░╤Б╨┐╨╕╤Б╨░╨╜╨╕╨╡┬╗, ┬л╨Ъ╨░╤А╤В╨░┬╗ = RU copies. | EN aligned (food chain, producer, hareтЖТfox).
+g3w-eco-l3	C4	EN/KY aligned on rare species / poaching / conservation actions.
+g3w-geo-l1	C5	EN/KY aligned (compass, rising sun, map south, right-of-north).
+g3w-geo-l2	C5	EN/KY well aligned on map vs globe / scale / colors.
+g3w-nat-l2	C5	EN/KY aligned (combustible, fuel uses, ironтЖТmetal).
+g4r-cases-l1	C4	ky_eq_ru:data.tasks.g4r_cases_q3_a | ky_eq_ru:data.tasks.g4r_cases_q3_b | ky_eq_ru:data.tasks.g4r_cases_q3_c
+g4r-cases-l2	C4	ky_eq_ru:data.tasks.g4r_cases2_q1_a | ky_eq_ru:data.tasks.g4r_cases2_q1_b | ky_eq_ru:data.tasks.g4r_cases2_q1_c | ky_eq_ru:data.tasks.g4r_cases2_q2_a | ky_eq_ru
+g4r-cases-l3	C4	ky_eq_ru:data.tasks.g4r_cases3_q1_a | ky_eq_ru:data.tasks.g4r_cases3_q1_b | ky_eq_ru:data.tasks.g4r_cases3_q1_c | ky_eq_ru:data.tasks.g4r_cases3_q2_a | ky_eq_ru
+g4r-conj-l1	C4	ky_eq_ru:data.tasks.g4r_conj_q2_a | ky_eq_ru:data.tasks.g4r_conj_q2_b | ky_eq_ru:data.tasks.g4r_conj_q2_c
+g4r-conj-l2	C4	ky_eq_ru:data.tasks.g4r_conj2_q1_a | ky_eq_ru:data.tasks.g4r_conj2_q1_b | ky_eq_ru:data.tasks.g4r_conj2_q1_c | ky_eq_ru:data.tasks.g4r_conj2_q2_a | ky_eq_ru:dat
+g4r-conj-l3	C4	ky_eq_ru:data.tasks.g4r_conj3_q2_a | ky_eq_ru:data.tasks.g4r_conj3_q2_b | ky_eq_ru:data.tasks.g4r_conj3_q2_c | ky_eq_ru:data.tasks.g4r_conj3_q3_a | ky_eq_ru:dat
+g4r-text-l3	C4	ky_eq_ru:data.tasks.g4r_text3_q2_a | ky_eq_ru:data.tasks.g4r_text3_q2_b | ky_eq_ru:data.tasks.g4r_text3_q2_c
+jungle-sub-1	C4	ky_eq_ru:data.tasks.aba_jungleSub_q2
+space-planets-1	C4	ky_eq_ru:data.tasks.opt_mars | ky_eq_ru:data.tasks.opt_jupiter
+space-planets-2	C4	ky_eq_ru:data.tasks.opt_mercury | ky_eq_ru:data.tasks.opt_mars | ky_eq_ru:data.tasks.opt_jupiter
+space-solar-1	C4	ky_eq_ru:data.tasks.opt_mars | ky_eq_ru:data.tasks.opt_mercury
+\n=== CLEARED ===
+g1e-grt-l1, g1e-grt-l3, g1e-num-l1, g1e-num-l2, g1e-num-l3, g2m-100-l2, g2s-plt-l1, island-anim-l1, island-anim-l3

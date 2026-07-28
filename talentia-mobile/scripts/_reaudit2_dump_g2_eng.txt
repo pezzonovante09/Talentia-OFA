@@ -1,0 +1,166 @@
+
+######## g2e-days-l1 (worlds.ts lines 2648-2655)
+  [dialog npc] Hello! Меня зовут Поли! Тали, ты знаешь дни недели по-английски?
+  [dialog tali] Monday — понедельник, это я знаю! А дальше… Tuesday? Wednesday? Я путаюсь начиная с четверга! Помоги мне!
+  [intro] Дни недели! :: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday. Их семь!
+  [intro] Запомни по-порядку :: Mon-Tue-Wed-Thu-Fri — рабочие дни. Sat-Sun — выходные. Тали, повторяй вслух!
+  L2652 g2edaysl1t1 <multiple_choice> Q: Понедельник по-английски:
+      a [✓] Monday   {g2e_opt_monday}
+      b     Tuesday   {g2e_opt_tuesday}
+      c     Wednesday   {g2e_opt_wednesday}
+  L2653 g2edaysl1t2 <multiple_choice> Q: Вторник по-английски:
+      a     Monday   {g2e_opt_monday}
+      b [✓] Tuesday   {g2e_opt_tuesday}
+      c     Wednesday   {g2e_opt_wednesday}
+  L2654 g2edaysl1t3 <fill_blank> Q: Среда по-английски — _
+  L2655 g2edaysl1t4 <input> Q: Тали запутался! После понедельника идёт:
+
+######## g2e-days-l2 (worlds.ts lines 2657-2664)
+  [dialog npc] Поли, сегодня понедельник. Значит вчера было воскресенье? Yesterday was Sunday?
+  [dialog tali] Точно! Ты быстро учишься! А завтра — tomorrow — будет вторник, Tuesday!
+  [intro] Yesterday / Tomorrow! :: Yesterday — вчера. Today — сегодня. Tomorrow — завтра. «Today is Monday → Yesterday was Sunday → Tomorrow is Tuesday»
+  [intro] Выходные :: Saturday и Sunday — выходные дни. Поли особенно их любит!
+  L2661 g2edaysl2t1 <multiple_choice> Q: Today is Monday. Yesterday was…
+      a [✓] Sunday   {g2e_yd_opt_sunday}
+      b     Tuesday   {g2e_yd_opt_tuesday}
+      c     Monday   {g2e_yd_opt_monday}
+  L2662 g2edaysl2t2 <multiple_choice> Q: Today is Monday. Tomorrow is…
+      a     Sunday   {g2e_yd_opt_sunday}
+      b [✓] Tuesday   {g2e_yd_opt_tuesday}
+      c     Monday   {g2e_yd_opt_monday}
+  L2663 g2edaysl2t3 <multiple_choice> Q: «Yesterday» по-русски:
+      a [✓] Вчера   {g2e_yd_opt_vchera}
+      b     Сегодня   {g2e_yd_opt_segodnya}
+      c     Завтра   {g2e_yd_opt_zavtra}
+  L2664 g2edaysl2t4 <input> Q: «Tomorrow» по-русски:
+
+######## g2e-days-l3 (worlds.ts lines 2666-2674)
+  [dialog npc] What day is it today? — Это вопрос «Какой сегодня день?»
+  [dialog tali] On Monday we have math! По понедельникам у нас математика. Поли, а у тебя есть расписание?
+  [intro] Расписание! :: What day is it today? — Какой сегодня день? On Monday we have math — По понедельникам у нас математика.
+  [intro] Предлог ON :: On Monday, on Tuesday — с днями недели используем ON.
+  L2670 g2edaysl3t1 <multiple_choice> Q: On Monday we have ___ . Какой предмет?
+      a [✓] Math   {g2e_opt_maths}
+      b     Music   {g2e_opt_music}
+      c     Art   {g2e_opt_art}
+  L2671 g2edaysl3t2 <multiple_choice> Q: “On ___ we have math.” Какой день недели?
+      a [✓] Monday   {g2e_opt_day_monday}
+      b     Sunday   {g2e_opt_day_sunday}
+      c     Saturday   {g2e_opt_day_saturday}
+  L2672 g2edaysl3t3 <multiple_choice> Q: Какой предлог ставим перед днём недели: ___ Monday?
+      a [✓] On   {g2e_opt_on}
+      b     In   {g2e_opt_in}
+      c     At   {g2e_opt_at}
+  L2673 g2edaysl3t4 <input> Q: Дополни: On ___ we have math.
+
+######## g2e-phr-l1 (worlds.ts lines 2677-2684)
+  [dialog npc] Please и Thank you — самые важные слова! Тали, ты знаешь их?
+  [dialog tali] Please — пожалуйста! Thank you — спасибо! Но я иногда путаю, когда что говорить. Помоги мне!
+  [intro] Please и Thank you! :: Please — пожалуйста (просьба). Thank you — спасибо (благодарность). You're welcome — пожалуйста (ответ на спасибо).
+  [intro] Вежливость на английском :: Вежливые слова важны на любом языке!
+  L2681 g2ephrl1t1 <multiple_choice> Q: «Thank you» по-русски:
+      a [✓] Спасибо   {g2e_phrl1_opt_spasibo}
+      b     Пожалуйста   {g2e_phrl1_opt_pozh}
+      c     Привет   {g2e_phrl1_opt_privet}
+  L2682 g2ephrl1t2 <multiple_choice> Q: «Please» по-русски:
+      a     Спасибо   {g2e_phrl1_opt_spasibo}
+      b [✓] Пожалуйста   {g2e_phrl1_opt_pozh}
+      c     До свидания   {g2e_phrl1_opt_posvid}
+  L2683 g2ephrl1t3 <fill_blank> Q: Ответ на Thank you — _
+  L2684 g2ephrl1t4 <input> Q: «Thank you very much» означает:
+
+######## g2e-phr-l2 (worlds.ts lines 2686-2693)
+  [dialog npc] Поли, я случайно наступил тебе на лапу. Мне сказать «Please» или что-то другое?
+  [dialog tali] Sorry! Когда виноват — говоришь Sorry. А когда хочешь пройти или потревожить — Excuse me. Разница важна!
+  [intro] Excuse me и Sorry! :: Excuse me — извините (когда мешаешь, хочешь пройти). Sorry — прости (когда виноват, сделал что-то плохое).
+  [intro] Разница :: Поли наступил на ногу → Sorry. Поли хочет пройти → Excuse me.
+  L2690 g2ephrl2t1 <multiple_choice> Q: «Sorry» по-русски:
+      a [✓] Прости / Извини   {g2e_phr2_q1_a}
+      b     Пожалуйста   {g2e_phr2_q1_b}
+      c     Спасибо   {g2e_phr2_q1_c}
+  L2691 g2ephrl2t2 <multiple_choice> Q: Тали хочет пройти мимо Поли. Что он скажет?
+      a [✓] Excuse me   {g2e_phr2_q2_a}
+      b     Sorry   {g2e_phr2_q2_b}
+      c     Please   {g2e_phr2_q2_c}
+  L2692 g2ephrl2t3 <multiple_choice> Q: Как ответить на «Sorry»?
+      a [✓] It's OK / That's alright   {g2e_phr2_q3_a}
+      b     Please   {g2e_phr2_q3_b}
+      c     Thank you   {g2e_phr2_q3_c}
+  L2693 g2ephrl2t4 <input> Q: Тали снова наступил на лапу Поли. Это уже второй раз! Он говорит «I'm sorry» и «Sorry» — это одно и то же?
+
+######## g2e-phr-l3 (worlds.ts lines 2695-2703)
+  [dialog npc] Can I? — так спрашивают разрешение. You can't — так говорят «нельзя».
+  [dialog tali] Can I eat this sandwich? — Можно мне съесть этот бутерброд?
+  [dialog npc] No, you can't — это МОЙ бутерброд, Тали!
+  [intro] Can I? You can't! :: Can I go? — Можно выйти? You can't run here — Здесь нельзя бегать.
+  [intro] Разрешение :: Can I… — вежливый вопрос. Yes, you can — можно. No, you can't — нельзя.
+  L2699 g2ephrl3t1 <multiple_choice> Q: «Can I…?» используют, чтобы:
+      a [✓] Спросить разрешение   {g2e_phr3_q1_a}
+      b     Извиниться   {g2e_phr3_q1_b}
+      c     Попрощаться   {g2e_phr3_q1_c}
+  L2700 g2ephrl3t2 <multiple_choice> Q: «You can’t» по-русски:
+      a [✓] Тебе нельзя   {g2e_phr3_q2_a}
+      b     Можно мне?   {g2e_phr3_q2_b}
+      c     Спасибо   {g2e_phr3_q2_c}
+  L2701 g2ephrl3t3 <multiple_choice> Q: Тали хочет войти в комнату. Как он спросит?
+      a [✓] Can I come in?   {g2e_phr3_q3_a}
+      b     You can't come in   {g2e_phr3_q3_b}
+      c     Thank you for coming in   {g2e_phr3_q3_c}
+  L2702 g2ephrl3t4 <input> Q: Переведи на русский: «No, you can’t eat my sandwich!»
+
+######## g2e-sch-l1 (worlds.ts lines 2706-2713)
+  [dialog npc] Поли, я хочу описать наш класс по-английски, но не знаю слова! Desk — это что?
+  [dialog tali] Desk — парта! Chair — стул, board — доска, book — книга. Запоминай — я помогу!
+  [intro] В классе! :: Desk — парта, chair — стул, board — доска, book — книга, pen — ручка.
+  [intro] Classroom :: Classroom — класс. School — школа. Вот наш мир по-английски!
+  L2710 g2eschl1t1 <multiple_choice> Q: Книга по-английски:
+      a [✓] book   {g2e_opt_book}
+      b     pen   {g2e_opt_pen}
+      c     desk   {g2e_opt_desk}
+  L2711 g2eschl1t2 <multiple_choice> Q: Ручка по-английски:
+      a     book   {g2e_opt_book}
+      b [✓] pen   {g2e_opt_pen}
+      c     board   {g2e_opt_board}
+  L2712 g2eschl1t3 <multiple_choice> Q: Стул по-английски:
+      a     desk   {g2e_opt_desk}
+      b [✓] chair   {g2e_opt_chair}
+      c     board   {g2e_opt_board}
+  L2713 g2eschl1t4 <input> Q: Доска по-английски:
+
+######## g2e-sch-l2 (worlds.ts lines 2715-2722)
+  [dialog npc] Тали, какой у тебя любимый школьный предмет?
+  [dialog tali] Math — математика! Хотя нет, Art — рисование! Нет, подожди, PE — физкультура! Я не могу выбрать!
+  [intro] Школьные предметы! :: Math — математика, Art — рисование, PE — физкультура (Physical Education), Science — наука, English — английский.
+  [intro] PE — это важно! :: PE = Physical Education. На PE бегают, прыгают и играют в команде.
+  L2719 g2eschl2t1 <multiple_choice> Q: Математика по-английски:
+      a [✓] Math   {g2e_opt_maths}
+      b     Music   {g2e_opt_music}
+      c     Art   {g2e_opt_art}
+  L2720 g2eschl2t2 <multiple_choice> Q: Рисование по-английски:
+      a     Math   {g2e_opt_maths}
+      b     Music   {g2e_opt_music}
+      c [✓] Art   {g2e_opt_art}
+  L2721 g2eschl2t3 <multiple_choice> Q: Физкультура по-английски:
+      a [✓] PE   {g2e_opt_pe}
+      b     Science   {g2e_opt_science}
+      c     History   {g2e_opt_history}
+  L2722 g2eschl2t4 <input> Q: Английский язык по-английски:
+
+######## g2e-sch-l3 (worlds.ts lines 2724-2743)
+  [dialog npc] Поли, учитель спросил меня что-то, а я не понял! Как сказать «я не понимаю»?
+  [dialog tali] I don't understand — я не понимаю. Или можно спросить: Can you help me? — Можешь помочь?
+  [intro] Школьные фразы! :: May I come in? — Можно войти? I don't understand — я не понимаю. Can you help me? — Можешь помочь?
+  [intro] Не бойся спрашивать! :: Спросить «Can you help me?» — это смелость, не слабость. Так говорит Поли!
+  L2728 g2eschl3t1 <multiple_choice> Q: «Я не понимаю» по-английски:
+      a [✓] I don't understand   {g2e_sch3_opt_idont}
+      b     Can you help me?   {g2e_sch3_opt_help}
+      c     Hello!   {g2e_sch3_opt_hello}
+  L2729 g2eschl3t2 <multiple_choice> Q: «Можешь помочь?» по-английски:
+      a     I don't understand   {g2e_sch3_opt_idont}
+      b [✓] Can you help me?   {g2e_sch3_opt_help}
+      c     Goodbye!   {g2e_sch3_opt_bye}
+  L2730 g2eschl3t3 <multiple_choice> Q: «Можно войти?» по-английски:
+      a [✓] May I come in?   {g2e_sch3_opt_may}
+      b     Thank you!   {g2e_sch3_opt_thanks}
+      c     Hello!   {g2e_sch3_opt_hello}
+  L2731 g2eschl3t4 <input> Q: Учитель спросил, а Тали не понял. Что сказать?

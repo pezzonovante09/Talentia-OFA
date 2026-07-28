@@ -1,0 +1,1438 @@
+[
+  {
+    "id": "meadow-sh-l1",
+    "bucket": "hard",
+    "c": 4,
+    "u": 2,
+    "flags": [
+      "ky_eq_ru_question:mshl1-t1",
+      "input_answer_ru_only:mshl1-t4"
+    ],
+    "problems": [
+      {
+        "ref": "mshl1-t4",
+        "issue": "WRONG-ANSWER (EN/KY): answer hardcoded «Квадрат» while EN/KY ask for shape name — «Square»/«Чарчы» rejected; also rectangle has 4 corners"
+      },
+      {
+        "ref": "mshl1-t1",
+        "issue": "KY question still identical to RU («Что из этого круглое?»)"
+      }
+    ],
+    "fixes": [
+      "Accept Square/Чарчы/Квадрат; or MC shape pick",
+      "Translate mshl1-t1 KY stem"
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "forest-syl-l3",
+    "bucket": "hard",
+    "c": 4,
+    "u": 4,
+    "flags": [
+      "ky_eq_ru_question:fsyll3-t1",
+      "ky_eq_ru_question:fsyll3-t3",
+      "en_eq_ru_question:fsyll3-t1",
+      "en_eq_ru_question:fsyll3-t3"
+    ],
+    "problems": [
+      {
+        "ref": "fsyll3-t1",
+        "issue": "EN and KY still copy full RU prose question (instructional stem, not just syllable target)"
+      },
+      {
+        "ref": "fsyll3-t3",
+        "issue": "EN and KY still copy full RU prose question (РА-КЕ-ТА)"
+      },
+      {
+        "ref": "lesson",
+        "issue": "Review lesson still MC-only"
+      }
+    ],
+    "fixes": [
+      "Translate t1/t3 stems to EN/KY while keeping Cyrillic syllable targets",
+      "Add mixed review input across МА/СА/НА"
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "garden-col-l1",
+    "bucket": "hard",
+    "c": 4,
+    "u": 4,
+    "flags": [
+      "ky_eq_ru_question:gcoll1-a1",
+      "en_eq_ru_question:gcoll1-a1",
+      "aba_ky_eq_ru:gcoll1-a1",
+      "aba_en_eq_ru:gcoll1-a1"
+    ],
+    "problems": [
+      {
+        "ref": "lesson",
+        "issue": "MC-only color ID"
+      },
+      {
+        "ref": "gcoll1-a1",
+        "issue": "ABA/EN/KY question still RU («Клубника — какого цвета?»)"
+      }
+    ],
+    "fixes": [
+      "Translate ABA + option stems; add sort/paint mechanic or input color name"
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "garden-col-l2",
+    "bucket": "hard",
+    "c": 4,
+    "u": 4,
+    "flags": [
+      "ky_eq_ru_question:gcoll2-t2",
+      "en_eq_ru_question:gcoll2-t2",
+      "ky_eq_ru_question:gcoll2-a1",
+      "en_eq_ru_question:gcoll2-a1",
+      "aba_ky_eq_ru:gcoll2-a1",
+      "aba_en_eq_ru:gcoll2-a1"
+    ],
+    "problems": [
+      {
+        "ref": "gcoll2-t2",
+        "issue": "EN and KY still copy RU paint-mix question stem"
+      },
+      {
+        "ref": "gcoll2-a1",
+        "issue": "ABA still RU in EN/KY"
+      },
+      {
+        "ref": "lesson",
+        "issue": "MC-only; mixing + color ID is coherent with title"
+      }
+    ],
+    "fixes": [
+      "Localize t2 + ABA stems (keep color cognates as needed)"
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "garden-col-l3",
+    "bucket": "hard",
+    "c": 4,
+    "u": 4,
+    "flags": [
+      "ky_eq_ru_question:gcoll3-t2",
+      "en_eq_ru_question:gcoll3-t2",
+      "ky_eq_ru_question:gcoll3-t3",
+      "en_eq_ru_question:gcoll3-t3",
+      "ky_eq_ru_question:gcoll3-t4",
+      "en_eq_ru_question:gcoll3-t4",
+      "ky_eq_ru_question:gcoll3-a1",
+      "en_eq_ru_question:gcoll3-a1",
+      "aba_ky_eq_ru:gcoll3-a1",
+      "aba_en_eq_ru:gcoll3-a1"
+    ],
+    "problems": [
+      {
+        "ref": "gcoll3-t2",
+        "issue": "EN/KY still RU for paint-mix question"
+      },
+      {
+        "ref": "gcoll3-t3",
+        "issue": "EN/KY still RU"
+      },
+      {
+        "ref": "gcoll3-t4",
+        "issue": "EN/KY still RU for penguin riddle"
+      },
+      {
+        "ref": "gcoll3-a1",
+        "issue": "ABA still RU in EN/KY"
+      }
+    ],
+    "fixes": [
+      "Localize t2–t4 + ABA stems"
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "garden-anim-l1",
+    "bucket": "hard",
+    "c": 4,
+    "u": 4,
+    "flags": [
+      "ky_eq_ru_question:ganiml1-t3",
+      "en_eq_ru_question:ganiml1-t3",
+      "ky_eq_ru_question:ganiml1-t4",
+      "en_eq_ru_question:ganiml1-t4",
+      "ky_eq_ru_question:ganiml1-a1",
+      "en_eq_ru_question:ganiml1-a1",
+      "aba_ky_eq_ru:ganiml1-a1",
+      "aba_en_eq_ru:ganiml1-a1"
+    ],
+    "problems": [
+      {
+        "ref": "ganiml1-t3",
+        "issue": "EN/KY still RU"
+      },
+      {
+        "ref": "ganiml1-t4",
+        "issue": "EN/KY still RU"
+      },
+      {
+        "ref": "ganiml1-a1",
+        "issue": "ABA still RU in EN/KY"
+      }
+    ],
+    "fixes": [
+      "Localize t3–t4 + ABA"
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "garden-anim-l2",
+    "bucket": "hard",
+    "c": 4,
+    "u": 4,
+    "flags": [
+      "ky_eq_ru_question:ganiml2-t2",
+      "en_eq_ru_question:ganiml2-t2",
+      "ky_eq_ru_question:ganiml2-t3",
+      "en_eq_ru_question:ganiml2-t3",
+      "ky_eq_ru_question:ganiml2-t4",
+      "en_eq_ru_question:ganiml2-t4",
+      "ky_eq_ru_question:ganiml2-a1",
+      "en_eq_ru_question:ganiml2-a1",
+      "aba_ky_eq_ru:ganiml2-a1",
+      "aba_en_eq_ru:ganiml2-a1"
+    ],
+    "problems": [
+      {
+        "ref": "ganiml2-t2",
+        "issue": "EN/KY still RU"
+      },
+      {
+        "ref": "ganiml2-t3",
+        "issue": "EN/KY still RU"
+      },
+      {
+        "ref": "ganiml2-t4",
+        "issue": "EN/KY still RU"
+      },
+      {
+        "ref": "ganiml2-a1",
+        "issue": "ABA still RU in EN/KY"
+      }
+    ],
+    "fixes": [
+      "Localize t2–t4 + ABA"
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "garden-seas-l2",
+    "bucket": "hard",
+    "c": 4,
+    "u": 4,
+    "flags": [
+      "ky_eq_ru_question:gseasl2-t2",
+      "en_eq_ru_question:gseasl2-t2"
+    ],
+    "problems": [
+      {
+        "ref": "gseasl2-t2",
+        "issue": "EN/KY still copy RU season-chain question"
+      },
+      {
+        "ref": "lesson",
+        "issue": "Four MC chain tasks — coherent but repetitive format"
+      }
+    ],
+    "fixes": [
+      "Localize t2; add picture-match or ABA"
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "garden-seas-l3",
+    "bucket": "hard",
+    "c": 4,
+    "u": 4,
+    "flags": [
+      "ky_eq_ru_question:gseasl3-t1",
+      "en_eq_ru_question:gseasl3-t1"
+    ],
+    "problems": [
+      {
+        "ref": "gseasl3-t1",
+        "issue": "EN/KY still copy RU summer question"
+      },
+      {
+        "ref": "lesson",
+        "issue": "MC-only cycle review; apple picking in autumn is good cross-check"
+      }
+    ],
+    "fixes": [
+      "Localize t1; optional full-year order input"
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "island-abc-l2",
+    "bucket": "hard",
+    "c": 2,
+    "u": 3,
+    "flags": [
+      "wrong_en_letter:aba_ELEPHANT_vs_DOG",
+      "wrong_en_letter:aba_t3_asks_F",
+      "aba_en_wrong_answer_risk:iabcl2-t2"
+    ],
+    "problems": [
+      {
+        "ref": "iabcl2-a1",
+        "issue": "WRONG LETTER (ABA): base keys teach DOG→D/C, but abaTextOverrides.* set ELEPHANT→E/D — ABA track teaches E (belongs in E–F) and diverges from C/D lesson"
+      },
+      {
+        "ref": "nrw_iabcl2_t3",
+        "issue": "ABA overrides for standard keys ask «NOT start with F» (Fish/Frog/Egg) while lesson is C–D — latent mismatch if overrides ever apply beyond a1"
+      },
+      {
+        "ref": "nrw_iabcl2_t2",
+        "issue": "ABA EN override «Does DINOSAUR start with D?» with Yes/No keeps correct:false on Yes — would mark No as correct (wrong-answer) if that override is shown"
+      }
+    ],
+    "fixes": [
+      "Align abaTextOverrides.* nrw_iabcl2_a1_* with DOG / D / C",
+      "Fix ABA t2/t3 overrides to stay on C–D and match correct flags"
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "g1w-sch-l1",
+    "bucket": "hard",
+    "c": 3,
+    "u": 4,
+    "flags": [
+      "ky=ru: data.tasks.g1w_schl1_q4_a (Бассейн)",
+      "ky=ru: data.tasks.g1w_schl1_q4_c (Плита)"
+    ],
+    "problems": [
+      {
+        "ref": "intro2+t4",
+        "issue": "Intro-2 и t4 уходят в «класс/парты/доска» (тема l2), пока урок про принадлежности."
+      },
+      {
+        "ref": "t4 options KY",
+        "issue": "KY=RU на дистракторах «Бассейн»/«Плита» при переведённом EN и KY для верного варианта."
+      }
+    ],
+    "fixes": [
+      "Intro-2 и t4: портфель/пенал/линейка.",
+      "Перевести KY для g1w_schl1_q4_a/c."
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "g1w-nat-l2",
+    "bucket": "hard",
+    "c": 5,
+    "u": 2,
+    "flags": [
+      "en=ru/Cyrillic + ky=ru: nrw_ganiml2_t1–t4 questions/options",
+      "en=ru + ky=ru: nrw_ganiml2_a1 ABA"
+    ],
+    "problems": [
+      {
+        "ref": "en/ky locales",
+        "issue": "Банк RW56 nrw_ganiml2_*: почти все stems/options EN и KY — кириллица (EN=RU или EN Cyrillic stub); в EN/KY UI урок нечитаем."
+      },
+      {
+        "ref": "wiring",
+        "issue": "tasks: RW56_LESSON_TASKS['garden-anim-l2'] — наследие другого мира; не rewritten bank как nat-l1/l3."
+      },
+      {
+        "ref": "tasks",
+        "issue": "Все MC."
+      }
+    ],
+    "fixes": [
+      "Перевести EN/KY для nrw_ganiml2 t1–t4 (+ABA).",
+      "Или перенести на G1W_NAT_L2_TASKS в g1worldRewrittenTasks.ts."
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "g2m-add2-l3",
+    "bucket": "hard",
+    "c": 3,
+    "u": 5,
+    "flags": [
+      "intro_title_enky_says_addition_not_subtraction"
+    ],
+    "problems": [
+      {
+        "ref": "intro EN/KY title",
+        "issue": "Урок — вычитание, но EN title «Two-digit addition by place!», KY «Сложение двузначных по разрядам!» — прямое противоречие теме."
+      },
+      {
+        "ref": "t1–t4",
+        "issue": "Три голых уравнения + одно сюжетное; engagement ниже соседних уроков."
+      },
+      {
+        "ref": "key name",
+        "issue": "t4 questionKey всё ещё g2m_word_45plus27 при тексте 91−38 (косметика, ответ 53 верен)."
+      }
+    ],
+    "fixes": [
+      "Исправить EN/KY intro title на subtraction.",
+      "Добавить один сюжетный who-is-right по 65−23 из диалога."
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "g2r-sp-l3",
+    "bucket": "hard",
+    "c": 2,
+    "u": 4,
+    "flags": [
+      "intro_enky_wrong_topic_from_sentence_lessons",
+      "input_answer_hardcoded_ru:Признак_предмета"
+    ],
+    "problems": [
+      {
+        "ref": "intro EN/KY",
+        "issue": "CRITICAL: EN/KY intro bodies скопированы из уроков про предложение — «Subject and predicate» / «Word connections» / «Ээ жана баяндооч» при теме прилагательного."
+      },
+      {
+        "ref": "t1–t3",
+        "issue": "Задачи по прилагательному в целом верны (RU), но EN/KY ребёнок сначала читает чужой intro."
+      },
+      {
+        "ref": "t4 answer",
+        "issue": "answer hardcoded «Признак предмета» — EN/KY не пройдут без локальных вариантов."
+      }
+    ],
+    "fixes": [
+      "Заменить EN/KY intro на перевод RU (признак / КАКОЙ?).",
+      "acceptedAnswers: Признак предмета / A feature of a thing / Заттын белгиси."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g2rspl3t4",
+        "answer": "Признак предмета"
+      },
+      {
+        "taskId": "g2rsentl1t4",
+        "answer": "Сидит"
+      }
+    ]
+  },
+  {
+    "id": "g2s-plt-l2",
+    "bucket": "hard",
+    "c": 5,
+    "u": 5,
+    "flags": [
+      "dialog_en_stub",
+      "input_answer_hardcoded_ru:В_листьях",
+      "ky_q_still_russian:t2"
+    ],
+    "problems": [
+      {
+        "ref": "dialog EN/KY",
+        "issue": "EN/KY dialog короче; шутка «фотографирует солнце» только в RU."
+      },
+      {
+        "ref": "t4 answer",
+        "issue": "answer hardcoded «В листьях»; EN/KY Q синхронизированы, нужна локаль ответа."
+      },
+      {
+        "ref": "KY t2 Q",
+        "issue": "KY Q t2 всё ещё русская фраза «Для фотосинтеза нужны:»."
+      }
+    ],
+    "fixes": [
+      "acceptedAnswers: В листьях / In the leaves / Жалбырактарда; дочистить KY Q."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g2spltl2t4",
+        "answer": "В листьях"
+      },
+      {
+        "taskId": "g2spltl3t4",
+        "answer": "Корень (клубень)"
+      }
+    ]
+  },
+  {
+    "id": "g2s-ani-l2",
+    "bucket": "hard",
+    "c": 4,
+    "u": 5,
+    "flags": [
+      "intro_en_says_fly_vs_penguin",
+      "ky_feather_fur_ambiguous"
+    ],
+    "problems": [
+      {
+        "ref": "intro EN",
+        "issue": "EN intro1 говорит «they fly» рядом с penguin — противоречит intro2 «не все летают»."
+      },
+      {
+        "ref": "t2 KY",
+        "issue": "KY «Жүнү бар» (перья) vs «Жүнү (териси) бар» (шерсть) — почти омонимия, путает."
+      }
+    ],
+    "fixes": [
+      "EN intro1: feathers/beak without «they fly».",
+      "KY: кауш жүндөрү / жүн (тери) для шерсти."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g2sanil2t4",
+        "answer": "Нет"
+      },
+      {
+        "taskId": "g2sanil3t4",
+        "answer": "жабрами"
+      }
+    ]
+  },
+  {
+    "id": "g2s-bdy-l1",
+    "bucket": "hard",
+    "c": 3,
+    "u": 4,
+    "flags": [
+      "intro2_enky_wrong_topic_organs",
+      "input_answer_hardcoded_ru:Бедренная"
+    ],
+    "problems": [
+      {
+        "ref": "intro2 EN/KY",
+        "issue": "RU intro2 про мышцы; EN/KY — «Organs / Heart, lungs, stomach» из следующего урока."
+      },
+      {
+        "ref": "t4",
+        "issue": "answer «Бедренная»; EN Q «biggest bone» — femur ок, но KY/EN не примут RU-строку."
+      }
+    ],
+    "fixes": [
+      "Вернуть EN/KY intro2 к мышцам.",
+      "acceptedAnswers: Бедренная/Femur/Sancоок/Чоң сан."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g2sbdyl1t4",
+        "answer": "Бедренная"
+      },
+      {
+        "taskId": "g2sbdyl2t4",
+        "answer": "Всё"
+      }
+    ]
+  },
+  {
+    "id": "g2s-bdy-l2",
+    "bucket": "hard",
+    "c": 4,
+    "u": 5,
+    "flags": [
+      "t4_q_enky_mismatch_vs_ru_answer"
+    ],
+    "problems": [
+      {
+        "ref": "t4 EN/KY Q",
+        "issue": "RU: «Что контролирует мозг?»; EN/KY: «Which organs… are important?» + answer «Всё» — Q и ключ разъехались."
+      }
+    ],
+    "fixes": [
+      "Выровнять t4 Q EN/KY под мозг/контроль или сменить answer."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g2sbdyl2t4",
+        "answer": "Всё"
+      },
+      {
+        "taskId": "g2sbdyl3t4",
+        "answer": "мышцы"
+      }
+    ]
+  },
+  {
+    "id": "g2s-bdy-l3",
+    "bucket": "hard",
+    "c": 2,
+    "u": 4,
+    "flags": [
+      "intro0_enky_sport_only_vs_nutrition",
+      "dialog_enky_stub",
+      "t3_q_enky_how_much_vs_yes_no",
+      "ky_q_still_russian:t1_t2",
+      "input_answer_hardcoded_ru:мышцы"
+    ],
+    "problems": [
+      {
+        "ref": "intro EN/KY",
+        "issue": "CRITICAL: RU intro0 — питание/витамины; EN/KY intro0 — только Sport/зарядка. Тема питания пропадает до заданий."
+      },
+      {
+        "ref": "dialog EN/KY",
+        "issue": "RU — печенье 3 дня; EN/KY — короткие слоганы."
+      },
+      {
+        "ref": "t3 EN/KY",
+        "issue": "RU: «Нужно ли пить воду?» (Да/Нет); EN/KY: «How much water…?» при тех же Yes/No — вопрос и опции несовместимы."
+      },
+      {
+        "ref": "KY t1/t2 Q",
+        "issue": "KY вопросы витаминов/белка всё ещё на русском."
+      },
+      {
+        "ref": "t4 answer",
+        "issue": "answer «мышцы»; KY hint тоже «мис.: мышцы»."
+      }
+    ],
+    "fixes": [
+      "Переписать EN/KY intro0 под питание; синхронизировать dialog.",
+      "t3 EN/KY: «Do you need to drink water every day?»",
+      "Перевести KY Q; acceptedAnswers мышцы/muscles/булчуң."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g2sbdyl3t4",
+        "answer": "мышцы"
+      },
+      {
+        "taskId": "g2edaysl1t4",
+        "answer": "Tuesday"
+      }
+    ]
+  },
+  {
+    "id": "g2e-sch-l3",
+    "bucket": "hard",
+    "c": 4,
+    "u": 5,
+    "flags": [
+      "dialog_en_tali_tautology"
+    ],
+    "problems": [
+      {
+        "ref": "dialog EN",
+        "issue": "EN Tali: «Can you help me? — Can you help me?» — бесполезная тавтология vs RU с переводом."
+      },
+      {
+        "ref": "t1–t3",
+        "issue": "MC «X по-английски» при опциях уже на английском — лёгкий matching, мало контекста использования."
+      }
+    ],
+    "fixes": [
+      "Починить EN dialog; одно situational MC (учитель спросил → I don't understand)."
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "g3m-1000-l2",
+    "bucket": "hard",
+    "c": 3,
+    "u": 4,
+    "flags": [
+      "KY intro0.title === RU «Разбираем число 247!»",
+      "KY intro1.title === RU «Число 356»",
+      "KY intro0.body === RU Cyrillic place-value text",
+      "KY t3 stem RU-leak «Запиши число: 2 сотни…»"
+    ],
+    "problems": [
+      {
+        "ref": "t4",
+        "issue": "fill_blank «самое большое из 398/403/389» — сравнение, не разрядный навык (тема соседнего урока)."
+      },
+      {
+        "ref": "types",
+        "issue": "3 input + 1 fill_blank — нет MC на извлечение разряда."
+      },
+      {
+        "ref": "dialog EN/KY",
+        "issue": "EN/KY dialog — rule dump («Place values…»), без детективного сюжета RU."
+      }
+    ],
+    "fixes": [
+      "t4 → MC «какая цифра в разряде сотен/десятков у 403?» (сохранить 403 как якорь).",
+      "Добавить 1 MC на извлечение разряда.",
+      "KY intro titles + intro0.body: перевести; KY t3 stem без RU «сотни/десятки»."
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "g3m-1000-l3",
+    "bucket": "hard",
+    "c": 2,
+    "u": 5,
+    "flags": [
+      "EN/KY dialog wrong place-value tip («More digits — bigger number»)."
+    ],
+    "problems": [
+      {
+        "ref": "dialog EN/KY",
+        "issue": "CRITICAL: tip «More digits — bigger number!» / «Разряддар көп — сан чоң!» неверен для 356 vs 298 (оба трёхзначные); в RU правильно: смотри на сотни."
+      }
+    ],
+    "fixes": [
+      "EN/KY dialog: «Compare hundreds first: 3>2 → 356>298»."
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "g3w-geo-l3",
+    "bucket": "hard",
+    "c": 2,
+    "u": 3,
+    "flags": [
+      "CRITICAL EN/KY t4 stem inverted vs answer «Кыргызстана».",
+      "KY t1–t3 stems === RU.",
+      "EN/KY dialog loses Bishkek personalization."
+    ],
+    "problems": [
+      {
+        "ref": "t4 EN/KY",
+        "issue": "CRITICAL: EN/KY stem «Capital of Kyrgyzstan:» спрашивает столицу, а hardcoded answer = «Кыргызстана» (страна) — инверсия вопроса/ответа vs RU."
+      },
+      {
+        "ref": "KY t1–t3",
+        "issue": "KY stems всё ещё RU («Столица России:» / «Столица Франции:»)."
+      },
+      {
+        "ref": "tasks",
+        "issue": "Три однотипных «столица X» + потеря Эйфелевой башни в EN t2; низкая вовлечённость."
+      },
+      {
+        "ref": "dialog EN/KY",
+        "issue": "Потерян личный сюжет Бишкек/Тали из RU."
+      }
+    ],
+    "fixes": [
+      "EN/KY t4: «Bishkek is the capital of which country?» + acceptedAnswers Кыргызстан(а) | Kyrgyzstan.",
+      "Перевести KY stems; вернуть контекст Эйфелевой башни в EN t2.",
+      "Восстановить Bishkek story в EN/KY dialog."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g3wnatl1t4",
+        "answer": "Испарение"
+      }
+    ]
+  },
+  {
+    "id": "g3e-tobe-l1",
+    "bucket": "hard",
+    "c": 3,
+    "u": 4,
+    "flags": [
+      "EN t4 circular stem contains answer.",
+      "KY t1–t3 RU-leak «Какое слово?» / «Am используется с»."
+    ],
+    "problems": [
+      {
+        "ref": "t4 EN",
+        "issue": "Stem уже содержит ответ: «Write… “I am happy”» при answer «I am happy» — circular."
+      },
+      {
+        "ref": "t1–t2 EN/KY",
+        "issue": "Сюжет RU сплющен; KY stems с RU-leak «Какое слово?»."
+      }
+    ],
+    "fixes": [
+      "EN t4: «Translate: Я счастлив» без готовой фразы.",
+      "KY stems: кыргызские инструкции без RU."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g3etobel1t4",
+        "answer": "I am happy"
+      },
+      {
+        "taskId": "g3etobel2t4",
+        "answer": "He is not late"
+      }
+    ]
+  },
+  {
+    "id": "g3e-food-l2",
+    "bucket": "hard",
+    "c": 2,
+    "u": 3,
+    "flags": [
+      "EN dialog.g3e_foodl2_0 === KY («мага жагат / мага жакпайт»).",
+      "EN t1 meaning-check tautology (I like apples → I like apples)."
+    ],
+    "problems": [
+      {
+        "ref": "dialog EN",
+        "issue": "CRITICAL: EN dialog.tali = KY-текст «мага жагат / мага жакпайт» — locale contamination; npc сплющен vs RU (нет Do you like…?)."
+      },
+      {
+        "ref": "t1 EN",
+        "issue": "«What does “I like apples” mean?» → ✓ «I like apples» — тавтология в EN locale."
+      }
+    ],
+    "fixes": [
+      "EN dialog.tali: English + RU gloss (мне нравится / не нравится).",
+      "EN t1 options: L1 paraphrases (I enjoy apples / I dislike…), не повтор фразы."
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "g3e-daily-l1",
+    "bucket": "hard",
+    "c": 3,
+    "u": 3,
+    "flags": [
+      "KY t4 stem RU-leak «Eat breakfast — это:».",
+      "Input answer RU-locked («Завтракать»).",
+      "KY t1–t2 task direction flipped vs RU."
+    ],
+    "problems": [
+      {
+        "ref": "t4 answer",
+        "issue": "answer=«Завтракать» hardcoded RU при EN stem «Eat breakfast is:»."
+      },
+      {
+        "ref": "dialog EN",
+        "issue": "EN dialog generic («tell me what you do») — не про vocab Wake up / breakfast из RU."
+      },
+      {
+        "ref": "KY stems",
+        "issue": "KY t1–t2 перевёрнуты («Ойгонуу англисче») vs RU meaning-check; t4 RU-leak «Eat breakfast — это:»."
+      }
+    ],
+    "fixes": [
+      "answerKey по локали: Завтракать | to eat breakfast | эртең мененки тамак жеш.",
+      "Выровнять dialog EN с routine vocabulary; починить KY stems."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g3edailyl1t4",
+        "answer": "Завтракать"
+      }
+    ]
+  },
+  {
+    "id": "g3e-daily-l2",
+    "bucket": "hard",
+    "c": 3,
+    "u": 5,
+    "flags": [
+      "EN dialog topic drift (get up vs telling time)."
+    ],
+    "problems": [
+      {
+        "ref": "dialog EN",
+        "issue": "EN уходит в «What time do you get up?» вместо обучения half past / quarter past."
+      },
+      {
+        "ref": "t1–t3",
+        "issue": "Однотипные clock-phrase → digital time."
+      }
+    ],
+    "fixes": [
+      "EN dialog: объяснить half past / quarter past.",
+      "Один reverse task: 3:30 → half past three."
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "g3e-daily-l3",
+    "bucket": "hard",
+    "c": 2,
+    "u": 4,
+    "flags": [
+      "CRITICAL EN t4 circular stem contains answer «I am never late».",
+      "EN intro0.body bilingual scale with RU glosses (intentional teaching text)."
+    ],
+    "problems": [
+      {
+        "ref": "t4 EN",
+        "issue": "CRITICAL: stem «“I am never late” in English is:» уже содержит ответ; answer hardcoded «I am never late» — circular в EN."
+      },
+      {
+        "ref": "t1–t3",
+        "issue": "Три recognition MC без production до финала; нет проверки позиции наречия из intro1."
+      }
+    ],
+    "fixes": [
+      "EN t4: «Translate: Я никогда не опаздываю» (без готовой EN-фразы).",
+      "1 MC на порядок: I ___ brush / I brush ___ always."
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "meadow-c5-l1",
+    "bucket": "soft_input",
+    "c": 4,
+    "u": 2,
+    "flags": [
+      "input_answer_ru_only:mc5l1-t4"
+    ],
+    "problems": [
+      {
+        "ref": "mc5l1-t4",
+        "issue": "WRONG-ANSWER (EN/KY): question localized («Who has more?» / «Кимдин көбүрөөк?») but hardcoded answer is RU «У Тали больше» — English/Kyrgyz typing cannot match"
+      },
+      {
+        "ref": "lesson",
+        "issue": "Core tasks reuse Tali-wrong correction frame; ABA plain visual count is fine"
+      }
+    ],
+    "fixes": [
+      "Switch t4 to MC «У кого больше?» or numeric answer «3»; if keeping input, localize accepted answers",
+      "Keep visualCount on t1"
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "meadow-c10-l1",
+    "bucket": "soft_input",
+    "c": 4,
+    "u": 2,
+    "flags": [
+      "input_answer_ru_only:mc10l1-t4"
+    ],
+    "problems": [
+      {
+        "ref": "mc10l1-t4",
+        "issue": "WRONG-ANSWER (EN/KY): Q asks which tank has more in EN/KY, but answer is hardcoded «В синем» — localized answers like «blue» / «көк» fail"
+      },
+      {
+        "ref": "mc10l1-t2",
+        "issue": "Compare with spatial distractor («куст ближе») — good logic stretch, slightly busy for intro to 6–7"
+      }
+    ],
+    "fixes": [
+      "Accept localized answers or switch to MC «в синем / в красном»",
+      "Keep compare as stretch after a pure 6–7 count"
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "meadow-sh-l2",
+    "bucket": "soft_input",
+    "c": 2,
+    "u": 2,
+    "flags": [
+      "input_answer_ru_only:mshl2-t4",
+      "ambiguous_correct:mshl2-t4"
+    ],
+    "problems": [
+      {
+        "ref": "mshl2-t4",
+        "issue": "WRONG-ANSWER RISK: asks мяч/книга/дверь → only «Книга» accepted, but intro and t2/ABA teach дверь as rectangle — both book and door are valid; EN/KY also need Book/Door/китеп/эшик"
+      },
+      {
+        "ref": "mshl2-t3",
+        "issue": "«4 угла» → прямоугольник; square also has 4 corners (not offered)"
+      }
+    ],
+    "fixes": [
+      "Accept Книга and Дверь (and EN/KY synonyms), or ask «что НЕ прямоугольник» (мяч)",
+      "Align intro examples with a single expected answer"
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "meadow-sh-l3",
+    "bucket": "soft_input",
+    "c": 3,
+    "u": 3,
+    "flags": [
+      "input_answer_ru_only:mshl3-t4"
+    ],
+    "problems": [
+      {
+        "ref": "mshl3-t2",
+        "issue": "Repeats «сколько сторон у треугольника» from meadow-sh-l2 — low new learning"
+      },
+      {
+        "ref": "mshl3-t3",
+        "issue": "Odd-one-out апельсин is engaging but light on geometry"
+      },
+      {
+        "ref": "mshl3-t4",
+        "issue": "Input «Круг» may fail EN «Circle» / KY «Тегерек» if checker is literal RU-only"
+      }
+    ],
+    "fixes": [
+      "Replace t2 with find-in-scene or classify mixed shapes",
+      "Localize accepted input answers for t4"
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "mshl3-t4",
+        "answer": "Круг"
+      }
+    ]
+  },
+  {
+    "id": "g2r-sp-l2",
+    "bucket": "soft_input",
+    "c": 5,
+    "u": 5,
+    "flags": [
+      "input_answer_hardcoded_ru:Да"
+    ],
+    "problems": [
+      {
+        "ref": "t4 answer",
+        "issue": "answer hardcoded «Да» — для EN/KY Q ок по смыслу, но проверка должна принимать Yes/Ооба."
+      }
+    ],
+    "fixes": [
+      "acceptedAnswers: Да/Yes/Ооба."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g2rspl2t4",
+        "answer": "Да"
+      },
+      {
+        "taskId": "g2rspl3t4",
+        "answer": "Признак предмета"
+      }
+    ]
+  },
+  {
+    "id": "g2r-sent-l1",
+    "bucket": "soft_input",
+    "c": 4,
+    "u": 5,
+    "flags": [
+      "dialog_enky_stub",
+      "input_answer_hardcoded_ru:Сидит"
+    ],
+    "problems": [
+      {
+        "ref": "dialog EN/KY",
+        "issue": "EN/KY dialog — глоссы «Subject and predicate», без истории «Бежит» из RU."
+      },
+      {
+        "ref": "t4 answer",
+        "issue": "answer «Сидит» — EN Q про The cat is sitting может ждать sitting/sits."
+      }
+    ],
+    "fixes": [
+      "Синхронизировать dialog; acceptedAnswers: Сидит/Sits/Sitting/Отурат."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g2rsentl1t4",
+        "answer": "Сидит"
+      },
+      {
+        "taskId": "g2rsentl2t4",
+        "answer": "Обстоятельство"
+      }
+    ]
+  },
+  {
+    "id": "g2r-sent-l2",
+    "bucket": "soft_input",
+    "c": 5,
+    "u": 5,
+    "flags": [
+      "input_answer_locale_hardcoded_ru:Обстоятельство"
+    ],
+    "problems": [
+      {
+        "ref": "t4 answer",
+        "issue": "RU-ответ «Обстоятельство»; EN просит Attribute/Object/Adverbial — нужна согласованная проверка."
+      },
+      {
+        "ref": "KY-q",
+        "issue": "KY-вопросы оставляют русские примеры («Пушистый кот…») — ок для русистики."
+      }
+    ],
+    "fixes": [
+      "Локализовать accepted answers для EN (Adverbial) / KY (Бышыктооч/Жагдай)."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g2rsentl2t4",
+        "answer": "Обстоятельство"
+      },
+      {
+        "taskId": "g2rsentl3t4",
+        "answer": "Мама готовит обед."
+      }
+    ]
+  },
+  {
+    "id": "g2s-ani-l1",
+    "bucket": "soft_input",
+    "c": 5,
+    "u": 5,
+    "flags": [
+      "input_answer_hardcoded_ru_likely:Да"
+    ],
+    "problems": [
+      {
+        "ref": "t4 answer",
+        "issue": "Да/Yes для «летучая мышь — млекопитающее?» — нужна мультиязычная проверка."
+      }
+    ],
+    "fixes": [
+      "acceptedAnswers: Да/Yes/Ооба."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g2sanil1t4",
+        "answer": "Да"
+      },
+      {
+        "taskId": "g2sanil2t4",
+        "answer": "Нет"
+      }
+    ]
+  },
+  {
+    "id": "g2s-ani-l3",
+    "bucket": "soft_input",
+    "c": 5,
+    "u": 5,
+    "flags": [
+      "input_answer_hardcoded_ru:Жабры"
+    ],
+    "problems": [
+      {
+        "ref": "t4 answer",
+        "issue": "«Жабры» hardcoded; EN/KY ждут gills / желбезек."
+      }
+    ],
+    "fixes": [
+      "acceptedAnswers: Жабры/gills/желбезек."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g2sanil3t4",
+        "answer": "жабрами"
+      },
+      {
+        "taskId": "g2sbdyl1t4",
+        "answer": "Бедренная"
+      }
+    ]
+  },
+  {
+    "id": "g2e-phr-l1",
+    "bucket": "soft_input",
+    "c": 4,
+    "u": 5,
+    "flags": [
+      "input_answer_hardcoded_ru:Большое_спасибо"
+    ],
+    "problems": [
+      {
+        "ref": "t1/t2",
+        "issue": "Основные задания — перевод EN→RU («Thank you»→Спасибо), мало практики сказать Please/Thank you в ситуации."
+      },
+      {
+        "ref": "t4 answer",
+        "issue": "answer hardcoded «Большое спасибо» при Q «означает» — EN/KY дети могут писать Thank you very much / чоң рахмат."
+      }
+    ],
+    "fixes": [
+      "Одно situational MC: когда сказать Please.",
+      "acceptedAnswers: Большое спасибо / Thanks a lot / Чоң рахмат."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g2ephrl1t4",
+        "answer": "Большое спасибо"
+      },
+      {
+        "taskId": "g2ephrl2t4",
+        "answer": "Да, оба означают прости"
+      }
+    ]
+  },
+  {
+    "id": "g2e-phr-l3",
+    "bucket": "soft_input",
+    "c": 4,
+    "u": 5,
+    "flags": [
+      "dialog_tali_stub",
+      "input_answer_hardcoded_ru_translate"
+    ],
+    "problems": [
+      {
+        "ref": "dialog EN/KY",
+        "issue": "Tali-реплика EN/KY урезана («Ask for permission: Can I go?») vs RU про sandwich."
+      },
+      {
+        "ref": "t4 answer",
+        "issue": "Перевод на русский hardcoded — EN/KY локали должны принимать локальный перевод."
+      }
+    ],
+    "fixes": [
+      "Восстановить sandwich-бит в dialog; локализовать t4 acceptedAnswers."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g2ephrl3t4",
+        "answer": "Нет, тебе нельзя есть мой бутерброд"
+      },
+      {
+        "taskId": "g2eschl1t4",
+        "answer": "board"
+      }
+    ]
+  },
+  {
+    "id": "g3m-div-l2",
+    "bucket": "soft_input",
+    "c": 3,
+    "u": 4,
+    "flags": [
+      "KY intro0.title === RU «Деление с остатком».",
+      "Input answers RU-locked («3 остаток 1»)."
+    ],
+    "problems": [
+      {
+        "ref": "title vs t3",
+        "issue": "Урок «на 4 и 5», но t3 — 7÷2 (остаток); смещает фокус делителей."
+      },
+      {
+        "ref": "types",
+        "issue": "Все 4 — input; остаток лучше закрепить MC с выбором «частное+остаток»."
+      },
+      {
+        "ref": "answer format",
+        "issue": "Hardcoded «3 остаток 1» / «3 остаток 2» — EN/KY могут ждать «3 remainder 1» / KY-форму."
+      }
+    ],
+    "fixes": [
+      "t3 → 17÷4 или 23÷5, чтобы держаться 4/5.",
+      "1 MC на выбор верной пары (частное, остаток).",
+      "acceptedAnswers мультиязычные; KY intro0.title перевести."
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "g3w-geo-l1",
+    "bucket": "soft_input",
+    "c": 4,
+    "u": 5,
+    "flags": [
+      "Input answer RU-locked («Восток»)."
+    ],
+    "problems": [
+      {
+        "ref": "dialog EN/KY",
+        "issue": "Rule dump vs более живой RU-диалог."
+      },
+      {
+        "ref": "t4 answer",
+        "issue": "Hardcoded «Восток» — EN stem ждёт East."
+      }
+    ],
+    "fixes": [
+      "acceptedAnswers: Восток | East | Чыгыш.",
+      "Чуть оживить EN/KY dialog."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g3wgeol1t4",
+        "answer": "Восток"
+      }
+    ]
+  },
+  {
+    "id": "g3w-nat-l1",
+    "bucket": "soft_input",
+    "c": 5,
+    "u": 5,
+    "flags": [
+      "Input answer RU-locked («Испарение»)."
+    ],
+    "problems": [
+      {
+        "ref": "t4 answer",
+        "issue": "Hardcoded «Испарение» — EN stem ждёт Evaporation."
+      }
+    ],
+    "fixes": [
+      "acceptedAnswers: Испарение | Evaporation | Буулануу."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g3wnatl1t4",
+        "answer": "Испарение"
+      },
+      {
+        "taskId": "g3wnatl2t4",
+        "answer": "Строительные"
+      }
+    ]
+  },
+  {
+    "id": "g3w-nat-l2",
+    "bucket": "soft_input",
+    "c": 5,
+    "u": 5,
+    "flags": [
+      "Input answer RU-locked («Строительные»)."
+    ],
+    "problems": [
+      {
+        "ref": "t4 answer",
+        "issue": "Hardcoded «Строительные» — короткий ответ при EN stem «what kind of mineral»."
+      }
+    ],
+    "fixes": [
+      "Уточнить stem/answer: «строительные полезные ископаемые» + EN Building minerals."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g3wnatl2t4",
+        "answer": "Строительные"
+      },
+      {
+        "taskId": "g3wnatl3t4",
+        "answer": "Выброс мусора в лесу"
+      }
+    ]
+  },
+  {
+    "id": "g3w-eco-l2",
+    "bucket": "soft_input",
+    "c": 5,
+    "u": 5,
+    "flags": [
+      "Input answer RU-locked («Дуб»)."
+    ],
+    "problems": [
+      {
+        "ref": "t4 answer",
+        "issue": "Hardcoded «Дуб» — EN «producer» ок conceptually; KY может ждать «Эмен»."
+      }
+    ],
+    "fixes": [
+      "acceptedAnswers: Дуб | Oak | Эмен."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g3wecol2t4",
+        "answer": "Дуб"
+      },
+      {
+        "taskId": "g3wecol3t4",
+        "answer": "Рыбы и водные животные"
+      }
+    ]
+  },
+  {
+    "id": "g3e-food-l1",
+    "bucket": "soft_input",
+    "c": 4,
+    "u": 4,
+    "flags": [
+      "Input answer RU-locked («Воду»)."
+    ],
+    "problems": [
+      {
+        "ref": "t1 EN",
+        "issue": "«Juice means: Juice / fruit drink (сок)» — мягкая тавтология; gloss спасает слабо."
+      },
+      {
+        "ref": "t4 answer",
+        "issue": "Hardcoded «Воду» при EN stem — EN/KY ждут water / суу."
+      }
+    ],
+    "fixes": [
+      "EN meaning-check: L1-only или picture, без повтора EN-слова в ✓.",
+      "acceptedAnswers: Воду | water | суу."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g3efoodl1t4",
+        "answer": "Воду"
+      }
+    ]
+  },
+  {
+    "id": "g2m-add2-l1",
+    "bucket": "soft_other",
+    "c": 4,
+    "u": 5,
+    "flags": [
+      "intro_ky_mixed_russian"
+    ],
+    "problems": [
+      {
+        "ref": "t2/t4",
+        "issue": "Голые формулы 40+50 / 60+40 без сюжета."
+      },
+      {
+        "ref": "t3",
+        "issue": "Найти вечерний путь (100−30) — вычитание/дополнение, не чистое сложение десятков."
+      },
+      {
+        "ref": "intro KY",
+        "issue": "KY intro body частично на русском («2 десятка + 3 = 5 десятков»)."
+      }
+    ],
+    "fixes": [
+      "Обернуть t2/t4 в мини-сюжет (бананы/км).",
+      "t3 оставить как «дополнение до 100» с явной меткой или заменить на 20+40."
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "g2m-times-l1",
+    "bucket": "soft_other",
+    "c": 5,
+    "u": 5,
+    "flags": [
+      "intro_ky_partial_ru"
+    ],
+    "problems": [
+      {
+        "ref": "t2/t3",
+        "issue": "Голые 2×7 / 2×9 без контекста после сильного t1 про носки."
+      },
+      {
+        "ref": "intro KY",
+        "issue": "KY intro title/body частично скопированы с RU."
+      }
+    ],
+    "fixes": [
+      "Обернуть t2/t3 в «пары / два ряда».",
+      "Дочистить KY intro."
+    ],
+    "inputsInWorlds": []
+  },
+  {
+    "id": "g2s-plt-l1",
+    "bucket": "soft_other",
+    "c": 5,
+    "u": 5,
+    "flags": [
+      "t4_q_part_count_locale_drift"
+    ],
+    "problems": [
+      {
+        "ref": "t4 EN/KY",
+        "issue": "RU считает 5 частей (корень…плод); EN/KY Q «How many main parts» — ответ зависит от списка (4 vs 5)."
+      }
+    ],
+    "fixes": [
+      "Выровнять список частей во всех локалях и answer."
+    ],
+    "inputsInWorlds": [
+      {
+        "taskId": "g2spltl2t4",
+        "answer": "В листьях"
+      }
+    ]
+  }
+]
