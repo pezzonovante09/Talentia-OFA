@@ -20,6 +20,8 @@ Copy `.env.example` to `.env.local` and set at least:
 
 Mobile app: set `EXPO_PUBLIC_BACKEND_URL` to this deployment’s origin. Authenticated calls send `Authorization: Bearer` from the current Supabase session (`access_token`).
 
+**Legal pages (Play Data Safety):** after deploy, `GET /privacy` and `GET /terms` must return HTML. Point mobile `EXPO_PUBLIC_LEGAL_BASE_URL` at this origin. Full checklist: [`docs/PLAY_LAUNCH_CHECKLIST.md`](../docs/PLAY_LAUNCH_CHECKLIST.md).
+
 ## Abuse prevention
 
 - **Auth**: Supabase JWT on protected routes; optional shared secret for `/api/ping` only (see above).

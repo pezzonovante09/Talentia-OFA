@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { NanoBananaIcon } from '../src/components/NanoBananaIcon';
 import { NANO_UI } from '../src/constants/nanoBananaAssets';
 
+import { ConsentGate } from '../src/components/ConsentGate';
 import { Screen } from '../src/components/Screen';
 import { AppText } from '../src/components/Text';
 import { Spacer } from '../src/components/Spacer';
@@ -96,7 +97,8 @@ export default function AchievementsScreen() {
   const unlockedCount = ACHIEVEMENT_DEFS.filter((d) => achievements[d.key]).length;
 
   return (
-    <Screen scroll>
+    <ConsentGate>
+      <Screen scroll>
       <AppText variant="title" accessibilityRole="header">
         {t('achievements.title')}
       </AppText>
@@ -114,5 +116,6 @@ export default function AchievementsScreen() {
         ))}
       </View>
     </Screen>
+    </ConsentGate>
   );
 }

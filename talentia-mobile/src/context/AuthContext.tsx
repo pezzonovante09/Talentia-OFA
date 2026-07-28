@@ -52,8 +52,13 @@ async function fetchProfile(userId: string): Promise<ChildProfileRow | null> {
   return data as ChildProfileRow | null;
 }
 
-function isProfileCompleted(profile: ChildProfileRow | null): boolean {
-  return !!profile?.child_name?.trim();
+/** True when the child profile is ready for map/lessons (name + parental consent). */
+export function isProfileCompleted(profile: ChildProfileRow | null): boolean {
+  if (!profile?.child_name?.trim()) return false;
+  // Families / COPPA: require guardian attestation + consent timestamp before map/lessons.
+  if (!profile.guardian_attested) return false;
+  if (!profile.parental_consent_at?.trim()) return false;
+  return true;
 }
 
 function syncProfileToLocal(profile: ChildProfileRow | null) {

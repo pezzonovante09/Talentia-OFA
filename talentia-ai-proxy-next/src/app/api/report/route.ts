@@ -4,6 +4,7 @@ import { corsJson, corsPreflight } from "@/lib/api-cors";
 import { buildCorsHeaders } from "@/lib/cors-strict";
 import { enforceRateLimit, ratelimitApi } from "@/lib/ratelimit";
 import { authJsonError, verifyAuth } from "@/lib/verifyAuth";
+import { verifyParentalConsent } from "@/lib/verifyParentalConsent";
 import { buildStandardReport, normalizeLanguage } from "@/lib/report";
 import { StandardReportBodySchema } from "@/lib/reportSchemas";
 
@@ -29,6 +30,9 @@ export async function POST(req: NextRequest) {
   if (limited) return limited;
   const auth = await verifyAuth(req);
   if (!auth.ok) return authJsonError(req, auth);
+  if (!(await verifyParentalConsent(auth.userId))) {
+    return corsJson({ error: "Parental consent required" }, 403, req);
+  }
   try {
     const rawBody = await req.json().catch(() => ({}));
     const parsed = StandardReportBodySchema.safeParse(rawBody);

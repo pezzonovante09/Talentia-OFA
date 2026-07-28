@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { corsAudioMpegResponse, corsJson, corsPreflight } from "@/lib/api-cors";
 import { authJsonError, verifyAuth } from "@/lib/verifyAuth";
+import { verifyParentalConsent } from "@/lib/verifyParentalConsent";
 import { enforceRateLimit, ratelimitApi, ratelimitTts } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
@@ -179,6 +180,9 @@ export async function POST(req: NextRequest) {
   try {
     const auth = await verifyAuth(req);
     if (!auth.ok) return authJsonError(req, auth);
+    if (!(await verifyParentalConsent(auth.userId))) {
+      return corsJson({ error: "Parental consent required" }, 403, req);
+    }
 
     const rawBody = await req.json().catch(() => ({}));
     const parsed = TtsRequestSchema.safeParse(rawBody);

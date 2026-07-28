@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pressable, Switch, TextInput, View } from 'react-native';
+import { Linking, Pressable, Switch, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -13,6 +13,7 @@ import { useAppTheme } from '../../src/theme';
 import { useAuth } from '../../src/context/AuthContext';
 import { supabase, isSupabaseConfigured, type ChildProfileRow } from '../../src/services/supabase';
 import { useSettingsStore, type AgeBand, type AvatarId, type LanguageCode } from '../../src/store/settingsStore';
+import { getPrivacyPolicyUrl, getTermsOfUseUrl } from '../../src/constants/legalUrls';
 
 const PROFILE_TABLE = 'profiles';
 
@@ -237,7 +238,22 @@ export default function ParentSetupScreen() {
             color={guardianOk ? theme.colors.primary : theme.colors.textMuted}
           />
           <AppText variant="small" style={{ flex: 1 }}>
-            {t('auth.consentGuardianProfile')}
+            {t('auth.consentGuardianProfile')}{' '}
+            <AppText
+              variant="small"
+              style={{ color: theme.colors.primary, textDecorationLine: 'underline' }}
+              onPress={() => void Linking.openURL(getPrivacyPolicyUrl())}
+            >
+              {t('settings.privacy')}
+            </AppText>
+            {' · '}
+            <AppText
+              variant="small"
+              style={{ color: theme.colors.primary, textDecorationLine: 'underline' }}
+              onPress={() => void Linking.openURL(getTermsOfUseUrl())}
+            >
+              {t('settings.terms')}
+            </AppText>
           </AppText>
         </Pressable>
         <Spacer size="lg" />

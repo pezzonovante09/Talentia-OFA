@@ -2,6 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { ConsentGate } from '../src/components/ConsentGate';
 import { TaliModal } from '../src/components/TaliModal';
 
 export default function TaliRoute() {
@@ -15,16 +16,18 @@ export default function TaliRoute() {
   }>();
 
   return (
-    <View style={{ flex: 1 }}>
-      <TaliModal
-        visible
-        onClose={() => router.back()}
-        lessonId={lessonId ? String(lessonId) : undefined}
-        topicId={topicId ? String(topicId) : undefined}
-        context={context ? String(context) : undefined}
-        reportSummary={reportSummary ? String(reportSummary) : undefined}
-        lessonTitle={lessonTitle ? String(lessonTitle) : undefined}
-      />
-    </View>
+    <ConsentGate>
+      <View style={{ flex: 1 }}>
+        <TaliModal
+          visible
+          onClose={() => router.back()}
+          lessonId={lessonId ? String(lessonId) : undefined}
+          topicId={topicId ? String(topicId) : undefined}
+          context={context ? String(context) : undefined}
+          reportSummary={reportSummary ? String(reportSummary) : undefined}
+          lessonTitle={lessonTitle ? String(lessonTitle) : undefined}
+        />
+      </View>
+    </ConsentGate>
   );
 }

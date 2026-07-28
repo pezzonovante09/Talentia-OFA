@@ -26,6 +26,7 @@
     "import:curriculum-aba-ru": "npx tsx scripts/import-curriculum-aba-ru.ts",
     "translate:aba-overrides": "npx tsx scripts/translate-aba-overrides.ts",
     "seed:aba-overrides-locales": "npx tsx scripts/seed-aba-overrides-from-locales.ts",
+    "verify:consent-constraint": "npx tsx scripts/verify-profiles-consent-constraint.mjs",
     "import:final-tasks": "npx tsx scripts/import-final-tasks-tsv.ts",
     "verify:final-tasks-locales": "npx tsx scripts/verify-final-tasks-locales.ts",
     "audit:locale-quality": "npx tsx scripts/audit-locale-quality.ts",

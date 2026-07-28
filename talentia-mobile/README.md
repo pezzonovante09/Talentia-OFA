@@ -125,8 +125,10 @@ npm run dev:api      # proxy (separate terminal)
 
 ## Pre-launch ops
 
+See **[docs/PLAY_LAUNCH_CHECKLIST.md](../docs/PLAY_LAUNCH_CHECKLIST.md)** for Privacy URL deploy, Data Safety, and Families steps.
+
 - Set `EXPO_PUBLIC_SENTRY_DSN` in EAS Secrets for production builds.
 - Set `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` on Vercel.
 - Deploy proxy so `/privacy` and `/terms` are publicly reachable; point `EXPO_PUBLIC_LEGAL_BASE_URL` or `EXPO_PUBLIC_BACKEND_URL` at that host.
-- Apply migration `20260724120000_parental_consent.sql` before relying on consent columns.
+- Apply migrations `20260724120000_parental_consent.sql` and `20260724230000_profiles_consent_required.sql` before relying on consent columns.
 

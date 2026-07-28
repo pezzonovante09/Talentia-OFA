@@ -7,6 +7,7 @@ import { NANO_UI, resolveScreenBackground } from '../../src/constants/nanoBanana
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { ConsentGate } from '../../src/components/ConsentGate';
 import { Screen } from '../../src/components/Screen';
 import { ABAReinforcementBanner } from '../../src/components/ABAReinforcementBanner';
 import { AppText } from '../../src/components/Text';
@@ -94,7 +95,7 @@ const ABA_REINFORCE_KEYS = [
 ] as const;
 
 // ── Main lesson screen ────────────────────────────────────────────────────────
-export default function LessonScreen() {
+function LessonScreenContent() {
   const { lessonId } = useLocalSearchParams<{ lessonId?: string; topicId?: string }>();
   const { t } = useTranslation();
   const theme = useAppTheme();
@@ -2112,6 +2113,14 @@ export default function LessonScreen() {
         lessonTitle={t(lesson.titleKey)}
       />
     </Screen>
+  );
+}
+
+export default function LessonScreen() {
+  return (
+    <ConsentGate>
+      <LessonScreenContent />
+    </ConsentGate>
   );
 }
 

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Animated, Platform, View } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,7 @@ import { useAppTheme } from '../../src/theme';
 import { TaliFAB } from '../../src/components/TaliFAB';
 import { NanoBananaIcon } from '../../src/components/NanoBananaIcon';
 import { NANO_UI } from '../../src/constants/nanoBananaAssets';
+import { useAuth } from '../../src/context/AuthContext';
 
 type IconName = React.ComponentProps<typeof MaterialIcons>['name'];
 
@@ -75,6 +76,14 @@ function AnimatedTabRasterIcon({
 export default function TabLayout() {
   const { t } = useTranslation();
   const theme = useAppTheme();
+  const session = useAuth((s) => s.session);
+  const profileCompleted = useAuth((s) => s.profileCompleted);
+  const loading = useAuth((s) => s.loading);
+
+  // Deep links into /(tabs)/* must not bypass parental-consent / parent-setup.
+  if (!loading && session && !profileCompleted) {
+    return <Redirect href="/(auth)/parent-setup" />;
+  }
 
   return (
     <View style={{ flex: 1 }}>

@@ -6,6 +6,7 @@ import { NANO_UI } from '../src/constants/nanoBananaAssets';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { ConsentGate } from '../src/components/ConsentGate';
 import { Screen } from '../src/components/Screen';
 import { AppText } from '../src/components/Text';
 import { Spacer } from '../src/components/Spacer';
@@ -138,7 +139,7 @@ function XPWeekChart({
   );
 }
 
-export default function ParentReportScreen() {
+function ParentReportScreenContent() {
   const { t } = useTranslation();
   const theme = useAppTheme();
   const router = useRouter();
@@ -941,5 +942,13 @@ export default function ParentReportScreen() {
 
       <Spacer size="xl" />
     </Screen>
+  );
+}
+
+export default function ParentReportScreen() {
+  return (
+    <ConsentGate>
+      <ParentReportScreenContent />
+    </ConsentGate>
   );
 }

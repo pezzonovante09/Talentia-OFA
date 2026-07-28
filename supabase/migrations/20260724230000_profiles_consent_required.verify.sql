@@ -1,0 +1,24 @@
+-- Manual checklist: expect ERROR on the INSERT below after 20260724230000 is applied.
+-- Replace USER_UUID with a real auth.users id (or create a throwaway user first).
+--
+-- 1) Preflight (expect 0 after backfill):
+--    see 20260724230000_profiles_consent_required.preflight.sql
+--
+-- 2) This INSERT must fail with profiles_consent_when_named / 23514:
+
+-- INSERT INTO public.profiles (
+--   user_id, child_name, age_band, language, avatar_id, child_mode,
+--   guardian_attested, parental_consent_at
+-- ) VALUES (
+--   'USER_UUID',
+--   'ConsentTestChild',
+--   '5-6',
+--   'ru',
+--   'sun',
+--   'standard',
+--   false,
+--   NULL
+-- );
+
+-- 3) Cleanup if a row slipped through:
+-- DELETE FROM public.profiles WHERE child_name = 'ConsentTestChild';

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { LEGAL_LAST_UPDATED, SUPPORT_EMAIL } from "@/lib/legalConstants";
+
 export const metadata: Metadata = {
   title: "Terms of Use — Talentia",
   description: "Terms of use for the Talentia learning app.",
@@ -23,7 +25,7 @@ export default function TermsPage() {
       </p>
       <h1>Terms of Use</h1>
       <p>
-        <strong>Last updated:</strong> 24 July 2026
+        <strong>Last updated:</strong> {LEGAL_LAST_UPDATED}
       </p>
       <p>
         By creating an account or using Talentia, you agree to these Terms. The app is
@@ -32,9 +34,10 @@ export default function TermsPage() {
 
       <h2>1. Eligibility</h2>
       <p>
-        You must be a parent or legal guardian (or otherwise an adult authorized to
-        manage the child’s learning profile) to create an account and provide consent
-        for data processing described in our Privacy Policy.
+        You must be a parent or legal guardian (or otherwise an adult authorized to manage
+        the child&apos;s learning profile) to create an account and provide consent for data
+        processing described in our{" "}
+        <Link href="/privacy">Privacy Policy</Link>.
       </p>
 
       <h2>2. Acceptable use</h2>
@@ -46,16 +49,23 @@ export default function TermsPage() {
 
       <h2>3. AI companion (Tali)</h2>
       <p>
-        Tali provides educational encouragement and hints. It may be imperfect. Do not
-        rely on it for medical, legal, or emergency advice. We may refuse or replace
-        replies that fail child-safety filters.
+        Tali provides educational encouragement and hints via a third-party language model
+        (DeepSeek) through our proxy. Replies may be imperfect. Do not rely on Tali for
+        medical, legal, or emergency advice.
+      </p>
+      <p>
+        Safety is enforced with prompt rules and <strong>keyword-based input/output filters</strong>.
+        This is <strong>not human moderation</strong> and does not guarantee that every
+        reply is appropriate — parents should supervise the child&apos;s use. We may refuse
+        or replace replies that fail safety filters. Chat text is not stored in our database
+        (see Privacy Policy).
       </p>
 
       <h2>4. Accounts and deletion</h2>
       <p>
-        You are responsible for safeguarding login credentials. You may delete your
-        account from Settings; associated cloud progress for that user is removed as
-        described in the Privacy Policy.
+        You are responsible for safeguarding login credentials. You may delete your account
+        from Settings; associated cloud progress for that user is removed as described in
+        the Privacy Policy. Local device cache and parent PIN can be cleared separately.
       </p>
 
       <h2>5. Disclaimer</h2>
@@ -66,8 +76,8 @@ export default function TermsPage() {
 
       <h2>6. Contact</h2>
       <p>
-        For questions about these Terms, use the email associated with your Talentia
-        account or your published support channel.
+        Questions about these Terms:{" "}
+        <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
       </p>
     </main>
   );

@@ -4,8 +4,13 @@ import { z } from "zod";
 import { corsJson, corsPreflight } from "@/lib/api-cors";
 import { buildCorsHeaders } from "@/lib/cors-strict";
 import { enforceRateLimit, ratelimitApi } from "@/lib/ratelimit";
-import { filterTaliReply, taliSafeFallback } from "@/lib/taliSafety";
+import {
+  filterTaliReply,
+  filterTaliRequestFields,
+  taliSafeFallback,
+} from "@/lib/taliSafety";
 import { authJsonError, verifyAuth } from "@/lib/verifyAuth";
+import { verifyParentalConsent } from "@/lib/verifyParentalConsent";
 
 export const runtime = "nodejs";
 
@@ -170,6 +175,9 @@ export async function POST(req: NextRequest) {
   try {
     const auth = await verifyAuth(req);
     if (!auth.ok) return authJsonError(req, auth);
+    if (!(await verifyParentalConsent(auth.userId))) {
+      return corsJson({ error: "Parental consent required" }, 403, req);
+    }
 
     const apiKey = process.env.DEEPSEEK_API_KEY;
     if (!apiKey) return corsJson({ error: "Missing DEEPSEEK_API_KEY" }, 500, req);
@@ -190,6 +198,31 @@ export async function POST(req: NextRequest) {
 
     if (!message && mode === "chat" && !parentContext) {
       return corsJson({ error: "message is required" }, 400, req);
+    }
+
+    const fallback = taliSafeFallback(language);
+    const inputCheck = filterTaliRequestFields({
+      message,
+      parentContext,
+      taskContext: taskContext ?? null,
+    });
+    if (!inputCheck.ok) {
+      console.warn("[tali] safety_filter", {
+        side: "input",
+        category: inputCheck.category ?? inputCheck.reason,
+        language,
+        mode,
+      });
+      return corsJson(
+        {
+          reply: fallback,
+          filtered: true,
+          filterReason: inputCheck.reason,
+          ...(inputCheck.category ? { filterCategory: inputCheck.category } : {}),
+        },
+        200,
+        req,
+      );
     }
 
     const system = buildSystemPrompt({
@@ -227,15 +260,31 @@ export async function POST(req: NextRequest) {
       return corsJson({ error: "Upstream AI service error" }, 502, req);
     }
 
-    const fallback = taliSafeFallback(language);
     const rawReply = dsData?.choices?.[0]?.message?.content?.trim() || fallback;
-    const filtered = filterTaliReply(rawReply);
+    const filtered = filterTaliReply(rawReply, {
+      correctAnswer: taskContext?.correctAnswer,
+    });
     const reply = filtered.ok ? filtered.reply : fallback;
+
+    if (!filtered.ok) {
+      console.warn("[tali] safety_filter", {
+        side: "output",
+        category: filtered.category ?? filtered.reason,
+        language,
+        mode,
+      });
+    }
 
     return corsJson(
       {
         reply,
-        ...(filtered.ok ? {} : { filtered: true, filterReason: filtered.reason }),
+        ...(filtered.ok
+          ? {}
+          : {
+              filtered: true,
+              filterReason: filtered.reason,
+              ...(filtered.category ? { filterCategory: filtered.category } : {}),
+            }),
       },
       200,
       req,
