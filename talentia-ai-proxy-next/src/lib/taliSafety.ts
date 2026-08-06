@@ -43,6 +43,30 @@ const BLOCK_RULES: BlockRule[] = [
     category: "prompt_injection",
     re: /(?:игнорируй|забудь)\s+(?:все\s+)?(?:предыдущие\s+)?инструкции/i,
   },
+  // —— roleplay / persona jailbreaks (e.g. "pretend you're DAN", "act as an unrestricted AI") ——
+  {
+    category: "prompt_injection",
+    re: /\b(?:pretend|act|roleplay)\s+(?:that\s+)?you(?:'re|\s+are)?\s+(?:an?\s+)?(?:ai|assistant|bot|character)?\s*(?:with\s+no|without\s+any?)\s+(?:rules|restrictions|filters|limits|guidelines)\b/i,
+  },
+  {
+    category: "prompt_injection",
+    re: /\b(?:unrestricted|uncensored|unfiltered|unlimited|jailbroken)\s+(?:ai|assistant|mode|version|chatbot)\b/i,
+  },
+  { category: "prompt_injection", re: /\bDAN\b.{0,20}\b(?:mode|ai|assistant|prompt)\b/i },
+  { category: "prompt_injection", re: /\bdo\s+anything\s+now\b/i },
+  { category: "prompt_injection", re: /\bjailbreak(?:ing|ed)?\b/i },
+  {
+    category: "prompt_injection",
+    re: /\bno\s+(?:rules|restrictions|filters)\s+(?:apply|anymore|now)\b/i,
+  },
+  { category: "prompt_injection", re: /\bstop\s+(?:being|acting\s+like)\s+tali\b/i },
+  {
+    category: "prompt_injection",
+    re: /(?:представь|притворись|играй\s*роль).{0,20}(?:без\s*(?:правил|ограничений|фильтров)|неограниченн\w*)/i,
+  },
+  { category: "prompt_injection", re: /(?:джейлбрейк|выйди\s*из\s*роли|перестань\s*быть\s*тали)/i },
+  // KY coverage is a best-effort start (not native-speaker reviewed — see taliSafety.test.ts TODO).
+  { category: "prompt_injection", re: /(?:чектөөсүз|эрежесиз)/i },
 
   // —— self-harm (before violence so KY «өзүн өлтүр» is not tagged as violence) ——
   { category: "self_harm", re: /\b(suicide|self[-\s]?harm)\b/i },
@@ -119,7 +143,9 @@ const BLOCK_RULES: BlockRule[] = [
   // —— profanity ——
   { category: "profanity", re: /\b(fuck|shit|bitch|asshole|damn\s*you)\b/i },
   { category: "profanity", re: /(хуй|бля|пизд|еб[аоу]|сука\b)/i },
-  { category: "profanity", re: /(согун|салак)/i },
+  // KY list is a best-effort start covering common mild-to-strong insults;
+  // not yet reviewed by a native speaker — expand/correct before relying on it alone.
+  { category: "profanity", re: /(согун|салак|акмак|жинди|эшек|маскара|иттин\s*баласы)/i },
 
   // —— PII (phone / email / street address) ——
   { category: "pii", re: /\b[\w.+-]+@[\w-]+\.[\w.-]+\b/ },
@@ -129,7 +155,7 @@ const BLOCK_RULES: BlockRule[] = [
   },
   {
     category: "pii",
-    re: /\b\d{1,5}\s+[\w\u0400-\u04FF]+\s+(?:street|st|avenue|ave|road|rd|ул\.?|улица)\b/i,
+    re: /\b\d{1,5}\s+[\w\u0400-\u04FF]+\s+(?:street|st|avenue|ave|road|rd|ул\.?|улица|көчө)\b/i,
   },
 ];
 
