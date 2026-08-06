@@ -110,7 +110,14 @@ export default function SettingsScreen() {
   const doDeleteAccount = async () => {
     setDeletingAccount(true);
     try {
-      if (isSupabaseConfigured && getBackendBaseUrl()) {
+      if (isSupabaseConfigured) {
+        // A cloud account exists — cloud deletion is mandatory, not best-effort.
+        // Never silently fall through to a local-only wipe here: that would leave
+        // the child's cloud data intact while the parent believes it was deleted.
+        if (!getBackendBaseUrl()) {
+          Alert.alert(t('settings.deleteAccountTitle'), t('settings.deleteAccountUnavailable'));
+          return;
+        }
         const res = await backendFetch('/api/account/delete', { method: 'POST', body: '{}' });
         if (!res.ok) {
           Alert.alert(t('settings.deleteAccountTitle'), t('settings.deleteAccountFailed'));
