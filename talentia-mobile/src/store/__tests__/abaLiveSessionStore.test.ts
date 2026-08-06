@@ -105,3 +105,38 @@ describe('abaLiveSessionStore finish/clear', () => {
     jest.useRealTimers();
   });
 });
+
+describe('abaLiveSessionStore — Supabase query scoping', () => {
+  // Regression guard: a write that silently drops the .eq('user_id', ...)
+  // filter would let one signed-in device's write target rows it shouldn't
+  // touch. The mocked getSession() above always resolves to 'user-1'.
+  it('finishSession scopes its update to the signed-in user_id (not just status)', async () => {
+    const eqCalls: unknown[][] = [];
+    const chain: { eq: jest.Mock; then: (fn: (v: { error: null }) => unknown) => Promise<unknown> } = {
+      eq: jest.fn((...args: unknown[]) => {
+        eqCalls.push(args);
+        return chain;
+      }),
+      then(onFulfilled) {
+        return Promise.resolve({ error: null }).then(onFulfilled);
+      },
+    };
+    mockFrom.mockReset();
+    mockFrom.mockImplementation(() => ({ update: jest.fn(() => chain) }));
+
+    useAbaLiveSessionStore.setState({
+      active: true,
+      lessonId: 'lesson-1',
+      lessonTitleKey: 'data.lessons.x',
+    });
+    useAbaLiveSessionStore.getState().finishSession(2);
+
+    // syncWithRetry's mock fires the async write without awaiting it —
+    // flush the microtask/macrotask queue so the mocked chain has run.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(mockFrom).toHaveBeenCalledWith('aba_live_sessions');
+    expect(eqCalls[0]).toEqual(['user_id', 'user-1']);
+    expect(eqCalls[1]).toEqual(['status', 'active']);
+  });
+});
