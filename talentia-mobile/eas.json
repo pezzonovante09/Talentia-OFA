@@ -7,8 +7,8 @@
     "preview": {
       "env": {
         "SENTRY_DISABLE_AUTO_UPLOAD": "true",
-        "EXPO_PUBLIC_LEGAL_BASE_URL": "https://YOUR_PROXY_HOST",
-        "EXPO_PUBLIC_BACKEND_URL": "https://YOUR_PROXY_HOST"
+        "EXPO_PUBLIC_LEGAL_BASE_URL": "https://talentia-ai-proxy-next.vercel.app",
+        "EXPO_PUBLIC_BACKEND_URL": "https://talentia-ai-proxy-next.vercel.app"
       },
       "android": {
         "buildType": "apk"
@@ -17,8 +17,8 @@
     "production": {
       "env": {
         "SENTRY_DISABLE_AUTO_UPLOAD": "true",
-        "EXPO_PUBLIC_LEGAL_BASE_URL": "https://YOUR_PROXY_HOST",
-        "EXPO_PUBLIC_BACKEND_URL": "https://YOUR_PROXY_HOST"
+        "EXPO_PUBLIC_LEGAL_BASE_URL": "https://talentia-ai-proxy-next.vercel.app",
+        "EXPO_PUBLIC_BACKEND_URL": "https://talentia-ai-proxy-next.vercel.app"
       },
       "android": {
         "buildType": "app-bundle",
