@@ -85,7 +85,7 @@ function XPWeekChart({
 }) {
   const { t, i18n } = useTranslation();
 
-  const localeMap: Record<string, string> = { en: 'en-US', ru: 'ru-RU', ky: 'ru-RU' };
+  const localeMap: Record<string, string> = { en: 'en-US', ru: 'ru-RU', ky: 'ky-KG' };
   const dateLocale = localeMap[i18n.language] ?? 'ru-RU';
   const todayKey = formatLocalDateYMD(new Date());
 
