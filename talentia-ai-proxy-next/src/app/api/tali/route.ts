@@ -11,6 +11,7 @@ import {
 } from "@/lib/taliSafety";
 import { authJsonError, verifyAuth } from "@/lib/verifyAuth";
 import { verifyParentalConsent } from "@/lib/verifyParentalConsent";
+import { logTaliSafetyEvent } from "@/lib/taliSafetyLog";
 
 export const runtime = "nodejs";
 
@@ -213,6 +214,13 @@ export async function POST(req: NextRequest) {
         language,
         mode,
       });
+      await logTaliSafetyEvent({
+        userId: auth.userId,
+        side: "input",
+        category: inputCheck.category ?? inputCheck.reason,
+        mode,
+        language,
+      });
       return corsJson(
         {
           reply: fallback,
@@ -272,6 +280,13 @@ export async function POST(req: NextRequest) {
         category: filtered.category ?? filtered.reason,
         language,
         mode,
+      });
+      await logTaliSafetyEvent({
+        userId: auth.userId,
+        side: "output",
+        category: filtered.category ?? filtered.reason,
+        mode,
+        language,
       });
     }
 

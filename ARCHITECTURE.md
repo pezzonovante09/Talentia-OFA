@@ -188,12 +188,17 @@ user_progress     -- lesson completion + stars (cloud sync of progressStore)
 user_stats        -- XP, level, streak (cloud sync of progressStore)
 aba_live_sessions -- real-time ABA session state for parent dashboard
 parent_child      -- parent ↔ child account links
+tali_safety_events -- audit log of Tali input/output safety-filter hits (category + timestamp only, no message text)
 ```
 
 Indexes (`supabase/migrations/20260715221000_indexes.sql`): `tasks(lesson_id)`,
 `lessons(world_id)`, `lesson_analytics(user_id, event_ts)`, `parent_child(child_id)`.
 The `aba_live_sessions(user_id, status)` index lives in
 `20260715220000_aba_live_sessions.sql` alongside the table + RLS.
+The `tali_safety_events(user_id, created_at)` index + RLS live in
+`20260807000000_tali_safety_events.sql` — writable only by the proxy's
+service-role client, never by `authenticated`, so a flagged event can't be
+forged or erased by the account it's about.
 
 ## Testing & CI
 
