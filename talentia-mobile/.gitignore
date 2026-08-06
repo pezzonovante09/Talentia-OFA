@@ -55,3 +55,6 @@ app-example
 # generated native folders
 /ios
 /android
+
+# stray Supabase CLI link artifacts (run supabase commands from repo root instead)
+/supabase/.temp/

@@ -3,12 +3,6 @@
     "version": ">= 16.0.0",
     "appVersionSource": "local"
   },
-  "envDocumentation": {
-    "EXPO_PUBLIC_LEGAL_BASE_URL": "HTTPS origin of deployed talentia-ai-proxy-next. Serves GET /privacy and GET /terms. Set via EAS Secrets for production (overrides placeholder below). Example: https://api.talentia.app",
-    "EXPO_PUBLIC_BACKEND_URL": "Same origin as EXPO_PUBLIC_LEGAL_BASE_URL unless API is split later. Used for /api/tali, /api/tts, /api/report*, /api/account/delete.",
-    "EXPO_PUBLIC_SUPABASE_URL": "Supabase project URL (required for auth/sync).",
-    "EXPO_PUBLIC_SUPABASE_ANON_KEY": "Supabase anon key (required for auth/sync)."
-  },
   "build": {
     "preview": {
       "env": {

@@ -20,7 +20,7 @@
       "buildNumber": "1"
     },
     "android": {
-      "versionCode": 4,
+      "versionCode": 5,
       "package": "com.talentia.mobile",
       "label": "Talentia",
       "adaptiveIcon": {
