@@ -394,10 +394,16 @@ export const worlds: World[] = [
             ],
           },
           {
-            id: 'jungle-aba-showcase',
+            // Split from a single 23-task "jungle-aba-showcase" lesson into
+            // 5 lessons of ~4-5 tasks each - a single 23-task session with no
+            // audience filtering was far beyond a young child's attention
+            // span. Task ids/content are unchanged, only regrouped; XP is
+            // divided across the 5 parts (5 each) so total reward for
+            // completing the whole showcase stays the same (25).
+            id: 'jungle-aba-showcase-1',
             topicId: 'jungle-addition',
-            titleKey: 'data.lessons.jungleAbaShowcase',
-            reward: { xp: 25 },
+            titleKey: 'data.lessons.jungleAbaShowcase1',
+            reward: { xp: 5 },
             abaTokensPerPiece: 5,
             dialog: [{ speaker: 'npc', textKey: 'data.dialog.jungle_aba_0' }, { speaker: 'tali', textKey: 'data.dialog.jungle_aba_1' }],
             intro: [{ titleKey: 'data.intro.jungle_aba_0_t', bodyKey: 'data.intro.jungle_aba_0_b', emoji: '' }, { titleKey: 'data.intro.jungle_aba_1_t', bodyKey: 'data.intro.jungle_aba_1_b', emoji: '' }],
@@ -405,6 +411,7 @@ export const worlds: World[] = [
               {
                 id: 'jungle-aba-t0',
                 type: 'multiple_choice',
+                audience: 'standard',
                 questionKey: 'data.tasks.aba_demo_std_warmup',
                 difficulty: 1,
                 visualCount: 3,
@@ -459,6 +466,15 @@ export const worlds: World[] = [
                 skippable: true,
                 soundTextKey: 'data.tasks.aba_demo_vi_sound2',
               },
+            ],
+          },
+          {
+            id: 'jungle-aba-showcase-2',
+            topicId: 'jungle-addition',
+            titleKey: 'data.lessons.jungleAbaShowcase2',
+            reward: { xp: 5 },
+            abaTokensPerPiece: 5,
+            tasks: [
               {
                 id: 'jungle-aba-wr1',
                 type: 'word_repetition',
@@ -513,6 +529,15 @@ export const worlds: World[] = [
                   { id: 'fb-c', textKey: 'data.tasks.aba_demo_fb_c', correct: false },
                 ],
               },
+            ],
+          },
+          {
+            id: 'jungle-aba-showcase-3',
+            topicId: 'jungle-addition',
+            titleKey: 'data.lessons.jungleAbaShowcase3',
+            reward: { xp: 5 },
+            abaTokensPerPiece: 5,
+            tasks: [
               {
                 id: 'jungle-aba-fb2',
                 type: 'fill_blank',
@@ -585,6 +610,15 @@ export const worlds: World[] = [
                   { id: 'wk-f', textKey: 'data.tasks.aba_demo_room_living', correct: false },
                 ],
               },
+            ],
+          },
+          {
+            id: 'jungle-aba-showcase-4',
+            topicId: 'jungle-addition',
+            titleKey: 'data.lessons.jungleAbaShowcase4',
+            reward: { xp: 5 },
+            abaTokensPerPiece: 5,
+            tasks: [
               {
                 id: 'jungle-aba-so1',
                 type: 'sorting',
@@ -646,6 +680,15 @@ export const worlds: World[] = [
                   { id: 'rc2c', labelKey: 'data.tasks.aba_demo_routine_brush', imageKey: 'aba_routine_brush', order: 3 },
                 ],
               },
+            ],
+          },
+          {
+            id: 'jungle-aba-showcase-5',
+            topicId: 'jungle-addition',
+            titleKey: 'data.lessons.jungleAbaShowcase5',
+            reward: { xp: 5 },
+            abaTokensPerPiece: 5,
+            tasks: [
               {
                 id: 'jungle-aba-rc3',
                 type: 'routine_chain',
