@@ -38,6 +38,15 @@ import { useCloudProgress } from '../src/hooks/useCloudProgress';
 
 type TabId = 'overall' | 'weekly' | 'byIsland';
 
+// Single source of truth for app language -> Intl/Date locale mapping. This
+// used to be duplicated (an object lookup here, a nested ternary elsewhere in
+// this file) and drifted once already — a KY-locale date-formatting fix
+// (753fa21) updated one copy but not the other.
+const LANGUAGE_TO_DATE_LOCALE: Record<string, string> = { en: 'en-US', ru: 'ru-RU', ky: 'ky-KG' };
+function mapLanguageToLocale(language: string): string {
+  return LANGUAGE_TO_DATE_LOCALE[language] ?? 'ru-RU';
+}
+
 // If the live session claims to be active but its last update is older than
 // this, the realtime channel or the child's connection is likely stuck
 // (app backgrounded, network drop, etc.) rather than the child just being
@@ -85,8 +94,7 @@ function XPWeekChart({
 }) {
   const { t, i18n } = useTranslation();
 
-  const localeMap: Record<string, string> = { en: 'en-US', ru: 'ru-RU', ky: 'ky-KG' };
-  const dateLocale = localeMap[i18n.language] ?? 'ru-RU';
+  const dateLocale = mapLanguageToLocale(i18n.language);
   const todayKey = formatLocalDateYMD(new Date());
 
   const maxXP = Math.max(...weeklyStats.map((d) => d.xpEarned), 1);
@@ -609,9 +617,7 @@ function ParentReportScreenContent() {
                   variant="small"
                   style={{ color: isLiveSessionStale ? '#B45309' : theme.colors.textMuted }}
                 >
-                  {new Date(liveLastUpdated).toLocaleString(
-                    language === 'en' ? 'en-US' : language === 'ky' ? 'ky-KG' : 'ru-RU',
-                  )}
+                  {new Date(liveLastUpdated).toLocaleString(mapLanguageToLocale(language))}
                 </AppText>
               ) : null}
             </View>

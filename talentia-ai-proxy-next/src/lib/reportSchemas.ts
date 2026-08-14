@@ -12,6 +12,12 @@ export const AccuracyBySubjectSchema = z
     message: "accuracyBySubject must have at most 50 subjects",
   });
 
+// Field-for-field duplicate of ReportStats/WeeklyStats in
+// talentia-mobile/src/services/reportService.ts — the two projects are separate
+// npm packages (Next.js serverless vs. Expo app) with no shared workspace package
+// linking them, so there's no single source of truth to import from. Keep the two
+// shapes in sync by hand; a field renamed on only one side fails at runtime rather
+// than at compile time.
 export const ReportStatsInputSchema = z.object({
   totalCorrect: z.number().finite().min(0).optional(),
   totalAttempts: z.number().finite().min(0).optional(),

@@ -23,6 +23,13 @@ export type WeeklyReport = {
   isStub: boolean;
 };
 
+// Field-for-field duplicate of ReportStatsInputSchema/WeeklyReportBodySchema in
+// talentia-ai-proxy-next/src/lib/reportSchemas.ts — the two projects are separate
+// npm packages (Expo app vs. Next.js serverless) with no shared workspace package
+// linking them, so there's no single source of truth to import from. Keep the two
+// shapes in sync by hand; a field renamed on only one side fails at runtime (mobile
+// gets a 400, or the proxy silently drops an unrecognized field) rather than at
+// compile time.
 export type ReportStats = {
   accuracyBySubject: Record<string, number>;
   totalCorrect: number;
