@@ -237,6 +237,7 @@
     "standardCorrect": "That's right — nice work!",
     "standardIncorrect": "Not quite. Let’s think again — what is the most important clue in the question?",
     "standardHintLevel1": "Read the question again slowly and think about what it's asking you to do.",
+    "inputFirstLetterHint": "Hint: the answer starts with \"{{letter}}\"",
     "repeatSpeech": "Repeat voice",
     "hintFromTali": "Tali's hint",
     "dialogTyping": "Tali is typing…",

@@ -1877,30 +1877,35 @@ function LessonScreenContent() {
               accessibilityLabel={t('lesson.sortingGroupsLabel')}
               style={{ flexDirection: 'row', gap: theme.spacing.sm, marginBottom: theme.spacing.md, flexWrap: 'wrap' }}
             >
-              {(task as SortingTask).groups.map((g) => (
-                <Pressable
-                  key={g.id}
-                  onPress={() => {
-                    if (hasChecked || taskTransitionBusy || !sortPickItemId) return;
-                    setSortAssignments((prev) => ({ ...prev, [sortPickItemId]: g.id }));
-                    setSortPickItemId(null);
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={lt(g.labelKey)}
-                  accessibilityState={{ disabled: hasChecked || taskTransitionBusy || !sortPickItemId }}
-                  style={{
-                    flex: 1,
-                    minWidth: 120,
-                    padding: theme.spacing.md,
-                    borderRadius: theme.radii.md,
-                    borderWidth: 2,
-                    borderColor: theme.colors.border,
-                    backgroundColor: theme.colors.surfaceAlt,
-                  }}
-                >
-                  <AppText style={{ textAlign: 'center', fontWeight: '700' }}>{lt(g.labelKey)}</AppText>
-                </Pressable>
-              ))}
+              {(task as SortingTask).groups.map((g) => {
+                const pickedItem = (task as SortingTask).items.find((i) => i.id === sortPickItemId);
+                const isHintTarget =
+                  promptLevel >= 2 && !!pickedItem && pickedItem.groupId === g.id && !hasChecked;
+                return (
+                  <Pressable
+                    key={g.id}
+                    onPress={() => {
+                      if (hasChecked || taskTransitionBusy || !sortPickItemId) return;
+                      setSortAssignments((prev) => ({ ...prev, [sortPickItemId]: g.id }));
+                      setSortPickItemId(null);
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={lt(g.labelKey)}
+                    accessibilityState={{ disabled: hasChecked || taskTransitionBusy || !sortPickItemId }}
+                    style={{
+                      flex: 1,
+                      minWidth: 120,
+                      padding: theme.spacing.md,
+                      borderRadius: theme.radii.md,
+                      borderWidth: isHintTarget ? 3 : 2,
+                      borderColor: isHintTarget ? theme.colors.success : theme.colors.border,
+                      backgroundColor: theme.colors.surfaceAlt,
+                    }}
+                  >
+                    <AppText style={{ textAlign: 'center', fontWeight: '700' }}>{lt(g.labelKey)}</AppText>
+                  </Pressable>
+                );
+              })}
             </View>
             <View
               accessibilityRole="radiogroup"
@@ -1951,37 +1956,43 @@ function LessonScreenContent() {
               accessibilityLabel={t('lesson.abaRoutineTapOrder')}
               style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm }}
             >
-              {routineShuffledSteps.map((step) => {
-                const picked = routinePickedIds.includes(step.id);
-                const src = getAbaLessonImage(step.imageKey);
-                return (
-                  <Pressable
-                    key={step.id}
-                    disabled={picked || hasChecked || taskTransitionBusy}
-                    onPress={() => {
-                      setRoutinePickedIds((prev) => [...prev, step.id]);
-                      setSelectHint(false);
-                    }}
-                    accessibilityRole="button"
-                    accessibilityLabel={lt(step.labelKey)}
-                    accessibilityState={{ disabled: picked || hasChecked || taskTransitionBusy }}
-                    style={{
-                      width: 100,
-                      padding: theme.spacing.sm,
-                      borderRadius: theme.radii.md,
-                      borderWidth: 2,
-                      borderColor: theme.colors.border,
-                      opacity: picked ? 0.35 : 1,
-                      alignItems: 'center',
-                    }}
-                  >
-                    {src ? <Image source={src} style={{ width: 48, height: 48, resizeMode: 'contain' }} /> : null}
-                    <AppText variant="small" style={{ textAlign: 'center' }}>
-                      {lt(step.labelKey)}
-                    </AppText>
-                  </Pressable>
-                );
-              })}
+              {(() => {
+                const nextCorrectStepId = routineShuffledSteps
+                  .filter((s) => !routinePickedIds.includes(s.id))
+                  .sort((a, b) => a.order - b.order)[0]?.id;
+                return routineShuffledSteps.map((step) => {
+                  const picked = routinePickedIds.includes(step.id);
+                  const src = getAbaLessonImage(step.imageKey);
+                  const isHintTarget = promptLevel >= 2 && !hasChecked && !picked && step.id === nextCorrectStepId;
+                  return (
+                    <Pressable
+                      key={step.id}
+                      disabled={picked || hasChecked || taskTransitionBusy}
+                      onPress={() => {
+                        setRoutinePickedIds((prev) => [...prev, step.id]);
+                        setSelectHint(false);
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={lt(step.labelKey)}
+                      accessibilityState={{ disabled: picked || hasChecked || taskTransitionBusy }}
+                      style={{
+                        width: 100,
+                        padding: theme.spacing.sm,
+                        borderRadius: theme.radii.md,
+                        borderWidth: isHintTarget ? 3 : 2,
+                        borderColor: isHintTarget ? theme.colors.success : theme.colors.border,
+                        opacity: picked ? 0.35 : 1,
+                        alignItems: 'center',
+                      }}
+                    >
+                      {src ? <Image source={src} style={{ width: 48, height: 48, resizeMode: 'contain' }} /> : null}
+                      <AppText variant="small" style={{ textAlign: 'center' }}>
+                        {lt(step.labelKey)}
+                      </AppText>
+                    </Pressable>
+                  );
+                });
+              })()}
             </View>
           </View>
         ) : task.type === 'input' && task.skippable ? (
@@ -2030,6 +2041,11 @@ function LessonScreenContent() {
                 disabled={hasChecked || taskTransitionBusy}
               />
             </View>
+            {promptLevel >= 2 && !hasChecked && task.answer.trim().length > 0 && (
+              <AppText variant="small" style={{ marginTop: theme.spacing.sm, color: theme.colors.primary }}>
+                {t('lesson.inputFirstLetterHint', { letter: task.answer.trim()[0]!.toUpperCase() })}
+              </AppText>
+            )}
           </View>
         ) : (
           <AppText>{t('errors.lessonNotFound')}</AppText>
