@@ -68,7 +68,7 @@ import { IntroPhase } from '../../src/components/lesson/IntroPhase';
 import { DialogPhase } from '../../src/components/lesson/DialogPhase';
 import { RewardPhase } from '../../src/components/lesson/RewardPhase';
 import { BreakReminderModal } from '../../src/components/lesson/BreakReminderModal';
-import { useBreakReminder } from '../../src/hooks/useBreakReminder';
+import { defaultBreakReminderMinutesForAgeBand, useBreakReminder } from '../../src/hooks/useBreakReminder';
 import {
   clearLessonResume,
   getLessonResume,
@@ -657,6 +657,7 @@ function LessonScreenContent() {
   const { visible: breakModalVisible, dismiss: dismissBreakReminder } = useBreakReminder({
     enabled: breakReminderEnabled,
     active: phase === 'tasks',
+    thresholdMinutes: defaultBreakReminderMinutesForAgeBand(profile?.age_band),
   });
 
   // Early returns after all hooks
