@@ -4,15 +4,21 @@
  * 1) All literal `data.*` i18n keys referenced from `src/data` exist in ru/en/ky.
  * 2) All literal `t('…')` / `t("…")` keys referenced from `app/` and
  *    `src/components` exist (as non-empty strings) in all three locales.
+ * 3) No EN/KY value is byte-identical to its RU counterpart while containing
+ *    Cyrillic text — a strong signal of leaked, untranslated Russian content
+ *    (see the 2026-08-12 audit) — unless the key is in
+ *    scripts/i18n-ru-identity-allowlist.json (Russian-language lessons,
+ *    proper nouns, and genuine Kyrgyz loanwords are expected to match RU).
  *
- * Does not check translation quality, plural-form completeness beyond key
- * presence, or dynamically constructed keys.
+ * Does not check translation quality beyond this identity heuristic, plural-form
+ * completeness beyond key presence, or dynamically constructed keys.
  *
  * Run from talentia-mobile:
  *   node scripts/check-i18n.js
  *   node scripts/check-i18n.js --json
  *
- * Exit code: 1 if any locale is missing a referenced key.
+ * Exit code: 1 if any locale is missing a referenced key, or has an
+ * unallowlisted RU-identity match.
  */
 
 /* global __dirname */
@@ -139,10 +145,101 @@ for (const key of [...uiKeys].sort()) {
   }
 }
 
+// ── RU-identity check: EN/KY values that are byte-identical to RU while ──
+// containing Cyrillic text are almost always leaked, untranslated Russian
+// content rather than a real translation. Allowlisted for cases where that's
+// wrong (Russian-language lessons, phonics content, loanwords, proper nouns).
+const CYRILLIC_RE = /[Ѐ-ӿ]/;
+const ALLOWLIST_PATH = path.join(__dirname, 'i18n-ru-identity-allowlist.json');
+const allowlistRaw = JSON.parse(fs.readFileSync(ALLOWLIST_PATH, 'utf8'));
+const allowPatterns = allowlistRaw.patterns.map((p) => ({
+  re: new RegExp(p.re),
+  locales: p.locales,
+}));
+const allowKeys = { en: new Set(allowlistRaw.keys.en || []), ky: new Set(allowlistRaw.keys.ky || []) };
+
+function isRuIdentityAllowed(key, locale) {
+  if (allowKeys[locale] && allowKeys[locale].has(key)) return true;
+  return allowPatterns.some((p) => p.locales.includes(locale) && p.re.test(key));
+}
+
+function loadRawLocale(name) {
+  const file = path.join(LOCALES_DIR, `${name}.json`);
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function findRuIdentityLeaks(ruNode, targetNode, locale, keyPath, out) {
+  if (typeof ruNode === 'string') {
+    if (typeof targetNode !== 'string') return;
+    if (
+      ruNode === targetNode &&
+      CYRILLIC_RE.test(ruNode) &&
+      ruNode.trim().length > 3 &&
+      !isRuIdentityAllowed(keyPath, locale)
+    ) {
+      out.push(keyPath);
+    }
+    return;
+  }
+  if (ruNode && typeof ruNode === 'object') {
+    for (const k of Object.keys(ruNode)) {
+      if (targetNode && typeof targetNode === 'object' && k in targetNode) {
+        findRuIdentityLeaks(ruNode[k], targetNode[k], locale, keyPath ? `${keyPath}.${k}` : k, out);
+      }
+    }
+  }
+}
+
+const rawRu = loadRawLocale('ru');
+const ruIdentityLeaks = { en: [], ky: [] };
+for (const locale of ['en', 'ky']) {
+  findRuIdentityLeaks(rawRu, loadRawLocale(locale), locale, '', ruIdentityLeaks[locale]);
+}
+const hasAnyRuIdentityLeak = ruIdentityLeaks.en.length > 0 || ruIdentityLeaks.ky.length > 0;
+
+// ── EN-identity check: KY values byte-identical to EN while containing no ──
+// Cyrillic at all are a different failure mode — untranslated English text
+// (rather than Russian) left in the Kyrgyz locale. Allowlisted for English
+// lessons, where the content is legitimately the English being taught.
+const LATIN_WORD_RE = /\b[a-zA-Z]{3,}\b/;
+const enIdentityPatterns = (allowlistRaw.en_identity_patterns || []).map((p) => new RegExp(p.re));
+
+function isEnIdentityAllowed(key) {
+  return enIdentityPatterns.some((re) => re.test(key));
+}
+
+function findEnIdentityLeaks(enNode, kyNode, keyPath, out) {
+  if (typeof enNode === 'string') {
+    if (typeof kyNode !== 'string') return;
+    if (
+      enNode === kyNode &&
+      LATIN_WORD_RE.test(enNode) &&
+      !CYRILLIC_RE.test(enNode) &&
+      enNode.trim().split(/\s+/).length >= 3 &&
+      !isEnIdentityAllowed(keyPath)
+    ) {
+      out.push(keyPath);
+    }
+    return;
+  }
+  if (enNode && typeof enNode === 'object') {
+    for (const k of Object.keys(enNode)) {
+      if (kyNode && typeof kyNode === 'object' && k in kyNode) {
+        findEnIdentityLeaks(enNode[k], kyNode[k], keyPath ? `${keyPath}.${k}` : k, out);
+      }
+    }
+  }
+}
+
+const enIdentityLeaksKy = [];
+findEnIdentityLeaks(loadRawLocale('en'), loadRawLocale('ky'), '', enIdentityLeaksKy);
+const hasAnyEnIdentityLeak = enIdentityLeaksKy.length > 0;
+
 const asJson = process.argv.includes('--json');
 const hasAnyMissing =
   localeNames.some((n) => missingData[n].length > 0) ||
   localeNames.some((n) => missingUi[n].length > 0);
+const hasAnyIssue = hasAnyMissing || hasAnyRuIdentityLeak || hasAnyEnIdentityLeak;
 
 if (asJson) {
   const report = {
@@ -153,6 +250,9 @@ if (asJson) {
     report[`missing_data_${name}`] = missingData[name];
     report[`missing_ui_${name}`] = missingUi[name];
   }
+  report.ru_identity_leaks_en = ruIdentityLeaks.en;
+  report.ru_identity_leaks_ky = ruIdentityLeaks.ky;
+  report.en_identity_leaks_ky = enIdentityLeaksKy;
   console.log(JSON.stringify(report, null, 2));
 } else {
   console.log(`Checked ${CONTENT_FILES.length} content file(s) and ${UI_FILES.length} UI file(s).`);
@@ -163,6 +263,11 @@ if (asJson) {
     const u = missingUi[name].length;
     console.log(`  ${name}: data ${d === 0 ? 'OK' : `${d} missing`}, ui ${u === 0 ? 'OK' : `${u} missing`}`);
   }
+  console.log(
+    `  ru-identity: en ${ruIdentityLeaks.en.length === 0 ? 'OK' : `${ruIdentityLeaks.en.length} leaked`}, ` +
+      `ky ${ruIdentityLeaks.ky.length === 0 ? 'OK' : `${ruIdentityLeaks.ky.length} leaked`}`,
+  );
+  console.log(`  en-identity: ky ${enIdentityLeaksKy.length === 0 ? 'OK' : `${enIdentityLeaksKy.length} leaked`}`);
 
   if (hasAnyMissing) {
     for (const name of localeNames) {
@@ -175,11 +280,32 @@ if (asJson) {
         missingUi[name].forEach((k) => console.log(`  ${k}`));
       }
     }
-  } else {
+  }
+  if (hasAnyRuIdentityLeak) {
+    for (const locale of ['en', 'ky']) {
+      if (ruIdentityLeaks[locale].length) {
+        console.log(`\n--- ${locale} values byte-identical to RU (untranslated leak, first 100) ---`);
+        ruIdentityLeaks[locale].slice(0, 100).forEach((k) => console.log(`  ${k}`));
+        console.log(
+          `If any of these are legitimate (loanword, proper noun, or Russian-language lesson ` +
+            `content), add them to scripts/i18n-ru-identity-allowlist.json — do not ignore this check.`,
+        );
+      }
+    }
+  }
+  if (hasAnyEnIdentityLeak) {
+    console.log(`\n--- ky values byte-identical to EN (untranslated English leak, first 100) ---`);
+    enIdentityLeaksKy.slice(0, 100).forEach((k) => console.log(`  ${k}`));
+    console.log(
+      `If any of these are legitimate (English-lesson content being taught), add them to ` +
+        `en_identity_patterns in scripts/i18n-ru-identity-allowlist.json — do not ignore this check.`,
+    );
+  }
+  if (!hasAnyIssue) {
     console.log('\nAll i18n keys OK');
   }
 }
 
-if (hasAnyMissing) {
+if (hasAnyIssue) {
   process.exit(1);
 }
