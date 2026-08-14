@@ -87,4 +87,14 @@ describe("enforceRateLimit", () => {
     expect(res).not.toBeNull();
     expect(res?.status).toBe(503);
   });
+
+  it("uses the explicit key override instead of IP when provided (per-user limiting)", async () => {
+    const limiter = mockLimiter({ success: true, limit: 300, remaining: 299, reset: Date.now() });
+    await enforceRateLimit(
+      makeRequest({ "x-forwarded-for": "1.2.3.4" }),
+      limiter,
+      "user-abc-123",
+    );
+    expect(limiter.limit).toHaveBeenCalledWith("user-abc-123");
+  });
 });

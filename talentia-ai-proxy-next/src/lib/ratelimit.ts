@@ -34,6 +34,21 @@ export const ratelimitTts =
       })
     : null;
 
+/**
+ * Tali chat — per-user daily cap, keyed by authenticated user id (not IP).
+ * Bounds worst-case DeepSeek spend from a single account even though the IP-based
+ * ratelimitApi limit is shared across all routes and resets every minute. 300/day is
+ * generous for realistic lesson-companion usage while still capping runaway cost.
+ */
+export const ratelimitTaliUserDaily =
+  redis !== null
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(300, "1 d"),
+        prefix: "talentia:tali:user:daily",
+      })
+    : null;
+
 /** True on Vercel production deployments (or when NODE_ENV is explicitly production). */
 function isProductionEnv(): boolean {
   return process.env.VERCEL_ENV === "production" || process.env.NODE_ENV === "production";
@@ -67,10 +82,15 @@ function clientIp(req: NextRequest): string {
  * otherwise let anyone with a valid JWT hit the AI/TTS providers without limit).
  * In non-production environments (local dev, previews without Redis) requests are
  * still allowed through, with a warning logged, so local development isn't blocked.
+ *
+ * `key` overrides the default IP-based bucket key — pass the authenticated user id
+ * for a per-user limiter (only available after verifyAuth succeeds, unlike IP which
+ * is known pre-auth).
  */
 export async function enforceRateLimit(
   req: NextRequest,
   limiter: Ratelimit | null,
+  key?: string,
 ): Promise<NextResponse | null> {
   if (!limiter) {
     if (isProductionEnv()) {
@@ -89,9 +109,9 @@ export async function enforceRateLimit(
     );
     return null;
   }
-  const ip = clientIp(req);
+  const rlKey = key ?? clientIp(req);
   try {
-    const { success, limit, remaining, reset } = await limiter.limit(ip);
+    const { success, limit, remaining, reset } = await limiter.limit(rlKey);
     if (!success) {
       return NextResponse.json(
         { error: "Too many requests" },

@@ -402,6 +402,15 @@ export default function ProfileScreen() {
         {t('profile.parentReportLink')}
       </Button>
 
+      <Spacer size="sm" />
+
+      <Button
+        variant="secondary"
+        onPress={() => router.push('/tali-safety-log')}
+      >
+        {t('taliSafetyLog.link')}
+      </Button>
+
       <Spacer size="xl" />
     </Screen>
   );

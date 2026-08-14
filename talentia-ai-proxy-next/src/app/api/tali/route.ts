@@ -3,10 +3,12 @@ import { z } from "zod";
 
 import { corsJson, corsPreflight } from "@/lib/api-cors";
 import { buildCorsHeaders } from "@/lib/cors-strict";
-import { enforceRateLimit, ratelimitApi } from "@/lib/ratelimit";
+import { enforceRateLimit, ratelimitApi, ratelimitTaliUserDaily } from "@/lib/ratelimit";
 import {
+  collectTextFieldsForFilter,
   filterTaliReply,
   filterTaliRequestFields,
+  moderateWithLLM,
   taliSafeFallback,
 } from "@/lib/taliSafety";
 import { authJsonError, verifyAuth } from "@/lib/verifyAuth";
@@ -176,6 +178,12 @@ export async function POST(req: NextRequest) {
   try {
     const auth = await verifyAuth(req);
     if (!auth.ok) return authJsonError(req, auth);
+
+    // Per-user daily cap, in addition to the IP-based limit above — bounds worst-case
+    // DeepSeek spend from a single compromised/abusive account regardless of IP rotation.
+    const userLimited = await enforceRateLimit(req, ratelimitTaliUserDaily, auth.userId);
+    if (userLimited) return userLimited;
+
     if (!(await verifyParentalConsent(auth.userId))) {
       return corsJson({ error: "Parental consent required" }, 403, req);
     }
@@ -233,6 +241,52 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Second-pass semantic moderation on top of the regex blocklist above — catches
+    // unsafe framing with zero literal keyword overlap (e.g. roleplay/fictional asks).
+    // Fail-closed: any moderation-call error (timeout, upstream failure) is treated as
+    // unsafe, matching the product decision that Tali availability never trumps child
+    // safety when the safety net itself can't be evaluated.
+    const combinedInputText = collectTextFieldsForFilter({
+      message,
+      parentContext,
+      taskContext: taskContext ?? null,
+    }).join("\n");
+    let inputModerationBlocked = false;
+    let inputModerationCategory: string = "semantic_unsafe";
+    try {
+      const moderation = await moderateWithLLM(combinedInputText, apiKey);
+      if (!moderation.safe) inputModerationBlocked = true;
+    } catch (e) {
+      console.error("[tali] moderation_unavailable (input)", e);
+      inputModerationBlocked = true;
+      inputModerationCategory = "moderation_unavailable";
+    }
+    if (inputModerationBlocked) {
+      console.warn("[tali] safety_filter", {
+        side: "input",
+        category: inputModerationCategory,
+        language,
+        mode,
+      });
+      await logTaliSafetyEvent({
+        userId: auth.userId,
+        side: "input",
+        category: inputModerationCategory,
+        mode,
+        language,
+      });
+      return corsJson(
+        {
+          reply: fallback,
+          filtered: true,
+          filterReason: "blocked",
+          filterCategory: inputModerationCategory,
+        },
+        200,
+        req,
+      );
+    }
+
     const system = buildSystemPrompt({
       language,
       mode,
@@ -272,19 +326,43 @@ export async function POST(req: NextRequest) {
     const filtered = filterTaliReply(rawReply, {
       correctAnswer: taskContext?.correctAnswer,
     });
-    const reply = filtered.ok ? filtered.reply : fallback;
 
-    if (!filtered.ok) {
+    // Second-pass semantic moderation on the model's reply — only run when the regex
+    // pass already accepted it (no point spending a moderation call on text we're about
+    // to discard anyway). Same fail-closed contract as the input-side check above.
+    let outputModerationBlocked = false;
+    let outputModerationCategory: string = "semantic_unsafe";
+    if (filtered.ok) {
+      try {
+        const moderation = await moderateWithLLM(filtered.reply, apiKey);
+        if (!moderation.safe) outputModerationBlocked = true;
+      } catch (e) {
+        console.error("[tali] moderation_unavailable (output)", e);
+        outputModerationBlocked = true;
+        outputModerationCategory = "moderation_unavailable";
+      }
+    }
+
+    const isFiltered = !filtered.ok || outputModerationBlocked;
+    const reply = isFiltered ? fallback : filtered.reply;
+    const filterReason = !filtered.ok ? filtered.reason : "blocked";
+    const filterCategory = !filtered.ok
+      ? filtered.category
+      : outputModerationBlocked
+        ? outputModerationCategory
+        : undefined;
+
+    if (isFiltered) {
       console.warn("[tali] safety_filter", {
         side: "output",
-        category: filtered.category ?? filtered.reason,
+        category: filterCategory ?? filterReason,
         language,
         mode,
       });
       await logTaliSafetyEvent({
         userId: auth.userId,
         side: "output",
-        category: filtered.category ?? filtered.reason,
+        category: filterCategory ?? filterReason,
         mode,
         language,
       });
@@ -293,13 +371,13 @@ export async function POST(req: NextRequest) {
     return corsJson(
       {
         reply,
-        ...(filtered.ok
-          ? {}
-          : {
+        ...(isFiltered
+          ? {
               filtered: true,
-              filterReason: filtered.reason,
-              ...(filtered.category ? { filterCategory: filtered.category } : {}),
-            }),
+              filterReason,
+              ...(filterCategory ? { filterCategory } : {}),
+            }
+          : {}),
       },
       200,
       req,

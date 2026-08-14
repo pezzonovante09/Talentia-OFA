@@ -73,6 +73,13 @@ function RootStack() {
         }}
       />
       <Stack.Screen
+        name="tali-safety-log"
+        options={{
+          headerShown: true,
+          title: t('taliSafetyLog.title'),
+        }}
+      />
+      <Stack.Screen
         name="collection"
         options={{
           headerShown: true,
