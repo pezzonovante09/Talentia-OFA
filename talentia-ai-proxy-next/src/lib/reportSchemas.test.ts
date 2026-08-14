@@ -67,14 +67,37 @@ describe("WeeklyReportBodySchema", () => {
     expect(ok.success).toBe(true);
   });
 
-  it("rejects oversized string counters / weekStartDate", () => {
+  it("rejects non-numeric counters instead of silently coercing to NaN", () => {
+    // Regression test: lessonsThisWeek/correctThisWeek previously accepted any
+    // string up to 32 chars, and route.ts's Number(...) turned "abc" into NaN
+    // that flowed into the report unvalidated instead of a 400.
     expect(
       WeeklyReportBodySchema.safeParse({
-        lessonsThisWeek: "a".repeat(33),
+        lessonsThisWeek: "abc",
         correctThisWeek: 1,
         weekStartDate: "2026-07-13",
       }).success,
     ).toBe(false);
+    expect(
+      WeeklyReportBodySchema.safeParse({
+        lessonsThisWeek: 1,
+        correctThisWeek: "a".repeat(33),
+        weekStartDate: "2026-07-13",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects negative counters", () => {
+    expect(
+      WeeklyReportBodySchema.safeParse({
+        lessonsThisWeek: -1,
+        correctThisWeek: 1,
+        weekStartDate: "2026-07-13",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects oversized weekStartDate", () => {
     expect(
       WeeklyReportBodySchema.safeParse({
         lessonsThisWeek: 1,

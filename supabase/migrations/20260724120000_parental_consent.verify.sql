@@ -1,0 +1,35 @@
+-- Manual checklist: confirm profiles_age_band_check / profiles_child_name_len
+-- actually got added by 20260724120000_parental_consent.sql, rather than
+-- silently skipped (the migration wraps each ADD CONSTRAINT in a DO block
+-- that catches check_violation and just RAISE NOTICEs — if any existing row
+-- already violated the check, the constraint silently never gets added and
+-- nothing in CI/deploy output flags it).
+--
+-- 1) Confirm both constraints exist:
+--
+-- SELECT conname FROM pg_constraint
+-- WHERE conname IN ('profiles_age_band_check', 'profiles_child_name_len');
+--
+-- Expect 2 rows. If either is missing, the migration's DO block caught a
+-- check_violation on existing data — find and fix the offending rows, then
+-- re-run the ADD CONSTRAINT statement from 20260724120000_parental_consent.sql
+-- directly (it is idempotent: guarded by an `IF NOT EXISTS` on pg_constraint).
+--
+-- 2) If both are present, confirm they actually reject bad data (expect ERROR
+-- 23514 / check_violation on each of the following — replace USER_UUID with a
+-- real auth.users id, or a throwaway test user):
+--
+-- INSERT INTO public.profiles (
+--   user_id, child_name, age_band, language, avatar_id, child_mode
+-- ) VALUES (
+--   'USER_UUID', 'Test', 'not-a-real-age-band', 'ru', 'sun', 'standard'
+-- );
+--
+-- INSERT INTO public.profiles (
+--   user_id, child_name, age_band, language, avatar_id, child_mode
+-- ) VALUES (
+--   'USER_UUID', repeat('x', 81), '5-6', 'ru', 'sun', 'standard'
+-- );
+--
+-- 3) Cleanup if either row slipped through:
+-- DELETE FROM public.profiles WHERE child_name IN ('Test') OR char_length(child_name) > 80;

@@ -39,6 +39,30 @@ Set for **Production** (and Preview if you test PRs):
 
 Do **not** set `Access-Control-Allow-Origin: *` in Vercel headers — CORS is handled in `src/lib/cors-strict.ts`.
 
+### Key rotation runbook
+
+No automated rotation exists for any of these — rotate manually if a key is
+suspected leaked, on a security incident, or on your own periodic schedule.
+General steps for any key in the table above:
+
+1. Generate a new key/token at the provider (DeepSeek, Supabase, Upstash,
+   ElevenLabs) — do this *before* revoking the old one, so there's no gap.
+2. Update the value in Vercel → Settings → Environment Variables for
+   **Production** (and Preview, if set there too).
+3. Redeploy (`vercel --prod` or push to the tracked branch) — env var changes
+   do not apply to already-running deployments.
+4. Verify with the smoke checks in section 4 below.
+5. Only then revoke/delete the old key at the provider.
+
+Notes per key:
+- `SUPABASE_SERVICE_ROLE_KEY` — rotating this does **not** rotate
+  `EXPO_PUBLIC_SUPABASE_URL`/anon key used by the mobile app; those are a
+  separate, lower-privilege credential and don't need to change together.
+- `DEEPSEEK_API_KEY` — rotation briefly interrupts Tali chat and the new
+  semantic-moderation check (both call this same key) until step 2–3 land.
+- `UPSTASH_REDIS_REST_TOKEN` — rate limiting fails closed (503) in production
+  if this is invalid, so an interrupted rotation is loud, not silent.
+
 ## 3. Deploy
 
 ```bash

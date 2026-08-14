@@ -2,5 +2,9 @@
   "framework": "nextjs",
   "buildCommand": "next build",
   "outputDirectory": ".next",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "functions": {
+    "src/app/api/tts/route.ts": { "maxDuration": 60 },
+    "src/app/api/tali/route.ts": { "maxDuration": 60 }
+  }
 }

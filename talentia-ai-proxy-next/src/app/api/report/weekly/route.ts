@@ -49,8 +49,6 @@ export async function POST(req: NextRequest) {
     const payload = buildWeeklyReport(
       {
         ...body,
-        lessonsThisWeek: Number(body.lessonsThisWeek),
-        correctThisWeek: Number(body.correctThisWeek),
         weekStartDate: String(body.weekStartDate),
       },
       lang

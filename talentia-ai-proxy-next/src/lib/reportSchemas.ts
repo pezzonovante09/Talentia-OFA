@@ -29,8 +29,11 @@ export const StandardReportBodySchema = ReportStatsInputSchema.extend({
 
 export const WeeklyReportBodySchema = ReportStatsInputSchema.extend({
   language: ReportLanguageSchema,
-  lessonsThisWeek: z.union([z.number().finite(), z.string().max(32)]),
-  correctThisWeek: z.union([z.number().finite(), z.string().max(32)]),
+  // z.coerce.number() accepts numbers and numeric strings but rejects anything
+  // that doesn't actually parse to a finite number (e.g. "abc" -> NaN fails
+  // .finite()) instead of silently flowing through as NaN into the report.
+  lessonsThisWeek: z.coerce.number().finite().min(0),
+  correctThisWeek: z.coerce.number().finite().min(0),
   weekStartDate: z.union([z.string().max(64), z.number().finite()]),
 });
 
