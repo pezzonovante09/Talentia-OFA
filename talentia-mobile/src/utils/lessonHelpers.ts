@@ -1,5 +1,15 @@
 import type { LessonTask } from '../data/worlds';
 
+/**
+ * ABA "least-to-most" prompt escalation for a single trial (one task).
+ * Must be driven by mistakes on THIS task only — feeding it a lesson-wide
+ * mistake tally causes every task after the child's first lesson mistake to
+ * skip straight to the restricted-choice prompt (level 2).
+ */
+export function nextAbaPromptLevel(taskMistakesBeforeThisAnswer: number): 1 | 2 {
+  return taskMistakesBeforeThisAnswer === 0 ? 1 : 2;
+}
+
 export function isTherapistLedTask(t: LessonTask): boolean {
   return (
     t.type === 'vocal_imitation' ||

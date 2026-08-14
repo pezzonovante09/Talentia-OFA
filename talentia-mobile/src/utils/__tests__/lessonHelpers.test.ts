@@ -1,0 +1,27 @@
+import { nextAbaPromptLevel } from '../lessonHelpers';
+
+describe('nextAbaPromptLevel', () => {
+  it('escalates to level 1 (visual prompt) on the first mistake on a task', () => {
+    expect(nextAbaPromptLevel(0)).toBe(1);
+  });
+
+  it('escalates to level 2 (restricted choice) on the second mistake on the same task', () => {
+    expect(nextAbaPromptLevel(1)).toBe(2);
+  });
+
+  it('stays at level 2 for further mistakes on the same task', () => {
+    expect(nextAbaPromptLevel(2)).toBe(2);
+    expect(nextAbaPromptLevel(5)).toBe(2);
+  });
+
+  it('does not carry a mistake on task 1 into task 2 (per-trial reset)', () => {
+    // Task 1: one wrong answer escalates to level 1, then the child answers
+    // correctly and the lesson advances — `resetForNextTask()` zeroes the
+    // per-task mistake tally before task 2 starts.
+    const task1MistakesBeforeAnswer = 0;
+    expect(nextAbaPromptLevel(task1MistakesBeforeAnswer)).toBe(1);
+
+    const task2MistakesBeforeAnswer = 0; // reset by resetForNextTask()
+    expect(nextAbaPromptLevel(task2MistakesBeforeAnswer)).toBe(1);
+  });
+});

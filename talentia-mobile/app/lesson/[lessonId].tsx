@@ -60,6 +60,7 @@ import { TASK_FEEDBACK_KEYS_BY_TASK_ID } from '../../src/data/taskFeedbackKeys.g
 import {
   abaTaskInstructionI18nKey,
   isTherapistLedTask,
+  nextAbaPromptLevel,
   shuffleArray,
   splitWordSyllables,
 } from '../../src/utils/lessonHelpers';
@@ -220,6 +221,11 @@ function LessonScreenContent() {
   const [hasChecked, setHasChecked] = useState(false);
   const [selectHint, setSelectHint] = useState(false);
   const [mistakeCount, setMistakeCount] = useState(0);
+  // Per-trial mistake tally, reset for every task — drives ABA prompt-level
+  // escalation. Kept separate from `mistakeCount` (lesson-wide, used for
+  // resume/reward calculation) so one task's history doesn't skip prompt
+  // levels on the next task.
+  const [taskMistakeCount, setTaskMistakeCount] = useState(0);
   const [trialCount, setTrialCount] = useState(1);
   const [earnedXP, setEarnedXP] = useState(0);
   const [earnedItem, setEarnedItem] = useState<string | null>(null);
@@ -844,6 +850,7 @@ function LessonScreenContent() {
     setSelectHint(false);
     setTrialCount(1);
     setPromptLevel(0);
+    setTaskMistakeCount(0);
     setHintText(null);
     setSuccessType('pure');
     setSortPickItemId(null);
@@ -1069,6 +1076,8 @@ function LessonScreenContent() {
         if (useAbaPedagogy) recordLiveResult('incorrect');
         const newMistakeCount = mistakeCount + 1;
         setMistakeCount(newMistakeCount);
+        const newTaskMistakeCount = taskMistakeCount + 1;
+        setTaskMistakeCount(newTaskMistakeCount);
         setTrialCount((c) => c + 1);
 
         recordAnswer({
@@ -1084,16 +1093,16 @@ function LessonScreenContent() {
         });
 
         if (useAbaPedagogy) {
-          if (mistakeCount === 0) {
-            setPromptLevel(1);
+          const level = nextAbaPromptLevel(taskMistakeCount);
+          setPromptLevel(level);
+          if (level === 1) {
             const taskCtx = buildTaskContext();
             getHint(taskCtx, language)
               .then((hint) => { if (hint) setHintText(hint); })
               .catch((err) => {
                 captureException(err, { where: 'lesson.getHint' });
               });
-          } else if (mistakeCount >= 1) {
-            setPromptLevel(2);
+          } else {
             playAbaLevel2ReinforcementCue();
           }
         }
