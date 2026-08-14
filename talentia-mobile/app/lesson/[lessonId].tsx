@@ -1087,16 +1087,23 @@ function LessonScreenContent() {
           correct: false,
           taskId: task.id,
           taskIndex: currentIndex,
-          promptLevel: useAbaPedagogy ? promptLevel : 0,
+          promptLevel,
           latencyMs,
           sessionId,
           attemptNo: trialCount,
         });
 
-        if (useAbaPedagogy) {
-          const level = nextAbaPromptLevel(taskMistakeCount);
-          setPromptLevel(level);
-          if (level === 1) {
+        // Least-to-most prompt escalation now runs in both modes (was
+        // ABA-only): level 1 shows a text hint, level 2 adds the
+        // restricted-choice/visual-target UI (see isVisualTarget/
+        // isDisabledByPrompt above). Only the AI-generated hint content
+        // (getHint, an AI-proxy network call) and the ABA voice
+        // reinforcement cue stay ABA-only, to avoid silently multiplying AI
+        // proxy calls across the much larger standard-mode user base.
+        const level = nextAbaPromptLevel(taskMistakeCount);
+        setPromptLevel(level);
+        if (level === 1) {
+          if (useAbaPedagogy) {
             const taskCtx = buildTaskContext();
             getHint(taskCtx, language)
               .then((hint) => { if (hint) setHintText(hint); })
@@ -1104,8 +1111,10 @@ function LessonScreenContent() {
                 captureException(err, { where: 'lesson.getHint' });
               });
           } else {
-            playAbaLevel2ReinforcementCue();
+            setHintText(t('lesson.standardHintLevel1'));
           }
+        } else if (useAbaPedagogy) {
+          playAbaLevel2ReinforcementCue();
         }
       }
 
@@ -1335,8 +1344,8 @@ function LessonScreenContent() {
 
       <Spacer size="lg" />
 
-      {/* ABA Hint Card (Visual Prompt Level 1+) */}
-      {useAbaPedagogy && hintText && promptLevel >= 1 && (
+      {/* Hint Card (Prompt Level 1+, both standard and ABA mode) */}
+      {hintText && promptLevel >= 1 && (
         <View
           style={{
             borderLeftWidth: 4,
@@ -1530,9 +1539,9 @@ function LessonScreenContent() {
               const showCorrect = hasChecked && feedback === 'correct' && option.correct;
               const showWrong = hasChecked && feedback === 'incorrect' && isSelected;
               const isVisualTarget =
-                useAbaPedagogy && promptLevel >= 1 && option.correct && !hasChecked;
+                promptLevel >= 1 && option.correct && !hasChecked;
               const isDisabledByPrompt =
-                useAbaPedagogy && promptLevel >= 2 && !option.correct && !hasChecked;
+                promptLevel >= 2 && !option.correct && !hasChecked;
 
               return (
                 <Pressable
@@ -1590,9 +1599,9 @@ function LessonScreenContent() {
               const showCorrect = hasChecked && feedback === 'correct' && option.correct;
               const showWrong = hasChecked && feedback === 'incorrect' && isSelected;
               const isVisualTarget =
-                useAbaPedagogy && promptLevel >= 1 && option.correct && !hasChecked;
+                promptLevel >= 1 && option.correct && !hasChecked;
               const isDisabledByPrompt =
-                useAbaPedagogy && promptLevel >= 2 && !option.correct && !hasChecked;
+                promptLevel >= 2 && !option.correct && !hasChecked;
               const label = option.textKey ? optionText(option.textKey) : '';
               const src = option.imageKey ? getAbaLessonImage(option.imageKey) : undefined;
 
@@ -1665,9 +1674,9 @@ function LessonScreenContent() {
               const showCorrect = hasChecked && feedback === 'correct' && option.correct;
               const showWrong = hasChecked && feedback === 'incorrect' && isSelected;
               const isVisualTarget =
-                useAbaPedagogy && promptLevel >= 1 && option.correct && !hasChecked;
+                promptLevel >= 1 && option.correct && !hasChecked;
               const isDisabledByPrompt =
-                useAbaPedagogy && promptLevel >= 2 && !option.correct && !hasChecked;
+                promptLevel >= 2 && !option.correct && !hasChecked;
               const label = option.textKey ? optionText(option.textKey) : '';
               const src = option.imageKey ? getAbaLessonImage(option.imageKey) : undefined;
 
@@ -1760,9 +1769,9 @@ function LessonScreenContent() {
               const showCorrect = hasChecked && feedback === 'correct' && option.correct;
               const showWrong = hasChecked && feedback === 'incorrect' && isSelected;
               const isVisualTarget =
-                useAbaPedagogy && promptLevel >= 1 && option.correct && !hasChecked;
+                promptLevel >= 1 && option.correct && !hasChecked;
               const isDisabledByPrompt =
-                useAbaPedagogy && promptLevel >= 2 && !option.correct && !hasChecked;
+                promptLevel >= 2 && !option.correct && !hasChecked;
               return (
                 <Pressable
                   key={option.id}
@@ -1814,7 +1823,7 @@ function LessonScreenContent() {
                   const showCorrect = hasChecked && feedback === 'correct' && h.correct;
                   const showWrong = hasChecked && feedback === 'incorrect' && isSelected;
                   const isHotVisual =
-                    useAbaPedagogy && promptLevel >= 1 && h.correct && !hasChecked;
+                    promptLevel >= 1 && h.correct && !hasChecked;
                   return (
                     <Pressable
                       key={h.id}
