@@ -10,6 +10,10 @@ function today(): string {
 describe('progressStore', () => {
   beforeEach(() => {
     useProgressStore.getState().resetAll();
+    // resetAll() intentionally leaves masteryMinStars untouched (it's a
+    // configured threshold, not run progress) — pin it back to the default
+    // explicitly so tests that change it don't leak into others.
+    useProgressStore.getState().setMasteryMinStars(2);
   });
 
   describe('addXP', () => {
@@ -149,6 +153,55 @@ describe('progressStore', () => {
       useProgressStore.getState().markLessonCompleted({ topicId: TOPIC_ID, lessonId: LESSON_ID, mistakeCount: 0, hadSkips: false });
       expect(useProgressStore.getState().achievements.perfectLesson).toBe(false);
       expect(useProgressStore.getState().lessonStars[LESSON_ID]).toBe(3);
+    });
+  });
+
+  describe('getLessonStatus (mastery gate)', () => {
+    // Real, consecutive lesson ids from the jungle-addition topic (src/data/worlds.ts)
+    // — getLessonStatus resolves lessons via getTopicForLesson(worlds.ts), so
+    // made-up ids would never be found and the gate would never engage.
+    const JUNGLE_TOPIC_ID = 'jungle-addition';
+    const LESSON_1 = 'jungle-add-1';
+    const LESSON_2 = 'jungle-add-2';
+    const ORDERED = [LESSON_1, LESSON_2];
+
+    it('the first lesson is available before anything is completed', () => {
+      const status = useProgressStore.getState().getLessonStatus(LESSON_1, ORDERED);
+      expect(status).toBe('available');
+    });
+
+    it('the second lesson is locked before the first is completed', () => {
+      const status = useProgressStore.getState().getLessonStatus(LESSON_2, ORDERED);
+      expect(status).toBe('locked');
+    });
+
+    it('keeps the next lesson locked when the prerequisite is completed below the mastery threshold', () => {
+      // mistakeCount: 5 -> 1 star, below the default masteryMinStars of 2.
+      useProgressStore.getState().markLessonCompleted({ topicId: JUNGLE_TOPIC_ID, lessonId: LESSON_1, mistakeCount: 5 });
+      expect(useProgressStore.getState().lessonStars[LESSON_1]).toBe(1);
+      const status = useProgressStore.getState().getLessonStatus(LESSON_2, ORDERED);
+      expect(status).toBe('locked');
+    });
+
+    it('unlocks the next lesson once the prerequisite meets the mastery threshold', () => {
+      // mistakeCount: 0 -> 3 stars, at/above the default masteryMinStars of 2.
+      useProgressStore.getState().markLessonCompleted({ topicId: JUNGLE_TOPIC_ID, lessonId: LESSON_1, mistakeCount: 0 });
+      const status = useProgressStore.getState().getLessonStatus(LESSON_2, ORDERED);
+      expect(status).toBe('available');
+    });
+
+    it('respects a configured mastery threshold (1 star is enough to unlock when gate is relaxed)', () => {
+      useProgressStore.getState().setMasteryMinStars(1);
+      useProgressStore.getState().markLessonCompleted({ topicId: JUNGLE_TOPIC_ID, lessonId: LESSON_1, mistakeCount: 5 });
+      expect(useProgressStore.getState().lessonStars[LESSON_1]).toBe(1);
+      const status = useProgressStore.getState().getLessonStatus(LESSON_2, ORDERED);
+      expect(status).toBe('available');
+    });
+
+    it('never re-locks a lesson the child already completed, even if the prerequisite is later replayed with a worse score', () => {
+      useProgressStore.getState().markLessonCompleted({ topicId: JUNGLE_TOPIC_ID, lessonId: LESSON_1, mistakeCount: 0 });
+      useProgressStore.getState().markLessonCompleted({ topicId: JUNGLE_TOPIC_ID, lessonId: LESSON_2, mistakeCount: 0 });
+      expect(useProgressStore.getState().getLessonStatus(LESSON_2, ORDERED)).toBe('completed');
     });
   });
 

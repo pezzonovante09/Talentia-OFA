@@ -60,6 +60,18 @@ type ProgressState = {
   xp: number;
   level: number;
   lessonStars: Record<string, 1 | 2 | 3>;
+  /**
+   * Mastery gate: minimum star rating (see markLessonCompleted) a lesson must
+   * reach before the NEXT lesson unlocks. Stars are already the existing
+   * proxy for "how clean was the run" shown to parents (3 = perfect, 2 = up
+   * to 2 mistakes, 1 = more) — reusing that scale keeps the gate legible
+   * instead of introducing an invisible second percentage. Default 2 stars
+   * (≤2 mistakes across the lesson) approximates an "≥80% correct, else
+   * repeat" mastery criterion without requiring new per-lesson attempt
+   * tracking. Configurable per profile (e.g. a parent/therapist may want a
+   * stricter 3-star gate, or 1 to effectively disable gating).
+   */
+  masteryMinStars: 1 | 2 | 3;
   dailyLessonsCompleted: number;
   dailyGoalDate: string | null;
   dailyGoal: number;
@@ -92,6 +104,7 @@ type ProgressState = {
   }) => void;
   addXP: (amount: number) => void;
   setDailyGoal: (goal: number) => void;
+  setMasteryMinStars: (stars: 1 | 2 | 3) => void;
   resetAll: () => void;
 };
 
@@ -178,6 +191,7 @@ export const useProgressStore = create<ProgressState>()(
       xp: 0,
       level: 1,
       lessonStars: {},
+      masteryMinStars: 2,
       dailyLessonsCompleted: 0,
       dailyGoalDate: null,
       dailyGoal: 3,
@@ -219,6 +233,18 @@ export const useProgressStore = create<ProgressState>()(
           ? !!state.topics[prevTopic.id]?.completedLessons[prevId]
           : false;
         if (!prevCompleted) return 'locked';
+        // Mastery gate: don't hand out a NEW unlock until the prerequisite
+        // lesson was completed at/above masteryMinStars. A lesson the child
+        // has already completed stays 'completed' regardless of the
+        // prerequisite's current star rating — this only blocks forward
+        // progress, it never re-locks finished content. Missing star data
+        // (e.g. legacy saves from before stars existed) is treated as
+        // passing, so existing players are never retroactively gated.
+        if (!thisCompleted) {
+          const prevStars = state.lessonStars[prevId];
+          const prevMastered = prevStars === undefined || prevStars >= state.masteryMinStars;
+          if (!prevMastered) return 'locked';
+        }
         return thisCompleted ? 'completed' : 'available';
       },
 
@@ -373,6 +399,8 @@ export const useProgressStore = create<ProgressState>()(
       },
 
       setDailyGoal: (goal) => set({ dailyGoal: goal }),
+
+      setMasteryMinStars: (stars) => set({ masteryMinStars: stars }),
 
       resetAll: () =>
         set({
