@@ -6,6 +6,12 @@
  *
  *   node scripts/regen-aba-en-ky-from-ru.mjs
  *   node scripts/regen-aba-en-ky-from-ru.mjs --dry-run
+ *
+ * After running this (or any manual edit to the *.generated.json override
+ * files), run `npm run check:aba-override-orphans` - it catches the case
+ * where an option (…_a/_b/_c) got overridden but its parent question key
+ * didn't, which leaves the ABA-mode question mismatched with its own
+ * options.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -132,6 +138,7 @@ async function main() {
   const failPath = path.join(__dirname, "_aba_en_ky_regen_failures.json");
   fs.writeFileSync(failPath, `${JSON.stringify({ done, failed, failures }, null, 2)}\n`);
   console.log(`Done translated: ${done}, failed: ${failed}`);
+  console.log("Next: run `npm run check:aba-override-orphans` to verify no question/option overrides went out of sync.");
 }
 
 main().catch((e) => {

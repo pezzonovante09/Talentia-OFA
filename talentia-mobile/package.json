@@ -28,6 +28,7 @@
     "seed:aba-overrides-locales": "npx tsx scripts/seed-aba-overrides-from-locales.ts",
     "audit:aba-en-ky": "node scripts/audit-aba-en-ky-semantics.mjs",
     "regen:aba-en-ky": "node scripts/regen-aba-en-ky-from-ru.mjs",
+    "check:aba-override-orphans": "node scripts/check-aba-override-orphans.mjs",
     "verify:consent-constraint": "npx tsx scripts/verify-profiles-consent-constraint.mjs",
     "import:final-tasks": "npx tsx scripts/import-final-tasks-tsv.ts",
     "verify:final-tasks-locales": "npx tsx scripts/verify-final-tasks-locales.ts",
