@@ -1379,6 +1379,15 @@ function LessonScreenContent() {
               });
             })()}
           </View>
+        ) : task.visualEmoji && !isTherapistLedTask(task) ? (
+          // Standalone illustrative emoji (no count) - gives text-only task
+          // types (kindergarten/grade-1 content) a visual anchor alongside
+          // the question instead of pure text.
+          <View style={{ alignItems: 'center', marginBottom: theme.spacing.md }}>
+            <AppText style={{ fontSize: 48 }} accessibilityLabel={task.visualEmoji}>
+              {task.visualEmoji}
+            </AppText>
+          </View>
         ) : null}
 
         <Pressable

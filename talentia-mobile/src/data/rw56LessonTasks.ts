@@ -8,6 +8,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fvl1_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🍉",
     "options": [
       {
         "id": "a",
@@ -31,6 +32,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fvl1_t2_q",
     "difficulty": 1,
+    "visualEmoji": "👩",
     "options": [
       {
         "id": "a",
@@ -49,6 +51,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fvl1_t3_q",
     "difficulty": 1,
+    "visualEmoji": "🎵",
     "options": [
       {
         "id": "a",
@@ -72,6 +75,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fvl1_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🕵️",
     "options": [
       {
         "id": "a",
@@ -95,6 +99,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fvl1_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🍉",
     "options": [
       {
         "id": "a",
@@ -117,6 +122,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fvl2_t1_q",
     "difficulty": 1,
+    "visualEmoji": "☁️",
     "options": [
       {
         "id": "a",
@@ -140,6 +146,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fvl2_t2_q",
     "difficulty": 2,
+    "visualEmoji": "🏠",
     "options": [
       {
         "id": "a",
@@ -163,6 +170,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fvl2_t3_q",
     "difficulty": 2,
+    "visualEmoji": "🦆",
     "options": [
       {
         "id": "a",
@@ -186,6 +194,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fvl2_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🔤",
     "options": [
       {
         "id": "a",
@@ -209,6 +218,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fvl2_a1_q",
     "difficulty": 1,
+    "visualEmoji": "☁️",
     "options": [
       {
         "id": "a",
@@ -231,6 +241,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fvl3_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🎮",
     "options": [
       {
         "id": "a",
@@ -254,6 +265,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fvl3_t2_q",
     "difficulty": 2,
+    "visualEmoji": "🐳",
     "options": [
       {
         "id": "a",
@@ -277,6 +289,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fvl3_t3_q",
     "difficulty": 2,
+    "visualEmoji": "🖥️",
     "options": [
       {
         "id": "a",
@@ -300,6 +313,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fvl3_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🌲",
     "options": [
       {
         "id": "a",
@@ -323,6 +337,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fvl3_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🎮",
     "options": [
       {
         "id": "a",
@@ -345,6 +360,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fconl1_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🐻",
     "options": [
       {
         "id": "a",
@@ -368,6 +384,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fconl1_t2_q",
     "difficulty": 1,
+    "visualEmoji": "🎤",
     "options": [
       {
         "id": "a",
@@ -386,6 +403,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fconl1_t3_q",
     "difficulty": 1,
+    "visualEmoji": "🐭",
     "options": [
       {
         "id": "a",
@@ -409,6 +427,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fconl1_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🦉",
     "options": [
       {
         "id": "a",
@@ -432,6 +451,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fconl1_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🐻",
     "options": [
       {
         "id": "a",
@@ -454,6 +474,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fconl2_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🐯",
     "options": [
       {
         "id": "a",
@@ -477,6 +498,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fconl2_t2_q",
     "difficulty": 1,
+    "visualEmoji": "🎤",
     "options": [
       {
         "id": "a",
@@ -495,6 +517,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fconl2_t3_q",
     "difficulty": 1,
+    "visualEmoji": "🐯",
     "options": [
       {
         "id": "a",
@@ -518,6 +541,7 @@ export const RW56_LESSON_TASKS = {
     "type": "input",
     "questionKey": "data.tasks.nrw_fconl2_t4_q",
     "difficulty": 1,
+    "visualEmoji": "🐱",
     "answer": "К",
     "skippable": true
   },
@@ -526,6 +550,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fconl2_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🐯",
     "options": [
       {
         "id": "a",
@@ -548,6 +573,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fconl3_t1_q",
     "difficulty": 1,
+    "visualEmoji": "👃",
     "options": [
       {
         "id": "a",
@@ -571,6 +597,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fconl3_t2_q",
     "difficulty": 1,
+    "visualEmoji": "🔤",
     "options": [
       {
         "id": "a",
@@ -589,6 +616,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fconl3_t3_q",
     "difficulty": 2,
+    "visualEmoji": "🕳️",
     "options": [
       {
         "id": "a",
@@ -612,6 +640,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fconl3_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🦌",
     "options": [
       {
         "id": "a",
@@ -635,6 +664,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fconl3_a1_q",
     "difficulty": 1,
+    "visualEmoji": "👃",
     "options": [
       {
         "id": "a",
@@ -657,6 +687,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fsyll1_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🧱",
     "options": [
       {
         "id": "a",
@@ -680,6 +711,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fsyll1_t2_q",
     "difficulty": 1,
+    "visualEmoji": "🐄",
     "options": [
       {
         "id": "a",
@@ -703,6 +735,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fsyll1_t3_q",
     "difficulty": 2,
+    "visualEmoji": "👏",
     "options": [
       {
         "id": "a",
@@ -726,6 +759,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fsyll1_t4_q",
     "difficulty": 2,
+    "visualEmoji": "👩",
     "options": [
       {
         "id": "a",
@@ -749,6 +783,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fsyll1_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🧱",
     "options": [
       {
         "id": "a",
@@ -771,6 +806,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fsyll2_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🧱",
     "options": [
       {
         "id": "a",
@@ -794,6 +830,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fsyll2_t2_q",
     "difficulty": 1,
+    "visualEmoji": "👏",
     "options": [
       {
         "id": "a",
@@ -817,6 +854,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fsyll2_t3_q",
     "difficulty": 2,
+    "visualEmoji": "🦉",
     "options": [
       {
         "id": "a",
@@ -840,6 +878,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fsyll2_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🛷",
     "options": [
       {
         "id": "a",
@@ -863,6 +902,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fsyll2_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🧱",
     "options": [
       {
         "id": "a",
@@ -885,6 +925,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fsyll3_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🧱",
     "options": [
       {
         "id": "a",
@@ -908,6 +949,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fsyll3_t2_q",
     "difficulty": 2,
+    "visualEmoji": "🦊",
     "options": [
       {
         "id": "a",
@@ -931,6 +973,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fsyll3_t3_q",
     "difficulty": 2,
+    "visualEmoji": "🚀",
     "options": [
       {
         "id": "a",
@@ -954,6 +997,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fsyll3_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🧱",
     "options": [
       {
         "id": "a",
@@ -977,6 +1021,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_fsyll3_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🧱",
     "options": [
       {
         "id": "a",
@@ -999,6 +1044,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_iabcl1_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🐊",
     "options": [
       {
         "id": "a",
@@ -1022,6 +1068,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_iabcl1_t2_q",
     "difficulty": 1,
+    "visualEmoji": "⚽",
     "options": [
       {
         "id": "a",
@@ -1040,6 +1087,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_iabcl1_t3_q",
     "difficulty": 2,
+    "visualEmoji": "🕵️",
     "options": [
       {
         "id": "a",
@@ -1063,6 +1111,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_iabcl1_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🔤",
     "options": [
       {
         "id": "a",
@@ -1086,6 +1135,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_iabcl1_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🐊",
     "options": [
       {
         "id": "a",
@@ -1108,6 +1158,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_iabcl2_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🦒",
     "options": [
       {
         "id": "a",
@@ -1131,6 +1182,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_iabcl2_t2_q",
     "difficulty": 1,
+    "visualEmoji": "🦕",
     "options": [
       {
         "id": "a",
@@ -1149,6 +1201,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_iabcl2_t3_q",
     "difficulty": 2,
+    "visualEmoji": "🕵️",
     "options": [
       {
         "id": "a",
@@ -1172,6 +1225,7 @@ export const RW56_LESSON_TASKS = {
     "type": "input",
     "questionKey": "data.tasks.nrw_iabcl2_t4_q",
     "difficulty": 1,
+    "visualEmoji": "🦆",
     "answer": "D",
     "skippable": true
   },
@@ -1180,6 +1234,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_iabcl2_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🐶",
     "options": [
       {
         "id": "a",
@@ -1202,6 +1257,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_iabcl3_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🐘",
     "options": [
       {
         "id": "a",
@@ -1225,6 +1281,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_iabcl3_t2_q",
     "difficulty": 1,
+    "visualEmoji": "🦊",
     "options": [
       {
         "id": "a",
@@ -1243,6 +1300,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_iabcl3_t3_q",
     "difficulty": 2,
+    "visualEmoji": "🔤",
     "options": [
       {
         "id": "a",
@@ -1266,6 +1324,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_iabcl3_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🥚",
     "options": [
       {
         "id": "a",
@@ -1289,6 +1348,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_iabcl3_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🦊",
     "options": [
       {
         "id": "a",
@@ -1311,6 +1371,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_icoll1_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🚒",
     "options": [
       {
         "id": "a",
@@ -1334,6 +1395,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_icoll1_t2_q",
     "difficulty": 2,
+    "visualEmoji": "🎒",
     "options": [
       {
         "id": "a",
@@ -1357,6 +1419,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_icoll1_t3_q",
     "difficulty": 1,
+    "visualEmoji": "🌱",
     "options": [
       {
         "id": "a",
@@ -1375,6 +1438,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_icoll1_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🍅",
     "options": [
       {
         "id": "a",
@@ -1398,6 +1462,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_icoll1_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🚒",
     "options": [
       {
         "id": "a",
@@ -1420,6 +1485,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_icoll2_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🎃",
     "options": [
       {
         "id": "a",
@@ -1443,6 +1509,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_icoll2_t2_q",
     "difficulty": 2,
+    "visualEmoji": "🎨",
     "options": [
       {
         "id": "a",
@@ -1466,6 +1533,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_icoll2_t3_q",
     "difficulty": 2,
+    "visualEmoji": "🍋",
     "options": [
       {
         "id": "a",
@@ -1489,6 +1557,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_icoll2_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🍇",
     "options": [
       {
         "id": "a",
@@ -1507,6 +1576,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_icoll2_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🎃",
     "options": [
       {
         "id": "a",
@@ -1529,6 +1599,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_icoll3_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🐻‍❄️",
     "options": [
       {
         "id": "a",
@@ -1552,6 +1623,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_icoll3_t2_q",
     "difficulty": 2,
+    "visualEmoji": "🎨",
     "options": [
       {
         "id": "a",
@@ -1575,6 +1647,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_icoll3_t3_q",
     "difficulty": 2,
+    "visualEmoji": "🕵️",
     "options": [
       {
         "id": "a",
@@ -1598,6 +1671,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_icoll3_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🐧",
     "options": [
       {
         "id": "a",
@@ -1621,6 +1695,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_icoll3_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🐻‍❄️",
     "options": [
       {
         "id": "a",
@@ -1643,6 +1718,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ianiml1_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🐶",
     "options": [
       {
         "id": "a",
@@ -1666,6 +1742,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ianiml1_t2_q",
     "difficulty": 1,
+    "visualEmoji": "🐱",
     "options": [
       {
         "id": "a",
@@ -1684,6 +1761,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ianiml1_t3_q",
     "difficulty": 1,
+    "visualEmoji": "🐱",
     "options": [
       {
         "id": "a",
@@ -1707,6 +1785,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ianiml1_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🐾",
     "options": [
       {
         "id": "a",
@@ -1730,6 +1809,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ianiml1_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🐶",
     "options": [
       {
         "id": "a",
@@ -1752,6 +1832,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ianiml2_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🐦",
     "options": [
       {
         "id": "a",
@@ -1775,6 +1856,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ianiml2_t2_q",
     "difficulty": 1,
+    "visualEmoji": "🐠",
     "options": [
       {
         "id": "a",
@@ -1798,6 +1880,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ianiml2_t3_q",
     "difficulty": 2,
+    "visualEmoji": "🐸",
     "options": [
       {
         "id": "a",
@@ -1821,6 +1904,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ianiml2_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🐧",
     "options": [
       {
         "id": "a",
@@ -1839,6 +1923,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ianiml2_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🐦",
     "options": [
       {
         "id": "a",
@@ -1861,6 +1946,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ianiml3_t1_q",
     "difficulty": 2,
+    "visualEmoji": "🐧",
     "options": [
       {
         "id": "a",
@@ -1884,6 +1970,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ianiml3_t2_q",
     "difficulty": 1,
+    "visualEmoji": "🐘",
     "options": [
       {
         "id": "a",
@@ -1907,6 +1994,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ianiml3_t3_q",
     "difficulty": 2,
+    "visualEmoji": "🐱",
     "options": [
       {
         "id": "a",
@@ -1925,6 +2013,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ianiml3_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🚀",
     "options": [
       {
         "id": "a",
@@ -1948,6 +2037,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ianiml3_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🐧",
     "options": [
       {
         "id": "a",
@@ -1970,6 +2060,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gcoll1_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🍓",
     "options": [
       {
         "id": "a",
@@ -1993,6 +2084,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gcoll1_t2_q",
     "difficulty": 2,
+    "visualEmoji": "🎨",
     "options": [
       {
         "id": "a",
@@ -2016,6 +2108,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gcoll1_t3_q",
     "difficulty": 1,
+    "visualEmoji": "🐸",
     "options": [
       {
         "id": "a",
@@ -2034,6 +2127,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gcoll1_t4_q",
     "difficulty": 2,
+    "visualEmoji": "☀️",
     "options": [
       {
         "id": "a",
@@ -2057,6 +2151,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gcoll1_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🍓",
     "options": [
       {
         "id": "a",
@@ -2079,6 +2174,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gcoll2_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🌻",
     "options": [
       {
         "id": "a",
@@ -2102,6 +2198,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gcoll2_t2_q",
     "difficulty": 2,
+    "visualEmoji": "🎨",
     "options": [
       {
         "id": "a",
@@ -2125,6 +2222,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gcoll2_t3_q",
     "difficulty": 1,
+    "visualEmoji": "🍆",
     "options": [
       {
         "id": "a",
@@ -2143,6 +2241,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gcoll2_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🌅",
     "options": [
       {
         "id": "a",
@@ -2166,6 +2265,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gcoll2_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🌻",
     "options": [
       {
         "id": "a",
@@ -2188,6 +2288,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gcoll3_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🐻‍❄️",
     "options": [
       {
         "id": "a",
@@ -2211,6 +2312,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gcoll3_t2_q",
     "difficulty": 2,
+    "visualEmoji": "🎨",
     "options": [
       {
         "id": "a",
@@ -2234,6 +2336,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gcoll3_t3_q",
     "difficulty": 2,
+    "visualEmoji": "🕵️",
     "options": [
       {
         "id": "a",
@@ -2257,6 +2360,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gcoll3_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🐧",
     "options": [
       {
         "id": "a",
@@ -2280,6 +2384,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gcoll3_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🐻‍❄️",
     "options": [
       {
         "id": "a",
@@ -2302,6 +2407,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ganiml1_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🐄",
     "options": [
       {
         "id": "a",
@@ -2325,6 +2431,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ganiml1_t2_q",
     "difficulty": 1,
+    "visualEmoji": "🐕",
     "options": [
       {
         "id": "a",
@@ -2343,6 +2450,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ganiml1_t3_q",
     "difficulty": 1,
+    "visualEmoji": "🐱",
     "options": [
       {
         "id": "a",
@@ -2366,6 +2474,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ganiml1_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🏠",
     "options": [
       {
         "id": "a",
@@ -2389,6 +2498,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ganiml1_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🐱",
     "options": [
       {
         "id": "a",
@@ -2411,6 +2521,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ganiml2_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🐻",
     "options": [
       {
         "id": "a",
@@ -2434,6 +2545,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ganiml2_t2_q",
     "difficulty": 2,
+    "visualEmoji": "🦁",
     "options": [
       {
         "id": "a",
@@ -2452,6 +2564,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ganiml2_t3_q",
     "difficulty": 1,
+    "visualEmoji": "🦊",
     "options": [
       {
         "id": "a",
@@ -2475,6 +2588,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ganiml2_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🐺",
     "options": [
       {
         "id": "a",
@@ -2498,6 +2612,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ganiml2_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🦊",
     "options": [
       {
         "id": "a",
@@ -2520,6 +2635,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ganiml3_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🐟",
     "options": [
       {
         "id": "a",
@@ -2543,6 +2659,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ganiml3_t2_q",
     "difficulty": 2,
+    "visualEmoji": "🦆",
     "options": [
       {
         "id": "a",
@@ -2566,6 +2683,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ganiml3_t3_q",
     "difficulty": 2,
+    "visualEmoji": "🐟",
     "options": [
       {
         "id": "a",
@@ -2589,6 +2707,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ganiml3_t4_q",
     "difficulty": 2,
+    "visualEmoji": "🐦",
     "options": [
       {
         "id": "a",
@@ -2612,6 +2731,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_ganiml3_a1_q",
     "difficulty": 1,
+    "visualEmoji": "🐟",
     "options": [
       {
         "id": "a",
@@ -2634,6 +2754,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gseasl1_t1_q",
     "difficulty": 1,
+    "visualEmoji": "🍂",
     "options": [
       {
         "id": "a",
@@ -2657,6 +2778,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gseasl1_t2_q",
     "difficulty": 1,
+    "visualEmoji": "❄️",
     "options": [
       {
         "id": "a",
@@ -2680,6 +2802,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gseasl1_t3_q",
     "difficulty": 1,
+    "visualEmoji": "⛄",
     "options": [
       {
         "id": "a",
@@ -2703,6 +2826,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gseasl1_t4_q",
     "difficulty": 1,
+    "visualEmoji": "🗓️",
     "options": [
       {
         "id": "a",
@@ -2729,6 +2853,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gseasl2_t1_q",
     "difficulty": 1,
+    "visualEmoji": "💧",
     "options": [
       {
         "id": "a",
@@ -2752,6 +2877,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gseasl2_t2_q",
     "difficulty": 1,
+    "visualEmoji": "🌸",
     "options": [
       {
         "id": "a",
@@ -2775,6 +2901,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gseasl2_t3_q",
     "difficulty": 1,
+    "visualEmoji": "🐦",
     "options": [
       {
         "id": "a",
@@ -2798,6 +2925,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gseasl2_t4_q",
     "difficulty": 1,
+    "visualEmoji": "☀️",
     "options": [
       {
         "id": "a",
@@ -2824,6 +2952,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gseasl3_t1_q",
     "difficulty": 1,
+    "visualEmoji": "☀️",
     "options": [
       {
         "id": "a",
@@ -2847,6 +2976,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gseasl3_t2_q",
     "difficulty": 1,
+    "visualEmoji": "🏊",
     "options": [
       {
         "id": "a",
@@ -2870,6 +3000,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gseasl3_t3_q",
     "difficulty": 2,
+    "visualEmoji": "🍁",
     "options": [
       {
         "id": "a",
@@ -2893,6 +3024,7 @@ export const RW56_LESSON_TASKS = {
     "type": "multiple_choice",
     "questionKey": "data.tasks.nrw_gseasl3_t4_q",
     "difficulty": 1,
+    "visualEmoji": "🍎",
     "options": [
       {
         "id": "a",
