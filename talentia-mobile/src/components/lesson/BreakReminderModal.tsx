@@ -20,9 +20,11 @@ export function BreakReminderModal({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onDismiss}>
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('common.close')}
         style={{
           flex: 1,
-          backgroundColor: 'rgba(0,0,0,0.5)',
+          backgroundColor: theme.colors.overlay,
           justifyContent: 'center',
           alignItems: 'center',
           padding: theme.spacing.xl,

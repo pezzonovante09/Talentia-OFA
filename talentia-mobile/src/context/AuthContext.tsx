@@ -5,6 +5,7 @@ import { create } from 'zustand';
 
 import { supabase, isSupabaseConfigured, type ChildProfileRow } from '../services/supabase';
 import { useSettingsStore } from '../store/settingsStore';
+import { captureException } from '../services/sentry';
 
 const DEMO_STORAGE_KEY = 'talentia-demo-auth';
 /** Persisted after every successful Supabase login so the app works offline */
@@ -164,8 +165,11 @@ const useAuthStore = create<AuthContextValue>((set, get) => ({
     } else {
       try {
         await supabase.auth.signOut();
-      } catch {
-        // Best-effort: local state is cleared below regardless of network errors.
+      } catch (e) {
+        // Best-effort: local state is cleared below regardless of network errors,
+        // but a failed server-side signOut means the Supabase session token may
+        // still be live — report it instead of losing that signal silently.
+        captureException(e, { context: 'AuthContext.signOut' });
       }
       await AsyncStorage.removeItem(OFFLINE_CACHE_KEY);
     }

@@ -1,13 +1,18 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-const { insertMock, fromMock } = vi.hoisted(() => {
+const { insertMock, fromMock, captureExceptionMock } = vi.hoisted(() => {
   const insertMock = vi.fn();
   const fromMock = vi.fn(() => ({ insert: insertMock }));
-  return { insertMock, fromMock };
+  const captureExceptionMock = vi.fn();
+  return { insertMock, fromMock, captureExceptionMock };
 });
 
 vi.mock("@/lib/supabaseAdmin", () => ({
   supabaseAdmin: { from: fromMock },
+}));
+
+vi.mock("@/lib/sentry", () => ({
+  captureException: captureExceptionMock,
 }));
 
 import { logTaliSafetyEvent } from "./taliSafetyLog";
@@ -17,6 +22,7 @@ describe("logTaliSafetyEvent", () => {
     fromMock.mockClear();
     insertMock.mockReset();
     insertMock.mockResolvedValue({ error: null });
+    captureExceptionMock.mockClear();
   });
 
   it("inserts a row with the expected shape, no raw message text", async () => {
@@ -50,19 +56,29 @@ describe("logTaliSafetyEvent", () => {
     });
   });
 
-  it("never throws when the insert fails", async () => {
+  it("never throws when the insert fails, and reports it via captureException", async () => {
     insertMock.mockResolvedValue({ error: { message: "boom" } });
     await expect(
       logTaliSafetyEvent({ userId: "user-3", side: "input", category: "hate" }),
     ).resolves.toBeUndefined();
+
+    expect(captureExceptionMock).toHaveBeenCalledTimes(1);
+    const [err, extra] = captureExceptionMock.mock.calls[0];
+    expect(String(err)).toContain("boom");
+    expect(extra).toEqual({ userId: "user-3", side: "input" });
   });
 
-  it("never throws when supabaseAdmin.from itself throws", async () => {
+  it("never throws when supabaseAdmin.from itself throws, and reports it via captureException", async () => {
     fromMock.mockImplementationOnce(() => {
       throw new Error("network down");
     });
     await expect(
       logTaliSafetyEvent({ userId: "user-4", side: "output", category: "violence" }),
     ).resolves.toBeUndefined();
+
+    expect(captureExceptionMock).toHaveBeenCalledTimes(1);
+    const [err, extra] = captureExceptionMock.mock.calls[0];
+    expect((err as Error).message).toBe("network down");
+    expect(extra).toEqual({ context: "logTaliSafetyEvent", userId: "user-4", side: "output" });
   });
 });

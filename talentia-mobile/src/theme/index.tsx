@@ -17,6 +17,12 @@ export type AppTheme = {
     border: string;
     success: string;
     error: string;
+    /** Semi-transparent backdrop for modals (TaliModal, BreakReminderModal, ...). */
+    overlay: string;
+    /** primary at low opacity — soft tinted backgrounds (e.g. Tali intro card). */
+    primarySoft: string;
+    /** primary at slightly higher opacity — borders paired with primarySoft. */
+    primarySoftBorder: string;
   };
   spacing: {
     xs: number;
@@ -41,20 +47,43 @@ export type AppTheme = {
   focusMode: boolean;
 };
 
+/** Identity colors for one theme variant, before overlay/primarySoft/primarySoftBorder are derived. */
+type IdentityColors = Omit<AppTheme['colors'], 'overlay' | 'primarySoft' | 'primarySoftBorder'>;
+
+/** Appends an alpha channel to a 6-digit hex color (e.g. '#0DBFB2' + '15' -> '#0DBFB215'). */
+function withAlpha(hex: string, alphaHex: string): string {
+  return `${hex}${alphaHex}`;
+}
+
+/** Derives overlay/primarySoft/primarySoftBorder from a variant's identity colors — keeps
+ * these consistent with that variant's actual `primary` instead of computed ad hoc at each
+ * call site (which silently used the wrong tint if a component forgot to re-derive it after
+ * a theme/primary color change). */
+function withDerivedColors(colors: IdentityColors): AppTheme['colors'] {
+  return {
+    ...colors,
+    overlay: 'rgba(0,0,0,0.45)',
+    primarySoft: withAlpha(colors.primary, '15'),
+    primarySoftBorder: withAlpha(colors.primary, '30'),
+  };
+}
+
+const baseIdentityColors: IdentityColors = {
+  background: '#EBF9FF',
+  surface: '#FFFFFF',
+  surfaceAlt: '#D6F5EF',
+  primary: '#0DBFB2',
+  secondary: '#FF7A38',
+  accent: '#FFD060',
+  text: '#0E2B3B',
+  textMuted: '#5D7D8E',
+  border: '#BAE0EC',
+  success: '#05C896',
+  error: '#FF3D60',
+};
+
 const baseTheme: Omit<AppTheme, 'calmMode' | 'focusMode'> = {
-  colors: {
-    background: '#EBF9FF',
-    surface: '#FFFFFF',
-    surfaceAlt: '#D6F5EF',
-    primary: '#0DBFB2',
-    secondary: '#FF7A38',
-    accent: '#FFD060',
-    text: '#0E2B3B',
-    textMuted: '#5D7D8E',
-    border: '#BAE0EC',
-    success: '#05C896',
-    error: '#FF3D60',
-  },
+  colors: withDerivedColors(baseIdentityColors),
   spacing: {
     xs: 4,
     sm: 8,
@@ -93,10 +122,10 @@ function buildTheme({
 }): AppTheme {
   const multiplier = focusMode ? 1.2 : 1;
 
-  const colors =
+  const identityColors: IdentityColors =
     calmMode && systemScheme === 'dark'
       ? {
-          ...baseTheme.colors,
+          ...baseIdentityColors,
           background: '#0F2027',
           surface: '#172A34',
           surfaceAlt: '#1F3642',
@@ -121,10 +150,10 @@ function buildTheme({
           success: '#28B278',
           error: '#E05A6A',
         }
-      : baseTheme.colors;
+      : baseIdentityColors;
 
   return {
-    colors,
+    colors: withDerivedColors(identityColors),
     spacing: {
       xs: baseTheme.spacing.xs * multiplier,
       sm: baseTheme.spacing.sm * multiplier,

@@ -1781,12 +1781,16 @@ function LessonScreenContent() {
         ) : task.type === 'image_point' ? (
           <View>
             {getAbaLessonImage((task as ImagePointTask).imageKey) ? (
-              <View style={{ width: '100%', aspectRatio: 1, position: 'relative', marginBottom: theme.spacing.md }}>
+              <View
+                accessibilityRole="radiogroup"
+                accessibilityLabel={t('lesson.imagePointGroupLabel')}
+                style={{ width: '100%', aspectRatio: 1, position: 'relative', marginBottom: theme.spacing.md }}
+              >
                 <Image
                   source={getAbaLessonImage((task as ImagePointTask).imageKey)!}
                   style={{ width: '100%', height: '100%', resizeMode: 'contain' }}
                 />
-                {(task as ImagePointTask).hotspots.map((h) => {
+                {(task as ImagePointTask).hotspots.map((h, hotspotIndex) => {
                   const isSelected = selectedOptionId === h.id;
                   const showCorrect = hasChecked && feedback === 'correct' && h.correct;
                   const showWrong = hasChecked && feedback === 'incorrect' && isSelected;
@@ -1801,6 +1805,13 @@ function LessonScreenContent() {
                           setSelectHint(false);
                         }
                       }}
+                      accessibilityRole="radio"
+                      accessibilityLabel={
+                        h.labelKey
+                          ? lt(h.labelKey)
+                          : t('lesson.imagePointOptionLabel', { index: hotspotIndex + 1 })
+                      }
+                      accessibilityState={{ selected: isSelected, disabled: hasChecked || taskTransitionBusy }}
                       style={{
                         position: 'absolute',
                         left: `${h.x * 100}%`,
@@ -1833,7 +1844,11 @@ function LessonScreenContent() {
           </View>
         ) : task.type === 'sorting' ? (
           <View>
-            <View style={{ flexDirection: 'row', gap: theme.spacing.sm, marginBottom: theme.spacing.md, flexWrap: 'wrap' }}>
+            <View
+              accessibilityRole="radiogroup"
+              accessibilityLabel={t('lesson.sortingGroupsLabel')}
+              style={{ flexDirection: 'row', gap: theme.spacing.sm, marginBottom: theme.spacing.md, flexWrap: 'wrap' }}
+            >
               {(task as SortingTask).groups.map((g) => (
                 <Pressable
                   key={g.id}
@@ -1842,6 +1857,9 @@ function LessonScreenContent() {
                     setSortAssignments((prev) => ({ ...prev, [sortPickItemId]: g.id }));
                     setSortPickItemId(null);
                   }}
+                  accessibilityRole="button"
+                  accessibilityLabel={lt(g.labelKey)}
+                  accessibilityState={{ disabled: hasChecked || taskTransitionBusy || !sortPickItemId }}
                   style={{
                     flex: 1,
                     minWidth: 120,
@@ -1856,8 +1874,12 @@ function LessonScreenContent() {
                 </Pressable>
               ))}
             </View>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm }}>
-              {(task as SortingTask).items.map((it) => {
+            <View
+              accessibilityRole="radiogroup"
+              accessibilityLabel={t('lesson.sortingItemsLabel')}
+              style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm }}
+            >
+              {(task as SortingTask).items.map((it, itemIndex) => {
                 const picked = sortPickItemId === it.id;
                 const assigned = sortAssignments[it.id];
                 const src = getAbaLessonImage(it.imageKey);
@@ -1869,6 +1891,9 @@ function LessonScreenContent() {
                       setSortPickItemId(it.id);
                       setSelectHint(false);
                     }}
+                    accessibilityRole="radio"
+                    accessibilityLabel={t('lesson.sortingItemLabel', { index: itemIndex + 1 })}
+                    accessibilityState={{ selected: picked, disabled: hasChecked || taskTransitionBusy }}
                     style={{
                       padding: theme.spacing.sm,
                       borderRadius: theme.radii.md,
@@ -1893,7 +1918,11 @@ function LessonScreenContent() {
             <AppText variant="small" style={{ marginBottom: theme.spacing.sm, color: theme.colors.textMuted }}>
               {t('lesson.abaRoutineTapOrder')}
             </AppText>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm }}>
+            <View
+              accessibilityRole="radiogroup"
+              accessibilityLabel={t('lesson.abaRoutineTapOrder')}
+              style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm }}
+            >
               {routineShuffledSteps.map((step) => {
                 const picked = routinePickedIds.includes(step.id);
                 const src = getAbaLessonImage(step.imageKey);
@@ -1905,6 +1934,9 @@ function LessonScreenContent() {
                       setRoutinePickedIds((prev) => [...prev, step.id]);
                       setSelectHint(false);
                     }}
+                    accessibilityRole="button"
+                    accessibilityLabel={lt(step.labelKey)}
+                    accessibilityState={{ disabled: picked || hasChecked || taskTransitionBusy }}
                     style={{
                       width: 100,
                       padding: theme.spacing.sm,

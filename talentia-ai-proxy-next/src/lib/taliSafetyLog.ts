@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import type { TaliSafetyCategory } from "@/lib/taliSafety";
+import { captureException } from "@/lib/sentry";
 
 /**
  * Persist a Tali safety-filter hit so a parent/specialist can review it later
@@ -27,9 +28,15 @@ export async function logTaliSafetyEvent(event: {
       language: event.language ?? null,
     });
     if (error) {
-      console.error("[tali] safety_event_log_failed", error.message);
+      // A broken safety-events table (migration drift, RLS misconfig) would
+      // otherwise fail silently forever — this is the parent/specialist
+      // oversight mechanism the whole feature exists for, so alert on it.
+      captureException(new Error(`safety_event_log_failed: ${error.message}`), {
+        userId: event.userId,
+        side: event.side,
+      });
     }
   } catch (e) {
-    console.error("[tali] safety_event_log_failed", e);
+    captureException(e, { context: "logTaliSafetyEvent", userId: event.userId, side: event.side });
   }
 }

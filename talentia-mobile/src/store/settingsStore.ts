@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
+import { AccessibilityInfo, Platform } from 'react-native';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -119,6 +119,10 @@ type SettingsState = {
   ttsEnabled: boolean;
   taliSpeakEnabled: boolean;
   reduceMotion: boolean;
+  /** True once the user has explicitly toggled Reduce Motion in Settings — once
+   * set, the OS-level accessibility setting no longer overrides it (see
+   * syncReduceMotionWithOS below). */
+  reduceMotionUserSet: boolean;
   setLanguage: (language: LanguageCode) => void;
   setMethodology: (methodology: Methodology) => void;
   toggleCalmMode: () => void;
@@ -176,6 +180,7 @@ export const useSettingsStore = create<SettingsState>()(
       ttsEnabled: true,
       taliSpeakEnabled: true,
       reduceMotion: false,
+      reduceMotionUserSet: false,
       setLanguage: (language) => set({ language }),
       setMethodology: (methodology) => set({ methodology }),
       toggleCalmMode: () => set((state) => ({ calmMode: !state.calmMode })),
@@ -225,7 +230,7 @@ export const useSettingsStore = create<SettingsState>()(
       setHasSeenMapTip: () => set({ hasSeenMapTip: true }),
       setTtsEnabled: (value) => set({ ttsEnabled: value }),
       setTaliSpeakEnabled: (value) => set({ taliSpeakEnabled: value }),
-      setReduceMotion: (value) => set({ reduceMotion: value }),
+      setReduceMotion: (value) => set({ reduceMotion: value, reduceMotionUserSet: true }),
     }),
     {
       name: 'talentia-settings',
@@ -266,6 +271,7 @@ export const useSettingsStore = create<SettingsState>()(
         ttsEnabled: state.ttsEnabled,
         taliSpeakEnabled: state.taliSpeakEnabled,
         reduceMotion: state.reduceMotion,
+        reduceMotionUserSet: state.reduceMotionUserSet,
         pinFailedAttempts: state.pinFailedAttempts,
         pinLockedUntil: state.pinLockedUntil,
         pinLockoutLevel: state.pinLockoutLevel,
@@ -290,3 +296,21 @@ export const useSettingsStore = create<SettingsState>()(
 void readPinFromSecureStore().then((pin) => {
   useSettingsStore.setState({ parentPin: pin, parentPinHydrated: true });
 });
+
+/**
+ * Applies the OS-level "Reduce Motion" accessibility setting as the default
+ * for reduceMotion, without overriding a choice the user already made via the
+ * in-app Settings toggle. Call once at app startup (e.g. app/_layout.tsx);
+ * returns an unsubscribe function for the live-change listener.
+ */
+export function syncReduceMotionWithOS(): () => void {
+  const applyIfNotUserSet = (osReduceMotionEnabled: boolean) => {
+    if (osReduceMotionEnabled && !useSettingsStore.getState().reduceMotionUserSet) {
+      useSettingsStore.setState({ reduceMotion: true });
+    }
+  };
+
+  void AccessibilityInfo.isReduceMotionEnabled().then(applyIfNotUserSet);
+  const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', applyIfNotUserSet);
+  return () => subscription.remove();
+}

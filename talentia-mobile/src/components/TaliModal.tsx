@@ -219,7 +219,7 @@ export function TaliModal({
           accessibilityLabel={t('common.close')}
           onPress={onClose}
         >
-          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.45)' }]} />
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: theme.colors.overlay }]} />
         </Pressable>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -277,15 +277,15 @@ export function TaliModal({
                       flexDirection: 'row',
                       alignItems: 'center',
                       gap: theme.spacing.md,
-                      backgroundColor: theme.colors.primary + '15',
+                      backgroundColor: theme.colors.primarySoft,
                       borderRadius: theme.radii.lg,
                       padding: theme.spacing.md,
                       marginBottom: theme.spacing.md,
                       borderWidth: 1.5,
-                      borderColor: theme.colors.primary + '30',
+                      borderColor: theme.colors.primarySoftBorder,
                     }}
                   >
-                    <TaliVideo emotion="idle" size={56} bgColor={theme.colors.primary + '15'} />
+                    <TaliVideo emotion="idle" size={56} bgColor={theme.colors.primarySoft} />
                     <View style={{ flex: 1 }}>
                       <AppText variant="subtitle" style={{ fontWeight: '800', color: theme.colors.primary }}>
                         {t('tali.name')}
@@ -384,7 +384,7 @@ export function TaliModal({
                               maxWidth: '80%',
                               backgroundColor: isChild ? theme.colors.secondary : theme.colors.surfaceAlt,
                               borderWidth: isChild ? 0 : 1.5,
-                              borderColor: theme.colors.primary + '30',
+                              borderColor: theme.colors.primarySoftBorder,
                             }}
                           >
                             <AppText style={{ color: isChild ? '#fff' : theme.colors.text, lineHeight: 22 }}>

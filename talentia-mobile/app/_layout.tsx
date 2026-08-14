@@ -15,7 +15,7 @@ import {
 import { AppThemeProvider, useAppTheme } from '../src/theme';
 import i18n from '../src/i18n';
 import { checkEnvInDev } from '../src/utils/envCheck';
-import { useSettingsStore } from '../src/store/settingsStore';
+import { useSettingsStore, syncReduceMotionWithOS } from '../src/store/settingsStore';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider } from '../src/context/AuthContext';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
@@ -115,6 +115,10 @@ function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
+
+  useEffect(() => {
+    return syncReduceMotionWithOS();
+  }, []);
 
   useEffect(() => {
     const sub = AppState.addEventListener('change', (next) => {
