@@ -1345,6 +1345,21 @@ export const worlds: World[] = [
                   { id: 'opt-stars', textKey: 'data.tasks.opt_stars', correct: false },
                 ],
               },
+              {
+                // Bridges the difficulty-3 MC tasks above and the
+                // difficulty-4 free-text spelling task below: recognize the
+                // word "orbit" in a multiple-choice question before being
+                // asked to spell it unaided (receptive before expressive).
+                id: 'space-sol-1-t2b',
+                type: 'multiple_choice',
+                questionKey: 'data.tasks.space_q_orbit_mc',
+                difficulty: 3,
+                options: [
+                  { id: 'opt-orbit', textKey: 'data.tasks.opt_orbit', correct: true },
+                  { id: 'opt-atmosphere', textKey: 'data.tasks.opt_atmosphere', correct: false },
+                  { id: 'opt-galaxy', textKey: 'data.tasks.opt_galaxy', correct: false },
+                ],
+              },
               { id: 'space-sol-1-t3', type: 'input', questionKey: 'data.tasks.space_q_orbit_word', difficulty: 4, answer: 'орбита', placeholderKey: 'lesson.answerPlaceholder' },
               // Montessori
               // ABA
