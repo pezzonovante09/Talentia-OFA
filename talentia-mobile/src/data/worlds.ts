@@ -1450,8 +1450,8 @@ export const worlds: World[] = [
     { speaker: 'npc', textKey: 'data.dialog.meadow_c5l2_1' },
   ],
   intro: [
-    { titleKey: 'data.intro.meadow_c5l2_0_t', bodyKey: 'data.intro.meadow_c5l2_0_b', emoji: '🦕' },
-    { titleKey: 'data.intro.meadow_c5l2_1_t', bodyKey: 'data.intro.meadow_c5l2_1_b', emoji: '🍪' },
+    { titleKey: 'data.intro.meadow_c5l2_0_t', bodyKey: 'data.intro.meadow_c5l2_0_b', emoji: '✋' },
+    { titleKey: 'data.intro.meadow_c5l2_1_t', bodyKey: 'data.intro.meadow_c5l2_1_b', emoji: '🖐️' },
   ],
   tasks: [
     { id: 'mc5l2-t1', type: 'multiple_choice', questionKey: 'data.tasks.pre_count_4pizzas', difficulty: 1, visualCount: 4, visualEmoji: '🍕', options: [{ id: 'a', textKey: 'data.tasks.opt_three', correct: false }, { id: 'b', textKey: 'data.tasks.opt_four', correct: true }, { id: 'c', textKey: 'data.tasks.opt_five', correct: false }] },
