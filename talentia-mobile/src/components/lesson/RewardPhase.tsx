@@ -21,6 +21,7 @@ const REWARD_XP_ICONS = [NANO_UI.lightning, NANO_UI.trophy, NANO_UI.medal, NANO_
 
 export function RewardPhase({
   earnedXP,
+  bonusAwarded = false,
   earnedItemEmoji,
   leveledUp,
   newLevel,
@@ -33,6 +34,8 @@ export function RewardPhase({
   onGoToMap,
 }: {
   earnedXP: number;
+  /** True on the ~10% of completions that hit the variable-ratio bonus roll. */
+  bonusAwarded?: boolean;
   earnedItemEmoji: string | null;
   leveledUp: boolean;
   newLevel: number;
@@ -112,6 +115,14 @@ export function RewardPhase({
               >
                 {t('lesson.rewardXP', { xp: earnedXP })}
               </AppText>
+              {bonusAwarded && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: theme.spacing.xs }}>
+                  <NanoBananaIcon source={NANO_UI.egg} size={22} accessibilityLabel="" />
+                  <AppText variant="small" style={{ color: theme.colors.success, fontWeight: '600' }}>
+                    {t('lesson.rewardBonusXp')}
+                  </AppText>
+                </View>
+              )}
             </View>
           )}
 

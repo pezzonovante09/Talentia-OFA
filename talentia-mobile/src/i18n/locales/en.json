@@ -190,6 +190,7 @@
     "rewardTitle3": "You did it!",
     "rewardTitle4": "Mission accomplished!",
     "rewardXP": "+{{xp}} XP",
+    "rewardBonusXp": "Surprise! Bonus XP",
     "rewardReplayNotice": "You already completed this lesson! Your stars are saved, but replays don't earn new points.",
     "rewardItem": "You found: {{item}}!",
     "rewardLevelUp": "Level Up! You are now Level {{level}}!",

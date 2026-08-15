@@ -97,6 +97,21 @@ const ABA_REINFORCE_KEYS = [
   'lesson.abaReinforce12',
 ] as const;
 
+/**
+ * Variable-ratio bonus: a ~10% chance of extra XP on lesson completion, on
+ * top of the fixed reward - a fixed 100%-predictable payout is easier to
+ * habituate to than one with occasional variability. Uses the existing
+ * bundled `egg` icon (NANO_UI.egg) as a "surprise" motif; icons_separated_1/
+ * at the repo root (11_gift_box.png, 16/17_easter_egg*.png) were considered
+ * for this instead but are outside talentia-mobile's project root, where
+ * Expo/Metro's default asset resolution does not look - wiring them in
+ * would need a metro.config.js watchFolders change, untested here, so they
+ * stay unused rather than risk a broken build. Not deleted - see this
+ * comment for why.
+ */
+const LESSON_BONUS_XP_CHANCE = 0.1;
+const LESSON_BONUS_XP_AMOUNT = 5;
+
 // ── Main lesson screen ────────────────────────────────────────────────────────
 function LessonScreenContent() {
   const { lessonId } = useLocalSearchParams<{ lessonId?: string; topicId?: string }>();
@@ -237,6 +252,7 @@ function LessonScreenContent() {
   const [leveledUp, setLeveledUp] = useState(false);
   const [newLevel, setNewLevel] = useState(0);
   const [earnedStars, setEarnedStars] = useState<1 | 2 | 3>(3);
+  const [bonusAwarded, setBonusAwarded] = useState(false);
   const [isReplayCompletion, setIsReplayCompletion] = useState(false);
   const [resumedNotice, setResumedNotice] = useState(false);
   /** False until getLessonResume settles for *this* lessonId — blocks checkpoint wipe. */
@@ -863,6 +879,7 @@ function LessonScreenContent() {
     return (
       <RewardPhase
         earnedXP={earnedXP}
+        bonusAwarded={bonusAwarded}
         earnedItemEmoji={earnedItem}
         leveledUp={leveledUp}
         newLevel={newLevel}
@@ -913,7 +930,10 @@ function LessonScreenContent() {
     setIsReplayCompletion(alreadyCompleted);
 
     const reward = lesson.reward;
-    const xpGain = alreadyCompleted ? 0 : reward?.xp ?? 20;
+    const baseXpGain = alreadyCompleted ? 0 : reward?.xp ?? 20;
+    const bonusHit = !alreadyCompleted && Math.random() < LESSON_BONUS_XP_CHANCE;
+    const xpGain = baseXpGain + (bonusHit ? LESSON_BONUS_XP_AMOUNT : 0);
+    setBonusAwarded(bonusHit);
     const prevLevel = getLevelFromXP(xp);
     const perfectRun = totalMistakes === 0 && !skippedAnyTaskRef.current;
     const stars: 1 | 2 | 3 = perfectRun ? 3 : totalMistakes <= 2 ? 2 : 1;
