@@ -110,6 +110,7 @@ function LessonScreenContent() {
   const reduceMotion = useSettingsStore((s) => s.reduceMotion);
   const breakReminderEnabled = useSettingsStore((s) => s.breakReminderEnabled);
   const breakDurationMinutes = useSettingsStore((s) => s.breakDurationMinutes);
+  const abaTokenRewardSchedule = useSettingsStore((s) => s.abaTokenRewardSchedule);
 
   const recordAnswer = useProgressStore((s) => s.recordAnswer);
   const markLessonCompleted = useProgressStore((s) => s.markLessonCompleted);
@@ -131,6 +132,8 @@ function LessonScreenContent() {
   const sessionId = useRef<string>(`s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`).current;
   const taskStartTime = useRef<number>(Date.now());
   const lastWrongAnswer = useRef<string | null>(null);
+  /** Running total for the per-trial ABA token schedule (see abaTokenRewardSchedule). */
+  const perTrialTokensAwardedRef = useRef(0);
 
   // Resolve lesson data before any conditional renders
   const lesson = lessonId ? getLesson(String(lessonId)) : null;
@@ -431,6 +434,7 @@ function LessonScreenContent() {
     abaCorrectProceedRef.current = null;
     liveSessionStartedRef.current = false;
     lastAbaReinforceIdx.current = null;
+    perTrialTokensAwardedRef.current = 0;
     setMistakeCount(0);
     setDialogIndex(0);
     setIntroIndex(0);
@@ -945,7 +949,7 @@ function LessonScreenContent() {
     // Skip the ABA token/puzzle celebration on replays — no new tokens were earned.
     // Still finish (or clear) the remote live session so the parent dashboard
     // does not stay stuck on "active" after a replay or non-ABA completion.
-    if (useAbaPedagogy && !lessonWasAlreadyCompletedRef.current) {
+    if (useAbaPedagogy && !lessonWasAlreadyCompletedRef.current && abaTokenRewardSchedule !== 'per_trial') {
       setPendingAbaTokenCount(stars);
       // Finish the remote live row as soon as rewards are settled — before the
       // celebration UI — so back/kill mid-tokens doesn't leave null tokens_earned.
@@ -953,7 +957,7 @@ function LessonScreenContent() {
       setPhase('aba_tokens');
     } else {
       if (useAbaPedagogy) {
-        finishLiveSession(0);
+        finishLiveSession(abaTokenRewardSchedule === 'per_trial' ? perTrialTokensAwardedRef.current : 0);
       } else {
         clearLiveSession();
       }
@@ -1084,6 +1088,13 @@ function LessonScreenContent() {
       if (correct) {
         hapticCorrect();
         if (useAbaPedagogy) recordLiveResult('correct');
+        if (useAbaPedagogy && abaTokenRewardSchedule === 'per_trial' && !isLessonAlreadyCompleted(topic.id, lesson.id)) {
+          // Per-trial token economy: 1 token credited on each correct answer
+          // instead of a single lump sum at lesson end (see completeLessonFlow,
+          // which skips the lesson-end award in this mode).
+          addLessonTokens(1, lesson.abaTokensPerPiece ?? 5);
+          perTrialTokensAwardedRef.current += 1;
+        }
         const sType: SuccessType = promptLevel > 0 ? 'assisted' : 'pure';
         setSuccessType(sType);
 

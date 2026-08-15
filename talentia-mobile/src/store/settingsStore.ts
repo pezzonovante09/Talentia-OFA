@@ -113,6 +113,14 @@ type SettingsState = {
   reminderHour: number;
   breakReminderEnabled: boolean;
   breakDurationMinutes: number;
+  /**
+   * ABA token-economy schedule: 'per_lesson' credits the whole star-based
+   * amount once at lesson end (existing behavior); 'per_trial' credits 1
+   * token immediately on each correct answer instead. Real ABA token
+   * economies typically reinforce per-response, not per-session, so this is
+   * exposed as a per-profile choice rather than hardcoded.
+   */
+  abaTokenRewardSchedule: 'per_lesson' | 'per_trial';
   adaptiveSpeed: 'fast' | 'medium' | 'slow';
   voiceInputEnabled: boolean;
   hasSeenMapTip: boolean;
@@ -144,6 +152,7 @@ type SettingsState = {
   setReminderHour: (hour: number) => void;
   setBreakReminderEnabled: (value: boolean) => void;
   setBreakDurationMinutes: (minutes: number) => void;
+  setAbaTokenRewardSchedule: (schedule: 'per_lesson' | 'per_trial') => void;
   setAdaptiveSpeed: (speed: 'fast' | 'medium' | 'slow') => void;
   setVoiceInputEnabled: (value: boolean) => void;
   setHasSeenMapTip: () => void;
@@ -174,6 +183,7 @@ export const useSettingsStore = create<SettingsState>()(
       reminderHour: 18,
       breakReminderEnabled: true,
       breakDurationMinutes: 5,
+      abaTokenRewardSchedule: 'per_lesson',
       adaptiveSpeed: 'medium',
       voiceInputEnabled: false,
       hasSeenMapTip: false,
@@ -225,6 +235,7 @@ export const useSettingsStore = create<SettingsState>()(
       setReminderHour: (hour) => set({ reminderHour: hour }),
       setBreakReminderEnabled: (value) => set({ breakReminderEnabled: value }),
       setBreakDurationMinutes: (minutes) => set({ breakDurationMinutes: minutes }),
+      setAbaTokenRewardSchedule: (schedule) => set({ abaTokenRewardSchedule: schedule }),
       setAdaptiveSpeed: (speed) => set({ adaptiveSpeed: speed }),
       setVoiceInputEnabled: (value) => set({ voiceInputEnabled: value }),
       setHasSeenMapTip: () => set({ hasSeenMapTip: true }),
@@ -265,6 +276,7 @@ export const useSettingsStore = create<SettingsState>()(
         reminderHour: state.reminderHour,
         breakReminderEnabled: state.breakReminderEnabled,
         breakDurationMinutes: state.breakDurationMinutes,
+        abaTokenRewardSchedule: state.abaTokenRewardSchedule,
         adaptiveSpeed: state.adaptiveSpeed,
         voiceInputEnabled: state.voiceInputEnabled,
         hasSeenMapTip: state.hasSeenMapTip,
