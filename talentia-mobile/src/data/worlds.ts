@@ -896,6 +896,19 @@ export const worlds: World[] = [
 
   // ---
   {
+    // Content dependency: canyon-words opens directly on whole-word
+    // recognition (canyon-words-1-t1) with no letter/phonics content of its
+    // own. Letter-level phonics live in the island world's islandAbc topic
+    // (worldId: 'island', ageBand: '5-6'). getOrderedLessonNodes() filters
+    // worlds by `!w.ageBand || w.ageBand === ageBand` (this file, ~3841),
+    // so a profile whose age_band is '7' never sees ageBand:'5-6' worlds at
+    // all - the assumption is that a 7-year-old already did islandAbc at
+    // 5-6. That holds for a child who has used the app continuously, but
+    // NOT for a new user who starts at age 7 - they get word-level reading
+    // with no in-app letter foundation. Not fixed here (would mean
+    // duplicating/re-authoring letter content into an ageBand:'7' world);
+    // flagging the dependency so it's not silently rediscovered as "missing
+    // content" later.
     id: 'canyon',
     ageBand: '7',
     titleKey: 'data.worlds.canyon',
