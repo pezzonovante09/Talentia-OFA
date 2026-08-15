@@ -61,6 +61,7 @@ import {
   abaTaskInstructionI18nKey,
   isTherapistLedTask,
   nextAbaPromptLevel,
+  reinforcementRateForAgeBand,
   responseWindowMsForAgeBand,
   shuffleArray,
   splitWordSyllables,
@@ -1196,8 +1197,7 @@ function LessonScreenContent() {
 
     // feedback === 'correct'
     if (useAbaPedagogy) {
-      setTaskTransitionBusy(true);
-      abaCorrectProceedRef.current = () => {
+      const proceed = () => {
         if (isLastTask) {
           completeLessonFlow(mistakeCount);
         } else {
@@ -1206,6 +1206,16 @@ function LessonScreenContent() {
           fadeIn();
         }
       };
+      // Age-scaled reinforcement frequency: skip the full verbal banner on a
+      // fraction of correct answers for older children (intermittent
+      // schedule) and proceed straight away. Haptic feedback already fired
+      // above regardless of this roll.
+      if (Math.random() >= reinforcementRateForAgeBand(profile?.age_band)) {
+        proceed();
+        return;
+      }
+      setTaskTransitionBusy(true);
+      abaCorrectProceedRef.current = proceed;
       const pool = ABA_REINFORCE_KEYS.length;
       let idx = Math.floor(Math.random() * pool);
       if (lastAbaReinforceIdx.current !== null && pool > 1) {

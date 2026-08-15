@@ -1,4 +1,24 @@
-import { nextAbaPromptLevel, responseWindowMsForAgeBand } from '../lessonHelpers';
+import { nextAbaPromptLevel, reinforcementRateForAgeBand, responseWindowMsForAgeBand } from '../lessonHelpers';
+
+describe('reinforcementRateForAgeBand', () => {
+  it('reinforces every correct answer for the youngest band', () => {
+    expect(reinforcementRateForAgeBand('5-6')).toBe(1);
+  });
+
+  it('decreases (more intermittent) for older bands', () => {
+    const bands = ['5-6', '7', '8', '9-10'] as const;
+    const values = bands.map(reinforcementRateForAgeBand);
+    for (let i = 1; i < values.length; i++) {
+      expect(values[i]).toBeLessThanOrEqual(values[i - 1]!);
+    }
+    expect(values[values.length - 1]).toBeGreaterThan(0);
+  });
+
+  it('defaults to full reinforcement for unknown/missing age bands', () => {
+    expect(reinforcementRateForAgeBand(undefined)).toBe(1);
+    expect(reinforcementRateForAgeBand('unknown')).toBe(1);
+  });
+});
 
 describe('responseWindowMsForAgeBand', () => {
   it('gives the youngest band the shortest window', () => {

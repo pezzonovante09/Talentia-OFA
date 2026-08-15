@@ -1,6 +1,31 @@
 import type { LessonTask } from '../data/worlds';
 
 /**
+ * Probability (0-1) of showing the full verbal reinforcement banner after a
+ * correct answer, scaled by age band. Younger children benefit from
+ * reinforcement on (close to) every trial; older children can move toward a
+ * more intermittent schedule as a fading step, which is also more
+ * resistant to extinction than a fixed 100% schedule. Haptic feedback still
+ * fires on every correct answer regardless - this only gates the bigger
+ * verbal/visual celebration. A reasonable default, not a clinical
+ * prescription.
+ */
+export function reinforcementRateForAgeBand(ageBand: '5-6' | '7' | '8' | '9-10' | string | undefined | null): number {
+  switch (ageBand) {
+    case '5-6':
+      return 1;
+    case '7':
+      return 0.85;
+    case '8':
+      return 0.7;
+    case '9-10':
+      return 0.6;
+    default:
+      return 1;
+  }
+}
+
+/**
  * DTT response window: how long (ms) a child gets to start answering a task
  * before an automatic level-1 prompt kicks in, scaled by age band (younger
  * children get a shorter window, matching a shorter expected attention/
