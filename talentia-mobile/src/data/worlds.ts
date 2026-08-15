@@ -3262,7 +3262,7 @@ export const worlds: World[] = [
           { id: 'g4m-cm-l1-t1', type: 'multiple_choice', questionKey: 'data.tasks.g4m_cm_q1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4m_cm_q1_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_cm_q1_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_cm_q1_c', correct: false }] },
           { id: 'g4m-cm-l1-t2', type: 'multiple_choice', questionKey: 'data.tasks.g4m_cm_q2', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4m_cm_q2_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_cm_q2_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_cm_q2_c', correct: false }] },
           { id: 'g4m-cm-l1-t3', type: 'multiple_choice', questionKey: 'data.tasks.g4m_cm_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4m_cm_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4m_cm_q3_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4m_cm_q3_c', correct: false }] },
-          { id: 'g4m-cm-l1-t4', type: 'input', questionKey: 'data.tasks.g4m_cm_q4', difficulty: 2, answer: "Нет, правильно 884" },
+          { id: 'g4m-cm-l1-t4', type: 'input', questionKey: 'data.tasks.g4m_cm_q4', difficulty: 1, answer: "Нет, правильно 884" },
         ] },
         { id: 'g4m-cm-l2', topicId: 'g4m-colmult', titleKey: 'data.lessons.g4mCmL2', reward: { xp: 30 },
           dialog: [
