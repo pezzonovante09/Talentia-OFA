@@ -61,6 +61,7 @@ import {
   abaTaskInstructionI18nKey,
   isTherapistLedTask,
   nextAbaPromptLevel,
+  responseWindowMsForAgeBand,
   shuffleArray,
   splitWordSyllables,
 } from '../../src/utils/lessonHelpers';
@@ -659,6 +660,41 @@ function LessonScreenContent() {
     active: phase === 'tasks',
     thresholdMinutes: defaultBreakReminderMinutesForAgeBand(profile?.age_band),
   });
+
+  // DTT response window: if the child hasn't started answering within an
+  // age-scaled window, surface the level-1 prompt automatically (SD given,
+  // no response within the window -> prompt), instead of waiting forever
+  // for a wrong answer to trigger scaffolding. Uses a static hint (not the
+  // AI-generated one) since this fires without any user action and would
+  // otherwise call the AI proxy for every silently-stuck child.
+  useEffect(() => {
+    const currentTask = tasks[currentIndex];
+    if (phase !== 'tasks' || !currentTask || hasChecked || taskTransitionBusy) return;
+    if (isTherapistLedTask(currentTask)) return; // adult judges these live
+    if (promptLevel > 0) return; // already prompted via a wrong answer
+    const hasStartedAnswering =
+      !!selectedOptionId || inputValue.trim().length > 0 || !!sortPickItemId || routinePickedIds.length > 0;
+    if (hasStartedAnswering) return;
+    const windowMs = responseWindowMsForAgeBand(profile?.age_band);
+    const timer = setTimeout(() => {
+      setPromptLevel(1);
+      setHintText(t('lesson.responseWindowHint'));
+    }, windowMs);
+    return () => clearTimeout(timer);
+  }, [
+    tasks,
+    currentIndex,
+    phase,
+    hasChecked,
+    taskTransitionBusy,
+    promptLevel,
+    selectedOptionId,
+    inputValue,
+    sortPickItemId,
+    routinePickedIds,
+    profile?.age_band,
+    t,
+  ]);
 
   // Early returns after all hooks
   if (!lessonId || !lesson || !topic) {

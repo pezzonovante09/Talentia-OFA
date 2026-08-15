@@ -1,4 +1,21 @@
-import { nextAbaPromptLevel } from '../lessonHelpers';
+import { nextAbaPromptLevel, responseWindowMsForAgeBand } from '../lessonHelpers';
+
+describe('responseWindowMsForAgeBand', () => {
+  it('gives the youngest band the shortest window', () => {
+    expect(responseWindowMsForAgeBand('5-6')).toBe(15_000);
+  });
+
+  it('increases the window for older bands', () => {
+    expect(responseWindowMsForAgeBand('7')).toBe(18_000);
+    expect(responseWindowMsForAgeBand('8')).toBe(20_000);
+    expect(responseWindowMsForAgeBand('9-10')).toBe(20_000);
+  });
+
+  it('falls back to 20s for unknown/missing age bands', () => {
+    expect(responseWindowMsForAgeBand(undefined)).toBe(20_000);
+    expect(responseWindowMsForAgeBand('unknown')).toBe(20_000);
+  });
+});
 
 describe('nextAbaPromptLevel', () => {
   it('escalates to level 1 (visual prompt) on the first mistake on a task', () => {
