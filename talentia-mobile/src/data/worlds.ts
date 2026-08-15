@@ -300,13 +300,13 @@ export const worlds: World[] = [
             ],
             tasks: [
               // Standard tasks
-              { id: 'jungle-cmp-1-t1', type: 'multiple_choice', questionKey: 'data.tasks.jungle_q_bigger_7_4', difficulty: 2, options: [{ id: 'opt-7', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'opt-4', textKey: 'data.tasks.opt_four', correct: false }] },
-              { id: 'jungle-cmp-1-t2', type: 'multiple_choice', questionKey: 'data.tasks.jungle_q_smaller_3_9', difficulty: 2, options: [{ id: 'opt-9', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'opt-3', textKey: 'data.tasks.opt_three', correct: true }] },
-              { id: 'jungle-cmp-1-t3', type: 'input', questionKey: 'data.tasks.jungle_q_6_gt_5', difficulty: 2, answer: "Да" },
+              { id: 'jungle-cmp-1-t1', type: 'multiple_choice', questionKey: 'data.tasks.jungle_q_bigger_7_4', difficulty: 1, options: [{ id: 'opt-7', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'opt-4', textKey: 'data.tasks.opt_four', correct: false }] },
+              { id: 'jungle-cmp-1-t2', type: 'multiple_choice', questionKey: 'data.tasks.jungle_q_smaller_3_9', difficulty: 1, options: [{ id: 'opt-9', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'opt-3', textKey: 'data.tasks.opt_three', correct: true }] },
+              { id: 'jungle-cmp-1-t3', type: 'input', questionKey: 'data.tasks.jungle_q_6_gt_5', difficulty: 1, answer: "Да" },
               // Montessori
               // ABA
-              { id: 'jungle-cmp-1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_jungleCmp_q1', difficulty: 2, options: [{ id: 'opt-7', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'opt-4', textKey: 'data.tasks.opt_four', correct: false }] },
-              { id: 'jungle-cmp-1-a2', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_jungleCmp_q2', difficulty: 2, options: [{ id: 'opt-9', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'opt-3', textKey: 'data.tasks.opt_three', correct: true }] },
+              { id: 'jungle-cmp-1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_jungleCmp_q1', difficulty: 1, options: [{ id: 'opt-7', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'opt-4', textKey: 'data.tasks.opt_four', correct: false }] },
+              { id: 'jungle-cmp-1-a2', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_jungleCmp_q2', difficulty: 1, options: [{ id: 'opt-9', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'opt-3', textKey: 'data.tasks.opt_three', correct: true }] },
               // TEACCH
             ],
           },
