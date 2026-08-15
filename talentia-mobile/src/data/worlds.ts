@@ -276,6 +276,42 @@ export const worlds: World[] = [
     npcName: 'Rex',
     npcEmoji: '',
     topics: [
+      // Comparison moved first: basic quantity comparison (>/</=) is a
+      // prerequisite for meaningfully teaching addition/subtraction, not a
+      // topic to cover after them.
+      {
+        id: 'jungle-comparison',
+        worldId: 'jungle',
+        titleKey: 'data.topics.jungleComparison',
+        subject: 'math',
+        lessons: [
+          {
+            id: 'jungle-compare-1',
+            topicId: 'jungle-comparison',
+            titleKey: 'data.lessons.jungleCompare1',
+            reward: { xp: 35, item: 'dino_egg_green' },
+            dialog: [
+              { speaker: 'tali', textKey: 'data.dialog.jungle_compare_1_0' },
+              { speaker: 'npc', textKey: 'data.dialog.jungle_compare_1_1' },
+            ],
+            intro: [
+              { titleKey: 'data.intro.jungleCmp_0_title', bodyKey: 'data.intro.jungleCmp_0_body', emoji: '' },
+              { titleKey: 'data.intro.jungleCmp_1_title', bodyKey: 'data.intro.jungleCmp_1_body', emoji: '' },
+            ],
+            tasks: [
+              // Standard tasks
+              { id: 'jungle-cmp-1-t1', type: 'multiple_choice', questionKey: 'data.tasks.jungle_q_bigger_7_4', difficulty: 2, options: [{ id: 'opt-7', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'opt-4', textKey: 'data.tasks.opt_four', correct: false }] },
+              { id: 'jungle-cmp-1-t2', type: 'multiple_choice', questionKey: 'data.tasks.jungle_q_smaller_3_9', difficulty: 2, options: [{ id: 'opt-9', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'opt-3', textKey: 'data.tasks.opt_three', correct: true }] },
+              { id: 'jungle-cmp-1-t3', type: 'input', questionKey: 'data.tasks.jungle_q_6_gt_5', difficulty: 2, answer: "Да" },
+              // Montessori
+              // ABA
+              { id: 'jungle-cmp-1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_jungleCmp_q1', difficulty: 2, options: [{ id: 'opt-7', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'opt-4', textKey: 'data.tasks.opt_four', correct: false }] },
+              { id: 'jungle-cmp-1-a2', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_jungleCmp_q2', difficulty: 2, options: [{ id: 'opt-9', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'opt-3', textKey: 'data.tasks.opt_three', correct: true }] },
+              // TEACCH
+            ],
+          },
+        ],
+      },
       {
         id: 'jungle-addition',
         worldId: 'jungle',
@@ -851,39 +887,6 @@ export const worlds: World[] = [
                   { id: 'fb-c', textKey: 'data.tasks.opt_six', correct: false },
                 ],
               },
-            ],
-          },
-        ],
-      },
-      {
-        id: 'jungle-comparison',
-        worldId: 'jungle',
-        titleKey: 'data.topics.jungleComparison',
-        subject: 'math',
-        lessons: [
-          {
-            id: 'jungle-compare-1',
-            topicId: 'jungle-comparison',
-            titleKey: 'data.lessons.jungleCompare1',
-            reward: { xp: 35, item: 'dino_egg_green' },
-            dialog: [
-              { speaker: 'tali', textKey: 'data.dialog.jungle_compare_1_0' },
-              { speaker: 'npc', textKey: 'data.dialog.jungle_compare_1_1' },
-            ],
-            intro: [
-              { titleKey: 'data.intro.jungleCmp_0_title', bodyKey: 'data.intro.jungleCmp_0_body', emoji: '' },
-              { titleKey: 'data.intro.jungleCmp_1_title', bodyKey: 'data.intro.jungleCmp_1_body', emoji: '' },
-            ],
-            tasks: [
-              // Standard tasks
-              { id: 'jungle-cmp-1-t1', type: 'multiple_choice', questionKey: 'data.tasks.jungle_q_bigger_7_4', difficulty: 2, options: [{ id: 'opt-7', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'opt-4', textKey: 'data.tasks.opt_four', correct: false }] },
-              { id: 'jungle-cmp-1-t2', type: 'multiple_choice', questionKey: 'data.tasks.jungle_q_smaller_3_9', difficulty: 2, options: [{ id: 'opt-9', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'opt-3', textKey: 'data.tasks.opt_three', correct: true }] },
-              { id: 'jungle-cmp-1-t3', type: 'input', questionKey: 'data.tasks.jungle_q_6_gt_5', difficulty: 2, answer: "Да" },
-              // Montessori
-              // ABA
-              { id: 'jungle-cmp-1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_jungleCmp_q1', difficulty: 2, options: [{ id: 'opt-7', textKey: 'data.tasks.opt_seven', correct: true }, { id: 'opt-4', textKey: 'data.tasks.opt_four', correct: false }] },
-              { id: 'jungle-cmp-1-a2', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_jungleCmp_q2', difficulty: 2, options: [{ id: 'opt-9', textKey: 'data.tasks.opt_nine', correct: false }, { id: 'opt-3', textKey: 'data.tasks.opt_three', correct: true }] },
-              // TEACCH
             ],
           },
         ],
