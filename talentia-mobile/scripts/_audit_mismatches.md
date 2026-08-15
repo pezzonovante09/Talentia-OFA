@@ -1,5 +1,7 @@
 # Locale semantic mismatch audit
 
+> **Internal QA / AI-generated.** Self-review of the repo's own locale content, not feedback from a human reviewer, specialist, or user. See `docs/FIELD_TEST_FEEDBACK.md` for real field-test notes.
+
 ## 1. Birds / mc10l1-t2
 ### pre_birds_tree_vs_bush
 - RU: На дереве 6 птичек, на кустике — 4. Тали думает, что на кустике больше, «потому что куст ближе». Прав?

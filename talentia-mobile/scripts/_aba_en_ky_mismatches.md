@@ -1,5 +1,7 @@
 # ABA EN/KY semantic mismatches (heuristic)
 
+> **Internal QA, script-generated.** This is a heuristic self-check run against the repo's own locale files, not feedback from a human reviewer, specialist, or user. Do not cite it as field/user feedback — see `docs/FIELD_TEST_FEEDBACK.md` for that.
+
 Generated: 2026-07-28T10:13:30.428Z
 
 ## Summary

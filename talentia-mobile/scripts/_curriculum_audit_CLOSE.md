@@ -1,5 +1,7 @@
 ﻿# Curriculum audit — closed after Wave 3 + spot fix
 
+> **Internal QA / AI-generated.** Self-review of the repo's own curriculum content, not feedback from a human reviewer, specialist, or user. See `docs/FIELD_TEST_FEEDBACK.md` for real field-test notes.
+
 Date: 2026-07-27
 Final reaudit: #7 (post Wave 3)
 Spot fix after close scores: g4e-quest-l2 EN/KY synced under RU (t4 Why/bike; t3 Where/bag; t2 Who/friend). Audit JSON scores still reflect #7 (g4e-quest-l2 was C2 until this content fix).

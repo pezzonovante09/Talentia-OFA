@@ -175,6 +175,7 @@ function main() {
   };
 
   const jsonOut = {
+    _note: "Internal QA, script-generated heuristic check - not human/field feedback. See docs/FIELD_TEST_FEEDBACK.md for that.",
     summary,
     mismatches: bad.map((r) => ({
       key: r.key,
@@ -191,6 +192,8 @@ function main() {
 
   const lines = [
     "# ABA EN/KY semantic mismatches (heuristic)",
+    "",
+    "> **Internal QA, script-generated.** This is a heuristic self-check run against the repo's own locale files, not feedback from a human reviewer, specialist, or user. Do not cite it as field/user feedback — see `docs/FIELD_TEST_FEEDBACK.md` for that.",
     "",
     `Generated: ${summary.generatedAt}`,
     "",

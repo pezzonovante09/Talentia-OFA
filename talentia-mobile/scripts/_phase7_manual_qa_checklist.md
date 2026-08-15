@@ -1,5 +1,7 @@
 # Phase 7 — Manual QA checklist (in-app)
 
+> **Internal QA (dev team pre-release checklist), not field feedback.** This is a checklist for the dev team to manually run through the app before release - not observations from real children, parents, or ABA/education specialists. See `docs/FIELD_TEST_FEEDBACK.md` for that.
+
 Automated checks done: `audit:i18n`, `check:i18n`, `audit:aba-en-ky` (0 mismatches), `audit:locale-quality`, `npm test` (56), `export:curriculum-grades`, inventory `pureMcCount: 0`.
 
 **Что это за чеклист:** это пункт 7 плана (ручной прогон в приложении) — не авто-скоринг связности.  
