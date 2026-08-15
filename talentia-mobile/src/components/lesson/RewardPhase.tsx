@@ -56,12 +56,18 @@ export function RewardPhase({
     () => REWARD_TITLE_KEYS[Math.floor(Math.random() * REWARD_TITLE_KEYS.length)]!,
   );
   const [xpIcon] = useState(() => REWARD_XP_ICONS[Math.floor(Math.random() * REWARD_XP_ICONS.length)]!);
+  // Tali's reaction reflects how the run actually went, instead of always
+  // being "energetic" regardless of performance: a clean 3-star run gets
+  // the big celebratory clip, a rougher 1-star run gets the calmer "idle"
+  // clip (still positive, not a scolding face - this app has no
+  // disappointed/sad Tali state, by design).
+  const rewardEmotion = earnedStars === 3 ? 'energetic' : earnedStars === 2 ? 'friendly' : 'idle';
   return (
     <Screen scroll backgroundImage={backgroundImage} backgroundImageTint={backgroundImageTint}>
       <View style={{ alignItems: 'center', paddingTop: theme.spacing.xl, position: 'relative' }}>
         {!reduceMotion && <Confetti />}
 
-        <TaliVideo emotion="energetic" size={140} bgColor={theme.colors.background} />
+        <TaliVideo emotion={rewardEmotion} size={140} bgColor={theme.colors.background} />
         <Spacer size="sm" />
         <AppText variant="title" style={{ textAlign: 'center' }}>
           {t(titleKey)}
