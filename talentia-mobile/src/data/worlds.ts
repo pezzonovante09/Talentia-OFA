@@ -1394,6 +1394,15 @@ export const worlds: World[] = [
   // ---
 
   // ---
+  // Verified (no fix needed): meadow (counting, ageBand 5-6) sits after
+  // jungle (arithmetic, ageBand 7) in this array, which looks backwards for
+  // prerequisite ordering. It has no actual effect though -
+  // getOrderedLessonNodes() filters worlds by `!w.ageBand || w.ageBand ===
+  // ageBand` (~3841 in this file) against settingsStore's `ageBand`, which
+  // always has a concrete value ('5-6' default, never undefined) - so a
+  // 5-6 profile never sees jungle content and a 7 profile never sees
+  // meadow content. The two worlds are mutually exclusive per session;
+  // their relative array position is inert.
   {
     id: 'meadow',
     ageBand: '5-6',
