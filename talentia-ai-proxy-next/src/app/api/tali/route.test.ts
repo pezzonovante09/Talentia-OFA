@@ -69,4 +69,25 @@ describe("TaliRequestSchema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("accepts recentMessages up to 2 entries", () => {
+    const result = TaliRequestSchema.safeParse({ recentMessages: ["hi", "how are you"] });
+    expect(result.success).toBe(true);
+  });
+
+  it("allows recentMessages to be omitted", () => {
+    const result = TaliRequestSchema.safeParse({});
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.recentMessages).toBeUndefined();
+  });
+
+  it("rejects more than 2 recentMessages entries", () => {
+    const result = TaliRequestSchema.safeParse({ recentMessages: ["a", "b", "c"] });
+    expect(result.success).toBe(false);
+  });
+
+  it("caps each recentMessages entry's length", () => {
+    const result = TaliRequestSchema.safeParse({ recentMessages: ["a".repeat(501)] });
+    expect(result.success).toBe(false);
+  });
 });

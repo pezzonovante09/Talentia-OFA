@@ -45,6 +45,12 @@ export const TaliRequestSchema = z.object({
     .object({ childGaveCorrectAnswer: z.boolean().optional() })
     .nullable()
     .optional(),
+  // The child's own last 1-2 messages in this chat session, for input-side semantic
+  // moderation context only (see moderateWithLLM's recentContext param) — never used to
+  // build the chat system/user prompt sent to the main model, and never re-run through the
+  // regex blocklist (each was already checked in its own turn). Client keeps this in memory
+  // only, reset whenever the chat is reopened; nothing new is persisted server-side.
+  recentMessages: z.array(z.string().max(500)).max(2).optional(),
 });
 
 type TaskContext = z.infer<typeof TaskContextSchema>;
@@ -202,7 +208,7 @@ export async function POST(req: NextRequest) {
     }
     const data = parsed.data;
 
-    const { language, mode, taskContext, parentContext, flags } = data;
+    const { language, mode, taskContext, parentContext, flags, recentMessages } = data;
     const message = data.message.trim();
 
     if (!message && mode === "chat" && !parentContext) {
@@ -254,7 +260,7 @@ export async function POST(req: NextRequest) {
     let inputModerationBlocked = false;
     let inputModerationCategory: string = "semantic_unsafe";
     try {
-      const moderation = await moderateWithLLM(combinedInputText, apiKey);
+      const moderation = await moderateWithLLM(combinedInputText, apiKey, recentMessages);
       if (!moderation.safe) inputModerationBlocked = true;
     } catch (e) {
       console.error("[tali] moderation_unavailable (input)", e);

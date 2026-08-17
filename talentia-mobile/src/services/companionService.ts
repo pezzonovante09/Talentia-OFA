@@ -65,6 +65,12 @@ type CompanionRequest = {
   /** Task context when helping during a lesson */
   taskContext?: TaskContext;
   flags?: CompanionFlags;
+  /**
+   * The child's own last 1-2 messages in this chat session, for input-side safety-moderation
+   * context only — never shown to the main chat model, never persisted beyond the in-memory
+   * chat session on the client.
+   */
+  recentMessages?: string[];
 };
 
 type CompanionResponse = {

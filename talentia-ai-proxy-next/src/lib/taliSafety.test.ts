@@ -379,4 +379,46 @@ describe("moderateWithLLM (second-pass semantic moderation)", () => {
     vi.stubGlobal("fetch", fetchMock);
     await expect(moderateWithLLM("hello", "fake-key")).rejects.toThrow();
   });
+
+  it("sends the current message alone (no context block) when recentContext is omitted", async () => {
+    const fetchMock = mockFetchOnce({
+      ok: true,
+      body: { choices: [{ message: { content: "safe" } }] },
+    });
+    await moderateWithLLM("hello", "fake-key");
+    const body = JSON.parse(fetchMock.mock.calls[0]![1].body as string);
+    expect(body.messages[1].content).toBe("hello");
+  });
+
+  it("prepends a RECENT CONTEXT block (oldest first, capped to last 2) when recentContext is given", async () => {
+    const fetchMock = mockFetchOnce({
+      ok: true,
+      body: { choices: [{ message: { content: "safe" } }] },
+    });
+    await moderateWithLLM("current message", "fake-key", ["first", "second", "third"]);
+    const body = JSON.parse(fetchMock.mock.calls[0]![1].body as string);
+    const content = body.messages[1].content as string;
+    expect(content).toContain("RECENT CONTEXT");
+    expect(content).toContain("1. second");
+    expect(content).toContain("2. third");
+    expect(content).not.toContain("1. first");
+    expect(content).toContain("CURRENT message to classify:\ncurrent message");
+  });
+
+  it("ignores blank/whitespace-only recentContext entries", async () => {
+    const fetchMock = mockFetchOnce({
+      ok: true,
+      body: { choices: [{ message: { content: "safe" } }] },
+    });
+    await moderateWithLLM("hello", "fake-key", ["   ", ""]);
+    const body = JSON.parse(fetchMock.mock.calls[0]![1].body as string);
+    expect(body.messages[1].content).toBe("hello");
+  });
+
+  it("still fails closed on upstream error when recentContext is provided", async () => {
+    mockFetchOnce({ ok: false, status: 502 });
+    await expect(
+      moderateWithLLM("current message", "fake-key", ["earlier message"]),
+    ).rejects.toThrow();
+  });
 });

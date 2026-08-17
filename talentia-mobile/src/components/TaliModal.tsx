@@ -141,6 +141,13 @@ export function TaliModal({
   const sendMessage = async (userText: string) => {
     if (!userText.trim()) return;
     const displayText = userText.trim();
+    // Captured before addMessage('child', ...) below so it holds the child's own last
+    // messages *prior to* this one — short-lived moderation context only, never persisted
+    // beyond this in-memory chat session and never sent to the main chat model.
+    const recentMessages = messages
+      .filter((m) => m.from === 'child')
+      .slice(-2)
+      .map((m) => m.text.slice(0, 500));
     addMessage('child', displayText);
     setInput('');
 
@@ -158,6 +165,7 @@ export function TaliModal({
         topicId: topicId ? String(topicId) : undefined,
         parentContext: isParentContext ? String(reportSummary) : undefined,
         taskContext: companionTaskContext,
+        recentMessages: recentMessages.length > 0 ? recentMessages : undefined,
       });
       addMessage('tali', reply ?? t('tali.errorGeneric'));
     } finally {
