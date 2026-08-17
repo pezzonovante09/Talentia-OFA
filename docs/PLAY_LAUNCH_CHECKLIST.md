@@ -83,13 +83,13 @@ Align with [`talentia-ai-proxy-next/src/app/privacy/page.tsx`](../talentia-ai-pr
 
 > Designed for children 5–10 with parent supervision. Parent creates account and provides consent. Contains AI learning companion with automated safety filters (keyword + AI-based check, not human moderation).
 
-**⚠️ OPEN DECISION — age range mismatch, needs product-owner sign-off before submission:**
-This checklist and the DB `age_band` CHECK constraint both say **5–10**, but the
-product brief/marketing describes the target audience as **4–10**. Pick one and
-make the store listing, this checklist, and `profiles_age_band_check`
-(`supabase/migrations/20260724120000_parental_consent.sql`) agree — do not
-submit to Play with them still inconsistent. Not something a code change can
-resolve unilaterally; needs a product decision.
+**✅ RESOLVED (2026-08-17) — age range standardized on 5–10.** Product owner
+confirmed **5–10** as the target range, matching the DB `age_band` CHECK
+constraint (`profiles_age_band_check`, values `5-6`/`7`/`8`/`9-10`) and this
+checklist. The stray "4–10" wording in `talentia-ai-proxy-next/src/lib/taliSafety.ts`,
+`talentia-ai-proxy-next/src/app/api/tali/route.ts`, and the mismatched
+"ages 5–8" `welcomeSubtitle` string (all three locales) have been corrected
+to 5–10 in-repo.
 
 **⚠️ OPEN DECISION — verifiable parental consent (VPC), needs legal review:**
 Consent is currently a self-reported checkbox ("I am the parent/guardian") at
@@ -103,14 +103,21 @@ enrolling in Designed for Families, or add a stronger verification step.
 **Console checklist:**
 
 1. Enroll in **Designed for Families** (or declare child-directed treatment per your Play policy path).  
-2. Target age bands: resolve the 4–10 vs 5–10 mismatch above first, then set consistently.  
+2. Target age bands: set to **5–10** (resolved above).  
 3. Disclose third parties in Data Safety: **Supabase**, **DeepSeek** (Tali chat), **ElevenLabs / Hugging Face** (TTS if enabled), optional **Sentry**.  
 4. Do **not** claim "fully moderated" or "human-reviewed chat" — the app uses prompt rules + **keyword filters + an automated AI safety check** (DeepSeek-based, added 2026-08-12), still not human review.
 5. Privacy policy URL must be the **deployed proxy** (`https://YOUR_PROXY/privacy`), not `talentia.app` until that domain serves the same pages.  
-6. Run a full dependency license audit (`npx license-checker --summary` in both
-   `talentia-mobile` and `talentia-ai-proxy-next`) before submission — not yet
-   done as of this checklist revision; a name-based spot check found no
-   obvious GPL/AGPL packages but the full transitive tree hasn't been checked.
+6. **✅ Done (2026-08-17):** full dependency license audit run in both
+   `talentia-mobile` and `talentia-ai-proxy-next` (`npx license-checker --summary`
+   + an `--onlyAllow` pass against every license family it reported, and a
+   check of every `UNLICENSED` entry). No GPL/AGPL found. The only
+   `UNLICENSED` hits are the two projects' own `package.json` (no `license`
+   field set — harmless, not third-party) and the local monorepo workspace
+   package. Notable non-permissive-but-not-blocking entries: `MPL-2.0` (file-level
+   weak copyleft, a few packages in both projects), one `Apache-2.0 AND
+   LGPL-3.0-or-later` package, and `@sentry/cli` under `FSL-1.1-MIT`
+   (source-available, dev-only build tool in the proxy, not shipped to end
+   users) — none require action for how they're used here.
 7. Confirm Supabase Point-in-Time-Recovery / backup retention is actually
    enabled for the production project (Supabase dashboard → Settings →
    Database → Backups) — this is a dashboard setting, not verifiable from

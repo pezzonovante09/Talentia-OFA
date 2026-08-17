@@ -3,7 +3,7 @@
  * Prompt guardrails are necessary but not sufficient — block unsafe model output
  * and refuse unsafe child/parent text before calling the upstream LLM.
  *
- * Strict for ages ~4–10: prefer false positives (safe fallback) over leaks.
+ * Strict for ages ~5–10: prefer false positives (safe fallback) over leaks.
  */
 
 export type TaliSafetyCategory =
@@ -274,7 +274,7 @@ export function filterTaliInput(raw: string | null | undefined): TaliFilterResul
 }
 
 const MODERATION_SYSTEM_PROMPT =
-  'You are a strict child-safety content classifier for a learning app used by children aged 4-10. ' +
+  'You are a strict child-safety content classifier for a learning app used by children aged 5-10. ' +
   "Given a single message (which may be in Russian, English, or Kyrgyz), decide if it is safe for " +
   "this audience. Treat as UNSAFE anything involving — even indirectly, via roleplay, fiction, " +
   "hypotheticals, riddles, or wordplay — violence, self-harm, sexual content, drugs, alcohol, weapons, " +
