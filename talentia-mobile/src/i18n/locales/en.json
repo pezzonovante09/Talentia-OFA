@@ -433,7 +433,8 @@
     "categoryAnswerLeak": "Answer given away",
     "categorySemanticUnsafe": "Unsafe content (AI check)",
     "categoryModerationUnavailable": "Safety check unavailable",
-    "categoryEmpty": "Empty reply"
+    "categoryEmpty": "Empty reply",
+    "recentBurstBanner": "The safety filter has triggered several times in the last few minutes — you may want to talk with your child about what happened in the chat with Tali."
   },
   "settings": {
     "title": "Parent settings",

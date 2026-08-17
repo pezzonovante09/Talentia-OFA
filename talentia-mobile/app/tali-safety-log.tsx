@@ -15,7 +15,7 @@ import { NANO_UI } from '../src/constants/nanoBananaAssets';
 import { useAppTheme } from '../src/theme';
 import { useAuth } from '../src/context/AuthContext';
 import { useSettingsStore } from '../src/store/settingsStore';
-import { useTaliSafetyEvents, type TaliSafetyEvent } from '../src/hooks/useTaliSafetyEvents';
+import { hasRecentSafetyBurst, useTaliSafetyEvents, type TaliSafetyEvent } from '../src/hooks/useTaliSafetyEvents';
 
 // Category labels shown to the parent — human-readable, not the raw stored
 // string. Anything not in this map (a category added on the proxy side
@@ -69,6 +69,7 @@ function TaliSafetyLogScreenContent() {
   const router = useRouter();
   const user = useAuth((s) => s.user);
   const { data: events, loading, error } = useTaliSafetyEvents(user?.id);
+  const recentBurst = hasRecentSafetyBurst(events);
 
   const parentPin = useSettingsStore((s) => s.parentPin);
   const parentPinHydrated = useSettingsStore((s) => s.parentPinHydrated);
@@ -149,6 +150,17 @@ function TaliSafetyLogScreenContent() {
       <Spacer size="xs" />
       <AppText style={{ color: theme.colors.textMuted }}>{t('taliSafetyLog.subtitle')}</AppText>
       <Spacer size="md" />
+
+      {!loading && !error && recentBurst && (
+        <>
+          <Card style={{ borderWidth: 1.5, borderColor: theme.colors.error }}>
+            <AppText style={{ color: theme.colors.error, fontWeight: '700' }}>
+              {t('taliSafetyLog.recentBurstBanner')}
+            </AppText>
+          </Card>
+          <Spacer size="md" />
+        </>
+      )}
 
       {loading && (
         <Card>

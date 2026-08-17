@@ -67,3 +67,26 @@ export function useTaliSafetyEvents(userId: string | undefined): {
 
   return { data, loading, error };
 }
+
+/** Mirrors the server-side burst thresholds in talentia-ai-proxy-next/src/lib/taliSafetyLog.ts. */
+export const SAFETY_BURST_THRESHOLD = 3;
+export const SAFETY_BURST_WINDOW_MINUTES = 10;
+
+/**
+ * True when the same category has hit the burst threshold within the recent window, computed
+ * from events already fetched by useTaliSafetyEvents (no extra query) — a real-time echo of the
+ * same signal the server sends to Sentry, so the parent doesn't have to wait to notice it here.
+ */
+export function hasRecentSafetyBurst(
+  events: TaliSafetyEvent[],
+  thresholdCount: number = SAFETY_BURST_THRESHOLD,
+  windowMinutes: number = SAFETY_BURST_WINDOW_MINUTES,
+): boolean {
+  const windowStart = Date.now() - windowMinutes * 60_000;
+  const countsByCategory = new Map<string, number>();
+  for (const event of events) {
+    if (new Date(event.createdAt).getTime() < windowStart) continue;
+    countsByCategory.set(event.category, (countsByCategory.get(event.category) ?? 0) + 1);
+  }
+  return [...countsByCategory.values()].some((count) => count >= thresholdCount);
+}

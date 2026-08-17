@@ -433,7 +433,8 @@
     "categoryAnswerLeak": "Жооп ачылып калды",
     "categorySemanticUnsafe": "Коопсуз эмес мазмун (ЖИ текшерүүсү)",
     "categoryModerationUnavailable": "Коопсуздук текшерүүсү жеткиликсиз",
-    "categoryEmpty": "Бош жооп"
+    "categoryEmpty": "Бош жооп",
+    "recentBurstBanner": "Соңку бир нече мүнөттө коопсуздук фильтри бир нече жолу иштеди — балаңыз менен Тали менен болгон маек тууралуу сүйлөшкөнүңүз оң болор."
   },
   "settings": {
     "title": "Ата-эне үчүн",
