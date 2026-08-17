@@ -1,18 +1,477 @@
 {
   "_note": "Internal QA, script-generated heuristic check - not human/field feedback. See docs/FIELD_TEST_FEEDBACK.md for that.",
   "summary": {
-    "ruKeys": 4197,
-    "enKeys": 4197,
-    "kyKeys": 4197,
-    "mismatchKeys": 70,
-    "okKeys": 4127,
+    "ruKeys": 3400,
+    "enKeys": 3400,
+    "kyKeys": 3400,
+    "mismatchKeys": 172,
+    "okKeys": 3228,
     "byCategory": {
-      "length_outlier": 34,
-      "option_set_inconsistent": 42
+      "length_outlier": 125,
+      "option_set_inconsistent": 48
     },
-    "generatedAt": "2026-07-28T10:13:30.428Z"
+    "generatedAt": "2026-08-17T20:07:41.864Z"
   },
   "mismatches": [
+    {
+      "key": "data.dialog.forest_vl3_0",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Теперь учим И и Э!",
+      "en": "Now let's learn И and Э! Almost all vowels will be yours!",
+      "ky": "Эми И жана Э үйрөнөбүз! Дээрлик бардык үндүүлөр сеники болот!"
+    },
+    {
+      "key": "data.dialog.g1e_grtl1_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Hello — привет! Я использую это слово всё время! Но Тали говорит: «Good morning — это «до свидания»!» Правда?",
+      "en": "Hello — hi! Use it everywhere!",
+      "ky": "Hello — салам! Ар жерде колдон!"
+    },
+    {
+      "key": "data.dialog.g1m_addl2_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "7 + 3 = 10! Я запомнил этот секрет: смотрю, сколько не хватает до 10. Но с другими числами ещё путаюсь — проверишь меня?",
+      "en": "Correct — 3! 7 + 3 = 10. Well done!",
+      "ky": "Туура — 3! 7 + 3 = 10. Жакшы!"
+    },
+    {
+      "key": "data.dialog.g1m_c20l3_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "17 больше 14! Я запомнил: чем правее на числовой линии, тем больше! Теперь я хочу доказать, что научился. Проверишь меня?",
+      "en": "17 is bigger than 14! You are doing great!",
+      "ky": "17, 14тен чоңураак! Сен эң жакшы аткаруудасың!"
+    },
+    {
+      "key": "data.dialog.g1m_subl2_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "10 − 3 = 7! Я выучил специальные пары! Хочу показать — проверь, правильно ли я их запомнил?",
+      "en": "10 - 3 = 7! Excellent work!",
+      "ky": "10 - 3 = 7! Мыкты иш!"
+    },
+    {
+      "key": "data.dialog.g1r_grml1_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Маша, Москва, Тали — с большой! Тали говорит: «Значит, слово «кот» тоже надо писать с большой буквы — ведь это имя животного?»",
+      "en": "Маша, Москва, Тали — with a capital!",
+      "ky": "Маша, Москва, Тали — баш тамга менен!"
+    },
+    {
+      "key": "data.dialog.g1w_schl2_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "На физкультуре бегаем, на рисовании рисуем! Тали говорит: «На физкультуре мы решаем задачки!» Правда?",
+      "en": "In PE we run, in art we draw!",
+      "ky": "Дене тарбияда чуркайбыз, сүрөттө тартабыз!"
+    },
+    {
+      "key": "data.dialog.g2e_daysl1_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Monday — понедельник, это я знаю! А дальше… Tuesday? Wednesday? Я путаюсь начиная с четверга! Помоги мне!",
+      "en": "Monday is the first day of the week. There are seven days in a week!",
+      "ky": "Monday — дүйшөмбү. Жумада жети күн!"
+    },
+    {
+      "key": "data.dialog.g2m_add2l2_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Я думаю… 213? Нет, подожди, я посчитаю по-другому. 28 + 2 = 30, и ещё 3… Кажется, 33? Но я не уверен — проверь меня!",
+      "en": "28 + 2 = 30, plus 3 = 33! You did it!",
+      "ky": "28 + 2 = 30, дагы 3 = 33! Жасадың!"
+    },
+    {
+      "key": "data.dialog.g2r_sentl1_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Почти! Но чего не хватает — КТО бежит? Подлежащее! «Кот бежит» — вот настоящее предложение. Поможем Тали разобраться?",
+      "en": "Who? What? — subject. What does it do? — predicate!",
+      "ky": "Ким? Эмне? — ээ. Эмне кылат? — баяндооч!"
+    },
+    {
+      "key": "data.dialog.g2r_sentl3_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Хм, слова есть, но они не связаны правильно! Слова в предложении должны «дружить» друг с другом — согласовываться. Поможем Тали исправить?",
+      "en": "An adjective agrees with the noun in gender!",
+      "ky": "Сын атооч зат атооч менен жынысы жагынан макулдашат!"
+    },
+    {
+      "key": "data.dialog.g2r_spl1_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Хаха! Почти! Существительное — это слово, которое называет предмет или существо: КОТ, СТОЛ, НЕБО. Давай Тали поможем разобраться!",
+      "en": "A noun names an object or person!",
+      "ky": "Зат атооч буюм же адамды атайт!"
+    },
+    {
+      "key": "data.dialog.g2s_bdyl3_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали! Тело нужно кормить правильно — овощи, фрукты, белок. Печенье — это не еда на три дня! Расскажи нам, что полезно есть.",
+      "en": "Eat vegetables, do exercise!",
+      "ky": "Жашылча же, дене тарбия кыл!"
+    },
+    {
+      "key": "data.dialog.g2s_pltl3_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали, нет! Морковь — это овощ, и она растёт под землёй. А яблоко — фрукт, растёт на дереве. Давай разберёмся вместе!",
+      "en": "Carrot is a root vegetable, apple is a fruit!",
+      "ky": "Сабиз — тамыр жашылчасы, алма — мөмө!"
+    },
+    {
+      "key": "data.dialog.g3e_foodl1_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Juice — сок! Porridge — каша. Тали, ты пьёшь сок каждое утро — теперь знаешь, как это по-английски!",
+      "en": "Juice means сок! Porridge means каша. Tali, you drink juice every morning — now you know the English words!",
+      "ky": "Food — тамак. Drink — суусундук!"
+    },
+    {
+      "key": "data.dialog.g3m_1000l2_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали, ты правильно думаешь! Давай проверим на заданиях — помоги мне убедиться, что я тоже понял правило.",
+      "en": "247 = 2 hundreds, 4 tens, 7 units!",
+      "ky": "247 = 2 жүздүк, 4 ондук, 7 бирдик!"
+    },
+    {
+      "key": "data.dialog.g3m_divl1_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали, именно! Деление и умножение — лучшие друзья. Давай проверим твою идею на задачах!",
+      "en": "We divide equally. 8 / 4 = 2!",
+      "ky": "Бирдей бөлөбүз. 8 ÷ 4 = 2!"
+    },
+    {
+      "key": "data.dialog.g3m_divl2_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали, проверим! 4 × 7 = 28? Да! Значит, ты прав. Деление всегда проверяется умножением.",
+      "en": "Division and multiplication are friends!",
+      "ky": "Бөлүү жана көбөйтүү — достор!"
+    },
+    {
+      "key": "data.dialog.g3r_adjl1_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Потому что прилагательное согласуется с существительным в роде! Шар — он (красный). Роза — она (красная). Яблоко — оно (красное).",
+      "en": "Red ball, red rose, red apple!",
+      "ky": "Кызыл топ, кызыл раймайлы, кызыл алма!"
+    },
+    {
+      "key": "data.dialog.g3r_adjl2_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали, ты сам привёл идеальный пример! Положительная — большой, сравнительная — больше, превосходная — самый большой.",
+      "en": "Beautiful — more beautiful — most beautiful!",
+      "ky": "Сулуу — сулуураак — эң сулуу!"
+    },
+    {
+      "key": "data.dialog.g3r_genl2_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Хорошая мысль! Средний — это слова с окончанием -о, -е: ОКНО, МОРЕ, СОЛНЦЕ. Они отвечают на «оно моё». Давай проверим!",
+      "en": "Ending -о, -е often for neuter gender!",
+      "ky": "-о, -е жалгоочтору орто жынысында көп!"
+    },
+    {
+      "key": "data.dialog.g3w_ecol1_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали, они все связаны! Деревья кормят белок, белки растаскивают семена, семена вырастают в деревья. Убери одно звено — рухнет вся цепь!",
+      "en": "Forest, meadow, pond — different ecosystems!",
+      "ky": "Токой, жайлоо, көлмө — ар кандай экосистемалар!"
+    },
+    {
+      "key": "data.dialog.g3w_ecol3_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Да, Тали! Человек — часть экосистемы. И наши действия влияют на всю природу — как положительно, так и отрицательно.",
+      "en": "Our actions affect nature!",
+      "ky": "Биздин аракеттер жаратылышка таасир этет!"
+    },
+    {
+      "key": "data.dialog.g3w_geol1_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали, запомни: солнце встаёт на востоке, садится на западе. Компас поможет с севером и югом!",
+      "en": "A compass shows direction!",
+      "ky": "Компас багытты көрсөтөт!"
+    },
+    {
+      "key": "data.dialog.g3w_geol2_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Глобус — точная копия формы Земли (шар). Карта — это как если раскатать апельсин скалкой: немного искажается, зато плоская и удобная!",
+      "en": "Countries and oceans are on the map!",
+      "ky": "Картада өлкөлөр жана океандар бар!"
+    },
+    {
+      "key": "data.dialog.g3w_geol3_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Очень круто! Столица — главный город страны. Москва — столица России, Париж — Франции, Лондон — Великобритании. А ты живёшь в Бишкеке!",
+      "en": "Every country has a capital!",
+      "ky": "Ар бир өлкөнүн борбор шаары бар!"
+    },
+    {
+      "key": "data.dialog.g3w_natl1_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Вода испарилась — поднялась в небо! Это первый шаг круговорота воды. Потом она вернётся дождём. Расскажем Тали весь путь?",
+      "en": "Water moves constantly in nature!",
+      "ky": "Суу жаратылышта дайыма кыймылдайт!"
+    },
+    {
+      "key": "data.dialog.g3w_natl2_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Почти! Нефть и уголь образовались из остатков древних живых существ за миллионы лет. Тали, это ископаемые в буквальном смысле — нужно откопать!",
+      "en": "They are extracted from the ground!",
+      "ky": "Алар жерден казылат!"
+    },
+    {
+      "key": "data.dialog.g3w_natl3_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали, это очень важная книга! В ней — список животных и растений, которым грозит исчезновение. Красный цвет — это сигнал опасности.",
+      "en": "Protect the forest, water, animals!",
+      "ky": "Токойду, сууну, жаныбарларды корго!"
+    },
+    {
+      "key": "data.dialog.g4r_cases_l1_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Это два падежа. Именительный — «кто?». Винительный — «кого?».",
+      "en": "Tali, those are two different cases! Nominative answers “кто?” — it’s the subject, the owner of the sentence. Accusative — “кого? что?” — is the object of the action. Let’s figure it out!",
+      "ky": "Тали, бул эки башка жөндөмө! Именительный «кто?» дегенге жооп берет — бул ээ, сүйлөмдүн ээси. Винительный — «кого? что?» — аракеттин объектиси. Кел, чогуу түшүнөлү!"
+    },
+    {
+      "key": "data.dialog.g4r_cases_l2_0",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "«Я отправил письмо мама.» Верно? 📬",
+      "en": "Word, I need to write a letter to a friend! “Я отправил письмо мама” — is that right? Something sounds weird…",
+      "ky": "Сөз, мага досума кат жазыш керек! «Я отправил письмо мама» — туурабы? Бир нерсе кулакка тийип жатат…"
+    },
+    {
+      "key": "data.dialog.g4r_cases_l2_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Нужен дательный падеж: «маме».",
+      "en": "Tali, you can feel it — «мама» doesn’t fit here! After “отправил кому?” you need dative: «маме». And “не хватает кого?” — genitive: «мамы». Let’s look at both!",
+      "ky": "Тали, сен сезип жатасың — бул жерде «мама» туура келбейт! «Отправил кому?» дегенден кийин дательный керек: «маме». Ал эми «не хватает кого?» — родительный: «мамы». Кел, экөөнү тең карап чыгалы!"
+    },
+    {
+      "key": "data.dialog.g4r_cases_l3_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Творительный: «кем? чем?». Предложный: всегда с предлогом.",
+      "en": "You almost guessed, Tali! Instrumental is “creating with the help of something.” “Пишу карандашом” — instrumental. And prepositional — because it is always used WITH a preposition. Never without one!",
+      "ky": "Дээрлик таптың, Тали! Творительный — «бир нерсенин жардамы менен жаратуу». «Пишу карандашом» — творительный. Ал эми предложный — анткени ал ар дайым ПРЕДЛОГ МЕНЕН колдонулат. Эч качан андан тышкары!"
+    },
+    {
+      "key": "data.dialog.g4r_conj_l1_0",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Привет. 👋 Я записал: «Я хожу. Ты ходишь. Он ходить.»",
+      "en": "Hi, I’m Word! Today Tali wrote in his diary: “Я хожу в школу. Ты ходишь в школу. Он ходить в школу.” Something’s wrong in the third sentence — Tali didn’t notice the mistake!",
+      "ky": "Салам, мен Сөз! Бүгүн Тали күндөлүгүнө жазды: «Я хожу в школу. Ты ходишь в школу. Он ходить в школу.» Үчүнчү сүйлөмдө бир нерсе туура эмес — Тали катаны байкаган жок!"
+    },
+    {
+      "key": "data.dialog.g4r_conj_l2_0",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Я написал: «Мы петь вместе!» 🎵",
+      "en": "Word, I’m writing a play about dinosaurs! There’s a line like this: “Мы петь вместе!” Sounds beautiful, right?",
+      "ky": "Сөз, мен динозаврлар жөнүндө пьеса жазып жатам! Мындай реплика бар: «Мы петь вместе!» Кооз угулат, туурабы?"
+    },
+    {
+      "key": "data.dialog.g4r_conj_l2_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Нужен спряжённый глагол: «Мы поём.»",
+      "en": "Tali, “мы петь” isn’t conjugation! You need to change the verb by person. “Мы поём” — that’s how it should sound. Let’s fix the play together!",
+      "ky": "Тали, «мы петь» — бул жакталуу эмес! Этишти жак боюнча өзгөртүш керек. «Мы поём» — туура ушундай угулат. Кел, пьесаны чогуу оңдойлу!"
+    },
+    {
+      "key": "data.dialog.g4r_conj_l3_0",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Последняя фраза: «Мы бежит к финишу!» 🏃",
+      "en": "Word, I’m almost done with the play! But the last line won’t come out: “Мы бежит к финишу!” Something sounds off…",
+      "ky": "Сөз, мен пьесаны дээрлик бүтүрдүм! Бирок акыркы реплика чыкпай жатат: «Мы бежит к финишу!» Бир нерсе туура эмес угулат…"
+    },
+    {
+      "key": "data.dialog.g4r_conj_l3_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Нужно определить спряжение и подобрать окончание.",
+      "en": "Tali, you can feel the mistake — that’s a good sign! Now we need to find the verb’s conjugation and pick the right ending. You already know almost everything!",
+      "ky": "Тали, сен катаны сезип жатасың — бул жакшы белги! Эми этиштин жакталуусун аныктап, туура аягын тандаш керек. Сен дээрлик баарын билесиң!"
+    },
+    {
+      "key": "data.dialog.g4r_text_l2_0",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Текст: «Ёж свернулся в клубок. Иголки торчат. Никто не тронет ежа.» 🦔",
+      "en": "I read a text about a hedgehog: “Ёж свернулся в клубок. Иголки торчат во все стороны. Никто не тронет ежа.” Word, what’s the main idea here? There are three sentences — and each one matters!",
+      "ky": "Мен кирпи жөнүндө текст окудум: «Ёж свернулся в клубок. Иголки торчат во все стороны. Никто не тронет ежа.» Сөз, бул жерде негизги ой кайсы? Үч сүйлөм бар — ар бири маанилүү!"
+    },
+    {
+      "key": "data.dialog.g4r_text_l3_1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Слова «сначала», «потом», «наконец» — маяки. Они показывают порядок.",
+      "en": "Tali, the order of events in a text is sequence! Words like “сначала”, “потом”, “наконец” are beacons that show what comes after what. Let’s put the order back!",
+      "ky": "Тали, тексттеги окуялардын тартиби — бул ырааттуулук! «Сначала», «потом», «наконец» сыяктуу сөздөр — эмненин артынан эмне келерин көрсөткөн маяктар. Кел, тартипти калыбына келтирели!"
+    },
+    {
+      "key": "data.intro.forest_vl2_0_t",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Буква О.",
+      "en": "Letter О — like a hoop!",
+      "ky": "О тамгасы — чеңгел сыяктуу!"
+    },
+    {
+      "key": "data.intro.forest_vl2_1_t",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Буква У.",
+      "en": "Letter У — lips like a tube!",
+      "ky": "У тамгасы — эриндер трубка!"
+    },
+    {
+      "key": "data.intro.forest_vl3_1_t",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Буква Э.",
+      "en": "We know 5 vowels!",
+      "ky": "Биз 5 үндүүнү билебиз!"
+    },
+    {
+      "key": "data.intro.g1r_vowl1_1_t",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Мягкость",
+      "en": "Softening consonants",
+      "ky": "Үнсүздөрдүн жумшаруусу"
+    },
+    {
+      "key": "data.intro.g2e_daysl1_1_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Mon-Tue-Wed-Thu-Fri — рабочие дни. Sat-Sun — выходные. Тали, повторяй вслух!",
+      "en": "Mon-Tue-Wed-Thu-Fri — weekdays. Sat-Sun — weekend. Tali, say them out loud!",
+      "ky": "Бир жумада жети күн!"
+    },
+    {
+      "key": "data.intro.g2e_daysl2_0_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Yesterday — вчера. Today — сегодня. Tomorrow — завтра. «Today is Monday → Yesterday was Sunday → Tomorrow is Tuesday»",
+      "en": "Yesterday — the day before today. Tomorrow — the day after today!",
+      "ky": "Yesterday — кечөө. Tomorrow — эртең!"
+    },
+    {
+      "key": "data.intro.g2e_daysl3_1_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "On Monday, on Tuesday — с днями недели используем ON.",
+      "en": "Weekly timetable!",
+      "ky": "Жумалык жадыбал!"
+    },
+    {
+      "key": "data.intro.g2e_phrl1_0_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Please — пожалуйста (просьба). Thank you — спасибо (благодарность). You're welcome — пожалуйста (ответ на спасибо).",
+      "en": "Please — a polite request. Thank you — gratitude. You're welcome — a reply to thank you.",
+      "ky": "Please — сураныч. Thank you — рахмат!"
+    },
+    {
+      "key": "data.intro.g2e_phrl1_1_t",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Вежливость на английском",
+      "en": "Politeness",
+      "ky": "Сылыктык"
+    },
+    {
+      "key": "data.intro.g2e_phrl3_1_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Can I… — вежливый вопрос. Yes, you can — можно. No, you can't — нельзя.",
+      "en": "Can I go? — Can I leave?",
+      "ky": "Can I go? — Чыксам болобу?"
+    },
+    {
+      "key": "data.intro.g2e_schl2_0_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Math — математика, Art — рисование, PE — физкультура (Physical Education), Science — наука, English — английский.",
+      "en": "Math, Reading, PE (Physical Education)!",
+      "ky": "Math, Reading, PE (Physical Education)!"
+    },
     {
       "key": "data.intro.g2m_add2l1_0_b",
       "categories": [
@@ -21,6 +480,150 @@
       "ru": "20 + 30: смотри только на десятки: 2 + 3 = 5, добавь нолик → 50. Нули «не мешают», они просто показывают, что это десятки!",
       "en": "20 + 30: 2 tens + 3 tens = 5 tens = 50.",
       "ky": "20 + 30: 2 ондук + 3 ондук = 5 ондук = 50."
+    },
+    {
+      "key": "data.intro.g2r_sentl2_1_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Без второстепенных: «Кот ест». С ними: «Пушистый кот быстро ест вкусную рыбу». Разница чувствуется!",
+      "en": "They clarify the main members!",
+      "ky": "Алар негизги мүчөлөрдү тактайт!"
+    },
+    {
+      "key": "data.intro.g3e_dailyl1_1_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Do homework, go to bed.",
+      "en": "Use: wake up, eat, go to school, play, sleep — to describe your day.",
+      "ky": "Колдон: wake up, eat, go to school, play, sleep — күнүңдү сүрөттөө үчүн."
+    },
+    {
+      "key": "data.intro.g3e_dailyl2_1_t",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Части дня",
+      "en": "Morning, afternoon, evening",
+      "ky": "Таң, күн, кеч"
+    },
+    {
+      "key": "data.intro.g3m_tabl1_1_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "6 × 6 = 36 — запомни как «шесть шестёрок тридцать шесть»!",
+      "en": "6 x 6 = 36!",
+      "ky": "6 × 6 = 36!"
+    },
+    {
+      "key": "data.intro.g3m_tabl2_1_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "8 × 8 = 64 — «восемь восемь шестьдесят четыре». Запоминай парами!",
+      "en": "8 x 8 = 64!",
+      "ky": "8 × 8 = 64!"
+    },
+    {
+      "key": "data.intro.g3m_tabl3_1_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "9×9=81, 8+1=9. Правило всегда работает!",
+      "en": "9 x 9 = 81!",
+      "ky": "9 × 9 = 81!"
+    },
+    {
+      "key": "data.intro.g3w_geol1_1_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Стрелка компаса показывает на север. Тали, запомни: если лицом на север — справа восток, слева запад, сзади юг.",
+      "en": "A map is a flat representation of the Earth!",
+      "ky": "Карта — Жердин жалпак чагылдырылышы!"
+    },
+    {
+      "key": "data.intro.g3w_natl1_1_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Та же вода, что падала на динозавров миллионы лет назад, сейчас в твоём стакане. Серьёзно!",
+      "en": "Water is constantly moving!",
+      "ky": "Суу дайыма кыймылдайт!"
+    },
+    {
+      "key": "data.intro.g3w_natl2_0_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Нефть, газ, уголь — горючие ископаемые. Гранит, песок — строительные. Железная руда — металлическая.",
+      "en": "Oil, gas, coal — extracted from the ground!",
+      "ky": "Нефть, газ, көмүр — жерден казылат!"
+    },
+    {
+      "key": "data.intro.g3w_natl3_1_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Что мы делаем с природой, то возвращается к нам.",
+      "en": "Protect nature!",
+      "ky": "Жаратылышты корго!"
+    },
+    {
+      "key": "data.intro.g4r_cases_l1_1_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "«Я вижу кота» — кот отвечает на «кого?».",
+      "en": "“I see the cat” - the cat is the object here, answers “whom?”, is in the accusative case. That's why the ending changes!",
+      "ky": "«Я вижу кота» — «кота» бул жерде объект, «кимди?» деген суроого жооп берет, табыш жөндөмөдө турат. Ошондуктан мүчө өзгөрөт!"
+    },
+    {
+      "key": "data.intro.g4r_cases_l2_1_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "«Не хватает мамы» — отвечает на «кого?».",
+      "en": "“Mom is missing” - answers “whom?” The genitive is often used with negation or after “there is no” / “there is not enough”!",
+      "ky": "«Не хватает мамы» — «кимдин?» деген суроого жооп берет. Илик жөндөмө көбүнчө терс мааниде же «жок», «жетишпейт» деген сөздөрдөн кийин колдонулат!"
+    },
+    {
+      "key": "data.intro.g4r_cases_l3_1_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "«Думаю о лесе», «живу в городе».",
+      "en": "“I think about the forest”, “I live in the city” - answers “about whom? about what? where?” The prepositional case does NOT exist without a preposition!",
+      "ky": "«Думаю о лесе», «живу в городе» — «ким жөнүндө? эмне жөнүндө? кайда?» деген суроого жооп берет. Жандооч сөзсүз болбосо, предложный жөндөмө ЖОК!"
+    },
+    {
+      "key": "data.intro.g4r_conj_l2_1_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Вы пишЕТЕ. Они пишУТ.",
+      "en": "“Vy” (you-plural) and “oni” (they) are often confused: vy pishETE (2nd person plural), oni pishUT (3rd person plural). Different endings!",
+      "ky": "«Вы» жана «они» көп чаташтырылат: вы пишЕТЕ (2-жак көптүк), они пишУТ (3-жак көптүк). Мүчөлөрү башка!"
+    },
+    {
+      "key": "data.tasks.g1e_morning_greeting",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Утром, входя в класс, говорят:",
+      "en": "In the morning when you walk into class, which greeting is usually right: Good morning, Good night, or Goodbye?",
+      "ky": "Эртең менен класска киргенде куттуктоо үчүн кайсынысы туура: Good morning, Good night же Goodbye?"
+    },
+    {
+      "key": "data.tasks.g1e_opt_good_night",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Good night",
+      "en": "Good night",
+      "ky": "Good night (Кайырлуу түн)"
     },
     {
       "key": "data.tasks.g2r_opt_krasivyi",
@@ -59,6 +662,141 @@
       "ky": "Денени кыймылдатүү үчүн"
     },
     {
+      "key": "data.tasks.g2s_photosyn_needs",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Что нужно растению для фотосинтеза? Тали перечисляет: «свет, вода и… и… что ещё?»",
+      "en": "Photosynthesis requires:",
+      "ky": "Фотосинтез үчүн керек:"
+    },
+    {
+      "key": "data.tasks.g3m_25div5",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Знаешь, что 5 × 5 = 25? Реши обратную задачу: 25 ÷ 5 = ?",
+      "en": "25 ÷ 5 =?",
+      "ky": " 25 ÷ 5 =?"
+    },
+    {
+      "key": "data.tasks.g3m_30div10",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Раз 3 × 10 = 30, то 30 ÷ 10 = ?",
+      "en": "30 ÷ 10 =?",
+      "ky": " 30 ÷ 10 =?"
+    },
+    {
+      "key": "data.tasks.g3m_4x6",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "У осьминога 4 друга, у каждого по 6 рук. Тали считает: 4 × 6 = ?",
+      "en": "4 × 6 =?",
+      "ky": " 4 × 6 =?"
+    },
+    {
+      "key": "data.tasks.g3m_4x8",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Паук сплёл 4 паутины, в каждой 8 узелков. Сколько узелков завязал трудолюбивый паук? 4 × 8 = ?",
+      "en": "4 × 8 =?",
+      "ky": " 4 × 8 =?"
+    },
+    {
+      "key": "data.tasks.g3m_6x7",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "На каждой из 6 полок по 7 книг. Тали считает всю библиотеку: 6 × 7 = ?",
+      "en": "6 × 7 =?",
+      "ky": " 6 × 7 =?"
+    },
+    {
+      "key": "data.tasks.g3m_6x9",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Пчела облетела 6 цветков и собрала с каждого по 9 капель нектара. Тали хочет узнать итог: 6 × 9 = ?",
+      "en": "6 × 9 =?",
+      "ky": " 6 × 9 =?"
+    },
+    {
+      "key": "data.tasks.g3m_7x5",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Неделя — 7 дней. За 5 недель сколько дней? 7 × 5 = ?",
+      "en": "7 × 5 =?",
+      "ky": " 7 × 5 =?"
+    },
+    {
+      "key": "data.tasks.g3m_7x8",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Осьминог купил 7 тетрадей по 8 листов. Тали помогает считать: 7 × 8 = ?",
+      "en": "7 × 8 =?",
+      "ky": " 7 × 8 =?"
+    },
+    {
+      "key": "data.tasks.g3m_8x6",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "В 8 корзинах по 6 яблок. Тали готовится к пирогу: 8 × 6 = ?",
+      "en": "8 × 6 =?",
+      "ky": " 8 × 6 =?"
+    },
+    {
+      "key": "data.tasks.g3m_8x9",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Стадо из 8 коров даёт по 9 литров молока. Сколько литров получит фермер? 8 × 9 = ?",
+      "en": "8 × 9 =?",
+      "ky": " 8 × 9 =?"
+    },
+    {
+      "key": "data.tasks.g3m_9x4",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Кот прожил 4 из своих 9 жизней. Но сейчас важнее: 9 × 4 = ?",
+      "en": "9 × 4 =?",
+      "ky": " 9 × 4 =?"
+    },
+    {
+      "key": "data.tasks.g3m_9x6_check",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали утверждает: «9 × 6 = 54!» И добавляет: «5+4=9 — правило работает!» Он прав?",
+      "en": "9 × 6 = 54. Right?",
+      "ky": " 9 × 6 = 54. Верно?"
+    },
+    {
+      "key": "data.tasks.g3m_9x7",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "На 9 ёлках по 7 шишек. Белка хочет знать итог: 9 × 7 = ?",
+      "en": "9 × 7 =?",
+      "ky": " 9 × 7 =?"
+    },
+    {
+      "key": "data.tasks.g3m_9x9",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Магический квадрат: 9 рядов по 9 клеток. Сколько клеток на доске? 9 × 9 = ?",
+      "en": "9 × 9 =?",
+      "ky": " 9 × 9 =?"
+    },
+    {
       "key": "data.tasks.g3r_adjl1_q3_b",
       "categories": [
         "length_outlier"
@@ -66,6 +804,51 @@
       "ru": "Высокий дерево",
       "en": "Высокий дерево (wrong masculine ending)",
       "ky": "Высокий дерево (туура эмес эркек род)"
+    },
+    {
+      "key": "data.tasks.g3w_poaching_is",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Браконьер охотится незаконно. Что такое браконьерство?",
+      "en": "What is poaching?",
+      "ky": " Мыйзамсыз аң уулоо деген эмне?"
+    },
+    {
+      "key": "data.tasks.g4e_quest3_q1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Тали ответил: «Do you like cats?» → «Yes, I likes.» Spark говорит: «Нет, Тали, краткий ответ — это...»",
+      "en": "Choose: ___ books do you have?",
+      "ky": " Choose: ___ books do you have?"
+    },
+    {
+      "key": "data.tasks.g4e_quest3_q1_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Yes, I does.",
+      "en": "Where",
+      "ky": "Where"
+    },
+    {
+      "key": "data.tasks.g4e_quest3_q1_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Yes, I do.",
+      "en": "How many",
+      "ky": "How many"
+    },
+    {
+      "key": "data.tasks.g4e_quest3_q1_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Yes, I am.",
+      "en": "What",
+      "ky": "What"
     },
     {
       "key": "data.tasks.g4e_quest3_q3",
@@ -140,514 +923,644 @@
       "ky": "What"
     },
     {
-      "key": "data.tasks.g4e_quest_q4",
+      "key": "data.tasks.g4r_cases2_q2",
       "categories": [
         "length_outlier"
       ],
-      "ru": "Инопланетянин приземлился и задаёт вопрос: «___ humans sleep at night?» Какое слово начинает вопрос?",
-      "en": "Choose: ___ did you go yesterday?",
-      "ky": " Choose: ___ did you go yesterday?"
+      "ru": "«Я дал корм собака.» Как правильно?",
+      "en": "Tali wrote a letter: “Я дал корм собака.” Word says the case is wrong. “Дал кому?” — so you need…",
+      "ky": "Тали кат жазды: «Я дал корм собака.» Сөз жөндөмө туура эмес дейт. «Дал кому?» — демек керек…"
     },
     {
-      "key": "data.tasks.g4e_quest_q4_a",
+      "key": "data.tasks.g4r_cases2_q2_a",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "Are",
-      "en": "What",
-      "ky": "What"
+      "ru": "Дательный: «собаке»",
+      "en": "Dative: «собаке»",
+      "ky": "Барыш: «собаке»"
     },
     {
-      "key": "data.tasks.g4e_quest_q4_b",
+      "key": "data.tasks.g4r_cases2_q2_b",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "Do",
-      "en": "Where",
-      "ky": "Where"
+      "ru": "Именительный: «собака»",
+      "en": "Nominative: «собака»",
+      "ky": "Атооч: «собака»"
     },
     {
-      "key": "data.tasks.g4e_quest_q4_c",
+      "key": "data.tasks.g4r_cases2_q2_c",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "Is",
-      "en": "Who",
-      "ky": "Who"
+      "ru": "Родительный: «собаки»",
+      "en": "Genitive: «собаки»",
+      "ky": "Илик: «собаки»"
     },
     {
-      "key": "data.tasks.g4s_help2_q1",
+      "key": "data.tasks.g4r_cases2_q3",
       "categories": [
         "length_outlier"
       ],
-      "ru": "«Дай мне ластик!» vs. «Можешь одолжить ластик, пожалуйста?» Какой вариант вежливее?",
-      "en": "What does \"mutual assistance\" mean?",
-      "ky": " Что значит «взаимопомощь»?"
+      "ru": "«Не хватает ___» (друг). Какой падеж?",
+      "en": "Tali didn’t wait for his friend and wrote: “Подожди — не хватает ___ (друг).” Which case is needed?",
+      "ky": "Тали досун күтпөй калып жазды: «Подожди — не хватает ___ (друг).» Кайсы жөндөмө керек?"
     },
     {
-      "key": "data.tasks.g4s_help2_q1_a",
+      "key": "data.tasks.g4r_cases2_q3_a",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "Первый — он короткий и понятный",
-      "en": "Помогать только себе",
-      "ky": "Помогать только себе"
+      "ru": "друг (именительный)",
+      "en": "друг (nominative)",
+      "ky": "друг (атооч)"
     },
     {
-      "key": "data.tasks.g4s_help2_q1_b",
+      "key": "data.tasks.g4r_cases2_q3_b",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "Второй — вежливый вопрос, а не приказ",
-      "en": "Помогать друг другу",
-      "ky": "Помогать друг другу"
+      "ru": "друга (родительный)",
+      "en": "друга (genitive)",
+      "ky": "друга (илик)"
     },
     {
-      "key": "data.tasks.g4s_help2_q1_c",
+      "key": "data.tasks.g4r_cases2_q3_c",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "Оба одинаково вежливые",
-      "en": "Просить помощи",
-      "ky": "Просить помощи"
+      "ru": "другу (дательный)",
+      "en": "другу (dative)",
+      "ky": "другу (барыш)"
     },
     {
-      "key": "data.tasks.g4s_help2_q3_b",
+      "key": "data.tasks.g4r_cases2_q4",
       "categories": [
         "length_outlier"
       ],
-      "ru": "Ничего не говорить — и так понятно",
-      "en": "Не смотреть",
-      "ky": "Не смотреть"
+      "ru": "«Отправить письмо ___» (мама).",
+      "en": "The dinosaur mail carrier delivers letters: “Отправить письмо ___ (мама).” Put the word in the correct case.",
+      "ky": "Динозавр-почтальон каттарды таратат: «Отправить письмо ___ (мама).» Сөздү туура жөндөмөгө кой."
     },
     {
-      "key": "data.tasks.g4s_help3_q1",
+      "key": "data.tasks.g4r_cases3_q1",
       "categories": [
         "length_outlier"
       ],
-      "ru": "Маша потеряла рюкзак на перемене. К кому ей сначала обратиться?",
-      "en": "Why help strangers?",
-      "ky": " Зачем помогают незнакомым?"
+      "ru": "«Мы говорили о лес.» Как правильно?",
+      "en": "Tali wrote: “Мы говорили о лес.” Word looks and says: “Tali, here you need the prepositional case — it always comes with a preposition!” What’s correct?",
+      "ky": "Тали жазды: «Мы говорили о лес.» Сөз карап айтат: «Тали, бул жерде предложный жөндөмө керек — ал ар дайым предлог менен!» Кантип туура?"
     },
     {
-      "key": "data.tasks.g4s_help3_q1_a",
+      "key": "data.tasks.g4r_cases3_q1_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Предложный: «о лесе»",
+      "en": "Prepositional: «о лесе»",
+      "ky": "Жатыш/предложный: «о лесе»"
+    },
+    {
+      "key": "data.tasks.g4r_cases3_q1_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Винительный: «о лес»",
+      "en": "Accusative: «о лес»",
+      "ky": "Табыш: «о лес»"
+    },
+    {
+      "key": "data.tasks.g4r_cases3_q1_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Дательный: «о лесу»",
+      "en": "Dative: «о лесу»",
+      "ky": "Барыш: «о лесу»"
+    },
+    {
+      "key": "data.tasks.g4r_cases3_q2",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "«Я стал ___» (художник).",
+      "en": "Tali draws a self-portrait and writes a caption: “Я стал ___ (художник).” Which case is needed after «стал»?",
+      "ky": "Тали автопортрет тартып, колтамга жазат: «Я стал ___ (художник).» «Стал» сөзүнөн кийин кайсы жөндөмө керек?"
+    },
+    {
+      "key": "data.tasks.g4r_cases3_q2_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "художник (именительный)",
+      "en": "художник (nominative)",
+      "ky": "художник (атооч)"
+    },
+    {
+      "key": "data.tasks.g4r_cases3_q2_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "художником (творительный)",
+      "en": "художником (instrumental)",
+      "ky": "художником (творительный)"
+    },
+    {
+      "key": "data.tasks.g4r_cases3_q2_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "художнику (дательный)",
+      "en": "художнику (dative)",
+      "ky": "художнику (барыш)"
+    },
+    {
+      "key": "data.tasks.g4r_cases3_q3",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Какой падеж всегда употребляется с предлогом?",
+      "en": "Word asks Tali: “Which case is never used without a preposition?” Tali thinks and says: “Dative!” Is Tali right?",
+      "ky": "Сөз Талиден сурайт: «Кайсы жөндөмө эч качан предлогсуз колдонулбайт?» Тали ойлонуп айтат: «Дательный!» Тали туурабы?"
+    },
+    {
+      "key": "data.tasks.g4r_cases3_q3_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Да, Тали прав — дательный",
+      "en": "Yes, Tali is right — dative",
+      "ky": "Ооба, Тали туура — барыш"
+    },
+    {
+      "key": "data.tasks.g4r_cases3_q3_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Нет, это предложный — только он всегда с предлогом",
+      "en": "No, it’s prepositional — only that one always takes a preposition",
+      "ky": "Жок, бул предложный — бир гана ал ар дайым предлог менен"
+    },
+    {
+      "key": "data.tasks.g4r_cases3_q3_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Нет, это творительный",
+      "en": "No, it’s instrumental",
+      "ky": "Жок, бул творительный"
+    },
+    {
+      "key": "data.tasks.g4r_cases_q2",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Найди подлежащее: «Книга лежит на столе.»",
+      "en": "Word asks to find the subject in “Книга лежит на столе.” Tali answers: “The subject is «столе»!” Is that correct?",
+      "ky": "Сөз «Книга лежит на столе» сүйлөмүнөн ээни табууну суранат. Тали жооп берет: «Ээ — «столе»!» Туурабы?"
+    },
+    {
+      "key": "data.tasks.g4r_cases_q2_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Нет, подлежащее «книга» — она в именительном падеже",
+      "en": "No, the subject is «книга» — it’s in the nominative",
+      "ky": "Жок, ээ — «книга», ал атооч жөндөмөдө"
+    },
+    {
+      "key": "data.tasks.g4r_cases_q2_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "столе",
+      "en": "Yes, Tali is right",
+      "ky": "Ооба, Тали туура"
+    },
+    {
+      "key": "data.tasks.g4r_cases_q2_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "подлежащего нет",
+      "en": "There is no subject",
+      "ky": "Ээ жок"
+    },
+    {
+      "key": "data.tasks.g4r_conj2_q1",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "«Мы петь вместе!» Как правильно?",
+      "en": "Tali wrote in his play: “Мы петь вместе на сцене!” Word says that isn’t a conjugated verb. What’s correct?",
+      "ky": "Тали пьесасына жазды: «Мы петь вместе на сцене!» Сөз бул жакталган этиш эмес дейт. Кантип туура?"
+    },
+    {
+      "key": "data.tasks.g4r_conj2_q1_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Мы поём",
+      "en": "Мы поём",
+      "ky": "Мы поём"
+    },
+    {
+      "key": "data.tasks.g4r_conj2_q1_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Мы поёте",
+      "en": "Мы поёте",
+      "ky": "Мы поёте"
+    },
+    {
+      "key": "data.tasks.g4r_conj2_q1_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Мы поют",
+      "en": "Мы поют",
+      "ky": "Мы поют"
+    },
+    {
+      "key": "data.tasks.g4r_conj2_q2",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "«Он читает книгу» → «Они ___ книгу».",
+      "en": "Tali changes a line in the play: “Он читает книгу” → “Они ___ книгу.” What changes in the verb?",
+      "ky": "Тали пьесадагы репликаны өзгөртөт: «Он читает книгу» → «Они ___ книгу.» Этиште эмне өзгөрөт?"
+    },
+    {
+      "key": "data.tasks.g4r_conj2_q2_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "читают",
+      "en": "читают",
+      "ky": "читают"
+    },
+    {
+      "key": "data.tasks.g4r_conj2_q2_b",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "читает",
+      "en": "читает",
+      "ky": "читает"
+    },
+    {
+      "key": "data.tasks.g4r_conj2_q2_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "читали",
+      "en": "читали",
+      "ky": "читали"
+    },
+    {
+      "key": "data.tasks.g4r_conj2_q3",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "«Вы знаешь правильный ответ?» Форма верна?",
+      "en": "Word asks Tali a line for the play: “Вы ___ правильный ответ?” (verb «знать»). Tali wrote «знаешь». Is that correct?",
+      "ky": "Сөз Талиге пьеса үчүн суроо берет: «Вы ___ правильный ответ?» («знать» этиши). Тали «знаешь» деп жазды. Туурабы?"
+    },
+    {
+      "key": "data.tasks.g4r_conj2_q3_a",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Нет, нужно «знаете»",
+      "en": "No, the correct form is «знаете»",
+      "ky": "Жок, туурасы «знаете»"
+    },
+    {
+      "key": "data.tasks.g4r_conj2_q3_b",
       "categories": [
         "length_outlier",
         "option_set_inconsistent"
       ],
-      "ru": "Сначала спорить с одноклассниками, кто взял",
-      "en": "Ради награды",
-      "ky": "Ради награды"
+      "ru": "Да, верна",
+      "en": "Yes, «знаешь» is correct",
+      "ky": "Ооба, «знаешь» туура"
     },
     {
-      "key": "data.tasks.g4s_help3_q1_b",
-      "categories": [
-        "length_outlier",
-        "option_set_inconsistent"
-      ],
-      "ru": "Сначала к учителю или в учительскую, потом действовать по указанию взрослых",
-      "en": "Из сочувствия и доброты",
-      "ky": "Из сочувствия и доброты"
-    },
-    {
-      "key": "data.tasks.g4s_help3_q1_c",
+      "key": "data.tasks.g4r_conj2_q3_c",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "Никуда не обращаться — само найдётся",
-      "en": "Из обязанности",
-      "ky": "Из обязанности"
+      "ru": "Нет, нужно «знают»",
+      "en": "No, the correct form is «знают»",
+      "ky": "Жок, туурасы «знают»"
     },
     {
-      "key": "data.tasks.g4s_help3_q2",
+      "key": "data.tasks.g4r_conj2_q4",
       "categories": [
         "length_outlier"
       ],
-      "ru": "Младший брат Тали плачет, но не говорит почему. Что поможет ему рассказать о своей проблеме?",
-      "en": "What is a volunteer?",
-      "ky": " Ыктыярчы деген эмне?"
+      "ru": "«Они ___ через лес» (глагол «идти»).",
+      "en": "In Tali’s play, a squad of dinosaur knights set out on a hike. “Они ___ через лес.” Put the verb «идти» in the correct form.",
+      "ky": "Талинин пьесасында динозавр-рыцарлар отряды жортуулга чыкты. «Они ___ через лес.» «Идти» этишин туура формада кой."
     },
     {
-      "key": "data.tasks.g4s_help3_q2_a",
-      "categories": [
-        "option_set_inconsistent"
-      ],
-      "ru": "Кричать: «Говори немедленно!»",
-      "en": "Помогает за деньги",
-      "ky": "Помогает за деньги"
-    },
-    {
-      "key": "data.tasks.g4s_help3_q2_b",
-      "categories": [
-        "option_set_inconsistent"
-      ],
-      "ru": "Спокойно спросить и выслушать",
-      "en": "Помогает добровольно",
-      "ky": "Помогает добровольно"
-    },
-    {
-      "key": "data.tasks.g4s_help3_q2_c",
-      "categories": [
-        "option_set_inconsistent"
-      ],
-      "ru": "Отвернуться — сам успокоится",
-      "en": "Просит помощи",
-      "ky": "Просит помощи"
-    },
-    {
-      "key": "data.tasks.g4s_help3_q3",
+      "key": "data.tasks.g4r_conj3_q3",
       "categories": [
         "length_outlier"
       ],
-      "ru": "Тали хочет помочь пожилой соседке донести сумку. Как правильно предложить помощь, чтобы не обидеть?",
-      "en": "How to react if you were helped?",
-      "ky": " Сага жардам бергенде кандай жооп берүү керек?"
+      "ru": "«Мы бежит к финишу!» Как правильно?",
+      "en": "Tali wrote the last line of the play: “Мы бежит к финишу!” Word says the verb form is wrong. Fix it for Tali!",
+      "ky": "Тали пьесанын акыркы репликасын жазды: «Мы бежит к финишу!» Сөз этиштин формасы туура эмес дейт. Тали үчүн оңдоп кой!"
     },
     {
-      "key": "data.tasks.g4s_help3_q3_a",
+      "key": "data.tasks.g4r_conj3_q3_a",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "«Дай я сам — ты слабая»",
-      "en": "Промолчать",
-      "ky": "Промолчать"
+      "ru": "бежит",
+      "en": "бежит",
+      "ky": "бежит"
     },
     {
-      "key": "data.tasks.g4s_help3_q3_b",
+      "key": "data.tasks.g4r_conj3_q3_b",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "«Мне не нужна твоя помощь» (это чужая реплика, не предложение)",
-      "en": "Убежать",
-      "ky": "Убежать"
+      "ru": "бежите",
+      "en": "бежите",
+      "ky": "бежите"
     },
     {
-      "key": "data.tasks.g4s_help3_q3_c",
+      "key": "data.tasks.g4r_conj3_q3_c",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "«Могу помочь донести?»",
-      "en": "Сказать «спасибо»",
-      "ky": "Сказать «спасибо»"
+      "ru": "бежим",
+      "en": "бежим",
+      "ky": "бежим"
     },
     {
-      "key": "data.tasks.g4s_help3_q4",
+      "key": "data.tasks.g4r_conj_q1_b",
       "categories": [
         "length_outlier"
       ],
-      "ru": "Учитель объяснил тему, но Тали не понял. Тали говорит: «Подниму руку прямо сейчас и перебью!» Friendly морщится. Как лучше поступить?",
-      "en": "What should you do if you see that someone is ill?",
-      "ky": " Что делать, если видишь, что кому-то плохо?"
+      "ru": "Да, верна",
+      "en": "Yes, the form is correct",
+      "ky": "Ооба, форма туура"
     },
     {
-      "key": "data.tasks.g4s_help3_q4_a",
-      "categories": [
-        "option_set_inconsistent"
-      ],
-      "ru": "Перебить с места громко",
-      "en": "Не замечать",
-      "ky": "Не замечать"
-    },
-    {
-      "key": "data.tasks.g4s_help3_q4_b",
-      "categories": [
-        "option_set_inconsistent"
-      ],
-      "ru": "Подойти после урока или поднять руку в подходящий момент",
-      "en": "Спросить: «Тебе помочь?»",
-      "ky": "Спросить: «Тебе помочь?»"
-    },
-    {
-      "key": "data.tasks.g4s_help3_q4_c",
-      "categories": [
-        "option_set_inconsistent"
-      ],
-      "ru": "Шептать на весь класс",
-      "en": "Позвать смотреть",
-      "ky": "Позвать смотреть"
-    },
-    {
-      "key": "data.tasks.g4s_help_q1",
+      "key": "data.tasks.g4r_conj_q2",
       "categories": [
         "length_outlier"
       ],
-      "ru": "Тали стоит с пакетами перед тяжёлой дверью и говорит: «Сам справлюсь!» — и продолжает толкать её ногой. Это мудрое решение?",
-      "en": "What if a friend falls and gets hurt?",
-      "ky": " Что сделать, если друг упал и поранился?"
+      "ru": "Как сказать «читать» про ты?",
+      "en": "Word asks Tali: what is the verb «читать» for «ты»? Tali is thinking… Help him!",
+      "ky": "Сөз Талиден сурайт: «читать» этиши «ты» үчүн кандай болот? Тали ойлонуп жатат… Ага жардам бер!"
     },
     {
-      "key": "data.tasks.g4s_help_q1_a",
-      "categories": [
-        "length_outlier",
-        "option_set_inconsistent"
-      ],
-      "ru": "Да, надо всегда справляться самому",
-      "en": "Посмеяться",
-      "ky": "Посмеяться"
-    },
-    {
-      "key": "data.tasks.g4s_help_q1_b",
+      "key": "data.tasks.g4r_conj_q2_a",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "Нет — лучше попросить кого-то придержать дверь",
-      "en": "Помочь и позвать взрослого",
-      "ky": "Помочь и позвать взрослого"
+      "ru": "читаешь",
+      "en": "читаешь",
+      "ky": "читаешь"
     },
     {
-      "key": "data.tasks.g4s_help_q1_c",
+      "key": "data.tasks.g4r_conj_q2_b",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "Да, можно и дальше толкать ногой",
-      "en": "Уйти",
-      "ky": "Уйти"
+      "ru": "читает",
+      "en": "читает",
+      "ky": "читает"
     },
     {
-      "key": "data.tasks.g4s_help_q3",
+      "key": "data.tasks.g4r_conj_q2_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "читали",
+      "en": "читали",
+      "ky": "читали"
+    },
+    {
+      "key": "data.tasks.g4r_text2_q1_b",
       "categories": [
         "length_outlier"
       ],
-      "ru": "Одноклассник не понимает задание, но молчит и расстраивается. Что ему стоит сделать?",
-      "en": "What does it mean to “help”?",
-      "ky": " Что значит «помогать»?"
+      "ru": "Ёж всегда злой",
+      "en": "The hedgehog is always angry and doesn’t want to talk",
+      "ky": "Кирпи ар дайым ачуулуу жана сүйлөшкүсү келбейт"
     },
     {
-      "key": "data.tasks.g4s_help_q3_a",
-      "categories": [
-        "option_set_inconsistent"
-      ],
-      "ru": "Молчать и злиться дальше",
-      "en": "Делать всё за другого",
-      "ky": "Делать всё за другого"
-    },
-    {
-      "key": "data.tasks.g4s_help_q3_b",
-      "categories": [
-        "option_set_inconsistent"
-      ],
-      "ru": "Смеяться над собственной ошибкой",
-      "en": "Не обращать внимания",
-      "ky": "Не обращать внимания"
-    },
-    {
-      "key": "data.tasks.g4s_help_q3_c",
-      "categories": [
-        "option_set_inconsistent"
-      ],
-      "ru": "Сказать учителю или попросить одноклассника объяснить",
-      "en": "Поддерживать в нужный момент",
-      "ky": "Поддерживать в нужный момент"
-    },
-    {
-      "key": "data.tasks.g4s_help_q4",
+      "key": "data.tasks.g4r_text2_q3",
       "categories": [
         "length_outlier"
       ],
-      "ru": "Тали первый раз едет в новый район и не знает дороги. Он говорит: «Буду ехать наугад — не хочу спрашивать, это стыдно.» Согласен ли с ним Friendly?",
-      "en": "How do you feel about helping others?",
-      "ky": " Башкаларга жардам берип жатканда өзүңдү кандай сезесиң?"
+      "ru": "Расставь по порядку. Какое предложение первое?",
+      "en": "Tali mixed up the sentences of his rain story. Which should come first so the text makes sense?",
+      "ky": "Тали жамгыр жөнүндөгү аңгемесинин сүйлөмдөрүн аралаштырып жиберди. Текст байланыштуу болушу үчүн кайсыны биринчи коюш керек?"
     },
     {
-      "key": "data.tasks.g4s_help_q4_a",
+      "key": "data.tasks.g4r_text2_q3_a",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "Да, лучше разобраться самому",
-      "en": "Плохо",
-      "ky": "Плохо"
+      "ru": "Сначала пошёл дождь.",
+      "en": "First it started to rain.",
+      "ky": "Адегенде жамгыр жаады."
     },
     {
-      "key": "data.tasks.g4s_help_q4_b",
-      "categories": [
-        "length_outlier",
-        "option_set_inconsistent"
-      ],
-      "ru": "Нет — лучше спокойно спросить взрослого и назвать адрес",
-      "en": "Хорошо и радостно",
-      "ky": "Хорошо и радостно"
-    },
-    {
-      "key": "data.tasks.g4s_help_q4_c",
+      "key": "data.tasks.g4r_text2_q3_b",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "Да, просить помощи — это стыдно",
-      "en": "Никак",
-      "ky": "Никак"
+      "ru": "Поэтому лужи блестели.",
+      "en": "That’s why the puddles sparkled.",
+      "ky": "Ошондуктан көлчүктөр жылтырады."
     },
     {
-      "key": "data.tasks.g4s_turn2_q1",
+      "key": "data.tasks.g4r_text2_q3_c",
+      "categories": [
+        "option_set_inconsistent"
+      ],
+      "ru": "Наконец стало темно.",
+      "en": "At last it grew dark.",
+      "ky": "Акыры караңгы болду."
+    },
+    {
+      "key": "data.tasks.g4r_text2_q4",
       "categories": [
         "length_outlier"
       ],
-      "ru": "Тали не знает, как честно разделить самокат между тремя друзьями. Friendly предлагает варианты. Какой самый справедливый?",
-      "en": "Another is playing with a toy. What will you do?",
-      "ky": " Другой играет с игрушкой. Что сделаешь?"
+      "ru": "Где чаще всего находится главная мысль текста?",
+      "en": "Word asks Tali: “Where does the main idea of a story most often hide?” Tali says: “Only in the middle!” Is that true?",
+      "ky": "Сөз Талиден сурайт: «Аңгеменин негизги ою көбүнчө кайда жашынат?» Тали айтат: «Бир гана ортосунда!» Туурабы?"
     },
     {
-      "key": "data.tasks.g4s_turn2_q1_a",
-      "categories": [
-        "length_outlier",
-        "option_set_inconsistent"
-      ],
-      "ru": "Тали берёт самокат себе — он же хозяин",
-      "en": "Take it away",
-      "ky": "Тартып алуу"
-    },
-    {
-      "key": "data.tasks.g4s_turn2_q1_b",
-      "categories": [
-        "option_set_inconsistent"
-      ],
-      "ru": "По очереди — каждому по одинаковому времени",
-      "en": "Wait or ask politely",
-      "ky": "Күтүү же сылыктык менен суроо"
-    },
-    {
-      "key": "data.tasks.g4s_turn2_q1_c",
-      "categories": [
-        "option_set_inconsistent"
-      ],
-      "ru": "Кто сильнее — тот и катается",
-      "en": "Cry",
-      "ky": "Ыйлоо"
-    },
-    {
-      "key": "data.tasks.g4s_turn2_q2",
+      "key": "data.tasks.g4r_text3_q1",
       "categories": [
         "length_outlier"
       ],
-      "ru": "Один ребёнок всегда берёт самый большой кусок пирога. Как объяснить ему про справедливость?",
-      "en": "What is a compromise?",
-      "ky": " Компромисс деген эмне?"
+      "ru": "Что было первым: нашла гриб, позвала сестру, набрали корзину?",
+      "en": "Tali read: “Сначала Маша нашла гриб. Потом позвала сестру. Наконец они набрали полную корзину.” He thinks “позвала сестру” came first. Correct Tali — what happened first?",
+      "ky": "Тали окуду: «Сначала Маша нашла гриб. Потом позвала сестру. Наконец они набрали полную корзину.» Ал «позвала сестру» биринчи болду деп ойлойт. Талини оңдо — эң биринчи эмне болду?"
     },
     {
-      "key": "data.tasks.g4s_turn2_q2_a",
-      "categories": [
-        "length_outlier",
-        "option_set_inconsistent"
-      ],
-      "ru": "Решение, при котором всем понятно и никто не обижен — это и есть справедливость",
-      "en": "A solution for both sides",
-      "ky": "Эки тарап үчүн чечим"
-    },
-    {
-      "key": "data.tasks.g4s_turn2_q2_b",
+      "key": "data.tasks.g4r_text3_q1_a",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "Победа одного — это нормально",
-      "en": "One person's victory",
-      "ky": "Бир адамдын жеңиши"
+      "ru": "набрали корзину",
+      "en": "they filled the basket",
+      "ky": "себетти толтурушту"
     },
     {
-      "key": "data.tasks.g4s_turn2_q2_c",
+      "key": "data.tasks.g4r_text3_q1_b",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "Справедливость — это ссора",
-      "en": "An argument",
-      "ky": "Талаш"
+      "ru": "позвала сестру",
+      "en": "she called her sister",
+      "ky": "эжесин чакырды"
     },
     {
-      "key": "data.tasks.g4s_turn2_q3_a",
-      "categories": [
-        "length_outlier"
-      ],
-      "ru": "Это слабость, уступать не надо",
-      "en": "Weakness",
-      "ky": "Алсыздык"
-    },
-    {
-      "key": "data.tasks.g4s_turn2_q3_b",
-      "categories": [
-        "length_outlier"
-      ],
-      "ru": "Это грубость в ответ на грубость",
-      "en": "Rudeness",
-      "ky": "Дөрөкөлүк"
-    },
-    {
-      "key": "data.tasks.g4s_turn2_q3_c",
-      "categories": [
-        "length_outlier"
-      ],
-      "ru": "Это решение, при котором каждая сторона чуть-чуть уступает ради общего блага",
-      "en": "Willingness to compromise",
-      "ky": "Ийкемдүүлүк"
-    },
-    {
-      "key": "data.tasks.g4s_turn3_q4_a",
-      "categories": [
-        "length_outlier"
-      ],
-      "ru": "Объявить — это правильно, Тали прав",
-      "en": "Shout",
-      "ky": "Кыйкыруу"
-    },
-    {
-      "key": "data.tasks.g4s_turn3_q4_b",
-      "categories": [
-        "length_outlier"
-      ],
-      "ru": "Сначала нужно поговорить со всеми участниками и получить согласие",
-      "en": "Talk and find a solution together",
-      "ky": "Сүйлөшүп, чечим табуу"
-    },
-    {
-      "key": "data.tasks.g4s_turn_q1",
-      "categories": [
-        "length_outlier"
-      ],
-      "ru": "Тали собирается прыгнуть к другу в середину очереди. Friendly тихо останавливает его. Как правильно поступить?",
-      "en": "What does it mean to “wait your turn”?",
-      "ky": " Что значит «ждать своей очереди»?"
-    },
-    {
-      "key": "data.tasks.g4s_turn_q1_a",
+      "key": "data.tasks.g4r_text3_q1_c",
       "categories": [
         "option_set_inconsistent"
       ],
-      "ru": "Прыгнуть — друг же позвал!",
-      "en": "Take first",
-      "ky": "Биринчи алуу"
+      "ru": "нашла гриб",
+      "en": "she found a mushroom",
+      "ky": "козу карын тапты"
     },
     {
-      "key": "data.tasks.g4s_turn_q1_b",
-      "categories": [
-        "option_set_inconsistent"
-      ],
-      "ru": "Уважать право других на очередь и встать в конец",
-      "en": "Respect others and do not interrupt",
-      "ky": "Башкаларды урматтоо жана бөлбөө"
-    },
-    {
-      "key": "data.tasks.g4s_turn_q1_c",
-      "categories": [
-        "option_set_inconsistent"
-      ],
-      "ru": "Кричать, чтобы пропустили быстрее",
-      "en": "Shout louder",
-      "ky": "Катуураак кыйкыруу"
-    },
-    {
-      "key": "data.tasks.g4s_turn_q3_c",
+      "key": "data.tasks.g4r_text_q2_b",
       "categories": [
         "length_outlier"
       ],
-      "ru": "Потому что это нарушает право других на уважение",
-      "en": "It shows respect",
-      "ky": "Бул урматтоонун белгиси"
+      "ru": "концовка",
+      "en": "the ending (концовка)",
+      "ky": "концовка (аягы)"
     },
     {
-      "key": "data.tasks.g4s_turn_q4_b",
+      "key": "data.tasks.g4r_text_q4",
       "categories": [
         "length_outlier"
       ],
-      "ru": "Договориться заранее и соблюдать порядок",
-      "en": "Raise your hand",
-      "ky": "Колду көтөрүү"
+      "ru": "Как называется первая часть рассказа?",
+      "en": "Tali writes a story about a kitten. He calls the first part “table of contents.” Word says that name is wrong. What is the first part of a story really called?",
+      "ky": "Тали мышык баласы жөнүндө аңгеме жазат. Биринчи бөлүктү «мазмуну» деп атат. Сөз ат туура эмес дейт. Аңгеменин биринчи бөлүгү чындыгында кандай аталат?"
+    },
+    {
+      "key": "data.tasks.nrw_fconl1_t3_q",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Найди слово, которое начинается на С.",
+      "en": "Tali is looking for a word that starts with the letter С. He says: \"It's Мышка (mouse)!\" Help him find the right one.",
+      "ky": "Тали С тамгасына сөз издейт. «Бул Мышка!» — дейт. Туурасын табууга жардам бер."
+    },
+    {
+      "key": "data.tasks.nrw_fconl3_t2_q",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Буква Н — гласная или согласная?",
+      "en": "Is the letter Н a vowel or a consonant? Tali thinks it's a vowel because \"it sounds soft.\" Is he right?",
+      "ky": "Н тамгасы үндүүбү же үнсүзбү? Тали аны үндүү деп ойлойт, анткени «жумшак угулат». Ал туурабы?"
+    },
+    {
+      "key": "data.tasks.nrw_fsyll2_t3_q",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Слово СО-ВА. Сколько слогов?",
+      "en": "Tali is flying on an owl. SO-VA — how many syllable-bricks are in the name of his ride?",
+      "ky": "Тали үкүдө учуп баратат. СО-ВА — анын унаасынын атында канча муун бар?"
+    },
+    {
+      "key": "data.tasks.nrw_fsyll3_t2_q",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Слово НО-РА. Сколько слогов?",
+      "en": "The fox invited Tali into her burrow (NORA). How many syllables are in the word NORA?",
+      "ky": "Түлкү Талини НО-РУ дегенге чакырды. НОРА сөзүндө канча муун бар?"
+    },
+    {
+      "key": "data.tasks.nrw_fvl1_t4_q",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "В каком слове нет буквы А?",
+      "en": "A spy hid the letter A in one of the words. Which word doesn't have it — that's where the spy wasn't hiding!",
+      "ky": "Тыңчы А тамгасын сөздөрдүн биринде жашырды. Кайсы сөздө ал жок — ошол жерде тыңчы жашынган эмес!"
+    },
+    {
+      "key": "data.tasks.nrw_ganiml3_t1_q",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Где живёт рыба?",
+      "en": "Tali is an underwater explorer! He found a little fish. Where do fish live?",
+      "ky": "Тали суу астындагы изилдөөчү! Ал майда балык тапты. Балык кайда жашайт?"
+    },
+    {
+      "key": "data.tasks.nrw_ganiml3_t4_q",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Крылья, клюв, поёт. Это:",
+      "en": "Tali sees a creature with wings and a beak through his binoculars. It sings. What is it?",
+      "ky": "Тали дурбу менен канаттуу жана тумшуктуу жандыкты көрөт. Ал ырдайт. Бул ким?"
+    },
+    {
+      "key": "data.tasks.nrw_gcoll1_t4_b",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Морковка",
+      "en": "No — the sky is blue!",
+      "ky": "Жок — асман көк!"
+    },
+    {
+      "key": "data.tasks.nrw_gseasl1_t1_q",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Листья летят с деревьев. Хруст. Какое время года?",
+      "en": "Tali is walking through the park and hears crunching. Leaves are falling from the trees. \"It's summer!\" says Tali. What season is it?",
+      "ky": "Тали парк аралап баратып, бут астынан кыртылдаган добуш угат. Дарактардан жалбырактар түшүп жатат. «Бул жай!» — дейт Тали. Кайсы мезгил?"
+    },
+    {
+      "key": "data.tasks.nrw_gseasl2_t3_q",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Когда птицы прилетают из тёплых стран?",
+      "en": "Tali hears a familiar song in the sky — the birds are back! In which season do birds return from warm countries?",
+      "ky": "Тали асманда тааныш ырды угат — куштар кайтып келди! Куштар жылуу өлкөлөрдөн кайсы мезгилде учуп келет?"
+    },
+    {
+      "key": "data.tasks.nrw_ianiml2_t2_q",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Where does a fish live?",
+      "en": "Tali drops his toy fish in the tank. Where does a fish live?",
+      "ky": "Тали оюнчук балыгын аквариумга салат. Балык кайда жашайт?"
+    },
+    {
+      "key": "data.tasks.nrw_icoll1_t3_q",
+      "categories": [
+        "length_outlier"
+      ],
+      "ru": "Is grass GREEN?",
+      "en": "Tali runs across the grass. Is grass GREEN?",
+      "ky": "Тали чөп аркылуу чуркайт. Чөп GREEN түстөбү?"
     }
   ]
 }

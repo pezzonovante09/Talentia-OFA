@@ -1,18 +1,19 @@
 import type { TaskContext } from '../services/companionService';
-import type {
-  ActionInstructionTask,
-  FillBlankTask,
-  ImagePointTask,
-  ImageWordMatchTask,
-  InputTask,
-  Lesson,
-  LessonTask,
-  MultipleChoiceTask,
-  Topic,
-  VolumeControlTask,
-  VocalImitationTask,
-  WordRepetitionTask,
-  WorldKnowledgeTask,
+import {
+  resolveInputTaskAnswer,
+  type ActionInstructionTask,
+  type FillBlankTask,
+  type ImagePointTask,
+  type ImageWordMatchTask,
+  type InputTask,
+  type Lesson,
+  type LessonTask,
+  type MultipleChoiceTask,
+  type Topic,
+  type VolumeControlTask,
+  type VocalImitationTask,
+  type WordRepetitionTask,
+  type WorldKnowledgeTask,
 } from '../data/worlds';
 
 type Translate = (key: string) => string;
@@ -28,11 +29,12 @@ export function lessonTaskToCompanionContext(params: {
   childMode: string;
   methodology: string | null;
   isEnglishLesson: boolean;
+  language: string;
   t: Translate;
   tEn: Translate;
   optionText: (textKey: string) => string;
 }): TaskContext {
-  const { task, lesson, topic, childMode, methodology, isEnglishLesson, t, tEn, optionText } =
+  const { task, lesson, topic, childMode, methodology, isEnglishLesson, language, t, tEn, optionText } =
     params;
 
   const answerOptions = ((): string[] | undefined => {
@@ -85,7 +87,7 @@ export function lessonTaskToCompanionContext(params: {
         return h?.labelKey ? t(h.labelKey) : h?.id;
       }
       case 'input':
-        return String((task as InputTask).answer);
+        return resolveInputTaskAnswer(task as InputTask, language);
       case 'vocal_imitation':
         return t((task as VocalImitationTask).soundTextKey);
       case 'word_repetition':

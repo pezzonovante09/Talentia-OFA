@@ -77,8 +77,21 @@ export type MultipleChoiceTask = BaseTask & {
 export type InputTask = BaseTask & {
   type: 'input';
   answer: string;
+  /**
+   * Optional per-locale override for tasks where the correct literal answer is itself a
+   * translated concept (e.g. "No"/"Нет"/"Жок", a literary term) rather than fixed
+   * target-language content that must stay identical across locales (an English verb form,
+   * a Russian case example). Falls back to `answer` (RU) when a locale isn't listed.
+   */
+  answerByLocale?: Partial<Record<'ru' | 'en' | 'ky', string>>;
   placeholderKey?: string;
 };
+
+/** Resolves an input task's correct answer for the given UI language. */
+export function resolveInputTaskAnswer(task: InputTask, language: string): string {
+  const byLocale = task.answerByLocale?.[language as 'ru' | 'en' | 'ky'];
+  return byLocale ?? task.answer;
+}
 
 export type ImagePointHotspot = {
   id: string;
@@ -1199,8 +1212,8 @@ export const worlds: World[] = [
                   { id: 'c', textKey: 'data.tasks.lab_ph_q2_c', correct: false },
                 ],
               },
-              { id: 'lab-ph-1-t3', type: 'input', questionKey: 'data.tasks.lab_ph_q3', difficulty: 2, answer: "Равновесие" },
-              { id: 'lab-ph-1-t4', type: 'input', questionKey: 'data.tasks.lab_ph_q4', difficulty: 2, answer: "Вправо" },
+              { id: 'lab-ph-1-t3', type: 'input', questionKey: 'data.tasks.lab_ph_q3', difficulty: 2, answer: "Равновесие", answerByLocale: { en: "Balance", ky: "Тең салмактуулук" } },
+              { id: 'lab-ph-1-t4', type: 'input', questionKey: 'data.tasks.lab_ph_q4', difficulty: 2, answer: "Вправо", answerByLocale: { en: "Right", ky: "Оңго" } },
               // Montessori
               // ABA
               { id: 'lab-ph-1-a1', type: 'multiple_choice', audience: 'special_aba', questionKey: 'data.tasks.aba_labPhysics_q1', difficulty: 2, options: [{ id: 'opt-2', textKey: 'data.tasks.opt_two', correct: true }, { id: 'opt-3', textKey: 'data.tasks.opt_three', correct: false }, { id: 'opt-4', textKey: 'data.tasks.opt_four', correct: false }] },
@@ -2629,7 +2642,7 @@ export const worlds: World[] = [
             { id: 'g2rsentl3t1', type: 'multiple_choice', questionKey: 'data.tasks.g2r_sentl3_q1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2r_sentl3_q1_a', correct: true }, { id: 'b', textKey: 'data.tasks.g2r_sentl3_q1_b', correct: false }, { id: 'c', textKey: 'data.tasks.g2r_sentl3_q1_c', correct: false }] },
             { id: 'g2rsentl3t2', type: 'multiple_choice', questionKey: 'data.tasks.g2r_sentl3_q2', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g2r_sentl3_opt_boy_go', correct: true }, { id: 'b', textKey: 'data.tasks.g2r_sentl3_opt_boy_go_bad', correct: false }, { id: 'c', textKey: 'data.tasks.g2r_sentl3_opt_boys_go_bad', correct: false }] },
             { id: 'g2rsentl3t3', type: 'multiple_choice', questionKey: 'data.tasks.g2r_sentl3_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g2r_sentl3_opt_red_ball', correct: true }, { id: 'b', textKey: 'data.tasks.g2r_sentl3_opt_red_ball_bad', correct: false }, { id: 'c', textKey: 'data.tasks.g2r_sentl3_opt_boy_go_bad', correct: false }] },
-            { id: 'g2rsentl3t4', type: 'input', questionKey: 'data.tasks.g2r_which_correct_sent', difficulty: 2, answer: "Мама готовит обед." },
+            { id: 'g2rsentl3t4', type: 'input', questionKey: 'data.tasks.g2r_which_correct_sent', difficulty: 2, answer: "Мама готовит обед.", answerByLocale: { en: "Mom cooks lunch.", ky: "Апам түшкү тамак бышырат." } },
           ] },
       ] },
     ],
@@ -3456,7 +3469,7 @@ export const worlds: World[] = [
           { id: 'g4r-text-l1-t1', type: 'multiple_choice', questionKey: 'data.tasks.g4r_text_q1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4r_text_q1_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4r_text_q1_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4r_text_q1_c', correct: false }] },
           { id: 'g4r-text-l1-t2', type: 'multiple_choice', questionKey: 'data.tasks.g4r_text_q2', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4r_text_q2_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4r_text_q2_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4r_text_q2_c', correct: false }] },
           { id: 'g4r-text-l1-t3', type: 'multiple_choice', questionKey: 'data.tasks.g4r_text_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4r_text_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4r_text_q3_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4r_text_q3_c', correct: true }] },
-          { id: 'g4r-text-l1-t4', type: 'input', questionKey: 'data.tasks.g4r_text_q4', difficulty: 1, answer: "завязка (начало)" },
+          { id: 'g4r-text-l1-t4', type: 'input', questionKey: 'data.tasks.g4r_text_q4', difficulty: 1, answer: "завязка (начало)", answerByLocale: { en: "exposition (the beginning)", ky: "башталышы (окуянын башы)" } },
         ] },
         { id: 'g4r-text-l2', topicId: 'g4r-text', titleKey: 'data.lessons.g4rTextL2', reward: { xp: 30 },
           dialog: [
@@ -3471,7 +3484,7 @@ export const worlds: World[] = [
           { id: 'g4r-text-l2-t1', type: 'multiple_choice', questionKey: 'data.tasks.g4r_text2_q1', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4r_text2_q1_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4r_text2_q1_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4r_text2_q1_c', correct: false }] },
           { id: 'g4r-text-l2-t2', type: 'multiple_choice', questionKey: 'data.tasks.g4r_text2_q2', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4r_text2_q2_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4r_text2_q2_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4r_text2_q2_c', correct: false }] },
           { id: 'g4r-text-l2-t3', type: 'multiple_choice', questionKey: 'data.tasks.g4r_text2_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4r_text2_q3_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4r_text2_q3_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4r_text2_q3_c', correct: false }] },
-          { id: 'g4r-text-l2-t4', type: 'input', questionKey: 'data.tasks.g4r_text2_q4', difficulty: 1, answer: "Нет" },
+          { id: 'g4r-text-l2-t4', type: 'input', questionKey: 'data.tasks.g4r_text2_q4', difficulty: 1, answer: "Нет", answerByLocale: { en: "No", ky: "Жок" } },
         ] },
         { id: 'g4r-text-l3', topicId: 'g4r-text', titleKey: 'data.lessons.g4rTextL3', reward: { xp: 30 },
           dialog: [
@@ -3750,7 +3763,7 @@ export const worlds: World[] = [
           { id: 'g4s-turn-l1-t1', type: 'multiple_choice', questionKey: 'data.tasks.g4s_turn_q1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4s_turn_q1_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4s_turn_q1_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4s_turn_q1_c', correct: false }] },
           { id: 'g4s-turn-l1-t2', type: 'multiple_choice', questionKey: 'data.tasks.g4s_turn_q2', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4s_turn_q2_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4s_turn_q2_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4s_turn_q2_c', correct: false }] },
           { id: 'g4s-turn-l1-t3', type: 'multiple_choice', questionKey: 'data.tasks.g4s_turn_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4s_turn_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4s_turn_q3_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4s_turn_q3_c', correct: true }] },
-          { id: 'g4s-turn-l1-t4', type: 'input', questionKey: 'data.tasks.g4s_turn_q4', difficulty: 1, answer: "Договориться" },
+          { id: 'g4s-turn-l1-t4', type: 'input', questionKey: 'data.tasks.g4s_turn_q4', difficulty: 1, answer: "Договориться", answerByLocale: { en: "Agree", ky: "Макулдашуу" } },
         ] },
         { id: 'g4s-turn-l2', topicId: 'g4s-turn-taking', titleKey: 'data.lessons.g4sTurnL2', reward: { xp: 30 },
           dialog: [
@@ -3765,7 +3778,7 @@ export const worlds: World[] = [
           { id: 'g4s-turn-l2-t1', type: 'multiple_choice', questionKey: 'data.tasks.g4s_turn2_q1', difficulty: 1, options: [{ id: 'a', textKey: 'data.tasks.g4s_turn2_q1_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4s_turn2_q1_b', correct: true }, { id: 'c', textKey: 'data.tasks.g4s_turn2_q1_c', correct: false }] },
           { id: 'g4s-turn-l2-t2', type: 'multiple_choice', questionKey: 'data.tasks.g4s_turn2_q2', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4s_turn2_q2_a', correct: true }, { id: 'b', textKey: 'data.tasks.g4s_turn2_q2_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4s_turn2_q2_c', correct: false }] },
           { id: 'g4s-turn-l2-t3', type: 'multiple_choice', questionKey: 'data.tasks.g4s_turn2_q3', difficulty: 2, options: [{ id: 'a', textKey: 'data.tasks.g4s_turn2_q3_a', correct: false }, { id: 'b', textKey: 'data.tasks.g4s_turn2_q3_b', correct: false }, { id: 'c', textKey: 'data.tasks.g4s_turn2_q3_c', correct: true }] },
-          { id: 'g4s-turn-l2-t4', type: 'input', questionKey: 'data.tasks.g4s_turn2_q4', difficulty: 1, answer: "Принимает" },
+          { id: 'g4s-turn-l2-t4', type: 'input', questionKey: 'data.tasks.g4s_turn2_q4', difficulty: 1, answer: "Принимает", answerByLocale: { en: "Accepts", ky: "Кабыл алат" } },
         ] },
         { id: 'g4s-turn-l3', topicId: 'g4s-turn-taking', titleKey: 'data.lessons.g4sTurnL3', reward: { xp: 30 },
           dialog: [

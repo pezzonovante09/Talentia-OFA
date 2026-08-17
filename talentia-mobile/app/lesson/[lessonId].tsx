@@ -25,6 +25,7 @@ import {
   getLesson,
   getTopicForLesson,
   getWorldForLesson,
+  resolveInputTaskAnswer,
   withSpacedReviewTasks,
   type FillBlankTask,
   type ImagePointTask,
@@ -412,6 +413,7 @@ function LessonScreenContent() {
       methodology:
         profile?.child_mode === 'special' ? (profile.methodology ?? 'aba') : null,
       isEnglishLesson,
+      language,
       t: lt,
       tEn,
       optionText,
@@ -425,6 +427,7 @@ function LessonScreenContent() {
     profile?.child_mode,
     profile?.methodology,
     isEnglishLesson,
+    language,
     lt,
     tEn,
     optionText,
@@ -758,6 +761,7 @@ function LessonScreenContent() {
       methodology:
         profile?.child_mode === 'special' ? (profile.methodology ?? 'aba') : null,
       isEnglishLesson,
+      language,
       t: lt,
       tEn,
       optionText,
@@ -1095,7 +1099,7 @@ function LessonScreenContent() {
           routinePickedIds.every((id, i) => ordered[i]?.id === id);
         if (!correct) lastWrongAnswer.current = 'order';
       } else if (task.type === 'input') {
-        const expected = String(task.answer).trim().toLowerCase();
+        const expected = String(resolveInputTaskAnswer(task, language)).trim().toLowerCase();
         const input = inputValue.trim().toLowerCase();
         const expNum = parseFloat(expected);
         const inpNum = parseFloat(input);
@@ -2118,9 +2122,9 @@ function LessonScreenContent() {
                 disabled={hasChecked || taskTransitionBusy}
               />
             </View>
-            {promptLevel >= 2 && !hasChecked && task.answer.trim().length > 0 && (
+            {promptLevel >= 2 && !hasChecked && resolveInputTaskAnswer(task, language).trim().length > 0 && (
               <AppText variant="small" style={{ marginTop: theme.spacing.sm, color: theme.colors.primary }}>
-                {t('lesson.inputFirstLetterHint', { letter: task.answer.trim()[0]!.toUpperCase() })}
+                {t('lesson.inputFirstLetterHint', { letter: resolveInputTaskAnswer(task, language).trim()[0]!.toUpperCase() })}
               </AppText>
             )}
           </View>
