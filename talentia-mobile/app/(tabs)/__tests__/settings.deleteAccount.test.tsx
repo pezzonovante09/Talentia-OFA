@@ -46,6 +46,12 @@ jest.mock('../../../src/context/AuthContext', () => ({
 
 import SettingsScreen from '../settings';
 
+// This file's first test has occasionally exceeded Jest's default 5000ms
+// waitFor timeout in CI — the settings screen's first render/mock wiring in
+// this suite is slow, not the deleteAccount flow itself (the later tests in
+// this file do strictly more work and pass reliably). Give it more headroom.
+jest.setTimeout(15000);
+
 /** Presses the destructive "delete account" Alert button, matching how a user confirms. */
 function confirmDeleteViaAlert() {
   const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
