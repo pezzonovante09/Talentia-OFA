@@ -86,7 +86,11 @@ export async function sendToCompanion(payload: CompanionRequest): Promise<string
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 7000);
+    // /api/tali chains up to three sequential DeepSeek calls (8s input
+    // moderation + 20s chat completion + 8s output moderation = 36s
+    // legitimate worst case, see talentia-ai-proxy-next/src/app/api/tali/route.ts).
+    // Must stay comfortably above that so we don't abort in-flight requests.
+    const timeout = setTimeout(() => controller.abort(), 40000);
 
     const response = await backendFetch('/api/tali', {
       method: 'POST',
