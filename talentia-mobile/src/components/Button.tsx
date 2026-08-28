@@ -11,6 +11,14 @@ import { AppText } from './Text';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
+/**
+ * Text/icon color for filled (non-ghost) button variants. White text on the
+ * app's primary/secondary/error fills measures as low as 2.3:1 (WCAG AA
+ * requires 4.5:1 for this text size) across every theme variant — this dark
+ * color clears 4.5:1 against all of them instead.
+ */
+const FILLED_BUTTON_TEXT_COLOR = '#0B1B22';
+
 export type ButtonProps = PressableProps & {
   variant?: Variant;
   loading?: boolean;
@@ -48,7 +56,7 @@ export function Button({
       : baseBackground;
 
   const baseTextColor =
-    variant === 'ghost' ? theme.colors.text : '#ffffff';
+    variant === 'ghost' ? theme.colors.text : FILLED_BUTTON_TEXT_COLOR;
 
   const shadowColor =
     variant === 'primary'

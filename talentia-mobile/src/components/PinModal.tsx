@@ -114,6 +114,12 @@ export function PinModal({ visible, mode, existingPin, onSuccess, onCancel }: Pi
 
   const currentValue = step === 'enter' ? input : confirmInput;
 
+  const getKeyAccessibilityLabel = (d: string) => {
+    if (d === PIN_BACK) return t('pin.backspace');
+    if (d === PIN_OK) return t('pin.confirm');
+    return t('pin.digit', { digit: d });
+  };
+
   const title = mode === 'verify'
     ? t('pin.enterTitle')
     : step === 'enter'
@@ -199,6 +205,9 @@ export function PinModal({ visible, mode, existingPin, onSuccess, onCancel }: Pi
                 key={d}
                 onPress={() => handleDigit(d)}
                 disabled={isLocked}
+                accessibilityRole="button"
+                accessibilityLabel={getKeyAccessibilityLabel(d)}
+                accessibilityState={{ disabled: isLocked }}
                 style={({ pressed }) => ({
                   width: 70,
                   height: 56,
@@ -233,7 +242,11 @@ export function PinModal({ visible, mode, existingPin, onSuccess, onCancel }: Pi
           </View>
 
           <Spacer size="lg" />
-          <Pressable onPress={() => { reset(); onCancel(); }}>
+          <Pressable
+            onPress={() => { reset(); onCancel(); }}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.cancel')}
+          >
             <AppText variant="small" style={{ color: theme.colors.textMuted }}>
               {t('common.cancel')}
             </AppText>

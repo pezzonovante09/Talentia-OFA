@@ -120,6 +120,7 @@ export function VoiceInputButtonNative({ onTranscript, disabled, large, label }:
     <Pressable
       onPress={recognizing ? handleStop : handlePress}
       disabled={disabled}
+      hitSlop={8}
       style={{
         padding: theme.spacing.sm,
         borderRadius: theme.radii.md,

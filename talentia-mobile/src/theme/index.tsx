@@ -76,7 +76,10 @@ const baseIdentityColors: IdentityColors = {
   secondary: '#FF7A38',
   accent: '#FFD060',
   text: '#0E2B3B',
-  textMuted: '#5D7D8E',
+  // Darkened from #5D7D8E — that measured 4.08:1 / 4.38:1 against
+  // background/surface, below WCAG AA's 4.5:1 minimum for normal text
+  // (2026-08-29 accessibility audit). This clears 4.6:1+ against both.
+  textMuted: '#577484',
   border: '#BAE0EC',
   success: '#05C896',
   error: '#FF3D60',
@@ -145,7 +148,10 @@ function buildTheme({
           secondary: '#E8AC7A',
           accent: '#F0DA90',
           text: '#1A2E26',
-          textMuted: '#6A9880',
+          // Darkened from #6A9880 — that measured 3.02:1 / 3.14:1 against
+          // background/surface, a clear WCAG AA fail (2026-08-29 audit).
+          // This clears 4.6:1+ against both.
+          textMuted: '#537764',
           border: '#BAE0CE',
           success: '#28B278',
           error: '#E05A6A',
