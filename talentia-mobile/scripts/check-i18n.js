@@ -4,11 +4,18 @@
  * 1) All literal `data.*` i18n keys referenced from `src/data` exist in ru/en/ky.
  * 2) All literal `t('…')` / `t("…")` keys referenced from `app/` and
  *    `src/components` exist (as non-empty strings) in all three locales.
- * 3) No EN/KY value is byte-identical to its RU counterpart while containing
- *    Cyrillic text — a strong signal of leaked, untranslated Russian content
- *    (see the 2026-08-12 audit) — unless the key is in
+ * 3) No EN/KY value is byte-identical (after trimming leading/trailing
+ *    whitespace) to its RU counterpart while containing Cyrillic text — a
+ *    strong signal of leaked, untranslated Russian content (see the
+ *    2026-08-12 audit) — unless the key is in
  *    scripts/i18n-ru-identity-allowlist.json (Russian-language lessons,
  *    proper nouns, and genuine Kyrgyz loanwords are expected to match RU).
+ *    Trimming before comparing matters: a stray leading/trailing space on an
+ *    otherwise-untranslated value previously defeated this check entirely
+ *    (see the 2026-08-29 audit — 51 raw-Russian ky.json values were hidden
+ *    this way).
+ * 4) No locale value has leading/trailing whitespace at all — this is what
+ *    let issue (3) hide 51 real leaks, so it's checked independently too.
  *
  * Does not check translation quality beyond this identity heuristic, plural-form
  * completeness beyond key presence, or dynamically constructed keys.
@@ -172,7 +179,7 @@ function findRuIdentityLeaks(ruNode, targetNode, locale, keyPath, out) {
   if (typeof ruNode === 'string') {
     if (typeof targetNode !== 'string') return;
     if (
-      ruNode === targetNode &&
+      ruNode.trim() === targetNode.trim() &&
       CYRILLIC_RE.test(ruNode) &&
       ruNode.trim().length > 3 &&
       !isRuIdentityAllowed(keyPath, locale)
@@ -212,7 +219,7 @@ function findEnIdentityLeaks(enNode, kyNode, keyPath, out) {
   if (typeof enNode === 'string') {
     if (typeof kyNode !== 'string') return;
     if (
-      enNode === kyNode &&
+      enNode.trim() === kyNode.trim() &&
       LATIN_WORD_RE.test(enNode) &&
       !CYRILLIC_RE.test(enNode) &&
       enNode.trim().split(/\s+/).length >= 3 &&
@@ -235,11 +242,33 @@ const enIdentityLeaksKy = [];
 findEnIdentityLeaks(loadRawLocale('en'), loadRawLocale('ky'), '', enIdentityLeaksKy);
 const hasAnyEnIdentityLeak = enIdentityLeaksKy.length > 0;
 
+// ── Whitespace-boundary check: a leading/trailing space on a locale value ──
+// is always a bug (renders as a stray gap, and previously masked real
+// untranslated-content leaks from the checks above — see the 2026-08-29 audit).
+function findWhitespaceBoundaryIssues(node, keyPath, out) {
+  if (typeof node === 'string') {
+    if (node.length > 0 && node.trim() !== node) out.push(keyPath);
+    return;
+  }
+  if (node && typeof node === 'object') {
+    for (const k of Object.keys(node)) {
+      findWhitespaceBoundaryIssues(node[k], keyPath ? `${keyPath}.${k}` : k, out);
+    }
+  }
+}
+
+const whitespaceIssues = {};
+for (const name of localeNames) {
+  whitespaceIssues[name] = [];
+  findWhitespaceBoundaryIssues(loadRawLocale(name), '', whitespaceIssues[name]);
+}
+const hasAnyWhitespaceIssue = localeNames.some((n) => whitespaceIssues[n].length > 0);
+
 const asJson = process.argv.includes('--json');
 const hasAnyMissing =
   localeNames.some((n) => missingData[n].length > 0) ||
   localeNames.some((n) => missingUi[n].length > 0);
-const hasAnyIssue = hasAnyMissing || hasAnyRuIdentityLeak || hasAnyEnIdentityLeak;
+const hasAnyIssue = hasAnyMissing || hasAnyRuIdentityLeak || hasAnyEnIdentityLeak || hasAnyWhitespaceIssue;
 
 if (asJson) {
   const report = {
@@ -253,6 +282,9 @@ if (asJson) {
   report.ru_identity_leaks_en = ruIdentityLeaks.en;
   report.ru_identity_leaks_ky = ruIdentityLeaks.ky;
   report.en_identity_leaks_ky = enIdentityLeaksKy;
+  for (const name of localeNames) {
+    report[`whitespace_boundary_${name}`] = whitespaceIssues[name];
+  }
   console.log(JSON.stringify(report, null, 2));
 } else {
   console.log(`Checked ${CONTENT_FILES.length} content file(s) and ${UI_FILES.length} UI file(s).`);
@@ -268,6 +300,9 @@ if (asJson) {
       `ky ${ruIdentityLeaks.ky.length === 0 ? 'OK' : `${ruIdentityLeaks.ky.length} leaked`}`,
   );
   console.log(`  en-identity: ky ${enIdentityLeaksKy.length === 0 ? 'OK' : `${enIdentityLeaksKy.length} leaked`}`);
+  console.log(
+    `  whitespace: ${localeNames.map((n) => `${n} ${whitespaceIssues[n].length === 0 ? 'OK' : `${whitespaceIssues[n].length} bad`}`).join(', ')}`,
+  );
 
   if (hasAnyMissing) {
     for (const name of localeNames) {
@@ -300,6 +335,14 @@ if (asJson) {
       `If any of these are legitimate (English-lesson content being taught), add them to ` +
         `en_identity_patterns in scripts/i18n-ru-identity-allowlist.json — do not ignore this check.`,
     );
+  }
+  if (hasAnyWhitespaceIssue) {
+    for (const name of localeNames) {
+      if (whitespaceIssues[name].length) {
+        console.log(`\n--- ${name} values with leading/trailing whitespace (first 100) ---`);
+        whitespaceIssues[name].slice(0, 100).forEach((k) => console.log(`  ${k}`));
+      }
+    }
   }
   if (!hasAnyIssue) {
     console.log('\nAll i18n keys OK');
