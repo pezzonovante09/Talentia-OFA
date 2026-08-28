@@ -37,12 +37,13 @@ export async function syncLessonCompletion({
   if (!userId) return;
 
   if (!isFirstCompletion) {
-    const { data: existing } = await supabase
+    const { data: existing, error: selectError } = await supabase
       .from('user_progress')
       .select('stars, mistake_count, completed_at')
       .eq('user_id', userId)
       .eq('lesson_id', lessonId)
       .maybeSingle();
+    if (selectError) throw selectError;
 
     if (existing) {
       const prevStars = typeof existing.stars === 'number' ? existing.stars : 0;
@@ -52,7 +53,7 @@ export async function syncLessonCompletion({
       if (stars < prevStars || (stars === prevStars && mistakeCount > prevMistakes)) {
         return;
       }
-      await supabase
+      const { error } = await supabase
         .from('user_progress')
         .update({
           stars,
@@ -63,11 +64,12 @@ export async function syncLessonCompletion({
         })
         .eq('user_id', userId)
         .eq('lesson_id', lessonId);
+      if (error) throw error;
       return;
     }
   }
 
-  await supabase.from('user_progress').upsert(
+  const { error } = await supabase.from('user_progress').upsert(
     {
       user_id: userId,
       lesson_id: lessonId,
@@ -78,6 +80,7 @@ export async function syncLessonCompletion({
     },
     { onConflict: 'user_id,lesson_id' },
   );
+  if (error) throw error;
 }
 
 export async function syncUserStats({
@@ -98,7 +101,7 @@ export async function syncUserStats({
   const userId = session?.user?.id;
   if (!userId) return;
 
-  await supabase.from('user_stats').upsert(
+  const { error } = await supabase.from('user_stats').upsert(
     {
       user_id: userId,
       xp,
@@ -109,4 +112,5 @@ export async function syncUserStats({
     },
     { onConflict: 'user_id' },
   );
+  if (error) throw error;
 }
