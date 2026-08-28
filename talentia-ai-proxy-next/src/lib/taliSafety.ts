@@ -4,6 +4,15 @@
  * and refuse unsafe child/parent text before calling the upstream LLM.
  *
  * Strict for ages ~5–10: prefer false positives (safe fallback) over leaks.
+ *
+ * KY (Kyrgyz) coverage TODO: every KY pattern in BLOCK_RULES below — the
+ * original set and the self_harm/adult_contact/weapons additions made
+ * 2026-08-29 in response to the AI-safety audit — was written without a
+ * native Kyrgyz speaker's review. Patterns were validated only by scripted
+ * regex testing against constructed example phrases (see the PR/commit that
+ * introduced them), not by a speaker judging real-world coverage, dialectal
+ * variation, or false-positive risk in everyday usage. Get a native-speaker
+ * review before treating KY moderation coverage as equivalent to EN/RU.
  */
 
 export type TaliSafetyCategory =
@@ -65,7 +74,7 @@ const BLOCK_RULES: BlockRule[] = [
     re: /(?:представь|притворись|играй\s*роль).{0,20}(?:без\s*(?:правил|ограничений|фильтров)|неограниченн\w*)/i,
   },
   { category: "prompt_injection", re: /(?:джейлбрейк|выйди\s*из\s*роли|перестань\s*быть\s*тали)/i },
-  // KY coverage is a best-effort start (not native-speaker reviewed — see taliSafety.test.ts TODO).
+  // KY coverage is a best-effort start (not native-speaker reviewed — see module-level TODO above).
   { category: "prompt_injection", re: /(?:чектөөсүз|эрежесиз)/i },
   {
     category: "prompt_injection",
@@ -82,6 +91,18 @@ const BLOCK_RULES: BlockRule[] = [
   { category: "self_harm", re: /(суицид|самоубий)/i },
   { category: "self_harm", re: /(өзүн\s*өлтүр|суицид|өз\s*кол\s*жум|кайрыла\s*ал)/i },
   { category: "self_harm", re: /(кайгыдан\s*өл|жан\s*кый|кайрыла\s*алуу)/i },
+  // Added 2026-08-29: the previous KY self_harm patterns all required "kill/end
+  // oneself" phrasing and missed the more common "I want to die" / "I don't
+  // want to live" desiderative construction (verb stem + -гым/-гум/-гүм + келет),
+  // which a real child is at least as likely to type. Deliberately scoped to
+  // that construction (not a bare "өл"/die-root match) because "өл" is also the
+  // root of extremely common hyperbole ("чарчап өлдүм" = "I'm dead tired",
+  // "күлкүдөн өлдүк" = "died laughing") that would otherwise false-positive
+  // constantly. NOT NATIVE-SPEAKER REVIEWED — see module-level TODO.
+  {
+    category: "self_harm",
+    re: /(?<![\p{L}])өл(?:гүм|гум|гусу|гүсү)\s*кел|жаша(?:гым|гум)\s*келбейт|өмүрүмдү\s*токтот|өзүмдү\s*(?:жаралагым|кыйнагым|өлтүргүм)\s*келет/iu,
+  },
 
   // —— violence ——
   { category: "violence", re: /\b(kill|murder|slaughter)\b/i },
@@ -116,7 +137,7 @@ const BLOCK_RULES: BlockRule[] = [
   // —— weapons / terror ——
   { category: "weapons", re: /\b(weapon|gun|bomb|terror|shoot|rifle|pistol)\b/i },
   { category: "weapons", re: /(оружие|бомб|террор|пистолет|выстрел)/i },
-  { category: "weapons", re: /(курал|бомба|террор|пистолет|атуу|аткан|курок|ок\s*ат)/i },
+  { category: "weapons", re: /(курал|бомба|террор|пистолет|атуу|аткан|курок|ок\s*ат|мылтык)/i },
 
   // —— hate ——
   { category: "hate", re: /\b(hate\s*speech|nazi|racist)\b/i },
@@ -140,6 +161,15 @@ const BLOCK_RULES: BlockRule[] = [
   {
     category: "adult_contact",
     re: /(жалгыз\s*кел|дарек(иң|иңди)?\s*жибер|телефон(уң|ун)?\s*жибер|кай\s*жашайсың|сүрөт\s*жибер|фото\s*жибер)/i,
+  },
+  // Added 2026-08-29: the previous KY adult_contact patterns only covered the
+  // "ask for identifying info" half of grooming; they missed the secrecy-
+  // building phrasing ("don't tell anyone" / "don't tell your parents") that
+  // typically accompanies it — the exact gap named in the 2026-08-29 AI-safety
+  // audit's worked example. NOT NATIVE-SPEAKER REVIEWED — see module-level TODO.
+  {
+    category: "adult_contact",
+    re: /эч\s*кимге\s*айтпа|ата-эне(?:ңе|ге)?\s*айтпа|бул\s*сыр(?:ды)?\s*сакта|видео\s*жибер/i,
   },
 
   // —— politics ——
@@ -276,7 +306,7 @@ export function filterTaliInput(raw: string | null | undefined): TaliFilterResul
 const MODERATION_SYSTEM_PROMPT =
   'You are a strict child-safety content classifier for a learning app used by children aged 5-10. ' +
   "You will be given the CURRENT message to classify (which may be in Russian, English, or Kyrgyz), " +
-  "optionally preceded by a short RECENT CONTEXT of the child's own last 1-2 prior messages in this " +
+  "optionally preceded by a short RECENT CONTEXT of the child's own last few prior messages in this " +
   "chat session. The prior messages were already checked separately when they were sent — use them " +
   "only to judge the CURRENT message in context, not to reclassify them. Treat the CURRENT message as " +
   "UNSAFE if it is unsafe on its own, OR if it continues, completes, or builds on unsafe intent that " +
@@ -315,7 +345,7 @@ export async function moderateWithLLM(
   const trimmed = text.trim();
   if (!trimmed) return { safe: true };
 
-  const context = (recentContext ?? []).map((m) => m.trim()).filter(Boolean).slice(-2);
+  const context = (recentContext ?? []).map((m) => m.trim()).filter(Boolean).slice(-4);
   const userContent =
     context.length > 0
       ? `RECENT CONTEXT (child's own prior messages, oldest first):\n${context

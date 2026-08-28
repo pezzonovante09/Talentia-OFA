@@ -143,10 +143,11 @@ export function TaliModal({
     const displayText = userText.trim();
     // Captured before addMessage('child', ...) below so it holds the child's own last
     // messages *prior to* this one — short-lived moderation context only, never persisted
-    // beyond this in-memory chat session and never sent to the main chat model.
+    // beyond this in-memory chat session and never sent to the main chat model. Kept in
+    // sync with the server's cap (see TaliRequestSchema.recentMessages in tali/route.ts).
     const recentMessages = messages
       .filter((m) => m.from === 'child')
-      .slice(-2)
+      .slice(-4)
       .map((m) => m.text.slice(0, 500));
     addMessage('child', displayText);
     setInput('');

@@ -5,6 +5,8 @@ import { corsAudioMpegResponse, corsJson, corsPreflight } from "@/lib/api-cors";
 import { authJsonError, verifyAuth } from "@/lib/verifyAuth";
 import { verifyParentalConsent } from "@/lib/verifyParentalConsent";
 import { enforceRateLimit, ratelimitApi, ratelimitTts } from "@/lib/ratelimit";
+import { filterTaliInput } from "@/lib/taliSafety";
+import { logTaliSafetyEvent } from "@/lib/taliSafetyLog";
 
 export const runtime = "nodejs";
 
@@ -197,6 +199,23 @@ export async function POST(req: NextRequest) {
     const language = parsed.data.language;
 
     if (!text) return corsJson({ error: "text is required" }, 400, req);
+
+    // TTS has no lesson-content allowlist of its own — without this, any
+    // authenticated+consented caller could use it as a free-form
+    // text-to-speech oracle against the ElevenLabs/HF budget with arbitrary
+    // text. Reuse Tali's regex blocklist (cheap, no extra LLM call/latency)
+    // rather than duplicating it here.
+    const inputCheck = filterTaliInput(text);
+    if (!inputCheck.ok) {
+      await logTaliSafetyEvent({
+        userId: auth.userId,
+        side: "input",
+        category: inputCheck.category ?? inputCheck.reason,
+        mode: "tts",
+        language,
+      });
+      return corsJson({ error: "Text not allowed" }, 403, req);
+    }
 
     const hfToken = huggingFaceToken();
     const engineEnv = process.env.TTS_ENGINE?.trim().toLowerCase();

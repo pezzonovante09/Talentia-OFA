@@ -125,7 +125,7 @@ describe("logTaliSafetyEvent — burst detection", () => {
     expect(gteMock).toHaveBeenCalledWith("created_at", expect.any(String));
   });
 
-  it(`alerts exactly when the count first reaches the threshold (${SAFETY_BURST_THRESHOLD})`, async () => {
+  it(`alerts when the count reaches the threshold (${SAFETY_BURST_THRESHOLD})`, async () => {
     mockBurstCount({ count: SAFETY_BURST_THRESHOLD, error: null });
     await logTaliSafetyEvent({ userId: "user-1", side: "input", category: "self_harm" });
 
@@ -142,10 +142,24 @@ describe("logTaliSafetyEvent — burst detection", () => {
     expect(captureExceptionMock).not.toHaveBeenCalled();
   });
 
-  it("does not re-alert past the threshold (fires once, not on every hit)", async () => {
+  it("still alerts past the threshold (>=, not ===, so a race that skips the exact threshold value still fires)", async () => {
     mockBurstCount({ count: SAFETY_BURST_THRESHOLD + 5, error: null });
     await logTaliSafetyEvent({ userId: "user-1", side: "input", category: "self_harm" });
-    expect(captureExceptionMock).not.toHaveBeenCalled();
+
+    expect(captureExceptionMock).toHaveBeenCalledTimes(1);
+    const [err, extra] = captureExceptionMock.mock.calls[0];
+    expect((err as Error).message).toContain("tali_safety_burst");
+    expect(extra).toEqual({
+      userId: "user-1",
+      category: "self_harm",
+      count: SAFETY_BURST_THRESHOLD + 5,
+    });
+  });
+
+  it("alerts on a count that skips straight past the threshold (the race the >= check exists to fix)", async () => {
+    mockBurstCount({ count: SAFETY_BURST_THRESHOLD + 1, error: null });
+    await logTaliSafetyEvent({ userId: "user-1", side: "input", category: "self_harm" });
+    expect(captureExceptionMock).toHaveBeenCalledTimes(1);
   });
 
   it("is best-effort: a burst-query error does not throw or alert", async () => {

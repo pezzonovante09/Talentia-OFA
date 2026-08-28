@@ -70,8 +70,10 @@ describe("TaliRequestSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("accepts recentMessages up to 2 entries", () => {
-    const result = TaliRequestSchema.safeParse({ recentMessages: ["hi", "how are you"] });
+  it("accepts recentMessages up to 4 entries", () => {
+    const result = TaliRequestSchema.safeParse({
+      recentMessages: ["hi", "how are you", "one more", "and another"],
+    });
     expect(result.success).toBe(true);
   });
 
@@ -81,8 +83,8 @@ describe("TaliRequestSchema", () => {
     if (result.success) expect(result.data.recentMessages).toBeUndefined();
   });
 
-  it("rejects more than 2 recentMessages entries", () => {
-    const result = TaliRequestSchema.safeParse({ recentMessages: ["a", "b", "c"] });
+  it("rejects more than 4 recentMessages entries", () => {
+    const result = TaliRequestSchema.safeParse({ recentMessages: ["a", "b", "c", "d", "e"] });
     expect(result.success).toBe(false);
   });
 

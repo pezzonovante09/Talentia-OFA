@@ -51,8 +51,18 @@ export async function logTaliSafetyEvent(event: {
  * Passive logging alone means a burst of blocks (repeated jailbreak/bypass
  * attempts) sits unread until a parent happens to open the log screen. This
  * turns "N hits of the same category within M minutes" into an active
- * Sentry alert instead. Fires once, exactly when the count first reaches the
- * threshold — not on every subsequent hit — to avoid alert spam.
+ * Sentry alert instead.
+ *
+ * Fires on every hit once the count reaches the threshold (not just the one
+ * where it first crosses it) — an earlier version used `count === THRESHOLD`
+ * to fire "only once", but under concurrent requests two inserts can land
+ * before either count-query runs, so the count observed can jump straight
+ * from below-threshold to above it (e.g. 2 -> 4), skipping the exact value
+ * and silently never alerting for that burst at all. `>=` closes that gap.
+ * This relies on Sentry grouping repeat calls with the same error message
+ * (same category, no count in the message text) into one Issue rather than
+ * paging on every event — a real alert-spam concern would be a Sentry
+ * alert-rule tuning problem, not something to solve by racily under-firing.
  *
  * Best-effort and silent on its own failure: the primary write above already
  * alerts if the table itself is broken, so a failure here (e.g. a transient
@@ -69,7 +79,7 @@ async function checkSafetyEventBurst(userId: string, category: string): Promise<
       .eq("category", category)
       .gte("created_at", windowStart);
     if (error || count == null) return;
-    if (count === SAFETY_BURST_THRESHOLD) {
+    if (count >= SAFETY_BURST_THRESHOLD) {
       captureException(
         new Error(
           `tali_safety_burst: ${SAFETY_BURST_THRESHOLD}+ "${category}" hits in ${SAFETY_BURST_WINDOW_MINUTES}m`,

@@ -45,12 +45,14 @@ export const TaliRequestSchema = z.object({
     .object({ childGaveCorrectAnswer: z.boolean().optional() })
     .nullable()
     .optional(),
-  // The child's own last 1-2 messages in this chat session, for input-side semantic
+  // The child's own last few messages in this chat session, for input-side semantic
   // moderation context only (see moderateWithLLM's recentContext param) — never used to
   // build the chat system/user prompt sent to the main model, and never re-run through the
   // regex blocklist (each was already checked in its own turn). Client keeps this in memory
   // only, reset whenever the chat is reopened; nothing new is persisted server-side.
-  recentMessages: z.array(z.string().max(500)).max(2).optional(),
+  // Capped at 4 (was 2) — a 2-message window let an escalation spread across 3+ turns lose
+  // its earliest, scene-setting message by the time the payoff turn arrived (2026-08-29 audit).
+  recentMessages: z.array(z.string().max(500)).max(4).optional(),
 });
 
 type TaskContext = z.infer<typeof TaskContextSchema>;
