@@ -5,47 +5,47 @@ export const NANO_NPC_BY_WORLD: Record<
   'meadow' | 'forest' | 'garden' | 'island',
   ImageSourcePropType
 > = {
-  meadow: require('../../assets/images/npcs/npc-zoya.png'),
-  forest: require('../../assets/images/npcs/npc-fedya.png'),
-  garden: require('../../assets/images/npcs/npc-tara.png'),
-  island: require('../../assets/images/npcs/npc-pete.png'),
+  meadow: require('../../assets/images/npcs/npc-zoya.webp'),
+  forest: require('../../assets/images/npcs/npc-fedya.webp'),
+  garden: require('../../assets/images/npcs/npc-tara.webp'),
+  island: require('../../assets/images/npcs/npc-pete.webp'),
 };
 
 export const NANO_BG_BY_WORLD: Record<
   'meadow' | 'forest' | 'garden' | 'island',
   ImageSourcePropType
 > = {
-  meadow: require('../../assets/images/backgrounds/bg-meadow.png'),
-  forest: require('../../assets/images/backgrounds/bg-forest.png'),
-  garden: require('../../assets/images/backgrounds/bg-garden.png'),
-  island: require('../../assets/images/backgrounds/bg-island.png'),
+  meadow: require('../../assets/images/backgrounds/bg-meadow.webp'),
+  forest: require('../../assets/images/backgrounds/bg-forest.webp'),
+  garden: require('../../assets/images/backgrounds/bg-garden.webp'),
+  island: require('../../assets/images/backgrounds/bg-island.webp'),
 };
 
 /** Спокойный градиент для режима ABA (особый профиль + методология ABA). */
-export const NANO_BG_ABA: ImageSourcePropType = require('../../assets/images/backgrounds/bg-aba.png');
+export const NANO_BG_ABA: ImageSourcePropType = require('../../assets/images/backgrounds/bg-aba.webp');
 
 export const NANO_UI = {
-  streak: require('../../assets/images/ui/ui-streak.png'),
-  book: require('../../assets/images/ui/ui-book.png'),
-  bookBookmark: require('../../assets/images/ui/ui-book-bookmark.png'),
-  check: require('../../assets/images/ui/ui-check.png'),
-  medal: require('../../assets/images/ui/ui-medal.png'),
-  backpack: require('../../assets/images/ui/ui-backpack.png'),
-  stars: require('../../assets/images/ui/ui-stars.png'),
-  x: require('../../assets/images/ui/ui-x.png'),
-  lightning: require('../../assets/images/ui/ui-lightning.png'),
-  gift: require('../../assets/images/ui/ui-gift.png'),
-  levelUp: require('../../assets/images/ui/ui-level-up.png'),
-  bulb: require('../../assets/images/ui/ui-bulb.png'),
-  map: require('../../assets/images/ui/ui-map.png'),
-  egg: require('../../assets/images/ui/ui-egg.png'),
-  help: require('../../assets/images/ui/ui-help.png'),
-  lock: require('../../assets/images/ui/ui-lock.png'),
-  heart: require('../../assets/images/ui/ui-heart.png'),
-  trophy: require('../../assets/images/ui/ui-trophy.png'),
-  pencilPaper: require('../../assets/images/ui/ui-pencil-paper.png'),
-  meteor: require('../../assets/images/ui/ui-meteor.png'),
-  flame: require('../../assets/images/ui/ui-flame.png'),
+  streak: require('../../assets/images/ui/ui-streak.webp'),
+  book: require('../../assets/images/ui/ui-book.webp'),
+  bookBookmark: require('../../assets/images/ui/ui-book-bookmark.webp'),
+  check: require('../../assets/images/ui/ui-check.webp'),
+  medal: require('../../assets/images/ui/ui-medal.webp'),
+  backpack: require('../../assets/images/ui/ui-backpack.webp'),
+  stars: require('../../assets/images/ui/ui-stars.webp'),
+  x: require('../../assets/images/ui/ui-x.webp'),
+  lightning: require('../../assets/images/ui/ui-lightning.webp'),
+  gift: require('../../assets/images/ui/ui-gift.webp'),
+  levelUp: require('../../assets/images/ui/ui-level-up.webp'),
+  bulb: require('../../assets/images/ui/ui-bulb.webp'),
+  map: require('../../assets/images/ui/ui-map.webp'),
+  egg: require('../../assets/images/ui/ui-egg.webp'),
+  help: require('../../assets/images/ui/ui-help.webp'),
+  lock: require('../../assets/images/ui/ui-lock.webp'),
+  heart: require('../../assets/images/ui/ui-heart.webp'),
+  trophy: require('../../assets/images/ui/ui-trophy.webp'),
+  pencilPaper: require('../../assets/images/ui/ui-pencil-paper.webp'),
+  meteor: require('../../assets/images/ui/ui-meteor.webp'),
+  flame: require('../../assets/images/ui/ui-flame.webp'),
 } as const satisfies Record<string, ImageSourcePropType>;
 
 export type NanoUiKey = keyof typeof NANO_UI;

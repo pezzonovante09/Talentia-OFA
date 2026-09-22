@@ -3,9 +3,9 @@ import type { ImageSourcePropType } from 'react-native';
 /**
  * Keys referenced by LessonTask imageKey / illustrationKey (ABA tasks).
  *
- * Audit (asset wiring): keys aba_apple … aba_sort_toy and rooms use real ABA PNGs.
+ * Audit (asset wiring): keys aba_apple … aba_sort_toy and rooms use real ABA WebP assets.
  * Keys below (routine demo wet/paste/brush/rinse, action_*, match_*, volume) still
- * point at ui-*.png placeholders until matching aba_*.png assets exist — then only
+ * point at ui-*.webp placeholders until matching aba_*.webp assets exist — then only
  * swap the require() paths here; worlds.ts imageKey names stay the same.
  */
 const ABA_IMAGES: Record<string, ImageSourcePropType> = {
@@ -21,10 +21,10 @@ const ABA_IMAGES: Record<string, ImageSourcePropType> = {
   aba_room_kitchen: require('../../assets/images/aba/aba_room_kitchen.webp'),
   aba_sort_food: require('../../assets/images/aba/aba_sort_food.webp'),
   aba_sort_toy: require('../../assets/images/aba/aba_sort_toy.webp'),
-  aba_routine_brush: require('../../assets/images/ui/ui-pencil-paper.png'),
-  aba_routine_paste: require('../../assets/images/ui/ui-medal.png'),
-  aba_routine_rinse: require('../../assets/images/ui/ui-flame.png'),
-  aba_routine_wet: require('../../assets/images/ui/ui-lightning.png'),
+  aba_routine_brush: require('../../assets/images/ui/ui-pencil-paper.webp'),
+  aba_routine_paste: require('../../assets/images/ui/ui-medal.webp'),
+  aba_routine_rinse: require('../../assets/images/ui/ui-flame.webp'),
+  aba_routine_wet: require('../../assets/images/ui/ui-lightning.webp'),
   aba_routine_wash_tap: require('../../assets/images/aba/routine_wash_tap.webp'),
   aba_routine_wash_soap: require('../../assets/images/aba/routine_wash_soap.webp'),
   aba_routine_wash_rinse: require('../../assets/images/aba/routine_wash_rinse.webp'),
@@ -33,13 +33,13 @@ const ABA_IMAGES: Record<string, ImageSourcePropType> = {
   aba_routine_sleep_teeth: require('../../assets/images/aba/routine_sleep_teeth.webp'),
   aba_routine_sleep_read: require('../../assets/images/aba/routine_sleep_read.webp'),
   aba_routine_sleep_sleep: require('../../assets/images/aba/routine_sleep_sleep.webp'),
-  aba_action_clap: require('../../assets/images/ui/ui-streak.png'),
-  aba_action_jump: require('../../assets/images/ui/ui-meteor.png'),
-  aba_action_blow: require('../../assets/images/ui/ui-bulb.png'),
-  aba_match_sun: require('../../assets/images/ui/ui-map.png'),
-  aba_match_moon: require('../../assets/images/ui/ui-lock.png'),
-  aba_match_star: require('../../assets/images/ui/ui-stars.png'),
-  aba_volume_illustration: require('../../assets/images/ui/ui-help.png'),
+  aba_action_clap: require('../../assets/images/ui/ui-streak.webp'),
+  aba_action_jump: require('../../assets/images/ui/ui-meteor.webp'),
+  aba_action_blow: require('../../assets/images/ui/ui-bulb.webp'),
+  aba_match_sun: require('../../assets/images/ui/ui-map.webp'),
+  aba_match_moon: require('../../assets/images/ui/ui-lock.webp'),
+  aba_match_star: require('../../assets/images/ui/ui-stars.webp'),
+  aba_volume_illustration: require('../../assets/images/ui/ui-help.webp'),
 };
 
 export function getAbaLessonImage(key: string): ImageSourcePropType | undefined {
