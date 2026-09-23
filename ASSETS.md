@@ -75,6 +75,42 @@ children's picture-book applique look.
 
 ---
 
+## Главное правило: плотность — это узор, а не анатомия
+
+Две крайности, в которые эти промпты уже успели свалиться, и обе одинаково плохи.
+
+**Первая партия вышла пустой.** В промпте стояло «NO shading», «a few simple round
+trees» и «нижняя четверть кадра пустая» — панорамы получились по 22–60 фигур, на
+экране это читается как залитая форма. Я тогда приравнял плоскую аппликацию к малому
+числу фигур, а это разные вещи.
+
+**Вторая вышла реалистичной.** Исправляя первую, я добавил Tali щитки вдоль спины,
+пластины живота, когти, складки на сгибах, ноздрю и надбровную дугу. Плотность
+появилась — но щитки и надбровная дуга на тираннозавре и есть настоящий тираннозавр.
+Плотность набиралась анатомией.
+
+Верное правило между ними:
+
+> **Форма остаётся простой и мультяшной. Богатство даёт узор поверх формы.**
+
+Так работает Чарли Харпер, и он сам называл это «минимальным реализмом»: зверь сведён
+к нескольким чистым геометрическим формам, а сцена насыщена повторяющимися мотивами —
+рядами точек, полосами, насечками, чешуёй-орнаментом. Эрика Карла из ориентиров
+убрал: у него коллаж из крашеной бумаги, и он тянет в фактурность, то есть в реализм.
+
+Практическая проверка для Tali: **если персонаж мог бы попасть в энциклопедию
+динозавров — промпт неверен.** Правильный Tali собран из больших мягких овалов,
+пальцы у него скруглённые подушечки, а не когти, зубов не больше одного и тот
+тупой. Детализацию несут очки с заклёпками, сумка со строчкой и пряжкой, ровный
+ряд шевронов вдоль спины как печатный узор на ткани — то есть костюм и орнамент,
+а не животное.
+
+Для панорам то же самое: пять планов и сорок элементов набираются повторением
+простых мотивов, а не приближением к фотографии. Никакой дымки, мазков, мягких
+теней и природной нерегулярности — узор ровный и намеренный, как на печатной бумаге.
+
+---
+
 ## Шаг 2. Tali, шесть поз
 
 ### Кто такой Tali
@@ -111,28 +147,45 @@ children's picture-book applique look.
 Формат **1:1**, прозрачный фон, ссылка на сохранённый стиль.
 
 ```
-A cartoon Tyrannosaurus Rex explorer, full body, standing and waving hello.
-Flat vector cut-out style, thick uniform dark outline (#2A1A12), children's
-picture-book applique look. NO gradients and NO airbrush anywhere.
+A cartoon dinosaur character named Tali: a friendly little T-Rex explorer,
+full body, standing and waving hello. Flat vector cut-out style, thick uniform
+dark outline (#2A1A12). NO gradients, NO airbrush, NO texture.
 
-DETAIL — important: the character is richly detailed, not a plain silhouette.
-Rows of small scutes running down the back and tail, separate belly plates
-across the underside, individual claws on hands and feet, creased folds at the
-elbows and knees, a nostril, an eyebrow ridge, a round eye highlight cut as its
-own shape, one small tooth, stitching and a flap on the satchel, a strap buckle
-with a visible pin, rivets around the goggle rims.
+STYLE — read this first. Minimal realism in the manner of Charley Harper: the
+FORM is simplified to a few clean geometric shapes, and richness comes from
+DECORATIVE PATTERN laid over that form, never from anatomy. This is a toy
+character for small children, not a natural history illustration.
 
-VOLUME from FLAT TONE STEPS only: each colour appears as three separate solid
-shapes with hard edges — light step on the lit side, mid step, dark step on the
-shadow side. Like cut paper laid on cut paper. No blending, no soft shading.
+NOT REALISTIC. Absolutely no: muscle definition, individually rendered scales,
+skin texture, wrinkles, creased folds at joints, visible ribs or bone structure,
+claws as weapons, rows of sharp teeth, nostril and eyebrow modelling, correct
+dinosaur anatomy, menacing posture. If it could appear in a dinosaur
+encyclopaedia, it is wrong.
 
-Proportions: oversized head about 40 percent of total height, comically tiny
-short arms, sturdy legs, heavy tail for balance. Friendly rounded snout, big
-round eyes, no menace.
+FORM: built from big soft ovals and rounded rectangles. Oversized round head
+about 40 percent of total height, short blunt rounded snout, comically tiny
+short arms, plump sturdy legs like simple tubes, thick rounded tail. Toes and
+fingers are soft rounded nubs, not claws. Huge round friendly eyes with a big
+dark pupil and one round white highlight cut as its own shape. A wide closed
+smile with at most one tiny rounded tooth showing. Kind and a little goofy.
+
+DETAIL comes from COSTUME AND PATTERN, not from the animal:
+- a decorative motif on the back and tail — a neat evenly spaced row of soft
+  rounded chevrons, like a printed pattern on fabric, not like real scutes;
+- a few scattered round spots on the flank, simple and evenly sized;
+- large yellow goggles pushed up on the forehead, with a stitched strap,
+  round rivets at the rims and a highlight arc on each lens;
+- a red satchel with a flap, a row of visible stitches along the edge,
+  a square buckle and a shoulder strap;
+- soft rounded belly panel as a single clean shape, with NO plating or segments.
+
+VOLUME from FLAT TONE STEPS only: each colour appears as two or three separate
+solid shapes with hard edges — a light step on the lit side and a darker step on
+the shadow side. Like cut paper laid on cut paper. No blending, no soft shading.
 
 Colours: body #3FC08A with a darker green shadow side #2FA24E, cream belly
-#FFE6C7, large yellow goggles #FFC42E with blue lenses #0E8FBF worn pushed up
-on the forehead, red satchel #D93A1E with a yellow buckle.
+#FFE6C7, yellow goggles #FFC42E with blue lenses #0E8FBF, red satchel #D93A1E
+with a yellow buckle.
 
 The character FILLS THE ENTIRE FRAME: head touches the top edge, feet touch the
 bottom edge, tail reaches the side. Tight crop, no empty margins.
@@ -216,14 +269,22 @@ Transparent background, no ground shadow, no text.
 
 ```
 Wide landscape illustration, 16:9 aspect ratio, flat vector cut-out style,
-children's picture-book applique in the spirit of Charley Harper and Eric Carle:
-absolutely NO gradients anywhere, but very many overlapping flat shapes.
+in the manner of Charley Harper: absolutely NO gradients anywhere, but very many
+overlapping flat shapes.
 
-DENSITY — the most important instruction. The scene is BUSY and richly detailed,
-at least forty distinct elements. Every large shape carries smaller shapes inside
-it: stripes, rows of dots, notches, scalloped edges, cut-out patterns. No large
-area is left as a single empty flat fill. Build the scene in five overlapping
-depth planes from far to near.
+STYLE: minimal realism. Every object is reduced to a few clean geometric shapes,
+and richness comes from DECORATIVE PATTERN laid over those shapes. This is a
+stylised storybook map, NOT a realistic landscape painting. No realistic
+texture, no rendered foliage, no photographic detail, no fine hatching, no
+atmospheric haze, no natural irregularity — patterns are neat, evenly spaced
+and deliberate, like printed paper.
+
+DENSITY — the most important instruction. The scene is BUSY: at least forty
+distinct elements. Every large shape carries smaller shapes inside it — rows of
+dots, stripes, notches, scalloped edges, repeated motifs. No large area is left
+as a single empty flat fill. Build the scene in five overlapping depth planes
+from far to near. Density comes from repeating simple motifs, never from making
+objects more realistic.
 
 VOLUME comes from FLAT TONE STEPS, never from gradients. Each colour appears as
 three separate solid shapes with hard edges between them — a light step, a mid
@@ -254,21 +315,30 @@ but it is NOT empty and NOT a blank band. Keep the tallest shapes away from the
 left and right edges.
 
 DO NOT include: characters, animals, people, text, letters, numbers, signage,
-logos, frames, borders, vignettes.
+logos, frames, borders, vignettes. DO NOT make it realistic: no photographic
+texture, no painterly rendering, no soft shading, no perspective haze.
 ```
 
 **`region-words.svg` — Побережье слов, язык и чтение**
 
 ```
 Wide landscape illustration, 16:9 aspect ratio, flat vector cut-out style,
-children's picture-book applique in the spirit of Charley Harper and Eric Carle:
-absolutely NO gradients anywhere, but very many overlapping flat shapes.
+in the manner of Charley Harper: absolutely NO gradients anywhere, but very many
+overlapping flat shapes.
 
-DENSITY — the most important instruction. The scene is BUSY and richly detailed,
-at least forty distinct elements. Every large shape carries smaller shapes inside
-it: stripes, rows of dots, notches, scalloped edges, cut-out patterns. No large
-area is left as a single empty flat fill. Build the scene in five overlapping
-depth planes from far to near.
+STYLE: minimal realism. Every object is reduced to a few clean geometric shapes,
+and richness comes from DECORATIVE PATTERN laid over those shapes. This is a
+stylised storybook map, NOT a realistic landscape painting. No realistic
+texture, no rendered foliage, no photographic detail, no fine hatching, no
+atmospheric haze, no natural irregularity — patterns are neat, evenly spaced
+and deliberate, like printed paper.
+
+DENSITY — the most important instruction. The scene is BUSY: at least forty
+distinct elements. Every large shape carries smaller shapes inside it — rows of
+dots, stripes, notches, scalloped edges, repeated motifs. No large area is left
+as a single empty flat fill. Build the scene in five overlapping depth planes
+from far to near. Density comes from repeating simple motifs, never from making
+objects more realistic.
 
 VOLUME comes from FLAT TONE STEPS, never from gradients. Each colour appears as
 three separate solid shapes with hard edges between them — a light step, a mid
@@ -299,21 +369,30 @@ but it is NOT empty and NOT a blank band. Keep the tallest shapes away from the
 left and right edges.
 
 DO NOT include: characters, animals, people, text, letters, numbers, signage,
-logos, frames, borders, vignettes.
+logos, frames, borders, vignettes. DO NOT make it realistic: no photographic
+texture, no painterly rendering, no soft shading, no perspective haze.
 ```
 
 **`region-nature.svg` — Живой лес, окружающий мир**
 
 ```
 Wide landscape illustration, 16:9 aspect ratio, flat vector cut-out style,
-children's picture-book applique in the spirit of Charley Harper and Eric Carle:
-absolutely NO gradients anywhere, but very many overlapping flat shapes.
+in the manner of Charley Harper: absolutely NO gradients anywhere, but very many
+overlapping flat shapes.
 
-DENSITY — the most important instruction. The scene is BUSY and richly detailed,
-at least forty distinct elements. Every large shape carries smaller shapes inside
-it: stripes, rows of dots, notches, scalloped edges, cut-out patterns. No large
-area is left as a single empty flat fill. Build the scene in five overlapping
-depth planes from far to near.
+STYLE: minimal realism. Every object is reduced to a few clean geometric shapes,
+and richness comes from DECORATIVE PATTERN laid over those shapes. This is a
+stylised storybook map, NOT a realistic landscape painting. No realistic
+texture, no rendered foliage, no photographic detail, no fine hatching, no
+atmospheric haze, no natural irregularity — patterns are neat, evenly spaced
+and deliberate, like printed paper.
+
+DENSITY — the most important instruction. The scene is BUSY: at least forty
+distinct elements. Every large shape carries smaller shapes inside it — rows of
+dots, stripes, notches, scalloped edges, repeated motifs. No large area is left
+as a single empty flat fill. Build the scene in five overlapping depth planes
+from far to near. Density comes from repeating simple motifs, never from making
+objects more realistic.
 
 VOLUME comes from FLAT TONE STEPS, never from gradients. Each colour appears as
 three separate solid shapes with hard edges between them — a light step, a mid
@@ -344,21 +423,30 @@ but it is NOT empty and NOT a blank band. Keep the tallest shapes away from the
 left and right edges.
 
 DO NOT include: characters, animals, people, text, letters, numbers, signage,
-logos, frames, borders, vignettes.
+logos, frames, borders, vignettes. DO NOT make it realistic: no photographic
+texture, no painterly rendering, no soft shading, no perspective haze.
 ```
 
 **`region-logic.svg` — Мастерская, логика и задачи**
 
 ```
 Wide landscape illustration, 16:9 aspect ratio, flat vector cut-out style,
-children's picture-book applique in the spirit of Charley Harper and Eric Carle:
-absolutely NO gradients anywhere, but very many overlapping flat shapes.
+in the manner of Charley Harper: absolutely NO gradients anywhere, but very many
+overlapping flat shapes.
 
-DENSITY — the most important instruction. The scene is BUSY and richly detailed,
-at least forty distinct elements. Every large shape carries smaller shapes inside
-it: stripes, rows of dots, notches, scalloped edges, cut-out patterns. No large
-area is left as a single empty flat fill. Build the scene in five overlapping
-depth planes from far to near.
+STYLE: minimal realism. Every object is reduced to a few clean geometric shapes,
+and richness comes from DECORATIVE PATTERN laid over those shapes. This is a
+stylised storybook map, NOT a realistic landscape painting. No realistic
+texture, no rendered foliage, no photographic detail, no fine hatching, no
+atmospheric haze, no natural irregularity — patterns are neat, evenly spaced
+and deliberate, like printed paper.
+
+DENSITY — the most important instruction. The scene is BUSY: at least forty
+distinct elements. Every large shape carries smaller shapes inside it — rows of
+dots, stripes, notches, scalloped edges, repeated motifs. No large area is left
+as a single empty flat fill. Build the scene in five overlapping depth planes
+from far to near. Density comes from repeating simple motifs, never from making
+objects more realistic.
 
 VOLUME comes from FLAT TONE STEPS, never from gradients. Each colour appears as
 three separate solid shapes with hard edges between them — a light step, a mid
@@ -391,7 +479,8 @@ but it is NOT empty and NOT a blank band. Keep the tallest shapes away from the
 left and right edges.
 
 DO NOT include: characters, animals, people, text, letters, numbers, signage,
-logos, frames, borders, vignettes.
+logos, frames, borders, vignettes. DO NOT make it realistic: no photographic
+texture, no painterly rendering, no soft shading, no perspective haze.
 ```
 
 **Нижняя четверть обязана остаться спокойной.** Если модель забила её деталями,
@@ -535,11 +624,12 @@ children's picture-book applique look. No text.
    и на экране читается как залитая форма. Ориентир: **панорама от 250 путей,
    поза Tali от 150**. Меньше — сцена выйдет пустой, сколько бы её ни перекрашивали.
 
-   Причина первой партии была в промпте, а не в модели: там стояло «NO shading»,
-   «a few simple round trees» и «нижняя четверть пустая». Плоская аппликация не
-   значит «мало фигур» — у Эрика Карла заливки без единого градиента, а фигур
-   на развороте сотни. Объём набирается **ступенями тона**: один цвет лежит тремя
-   отдельными заливками — светлой, средней и тёмной, с жёсткой границей между ними.
+   Но плотность считается **только узором**. Если фигуры набежали за счёт анатомии —
+   щитков, складок, когтей, прорисованной чешуи — счётчик зелёный, а ассет негодный.
+   Форма простая и мультяшная, богатство даёт орнамент поверх неё; подробно об этом
+   в разделе «Плотность — это узор, а не анатомия». Объём набирается **ступенями
+   тона**: один цвет лежит двумя-тремя отдельными заливками — светлой, средней и
+   тёмной, с жёсткой границей между ними.
 
 2. **Размер файла SVG.** Обратная граница к плотности. Нейросети иногда выдают
    вектор с десятками тысяч точек. Панорама больше **300 КБ** — перегенерируйте
