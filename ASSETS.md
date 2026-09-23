@@ -77,53 +77,95 @@ children's picture-book applique look.
 
 ## Шаг 2. Tali, шесть поз
 
-Генерируйте **одним листом**, не по одной картинке: внутри одного кадра модель
-держит персонажа заметно лучше.
+### Кто такой Tali
 
-Формат **16:9**, прозрачный фон, ссылка на сохранённый стиль.
+**Тираннозавр-исследователь.** Не абстрактный динозавр: силуэт ти-рекса узнаётся
+залитым в чёрный за долю секунды, и это первое требование к запоминаемому
+персонажу.
 
-```
-Character sheet, 6 poses of the same cartoon dinosaur, flat vector cut-out
-style, thick uniform dark outline (#2A1A12), completely flat fills with NO
-gradients and NO texture, children's picture-book applique look.
+**Крошечные ручки — главная черта, и она не декоративная.** Ти-рекс физически
+не дотягивается, не удерживает, не может сосчитать на пальцах — их два. Поэтому
+ему нужен ребёнок. Концепция «ребёнок помогает Tali» перестаёт быть сценарной
+условностью и становится свойством тела персонажа.
 
-Character: small friendly green dinosaur explorer. Body #3FC08A with a
-darker green shadow side #2FA24E, cream belly #FFE6C7, large yellow goggles
-#FFC42E with blue lenses #0E8FBF worn on the forehead, red satchel #D93A1E
-with a yellow buckle. Big head, short legs, round friendly eyes.
+Три правила запоминаемости, по убыванию важности:
 
-Poses left to right: 1 waving hello, 2 holding up a rolled map having found
-something, 3 puzzled with head tilted, 4 pointing a paw to the side,
-5 jumping with joy, 6 leaning over a book and writing.
+1. **Силуэт.** Залейте фигуру чёрным — должна узнаваться. Большая голова,
+   мелкие ручки, тяжёлый хвост дают это сразу.
+2. **Один крючок.** Черта, которую называют первой. Здесь — ручки. Гогглы
+   вторичны.
+3. **Преувеличенные пропорции.** Голова 35–40% роста. Реалистичные пропорции
+   у детского персонажа всегда читаются скучно.
 
-Plain white background, each pose fully separated, no text, no labels,
-no shadows on the ground.
-```
+### Почему не листом из шести поз
 
-**Если одна поза не удалась** — правьте её отдельно через image-input от удачного
-кадра. Не перегенерируйте весь лист: потеряете те позы, что уже хороши.
+Лист 1024 px делит кадр на шесть, каждой позе достаётся около 340 px — персонаж
+выходит мелким по построению.
 
-**Требования к нарезке — от них зависит, будет ли работать анимация:**
+**Генерируйте по одной позе на кадр.** Сначала главная поза крупно и до идеала,
+затем она становится **образцом-изображением** для остальных пяти: Recraft V4.1
+принимает картинку на вход, и персонаж держится от неё надёжнее, чем от текста.
 
-1. Шесть отдельных файлов.
-2. **Одинаковый размер кадра** у всех шести.
-3. **Одинаковое положение и масштаб персонажа** внутри кадра. Если на одной позе
-   Tali по центру, а на другой смещён — при переключении он будет прыгать.
+### Поза 1: эталон
 
-Проще всего резать лист по равным ячейкам.
-
-**Имена файлов:**
+Формат **1:1**, прозрачный фон, ссылка на сохранённый стиль.
 
 ```
-tali-hello.svg     приветствие
-tali-found.svg     нашёл
-tali-puzzled.svg   сомневается
-tali-point.svg     указывает
-tali-cheer.svg     похвала
-tali-write.svg     вписывает в атлас
+A cartoon Tyrannosaurus Rex explorer, full body, standing and waving hello.
+Flat vector cut-out style, thick uniform dark outline (#2A1A12), completely
+flat fills with NO gradients and NO texture, children's picture-book applique
+look.
+
+Proportions: oversized head about 40 percent of total height, comically tiny
+short arms, sturdy legs, heavy tail for balance. Friendly rounded snout, one
+small tooth showing, big round eyes, no menace.
+
+Colours: body #3FC08A with a darker green shadow side #2FA24E, cream belly
+#FFE6C7, large yellow goggles #FFC42E with blue lenses #0E8FBF worn pushed up
+on the forehead, red satchel #D93A1E with a yellow buckle.
+
+The character FILLS THE ENTIRE FRAME: head touches the top edge, feet touch the
+bottom edge, tail reaches the side. Tight crop, no empty margins.
+Transparent background, no ground shadow, no text.
 ```
 
-Расход: примерно 30 кредитов.
+Доводите эту позу, пока не понравится всё: пропорции, морда, толщина контура.
+**Остальные пять наследуют её, поэтому на эталон кредитов не жалейте.**
+
+### Позы 2–6: от образца
+
+Для каждой — та же генерация, но **с эталоном на входе как image reference**,
+и меняется только описание позы:
+
+| Файл | Поза | Что писать вместо `standing and waving hello` |
+|---|---|---|
+| `tali-hello.svg` | приветствие | это и есть эталон |
+| `tali-found.svg` | нашёл | `holding up a rolled map in both tiny arms, excited, leaning forward` |
+| `tali-puzzled.svg` | сомневается | `head tilted, one tiny arm scratching the chin, puzzled` |
+| `tali-point.svg` | указывает | `goggles pulled down over the eyes, one tiny arm pointing to the side` |
+| `tali-cheer.svg` | похвала | `jumping with joy, both tiny arms up, tail lifted` |
+| `tali-write.svg` | вписывает | `leaning over an open atlas, holding a pencil in one tiny arm` |
+
+В каждой повторяйте абзац про заполнение кадра — модель о нём забывает.
+
+### Требования к набору
+
+От них зависит, соберётся ли анимация:
+
+1. **Одинаковый размер кадра** у всех шести.
+2. **Одинаковое положение и масштаб персонажа** внутри кадра. Если на одной позе
+   Tali по центру, а на другой смещён — при переключении он прыгает.
+3. **Голова одного размера** во всех позах.
+
+Проверка: положите шесть файлов друг на друга в редакторе. Голова и ноги должны
+совпасть.
+
+### Проверка силуэта
+
+Залейте готовую фигуру сплошным чёрным и уменьшите до 24 px. Если не узнаётся —
+пропорции недостаточно преувеличены: увеличивайте голову и уменьшайте ручки.
+
+Расход: примерно 60 кредитов — эталон дороже, остальные дешевле.
 
 ---
 
@@ -259,11 +301,11 @@ assets/images/tasks/      предметы к заданиям
 | Этап | Кредитов |
 |---|---|
 | Калибровка стиля | ~50 |
-| Tali, шесть поз | ~30 |
+| Tali: эталон плюс пять поз | ~60 |
 | Четыре панорамы | ~65 |
 | 22 иконки | ~130 |
 | Запас на переделки | ~200 |
-| **Итого** | **~475** |
+| **Итого** | **~505** |
 
 Тариф Basic даёт 1000 кредитов в месяц: весь набор укладывается меньше чем
 в половину. Векторная генерация стоит 2 кредита, растровая — 1.
@@ -278,8 +320,12 @@ assets/images/tasks/      предметы к заданиям
 **У персонажа белый фон вместо прозрачного.** Прозрачность не включена в настройках.
 Перегенерируйте: вырезать фон вручную у вектора мучительно.
 
-**Позы Tali разного масштаба.** Лист нарезан неровно. Режьте по равным ячейкам
-от краёв изображения, а не «на глаз» по фигурам.
+**Позы Tali разного масштаба.** Забыт абзац про заполнение кадра, или поза сделана
+без эталона на входе. Перегенерируйте с image reference и явным требованием, что
+голова касается верхнего края.
+
+**Персонаж выходит мелким.** Модель оставляет поля по привычке. Усильте: `The character
+fills 100 percent of the frame height, head touching the top edge, cropped tight.`
 
 **Панорама забита деталями снизу.** Модель проигнорировала «lower third nearly
 empty». Усильте: добавьте в конец промпта `The bottom third must be empty sky or
