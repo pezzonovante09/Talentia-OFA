@@ -171,12 +171,33 @@ Transparent background, no ground shadow, no text.
 
 ## Шаг 3. Четыре панорамы регионов
 
-**Pro Vector**, формат **3:4**, фон не прозрачный, ссылка на стиль.
+**Pro Vector**, формат **16:9 ландшафтный**, фон не прозрачный, ссылка на стиль.
+
+### Почему ландшафт, а не вертикаль
+
+Панорама не заполняет экран целиком. Она встаёт в два горизонтальных места:
+
+- **полоса региона в шапке урока** — примерно 390×286, то есть широкая лента;
+- **карта региона** — горизонтальная лента, которая прокручивается вбок.
+
+Вектор тянется без потерь, но **композиция не тянется**: вертикальную сцену в широкой
+полосе придётся обрезать сверху и снизу, и от неё останется середина. Обратное работает —
+из широкой панорамы полоса вырезается свободно.
+
+### Безопасные зоны
+
+Выведены из вёрстки экрана, не из общих соображений:
+
+- **нижняя четверть спокойная** — там стоит Tali и висит его реплика;
+- **важное не у самых краёв** — телефоны разной ширины обрежут бока по-разному;
+- смысловой центр сцены держите в средней трети по горизонтали.
 
 ```
-Wide landscape illustration, flat vector cut-out style, thick dark outline
+Wide landscape illustration, 16:9, flat vector cut-out style, thick dark outline
 on every shape, flat fills, no gradients, no texture.
-Scene: {СЦЕНА}. Calm and spacious, the lower third nearly empty.
+Scene: {СЦЕНА}. Calm and spacious.
+The bottom quarter must stay empty and uncluttered.
+Keep the main elements away from the left and right edges.
 No characters, no text, no signage.
 ```
 
@@ -187,9 +208,8 @@ No characters, no text, no signage.
 | `region-nature.svg` | Живой лес, окружающий мир | `a forest of pointed conifer trees on soft green hills, a winding path` |
 | `region-logic.svg` | Мастерская, логика | `a small village of cubic workshop roofs with a chimney and gears, purple and warm tones` |
 
-**Нижняя треть обязана остаться пустой** — туда встаёт интерфейс. Если модель
-заполнила её деталями, перегенерируйте: обрезать потом не получится, композиция
-поедет.
+**Нижняя четверть обязана остаться спокойной.** Если модель забила её деталями,
+перегенерируйте: обрезать потом не выйдет, композиция поедет.
 
 Расход: примерно 65 кредитов.
 
@@ -327,9 +347,11 @@ assets/images/tasks/      предметы к заданиям
 **Персонаж выходит мелким.** Модель оставляет поля по привычке. Усильте: `The character
 fills 100 percent of the frame height, head touching the top edge, cropped tight.`
 
-**Панорама забита деталями снизу.** Модель проигнорировала «lower third nearly
-empty». Усильте: добавьте в конец промпта `The bottom third must be empty sky or
-flat ground with nothing in it.`
+**Панорама забита деталями снизу.** Модель проигнорировала требование. Усильте:
+`The bottom quarter must be completely empty flat ground with nothing in it.`
+
+**Панорама вышла вертикальной.** Проверьте формат: нужен 16:9 ландшафтный. Вертикальную
+сцену в горизонтальную полосу не перекомпоновать — только перегенерировать.
 
 **SVG весит мегабайт.** Слишком сложная сцена. Упростите промпт: уберите
 `distant mountains`, `small flowers and stones`, оставьте два-три плана.
