@@ -287,279 +287,101 @@ shadow, no text, no watermark.
 
 ### Промпты: по одному на регион
 
-Каждый самодостаточный. Копируйте целиком, ничего не подставляя.
+Промпты намеренно короткие. Предыдущие версии перечисляли фигуры — «круг с
+точкой в центре», «ряды простых кругов», «скруглённые прямоугольники с линиями
+досок» — и генератор складывал сцену ровно из перечисленного, отчего она
+выглядела собранной в пэинте. Перечисление примитивов и есть причина, а не
+лекарство: модель умеет рисовать пейзаж, ей нужно сказать, ЧТО на нём, а не
+КАК его строить.
 
-Почему не шаблон с подстановкой: первая панорама вышла с сине-чёрным контуром
-`#050042` вместо тёплого `#2A1A12`, на треть белой и мимо палитры во всех пяти
-цветах. Общая настройка проекта не удержала ни один. Поэтому палитра и контур
-перечисляются в каждом промпте поимённо, а заполнение кадра требуется дважды
-разными словами.
+Поэтому в промпте остаётся четыре вещи: сцена одним предложением, стиль,
+палитра и технические запреты. Композиция, ритм и детали — на модели.
 
 **`region-numbers.svg` — Числовая долина, математика**
 
 ```
-Wide landscape illustration, 3:2 aspect ratio, flat vector cartoon sticker art.
+A charming cartoon landscape of a sunny valley: rolling golden hills, round
+leafy trees, a winding stone path, drystone walls and little flowers scattered
+on the slopes.
 
-STYLE: exactly the same drawing language as a chunky kawaii cartoon sticker —
-the same language as the character who will stand on this picture. Bold dark
-outlines, completely flat colour, soft rounded geometry, cheerful and toy-like.
-A storybook map drawn as a sticker set. NOT a landscape painting, NOT a nature
-illustration, NOT mid-century graphic design, NOT an infographic.
+Kawaii sticker illustration style: bold dark outlines #2A1A12, flat vivid
+colours, soft rounded forms, warm and playful — the same style as a cute chunky
+cartoon dinosaur mascot who will stand in this scene. Polished professional
+vector art, beautifully composed, rich and inviting.
 
-FLATNESS — the single most important rule. Every object is ONE single flat
-colour. NO shading, NO tone steps, NO lit side and shadow side, NO gradients,
-NO airbrush, NO glossy highlights, NO texture, NO hatching, NO rendering.
-Depth is created ONLY by overlapping silhouettes and by giving distant objects
-a DIFFERENT colour from the list below — never by darkening the same colour.
+Palette: golden yellow #F2B705, amber #C79104, green #2FA24E, red #D93A1E,
+cream #FFE6C7, brown #8C6A03. The foreground is a band of deep shadowed earth
+#534723 where a character will stand.
 
-OUTLINE: warm near-black #2A1A12, thick and even, around every object — hills,
-trees, buildings, waves, rocks. Rounded line ends and rounded corners
-everywhere. No sharp points, no thin tapering lines, no sketchy strokes. Small
-decorative dots and spots carry NO outline and are read by colour alone.
-Nothing else in the image is near-black.
-
-SHAPES: soft and rounded, built from circles, ovals, rounded triangles and
-rounded rectangles — the same vocabulary as the character: round spots, rounded
-bumps, simple curved lines. No spiky silhouettes, no fine detail.
-
-DENSITY: busy but calm. Thirty to forty objects in four overlapping planes from
-far to near. No object smaller than one fortieth of the image height. Richness
-comes from repeating simple motifs — rows of round dots, rounded bumps, simple
-stripes — placed in the far and middle planes. The near plane is a few large
-plain shapes.
-
-COLOURS, use ONLY these, each as a flat fill: golden yellow #F2B705 sky, amber
-#C79104 far hills, green #2FA24E near hills and grass, red #D93A1E flowers and
-berries, cream #FFE6C7 small blossoms and pebbles, grey-brown #8C6A03 trunks,
-stones and paths, dark brown #534723 for the foreground ground only.
-
-SCENE: a sunny valley of rounded stepped hills. A range of soft stepped hills
-spans the top third as the landmark. Behind it two more ranges in amber. Round
-trees: a plain circle crown on a short rounded trunk, standing in a scattered
-grove. Round bushes as clusters of overlapping circles. Drystone walls as neat
-rows of plain circles. A winding path of separate rounded stepping stones.
-Flowers as a circle with a round dot centre, in small clusters. A plain round
-sun with short rounded rays over the hills. Warm, open, friendly.
-
-FRAMING:
-- the artwork covers the whole canvas edge to edge; no margin, no frame, no
-  border, no vignette;
-- the outer 8% of the width on each side may be cropped away: keep everything
-  that matters inside the central 84%;
-- the horizon and the main landmark sit in the TOP THIRD across the full width;
-- the bottom two fifths is the character's ground: two or three large plain
-  shapes in the dark ground colour named below, with no pattern, no tall
-  objects and no small parts;
-- keep the RIGHT half free of white, cream and pale tones — a white speech
-  balloon will sit there.
-
-DO NOT include: characters, animals, people, faces, eyes, text, letters,
-numbers, signage, logos, frames, borders, vignettes. DO NOT use: white or pale
-cream as a sky or as any large area; any near-black other than the outline
-colour; shading of any kind.
+Flat colours only, no gradients, no shading, no texture, no glossy highlights.
+Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
+No characters, no animals, no people, no text, no frame.
 ```
 
 **`region-words.svg` — Побережье слов, язык и чтение**
 
 ```
-Wide landscape illustration, 3:2 aspect ratio, flat vector cartoon sticker art.
+A charming cartoon seaside: a striped lighthouse on a grassy headland, gentle
+rolling waves, a wooden jetty, little sailing boats with flags, buoys and
+shells along the shore.
 
-STYLE: exactly the same drawing language as a chunky kawaii cartoon sticker —
-the same language as the character who will stand on this picture. Bold dark
-outlines, completely flat colour, soft rounded geometry, cheerful and toy-like.
-A storybook map drawn as a sticker set. NOT a landscape painting, NOT a nature
-illustration, NOT mid-century graphic design, NOT an infographic.
+Kawaii sticker illustration style: bold dark outlines #2A1A12, flat vivid
+colours, soft rounded forms, warm and playful — the same style as a cute chunky
+cartoon dinosaur mascot who will stand in this scene. Polished professional
+vector art, beautifully composed, rich and inviting.
 
-FLATNESS — the single most important rule. Every object is ONE single flat
-colour. NO shading, NO tone steps, NO lit side and shadow side, NO gradients,
-NO airbrush, NO glossy highlights, NO texture, NO hatching, NO rendering.
-Depth is created ONLY by overlapping silhouettes and by giving distant objects
-a DIFFERENT colour from the list below — never by darkening the same colour.
+Palette: sea blue #0E8FBF, deep blue #0C6E92, red #D93A1E, yellow #FFC42E,
+green #2FA24E, cream #FFE6C7, brown #8C6A03. The foreground is a band of deep
+shadowed wet shore #274F5D where a character will stand.
 
-OUTLINE: warm near-black #2A1A12, thick and even, around every object — hills,
-trees, buildings, waves, rocks. Rounded line ends and rounded corners
-everywhere. No sharp points, no thin tapering lines, no sketchy strokes. Small
-decorative dots and spots carry NO outline and are read by colour alone.
-Nothing else in the image is near-black.
-
-SHAPES: soft and rounded, built from circles, ovals, rounded triangles and
-rounded rectangles — the same vocabulary as the character: round spots, rounded
-bumps, simple curved lines. No spiky silhouettes, no fine detail.
-
-DENSITY: busy but calm. Thirty to forty objects in four overlapping planes from
-far to near. No object smaller than one fortieth of the image height. Richness
-comes from repeating simple motifs — rows of round dots, rounded bumps, simple
-stripes — placed in the far and middle planes. The near plane is a few large
-plain shapes.
-
-COLOURS, use ONLY these, each as a flat fill: sea blue #0E8FBF sky and near
-water, deep blue #0C6E92 far water, red #D93A1E lighthouse stripes and flags,
-yellow #FFC42E sand, lamp and buoys, green #2FA24E headland grass, cream
-#FFE6C7 shells and foam dots (small motifs only), grey-brown #8C6A03 timber and
-rock, deep blue #274F5D for the foreground shore only.
-
-SCENE: a bright friendly shoreline. A stout striped lighthouse with a rounded
-lamp room stands on a low headland in the top third as the landmark. Behind and
-below it, three bands of sea, each edged with a row of rounded scalloped wave
-crests and a row of plain round foam dots. A wooden jetty as a rounded plank on
-a row of rounded piles. Moored boats with rounded hulls, striped sides and
-small pennant flags. Round buoys. Shells and pebbles as plain circles and
-ovals. The near plane is shore in deep blue #274F5D with two or three large
-plain rounded stones.
-
-FRAMING:
-- the artwork covers the whole canvas edge to edge; no margin, no frame, no
-  border, no vignette;
-- the outer 8% of the width on each side may be cropped away: keep everything
-  that matters inside the central 84%;
-- the horizon and the main landmark sit in the TOP THIRD across the full width;
-- the bottom two fifths is the character's ground: two or three large plain
-  shapes in the dark ground colour named below, with no pattern, no tall
-  objects and no small parts;
-- keep the RIGHT half free of white, cream and pale tones — a white speech
-  balloon will sit there.
-
-DO NOT include: characters, animals, people, faces, eyes, text, letters,
-numbers, signage, logos, frames, borders, vignettes. DO NOT use: white or pale
-cream as a sky or as any large area; any near-black other than the outline
-colour; shading of any kind.
+Flat colours only, no gradients, no shading, no texture, no glossy highlights.
+Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
+No characters, no animals, no people, no text, no frame.
 ```
 
 **`region-nature.svg` — Живой лес, окружающий мир**
 
 ```
-Wide landscape illustration, 3:2 aspect ratio, flat vector cartoon sticker art.
+A charming cartoon forest: tall soft pine trees, ferns, clusters of spotted
+mushrooms, berry bushes and a mossy fallen log.
 
-STYLE: exactly the same drawing language as a chunky kawaii cartoon sticker —
-the same language as the character who will stand on this picture. Bold dark
-outlines, completely flat colour, soft rounded geometry, cheerful and toy-like.
-A storybook map drawn as a sticker set. NOT a landscape painting, NOT a nature
-illustration, NOT mid-century graphic design, NOT an infographic.
+Kawaii sticker illustration style: bold dark outlines #2A1A12, flat vivid
+colours, soft rounded forms, warm and playful — the same style as a cute chunky
+cartoon dinosaur mascot who will stand in this scene. Polished professional
+vector art, beautifully composed, rich and inviting.
 
-FLATNESS — the single most important rule. Every object is ONE single flat
-colour. NO shading, NO tone steps, NO lit side and shadow side, NO gradients,
-NO airbrush, NO glossy highlights, NO texture, NO hatching, NO rendering.
-Depth is created ONLY by overlapping silhouettes and by giving distant objects
-a DIFFERENT colour from the list below — never by darkening the same colour.
+Palette: green #2FA24E, deep green #1F7A3A, red #D93A1E, cream #FFE6C7,
+brown #8C6A03. The foreground is a band of deep shadowed forest floor #235330
+where a character will stand.
 
-OUTLINE: warm near-black #2A1A12, thick and even, around every object — hills,
-trees, buildings, waves, rocks. Rounded line ends and rounded corners
-everywhere. No sharp points, no thin tapering lines, no sketchy strokes. Small
-decorative dots and spots carry NO outline and are read by colour alone.
-Nothing else in the image is near-black.
+IMPORTANT: keep every green deep and rich. No mint, pale or pastel green
+anywhere — a bright mint-green cartoon character will stand in front of this
+forest and must not disappear into it.
 
-SHAPES: soft and rounded, built from circles, ovals, rounded triangles and
-rounded rectangles — the same vocabulary as the character: round spots, rounded
-bumps, simple curved lines. No spiky silhouettes, no fine detail.
-
-DENSITY: busy but calm. Thirty to forty objects in four overlapping planes from
-far to near. No object smaller than one fortieth of the image height. Richness
-comes from repeating simple motifs — rows of round dots, rounded bumps, simple
-stripes — placed in the far and middle planes. The near plane is a few large
-plain shapes.
-
-COLOURS, use ONLY these, each as a flat fill: green #2FA24E foliage, deep green
-#1F7A3A far forest, red #D93A1E berries and mushroom caps, cream #FFE6C7 spots
-and mushroom stems (small motifs only), grey-brown #8C6A03 trunks and branches,
-very dark green #235330 for the forest floor only.
-IMPORTANT: no pale, minty or pastel green anywhere in this picture. A bright
-mint-green cartoon character will stand in front of this forest and must not be
-lost in it.
-
-SCENE: a friendly deep forest. A rank of tall conifers spans the top third as
-the landmark, each crown built from three or four stacked ROUNDED triangles,
-blunt and soft, never sharp. Behind them a second rank in deep green. Rounded
-trunks with a few simple ring marks. Round mushrooms: a plain circle cap with
-cream dots on a short rounded stem, in small clusters. A fallen log as a long
-rounded rectangle with a row of round bracket fungi. Berry bushes as clusters
-of circles with plain round berries. The near plane is forest floor in very
-dark green #235330 with two or three large plain rounded stones.
-
-FRAMING:
-- the artwork covers the whole canvas edge to edge; no margin, no frame, no
-  border, no vignette;
-- the outer 8% of the width on each side may be cropped away: keep everything
-  that matters inside the central 84%;
-- the horizon and the main landmark sit in the TOP THIRD across the full width;
-- the bottom two fifths is the character's ground: two or three large plain
-  shapes in the dark ground colour named below, with no pattern, no tall
-  objects and no small parts;
-- keep the RIGHT half free of white, cream and pale tones — a white speech
-  balloon will sit there.
-
-DO NOT include: characters, animals, people, faces, eyes, text, letters,
-numbers, signage, logos, frames, borders, vignettes. DO NOT use: white or pale
-cream as a sky or as any large area; any near-black other than the outline
-colour; shading of any kind.
+Flat colours only, no gradients, no shading, no texture, no glossy highlights.
+Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
+No characters, no animals, no people, no text, no frame.
 ```
 
 **`region-logic.svg` — Мастерская, логика и задачи**
 
 ```
-Wide landscape illustration, 3:2 aspect ratio, flat vector cartoon sticker art.
+A charming cartoon workshop village: cosy cubic houses with tiled roofs, a tall
+smoking chimney, big friendly gears and pipes on the walls, hanging lamps and
+stacked crates in the yard.
 
-STYLE: exactly the same drawing language as a chunky kawaii cartoon sticker —
-the same language as the character who will stand on this picture. Bold dark
-outlines, completely flat colour, soft rounded geometry, cheerful and toy-like.
-A storybook map drawn as a sticker set. NOT a landscape painting, NOT a nature
-illustration, NOT mid-century graphic design, NOT an infographic.
+Kawaii sticker illustration style: bold dark outlines #2A1A12, flat vivid
+colours, soft rounded forms, warm and playful — the same style as a cute chunky
+cartoon dinosaur mascot who will stand in this scene. Polished professional
+vector art, beautifully composed, rich and inviting.
 
-FLATNESS — the single most important rule. Every object is ONE single flat
-colour. NO shading, NO tone steps, NO lit side and shadow side, NO gradients,
-NO airbrush, NO glossy highlights, NO texture, NO hatching, NO rendering.
-Depth is created ONLY by overlapping silhouettes and by giving distant objects
-a DIFFERENT colour from the list below — never by darkening the same colour.
+Palette: violet #9671DB, deep violet #6F49B0, red #D93A1E, yellow #FFC42E,
+cream #FFE6C7, brown #8C6A03. The foreground is a band of deep shadowed paving
+#3A2560 where a character will stand.
 
-OUTLINE: warm near-black #2A1A12, thick and even, around every object — hills,
-trees, buildings, waves, rocks. Rounded line ends and rounded corners
-everywhere. No sharp points, no thin tapering lines, no sketchy strokes. Small
-decorative dots and spots carry NO outline and are read by colour alone.
-Nothing else in the image is near-black.
-
-SHAPES: soft and rounded, built from circles, ovals, rounded triangles and
-rounded rectangles — the same vocabulary as the character: round spots, rounded
-bumps, simple curved lines. No spiky silhouettes, no fine detail.
-
-DENSITY: busy but calm. Thirty to forty objects in four overlapping planes from
-far to near. No object smaller than one fortieth of the image height. Richness
-comes from repeating simple motifs — rows of round dots, rounded bumps, simple
-stripes — placed in the far and middle planes. The near plane is a few large
-plain shapes.
-
-COLOURS, use ONLY these, each as a flat fill: violet #9671DB sky and near walls,
-deep violet #6F49B0 far buildings, red #D93A1E roofs and pipes, yellow #FFC42E
-windows, lamps and gears, cream #FFE6C7 smoke puffs and dials (small motifs
-only), grey-brown #8C6A03 timber, crates and brick rows, dark violet #3A2560
-for the foreground yard only.
-
-SCENE: a cheerful inventor's workshop quarter. A stout banded chimney above a
-block of rounded cubic roofs stands in the top third as the landmark, with
-puffs of smoke as clusters of plain circles. Behind it two ranks of rounded
-cubic buildings in deep violet. Walls carry a few rows of plain brick
-rectangles with rounded corners; roofs carry rows of rounded tiles. Windows as
-rounded squares in simple grids. Large round gears with a few big BLUNT ROUNDED
-bumps for teeth — never sharp, never finely cut. Jointed pipes with rounded
-elbows, rows of plain round rivets, hanging lamps on simple brackets, round
-dials with dot marks. Stacked crates as rounded rectangles with plank lines.
-Everything geometric but soft-cornered. The near plane is a paved yard in dark
-violet #3A2560 with two or three large plain crates.
-
-FRAMING:
-- the artwork covers the whole canvas edge to edge; no margin, no frame, no
-  border, no vignette;
-- the outer 8% of the width on each side may be cropped away: keep everything
-  that matters inside the central 84%;
-- the horizon and the main landmark sit in the TOP THIRD across the full width;
-- the bottom two fifths is the character's ground: two or three large plain
-  shapes in the dark ground colour named below, with no pattern, no tall
-  objects and no small parts;
-- keep the RIGHT half free of white, cream and pale tones — a white speech
-  balloon will sit there.
-
-DO NOT include: characters, animals, people, faces, eyes, text, letters,
-numbers, signage, logos, frames, borders, vignettes. DO NOT use: white or pale
-cream as a sky or as any large area; any near-black other than the outline
-colour; shading of any kind.
+Flat colours only, no gradients, no shading, no texture, no glossy highlights.
+Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
+No characters, no animals, no people, no text, no frame.
 ```
 
 **Нижняя четверть обязана остаться спокойной.** Если модель забила её деталями,
