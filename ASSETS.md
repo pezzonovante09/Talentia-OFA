@@ -192,21 +192,134 @@ Transparent background, no ground shadow, no text.
 - **важное не у самых краёв** — телефоны разной ширины обрежут бока по-разному;
 - смысловой центр сцены держите в средней трети по горизонтали.
 
+### Промпты: по одному на регион
+
+Каждый самодостаточный. Копируйте целиком, ничего не подставляя.
+
+Почему не шаблон с подстановкой: первая панорама вышла с сине-чёрным контуром
+`#050042` вместо тёплого `#2A1A12`, на треть белой и мимо палитры во всех пяти
+цветах. Общая настройка проекта не удержала ни один. Поэтому палитра и контур
+перечисляются в каждом промпте поимённо, а заполнение кадра требуется дважды
+разными словами.
+
+**`region-numbers.svg` — Числовая долина, математика**
+
 ```
-Wide landscape illustration, 16:9, flat vector cut-out style, thick dark outline
-on every shape, flat fills, no gradients, no texture.
-Scene: {СЦЕНА}. Calm and spacious.
-The bottom quarter must stay empty and uncluttered.
-Keep the main elements away from the left and right edges.
-No characters, no text, no signage.
+Wide landscape illustration, 16:9 aspect ratio, flat vector cut-out style,
+children's picture-book applique look.
+
+OUTLINE: every shape has a thick uniform outline in warm near-black #2A1A12.
+Same weight everywhere, no thin or tapering lines, no other outline colour.
+
+FILLS: completely flat solid colour. NO gradients, NO texture, NO shading,
+NO drop shadows.
+
+COLOURS, use only these: golden yellow #F2B705 for the sky and the hills,
+deeper amber #C79104 for the far hills, green #2FA24E for trees,
+red #D93A1E and cream #FFE6C7 for small flowers, grey-brown #8C6A03 for stones.
+
+SCENE: rolling stepped golden hills in three overlapping layers, a few simple
+round trees on the middle ridge, small flowers and stones scattered on the
+slopes. Warm, open, sunny.
+
+FRAMING: the artwork covers the whole canvas edge to edge — top, bottom, left
+and right. There is no white margin and no empty canvas anywhere. The bottom
+quarter is calm flat ground belonging to the scene, with nothing
+placed on it. Keep the main shapes away from the left and right edges.
+
+DO NOT include: characters, animals, people, text, letters, numbers,
+signage, logos, frames, borders, vignettes.
 ```
 
-| Файл | Регион | `{СЦЕНА}` |
-|---|---|---|
-| `region-numbers.svg` | Числовая долина, математика | `rolling stepped golden hills under a warm yellow sky, distant mountains, a few simple trees, small flowers and stones` |
-| `region-words.svg` | Побережье слов, язык | `a calm seashore with rounded waves and a striped lighthouse, blue water and sky` |
-| `region-nature.svg` | Живой лес, окружающий мир | `a forest of pointed conifer trees on soft green hills, a winding path` |
-| `region-logic.svg` | Мастерская, логика | `a small village of cubic workshop roofs with a chimney and gears, purple and warm tones` |
+**`region-words.svg` — Побережье слов, язык и чтение**
+
+```
+Wide landscape illustration, 16:9 aspect ratio, flat vector cut-out style,
+children's picture-book applique look.
+
+OUTLINE: every shape has a thick uniform outline in warm near-black #2A1A12.
+Same weight everywhere, no thin or tapering lines, no other outline colour.
+
+FILLS: completely flat solid colour. NO gradients, NO texture, NO shading,
+NO drop shadows.
+
+COLOURS, use only these: blue #0E8FBF for the sky and the sea, deeper blue
+#0C6E92 for the far water, cream #FFE6C7 for the sand and the lighthouse body,
+red #D93A1E for the lighthouse stripes, yellow #FFC42E for its lamp,
+green #2FA24E for a few coastal bushes.
+
+SCENE: a calm shore with rounded overlapping waves, a striped lighthouse
+standing on a low rocky point to one side, a sandy beach in front, a few small
+bushes. Wide horizon, peaceful.
+
+FRAMING: the artwork covers the whole canvas edge to edge — top, bottom, left
+and right. There is no white margin and no empty canvas anywhere. The bottom
+quarter is calm flat sand belonging to the scene, with nothing
+placed on it. Keep the lighthouse away from the left and right edges.
+
+DO NOT include: characters, animals, people, boats, text, letters, numbers,
+signage, logos, frames, borders, vignettes.
+```
+
+**`region-nature.svg` — Живой лес, окружающий мир**
+
+```
+Wide landscape illustration, 16:9 aspect ratio, flat vector cut-out style,
+children's picture-book applique look.
+
+OUTLINE: every shape has a thick uniform outline in warm near-black #2A1A12.
+Same weight everywhere, no thin or tapering lines, no other outline colour.
+
+FILLS: completely flat solid colour. NO gradients, NO texture, NO shading,
+NO drop shadows.
+
+COLOURS, use only these: green #2FA24E for the trees and hills, deeper green
+#1F7A3A for the far forest, light green #6FD6AC for the near meadow, cream
+#FFE6C7 for the winding path, red #D93A1E for a few berries, brown #8C6A03
+for the tree trunks.
+
+SCENE: rows of pointed conifer trees on soft rolling hills, a winding cream
+path leading between them, low bushes with small berries, a calm clearing in
+front. Layered depth, three planes.
+
+FRAMING: the artwork covers the whole canvas edge to edge — top, bottom, left
+and right. There is no white margin and no empty canvas anywhere. The bottom
+quarter is calm flat meadow belonging to the scene, with nothing
+placed on it. Keep the tallest trees away from the left and right edges.
+
+DO NOT include: characters, animals, people, text, letters, numbers,
+signage, logos, frames, borders, vignettes.
+```
+
+**`region-logic.svg` — Мастерская, логика и задачи**
+
+```
+Wide landscape illustration, 16:9 aspect ratio, flat vector cut-out style,
+children's picture-book applique look.
+
+OUTLINE: every shape has a thick uniform outline in warm near-black #2A1A12.
+Same weight everywhere, no thin or tapering lines, no other outline colour.
+
+FILLS: completely flat solid colour. NO gradients, NO texture, NO shading,
+NO drop shadows.
+
+COLOURS, use only these: purple #9671DB for the sky and the distant hills,
+deeper purple #6F49B0 for the far buildings, cream #FFE6C7 for the walls,
+red #D93A1E for the roofs, yellow #FFC42E for the lit windows and the gears,
+brown #8C6A03 for the chimney.
+
+SCENE: a small village of cubic workshop buildings with pitched roofs, one
+tall chimney, a few large gear wheels mounted on the walls, low hills behind.
+Orderly and geometric, everything built from simple rectangles and circles.
+
+FRAMING: the artwork covers the whole canvas edge to edge — top, bottom, left
+and right. There is no white margin and no empty canvas anywhere. The bottom
+quarter is calm flat ground belonging to the scene, with nothing
+placed on it. Keep the buildings away from the left and right edges.
+
+DO NOT include: characters, animals, people, text, letters, numbers,
+signage, logos, frames, borders, vignettes.
+```
 
 **Нижняя четверть обязана остаться спокойной.** Если модель забила её деталями,
 перегенерируйте: обрезать потом не выйдет, композиция поедет.
