@@ -51,11 +51,31 @@ const BLUSH = '#FA9A8C';
 
 const TALI = [...BASE, '#3FC08A', '#2FA24E', '#FFC42E', '#0E8FBF', '#D93A1E', BLUSH];
 
+/**
+ * Регионам белый и бумажный не выдаются. Панорама обязана быть залита
+ * до краёв, и всякое белое в ней — это недотянутая до края картинка либо
+ * пятно, на котором потеряется край белой реплики. Пусть становится
+ * кремовым: так дефект виден, но не ломает экран.
+ */
+const REGION_BASE = [OUTLINE, CREAM, BROWN];
+
+/**
+ * Последний цвет каждого списка — грунт переднего плана, на котором стоит
+ * Tali. Он нужен, потому что тело персонажа #3FC08A не отделяется ни от
+ * одной заливки регионов: лучший контраст из тринадцати проверенных был
+ * 2.34:1 при норме 3:1. К этим грунтам тело даёт от 3.86:1, морда от 5.58:1.
+ * Светлота у всех четырёх 23–26%, то есть выше порога контура: иначе скрипт
+ * сплющил бы их в обводку.
+ */
 const REGIONS = {
-  'region-numbers': [...BASE, '#F2B705', '#C79104', '#2FA24E', '#D93A1E'],
-  'region-words': [...BASE, '#0E8FBF', '#0C6E92', '#D93A1E', '#FFC42E', '#2FA24E'],
-  'region-nature': [...BASE, '#2FA24E', '#1F7A3A', '#6FD6AC', '#D93A1E'],
-  'region-logic': [...BASE, '#9671DB', '#6F49B0', '#D93A1E', '#FFC42E'],
+  'region-numbers': [...REGION_BASE, '#F2B705', '#C79104', '#2FA24E', '#D93A1E', '#534723'],
+  'region-words': [...REGION_BASE, '#0E8FBF', '#0C6E92', '#D93A1E', '#FFC42E', '#2FA24E', '#274F5D'],
+  // Жёлтый здесь не декор, а небо: генератор рисует его золотистым, а без
+  // жёлтого в списке золотистому некуда идти, кроме коричневого — и над
+  // лесом оказывается бурое небо. Мятный #6FD6AC убран: его тон 155.5°
+  // против 154.9° у тела Tali, персонаж в таком лесу растворяется.
+  'region-nature': [...REGION_BASE, '#2FA24E', '#1F7A3A', '#D93A1E', '#FFC42E', '#235330'],
+  'region-logic': [...REGION_BASE, '#9671DB', '#6F49B0', '#D93A1E', '#FFC42E', '#3A2560'],
 };
 
 const ICONS = {
@@ -245,13 +265,26 @@ const svgoConfig = {
 };
 
 function normalize(name, source, palette) {
-  const re = /(fill|stroke)="(#[0-9a-fA-F]{6})"/g;
+  // stop-color обязателен: генератор кладёт часть заливок в градиенты, и
+  // цвета там лежат не в fill, а в остановках. Без этого пять файлов из
+  // десяти первой партии сохранили бы цвета мимо палитры.
+  const re = /(fill|stroke|stop-color)="(#[0-9a-fA-F]{6})"/g;
   // Первый проход — собрать всю палитру файла: решение по цвету зависит
   // от того, какие ещё цвета рядом, поэтому по одному его принять нельзя.
   const colours = [...new Set([...source.matchAll(re)].map((m) => m[2].toUpperCase()))];
   const { mapping, warnings } = buildMapping(colours, palette);
   const recoloured = source.replace(re, (_, attr, hex) => `${attr}="${mapping.get(hex.toUpperCase())}"`);
   const { data } = optimize(recoloured, { ...svgoConfig, path: name });
+
+  // Градиент противоречит плоскому стилю. После переназначения цветов часть
+  // из них вырождается — все остановки попали в один токен, — и такой
+  // градиент безвреден. Оставшиеся надо смотреть глазами.
+  const gradients = [...data.matchAll(/<(?:linear|radial)Gradient[\s\S]*?<\/(?:linear|radial)Gradient>/g)];
+  const live = gradients.filter((g) => new Set([...g[0].matchAll(/stop-color="([^"]+)"/g)].map((m) => m[1])).size > 1);
+  if (live.length) warnings.push(`осталось настоящих градиентов: ${live.length} из ${gradients.length}`);
+  const fades = (data.match(/(?:fill-)?opacity="0?\.[0-9]+"/g) || []).length;
+  if (fades) warnings.push(`полупрозрачных заливок: ${fades} — на панораме дадут грязь`);
+
   return { data, mapping, warnings };
 }
 
