@@ -98,6 +98,13 @@ trees» и «нижняя четверть кадра пустая» — пан�
 рядами точек, полосами, насечками, чешуёй-орнаментом. Эрика Карла из ориентиров
 убрал: у него коллаж из крашеной бумаги, и он тянет в фактурность, то есть в реализм.
 
+Но у персонажа есть рычаг сильнее орнамента — **пропорции**. Мультяшность даёт
+не большая голова, а маленькое тело: голова в половину роста, туловище заметно
+меньше головы, ноги короткими тумбами, глаза каждый в треть ширины головы с
+белком и двумя бликами, морда отдельной накладкой другого цвета, румянец
+овалами. Пока сложение обычное, сколько ни навешивай узора, выйдет динозавр —
+просто головастый.
+
 Практическая проверка для Tali: **если персонаж мог бы попасть в энциклопедию
 динозавров — промпт неверен.** Правильный Tali собран из больших мягких овалов,
 пальцы у него скруглённые подушечки, а не когти, зубов не больше одного и тот
@@ -147,53 +154,76 @@ trees» и «нижняя четверть кадра пустая» — пан�
 Формат **1:1**, прозрачный фон, ссылка на сохранённый стиль.
 
 ```
-A cartoon dinosaur character named Tali: a friendly little T-Rex explorer,
-full body, standing and waving hello. Flat vector cut-out style, thick uniform
-dark outline (#2A1A12). NO gradients, NO airbrush, NO texture.
+A cute cartoon dinosaur mascot named Tali: a friendly baby T-Rex, full body,
+standing and waving hello. Chibi proportions, clean flat vector sticker art.
 
-STYLE — read this first. Minimal realism in the manner of Charley Harper: the
-FORM is simplified to a few clean geometric shapes, and richness comes from
-DECORATIVE PATTERN laid over that form, never from anatomy. This is a toy
-character for small children, not a natural history illustration.
+STYLE: flat vector cartoon, like a modern children's sticker or a mascot logo.
+Crisp solid shapes with hard edges. NO gradients, NO airbrush, NO soft glow,
+NO glossy highlights, NO texture, NO rendering.
 
-NOT REALISTIC. Absolutely no: muscle definition, individually rendered scales,
-skin texture, wrinkles, creased folds at joints, visible ribs or bone structure,
-claws as weapons, rows of sharp teeth, nostril and eyebrow modelling, correct
-dinosaur anatomy, menacing posture. If it could appear in a dinosaur
-encyclopaedia, it is wrong.
+PROPORTIONS — chibi. This is what makes it read as a cartoon, get it right first:
+- the head is HALF the total height, a big round ball;
+- the body is small and plump and clearly SMALLER than the head;
+- legs are short stubby tubes, feet are small rounded blobs;
+- arms are tiny and short, hands are small rounded mitts;
+- the tail is short, thick, and curls slightly upward;
+- the whole silhouette is a soft egg: wide at the head, narrow at the feet.
 
-FORM: built from big soft ovals and rounded rectangles. Oversized round head
-about 40 percent of total height, short blunt rounded snout, comically tiny
-short arms, plump sturdy legs like simple tubes, thick rounded tail. Toes and
-fingers are soft rounded nubs, not claws. Huge round friendly eyes with a big
-dark pupil and one round white highlight cut as its own shape. A wide closed
-smile with at most one tiny rounded tooth showing. Kind and a little goofy.
+FACE — the main source of cuteness:
+- two enormous round eyes, each about one third of the head width, set wide
+  apart and low on the face;
+- each eye has a white sclera, a large dark iris filling most of it, and TWO
+  round white highlight dots, one big and one small;
+- a separate rounded muzzle shape in a contrasting colour laid over the lower
+  face, like a wide soft heart;
+- a big open happy smile inside the muzzle, with a small pink tongue and
+  exactly two tiny rounded teeth pointing down;
+- two soft oval blush patches on the cheeks;
+- two tiny nostril dots;
+- no eyebrows, no eyelids, no brow ridge, no nose bridge, no cheekbones.
 
-DETAIL comes from COSTUME AND PATTERN, not from the animal:
-- a decorative motif on the back and tail — a neat evenly spaced row of soft
-  rounded chevrons, like a printed pattern on fabric, not like real scutes;
-- a few scattered round spots on the flank, simple and evenly sized;
-- large yellow goggles pushed up on the forehead, with a stitched strap,
-  round rivets at the rims and a highlight arc on each lens;
-- a red satchel with a flap, a row of visible stitches along the edge,
-  a square buckle and a shoulder strap;
-- soft rounded belly panel as a single clean shape, with NO plating or segments.
+DECORATION — flat motifs only, nothing anatomical:
+- a row of small rounded triangular spikes along the top of the head and down
+  the back and tail, in a contrasting colour, evenly spaced and all alike;
+- a cream belly panel as one clean rounded shape with three or four gentle
+  curved lines across it;
+- a scattering of plain round spots on the head, back and tail;
+- small cream oval toe-nubs on each foot.
 
-VOLUME from FLAT TONE STEPS only: each colour appears as two or three separate
-solid shapes with hard edges — a light step on the lit side and a darker step on
-the shadow side. Like cut paper laid on cut paper. No blending, no soft shading.
+NOT REALISTIC. Absolutely no: muscle definition, rendered scales, skin texture,
+wrinkles, folds at joints, visible ribs, sharp claws, rows of sharp teeth, long
+jaw, heavy brow, correct dinosaur anatomy, menacing posture. If it could appear
+in a dinosaur encyclopaedia it is wrong. It should look like a plush toy.
 
-Colours: body #3FC08A with a darker green shadow side #2FA24E, cream belly
-#FFE6C7, yellow goggles #FFC42E with blue lenses #0E8FBF, red satchel #D93A1E
-with a yellow buckle.
+OUTLINE: a thick dark outline in #2A1A12 around the whole silhouette, and
+thinner lines of the same colour for the shapes inside it. Rounded ends,
+no tapering, no sketchy strokes.
 
-The character FILLS THE ENTIRE FRAME: head touches the top edge, feet touch the
-bottom edge, tail reaches the side. Tight crop, no empty margins.
-Transparent background, no ground shadow, no text.
+VOLUME: where a shape needs depth, use exactly two flat steps of the same
+colour with a hard edge between them. No blending, no soft shading.
+
+COLOURS: body green #3FC08A with darker green #2FA24E for the spots and the
+shadow step, cream #FFE6C7 for the belly panel and toe-nubs, yellow #FFC42E
+for the muzzle and the spikes, red #D93A1E for the tongue and the blush.
+
+ACCESSORIES, small and simple, they must not break up the silhouette: round
+yellow goggles pushed up on the forehead, and a small red satchel on a strap
+across the chest.
+
+The character FILLS THE FRAME: head near the top edge, feet near the bottom
+edge. Tight crop, very small margins. Transparent background, no ground
+shadow, no text, no watermark.
 ```
 
 Доводите эту позу, пока не понравится всё: пропорции, морда, толщина контура.
 **Остальные пять наследуют её, поэтому на эталон кредитов не жалейте.**
+
+**Если есть под рукой картинка с нужными пропорциями — грузите её образцом,
+а не описывайте словами.** Recraft V4.1 принимает изображение на вход, и чиби-
+пропорции держатся от образца несравнимо надёжнее, чем от текста: «голова в
+половину роста» модель понимает как угодно, картинку — однозначно. Образец
+задаёт сложение и посадку головы, а стиль всё равно придёт из Style Lock,
+поэтому градиенты и залаченный блеск с образца не перетекут.
 
 ### Позы 2–6: от образца
 
