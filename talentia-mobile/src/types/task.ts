@@ -23,8 +23,19 @@ export type Presentation = 'picture' | 'text';
 
 /** Элемент, который ребёнок видит: подпись, картинка, озвучка. */
 export type Media = {
-  /** Ключ локали с подписью. */
+  /**
+   * Ключ локали. Он же адресует озвучку: файл лежит по пути
+   * `voice/<язык>/<этот ключ>.m4a`. Отдельного поля под звук нет намеренно —
+   * когда их два, текст и голос рано или поздно расходятся, и ребёнок слышит
+   * одно, а видит другое. Один ключ такую ошибку делает невозможной.
+   */
   labelKey: string;
+  /**
+   * Язык, на котором элемент показывается всегда, независимо от языка
+   * интерфейса. Нужен там, где содержание и есть язык: английское слово в
+   * Мастерской, русский слог в Побережье слов. Такие элементы не переводятся.
+   */
+  lang?: 'ru' | 'en' | 'ky';
   /**
    * Имя фигуры, которую рисует вектором `<CountableShape>`, либо имя файла в
    * `assets/images/items`. Для заданий на счёт хватает фигур: рисовать камень
@@ -34,17 +45,23 @@ export type Media = {
   image?: string;
   /** Сколько фигур нарисовать. Только вместе с `shape`. */
   count?: number;
-  /** Ключ озвучки. Обязателен на полосе 5-6. */
-  audioKey?: string;
 };
 
 type BaseTask = {
   id: string;
   /** Ключ вопроса. На полосе 5-6 он звучит голосом, а не читается. */
   promptKey: string;
-  promptAudioKey?: string;
-  /** Подсказка после первой ошибки: ошибка обязана давать следующий шаг. */
-  hintKey?: string;
+  /**
+   * Навык, который задание проверяет, — например `count-to-5`. По нему
+   * работает интервальное повторение: повторяется навык, а не урок. Один
+   * навык живёт в нескольких уроках и нескольких формулировках.
+   */
+  skill: string;
+  /**
+   * Подсказка после первой ошибки. Ровно одна: вторую ступень приложение
+   * строит само, показывая верный ответ, — см. «Ошибка» в FORMATS.md.
+   */
+  hintKey: string;
   /**
    * То, о чём спрашивают: группа предметов, картинка, слово. В задании
    * «сколько их?» без этого поля нечего считать.
@@ -56,7 +73,7 @@ type BaseTask = {
 export type ChooseTask = BaseTask & {
   format: 'choose';
   presentation: Presentation;
-  options: Array<Media & { id: string; correct: boolean }>;
+  options: (Media & { id: string; correct: boolean })[];
 };
 
 /**
@@ -68,7 +85,7 @@ export type ChooseTask = BaseTask & {
 export type PointTask = BaseTask & {
   format: 'point';
   scene: string;
-  targets: Array<{
+  targets: {
     id: string;
     x: number;
     y: number;
@@ -76,14 +93,14 @@ export type PointTask = BaseTask & {
     r: number;
     correct: boolean;
     labelKey?: string;
-  }>;
+  }[];
 };
 
 /** Соединить пары. Связь между понятиями. С 5 лет. Тап по одному, тап по второму. */
 export type MatchTask = BaseTask & {
   format: 'match';
   presentation: Presentation;
-  pairs: Array<{ id: string; left: Media; right: Media }>;
+  pairs: { id: string; left: Media; right: Media }[];
 };
 
 /** Разложить по порядку. Последовательность. С 5 лет. */
@@ -91,22 +108,22 @@ export type OrderTask = BaseTask & {
   format: 'order';
   presentation: Presentation;
   /** `position` — верный порядок, от нуля. Порядок показа перемешивается. */
-  items: Array<Media & { id: string; position: number }>;
+  items: (Media & { id: string; position: number })[];
 };
 
 /** Разложить по группам. Классификация. С 6 лет. */
 export type GroupTask = BaseTask & {
   format: 'group';
   presentation: Presentation;
-  groups: Array<{ id: string; labelKey: string; shape?: Media['shape']; image?: string }>;
-  items: Array<Media & { id: string; groupId: string }>;
+  groups: { id: string; labelKey: string; shape?: Media['shape']; image?: string }[];
+  items: (Media & { id: string; groupId: string })[];
 };
 
 /** Собрать ответ из фрагментов или ввести. Припоминание, а не узнавание. С 7 лет. */
 export type BuildTask = BaseTask & {
   format: 'build';
   /** Готовые фрагменты для сборки; без них — ввод с клавиатуры. */
-  fragments?: Array<{ id: string; labelKey: string }>;
+  fragments?: { id: string; labelKey: string }[];
   answer: string;
 };
 
@@ -134,7 +151,17 @@ export type Lesson = {
   atlasEntryKey: string;
 };
 
-export type Topic = { id: string; titleKey: string; lessons: Lesson[] };
+export type Topic = {
+  id: string;
+  titleKey: string;
+  /**
+   * Языки обучения, для которых тема вообще существует. Побережье слов — это
+   * родной язык, и «жи-ши» на английский не переводится в принципе: такие темы
+   * живут только при своём языке. Пусто — тема есть при любом.
+   */
+  instructionLanguages?: ('ru' | 'en' | 'ky')[];
+  lessons: Lesson[];
+};
 export type Region = {
   id: 'numbers' | 'words' | 'nature' | 'workshop';
   titleKey: string;
