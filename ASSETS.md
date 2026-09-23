@@ -112,13 +112,23 @@ children's picture-book applique look.
 
 ```
 A cartoon Tyrannosaurus Rex explorer, full body, standing and waving hello.
-Flat vector cut-out style, thick uniform dark outline (#2A1A12), completely
-flat fills with NO gradients and NO texture, children's picture-book applique
-look.
+Flat vector cut-out style, thick uniform dark outline (#2A1A12), children's
+picture-book applique look. NO gradients and NO airbrush anywhere.
+
+DETAIL — important: the character is richly detailed, not a plain silhouette.
+Rows of small scutes running down the back and tail, separate belly plates
+across the underside, individual claws on hands and feet, creased folds at the
+elbows and knees, a nostril, an eyebrow ridge, a round eye highlight cut as its
+own shape, one small tooth, stitching and a flap on the satchel, a strap buckle
+with a visible pin, rivets around the goggle rims.
+
+VOLUME from FLAT TONE STEPS only: each colour appears as three separate solid
+shapes with hard edges — light step on the lit side, mid step, dark step on the
+shadow side. Like cut paper laid on cut paper. No blending, no soft shading.
 
 Proportions: oversized head about 40 percent of total height, comically tiny
-short arms, sturdy legs, heavy tail for balance. Friendly rounded snout, one
-small tooth showing, big round eyes, no menace.
+short arms, sturdy legs, heavy tail for balance. Friendly rounded snout, big
+round eyes, no menace.
 
 Colours: body #3FC08A with a darker green shadow side #2FA24E, cream belly
 #FFE6C7, large yellow goggles #FFC42E with blue lenses #0E8FBF worn pushed up
@@ -206,119 +216,182 @@ Transparent background, no ground shadow, no text.
 
 ```
 Wide landscape illustration, 16:9 aspect ratio, flat vector cut-out style,
-children's picture-book applique look.
+children's picture-book applique in the spirit of Charley Harper and Eric Carle:
+absolutely NO gradients anywhere, but very many overlapping flat shapes.
+
+DENSITY — the most important instruction. The scene is BUSY and richly detailed,
+at least forty distinct elements. Every large shape carries smaller shapes inside
+it: stripes, rows of dots, notches, scalloped edges, cut-out patterns. No large
+area is left as a single empty flat fill. Build the scene in five overlapping
+depth planes from far to near.
+
+VOLUME comes from FLAT TONE STEPS, never from gradients. Each colour appears as
+three separate solid shapes with hard edges between them — a light step, a mid
+step and a dark step — like cut paper laid on cut paper. Lit side light, shadow
+side dark. No blending, no soft edges, no airbrush, no drop shadows.
 
 OUTLINE: every shape has a thick uniform outline in warm near-black #2A1A12.
 Same weight everywhere, no thin or tapering lines, no other outline colour.
 
-FILLS: completely flat solid colour. NO gradients, NO texture, NO shading,
-NO drop shadows.
+COLOURS, use only these, each in a light, mid and dark flat step: golden yellow
+#F2B705 for the sky and the near hills, deeper amber #C79104 for the far hills,
+green #2FA24E for trees and grass, red #D93A1E and cream #FFE6C7 for flowers,
+grey-brown #8C6A03 for stones, paths and trunks.
 
-COLOURS, use only these: golden yellow #F2B705 for the sky and the hills,
-deeper amber #C79104 for the far hills, green #2FA24E for trees,
-red #D93A1E and cream #FFE6C7 for small flowers, grey-brown #8C6A03 for stones.
-
-SCENE: rolling stepped golden hills in three overlapping layers, a few simple
-round trees on the middle ridge, small flowers and stones scattered on the
-slopes. Warm, open, sunny.
+SCENE: a sunny terraced valley. Five ridges of stepped hills overlapping into
+the distance, the near ones cut into terraces with rows of furrows running along
+the slope. Round trees with three concentric rings of layered foliage and a
+notched trunk, standing in a scattered grove. Drystone walls built of stacked
+individual pebbles. A winding path of separate stepping stones climbing from the
+foreground to the far ridge. Clusters of small flowers with visible petals and
+round centres. Bushes drawn as clumps of overlapping scalloped lobes. A striped
+sun low over the far ridge. Warm, open, abundant.
 
 FRAMING: the artwork covers the whole canvas edge to edge — top, bottom, left
-and right. There is no white margin and no empty canvas anywhere. The bottom
-quarter is calm flat ground belonging to the scene, with nothing
-placed on it. Keep the main shapes away from the left and right edges.
+and right. No white margin, no empty canvas. The bottom sixth is built from
+fewer and larger shapes so a character can stand there and still read clearly —
+but it is NOT empty and NOT a blank band. Keep the tallest shapes away from the
+left and right edges.
 
-DO NOT include: characters, animals, people, text, letters, numbers,
-signage, logos, frames, borders, vignettes.
+DO NOT include: characters, animals, people, text, letters, numbers, signage,
+logos, frames, borders, vignettes.
 ```
 
 **`region-words.svg` — Побережье слов, язык и чтение**
 
 ```
 Wide landscape illustration, 16:9 aspect ratio, flat vector cut-out style,
-children's picture-book applique look.
+children's picture-book applique in the spirit of Charley Harper and Eric Carle:
+absolutely NO gradients anywhere, but very many overlapping flat shapes.
+
+DENSITY — the most important instruction. The scene is BUSY and richly detailed,
+at least forty distinct elements. Every large shape carries smaller shapes inside
+it: stripes, rows of dots, notches, scalloped edges, cut-out patterns. No large
+area is left as a single empty flat fill. Build the scene in five overlapping
+depth planes from far to near.
+
+VOLUME comes from FLAT TONE STEPS, never from gradients. Each colour appears as
+three separate solid shapes with hard edges between them — a light step, a mid
+step and a dark step — like cut paper laid on cut paper. Lit side light, shadow
+side dark. No blending, no soft edges, no airbrush, no drop shadows.
 
 OUTLINE: every shape has a thick uniform outline in warm near-black #2A1A12.
 Same weight everywhere, no thin or tapering lines, no other outline colour.
 
-FILLS: completely flat solid colour. NO gradients, NO texture, NO shading,
-NO drop shadows.
+COLOURS, use only these, each in a light, mid and dark flat step: sea blue
+#0E8FBF for water and sky, deep blue #0C6E92 for the far water and cliff shadow,
+red #D93A1E for the lighthouse stripes and flags, yellow #FFC42E for sand,
+lamp and buoys, green #2FA24E for headland grass, cream #FFE6C7 for foam and
+shells, grey-brown #8C6A03 for rock and timber.
 
-COLOURS, use only these: blue #0E8FBF for the sky and the sea, deeper blue
-#0C6E92 for the far water, cream #FFE6C7 for the sand and the lighthouse body,
-red #D93A1E for the lighthouse stripes, yellow #FFC42E for its lamp,
-green #2FA24E for a few coastal bushes.
-
-SCENE: a calm shore with rounded overlapping waves, a striped lighthouse
-standing on a low rocky point to one side, a sandy beach in front, a few small
-bushes. Wide horizon, peaceful.
+SCENE: a bright shoreline. Five bands of sea receding to the horizon, each band
+built from rows of scalloped wave crests with separate round foam dots along
+their edges. A tall striped lighthouse with a banded lamp room, a railing of
+individual posts and a course of bricks at its base, standing on a headland of
+layered rock strata. Wooden jetty on a row of separate piles, with planks drawn
+one by one. Moored sailing boats with striped hulls and pennant flags. Round
+buoys on chains. Foreground sand strewn with shells, pebbles and coils of rope.
 
 FRAMING: the artwork covers the whole canvas edge to edge — top, bottom, left
-and right. There is no white margin and no empty canvas anywhere. The bottom
-quarter is calm flat sand belonging to the scene, with nothing
-placed on it. Keep the lighthouse away from the left and right edges.
+and right. No white margin, no empty canvas. The bottom sixth is built from
+fewer and larger shapes so a character can stand there and still read clearly —
+but it is NOT empty and NOT a blank band. Keep the tallest shapes away from the
+left and right edges.
 
-DO NOT include: characters, animals, people, boats, text, letters, numbers,
-signage, logos, frames, borders, vignettes.
+DO NOT include: characters, animals, people, text, letters, numbers, signage,
+logos, frames, borders, vignettes.
 ```
 
 **`region-nature.svg` — Живой лес, окружающий мир**
 
 ```
 Wide landscape illustration, 16:9 aspect ratio, flat vector cut-out style,
-children's picture-book applique look.
+children's picture-book applique in the spirit of Charley Harper and Eric Carle:
+absolutely NO gradients anywhere, but very many overlapping flat shapes.
+
+DENSITY — the most important instruction. The scene is BUSY and richly detailed,
+at least forty distinct elements. Every large shape carries smaller shapes inside
+it: stripes, rows of dots, notches, scalloped edges, cut-out patterns. No large
+area is left as a single empty flat fill. Build the scene in five overlapping
+depth planes from far to near.
+
+VOLUME comes from FLAT TONE STEPS, never from gradients. Each colour appears as
+three separate solid shapes with hard edges between them — a light step, a mid
+step and a dark step — like cut paper laid on cut paper. Lit side light, shadow
+side dark. No blending, no soft edges, no airbrush, no drop shadows.
 
 OUTLINE: every shape has a thick uniform outline in warm near-black #2A1A12.
 Same weight everywhere, no thin or tapering lines, no other outline colour.
 
-FILLS: completely flat solid colour. NO gradients, NO texture, NO shading,
-NO drop shadows.
+COLOURS, use only these, each in a light, mid and dark flat step: green #2FA24E
+for foliage, deep green #1F7A3A for the far forest, mint #6FD6AC for lit leaves
+and moss, red #D93A1E for berries and mushroom caps, cream #FFE6C7 for spots,
+blossoms and mushroom stems, grey-brown #8C6A03 for trunks, branches and soil.
 
-COLOURS, use only these: green #2FA24E for the trees and hills, deeper green
-#1F7A3A for the far forest, light green #6FD6AC for the near meadow, cream
-#FFE6C7 for the winding path, red #D93A1E for a few berries, brown #8C6A03
-for the tree trunks.
-
-SCENE: rows of pointed conifer trees on soft rolling hills, a winding cream
-path leading between them, low bushes with small berries, a calm clearing in
-front. Layered depth, three planes.
+SCENE: a deep living forest. Five ranks of pointed conifer crowns overlapping
+into the distance, each crown built from rows of separate triangular tiers.
+Foreground trunks with notched bark marks and ring-shaped knots. Ferns drawn as
+stems with individually cut leaflets. Clusters of round mushrooms with spotted
+caps and ringed stems. Mossy fallen log with scalloped moss patches and rows of
+bracket fungi. Berry bushes with separate round berries on visible stems.
+Ground layer of scattered leaves, cones and small stones. Shafts of light shown
+as hard-edged flat wedges, never as soft glow.
 
 FRAMING: the artwork covers the whole canvas edge to edge — top, bottom, left
-and right. There is no white margin and no empty canvas anywhere. The bottom
-quarter is calm flat meadow belonging to the scene, with nothing
-placed on it. Keep the tallest trees away from the left and right edges.
+and right. No white margin, no empty canvas. The bottom sixth is built from
+fewer and larger shapes so a character can stand there and still read clearly —
+but it is NOT empty and NOT a blank band. Keep the tallest shapes away from the
+left and right edges.
 
-DO NOT include: characters, animals, people, text, letters, numbers,
-signage, logos, frames, borders, vignettes.
+DO NOT include: characters, animals, people, text, letters, numbers, signage,
+logos, frames, borders, vignettes.
 ```
 
 **`region-logic.svg` — Мастерская, логика и задачи**
 
 ```
 Wide landscape illustration, 16:9 aspect ratio, flat vector cut-out style,
-children's picture-book applique look.
+children's picture-book applique in the spirit of Charley Harper and Eric Carle:
+absolutely NO gradients anywhere, but very many overlapping flat shapes.
+
+DENSITY — the most important instruction. The scene is BUSY and richly detailed,
+at least forty distinct elements. Every large shape carries smaller shapes inside
+it: stripes, rows of dots, notches, scalloped edges, cut-out patterns. No large
+area is left as a single empty flat fill. Build the scene in five overlapping
+depth planes from far to near.
+
+VOLUME comes from FLAT TONE STEPS, never from gradients. Each colour appears as
+three separate solid shapes with hard edges between them — a light step, a mid
+step and a dark step — like cut paper laid on cut paper. Lit side light, shadow
+side dark. No blending, no soft edges, no airbrush, no drop shadows.
 
 OUTLINE: every shape has a thick uniform outline in warm near-black #2A1A12.
 Same weight everywhere, no thin or tapering lines, no other outline colour.
 
-FILLS: completely flat solid colour. NO gradients, NO texture, NO shading,
-NO drop shadows.
+COLOURS, use only these, each in a light, mid and dark flat step: violet #9671DB
+for walls and sky, deep violet #6F49B0 for the far buildings and shadow sides,
+red #D93A1E for roofs and pipes, yellow #FFC42E for windows, lamps and gears,
+cream #FFE6C7 for smoke, dials and paper, grey-brown #8C6A03 for timber,
+crates and brickwork.
 
-COLOURS, use only these: purple #9671DB for the sky and the distant hills,
-deeper purple #6F49B0 for the far buildings, cream #FFE6C7 for the walls,
-red #D93A1E for the roofs, yellow #FFC42E for the lit windows and the gears,
-brown #8C6A03 for the chimney.
-
-SCENE: a small village of cubic workshop buildings with pitched roofs, one
-tall chimney, a few large gear wheels mounted on the walls, low hills behind.
-Orderly and geometric, everything built from simple rectangles and circles.
+SCENE: a tidy inventor's workshop quarter. Five ranks of cubic buildings
+overlapping into the distance, their walls laid in visible courses of individual
+bricks and their roofs in rows of separate tiles. A tall chimney of stacked
+bands with puffs of smoke drawn as clusters of hard-edged round lobes. Windows
+as grids of separate panes. Exposed machinery on the walls: toothed gears with
+every tooth cut out, belts, rivets in rows, jointed pipes with flanges. Stacked
+crates with plank lines and corner brackets. Hanging lamps on brackets. Round
+dials with tick marks. Orderly and geometric, everything built from rectangles
+and circles, but packed with parts.
 
 FRAMING: the artwork covers the whole canvas edge to edge — top, bottom, left
-and right. There is no white margin and no empty canvas anywhere. The bottom
-quarter is calm flat ground belonging to the scene, with nothing
-placed on it. Keep the buildings away from the left and right edges.
+and right. No white margin, no empty canvas. The bottom sixth is built from
+fewer and larger shapes so a character can stand there and still read clearly —
+but it is NOT empty and NOT a blank band. Keep the tallest shapes away from the
+left and right edges.
 
-DO NOT include: characters, animals, people, text, letters, numbers,
-signage, logos, frames, borders, vignettes.
+DO NOT include: characters, animals, people, text, letters, numbers, signage,
+logos, frames, borders, vignettes.
 ```
 
 **Нижняя четверть обязана остаться спокойной.** Если модель забила её деталями,
@@ -452,17 +525,33 @@ children's picture-book applique look. No text.
 
 ## Приёмка: проверять каждый ассет
 
-1. **Размер файла SVG.** Нейросети иногда выдают вектор с десятками тысяч точек.
-   Панорама больше **300 КБ** — перегенерируйте проще или возьмите растр. Иначе
-   теряется весь выигрыш по весу, ради которого выбирался вектор.
-2. **Фон действительно прозрачный, а не белый.** Положите картинку на цветной фон
+1. **Плотность.** Главная проверка, и раньше её тут не было. Считайте фигуры:
+
+   ```bash
+   grep -o '<path' файл.svg | wc -l
+   ```
+
+   Первая партия дала **22–60 путей на панораму** — это силуэт, а не иллюстрация,
+   и на экране читается как залитая форма. Ориентир: **панорама от 250 путей,
+   поза Tali от 150**. Меньше — сцена выйдет пустой, сколько бы её ни перекрашивали.
+
+   Причина первой партии была в промпте, а не в модели: там стояло «NO shading»,
+   «a few simple round trees» и «нижняя четверть пустая». Плоская аппликация не
+   значит «мало фигур» — у Эрика Карла заливки без единого градиента, а фигур
+   на развороте сотни. Объём набирается **ступенями тона**: один цвет лежит тремя
+   отдельными заливками — светлой, средней и тёмной, с жёсткой границей между ними.
+
+2. **Размер файла SVG.** Обратная граница к плотности. Нейросети иногда выдают
+   вектор с десятками тысяч точек. Панорама больше **300 КБ** — перегенерируйте
+   проще. Между 250 путями и 300 КБ есть широкий коридор, в него и целимся.
+3. **Фон действительно прозрачный, а не белый.** Положите картинку на цветной фон
    и посмотрите. Это ровно та ошибка, что сейчас в приложении: 22 иконки сохранены
    без альфа-канала и лягут квадратами на любой новый фон.
-3. **Внутри картинки нет текста.** Надписи приходят из локалей, иначе перевод
+4. **Внутри картинки нет текста.** Надписи приходят из локалей, иначе перевод
    невозможен.
-4. **Контур одинаковой толщины** на всех ассетах. Разнотолщинность — первый признак,
+5. **Контур одинаковой толщины** на всех ассетах. Разнотолщинность — первый признак,
    что Style Lock не сработал.
-5. **Цвета из палитры.** Если модель увела оттенок — поправьте в настройках проекта
+6. **Цвета из палитры.** Если модель увела оттенок — поправьте в настройках проекта
    и перегенерируйте, а не подгоняйте потом в коде.
 
 ---
