@@ -287,33 +287,56 @@ shadow, no text, no watermark.
 
 ### Промпты: по одному на регион
 
-Промпты намеренно короткие. Предыдущие версии перечисляли фигуры — «круг с
-точкой в центре», «ряды простых кругов», «скруглённые прямоугольники с линиями
-досок» — и генератор складывал сцену ровно из перечисленного, отчего она
-выглядела собранной в пэинте. Перечисление примитивов и есть причина, а не
-лекарство: модель умеет рисовать пейзаж, ей нужно сказать, ЧТО на нём, а не
-КАК его строить.
+Промпты короткие: перечисление фигур («круг с точкой в центре», «ряды простых
+кругов») генератор понимает буквально и складывает сцену из перечисленного,
+отчего она выглядит собранной в пэинте. Модель умеет рисовать пейзаж, ей надо
+сказать, ЧТО на нём, а не КАК его строить.
 
-Поэтому в промпте остаётся четыре вещи: сцена одним предложением, стиль,
-палитра и технические запреты. Композиция, ритм и детали — на модели.
+Но три вещи сказать обязательно, иначе картинка выходит сырой:
+
+1. **Контур толстый.** Без явного «BOLD THICK, never thin or delicate» модель
+   рисует тонкую ровную линию флэт-иллюстрации, и панорама оказывается из
+   другого набора, чем персонаж с его жирной обводкой.
+2. **Планы различаются цветом.** Без явного требования модель заливает небо и
+   все холмы одним цветом: в первой пробе `#FEB422` занял 28.7% кадра — небо и
+   вся земля разом, отделённые только ниточкой контура. Глубина обязана идти
+   цветом, потому что светотень нам запрещена стилем персонажа.
+3. **Разнообразие вместо повтора.** Модель охотно клонирует один тюльпан
+   пятнадцать раз. «Several different kinds and sizes» это снимает.
+
+### Главное: образец важнее слов
+
+Слова «в стиле милого мультяшного маскота» модель толкует как угодно.
+**Грузите финального Tali образцом-изображением и пересоберите на нём Style
+Lock.** Именно оттуда переносятся толщина контура, насыщенность заливок и
+скруглённость форм — то, что текстом передаётся хуже всего. Панорамы,
+собранные на Style Lock от персонажа, сходятся с ним без подгонки.
 
 **`region-numbers.svg` — Числовая долина, математика**
 
 ```
-A charming cartoon landscape of a sunny valley: rolling golden hills, round
-leafy trees, a winding stone path, drystone walls and little flowers scattered
-on the slopes.
+A rich, detailed cartoon landscape of a sunny valley: rolling hills, leafy
+trees, a winding stone path, drystone walls, round bushes, meadows of flowers
+and a little stream.
 
-Kawaii sticker illustration style: bold dark outlines #2A1A12, flat vivid
-colours, soft rounded forms, warm and playful — the same style as a cute chunky
-cartoon dinosaur mascot who will stand in this scene. Polished professional
-vector art, beautifully composed, rich and inviting.
+Style: BOLD THICK dark outlines #2A1A12 — heavy confident linework, the same
+chunky weight as a kawaii vinyl sticker, never thin or delicate. Flat vivid
+colours, soft rounded forms. Polished professional vector illustration,
+generously detailed and lovingly finished, warm and inviting.
 
-Palette: golden yellow #F2B705, amber #C79104, green #2FA24E, red #D93A1E,
-cream #FFE6C7, brown #8C6A03. The foreground is a band of deep shadowed earth
-#534723 where a character will stand.
+DEPTH THROUGH COLOUR, never through shading: the sky, the far ground, the
+middle ground and the near ground must EACH be a different colour from the
+palette. Never use one colour for both the sky and the land. Every layer is
+clearly separated by having its own colour, not by a line.
 
-Flat colours only, no gradients, no shading, no texture, no glossy highlights.
+VARIETY: many different kinds of tree, bush and flower, in several different
+greens and several different sizes — never one shape repeated over and over.
+
+Palette: golden yellow #F2B705, amber #C79104, brown #8C6A03, green #2FA24E,
+deep green #1F7A3A, red #D93A1E, cream #FFE6C7. The foreground is a band of
+deep shadowed earth #534723 where a character will stand.
+
+No gradients, no airbrush, no texture, no glossy highlights.
 Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
 No characters, no animals, no people, no text, no frame.
 ```
@@ -321,20 +344,29 @@ No characters, no animals, no people, no text, no frame.
 **`region-words.svg` — Побережье слов, язык и чтение**
 
 ```
-A charming cartoon seaside: a striped lighthouse on a grassy headland, gentle
-rolling waves, a wooden jetty, little sailing boats with flags, buoys and
+A rich, detailed cartoon seaside: a striped lighthouse on a grassy headland,
+rolling waves, a wooden jetty, sailing boats with flags, buoys, rocks and
 shells along the shore.
 
-Kawaii sticker illustration style: bold dark outlines #2A1A12, flat vivid
-colours, soft rounded forms, warm and playful — the same style as a cute chunky
-cartoon dinosaur mascot who will stand in this scene. Polished professional
-vector art, beautifully composed, rich and inviting.
+Style: BOLD THICK dark outlines #2A1A12 — heavy confident linework, the same
+chunky weight as a kawaii vinyl sticker, never thin or delicate. Flat vivid
+colours, soft rounded forms. Polished professional vector illustration,
+generously detailed and lovingly finished, warm and inviting.
 
-Palette: sea blue #0E8FBF, deep blue #0C6E92, red #D93A1E, yellow #FFC42E,
-green #2FA24E, cream #FFE6C7, brown #8C6A03. The foreground is a band of deep
-shadowed wet shore #274F5D where a character will stand.
+DEPTH THROUGH COLOUR, never through shading: the sky, the far ground, the
+middle ground and the near ground must EACH be a different colour from the
+palette. Never use one colour for both the sky and the land. Every layer is
+clearly separated by having its own colour, not by a line.
 
-Flat colours only, no gradients, no shading, no texture, no glossy highlights.
+VARIETY: many different kinds of boat, rock, shell and plant, in several
+different sizes — never one shape repeated over and over.
+
+Palette: sea blue #0E8FBF, deep blue #0C6E92, green #2FA24E, deep green
+#1F7A3A, yellow #FFC42E, red #D93A1E, brown #8C6A03, cream #FFE6C7. The
+foreground is a band of deep shadowed wet shore #274F5D where a character
+will stand.
+
+No gradients, no airbrush, no texture, no glossy highlights.
 Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
 No characters, no animals, no people, no text, no frame.
 ```
@@ -342,23 +374,32 @@ No characters, no animals, no people, no text, no frame.
 **`region-nature.svg` — Живой лес, окружающий мир**
 
 ```
-A charming cartoon forest: tall soft pine trees, ferns, clusters of spotted
-mushrooms, berry bushes and a mossy fallen log.
+A rich, detailed cartoon forest: tall pine trees, broad leafy trees, ferns,
+clusters of spotted mushrooms, berry bushes and a mossy fallen log.
 
-Kawaii sticker illustration style: bold dark outlines #2A1A12, flat vivid
-colours, soft rounded forms, warm and playful — the same style as a cute chunky
-cartoon dinosaur mascot who will stand in this scene. Polished professional
-vector art, beautifully composed, rich and inviting.
+Style: BOLD THICK dark outlines #2A1A12 — heavy confident linework, the same
+chunky weight as a kawaii vinyl sticker, never thin or delicate. Flat vivid
+colours, soft rounded forms. Polished professional vector illustration,
+generously detailed and lovingly finished, warm and inviting.
 
-Palette: green #2FA24E, deep green #1F7A3A, red #D93A1E, cream #FFE6C7,
-brown #8C6A03. The foreground is a band of deep shadowed forest floor #235330
-where a character will stand.
+DEPTH THROUGH COLOUR, never through shading: the sky, the far ground, the
+middle ground and the near ground must EACH be a different colour from the
+palette. Never use one colour for both the sky and the land. Every layer is
+clearly separated by having its own colour, not by a line.
+
+VARIETY: many different kinds of tree, fern, mushroom and berry, in several
+different greens and several different sizes — never one shape repeated over
+and over.
 
 IMPORTANT: keep every green deep and rich. No mint, pale or pastel green
 anywhere — a bright mint-green cartoon character will stand in front of this
 forest and must not disappear into it.
 
-Flat colours only, no gradients, no shading, no texture, no glossy highlights.
+Palette: green #2FA24E, deep green #1F7A3A, brown #8C6A03, red #D93A1E,
+yellow #FFC42E, cream #FFE6C7. The foreground is a band of deep shadowed
+forest floor #235330 where a character will stand.
+
+No gradients, no airbrush, no texture, no glossy highlights.
 Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
 No characters, no animals, no people, no text, no frame.
 ```
@@ -366,20 +407,28 @@ No characters, no animals, no people, no text, no frame.
 **`region-logic.svg` — Мастерская, логика и задачи**
 
 ```
-A charming cartoon workshop village: cosy cubic houses with tiled roofs, a tall
-smoking chimney, big friendly gears and pipes on the walls, hanging lamps and
-stacked crates in the yard.
+A rich, detailed cartoon workshop village: cosy cubic houses with tiled roofs,
+a tall smoking chimney, big friendly gears and pipes on the walls, hanging
+lamps, workbenches and stacked crates in the yard.
 
-Kawaii sticker illustration style: bold dark outlines #2A1A12, flat vivid
-colours, soft rounded forms, warm and playful — the same style as a cute chunky
-cartoon dinosaur mascot who will stand in this scene. Polished professional
-vector art, beautifully composed, rich and inviting.
+Style: BOLD THICK dark outlines #2A1A12 — heavy confident linework, the same
+chunky weight as a kawaii vinyl sticker, never thin or delicate. Flat vivid
+colours, soft rounded forms. Polished professional vector illustration,
+generously detailed and lovingly finished, warm and inviting.
+
+DEPTH THROUGH COLOUR, never through shading: the sky, the far ground, the
+middle ground and the near ground must EACH be a different colour from the
+palette. Never use one colour for both the sky and the land. Every layer is
+clearly separated by having its own colour, not by a line.
+
+VARIETY: many different kinds of house, gear, pipe, lamp and crate, in several
+different sizes — never one shape repeated over and over.
 
 Palette: violet #9671DB, deep violet #6F49B0, red #D93A1E, yellow #FFC42E,
-cream #FFE6C7, brown #8C6A03. The foreground is a band of deep shadowed paving
+brown #8C6A03, cream #FFE6C7. The foreground is a band of deep shadowed paving
 #3A2560 where a character will stand.
 
-Flat colours only, no gradients, no shading, no texture, no glossy highlights.
+No gradients, no airbrush, no texture, no glossy highlights.
 Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
 No characters, no animals, no people, no text, no frame.
 ```
