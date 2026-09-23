@@ -330,114 +330,23 @@ signage, logos, frames, borders, vignettes.
 
 ## Шаг 4. Иконки интерфейса
 
-Тип стиля **Icon**, прозрачный фон, квадратный формат, по одной штуке.
-
-### Промпты: по одному на иконку
-
 Тип стиля **Icon**, прозрачный фон, квадратный формат, ссылка на сохранённый стиль.
-Каждый самодостаточный — копируется целиком.
 
-**`ui-trophy.svg`** — достижения
+### Сколько их нужно
 
-```
-A single trophy cup icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: gold #FFC42E cup, cream #FFE6C7 base.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
+**Шесть, а не двадцать две.** Первоначальный список был перенесён из текущего
+приложения не глядя, хотя оно пересобирается с нуля. Список обязан выводиться
+из новых экранов, а не наследоваться от старых.
 
-**`ui-medal.svg`** — награда
+Правило: **иконка под несуществующую механику заставляет потом придумывать
+механику, чтобы оправдать иконку.** Это работа задом наперёд, и в текущем
+приложении она уже случилась — двенадцать форматов заданий существуют по два
+экземпляра, потому что их сделали до того, как поняли зачем.
 
-```
-A single medal on a ribbon icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: gold #FFC42E disc, red #D93A1E ribbon.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
+### Промпты
 
-**`ui-stars.svg`** — рейтинг урока
 
-```
-A single three five-pointed stars icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: gold #FFC42E stars.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-heart.svg`** — жизни
-
-```
-A single heart icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: red #D93A1E heart, cream #FFE6C7 highlight.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-lock.svg`** — закрытый узел
-
-```
-A single closed padlock icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: cream #FFE6C7 body, brown #8C6A03 shackle.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-lightning.svg`** — быстрый ответ
-
-```
-A single lightning bolt icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: gold #FFC42E bolt.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-gift.svg`** — награда
-
-```
-A single gift box with a bow icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: red #D93A1E box, gold #FFC42E ribbon and bow.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-book.svg`** — урок
-
-```
-A single closed book icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: blue #0E8FBF cover, cream #FFE6C7 pages.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-book-bookmark.svg`** — тема
-
-```
-A single open book with a bookmark icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: green #2FA24E cover, cream #FFE6C7 pages, red #D93A1E bookmark.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-backpack.svg`** — снаряжение
-
-```
-A single backpack icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: red #D93A1E body, gold #FFC42E buckles, cream #FFE6C7 front pocket.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-check.svg`** — верно
+**`ui-check.svg`** — верный ответ, пройденный узел карты
 
 ```
 A single check mark icon, flat vector cut-out style, thick uniform outline
@@ -447,7 +356,7 @@ Centered, filling the frame, square format.
 Transparent background, no text, no letters, no frame, no border.
 ```
 
-**`ui-x.svg`** — неверно
+**`ui-x.svg`** — неверный ответ
 
 ```
 A single cross mark icon, flat vector cut-out style, thick uniform outline
@@ -457,97 +366,17 @@ Centered, filling the frame, square format.
 Transparent background, no text, no letters, no frame, no border.
 ```
 
-**`ui-bulb.svg`** — подсказка
+**`ui-lock.svg`** — закрытый узел карты
 
 ```
-A single light bulb icon, flat vector cut-out style, thick uniform outline
+A single closed padlock icon, flat vector cut-out style, thick uniform outline
 in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: gold #FFC42E glass, cream #FFE6C7 screw base.
+no shadows. Colours: cream #FFE6C7 body, brown #8C6A03 shackle.
 Centered, filling the frame, square format.
 Transparent background, no text, no letters, no frame, no border.
 ```
 
-**`ui-map.svg`** — карта региона
-
-```
-A single folded paper map icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: cream #FFE6C7 paper, green #2FA24E and blue #0E8FBF markings, red #D93A1E pin.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-egg.svg`** — коллекция
-
-```
-A single speckled egg icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: cream #FFE6C7 shell, blue #0E8FBF speckles.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-flame.svg`** — серия дней
-
-```
-A single flame icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: red #D93A1E outer flame, gold #FFC42E inner flame.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-streak.svg`** — стрик
-
-```
-A single calendar page with a small flame on it icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: cream #FFE6C7 calendar, red #D93A1E flame, blue #0E8FBF header bar.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-meteor.svg`** — бонус
-
-```
-A single meteor with a trail icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: brown #8C6A03 rock, gold #FFC42E trail.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-pencil-paper.svg`** — ввод ответа
-
-```
-A single pencil lying on a sheet of paper icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: gold #FFC42E pencil, cream #FFE6C7 paper.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-help.svg`** — помощь
-
-```
-A single question mark inside a circle icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: purple #5A34C4 circle, cream #FFE6C7 question mark.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-level-up.svg`** — новый уровень
-
-```
-A single badge with an upward arrow icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: green #12855A badge, cream #FFE6C7 arrow.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-sound.svg`** — послушать ещё раз
+**`ui-sound.svg`** — «послушать ещё раз»
 
 ```
 A single speaker with two sound waves icon, flat vector cut-out style, thick uniform outline
@@ -557,8 +386,46 @@ Centered, filling the frame, square format.
 Transparent background, no text, no letters, no frame, no border.
 ```
 
+**`ui-map.svg`** — возврат на карту из урока
 
-Расход: примерно 130 кредитов с переделками.
+```
+A single folded paper map icon, flat vector cut-out style, thick uniform outline
+in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
+no shadows. Colours: cream #FFE6C7 paper, green #2FA24E and blue #0E8FBF markings, red #D93A1E pin.
+Centered, filling the frame, square format.
+Transparent background, no text, no letters, no frame, no border.
+```
+
+**`ui-bulb.svg`** — подсказка в обычном режиме
+
+```
+A single light bulb icon, flat vector cut-out style, thick uniform outline
+in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
+no shadows. Colours: gold #FFC42E glass, cream #FFE6C7 screw base.
+Centered, filling the frame, square format.
+Transparent background, no text, no letters, no frame, no border.
+```
+
+`ui-help` под вопросом: помощь в этом продукте — это Tali. Отдельная иконка
+может оказаться лишней сущностью. Решается, когда соберём экран урока.
+
+### Что отложено и почему
+
+Не генерировать, пока не собраны экраны и не подтверждены механики.
+
+| Иконка | Механика | Почему отложена |
+|---|---|---|
+| `ui-stars` | звёзды урока | рисуются кодом: `StarsRow` — SVG с двумя силуэтами, заполненным и пунктирным |
+| `ui-heart` | жизни | механики нет и не будет: «жизни» — наказание за ошибку, а в системе записано, что наказательных механик нет |
+| `ui-lightning`, `ui-meteor` | быстрый ответ, бонус | поощрение за скорость противоречит ABA-режиму и вообще детям, которым нужно время подумать |
+| `ui-trophy`, `ui-medal`, `ui-level-up` | достижения | экран достижений в новой структуре не подтверждён |
+| `ui-flame`, `ui-streak` | серия дней | не решено, переносим ли стрик; для пятилетки «ты пропустил день» — сомнительная мотивация |
+| `ui-gift`, `ui-egg` | коллекция | коллекция стала атласом, его страницы — иллюстрации находок, а не иконки |
+| `ui-backpack` | снаряжение | механики нет |
+| `ui-book`, `ui-book-bookmark` | урок, тема | на карте узлы, а не книжки |
+| `ui-pencil-paper` | задание на ввод | тип задания виден по самому заданию, метка не нужна |
+
+Расход: примерно 40 кредитов вместо 130.
 
 ---
 
@@ -630,9 +497,9 @@ assets/images/tasks/      предметы к заданиям
 | Калибровка стиля | ~50 |
 | Tali: эталон плюс пять поз | ~60 |
 | Четыре панорамы | ~65 |
-| 22 иконки | ~130 |
+| 6 иконок | ~40 |
 | Запас на переделки | ~200 |
-| **Итого** | **~505** |
+| **Итого** | **~415** |
 
 Тариф Basic даёт 1000 кредитов в месяц: весь набор укладывается меньше чем
 в половину. Векторная генерация стоит 2 кредита, растровая — 1.
