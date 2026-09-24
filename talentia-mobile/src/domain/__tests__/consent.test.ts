@@ -1,5 +1,6 @@
 import {
   appendConsent,
+  canManageConsent,
   consentEventErrors,
   consentStatus,
   isGranted,
@@ -99,13 +100,44 @@ describe('отзыв и удаление', () => {
     expect(REVOCATION_EFFECTS.voice_asr).toEqual(['hide_microphone']);
   });
 
-  it('после удаления журнал остаётся, но без идентификаторов', () => {
+  const KID_P = '6f1c1a8e-0000-4000-8000-000000000001';
+  const ADULT_P = '6f1c1a8e-0000-4000-8000-000000000002';
+
+  it('после удаления журнал остаётся, но с разными псевдонимами у ребёнка и взрослого', () => {
     const log = build(event(), event({ action: 'revoke' }), event({ childId: 'kid-2' }));
-    const kept = pseudonymizeConsentLog(log, { childId: 'kid-1', actorId: 'parent-1' }, 'anon-7');
+    const kept = pseudonymizeConsentLog(log, {
+      child: { id: 'kid-1', pseudonym: KID_P },
+      actor: { id: 'parent-1', pseudonym: ADULT_P },
+    });
     expect(kept.map((e) => [e.childId, e.actorId])).toEqual([
-      ['anon-7', 'anon-7'],
-      ['anon-7', 'anon-7'],
-      ['kid-2', 'anon-7'],
+      [KID_P, ADULT_P],
+      [KID_P, ADULT_P],
+      ['kid-2', ADULT_P],
     ]);
+  });
+
+  it('общий псевдоним на ребёнка и взрослого — ошибка', () => {
+    expect(() =>
+      pseudonymizeConsentLog([], { child: { id: 'kid-1', pseudonym: KID_P }, actor: { id: 'parent-1', pseudonym: KID_P } }),
+    ).toThrow();
+  });
+});
+
+describe('кто управляет согласием', () => {
+  it('ИИ, голос и облако — только владелец', () => {
+    expect((['companion_ai', 'voice_asr', 'cloud_sync'] as const).map((s) => canManageConsent(s, 'guardian'))).toEqual([
+      false,
+      false,
+      false,
+    ]);
+    expect((['companion_ai', 'voice_asr', 'cloud_sync'] as const).map((s) => canManageConsent(s, 'owner'))).toEqual([
+      true,
+      true,
+      true,
+    ]);
+  });
+
+  it('телеметрию может отключить и второй родитель; специалист — ничего', () => {
+    expect([canManageConsent('telemetry', 'guardian'), canManageConsent('telemetry', 'specialist')]).toEqual([true, false]);
   });
 });

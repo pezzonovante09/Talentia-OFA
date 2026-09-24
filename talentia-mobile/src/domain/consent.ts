@@ -49,8 +49,30 @@ export type ConsentEvent = {
   textVersion: string;
   confirmedBy: ConsentMethod;
   actorId: string;
+  /**
+   * Время по часам устройства — нужно, чтобы согласие действовало офлайн. На
+   * сервере оно хранится как `client_at` рядом с серверным `received_at`: доказывает
+   * серверное, клиентскому можно только верить.
+   */
   at: string;
 };
+
+/** Роль взрослого при ребёнке — как `child_guardians.role`. */
+export type GuardianRole = 'owner' | 'guardian' | 'specialist';
+
+/**
+ * Может ли взрослый с этой ролью давать и отзывать согласие.
+ *
+ * ИИ-разговор и голос — только владелец: наружу уходит то, за что отвечает он.
+ * Облако — тоже: его отзыв удаляет ребёнка из облака целиком, а удалять ребёнка
+ * может только владелец. Телеметрию может отключить и второй родитель. Специалист
+ * согласий не даёт. То же правило проверяет сервер политикой на `consent_events`.
+ */
+export function canManageConsent(scope: ConsentScope, role: GuardianRole): boolean {
+  if (role === 'specialist') return false;
+  if (scope === 'telemetry') return true;
+  return role === 'owner';
+}
 
 export type ConsentStatus =
   | 'granted'
@@ -134,21 +156,31 @@ export const REVOCATION_EFFECTS: Record<ConsentScope, readonly RevocationEffect[
   telemetry: ['clear_telemetry_queue'],
 };
 
+/** Замена одного идентификатора псевдонимом. Псевдоним — uuid, как и то, что он заменяет. */
+export type Pseudonym = { id: string; pseudonym: string };
+
 /**
  * Журнал после удаления ребёнка или аккаунта.
  *
  * Переживает удаление только он, как доказательство, что согласие было получено
- * и отозвано, — и только с псевдонимом вместо идентификаторов. Об этом прямо
+ * и отозвано, — и только с псевдонимами вместо идентификаторов. Об этом прямо
  * говорит текст экрана удаления.
+ *
+ * Псевдонимы у ребёнка и у взрослого **разные**: общий склеил бы две сущности в
+ * одну. Один на сущность: иначе журнал теряет связность. На сервере то же делают
+ * триггеры удаления.
  */
 export function pseudonymizeConsentLog(
   log: readonly ConsentEvent[],
-  ids: { childId?: string; actorId?: string },
-  pseudonym: string,
+  replace: { child?: Pseudonym; actor?: Pseudonym },
 ): ConsentEvent[] {
+  const { child, actor } = replace;
+  if (child && actor && child.pseudonym === actor.pseudonym) {
+    throw new Error('Один псевдоним на ребёнка и взрослого склеивает две сущности');
+  }
   return log.map((e) => ({
     ...e,
-    childId: ids.childId !== undefined && e.childId === ids.childId ? pseudonym : e.childId,
-    actorId: ids.actorId !== undefined && e.actorId === ids.actorId ? pseudonym : e.actorId,
+    childId: child && e.childId === child.id ? child.pseudonym : e.childId,
+    actorId: actor && e.actorId === actor.id ? actor.pseudonym : e.actorId,
   }));
 }
