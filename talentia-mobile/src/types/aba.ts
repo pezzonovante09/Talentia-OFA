@@ -148,6 +148,12 @@ export type AbaProgram = {
 export type AbaTrialKind =
   | 'baseline'
   | 'teaching'
+  /**
+   * Первый шаг коррекции: проба на последнем успешном уровне подсказки. Успешна
+   * по построению, поэтому ни в процент, ни в затухание, ни в остановку не идёт —
+   * иначе каждая ошибка сама себя «исправляла» бы в данных.
+   */
+  | 'correction'
   /** Третий шаг коррекции: тот же SD после подсказанной пробы и отвлечения. */
   | 'transfer'
   /** Новый экземпляр, перефразированный SD, без эскалации. Измеряет, а не учит. */
@@ -188,6 +194,8 @@ export type AbaTrial = {
   sessionId: string;
   targetId: string;
   exemplarId: string;
+  /** Перефразированный SD пробы переноса. Отсутствие — основная формулировка `sdKey`. */
+  sdVariantKey?: string;
   /** Для цепочек каждое звено — отдельная строка: иначе теряется то, ради чего делался task analysis. */
   stepId?: string;
   index: number;
@@ -199,6 +207,13 @@ export type AbaTrial = {
   /** Сколько раз предъявлялся SD. Больше трёх — уже натаскивание. */
   presentations: number;
   response: AbaResponse;
+  /**
+   * Была ли попытка ответа до первой подсказки. По ней отличают зависимость от
+   * неумения: не умеющий пробует и ошибается, зависимый молчит ровно до
+   * подсказки. Латентность этого не различает — подсказанный ответ приходит после
+   * задержки по построению.
+   */
+  emittedBeforePrompt: boolean;
   latencyMs: number | null;
   /** Момент окончания озвучки SD. По нему восстанавливается темп сессии. */
   sdEndedAt: string;
@@ -208,6 +223,13 @@ export type AbaTrial = {
   asrSuggestion?: { text: string; confidence: number; acceptedByAdult: boolean };
   tokens: 0 | 1;
   tokenReason?: AbaTokenReason;
+};
+
+/** Итог пробы переноса. Зачёт — на разных экземплярах или формулировках: повтор уже знаком ребёнку. */
+export type AbaGeneralizationProbe = {
+  response: AbaResponse;
+  exemplarId: string;
+  sdVariantKey?: string;
 };
 
 export type AbaPhase =
@@ -240,10 +262,25 @@ export type AbaTargetState = {
   /** Дни засчитанных сессий: критерий требует разных, иначе берётся одной серией за вечер. */
   criterionDays: string[];
   exemplarsAtCriterion: string[];
-  generalizationProbes: AbaResponse[];
+  generalizationProbes: AbaGeneralizationProbe[];
+  /** Последняя сессия, в которой цель встречалась. */
   lastSessionIndex: number;
+  /**
+   * Последняя проба поддержания — отдельно от `lastSessionIndex`: разогрев на
+   * освоенной цели иначе сдвигал бы расписание, и проба поддержания не наступала
+   * бы никогда.
+   */
+  lastMaintenanceSessionIndex: number;
   maintenanceGapIndex: 0 | 1 | 2 | 3;
+  /** Провалы поддержания подряд. Два — и цель возвращается в обучение. */
+  maintenanceFailsInRow: number;
   flags: AbaFlag[];
+  /**
+   * Сессия, после которой сработал флаг зависимости. Следующая проверка смотрит
+   * только на сессии после неё: окно скользит, и на тех же данных флаг иначе
+   * срабатывал бы каждую сессию, а задержка росла без конца.
+   */
+  dependenceFlaggedAtSession: number | null;
   /**
    * Уровень, на котором цель в последний раз была успешна. Провал пробы
    * поддержания возвращает сюда, а не к полной модели: откат к нулю у ребёнка,
@@ -280,6 +317,11 @@ export const MASTERY = {
   minIndependentRate: 0.8,
   /** Без минимума проб «80% в трёх сессиях» берётся на трёх удачных и означает шум. */
   minTrialsPerSession: 5,
+  /**
+   * У цепочки минимум считается в прогонах, а не в пробах: пять полных «помыть
+   * руки» не помещаются в сессию на 8–12 минут с двумя целями.
+   */
+  minChainRunsPerSession: 3,
   sessionsInRow: 3,
   requireDistinctDays: true,
   minDistinctExemplars: 2,
@@ -290,12 +332,34 @@ export const MASTERY = {
 /** Интервалы проб поддержания — в сессиях. */
 export const MAINTENANCE_GAP = [1, 2, 5, 12] as const;
 
-/** Порог зависимости от подсказки. Третье условие ключевое: не умеющий ошибается быстро, зависимый молчит ровно до подсказки. */
+/**
+ * Порог зависимости от подсказки. Третье условие ключевое: не умеющий пробует и
+ * ошибается, зависимый молчит ровно до подсказки.
+ */
 export const PROMPT_DEPENDENCE = {
   minPromptedRate: 0.8,
   maxIndependentRate: 0.2,
+  /** Среди подсказанных проб со старта L0 — доля, где до подсказки не было попытки. */
+  minSilentBeforePromptRate: 0.8,
+  /** Меньше таких проб — судить не по чему. */
+  minSilentEvidence: 5,
   overSessions: 3,
 } as const;
+
+/** Провалов поддержания подряд, после которых цель возвращается в обучение. */
+export const MAINTENANCE_FAILS_TO_REACQUIRE = 2;
+
+/**
+ * Задержка: шаг и потолок. Потолок по возрасту — пятилетка, которого заставляют
+ * ждать по 8–10 секунд, перестаёт ждать вовсе.
+ */
+export const DELAY_STEP_MS = 1000;
+export const MAX_DELAY_MS: Record<AgeBand, number> = {
+  '5-6': 4000,
+  '7': 5000,
+  '8': 5000,
+  '9-10': 5000,
+};
 
 /** Сколько эскалаций допускается внутри пробы. Три предъявления одного SD — уже натаскивание. */
 export const MAX_ESCALATIONS_PER_TRIAL = 2;

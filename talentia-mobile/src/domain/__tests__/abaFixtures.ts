@@ -32,6 +32,7 @@ export function trial(over: Partial<AbaTrial> = {}): AbaTrial {
     promptLevelUsed: 0,
     presentations: 1,
     response: 'independent',
+    emittedBeforePrompt: true,
     latencyMs: 1200,
     sdEndedAt: '2026-09-24T10:00:00Z',
     scoredBy: 'adult',

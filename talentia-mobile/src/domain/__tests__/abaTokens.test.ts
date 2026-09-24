@@ -1,7 +1,7 @@
 import {
   addTokens,
   awardForTrial,
-  exchange,
+  tryExchange,
   newSchedule,
   reinforcerChoices,
   type Rng,
@@ -18,22 +18,43 @@ const pool = ['puzzle', 'bubbles', 'drum', 'stickers', 'train', 'balloon'];
 describe('жетоны за пробу', () => {
   const rng = cycle(0);
 
-  it('на усвоении жетон за каждый самостоятельный', () => {
-    const a = awardForTrial('independent', 'acquisition', newSchedule(rng), rng);
-    expect({ tokens: a.tokens, reason: a.reason }).toEqual({ tokens: 1, reason: 'independent' });
+  const award = (r: Parameters<typeof awardForTrial>[0], kind: Parameters<typeof awardForTrial>[1] = 'teaching') => {
+    const a = awardForTrial(r, kind, 'acquisition', newSchedule(rng), rng);
+    return { tokens: a.tokens, feedback: a.feedback };
+  };
+
+  it('на усвоении жетон и похвала за каждый самостоятельный', () => {
+    const a = awardForTrial('independent', 'teaching', 'acquisition', newSchedule(rng), rng);
+    expect({ tokens: a.tokens, reason: a.reason, feedback: a.feedback }).toEqual({
+      tokens: 1,
+      reason: 'independent',
+      feedback: 'token_praise',
+    });
   });
 
   it('с подсказкой — похвала без жетона', () => {
-    expect(awardForTrial('prompted', 'acquisition', newSchedule(rng), rng).tokens).toBe(0);
+    expect(award('prompted')).toEqual({ tokens: 0, feedback: 'praise' });
   });
 
-  it('ошибка и приближение жетона не дают', () => {
-    const s = newSchedule(rng);
-    expect(
-      (['incorrect', 'no_response', 'approximation'] as const).map(
-        (r) => awardForTrial(r, 'acquisition', s, rng).tokens,
-      ),
-    ).toEqual([0, 0, 0]);
+  it('приближение подкрепляется похвалой: на шейпинге усилие не наказывается', () => {
+    expect(award('approximation')).toEqual({ tokens: 0, feedback: 'praise' });
+  });
+
+  it('ошибка — нейтральная реакция без жетона', () => {
+    expect([award('incorrect'), award('no_response')]).toEqual([
+      { tokens: 0, feedback: 'neutral' },
+      { tokens: 0, feedback: 'neutral' },
+    ]);
+  });
+
+  it('базовая линия не подкрепляется: иначе она сама становится обучением', () => {
+    expect(award('independent', 'baseline')).toEqual({ tokens: 0, feedback: 'neutral' });
+  });
+
+  it('разогрев на освоенной цели — жетон за каждый верный', () => {
+    const s = newSchedule(cycle(0.99));
+    const a = awardForTrial('independent', 'high_p', 'mastered', s, rng);
+    expect(a.tokens).toBe(1);
   });
 
   it('на освоенной цели — прерывисто, через 2–4 самостоятельных', () => {
@@ -47,7 +68,7 @@ describe('жетоны за пробу', () => {
       let trials = 0;
       let tokens = 0;
       while (tokens === 0) {
-        const a = awardForTrial('independent', 'mastered', schedule, r);
+        const a = awardForTrial('independent', 'maintenance', 'mastered', schedule, r);
         schedule = a.schedule;
         tokens = a.tokens;
         trials += 1;
@@ -67,7 +88,11 @@ describe('доска жетонов', () => {
   });
 
   it('обмен забирает все жетоны, включая сверх доски', () => {
-    expect(exchange({ size: 3, earned: 5 })).toEqual({ board: { size: 3, earned: 0 }, exchanged: 5 });
+    expect(tryExchange({ size: 3, earned: 5 })).toEqual({ board: { size: 3, earned: 0 }, exchanged: 5 });
+  });
+
+  it('неполная доска не обменивается и переходит дальше как есть', () => {
+    expect(tryExchange({ size: 5, earned: 4 })).toEqual({ board: { size: 5, earned: 4 }, exchanged: 0 });
   });
 });
 
