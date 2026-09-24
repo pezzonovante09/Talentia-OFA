@@ -24,7 +24,7 @@ async function setup(db) {
     ('${A}', 'anna@example.kg', now()), ('${B}', 'bakyt@example.kg', now()), ('${C}', 'c@example.kg', now()),
     ('${S}', 'spec@example.kg', now()), ('${D}', 'dana@example.kg', now()), ('${ANON_SIGNIN.id}', NULL, NULL)`);
   await db.exec(`INSERT INTO consent_texts (scope, version, locale, body_sha256, is_current)
-    SELECT s, 'v1', 'ru', sha256(convert_to(s || ' v1', 'UTF8')), true
+    SELECT s, 'ru-v1', 'ru', sha256(convert_to(s || ' v1', 'UTF8')), true
     FROM unnest(ARRAY['account_local', 'cloud_sync', 'companion_ai', 'voice_asr', 'telemetry']) AS s`);
   const as = actor(db);
   // Как service-role: RLS не действует, пользователя в JWT нет.
@@ -34,7 +34,7 @@ async function setup(db) {
     return db.query(sql, params);
   };
   const makeChild = async (owner = A, name = 'Лиса') =>
-    (await as(owner, `SELECT public.create_child($1, '5-6', 'v1', 'biometric') AS id`, [name])).rows[0].id;
+    (await as(owner, `SELECT public.create_child($1, '5-6', 'ru-v1', 'biometric') AS id`, [name])).rows[0].id;
   const invite = async (kid, owner = A) =>
     (await as(owner, `SELECT public.create_child_invite($1) AS c`, [kid])).rows[0].c;
   const redeem = async (user, code) => (await as(user, `SELECT public.redeem_child_invite($1) AS s`, [code])).rows[0].s;
@@ -53,8 +53,8 @@ await group('создание и видимость', async (db) => {
   let kid;
 
   await check('ребёнок появляется только с согласием на облако по текущему тексту', async () => {
-    await denied(as(A, `SELECT public.create_child('x', '7', 'v0', 'biometric')`));
-    await denied(as(A, `SELECT public.create_child('x', '7', 'v1', 'signup')`));
+    await denied(as(A, `SELECT public.create_child('x', '7', 'ru-v0', 'biometric')`));
+    await denied(as(A, `SELECT public.create_child('x', '7', 'ru-v1', 'signup')`));
     kid = await makeChild();
     eq((await as(A, `SELECT role, status FROM child_guardians WHERE child_id = $1`, [kid])).rows, [
       { role: 'owner', status: 'active' },
@@ -79,11 +79,11 @@ await group('создание и видимость', async (db) => {
   });
 
   await check('анонимный вход Supabase ребёнка не создаёт', async () => {
-    await denied(as(ANON_SIGNIN, `SELECT public.create_child('x', '7', 'v1', 'pin')`));
+    await denied(as(ANON_SIGNIN, `SELECT public.create_child('x', '7', 'ru-v1', 'pin')`));
   });
 
   await check('аноним без входа не вызывает функции', async () => {
-    await denied(as(null, `SELECT public.create_child('x', '7', 'v1', 'pin')`));
+    await denied(as(null, `SELECT public.create_child('x', '7', 'ru-v1', 'pin')`));
     await denied(as(null, `SELECT public.redeem_child_invite('AAAAAAAA')`));
     await denied(as(null, `SELECT public.has_child_access($1)`, [kid]));
     await denied(as(null, `SELECT public.approve_guardian($1, $2)`, [kid, C]));
@@ -94,7 +94,7 @@ await group('создание и видимость', async (db) => {
     for (const t of ['children', 'child_guardians', 'skill_state', 'lesson_runs', 'consent_events', 'child_access_log']) {
       await denied(as(null, `SELECT * FROM ${t}`));
     }
-    await denied(as(null, `INSERT INTO consent_events (scope, action, text_version, confirmed_by) VALUES ('account_local', 'grant', 'v1', 'signup')`));
+    await denied(as(null, `INSERT INTO consent_events (scope, action, text_version, confirmed_by) VALUES ('account_local', 'grant', 'ru-v1', 'signup')`));
   });
 
   await check('служебные функции клиенту недоступны', async () => {
@@ -266,7 +266,7 @@ await group('права второго родителя и специалист�
     eq(await count(S, 'skill_state'), 0);
     await denied(as(S, `SELECT public.create_child_invite($1)`, [kid]));
     await denied(
-      as(S, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('telemetry', 'grant', $1, 'v1', 'pin', now())`, [kid]),
+      as(S, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('telemetry', 'grant', $1, 'ru-v1', 'pin', now())`, [kid]),
     );
   });
 
@@ -318,23 +318,23 @@ await group('данные ребёнка и согласие на облако',
 
   await check('сменился текст — запись в облако закрыта до нового согласия', async () => {
     await admin(`UPDATE consent_texts SET is_current = false WHERE scope = 'cloud_sync'`);
-    await admin(`INSERT INTO consent_texts (scope, version, locale, body_sha256, is_current) VALUES ('cloud_sync', 'v2', 'ru', sha256('cloud v2'::bytea), true)`);
+    await admin(`INSERT INTO consent_texts (scope, version, locale, body_sha256, is_current) VALUES ('cloud_sync', 'ru-v2', 'ru', sha256('cloud v2'::bytea), true)`);
     await denied(as(B, `INSERT INTO skill_state (child_id, skill, box) VALUES ($1, 'new', 1)`, [kid]));
-    await denied(as(B, `SELECT public.grant_cloud_sync($1, 'v2', 'pin')`, [kid]));
-    await denied(as(A, `SELECT public.grant_cloud_sync($1, 'v1', 'pin')`, [kid]));
-    await as(A, `SELECT public.grant_cloud_sync($1, 'v2', 'pin')`, [kid]);
+    await denied(as(B, `SELECT public.grant_cloud_sync($1, 'ru-v2', 'pin')`, [kid]));
+    await denied(as(A, `SELECT public.grant_cloud_sync($1, 'ru-v1', 'pin')`, [kid]));
+    await as(A, `SELECT public.grant_cloud_sync($1, 'ru-v2', 'pin')`, [kid]);
     await as(B, `INSERT INTO skill_state (child_id, skill, box) VALUES ($1, 'new', 1)`, [kid]);
   });
 
   await check('облачное согласие не пишется в обход функций', async () => {
     await denied(
-      as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('cloud_sync', 'grant', $1, 'v2', 'pin', now())`, [kid]),
+      as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('cloud_sync', 'grant', $1, 'ru-v2', 'pin', now())`, [kid]),
     );
   });
 
   await check('отзыв облака — только владельцем, и убирает собранное', async () => {
-    await denied(as(B, `SELECT public.revoke_cloud_sync($1, 'v2', 'pin')`, [kid]));
-    await as(A, `SELECT public.revoke_cloud_sync($1, 'v2', 'pin')`, [kid]);
+    await denied(as(B, `SELECT public.revoke_cloud_sync($1, 'ru-v2', 'pin')`, [kid]));
+    await as(A, `SELECT public.revoke_cloud_sync($1, 'ru-v2', 'pin')`, [kid]);
     eq(await adminCount(`children WHERE id = '${kid}'`), 0);
     eq(await adminCount(`skill_state WHERE child_id = '${kid}'`), 0);
     eq(await adminCount(`lesson_runs WHERE child_id = '${kid}'`), 0);
@@ -356,44 +356,44 @@ await group('журнал согласий', async (db) => {
   await link(kid, B);
 
   await check('автора и серверное время ставит сервер', async () => {
-    await as(A, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'v1', 'signup', now() - interval '1 day')`);
+    await as(A, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'ru-v1', 'signup', now() - interval '1 day')`);
     const r = (await admin(`SELECT actor_id, received_at > client_at AS later FROM consent_events WHERE scope = 'account_local'`)).rows;
     eq(r, [{ actor_id: A, later: true }]);
   });
 
   await check('чужое имя и серверное время из клиента не пишутся', async () => {
-    await denied(as(C, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, actor_id, client_at) VALUES ('account_local', 'grant', 'v1', 'signup', $1, now())`, [A]));
-    await denied(as(A, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at, received_at) VALUES ('account_local', 'grant', 'v1', 'signup', now(), now() - interval '1 year')`));
+    await denied(as(C, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, actor_id, client_at) VALUES ('account_local', 'grant', 'ru-v1', 'signup', $1, now())`, [A]));
+    await denied(as(A, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at, received_at) VALUES ('account_local', 'grant', 'ru-v1', 'signup', now(), now() - interval '1 year')`));
   });
 
   await check('время устройства из будущего отклоняется', async () => {
-    await denied(as(A, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'v1', 'signup', now() + interval '1 day')`));
+    await denied(as(A, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'ru-v1', 'signup', now() + interval '1 day')`));
   });
 
   await check('ИИ и голос — только владелец', async () => {
     for (const scope of ['companion_ai', 'voice_asr']) {
-      await denied(as(B, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ($1, 'grant', $2, 'v1', 'pin', now())`, [scope, kid]));
-      await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ($1, 'grant', $2, 'v1', 'biometric', now())`, [scope, kid]);
+      await denied(as(B, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ($1, 'grant', $2, 'ru-v1', 'pin', now())`, [scope, kid]));
+      await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ($1, 'grant', $2, 'ru-v1', 'biometric', now())`, [scope, kid]);
     }
   });
 
   await check('телеметрию может отключить и второй родитель', async () => {
-    await as(B, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('telemetry', 'revoke', $1, 'v1', 'pin', now())`, [kid]);
+    await as(B, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('telemetry', 'revoke', $1, 'ru-v1', 'pin', now())`, [kid]);
   });
 
   await check('на чужого ребёнка согласие не пишется', async () => {
-    await denied(as(C, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('telemetry', 'grant', $1, 'v1', 'pin', now())`, [kid]));
+    await denied(as(C, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('telemetry', 'grant', $1, 'ru-v1', 'pin', now())`, [kid]));
     eq(await count(C, 'consent_events'), 0);
   });
 
   await check('правила в схеме совпадают с клиентом', async () => {
-    await denied(as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', $1, 'v1', 'signup', now())`, [kid]));
-    await denied(as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('telemetry', 'grant', $1, 'v1', 'signup', now())`, [kid]));
+    await denied(as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', $1, 'ru-v1', 'signup', now())`, [kid]));
+    await denied(as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('telemetry', 'grant', $1, 'ru-v1', 'signup', now())`, [kid]));
     await denied(as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('telemetry', 'grant', $1, '', 'pin', now())`, [kid]));
   });
 
   await check('анонимный вход согласий не даёт', async () => {
-    await denied(as(ANON_SIGNIN, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'v1', 'signup', now())`));
+    await denied(as(ANON_SIGNIN, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'ru-v1', 'signup', now())`));
   });
 
   await check('клиент не правит и не удаляет согласия', async () => {
@@ -414,7 +414,7 @@ await group('удаление аккаунта владельца без пер�
   const kid = await makeChild();
   await link(kid, B);
   await as(B, `INSERT INTO skill_state (child_id, skill, box) VALUES ($1, 'count-5', 2)`, [kid]);
-  await as(A, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'v1', 'signup', now())`);
+  await as(A, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'ru-v1', 'signup', now())`);
 
   await check('ребёнок удаляется вместе с владельцем — сирот не бывает', async () => {
     await admin(`DELETE FROM auth.users WHERE id = $1`, [A]);
@@ -495,7 +495,7 @@ await group('сроки хранения', async (db) => {
     await invite(kid);
     await admin(`UPDATE child_access_invites SET expires_at = now() - interval '8 days'`);
     await admin(`INSERT INTO invite_attempts (user_id, at) VALUES ($1, now() - interval '2 days')`, [C]);
-    await as(C, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'v1', 'signup', now())`);
+    await as(C, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'ru-v1', 'signup', now())`);
     await admin(`DELETE FROM auth.users WHERE id = $1`, [C]); // псевдоним и срок
     // «прошло три года»: срок в прошлое защитный триггер не пускает — отключаем его только здесь
     await admin(`ALTER TABLE consent_events DISABLE TRIGGER consent_events_append_only`);
@@ -516,7 +516,7 @@ await group('передача: согласие переданного ребё�
   const { as, admin, makeChild, link, count } = await setup(db);
   const kid = await makeChild();
   await link(kid, B);
-  await as(A, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'v1', 'signup', now())`);
+  await as(A, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'ru-v1', 'signup', now())`);
   await as(A, `SELECT public.transfer_child_ownership($1, $2)`, [kid, B]);
   await admin(`DELETE FROM auth.users WHERE id = $1`, [A]);
 
@@ -549,7 +549,7 @@ await group('передача: согласие переданного ребё�
   });
 
   await check('своё согласие — и запись снова открыта', async () => {
-    await as(B, `SELECT public.grant_cloud_sync($1, 'v1', 'biometric')`, [kid]);
+    await as(B, `SELECT public.grant_cloud_sync($1, 'ru-v1', 'biometric')`, [kid]);
     await as(B, `INSERT INTO skill_state (child_id, skill, box) VALUES ($1, 'b', 1)`, [kid]);
     eq(await count(B, 'skill_state'), 2);
   });
@@ -602,7 +602,7 @@ await group('запрос второго родителя на отзыв', asyn
   const { as, makeChild, link } = await setup(db);
   const kid = await makeChild();
   await link(kid, B);
-  await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('companion_ai', 'grant', $1, 'v1', 'pin', now())`, [kid]);
+  await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('companion_ai', 'grant', $1, 'ru-v1', 'pin', now())`, [kid]);
 
   await check('второй родитель подаёт запрос, владелец его видит', async () => {
     await as(B, `SELECT public.request_consent_revoke($1, 'companion_ai')`, [kid]);
@@ -630,9 +630,9 @@ await group('запрос второго родителя на отзыв', asyn
   });
 
   await check('владелец отзывает — запрос закрывается сам', async () => {
-    await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('voice_asr', 'grant', $1, 'v1', 'pin', now())`, [kid]);
+    await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('voice_asr', 'grant', $1, 'ru-v1', 'pin', now())`, [kid]);
     await as(B, `SELECT public.request_consent_revoke($1, 'voice_asr')`, [kid]);
-    await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('voice_asr', 'revoke', $1, 'v1', 'pin', now())`, [kid]);
+    await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('voice_asr', 'revoke', $1, 'ru-v1', 'pin', now())`, [kid]);
     eq((await as(B, `SELECT scope, resolution FROM consent_revoke_requests ORDER BY id`)).rows, [
       { scope: 'companion_ai', resolution: 'kept' },
       { scope: 'voice_asr', resolution: 'revoked' },
@@ -640,7 +640,7 @@ await group('запрос второго родителя на отзыв', asyn
   });
 
   await check('ушедший второй родитель — его открытый запрос отозван', async () => {
-    await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('voice_asr', 'grant', $1, 'v1', 'pin', now())`, [kid]);
+    await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('voice_asr', 'grant', $1, 'ru-v1', 'pin', now())`, [kid]);
     await as(B, `SELECT public.request_consent_revoke($1, 'voice_asr')`, [kid]);
     await as(B, `DELETE FROM child_guardians WHERE user_id = $1`, [B]);
     eq((await as(A, `SELECT resolution FROM consent_revoke_requests ORDER BY id DESC LIMIT 1`)).rows, [
@@ -665,7 +665,7 @@ await group('журналы нельзя переписать даже в обх
   });
 
   await check('псевдоним не переписать второй раз', async () => {
-    await as(A, `SELECT public.revoke_cloud_sync($1, 'v1', 'pin')`, [kid]);
+    await as(A, `SELECT public.revoke_cloud_sync($1, 'ru-v1', 'pin')`, [kid]);
     await denied(admin(`UPDATE consent_events SET child_id = gen_random_uuid() WHERE actor_id = $1 AND scope = 'cloud_sync'`, [A]));
   });
 
@@ -699,8 +699,8 @@ await group('проверка согласия и порядок событий'
   await check('пачка [дал, отозвал] одним запросом: решает серверный порядок, а не время устройства', async () => {
     // время устройства у grant позже — по нему «победил» бы grant
     await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES
-      ('telemetry', 'grant', $1, 'v1', 'pin', now()),
-      ('telemetry', 'revoke', $1, 'v1', 'pin', now() - interval '1 hour')`, [kid]);
+      ('telemetry', 'grant', $1, 'ru-v1', 'pin', now()),
+      ('telemetry', 'revoke', $1, 'ru-v1', 'pin', now() - interval '1 hour')`, [kid]);
     eq((await as(A, `SELECT public.has_consent($1, 'telemetry') AS ok`, [kid])).rows[0].ok, false);
   });
 });
@@ -719,8 +719,8 @@ await group('прохождения из будущего', async (db) => {
 await group('отозванное согласие не вернуть подменой идентификатора', async (db) => {
   const { as, admin, makeChild } = await setup(db);
   const kid = await makeChild();
-  await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('companion_ai', 'grant', $1, 'v1', 'pin', now())`, [kid]);
-  await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('companion_ai', 'revoke', $1, 'v1', 'pin', now())`, [kid]);
+  await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('companion_ai', 'grant', $1, 'ru-v1', 'pin', now())`, [kid]);
+  await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('companion_ai', 'revoke', $1, 'ru-v1', 'pin', now())`, [kid]);
 
   await check('отзыв живого ребёнка не отвязать псевдонимом — даже в обход RLS', async () => {
     await denied(admin(`UPDATE consent_events SET child_id = gen_random_uuid(), child_pseudonymized_at = now() WHERE action = 'revoke' AND child_id = $1`, [kid]));
@@ -824,6 +824,73 @@ await group('передача туда-обратно срок не продле
     await as(A, `SELECT public.transfer_child_ownership($1, $2)`, [kid, B]);
     const left = (await admin(`SELECT consent_grace_until < now() + interval '2 days' AS short FROM children WHERE id = $1`, [kid])).rows[0];
     eq(left, { short: true });
+  });
+});
+
+// ---------------------------------------------------------------------------
+await group('срок хранения только у записей удалённых', async (db) => {
+  const { as, admin, makeChild } = await setup(db);
+  const kid = await makeChild();
+  await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('companion_ai', 'grant', $1, 'ru-v1', 'pin', now())`, [kid]);
+  await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('companion_ai', 'revoke', $1, 'ru-v1', 'pin', now())`, [kid]);
+
+  await check('на отзыв живого ребёнка срок не поставить — даже в обход RLS', async () => {
+    await denied(admin(`UPDATE consent_events SET retain_until = now() + interval '3 years' WHERE action = 'revoke' AND child_id = $1`, [kid]));
+    await denied(admin(`UPDATE child_access_log SET retain_until = now() + interval '3 years' WHERE child_id = $1`, [kid]));
+  });
+
+  await check('на согласие аккаунта живого взрослого срок не поставить', async () => {
+    await as(A, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'ru-v1', 'signup', now())`);
+    await denied(admin(`UPDATE consent_events SET retain_until = now() + interval '3 years' WHERE scope = 'account_local'`));
+  });
+
+  await check('после удаления ребёнка срок ставится сам', async () => {
+    await as(A, `DELETE FROM children WHERE id = $1`, [kid]);
+    const rows = (await admin(`SELECT retain_until IS NOT NULL AS kept FROM consent_events WHERE scope = 'companion_ai'`)).rows;
+    eq(rows, [{ kept: true }, { kept: true }]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+await group('синхронизация из клиента, как её шлёт PostgREST', async (db) => {
+  const { as, makeChild, count } = await setup(db);
+  const kid = await makeChild();
+  const other = await makeChild(C, 'Чужой');
+  // upsert с merge-duplicates: SET по всем колонкам из запроса, включая ключ
+  const upsert = (user, child, box) =>
+    as(user, `INSERT INTO skill_state (child_id, skill, box, attempts, correct) VALUES ($1, 'count-5', $2, 3, 1)
+              ON CONFLICT (child_id, skill) DO UPDATE SET child_id = EXCLUDED.child_id, skill = EXCLUDED.skill,
+                box = EXCLUDED.box, attempts = EXCLUDED.attempts, correct = EXCLUDED.correct`, [child, box]);
+
+  await check('upsert навыка работает: вставка, затем обновление', async () => {
+    await upsert(A, kid, 1);
+    await upsert(A, kid, 3);
+    eq((await as(A, `SELECT box FROM skill_state WHERE child_id = $1`, [kid])).rows, [{ box: 3 }]);
+  });
+
+  await check('право на ключевые колонки не переносит строку на чужого ребёнка', async () => {
+    await denied(as(A, `UPDATE skill_state SET child_id = $1 WHERE child_id = $2`, [other, kid]));
+    eq(await count(A, `skill_state WHERE child_id = '${kid}'`), 1);
+  });
+
+  await check('повтор прохождения из офлайна — ignore-duplicates без права на UPDATE', async () => {
+    const id = '00000000-0000-4000-8000-00000000abcd';
+    const send = () =>
+      as(A, `INSERT INTO lesson_runs (id, child_id, lesson_id, started_at) VALUES ($1, $2, 'l', now()) ON CONFLICT (id) DO NOTHING`, [id, kid]);
+    await send();
+    await send();
+    eq(await count(A, 'lesson_runs'), 1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+await group('версия текста согласия с языком', async (db) => {
+  await setup(db);
+
+  await check('версия без префикса языка не публикуется', async () => {
+    await denied(db.query(`INSERT INTO consent_texts (scope, version, locale, body_sha256) VALUES ('telemetry', 'v9', 'ru', sha256('x'::bytea))`));
+    await denied(db.query(`INSERT INTO consent_texts (scope, version, locale, body_sha256) VALUES ('telemetry', 'en-9', 'ru', sha256('x'::bytea))`));
+    await db.query(`INSERT INTO consent_texts (scope, version, locale, body_sha256) VALUES ('telemetry', 'en-9', 'en', sha256('x'::bytea))`);
   });
 });
 
