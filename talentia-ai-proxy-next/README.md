@@ -10,7 +10,8 @@ Copy `.env.example` to `.env.local` and set at least:
 |----------|---------|
 | `DEEPSEEK_API_KEY` | Tali chat (`/api/tali`) |
 | `SUPABASE_URL` | Supabase project URL — required to verify user JWTs on `/api/tali`, `/api/tts`, `/api/report*`. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key — used server-side only with `auth.getUser(jwt)`; never expose to clients. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key — used server-side only with `auth.getUser(jwt)` and `auth.admin.deleteUser`; never expose to clients. |
+| `SUPABASE_ANON_KEY` | Public anon key — `/api/account/delete` calls the database **as the user** (their JWT), so RLS and `transfer_child_ownership` check the rights, not this code. |
 | `TALENTIA_API_SECRET` | Optional: when set, `/api/ping` requires header `X-Talentia-Secret`. **Not** used for Tali, TTS, or report routes (those use Supabase JWT). |
 | `ALLOWED_CORS_ORIGINS` | Comma-separated list of browser `Origin` values allowed for CORS. Native apps send no Origin — they are not CORS-restricted. |
 | `ELEVENLABS_API_KEY` / `ELEVENLABS_VOICE_ID` | TTS (`/api/tts`), языки `ru` / `en` / `ky` (для `ky` — мультиязычный голос; опционально `ELEVENLABS_VOICE_ID_KY`) |
@@ -28,7 +29,8 @@ Mobile app: set `EXPO_PUBLIC_BACKEND_URL` to this deployment’s origin. Authent
   `Access-Control-Allow-Origin` via `vercel.json` headers — that would override the
   allowlist with `*` and undo this protection).
 - **Rate limit** (`src/lib/ratelimit.ts`, `@upstash/ratelimit` sliding window, per client IP):
-  **20 requests/minute** on `/api/tali` and `/api/report*`, **10 requests/minute** on `/api/tts`.
+  **20 requests/minute** on `/api/tali` and `/api/report*`, **10 requests/minute** on `/api/tts`,
+  **3 requests / 10 minutes** on `/api/account/delete`.
   **Fail-closed** in production — if Upstash isn't configured, requests get a 503 instead of
   running unmetered; outside production it fails open with a warning so local dev isn't blocked.
 - **Input validation**: every route body is validated with Zod (`src/lib/reportSchemas.ts` and
@@ -66,3 +68,32 @@ curl -s -w "\n%{http_code}\n" -H "X-Talentia-Secret: mysecret" http://localhost:
 ```
 
 Production deploys assume **Vercel** (trusted `x-vercel-forwarded-for` for rate-limit keys).
+
+## Account deletion — `POST /api/account/delete`
+
+Deletes the calling adult's account (`sub` from the verified JWT only — the body has no
+user id). Logic: `src/lib/accountDeletion.ts`; spec: `PARENT.md` in the repo root.
+
+- The body carries a decision for **every** child the caller owns: `delete` or
+  `transfer` to an active second guardian. Missing, extra or duplicate decisions → 409,
+  nothing happens.
+- Transfers run first, as the user (`transfer_child_ownership` under their JWT). If one
+  fails, the account is **not** deleted.
+- Then `auth.admin.deleteUser(id, false)` — a **hard** delete. Database triggers delete
+  the children that were not transferred and pseudonymize the consent and access logs;
+  a soft delete would skip them and leave the data.
+- The token must be issued within the last 5 minutes: the app refreshes the session
+  right after the level-2 gate (biometrics / PIN). Older token → 401.
+
+```json
+{ "confirm": "DELETE_MY_ACCOUNT",
+  "children": [ { "childId": "…", "action": "transfer", "newOwnerId": "…" },
+                { "childId": "…", "action": "delete" } ] }
+```
+
+## Consent checks on the server
+
+`has_consent` in the database answers only to a user with access to the child. The proxy,
+using the service-role key, has no user — it must call **`consent_active(child, scope)`**,
+which is granted to `service_role` only. Never "fix" a `false` from `has_consent` by
+widening its grants.

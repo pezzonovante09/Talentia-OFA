@@ -34,6 +34,19 @@ export const ratelimitTts =
       })
     : null;
 
+/**
+ * Account deletion — 3 req/10 min per IP. Deletion is rare; a burst means a script
+ * or a stolen session, not a parent.
+ */
+export const ratelimitAccount =
+  redis !== null
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(3, "10 m"),
+        prefix: "talentia:account",
+      })
+    : null;
+
 /** True on Vercel production deployments (or when NODE_ENV is explicitly production). */
 function isProductionEnv(): boolean {
   return process.env.VERCEL_ENV === "production" || process.env.NODE_ENV === "production";
