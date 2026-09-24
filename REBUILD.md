@@ -24,12 +24,16 @@
 Код фундамента: `src/types/task.ts` и `src/types/aba.ts` — схемы;
 `src/domain/mastery.ts` — освоение и повторение; `src/domain/abaPrompting.ts`,
 `abaCriterion.ts`, `abaTokens.ts` — логика ABA; `src/domain/companionSituations.ts` —
-реплики; `src/design/tokens.ts` — токены; `src/assets/registry.ts` — вектор.
-Гарды: `src/data/__tests__/corpus.test.ts` и `src/assets/__tests__/registry.test.ts`.
+реплики; `src/domain/consent.ts` и `parentReport.ts` — согласия и отчёт родителю;
+`src/design/tokens.ts` — токены; `src/assets/registry.ts` — вектор. Схема детей и
+родителей — `supabase/migrations/20260924120000_children_and_guardians.sql`.
+Гарды: `src/data/__tests__/corpus.test.ts` и `src/assets/__tests__/registry.test.ts`;
+RLS проверяется `npm run test:db` — все миграции в PGlite, без Supabase и Docker.
 
-**Ближайшие работы:** родительская часть — журнал согласий, сборка отчёта, миграция под `children` и
-`child_guardians`; токены ABA и родительской тональности с тестами на контраст;
-экраны шести форматов.
+**Ближайшие работы:** токены ABA и родительской тональности с тестами на контраст;
+экраны шести форматов. Родительской части не хватает гейта (биометрия, PIN с
+перемешанной раскладкой и хешем, окно свежести) и функции удаления аккаунта с
+service-role — она же псевдонимизирует журнал согласий.
 
 **Открытые вопросы** — в конце этого файла.
 
@@ -672,6 +676,10 @@ Rive советовался, когда предполагался художн�
       освоения, поддержание с возвратом в обучение, жетоны с обменом при полной доске и
       ротация подкрепителей (`src/domain/aba*.ts`). Проверено `aba-pedagogy-specialist`,
       найденное исправлено, трактовки внесены в `ABA.md`
+- [x] **Родительская часть: данные** — журнал согласий, сборка отчёта из локальных
+      данных, миграция `children` · `child_guardians` · инвайты · `skill_state` ·
+      `lesson_runs` · `consent_events`; 28 сценариев RLS в `supabase/tests/`.
+      Миграция в облако не накатывалась
 - [ ] Анимация Tali кодом по карте реакций
 - [ ] Локализация — в самом конце
 
