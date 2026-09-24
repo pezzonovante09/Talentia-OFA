@@ -238,6 +238,7 @@ shadow, no text, no watermark.
 | `tali-point.svg` | указывает | `goggles pulled down over the eyes, one tiny arm pointing to the side` |
 | `tali-cheer.svg` | похвала | `jumping with joy, both tiny arms up, tail lifted` |
 | `tali-write.svg` | вписывает | `leaning over an open atlas, holding a pencil in one tiny arm` |
+| `tali-idle.svg` | спокоен | `standing calmly and relaxed, both tiny arms resting down at the sides, mouth closed in a soft small smile, eyes looking up and to the right, goggles pushed up on the forehead` |
 
 В каждой повторяйте абзац про заполнение кадра — модель о нём забывает.
 
@@ -245,7 +246,7 @@ shadow, no text, no watermark.
 
 От них зависит, соберётся ли анимация:
 
-1. **Одинаковый размер кадра** у всех шести.
+1. **Одинаковый размер кадра** у всех семи.
 2. **Одинаковое положение и масштаб персонажа** внутри кадра. Если на одной позе
    Tali по центру, а на другой смещён — при переключении он прыгает.
 3. **Голова одного размера** во всех позах.
