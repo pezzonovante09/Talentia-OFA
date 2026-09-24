@@ -1,10 +1,13 @@
 import {
+  PARTICIPATION_AWARD,
   addTokens,
   awardForTrial,
+  isBoardFull,
   tryExchange,
   newSchedule,
   reinforcerChoices,
   type Rng,
+  type TokenBoard,
 } from '../abaTokens';
 
 /** Детерминированный генератор: перебирает значения по кругу. */
@@ -51,10 +54,24 @@ describe('жетоны за пробу', () => {
     expect(award('independent', 'baseline')).toEqual({ tokens: 0, feedback: 'neutral' });
   });
 
-  it('разогрев на освоенной цели — жетон за каждый верный', () => {
+  it('разогрев на освоенной цели — жетон за первый верный, дальше похвала', () => {
     const s = newSchedule(cycle(0.99));
-    const a = awardForTrial('independent', 'high_p', 'mastered', s, rng);
-    expect(a.tokens).toBe(1);
+    const first = awardForTrial('independent', 'high_p', 'mastered', s, rng, false);
+    const second = awardForTrial('independent', 'high_p', 'mastered', s, rng, true);
+    expect([first.feedback, second.feedback]).toEqual(['token_praise', 'praise']);
+  });
+
+  it('разогрев и участие не заполняют доску на 5–6 без ответа по цели', () => {
+    const s = newSchedule(rng);
+    let paid = false;
+    let board: TokenBoard = { size: 3, earned: 0 };
+    for (let i = 0; i < 2; i += 1) {
+      const a = awardForTrial('independent', 'high_p', 'mastered', s, rng, paid);
+      paid = paid || a.tokens === 1;
+      board = addTokens(board, a.tokens);
+    }
+    board = addTokens(board, PARTICIPATION_AWARD.tokens);
+    expect(isBoardFull(board)).toBe(false);
   });
 
   it('на освоенной цели — прерывисто, через 2–4 самостоятельных', () => {

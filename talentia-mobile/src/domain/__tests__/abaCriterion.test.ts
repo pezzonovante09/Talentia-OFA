@@ -201,27 +201,30 @@ describe('поддержание', () => {
     expect({ gap: s.maintenanceGapIndex, due: isMaintenanceDue(s, 16) }).toEqual({ gap: 0, due: true });
   });
 
-  it('ответ с подсказкой L1 возвращает старт на L1, а не к полной модели', () => {
+  it('после первого провала пересдача снова без подсказки — самостоятельный ответ возможен', () => {
     const s = applyMaintenanceProbe(
       { ...mastered(), startPromptLevel: 0, lastSuccessfulPromptLevel: 0 },
       maint({ response: 'prompted', promptLevelUsed: 1 }),
       11,
     );
-    expect(s.startPromptLevel).toBe(1);
+    expect({ старт: s.startPromptLevel, успех: s.lastSuccessfulPromptLevel }).toEqual({ старт: 0, успех: 1 });
+    const retake = applyMaintenanceProbe(s, maint(), 12);
+    expect({ фаза: retake.phase, провалов: retake.maintenanceFailsInRow }).toEqual({
+      фаза: 'maintenance',
+      провалов: 0,
+    });
   });
 
-  it('провал без ответа возвращает к уровню последнего успеха', () => {
-    const s = applyMaintenanceProbe(
-      { ...mastered(), startPromptLevel: 0, lastSuccessfulPromptLevel: 1 },
-      maint({ response: 'no_response', promptLevelUsed: 3 }),
-      11,
-    );
-    expect(s.startPromptLevel).toBe(1);
+  it('возврат в обучение — со старта на уровне последнего успеха, а не с полной модели', () => {
+    let s: AbaTargetState = { ...mastered(), startPromptLevel: 0, lastSuccessfulPromptLevel: 0 };
+    s = applyMaintenanceProbe(s, maint({ response: 'prompted', promptLevelUsed: 1 }), 11);
+    s = applyMaintenanceProbe(s, maint({ response: 'no_response', promptLevelUsed: 3 }), 12);
+    expect({ фаза: s.phase, старт: s.startPromptLevel }).toEqual({ фаза: 'acquisition', старт: 1 });
   });
 
-  it('подсказка взрослого (L4) не становится стартовым уровнем', () => {
+  it('подсказка взрослого (L4) не становится уровнем приложения', () => {
     const s = applyMaintenanceProbe(mastered(), maint({ response: 'prompted', promptLevelUsed: 4 }), 11);
-    expect(s.startPromptLevel).toBe(3);
+    expect(s.lastSuccessfulPromptLevel).toBe(3);
   });
 
   it('два провала подряд — цель возвращается в обучение, серия заново', () => {
@@ -234,7 +237,10 @@ describe('поддержание', () => {
       фаза: s.phase,
       серия: s.sessionsAtCriterion,
       перенос: s.generalizationProbes.length,
-    }).toEqual({ фаза: 'acquisition', серия: 0, перенос: 0 });
+      доли: s.recentIndependentRates,
+    }).toEqual({ фаза: 'acquisition', серия: 0, перенос: 0, доли: [] });
+    // старая доля со времён освоения не открывает пробы переноса без новых данных
+    expect(needsGeneralizationProbe(s)).toBe(false);
   });
 
   it('успех между провалами обнуляет счёт', () => {

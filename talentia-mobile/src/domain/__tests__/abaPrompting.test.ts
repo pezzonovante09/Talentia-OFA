@@ -50,6 +50,16 @@ describe('подъём внутри пробы', () => {
   it('проба переноса измеряет, а не учит: подсказки нет', () => {
     expect(nextEscalation({ kind: 'generalization' }, 0, 1)).toEqual({ kind: 'close' });
   });
+
+  it('поддержание, перенос после коррекции и коррекция подсказку дают', () => {
+    expect(
+      (['maintenance', 'transfer', 'correction'] as const).map((kind) => nextEscalation({ kind }, 0, 1)),
+    ).toEqual([
+      { kind: 'present', level: 1 },
+      { kind: 'present', level: 1 },
+      { kind: 'present', level: 1 },
+    ]);
+  });
 });
 
 describe('затухание между пробами', () => {
@@ -182,6 +192,15 @@ describe('задержка', () => {
     expect(s.currentDelayMs).toBe(3000);
   });
 
+  it('блоки на подсказанном старте задержку не двигают', () => {
+    const prompted = Array.from({ length: 5 }, () =>
+      trial({ startPromptLevel: 3, promptLevelUsed: 3, response: 'prompted', emittedBeforePrompt: false }),
+    );
+    let s = initialTargetState(progressive);
+    for (let i = 0; i < 5; i += 1) s = applyBlockToDelay(s, progressive, prompted);
+    expect(s.currentDelayMs).toBe(1000);
+  });
+
   it('постоянная задержка не меняется', () => {
     expect(applyBlockToDelay(initialTargetState(target), target, clean()).currentDelayMs).toBe(3000);
   });
@@ -219,6 +238,13 @@ describe('критерий остановки', () => {
     const cut = trial({ response: 'interrupted' });
     expect(isBreakdown([failAtMax(), cut, failAtMax(), failAtMax()], target.id)).toBe(true);
   });
+
+  it('в цепочке серия считается по звену: удачные первые звенья её не рвут', () => {
+    const ok = (stepId: string) => trial({ stepId });
+    const fail = () => ({ ...failAtMax(), stepId: 'st-3' });
+    const runs = [0, 1, 2].flatMap(() => [ok('st-1'), ok('st-2'), fail()]);
+    expect(isBreakdown(runs, target.id)).toBe(true);
+  });
 });
 
 describe('зависимость от подсказки', () => {
@@ -235,6 +261,21 @@ describe('зависимость от подсказки', () => {
 
   it('пробует и промахивается — это не зависимость, а неумение', () => {
     expect(isPromptDependent(at(0), sessions(tries))).toBe(false);
+  });
+
+  it('пробы с подсказанного старта доли не размывают и не накручивают', () => {
+    // пять проб со старта L0 — самостоятельные, остальные с L2 — подсказанные по построению
+    const own = (): SessionTrials[] =>
+      [1, 2, 3].map((index) => ({
+        index,
+        trials: [
+          ...Array.from({ length: 2 }, () => trial()),
+          ...Array.from({ length: 5 }, () =>
+            trial({ startPromptLevel: 2, promptLevelUsed: 2, response: 'prompted', emittedBeforePrompt: false }),
+          ),
+        ],
+      }));
+    expect(isPromptDependent(at(0), own())).toBe(false);
   });
 
   it('без проб со старта L0 судить не по чему', () => {
@@ -287,5 +328,21 @@ describe('инварианты записи пробы', () => {
 
   it('четыре предъявления — противоречие', () => {
     expect(trialInvariantErrors(trial({ presentations: 4 }))).toContain('больше трёх предъявлений одного SD');
+  });
+
+  it('самостоятельный ответ без попытки до подсказки — противоречие', () => {
+    expect(trialInvariantErrors(trial({ emittedBeforePrompt: false }))).toContain(
+      'самостоятельный ответ без попытки до подсказки',
+    );
+  });
+
+  it('проба поддержания, начатая с подсказки, — противоречие: её провал назначен заранее', () => {
+    const t = trial({ kind: 'maintenance', startPromptLevel: 1, promptLevelUsed: 1, response: 'prompted' });
+    expect(trialInvariantErrors(t)).toContain('измерительная проба начата с подсказки');
+  });
+
+  it('попытка до подсказки при старте с полной модели — противоречие', () => {
+    const t = trial({ startPromptLevel: 3, promptLevelUsed: 3, response: 'prompted', emittedBeforePrompt: true });
+    expect(trialInvariantErrors(t)).toContain('попытка до подсказки при старте с полной модели');
   });
 });

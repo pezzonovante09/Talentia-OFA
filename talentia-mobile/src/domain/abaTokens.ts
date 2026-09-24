@@ -50,9 +50,12 @@ export type TokenAward = {
  * похвала **без** жетона, тёплая и без «но»: приближение на шейпинге обязано
  * подкрепляться, иначе усилие наказывается. Ошибка — нейтральная реакция.
  *
- * Разогрев — жетон за каждый верный: его задача начать сессию с успеха, и
- * прерывистая схема оставила бы успех неоплаченным. Базовая линия не
- * подкрепляется вовсе: иначе она сама становится обучением и перестаёт измерять.
+ * Высоковероятные пробы (разогрев и отвлекающие пробы коррекции) — похвала
+ * за каждый верный, но **жетон один на сессию**: первый. Иначе на полосе 5–6
+ * два жетона разогрева и один за участие заполняют доску из трёх, и обмен
+ * случается без единого ответа по обучаемой цели — жетон обесценивается так
+ * же, как при обмене на неполной доске. Базовая линия не подкрепляется вовсе:
+ * иначе она сама становится обучением и перестаёт измерять.
  */
 export function awardForTrial(
   response: AbaResponse,
@@ -60,13 +63,21 @@ export function awardForTrial(
   phase: AbaPhase,
   schedule: TokenSchedule,
   rng: Rng,
+  /** Жетон за высоковероятную пробу в этой сессии уже выдан. */
+  highPTokenPaid = false,
 ): TokenAward {
   if (kind === 'baseline' || phase === 'baseline') return { tokens: 0, feedback: 'neutral', schedule };
   if (response === 'prompted' || response === 'approximation') return { tokens: 0, feedback: 'praise', schedule };
   if (response !== 'independent') return { tokens: 0, feedback: 'neutral', schedule };
 
-  const continuous = kind === 'high_p' || (phase !== 'mastered' && phase !== 'maintenance');
-  if (continuous) return { tokens: 1, reason: 'independent', feedback: 'token_praise', schedule };
+  if (kind === 'high_p') {
+    return highPTokenPaid
+      ? { tokens: 0, feedback: 'praise', schedule }
+      : { tokens: 1, reason: 'independent', feedback: 'token_praise', schedule };
+  }
+  if (phase !== 'mastered' && phase !== 'maintenance') {
+    return { tokens: 1, reason: 'independent', feedback: 'token_praise', schedule };
+  }
 
   const sinceLast = schedule.sinceLast + 1;
   if (sinceLast < schedule.nextAt) return { tokens: 0, feedback: 'praise', schedule: { ...schedule, sinceLast } };

@@ -154,10 +154,18 @@ function erredBeforePrompt(t: AbaTrial): boolean {
  * Блок без единой ошибки до подсказки — задержка на шаг длиннее. Две подряд
  * ошибки до подсказки — на шаг короче: ребёнок не ждёт, а угадывает, и ему
  * нужна подсказка раньше. Потолок по возрасту. Постоянная задержка не меняется.
+ *
+ * Считаются только пробы со старта L0 — там, где задержка вообще действует. На
+ * подсказанном старте окна «до подсказки» нет, ошибиться до неё невозможно, и
+ * каждый такой блок выглядел бы безошибочным: задержка доросла бы до потолка,
+ * пока цель ещё на полной модели, и самая длинная пауза встретила бы ребёнка
+ * ровно тогда, когда он впервые должен отвечать сам.
  */
 export function applyBlockToDelay(s: AbaTargetState, target: AbaTarget, block: AbaTrial[]): AbaTargetState {
   if (target.delayMode !== 'progressive') return s;
-  const trials = block.filter((t) => t.kind === 'teaching' && t.response !== 'interrupted');
+  const trials = block.filter(
+    (t) => t.kind === 'teaching' && t.startPromptLevel === 0 && t.response !== 'interrupted',
+  );
   if (trials.length === 0) return s;
 
   const twoInRow = trials.some((t, i) => i > 0 && erredBeforePrompt(t) && erredBeforePrompt(trials[i - 1]));
@@ -177,6 +185,9 @@ export const BREAKDOWN_AFTER = 3;
 /**
  * Критерий остановки: три подряд пробы цели без ответа даже на полной модели.
  *
+ * У цепочки серия считается по каждому звену отдельно: провалы третьего звена
+ * перемежаются удачными первыми двумя, и общая серия не собралась бы никогда.
+ *
  * Считаются только обучающие пробы и пробы переноса этой цели. Разогрев и
  * отвлекающие пробы между ними серию не рвут: коррекция после каждой ошибки
  * вставляет отвлекающую пробу освоенной цели, и если бы она рвала серию, три
@@ -187,11 +198,17 @@ export const BREAKDOWN_AFTER = 3;
  * последнее событие сеанса ассоциируется с сеансом.
  */
 export function isBreakdown(sessionTrials: AbaTrial[], targetId: string): boolean {
-  const recent = sessionTrials
-    .filter((t) => t.targetId === targetId && (t.kind === 'teaching' || t.kind === 'transfer'))
-    .filter((t) => t.response !== 'interrupted')
-    .slice(-BREAKDOWN_AFTER);
-  return recent.length === BREAKDOWN_AFTER && recent.every(failedAtMax);
+  const byStep = new Map<string, AbaTrial[]>();
+  for (const t of sessionTrials) {
+    if (t.targetId !== targetId || t.response === 'interrupted') continue;
+    if (t.kind !== 'teaching' && t.kind !== 'transfer') continue;
+    const key = t.stepId ?? '';
+    byStep.set(key, [...(byStep.get(key) ?? []), t]);
+  }
+  return [...byStep.values()].some((trials) => {
+    const recent = trials.slice(-BREAKDOWN_AFTER);
+    return recent.length === BREAKDOWN_AFTER && recent.every(failedAtMax);
+  });
 }
 
 /** Сессия цели для проверки зависимости: сквозной номер и её пробы. */
@@ -200,8 +217,8 @@ export type SessionTrials = { index: number; trials: AbaTrial[] };
 /**
  * Зависимость от подсказки по последним сессиям цели (свежие в конце).
  *
- * Три условия: подсказанных много, самостоятельных мало и — ключевое — среди
- * подсказанных проб со старта L0 ребёнок почти всегда **молчал до подсказки**.
+ * Три условия по пробам со старта L0: подсказанных много, самостоятельных мало
+ * и — ключевое — в подсказанных ребёнок почти всегда **молчал до подсказки**.
  * Не умеющий пробует и ошибается; зависимый ждёт. Пока старт выше L0, одно от
  * другого не отличить, и флаг не ставится.
  *
@@ -214,16 +231,17 @@ export function isPromptDependent(s: AbaTargetState, sessions: SessionTrials[]):
   const window = fresh.slice(-PROMPT_DEPENDENCE.overSessions);
   if (window.length < PROMPT_DEPENDENCE.overSessions) return false;
 
+  // Только старт с L0: на подсказанном старте самостоятельный ответ невозможен по
+  // построению, и доли выполнялись бы сами собой
   const trials = window
     .flatMap((x) => x.trials)
-    .filter((t) => t.kind === 'teaching' && t.response !== 'interrupted');
-  if (trials.length === 0) return false;
+    .filter((t) => t.kind === 'teaching' && t.startPromptLevel === 0 && t.response !== 'interrupted');
+  const promptedTrials = trials.filter((t) => t.response === 'prompted');
+  if (promptedTrials.length < PROMPT_DEPENDENCE.minSilentEvidence) return false;
 
   const independent = trials.filter((t) => t.response === 'independent').length / trials.length;
-  const prompted = trials.filter((t) => t.response === 'prompted').length / trials.length;
-  const fromL0 = trials.filter((t) => t.startPromptLevel === 0 && t.response === 'prompted');
-  if (fromL0.length < PROMPT_DEPENDENCE.minSilentEvidence) return false;
-  const silent = fromL0.filter((t) => !t.emittedBeforePrompt).length / fromL0.length;
+  const prompted = promptedTrials.length / trials.length;
+  const silent = promptedTrials.filter((t) => !t.emittedBeforePrompt).length / promptedTrials.length;
 
   return (
     prompted >= PROMPT_DEPENDENCE.minPromptedRate &&
@@ -252,6 +270,13 @@ export function applyPromptDependence(
   };
 }
 
+/**
+ * Пробы, которые измеряют, а не учат: начинаются всегда без подсказки. Проба
+ * поддержания со старта L1 не может дать самостоятельный ответ, и её провал был
+ * бы назначен заранее.
+ */
+const MEASURING_KINDS: ReadonlySet<AbaTrial['kind']> = new Set(['baseline', 'generalization', 'maintenance']);
+
 /** Противоречие внутри записи пробы. Непустой список — запись нельзя писать в лог. */
 export function trialInvariantErrors(t: AbaTrial): string[] {
   const errors: string[] = [];
@@ -263,6 +288,12 @@ export function trialInvariantErrors(t: AbaTrial): string[] {
   if (t.presentations > MAX_ESCALATIONS_PER_TRIAL + 1) errors.push('больше трёх предъявлений одного SD');
   if (t.response === 'independent' && !t.emittedBeforePrompt) {
     errors.push('самостоятельный ответ без попытки до подсказки');
+  }
+  if (MEASURING_KINDS.has(t.kind) && t.startPromptLevel !== 0) {
+    errors.push('измерительная проба начата с подсказки');
+  }
+  if (t.startPromptLevel >= APP_MAX_PROMPT && t.emittedBeforePrompt) {
+    errors.push('попытка до подсказки при старте с полной модели');
   }
   return errors;
 }

@@ -219,14 +219,16 @@ type GapIndex = AbaTargetState['maintenanceGapIndex'];
  * Итог пробы поддержания.
  *
  * Самостоятельный ответ отодвигает следующую. Всё остальное — провал, и
- * следующая проба на следующей же сессии, со стартом **на уровне, где цель в
- * последний раз была успешна**: если ребёнок ответил с подсказкой L1 — с L1, а
- * не с полной модели. Откат к нулю у ребёнка, который навык почти держит, —
- * регресс, назначенный процедурой.
+ * следующая проба на следующей же сессии — снова **без подсказки**: проба
+ * поддержания измеряет, и со старта L1 самостоятельный ответ был бы невозможен,
+ * а второй провал — назначен заранее. Запоминается только уровень, на котором
+ * ребёнок справился: ответил с L1 — значит L1.
  *
  * Два провала подряд — навык распался: цель возвращается в обучение с
- * непрерывным подкреплением, серия критерия начинается заново. Иначе в данных
- * она оставалась бы «освоенной» без единого обучающего блока.
+ * непрерывным подкреплением и стартом **на уровне последнего успеха**, а не с
+ * полной модели — откат к нулю у ребёнка, который навык почти держит, это
+ * регресс, назначенный процедурой. Серия критерия и история долей начинаются
+ * заново: иначе старая доля со времён освоения сразу открыла бы пробы переноса.
  */
 export function applyMaintenanceProbe(
   s: AbaTargetState,
@@ -249,25 +251,29 @@ export function applyMaintenanceProbe(
   const lastSuccessfulPromptLevel =
     t.response === 'prompted' ? clampToApp(t.promptLevelUsed) : clampToApp(s.lastSuccessfulPromptLevel);
   const fails = s.maintenanceFailsInRow + 1;
-  const reset = {
-    startPromptLevel: lastSuccessfulPromptLevel,
-    lastSuccessfulPromptLevel,
-    consecutiveIndependentAtStart: 0,
-    consecutiveAboveStart: 0,
-    maintenanceGapIndex: 0 as GapIndex,
-  };
 
   if (fails >= MAINTENANCE_FAILS_TO_REACQUIRE) {
     return {
       ...base,
-      ...reset,
       phase: 'acquisition',
+      startPromptLevel: lastSuccessfulPromptLevel,
+      lastSuccessfulPromptLevel,
+      consecutiveIndependentAtStart: 0,
+      consecutiveAboveStart: 0,
+      maintenanceGapIndex: 0,
       maintenanceFailsInRow: 0,
+      recentIndependentRates: [],
       sessionsAtCriterion: 0,
       criterionDays: [],
       exemplarsAtCriterion: [],
       generalizationProbes: [],
     };
   }
-  return { ...base, ...reset, phase: 'maintenance', maintenanceFailsInRow: fails };
+  return {
+    ...base,
+    phase: 'maintenance',
+    lastSuccessfulPromptLevel,
+    maintenanceGapIndex: 0 as GapIndex,
+    maintenanceFailsInRow: fails,
+  };
 }
