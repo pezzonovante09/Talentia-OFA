@@ -12,8 +12,8 @@ import { z } from "zod";
  * доступа заменяются псевдонимами, согласия получают срок хранения.
  */
 
-/** Сколько секунд после выдачи токена он годится для удаления: окно свежести гейта. */
-export const FRESH_TOKEN_SECONDS = 5 * 60;
+/** Сколько секунд после подтверждения кодом из письма можно удалить аккаунт. */
+export const FRESH_OTP_SECONDS = 5 * 60;
 
 /** Больше детей на аккаунт база не допускает. */
 const MAX_CHILDREN = 10;
@@ -25,8 +25,8 @@ const ChildDecisionSchema = z.discriminatedUnion("action", [
 
 /**
  * Тело запроса. `user_id` в нём нет и быть не может: удаляется только владелец
- * JWT. `confirm` — защита от случайного вызова, а не от атаки: от атаки защищают
- * свежий токен и гейт в приложении.
+ * JWT. `confirm` — защита от случайного вызова, а не от атаки: от атаки защищает
+ * код из письма, подтверждённый за последние пять минут.
  */
 export const AccountDeletionBodySchema = z
   .object({
@@ -106,26 +106,42 @@ export async function deleteAccount(
 }
 
 /**
- * Время выдачи токена. Подпись уже проверил `auth.getUser` — здесь только чтение
- * поля `iat` из тела JWT.
+ * Когда пользователь в последний раз подтвердил вход кодом из письма — по claim
+ * `amr` из JWT. Подпись уже проверил `auth.getUser`, здесь только чтение.
+ *
+ * Не `iat`: время выдачи токена обновляется при каждом обновлении сессии, а для
+ * него не нужно ничего, кроме открытого приложения. `amr` хранит время настоящего
+ * входа и при обновлении не меняется.
  */
-export function tokenIssuedAt(jwt: string): number | null {
+export function emailOtpVerifiedAt(jwt: string): number | null {
   const payload = jwt.split(".")[1];
   if (!payload) return null;
   try {
-    const json = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { iat?: unknown };
-    return typeof json.iat === "number" ? json.iat : null;
+    const json = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { amr?: unknown };
+    if (!Array.isArray(json.amr)) return null;
+    const times = json.amr
+      .filter(
+        (e): e is { method: string; timestamp: number } =>
+          typeof e === "object" &&
+          e !== null &&
+          (e as { method?: unknown }).method === "otp" &&
+          typeof (e as { timestamp?: unknown }).timestamp === "number",
+      )
+      .map((e) => e.timestamp);
+    return times.length ? Math.max(...times) : null;
   } catch {
     return null;
   }
 }
 
 /**
- * Свежий ли токен. Гейт уровня 2 в приложении обновляет сессию сразу после
- * подтверждения биометрией или PIN; токен старше пяти минут значит, что
- * подтверждения не было — или телефон с открытой сессией взял кто-то другой.
+ * Подтвердил ли пользователь удаление кодом из письма за последние пять минут.
+ *
+ * Код приходит на почту владельца аккаунта: ребёнок с разблокированным планшетом и
+ * тот, кто унёс сессию, его не получат. Биометрии на устройстве для удаления мало —
+ * она подтверждает устройство, а не взрослого.
  */
-export function isFreshToken(iat: number | null, nowSeconds: number): boolean {
-  if (iat === null) return false;
-  return iat <= nowSeconds + 30 && nowSeconds - iat <= FRESH_TOKEN_SECONDS;
+export function isRecentEmailOtp(verifiedAt: number | null, nowSeconds: number): boolean {
+  if (verifiedAt === null) return false;
+  return verifiedAt <= nowSeconds + 30 && nowSeconds - verifiedAt <= FRESH_OTP_SECONDS;
 }

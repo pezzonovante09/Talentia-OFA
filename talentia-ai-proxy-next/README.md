@@ -82,8 +82,13 @@ user id). Logic: `src/lib/accountDeletion.ts`; spec: `PARENT.md` in the repo roo
 - Then `auth.admin.deleteUser(id, false)` — a **hard** delete. Database triggers delete
   the children that were not transferred and pseudonymize the consent and access logs;
   a soft delete would skip them and leave the data.
-- The token must be issued within the last 5 minutes: the app refreshes the session
-  right after the level-2 gate (biometrics / PIN). Older token → 401.
+- The caller must have signed in **with an email code within the last 5 minutes**
+  (`signInWithOtp` with `shouldCreateUser: false`, then `verifyOtp`). The route reads the
+  time of that sign-in from the JWT `amr` claim — not `iat`, which any session refresh
+  renews without the parent. No recent email code → 401.
+- Rate limit: 3 / 10 min per IP **and** 3 / hour per user.
+- After a 502 with partial success, retry without the children listed in
+  `transferred` — they are no longer the caller's.
 
 ```json
 { "confirm": "DELETE_MY_ACCOUNT",
@@ -93,7 +98,15 @@ user id). Logic: `src/lib/accountDeletion.ts`; spec: `PARENT.md` in the repo roo
 
 ## Consent checks on the server
 
-`has_consent` in the database answers only to a user with access to the child. The proxy,
-using the service-role key, has no user — it must call **`consent_active(child, scope)`**,
-which is granted to `service_role` only. Never "fix" a `false` from `has_consent` by
-widening its grants.
+Anything about a specific child is done **as the user** — `supabaseAsUser(jwt)`
+(`src/lib/supabaseUser.ts`) — never with `supabaseAdmin`, which bypasses RLS and would make
+a `childId` from the request body the only access check.
+
+Before calling DeepSeek or a voice provider for a child, check consent with
+**`hasConsent(asUser, childId, scope)`** (`src/lib/consentCheck.ts`). It calls the database
+`has_consent` under the user's JWT: for a child the user has no access to, the answer is
+always `false`, so a foreign `childId` cannot "borrow" another child's consent. Any error
+means `false`.
+
+`consent_active(child, scope)` is granted to `service_role` only and is for background jobs
+that have no user. Never widen `has_consent`'s grants to "fix" a `false`.

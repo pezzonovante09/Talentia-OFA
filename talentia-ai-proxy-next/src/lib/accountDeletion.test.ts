@@ -4,9 +4,9 @@ import {
   AccountDeletionBodySchema,
   checkDecisions,
   deleteAccount,
-  FRESH_TOKEN_SECONDS,
-  isFreshToken,
-  tokenIssuedAt,
+  emailOtpVerifiedAt,
+  FRESH_OTP_SECONDS,
+  isRecentEmailOtp,
   type AccountDeletionPort,
 } from "./accountDeletion";
 
@@ -128,25 +128,46 @@ describe("deleteAccount", () => {
   });
 });
 
-describe("свежесть токена", () => {
+describe("подтверждение кодом из письма", () => {
   const jwtWith = (payload: object) =>
     `h.${Buffer.from(JSON.stringify(payload)).toString("base64url")}.s`;
+  const now = 1_700_000_000;
 
-  it("читает iat из тела токена", () => {
-    expect(tokenIssuedAt(jwtWith({ iat: 1700000000 }))).toBe(1700000000);
-    expect(tokenIssuedAt("garbage")).toBeNull();
-    expect(tokenIssuedAt(jwtWith({ sub: "x" }))).toBeNull();
+  it("берёт время входа по коду из amr, а не время выдачи токена", () => {
+    const jwt = jwtWith({ iat: now, amr: [{ method: "otp", timestamp: now - 100 }] });
+    expect(emailOtpVerifiedAt(jwt)).toBe(now - 100);
   });
 
-  it("годится только токен не старше пяти минут", () => {
-    const now = 1_700_000_000;
-    expect(isFreshToken(now - 60, now)).toBe(true);
-    expect(isFreshToken(now - FRESH_TOKEN_SECONDS - 1, now)).toBe(false);
-    expect(isFreshToken(null, now)).toBe(false);
+  it("свежий токен после обновления сессии без кода — не подтверждение", () => {
+    // iat свежий, вход был паролем неделю назад: обновление сессии кода не заменяет
+    const jwt = jwtWith({ iat: now, amr: [{ method: "password", timestamp: now - 7 * 86400 }] });
+    expect(isRecentEmailOtp(emailOtpVerifiedAt(jwt), now)).toBe(false);
   });
 
-  it("токен из будущего не принимается", () => {
-    const now = 1_700_000_000;
-    expect(isFreshToken(now + 3600, now)).toBe(false);
+  it("код пятиминутной давности годится, старше — нет", () => {
+    expect(isRecentEmailOtp(now - 60, now)).toBe(true);
+    expect(isRecentEmailOtp(now - FRESH_OTP_SECONDS - 1, now)).toBe(false);
+  });
+
+  it("из нескольких входов берётся последний вход по коду", () => {
+    const jwt = jwtWith({
+      amr: [
+        { method: "otp", timestamp: now - 9000 },
+        { method: "password", timestamp: now - 10 },
+        { method: "otp", timestamp: now - 120 },
+      ],
+    });
+    expect(emailOtpVerifiedAt(jwt)).toBe(now - 120);
+  });
+
+  it("мусор и отсутствие amr — не подтверждение", () => {
+    expect(emailOtpVerifiedAt("garbage")).toBeNull();
+    expect(emailOtpVerifiedAt(jwtWith({ sub: "x" }))).toBeNull();
+    expect(emailOtpVerifiedAt(jwtWith({ amr: "otp" }))).toBeNull();
+    expect(isRecentEmailOtp(null, now)).toBe(false);
+  });
+
+  it("время из будущего не принимается", () => {
+    expect(isRecentEmailOtp(now + 3600, now)).toBe(false);
   });
 });

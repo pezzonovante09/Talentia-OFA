@@ -1,16 +1,16 @@
-import { createClient } from "@supabase/supabase-js";
 import type { NextRequest } from "next/server";
 
 import {
   AccountDeletionBodySchema,
   deleteAccount,
-  isFreshToken,
-  tokenIssuedAt,
+  emailOtpVerifiedAt,
+  isRecentEmailOtp,
   type AccountDeletionPort,
 } from "@/lib/accountDeletion";
 import { corsJson, corsPreflight } from "@/lib/api-cors";
-import { enforceRateLimit, ratelimitAccount } from "@/lib/ratelimit";
+import { enforceRateLimit, ratelimitAccount, ratelimitAccountUser } from "@/lib/ratelimit";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { bearerToken, supabaseAsUser } from "@/lib/supabaseUser";
 import { authJsonError, verifyAuth } from "@/lib/verifyAuth";
 
 export const runtime = "nodejs";
@@ -24,6 +24,12 @@ export async function OPTIONS(req: Request) {
  * второму родителю или удалить. Логика — `src/lib/accountDeletion.ts`.
  *
  * Идентификатор пользователя берётся только из проверенного JWT; в теле его нет.
+ *
+ * Перед вызовом приложение проводит родителя через вход кодом из письма
+ * (`signInWithOtp` без создания пользователя, затем `verifyOtp`) — роут принимает
+ * только JWT, в `amr` которого такой вход не старше пяти минут. Если ответ 502 после
+ * частичного успеха, при повторе приложение убирает из решений детей из
+ * `transferred`: они уже не его.
  */
 export async function POST(req: NextRequest) {
   const limited = await enforceRateLimit(req, ratelimitAccount);
@@ -31,14 +37,16 @@ export async function POST(req: NextRequest) {
   const auth = await verifyAuth(req);
   if (!auth.ok) return authJsonError(req, auth);
 
-  const jwt = (req.headers.get("authorization") ?? "").slice(7).trim();
-  if (!isFreshToken(tokenIssuedAt(jwt), Math.floor(Date.now() / 1000))) {
-    return corsJson({ error: "Re-authentication required" }, 401, req);
+  const perUser = await enforceRateLimit(req, ratelimitAccountUser, auth.userId);
+  if (perUser) return perUser;
+
+  const jwt = bearerToken(req);
+  if (!isRecentEmailOtp(emailOtpVerifiedAt(jwt), Math.floor(Date.now() / 1000))) {
+    return corsJson({ error: "Email code confirmation required" }, 401, req);
   }
 
-  const url = process.env.SUPABASE_URL?.trim();
-  const anonKey = process.env.SUPABASE_ANON_KEY?.trim();
-  if (!url || !anonKey || !supabaseAdmin) {
+  const asUser = supabaseAsUser(jwt);
+  if (!asUser || !supabaseAdmin) {
     return corsJson({ error: "Server is not configured" }, 500, req);
   }
 
@@ -47,12 +55,8 @@ export async function POST(req: NextRequest) {
     return corsJson({ error: "Invalid request", details: parsed.error.flatten() }, 400, req);
   }
 
-  // Под JWT пользователя: права на передачу и список своих детей проверяет база
-  // через RLS и функции, а не этот код.
-  const asUser = createClient(url, anonKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-    global: { headers: { Authorization: `Bearer ${jwt}` } },
-  });
+  // Список своих детей и передачи — под JWT пользователя: права проверяет база
+  // через RLS и функции, а не этот код. Service-role — только для удаления.
   const admin = supabaseAdmin;
 
   const port: AccountDeletionPort = {
