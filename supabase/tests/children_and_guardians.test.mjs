@@ -20,7 +20,8 @@ const ANON_SIGNIN = { id: '00000000-0000-4000-8000-0000000000ff', anonymous: tru
 
 /** Общая подготовка группы: пользователи, действующие тексты согласий, помощники. */
 async function setup(db) {
-  await db.exec(`INSERT INTO auth.users VALUES ('${A}'), ('${B}'), ('${C}'), ('${S}'), ('${D}'), ('${ANON_SIGNIN.id}')`);
+  await db.exec(`INSERT INTO auth.users (id, email) VALUES ('${A}', 'anna@example.kg'), ('${B}', 'bakyt@example.kg'),
+    ('${C}', 'c@example.kg'), ('${S}', 'spec@example.kg'), ('${D}', 'dana@example.kg'), ('${ANON_SIGNIN.id}', NULL)`);
   await db.exec(`INSERT INTO consent_texts (scope, version, is_current) VALUES
     ('account_local', 'v1', true), ('cloud_sync', 'v1', true), ('companion_ai', 'v1', true),
     ('voice_asr', 'v1', true), ('telemetry', 'v1', true)`);
@@ -419,8 +420,15 @@ await group('удаление аккаунта владельца без пер�
     eq(await adminCount('children'), 0);
     eq(await adminCount('skill_state'), 0);
     eq(await adminCount('child_guardians'), 0);
-    eq(await adminCount('child_access_log'), 0);
     eq(await count(B, 'children'), 0);
+  });
+
+  await check('журнал доступа переживает удаление ребёнка — под псевдонимами и со сроком', async () => {
+    const rows = (await admin(`SELECT child_id, user_id, retain_until IS NOT NULL AS kept FROM child_access_log`)).rows;
+    if (rows.length === 0) throw new Error('журнал доступа удалён вместе с ребёнком');
+    if (rows.some((r) => r.child_id === kid || r.user_id === A)) throw new Error('идентификаторы не заменены');
+    eq(rows.every((r) => r.kept), true, 'срок хранения:');
+    eq(new Set(rows.map((r) => r.child_id)).size, 1, 'один псевдоним ребёнка:');
   });
 
   await check('согласия остаются под псевдонимами: у ребёнка и у взрослого разные', async () => {
@@ -488,7 +496,10 @@ await group('сроки хранения', async (db) => {
     await admin(`INSERT INTO invite_attempts (user_id, at) VALUES ($1, now() - interval '2 days')`, [C]);
     await as(C, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'v1', 'signup', now())`);
     await admin(`DELETE FROM auth.users WHERE id = $1`, [C]); // псевдоним и срок
+    // «прошло три года»: срок в прошлое защитный триггер не пускает — отключаем его только здесь
+    await admin(`ALTER TABLE consent_events DISABLE TRIGGER consent_events_append_only`);
     await admin(`UPDATE consent_events SET retain_until = now() - interval '1 day' WHERE retain_until IS NOT NULL`);
+    await admin(`ALTER TABLE consent_events ENABLE TRIGGER consent_events_append_only`);
 
     await admin(`SELECT public.purge_expired()`);
     eq((await admin(`SELECT lesson_id FROM lesson_runs`)).rows, [{ lesson_id: 'new' }]);
@@ -496,6 +507,196 @@ await group('сроки хранения', async (db) => {
     eq(await adminCount('invite_attempts'), 0);
     eq(await adminCount(`consent_events WHERE scope = 'account_local'`), 0);
     eq(await adminCount(`consent_events WHERE scope = 'cloud_sync'`), 1, 'действующее согласие осталось:');
+  });
+});
+
+// ---------------------------------------------------------------------------
+await group('передача: согласие переданного ребёнка и семь дней на своё', async (db) => {
+  const { as, admin, makeChild, link, count } = await setup(db);
+  const kid = await makeChild();
+  await link(kid, B);
+  await as(A, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'v1', 'signup', now())`);
+  await as(A, `SELECT public.transfer_child_ownership($1, $2)`, [kid, B]);
+  await admin(`DELETE FROM auth.users WHERE id = $1`, [A]);
+
+  await check('согласие живого ребёнка не получает срок хранения при удалении аккаунта', async () => {
+    const rows = (await admin(`SELECT scope, retain_until IS NULL AS forever FROM consent_events ORDER BY seq`)).rows;
+    eq(rows, [
+      { scope: 'cloud_sync', forever: true },
+      { scope: 'account_local', forever: false },
+    ]);
+  });
+
+  await check('очистка через три года согласие живого ребёнка не трогает', async () => {
+    await admin(`ALTER TABLE consent_events DISABLE TRIGGER consent_events_append_only`);
+    await admin(`UPDATE consent_events SET retain_until = now() - interval '1 day' WHERE retain_until IS NOT NULL`);
+    await admin(`ALTER TABLE consent_events ENABLE TRIGGER consent_events_append_only`);
+    await admin(`SELECT public.purge_expired()`);
+    eq((await admin(`SELECT scope FROM consent_events`)).rows, [{ scope: 'cloud_sync' }]);
+  });
+
+  await check('семь дней новый владелец пишет на согласии прежнего', async () => {
+    eq((await as(B, `SELECT public.has_consent($1, 'cloud_sync') AS ok`, [kid])).rows[0].ok, true);
+    await as(B, `INSERT INTO skill_state (child_id, skill, box) VALUES ($1, 'a', 1)`, [kid]);
+  });
+
+  await check('после семи дней без своего согласия запись закрыта', async () => {
+    await admin(`UPDATE children SET consent_grace_until = now() - interval '1 minute' WHERE id = $1`, [kid]);
+    eq((await as(B, `SELECT public.has_consent($1, 'cloud_sync') AS ok`, [kid])).rows[0].ok, false);
+    await denied(as(B, `INSERT INTO skill_state (child_id, skill, box) VALUES ($1, 'b', 1)`, [kid]));
+    await denied(as(B, `UPDATE children SET display_name = 'Новое' WHERE id = $1`, [kid]));
+  });
+
+  await check('своё согласие — и запись снова открыта', async () => {
+    await as(B, `SELECT public.grant_cloud_sync($1, 'v1', 'biometric')`, [kid]);
+    await as(B, `INSERT INTO skill_state (child_id, skill, box) VALUES ($1, 'b', 1)`, [kid]);
+    eq(await count(B, 'skill_state'), 2);
+  });
+
+  await check('срок на согласие из клиента не продлить', async () => {
+    await denied(as(B, `UPDATE children SET consent_grace_until = now() + interval '1 year' WHERE id = $1`, [kid]));
+  });
+});
+
+// ---------------------------------------------------------------------------
+await group('заявки: владелец видит, кто просится', async (db) => {
+  const { as, admin, makeChild, invite, redeem, count, adminCount } = await setup(db);
+  const kid = await makeChild();
+  eq(await redeem(B, await invite(kid)), 'pending_approval');
+
+  await check('владелец видит заявку с замаскированной почтой', async () => {
+    const rows = (await as(A, `SELECT user_id, email_hint FROM public.pending_requests($1)`, [kid])).rows;
+    eq(rows, [{ user_id: B, email_hint: 'b***@example.kg' }]);
+  });
+
+  await check('заявки не видит никто, кроме владельца', async () => {
+    await denied(as(B, `SELECT * FROM public.pending_requests($1)`, [kid]));
+    await denied(as(C, `SELECT * FROM public.pending_requests($1)`, [kid]));
+    await denied(as(null, `SELECT * FROM public.pending_requests($1)`, [kid]));
+  });
+
+  await check('неподтверждённая заявка истекает через 72 часа и освобождает место', async () => {
+    await admin(`UPDATE child_guardians SET created_at = now() - interval '73 hours' WHERE status = 'pending'`);
+    await admin(`SELECT public.purge_expired()`);
+    eq(await adminCount(`child_guardians WHERE user_id = '${B}'`), 0);
+    eq((await as(A, `SELECT event FROM child_access_log WHERE user_id = $1 ORDER BY id`, [B])).rows.map((r) => r.event), [
+      'requested',
+      'expired',
+    ]);
+  });
+
+  await check('отзыв доступа сервисом пишется как отзыв, а не как «вышел сам»', async () => {
+    eq(await redeem(D, await invite(kid)), 'pending_approval');
+    await as(A, `SELECT public.approve_guardian($1, $2)`, [kid, D]);
+    await admin(`DELETE FROM child_guardians WHERE user_id = $1`, [D]);
+    eq((await as(A, `SELECT event FROM child_access_log WHERE user_id = $1 ORDER BY id DESC LIMIT 1`, [D])).rows, [
+      { event: 'revoked' },
+    ]);
+    eq(await count(D, 'children'), 0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+await group('запрос второго родителя на отзыв', async (db) => {
+  const { as, makeChild, link } = await setup(db);
+  const kid = await makeChild();
+  await link(kid, B);
+  await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('companion_ai', 'grant', $1, 'v1', 'pin', now())`, [kid]);
+
+  await check('второй родитель подаёт запрос, владелец его видит', async () => {
+    await as(B, `SELECT public.request_consent_revoke($1, 'companion_ai')`, [kid]);
+    await as(B, `SELECT public.request_consent_revoke($1, 'companion_ai')`, [kid]); // повтор не плодит запросов
+    eq((await as(A, `SELECT scope, requested_by FROM consent_revoke_requests WHERE resolved_at IS NULL`)).rows, [
+      { scope: 'companion_ai', requested_by: B },
+    ]);
+    eq((await as(B, `SELECT count(*)::int AS n FROM consent_revoke_requests`)).rows[0].n, 1);
+  });
+
+  await check('владельцу просить некого, посторонний не просит', async () => {
+    await denied(as(A, `SELECT public.request_consent_revoke($1, 'companion_ai')`, [kid]));
+    await denied(as(C, `SELECT public.request_consent_revoke($1, 'companion_ai')`, [kid]));
+    eq((await as(C, `SELECT count(*)::int AS n FROM consent_revoke_requests`)).rows[0].n, 0);
+  });
+
+  await check('владелец оставляет согласие — запрос закрыт как «оставлено»', async () => {
+    await denied(as(B, `SELECT public.dismiss_consent_revoke($1, 'companion_ai')`, [kid]));
+    await as(A, `SELECT public.dismiss_consent_revoke($1, 'companion_ai')`, [kid]);
+    eq((await as(B, `SELECT resolution FROM consent_revoke_requests`)).rows, [{ resolution: 'kept' }]);
+  });
+
+  await check('владелец отзывает — запрос закрывается сам', async () => {
+    await as(B, `SELECT public.request_consent_revoke($1, 'companion_ai')`, [kid]);
+    await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES ('companion_ai', 'revoke', $1, 'v1', 'pin', now())`, [kid]);
+    eq((await as(B, `SELECT resolution FROM consent_revoke_requests ORDER BY id`)).rows, [
+      { resolution: 'kept' },
+      { resolution: 'revoked' },
+    ]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+await group('журналы нельзя переписать даже в обход RLS', async (db) => {
+  const { as, admin, makeChild } = await setup(db);
+  const kid = await makeChild();
+  const other = await makeChild(C, 'Другой');
+
+  await check('срок хранения не сдвинуть в прошлое, чтобы потом удалить', async () => {
+    await denied(admin(`UPDATE consent_events SET retain_until = '2000-01-01' WHERE child_id = $1`, [kid]));
+    await denied(admin(`UPDATE child_access_log SET retain_until = '2000-01-01' WHERE child_id = $1`, [kid]));
+  });
+
+  await check('согласие не перевесить на другого живого ребёнка', async () => {
+    await denied(admin(`UPDATE consent_events SET child_id = $1 WHERE child_id = $2`, [other, kid]));
+  });
+
+  await check('псевдоним не переписать второй раз', async () => {
+    await as(A, `SELECT public.revoke_cloud_sync($1, 'v1', 'pin')`, [kid]);
+    await denied(admin(`UPDATE consent_events SET child_id = gen_random_uuid() WHERE actor_id = $1 AND scope = 'cloud_sync'`, [A]));
+  });
+
+  await check('журнал доступа не правится и не удаляется до срока', async () => {
+    await denied(admin(`UPDATE child_access_log SET event = 'left'`));
+    await denied(admin(`DELETE FROM child_access_log`));
+  });
+
+  await check('TRUNCATE журналов запрещён всем', async () => {
+    await denied(admin(`TRUNCATE consent_events`));
+    await denied(admin(`TRUNCATE child_access_log`));
+  });
+});
+
+// ---------------------------------------------------------------------------
+await group('проверка согласия и порядок событий', async (db) => {
+  const { as, makeChild, link } = await setup(db);
+  const kid = await makeChild();
+  await link(kid, B);
+
+  await check('о согласии чужого ребёнка не узнать', async () => {
+    eq((await as(A, `SELECT public.has_consent($1, 'cloud_sync') AS ok`, [kid])).rows[0].ok, true);
+    eq((await as(C, `SELECT public.has_consent($1, 'cloud_sync') AS ok`, [kid])).rows[0].ok, false);
+  });
+
+  await check('бывший второй родитель тоже не узнаёт', async () => {
+    await as(B, `DELETE FROM child_guardians WHERE user_id = $1`, [B]);
+    eq((await as(B, `SELECT public.has_consent($1, 'cloud_sync') AS ok`, [kid])).rows[0].ok, false);
+  });
+
+  await check('пачка [дал, отозвал] одним запросом: решает серверный порядок, а не время устройства', async () => {
+    // время устройства у grant позже — по нему «победил» бы grant
+    await as(A, `INSERT INTO consent_events (scope, action, child_id, text_version, confirmed_by, client_at) VALUES
+      ('telemetry', 'grant', $1, 'v1', 'pin', now()),
+      ('telemetry', 'revoke', $1, 'v1', 'pin', now() - interval '1 hour')`, [kid]);
+    eq((await as(A, `SELECT public.has_consent($1, 'telemetry') AS ok`, [kid])).rows[0].ok, false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+await group('прохождения из будущего', async (db) => {
+  const { as, makeChild } = await setup(db);
+  const kid = await makeChild();
+
+  await check('датой из будущего от очистки не уйти', async () => {
+    await denied(as(A, `INSERT INTO lesson_runs (child_id, lesson_id, started_at) VALUES ($1, 'l', now() + interval '2 years')`, [kid]));
   });
 });
 
