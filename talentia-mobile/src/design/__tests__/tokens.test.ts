@@ -13,21 +13,7 @@ import {
   type RegionId,
   type Scheme,
 } from '../tokens';
-
-/** Относительная яркость по WCAG 2.1. */
-function luminance(hex: string): number {
-  const h = hex.replace('#', '');
-  const channel = (i: number) => {
-    const c = parseInt(h.slice(i, i + 2), 16) / 255;
-    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  };
-  return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
-}
-
-function contrast(a: string, b: string): number {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-  return (hi + 0.05) / (lo + 0.05);
-}
+import { contrast, luminance } from '../contrast';
 
 const REGIONS: RegionId[] = ['numbers', 'words', 'nature', 'logic'];
 const SCHEMES: Scheme[] = ['light', 'dark'];
