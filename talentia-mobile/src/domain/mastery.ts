@@ -75,6 +75,27 @@ export function applyOutcome(s: SkillState, outcome: Outcome, lesson: number): S
   return { ...base, box, correctInRow };
 }
 
+/**
+ * Все попытки навыка за один урок — одним шагом коробки.
+ *
+ * Коробка — это интервал до следующей встречи, а не счётчик верных. В уроке часто
+ * два-три задания на один навык, и если двигать коробку на каждое, безошибочный
+ * первый урок сразу даёт «освоено»: навык уезжает в четвёртую коробку и не
+ * всплывает двенадцать уроков, хотя его ни разу не вспоминали после перерыва.
+ * Поэтому за урок коробка сдвигается не больше чем на шаг, и решает худший исход:
+ * хоть раз показали ответ — первая коробка; хоть раз с подсказкой — на месте;
+ * всё сам — на одну дальше. Счётчики попыток и серия верных копятся как обычно.
+ */
+export function applyLessonOutcomes(s: SkillState, outcomes: readonly Outcome[], lesson: number): SkillState {
+  if (outcomes.length === 0) return s;
+  const counted = outcomes.reduce((acc, o) => applyOutcome(acc, o, lesson), s);
+  const forBox = outcomes.filter((o) => o !== 'transfer_correct');
+  let box = s.box;
+  if (forBox.includes('helped')) box = 1;
+  else if (forBox.length > 0 && !forBox.includes('hinted')) box = Math.min(4, s.box + 1) as Box;
+  return { ...counted, box };
+}
+
 /** Освоен ли навык: дошёл до последней коробки. */
 export function isMastered(s: SkillState): boolean {
   return s.box === 4;

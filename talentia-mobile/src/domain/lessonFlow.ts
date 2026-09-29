@@ -140,8 +140,25 @@ export function activeResponseAfterShow(format: TaskFormat): 'tap_shown' | 'tap_
 // Проба переноса
 // ---------------------------------------------------------------------------
 
-/** Задание в очереди урока. */
-export type QueuedTask = { task: Task; transferProbe?: true };
+/**
+ * Задание в очереди урока. `review` — повторение навыка из пройденного урока,
+ * подмешанное сборкой (`lessonAssembly.assembleLesson`).
+ */
+export type QueuedTask = { task: Task; transferProbe?: true; review?: true };
+
+/** Самая длинная серия заданий одного формата подряд. */
+export function maxFormatRun(queue: readonly QueuedTask[]): number {
+  let best = 0;
+  let run = 0;
+  queue.forEach((q, i) => {
+    run = i > 0 && queue[i - 1].task.format === q.task.format ? run + 1 : 1;
+    best = Math.max(best, run);
+  });
+  return best;
+}
+
+/** «Не больше двух одного формата подряд» (FORMATS.md, правила на корпус). */
+export const MAX_FORMAT_RUN = 2;
 
 /**
  * Через сколько других заданий возвращается показанное. «Через 1–2 других»:
@@ -158,6 +175,10 @@ export const PROBE_AFTER = 2;
  * сразу ведёт к показу. Запрет FORMATS.md касается повтора того же экрана
  * **сразу**, отложенная проба с перемешанными позициями разрешена.
  *
+ * Проба того же формата, что показанное задание, и через два других может встать
+ * третьей подряд. Тогда она идёт через одно — «через одно-два» это допускает; если
+ * серию не разбить и так, остаётся через два: проба важнее правила вёрстки урока.
+ *
  * Возвращает новую очередь; если проба уже была или задание не в зачёт — прежнюю.
  */
 export function scheduleTransferProbe(
@@ -169,9 +190,16 @@ export function scheduleTransferProbe(
   if (!shown || shown.transferProbe || !countsTowardMastery(shown.task)) return [...queue];
   if (queue.some((q) => q.transferProbe)) return [...queue];
   const others = queue.length - shownIndex - 1;
-  const at = shownIndex + 1 + Math.min(PROBE_AFTER, others);
   const probe: QueuedTask = { task: reshuffle(shown.task, rng), transferProbe: true };
-  return [...queue.slice(0, at), probe, ...queue.slice(at)];
+  const insertAt = (after: number) => {
+    const at = shownIndex + 1 + after;
+    return [...queue.slice(0, at), probe, ...queue.slice(at)];
+  };
+  const preferred = insertAt(Math.min(PROBE_AFTER, others));
+  const allowed = Math.max(MAX_FORMAT_RUN, maxFormatRun(queue));
+  if (maxFormatRun(preferred) <= allowed || others < PROBE_AFTER) return preferred;
+  const closer = insertAt(PROBE_AFTER - 1);
+  return maxFormatRun(closer) <= allowed ? closer : preferred;
 }
 
 function shuffled<T>(items: readonly T[], rng: Rng): T[] {
