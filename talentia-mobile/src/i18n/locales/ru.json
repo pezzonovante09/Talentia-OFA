@@ -465,6 +465,13 @@
     "lessonNotFound": "Урок не найден."
   },
   "content": {
+    "scene": {
+      "region-numbers": {
+        "trio": "три дерева рядом",
+        "single": "одно дерево",
+        "many": "много деревьев"
+      }
+    },
     "common": {
       "one": "один",
       "two": "два",

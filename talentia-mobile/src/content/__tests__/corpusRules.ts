@@ -195,13 +195,23 @@ export const RULES = {
     // Зоны в долях кадра, потому что сцена растягивается по экрану; координата
     // вне [0,1] — зона за кадром, куда ребёнок не может попасть. r < 0.1 —
     // палец пятилетки промахивается мимо зоны, и ошибка оказывается моторной.
-    title: 'point: ровно одна верная цель, r ≥ 0.1, x и y в [0, 1]',
+    // Названия зон — не украшение: тап по зоне её озвучивает, и скринридер читает
+    // каждую зону отдельным элементом (SCREENS.md, 3.2 и 6). Две зоны с одним
+    // названием звучат одинаково — ребёнок не знает, в какую попал.
+    title: 'point: 2–4 цели, ровно одна верная, r ≥ 0.1, x и y в [0, 1], у каждой цели своё название',
     check: (corpus) =>
       tasksOf(corpus).flatMap(({ task, at }) => {
         if (task.format !== 'point') return [];
         const bad: string[] = [];
+        const n = task.targets.length;
+        if (n < 2 || n > 4) bad.push(`${at}: целей ${n}, нужно 2–4`);
         const correct = task.targets.filter((z) => z.correct === true).length;
         if (correct !== 1) bad.push(`${at}: верных целей ${correct}, нужна ровно одна`);
+        const labels = task.targets.map((z) => z.labelKey);
+        for (const z of task.targets) {
+          if (!isNonEmptyString(z.labelKey)) bad.push(`${at}: цель ${z.id} без названия — нечего озвучить`);
+        }
+        if (new Set(labels).size !== labels.length) bad.push(`${at}: у целей повторяются названия`);
         for (const z of task.targets) {
           // `!(a >= b)` вместо `a < b`, чтобы NaN тоже был нарушением.
           if (!(z.r >= 0.1)) bad.push(`${at}: цель ${z.id} r=${z.r} < 0.1`);

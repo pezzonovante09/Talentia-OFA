@@ -50,7 +50,7 @@ function lessonPicture(): Lesson {
         scene: 'region-numbers',
         targets: [
           { id: 'x', x: 0, y: 1, r: 0.1, correct: true, labelKey: k('a.l1.t2.x') },
-          { id: 'y', x: 1, y: 0, r: 0.2, correct: false },
+          { id: 'y', x: 1, y: 0, r: 0.2, correct: false, labelKey: k('a.l1.t2.y') },
         ],
       },
       {
@@ -124,7 +124,7 @@ function lessonText(): Lesson {
         ],
       },
       { id: 'fx-b-l1-t3', skill: 'spell-word', format: 'build', ...t(3), answer: 'дом' },
-      { id: 'fx-b-l1-t4', skill: 'find-on-map', format: 'point', ...t(4), scene: 'region-words', targets: [{ id: 'z', x: 0.5, y: 0.5, r: 0.15, correct: true }] },
+      { id: 'fx-b-l1-t4', skill: 'find-on-map', format: 'point', ...t(4), scene: 'region-words', targets: [{ id: 'z', x: 0.5, y: 0.5, r: 0.15, correct: true, labelKey: k('b.l1.t4.z') }, { id: 'w', x: 0.2, y: 0.2, r: 0.15, correct: false, labelKey: k('b.l1.t4.w') }] },
       { id: 'fx-b-l1-t5', skill: 'match-words', format: 'match', presentation: 'text', ...t(5), pairs: [{ id: 'p1', left: { labelKey: k('b.l1.t5.l1') }, right: { labelKey: k('b.l1.t5.r1') } }, { id: 'p2', left: { labelKey: k('b.l1.t5.l2') }, right: { labelKey: k('b.l1.t5.r2') } }] },
       { id: 'fx-b-l1-t6', skill: 'order-words', format: 'order', presentation: 'text', ...t(6), items: [{ id: 'a', labelKey: k('b.l1.t6.a'), position: 1 }, { id: 'b', labelKey: k('b.l1.t6.b'), position: 0 }] },
       { id: 'fx-b-l1-t7', skill: 'sort-words', format: 'group', presentation: 'text', ...t(7), groups: [{ id: 'g1', labelKey: k('b.l1.t7.g1') }, { id: 'g2', labelKey: k('b.l1.t7.g2') }], items: [{ id: 'a', labelKey: k('b.l1.t7.a'), groupId: 'g1' }, { id: 'b', labelKey: k('b.l1.t7.b'), groupId: 'g2' }] },
@@ -197,7 +197,7 @@ function corpusWithShare(total: number, choose: number): Corpus {
   const tasks: Task[] = Array.from({ length: total }, (_, i) =>
     i < choose
       ? simpleChoose(`c${i}`)
-      : { id: `p${i}`, skill: 's', format: 'point', promptKey: 'content.fx.p', hintKey: 'content.fx.h', scene: 's', targets: [{ id: 'z', x: 0.5, y: 0.5, r: 0.2, correct: true }] },
+      : { id: `p${i}`, skill: 's', format: 'point', promptKey: 'content.fx.p', hintKey: 'content.fx.h', scene: 's', targets: [{ id: 'z', x: 0.5, y: 0.5, r: 0.2, correct: true, labelKey: 'content.fx.z' }, { id: 'w', x: 0.1, y: 0.1, r: 0.1, correct: false, labelKey: 'content.fx.w' }] },
   );
   const topic: Topic = {
     id: 't',
@@ -293,6 +293,31 @@ describe('гард корпуса: point', () => {
     const c = goodCorpus();
     taskOf(c, 0, 'point').targets[0].r = 0.09;
     expectRed('point', c, 'r=0.09');
+  });
+
+  it('ловит цель без названия', () => {
+    const c = goodCorpus();
+    taskOf(c, 0, 'point').targets[1].labelKey = '  ';
+    expectRed('point', c, 'без названия');
+  });
+
+  it('ловит одинаковые названия целей', () => {
+    const c = goodCorpus();
+    const t = taskOf(c, 0, 'point');
+    t.targets[1].labelKey = t.targets[0].labelKey;
+    expectRed('point', c, 'повторяются названия');
+  });
+
+  it('ловит одну цель и пять целей', () => {
+    const one = goodCorpus();
+    const t1 = taskOf(one, 0, 'point');
+    t1.targets = [t1.targets.find((z) => z.correct)!];
+    expectRed('point', one, 'целей 1');
+    const five = goodCorpus();
+    const t5 = taskOf(five, 0, 'point');
+    const extra = (i: number) => ({ id: `e${i}`, x: 0.5, y: 0.5, r: 0.1, correct: false, labelKey: k(`a.l1.t2.e${i}`) });
+    t5.targets = [...t5.targets, extra(1), extra(2), extra(3)];
+    expectRed('point', five, 'целей 5');
   });
 
   it('ловит NaN в радиусе', () => {
