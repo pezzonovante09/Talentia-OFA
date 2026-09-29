@@ -34,6 +34,32 @@ export const ratelimitTts =
       })
     : null;
 
+/**
+ * Account deletion — 3 req/10 min per IP. Deletion is rare; a burst means a script
+ * or a stolen session, not a parent.
+ */
+export const ratelimitAccount =
+  redis !== null
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(3, "10 m"),
+        prefix: "talentia:account",
+      })
+    : null;
+
+/**
+ * Account deletion per user — 3 req/hour, keyed by the verified user id. The IP
+ * limit alone lets one stolen session retry from many addresses.
+ */
+export const ratelimitAccountUser =
+  redis !== null
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(3, "1 h"),
+        prefix: "talentia:account:user",
+      })
+    : null;
+
 /** True on Vercel production deployments (or when NODE_ENV is explicitly production). */
 function isProductionEnv(): boolean {
   return process.env.VERCEL_ENV === "production" || process.env.NODE_ENV === "production";
@@ -71,6 +97,8 @@ function clientIp(req: NextRequest): string {
 export async function enforceRateLimit(
   req: NextRequest,
   limiter: Ratelimit | null,
+  /** Ключ окна; по умолчанию IP клиента. Для лимита на пользователя — его id из проверенного JWT. */
+  key?: string,
 ): Promise<NextResponse | null> {
   if (!limiter) {
     if (isProductionEnv()) {
@@ -89,9 +117,9 @@ export async function enforceRateLimit(
     );
     return null;
   }
-  const ip = clientIp(req);
+  const identifier = key ?? clientIp(req);
   try {
-    const { success, limit, remaining, reset } = await limiter.limit(ip);
+    const { success, limit, remaining, reset } = await limiter.limit(identifier);
     if (!success) {
       return NextResponse.json(
         { error: "Too many requests" },

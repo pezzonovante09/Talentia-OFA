@@ -1,27 +1,15 @@
-import {
-  filterTasksForProfile,
-  getLesson,
-  getWorldForLesson,
-  withSpacedReviewTasks,
-} from '../worlds';
+import { filterTasksForProfile, getLesson } from '../worlds';
 import type { LessonTask } from '../worlds';
 
+/**
+ * Чистые функции выборки заданий. Проверки, опиравшиеся на конкретные уроки
+ * прежнего корпуса, убраны вместе с ним; инварианты нового корпуса живут в
+ * corpus.test.ts.
+ */
 describe('worlds data helpers', () => {
-  it('getLesson returns a known lesson', () => {
-    const lesson = getLesson('jungle-add-1');
-    expect(lesson).toBeDefined();
-    expect(lesson?.id).toBe('jungle-add-1');
-    expect(lesson?.tasks.length).toBeGreaterThan(0);
-  });
 
   it('getLesson returns undefined for unknown id', () => {
     expect(getLesson('no-such-lesson')).toBeUndefined();
-  });
-
-  it('getWorldForLesson resolves world for lesson', () => {
-    const world = getWorldForLesson('jungle-add-1');
-    expect(world).toBeDefined();
-    expect(world?.id).toBe('jungle');
   });
 
   it('filterTasksForProfile standard mode excludes special_aba when standard exists', () => {
@@ -93,13 +81,4 @@ describe('worlds data helpers', () => {
     ).toEqual(['b']);
   });
 
-  it('withSpacedReviewTasks injects a prior-lesson task on every 3rd lesson', () => {
-    const lesson = getLesson('meadow-c5-l3');
-    expect(lesson).toBeDefined();
-    if (!lesson) return;
-    const filtered = filterTasksForProfile(lesson.tasks, null);
-    const withReview = withSpacedReviewTasks(lesson.id, filtered, null);
-    expect(withReview.length).toBe(filtered.length + 1);
-    expect(withReview.some((t) => t.id.startsWith('review__'))).toBe(true);
-  });
 });

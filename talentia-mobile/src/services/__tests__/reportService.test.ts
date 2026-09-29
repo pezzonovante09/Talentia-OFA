@@ -1,3 +1,27 @@
+/**
+ * getWorldStats — чистая агрегация по темам мира.
+ *
+ * Мир берётся из фикстуры, а не из корпуса: прежняя версия проверяла
+ * `jungle` из реального контента и падала, как только контент удалили.
+ * Агрегация от наполнения курса не зависит, и тест не должен зависеть тоже.
+ */
+jest.mock('../../data/worlds', () => ({
+  worlds: [
+    {
+      id: 'fixture-world',
+      nameKey: 'x',
+      descKey: 'x',
+      biome: 'b',
+      accentColor: '#000000',
+      ageBands: ['7'],
+      topics: [
+        { id: 'fixture-addition', nameKey: 'x', subject: 'math', lessons: [] },
+        { id: 'fixture-reading', nameKey: 'x', subject: 'russian', lessons: [] },
+      ],
+    },
+  ],
+}));
+
 import { getWorldStats } from '../reportService';
 import type { TopicProgress } from '../../store/progressStore';
 
@@ -8,8 +32,8 @@ describe('getWorldStats', () => {
 
   it('aggregates accuracy by raw subject key (localized server-side) for known world with topic progress', () => {
     const topics: Record<string, TopicProgress> = {
-      'jungle-addition': {
-        topicId: 'jungle-addition',
+      'fixture-addition': {
+        topicId: 'fixture-addition',
         skill: 0,
         difficulty: 1,
         correctStreak: 0,
@@ -19,7 +43,7 @@ describe('getWorldStats', () => {
         totalAttempts: 10,
       },
     };
-    const result = getWorldStats('jungle', topics);
+    const result = getWorldStats('fixture-world', topics);
     expect(result).not.toBeNull();
     expect(result!.totalCorrect).toBe(8);
     expect(result!.totalAttempts).toBe(10);
@@ -29,7 +53,7 @@ describe('getWorldStats', () => {
   });
 
   it('returns zeros when world exists but no matching topic progress', () => {
-    const result = getWorldStats('jungle', {});
+    const result = getWorldStats('fixture-world', {});
     expect(result).not.toBeNull();
     expect(result!.totalCorrect).toBe(0);
     expect(result!.totalAttempts).toBe(0);

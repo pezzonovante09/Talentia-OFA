@@ -1,0 +1,661 @@
+# Генерация ассетов Talentia
+
+Пошаговый гайд. Направление — «Живая гуашь», плоские фигуры со сплошной заливкой
+и толстым контуром. Решения и обоснования — в `REBUILD.md`.
+
+Инструменты: **Recraft** для всего, что должно быть вектором; **Nano Banana**
+(Google AI Studio, бесплатно) для предметов к заданиям.
+
+---
+
+## 0. Настройка, один раз
+
+Создайте в Recraft **проект** — он держит общие настройки для всех генераций.
+
+### Цвета бренда
+
+Вбейте ровно эти. Recraft будет удерживать палитру, и ассеты сойдутся с кодом.
+
+```
+#2A1A12   контур и текст
+#FFF3E3   фон приложения
+#FFFFFF   карточки
+#FFE6C7   брюхо, вложенные блоки
+#3FC08A   тело Tali
+#2FA24E   зелёная тень, Живой лес
+#FFC42E   награда, гогглы
+#0E8FBF   Побережье слов, стёкла
+#D93A1E   внимание, сумка
+#5A34C4   основное действие
+#F2B705   Числовая долина
+#12855A   верно
+```
+
+### Модели
+
+| Что генерируем | Модель | Тип стиля |
+|---|---|---|
+| Пробный кадр, Tali, иконки | **Recraft V4.1 Vector** | Vector illustration |
+| Четыре панорамы | **Recraft V4.1 Pro Vector** | Vector illustration |
+| Иконки интерфейса | Recraft V4.1 Vector | **Icon** |
+
+Не берите «Digital illustration» — она даёт мягкие переходы, которые выпадут
+из направления.
+
+### Прозрачный фон
+
+Включать для **Tali, жителей, иконок и предметов**. Для панорам не нужен.
+
+---
+
+## Шаг 1. Калибровка стиля
+
+**Это самый важный шаг. Не пропускайте его.** Без него четыре панорамы, персонаж
+и сотня предметов окажутся из разных миров, и переделывать придётся всё.
+
+Сгенерируйте один простой предмет и гоняйте, пока не понравится:
+
+```
+A single apple, flat vector cut-out style, thick uniform dark outline,
+completely flat fills, no gradients, no texture, no shadows,
+children's picture-book applique look.
+```
+
+**Что оценивать:**
+
+- толщина контура — она должна быть одинаковой по всему силуэту, без утончений;
+- заливка ровная, без намёка на градиент и текстуру;
+- форма упрощённая, но узнаваемая;
+- никаких теней под предметом.
+
+Когда кадр устраивает — **сохраните его как Style** (Style Lock, стиль по образцу).
+Дальше каждая генерация ссылается на этот стиль.
+
+Расход: примерно 50 кредитов.
+
+---
+
+## Главное правило: плотность — это узор, а не анатомия
+
+Две крайности, в которые эти промпты уже успели свалиться, и обе одинаково плохи.
+
+**Первая партия вышла пустой.** В промпте стояло «NO shading», «a few simple round
+trees» и «нижняя четверть кадра пустая» — панорамы получились по 22–60 фигур, на
+экране это читается как залитая форма. Я тогда приравнял плоскую аппликацию к малому
+числу фигур, а это разные вещи.
+
+**Вторая вышла реалистичной.** Исправляя первую, я добавил Tali щитки вдоль спины,
+пластины живота, когти, складки на сгибах, ноздрю и надбровную дугу. Плотность
+появилась — но щитки и надбровная дуга на тираннозавре и есть настоящий тираннозавр.
+Плотность набиралась анатомией.
+
+Верное правило между ними:
+
+> **Форма остаётся простой и мультяшной. Богатство даёт узор поверх формы.**
+
+Так работает Чарли Харпер, и он сам называл это «минимальным реализмом»: зверь сведён
+к нескольким чистым геометрическим формам, а сцена насыщена повторяющимися мотивами —
+рядами точек, полосами, насечками, чешуёй-орнаментом. Эрика Карла из ориентиров
+убрал: у него коллаж из крашеной бумаги, и он тянет в фактурность, то есть в реализм.
+
+Но у персонажа есть рычаг сильнее орнамента — **пропорции**. Мультяшность даёт
+не большая голова, а маленькое тело: голова в половину роста, туловище заметно
+меньше головы, ноги короткими тумбами, глаза каждый в треть ширины головы с
+белком и двумя бликами, морда отдельной накладкой другого цвета, румянец
+овалами. Пока сложение обычное, сколько ни навешивай узора, выйдет динозавр —
+просто головастый.
+
+Практическая проверка для Tali: **если персонаж мог бы попасть в энциклопедию
+динозавров — промпт неверен.** Правильный Tali собран из больших мягких овалов,
+пальцы у него скруглённые подушечки, а не когти, зубов не больше одного и тот
+тупой. Детализацию несут очки с заклёпками, сумка со строчкой и пряжкой, ровный
+ряд шевронов вдоль спины как печатный узор на ткани — то есть костюм и орнамент,
+а не животное.
+
+Для панорам то же самое: пять планов и сорок элементов набираются повторением
+простых мотивов, а не приближением к фотографии. Никакой дымки, мазков, мягких
+теней и природной нерегулярности — узор ровный и намеренный, как на печатной бумаге.
+
+---
+
+## Шаг 2. Tali, шесть поз
+
+### Кто такой Tali
+
+**Тираннозавр-исследователь.** Не абстрактный динозавр: силуэт ти-рекса узнаётся
+залитым в чёрный за долю секунды, и это первое требование к запоминаемому
+персонажу.
+
+**Крошечные ручки — главная черта, и она не декоративная.** Ти-рекс физически
+не дотягивается, не удерживает, не может сосчитать на пальцах — их два. Поэтому
+ему нужен ребёнок. Концепция «ребёнок помогает Tali» перестаёт быть сценарной
+условностью и становится свойством тела персонажа.
+
+Три правила запоминаемости, по убыванию важности:
+
+1. **Силуэт.** Залейте фигуру чёрным — должна узнаваться. Большая голова,
+   мелкие ручки, тяжёлый хвост дают это сразу.
+2. **Один крючок.** Черта, которую называют первой. Здесь — ручки. Гогглы
+   вторичны.
+3. **Преувеличенные пропорции.** Голова 35–40% роста. Реалистичные пропорции
+   у детского персонажа всегда читаются скучно.
+
+### Почему не листом из шести поз
+
+Лист 1024 px делит кадр на шесть, каждой позе достаётся около 340 px — персонаж
+выходит мелким по построению.
+
+**Генерируйте по одной позе на кадр.** Сначала главная поза крупно и до идеала,
+затем она становится **образцом-изображением** для остальных пяти: Recraft V4.1
+принимает картинку на вход, и персонаж держится от неё надёжнее, чем от текста.
+
+### Поза 1: эталон
+
+Формат **1:1**, прозрачный фон, ссылка на сохранённый стиль.
+
+```
+A cute cartoon dinosaur mascot named Tali: a friendly baby T-Rex, full body,
+standing and waving hello. Chibi proportions, clean flat vector sticker art.
+
+STYLE: flat vector cartoon, like a modern children's sticker or a mascot logo.
+Crisp solid shapes with hard edges. NO gradients, NO airbrush, NO soft glow,
+NO glossy highlights, NO texture, NO rendering.
+
+PROPORTIONS — chibi. This is what makes it read as a cartoon, get it right first:
+- the head is HALF the total height, a big round ball;
+- the body is small and plump and clearly SMALLER than the head;
+- legs are short stubby tubes, feet are small rounded blobs;
+- arms are tiny and short, hands are small rounded mitts;
+- the tail is short, thick, and curls slightly upward;
+- the whole silhouette is a soft egg: wide at the head, narrow at the feet.
+
+FACE — the main source of cuteness:
+- two enormous round eyes, each about one third of the head width, set wide
+  apart and low on the face;
+- each eye has a white sclera, a large dark iris filling most of it, and TWO
+  round white highlight dots, one big and one small;
+- a separate rounded muzzle shape in a contrasting colour laid over the lower
+  face, like a wide soft heart;
+- a big open happy smile inside the muzzle, with a small pink tongue and
+  exactly two tiny rounded teeth pointing down;
+- two soft oval blush patches on the cheeks;
+- two tiny nostril dots;
+- no eyebrows, no eyelids, no brow ridge, no nose bridge, no cheekbones.
+
+DECORATION — flat motifs only, nothing anatomical:
+- a row of small rounded triangular spikes along the top of the head and down
+  the back and tail, in a contrasting colour, evenly spaced and all alike;
+- a cream belly panel as one clean rounded shape with three or four gentle
+  curved lines across it;
+- a scattering of plain round spots on the head, back and tail;
+- small cream oval toe-nubs on each foot.
+
+NOT REALISTIC. Absolutely no: muscle definition, rendered scales, skin texture,
+wrinkles, folds at joints, visible ribs, sharp claws, rows of sharp teeth, long
+jaw, heavy brow, correct dinosaur anatomy, menacing posture. If it could appear
+in a dinosaur encyclopaedia it is wrong. It should look like a plush toy.
+
+OUTLINE: a thick dark outline in #2A1A12 around the whole silhouette, and
+thinner lines of the same colour for the shapes inside it. Rounded ends,
+no tapering, no sketchy strokes.
+
+VOLUME: where a shape needs depth, use exactly two flat steps of the same
+colour with a hard edge between them. No blending, no soft shading.
+
+COLOURS: body green #3FC08A with darker green #2FA24E for the spots and the
+shadow step, cream #FFE6C7 for the belly panel and toe-nubs, yellow #FFC42E
+for the muzzle and the spikes, red #D93A1E for the tongue and the blush.
+
+ACCESSORIES, small and simple, they must not break up the silhouette: round
+yellow goggles pushed up on the forehead, and a small red satchel on a strap
+across the chest.
+
+The character FILLS THE FRAME: head near the top edge, feet near the bottom
+edge. Tight crop, very small margins. Transparent background, no ground
+shadow, no text, no watermark.
+```
+
+Доводите эту позу, пока не понравится всё: пропорции, морда, толщина контура.
+**Остальные пять наследуют её, поэтому на эталон кредитов не жалейте.**
+
+**Если есть под рукой картинка с нужными пропорциями — грузите её образцом,
+а не описывайте словами.** Recraft V4.1 принимает изображение на вход, и чиби-
+пропорции держатся от образца несравнимо надёжнее, чем от текста: «голова в
+половину роста» модель понимает как угодно, картинку — однозначно. Образец
+задаёт сложение и посадку головы, а стиль всё равно придёт из Style Lock,
+поэтому градиенты и залаченный блеск с образца не перетекут.
+
+### Позы 2–6: от образца
+
+Для каждой — та же генерация, но **с эталоном на входе как image reference**,
+и меняется только описание позы:
+
+| Файл | Поза | Что писать вместо `standing and waving hello` |
+|---|---|---|
+| `tali-hello.svg` | приветствие | это и есть эталон |
+| `tali-found.svg` | нашёл | `holding up a rolled map in both tiny arms, excited, leaning forward` |
+| `tali-puzzled.svg` | сомневается | `head tilted, one tiny arm scratching the chin, puzzled` |
+| `tali-point.svg` | указывает | `goggles pulled down over the eyes, one tiny arm pointing to the side` |
+| `tali-cheer.svg` | похвала | `jumping with joy, both tiny arms up, tail lifted` |
+| `tali-write.svg` | вписывает | `leaning over an open atlas, holding a pencil in one tiny arm` |
+| `tali-idle.svg` | спокоен | `standing calmly and relaxed, both tiny arms resting down at the sides, mouth closed in a soft small smile, eyes looking up and to the right, goggles pushed up on the forehead` |
+
+В каждой повторяйте абзац про заполнение кадра — модель о нём забывает.
+
+### Требования к набору
+
+От них зависит, соберётся ли анимация:
+
+1. **Одинаковый размер кадра** у всех семи.
+2. **Одинаковое положение и масштаб персонажа** внутри кадра. Если на одной позе
+   Tali по центру, а на другой смещён — при переключении он прыгает.
+3. **Голова одного размера** во всех позах.
+
+Проверка: положите шесть файлов друг на друга в редакторе. Голова и ноги должны
+совпасть.
+
+### Проверка силуэта
+
+Залейте готовую фигуру сплошным чёрным и уменьшите до 24 px. Если не узнаётся —
+пропорции недостаточно преувеличены: увеличивайте голову и уменьшайте ручки.
+
+Расход: примерно 60 кредитов — эталон дороже, остальные дешевле.
+
+---
+
+## Шаг 3. Четыре панорамы регионов
+
+**Pro Vector**, формат **16:9 ландшафтный**, фон не прозрачный, ссылка на стиль.
+
+### Почему ландшафт, а не вертикаль
+
+Панорама не заполняет экран целиком. Она встаёт в два горизонтальных места:
+
+- **полоса региона в шапке урока** — примерно 390×286, то есть широкая лента;
+- **карта региона** — горизонтальная лента, которая прокручивается вбок.
+
+Вектор тянется без потерь, но **композиция не тянется**: вертикальную сцену в широкой
+полосе придётся обрезать сверху и снизу, и от неё останется середина. Обратное работает —
+из широкой панорамы полоса вырезается свободно.
+
+### Безопасные зоны
+
+Выведены из вёрстки экрана, не из общих соображений:
+
+- **нижняя четверть спокойная** — там стоит Tali и висит его реплика;
+- **важное не у самых краёв** — телефоны разной ширины обрежут бока по-разному;
+- смысловой центр сцены держите в средней трети по горизонтали.
+
+### Промпты: по одному на регион
+
+Промпты короткие: перечисление фигур («круг с точкой в центре», «ряды простых
+кругов») генератор понимает буквально и складывает сцену из перечисленного,
+отчего она выглядит собранной в пэинте. Модель умеет рисовать пейзаж, ей надо
+сказать, ЧТО на нём, а не КАК его строить.
+
+Но три вещи сказать обязательно, иначе картинка выходит сырой:
+
+1. **Контур толстый.** Без явного «BOLD THICK, never thin or delicate» модель
+   рисует тонкую ровную линию флэт-иллюстрации, и панорама оказывается из
+   другого набора, чем персонаж с его жирной обводкой.
+2. **Планы различаются цветом.** Без явного требования модель заливает небо и
+   все холмы одним цветом: в первой пробе `#FEB422` занял 28.7% кадра — небо и
+   вся земля разом, отделённые только ниточкой контура. Глубина обязана идти
+   цветом, потому что светотень нам запрещена стилем персонажа.
+3. **Разнообразие вместо повтора.** Модель охотно клонирует один тюльпан
+   пятнадцать раз. «Several different kinds and sizes» это снимает.
+
+### Главное: образец важнее слов
+
+Слова «в стиле милого мультяшного маскота» модель толкует как угодно.
+**Грузите финального Tali образцом-изображением и пересоберите на нём Style
+Lock.** Именно оттуда переносятся толщина контура, насыщенность заливок и
+скруглённость форм — то, что текстом передаётся хуже всего. Панорамы,
+собранные на Style Lock от персонажа, сходятся с ним без подгонки.
+
+**`region-numbers.svg` — Числовая долина, математика**
+
+```
+A rich, detailed cartoon landscape of a sunny valley: rolling hills, leafy
+trees, a winding stone path, drystone walls, round bushes, meadows of flowers
+and a little stream.
+
+Style: BOLD THICK dark outlines #2A1A12 — heavy confident linework, the same
+chunky weight as a kawaii vinyl sticker, never thin or delicate. Flat vivid
+colours, soft rounded forms. Polished professional vector illustration,
+generously detailed and lovingly finished, warm and inviting.
+
+DEPTH THROUGH COLOUR, never through shading: the sky, the far ground, the
+middle ground and the near ground must EACH be a different colour from the
+palette. Never use one colour for both the sky and the land. Every layer is
+clearly separated by having its own colour, not by a line.
+
+VARIETY: many different kinds of tree, bush and flower, in several different
+greens and several different sizes — never one shape repeated over and over.
+
+Palette: golden yellow #F2B705, amber #C79104, brown #8C6A03, green #2FA24E,
+deep green #1F7A3A, red #D93A1E, cream #FFE6C7. The foreground is a band of
+deep shadowed earth #534723 where a character will stand.
+
+No gradients, no airbrush, no texture, no glossy highlights.
+Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
+No characters, no animals, no people, no text, no frame.
+```
+
+**`region-words.svg` — Побережье слов, язык и чтение**
+
+```
+A rich, detailed cartoon seaside: a striped lighthouse on a grassy headland,
+rolling waves, a wooden jetty, sailing boats with flags, buoys, rocks and
+shells along the shore.
+
+Style: BOLD THICK dark outlines #2A1A12 — heavy confident linework, the same
+chunky weight as a kawaii vinyl sticker, never thin or delicate. Flat vivid
+colours, soft rounded forms. Polished professional vector illustration,
+generously detailed and lovingly finished, warm and inviting.
+
+DEPTH THROUGH COLOUR, never through shading: the sky, the far ground, the
+middle ground and the near ground must EACH be a different colour from the
+palette. Never use one colour for both the sky and the land. Every layer is
+clearly separated by having its own colour, not by a line.
+
+VARIETY: many different kinds of boat, rock, shell and plant, in several
+different sizes — never one shape repeated over and over.
+
+Palette: sea blue #0E8FBF, deep blue #0C6E92, green #2FA24E, deep green
+#1F7A3A, yellow #FFC42E, red #D93A1E, brown #8C6A03, cream #FFE6C7. The
+foreground is a band of deep shadowed wet shore #274F5D where a character
+will stand.
+
+No gradients, no airbrush, no texture, no glossy highlights.
+Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
+No characters, no animals, no people, no text, no frame.
+```
+
+**`region-nature.svg` — Живой лес, окружающий мир**
+
+```
+A rich, detailed cartoon forest: tall pine trees, broad leafy trees, ferns,
+clusters of spotted mushrooms, berry bushes and a mossy fallen log.
+
+Style: BOLD THICK dark outlines #2A1A12 — heavy confident linework, the same
+chunky weight as a kawaii vinyl sticker, never thin or delicate. Flat vivid
+colours, soft rounded forms. Polished professional vector illustration,
+generously detailed and lovingly finished, warm and inviting.
+
+DEPTH THROUGH COLOUR, never through shading: the sky, the far ground, the
+middle ground and the near ground must EACH be a different colour from the
+palette. Never use one colour for both the sky and the land. Every layer is
+clearly separated by having its own colour, not by a line.
+
+VARIETY: many different kinds of tree, fern, mushroom and berry, in several
+different greens and several different sizes — never one shape repeated over
+and over.
+
+IMPORTANT: keep every green deep and rich. No mint, pale or pastel green
+anywhere — a bright mint-green cartoon character will stand in front of this
+forest and must not disappear into it.
+
+Palette: green #2FA24E, deep green #1F7A3A, brown #8C6A03, red #D93A1E,
+yellow #FFC42E, cream #FFE6C7. The foreground is a band of deep shadowed
+forest floor #235330 where a character will stand.
+
+No gradients, no airbrush, no texture, no glossy highlights.
+Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
+No characters, no animals, no people, no text, no frame.
+```
+
+**`region-logic.svg` — Мастерская, логика и задачи**
+
+```
+A rich, detailed cartoon workshop village: cosy cubic houses with tiled roofs,
+a tall smoking chimney, big friendly gears and pipes on the walls, hanging
+lamps, workbenches and stacked crates in the yard.
+
+Style: BOLD THICK dark outlines #2A1A12 — heavy confident linework, the same
+chunky weight as a kawaii vinyl sticker, never thin or delicate. Flat vivid
+colours, soft rounded forms. Polished professional vector illustration,
+generously detailed and lovingly finished, warm and inviting.
+
+DEPTH THROUGH COLOUR, never through shading: the sky, the far ground, the
+middle ground and the near ground must EACH be a different colour from the
+palette. Never use one colour for both the sky and the land. Every layer is
+clearly separated by having its own colour, not by a line.
+
+VARIETY: many different kinds of house, gear, pipe, lamp and crate, in several
+different sizes — never one shape repeated over and over.
+
+Palette: violet #9671DB, deep violet #6F49B0, red #D93A1E, yellow #FFC42E,
+brown #8C6A03, cream #FFE6C7. The foreground is a band of deep shadowed paving
+#3A2560 where a character will stand.
+
+No gradients, no airbrush, no texture, no glossy highlights.
+Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
+No characters, no animals, no people, no text, no frame.
+```
+
+**Нижняя четверть обязана остаться спокойной.** Если модель забила её деталями,
+перегенерируйте: обрезать потом не выйдет, композиция поедет.
+
+Расход: примерно 65 кредитов.
+
+---
+
+## Шаг 4. Иконки интерфейса
+
+Тип стиля **Icon**, прозрачный фон, квадратный формат, ссылка на сохранённый стиль.
+
+### Сколько их нужно
+
+**Шесть, а не двадцать две.** Первоначальный список был перенесён из текущего
+приложения не глядя, хотя оно пересобирается с нуля. Список обязан выводиться
+из новых экранов, а не наследоваться от старых.
+
+Правило: **иконка под несуществующую механику заставляет потом придумывать
+механику, чтобы оправдать иконку.** Это работа задом наперёд, и в текущем
+приложении она уже случилась — двенадцать форматов заданий существуют по два
+экземпляра, потому что их сделали до того, как поняли зачем.
+
+### Промпты
+
+
+**`ui-check.svg`** — верный ответ, пройденный узел карты
+
+```
+A single check mark icon, flat vector cut-out style, thick uniform outline
+in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
+no shadows. Colours: green #12855A mark.
+Centered, filling the frame, square format.
+Transparent background, no text, no letters, no frame, no border.
+```
+
+**`ui-x.svg`** — неверный ответ
+
+```
+A single cross mark icon, flat vector cut-out style, thick uniform outline
+in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
+no shadows. Colours: red #C42020 cross.
+Centered, filling the frame, square format.
+Transparent background, no text, no letters, no frame, no border.
+```
+
+**`ui-lock.svg`** — закрытый узел карты
+
+```
+A single closed padlock icon, flat vector cut-out style, thick uniform outline
+in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
+no shadows. Colours: cream #FFE6C7 body, brown #8C6A03 shackle.
+Centered, filling the frame, square format.
+Transparent background, no text, no letters, no frame, no border.
+```
+
+**`ui-sound.svg`** — «послушать ещё раз»
+
+```
+A single speaker with two sound waves icon, flat vector cut-out style, thick uniform outline
+in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
+no shadows. Colours: gold #FFC42E speaker, warm near-black #2A1A12 waves.
+Centered, filling the frame, square format.
+Transparent background, no text, no letters, no frame, no border.
+```
+
+**`ui-map.svg`** — возврат на карту из урока
+
+```
+A single folded paper map icon, flat vector cut-out style, thick uniform outline
+in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
+no shadows. Colours: cream #FFE6C7 paper, green #2FA24E and blue #0E8FBF markings, red #D93A1E pin.
+Centered, filling the frame, square format.
+Transparent background, no text, no letters, no frame, no border.
+```
+
+**`ui-bulb.svg`** — подсказка в обычном режиме
+
+```
+A single light bulb icon, flat vector cut-out style, thick uniform outline
+in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
+no shadows. Colours: gold #FFC42E glass, cream #FFE6C7 screw base.
+Centered, filling the frame, square format.
+Transparent background, no text, no letters, no frame, no border.
+```
+
+`ui-help` под вопросом: помощь в этом продукте — это Tali. Отдельная иконка
+может оказаться лишней сущностью. Решается, когда соберём экран урока.
+
+### Что отложено и почему
+
+Не генерировать, пока не собраны экраны и не подтверждены механики.
+
+| Иконка | Механика | Почему отложена |
+|---|---|---|
+| `ui-stars` | звёзды урока | рисуются кодом: `StarsRow` — SVG с двумя силуэтами, заполненным и пунктирным |
+| `ui-heart` | жизни | механики нет и не будет: «жизни» — наказание за ошибку, а в системе записано, что наказательных механик нет |
+| `ui-lightning`, `ui-meteor` | быстрый ответ, бонус | поощрение за скорость противоречит ABA-режиму и вообще детям, которым нужно время подумать |
+| `ui-trophy`, `ui-medal`, `ui-level-up` | достижения | экран достижений в новой структуре не подтверждён |
+| `ui-flame`, `ui-streak` | серия дней | не решено, переносим ли стрик; для пятилетки «ты пропустил день» — сомнительная мотивация |
+| `ui-gift`, `ui-egg` | коллекция | коллекция стала атласом, его страницы — иллюстрации находок, а не иконки |
+| `ui-backpack` | снаряжение | механики нет |
+| `ui-book`, `ui-book-bookmark` | урок, тема | на карте узлы, а не книжки |
+| `ui-pencil-paper` | задание на ввод | тип задания виден по самому заданию, метка не нужна |
+
+Расход: примерно 40 кредитов вместо 130.
+
+---
+
+## Шаг 5. Предметы к заданиям
+
+**Это на Nano Banana, а не на Recraft.** Их будут сотни, кредиты на них тратить
+незачем, и растр там допустим.
+
+Google AI Studio даёт до 500 картинок в день бесплатно.
+
+```
+A single {ПРЕДМЕТ} on a plain white background, flat vector cut-out style,
+thick uniform dark outline, flat fills, no gradients, no texture, no shadows,
+children's picture-book applique look. No text.
+```
+
+Формат квадратный, 768×768 достаточно — в приложении они выводятся размером
+до 160 pt.
+
+Что понадобится: животные, фрукты, предметы быта, школьные вещи, транспорт,
+погода — по мере того как будет собираться корпус заданий.
+
+---
+
+## Приёмка: проверять каждый ассет
+
+1. **Плотность.** Главная проверка, и раньше её тут не было. Считайте фигуры:
+
+   ```bash
+   grep -o '<path' файл.svg | wc -l
+   ```
+
+   Первая партия дала **22–60 путей на панораму** — это силуэт, а не иллюстрация,
+   и на экране читается как залитая форма. Ориентир: **панорама от 250 путей,
+   поза Tali от 150**. Меньше — сцена выйдет пустой, сколько бы её ни перекрашивали.
+
+   Но плотность считается **только узором**. Если фигуры набежали за счёт анатомии —
+   щитков, складок, когтей, прорисованной чешуи — счётчик зелёный, а ассет негодный.
+   Форма простая и мультяшная, богатство даёт орнамент поверх неё; подробно об этом
+   в разделе «Плотность — это узор, а не анатомия». Объём набирается **ступенями
+   тона**: один цвет лежит двумя-тремя отдельными заливками — светлой, средней и
+   тёмной, с жёсткой границей между ними.
+
+2. **Размер файла SVG.** Обратная граница к плотности. Нейросети иногда выдают
+   вектор с десятками тысяч точек. Панорама больше **300 КБ** — перегенерируйте
+   проще. Между 250 путями и 300 КБ есть широкий коридор, в него и целимся.
+3. **Фон действительно прозрачный, а не белый.** Положите картинку на цветной фон
+   и посмотрите. Это ровно та ошибка, что сейчас в приложении: 22 иконки сохранены
+   без альфа-канала и лягут квадратами на любой новый фон.
+4. **Внутри картинки нет текста.** Надписи приходят из локалей, иначе перевод
+   невозможен.
+5. **Контур одинаковой толщины** на всех ассетах. Разнотолщинность — первый признак,
+   что Style Lock не сработал.
+6. **Цвета из палитры.** Если модель увела оттенок — поправьте в настройках проекта
+   и перегенерируйте, а не подгоняйте потом в коде.
+
+---
+
+## Куда класть
+
+Готовое складывайте в `talentia-mobile/scripts/input/`, дальше запускайте импорт:
+
+```bash
+cd talentia-mobile
+npm run assets:import-nano
+```
+
+Конвейер переведён на WebP и сам конвертирует и ужимает растр. Для SVG нужна
+отдельная ветка — скажите, когда появятся первые файлы, добавлю.
+
+Целевые пути в проекте:
+
+```
+assets/images/tali/       шесть поз
+assets/images/regions/    четыре панорамы
+assets/icons/             22 иконки
+assets/images/tasks/      предметы к заданиям
+```
+
+---
+
+## Бюджет кредитов
+
+| Этап | Кредитов |
+|---|---|
+| Калибровка стиля | ~50 |
+| Tali: эталон плюс пять поз | ~60 |
+| Четыре панорамы | ~65 |
+| 6 иконок | ~40 |
+| Запас на переделки | ~200 |
+| **Итого** | **~415** |
+
+Тариф Basic даёт 1000 кредитов в месяц: весь набор укладывается меньше чем
+в половину. Векторная генерация стоит 2 кредита, растровая — 1.
+
+---
+
+## Частые проблемы
+
+**Стиль разъезжается между ассетами.** Style Lock не применён или применён не ко
+всем генерациям. Проверьте, что каждая ссылается на сохранённый стиль.
+
+**У персонажа белый фон вместо прозрачного.** Прозрачность не включена в настройках.
+Перегенерируйте: вырезать фон вручную у вектора мучительно.
+
+**Позы Tali разного масштаба.** Забыт абзац про заполнение кадра, или поза сделана
+без эталона на входе. Перегенерируйте с image reference и явным требованием, что
+голова касается верхнего края.
+
+**Персонаж выходит мелким.** Модель оставляет поля по привычке. Усильте: `The character
+fills 100 percent of the frame height, head touching the top edge, cropped tight.`
+
+**Панорама забита деталями снизу.** Модель проигнорировала требование. Усильте:
+`The bottom quarter must be completely empty flat ground with nothing in it.`
+
+**Панорама вышла вертикальной.** Проверьте формат: нужен 16:9 ландшафтный. Вертикальную
+сцену в горизонтальную полосу не перекомпоновать — только перегенерировать.
+
+**SVG весит мегабайт.** Слишком сложная сцена. Упростите промпт: уберите
+`distant mountains`, `small flowers and stones`, оставьте два-три плана.

@@ -1,5 +1,5 @@
 /**
- * Нарезает ui-spritesheet.png сеткой 7×4 (равные ячейки).
+ * Нарезает scripts/input/ui-spritesheet.png сеткой 7×4 (равные ячейки).
  * Экспортирует только слоты с 1-based индексами:
  * 1,2,3,4,5,6,8,10,11,12,13,15,16,18,19,20,22,23,24,27,28
  *
@@ -57,7 +57,7 @@ function cellBounds(width, height, index1) {
 }
 
 async function main() {
-  const sheet = path.join(root, 'assets', 'images', 'ui', 'ui-spritesheet.png');
+  const sheet = path.join(root, 'scripts', 'input', 'ui-spritesheet.png');
   if (!fs.existsSync(sheet)) {
     console.error('Нет файла:', sheet);
     console.error('Сначала: node scripts/import-nano-banana-assets.mjs');
@@ -72,8 +72,8 @@ async function main() {
 
   for (const [idx, base] of EXPORT) {
     const { left, top, width, height } = cellBounds(w, h, idx);
-    const dest = path.join(outDir, `${base}.png`);
-    await sharp(sheet).extract({ left, top, width, height }).png().toFile(dest);
+    const dest = path.join(outDir, `${base}.webp`);
+    await sharp(sheet).extract({ left, top, width, height }).webp({ quality: 85, effort: 6 }).toFile(dest);
     console.log(`#${idx} → ${path.relative(root, dest)} (${width}×${height})`);
   }
   console.log('Готово.');
