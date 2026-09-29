@@ -29,6 +29,7 @@ import { correctionLevel, initialTargetState, promptStateOf } from '../abaPrompt
 import { applyBaseline, summarizeSession } from '../abaCriterion';
 import { targetErrors } from '../abaTargetRules';
 import { initialTokenTraining, type TokenTrainingState } from '../abaTokenTraining';
+import type { IdentifySet } from '../abaIdentifySet';
 
 /** Ребёнок, прошедший сопряжение и обучение доске: финальная ступень. */
 const TRAINED: TokenTrainingState = { ...initialTokenTraining(), pairingDone: true, stage: 5 };
@@ -577,35 +578,104 @@ describe('цепочки', () => {
   });
 });
 
-describe('identify', () => {
-  const I = tgt('I', {
-    format: 'identify',
-    fieldSize: 3,
-    distractors: ['d1', 'd2', 'd3'].map((id) => ({ id, labelKey: `k.${id}`, image: `img-${id}` })),
+describe('набор identify', () => {
+  const [I1, I2, I3] = ['I1', 'I2', 'I3'].map((id) => tgt(id, { format: 'identify', identifyPoolKey: 'animals' }));
+  const pool = [I1, I2, I3];
+  const acqAll = () => ({ I1: acq(I1), I2: acq(I2), I3: acq(I3) });
+  const withSet = (over: Partial<IdentifySet> = {}): IdentifySet[] => [
+    { id: 'animals#1', poolKey: 'animals', memberIds: ['I1', 'I2', 'I3'], createdAtSession: 1, lastSetSessionIndex: -1, ...over },
+  ];
+  const trialSteps = (steps: AbaStep[]) => steps.filter((s): s is TrialStep => s.kind === 'trial');
+  const runs = (ids: string[]) => ids.some((id, i) => i >= 2 && id === ids[i - 1] && id === ids[i - 2]);
+
+  it('первая сессия: набор собирается из трёх новых целей — базовая линия по 5 вперемешку', () => {
+    const { state, steps } = drive(begin(pool, {}), () => 'ok');
+    const trials = trialSteps(steps);
+    expect(state.set?.memberIds).toEqual(['I1', 'I2', 'I3']);
+    expect(trials.every((t) => t.trialKind === 'baseline')).toBe(true);
+    expect(trials).toHaveLength(15);
+    expect(runs(trials.map((t) => t.targetId))).toBe(false);
+    expect(steps[steps.length - 1]).toMatchObject({ kind: 'end', pairingCycle: true });
   });
 
-  it('«сам»: касание засчитывает устройство, поле — верная карточка и дистракторы', () => {
-    const st = begin([I], { I: acq(I) }, { config: 'alone' });
-    const step = nextStep(st, 1).step as TrialStep;
-    expect(step.scoredBy).toBe('device_tap');
-    expect(step.field).toHaveLength(3);
-    expect(step.field).toContain(step.exemplarId);
+  it('5/5 на базовой линии набора — обучение с L0, а не «освоено»; 4/5 — L1; меньше — L3', () => {
+    let n = 0;
+    const { state } = drive(begin(pool, {}), (s) => {
+      if (s.targetId === 'I1') return 'ok';
+      n += s.targetId === 'I2' ? 1 : 0;
+      return s.targetId === 'I2' && n === 1 ? { response: 'incorrect', used: 0, emitted: true } : s.targetId === 'I3' ? 'wrong' : 'ok';
+    });
+    const result = finishAbaSession(state, '2026-09-29', 99_000);
+    expect(result.states.I1).toMatchObject({ phase: 'acquisition', startPromptLevel: 0 });
+    expect(result.states.I2).toMatchObject({ phase: 'acquisition', startPromptLevel: 1 });
+    expect(result.states.I3).toMatchObject({ phase: 'acquisition', startPromptLevel: 3 });
+    expect(result.identifySets[0].lastSetSessionIndex).toBe(10);
   });
 
-  it('верная карточка не бывает три раза подряд на одном месте', () => {
+  it('обучение набора: по 5 проб на цель, 8 + 7 вокруг перерыва, поле — карточки набора', () => {
+    const { steps } = drive(begin(pool, acqAll(), { identifySets: withSet() }), () => 'ok');
+    const k = kinds(steps);
+    const brk = k.indexOf('break');
+    expect([brk, k.filter((x) => x === 'teaching').length]).toEqual([8, 15]);
+    const first = trialSteps(steps)[0];
+    expect(first.field).toHaveLength(3);
+    expect(new Set(first.field!.map((id) => id.split('-')[0]))).toEqual(new Set(['I1', 'I2', 'I3']));
+  });
+
+  it('инструкции вперемешку: не больше двух одной подряд; верная — не больше двух раз на одном месте', () => {
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
-      const { state } = drive(begin([I], { I: acq(I) }, { config: 'alone', seed }), () => 'ok');
-      const at = state.trials.filter((t) => t.field).map((t) => t.field!.indexOf(t.exemplarId));
-      expect(at.some((p, i) => i >= 2 && p === at[i - 1] && p === at[i - 2])).toBe(false);
+      const { state } = drive(begin(pool, acqAll(), { identifySets: withSet(), seed }), () => 'ok');
+      const teaching = state.trials.filter((t) => t.kind === 'teaching');
+      expect(runs(teaching.map((t) => t.targetId))).toBe(false);
+      const at = state.trials.filter((t) => t.field).map((t) => String(t.field!.indexOf(t.exemplarId)));
+      expect(runs(at)).toBe(false);
     }
   });
 
-  it('проба с чужим полем не пишется', () => {
-    const st = begin([I], { I: acq(I) }, { config: 'alone' });
-    const next = nextStep(st, 1);
-    const input = trialFor(next.state, next.step as TrialStep, 'ok');
-    const res = recordTrial(next.state, { ...input, field: [...input.field!].reverse() }, 1);
-    expect(res.ok).toBe(false);
+  it('«сам»: касание засчитывает телефон', () => {
+    const st = begin(pool, acqAll(), { identifySets: withSet(), config: 'alone' });
+    expect((nextStep(st, 1).step as TrialStep).scoredBy).toBe('device_tap');
+  });
+
+  it('коррекция: отвлекающая — следующая плановая проба другой инструкции, потом перенос', () => {
+    const st = begin(pool, acqAll(), { identifySets: withSet() });
+    const failed = answer(st, 1, 'wrong');
+    const { steps } = drive(failed.state, () => 'ok');
+    const [c, d, t] = trialSteps(steps);
+    expect([c.trialKind, c.targetId]).toEqual(['correction', failed.step.targetId]);
+    expect(d.trialKind).toBe('teaching');
+    expect(d.targetId).not.toBe(failed.step.targetId);
+    expect([t.trialKind, t.targetId, t.exemplarId]).toEqual(['transfer', failed.step.targetId, failed.step.exemplarId]);
+  });
+
+  it('освоенная цель остаётся в поле и получает две высоковероятные пробы', () => {
+    const { steps } = drive(
+      begin(pool, { I1: mastered(I1), I2: acq(I2), I3: acq(I3) }, { identifySets: withSet() }),
+      () => 'ok',
+    );
+    const block = trialSteps(steps).filter((t) => t.targetId === 'I1' && t.trialKind === 'high_p' && t.field);
+    expect(block.length).toBeGreaterThanOrEqual(2);
+    expect(trialSteps(steps).every((t) => !t.field || t.field.length === 3)).toBe(true);
+  });
+
+  it('набор и обычные цели — сессии чередуются', () => {
+    const A = tgt('A');
+    const states = { ...acqAll(), A: acq(A, 0, { lastSessionIndex: 9 }) };
+    expect(begin([A, ...pool], states, { identifySets: withSet({ lastSetSessionIndex: 8 }) }).set).not.toBeNull();
+    expect(begin([A, ...pool], states, { identifySets: withSet({ lastSetSessionIndex: 10 }) }).set).toBeNull();
+    expect(begin([A, ...pool], states, { identifySets: withSet({ lastSetSessionIndex: 10 }) }).teachingTargetIds).toEqual(['A']);
+  });
+
+  it('цель «покажи…» вне набора не обучается поодиночке', () => {
+    const I4 = tgt('I4', { format: 'identify', identifyPoolKey: 'animals', prerequisiteTargetIds: ['X'] });
+    const X = tgt('X');
+    const st = begin([X, I1, I2, I4], { X: acq(X), I1: acq(I1), I2: acq(I2) });
+    expect(st.set).toBeNull();
+    expect(st.teachingTargetIds).toEqual(['X']);
+  });
+
+  it('пул меньше трёх целей — сессия не начинается', () => {
+    expect(() => begin([I1, I2], {})).toThrow(/пул animals/);
   });
 });
 
@@ -700,7 +770,7 @@ describe('правила на цель', () => {
     ['блок 10 на 5–6', { band: '5-6' as const, blockSize: 10 as const, delayMs: 3000 }, 'блок 10'],
     ['одна пара для переноса', { exemplars: [ex('x-1'), ex('x-2'), ex('x-g', 'generalization')] }, 'меньше двух пар'],
     ['экземпляры отличаются только id', { exemplars: [ex('x-1'), { ...ex('x-1'), id: 'x-9' }, ex('x-g1', 'generalization'), ex('x-g2', 'generalization')] }, 'только id'],
-    ['identify без дистракторов', { format: 'identify' as const }, 'дистракторов'],
+    ['identify без пула', { format: 'identify' as const }, 'нет пула'],
   ])('%s — ошибка', (_, over, message) => {
     expect(targetErrors(tgt('A', over)).join('; ')).toContain(message);
   });

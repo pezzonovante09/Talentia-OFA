@@ -60,16 +60,13 @@ export function targetErrors(t: AbaTarget): string[] {
   }
 
   if (t.format === 'identify') {
-    const size = t.fieldSize ?? 3;
-    if ((t.distractors?.length ?? 0) < size - 1) {
-      errors.push(`дистракторов ${t.distractors?.length ?? 0}, для поля из ${size} нужно ${size - 1}`);
-    }
+    if (!t.identifyPoolKey) errors.push('у identify нет пула: цели «покажи…» учатся только набором');
     if (t.exemplars.some((e) => !e.image)) errors.push('у экземпляра identify нет картинки');
     if (t.scoredBy === 'device_onset' || t.scoredBy === 'device_loudness') {
       errors.push('identify оценивает касание или взрослый');
     }
-  } else if (t.distractors?.length || t.fieldSize) {
-    errors.push('поле карточек — только у identify');
+  } else if (t.identifyPoolKey) {
+    errors.push('пул набора — только у identify');
   }
   if (t.scoredBy === 'device_tap' && t.format !== 'identify') errors.push('касание оценивает только identify');
   return errors;

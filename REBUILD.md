@@ -40,7 +40,8 @@ Design по `DESIGN_PROMPTS.md`, а фронт потом пишется с ну
   и `lessonFlow.ts` — лимиты по полосе и ход задания (сужение, исход, отклик, проба
   переноса); `lessonAssembly.ts` — сборка урока с повторениями и его итог (звёзды,
   коробки навыков, запись в атлас); `abaPrompting.ts`, `abaCriterion.ts`, `abaTokens.ts` — логика ABA;
-  `abaSession.ts` — ход ABA-сессии, `abaTargetRules.ts` — что годится в ABA-цель;
+  `abaSession.ts` — ход ABA-сессии, `abaTargetRules.ts` — что годится в ABA-цель,
+  `abaTokenTraining.ts` — сопряжение и обучение доске, `abaIdentifySet.ts` — наборы «покажи…»;
   `companionSituations.ts` — реплики Tali; `consent.ts`, `parentReport.ts`,
   `parentGate.ts` — согласия, отчёт родителю, правила гейта.
 - Токены `src/design/`: `tokens.ts`, `abaTokens.ts`, `parentTokens.ts`, `contrast.ts`.

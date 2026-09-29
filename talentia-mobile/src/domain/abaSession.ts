@@ -78,6 +78,7 @@ import {
   type TokenSchedule,
 } from './abaTokens';
 import { targetErrors } from './abaTargetRules';
+import { poolErrors, setHalves, updateSets, type IdentifySet } from './abaIdentifySet';
 import {
   applyStageSession,
   EXCHANGE_ACCESS_MS,
@@ -165,7 +166,14 @@ type QueueItem =
   | { kind: 'reinforcer' }
   | { kind: 'trial'; trial: PlannedTrial }
   /** Конец блока цели. `participation` — жетон за участие; базовая линия его не получает. */
-  | { kind: 'block_end'; targetId: string; participation: boolean; bridged?: true }
+  | {
+      kind: 'block_end';
+      /** Цель блока; у набора — id набора, участники — в `members`. */
+      targetId: string;
+      participation: boolean;
+      bridged?: true;
+      members?: string[];
+    }
   | { kind: 'break' };
 
 export type TrialStep = {
@@ -241,6 +249,10 @@ export type AbaSessionState = {
   maintenanceTargetIds: string[];
   /** Освоенные цели для разогрева, отвлекающих и закрывающих проб: не цепочки, не на поддержании. */
   highPTargetIds: string[];
+  /** Наборы `identify` ребёнка на эту сессию. */
+  identifySets: IdentifySet[];
+  /** Набор, который обучается в этой сессии: он занимает оба слота обучения. */
+  set: IdentifySet | null;
   reinforcerOptions: string[];
   reinforcerId: string | null;
   reinforcerChosenBy: 'child' | 'adult' | null;
@@ -281,6 +293,8 @@ export type StartInput = {
   board?: Pick<TokenBoard, 'earned' | 'nonContingent'>;
   /** Сопряжение и обучение доске — на ребёнке. Без сопряжения рабочая сессия не начинается. */
   tokenTraining: TokenTrainingState;
+  /** Наборы `identify` ребёнка. */
+  identifySets?: IdentifySet[];
   /** Взрослый может уменьшить лимит, но не увеличить. */
   timeLimitMs?: number;
   startedAt: number;
@@ -462,6 +476,8 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     const errors = targetErrors(t);
     if (errors.length) throw new Error(`Цель ${t.id}: ${errors.join('; ')}`);
   }
+  const pools = poolErrors(input.targets);
+  if (pools.length) throw new Error(pools.join('; '));
 
   if (!input.tokenTraining.pairingDone) {
     throw new Error('Сопряжение не закончено: сначала сессия сопряжения, а не рабочая');
@@ -474,18 +490,26 @@ export function startAbaSession(input: StartInput): AbaSessionState {
   const isMastered = (id: string) => states[id] !== undefined && MASTERED_PHASES.has(states[id].phase);
   const ready = (t: AbaTarget) => counts(t, config) && (t.prerequisiteTargetIds ?? []).every(isMastered);
 
-  const teaching = offered
-    .filter((t) => TEACHING_PHASES.has(states[t.id].phase) && ready(t))
-    .slice(0, MAX_TEACHING_TARGETS);
+  const single = offered.filter((t) => t.format !== 'identify');
+  const regular = single.filter((t) => TEACHING_PHASES.has(states[t.id].phase) && ready(t)).slice(0, MAX_TEACHING_TARGETS);
+
+  // identify — только набором. Набор занимает оба слота обучения; готовы и набор, и
+  // обычные цели — сессии чередуются
+  const identifySets = updateSets(input.identifySets ?? [], offered, states, sessionIndex, ready);
+  const candidate = identifySets[0] ?? null;
+  const regularLast = Math.max(-1, ...regular.map((t) => states[t.id].lastSessionIndex));
+  const set = candidate && (regular.length === 0 || candidate.lastSetSessionIndex <= regularLast) ? candidate : null;
+  const setMembers = set ? set.memberIds.map((id) => input.targets.find((t) => t.id === id)!) : [];
+  const teaching = set ? setMembers.filter((t) => TEACHING_PHASES.has(states[t.id].phase)) : regular;
   // 5–6: базовая линия занимает слоты обучения — иначе сессия малыша вдвое длиннее нормы
   const baselineRoom = Math.min(
     band === '5-6' ? MAX_TEACHING_TARGETS - teaching.length : MAX_BASELINE_TARGETS,
     // на ступенях 1–2 обучения доске — не больше одной новой цели
     input.tokenTraining.stage <= 2 ? 1 : MAX_BASELINE_TARGETS,
   );
-  const baseline = offered
-    .filter((t) => states[t.id].phase === 'baseline' && ready(t))
-    .slice(0, Math.max(0, baselineRoom));
+  const baseline = set
+    ? setMembers.filter((t) => states[t.id].phase === 'baseline')
+    : single.filter((t) => states[t.id].phase === 'baseline' && ready(t)).slice(0, Math.max(0, baselineRoom));
   const mastered = offered.filter((t) => isMastered(t.id));
 
   const due = mastered
@@ -517,16 +541,33 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     const warm = pick(highP, rng);
     for (let i = 0; i < WARMUP_TRIALS; i += 1) queue.push({ kind: 'trial', trial: highPTrial(warm, rng) });
   }
-  for (const t of baseline) {
-    for (const trial of baselineBlock(t, highP, rng)) queue.push({ kind: 'trial', trial });
-    queue.push({ kind: 'block_end', targetId: t.id, participation: false });
+  if (set) {
+    // набор: две половины вокруг перерыва, инструкции вперемешку
+    const rot = new Map(setMembers.map((t) => [t.id, rotation(t, rng)]));
+    const seen = new Map<string, number>();
+    const members = set.memberIds;
+    const hasTeaching = teaching.length > 0;
+    setHalves(set, states, rng).forEach((half, i) => {
+      if (i > 0) queue.push({ kind: 'break' });
+      for (const item of half) {
+        const n = seen.get(item.targetId) ?? 0;
+        seen.set(item.targetId, n + 1);
+        queue.push({ kind: 'trial', trial: { kind: item.kind, targetId: item.targetId, exemplarId: rot.get(item.targetId)!(n) } });
+      }
+      queue.push({ kind: 'block_end', targetId: set.id, participation: hasTeaching, members });
+    });
+  } else {
+    for (const t of baseline) {
+      for (const trial of baselineBlock(t, highP, rng)) queue.push({ kind: 'trial', trial });
+      queue.push({ kind: 'block_end', targetId: t.id, participation: false });
+    }
+    teaching.forEach((t, i) => {
+      if (i > 0) queue.push({ kind: 'break' });
+      for (const trial of teachingBlock(t, rng)) queue.push({ kind: 'trial', trial });
+      queue.push({ kind: 'block_end', targetId: t.id, participation: true });
+    });
+    if (teaching.length === 1 && probes.length > 0) queue.push({ kind: 'break' });
   }
-  teaching.forEach((t, i) => {
-    if (i > 0) queue.push({ kind: 'break' });
-    for (const trial of teachingBlock(t, rng)) queue.push({ kind: 'trial', trial });
-    queue.push({ kind: 'block_end', targetId: t.id, participation: true });
-  });
-  if (teaching.length === 1 && probes.length > 0) queue.push({ kind: 'break' });
   for (const trial of probes.flat()) queue.push({ kind: 'trial', trial });
 
   const reinforcerOptions = reinforcerChoices(input.reinforcerPool, input.reinforcerHistory, rng);
@@ -548,6 +589,8 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     teachingTargetIds: teaching.map((t) => t.id),
     maintenanceTargetIds: maintenanceIds,
     highPTargetIds: highP.map((t) => t.id),
+    identifySets,
+    set,
     reinforcerOptions,
     reinforcerId: null,
     reinforcerChosenBy: null,
@@ -607,9 +650,9 @@ function trialStep(state: AbaSessionState, p: PlannedTrial): TrialStep {
 }
 
 /**
- * Поле `identify` для текущей пробы: верная карточка и дистракторы в случайном
- * порядке, но верная — не больше двух раз подряд на одном месте (по прошлым пробам цели
- * в этой сессии): иначе ребёнок учит место, а не стимул.
+ * Поле `identify` для текущей пробы: верная карточка и карточки других целей набора в
+ * случайном порядке, но верная — не больше двух раз подряд на одном месте по всем пробам
+ * сессии: иначе ребёнок учит место, а не стимул.
  */
 function withField(state: AbaSessionState): AbaSessionState {
   const head = state.queue[0];
@@ -618,12 +661,21 @@ function withField(state: AbaSessionState): AbaSessionState {
   if (target.format !== 'identify') return state;
 
   const r = seeded(state.seed);
-  const size = target.fieldSize ?? 3;
-  const distractors = shuffle(target.distractors ?? [], r.rng).slice(0, size - 1).map((d) => d.id);
-  const field = shuffle([head.trial.exemplarId, ...distractors], r.rng);
+  // карточки поля — учебные экземпляры других целей набора; вне набора (перенос и
+  // поддержание распавшегося набора) — других целей пула
+  const inSet = state.set?.memberIds.includes(target.id) ?? false;
+  const others = inSet
+    ? state.set!.memberIds.filter((id) => id !== target.id)
+    : Object.values(state.targets)
+        .filter((t) => t.format === 'identify' && t.identifyPoolKey === target.identifyPoolKey && t.id !== target.id)
+        .slice(0, 2)
+        .map((t) => t.id);
+  const cards = others.map((id) => pick(teachingExemplars(state.targets[id]), r.rng).id);
+  const field = shuffle([head.trial.exemplarId, ...cards], r.rng);
 
+  // позиция верной — по всему блоку, а не по цели: иначе ребёнок учит место
   const recent = state.trials
-    .filter((t) => t.targetId === target.id && t.field)
+    .filter((t) => t.field)
     .slice(-MAX_SAME_POSITION)
     .map((t) => t.field!.indexOf(t.exemplarId));
   const at = field.indexOf(head.trial.exemplarId);
@@ -978,7 +1030,9 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
     if (isBreakdown(counted, trial.targetId)) {
       st = closeOut(st, 'breakdown', now, trial.targetId);
     } else if (failed && trial.kind === 'teaching' && !trial.stepId) {
-      st = { ...st, queue: [...correctionFor(st, trial), ...st.queue] };
+      st = st.set?.memberIds.includes(trial.targetId)
+        ? { ...st, queue: setCorrection(st, trial) }
+        : { ...st, queue: [...correctionFor(st, trial), ...st.queue] };
     }
   }
 
@@ -1009,7 +1063,8 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
  */
 function bridgeFailedBlock(state: AbaSessionState, last: AbaTrial): AbaSessionState {
   const head = state.queue[0];
-  if (head?.kind !== 'block_end' || head.bridged || head.targetId !== last.targetId) return state;
+  const ofBlock = head?.kind === 'block_end' && (head.targetId === last.targetId || head.members?.includes(last.targetId));
+  if (head?.kind !== 'block_end' || head.bridged || !ofBlock) return state;
   if (last.kind !== 'teaching' && last.kind !== 'transfer') return state;
   if (last.response !== 'incorrect' && last.response !== 'no_response') return state;
 
@@ -1038,6 +1093,35 @@ function exchangedSince(after: AbaSessionState, before: AbaSessionState): number
   return after.events
     .slice(before.events.length)
     .reduce((n, e) => n + (e.kind === 'exchange' ? e.tokens : 0), 0);
+}
+
+/**
+ * Коррекция в наборе: проба коррекции → следующая плановая проба **другой инструкции**
+ * (учебная, считается как обычно; отдельной высоковероятной не вставляется) → перенос
+ * того же SD и экземпляра на стартовом уровне. Следующая плановая — той же инструкции:
+ * переставляется ближайшая другая. Другой до конца половины нет — нейтральная пауза.
+ */
+function setCorrection(state: AbaSessionState, failed: AbaTrial): QueueItem[] {
+  const [correction] = correctionFor({ ...state, highPTargetIds: [] }, failed).filter(
+    (q) => q.kind === 'trial' && q.trial.kind === 'correction',
+  );
+  const queue = [...state.queue];
+  const end = queue.findIndex((q) => q.kind !== 'trial');
+  const limit = end < 0 ? queue.length : end;
+  const j = queue.slice(0, limit).findIndex((q) => q.kind === 'trial' && q.trial.targetId !== failed.targetId);
+  const transfer: QueueItem = {
+    kind: 'trial',
+    trial: {
+      kind: 'transfer',
+      targetId: failed.targetId,
+      exemplarId: failed.exemplarId,
+      ...(j < 0 ? { pauseBeforeMs: NEUTRAL_PAUSE_MS } : {}),
+    },
+  };
+  const head: QueueItem[] = correction ? [correction] : [];
+  if (j < 0) return [...head, transfer, ...queue];
+  const [distractor] = queue.splice(j, 1);
+  return [...head, distractor, transfer, ...queue];
 }
 
 function correctionFor(state: AbaSessionState, failed: AbaTrial): QueueItem[] {
@@ -1140,6 +1224,8 @@ export type AbaSessionResult = {
   exchanged: number;
   /** Обучение доске после этой сессии. */
   tokenTraining: TokenTrainingState;
+  /** Наборы `identify` после этой сессии. */
+  identifySets: IdentifySet[];
 };
 
 /**
@@ -1235,7 +1321,7 @@ export function finishAbaSession(
       startedAt: iso(state.startedAt),
       endedAt: iso(endedAt),
       config: state.config,
-      targetIds: [...state.baselineTargetIds, ...state.teachingTargetIds],
+      targetIds: [...new Set([...state.baselineTargetIds, ...state.teachingTargetIds])],
       reinforcerId: state.reinforcerId ?? '',
       reinforcerChosenBy: state.reinforcerChosenBy,
       tokensEarned: state.tokensEarned,
@@ -1251,5 +1337,6 @@ export function finishAbaSession(
     board,
     exchanged,
     tokenTraining,
+    identifySets: state.identifySets.map((x) => (x.id === state.set?.id ? { ...x, lastSetSessionIndex: idx } : x)),
   };
 }

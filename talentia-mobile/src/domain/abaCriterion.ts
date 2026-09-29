@@ -229,6 +229,13 @@ export const BASELINE_CHAIN_RUNS = 2;
 /** Новых целей на базовой линии за сессию — не больше. */
 export const MAX_BASELINE_TARGETS = 2;
 
+/**
+ * Базовая линия цели набора `identify`: 5 проб вперемешку с целями набора. С выбором
+ * угадывание сильнее: при поле из трёх 3/5 и больше выпадают случайно в ~21% случаев,
+ * 4/5 — в ~4.5%, поэтому пороги строже, и даже 5/5 — не «освоено», а обучение с L0.
+ */
+export const IDENTIFY_BASELINE = { trials: 5, fromL0: 5, fromL1: 4 } as const;
+
 function baselineTrials(trials: AbaTrial[]): AbaTrial[] {
   return trials.filter(
     (t) => t.kind === 'baseline' && t.response !== 'interrupted' && COUNTS_TOWARD_MASTERY[t.scoredBy],
@@ -256,6 +263,8 @@ const fresh = (start: PromptLevel): StepPromptState => ({
  *
  * Цепочка, два прогона: у каждого звена свой старт — самостоятельно в обоих прогонах
  * L0, в одном — L1, ни в одном — L3. Цепочка идёт в обучение.
+ *
+ * Цель набора `identify` — `IDENTIFY_BASELINE`: 5/5 — L0, 4/5 — L1, меньше — L3.
  */
 export function applyBaseline(
   s: AbaTargetState,
@@ -277,6 +286,13 @@ export function applyBaseline(
       }),
     );
     return { ...s, phase: 'acquisition', stepPrompts };
+  }
+
+  if (target.format === 'identify') {
+    if (own.length < IDENTIFY_BASELINE.trials) return s;
+    const ok = own.filter((t) => t.response === 'independent').length;
+    const level: PromptLevel = ok >= IDENTIFY_BASELINE.fromL0 ? 0 : ok >= IDENTIFY_BASELINE.fromL1 ? 1 : APP_MAX_PROMPT;
+    return { ...s, phase: 'acquisition', ...fresh(level) };
   }
 
   if (own.length < BASELINE_TRIALS) return s;
