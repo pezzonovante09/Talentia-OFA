@@ -86,17 +86,18 @@ describe('жетон за ответ на стартовом уровне', () =
     expect(award({ kind: 'closing', response: 'prompted', start: 3, used: 3 }).tokens).toBe(0);
   });
 
-  it('базовая линия — похвала за внимание, что бы ребёнок ни ответил', () => {
-    expect(award({ kind: 'baseline' })).toMatchObject({ tokens: 0, feedback: 'attention' });
-    expect(award({ kind: 'baseline', response: 'no_response' }).feedback).toBe('attention');
+  it('базовая линия — нейтрально, что бы ребёнок ни ответил: внимание хвалят до инструкции', () => {
+    expect(award({ kind: 'baseline' })).toMatchObject({ tokens: 0, feedback: 'neutral' });
+    expect(award({ kind: 'baseline', response: 'no_response' }).feedback).toBe('neutral');
   });
 
   it('проба без права на критерий — «Tali послушал», без жетона', () => {
     expect(award({ counts: false })).toMatchObject({ tokens: 0, feedback: 'listened' });
   });
 
-  it('разогрев — жетон за первый верный, дальше похвала', () => {
+  it('разогрев — жетон за первый верный со своей причиной, дальше похвала', () => {
     const first = award({ kind: 'high_p', phase: 'mastered' });
+    expect(first.reason).toBe('high_p');
     const second = award({ kind: 'high_p', phase: 'mastered', highPTokenPaid: true });
     expect([first.feedback, second.feedback]).toEqual(['token_praise', 'praise']);
   });

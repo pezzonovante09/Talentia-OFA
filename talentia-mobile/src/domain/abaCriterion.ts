@@ -16,6 +16,8 @@ import {
   type AbaTarget,
   type AbaTargetState,
   type AbaTrial,
+  type PromptLevel,
+  type StepPromptState,
 } from '../types/aba';
 import { clampToApp } from './abaPrompting';
 
@@ -214,46 +216,85 @@ export function isMasteryMet(s: AbaTargetState): boolean {
   return criterionGaps(s).length === 0;
 }
 
-/** Проб базовой линии на цель. */
+/** Проб базовой линии на дискретную цель. */
 export const BASELINE_TRIALS = 3;
+
+/**
+ * Прогонов базовой линии цепочки — проверка task analysis с множеством возможностей
+ * (multiple-opportunity probe): проваленное звено выполняет взрослый, пробой ребёнка
+ * это не пишется, и прогон идёт дальше.
+ */
+export const BASELINE_CHAIN_RUNS = 2;
 
 /** Новых целей на базовой линии за сессию — не больше. */
 export const MAX_BASELINE_TARGETS = 2;
 
+function baselineTrials(trials: AbaTrial[]): AbaTrial[] {
+  return trials.filter(
+    (t) => t.kind === 'baseline' && t.response !== 'interrupted' && COUNTS_TOWARD_MASTERY[t.scoredBy],
+  );
+}
+
+const fresh = (start: PromptLevel): StepPromptState => ({
+  startPromptLevel: start,
+  lastSuccessfulPromptLevel: start,
+  consecutiveIndependentAtStart: 0,
+  consecutiveAboveStart: 0,
+  consecutiveFailures: 0,
+});
+
 /**
- * Итог базовой линии: с чего начинать обучение. Три пробы без подсказки:
+ * Итог базовой линии: с чего начинать обучение. Не набралось проб (сессию прервали) —
+ * базовая линия повторяется в следующей сессии.
  *
+ * Дискретная цель, три пробы без подсказки:
  * - все три самостоятельно — навык уже есть: сразу в поддержание с первого интервала,
- *   ближайшая проба поддержания сама перепроверит;
+ *   ближайшая проба поддержания сама перепроверит (`masteredBy: 'baseline'`);
  * - одна-две — обучение со старта L1: ребёнок почти умеет, полная модель научила бы его
  *   ждать модель;
  * - ни одной — обучение с полной модели, безошибочный старт.
  *
- * Меньше трёх проб (сессию прервали) — базовая линия повторяется в следующей сессии.
+ * Цепочка, два прогона: у каждого звена свой старт — самостоятельно в обоих прогонах
+ * L0, в одном — L1, ни в одном — L3. Цепочка идёт в обучение.
  */
-export function applyBaseline(s: AbaTargetState, trials: AbaTrial[], sessionIndex: number): AbaTargetState {
-  const own = trials.filter(
-    (t) => t.kind === 'baseline' && t.response !== 'interrupted' && COUNTS_TOWARD_MASTERY[t.scoredBy],
-  );
-  if (s.phase !== 'baseline' || own.length < BASELINE_TRIALS) return s;
+export function applyBaseline(
+  s: AbaTargetState,
+  trials: AbaTrial[],
+  sessionIndex: number,
+  target: AbaTarget,
+): AbaTargetState {
+  if (s.phase !== 'baseline') return s;
+  const own = baselineTrials(trials);
+
+  if (target.steps?.length) {
+    const byStep = target.steps.map((st) => own.filter((t) => t.stepId === st.id));
+    if (byStep.some((x) => x.length < BASELINE_CHAIN_RUNS)) return s;
+    const stepPrompts = Object.fromEntries(
+      target.steps.map((st, i) => {
+        const ok = byStep[i].filter((t) => t.response === 'independent').length;
+        const level: PromptLevel = ok >= BASELINE_CHAIN_RUNS ? 0 : ok > 0 ? 1 : APP_MAX_PROMPT;
+        return [st.id, fresh(level)];
+      }),
+    );
+    return { ...s, phase: 'acquisition', stepPrompts };
+  }
+
+  if (own.length < BASELINE_TRIALS) return s;
   const independent = own.filter((t) => t.response === 'independent').length;
-  if (independent === own.length) return markMastered(s, sessionIndex);
-  const start = independent > 0 ? 1 : APP_MAX_PROMPT;
-  return {
-    ...s,
-    phase: 'acquisition',
-    startPromptLevel: start,
-    lastSuccessfulPromptLevel: start,
-    consecutiveIndependentAtStart: 0,
-    consecutiveAboveStart: 0,
-  };
+  if (independent === own.length) return markMastered(s, sessionIndex, 'baseline');
+  return { ...s, phase: 'acquisition', ...fresh(independent > 0 ? 1 : APP_MAX_PROMPT) };
 }
 
 /** Перевести освоенную цель в поддержание: расписание начинается с этой сессии и первого интервала. */
-export function markMastered(s: AbaTargetState, sessionIndex: number): AbaTargetState {
+export function markMastered(
+  s: AbaTargetState,
+  sessionIndex: number,
+  by: 'criterion' | 'baseline' = 'criterion',
+): AbaTargetState {
   return {
     ...s,
     phase: 'mastered',
+    masteredBy: by,
     maintenanceGapIndex: 0,
     maintenanceFailsInRow: 0,
     lastMaintenanceSessionIndex: sessionIndex,

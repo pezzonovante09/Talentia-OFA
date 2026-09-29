@@ -14,6 +14,7 @@ import {
   MAX_ESCALATIONS_PER_TRIAL,
   PROMPT_DEPENDENCE,
   type AbaResponse,
+  type AbaFormat,
   type AbaTarget,
   type AbaTargetState,
   type AbaTrial,
@@ -23,6 +24,13 @@ import {
 
 /** Сколько подряд проб нужно, чтобы стартовый уровень сдвинулся. */
 export const FADE_AFTER = 2;
+
+/**
+ * Провалов подряд, после которых старт сразу возвращается на полную модель, а не
+ * поднимается на ступень: две ошибки подряд значат, что ребёнок угадывает, и каждая
+ * следующая проба без модели — ещё одна ошибка и коррекция.
+ */
+export const FAILURES_TO_ERRORLESS = 2;
 
 /** Уровень, который приложение может выдать. L4 даёт только взрослый — стартовым он не бывает. */
 export function clampToApp(level: PromptLevel): PromptLevel {
@@ -45,11 +53,11 @@ export function initialTargetState(target: AbaTarget): AbaTargetState {
   const start = target.delayMode === 'progressive' ? DELAY_STEP_MS : target.delayMs;
   return {
     targetId: target.id,
-    // процедура базовой линии для цепочки не определена методистом — цепочка сразу в обучении
-    phase: target.steps?.length ? 'acquisition' : 'baseline',
+    phase: 'baseline',
     startPromptLevel: APP_MAX_PROMPT,
     consecutiveIndependentAtStart: 0,
     consecutiveAboveStart: 0,
+    consecutiveFailures: 0,
     currentDelayMs: Math.min(start, MAX_DELAY_MS[target.band]),
     recentIndependentRates: [],
     sessionsAtCriterion: 0,
@@ -76,10 +84,18 @@ export function promptStateOf(s: AbaTargetState, stepId?: string): StepPromptSta
     startPromptLevel: s.startPromptLevel,
     consecutiveIndependentAtStart: s.consecutiveIndependentAtStart,
     consecutiveAboveStart: s.consecutiveAboveStart,
+    consecutiveFailures: s.consecutiveFailures,
     lastSuccessfulPromptLevel: s.lastSuccessfulPromptLevel,
   };
   if (!stepId) return own;
-  return s.stepPrompts?.[stepId] ?? { ...own, consecutiveIndependentAtStart: 0, consecutiveAboveStart: 0 };
+  return (
+    s.stepPrompts?.[stepId] ?? {
+      ...own,
+      consecutiveIndependentAtStart: 0,
+      consecutiveAboveStart: 0,
+      consecutiveFailures: 0,
+    }
+  );
 }
 
 function withPromptState(s: AbaTargetState, stepId: string | undefined, ps: StepPromptState): AbaTargetState {
@@ -88,18 +104,36 @@ function withPromptState(s: AbaTargetState, stepId: string | undefined, ps: Step
 }
 
 /**
- * Уровень пробы коррекции — не ниже того, что ребёнку только что понадобилось, плюс
- * ступень, и никогда не L0: коррекция на L0 — то самое «неверно, попробуй ещё». При
- * этом не ниже последнего успешного уровня.
- *
- * `null` — первый шаг коррекции пропускается: ребёнок не ответил даже на полной
- * модели, модель только что прозвучала и реакции не вызвала. Дальше сразу отвлекающая
- * проба и перенос.
+ * Первый уровень подсказки, который **несёт ответ**. После неверного ответа коррекция не
+ * бывает ниже: ошибку различения ориентирующей подсказкой не исправить, это то же
+ * «неверно, попробуй ещё» с жестом. В речевых форматах и в действии L1 ответа не
+ * раскрывает — нужна хотя бы частичная модель; в `identify` L1 — жест к карточке, он и
+ * есть ответ.
  */
-export function correctionLevel(s: AbaTargetState, failed: AbaTrial): PromptLevel | null {
+export const FIRST_ANSWER_LEVEL: Record<AbaFormat, PromptLevel> = {
+  imitate_sound: 2,
+  repeat_word: 2,
+  voice_volume: 2,
+  do_action: 2,
+  identify: 1,
+};
+
+/**
+ * Уровень пробы коррекции — не ниже того, что ребёнку только что понадобилось, плюс
+ * ступень, и никогда не L0: коррекция на L0 — то самое «неверно, попробуй ещё». Не
+ * ниже последнего успешного уровня, а после неверного ответа — не ниже первого уровня,
+ * несущего ответ (`FIRST_ANSWER_LEVEL`). Сама проба коррекции доводится до верного
+ * ответа при любом провале: до полной модели, со взрослым — до L4.
+ *
+ * `null` — ребёнок не ответил даже на полной модели: модель только что прозвучала и
+ * реакции не вызвала. Со взрослым вместо повтора модели взрослый сразу даёт L4, без
+ * взрослого шаг пропускается — дальше отвлекающая проба и перенос.
+ */
+export function correctionLevel(s: AbaTargetState, failed: AbaTrial, format: AbaFormat): PromptLevel | null {
   if (failed.response === 'no_response' && failed.promptLevelUsed >= APP_MAX_PROMPT) return null;
   const ps = promptStateOf(s, failed.stepId);
-  const level = Math.max(1, ps.lastSuccessfulPromptLevel, failed.promptLevelUsed + 1);
+  const floor = failed.response === 'incorrect' ? FIRST_ANSWER_LEVEL[format] : 1;
+  const level = Math.max(floor, ps.lastSuccessfulPromptLevel, failed.promptLevelUsed + 1);
   return clampToApp(Math.min(level, APP_MAX_PROMPT) as PromptLevel);
 }
 
@@ -150,6 +184,9 @@ const FAILURE: ReadonlySet<AbaResponse> = new Set(['incorrect', 'no_response']);
  * по построению и в затухание не идёт вовсе. Прерванная проба не случилась.
  *
  * У звена цепочки затухание своё (`stepPrompts`).
+ *
+ * Два провала подряд (`FAILURES_TO_ERRORLESS`) — старт сразу на полную модель:
+ * безошибочное обучение заново, а не подъём по ступени.
  */
 export function applyTrialToFading(s: AbaTargetState, t: AbaTrial): AbaTargetState {
   if (t.response === 'interrupted') return s;
@@ -160,8 +197,18 @@ export function applyTrialToFading(s: AbaTargetState, t: AbaTrial): AbaTargetSta
 function fadeStep(ps: StepPromptState, t: AbaTrial): StepPromptState {
   const succeeded = SUCCESS.has(t.response);
   const lastSuccessfulPromptLevel = succeeded ? clampToApp(t.promptLevelUsed) : ps.lastSuccessfulPromptLevel;
-  const base = { ...ps, lastSuccessfulPromptLevel };
+  const failures = FAILURE.has(t.response) ? ps.consecutiveFailures + 1 : 0;
+  const base = { ...ps, lastSuccessfulPromptLevel, consecutiveFailures: failures };
 
+  if (failures >= FAILURES_TO_ERRORLESS) {
+    return {
+      ...base,
+      startPromptLevel: APP_MAX_PROMPT,
+      consecutiveIndependentAtStart: 0,
+      consecutiveAboveStart: 0,
+      consecutiveFailures: 0,
+    };
+  }
   if (t.response === 'approximation') {
     return { ...base, consecutiveIndependentAtStart: 0, consecutiveAboveStart: 0 };
   }
@@ -314,6 +361,17 @@ export function applyPromptDependence(
     startPromptLevel: 0,
     consecutiveIndependentAtStart: 0,
     consecutiveAboveStart: 0,
+    consecutiveFailures: 0,
+    ...(s.stepPrompts
+      ? {
+          stepPrompts: Object.fromEntries(
+            Object.entries(s.stepPrompts).map(([id, ps]) => [
+              id,
+              { ...ps, startPromptLevel: 0 as PromptLevel, consecutiveIndependentAtStart: 0, consecutiveAboveStart: 0, consecutiveFailures: 0 },
+            ]),
+          ),
+        }
+      : {}),
     dependenceFlaggedAtSession: sessionIndex,
   };
 }

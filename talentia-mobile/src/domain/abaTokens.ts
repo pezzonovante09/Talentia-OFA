@@ -35,12 +35,13 @@ export function newSchedule(rng: Rng): TokenSchedule {
  * Что ребёнок получает сразу после пробы. Различие обязано быть заметным: жетон падает
  * на доску со звуком, похвала без жетона — только голос.
  *
- * - `attention` — похвала за внимание, не зависящая от ответа: базовая линия. Иначе
- *   она сама становится обучением и перестаёт измерять.
+ * - `neutral` на базовой линии — что бы ребёнок ни ответил: иначе она сама становится
+ *   обучением и перестаёт измерять. Внимание подкрепляется **до** инструкции
+ *   (`TrialStep.praiseAttentionBeforeSd`), а не как следствие ответа.
  * - `listened` — «Tali послушал», без «верно»: проба, которую оценило устройство без
  *   права на критерий (детектор начала звука знает «ответил», но не «верно»).
  */
-export type Feedback = 'token_praise' | 'praise' | 'neutral' | 'attention' | 'listened';
+export type Feedback = 'token_praise' | 'praise' | 'neutral' | 'listened';
 
 /**
  * Доска жетонов. Жетоны **никогда не отнимаются, не срезаются и не сгорают**: прежняя
@@ -89,7 +90,7 @@ const SUCCESS = new Set(['independent', 'prompted']);
 /**
  * Жетон и похвала за пробу.
  *
- * - Базовая линия — похвала за внимание, без жетона, что бы ребёнок ни ответил.
+ * - Базовая линия — нейтрально и без жетона, что бы ребёнок ни ответил.
  * - Проба без права на критерий — «Tali послушал», без жетона.
  * - Верный на стартовом уровне — жетон и похвала; на освоенной цели жетон по
  *   прерывистой схеме, похвала всегда.
@@ -108,7 +109,7 @@ export function awardForTrial(
   const { phase, schedule, board, rng } = ctx;
   const none = (feedback: Feedback): TokenAward => ({ tokens: 0, feedback, schedule });
 
-  if (t.kind === 'baseline' || phase === 'baseline') return none('attention');
+  if (t.kind === 'baseline' || phase === 'baseline') return none('neutral');
   if (ctx.counts === false) return none('listened');
   if (t.response === 'approximation') return none('praise');
   if (!SUCCESS.has(t.response)) return none('neutral');
@@ -117,7 +118,7 @@ export function awardForTrial(
 
   if (t.kind === 'high_p') {
     if (ctx.highPTokenPaid || !nonContingentRoom(board)) return none('praise');
-    return { tokens: 1, reason: 'at_start_level', nonContingent: true, feedback: 'token_praise', schedule };
+    return { tokens: 1, reason: 'high_p', nonContingent: true, feedback: 'token_praise', schedule };
   }
   if (phase !== 'mastered' && phase !== 'maintenance') {
     return { tokens: 1, reason: 'at_start_level', feedback: 'token_praise', schedule };

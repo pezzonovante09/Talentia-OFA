@@ -219,7 +219,12 @@ export type AbaTokenReason =
    * самостоятельный ответ; на безошибочном старте с полной модели — единственный
    * способ, которым новая цель вообще приносит жетон за результат.
    */
-  | 'at_start_level';
+  | 'at_start_level'
+  /**
+   * Высоковероятная проба: разогрев или отвлекающая. Не за результат по цели — в
+   * данных отличается от `at_start_level`, иначе результативность завышается.
+   */
+  | 'high_p';
 
 export type AbaTrial = {
   id: string;
@@ -294,6 +299,13 @@ export type AbaTargetState = {
   startPromptLevel: PromptLevel;
   consecutiveIndependentAtStart: number;
   consecutiveAboveStart: number;
+  /**
+   * Провалы подряд (неверно или молчание) в обучающих пробах и переносе. Два — сброс на
+   * безошибочный старт с полной модели: иначе быстрые ошибки со старта L0 поднимают
+   * уровень по ступени, и ребёнок проходит весь блок ошибок и коррекций раньше, чем
+   * сработает остановка.
+   */
+  consecutiveFailures: number;
   currentDelayMs: number;
   /** Доли самостоятельных по последним сессиям, свежие в конце. */
   recentIndependentRates: number[];
@@ -333,12 +345,21 @@ export type AbaTargetState = {
   stepPrompts?: Record<string, StepPromptState>;
   /** Последняя сессия с пробой переноса: перенос достаётся целям по кругу. */
   lastGeneralizationSessionIndex: number;
+  /**
+   * Откуда «освоено»: по полному критерию или по базовой линии, где навык оказался уже
+   * известен. Родителю «освоено» по одной сессии не показывается.
+   */
+  masteredBy?: 'criterion' | 'baseline';
 };
 
 /** Состояние подсказки одного звена цепочки. */
 export type StepPromptState = Pick<
   AbaTargetState,
-  'startPromptLevel' | 'consecutiveIndependentAtStart' | 'consecutiveAboveStart' | 'lastSuccessfulPromptLevel'
+  | 'startPromptLevel'
+  | 'consecutiveIndependentAtStart'
+  | 'consecutiveAboveStart'
+  | 'consecutiveFailures'
+  | 'lastSuccessfulPromptLevel'
 >;
 
 export type AbaSessionEndReason =
@@ -359,6 +380,8 @@ export type AbaSession = {
   targetIds: string[];
   /** Что ребёнок выбрал в начале. Без этого жетон не обеспечен ничем. */
   reinforcerId: string;
+  /** Кто выбрал: ребёнок или взрослый по таймауту. Выбор взрослого — не данные о предпочтениях. */
+  reinforcerChosenBy: 'child' | 'adult' | null;
   tokensEarned: number;
   exchangesMade: number;
   endReason: AbaSessionEndReason | null;
@@ -376,7 +399,20 @@ export type AbaSession = {
 export type AbaSessionEvent =
   | { kind: 'break'; startedAt: string; endedAt: string }
   | { kind: 'exchange'; at: string; tokens: number }
-  | { kind: 'participation'; at: string; targetId: string };
+  | { kind: 'participation'; at: string; targetId: string }
+  /**
+   * Смена фазы цели и её причина. По пробам потом не различить освоение по критерию,
+   * по базовой линии и возврат в обучение, а отсечки на графике специалиста строятся
+   * ровно по этим событиям.
+   */
+  | {
+      kind: 'phase';
+      at: string;
+      targetId: string;
+      from: AbaPhase;
+      to: AbaPhase;
+      reason: 'baseline' | 'criterion' | 'maintenance_failed' | 'maintenance_passed';
+    };
 
 /** Критерий освоения. Проверяется программно — в прежней версии его не было в коде вообще. */
 export const MASTERY = {

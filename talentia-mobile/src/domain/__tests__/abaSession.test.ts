@@ -74,7 +74,12 @@ const mastered = (t: AbaTarget, idx = 10, over: Partial<AbaTargetState> = {}): A
   ...over,
 });
 
-function begin(targets: AbaTarget[], states: Record<string, AbaTargetState>, over: Partial<StartInput> = {}) {
+function begin(
+  targets: AbaTarget[],
+  states: Record<string, AbaTargetState>,
+  over: Partial<StartInput> = {},
+  by: 'child' | 'adult' = 'child',
+) {
   const st = startAbaSession({
     sessionId: 's',
     sessionIndex: 10,
@@ -90,7 +95,7 @@ function begin(targets: AbaTarget[], states: Record<string, AbaTargetState>, ove
   });
   const first = nextStep(st, 0);
   if (first.step.kind !== 'choose_reinforcer') throw new Error('сессия начинается не с выбора подкрепителя');
-  return chooseReinforcer(first.state, first.step.options[0], 0);
+  return chooseReinforcer(first.state, first.step.options[0], 0, by);
 }
 
 /** Как ответил ребёнок. */
@@ -100,7 +105,7 @@ let seq = 0;
 
 function trialFor(state: AbaSessionState, step: TrialStep, how: How): Omit<AbaTrial, 'tokens' | 'tokenReason'> {
   const start = step.startPromptLevel;
-  const max: PromptLevel = step.allowEscalation ? 3 : start;
+  const max = (step.allowEscalation ? Math.max(3, start) : start) as PromptLevel;
   const h =
     how === 'ok'
       ? { response: start === 0 ? 'independent' : 'prompted', used: start, emitted: start === 0 }
@@ -216,9 +221,15 @@ describe('К1: уровень пробы коррекции', () => {
   }
 
   it('никогда не L0, даже если последний успех был самостоятельным', () => {
-    const st = answer(afterWarmup(acq(A, 0)), 3, { response: 'incorrect', used: 0, emitted: true }).state;
+    const st = answer(afterWarmup(acq(A, 0)), 3, { response: 'no_response', used: 0, emitted: false }).state;
     const step = nextStep(st, 4).step as TrialStep;
     expect([step.trialKind, step.startPromptLevel]).toEqual(['correction', 1]);
+  });
+
+  it('после неверного ответа — не ниже первого уровня, несущего ответ, и доводится до верного', () => {
+    const st = answer(afterWarmup(acq(A, 0)), 3, { response: 'incorrect', used: 0, emitted: true }).state;
+    const step = nextStep(st, 4).step as TrialStep;
+    expect([step.trialKind, step.startPromptLevel, step.escalateOnIncorrect]).toEqual(['correction', 2, true]);
   });
 
   it('не ниже того, что ребёнку только что понадобилось, плюс ступень', () => {
@@ -235,9 +246,17 @@ describe('К1: уровень пробы коррекции', () => {
     expect(t.startPromptLevel).toBe(0);
   });
 
-  it('не ответил и на полной модели — шаг коррекции пропускается', () => {
+  it('не ответил и на полной модели, со взрослым — сразу его помощь (L4), без повтора модели', () => {
     const st = answer(afterWarmup(acq(A, 3)), 3, 'silent_at_model').state;
-    expect((nextStep(st, 4).step as TrialStep).trialKind).toBe('high_p');
+    const step = nextStep(st, 4).step as TrialStep;
+    expect([step.trialKind, step.startPromptLevel, step.askAdultForL4]).toEqual(['correction', 4, true]);
+  });
+
+  it('не ответил и на полной модели, без взрослого — шаг коррекции пропускается', () => {
+    const V = tgt('V', { format: 'voice_volume' });
+    let st = begin([V], { V: acq(V, 3) }, { config: 'alone' });
+    st = answer(st, 1, 'silent_at_model').state;
+    expect((nextStep(st, 2).step as TrialStep).trialKind).toBe('transfer');
   });
 
   it('коррекция на полной модели со взрослым — просьба помочь (L4)', () => {
@@ -261,7 +280,22 @@ describe('К1: уровень пробы коррекции', () => {
   it('correctionLevel: провал на полной модели с неверным ответом — снова полная модель', () => {
     const s = acq(A, 1);
     const t = { kind: 'teaching', response: 'incorrect', promptLevelUsed: 3 } as AbaTrial;
-    expect(correctionLevel(s, t)).toBe(3);
+    expect(correctionLevel(s, t, 'imitate_sound')).toBe(3);
+  });
+
+  it('correctionLevel: в identify ответ несёт уже жест (L1)', () => {
+    const t = { kind: 'teaching', response: 'incorrect', promptLevelUsed: 0 } as AbaTrial;
+    expect(correctionLevel(acq(A, 0), t, 'identify')).toBe(1);
+    expect(correctionLevel(acq(A, 0), t, 'repeat_word')).toBe(2);
+  });
+
+  it('два провала подряд — старт сразу на полную модель, а не на ступень', () => {
+    let st = afterWarmup(acq(A, 0));
+    st = answer(st, 3, 'wrong').state;
+    st = answer(st, 4, 'ok').state; // коррекция
+    st = answer(st, 5, 'ok').state; // отвлекающая
+    st = answer(st, 6, 'wrong').state; // перенос
+    expect(st.states.A.startPromptLevel).toBe(3);
   });
 });
 
@@ -328,7 +362,7 @@ describe('остановка и закрытие', () => {
     const { steps } = toBreakdown();
     const closing = steps.find((s): s is TrialStep => s.kind === 'trial' && s.trialKind === 'closing')!;
     expect([closing.targetId, closing.startPromptLevel, closing.askAdultForL4]).toEqual(['A', 3, true]);
-    expect(steps[steps.length - 1]).toEqual({ kind: 'end', reason: 'breakdown' });
+    expect(steps[steps.length - 1]).toEqual({ kind: 'end', reason: 'breakdown', endedOnSuccess: true });
   });
 
   it('жетон за участие начатого блока — после успешной закрывающей пробы', () => {
@@ -363,9 +397,33 @@ describe('остановка и закрытие', () => {
   it('остановка взрослым: ни закрывающей, ни участия, ни обмена даже при полной доске', () => {
     const st = begin([A], { A: acq(A) }, { board: { earned: 5, nonContingent: 0 } });
     const s = stopSession(answer(st, 1, 'wrong').state, 'adult_stopped');
-    expect(nextStep(s, 2).step).toEqual({ kind: 'end', reason: 'adult_stopped' });
+    expect(nextStep(s, 2).step).toEqual({ kind: 'end', reason: 'adult_stopped', endedOnSuccess: false });
     const result = finishAbaSession(s, '2026-09-29', 3);
     expect([result.exchanged, result.board.earned]).toEqual([0, 5]);
+  });
+
+  it('блок не кончается провалом: перед концом блока — успешная закрывающая, потом участие и перерыв', () => {
+    const [M, B] = [tgt('M'), tgt('B')];
+    let teachingA = 0;
+    const { steps, state } = drive(begin([M, A, B], { M: mastered(M), A: acq(A), B: acq(B) }), (s) => {
+      if (s.targetId === 'A' && s.trialKind === 'teaching') teachingA += 1;
+      return s.targetId === 'A' && ((s.trialKind === 'teaching' && teachingA === 5) || s.trialKind === 'transfer')
+        ? 'wrong'
+        : 'ok';
+    });
+    const k = kinds(steps);
+    const brk = k.indexOf('break');
+    expect(k.slice(brk - 4, brk + 1)).toEqual(['correction', 'high_p', 'transfer', 'closing', 'break']);
+    const partAt = state.events.findIndex((e) => e.kind === 'participation');
+    expect(partAt).toBeGreaterThanOrEqual(0);
+  });
+
+  it('по лимиту жетон за участие экран получает флагом, а не молча', () => {
+    let st = begin([A], { A: acq(A) }, { timeLimitMs: 2500 });
+    st = answer(st, 1000, 'ok').state;
+    const next = nextStep(st, 3000);
+    expect(next.step.kind).toBe('end');
+    expect(next.participation).toBe(true);
   });
 
   it('по плану полная доска в конце обменивается', () => {
@@ -373,6 +431,14 @@ describe('остановка и закрытие', () => {
     const result = finishAbaSession(state, '2026-09-29', 99_000);
     expect(result.exchanged).toBeGreaterThanOrEqual(5);
     expect(result.session.events.some((e) => e.kind === 'exchange')).toBe(true);
+  });
+});
+
+describe('выбор подкрепителя', () => {
+  it('кто выбрал — пишется: выбор взрослого не данные о предпочтениях', () => {
+    const A = tgt('A');
+    const st = stopSession(begin([A], { A: acq(A) }, {}, 'adult'), 'abandoned');
+    expect(finishAbaSession(st, '2026-09-29', 1).session.reinforcerChosenBy).toBe('adult');
   });
 });
 
@@ -459,6 +525,30 @@ describe('цепочки', () => {
     expect(promptStateOf(state.states.C, 's2').startPromptLevel).toBe(3);
   });
 
+  it('базовая линия цепочки — два прогона, старт у каждого звена свой', () => {
+    const { state } = drive(begin([C], {}), (s) =>
+      s.stepId === 's2' && s.runIndex === 1 ? { response: 'no_response', used: 0, emitted: false } : 'ok',
+    );
+    const result = finishAbaSession(state, '2026-09-29', 99_000);
+    expect(promptStateOf(result.states.C, 's1').startPromptLevel).toBe(0);
+    expect(promptStateOf(result.states.C, 's2').startPromptLevel).toBe(1);
+    expect(result.states.C.phase).toBe('acquisition');
+  });
+
+  it('поддержание цепочки — прогоном; распалось — каждое звено к своему последнему успеху', () => {
+    const st = begin([C], { C: mastered(C, 0, { phase: 'maintenance', maintenanceFailsInRow: 1 }) });
+    const { state, steps } = drive(st, (s) =>
+      s.stepId === 's2' ? { response: 'prompted', used: 2, emitted: false } : 'ok',
+    );
+    const probe = steps.filter((s): s is TrialStep => s.kind === 'trial' && s.trialKind === 'maintenance');
+    expect(probe.map((s) => s.stepId)).toEqual(['s1', 's2']);
+    const result = finishAbaSession(state, '2026-09-29', 99_000);
+    expect(result.states.C.phase).toBe('acquisition');
+    expect(promptStateOf(result.states.C, 's1').startPromptLevel).toBe(0);
+    expect(promptStateOf(result.states.C, 's2').startPromptLevel).toBe(2);
+    expect(result.session.events).toContainEqual(expect.objectContaining({ kind: 'phase', reason: 'maintenance_failed' }));
+  });
+
   it('освоенная цепочка не бывает высоковероятной пробой', () => {
     const A = tgt('A');
     expect(begin([C, A], { C: mastered(C), A: acq(A) }).highPTargetIds).toEqual([]);
@@ -529,38 +619,49 @@ describe('базовая линия', () => {
   });
 
   it('3/3 — сразу в поддержание', () => {
-    expect(applyBaseline(initialTargetState(N), base(['independent', 'independent', 'independent']), 4).phase).toBe('mastered');
+    const s = applyBaseline(initialTargetState(N), base(['independent', 'independent', 'independent']), 4, N);
+    expect([s.phase, s.masteredBy]).toEqual(['mastered', 'baseline']);
   });
 
   it('1–2 из 3 — обучение со старта L1', () => {
-    expect(applyBaseline(initialTargetState(N), base(['independent', 'incorrect', 'no_response']), 4)).toMatchObject({
+    expect(applyBaseline(initialTargetState(N), base(['independent', 'incorrect', 'no_response']), 4, N)).toMatchObject({
       phase: 'acquisition',
       startPromptLevel: 1,
     });
   });
 
   it('0 из 3 — обучение с полной модели', () => {
-    expect(applyBaseline(initialTargetState(N), base(['incorrect', 'no_response', 'incorrect']), 4)).toMatchObject({
+    expect(applyBaseline(initialTargetState(N), base(['incorrect', 'no_response', 'incorrect']), 4, N)).toMatchObject({
       phase: 'acquisition',
       startPromptLevel: 3,
     });
   });
 
   it('меньше трёх проб — базовая линия повторяется', () => {
-    expect(applyBaseline(initialTargetState(N), base(['independent']), 4).phase).toBe('baseline');
+    expect(applyBaseline(initialTargetState(N), base(['independent']), 4, N).phase).toBe('baseline');
   });
 
-  it('в сессии: без подсказки, без жетонов за ответ, без участия, с похвалой за внимание', () => {
+  it('в сессии: без подсказки, без жетонов за ответ, без участия; внимание хвалят до инструкции', () => {
     const st = begin([N], {});
     const r = answer(st, 1, { response: 'incorrect', used: 0, emitted: true });
-    expect([r.step.trialKind, r.step.allowEscalation, r.res.award.feedback, r.res.award.tokens]).toEqual([
-      'baseline', false, 'attention', 0,
-    ]);
+    expect([r.step.trialKind, r.step.allowEscalation, r.step.praiseAttentionBeforeSd]).toEqual(['baseline', false, true]);
+    expect([r.res.award.feedback, r.res.award.tokens]).toEqual(['neutral', 0]);
     const { state } = drive(r.state, () => 'ok');
     expect(state.events.some((e) => e.kind === 'participation')).toBe(false);
     expect(state.queue).toEqual([]);
     const result = finishAbaSession(state, '2026-09-29', 10_000);
     expect(result.states.N).toMatchObject({ phase: 'acquisition', startPromptLevel: 1 });
+    expect(result.session.events).toContainEqual(
+      expect.objectContaining({ kind: 'phase', targetId: 'N', from: 'baseline', to: 'acquisition', reason: 'baseline' }),
+    );
+  });
+
+  it('5–6: базовая линия занимает слоты обучения', () => {
+    const [A5, B5, N5] = ['A', 'B', 'N'].map((id) => tgt(id, { band: '5-6' }));
+    const st = begin([A5, B5, N5], { A: acq(A5), B: acq(B5) }, { band: '5-6' });
+    expect(st.baselineTargetIds).toEqual([]);
+    const one = begin([A5, N5], { A: acq(A5) }, { band: '5-6' });
+    expect(one.baselineTargetIds).toEqual(['N']);
   });
 });
 
