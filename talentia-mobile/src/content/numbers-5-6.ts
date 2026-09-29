@@ -45,9 +45,9 @@ const lessonOneTwoThree: Lesson = {
       hintKey: 'content.numbers.l1.t2.hint',
       scene: 'region-numbers',
       targets: [
-        { id: 'trio', x: 0.61, y: 0.31, r: 0.17, correct: true },
-        { id: 'single', x: 0.14, y: 0.26, r: 0.13, correct: false },
-        { id: 'many', x: 0.87, y: 0.28, r: 0.13, correct: false },
+        { id: 'trio', x: 0.61, y: 0.31, r: 0.17, correct: true, labelKey: 'content.scene.region-numbers.trio' },
+        { id: 'single', x: 0.14, y: 0.26, r: 0.13, correct: false, labelKey: 'content.scene.region-numbers.single' },
+        { id: 'many', x: 0.87, y: 0.28, r: 0.13, correct: false, labelKey: 'content.scene.region-numbers.many' },
       ],
     },
     {
@@ -72,9 +72,9 @@ const lessonOneTwoThree: Lesson = {
       hintKey: 'content.numbers.l1.t4.hint',
       scene: 'region-numbers',
       targets: [
-        { id: 'single', x: 0.14, y: 0.26, r: 0.13, correct: true },
-        { id: 'trio', x: 0.61, y: 0.31, r: 0.17, correct: false },
-        { id: 'many', x: 0.87, y: 0.28, r: 0.13, correct: false },
+        { id: 'single', x: 0.14, y: 0.26, r: 0.13, correct: true, labelKey: 'content.scene.region-numbers.single' },
+        { id: 'trio', x: 0.61, y: 0.31, r: 0.17, correct: false, labelKey: 'content.scene.region-numbers.trio' },
+        { id: 'many', x: 0.87, y: 0.28, r: 0.13, correct: false, labelKey: 'content.scene.region-numbers.many' },
       ],
     },
     {

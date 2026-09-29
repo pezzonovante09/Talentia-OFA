@@ -33,9 +33,12 @@ describe('контраст палитр', () => {
           expect(contrast(c.textMuted, c.background)).toBeGreaterThanOrEqual(TEXT);
         });
 
-        it('текст читается на всех поверхностях', () => {
+        it('основной и вторичный текст читаются на всех поверхностях', () => {
+          // вторичный раньше проверялся только на фоне — и в тёмной схеме на карточке
+          // давал 3.93:1, не проходя там, где его и кладут
           [c.surface, c.surfaceAlt, c.surfaceSunken].forEach((bg) => {
             expect(contrast(c.text, bg)).toBeGreaterThanOrEqual(TEXT);
+            expect(contrast(c.textMuted, bg)).toBeGreaterThanOrEqual(TEXT);
           });
         });
 

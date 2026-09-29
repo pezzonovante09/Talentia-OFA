@@ -279,7 +279,9 @@ const darkColors: ColorTokens = {
   surfaceSunken: '#221A15',
 
   text: '#FFF3E3', // 16.62:1
-  textMuted: '#997867', // 4.54:1
+  // #997867 давал 4.54:1 к фону, но 3.93:1 на карточке — проходил только там, где
+  // его не используют. #AD8F7E: 6.07 к фону, 5.26 на surface, 4.57 на surfaceAlt.
+  textMuted: '#AD8F7E',
   textInverse: '#1B1410',
 
   outline: '#FFF3E3', // контур инвертируется — главный приём тёмной темы
