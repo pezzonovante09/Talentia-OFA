@@ -25,7 +25,8 @@
 `src/domain/mastery.ts` — освоение и повторение; `src/domain/abaPrompting.ts`,
 `abaCriterion.ts`, `abaTokens.ts` — логика ABA; `src/domain/companionSituations.ts` —
 реплики; `src/domain/consent.ts` и `parentReport.ts` — согласия и отчёт родителю;
-`src/domain/parentGate.ts` — правила гейта; `src/design/tokens.ts` — токены,
+`src/domain/parentGate.ts` — правила гейта; `lessonLimits.ts` и `lessonFlow.ts` —
+лимиты заданий по полосе и ход задания (сужение, исход, отклик, проба переноса); `src/design/tokens.ts` — токены,
 `abaTokens.ts` и `parentTokens.ts` — ABA и родительская тональность; `src/assets/registry.ts` — вектор. Схема детей и
 родителей — `supabase/migrations/20260924120000_children_and_guardians.sql`.
 Гарды: `src/data/__tests__/corpus.test.ts` и `src/assets/__tests__/registry.test.ts`;
@@ -700,6 +701,12 @@ Rive советовался, когда предполагался художн�
       1 → 5 → 15 минут, автозакрытие, окно свежести, порог намерения (`parentGate.ts`)
 - [x] **Токены ABA и родительской тональности** — с тестами на контраст и на правило
       «цвет в ABA не бывает стимулом» (`abaTokens.ts`, `parentTokens.ts`)
+- [x] **Экран урока: спецификация** — `SCREENS.md` (`design-lead`, проверено
+      `child-ux-specialist` и методистами) и промпты для Claude Design
+      (`DESIGN_PROMPTS.md`) для всех экранов обычного режима, ABA и родительского раздела
+- [x] **Ход задания по методистам** — минимум три альтернативы, знакомство вне зачёта,
+      сужение с сохранением верного, дифференцированный отклик, активный ответ после
+      показа, проба переноса; лимиты по полосе в гарде корпуса
 - [ ] Анимация Tali кодом по карте реакций
 - [ ] Локализация — в самом конце
 

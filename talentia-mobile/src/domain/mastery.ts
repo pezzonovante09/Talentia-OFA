@@ -38,8 +38,19 @@ export type SkillState = {
  */
 export const REVIEW_GAP: Record<Box, number> = { 1: 1, 2: 2, 3: 5, 4: 12 };
 
-/** Исход попытки. `helped` — ответ показали после второй ошибки. */
-export type Outcome = 'correct' | 'hinted' | 'helped';
+/**
+ * Исход попытки.
+ *
+ * - `helped` — ответ показали: после второй ошибки или сразу, когда сужать было
+ *   некуда (SCREENS.md, 2.6). В корпусе это почти не встречается: оценочное
+ *   задание обязано давать ≥ 3 альтернатив, два варианта — только в знакомстве,
+ *   которое в зачёт не идёт вовсе (`lessonFlow.countsTowardMastery`).
+ * - `transfer_correct` — верный ответ в пробе переноса: то же задание вернулось
+ *   позже в уроке после показа. Отдельная проба, коробку не двигает — ответ
+ *   получен в той же сессии после коррекции; самостоятельной считается следующая
+ *   встреча с навыком по `isDue`. Звёзды не меняет.
+ */
+export type Outcome = 'correct' | 'hinted' | 'helped' | 'transfer_correct';
 
 export function emptySkill(skill: string): SkillState {
   return { skill, box: 1, correctInRow: 0, attempts: 0, correct: 0, lastSeenLesson: -1 };
@@ -55,6 +66,7 @@ export function applyOutcome(s: SkillState, outcome: Outcome, lesson: number): S
   const correct = s.correct + (outcome === 'correct' ? 1 : 0);
   const base = { ...s, attempts, correct, lastSeenLesson: lesson };
 
+  if (outcome === 'transfer_correct') return { ...base, correct: s.correct + 1 };
   if (outcome === 'helped') return { ...base, box: 1, correctInRow: 0 };
   if (outcome === 'hinted') return { ...base, correctInRow: 0 };
 
@@ -91,7 +103,9 @@ export function skillsToReview(all: SkillState[], lesson: number, limit = 2): Sk
  * Звёзды за урок. Три градации, и различает их не цвет, а причина:
  * без единой ошибки, с одной, и «прошёл, но ответ показывали».
  */
-export function starsForLesson(outcomes: Outcome[]): 1 | 2 | 3 {
+export function starsForLesson(all: Outcome[]): 1 | 2 | 3 {
+  // проба переноса — повтор уже засчитанного задания, звёзды она не меняет
+  const outcomes = all.filter((o) => o !== 'transfer_correct');
   if (outcomes.some((o) => o === 'helped')) return 1;
   const hints = outcomes.filter((o) => o === 'hinted').length;
   if (hints === 0) return 3;
