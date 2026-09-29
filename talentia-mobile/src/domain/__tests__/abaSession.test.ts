@@ -28,6 +28,10 @@ import {
 import { correctionLevel, initialTargetState, promptStateOf } from '../abaPrompting';
 import { applyBaseline, summarizeSession } from '../abaCriterion';
 import { targetErrors } from '../abaTargetRules';
+import { initialTokenTraining, type TokenTrainingState } from '../abaTokenTraining';
+
+/** Ребёнок, прошедший сопряжение и обучение доске: финальная ступень. */
+const TRAINED: TokenTrainingState = { ...initialTokenTraining(), pairingDone: true, stage: 5 };
 
 const POOL = ['puzzle', 'bubbles', 'drum', 'stickers', 'train', 'balloon'];
 
@@ -91,6 +95,7 @@ function begin(
     reinforcerHistory: [],
     startedAt: 0,
     seed: 42,
+    tokenTraining: TRAINED,
     ...over,
   });
   const first = nextStep(st, 0);
@@ -362,7 +367,7 @@ describe('остановка и закрытие', () => {
     const { steps } = toBreakdown();
     const closing = steps.find((s): s is TrialStep => s.kind === 'trial' && s.trialKind === 'closing')!;
     expect([closing.targetId, closing.startPromptLevel, closing.askAdultForL4]).toEqual(['A', 3, true]);
-    expect(steps[steps.length - 1]).toEqual({ kind: 'end', reason: 'breakdown', endedOnSuccess: true });
+    expect(steps[steps.length - 1]).toEqual({ kind: 'end', reason: 'breakdown', endedOnSuccess: true, pairingCycle: false });
   });
 
   it('жетон за участие начатого блока — после успешной закрывающей пробы', () => {
@@ -397,7 +402,7 @@ describe('остановка и закрытие', () => {
   it('остановка взрослым: ни закрывающей, ни участия, ни обмена даже при полной доске', () => {
     const st = begin([A], { A: acq(A) }, { board: { earned: 5, nonContingent: 0 } });
     const s = stopSession(answer(st, 1, 'wrong').state, 'adult_stopped');
-    expect(nextStep(s, 2).step).toEqual({ kind: 'end', reason: 'adult_stopped', endedOnSuccess: false });
+    expect(nextStep(s, 2).step).toEqual({ kind: 'end', reason: 'adult_stopped', endedOnSuccess: false, pairingCycle: false });
     const result = finishAbaSession(s, '2026-09-29', 3);
     expect([result.exchanged, result.board.earned]).toEqual([0, 5]);
   });
@@ -702,5 +707,61 @@ describe('правила на цель', () => {
 
   it('сессия с негодной целью не начинается', () => {
     expect(() => begin([tgt('A', { chaining: 'backward' })], {})).toThrow(/обратное сцепление/);
+  });
+});
+
+describe('обучение доске в сессии', () => {
+  const [M, A, N] = ['M', 'A', 'N'].map((id) => tgt(id));
+  const stage = (st: TokenTrainingState['stage'], over: Partial<TokenTrainingState> = {}): TokenTrainingState => ({
+    ...initialTokenTraining(),
+    pairingDone: true,
+    stage: st,
+    ...over,
+  });
+
+  it('без сопряжения рабочая сессия не начинается', () => {
+    expect(() => begin([A], { A: acq(A) }, { tokenTraining: initialTokenTraining() })).toThrow(/Сопряжение/);
+  });
+
+  it('ступень 1: доска из одной ячейки, обмен сразу, доступ не в рабочее время', () => {
+    const st = begin([A], { A: acq(A) }, { tokenTraining: stage(1) });
+    expect(st.board.size).toBe(1);
+    const r = answer(st, 1, 'ok');
+    expect(r.res.exchanged).toBe(1);
+    expect(r.state.board.earned).toBe(0);
+    expect(r.state.pausedMs).toBe(20_000);
+  });
+
+  it('ступень 1: разогрев жетона не даёт — нет места для жетонов не за результат', () => {
+    const st = begin([M, A], { M: mastered(M), A: acq(A) }, { tokenTraining: stage(1) });
+    expect(answer(st, 1, 'ok').res.award.tokens).toBe(0);
+  });
+
+  it('на финальной ступени обмен — как прежде, на перерыве', () => {
+    const st = begin([A], { A: acq(A) });
+    expect(answer(st, 1, 'ok').res.exchanged).toBe(0);
+  });
+
+  it('ступени 1–2: на базовой линии не больше одной цели', () => {
+    const N2 = tgt('N2');
+    expect(begin([N, N2], {}, { tokenTraining: stage(2) }).baselineTargetIds).toEqual(['N']);
+    expect(begin([N, N2], {}, { tokenTraining: stage(3) }).baselineTargetIds).toEqual(['N', 'N2']);
+  });
+
+  it('сессия из одной базовой линии кончается циклом сопряжения', () => {
+    const { state, steps } = drive(begin([N], {}), () => 'ok');
+    expect(steps[steps.length - 1]).toMatchObject({ kind: 'end', pairingCycle: true });
+    expect(finishAbaSession(state, '2026-09-29', 99_000).session.events).toContainEqual(
+      expect.objectContaining({ kind: 'pairing' }),
+    );
+  });
+
+  it('две сессии подряд с двумя обменами — ступень растёт, событие в итоге', () => {
+    const tt = stage(1, { atStage: [{ sessionIndex: 9, exchanges: 3, endReason: 'completed' }] });
+    const { state } = drive(begin([A], { A: acq(A) }, { tokenTraining: tt }), () => 'ok');
+    const result = finishAbaSession(state, '2026-09-29', 99_000);
+    expect(result.tokenTraining.stage).toBe(2);
+    expect(result.session.events).toContainEqual(expect.objectContaining({ kind: 'board_stage', from: 1, to: 2 }));
+    expect(result.session.boardSize).toBe(1);
   });
 });

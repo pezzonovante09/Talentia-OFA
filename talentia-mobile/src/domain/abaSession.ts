@@ -21,7 +21,6 @@ import {
   COUNTS_TOWARD_MASTERY,
   MAINTENANCE_GAP,
   MASTERY,
-  TOKEN_BOARD_SIZE,
   type AbaConfig,
   type AbaExemplar,
   type AbaResponse,
@@ -79,6 +78,13 @@ import {
   type TokenSchedule,
 } from './abaTokens';
 import { targetErrors } from './abaTargetRules';
+import {
+  applyStageSession,
+  EXCHANGE_ACCESS_MS,
+  immediateExchange,
+  workingBoardSize,
+  type TokenTrainingState,
+} from './abaTokenTraining';
 
 // ---------------------------------------------------------------------------
 // Константы сессии
@@ -203,7 +209,17 @@ export type AbaStep =
   /** Перерыв по расписанию. Обмен — только при полной доске. */
   | { kind: 'break'; canExchange: boolean }
   /** `endedOnSuccess: false` — спокойный экран «закончили» без оценки и до обмена. */
-  | { kind: 'end'; reason: AbaSessionEndReason; endedOnSuccess: boolean };
+  | {
+      kind: 'end';
+      reason: AbaSessionEndReason;
+      endedOnSuccess: boolean;
+      /**
+       * Цикл сопряжения на экране перехода: в сессии не было ни учебной, ни освоенной
+       * цели (одна базовая линия), и без него ребёнок ушёл бы ни с чем. Жетон на доску из
+       * одной ячейки и сразу обмен, доступ 20 с; в доску не идёт.
+       */
+      pairingCycle: boolean;
+    };
 
 export type AbaSessionState = {
   sessionId: string;
@@ -231,6 +247,9 @@ export type AbaSessionState = {
   queue: QueueItem[];
   trials: AbaTrial[];
   board: TokenBoard;
+  tokenTraining: TokenTrainingState;
+  /** Обучение доске: обмен сразу, как доска полна, а не на перерыве. */
+  immediateExchange: boolean;
   tokensEarned: number;
   exchangesMade: number;
   schedule: TokenSchedule;
@@ -258,8 +277,10 @@ export type StartInput = {
   reinforcerPool: string[];
   /** Выборы прошлых сессий, свежие в конце. */
   reinforcerHistory: string[];
-  /** Доска с прошлой сессии: жетоны не сгорают. Размер берётся по текущей полосе. */
+  /** Доска с прошлой сессии: жетоны не сгорают. Размер — по ступени обучения доске. */
   board?: Pick<TokenBoard, 'earned' | 'nonContingent'>;
+  /** Сопряжение и обучение доске — на ребёнке. Без сопряжения рабочая сессия не начинается. */
+  tokenTraining: TokenTrainingState;
   /** Взрослый может уменьшить лимит, но не увеличить. */
   timeLimitMs?: number;
   startedAt: number;
@@ -442,6 +463,10 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     if (errors.length) throw new Error(`Цель ${t.id}: ${errors.join('; ')}`);
   }
 
+  if (!input.tokenTraining.pairingDone) {
+    throw new Error('Сопряжение не закончено: сначала сессия сопряжения, а не рабочая');
+  }
+
   const states: Record<string, AbaTargetState> = {};
   for (const t of input.targets) states[t.id] = input.states[t.id] ?? initialTargetState(t);
 
@@ -453,7 +478,11 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     .filter((t) => TEACHING_PHASES.has(states[t.id].phase) && ready(t))
     .slice(0, MAX_TEACHING_TARGETS);
   // 5–6: базовая линия занимает слоты обучения — иначе сессия малыша вдвое длиннее нормы
-  const baselineRoom = band === '5-6' ? MAX_TEACHING_TARGETS - teaching.length : MAX_BASELINE_TARGETS;
+  const baselineRoom = Math.min(
+    band === '5-6' ? MAX_TEACHING_TARGETS - teaching.length : MAX_BASELINE_TARGETS,
+    // на ступенях 1–2 обучения доске — не больше одной новой цели
+    input.tokenTraining.stage <= 2 ? 1 : MAX_BASELINE_TARGETS,
+  );
   const baseline = offered
     .filter((t) => states[t.id].phase === 'baseline' && ready(t))
     .slice(0, Math.max(0, baselineRoom));
@@ -525,10 +554,12 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     queue,
     trials: [],
     board: {
-      size: TOKEN_BOARD_SIZE[band],
+      size: workingBoardSize(input.tokenTraining, band),
       earned: input.board?.earned ?? 0,
       nonContingent: input.board?.nonContingent ?? 0,
     },
+    tokenTraining: input.tokenTraining,
+    immediateExchange: immediateExchange(input.tokenTraining, band),
     tokensEarned: 0,
     exchangesMade: 0,
     schedule,
@@ -619,9 +650,14 @@ function workedMs(state: AbaSessionState, now: number): number {
 export function nextStep(
   state: AbaSessionState,
   now: number,
-): { state: AbaSessionState; step: AbaStep; participation: boolean } {
+): { state: AbaSessionState; step: AbaStep; participation: boolean; exchanged: number } {
   const before = state.tokensEarned;
-  const done = (st: AbaSessionState, step: AbaStep) => ({ state: st, step, participation: st.tokensEarned > before });
+  const done = (st: AbaSessionState, step: AbaStep) => ({
+    state: st,
+    step,
+    participation: st.tokensEarned > before,
+    exchanged: exchangedSince(st, state),
+  });
   let st = state;
   if (st.endReason === null && st.breakStartedAt === null && workedMs(st, now) >= st.timeLimitMs) {
     st = closeOut(st, 'time_limit', now);
@@ -632,7 +668,12 @@ export function nextStep(
   const head = st.queue[0];
   if (!head) {
     const last = lastTrial(st);
-    return done(st, { kind: 'end', reason: st.endReason ?? 'completed', endedOnSuccess: !last || SUCCESS.has(last.response) });
+    return done(st, {
+      kind: 'end',
+      reason: st.endReason ?? 'completed',
+      endedOnSuccess: !last || SUCCESS.has(last.response),
+      pairingCycle: needsPairingCycle(st),
+    });
   }
   switch (head.kind) {
     case 'reinforcer':
@@ -702,15 +743,42 @@ export function stopSession(state: AbaSessionState, reason: 'adult_stopped' | 'a
 function payParticipation(state: AbaSessionState, targetId: string, now: number): { state: AbaSessionState; paid: boolean } {
   const award = participationAward(state.board);
   if (award.tokens === 0) return { state, paid: false };
+  const paid: AbaSessionState = {
+    ...state,
+    board: addTokens(state.board, award.tokens, true),
+    tokensEarned: state.tokensEarned + award.tokens,
+    events: [...state.events, { kind: 'participation', at: iso(now), targetId }],
+  };
+  return { state: settleBoard(paid, now).state, paid: true };
+}
+
+/**
+ * Обучение доске: полная доска обменивается сразу, внутри блока. Доступ к подкрепителю
+ * за обмен в рабочее время не идёт.
+ */
+function settleBoard(state: AbaSessionState, now: number): { state: AbaSessionState; exchanged: number } {
+  if (!state.immediateExchange || !isBoardFull(state.board)) return { state, exchanged: 0 };
+  const { board, exchanged } = tryExchange(state.board);
   return {
     state: {
       ...state,
-      board: addTokens(state.board, award.tokens, true),
-      tokensEarned: state.tokensEarned + award.tokens,
-      events: [...state.events, { kind: 'participation', at: iso(now), targetId }],
+      board,
+      exchangesMade: state.exchangesMade + 1,
+      pausedMs: state.pausedMs + EXCHANGE_ACCESS_MS[state.board.size],
+      events: [...state.events, { kind: 'exchange', at: iso(now), tokens: exchanged }],
     },
-    paid: true,
+    exchanged,
   };
+}
+
+/** Сессия без учебной и освоенной цели — одна базовая линия: в конце цикл сопряжения. */
+function needsPairingCycle(state: AbaSessionState): boolean {
+  const reason = state.endReason;
+  return (
+    state.teachingTargetIds.length === 0 &&
+    state.highPTargetIds.length === 0 &&
+    (reason === 'completed' || reason === 'time_limit')
+  );
 }
 
 /** Снять конец блока; обучающий блок получает жетон за участие. */
@@ -818,6 +886,8 @@ export type RecordResult =
       award: TokenAward;
       /** Жетон за участие: экран показывает его отдельным событием «за то, что занимался». */
       participation: boolean;
+      /** Обучение доске: доска заполнилась и обменялась сразу — экран даёт доступ. */
+      exchanged: number;
     }
   /** Запись противоречива или не та, что ждала сессия, — в лог она не идёт. */
   | { ok: false; errors: string[] };
@@ -899,6 +969,8 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
     openBlockTargetId: trial.kind === 'teaching' ? trial.targetId : state.openBlockTargetId,
     seed: r.seed(),
   };
+  const exchangesBefore = state.exchangesMade;
+  st = settleBoard(st, now).state;
 
   const failed = trial.response === 'incorrect' || trial.response === 'no_response';
   if (countsHere && st.endReason === null) {
@@ -924,7 +996,8 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
     participation ||= st.tokensEarned > before;
   }
 
-  return { ok: true, state: st, trial, award, participation };
+  const exchanged = st.exchangesMade > exchangesBefore ? exchangedSince(st, state) : 0;
+  return { ok: true, state: st, trial, award, participation, exchanged };
 }
 
 /**
@@ -958,6 +1031,13 @@ function bridgeFailedBlock(state: AbaSessionState, last: AbaTrial): AbaSessionSt
     queue: [{ kind: 'trial', trial }, { ...head, bridged: true }, ...state.queue.slice(1)],
     seed: r.seed(),
   };
+}
+
+/** Сколько жетонов ушло в обмены между двумя состояниями. */
+function exchangedSince(after: AbaSessionState, before: AbaSessionState): number {
+  return after.events
+    .slice(before.events.length)
+    .reduce((n, e) => n + (e.kind === 'exchange' ? e.tokens : 0), 0);
 }
 
 function correctionFor(state: AbaSessionState, failed: AbaTrial): QueueItem[] {
@@ -1058,6 +1138,8 @@ export type AbaSessionResult = {
   board: TokenBoard;
   /** Сколько жетонов ушло в обмен в конце. 0 — доска неполная или обмена по этой причине нет. */
   exchanged: number;
+  /** Обучение доске после этой сессии. */
+  tokenTraining: TokenTrainingState;
 };
 
 /**
@@ -1128,10 +1210,21 @@ export function finishAbaSession(
 
   const canExchange = EXCHANGE_AT_END.has(state.endReason);
   const { board, exchanged } = canExchange ? tryExchange(state.board) : { board: state.board, exchanged: 0 };
+  const exchangesMade = state.exchangesMade + (exchanged > 0 ? 1 : 0);
+  const tokenTraining = applyStageSession(state.tokenTraining, state.band, {
+    sessionIndex: idx,
+    exchanges: exchangesMade,
+    endReason: state.endReason,
+  });
+  const at = iso(endedAt);
   const events: AbaSessionEvent[] = [
     ...state.events,
-    ...(exchanged > 0 ? [{ kind: 'exchange' as const, at: iso(endedAt), tokens: exchanged }] : []),
+    ...(exchanged > 0 ? [{ kind: 'exchange' as const, at, tokens: exchanged }] : []),
+    ...(needsPairingCycle(state) ? [{ kind: 'pairing' as const, at }] : []),
     ...phaseEvents,
+    ...(tokenTraining.stage !== state.tokenTraining.stage
+      ? [{ kind: 'board_stage' as const, at, from: state.tokenTraining.stage, to: tokenTraining.stage }]
+      : []),
   ];
   const last = lastTrial(state);
 
@@ -1146,9 +1239,10 @@ export function finishAbaSession(
       reinforcerId: state.reinforcerId ?? '',
       reinforcerChosenBy: state.reinforcerChosenBy,
       tokensEarned: state.tokensEarned,
-      exchangesMade: state.exchangesMade + (exchanged > 0 ? 1 : 0),
+      exchangesMade,
       endReason: state.endReason,
       brokenTargetId: state.brokenTargetId,
+      boardSize: state.board.size,
       endedOnSuccess: !last || SUCCESS.has(last.response),
       events,
     },
@@ -1156,5 +1250,6 @@ export function finishAbaSession(
     trials: state.trials,
     board,
     exchanged,
+    tokenTraining,
   };
 }

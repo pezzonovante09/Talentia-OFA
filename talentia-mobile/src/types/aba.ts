@@ -387,6 +387,8 @@ export type AbaSession = {
   endReason: AbaSessionEndReason | null;
   /** Цель, на которой сработал критерий остановки. */
   brokenTargetId: string | null;
+  /** Рабочий размер доски в этой сессии: ступень обучения доске. */
+  boardSize: number;
   /**
    * Кончилась ли сессия успешной пробой. `false` — обе закрывающие пробы не удались,
    * сессия кончилась спокойно без требования; специалисту это видно.
@@ -400,6 +402,9 @@ export type AbaSessionEvent =
   | { kind: 'break'; startedAt: string; endedAt: string }
   | { kind: 'exchange'; at: string; tokens: number }
   | { kind: 'participation'; at: string; targetId: string }
+  /** Цикл сопряжения в конце сессии без учебной и освоенной цели: жетон не в доску. */
+  | { kind: 'pairing'; at: string }
+  | { kind: 'board_stage'; at: string; from: number; to: number }
   /**
    * Смена фазы цели и её причина. По пробам потом не различить освоение по критерию,
    * по базовой линии и возврат в обучение, а отсечки на графике специалиста строятся

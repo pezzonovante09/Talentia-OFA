@@ -8,6 +8,7 @@
  * гасила мотивацию отвечать самому.
  */
 import type { AbaPhase, AbaTokenReason, AbaTrial } from '../types/aba';
+import type { BoardStage } from './abaTokenTraining';
 
 /** Случайный источник в [0, 1). Передаётся явно, чтобы тесты были детерминированы. */
 export type Rng = () => number;
@@ -54,9 +55,9 @@ export type Feedback = 'token_praise' | 'praise' | 'neutral' | 'listened';
  * последний жетон доски всегда оплачен ответом по цели. Иначе на полосе 5–6 разогрев
  * и участие заполняют доску из трёх, и обмен случается без единого ответа по цели.
  */
-export type TokenBoard = { size: 3 | 5; earned: number; nonContingent: number };
+export type TokenBoard = { size: BoardStage; earned: number; nonContingent: number };
 
-export function emptyBoard(size: 3 | 5): TokenBoard {
+export function emptyBoard(size: BoardStage): TokenBoard {
   return { size, earned: 0, nonContingent: 0 };
 }
 
