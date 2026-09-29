@@ -20,7 +20,7 @@ const lessonOneTwoThree: Lesson = {
   id: 'nv-count-l1',
   titleKey: 'content.numbers.l1.title',
   band: '5-6',
-  hook: { taliPose: 'puzzled', lineKey: 'content.numbers.l1.hook' },
+  hook: { taliPose: 'write', lineKey: 'content.numbers.l1.hook' },
   atlasEntryKey: 'content.numbers.l1.atlas',
   tasks: [
     {
