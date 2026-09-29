@@ -77,20 +77,6 @@ const lessonOneTwoThree: Lesson = {
         { id: 'many', x: 0.89, y: 0.28, r: 0.1, correct: false, labelKey: 'content.scene.region-numbers.many' },
       ],
     },
-    {
-      id: 'nv-count-l1-t5',
-      skill: 'subitize-1-3',
-      format: 'choose',
-      presentation: 'picture',
-      promptKey: 'content.numbers.l1.t5.prompt',
-      hintKey: 'content.numbers.l1.t5.hint',
-      stimulus: { labelKey: 'content.numbers.l1.t5.stimulus', shape: 'leaf', count: 1 },
-      options: [
-        { id: 'a', labelKey: 'content.common.one', shape: 'dot', count: 1, correct: true },
-        { id: 'b', labelKey: 'content.common.two', shape: 'dot', count: 2, correct: false },
-        { id: 'c', labelKey: 'content.common.three', shape: 'dot', count: 3, correct: false },
-      ],
-    },
   ],
 };
 

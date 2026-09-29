@@ -18,7 +18,10 @@ import type { ChooseTask, Lesson, Task, TaskFormat, Topic } from '../../types/ta
 
 const k = (s: string) => `content.fx.${s}`;
 
-/** Урок 5-6: все пять доступных малышам форматов, по одному. */
+/**
+ * Урок 5-6: четыре формата по одному. Пятый доступный малышам, `group`, — во втором
+ * уроке (`lessonPictureTwo`): автор урока 5–6 пишет ровно четыре задания.
+ */
 function lessonPicture(): Lesson {
   return {
     id: 'fx-a-l1',
@@ -80,23 +83,40 @@ function lessonPicture(): Lesson {
           { id: 'i3', labelKey: k('a.l1.t4.i3'), shape: 'leaf', count: 2, position: 1 },
         ],
       },
+    ],
+  };
+}
+
+/** Второй урок 5-6: `group` и три задания первого урока под своими ключами. */
+function lessonPictureTwo(): Lesson {
+  const renamed = JSON.parse(
+    JSON.stringify(lessonPicture().tasks.slice(0, 3)).replace(/fx-a-l1-t(\d)/g, (_, n) => `fx-a-l2-t${Number(n) + 1}`).replace(/a\.l1\.t(\d)\./g, (_, n) => `a.l2.t${Number(n) + 1}.`),
+  ) as Task[];
+  return {
+    id: 'fx-a-l2',
+    titleKey: k('a.l2.title'),
+    band: '5-6',
+    hook: { taliPose: 'found', lineKey: k('a.l2.hook') },
+    atlasEntryKey: k('a.l2.atlas'),
+    tasks: [
       {
-        id: 'fx-a-l1-t5',
+        id: 'fx-a-l2-t1',
         skill: 'sort-by-kind',
         format: 'group',
         presentation: 'picture',
-        promptKey: k('a.l1.t5.prompt'),
-        hintKey: k('a.l1.t5.hint'),
+        promptKey: k('a.l2.t1.prompt'),
+        hintKey: k('a.l2.t1.hint'),
         groups: [
-          { id: 'g1', labelKey: k('a.l1.t5.g1'), shape: 'stone' },
-          { id: 'g2', labelKey: k('a.l1.t5.g2') },
+          { id: 'g1', labelKey: k('a.l2.t1.g1'), shape: 'stone' },
+          { id: 'g2', labelKey: k('a.l2.t1.g2') },
         ],
         items: [
-          { id: 'i1', labelKey: k('a.l1.t5.i1'), shape: 'stone', count: 1, groupId: 'g1' },
-          { id: 'i2', labelKey: k('a.l1.t5.i2'), image: 'leaf-big', groupId: 'g2' },
-          { id: 'i3', labelKey: k('a.l1.t5.i3'), shape: 'stone', count: 2, groupId: 'g1' },
+          { id: 'i1', labelKey: k('a.l2.t1.i1'), shape: 'stone', count: 1, groupId: 'g1' },
+          { id: 'i2', labelKey: k('a.l2.t1.i2'), image: 'leaf-big', groupId: 'g2' },
+          { id: 'i3', labelKey: k('a.l2.t1.i3'), shape: 'stone', count: 2, groupId: 'g1' },
         ],
       },
+      ...renamed,
     ],
   };
 }
@@ -137,7 +157,7 @@ function lessonText(): Lesson {
 
 function goodCorpus(): Corpus {
   return [
-    { file: 'numbers-5-6.ts', topic: { id: 'fx-a', titleKey: k('a.title'), lessons: [lessonPicture()] } },
+    { file: 'numbers-5-6.ts', topic: { id: 'fx-a', titleKey: k('a.title'), lessons: [lessonPicture(), lessonPictureTwo()] } },
     { file: 'words-9-10.ts', topic: { id: 'fx-b', titleKey: k('b.title'), lessons: [lessonText()] } },
   ];
 }
@@ -168,9 +188,9 @@ function setKey(root: Record<string, unknown>, key: string, value: unknown): voi
   node[parts[parts.length - 1]] = value;
 }
 
-/** Первое задание формата в уроке `lesson` (0 — 5-6, 1 — 9-10). */
+/** Первое задание формата в теме `lesson` (0 — 5-6, 1 — 9-10). */
 function taskOf<F extends TaskFormat>(c: Corpus, lesson: 0 | 1, format: F): Extract<Task, { format: F }> {
-  const found = c[lesson].topic.lessons[0].tasks.find((t) => t.format === format);
+  const found = c[lesson].topic.lessons.flatMap((l) => l.tasks).find((t) => t.format === format);
   if (!found) throw new Error(`в фикстуре нет ${format}`);
   return found as Extract<Task, { format: F }>;
 }
@@ -446,7 +466,7 @@ describe('гард корпуса: skill и hintKey', () => {
 describe('гард корпуса: формат и полоса', () => {
   it('ловит build на полосе 5-6', () => {
     const c = goodCorpus();
-    lessonAt(c, 0).tasks[4] = { id: 'fx-a-l1-t5', skill: 'spell', format: 'build', promptKey: k('a.l1.t5.prompt'), hintKey: k('a.l1.t5.hint'), answer: 'два' };
+    lessonAt(c, 0).tasks[3] = { id: 'fx-a-l1-t5', skill: 'spell', format: 'build', promptKey: k('a.l1.t5.prompt'), hintKey: k('a.l1.t5.hint'), answer: 'два' };
     expectRed('formatBand', c, 'формат build доступен с полосы 7');
   });
 
@@ -627,10 +647,10 @@ describe('гард корпуса: структура урока', () => {
   });
 
   it.each([
-    ['5-6', 0, 3, 'заданий 3, для 5-6 нужно 4–5'],
-    ['5-6', 0, 6, 'заданий 6, для 5-6 нужно 4–5'],
-    ['9-10', 1, 7, 'заданий 7, для 9-10 нужно 8–10'],
-    ['9-10', 1, 11, 'заданий 11, для 9-10 нужно 8–10'],
+    ['5-6', 0, 3, 'заданий 3, для 5-6 нужно 4'],
+    ['5-6', 0, 5, 'заданий 5, для 5-6 нужно 4'],
+    ['9-10', 1, 7, 'заданий 7, для 9-10 нужно 8'],
+    ['9-10', 1, 9, 'заданий 9, для 9-10 нужно 8'],
   ] as const)('ловит урок полосы %s из %s заданий', (_, i, n, message) => {
     const c = goodCorpus();
     const l = lessonAt(c, i);
@@ -640,7 +660,7 @@ describe('гард корпуса: структура урока', () => {
 
   it.each([
     ['5-6', 0, 4],
-    ['9-10', 1, 10],
+    ['9-10', 1, 8],
   ] as const)('пропускает границу нормы полосы %s: %s заданий', (_, i, n) => {
     const c = goodCorpus();
     const l = lessonAt(c, i);
@@ -648,20 +668,23 @@ describe('гард корпуса: структура урока', () => {
     expect(run('taskCount', c)).toEqual([]);
   });
 
-  it('на полосах 7 и 8 нижняя граница не проверяется — норма не зафиксирована', () => {
+  it.each([
+    ['8', 3, 'заданий 3, для 8 нужно 4–6'],
+    ['7', 7, 'заданий 7, для 7 нужно 4–6'],
+  ] as const)('на полосе %s ловит урок из %s заданий', (band, n, message) => {
     const c = goodCorpus();
     const l = lessonAt(c, 1);
-    l.band = '8';
-    l.tasks = l.tasks.slice(0, 1);
-    expect(run('taskCount', c)).toEqual([]);
+    l.band = band;
+    l.tasks = l.tasks.slice(0, n);
+    expectRed('taskCount', c, message);
   });
 
-  it('на полосах 7 и 8 больше десяти заданий — нарушение', () => {
+  it.each([4, 6])('на полосе 7 пропускает урок из %s заданий', (n) => {
     const c = goodCorpus();
     const l = lessonAt(c, 1);
     l.band = '7';
-    l.tasks = Array.from({ length: 11 }, (_, j) => ({ ...l.tasks[j % l.tasks.length], id: `n${j}` }));
-    expectRed('taskCount', c, 'заданий 11');
+    l.tasks = l.tasks.slice(0, n);
+    expect(run('taskCount', c)).toEqual([]);
   });
 });
 

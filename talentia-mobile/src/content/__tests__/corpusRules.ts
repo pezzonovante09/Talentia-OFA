@@ -131,9 +131,8 @@ function duplicates(list: string[]): string[] {
 const isNonEmptyString = (v: unknown): v is string => typeof v === 'string' && v.trim() !== '';
 
 /**
- * Нормы числа заданий в уроке по полосе — `domain/lessonLimits.ts`. Для 7 и 8
- * нижняя граница не зафиксирована (`CURRICULUM.md` считает 4–6, скилл автора велит
- * спрашивать), поэтому там проверяется только потолок — 10.
+ * Нормы числа заданий, которые пишет автор, по полосе — `domain/lessonLimits.ts`.
+ * Ниже потолка сессии: остаток — место под повторение.
  */
 export const TASK_COUNT = TASKS_PER_LESSON;
 
@@ -525,15 +524,16 @@ export const RULES = {
   },
 
   taskCount: {
-    // Длина урока — это длина внимания: 5–6 лет держат 6–8 минут, это 4–5
-    // заданий. См. TASK_COUNT про полосы 7 и 8.
-    title: 'число заданий в уроке по норме полосы (5-6: 4–5, 9-10: 8–10; 7 и 8: не больше 10)',
+    // Длина урока — это длина внимания: 5–6 лет держат 6–8 минут, это пять заданий
+    // вместе с повторением. Автор пишет меньше потолка — см. TASK_COUNT.
+    title: 'число заданий в уроке по норме полосы (5-6: 4, 7 и 8: 4–6, 9-10: 8)',
     check: (corpus) =>
       lessonsOf(corpus).flatMap(({ lesson, where }) => {
         const norm = TASK_COUNT[lesson.band];
         if (!norm) return [];
         const n = lesson.tasks.length;
-        return n < norm[0] || n > norm[1] ? [`${where}: заданий ${n}, для ${lesson.band} нужно ${norm[0]}–${norm[1]}`] : [];
+        const need = norm[0] === norm[1] ? `${norm[0]}` : `${norm[0]}–${norm[1]}`;
+        return n < norm[0] || n > norm[1] ? [`${where}: заданий ${n}, для ${lesson.band} нужно ${need}`] : [];
       }),
   },
 

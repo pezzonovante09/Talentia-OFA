@@ -85,14 +85,20 @@ export function applyOutcome(s: SkillState, outcome: Outcome, lesson: number): S
  * Поэтому за урок коробка сдвигается не больше чем на шаг, и решает худший исход:
  * хоть раз показали ответ — первая коробка; хоть раз с подсказкой — на месте;
  * всё сам — на одну дальше. Счётчики попыток и серия верных копятся как обычно.
+ *
+ * Вперёд — только если навыку **подошёл срок** (или он встретился впервые). Иначе
+ * три урока одной темы с общим навыком, пройденные за вечер, дают четвёртую коробку
+ * без единого перерыва — та же ошибка в масштабе темы. Назад — при любом сроке:
+ * показанный ответ знанием не бывает.
  */
 export function applyLessonOutcomes(s: SkillState, outcomes: readonly Outcome[], lesson: number): SkillState {
   if (outcomes.length === 0) return s;
   const counted = outcomes.reduce((acc, o) => applyOutcome(acc, o, lesson), s);
   const forBox = outcomes.filter((o) => o !== 'transfer_correct');
+  const due = s.lastSeenLesson < 0 || isDue(s, lesson);
   let box = s.box;
   if (forBox.includes('helped')) box = 1;
-  else if (forBox.length > 0 && !forBox.includes('hinted')) box = Math.min(4, s.box + 1) as Box;
+  else if (due && forBox.length > 0 && !forBox.includes('hinted')) box = Math.min(4, s.box + 1) as Box;
   return { ...counted, box };
 }
 

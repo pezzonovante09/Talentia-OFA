@@ -195,6 +195,9 @@ export function scheduleTransferProbe(
     const at = shownIndex + 1 + after;
     return [...queue.slice(0, at), probe, ...queue.slice(at)];
   };
+  // Проба повторения не встаёт последней: урок кончается своей темой, её и вписывают
+  // в атлас. Тогда — перед последним заданием урока.
+  if (shown.review && others > 0 && others <= PROBE_AFTER) return insertAt(others - 1);
   const preferred = insertAt(Math.min(PROBE_AFTER, others));
   const allowed = Math.max(MAX_FORMAT_RUN, maxFormatRun(queue));
   if (maxFormatRun(preferred) <= allowed || others < PROBE_AFTER) return preferred;

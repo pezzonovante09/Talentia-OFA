@@ -173,7 +173,7 @@ describe('сборка урока', () => {
     expect(q.some((x) => x.review)).toBe(false);
   });
 
-  it('помещается в лимит полосы: урок 5–6 из пяти заданий повторений не получает, из четырёх — одно', () => {
+  it('помещается в потолок сессии: урок 5–6 из четырёх заданий получает одно повторение, из пяти — ни одного', () => {
     const young = (n: number) =>
       lesson('y', '5-6', Array.from({ length: n }, (_, i) => (i % 2 ? point(`y-${i}`, 'own') : choose(`y-${i}`, 'own'))));
     const skills = [dueSkill('old-a'), dueSkill('old-b')];
@@ -181,6 +181,20 @@ describe('сборка урока', () => {
     const four = assembleLesson({ lesson: young(4), skills, lessonNumber: 2, pool, rng });
     expect(four).toHaveLength(5);
     expect(four.filter((x) => x.review)).toHaveLength(1);
+  });
+
+  it('позиции в задании повторения перемешаны', () => {
+    const q = assembleLesson({ lesson: fourTasks, skills: [dueSkill('old-a')], lessonNumber: 2, pool, rng });
+    const review = q.find((x) => x.review)!.task as ChooseTask;
+    expect(review.id).toBe('l1-1');
+    expect(review.options.map((o) => o.id)).not.toEqual(['a', 'b', 'c']);
+  });
+
+  it('при равной коробке — навык своего региона', () => {
+    const skills = [dueSkill('old-a'), dueSkill('old-b')];
+    const young = lesson('y', '5-6', [choose('y-1', 'own'), point('y-2', 'own'), choose('y-3', 'own'), point('y-4', 'own')]);
+    const q = assembleLesson({ lesson: young, skills, lessonNumber: 2, pool, regionSkills: new Set(['old-b']), rng });
+    expect(q.filter((x) => x.review).map((x) => x.task.skill)).toEqual(['old-b']);
   });
 
   it('5–6: текстовое задание из пула не берётся', () => {
@@ -212,12 +226,15 @@ describe('итог урока', () => {
     expect(r.stars).toBe(2);
   });
 
-  it('повторение идёт в звёзды и двигает свой навык', () => {
+  it('повторение в звёзды не идёт, но двигает свой навык', () => {
     const l = lesson('l', '7', [choose('a', 's1'), point('b', 's2')]);
     const q: QueuedTask[] = [{ task: l.tasks[0] }, { task: choose('r', 'old'), review: true }, { task: l.tasks[1] }];
-    const r = finishLesson(l, played(q, ['first', 'second', 'first']), [dueSkill('old', 2)], 4);
-    expect(r.stars).toBe(2);
-    expect(r.skills.find((s) => s.skill === 'old')).toMatchObject({ box: 2, lastSeenLesson: 4 });
+    const hinted = finishLesson(l, played(q, ['first', 'second', 'first']), [dueSkill('old', 2)], 4);
+    expect(hinted.stars).toBe(3);
+    expect(hinted.skills.find((s) => s.skill === 'old')).toMatchObject({ box: 2, lastSeenLesson: 4 });
+    const shown = finishLesson(l, played(q, ['first', 'shown', 'first']), [dueSkill('old', 2)], 4);
+    expect(shown.stars).toBe(3);
+    expect(shown.skills.find((s) => s.skill === 'old')?.box).toBe(1);
   });
 
   it('безошибочный первый урок — вторая коробка, а не «освоено»', () => {
@@ -243,6 +260,22 @@ describe('итог урока', () => {
 describe('коробка за урок', () => {
   it('всё сам — на шаг дальше, сколько бы ни было верных', () => {
     expect(applyLessonOutcomes(emptySkill('s'), ['correct', 'correct', 'correct'], 1).box).toBe(2);
+  });
+
+  it('срок не подошёл — всё сам, а коробка на месте', () => {
+    // коробка 2 видена на уроке 1: срок — через 2 урока
+    expect(applyLessonOutcomes(dueSkill('s', 2), ['correct'], 2).box).toBe(2);
+    expect(applyLessonOutcomes(dueSkill('s', 2), ['correct'], 3).box).toBe(3);
+  });
+
+  it('три урока темы за вечер не дают «освоено»', () => {
+    let s = emptySkill('s');
+    for (const n of [1, 2, 3]) s = applyLessonOutcomes(s, ['correct', 'correct'], n);
+    expect(s.box).toBe(2);
+  });
+
+  it('показанный ответ сбрасывает и до срока', () => {
+    expect(applyLessonOutcomes(dueSkill('s', 3, 4), ['helped'], 5).box).toBe(1);
   });
 
   it('хоть раз с подсказкой — на месте', () => {
@@ -281,6 +314,21 @@ describe('атлас', () => {
 
   it('лучший результат заменяет прежний', () => {
     expect(recordInAtlas([entry(1, 2)], entry(3, 7))).toEqual([entry(3, 2)]);
+  });
+});
+
+describe('проба переноса после повторения', () => {
+  it('не встаёт последней — идёт перед последним заданием урока', () => {
+    const q: QueuedTask[] = [
+      { task: choose('a', 's') },
+      { task: point('b', 's') },
+      { task: choose('r', 'old'), review: true },
+      { task: point('c', 's') },
+      { task: choose('d', 's') },
+    ];
+    const out = scheduleTransferProbe(q, 2, rng);
+    expect(out.findIndex((x) => x.transferProbe)).toBe(4);
+    expect(out[out.length - 1].task.id).toBe('d');
   });
 });
 

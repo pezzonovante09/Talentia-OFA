@@ -4,8 +4,8 @@
  *
  * Сборка: задания урока плюс не больше двух повторений навыков, которым подошёл срок
  * (`mastery.skillsToReview`), расставленных так, чтобы не нарушить «не больше двух
- * одного формата подряд». Итог: звёзды без знакомства с форматом и без проб переноса,
- * коробки навыков — одним шагом за урок, запись в атлас.
+ * одного формата подряд». Итог: звёзды по заданиям самого урока, коробки навыков —
+ * одним шагом за урок, запись в атлас. Решения методиста — REBUILD.md, «Сборка урока».
  */
 import {
   applyLessonOutcomes,
@@ -15,12 +15,13 @@ import {
   type Outcome,
   type SkillState,
 } from './mastery';
-import { TASKS_PER_LESSON } from './lessonLimits';
+import { SESSION_TASKS_MAX } from './lessonLimits';
 import {
   countsTowardMastery,
   MAX_FORMAT_RUN,
   maxFormatRun,
   outcomeOf,
+  reshuffle,
   type Attempt,
   type QueuedTask,
   type Rng,
@@ -76,15 +77,20 @@ export type AssembleInput = {
   /** Номер этого урока в истории ребёнка — тот же счётчик, что `lastSeenLesson`. */
   lessonNumber: number;
   pool: ReviewPool;
+  /**
+   * Навыки региона этого урока. При равной коробке повторяется свой: «первый звук в
+   * слове» посреди урока про камни рвёт сюжет, который завязка только что начала.
+   */
+  regionSkills?: ReadonlySet<string>;
   rng: Rng;
 };
 
 /**
  * Очередь урока.
  *
- * - Повторения помещаются в лимит заданий полосы (`TASKS_PER_LESSON`): урок и
- *   повторение вместе — это одна сессия, и её длину держит внимание ребёнка. Урок
- *   5–6 из пяти заданий повторений не получает; из четырёх — одно.
+ * - Повторения помещаются в потолок сессии (`SESSION_TASKS_MAX`): урок и повторение
+ *   вместе — одна сессия, её длину держит внимание. Автор пишет меньше потолка
+ *   (`TASKS_PER_LESSON`), остаток — место под повторение: на полосе 5–6 это одно.
  * - Навыки, которые есть в самом уроке, не повторяются: урок их и так тренирует.
  *   Место уходит следующему по сроку.
  * - Повторение не бывает первым (там знакомство с форматом или начало темы, которую
@@ -92,16 +98,21 @@ export type AssembleInput = {
  *   вписывают в атлас). Внутри — как можно равномернее.
  * - Серию одного формата повторение не удлиняет дальше двух. Если задание навыка не
  *   встаёт никуда, пробуется другое задание того же навыка, потом следующий навык.
+ * - Позиции в задании повторения перемешиваются: в пуле навыка всего несколько
+ *   заданий, и ребёнок иначе вспоминает, где стояла кнопка, а не навык.
  */
-export function assembleLesson({ lesson, skills, lessonNumber, pool, rng }: AssembleInput): QueuedTask[] {
+export function assembleLesson({ lesson, skills, lessonNumber, pool, regionSkills, rng }: AssembleInput): QueuedTask[] {
   let queue: QueuedTask[] = lesson.tasks.map((task) => ({ task }));
-  const room = Math.max(0, TASKS_PER_LESSON[lesson.band][1] - lesson.tasks.length);
+  const room = Math.max(0, SESSION_TASKS_MAX[lesson.band] - lesson.tasks.length);
   const limit = Math.min(MAX_REVIEWS, room);
   if (limit === 0) return queue;
 
   const own = new Set(lesson.tasks.map((t) => t.skill));
   const ownIds = new Set(lesson.tasks.map((t) => t.id));
-  const due = skillsToReview([...skills], lessonNumber, Infinity).filter((s) => !own.has(s.skill));
+  const home = (s: SkillState) => (regionSkills?.has(s.skill) ? 0 : 1);
+  const due = skillsToReview([...skills], lessonNumber, Infinity)
+    .filter((s) => !own.has(s.skill))
+    .sort((a, b) => a.box - b.box || home(a) - home(b));
 
   let placed = 0;
   for (const s of due) {
@@ -111,7 +122,7 @@ export function assembleLesson({ lesson, skills, lessonNumber, pool, rng }: Asse
       rng,
     );
     for (const task of candidates) {
-      const next = placeReview(queue, { task, review: true }, placed, limit);
+      const next = placeReview(queue, { task: reshuffle(task, rng), review: true }, placed, limit);
       if (next) {
         queue = next;
         placed += 1;
@@ -181,8 +192,11 @@ export type LessonResult = {
 /**
  * Итог урока.
  *
- * - Звёзды — по заданиям урока и повторениям; знакомство с форматом не в зачёт, а
- *   проба переноса повторяет уже засчитанное задание и звёзды не меняет.
+ * - Звёзды — только по заданиям самого урока: они пишутся в атлас этого урока и
+ *   обещают, насколько уверенно установлено **здесь**. Повторение сюда не входит — в
+ *   него по построению попадает самый слабый навык, и звёзды нового урока занижались
+ *   бы за то, чего в уроке нет. Знакомство с форматом не в зачёт, проба переноса
+ *   повторяет уже засчитанное.
  * - Коробки — по навыку, одним шагом за урок (`applyLessonOutcomes`); проба переноса
  *   добавляет попытку, но коробку не двигает.
  */
@@ -199,7 +213,7 @@ export function finishLesson(
     if (outcome === null) continue;
     if (!bySkill.has(queued.task.skill)) bySkill.set(queued.task.skill, []);
     bySkill.get(queued.task.skill)!.push(outcome);
-    if (!queued.transferProbe) forStars.push(outcome);
+    if (!queued.transferProbe && !queued.review) forStars.push(outcome);
   }
 
   const known = new Map(skills.map((s) => [s.skill, s]));
