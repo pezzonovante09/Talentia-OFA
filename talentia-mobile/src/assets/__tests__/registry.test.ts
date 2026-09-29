@@ -37,9 +37,9 @@ describe('реестр векторных ассетов', () => {
     expect({ [key]: imported(dir.split('/').pop() as string) }).toEqual({ [key]: onDisk(dir) });
   });
 
-  it('шесть поз Tali перечислены в карте поз', () => {
+  it('семь поз Tali перечислены в карте поз', () => {
     const poses = [...src.matchAll(/^\s{2}(\w+): Tali\w+,$/gm)].map((m) => m[1]);
-    expect(poses.sort()).toEqual(['cheer', 'found', 'hello', 'point', 'puzzled', 'write']);
+    expect(poses.sort()).toEqual(['cheer', 'found', 'hello', 'idle', 'point', 'puzzled', 'write']);
   });
 
   it('ключи панорам совпадают с идентификаторами регионов из схемы курса', () => {

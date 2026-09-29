@@ -12,6 +12,7 @@ import type { SvgProps } from 'react-native-svg';
 import TaliCheer from '../../assets/images/tali/tali-cheer.svg';
 import TaliFound from '../../assets/images/tali/tali-found.svg';
 import TaliHello from '../../assets/images/tali/tali-hello.svg';
+import TaliIdle from '../../assets/images/tali/tali-idle.svg';
 import TaliPoint from '../../assets/images/tali/tali-point.svg';
 import TaliPuzzled from '../../assets/images/tali/tali-puzzled.svg';
 import TaliWrite from '../../assets/images/tali/tali-write.svg';
@@ -30,8 +31,12 @@ import UiX from '../../assets/icons/ui-x.svg';
 
 type Svg = React.FC<SvgProps>;
 
-/** Шесть поз. Анимация Tali — переключение между ними, а не риг. */
+/**
+ * Семь поз. Анимация Tali — переключение между ними, а не риг. `idle` — спокоен,
+ * ждёт ребёнка: в ней экран урока проводит больше всего времени (SCREENS.md, 5).
+ */
 export const TALI_POSES = {
+  idle: TaliIdle,
   hello: TaliHello,
   found: TaliFound,
   point: TaliPoint,
