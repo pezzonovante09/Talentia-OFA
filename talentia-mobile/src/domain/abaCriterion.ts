@@ -7,6 +7,7 @@
  * В прежней версии критерия в коде не было вовсе.
  */
 import {
+  APP_MAX_PROMPT,
   COUNTS_TOWARD_MASTERY,
   MAINTENANCE_FAILS_TO_REACQUIRE,
   MAINTENANCE_GAP,
@@ -29,7 +30,10 @@ export type SessionOutcome = 'meets' | 'breaks' | 'neutral';
 
 /** Итог сессии по одной цели. */
 export type AbaSessionSummary = {
-  /** Проб в зачёт: обучающие, не прерванные, оценённые источником с правом на критерий. */
+  /**
+   * Проб в зачёт: обучающие, не прерванные, оценённые источником с правом на критерий.
+   * У цепочки — полных прогонов.
+   */
   trials: number;
   independentRate: number;
   outcome: SessionOutcome;
@@ -55,23 +59,38 @@ function allowedMisses(min: number): number {
   return min - Math.ceil(MASTERY.minIndependentRate * min - 1e-9);
 }
 
-function summarizeGroup(trials: AbaTrial[], min: number): AbaSessionSummary {
-  const counted = trials.filter(countable);
-  const independent = counted.filter((t) => t.response === 'independent');
-  const independentRate = counted.length ? independent.length / counted.length : 0;
-  const enough = counted.length >= min;
+function summarizeCounts(total: number, independent: number, min: number, exemplars: string[]): AbaSessionSummary {
+  const independentRate = total ? independent / total : 0;
+  const enough = total >= min;
 
   let outcome: SessionOutcome;
   if (enough) outcome = independentRate >= MASTERY.minIndependentRate ? 'meets' : 'breaks';
-  else outcome = counted.length - independent.length > allowedMisses(min) ? 'breaks' : 'neutral';
+  else outcome = total - independent > allowedMisses(min) ? 'breaks' : 'neutral';
 
-  return {
-    trials: counted.length,
-    independentRate,
-    outcome,
-    counted: enough,
-    independentExemplars: [...new Set(independent.map((t) => t.exemplarId))],
-  };
+  return { trials: total, independentRate, outcome, counted: enough, independentExemplars: [...new Set(exemplars)] };
+}
+
+function summarizeGroup(trials: AbaTrial[], min: number): AbaSessionSummary {
+  const counted = trials.filter(countable);
+  const independent = counted.filter((t) => t.response === 'independent');
+  return summarizeCounts(counted.length, independent.length, min, independent.map((t) => t.exemplarId));
+}
+
+/**
+ * Прогоны цепочки. Номер прогона — `runIndex`; без него k-я проба каждого звена
+ * считается k-м прогоном. Прогон в зачёте, только если в нём есть все звенья.
+ */
+export function chainRuns(target: AbaTarget, trials: AbaTrial[]): AbaTrial[][] {
+  const steps = target.steps ?? [];
+  const seen = new Map<string, number>();
+  const runs = new Map<number, AbaTrial[]>();
+  for (const t of trials.filter(countable)) {
+    const step = t.stepId ?? '';
+    const k = t.runIndex ?? seen.get(step) ?? 0;
+    seen.set(step, (seen.get(step) ?? 0) + 1);
+    runs.set(k, [...(runs.get(k) ?? []), t]);
+  }
+  return [...runs.values()].filter((run) => steps.every((st) => run.some((t) => t.stepId === st.id)));
 }
 
 /**
@@ -81,9 +100,11 @@ function summarizeGroup(trials: AbaTrial[], min: number): AbaSessionSummary {
  * в полной сессии были бы недостижимы, или если она оборвалась по критерию
  * остановки: короткими бывают как раз худшие сессии.
  *
- * У цепочки каждый шаг считается как отдельная цель, минимум — в прогонах, и
- * сессия в зачёт, только если в зачёт каждый шаг: ребёнок, стабильно
- * сыплющийся на третьем звене, руки не моет.
+ * У цепочки считаются **прогоны, выполненные целиком самостоятельно**: сессия в зачёт,
+ * если таких не меньше 80% при минимуме в три прогона. «80% на каждом звене» пропускал
+ * бы сессию, где ни один прогон не выполнен целиком — в каждом сыплется своё звено;
+ * «все звенья в каждом прогоне» — это 100%, строже дискретных целей без причины.
+ * Данные по звеньям остаются для диагностики (решение методиста, `ABA.md`).
  */
 export function summarizeSession(
   target: AbaTarget,
@@ -96,13 +117,14 @@ export function summarizeSession(
   if (!target.steps?.length) {
     summary = summarizeGroup(own, MASTERY.minTrialsPerSession);
   } else {
-    const min = MASTERY.minChainRunsPerSession;
-    const perStep = target.steps.map((step) => summarizeGroup(own.filter((t) => t.stepId === step.id), min));
-    const all = summarizeGroup(own, min * target.steps.length);
-    let outcome: SessionOutcome = 'neutral';
-    if (perStep.some((x) => x.outcome === 'breaks')) outcome = 'breaks';
-    else if (perStep.every((x) => x.outcome === 'meets')) outcome = 'meets';
-    summary = { ...all, outcome, counted: perStep.every((x) => x.counted) };
+    const runs = chainRuns(target, own);
+    const whole = runs.filter((run) => run.every((t) => t.response === 'independent'));
+    summary = summarizeCounts(
+      runs.length,
+      whole.length,
+      MASTERY.minChainRunsPerSession,
+      whole.map((run) => run[0].exemplarId),
+    );
   }
 
   if (endReason === 'breakdown' && summary.outcome !== 'breaks') return { ...summary, outcome: 'breaks' };
@@ -190,6 +212,41 @@ export function criterionGaps(s: AbaTargetState): CriterionGap[] {
 
 export function isMasteryMet(s: AbaTargetState): boolean {
   return criterionGaps(s).length === 0;
+}
+
+/** Проб базовой линии на цель. */
+export const BASELINE_TRIALS = 3;
+
+/** Новых целей на базовой линии за сессию — не больше. */
+export const MAX_BASELINE_TARGETS = 2;
+
+/**
+ * Итог базовой линии: с чего начинать обучение. Три пробы без подсказки:
+ *
+ * - все три самостоятельно — навык уже есть: сразу в поддержание с первого интервала,
+ *   ближайшая проба поддержания сама перепроверит;
+ * - одна-две — обучение со старта L1: ребёнок почти умеет, полная модель научила бы его
+ *   ждать модель;
+ * - ни одной — обучение с полной модели, безошибочный старт.
+ *
+ * Меньше трёх проб (сессию прервали) — базовая линия повторяется в следующей сессии.
+ */
+export function applyBaseline(s: AbaTargetState, trials: AbaTrial[], sessionIndex: number): AbaTargetState {
+  const own = trials.filter(
+    (t) => t.kind === 'baseline' && t.response !== 'interrupted' && COUNTS_TOWARD_MASTERY[t.scoredBy],
+  );
+  if (s.phase !== 'baseline' || own.length < BASELINE_TRIALS) return s;
+  const independent = own.filter((t) => t.response === 'independent').length;
+  if (independent === own.length) return markMastered(s, sessionIndex);
+  const start = independent > 0 ? 1 : APP_MAX_PROMPT;
+  return {
+    ...s,
+    phase: 'acquisition',
+    startPromptLevel: start,
+    lastSuccessfulPromptLevel: start,
+    consecutiveIndependentAtStart: 0,
+    consecutiveAboveStart: 0,
+  };
 }
 
 /** Перевести освоенную цель в поддержание: расписание начинается с этой сессии и первого интервала. */

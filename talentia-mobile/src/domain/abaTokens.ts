@@ -1,11 +1,13 @@
 /**
  * Жетоны и подкрепители ABA-режима. Спецификация — «Подкрепление» в `ABA.md`.
  *
- * Главное отличие от прежней версии — дифференциальное подкрепление: жетон
- * оплачивает только самостоятельный ответ. Формулировка «с подсказкой тоже
- * считается» гасила мотивацию отвечать самому.
+ * Главное отличие от прежней версии — дифференциальное подкрепление: жетон оплачивает
+ * верный ответ **на стартовом уровне**, без эскалации; понадобилась помощь сверх
+ * стартовой — только похвала. «Меньше помощи — больше подкрепления» совпадает с
+ * правилом затухания. Формулировка прежней версии «с подсказкой тоже считается»
+ * гасила мотивацию отвечать самому.
  */
-import type { AbaPhase, AbaResponse, AbaTokenReason, AbaTrialKind } from '../types/aba';
+import type { AbaPhase, AbaTokenReason, AbaTrial } from '../types/aba';
 
 /** Случайный источник в [0, 1). Передаётся явно, чтобы тесты были детерминированы. */
 export type Rng = () => number;
@@ -30,78 +32,119 @@ export function newSchedule(rng: Rng): TokenSchedule {
 }
 
 /**
- * Что ребёнок получает сразу после пробы. Различие обязано быть заметным: жетон
- * падает на доску со звуком, похвала без жетона — только голос.
+ * Что ребёнок получает сразу после пробы. Различие обязано быть заметным: жетон падает
+ * на доску со звуком, похвала без жетона — только голос.
+ *
+ * - `attention` — похвала за внимание, не зависящая от ответа: базовая линия. Иначе
+ *   она сама становится обучением и перестаёт измерять.
+ * - `listened` — «Tali послушал», без «верно»: проба, которую оценило устройство без
+ *   права на критерий (детектор начала звука знает «ответил», но не «верно»).
  */
-export type Feedback = 'token_praise' | 'praise' | 'neutral';
+export type Feedback = 'token_praise' | 'praise' | 'neutral' | 'attention' | 'listened';
+
+/**
+ * Доска жетонов. Жетоны **никогда не отнимаются, не срезаются и не сгорают**: прежняя
+ * версия делала `Math.min(3, amount)`, и ребёнок, заработавший пять, получал три и не
+ * понимал почему. Непредсказуемое подкрепление хуже редкого. Доска может
+ * переполниться — это видно, и при обмене уходят все.
+ *
+ * `nonContingent` — сколько жетонов в этом цикле доски (от обмена до обмена) выдано не
+ * за результат: за высоковероятные пробы и за участие. Их не больше `size − 1`:
+ * последний жетон доски всегда оплачен ответом по цели. Иначе на полосе 5–6 разогрев
+ * и участие заполняют доску из трёх, и обмен случается без единого ответа по цели.
+ */
+export type TokenBoard = { size: 3 | 5; earned: number; nonContingent: number };
+
+export function emptyBoard(size: 3 | 5): TokenBoard {
+  return { size, earned: 0, nonContingent: 0 };
+}
+
+/** Можно ли ещё выдать жетон не за результат в этом цикле доски. */
+export function nonContingentRoom(board: TokenBoard): boolean {
+  return board.nonContingent < board.size - 1;
+}
 
 export type TokenAward = {
   tokens: 0 | 1;
   reason?: AbaTokenReason;
+  /** Жетон не за результат — идёт в счёт `nonContingent`. */
+  nonContingent?: true;
   feedback: Feedback;
   schedule: TokenSchedule;
 };
 
+export type AwardContext = {
+  phase: AbaPhase;
+  schedule: TokenSchedule;
+  board: TokenBoard;
+  rng: Rng;
+  /** Жетон за высоковероятную пробу в этой сессии уже выдан. */
+  highPTokenPaid?: boolean;
+  /** Источник оценки пробы имеет право на критерий. Нет — реакция «Tali послушал». */
+  counts?: boolean;
+};
+
+const SUCCESS = new Set(['independent', 'prompted']);
+
 /**
  * Жетон и похвала за пробу.
  *
- * Самостоятельный верный — жетон и похвала (на освоенной цели жетон по
- * прерывистой схеме, похвала всегда). Верный с подсказкой и приближение —
- * похвала **без** жетона, тёплая и без «но»: приближение на шейпинге обязано
- * подкрепляться, иначе усилие наказывается. Ошибка — нейтральная реакция.
- *
- * Высоковероятные пробы (разогрев и отвлекающие пробы коррекции) — похвала
- * за каждый верный, но **жетон один на сессию**: первый. Иначе на полосе 5–6
- * два жетона разогрева и один за участие заполняют доску из трёх, и обмен
- * случается без единого ответа по обучаемой цели — жетон обесценивается так
- * же, как при обмене на неполной доске. Базовая линия не подкрепляется вовсе:
- * иначе она сама становится обучением и перестаёт измерять.
+ * - Базовая линия — похвала за внимание, без жетона, что бы ребёнок ни ответил.
+ * - Проба без права на критерий — «Tali послушал», без жетона.
+ * - Верный на стартовом уровне — жетон и похвала; на освоенной цели жетон по
+ *   прерывистой схеме, похвала всегда.
+ * - Верный, когда понадобилась эскалация сверх стартового, и приближение — похвала без
+ *   жетона, тёплая и без «но»: приближение на шейпинге обязано подкрепляться.
+ * - Ошибка — нейтральная реакция.
+ * - Коррекция и закрывающая проба — похвала без жетона: коррекция успешна по
+ *   построению, и жетон за неё оплачивал бы саму ошибку.
+ * - Высоковероятная проба (разогрев, отвлекающая) — жетон один на сессию и только пока
+ *   на доске есть место для жетонов не за результат.
  */
 export function awardForTrial(
-  response: AbaResponse,
-  kind: AbaTrialKind,
-  phase: AbaPhase,
-  schedule: TokenSchedule,
-  rng: Rng,
-  /** Жетон за высоковероятную пробу в этой сессии уже выдан. */
-  highPTokenPaid = false,
+  t: Pick<AbaTrial, 'response' | 'kind' | 'startPromptLevel' | 'promptLevelUsed'>,
+  ctx: AwardContext,
 ): TokenAward {
-  if (kind === 'baseline' || phase === 'baseline') return { tokens: 0, feedback: 'neutral', schedule };
-  if (response === 'prompted' || response === 'approximation') return { tokens: 0, feedback: 'praise', schedule };
-  if (response !== 'independent') return { tokens: 0, feedback: 'neutral', schedule };
+  const { phase, schedule, board, rng } = ctx;
+  const none = (feedback: Feedback): TokenAward => ({ tokens: 0, feedback, schedule });
 
-  if (kind === 'high_p') {
-    return highPTokenPaid
-      ? { tokens: 0, feedback: 'praise', schedule }
-      : { tokens: 1, reason: 'independent', feedback: 'token_praise', schedule };
+  if (t.kind === 'baseline' || phase === 'baseline') return none('attention');
+  if (ctx.counts === false) return none('listened');
+  if (t.response === 'approximation') return none('praise');
+  if (!SUCCESS.has(t.response)) return none('neutral');
+  if (t.promptLevelUsed > t.startPromptLevel) return none('praise');
+  if (t.kind === 'correction' || t.kind === 'closing') return none('praise');
+
+  if (t.kind === 'high_p') {
+    if (ctx.highPTokenPaid || !nonContingentRoom(board)) return none('praise');
+    return { tokens: 1, reason: 'at_start_level', nonContingent: true, feedback: 'token_praise', schedule };
   }
   if (phase !== 'mastered' && phase !== 'maintenance') {
-    return { tokens: 1, reason: 'independent', feedback: 'token_praise', schedule };
+    return { tokens: 1, reason: 'at_start_level', feedback: 'token_praise', schedule };
   }
 
   const sinceLast = schedule.sinceLast + 1;
   if (sinceLast < schedule.nextAt) return { tokens: 0, feedback: 'praise', schedule: { ...schedule, sinceLast } };
-  return { tokens: 1, reason: 'independent', feedback: 'token_praise', schedule: newSchedule(rng) };
+  return { tokens: 1, reason: 'at_start_level', feedback: 'token_praise', schedule: newSchedule(rng) };
 }
 
 /**
- * Жетон за завершение блока — независимо от точности. Ребёнок, у которого
- * сегодня не выходит, иначе не заработает ничего, и сеанс станет аверсивным
- * целиком. Помечен отдельной причиной и в результативность не входит.
+ * Жетон за завершение блока — независимо от точности. Ребёнок, у которого сегодня не
+ * выходит, иначе не заработает ничего, и сеанс станет аверсивным целиком. Помечен
+ * отдельной причиной и в результативность не входит; как жетон не за результат — только
+ * пока на доске есть для него место.
  */
-export const PARTICIPATION_AWARD = { tokens: 1, reason: 'participation' } as const;
+export function participationAward(board: TokenBoard): { tokens: 0 | 1; reason: 'participation' } {
+  return { tokens: nonContingentRoom(board) ? 1 : 0, reason: 'participation' };
+}
 
-/**
- * Доска жетонов. Жетоны **никогда не отнимаются, не срезаются и не сгорают**:
- * прежняя версия делала `Math.min(3, amount)`, и ребёнок, заработавший пять,
- * получал три и не понимал почему. Непредсказуемое подкрепление хуже редкого.
- * Доска может переполниться — это видно, и при обмене уходят все.
- */
-export type TokenBoard = { size: 3 | 5; earned: number };
-
-export function addTokens(board: TokenBoard, n: number): TokenBoard {
+export function addTokens(board: TokenBoard, n: number, nonContingent = false): TokenBoard {
   if (n < 0) throw new Error('Жетоны не отнимаются');
-  return { ...board, earned: board.earned + n };
+  return {
+    ...board,
+    earned: board.earned + n,
+    nonContingent: board.nonContingent + (nonContingent ? n : 0),
+  };
 }
 
 export function isBoardFull(board: TokenBoard): boolean {
@@ -109,15 +152,16 @@ export function isBoardFull(board: TokenBoard): boolean {
 }
 
 /**
- * Обмен на выбранный подкрепитель — **только при полной доске**. Если бы
- * подкрепитель выдавался при любом числе жетонов, жетон не стоил бы ничего.
+ * Обмен на выбранный подкрепитель — **только при полной доске**. Если бы подкрепитель
+ * выдавался при любом числе жетонов, жетон не стоил бы ничего.
  *
- * По расписанию сессии идёт перерыв, а не обмен: неполная доска переходит на
- * следующий блок как есть. При обмене уходят все жетоны, включая сверх доски.
+ * По расписанию сессии идёт перерыв, а не обмен: неполная доска переходит на следующий
+ * блок как есть. При обмене уходят все жетоны, включая сверх доски, и начинается новый
+ * цикл доски.
  */
 export function tryExchange(board: TokenBoard): { board: TokenBoard; exchanged: number } {
   if (!isBoardFull(board)) return { board, exchanged: 0 };
-  return { board: { ...board, earned: 0 }, exchanged: board.earned };
+  return { board: emptyBoard(board.size), exchanged: board.earned };
 }
 
 /** Сколько подкрепителей предлагается на выбор в начале сессии. */

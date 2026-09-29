@@ -18,6 +18,7 @@ import {
   type AbaTargetState,
   type AbaTrial,
   type PromptLevel,
+  type StepPromptState,
 } from '../types/aba';
 
 /** Сколько подряд проб нужно, чтобы стартовый уровень сдвинулся. */
@@ -29,9 +30,13 @@ export function clampToApp(level: PromptLevel): PromptLevel {
 }
 
 /**
- * Новая цель стартует с полной модели, а не с нуля: у нулевой цели вероятность
- * самостоятельного ответа около нуля, и «дай ответить самому» превращается в
- * серию неудач на старте. Две успешные пробы на L3 — и затухание пошло вниз.
+ * Новая цель начинается с **базовой линии** (`abaCriterion.applyBaseline`): три пробы без
+ * подсказки показывают, с чего начинать. Без неё уже известный навык прошёл бы
+ * безошибочный старт с полной модели — ребёнка учили бы ждать модель.
+ *
+ * Стартовый уровень здесь — на случай цели, у которой базовая линия дала ноль из трёх:
+ * обучение с полной модели, а не с нуля. У нулевой цели вероятность самостоятельного
+ * ответа около нуля, и «дай ответить самому» превращается в серию неудач на старте.
  *
  * Прогрессивная задержка начинается с одного шага и растёт по мере успеха;
  * постоянная — сразу `delayMs`. В обоих случаях не выше потолка по возрасту.
@@ -40,7 +45,8 @@ export function initialTargetState(target: AbaTarget): AbaTargetState {
   const start = target.delayMode === 'progressive' ? DELAY_STEP_MS : target.delayMs;
   return {
     targetId: target.id,
-    phase: 'acquisition',
+    // процедура базовой линии для цепочки не определена методистом — цепочка сразу в обучении
+    phase: target.steps?.length ? 'acquisition' : 'baseline',
     startPromptLevel: APP_MAX_PROMPT,
     consecutiveIndependentAtStart: 0,
     consecutiveAboveStart: 0,
@@ -57,7 +63,44 @@ export function initialTargetState(target: AbaTarget): AbaTargetState {
     flags: [],
     dependenceFlaggedAtSession: null,
     lastSuccessfulPromptLevel: APP_MAX_PROMPT,
+    lastGeneralizationSessionIndex: -1,
   };
+}
+
+/**
+ * Состояние подсказки для пробы: у звена цепочки — своё, у дискретной цели — цели.
+ * Новое звено наследует уровень цели: так цепочка стартует одинаково по всем звеньям.
+ */
+export function promptStateOf(s: AbaTargetState, stepId?: string): StepPromptState {
+  const own: StepPromptState = {
+    startPromptLevel: s.startPromptLevel,
+    consecutiveIndependentAtStart: s.consecutiveIndependentAtStart,
+    consecutiveAboveStart: s.consecutiveAboveStart,
+    lastSuccessfulPromptLevel: s.lastSuccessfulPromptLevel,
+  };
+  if (!stepId) return own;
+  return s.stepPrompts?.[stepId] ?? { ...own, consecutiveIndependentAtStart: 0, consecutiveAboveStart: 0 };
+}
+
+function withPromptState(s: AbaTargetState, stepId: string | undefined, ps: StepPromptState): AbaTargetState {
+  if (!stepId) return { ...s, ...ps };
+  return { ...s, stepPrompts: { ...s.stepPrompts, [stepId]: ps } };
+}
+
+/**
+ * Уровень пробы коррекции — не ниже того, что ребёнку только что понадобилось, плюс
+ * ступень, и никогда не L0: коррекция на L0 — то самое «неверно, попробуй ещё». При
+ * этом не ниже последнего успешного уровня.
+ *
+ * `null` — первый шаг коррекции пропускается: ребёнок не ответил даже на полной
+ * модели, модель только что прозвучала и реакции не вызвала. Дальше сразу отвлекающая
+ * проба и перенос.
+ */
+export function correctionLevel(s: AbaTargetState, failed: AbaTrial): PromptLevel | null {
+  if (failed.response === 'no_response' && failed.promptLevelUsed >= APP_MAX_PROMPT) return null;
+  const ps = promptStateOf(s, failed.stepId);
+  const level = Math.max(1, ps.lastSuccessfulPromptLevel, failed.promptLevelUsed + 1);
+  return clampToApp(Math.min(level, APP_MAX_PROMPT) as PromptLevel);
 }
 
 /**
@@ -105,14 +148,19 @@ const FAILURE: ReadonlySet<AbaResponse> = new Set(['incorrect', 'no_response']);
  * Проба переноса после коррекции идёт на свежем следе модели, её успех завышен:
  * провал поднимает уровень, успех только рвёт серию подъёма. Коррекция успешна
  * по построению и в затухание не идёт вовсе. Прерванная проба не случилась.
+ *
+ * У звена цепочки затухание своё (`stepPrompts`).
  */
 export function applyTrialToFading(s: AbaTargetState, t: AbaTrial): AbaTargetState {
   if (t.response === 'interrupted') return s;
   if (t.kind !== 'teaching' && t.kind !== 'transfer') return s;
+  return withPromptState(s, t.stepId, fadeStep(promptStateOf(s, t.stepId), t));
+}
 
+function fadeStep(ps: StepPromptState, t: AbaTrial): StepPromptState {
   const succeeded = SUCCESS.has(t.response);
-  const lastSuccessfulPromptLevel = succeeded ? clampToApp(t.promptLevelUsed) : s.lastSuccessfulPromptLevel;
-  const base = { ...s, lastSuccessfulPromptLevel };
+  const lastSuccessfulPromptLevel = succeeded ? clampToApp(t.promptLevelUsed) : ps.lastSuccessfulPromptLevel;
+  const base = { ...ps, lastSuccessfulPromptLevel };
 
   if (t.response === 'approximation') {
     return { ...base, consecutiveIndependentAtStart: 0, consecutiveAboveStart: 0 };
@@ -121,21 +169,21 @@ export function applyTrialToFading(s: AbaTargetState, t: AbaTrial): AbaTargetSta
   const above = FAILURE.has(t.response) || t.promptLevelUsed > t.startPromptLevel;
   if (t.kind === 'transfer' && !above) return { ...base, consecutiveAboveStart: 0 };
 
-  const independentRun = above ? 0 : s.consecutiveIndependentAtStart + 1;
-  const aboveRun = above ? s.consecutiveAboveStart + 1 : 0;
+  const independentRun = above ? 0 : ps.consecutiveIndependentAtStart + 1;
+  const aboveRun = above ? ps.consecutiveAboveStart + 1 : 0;
 
-  if (independentRun >= FADE_AFTER && s.startPromptLevel > 0) {
+  if (independentRun >= FADE_AFTER && ps.startPromptLevel > 0) {
     return {
       ...base,
-      startPromptLevel: (s.startPromptLevel - 1) as PromptLevel,
+      startPromptLevel: (ps.startPromptLevel - 1) as PromptLevel,
       consecutiveIndependentAtStart: 0,
       consecutiveAboveStart: 0,
     };
   }
-  if (aboveRun >= FADE_AFTER && s.startPromptLevel < APP_MAX_PROMPT) {
+  if (aboveRun >= FADE_AFTER && ps.startPromptLevel < APP_MAX_PROMPT) {
     return {
       ...base,
-      startPromptLevel: (s.startPromptLevel + 1) as PromptLevel,
+      startPromptLevel: (ps.startPromptLevel + 1) as PromptLevel,
       consecutiveIndependentAtStart: 0,
       consecutiveAboveStart: 0,
     };

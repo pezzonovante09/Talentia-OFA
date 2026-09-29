@@ -13,8 +13,13 @@
  */
 import type { AgeBand } from './task';
 
-/** Во всех четырёх ребёнок **производит** голосом или телом, а не выбирает. */
-export type AbaFormat = 'imitate_sound' | 'repeat_word' | 'voice_volume' | 'do_action';
+/**
+ * В четырёх ребёнок **производит** голосом или телом. Пятый, `identify` («покажи…»), —
+ * рецептивный: ребёнок касается нужной карточки среди нескольких. Рецептивная
+ * идентификация — базовая программа раннего этапа, а касание телефон оценивает
+ * однозначно и офлайн, так что у конфигурации «сам» появляется настоящее обучение.
+ */
+export type AbaFormat = 'imitate_sound' | 'repeat_word' | 'voice_volume' | 'do_action' | 'identify';
 
 /**
  * Уровень подсказки.
@@ -40,7 +45,7 @@ export const APP_MAX_PROMPT: PromptLevel = 3;
  * узнаёт. Приближение, которое на шейпинге обязано подкрепляться, машина
  * пометит ошибкой — это подкрепление наоборот.
  */
-export type ScoringSource = 'adult' | 'device_loudness' | 'device_onset' | 'device_asr';
+export type ScoringSource = 'adult' | 'device_loudness' | 'device_onset' | 'device_asr' | 'device_tap';
 
 /** Право источника двигать критерий освоения. */
 export const COUNTS_TOWARD_MASTERY: Record<ScoringSource, boolean> = {
@@ -50,6 +55,8 @@ export const COUNTS_TOWARD_MASTERY: Record<ScoringSource, boolean> = {
   /** Умеет «ответил / не ответил» и латентность. Точность — нет. */
   device_onset: false,
   device_asr: false,
+  /** Касание карточки в `identify`: верно или нет — однозначно. */
+  device_tap: true,
 };
 
 /** Ребёнок занимается один или рядом взрослый. Ребёнок видит, в какой он конфигурации. */
@@ -135,6 +142,21 @@ export type AbaTarget = {
   scoredBy: ScoringSource;
   /** Цель не открывается, пока не освоены предпосылки. Так получается лестница, а не список. */
   prerequisiteTargetIds?: string[];
+  /**
+   * Только для `identify`: карточек в поле. Для критерия не меньше трёх — из двух 4 из 5
+   * угадываются в ~19% случаев, из трёх — в ~4.5%.
+   */
+  fieldSize?: 3 | 4;
+  /** Только для `identify`: карточки-дистракторы, из них набирается поле. */
+  distractors?: AbaCard[];
+};
+
+/** Карточка поля `identify`. */
+export type AbaCard = {
+  id: string;
+  /** Ключ локали: подпись и озвучка по тапу взрослого, ребёнку не показывается. */
+  labelKey: string;
+  image: string;
 };
 
 export type AbaProgram = {
@@ -160,7 +182,13 @@ export type AbaTrialKind =
   | 'generalization'
   | 'maintenance'
   /** Высоковероятная проба освоенной цели: разогрев и разрыв серии неудач. */
-  | 'high_p';
+  | 'high_p'
+  /**
+   * Закрывающая проба: сессия кончается успехом. Не в процент, не в затухание, не в
+   * остановку, не в задержку и не в зависимость; не маскируется ни под коррекцию —
+   * число коррекций за сессию есть метрика нагрузки ошибок, — ни под разогрев.
+   */
+  | 'closing';
 
 /**
  * Что сделал ребёнок. Шесть значений, а не булев `correct`.
@@ -180,14 +208,18 @@ export type AbaResponse =
   | 'interrupted';
 
 export type AbaTokenReason =
-  /** Единственное, что оплачивается результатом. */
-  | 'independent'
   /**
    * Жетон за завершение блока, независимо от точности. Ребёнок, у которого
    * сегодня не выходит, иначе не заработает ничего, и сеанс станет аверсивным
    * целиком, а дальше начнётся избегание приложения. В результативность не входит.
    */
-  | 'participation';
+  | 'participation'
+  /**
+   * Верный ответ **на стартовом уровне**, без эскалации. На старте L0 это и есть
+   * самостоятельный ответ; на безошибочном старте с полной модели — единственный
+   * способ, которым новая цель вообще приносит жетон за результат.
+   */
+  | 'at_start_level';
 
 export type AbaTrial = {
   id: string;
@@ -221,6 +253,13 @@ export type AbaTrial = {
   loudnessDb?: number;
   /** Что предложила машина и согласился ли взрослый — для оценки надёжности автоскоринга. */
   asrSuggestion?: { text: string; confidence: number; acceptedByAdult: boolean };
+  /** Номер прогона цепочки: критерий цепочки считается по прогонам, выполненным целиком. */
+  runIndex?: number;
+  /**
+   * Поле `identify` слева направо: id карточек, верная — `exemplarId`. Позиция верной
+   * пишется в данные: смещение к позиции — отдельная ошибка различения.
+   */
+  field?: string[];
   tokens: 0 | 1;
   tokenReason?: AbaTokenReason;
 };
@@ -287,7 +326,20 @@ export type AbaTargetState = {
    * который навык почти держит, — это регресс, назначенный процедурой.
    */
   lastSuccessfulPromptLevel: PromptLevel;
+  /**
+   * Затухание звеньев цепочки — у каждого своё: звенья чередуются в прогоне, и «две
+   * подряд» по разным звеньям раскачивали бы общий уровень. Ключ — `stepId`.
+   */
+  stepPrompts?: Record<string, StepPromptState>;
+  /** Последняя сессия с пробой переноса: перенос достаётся целям по кругу. */
+  lastGeneralizationSessionIndex: number;
 };
+
+/** Состояние подсказки одного звена цепочки. */
+export type StepPromptState = Pick<
+  AbaTargetState,
+  'startPromptLevel' | 'consecutiveIndependentAtStart' | 'consecutiveAboveStart' | 'lastSuccessfulPromptLevel'
+>;
 
 export type AbaSessionEndReason =
   | 'completed'
@@ -310,7 +362,21 @@ export type AbaSession = {
   tokensEarned: number;
   exchangesMade: number;
   endReason: AbaSessionEndReason | null;
+  /** Цель, на которой сработал критерий остановки. */
+  brokenTargetId: string | null;
+  /**
+   * Кончилась ли сессия успешной пробой. `false` — обе закрывающие пробы не удались,
+   * сессия кончилась спокойно без требования; специалисту это видно.
+   */
+  endedOnSuccess: boolean;
+  /** Перерывы, обмены и жетоны за участие — по ним восстанавливается хронология сессии. */
+  events: AbaSessionEvent[];
 };
+
+export type AbaSessionEvent =
+  | { kind: 'break'; startedAt: string; endedAt: string }
+  | { kind: 'exchange'; at: string; tokens: number }
+  | { kind: 'participation'; at: string; targetId: string };
 
 /** Критерий освоения. Проверяется программно — в прежней версии его не было в коде вообще. */
 export const MASTERY = {
