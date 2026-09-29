@@ -14,6 +14,19 @@
  * `src/content` вне `__tests__`, гард считает контентом и требует от него
  * экспорт темы. Так правило обнаружения остаётся без списка исключений.
  */
+import {
+  BUILD_DIGITS,
+  BUILD_FRAGMENTS,
+  chooseOptions,
+  groupLimits,
+  INTRO_MIN,
+  matchOrderCount,
+  POINT_TARGET_GAP,
+  pointTargets,
+  TASKS_PER_LESSON,
+  TEXT_LIMITS,
+  type Range,
+} from '../../domain/lessonLimits';
 import { FORMAT_MIN_BAND } from '../../types/task';
 import type { AgeBand, Lesson, Media, Region, Task, Topic } from '../../types/task';
 
@@ -118,16 +131,21 @@ function duplicates(list: string[]): string[] {
 const isNonEmptyString = (v: unknown): v is string => typeof v === 'string' && v.trim() !== '';
 
 /**
- * Нормы числа заданий в уроке по полосе, из «Устройства урока» в `REBUILD.md`.
- * Для `7` и `8` норма не зафиксирована: `REBUILD.md` молчит, `CURRICULUM.md`
- * считает 4–6, и скилл автора велит спрашивать. Пока решения нет, гард эти
- * полосы не проверяет — выдуманная норма либо зарежет верные уроки, либо
- * пропустит неверные.
+ * Нормы числа заданий в уроке по полосе — `domain/lessonLimits.ts`. Для 7 и 8
+ * нижняя граница не зафиксирована (`CURRICULUM.md` считает 4–6, скилл автора велит
+ * спрашивать), поэтому там проверяется только потолок — 10.
  */
-export const TASK_COUNT: Partial<Record<AgeBand, [number, number]>> = {
-  '5-6': [4, 5],
-  '9-10': [8, 10],
-};
+export const TASK_COUNT = TASKS_PER_LESSON;
+
+/**
+ * Число элементов в допустимых пределах. Задание-знакомство (`intro`) допускает
+ * две альтернативы: оно в зачёт не идёт.
+ */
+function outOfRange(n: number, [min, max]: Range, intro: boolean | undefined, what: string): string | null {
+  const lo = intro ? Math.min(INTRO_MIN, min) : min;
+  if (n >= lo && n <= max) return null;
+  return `${what} ${n}, нужно ${lo === max ? lo : `${lo}–${max}`}${intro ? ' (знакомство)' : ''}`;
+}
 
 /** Порог, с которого проверяется доля `choose`, — как в прежнем гарде. */
 export const CHOOSE_SHARE_MIN_TASKS = 50;
@@ -135,6 +153,21 @@ export const CHOOSE_SHARE_MAX = 0.5;
 
 /** Регэксп утечки ответа — тот же, что в прежнем гарде. */
 export const ANSWER_LEAK = /\(\s*(ответ|answer|жооп)\s*[:：]/i;
+
+/**
+ * Собирается ли `answer` из не больше `maxParts` фишек (каждая — не больше раза).
+ * Регистр не важен: фишка «Ли» и ответ «лиса».
+ */
+function composable(answer: string, parts: string[], maxParts: number): boolean {
+  const target = answer.toLocaleLowerCase('ru');
+  const lower = parts.map((p) => p.toLocaleLowerCase('ru'));
+  const go = (rest: string, used: Set<number>, depth: number): boolean => {
+    if (rest === '') return depth > 0;
+    if (depth === maxParts) return false;
+    return lower.some((p, i) => p !== '' && !used.has(i) && rest.startsWith(p) && go(rest.slice(p.length), new Set(used).add(i), depth + 1));
+  };
+  return go(target, new Set(), 0);
+}
 
 export const RULES = {
   corpusIds: {
@@ -175,16 +208,16 @@ export const RULES = {
   },
 
   choose: {
-    // Прежний гард проверял только «ровно один верный». Верхняя граница из
-    // FORMATS.md: больше четырёх вариантов пятилетка не удерживает, а после
-    // первой ошибки задание сужается на один — из двух остаётся ответ.
-    title: 'choose: 2–4 варианта, ровно один верный',
+    // Нижняя граница — три: из двух угадывают в половине случаев, и после первой
+    // ошибки сужать нечего — остаётся ответ. Два — только в знакомстве с форматом.
+    // Верхняя — четыре с 7 лет, три на 5–6: больше пятилетка не удерживает.
+    title: 'choose: 3 варианта на 5–6, 3–4 с 7 лет (знакомство — от 2), ровно один верный',
     check: (corpus) =>
-      tasksOf(corpus).flatMap(({ task, at }) => {
+      tasksOf(corpus).flatMap(({ task, at, lesson }) => {
         if (task.format !== 'choose') return [];
         const bad: string[] = [];
-        const n = task.options.length;
-        if (n < 2 || n > 4) bad.push(`${at}: вариантов ${n}, нужно 2–4`);
+        const range = outOfRange(task.options.length, chooseOptions(lesson.band), task.intro, 'вариантов');
+        if (range) bad.push(`${at}: ${range}`);
         const correct = task.options.filter((o) => o.correct === true).length;
         if (correct !== 1) bad.push(`${at}: верных вариантов ${correct}, нужен ровно один`);
         return bad;
@@ -198,13 +231,31 @@ export const RULES = {
     // Названия зон — не украшение: тап по зоне её озвучивает, и скринридер читает
     // каждую зону отдельным элементом (SCREENS.md, 3.2 и 6). Две зоны с одним
     // названием звучат одинаково — ребёнок не знает, в какую попал.
-    title: 'point: 2–4 цели, ровно одна верная, r ≥ 0.1, x и y в [0, 1], у каждой цели своё название',
+    // Сцена 4:3: радиус в долях ширины, y — в долях высоты, поэтому по вертикали
+    // зона занимает r / 0.75. Зоны не ближе r₁ + r₂ + 0.05 — иначе тап между ними
+    // неоднозначен; целиком в кадре — иначе в часть зоны не попасть.
+    title: 'point: 3–4 цели (знакомство — от 2), одна верная, r ≥ 0.1, зона целиком в кадре, зоны не ближе r₁ + r₂ + 0.05, у каждой своё название',
     check: (corpus) =>
       tasksOf(corpus).flatMap(({ task, at }) => {
         if (task.format !== 'point') return [];
         const bad: string[] = [];
-        const n = task.targets.length;
-        if (n < 2 || n > 4) bad.push(`${at}: целей ${n}, нужно 2–4`);
+        const range = outOfRange(task.targets.length, pointTargets(), task.intro, 'целей');
+        if (range) bad.push(`${at}: ${range}`);
+        const ASPECT = 0.75;
+        for (const z of task.targets) {
+          const ry = z.r / ASPECT;
+          if (z.x - z.r < 0 || z.x + z.r > 1 || z.y - ry < 0 || z.y + ry > 1) {
+            bad.push(`${at}: цель ${z.id} выходит за кадр`);
+          }
+        }
+        task.targets.forEach((a, i) =>
+          task.targets.slice(i + 1).forEach((b) => {
+            const d = Math.hypot(a.x - b.x, (a.y - b.y) * ASPECT);
+            if (d < a.r + b.r + POINT_TARGET_GAP) {
+              bad.push(`${at}: цели ${a.id} и ${b.id} ближе ${(a.r + b.r + POINT_TARGET_GAP).toFixed(2)}`);
+            }
+          }),
+        );
         const correct = task.targets.filter((z) => z.correct === true).length;
         if (correct !== 1) bad.push(`${at}: верных целей ${correct}, нужна ровно одна`);
         const labels = task.targets.map((z) => z.labelKey);
@@ -223,26 +274,29 @@ export const RULES = {
   },
 
   match: {
-    // Одна пара — это не сопоставление, а тап по единственной паре: знание не
-    // проверяется, и сужать после ошибки нечего.
-    title: 'match: не меньше двух пар',
+    // Одна пара — тап по единственной паре; из двух пар ошибка в одной означает
+    // ошибку во второй — тот же выбор из двух. Текстовые на четыре не помещаются.
+    title: 'match: 3 пары на 5–6 и в тексте, 3–4 картинками с 7 лет (знакомство — от 2)',
     check: (corpus) =>
-      tasksOf(corpus).flatMap(({ task, at }) =>
-        task.format === 'match' && task.pairs.length < 2 ? [`${at}: пар ${task.pairs.length}, нужно ≥ 2`] : [],
-      ),
+      tasksOf(corpus).flatMap(({ task, at, lesson }) => {
+        if (task.format !== 'match') return [];
+        const range = outOfRange(task.pairs.length, matchOrderCount(lesson.band, task.presentation), task.intro, 'пар');
+        return range ? [`${at}: ${range}`] : [];
+      }),
   },
 
   order: {
     // `position` — верный порядок. Повтор или пропуск позиции делает задание
     // нерешаемым (две карточки претендуют на одно место) либо принимающим
     // неверный порядок.
-    title: 'order: не меньше двух элементов, position — перестановка 0..n-1',
+    title: 'order: 3 элемента на 5–6 и в тексте, 3–4 картинками с 7 лет (знакомство — от 2), position — перестановка 0..n-1',
     check: (corpus) =>
-      tasksOf(corpus).flatMap(({ task, at }) => {
+      tasksOf(corpus).flatMap(({ task, at, lesson }) => {
         if (task.format !== 'order') return [];
         const bad: string[] = [];
         const n = task.items.length;
-        if (n < 2) bad.push(`${at}: элементов ${n}, нужно ≥ 2`);
+        const range = outOfRange(n, matchOrderCount(lesson.band, task.presentation), task.intro, 'элементов');
+        if (range) bad.push(`${at}: ${range}`);
         const positions = task.items.map((i) => i.position).sort((a, b) => a - b);
         const expected = Array.from({ length: n }, (_, i) => i);
         if (positions.join(',') !== expected.join(',')) {
@@ -255,12 +309,18 @@ export const RULES = {
   group: {
     // Элемент с несуществующим groupId положить некуда — задание не решается.
     // Пустая группа — ловушка: ребёнок ищет, что в неё положить.
-    title: 'group: не меньше двух групп, groupId существует, в каждой группе есть элемент',
+    // На 5–6 — две группы и 3–4 предмета; с 7 лет — до трёх групп и шести
+    // предметов, три группы только картинками: подписи в три корзины не помещаются.
+    title: 'group: на 5–6 две группы и 3–4 предмета, с 7 лет 2–3 группы (три — только картинками) и 3–6 предметов; groupId существует, в каждой группе есть элемент',
     check: (corpus) =>
-      tasksOf(corpus).flatMap(({ task, at }) => {
+      tasksOf(corpus).flatMap(({ task, at, lesson }) => {
         if (task.format !== 'group') return [];
         const bad: string[] = [];
-        if (task.groups.length < 2) bad.push(`${at}: групп ${task.groups.length}, нужно ≥ 2`);
+        const limits = groupLimits(lesson.band, task.presentation);
+        const g = outOfRange(task.groups.length, limits.groups, task.intro, 'групп');
+        if (g) bad.push(`${at}: ${g}`);
+        const it = outOfRange(task.items.length, limits.items, task.intro, 'предметов');
+        if (it) bad.push(`${at}: ${it}`);
         const groupIds = new Set(task.groups.map((g) => g.id));
         for (const item of task.items) {
           if (!groupIds.has(item.groupId)) bad.push(`${at}: элемент ${item.id} ссылается на несуществующую группу ${item.groupId}`);
@@ -273,18 +333,65 @@ export const RULES = {
   },
 
   build: {
-    // Пустой answer засчитает пустой ввод. Один фрагмент — это тап по
-    // единственной кнопке, то есть узнавание, а build существует ради
-    // припоминания.
-    title: 'build: непустой answer, фрагментов (если есть) не меньше двух',
-    check: (corpus) =>
-      tasksOf(corpus).flatMap(({ task, at }) => {
+    // Из фрагментов — три фишки в ряд на SE: ответ ≤ 3 фишек, лоток ≤ 6, фишка
+    // ≤ 6 знаков, и ответ действительно собирается из фишек. Без фрагментов —
+    // своя цифровая клавиатура: ответ из цифр, разрядность по программе полосы.
+    title: 'build: ответ собирается из ≤ 3 фишек, лоток 2–6, фишка ≤ 6 знаков; без фишек — число с разрядностью по полосе',
+    check: (corpus, { ru }) =>
+      tasksOf(corpus).flatMap(({ task, at, lesson }) => {
         if (task.format !== 'build') return [];
         const bad: string[] = [];
-        if (!isNonEmptyString(task.answer)) bad.push(`${at}: пустой answer`);
-        if (task.fragments !== undefined && task.fragments.length < 2) {
-          bad.push(`${at}: фрагментов ${task.fragments.length}, нужно ≥ 2 или не задавать вовсе`);
+        if (!isNonEmptyString(task.answer)) return [`${at}: пустой answer`];
+        if (task.fragments === undefined) {
+          const digits = BUILD_DIGITS[lesson.band];
+          if (!/^\d+$/.test(task.answer)) bad.push(`${at}: без фишек ответ вводится цифрами, а answer «${task.answer}»`);
+          else if (task.answer.length > digits) bad.push(`${at}: ответ ${task.answer.length}-значный, для ${lesson.band} не больше ${digits}`);
+          return bad;
         }
+        const n = task.fragments.length;
+        if (n < 2 || n > BUILD_FRAGMENTS.maxInTray) bad.push(`${at}: фишек в лотке ${n}, нужно 2–${BUILD_FRAGMENTS.maxInTray}`);
+        const texts = task.fragments.map((f) => lookup(ru, f.labelKey));
+        texts.forEach((t, i) => {
+          if (typeof t === 'string' && [...t].length > BUILD_FRAGMENTS.maxChars) {
+            bad.push(`${at}: фишка ${task.fragments![i].id} «${t}» длиннее ${BUILD_FRAGMENTS.maxChars} знаков`);
+          }
+        });
+        if (texts.every((t) => typeof t === 'string') && !composable(task.answer, texts as string[], BUILD_FRAGMENTS.maxInAnswer)) {
+          bad.push(`${at}: ответ «${task.answer}» не собирается из ≤ ${BUILD_FRAGMENTS.maxInAnswer} фишек`);
+        }
+        return bad;
+      }),
+  },
+
+  intro: {
+    // Знакомство с форматом не идёт в зачёт. Два таких в уроке или знакомство не
+    // первым — лазейка: задание с двумя вариантами выдаётся за знакомство.
+    title: 'знакомство (intro) — не больше одного на урок и только первым заданием',
+    check: (corpus) =>
+      lessonsOf(corpus).flatMap(({ lesson, where }) => {
+        const bad: string[] = [];
+        const intros = lesson.tasks.filter((t) => t.intro);
+        if (intros.length > 1) bad.push(`${where}: знакомств ${intros.length}, нужно не больше одного`);
+        lesson.tasks.forEach((t, i) => {
+          if (t.intro && i > 0) bad.push(`${where}/${t.id}: знакомство не первым заданием`);
+        });
+        return bad;
+      }),
+  },
+
+  textLength: {
+    // Кыргызская строка до ×2.3 от русской: вопрос ≤ 40 знаков помещается в три
+    // строки по 18 pt, подсказка ≤ 36 — в пузырь Tali (SCREENS.md, 1.3 и 1.4).
+    title: `вопрос ≤ ${TEXT_LIMITS.promptChars} знаков, подсказка ≤ ${TEXT_LIMITS.hintChars} по-русски`,
+    check: (corpus, { ru }) =>
+      tasksOf(corpus).flatMap(({ task, at }) => {
+        const bad: string[] = [];
+        const check = (key: string, max: number, what: string) => {
+          const t = lookup(ru, key);
+          if (typeof t === 'string' && [...t].length > max) bad.push(`${at}: ${what} ${[...t].length} знаков, нужно ≤ ${max}`);
+        };
+        check(task.promptKey, TEXT_LIMITS.promptChars, 'вопрос');
+        check(task.hintKey, TEXT_LIMITS.hintChars, 'подсказка');
         return bad;
       }),
   },
@@ -420,7 +527,7 @@ export const RULES = {
   taskCount: {
     // Длина урока — это длина внимания: 5–6 лет держат 6–8 минут, это 4–5
     // заданий. См. TASK_COUNT про полосы 7 и 8.
-    title: 'число заданий в уроке по норме полосы (5-6: 4–5, 9-10: 8–10; 7 и 8 не проверяются)',
+    title: 'число заданий в уроке по норме полосы (5-6: 4–5, 9-10: 8–10; 7 и 8: не больше 10)',
     check: (corpus) =>
       lessonsOf(corpus).flatMap(({ lesson, where }) => {
         const norm = TASK_COUNT[lesson.band];

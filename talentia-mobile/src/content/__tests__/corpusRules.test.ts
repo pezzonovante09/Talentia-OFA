@@ -49,8 +49,9 @@ function lessonPicture(): Lesson {
         hintKey: k('a.l1.t2.hint'),
         scene: 'region-numbers',
         targets: [
-          { id: 'x', x: 0, y: 1, r: 0.1, correct: true, labelKey: k('a.l1.t2.x') },
-          { id: 'y', x: 1, y: 0, r: 0.2, correct: false, labelKey: k('a.l1.t2.y') },
+          { id: 'x', x: 0.2, y: 0.3, r: 0.1, correct: true, labelKey: k('a.l1.t2.x') },
+          { id: 'y', x: 0.8, y: 0.3, r: 0.2, correct: false, labelKey: k('a.l1.t2.y') },
+          { id: 'v', x: 0.5, y: 0.8, r: 0.1, correct: false, labelKey: k('a.l1.t2.v') },
         ],
       },
       {
@@ -63,6 +64,7 @@ function lessonPicture(): Lesson {
         pairs: [
           { id: 'p1', left: { labelKey: k('a.l1.t3.l1'), shape: 'berry', count: 1 }, right: { labelKey: 'content.common.one', image: 'card-one' } },
           { id: 'p2', left: { labelKey: k('a.l1.t3.l2'), shape: 'berry', count: 2 }, right: { labelKey: 'content.common.two', image: 'card-two' } },
+          { id: 'p3', left: { labelKey: k('a.l1.t3.l3'), shape: 'berry', count: 3 }, right: { labelKey: 'content.common.three', image: 'card-three' } },
         ],
       },
       {
@@ -123,12 +125,12 @@ function lessonText(): Lesson {
           { id: 'd', labelKey: k('b.l1.t2.d'), correct: false },
         ],
       },
-      { id: 'fx-b-l1-t3', skill: 'spell-word', format: 'build', ...t(3), answer: 'дом' },
-      { id: 'fx-b-l1-t4', skill: 'find-on-map', format: 'point', ...t(4), scene: 'region-words', targets: [{ id: 'z', x: 0.5, y: 0.5, r: 0.15, correct: true, labelKey: k('b.l1.t4.z') }, { id: 'w', x: 0.2, y: 0.2, r: 0.15, correct: false, labelKey: k('b.l1.t4.w') }] },
-      { id: 'fx-b-l1-t5', skill: 'match-words', format: 'match', presentation: 'text', ...t(5), pairs: [{ id: 'p1', left: { labelKey: k('b.l1.t5.l1') }, right: { labelKey: k('b.l1.t5.r1') } }, { id: 'p2', left: { labelKey: k('b.l1.t5.l2') }, right: { labelKey: k('b.l1.t5.r2') } }] },
-      { id: 'fx-b-l1-t6', skill: 'order-words', format: 'order', presentation: 'text', ...t(6), items: [{ id: 'a', labelKey: k('b.l1.t6.a'), position: 1 }, { id: 'b', labelKey: k('b.l1.t6.b'), position: 0 }] },
-      { id: 'fx-b-l1-t7', skill: 'sort-words', format: 'group', presentation: 'text', ...t(7), groups: [{ id: 'g1', labelKey: k('b.l1.t7.g1') }, { id: 'g2', labelKey: k('b.l1.t7.g2') }], items: [{ id: 'a', labelKey: k('b.l1.t7.a'), groupId: 'g1' }, { id: 'b', labelKey: k('b.l1.t7.b'), groupId: 'g2' }] },
-      { id: 'fx-b-l1-t8', skill: 'pick-word', format: 'choose', presentation: 'text', ...t(8), options: [{ id: 'a', labelKey: k('b.l1.t8.a'), correct: false }, { id: 'b', labelKey: k('b.l1.t8.b'), correct: true }] },
+      { id: 'fx-b-l1-t3', skill: 'multiply-2-by-1', format: 'build', ...t(3), answer: '256' },
+      { id: 'fx-b-l1-t4', skill: 'find-on-map', format: 'point', ...t(4), scene: 'region-words', targets: [{ id: 'z', x: 0.5, y: 0.5, r: 0.15, correct: true, labelKey: k('b.l1.t4.z') }, { id: 'w', x: 0.15, y: 0.25, r: 0.15, correct: false, labelKey: k('b.l1.t4.w') }, { id: 'u', x: 0.85, y: 0.25, r: 0.15, correct: false, labelKey: k('b.l1.t4.u') }] },
+      { id: 'fx-b-l1-t5', skill: 'match-words', format: 'match', presentation: 'text', ...t(5), pairs: [{ id: 'p1', left: { labelKey: k('b.l1.t5.l1') }, right: { labelKey: k('b.l1.t5.r1') } }, { id: 'p2', left: { labelKey: k('b.l1.t5.l2') }, right: { labelKey: k('b.l1.t5.r2') } }, { id: 'p3', left: { labelKey: k('b.l1.t5.l3') }, right: { labelKey: k('b.l1.t5.r3') } }] },
+      { id: 'fx-b-l1-t6', skill: 'order-words', format: 'order', presentation: 'text', ...t(6), items: [{ id: 'a', labelKey: k('b.l1.t6.a'), position: 1 }, { id: 'b', labelKey: k('b.l1.t6.b'), position: 0 }, { id: 'c', labelKey: k('b.l1.t6.c'), position: 2 }] },
+      { id: 'fx-b-l1-t7', skill: 'sort-words', format: 'group', presentation: 'text', ...t(7), groups: [{ id: 'g1', labelKey: k('b.l1.t7.g1') }, { id: 'g2', labelKey: k('b.l1.t7.g2') }], items: [{ id: 'a', labelKey: k('b.l1.t7.a'), groupId: 'g1' }, { id: 'b', labelKey: k('b.l1.t7.b'), groupId: 'g2' }, { id: 'c', labelKey: k('b.l1.t7.c'), groupId: 'g1' }] },
+      { id: 'fx-b-l1-t8', skill: 'pick-word', format: 'choose', presentation: 'text', ...t(8), options: [{ id: 'a', labelKey: k('b.l1.t8.a'), correct: false }, { id: 'b', labelKey: k('b.l1.t8.b'), correct: true }, { id: 'c', labelKey: k('b.l1.t8.c'), correct: false }] },
     ],
   };
 }
@@ -140,10 +142,19 @@ function goodCorpus(): Corpus {
   ];
 }
 
+/**
+ * Строки, которые важны правилам по содержанию, а не только по наличию: фишки
+ * `build` должны складываться в ответ.
+ */
+const FIXTURE_TEXT: Record<string, string> = {
+  [k('b.l1.t1.f1')]: 'ко',
+  [k('b.l1.t1.f2')]: 'т',
+};
+
 /** Локаль, в которой каждый ключ корпуса — непустая строка. */
 function localeFor(corpus: Corpus): Record<string, unknown> {
   const root: Record<string, unknown> = {};
-  for (const key of keysIn(corpus)) setKey(root, key, 'текст');
+  for (const key of keysIn(corpus)) setKey(root, key, FIXTURE_TEXT[key] ?? 'текст');
   return root;
 }
 
@@ -316,7 +327,7 @@ describe('гард корпуса: point', () => {
     const five = goodCorpus();
     const t5 = taskOf(five, 0, 'point');
     const extra = (i: number) => ({ id: `e${i}`, x: 0.5, y: 0.5, r: 0.1, correct: false, labelKey: k(`a.l1.t2.e${i}`) });
-    t5.targets = [...t5.targets, extra(1), extra(2), extra(3)];
+    t5.targets = [...t5.targets, extra(1), extra(2)];
     expectRed('point', five, 'целей 5');
   });
 
@@ -351,10 +362,18 @@ describe('гард корпуса: point', () => {
 });
 
 describe('гард корпуса: match, order, group, build', () => {
-  it('ловит match из одной пары', () => {
+  it('ловит match из двух пар — тот же выбор из двух', () => {
     const c = goodCorpus();
     taskOf(c, 0, 'match').pairs.pop();
-    expectRed('match', c, 'пар 1');
+    expectRed('match', c, 'пар 2, нужно 3');
+  });
+
+  it('пропускает две пары в знакомстве с форматом', () => {
+    const c = goodCorpus();
+    const t = taskOf(c, 0, 'match');
+    t.pairs.pop();
+    t.intro = true;
+    expect(run('match', c)).toEqual([]);
   });
 
   it('ловит order из одного элемента', () => {
@@ -406,7 +425,7 @@ describe('гард корпуса: match, order, group, build', () => {
     const c = goodCorpus();
     const t = taskOf(c, 1, 'build');
     t.fragments = t.fragments?.slice(0, 1);
-    expectRed('build', c, 'фрагментов 1');
+    expectRed('build', c, 'фишек в лотке 1');
   });
 });
 
@@ -629,12 +648,20 @@ describe('гард корпуса: структура урока', () => {
     expect(run('taskCount', c)).toEqual([]);
   });
 
-  it('не проверяет число заданий на полосах 7 и 8 — норма не зафиксирована', () => {
+  it('на полосах 7 и 8 нижняя граница не проверяется — норма не зафиксирована', () => {
     const c = goodCorpus();
     const l = lessonAt(c, 1);
     l.band = '8';
     l.tasks = l.tasks.slice(0, 1);
     expect(run('taskCount', c)).toEqual([]);
+  });
+
+  it('на полосах 7 и 8 больше десяти заданий — нарушение', () => {
+    const c = goodCorpus();
+    const l = lessonAt(c, 1);
+    l.band = '7';
+    l.tasks = Array.from({ length: 11 }, (_, j) => ({ ...l.tasks[j % l.tasks.length], id: `n${j}` }));
+    expectRed('taskCount', c, 'заданий 11');
   });
 });
 
@@ -649,6 +676,176 @@ describe('гард корпуса: доля choose', () => {
 
   it(`не включается до ${CHOOSE_SHARE_MIN_TASKS} заданий`, () => {
     expect(run('chooseShare', corpusWithShare(CHOOSE_SHARE_MIN_TASKS - 1, CHOOSE_SHARE_MIN_TASKS - 1))).toEqual([]);
+  });
+});
+
+/* ------------------------------------------------------------------------ */
+/* Лимиты по полосе, знакомство, длина текстов (domain/lessonLimits.ts)      */
+/* ------------------------------------------------------------------------ */
+
+describe('гард корпуса: лимиты по полосе', () => {
+  it('ловит два варианта choose вне знакомства', () => {
+    const c = goodCorpus();
+    taskOf(c, 0, 'choose').options.pop();
+    expectRed('choose', c, 'вариантов 2, нужно 3');
+  });
+
+  it('пропускает два варианта choose в знакомстве', () => {
+    const c = goodCorpus();
+    const t = taskOf(c, 0, 'choose');
+    t.options = t.options.filter((o) => o.correct || o.id === 'a');
+    t.intro = true;
+    expect(run('choose', c)).toEqual([]);
+  });
+
+  it('ловит четыре варианта choose на полосе 5–6', () => {
+    const c = goodCorpus();
+    taskOf(c, 0, 'choose').options.push({ id: 'd', labelKey: 'content.common.two', shape: 'dot', count: 4, correct: false });
+    expectRed('choose', c, 'вариантов 4, нужно 3');
+  });
+
+  it('ловит четыре текстовых пары match с 7 лет — на SE не помещаются', () => {
+    const c = goodCorpus();
+    taskOf(c, 1, 'match').pairs.push({ id: 'p4', left: { labelKey: k('b.l1.t5.l4') }, right: { labelKey: k('b.l1.t5.r4') } });
+    expectRed('match', c, 'пар 4, нужно 3');
+  });
+
+  it('ловит три группы на полосе 5–6 и три группы текстом', () => {
+    const young = goodCorpus();
+    taskOf(young, 0, 'group').groups.push({ id: 'g3', labelKey: k('a.l1.t5.g3') });
+    expectRed('group', young, 'групп 3, нужно 2');
+    const text = goodCorpus();
+    const g = taskOf(text, 1, 'group');
+    g.groups.push({ id: 'g3', labelKey: k('b.l1.t7.g3') });
+    g.items.push({ id: 'd', labelKey: k('b.l1.t7.d'), groupId: 'g3' });
+    expectRed('group', text, 'групп 3, нужно 2');
+  });
+
+  it('ловит пять предметов group на полосе 5–6', () => {
+    const c = goodCorpus();
+    const g = taskOf(c, 0, 'group');
+    g.items.push(
+      { id: 'i4', labelKey: k('a.l1.t5.i4'), shape: 'stone', count: 3, groupId: 'g1' },
+      { id: 'i5', labelKey: k('a.l1.t5.i5'), image: 'leaf-small', groupId: 'g2' },
+    );
+    expectRed('group', c, 'предметов 5, нужно 3–4');
+  });
+});
+
+describe('гард корпуса: point в кадре и с зазором', () => {
+  it('ловит зону, вылезающую за край кадра', () => {
+    const c = goodCorpus();
+    taskOf(c, 0, 'point').targets[0].x = 0.05;
+    expectRed('point', c, 'выходит за кадр');
+  });
+
+  it('ловит зону за верхним краем с учётом формата 4:3', () => {
+    const c = goodCorpus();
+    // r = 0.1 по ширине — это 0.133 по высоте; y = 0.12 уже за краем
+    taskOf(c, 0, 'point').targets[0].y = 0.12;
+    expectRed('point', c, 'выходит за кадр');
+  });
+
+  it('ловит две зоны ближе r₁ + r₂ + 0.05', () => {
+    const c = goodCorpus();
+    const t = taskOf(c, 0, 'point');
+    t.targets[2].x = t.targets[0].x + 0.2;
+    t.targets[2].y = t.targets[0].y;
+    expectRed('point', c, 'ближе');
+  });
+});
+
+describe('гард корпуса: build по полосе', () => {
+  it('ловит ответ, который не собирается из фишек', () => {
+    const c = goodCorpus();
+    taskOf(c, 1, 'build').answer = 'кит';
+    expectRed('build', c, 'не собирается');
+  });
+
+  it('ловит ответ из четырёх фишек', () => {
+    const c = goodCorpus();
+    const t = taskOf(c, 1, 'build');
+    t.answer = 'кококот';
+    t.fragments = [
+      { id: 'f1', labelKey: k('b.l1.t1.f1') },
+      { id: 'f2', labelKey: k('b.l1.t1.f2') },
+      { id: 'f3', labelKey: k('b.l1.t1.f3') },
+      { id: 'f4', labelKey: k('b.l1.t1.f4') },
+    ];
+    const locale = localeFor(c);
+    setKey(locale, k('b.l1.t1.f3'), 'ко');
+    setKey(locale, k('b.l1.t1.f4'), 'ко');
+    expectRed('build', c, 'не собирается', { ru: locale });
+  });
+
+  it('ловит фишку длиннее шести знаков', () => {
+    const c = goodCorpus();
+    const locale = localeFor(c);
+    setKey(locale, k('b.l1.t1.f1'), 'коооооо');
+    expectRed('build', c, 'длиннее 6', { ru: locale });
+  });
+
+  it('ловит семь фишек в лотке', () => {
+    const c = goodCorpus();
+    const t = taskOf(c, 1, 'build');
+    t.fragments = [...t.fragments!, ...[3, 4, 5, 6, 7].map((n) => ({ id: `f${n}`, labelKey: k(`b.l1.t1.f${n}`) }))];
+    expectRed('build', c, 'фишек в лотке 7');
+  });
+
+  it('ловит буквы там, где вводят с клавиатуры', () => {
+    const c = goodCorpus();
+    const t = c[1].topic.lessons[0].tasks.find((x) => x.format === 'build' && x.fragments === undefined);
+    if (!t || t.format !== 'build') throw new Error('в фикстуре нет build без фишек');
+    t.answer = 'дом';
+    expectRed('build', c, 'вводится цифрами');
+  });
+
+  it('ловит трёхзначное число на полосе 7', () => {
+    const c = goodCorpus();
+    lessonAt(c, 1).band = '7';
+    expectRed('build', c, '3-значный, для 7 не больше 2');
+  });
+});
+
+describe('гард корпуса: знакомство и длина текстов', () => {
+  it('ловит знакомство не первым заданием', () => {
+    const c = goodCorpus();
+    lessonAt(c, 0).tasks[2].intro = true;
+    expectRed('intro', c, 'знакомство не первым');
+  });
+
+  it('ловит два знакомства в уроке', () => {
+    const c = goodCorpus();
+    const l = lessonAt(c, 0);
+    l.tasks[0].intro = true;
+    l.tasks[1].intro = true;
+    expectRed('intro', c, 'знакомств 2');
+  });
+
+  it('пропускает одно знакомство первым', () => {
+    const c = goodCorpus();
+    lessonAt(c, 0).tasks[0].intro = true;
+    expect(run('intro', c)).toEqual([]);
+  });
+
+  it('ловит длинный вопрос и длинную подсказку', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0];
+    const locale = localeFor(c);
+    setKey(locale, t.promptKey, 'а'.repeat(41));
+    setKey(locale, t.hintKey, 'б'.repeat(37));
+    const out = run('textLength', c, { ru: locale }).join('\n');
+    expect(out).toContain('вопрос 41 знаков');
+    expect(out).toContain('подсказка 37 знаков');
+  });
+
+  it('пропускает вопрос ровно 40 и подсказку ровно 36', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0];
+    const locale = localeFor(c);
+    setKey(locale, t.promptKey, 'а'.repeat(40));
+    setKey(locale, t.hintKey, 'б'.repeat(36));
+    expect(run('textLength', c, { ru: locale })).toEqual([]);
   });
 });
 

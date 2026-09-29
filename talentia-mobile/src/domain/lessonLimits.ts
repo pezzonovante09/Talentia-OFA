@@ -1,0 +1,74 @@
+/**
+ * Сколько элементов бывает в задании — по формату и полосе. Одна таблица на всё:
+ * её читает гард корпуса, по ней считается вёрстка (SCREENS.md, раздел 8), и
+ * она же не даёт заданию стать слабым измерителем.
+ *
+ * Нижняя граница — **три альтернативы**, а не две. Из двух вариантов ребёнок
+ * угадывает в половине случаев, а три верных подряд, которые ведут навык в
+ * последнюю коробку, чистым угадыванием набираются в 12.5% случаев против 3.7%
+ * при трёх. К тому же при двух вариантах сужать после ошибки нечего: остаётся
+ * один, и вторая попытка ничего не измеряет. Два варианта допустимы только в
+ * задании-знакомстве с форматом (`intro`), которое в зачёт не идёт.
+ *
+ * Верхняя граница — вёрстка: всё помещается на iPhone SE без прокрутки, с зоной
+ * нажатия ≥ 60 pt (SCREENS.md, 3.1–3.6).
+ */
+import type { AgeBand, Presentation } from '../types/task';
+
+export type Range = readonly [min: number, max: number];
+
+/** Минимум для знакомства с форматом: там допустимы две альтернативы. */
+export const INTRO_MIN = 2;
+
+const youngest = (band: AgeBand) => band === '5-6';
+
+/** Вариантов в `choose`. */
+export function chooseOptions(band: AgeBand): Range {
+  return youngest(band) ? [3, 3] : [3, 4];
+}
+
+/** Зон в `point`. */
+export function pointTargets(): Range {
+  return [3, 4];
+}
+
+/**
+ * Пар в `match` и элементов в `order`. Текстовые на четыре не помещаются на SE:
+ * 4 × 60 + 3 × 16 = 288 > 275. На полосе 5–6 текста нет вовсе.
+ */
+export function matchOrderCount(band: AgeBand, presentation: Presentation): Range {
+  if (youngest(band) || presentation === 'text') return [3, 3];
+  return [3, 4];
+}
+
+/** Групп и предметов в `group`. Три группы — только картинками: подписи в три корзины не помещаются. */
+export function groupLimits(band: AgeBand, presentation: Presentation): { groups: Range; items: Range } {
+  if (youngest(band)) return { groups: [2, 2], items: [3, 4] };
+  return { groups: presentation === 'text' ? [2, 2] : [2, 3], items: [3, 6] };
+}
+
+/** `build` из фрагментов: ответ ≤ 3 фишек, лоток ≤ 6, фишка ≤ 6 знаков — три в ряд на SE. */
+export const BUILD_FRAGMENTS = { maxInAnswer: 3, maxInTray: 6, maxChars: 6 } as const;
+
+/**
+ * Разрядность числа при вводе с клавиатуры — по программе, а не по вёрстке:
+ * клавиатура вмещает четыре цифры, но семилетка многозначных чисел ещё не знает.
+ */
+export const BUILD_DIGITS: Record<AgeBand, number> = { '5-6': 0, '7': 2, '8': 3, '9-10': 4 };
+
+/**
+ * Длина вопроса и подсказки по-русски. Кыргызская строка до ×2.3 длиннее: вопрос
+ * ≤ 40 знаков помещается в 3 строки по 18 pt, подсказка ≤ 36 — в пузырь Tali.
+ */
+export const TEXT_LIMITS = { promptChars: 40, hintChars: 36 } as const;
+
+/** Минимальный зазор между зонами `point`, в долях ширины: не ближе `r₁ + r₂ + 0.05`. */
+export const POINT_TARGET_GAP = 0.05;
+
+/** Число заданий в уроке: 5–6 — 4–5, 9–10 — 8–10, остальным — не больше 10. */
+export const TASKS_PER_LESSON: Record<AgeBand, Range> = {
+  '5-6': [4, 5],
+  '7': [1, 10],
+  '8': [1, 10],
+  '9-10': [8, 10],
+};
