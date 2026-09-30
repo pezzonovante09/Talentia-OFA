@@ -30,9 +30,20 @@ describe("TaskContextSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("caps correctAnswer and childAnswer length", () => {
-    expect(TaskContextSchema.safeParse({ correctAnswer: "a".repeat(501) }).success).toBe(false);
+  it("caps childAnswer length", () => {
     expect(TaskContextSchema.safeParse({ childAnswer: "a".repeat(501) }).success).toBe(false);
+  });
+
+  it("отбрасывает правильный ответ и признак особенностей развития — в модель они не уходят", () => {
+    const r = TaskContextSchema.parse({ questionPrompt: "2 + 2", correctAnswer: "4", childMode: "special", methodology: "aba" });
+    expect(r).toEqual({ questionPrompt: "2 + 2" });
+  });
+});
+
+describe("TaliRequestSchema — данные о ребёнке", () => {
+  it("отбрасывает сводку отчёта родителю", () => {
+    const r = TaliRequestSchema.parse({ message: "hi", parentContext: "Прогресс: 40% по математике" });
+    expect("parentContext" in r).toBe(false);
   });
 });
 
@@ -57,10 +68,6 @@ describe("TaliRequestSchema", () => {
 
   it("caps message length", () => {
     expect(TaliRequestSchema.safeParse({ message: "a".repeat(2001) }).success).toBe(false);
-  });
-
-  it("caps parentContext length", () => {
-    expect(TaliRequestSchema.safeParse({ parentContext: "a".repeat(4001) }).success).toBe(false);
   });
 
   it("rejects an oversized nested taskContext (caught by TaskContextSchema)", () => {

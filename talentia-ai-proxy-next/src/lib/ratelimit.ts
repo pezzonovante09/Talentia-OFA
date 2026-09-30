@@ -60,6 +60,35 @@ export const ratelimitAccountUser =
       })
     : null;
 
+/**
+ * Лимиты на пользователя — по id из проверенного JWT. Лимит по IP один не работает: за
+ * школьным NAT и мобильным CGNAT много детей делят адрес и получают ложные 429, а один
+ * аккаунт, меняющий адрес, не ограничен ничем (AUDIT.md, «Важно»).
+ */
+function perUser(limit: number, window: Parameters<typeof Ratelimit.slidingWindow>[1], prefix: string) {
+  return redis !== null ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(limit, window), prefix }) : null;
+}
+
+function envInt(name: string, fallback: number): number {
+  const n = Number.parseInt(process.env[name] ?? "", 10);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+/** Tali — 30 запросов в минуту на пользователя. */
+export const ratelimitApiUser = perUser(30, "1 m", "talentia:api:user");
+
+/** Дневной бюджет живого разговора с Tali на пользователя (запросов к модели). */
+export const taliDailyUser = perUser(envInt("TALI_DAILY_REQUESTS_PER_USER", 200), "1 d", "talentia:tali:day");
+
+/** Озвучка — 20 запросов в минуту на пользователя. */
+export const ratelimitTtsUser = perUser(20, "1 m", "talentia:tts:user");
+
+/**
+ * Дневной бюджет озвучки в символах на пользователя: живая озвучка — самая дорогая
+ * статья (порядка $100k/мес на 10k детей без потолка). Списывается длиной текста.
+ */
+export const ttsCharsDailyUser = perUser(envInt("TTS_DAILY_CHARS_PER_USER", 30_000), "1 d", "talentia:tts:chars");
+
 /** True on Vercel production deployments (or when NODE_ENV is explicitly production). */
 function isProductionEnv(): boolean {
   return process.env.VERCEL_ENV === "production" || process.env.NODE_ENV === "production";
@@ -99,6 +128,8 @@ export async function enforceRateLimit(
   limiter: Ratelimit | null,
   /** Ключ окна; по умолчанию IP клиента. Для лимита на пользователя — его id из проверенного JWT. */
   key?: string,
+  /** Сколько списать с окна: по умолчанию 1, для бюджета символов — длина текста. */
+  rate?: number,
 ): Promise<NextResponse | null> {
   if (!limiter) {
     if (isProductionEnv()) {
@@ -119,7 +150,7 @@ export async function enforceRateLimit(
   }
   const identifier = key ?? clientIp(req);
   try {
-    const { success, limit, remaining, reset } = await limiter.limit(identifier);
+    const { success, limit, remaining, reset } = await (rate ? limiter.limit(identifier, { rate }) : limiter.limit(identifier));
     if (!success) {
       return NextResponse.json(
         { error: "Too many requests" },

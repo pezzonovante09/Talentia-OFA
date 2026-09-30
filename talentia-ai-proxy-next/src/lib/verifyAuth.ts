@@ -42,6 +42,12 @@ export async function verifyAuth(req: NextRequest): Promise<VerifyAuthResult> {
     };
   }
 
+  // Анонимная сессия Supabase — не родитель: без неё любой получил бы ИИ и озвучку за
+  // счёт проекта под одним лимитом по IP.
+  if (user.is_anonymous) {
+    return { ok: false, error: "Anonymous sessions are not allowed", status: 403 };
+  }
+
   return { ok: true, userId: user.id };
 }
 

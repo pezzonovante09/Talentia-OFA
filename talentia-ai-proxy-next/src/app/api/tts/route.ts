@@ -3,7 +3,13 @@ import { z } from "zod";
 
 import { corsAudioMpegResponse, corsJson, corsPreflight } from "@/lib/api-cors";
 import { authJsonError, verifyAuth } from "@/lib/verifyAuth";
-import { enforceRateLimit, ratelimitApi, ratelimitTts } from "@/lib/ratelimit";
+import {
+  enforceRateLimit,
+  ratelimitApi,
+  ratelimitTts,
+  ratelimitTtsUser,
+  ttsCharsDailyUser,
+} from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 
@@ -173,12 +179,20 @@ export async function GET(req: NextRequest) {
   );
 }
 
+/**
+ * **Роут старого приложения**: озвучивает любой текст, поэтому держится на лимитах. В
+ * пересборке свободного текста в озвучку нет: живые реплики Tali озвучивает
+ * `/api/v2/tali` после фильтра и проверки согласия, контент уроков озвучен заранее при
+ * сборке (AUDIT.md, блокер 2). Отключается вместе со старым приложением.
+ */
 export async function POST(req: NextRequest) {
   const limited = await enforceRateLimit(req, ratelimitTts);
   if (limited) return limited;
   try {
     const auth = await verifyAuth(req);
     if (!auth.ok) return authJsonError(req, auth);
+    const userLimited = await enforceRateLimit(req, ratelimitTtsUser, auth.userId);
+    if (userLimited) return userLimited;
 
     const rawBody = await req.json().catch(() => ({}));
     const parsed = TtsRequestSchema.safeParse(rawBody);
@@ -194,6 +208,10 @@ export async function POST(req: NextRequest) {
 
     if (!text) return corsJson({ error: "text is required" }, 400, req);
 
+    // дневной бюджет символов на пользователя — самая дорогая статья
+    const overBudget = await enforceRateLimit(req, ttsCharsDailyUser, auth.userId, text.length);
+    if (overBudget) return overBudget;
+
     const hfToken = huggingFaceToken();
     const engineEnv = process.env.TTS_ENGINE?.trim().toLowerCase();
     const hfFallback =
@@ -206,25 +224,12 @@ export async function POST(req: NextRequest) {
     // Force Hugging Face only (MMS: ru/en only)
     if (engineEnv === "huggingface") {
       if (language === "ky") {
-        return corsJson(
-          {
-            error: "Hugging Face path does not support Kyrgyz",
-            details:
-              "Use ElevenLabs (unset TTS_ENGINE or set ELEVENLABS_*), or rely on client expo-speech fallback.",
-          },
-          400,
-          req,
-        );
+        console.error("[tts] TTS_ENGINE=huggingface does not support Kyrgyz");
+        return corsJson({ error: "TTS not available for this language" }, 400, req);
       }
       if (!hfToken) {
-        return corsJson(
-          {
-            error: "TTS not configured",
-            details: "TTS_ENGINE=huggingface requires HUGGINGFACE_API_TOKEN (or HF_API_TOKEN / TTS_KEY).",
-          },
-          503,
-          req,
-        );
+        console.error("[tts] TTS_ENGINE=huggingface requires HUGGINGFACE_API_TOKEN");
+        return corsJson({ error: "TTS not configured" }, 503, req);
       }
       return synthesizeHuggingFace(text, language, hfToken, req);
     }
@@ -235,32 +240,16 @@ export async function POST(req: NextRequest) {
         const missing: string[] = [];
         if (!apiKey) missing.push("ELEVENLABS_API_KEY");
         if (!voiceId) missing.push("ELEVENLABS_VOICE_ID or ELEVENLABS_VOICE_ID_KY");
-        return corsJson(
-          {
-            error: "TTS not configured for Kyrgyz",
-            details:
-              "Kyrgyz requires ElevenLabs (multilingual voice). Set ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID; optional ELEVENLABS_VOICE_ID_KY.",
-            missing,
-          },
-          503,
-          req,
-        );
+        console.error("[tts] Kyrgyz needs ElevenLabs; missing:", missing.join(", "));
+        return corsJson({ error: "TTS not configured" }, 503, req);
       }
       if (!hfToken) {
         const missing: string[] = [];
         if (!apiKey) missing.push("ELEVENLABS_API_KEY");
         if (!voiceId) missing.push("ELEVENLABS_VOICE_ID");
         if (!hfToken) missing.push("HUGGINGFACE_API_TOKEN");
-        return corsJson(
-          {
-            error: "TTS not configured",
-            details:
-              "Set ELEVENLABS_API_KEY + ELEVENLABS_VOICE_ID, or HUGGINGFACE_API_TOKEN (e.g. TTS_ENGINE=huggingface).",
-            missing,
-          },
-          503,
-          req,
-        );
+        console.error("[tts] not configured; missing:", missing.join(", "));
+        return corsJson({ error: "TTS not configured" }, 503, req);
       }
       return synthesizeHuggingFace(text, language, hfToken, req);
     }

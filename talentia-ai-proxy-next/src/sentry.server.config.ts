@@ -1,5 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 
+import { scrubEvent } from "@/lib/sentryScrub";
+
 // No Sentry account is configured for this project by default — SENTRY_DSN is
 // intentionally absent so the proxy runs (and builds) fine without it. Set it
 // in the deployment environment to start receiving server-side error reports.
@@ -7,4 +9,7 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.NODE_ENV,
   tracesSampleRate: process.env.NODE_ENV === "production" ? 0.2 : 1.0,
+  // Без идентификаторов (CLAUDE.md): ни пользователя, ни заголовков авторизации, ни тела.
+  sendDefaultPii: false,
+  beforeSend: scrubEvent,
 });
