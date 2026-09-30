@@ -13,7 +13,7 @@ import {
 } from '../abaPrompting';
 import { target, trial } from './abaFixtures';
 
-const fade = (s: AbaTargetState, trials: AbaTrial[]) => trials.reduce(applyTrialToFading, s);
+const fade = (s: AbaTargetState, trials: AbaTrial[]) => trials.reduce((acc: AbaTargetState, t: AbaTrial) => applyTrialToFading(acc, t, target.format), s);
 const at = (level: PromptLevel): AbaTargetState => ({ ...initialTargetState(target), startPromptLevel: level });
 
 /** Прогнать пробу, где ребёнок не отвечает ни разу: какие уровни прозвучат. */

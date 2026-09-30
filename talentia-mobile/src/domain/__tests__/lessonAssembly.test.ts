@@ -362,14 +362,19 @@ describe('календарный зазор повторения', () => {
     lastSeenDay,
   });
 
-  it('коробка 3 — не раньше следующего дня, даже если уроков прошло достаточно', () => {
-    expect(isDue(seen(3, DAY), 10, DAY)).toBe(false);
-    expect(isDue(seen(3, DAY), 10, '2026-10-01')).toBe(true);
+  it('коробка 3 — не раньше чем через три дня, даже если уроков прошло достаточно', () => {
+    expect(isDue(seen(3, DAY), 10, '2026-10-02')).toBe(false);
+    expect(isDue(seen(3, DAY), 10, '2026-10-03')).toBe(true);
   });
 
-  it('коробка 4 — не раньше чем через три дня', () => {
-    expect(isDue(seen(4, '2026-09-28'), 20, DAY)).toBe(false);
-    expect(isDue(seen(4, '2026-09-27'), 20, DAY)).toBe(true);
+  it('коробка 4 — не раньше чем через неделю', () => {
+    expect(isDue(seen(4, '2026-09-24'), 20, DAY)).toBe(false);
+    expect(isDue(seen(4, '2026-09-23'), 20, DAY)).toBe(true);
+  });
+
+  it('подсказка на «освоенном» навыке возвращает его в третью коробку', () => {
+    expect(applyLessonOutcomes(seen(4, '2026-09-01'), ['correct', 'hinted'], 30, DAY).box).toBe(3);
+    expect(applyLessonOutcomes(seen(3, '2026-09-01'), ['hinted'], 30, DAY).box).toBe(3);
   });
 
   it('младшие коробки — без зазора: вспомненное с трудом трогают часто', () => {

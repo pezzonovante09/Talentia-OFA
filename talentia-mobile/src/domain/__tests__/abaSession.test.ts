@@ -301,13 +301,13 @@ describe('К1: уровень пробы коррекции', () => {
     expect(correctionLevel(acq(A, 0), t, 'repeat_word')).toBe(2);
   });
 
-  it('два провала подряд — старт сразу на полную модель, а не на ступень', () => {
+  it('два провала подряд — старт до уровня, несущего ответ, а не сразу на полную модель', () => {
     let st = afterWarmup(acq(A, 0));
     st = answer(st, 3, 'wrong').state;
     st = answer(st, 4, 'ok').state; // коррекция
     st = answer(st, 5, 'ok').state; // отвлекающая
     st = answer(st, 6, 'wrong').state; // перенос
-    expect(st.states.A.startPromptLevel).toBe(3);
+    expect(st.states.A.startPromptLevel).toBe(2);
   });
 });
 

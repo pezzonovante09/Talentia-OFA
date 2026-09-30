@@ -12,6 +12,7 @@
  * набор собирается из первых готовых целей пула и меняет состав по ходу обучения.
  */
 import type { AbaTarget, AbaTargetState, AbaTrialKind } from '../types/aba';
+import type { AgeBand } from '../types/task';
 import type { Rng } from './abaTokens';
 
 export type IdentifySet = {
@@ -25,6 +26,15 @@ export type IdentifySet = {
 };
 
 export const SET_SIZE = { min: 3, max: 4 } as const;
+
+/**
+ * На полосе 5–6 — не больше трёх целей: набор из четырёх с базовой линией и разогревом
+ * выходит за норму сессии 12–14 проб, лимит срезает вторую половину, и у целей остаётся
+ * меньше пяти проб — критерий недостижим (решение владельца 2026-10-01 по аудиту).
+ */
+export function maxSetSize(band: AgeBand): number {
+  return band === '5-6' ? 3 : SET_SIZE.max;
+}
 
 /** Проб на активную цель набора за сессию: критерий — 4 из 5 на каждую. */
 export const SET_TRIALS_PER_TARGET = 5;
@@ -80,6 +90,7 @@ export function updateSets(
   for (const key of keys) {
     const pool = targets.filter((t) => t.format === 'identify' && t.identifyPoolKey === key);
     const existing = sets.find((x) => x.poolKey === key);
+    const max = maxSetSize(pool[0].band);
     const candidates = pool.filter((t) => ACTIVE.has(states[t.id]?.phase ?? 'baseline') && ready(t));
 
     if (!existing) {
@@ -87,7 +98,7 @@ export function updateSets(
         out.push({
           id: `${key}#${sessionIndex}`,
           poolKey: key,
-          memberIds: candidates.slice(0, SET_SIZE.max).map((t) => t.id),
+          memberIds: candidates.slice(0, max).map((t) => t.id),
           createdAtSession: sessionIndex,
           lastSetSessionIndex: -1,
         });
@@ -98,7 +109,7 @@ export function updateSets(
     let memberIds = [...existing.memberIds];
     const newcomer = candidates.find((t) => !memberIds.includes(t.id));
     if (newcomer) {
-      if (memberIds.length < SET_SIZE.max) memberIds.push(newcomer.id);
+      if (memberIds.length < max) memberIds.push(newcomer.id);
       else {
         const leaving = memberIds.findIndex((id) => MASTERED.has(states[id]?.phase ?? ''));
         if (leaving >= 0) memberIds = memberIds.map((id, i) => (i === leaving ? newcomer.id : id));

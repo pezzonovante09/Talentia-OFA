@@ -80,6 +80,12 @@ export const ratelimitApiUser = perUser(30, "1 m", "talentia:api:user");
 /** Дневной бюджет живого разговора с Tali на пользователя (запросов к модели). */
 export const taliDailyUser = perUser(envInt("TALI_DAILY_REQUESTS_PER_USER", 200), "1 d", "talentia:tali:day");
 
+/**
+ * Дневной потолок живых реплик Tali на **ребёнка** — 30 (решение владельца 2026-10-01).
+ * Ключ — хеш id ребёнка, не сам id: в Upstash не уходит идентификатор ребёнка.
+ */
+export const taliDailyChild = perUser(envInt("TALI_DAILY_REPLIES_PER_CHILD", 30), "1 d", "talentia:tali:child");
+
 /** Озвучка — 20 запросов в минуту на пользователя. */
 export const ratelimitTtsUser = perUser(20, "1 m", "talentia:tts:user");
 

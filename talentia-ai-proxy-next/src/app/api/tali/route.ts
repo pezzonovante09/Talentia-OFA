@@ -82,7 +82,7 @@ function buildSystemPrompt(args: {
     : "";
 
   return [
-    `You are Tali, a friendly dinosaur learning companion for children about 4–10 years old.`,
+    `You are Tali, a friendly dinosaur learning companion for children about 5–10 years old.`,
     `Always reply in ${language} only.`,
     "",
     "SAFETY: Content must be 100% child-safe: learning, encouragement, curiosity, gentle humor only.",

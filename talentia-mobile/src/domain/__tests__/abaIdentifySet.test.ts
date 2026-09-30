@@ -107,3 +107,14 @@ describe('пул', () => {
     expect(poolErrors([...pool, dup]).join()).toContain('изображения повторяются');
   });
 });
+
+describe('размер набора по полосе', () => {
+  it('на 5–6 — не больше трёх целей', () => {
+    const young = ['Y1', 'Y2', 'Y3', 'Y4'].map((id) => idt(id, { band: '5-6' }));
+    const states = Object.fromEntries(young.map((t) => [t.id, phase('baseline')(t)]));
+    const [s] = updateSets([], young, states, 1, yes);
+    expect(s.memberIds).toEqual(['Y1', 'Y2', 'Y3']);
+    const [grown] = updateSets([s], young, { ...states, Y1: phase('acquisition')(young[0]) }, 2, yes);
+    expect(grown.memberIds).toHaveLength(3);
+  });
+});

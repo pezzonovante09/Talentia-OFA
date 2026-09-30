@@ -26,11 +26,13 @@ import {
 export const FADE_AFTER = 2;
 
 /**
- * Провалов подряд, после которых старт сразу возвращается на полную модель, а не
- * поднимается на ступень: две ошибки подряд значат, что ребёнок угадывает, и каждая
- * следующая проба без модели — ещё одна ошибка и коррекция.
+ * Провалов подряд, после которых старт поднимается сразу до уровня, несущего ответ
+ * (`FIRST_ANSWER_LEVEL`), а не на одну ступень: две ошибки подряд значат, что ребёнок
+ * угадывает. Но не сразу на полную модель — у почти освоившего ребёнка одна неудачная пара
+ * проб обнуляла бы сессию и серию критерия (решение владельца 2026-10-01 по аудиту,
+ * `aba-pedagogy-specialist`).
  */
-export const FAILURES_TO_ERRORLESS = 2;
+export const FAILURES_TO_RAISE = 2;
 
 /** Уровень, который приложение может выдать. L4 даёт только взрослый — стартовым он не бывает. */
 export function clampToApp(level: PromptLevel): PromptLevel {
@@ -185,25 +187,25 @@ const FAILURE: ReadonlySet<AbaResponse> = new Set(['incorrect', 'no_response']);
  *
  * У звена цепочки затухание своё (`stepPrompts`).
  *
- * Два провала подряд (`FAILURES_TO_ERRORLESS`) — старт сразу на полную модель:
- * безошибочное обучение заново, а не подъём по ступени.
+ * Два провала подряд (`FAILURES_TO_RAISE`) — старт сразу до уровня, несущего ответ
+ * (не ниже), но не обязательно до полной модели.
  */
-export function applyTrialToFading(s: AbaTargetState, t: AbaTrial): AbaTargetState {
+export function applyTrialToFading(s: AbaTargetState, t: AbaTrial, format: AbaFormat): AbaTargetState {
   if (t.response === 'interrupted') return s;
   if (t.kind !== 'teaching' && t.kind !== 'transfer') return s;
-  return withPromptState(s, t.stepId, fadeStep(promptStateOf(s, t.stepId), t));
+  return withPromptState(s, t.stepId, fadeStep(promptStateOf(s, t.stepId), t, FIRST_ANSWER_LEVEL[format]));
 }
 
-function fadeStep(ps: StepPromptState, t: AbaTrial): StepPromptState {
+function fadeStep(ps: StepPromptState, t: AbaTrial, answerLevel: PromptLevel): StepPromptState {
   const succeeded = SUCCESS.has(t.response);
   const lastSuccessfulPromptLevel = succeeded ? clampToApp(t.promptLevelUsed) : ps.lastSuccessfulPromptLevel;
   const failures = FAILURE.has(t.response) ? ps.consecutiveFailures + 1 : 0;
   const base = { ...ps, lastSuccessfulPromptLevel, consecutiveFailures: failures };
 
-  if (failures >= FAILURES_TO_ERRORLESS) {
+  if (failures >= FAILURES_TO_RAISE) {
     return {
       ...base,
-      startPromptLevel: APP_MAX_PROMPT,
+      startPromptLevel: Math.min(APP_MAX_PROMPT, Math.max(ps.startPromptLevel + 1, answerLevel)) as PromptLevel,
       consecutiveIndependentAtStart: 0,
       consecutiveAboveStart: 0,
       consecutiveFailures: 0,

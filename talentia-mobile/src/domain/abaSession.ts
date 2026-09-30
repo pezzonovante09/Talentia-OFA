@@ -1121,7 +1121,7 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
     tokensEarned: state.tokensEarned + award.tokens,
     schedule: award.schedule,
     highPTokenPaid: state.highPTokenPaid || (trial.kind === 'high_p' && award.tokens > 0),
-    states: countsHere ? { ...state.states, [trial.targetId]: applyTrialToFading(targetState, trial) } : state.states,
+    states: countsHere ? { ...state.states, [trial.targetId]: applyTrialToFading(targetState, trial, state.targets[trial.targetId].format) } : state.states,
     // блок набора — один блок: участие пишется на набор, как и в конце половины
     openBlockTargetId:
       trial.kind === 'teaching'
