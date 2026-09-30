@@ -76,6 +76,8 @@ export type AssembleInput = {
   skills: readonly SkillState[];
   /** Номер этого урока в истории ребёнка — тот же счётчик, что `lastSeenLesson`. */
   lessonNumber: number;
+  /** Сегодня — локальная дата устройства `YYYY-MM-DD`: срок повторения и по дням. */
+  day: string;
   pool: ReviewPool;
   /**
    * Навыки региона этого урока. При равной коробке повторяется свой: «первый звук в
@@ -101,7 +103,7 @@ export type AssembleInput = {
  * - Позиции в задании повторения перемешиваются: в пуле навыка всего несколько
  *   заданий, и ребёнок иначе вспоминает, где стояла кнопка, а не навык.
  */
-export function assembleLesson({ lesson, skills, lessonNumber, pool, regionSkills, rng }: AssembleInput): QueuedTask[] {
+export function assembleLesson({ lesson, skills, lessonNumber, day, pool, regionSkills, rng }: AssembleInput): QueuedTask[] {
   let queue: QueuedTask[] = lesson.tasks.map((task) => ({ task }));
   const room = Math.max(0, SESSION_TASKS_MAX[lesson.band] - lesson.tasks.length);
   const limit = Math.min(MAX_REVIEWS, room);
@@ -110,7 +112,7 @@ export function assembleLesson({ lesson, skills, lessonNumber, pool, regionSkill
   const own = new Set(lesson.tasks.map((t) => t.skill));
   const ownIds = new Set(lesson.tasks.map((t) => t.id));
   const home = (s: SkillState) => (regionSkills?.has(s.skill) ? 0 : 1);
-  const due = skillsToReview([...skills], lessonNumber, Infinity)
+  const due = skillsToReview([...skills], lessonNumber, Infinity, day)
     .filter((s) => !own.has(s.skill))
     .sort((a, b) => a.box - b.box || home(a) - home(b));
 
@@ -205,6 +207,8 @@ export function finishLesson(
   played: readonly Played[],
   skills: readonly SkillState[],
   lessonNumber: number,
+  /** Сегодня — локальная дата устройства `YYYY-MM-DD`. */
+  day: string,
 ): LessonResult {
   const bySkill = new Map<string, Outcome[]>();
   const forStars: Outcome[] = [];
@@ -218,7 +222,7 @@ export function finishLesson(
 
   const known = new Map(skills.map((s) => [s.skill, s]));
   for (const [skill, outcomes] of bySkill) {
-    known.set(skill, applyLessonOutcomes(known.get(skill) ?? emptySkill(skill), outcomes, lessonNumber));
+    known.set(skill, applyLessonOutcomes(known.get(skill) ?? emptySkill(skill), outcomes, lessonNumber, day));
   }
 
   const stars = starsForLesson(forStars);

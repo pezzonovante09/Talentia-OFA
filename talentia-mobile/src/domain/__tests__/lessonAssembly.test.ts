@@ -9,9 +9,10 @@ import {
   type Played,
 } from '../lessonAssembly';
 import { maxFormatRun, scheduleTransferProbe, type QueuedTask, type Rng } from '../lessonFlow';
-import { applyLessonOutcomes, emptySkill, type SkillState } from '../mastery';
+import { applyLessonOutcomes, daysBetween, emptySkill, isDue, skillsToReview, type SkillState } from '../mastery';
 
 const rng: Rng = () => 0.3;
+const DAY = '2026-09-30';
 
 function choose(id: string, skill: string, extra: Partial<ChooseTask> = {}): ChooseTask {
   return {
@@ -95,13 +96,13 @@ describe('пул повторения', () => {
 
 describe('сборка урока', () => {
   it('без сроков — ровно задания урока', () => {
-    const q = assembleLesson({ lesson: fourTasks, skills: [], lessonNumber: 2, pool, rng });
+    const q = assembleLesson({ lesson: fourTasks, skills: [], lessonNumber: 2, day: DAY, pool, rng });
     expect(q.map((x) => x.task.id)).toEqual(['l2-1', 'l2-2', 'l2-3', 'l2-4']);
   });
 
   it('не больше двух повторений, младшие коробки первыми', () => {
     const skills = [dueSkill('old-c', 3, 0), dueSkill('old-a', 1), dueSkill('old-b', 2, 0)];
-    const q = assembleLesson({ lesson: fourTasks, skills, lessonNumber: 5, pool, rng });
+    const q = assembleLesson({ lesson: fourTasks, skills, lessonNumber: 5, day: DAY, pool, rng });
     expect(q.filter((x) => x.review).map((x) => x.task.skill)).toEqual(['old-a', 'old-b']);
   });
 
@@ -109,7 +110,7 @@ describe('сборка урока', () => {
     const q = assembleLesson({
       lesson: fourTasks,
       skills: [dueSkill('old-a'), dueSkill('old-b')],
-      lessonNumber: 2,
+      lessonNumber: 2, day: DAY,
       pool,
       rng,
     });
@@ -125,13 +126,13 @@ describe('сборка урока', () => {
       choose('li-2', 'own-a'),
       point('li-3', 'own-a'),
     ]);
-    const q = assembleLesson({ lesson: withIntro, skills: [dueSkill('old-b')], lessonNumber: 2, pool, rng });
+    const q = assembleLesson({ lesson: withIntro, skills: [dueSkill('old-b')], lessonNumber: 2, day: DAY, pool, rng });
     expect(q.findIndex((x) => x.review)).toBeGreaterThanOrEqual(2);
   });
 
   it('встаёт туда, где серия одного формата не длиннее двух', () => {
     const dense = lesson('ld', '7', [choose('ld-1', 'own'), choose('ld-2', 'own'), point('ld-3', 'own'), point('ld-4', 'own')]);
-    const q = assembleLesson({ lesson: dense, skills: [dueSkill('old-a')], lessonNumber: 2, pool, rng });
+    const q = assembleLesson({ lesson: dense, skills: [dueSkill('old-a')], lessonNumber: 2, day: DAY, pool, rng });
     expect(formats(q)).toEqual(['choose', 'choose', 'point', 'choose', 'point']);
     expect(q[3].review).toBe(true);
   });
@@ -141,7 +142,7 @@ describe('сборка урока', () => {
     const q = assembleLesson({
       lesson: points,
       skills: [dueSkill('old-b')],
-      lessonNumber: 2,
+      lessonNumber: 2, day: DAY,
       pool: { 'old-b': [point('rb-point', 'old-b'), choose('rb-choose', 'old-b')] },
       rng,
     });
@@ -154,7 +155,7 @@ describe('сборка урока', () => {
     const q = assembleLesson({
       lesson: points,
       skills: [dueSkill('old-b'), dueSkill('old-a', 2, 0)],
-      lessonNumber: 5,
+      lessonNumber: 5, day: DAY,
       pool,
       rng,
     });
@@ -166,7 +167,7 @@ describe('сборка урока', () => {
     const q = assembleLesson({
       lesson: fourTasks,
       skills: [dueSkill('own-a')],
-      lessonNumber: 2,
+      lessonNumber: 2, day: DAY,
       pool: { 'own-a': [choose('x', 'own-a')] },
       rng,
     });
@@ -177,14 +178,14 @@ describe('сборка урока', () => {
     const young = (n: number) =>
       lesson('y', '5-6', Array.from({ length: n }, (_, i) => (i % 2 ? point(`y-${i}`, 'own') : choose(`y-${i}`, 'own'))));
     const skills = [dueSkill('old-a'), dueSkill('old-b')];
-    expect(assembleLesson({ lesson: young(5), skills, lessonNumber: 2, pool, rng })).toHaveLength(5);
-    const four = assembleLesson({ lesson: young(4), skills, lessonNumber: 2, pool, rng });
+    expect(assembleLesson({ lesson: young(5), skills, lessonNumber: 2, day: DAY, pool, rng })).toHaveLength(5);
+    const four = assembleLesson({ lesson: young(4), skills, lessonNumber: 2, day: DAY, pool, rng });
     expect(four).toHaveLength(5);
     expect(four.filter((x) => x.review)).toHaveLength(1);
   });
 
   it('позиции в задании повторения перемешаны', () => {
-    const q = assembleLesson({ lesson: fourTasks, skills: [dueSkill('old-a')], lessonNumber: 2, pool, rng });
+    const q = assembleLesson({ lesson: fourTasks, skills: [dueSkill('old-a')], lessonNumber: 2, day: DAY, pool, rng });
     const review = q.find((x) => x.review)!.task as ChooseTask;
     expect(review.id).toBe('l1-1');
     expect(review.options.map((o) => o.id)).not.toEqual(['a', 'b', 'c']);
@@ -193,7 +194,7 @@ describe('сборка урока', () => {
   it('при равной коробке — навык своего региона', () => {
     const skills = [dueSkill('old-a'), dueSkill('old-b')];
     const young = lesson('y', '5-6', [choose('y-1', 'own'), point('y-2', 'own'), choose('y-3', 'own'), point('y-4', 'own')]);
-    const q = assembleLesson({ lesson: young, skills, lessonNumber: 2, pool, regionSkills: new Set(['old-b']), rng });
+    const q = assembleLesson({ lesson: young, skills, lessonNumber: 2, day: DAY, pool, regionSkills: new Set(['old-b']), rng });
     expect(q.filter((x) => x.review).map((x) => x.task.skill)).toEqual(['old-b']);
   });
 
@@ -202,7 +203,7 @@ describe('сборка урока', () => {
     const q = assembleLesson({
       lesson: young,
       skills: [dueSkill('old-a')],
-      lessonNumber: 2,
+      lessonNumber: 2, day: DAY,
       pool: { 'old-a': [choose('txt', 'old-a', { presentation: 'text' })] },
       rng,
     });
@@ -213,7 +214,7 @@ describe('сборка урока', () => {
 describe('итог урока', () => {
   it('знакомство с форматом не в зачёт — ни звёзд, ни навыка', () => {
     const l = lesson('l', '7', [choose('i', 'intro-only', { intro: true }), choose('c', 'real')]);
-    const r = finishLesson(l, played(queueOf(l.tasks), ['shown', 'first']), [], 3);
+    const r = finishLesson(l, played(queueOf(l.tasks), ['shown', 'first']), [], 3, DAY);
     expect(r.stars).toBe(3);
     expect(r.skills.map((s) => s.skill)).toEqual(['real']);
   });
@@ -222,37 +223,37 @@ describe('итог урока', () => {
     const l = lesson('l', '7', [choose('a', 's1'), point('b', 's2'), choose('c', 's3')]);
     const q = scheduleTransferProbe(queueOf(l.tasks), 0, rng);
     expect(q[3].transferProbe).toBe(true);
-    const r = finishLesson(l, played(q, ['second', 'first', 'first', 'shown']), [], 3);
+    const r = finishLesson(l, played(q, ['second', 'first', 'first', 'shown']), [], 3, DAY);
     expect(r.stars).toBe(2);
   });
 
   it('повторение в звёзды не идёт, но двигает свой навык', () => {
     const l = lesson('l', '7', [choose('a', 's1'), point('b', 's2')]);
     const q: QueuedTask[] = [{ task: l.tasks[0] }, { task: choose('r', 'old'), review: true }, { task: l.tasks[1] }];
-    const hinted = finishLesson(l, played(q, ['first', 'second', 'first']), [dueSkill('old', 2)], 4);
+    const hinted = finishLesson(l, played(q, ['first', 'second', 'first']), [dueSkill('old', 2)], 4, DAY);
     expect(hinted.stars).toBe(3);
     expect(hinted.skills.find((s) => s.skill === 'old')).toMatchObject({ box: 2, lastSeenLesson: 4 });
-    const shown = finishLesson(l, played(q, ['first', 'shown', 'first']), [dueSkill('old', 2)], 4);
+    const shown = finishLesson(l, played(q, ['first', 'shown', 'first']), [dueSkill('old', 2)], 4, DAY);
     expect(shown.stars).toBe(3);
     expect(shown.skills.find((s) => s.skill === 'old')?.box).toBe(1);
   });
 
   it('безошибочный первый урок — вторая коробка, а не «освоено»', () => {
     const l = lesson('l', '5-6', [choose('a', 'sub'), point('b', 'scene'), choose('c', 'sub'), choose('d', 'sub')]);
-    const r = finishLesson(l, played(queueOf(l.tasks), ['first', 'first', 'first', 'first']), [], 1);
+    const r = finishLesson(l, played(queueOf(l.tasks), ['first', 'first', 'first', 'first']), [], 1, DAY);
     expect(r.skills.find((s) => s.skill === 'sub')).toMatchObject({ box: 2, correctInRow: 3, attempts: 3 });
   });
 
   it('навыки, которых урок не касался, остаются как были', () => {
     const l = lesson('l', '7', [choose('a', 's1')]);
     const untouched = dueSkill('other', 3);
-    const r = finishLesson(l, played(queueOf(l.tasks), ['first']), [untouched], 2);
+    const r = finishLesson(l, played(queueOf(l.tasks), ['first']), [untouched], 2, DAY);
     expect(r.skills).toContainEqual(untouched);
   });
 
   it('запись в атлас — ключ урока и звёзды', () => {
     const l = lesson('l', '7', [choose('a', 's1')]);
-    const r = finishLesson(l, played(queueOf(l.tasks), ['shown']), [], 9);
+    const r = finishLesson(l, played(queueOf(l.tasks), ['shown']), [], 9, DAY);
     expect(r.entry).toEqual({ lessonId: 'l', atlasEntryKey: 'content.atlas.l', stars: 1, firstLesson: 9 });
   });
 });
@@ -350,5 +351,54 @@ describe('проба переноса и серия формата', () => {
     // через два: c p c [c] c; через одно: c p [c] c c
     const q = queueOf([choose('a', 's'), point('b', 's'), choose('c', 's'), choose('d', 's')]);
     expect(scheduleTransferProbe(q, 0, rng).findIndex((x) => x.transferProbe)).toBe(3);
+  });
+});
+
+describe('календарный зазор повторения', () => {
+  const seen = (box: SkillState['box'], lastSeenDay: string | null): SkillState => ({
+    ...emptySkill('s'),
+    box,
+    lastSeenLesson: 0,
+    lastSeenDay,
+  });
+
+  it('коробка 3 — не раньше следующего дня, даже если уроков прошло достаточно', () => {
+    expect(isDue(seen(3, DAY), 10, DAY)).toBe(false);
+    expect(isDue(seen(3, DAY), 10, '2026-10-01')).toBe(true);
+  });
+
+  it('коробка 4 — не раньше чем через три дня', () => {
+    expect(isDue(seen(4, '2026-09-28'), 20, DAY)).toBe(false);
+    expect(isDue(seen(4, '2026-09-27'), 20, DAY)).toBe(true);
+  });
+
+  it('младшие коробки — без зазора: вспомненное с трудом трогают часто', () => {
+    expect(isDue(seen(1, DAY), 1, DAY)).toBe(true);
+    expect(isDue(seen(2, DAY), 2, DAY)).toBe(true);
+  });
+
+  it('и по урокам тоже: день прошёл, а уроков мало — рано', () => {
+    expect(isDue(seen(3, '2026-09-01'), 4, DAY)).toBe(false);
+  });
+
+  it('шесть уроков за вечер не дают ни повторения, ни «освоено»', () => {
+    let s: SkillState = { ...emptySkill('s'), box: 3, lastSeenLesson: 0, lastSeenDay: DAY };
+    for (let n = 5; n <= 10; n += 1) s = applyLessonOutcomes(s, ['correct'], n, DAY);
+    expect(s.box).toBe(3);
+    expect(skillsToReview([seen(3, DAY)], 10, 2, DAY)).toEqual([]);
+  });
+
+  it('итог урока пишет день встречи', () => {
+    const l = lesson('l', '7', [choose('a', 's1')]);
+    const r = finishLesson(l, played([{ task: l.tasks[0] }], ['first']), [], 1, DAY);
+    expect(r.skills[0].lastSeenDay).toBe(DAY);
+  });
+
+  it('запись без дня прошлой встречи календарём не ограничивается', () => {
+    expect(isDue(seen(4, null), 12, DAY)).toBe(true);
+  });
+
+  it('дни считаются через границу месяца', () => {
+    expect(daysBetween('2026-09-29', '2026-10-02')).toBe(3);
   });
 });

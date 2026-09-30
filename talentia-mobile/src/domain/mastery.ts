@@ -26,6 +26,11 @@ export type SkillState = {
   correct: number;
   /** Номер урока, на котором навык встретился в последний раз. */
   lastSeenLesson: number;
+  /**
+   * День последней встречи — локальная дата устройства, `YYYY-MM-DD`. `null` — навык ещё
+   * не встречался (или запись старше календарного зазора: тогда зазор не проверяется).
+   */
+  lastSeenDay: string | null;
 };
 
 /**
@@ -37,6 +42,20 @@ export type SkillState = {
  * заполняются повторением вместо нового.
  */
 export const REVIEW_GAP: Record<Box, number> = { 1: 1, 2: 2, 3: 5, 4: 12 };
+
+/**
+ * Календарный зазор: не раньше стольких дней после прошлой встречи. Интервалы в уроках
+ * не знают о времени: ребёнок, прошедший шесть уроков за час, получил бы «повторение
+ * через пять уроков» через двадцать минут, а «освоено» — без единого перерыва. Для
+ * младших коробок зазора нет: навык, вспомненный с трудом, надо трогать часто (решение
+ * владельца 2026-09-29, открытый вопрос №12).
+ */
+export const REVIEW_MIN_DAYS: Record<Box, number> = { 1: 0, 2: 0, 3: 1, 4: 3 };
+
+/** Дней между двумя локальными датами `YYYY-MM-DD`. */
+export function daysBetween(from: string, to: string): number {
+  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
+}
 
 /**
  * Исход попытки.
@@ -53,7 +72,7 @@ export const REVIEW_GAP: Record<Box, number> = { 1: 1, 2: 2, 3: 5, 4: 12 };
 export type Outcome = 'correct' | 'hinted' | 'helped' | 'transfer_correct';
 
 export function emptySkill(skill: string): SkillState {
-  return { skill, box: 1, correctInRow: 0, attempts: 0, correct: 0, lastSeenLesson: -1 };
+  return { skill, box: 1, correctInRow: 0, attempts: 0, correct: 0, lastSeenLesson: -1, lastSeenDay: null };
 }
 
 /**
@@ -61,10 +80,10 @@ export function emptySkill(skill: string): SkillState {
  * ребёнок справился, просто не сам. Показанный ответ возвращает в первую
  * коробку — засчитывать его как знание нельзя.
  */
-export function applyOutcome(s: SkillState, outcome: Outcome, lesson: number): SkillState {
+export function applyOutcome(s: SkillState, outcome: Outcome, lesson: number, day?: string): SkillState {
   const attempts = s.attempts + 1;
   const correct = s.correct + (outcome === 'correct' ? 1 : 0);
-  const base = { ...s, attempts, correct, lastSeenLesson: lesson };
+  const base = { ...s, attempts, correct, lastSeenLesson: lesson, lastSeenDay: day ?? s.lastSeenDay };
 
   if (outcome === 'transfer_correct') return { ...base, correct: s.correct + 1 };
   if (outcome === 'helped') return { ...base, box: 1, correctInRow: 0 };
@@ -91,11 +110,16 @@ export function applyOutcome(s: SkillState, outcome: Outcome, lesson: number): S
  * без единого перерыва — та же ошибка в масштабе темы. Назад — при любом сроке:
  * показанный ответ знанием не бывает.
  */
-export function applyLessonOutcomes(s: SkillState, outcomes: readonly Outcome[], lesson: number): SkillState {
+export function applyLessonOutcomes(
+  s: SkillState,
+  outcomes: readonly Outcome[],
+  lesson: number,
+  day?: string,
+): SkillState {
   if (outcomes.length === 0) return s;
-  const counted = outcomes.reduce((acc, o) => applyOutcome(acc, o, lesson), s);
+  const counted = outcomes.reduce((acc, o) => applyOutcome(acc, o, lesson, day), s);
   const forBox = outcomes.filter((o) => o !== 'transfer_correct');
-  const due = s.lastSeenLesson < 0 || isDue(s, lesson);
+  const due = s.lastSeenLesson < 0 || isDue(s, lesson, day);
   let box = s.box;
   if (forBox.includes('helped')) box = 1;
   else if (due && forBox.length > 0 && !forBox.includes('hinted')) box = Math.min(4, s.box + 1) as Box;
@@ -107,10 +131,16 @@ export function isMastered(s: SkillState): boolean {
   return s.box === 4;
 }
 
-/** Пора ли повторить навык на уроке с этим номером. */
-export function isDue(s: SkillState, lesson: number): boolean {
+/**
+ * Пора ли повторить навык на уроке с этим номером в этот день. Срок — и по урокам, и по
+ * дням (`REVIEW_MIN_DAYS`). Без дня (или без дня прошлой встречи) календарь не
+ * проверяется.
+ */
+export function isDue(s: SkillState, lesson: number, day?: string): boolean {
   if (s.lastSeenLesson < 0) return false;
-  return lesson - s.lastSeenLesson >= REVIEW_GAP[s.box];
+  if (lesson - s.lastSeenLesson < REVIEW_GAP[s.box]) return false;
+  if (!day || !s.lastSeenDay) return true;
+  return daysBetween(s.lastSeenDay, day) >= REVIEW_MIN_DAYS[s.box];
 }
 
 /**
@@ -119,9 +149,9 @@ export function isDue(s: SkillState, lesson: number): boolean {
  * Не больше двух: урок из пяти заданий, где три — повторение, перестаёт быть
  * новым уроком. Первыми идут навыки из младших коробок — те, что хуже держатся.
  */
-export function skillsToReview(all: SkillState[], lesson: number, limit = 2): SkillState[] {
+export function skillsToReview(all: SkillState[], lesson: number, limit = 2, day?: string): SkillState[] {
   return all
-    .filter((s) => isDue(s, lesson))
+    .filter((s) => isDue(s, lesson, day))
     .sort((a, b) => a.box - b.box || a.lastSeenLesson - b.lastSeenLesson)
     .slice(0, limit);
 }
