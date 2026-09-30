@@ -40,10 +40,10 @@ export async function appendConsentEvent(db: SqlDb, e: ConsentEvent): Promise<vo
   const errors = consentEventErrors(e);
   if (errors.length) throw new Error(`Согласие не записано: ${errors.join('; ')}`);
   await withDbLock(db, () =>
-    db.transaction(async () => {
-      const [last] = await db.all<{ at: string }>('SELECT at FROM consent_events ORDER BY seq DESC LIMIT 1');
+    db.transaction(async (tx) => {
+      const [last] = await tx.all<{ at: string }>('SELECT at FROM consent_events ORDER BY seq DESC LIMIT 1');
       if (last && e.at < last.at) throw new Error('Согласие не записано: событие раньше последнего в журнале');
-      await db.run(
+      await tx.run(
         `INSERT INTO consent_events (id, scope, action, child_id, text_version, confirmed_by, actor_id, at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [e.id, e.scope, e.action, e.childId, e.textVersion, e.confirmedBy, e.actorId, e.at],

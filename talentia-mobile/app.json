@@ -59,6 +59,7 @@
       "expo-video",
       "expo-font",
       "expo-secure-store",
+      "./plugins/withNoDataBackup",
       [
         "expo-build-properties",
         {

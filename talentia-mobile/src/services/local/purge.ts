@@ -15,11 +15,11 @@ const JOURNALS = ['aba_trials', 'aba_sessions', 'lesson_runs'] as const;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-async function withGate(db: SqlDb, id: string, fn: () => Promise<void>): Promise<void> {
-  await db.transaction(async () => {
-    await db.run('INSERT INTO purge_gate (child_id) VALUES (?)', [id]);
-    await fn();
-    await db.run('DELETE FROM purge_gate WHERE child_id = ?', [id]);
+async function withGate(db: SqlDb, id: string, fn: (tx: SqlDb) => Promise<void>): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx.run('INSERT INTO purge_gate (child_id) VALUES (?)', [id]);
+    await fn(tx);
+    await tx.run('DELETE FROM purge_gate WHERE child_id = ?', [id]);
   });
   await compactAfterDelete(db);
 }
@@ -46,16 +46,16 @@ export function retentionCutoff(now: Date, months = RETENTION_MONTHS): string {
 export async function applyRetention(db: SqlDb, now: Date): Promise<number> {
   const before = retentionCutoff(now);
   let removed = 0;
-  await db.transaction(async () => {
-    await db.run('INSERT INTO retention_gate (before) VALUES (?)', [before]);
+  await db.transaction(async (tx) => {
+    await tx.run('INSERT INTO retention_gate (before) VALUES (?)', [before]);
     for (const [t, col] of [
       ['aba_trials', 'recorded_at'],
       ['aba_sessions', 'recorded_at'],
       ['lesson_runs', 'started_at'],
     ] as const) {
-      removed += (await db.run(`DELETE FROM ${t} WHERE ${col} < ?`, [before])).changes;
+      removed += (await tx.run(`DELETE FROM ${t} WHERE ${col} < ?`, [before])).changes;
     }
-    await db.run('DELETE FROM retention_gate');
+    await tx.run('DELETE FROM retention_gate');
   });
   if (removed) await compactAfterDelete(db);
   return removed;
@@ -71,12 +71,12 @@ export async function applyRetention(db: SqlDb, now: Date): Promise<number> {
 export async function purgeChild(db: SqlDb, childId: string, childPseudonym: string): Promise<void> {
   if (childPseudonym === childId) throw new Error('Псевдоним совпадает с id ребёнка');
   if (!UUID.test(childPseudonym)) throw new Error('Псевдоним — случайный uuid');
-  await withGate(db, childId, async () => {
-    for (const t of JOURNALS) await db.run(`DELETE FROM ${t} WHERE child_id = ?`, [childId]);
-    await db.run('DELETE FROM child_state WHERE child_id = ?', [childId]);
-    await db.run('DELETE FROM sync_cursor WHERE child_id = ?', [childId]);
-    await db.run('DELETE FROM sync_problems WHERE child_id = ?', [childId]);
-    await db.run('UPDATE consent_events SET child_id = ? WHERE child_id = ?', [childPseudonym, childId]);
+  await withGate(db, childId, async (tx) => {
+    for (const t of JOURNALS) await tx.run(`DELETE FROM ${t} WHERE child_id = ?`, [childId]);
+    await tx.run('DELETE FROM child_state WHERE child_id = ?', [childId]);
+    await tx.run('DELETE FROM sync_cursor WHERE child_id = ?', [childId]);
+    await tx.run('DELETE FROM sync_problems WHERE child_id = ?', [childId]);
+    await tx.run('UPDATE consent_events SET child_id = ? WHERE child_id = ?', [childPseudonym, childId]);
   });
 }
 
@@ -85,10 +85,10 @@ export async function purgeChild(db: SqlDb, childId: string, childPseudonym: str
  * трогаются; курсоры синхронизации начинаются заново.
  */
 export async function clearChildProgress(db: SqlDb, childId: string): Promise<void> {
-  await withGate(db, childId, async () => {
-    for (const t of JOURNALS) await db.run(`DELETE FROM ${t} WHERE child_id = ?`, [childId]);
-    await db.run('DELETE FROM child_state WHERE child_id = ?', [childId]);
-    await db.run('DELETE FROM sync_cursor WHERE child_id = ?', [childId]);
+  await withGate(db, childId, async (tx) => {
+    for (const t of JOURNALS) await tx.run(`DELETE FROM ${t} WHERE child_id = ?`, [childId]);
+    await tx.run('DELETE FROM child_state WHERE child_id = ?', [childId]);
+    await tx.run('DELETE FROM sync_cursor WHERE child_id = ?', [childId]);
   });
 }
 
@@ -98,9 +98,9 @@ export async function clearChildProgress(db: SqlDb, childId: string): Promise<vo
  * этого удаляется и сам файл (`deleteLocalDb`).
  */
 export async function wipeDevice(db: SqlDb): Promise<void> {
-  await withGate(db, '*', async () => {
+  await withGate(db, '*', async (tx) => {
     for (const t of [...JOURNALS, 'consent_events', 'child_state', 'sync_cursor', 'consent_delivered', 'sync_problems']) {
-      await db.run(`DELETE FROM ${t}`);
+      await tx.run(`DELETE FROM ${t}`);
     }
   });
 }
@@ -130,7 +130,7 @@ export async function exportChild(
   exportedAt: string,
   profile: Record<string, unknown>,
 ): Promise<ChildExport> {
-  return db.transaction(() => collectExport(db, childId, exportedAt, profile));
+  return db.transaction((tx) => collectExport(tx, childId, exportedAt, profile));
 }
 
 async function collectExport(

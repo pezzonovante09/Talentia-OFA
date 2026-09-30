@@ -5,8 +5,10 @@
  * файла данные детей разделены колонкой `child_id`.
  *
  * `secure_delete` — удалённое затирается на диске, а не остаётся в свободных страницах;
- * после удалений журнал WAL сжимается (`compactAfterDelete`). Резервная копия файла в
- * облако системы запрещена конфигурацией приложения.
+ * после удалений журнал WAL сжимается (`compactAfterDelete`). Резервная копия базы
+ * запрещена config plugin `plugins/withNoDataBackup.js`: на iOS каталог `Documents/SQLite`
+ * помечается `isExcludedFromBackup` при запуске, на Android — `allowBackup: false` и
+ * `dataExtractionRules` (облачная копия и перенос на новое устройство).
  */
 import * as SQLite from 'expo-sqlite';
 import { migrate } from './schema';
@@ -19,8 +21,13 @@ export function localDbName(accountId: string): string {
   return `talentia-${accountId}.db`;
 }
 
-function adapt(db: SQLite.SQLiteDatabase): SqlDb {
-  return {
+/**
+ * `withExclusiveTransactionAsync`, а не `withTransactionAsync`: второй, по документации
+ * expo-sqlite, не эксклюзивен, и чужой запрос на том же соединении попадал внутрь — откат
+ * согласия молча стирал пробу из журнала (аудит 2026-09-30). Внутри — только `tx`.
+ */
+function adapt(db: SQLite.SQLiteDatabase, inTransaction = false): SqlDb {
+  const self: SqlDb = {
     async run(sql, params = []) {
       const r = await db.runAsync(sql, params as SqlValue[]);
       return { changes: r.changes };
@@ -28,13 +35,15 @@ function adapt(db: SQLite.SQLiteDatabase): SqlDb {
     all: <T>(sql: string, params: readonly SqlValue[] = []) => db.getAllAsync<T>(sql, params as SqlValue[]),
     exec: (sql) => db.execAsync(sql),
     async transaction(fn) {
+      if (inTransaction) return fn(self);
       let out!: Awaited<ReturnType<typeof fn>>;
-      await db.withTransactionAsync(async () => {
-        out = await fn();
+      await db.withExclusiveTransactionAsync(async (txn) => {
+        out = await fn(adapt(txn, true));
       });
       return out;
     },
   };
+  return self;
 }
 
 const opened = new Map<string, { raw: Promise<SQLite.SQLiteDatabase>; db: Promise<SqlDb> }>();

@@ -148,9 +148,9 @@ CREATE TABLE sync_problems (
 export async function migrate(db: SqlDb): Promise<void> {
   const [{ user_version: current }] = await db.all<{ user_version: number }>('PRAGMA user_version');
   for (let v = current; v < MIGRATIONS.length; v += 1) {
-    await db.transaction(async () => {
-      await db.exec(MIGRATIONS[v]);
-      await db.exec(`PRAGMA user_version = ${v + 1}`);
+    await db.transaction(async (tx) => {
+      await tx.exec(MIGRATIONS[v]);
+      await tx.exec(`PRAGMA user_version = ${v + 1}`);
     });
   }
 }
