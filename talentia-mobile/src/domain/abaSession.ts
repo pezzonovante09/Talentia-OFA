@@ -78,11 +78,12 @@ import {
   type TokenSchedule,
 } from './abaTokens';
 import { targetErrors } from './abaTargetRules';
-import { poolErrors, setHalves, updateSets, type IdentifySet } from './abaIdentifySet';
+import { arrange, baselineMembers, poolErrors, setHalves, updateSets, type IdentifySet } from './abaIdentifySet';
 import {
   applyStageSession,
   EXCHANGE_ACCESS_MS,
   immediateExchange,
+  PAIRING,
   workingBoardSize,
   type TokenTrainingState,
 } from './abaTokenTraining';
@@ -139,6 +140,14 @@ export const MAX_CLOSING_ATTEMPTS = 2;
 /** Верная карточка `identify` — не больше двух раз подряд на одном месте. */
 export const MAX_SAME_POSITION = 2;
 
+/**
+ * Сессий обучения без снижения стартового уровня и без роста доли самостоятельных, после
+ * которых цель считается застрявшей: флаг `no_progress` специалисту, и цель уступает
+ * слот следующей по программе. Иначе две застрявшие цели навсегда занимают оба слота, а
+ * на полосе 5–6 — ещё и базовую линию всех следующих.
+ */
+export const NO_PROGRESS_SESSIONS = 5;
+
 // ---------------------------------------------------------------------------
 // Типы
 // ---------------------------------------------------------------------------
@@ -160,6 +169,8 @@ export type PlannedTrial = {
   adultAssist?: true;
   /** Проба коррекции доводится до верного ответа при любом провале, не только при молчании. */
   escalateOnIncorrect?: true;
+  /** Закрывающая проба: блок или сессию. */
+  closes?: 'block' | 'session';
 };
 
 type QueueItem =
@@ -174,7 +185,9 @@ type QueueItem =
       bridged?: true;
       members?: string[];
     }
-  | { kind: 'break' };
+  | { kind: 'break' }
+  /** Доступ к подкрепителю после обмена при обучении доске. */
+  | { kind: 'access'; durationMs: number };
 
 export type TrialStep = {
   kind: 'trial';
@@ -208,6 +221,12 @@ export type TrialStep = {
    * ответ, — после ответа реакция нейтральная.
    */
   praiseAttentionBeforeSd: boolean;
+  /**
+   * Проба без подсказок в цепочке (базовая линия, перенос): проваленное звено выполняет
+   * взрослый, пробой ребёнка это не пишется, и прогон идёт дальше.
+   */
+  adultCompletesOnFail: boolean;
+  closes?: 'block' | 'session';
 };
 
 /** Что показать сейчас. */
@@ -215,7 +234,9 @@ export type AbaStep =
   | { kind: 'choose_reinforcer'; options: string[]; adultChoosesAfterMs: number }
   | TrialStep
   /** Перерыв по расписанию. Обмен — только при полной доске. */
-  | { kind: 'break'; canExchange: boolean }
+  | { kind: 'break'; canExchange: boolean; pauseBeforeMs: number }
+  /** Доступ к подкрепителю после обмена: экран показывает его и зовёт `finishAccess`. */
+  | { kind: 'access'; durationMs: number }
   /** `endedOnSuccess: false` — спокойный экран «закончили» без оценки и до обмена. */
   | {
       kind: 'end';
@@ -227,6 +248,9 @@ export type AbaStep =
        * одной ячейки и сразу обмен, доступ 20 с; в доску не идёт.
        */
       pairingCycle: boolean;
+      /** Цикл сопряжения — через столько после экрана «закончили», как в сессии сопряжения. */
+      pairingCycleAfterMs: number;
+      pauseBeforeMs: number;
     };
 
 export type AbaSessionState = {
@@ -240,6 +264,9 @@ export type AbaSessionState = {
   timeLimitMs: number;
   pausedMs: number;
   breakStartedAt: number | null;
+  accessStartedAt: number | null;
+  /** Нейтральная пауза перед следующим шагом: мост не нашёл, чем закрыть блок успехом. */
+  pendingPauseMs: number;
   targets: Record<string, AbaTarget>;
   states: Record<string, AbaTargetState>;
   baselineTargetIds: string[];
@@ -491,12 +518,18 @@ export function startAbaSession(input: StartInput): AbaSessionState {
   const ready = (t: AbaTarget) => counts(t, config) && (t.prerequisiteTargetIds ?? []).every(isMastered);
 
   const single = offered.filter((t) => t.format !== 'identify');
-  const regular = single.filter((t) => TEACHING_PHASES.has(states[t.id].phase) && ready(t)).slice(0, MAX_TEACHING_TARGETS);
+  // застрявшая цель уступает слот следующей по программе; сама — если больше некому
+  const stuck = (t: AbaTarget) => Number(states[t.id].flags.includes('no_progress'));
+  const regular = single
+    .filter((t) => TEACHING_PHASES.has(states[t.id].phase) && ready(t))
+    .sort((a, b) => stuck(a) - stuck(b))
+    .slice(0, MAX_TEACHING_TARGETS);
 
   // identify — только набором. Набор занимает оба слота обучения; готовы и набор, и
   // обычные цели — сессии чередуются
   const identifySets = updateSets(input.identifySets ?? [], offered, states, sessionIndex, ready);
-  const candidate = identifySets[0] ?? null;
+  // наборов несколько (пулов несколько) — давнее обучавшийся первым
+  const candidate = [...identifySets].sort((a, b) => a.lastSetSessionIndex - b.lastSetSessionIndex)[0] ?? null;
   const regularLast = Math.max(-1, ...regular.map((t) => states[t.id].lastSessionIndex));
   const set = candidate && (regular.length === 0 || candidate.lastSetSessionIndex <= regularLast) ? candidate : null;
   const setMembers = set ? set.memberIds.map((id) => input.targets.find((t) => t.id === id)!) : [];
@@ -507,8 +540,9 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     // на ступенях 1–2 обучения доске — не больше одной новой цели
     input.tokenTraining.stage <= 2 ? 1 : MAX_BASELINE_TARGETS,
   );
+  const setBaselineLimit = input.tokenTraining.stage <= 2 ? 1 : MAX_BASELINE_TARGETS;
   const baseline = set
-    ? setMembers.filter((t) => states[t.id].phase === 'baseline')
+    ? baselineMembers(set, states, setBaselineLimit).map((id) => setMembers.find((t) => t.id === id)!)
     : single.filter((t) => states[t.id].phase === 'baseline' && ready(t)).slice(0, Math.max(0, baselineRoom));
   const mastered = offered.filter((t) => isMastered(t.id));
 
@@ -519,6 +553,8 @@ export function startAbaSession(input: StartInput): AbaSessionState {
       return retest || overdue(states[b.id], sessionIndex) - overdue(states[a.id], sessionIndex);
     });
 
+  // поддержание участника набора — внутри блока набора, первой его пробой
+  const setDue = set ? due.filter((t) => set.memberIds.includes(t.id)).map((t) => t.id) : [];
   const probes: PlannedTrial[][] = [];
   const genTarget = teaching
     .filter((t) => needsGeneralizationProbe(states[t.id]))
@@ -528,12 +564,12 @@ export function startAbaSession(input: StartInput): AbaSessionState {
         generalizationPasses(states[a.id]) - generalizationPasses(states[b.id]),
     )[0];
   if (genTarget) probes.push(unit(genTarget, generalizationProbe(genTarget, states[genTarget.id], rng)));
-  for (const t of due) {
+  for (const t of due.filter((x) => !setDue.includes(x.id))) {
     if (probes.length >= MAX_PROBES) break;
     probes.push(unit(t, { kind: 'maintenance', targetId: t.id, exemplarId: pick(teachingExemplars(t), rng).id }));
   }
 
-  const maintenanceIds = probes.filter((p) => p[0].kind === 'maintenance').map((p) => p[0].targetId);
+  const maintenanceIds = [...setDue, ...probes.filter((p) => p[0].kind === 'maintenance').map((p) => p[0].targetId)];
   const highP = mastered.filter((t) => !t.steps?.length && !maintenanceIds.includes(t.id));
 
   const queue: QueueItem[] = [{ kind: 'reinforcer' }];
@@ -547,12 +583,19 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     const seen = new Map<string, number>();
     const members = set.memberIds;
     const hasTeaching = teaching.length > 0;
-    setHalves(set, states, rng).forEach((half, i) => {
+    const halves = setHalves(set, states, rng, { baselineLimit: setBaselineLimit, maintenanceIds: setDue });
+    halves.forEach((half, i) => {
       if (i > 0) queue.push({ kind: 'break' });
+      let baselineRun = 0;
       for (const item of half) {
         const n = seen.get(item.targetId) ?? 0;
         seen.set(item.targetId, n + 1);
         queue.push({ kind: 'trial', trial: { kind: item.kind, targetId: item.targetId, exemplarId: rot.get(item.targetId)!(n) } });
+        // между пробами базовой линии — через каждые две высоковероятная другой освоенной цели
+        const others = highP.filter((t) => !set.memberIds.includes(t.id));
+        if (item.kind === 'baseline' && ++baselineRun % 2 === 0 && others.length) {
+          queue.push({ kind: 'trial', trial: highPTrial(pick(others, rng), rng) });
+        }
       }
       queue.push({ kind: 'block_end', targetId: set.id, participation: hasTeaching, members });
     });
@@ -583,6 +626,8 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     timeLimitMs: Math.min(input.timeLimitMs ?? Infinity, SESSION_TIME_LIMIT_MS[band]),
     pausedMs: 0,
     breakStartedAt: null,
+    accessStartedAt: null,
+    pendingPauseMs: 0,
     targets: Object.fromEntries(input.targets.map((t) => [t.id, t])),
     states,
     baselineTargetIds: baseline.map((t) => t.id),
@@ -640,12 +685,14 @@ function trialStep(state: AbaSessionState, p: PlannedTrial): TrialStep {
     ...(p.field ? { field: p.field } : {}),
     startPromptLevel: start,
     delayMs: effectiveDelayMs(s, start),
-    pauseBeforeMs: p.pauseBeforeMs ?? 0,
+    pauseBeforeMs: Math.max(p.pauseBeforeMs ?? 0, state.pendingPauseMs),
     scoredBy: sessionScoring(target, state.config),
     allowEscalation: p.kind !== 'generalization' && p.kind !== 'baseline',
     askAdultForL4: withAdult && (p.adultAssist === true || (Boolean(p.stepId) && p.kind === 'teaching')),
     escalateOnIncorrect: p.escalateOnIncorrect === true,
     praiseAttentionBeforeSd: p.kind === 'baseline',
+    adultCompletesOnFail: withAdult && Boolean(p.stepId) && (p.kind === 'baseline' || p.kind === 'generalization'),
+    ...(p.closes ? { closes: p.closes } : {}),
   };
 }
 
@@ -664,12 +711,15 @@ function withField(state: AbaSessionState): AbaSessionState {
   // карточки поля — учебные экземпляры других целей набора; вне набора (перенос и
   // поддержание распавшегося набора) — других целей пула
   const inSet = state.set?.memberIds.includes(target.id) ?? false;
+  const size = state.states[target.id].lastFieldSize ?? 3;
   const others = inSet
     ? state.set!.memberIds.filter((id) => id !== target.id)
-    : Object.values(state.targets)
-        .filter((t) => t.format === 'identify' && t.identifyPoolKey === target.identifyPoolKey && t.id !== target.id)
-        .slice(0, 2)
-        .map((t) => t.id);
+    : shuffle(
+        Object.values(state.targets)
+          .filter((t) => t.format === 'identify' && t.identifyPoolKey === target.identifyPoolKey && t.id !== target.id)
+          .map((t) => t.id),
+        r.rng,
+      ).slice(0, size - 1);
   const cards = others.map((id) => pick(teachingExemplars(state.targets[id]), r.rng).id);
   const field = shuffle([head.trial.exemplarId, ...cards], r.rng);
 
@@ -691,7 +741,8 @@ function withField(state: AbaSessionState): AbaSessionState {
 function workedMs(state: AbaSessionState, now: number): number {
   if (state.workStartedAt === null) return 0;
   const inBreak = state.breakStartedAt === null ? 0 : now - state.breakStartedAt;
-  return now - state.workStartedAt - state.pausedMs - inBreak;
+  const inAccess = state.accessStartedAt === null ? 0 : now - state.accessStartedAt;
+  return now - state.workStartedAt - state.pausedMs - inBreak - inAccess;
 }
 
 /**
@@ -711,21 +762,31 @@ export function nextStep(
     exchanged: exchangedSince(st, state),
   });
   let st = state;
-  if (st.endReason === null && st.breakStartedAt === null && workedMs(st, now) >= st.timeLimitMs) {
+  const paused = st.breakStartedAt !== null || st.accessStartedAt !== null;
+  if (st.endReason === null && !paused && workedMs(st, now) >= st.timeLimitMs) {
     st = closeOut(st, 'time_limit', now);
   }
   while (st.queue[0]?.kind === 'block_end') st = endBlock(st, now).state;
   if (st.queue.length === 0 && st.endReason === null) st = closeOut(st, 'completed', now);
+  // доступ к подкрепителю отложил закрытие — сессия всё равно кончается успехом
+  if (st.queue.length === 0 && st.endReason !== null && CLOSABLE.has(st.endReason)) st = ensureSuccessfulEnd(st, now);
 
+  const pause = st.pendingPauseMs;
   const head = st.queue[0];
   if (!head) {
     const last = lastTrial(st);
-    return done(st, {
-      kind: 'end',
-      reason: st.endReason ?? 'completed',
-      endedOnSuccess: !last || SUCCESS.has(last.response),
-      pairingCycle: needsPairingCycle(st),
-    });
+    const pairingCycle = needsPairingCycle(st);
+    return done(
+      { ...st, pendingPauseMs: 0 },
+      {
+        kind: 'end',
+        reason: st.endReason ?? 'completed',
+        endedOnSuccess: !last || SUCCESS.has(last.response),
+        pairingCycle,
+        pairingCycleAfterMs: pairingCycle ? PAIRING.tokenAfterMs : 0,
+        pauseBeforeMs: pause,
+      },
+    );
   }
   switch (head.kind) {
     case 'reinforcer':
@@ -736,10 +797,15 @@ export function nextStep(
       });
     case 'break':
       if (st.breakStartedAt === null) st = { ...st, breakStartedAt: now };
-      return done(st, { kind: 'break', canExchange: isBoardFull(st.board) });
-    case 'trial':
+      return done({ ...st, pendingPauseMs: 0 }, { kind: 'break', canExchange: isBoardFull(st.board), pauseBeforeMs: pause });
+    case 'access':
+      if (st.accessStartedAt === null) st = { ...st, accessStartedAt: now };
+      return done(st, { kind: 'access', durationMs: head.durationMs });
+    case 'trial': {
       st = withField(st);
-      return done(st, trialStep(st, (st.queue[0] as { trial: PlannedTrial }).trial));
+      const step = trialStep(st, (st.queue[0] as { trial: PlannedTrial }).trial);
+      return done({ ...st, pendingPauseMs: 0 }, step);
+    }
     case 'block_end':
       throw new Error('недостижимо: концы блоков сняты выше');
   }
@@ -785,11 +851,34 @@ export function finishBreak(state: AbaSessionState, now: number): { state: AbaSe
 }
 
 /**
+ * Доступ к подкрепителю после обмена кончился. Пишется фактическое время: экран может
+ * прервать или продлить доступ, и рабочее время не должно на этом теряться.
+ */
+export function finishAccess(state: AbaSessionState, now: number): AbaSessionState {
+  if (state.queue[0]?.kind !== 'access') throw new Error('Сейчас не доступ к подкрепителю');
+  const startedAt = state.accessStartedAt ?? now;
+  return {
+    ...state,
+    pausedMs: state.pausedMs + (now - startedAt),
+    accessStartedAt: null,
+    events: [...state.events, { kind: 'access', startedAt: iso(startedAt), endedAt: iso(now) }],
+    queue: state.queue.slice(1),
+  };
+}
+
+/**
  * Взрослый остановил или ребёнок ушёл. Ни закрывающей пробы, ни жетона за участие:
  * решение принял человек, и подкреплять уход нельзя.
  */
 export function stopSession(state: AbaSessionState, reason: 'adult_stopped' | 'abandoned'): AbaSessionState {
-  return { ...state, endReason: state.endReason ?? reason, queue: [], participationOwed: null, breakStartedAt: null };
+  return {
+    ...state,
+    endReason: state.endReason ?? reason,
+    queue: [],
+    participationOwed: null,
+    breakStartedAt: null,
+    accessStartedAt: null,
+  };
 }
 
 function payParticipation(state: AbaSessionState, targetId: string, now: number): { state: AbaSessionState; paid: boolean } {
@@ -811,13 +900,14 @@ function payParticipation(state: AbaSessionState, targetId: string, now: number)
 function settleBoard(state: AbaSessionState, now: number): { state: AbaSessionState; exchanged: number } {
   if (!state.immediateExchange || !isBoardFull(state.board)) return { state, exchanged: 0 };
   const { board, exchanged } = tryExchange(state.board);
+  const access: QueueItem = { kind: 'access', durationMs: EXCHANGE_ACCESS_MS[state.board.size] };
   return {
     state: {
       ...state,
       board,
       exchangesMade: state.exchangesMade + 1,
-      pausedMs: state.pausedMs + EXCHANGE_ACCESS_MS[state.board.size],
       events: [...state.events, { kind: 'exchange', at: iso(now), tokens: exchanged }],
+      queue: [access, ...state.queue],
     },
     exchanged,
   };
@@ -826,10 +916,10 @@ function settleBoard(state: AbaSessionState, now: number): { state: AbaSessionSt
 /** Сессия без учебной и освоенной цели — одна базовая линия: в конце цикл сопряжения. */
 function needsPairingCycle(state: AbaSessionState): boolean {
   const reason = state.endReason;
+  // в «сам» высоковероятные пробы бывают без жетона («Tali послушал») — их не считаем
+  const paying = state.highPTargetIds.some((id) => counts(state.targets[id], state.config));
   return (
-    state.teachingTargetIds.length === 0 &&
-    state.highPTargetIds.length === 0 &&
-    (reason === 'completed' || reason === 'time_limit')
+    state.teachingTargetIds.length === 0 && !paying && (reason === 'completed' || reason === 'time_limit')
   );
 }
 
@@ -857,11 +947,15 @@ function closeOut(
     brokenTargetId: brokenTargetId ?? state.brokenTargetId,
     participationOwed: state.openBlockTargetId,
     openBlockTargetId: null,
-    queue: [],
+    // доступ к подкрепителю после обмена у ребёнка не отнимается
+    queue: state.queue.filter((q) => q.kind === 'access'),
     breakStartedAt: null,
   };
   return ensureSuccessfulEnd(closed, now);
 }
+
+/** Причины, при которых сессия закрывается успешной пробой. Уход и остановка взрослым — нет. */
+const CLOSABLE: ReadonlySet<AbaSessionEndReason> = new Set(['completed', 'time_limit', 'breakdown']);
 
 const lastTrial = (state: AbaSessionState) => [...state.trials].reverse().find((t) => t.response !== 'interrupted');
 
@@ -924,7 +1018,12 @@ function ensureSuccessfulEnd(state: AbaSessionState, now: number): AbaSessionSta
     }
   }
   if (!trial) return { ...state, participationOwed: null, seed: r.seed() };
-  return { ...state, closingAttempts: state.closingAttempts + 1, queue: [{ kind: 'trial', trial }], seed: r.seed() };
+  return {
+    ...state,
+    closingAttempts: state.closingAttempts + 1,
+    queue: [...state.queue.filter((q) => q.kind === 'access'), { kind: 'trial', trial: { ...trial, closes: 'session' } }],
+    seed: r.seed(),
+  };
 }
 
 /** Проба, как её записал экран. Жетоны проставляет сессия. */
@@ -955,6 +1054,7 @@ function mismatch(input: AbaTrialInput, expected: TrialStep, state: AbaSessionSt
   if (!same(input.runIndex, expected.runIndex)) errors.push('не тот прогон цепочки');
   if (!same(input.sdVariantKey, expected.sdVariantKey)) errors.push('не та формулировка SD');
   if (!same(input.field, expected.field)) errors.push('не то поле карточек');
+  if (!same(input.closes, expected.closes)) errors.push('не то, что закрывает проба');
   if (input.startPromptLevel !== expected.startPromptLevel) errors.push('не тот стартовый уровень');
   if (input.scoredBy !== expected.scoredBy) errors.push('не тот источник оценки');
   if (!expected.allowEscalation && input.promptLevelUsed !== input.startPromptLevel) {
@@ -1018,11 +1118,14 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
     schedule: award.schedule,
     highPTokenPaid: state.highPTokenPaid || (trial.kind === 'high_p' && award.tokens > 0),
     states: countsHere ? { ...state.states, [trial.targetId]: applyTrialToFading(targetState, trial) } : state.states,
-    openBlockTargetId: trial.kind === 'teaching' ? trial.targetId : state.openBlockTargetId,
+    // блок набора — один блок: участие пишется на набор, как и в конце половины
+    openBlockTargetId:
+      trial.kind === 'teaching'
+        ? (state.set?.memberIds.includes(trial.targetId) ? state.set.id : trial.targetId)
+        : state.openBlockTargetId,
     seed: r.seed(),
   };
   const exchangesBefore = state.exchangesMade;
-  st = settleBoard(st, now).state;
 
   const failed = trial.response === 'incorrect' || trial.response === 'no_response';
   if (countsHere && st.endReason === null) {
@@ -1049,43 +1152,71 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
     st = ensureSuccessfulEnd(st, now);
     participation ||= st.tokensEarned > before;
   }
+  // обмен при обучении доске — после всего: доступ встаёт первым в очереди
+  st = settleBoard(st, now).state;
 
   const exchanged = st.exchangesMade > exchangesBefore ? exchangedSince(st, state) : 0;
   return { ok: true, state: st, trial, award, participation, exchanged };
 }
 
 /**
- * Блок не кончается провалом: за концом блока идут жетон за участие и перерыв, и
- * провал сопрягался бы с уходом на перерыв — «перерыв за неудачу». Если последняя
- * учебная проба блока провалена, перед концом блока встаёт закрывающая проба:
- * высоковероятная освоенной цели, иначе полная модель того же экземпляра (со взрослым —
- * с его помощью). Одна на блок.
+ * Блок не кончается провалом: за концом блока идут жетон за участие или перерыв, и
+ * провал сопрягался бы с уходом — «перерыв за неудачу». Если последняя проба перед таким
+ * концом блока провалена (любая, кроме закрывающей), встаёт закрывающая проба блока:
+ *
+ * - высоковероятная проба освоенной цели;
+ * - после провала **базовой линии** — не полная модель той же цели (базовая линия
+ *   превратилась бы в обучение), а участник набора в обучении на его стартовом уровне;
+ * - иначе — полная модель того же экземпляра (со взрослым — с его помощью);
+ * - базовая линия, и закрыть нечем — нейтральная пауза перед концом блока.
+ *
+ * Одна на блок.
  */
 function bridgeFailedBlock(state: AbaSessionState, last: AbaTrial): AbaSessionState {
   const head = state.queue[0];
-  const ofBlock = head?.kind === 'block_end' && (head.targetId === last.targetId || head.members?.includes(last.targetId));
-  if (head?.kind !== 'block_end' || head.bridged || !ofBlock) return state;
-  if (last.kind !== 'teaching' && last.kind !== 'transfer') return state;
-  if (last.response !== 'incorrect' && last.response !== 'no_response') return state;
+  if (head?.kind !== 'block_end' || head.bridged) return state;
+  if (head.targetId !== last.targetId && !head.members?.includes(last.targetId)) return state;
+  if (!head.participation && state.queue[1]?.kind !== 'break') return state;
+  if (last.kind === 'closing' || (last.response !== 'incorrect' && last.response !== 'no_response')) return state;
 
   const r = seeded(state.seed);
+  const mark = (q: QueueItem[]) => ({ ...state, queue: [...q, { ...head, bridged: true as const }, ...state.queue.slice(1)], seed: r.seed() });
   const others = state.highPTargetIds.filter((id) => id !== last.targetId);
-  const trial: PlannedTrial = others.length
-    ? highPTrial(state.targets[pick(others, r.rng)], r.rng, 'closing')
-    : {
+  if (others.length) {
+    return mark([{ kind: 'trial', trial: { ...highPTrial(state.targets[pick(others, r.rng)], r.rng, 'closing'), closes: 'block' } }]);
+  }
+  if (last.kind === 'baseline') {
+    const learner = (state.set?.memberIds ?? []).find((id) => TEACHING_PHASES.has(state.states[id].phase));
+    if (!learner) return { ...mark([]), pendingPauseMs: NEUTRAL_PAUSE_MS };
+    const t = state.targets[learner];
+    return mark([
+      {
+        kind: 'trial',
+        trial: {
+          kind: 'closing',
+          targetId: learner,
+          exemplarId: pick(teachingExemplars(t), r.rng).id,
+          fixedStart: clampToApp(state.states[learner].startPromptLevel),
+          closes: 'block',
+        },
+      },
+    ]);
+  }
+  return mark([
+    {
+      kind: 'trial',
+      trial: {
         kind: 'closing',
         targetId: last.targetId,
         exemplarId: last.exemplarId,
         ...(last.stepId ? { stepId: last.stepId } : {}),
         ...(last.runIndex !== undefined ? { runIndex: last.runIndex } : {}),
         fixedStart: APP_MAX_PROMPT,
+        closes: 'block',
         ...(state.config === 'with_adult' ? { adultAssist: true as const } : {}),
-      };
-  return {
-    ...state,
-    queue: [{ kind: 'trial', trial }, { ...head, bridged: true }, ...state.queue.slice(1)],
-    seed: r.seed(),
-  };
+      },
+    },
+  ]);
 }
 
 /** Сколько жетонов ушло в обмены между двумя состояниями. */
@@ -1108,7 +1239,11 @@ function setCorrection(state: AbaSessionState, failed: AbaTrial): QueueItem[] {
   const queue = [...state.queue];
   const end = queue.findIndex((q) => q.kind !== 'trial');
   const limit = end < 0 ? queue.length : end;
-  const j = queue.slice(0, limit).findIndex((q) => q.kind === 'trial' && q.trial.targetId !== failed.targetId);
+  const differs = (q: QueueItem, kinds?: AbaTrialKind[]) =>
+    q.kind === 'trial' && q.trial.targetId !== failed.targetId && (!kinds || kinds.includes(q.trial.kind));
+  // отвлекающей лучше учебная или высоковероятная, чем проба базовой линии
+  let j = queue.slice(0, limit).findIndex((q) => differs(q, ['teaching', 'high_p']));
+  if (j < 0) j = queue.slice(0, limit).findIndex((q) => differs(q));
   const transfer: QueueItem = {
     kind: 'trial',
     trial: {
@@ -1121,7 +1256,18 @@ function setCorrection(state: AbaSessionState, failed: AbaTrial): QueueItem[] {
   const head: QueueItem[] = correction ? [correction] : [];
   if (j < 0) return [...head, transfer, ...queue];
   const [distractor] = queue.splice(j, 1);
-  return [...head, distractor, transfer, ...queue];
+  // остаток половины — заново, чтобы после вставки не вышло трёх одинаковых инструкций подряд
+  const cut = queue.findIndex((q) => q.kind !== 'trial');
+  const rest = (cut < 0 ? queue : queue.slice(0, cut)) as Extract<QueueItem, { kind: 'trial' }>[];
+  const tail = cut < 0 ? [] : queue.slice(cut);
+  const before = [...state.trials.slice(-2), ...[...head, distractor, transfer].map((q) => (q as { trial: PlannedTrial }).trial)];
+  const r = seeded(state.seed);
+  const arranged = arrange(
+    rest.map((q) => ({ targetId: q.trial.targetId, q })),
+    r.rng,
+    before,
+  ).map((x) => x.q);
+  return [...head, distractor, transfer, ...arranged, ...tail];
 }
 
 function correctionFor(state: AbaSessionState, failed: AbaTrial): QueueItem[] {
@@ -1158,6 +1304,28 @@ function correctionFor(state: AbaSessionState, failed: AbaTrial): QueueItem[] {
 // ---------------------------------------------------------------------------
 
 type PhaseReason = Extract<AbaSessionEvent, { kind: 'phase' }>['reason'];
+
+/**
+ * Прогресс цели за последние `NO_PROGRESS_SESSIONS` сессий обучения. Ни снижения
+ * стартового уровня (у цепочки — самого низкого из звеньев), ни роста доли
+ * самостоятельных — флаг `no_progress` специалисту. Прогресс пошёл — флаг снимается.
+ */
+function applyProgress(s: AbaTargetState, target: AbaTarget, sessionIndex: number, rate: number): AbaTargetState {
+  const start = target.steps?.length
+    ? (Math.min(...target.steps.map((st) => promptStateOf(s, st.id).startPromptLevel)) as PromptLevel)
+    : s.startPromptLevel;
+  const progressWindow = [...(s.progressWindow ?? []), { sessionIndex, startPromptLevel: start, independentRate: rate }].slice(
+    -NO_PROGRESS_SESSIONS,
+  );
+  const [first] = progressWindow;
+  const last = progressWindow[progressWindow.length - 1];
+  const stuck =
+    progressWindow.length >= NO_PROGRESS_SESSIONS &&
+    last.startPromptLevel >= first.startPromptLevel &&
+    last.independentRate <= first.independentRate;
+  const others = s.flags.filter((f) => f !== 'no_progress');
+  return { ...s, progressWindow, flags: stuck ? [...others, 'no_progress'] : others };
+}
 
 /**
  * Пробы переноса или поддержания цели — по одной на прогон. У цепочки прогон — это все
@@ -1269,8 +1437,11 @@ export function finishAbaSession(
     if (state.teachingTargetIds.includes(id)) {
       s = applyBlockToDelay(s, target, own.filter((t) => t.kind === 'teaching'));
       const endReason = state.brokenTargetId === id ? 'breakdown' : null;
-      s = applySession(s, summarizeSession(target, own, endReason), idx, day);
+      const summary = summarizeSession(target, own, endReason);
+      s = applySession(s, summary, idx, day);
+      if (summary.counted) s = applyProgress(s, target, idx, summary.independentRate);
     }
+    if (state.set?.memberIds.includes(id)) s = { ...s, lastFieldSize: state.set.memberIds.length };
     for (const t of probesOf(target, own, 'generalization')) {
       s = { ...applyGeneralizationProbe(s, t), lastGeneralizationSessionIndex: idx };
     }

@@ -13,6 +13,7 @@ import type {
 import {
   chooseReinforcer,
   finishAbaSession,
+  finishAccess,
   finishBreak,
   nextStep,
   NEUTRAL_PAUSE_MS,
@@ -132,6 +133,7 @@ function trialFor(state: AbaSessionState, step: TrialStep, how: How): Omit<AbaTr
     ...(step.runIndex !== undefined ? { runIndex: step.runIndex } : {}),
     ...(step.sdVariantKey ? { sdVariantKey: step.sdVariantKey } : {}),
     ...(step.field ? { field: step.field } : {}),
+    ...(step.closes ? { closes: step.closes } : {}),
     index: state.trials.length,
     kind: step.trialKind,
     startPromptLevel: start,
@@ -166,6 +168,10 @@ function drive(state: AbaSessionState, policy: (step: TrialStep) => How, clock =
     if (next.step.kind === 'end') return { state: st, steps };
     if (next.step.kind === 'break') {
       st = finishBreak(st, clock.now).state;
+      continue;
+    }
+    if (next.step.kind === 'access') {
+      st = finishAccess(st, clock.now);
       continue;
     }
     if (next.step.kind !== 'trial') throw new Error(`неожиданный шаг ${next.step.kind}`);
@@ -368,7 +374,8 @@ describe('остановка и закрытие', () => {
     const { steps } = toBreakdown();
     const closing = steps.find((s): s is TrialStep => s.kind === 'trial' && s.trialKind === 'closing')!;
     expect([closing.targetId, closing.startPromptLevel, closing.askAdultForL4]).toEqual(['A', 3, true]);
-    expect(steps[steps.length - 1]).toEqual({ kind: 'end', reason: 'breakdown', endedOnSuccess: true, pairingCycle: false });
+    expect(steps[steps.length - 1]).toMatchObject({ kind: 'end', reason: 'breakdown', endedOnSuccess: true, pairingCycle: false });
+    expect(closing.closes).toBe('session');
   });
 
   it('жетон за участие начатого блока — после успешной закрывающей пробы', () => {
@@ -403,7 +410,7 @@ describe('остановка и закрытие', () => {
   it('остановка взрослым: ни закрывающей, ни участия, ни обмена даже при полной доске', () => {
     const st = begin([A], { A: acq(A) }, { board: { earned: 5, nonContingent: 0 } });
     const s = stopSession(answer(st, 1, 'wrong').state, 'adult_stopped');
-    expect(nextStep(s, 2).step).toEqual({ kind: 'end', reason: 'adult_stopped', endedOnSuccess: false, pairingCycle: false });
+    expect(nextStep(s, 2).step).toMatchObject({ kind: 'end', reason: 'adult_stopped', endedOnSuccess: false, pairingCycle: false });
     const result = finishAbaSession(s, '2026-09-29', 3);
     expect([result.exchanged, result.board.earned]).toEqual([0, 5]);
   });
@@ -588,28 +595,59 @@ describe('набор identify', () => {
   const trialSteps = (steps: AbaStep[]) => steps.filter((s): s is TrialStep => s.kind === 'trial');
   const runs = (ids: string[]) => ids.some((id, i) => i >= 2 && id === ids[i - 1] && id === ids[i - 2]);
 
-  it('первая сессия: набор собирается из трёх новых целей — базовая линия по 5 вперемешку', () => {
+  it('первая сессия: набор из трёх новых — базовая линия двух по 5 вперемешку, третья — только карточкой', () => {
     const { state, steps } = drive(begin(pool, {}), () => 'ok');
     const trials = trialSteps(steps);
     expect(state.set?.memberIds).toEqual(['I1', 'I2', 'I3']);
     expect(trials.every((t) => t.trialKind === 'baseline')).toBe(true);
-    expect(trials).toHaveLength(15);
+    expect(trials).toHaveLength(10);
+    expect(trials.some((t) => t.targetId === 'I3')).toBe(false);
+    expect(trials.every((t) => t.field!.some((id) => id.startsWith('I3')))).toBe(true);
     expect(runs(trials.map((t) => t.targetId))).toBe(false);
-    expect(steps[steps.length - 1]).toMatchObject({ kind: 'end', pairingCycle: true });
+    expect(steps[steps.length - 1]).toMatchObject({ kind: 'end', pairingCycle: true, pairingCycleAfterMs: 10_000 });
+  });
+
+  it('на ступенях 1–2 обучения доске — базовая линия одной цели набора', () => {
+    const st = begin(pool, {}, { tokenTraining: { ...TRAINED, stage: 2 } });
+    expect(st.baselineTargetIds).toEqual(['I1']);
   });
 
   it('5/5 на базовой линии набора — обучение с L0, а не «освоено»; 4/5 — L1; меньше — L3', () => {
     let n = 0;
     const { state } = drive(begin(pool, {}), (s) => {
       if (s.targetId === 'I1') return 'ok';
-      n += s.targetId === 'I2' ? 1 : 0;
-      return s.targetId === 'I2' && n === 1 ? { response: 'incorrect', used: 0, emitted: true } : s.targetId === 'I3' ? 'wrong' : 'ok';
+      n += 1;
+      return n === 1 ? { response: 'incorrect', used: 0, emitted: true } : 'ok';
     });
-    const result = finishAbaSession(state, '2026-09-29', 99_000);
-    expect(result.states.I1).toMatchObject({ phase: 'acquisition', startPromptLevel: 0 });
-    expect(result.states.I2).toMatchObject({ phase: 'acquisition', startPromptLevel: 1 });
-    expect(result.states.I3).toMatchObject({ phase: 'acquisition', startPromptLevel: 3 });
-    expect(result.identifySets[0].lastSetSessionIndex).toBe(10);
+    const first = finishAbaSession(state, '2026-09-29', 99_000);
+    expect(first.states.I1).toMatchObject({ phase: 'acquisition', startPromptLevel: 0 });
+    expect(first.states.I2).toMatchObject({ phase: 'acquisition', startPromptLevel: 1 });
+    expect(first.states.I3.phase).toBe('baseline');
+    expect(first.identifySets[0].lastSetSessionIndex).toBe(10);
+
+    // вторая сессия: базовая линия третьей и обучение первых двух в тех же половинах
+    const second = begin(pool, first.states, { identifySets: first.identifySets, sessionIndex: 11 });
+    expect([second.baselineTargetIds, second.teachingTargetIds]).toEqual([['I3'], ['I1', 'I2']]);
+    const { state: s2 } = drive(second, (s) => (s.targetId === 'I3' ? 'wrong' : 'ok'));
+    expect(finishAbaSession(s2, '2026-09-30', 199_000).states.I3).toMatchObject({ phase: 'acquisition', startPromptLevel: 3 });
+  });
+
+  it('поддержание освоенного участника — первой его пробой в наборе, без отдельной пробы в конце', () => {
+    const states = { I1: mastered(I1, 0), I2: acq(I2), I3: acq(I3) };
+    const { steps } = drive(begin(pool, states, { identifySets: withSet() }), () => 'ok');
+    const mine = trialSteps(steps).filter((t) => t.targetId === 'I1');
+    expect(mine[0].trialKind).toBe('maintenance');
+    expect(mine.filter((t) => t.trialKind === 'maintenance')).toHaveLength(1);
+    expect(mine.slice(1).every((t) => t.trialKind === 'high_p')).toBe(true);
+  });
+
+  it('мост в наборе: проваленная базовая линия в конце половины — не подсказка той же цели', () => {
+    const states = { I1: acq(I1), I2: acq(I2) };
+    const st = begin(pool, states, { identifySets: withSet() });
+    // провалить все пробы базовой линии I3
+    const { steps } = drive(st, (s) => (s.trialKind === 'baseline' ? { response: 'incorrect', used: 0, emitted: true } : 'ok'));
+    const bridges = trialSteps(steps).filter((t) => t.closes === 'block');
+    expect(bridges.every((t) => t.targetId !== 'I3')).toBe(true);
   });
 
   it('обучение набора: по 5 проб на цель, 8 + 7 вокруг перерыва, поле — карточки набора', () => {
@@ -793,13 +831,23 @@ describe('обучение доске в сессии', () => {
     expect(() => begin([A], { A: acq(A) }, { tokenTraining: initialTokenTraining() })).toThrow(/Сопряжение/);
   });
 
-  it('ступень 1: доска из одной ячейки, обмен сразу, доступ не в рабочее время', () => {
+  it('ступень 1: доска из одной ячейки, обмен сразу, доступ — отдельный шаг с фактическим временем', () => {
     const st = begin([A], { A: acq(A) }, { tokenTraining: stage(1) });
     expect(st.board.size).toBe(1);
-    const r = answer(st, 1, 'ok');
+    const r = answer(st, 1000, 'ok');
     expect(r.res.exchanged).toBe(1);
     expect(r.state.board.earned).toBe(0);
-    expect(r.state.pausedMs).toBe(20_000);
+    const access = nextStep(r.state, 2000);
+    expect(access.step).toEqual({ kind: 'access', durationMs: 20_000 });
+    const after = finishAccess(access.state, 27_000);
+    expect(after.pausedMs).toBe(25_000);
+    expect(after.events).toContainEqual(expect.objectContaining({ kind: 'access' }));
+  });
+
+  it('доступ к подкрепителю не отнимается лимитом времени', () => {
+    const st = begin([A], { A: acq(A) }, { tokenTraining: stage(1), timeLimitMs: 1500 });
+    const r = answer(st, 1000, 'ok');
+    expect(nextStep(r.state, 5000).step.kind).toBe('access');
   });
 
   it('ступень 1: разогрев жетона не даёт — нет места для жетонов не за результат', () => {
@@ -818,6 +866,13 @@ describe('обучение доске в сессии', () => {
     expect(begin([N, N2], {}, { tokenTraining: stage(3) }).baselineTargetIds).toEqual(['N', 'N2']);
   });
 
+  it('«сам»: высоковероятные без жетона не отменяют цикл сопряжения', () => {
+    const V = tgt('V', { format: 'voice_volume' });
+    const R = tgt('R', { format: 'repeat_word' });
+    const { steps } = drive(begin([V, R], { R: mastered(R) }, { config: 'alone' }), () => 'ok');
+    expect(steps[steps.length - 1]).toMatchObject({ kind: 'end', pairingCycle: true });
+  });
+
   it('сессия из одной базовой линии кончается циклом сопряжения', () => {
     const { state, steps } = drive(begin([N], {}), () => 'ok');
     expect(steps[steps.length - 1]).toMatchObject({ kind: 'end', pairingCycle: true });
@@ -833,5 +888,27 @@ describe('обучение доске в сессии', () => {
     expect(result.tokenTraining.stage).toBe(2);
     expect(result.session.events).toContainEqual(expect.objectContaining({ kind: 'board_stage', from: 1, to: 2 }));
     expect(result.session.boardSize).toBe(1);
+  });
+});
+
+describe('застрявшая цель', () => {
+  const [A, B, C] = ['A', 'B', 'C'].map((id) => tgt(id));
+
+  it('пять сессий без снижения уровня и без роста доли — флаг no_progress', () => {
+    let states: Record<string, AbaTargetState> = { A: acq(A, 1) };
+    for (let i = 0; i < 5; i += 1) {
+      const st = begin([A], states, { sessionIndex: 10 + i });
+      // одни приближения: доля самостоятельных 0, уровень не двигается
+      const { state } = drive(st, () => 'approx');
+      states = finishAbaSession(state, `2026-10-0${i + 1}`, 99_000).states;
+    }
+    expect(states.A.flags).toContain('no_progress');
+  });
+
+  it('застрявшая уступает слот следующей по программе', () => {
+    const st = begin([A, B, C], { A: acq(A, 1, { flags: ['no_progress'] }), B: acq(B), C: acq(C) });
+    expect(st.teachingTargetIds).toEqual(['B', 'C']);
+    const alone = begin([A, B], { A: acq(A, 1, { flags: ['no_progress'] }), B: acq(B) });
+    expect(alone.teachingTargetIds).toEqual(['B', 'A']);
   });
 });

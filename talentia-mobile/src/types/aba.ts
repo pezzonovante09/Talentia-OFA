@@ -257,6 +257,11 @@ export type AbaTrial = {
    * пишется в данные: смещение к позиции — отдельная ошибка различения.
    */
   field?: string[];
+  /**
+   * Что закрывает проба `closing`: блок (мост перед концом проваленного блока) или сессию.
+   * Специалисту это разные события.
+   */
+  closes?: 'block' | 'session';
   tokens: 0 | 1;
   tokenReason?: AbaTokenReason;
 };
@@ -342,6 +347,14 @@ export type AbaTargetState = {
    * известен. Родителю «освоено» по одной сессии не показывается.
    */
   masteredBy?: 'criterion' | 'baseline';
+  /**
+   * Последние сессии обучения цели: стартовый уровень после сессии и доля самостоятельных.
+   * По ним ставится флаг `no_progress`: пять сессий без снижения уровня и без роста доли —
+   * цель застряла, флаг специалисту, и она уступает слот следующей по программе.
+   */
+  progressWindow?: { sessionIndex: number; startPromptLevel: PromptLevel; independentRate: number }[];
+  /** Размер поля последнего набора цели `identify`: по нему — поле вне набора. */
+  lastFieldSize?: number;
 };
 
 /** Состояние подсказки одного звена цепочки. */
@@ -393,6 +406,8 @@ export type AbaSession = {
 export type AbaSessionEvent =
   | { kind: 'break'; startedAt: string; endedAt: string }
   | { kind: 'exchange'; at: string; tokens: number }
+  /** Доступ к подкрепителю после обмена при обучении доске — фактическое время. */
+  | { kind: 'access'; startedAt: string; endedAt: string }
   | { kind: 'participation'; at: string; targetId: string }
   /** Цикл сопряжения в конце сессии без учебной и освоенной цели: жетон не в доску. */
   | { kind: 'pairing'; at: string }

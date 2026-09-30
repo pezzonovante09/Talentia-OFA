@@ -75,7 +75,7 @@ describe('последовательность набора', () => {
     for (let seed = 0; seed < 20; seed += 1) {
       let i = seed;
       const rng = () => ((i = (i * 9301 + 49297) % 233280) / 233280);
-      const [a, b] = setHalves(set(['I1', 'I2', 'I3']), states, rng);
+      const [a, b] = setHalves(set(['I1', 'I2', 'I3']), states, rng, { baselineLimit: 2 });
       expect([a.length, b.length]).toEqual([8, 7]);
       for (const half of [a, b]) {
         const ids = half.map((x) => x.targetId);
@@ -86,11 +86,11 @@ describe('последовательность набора', () => {
 
   it('4 цели — 10 + 10; освоенная — две высоковероятные', () => {
     const states = statesOf(phase('acquisition'), { I4: phase('mastered')(pool[3]) });
-    const [a, b] = setHalves(set(['I1', 'I2', 'I3', 'I4']), states, Math.random);
+    const [a, b] = setHalves(set(['I1', 'I2', 'I3', 'I4']), states, Math.random, { baselineLimit: 2 });
     expect(a.length + b.length).toBe(17);
     expect([...a, ...b].filter((x) => x.targetId === 'I4').every((x) => x.kind === 'high_p')).toBe(true);
     const full = statesOf(phase('acquisition'));
-    const [c, d] = setHalves(set(['I1', 'I2', 'I3', 'I4']), full, Math.random);
+    const [c, d] = setHalves(set(['I1', 'I2', 'I3', 'I4']), full, Math.random, { baselineLimit: 2 });
     expect([c.length, d.length]).toEqual([10, 10]);
   });
 });

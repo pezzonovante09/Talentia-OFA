@@ -121,7 +121,9 @@ function shuffle<T>(items: readonly T[], rng: Rng): T[] {
   return out;
 }
 
-function longestRun(items: readonly SetItem[]): number {
+type WithTarget = { targetId: string };
+
+function longestRun(items: readonly WithTarget[]): number {
   let best = 0;
   let run = 0;
   items.forEach((x, i) => {
@@ -132,30 +134,46 @@ function longestRun(items: readonly SetItem[]): number {
 }
 
 /**
- * Разложить пробы без серий длиннее двух одной инструкции. Случайные перестановки, а
- * если не выходит — жадно: каждый раз цель с наибольшим остатком, не третья подряд.
+ * Разложить пробы без серий длиннее двух одной инструкции, с учётом того, что уже было
+ * (`before`). Случайные перестановки, а если не выходит — жадно: каждый раз цель с
+ * наибольшим остатком, не третья подряд.
  */
-function arrange(items: SetItem[], rng: Rng, before: SetItem[] = []): SetItem[] {
+export function arrange<T extends WithTarget>(items: readonly T[], rng: Rng, before: readonly WithTarget[] = []): T[] {
   const tail = before.slice(-MAX_SAME_SD);
   for (let attempt = 0; attempt < 50; attempt += 1) {
     const out = shuffle(items, rng);
     if (longestRun([...tail, ...out]) <= MAX_SAME_SD) return out;
   }
-  const left = new Map<string, SetItem[]>();
+  const left = new Map<string, T[]>();
   for (const x of items) left.set(x.targetId, [...(left.get(x.targetId) ?? []), x]);
-  const out: SetItem[] = [];
+  const out: T[] = [];
   while (out.length < items.length) {
-    const seen = [...tail, ...out];
-    const last = seen.slice(-MAX_SAME_SD);
+    const last = [...tail, ...out].slice(-MAX_SAME_SD);
     const blocked =
       last.length === MAX_SAME_SD && last.every((x) => x.targetId === last[0].targetId) ? last[0].targetId : null;
-    const next = [...left.entries()]
-      .filter(([id, xs]) => xs.length > 0 && id !== blocked)
-      .sort((a, b) => b[1].length - a[1].length)[0] ?? [...left.entries()].find(([, xs]) => xs.length > 0)!;
+    const next =
+      [...left.entries()].filter(([id, xs]) => xs.length > 0 && id !== blocked).sort((a, b) => b[1].length - a[1].length)[0] ??
+      [...left.entries()].find(([, xs]) => xs.length > 0)!;
     out.push(next[1].shift()!);
   }
   return out;
 }
+
+export type HalvesOptions = {
+  /**
+   * Сколько участников на базовой линии получают её пробы в этой сессии: не больше двух,
+   * на ступенях 1–2 обучения доске — одного. Остальные новые участники — только
+   * карточкой в поле, без своей инструкции: базовая линия всех целей набора разом — это
+   * 15–20 проб без подсказок и без жетонов.
+   */
+  baselineLimit: number;
+  /**
+   * Освоенные участники, которым в эту сессию подошла проба поддержания: первая их проба
+   * в наборе — сама проба поддержания, без предварительной практики; высоковероятная —
+   * одна и только после неё.
+   */
+  maintenanceIds?: readonly string[];
+};
 
 /**
  * Пробы набора на сессию — две половины вокруг перерыва. У каждой цели её пробы делятся
@@ -167,17 +185,40 @@ export function setHalves(
   set: IdentifySet,
   states: Readonly<Record<string, AbaTargetState>>,
   rng: Rng,
+  opts: HalvesOptions,
 ): [SetItem[], SetItem[]] {
   const halves: [SetItem[], SetItem[]] = [[], []];
   let flip = 0;
+  let baselines = 0;
   for (const id of set.memberIds) {
     const phase = states[id]?.phase ?? 'baseline';
     const kind: AbaTrialKind = phase === 'baseline' ? 'baseline' : MASTERED.has(phase) ? 'high_p' : 'teaching';
+    if (kind === 'baseline' && baselines++ >= opts.baselineLimit) continue;
     const n = kind === 'baseline' ? SET_BASELINE_TRIALS : kind === 'high_p' ? SET_HIGH_P_PER_MASTERED : SET_TRIALS_PER_TARGET;
     const first = Math.floor(n / 2) + (n % 2 === 1 ? (flip++ % 2 === 0 ? 1 : 0) : 0);
     halves[0].push(...Array.from({ length: first }, () => ({ targetId: id, kind })));
     halves[1].push(...Array.from({ length: n - first }, () => ({ targetId: id, kind })));
   }
-  const first = arrange(halves[0], rng);
-  return [first, arrange(halves[1], rng, first)];
+  const a = arrange(halves[0], rng);
+  const b = arrange(halves[1], rng, a);
+  const out: [SetItem[], SetItem[]] = [a, b];
+  for (const id of opts.maintenanceIds ?? []) {
+    for (const half of out) {
+      const i = half.findIndex((x) => x.targetId === id);
+      if (i >= 0) {
+        half[i] = { targetId: id, kind: 'maintenance' };
+        break;
+      }
+    }
+  }
+  return out;
+}
+
+/** Кто из участников набора получает пробы базовой линии в этой сессии. */
+export function baselineMembers(
+  set: IdentifySet,
+  states: Readonly<Record<string, AbaTargetState>>,
+  limit: number,
+): string[] {
+  return set.memberIds.filter((id) => (states[id]?.phase ?? 'baseline') === 'baseline').slice(0, limit);
 }
