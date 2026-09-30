@@ -1,13 +1,23 @@
 /**
- * Локальная база приложения на `expo-sqlite`. Один файл на устройство: данные детей
- * разделены колонкой `child_id` во всех таблицах, а не отдельными файлами — так удаление
- * ребёнка и экспорт видят всё сразу.
+ * Локальная база приложения на `expo-sqlite`. **Файл на аккаунт** (`talentia-<uid>.db`):
+ * выход из аккаунта прогресс не стирает, но аккаунты на одном устройстве не видят
+ * журналов друг друга, в том числе согласий (PARENT.md, «Данные на устройстве»). Внутри
+ * файла данные детей разделены колонкой `child_id`.
+ *
+ * `secure_delete` — удалённое затирается на диске, а не остаётся в свободных страницах;
+ * после удалений журнал WAL сжимается (`compactAfterDelete`). Резервная копия файла в
+ * облако системы запрещена конфигурацией приложения.
  */
 import * as SQLite from 'expo-sqlite';
 import { migrate } from './schema';
 import type { SqlDb, SqlValue } from './sql';
 
-export const LOCAL_DB_NAME = 'talentia.db';
+const ACCOUNT_ID = /^[A-Za-z0-9-]{8,64}$/;
+
+export function localDbName(accountId: string): string {
+  if (!ACCOUNT_ID.test(accountId)) throw new Error('Недопустимый id аккаунта для имени базы');
+  return `talentia-${accountId}.db`;
+}
 
 function adapt(db: SQLite.SQLiteDatabase): SqlDb {
   return {
@@ -27,15 +37,33 @@ function adapt(db: SQLite.SQLiteDatabase): SqlDb {
   };
 }
 
-let opened: Promise<SqlDb> | null = null;
+const opened = new Map<string, { raw: Promise<SQLite.SQLiteDatabase>; db: Promise<SqlDb> }>();
 
-/** Открыть базу и накатить схему. Повторные вызовы возвращают ту же базу. */
-export function openLocalDb(): Promise<SqlDb> {
-  opened ??= (async () => {
-    const db = adapt(await SQLite.openDatabaseAsync(LOCAL_DB_NAME));
-    await db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
-    await migrate(db);
-    return db;
-  })();
-  return opened;
+/** Открыть базу аккаунта и накатить схему. Повторные вызовы возвращают ту же базу. */
+export function openLocalDb(accountId: string): Promise<SqlDb> {
+  const name = localDbName(accountId);
+  let entry = opened.get(name);
+  if (!entry) {
+    const raw = SQLite.openDatabaseAsync(name);
+    const db = raw.then(async (r) => {
+      const a = adapt(r);
+      await a.exec('PRAGMA journal_mode = WAL; PRAGMA secure_delete = ON; PRAGMA foreign_keys = ON;');
+      await migrate(a);
+      return a;
+    });
+    entry = { raw, db };
+    opened.set(name, entry);
+  }
+  return entry.db;
+}
+
+/** Удаление аккаунта: закрыть базу и удалить файл целиком, а не только строки. */
+export async function deleteLocalDb(accountId: string): Promise<void> {
+  const name = localDbName(accountId);
+  const entry = opened.get(name);
+  if (entry) {
+    await (await entry.raw).closeAsync();
+    opened.delete(name);
+  }
+  await SQLite.deleteDatabaseAsync(name);
 }

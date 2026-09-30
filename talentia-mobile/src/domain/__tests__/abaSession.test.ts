@@ -789,6 +789,14 @@ describe('проверка записи', () => {
     expect(res.ok === false && res.errors).toContain('не тот стартовый уровень');
   });
 
+  it('громкость в цели не на громкость — не пишется', () => {
+    const st = begin([A], { A: acq(A) });
+    const next = nextStep(st, 1);
+    const input = trialFor(next.state, next.step as TrialStep, 'ok');
+    const res = recordTrial(next.state, { ...input, loudnessDb: 62 }, 1);
+    expect(res.ok === false && res.errors).toContain('громкость пишется только в целях на громкость');
+  });
+
   it('L4 без просьбы к взрослому — не пишется', () => {
     const st = begin([A], { A: acq(A, 1) });
     const next = nextStep(st, 1);

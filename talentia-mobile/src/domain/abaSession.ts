@@ -1061,6 +1061,10 @@ function mismatch(input: AbaTrialInput, expected: TrialStep, state: AbaSessionSt
     errors.push('подсказка в пробе, которая измеряет');
   }
   if (input.promptLevelUsed === 4 && !expected.askAdultForL4) errors.push('L4 без просьбы к взрослому');
+  // минимизация: громкость — только там, где она и есть критерий
+  if (input.loudnessDb !== undefined && state.targets[expected.targetId].format !== 'voice_volume') {
+    errors.push('громкость пишется только в целях на громкость');
+  }
   return errors;
 }
 

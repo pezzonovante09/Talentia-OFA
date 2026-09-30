@@ -15,12 +15,26 @@
  */
 import type { SqlDb } from './sql';
 
+/**
+ * Локальный срок хранения журналов — 12 месяцев, как на сервере (PARENT.md, «Данные на
+ * устройстве»). Навыки и цели лежат в сводном состоянии `child_state` и не теряются.
+ */
+export const RETENTION_MONTHS = 12;
+
 /** Удаление строк ребёнка разрешено, пока в `purge_gate` есть его id (или `*` — всё). */
 const gated = (table: string) => `
 CREATE TRIGGER ${table}_no_update BEFORE UPDATE ON ${table}
 BEGIN SELECT RAISE(ABORT, '${table}: только дописывание'); END;
 CREATE TRIGGER ${table}_no_delete BEFORE DELETE ON ${table}
 WHEN NOT EXISTS (SELECT 1 FROM purge_gate WHERE child_id IN (OLD.child_id, '*'))
+BEGIN SELECT RAISE(ABORT, '${table}: только дописывание'); END;`;
+
+/** Удаление — по ребёнку через purge_gate или по сроку через retention_gate. */
+const retained = (table: string, column: string) => `
+DROP TRIGGER ${table}_no_delete;
+CREATE TRIGGER ${table}_no_delete BEFORE DELETE ON ${table}
+WHEN NOT EXISTS (SELECT 1 FROM purge_gate WHERE child_id IN (OLD.child_id, '*'))
+  AND NOT EXISTS (SELECT 1 FROM retention_gate WHERE OLD.${column} < before)
 BEGIN SELECT RAISE(ABORT, '${table}: только дописывание'); END;`;
 
 export const MIGRATIONS: readonly string[] = [
@@ -102,6 +116,30 @@ CREATE TABLE sync_cursor (
   stream   TEXT NOT NULL,
   position TEXT NOT NULL,
   PRIMARY KEY (child_id, stream)
+);
+`,
+  // 2 — срок хранения и доставка согласий
+  //
+  // Журналы можно было удалить только целиком по ребёнку, и локальный срок хранения ввести
+  // было нельзя. Теперь — ещё и строки старше отметки в retention_gate, и только их.
+  //
+  // Согласия уходят на сервер по одному и в своём порядке (первым — событие, создающее
+  // ребёнка в облаке), поэтому доставка учитывается по событию, а не курсором. Событие,
+  // которое сервер отклонил по существу (устаревший текст, часы устройства), не
+  // повторяется вечно, а ждёт родителя в sync_problems.
+  `
+CREATE TABLE retention_gate (before TEXT NOT NULL);
+${['aba_trials', 'aba_sessions'].map((t) => retained(t, 'recorded_at')).join('\n')}
+${retained('lesson_runs', 'started_at')}
+
+CREATE TABLE consent_delivered (id TEXT PRIMARY KEY, delivered_at TEXT NOT NULL);
+
+CREATE TABLE sync_problems (
+  child_id   TEXT NOT NULL,
+  event_id   TEXT NOT NULL,
+  reason     TEXT NOT NULL,
+  noticed_at TEXT NOT NULL,
+  PRIMARY KEY (child_id, event_id)
 );
 `,
 ];

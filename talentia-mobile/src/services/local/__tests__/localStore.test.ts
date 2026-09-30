@@ -6,7 +6,7 @@ import { appendSession, appendTrial, pastSessionsOfTarget, trialsOfSession, tria
 import { loadChildState, saveChildState } from '../childState';
 import { appendConsentEvent, readConsentLog } from '../consentLog';
 import { appendLessonRun, lessonRunsOf } from '../lessonRuns';
-import { clearChildProgress, exportChild, purgeChild, wipeDevice } from '../purge';
+import { applyRetention, clearChildProgress, exportChild, purgeChild, retentionCutoff, wipeDevice } from '../purge';
 import { migrate } from '../schema';
 import { memoryDb } from './nodeSql';
 
@@ -78,12 +78,13 @@ const run = (childId: string, id: string): LessonRun => ({
 });
 
 const NOW = '2026-09-30T10:00:00Z';
+const PSEUDO = '5f0c2a8e-3b1d-4c6e-9a7f-2d8b1e4c7a90';
 
 describe('схема', () => {
   it('миграции накатываются один раз', async () => {
     const db = await memoryDb();
     await migrate(db);
-    expect(await db.all('PRAGMA user_version')).toEqual([{ user_version: 1 }]);
+    expect(await db.all('PRAGMA user_version')).toEqual([{ user_version: 2 }]);
   });
 });
 
@@ -194,18 +195,18 @@ describe('удаление и экспорт', () => {
 
   it('удаление ребёнка: всё его — прочь, журнал согласий — с псевдонимом, другой ребёнок цел', async () => {
     const db = await filled();
-    await purgeChild(db, 'kid-a', 'pseudo-1');
+    await purgeChild(db, 'kid-a', PSEUDO);
     expect(await trialsOfTarget(db, 'kid-a', 't-1')).toEqual([]);
     expect(await lessonRunsOf(db, 'kid-a')).toEqual([]);
     expect(await loadChildState(db, 'kid-a', 'lessonCounter')).toBeUndefined();
     const log = await readConsentLog(db);
-    expect(log.map((e) => e.childId)).toEqual(['pseudo-1', 'kid-b']);
+    expect(log.map((e) => e.childId)).toEqual([PSEUDO, 'kid-b']);
     expect(await trialsOfTarget(db, 'kid-b', 't-1')).toHaveLength(1);
   });
 
   it('после удаления защита журнала снова на месте', async () => {
     const db = await filled();
-    await purgeChild(db, 'kid-a', 'pseudo-1');
+    await purgeChild(db, 'kid-a', PSEUDO);
     await expect(db.run("DELETE FROM aba_trials WHERE child_id = 'kid-b'")).rejects.toThrow(/только дописывание/);
   });
 
@@ -226,9 +227,40 @@ describe('удаление и экспорт', () => {
 
   it('экспорт — всё о ребёнке и ничего о другом', async () => {
     const db = await filled();
-    const out = await exportChild(db, 'kid-a', NOW);
+    const out = await exportChild(db, 'kid-a', NOW, { name: 'Аля', band: '5-6' });
+    expect(out.profile).toEqual({ name: 'Аля', band: '5-6' });
     expect([out.abaTrials.length, out.abaSessions.length, out.lessonRuns.length]).toEqual([1, 1, 1]);
     expect(out.state).toEqual({ lessonCounter: 7 });
     expect(out.consentEvents.every((e) => e.childId === 'kid-a')).toBe(true);
+  });
+});
+
+describe('псевдоним и срок хранения', () => {
+  it('псевдоним — только случайный uuid', async () => {
+    const db = await memoryDb();
+    await expect(purgeChild(db, 'kid-a', 'hash-of-kid-a')).rejects.toThrow(/uuid/);
+  });
+
+  it('журналы старше 12 месяцев удаляются, свежие — нет, состояние не трогается', async () => {
+    const db = await memoryDb();
+    await appendTrial(db, 'kid-a', trial(), '2025-08-01T10:00:00Z');
+    await appendTrial(db, 'kid-a', trial(), '2026-09-01T10:00:00Z');
+    await appendLessonRun(db, { ...run('kid-a', 'old'), startedAt: '2025-07-01T09:00:00Z' });
+    await saveChildState(db, 'kid-a', 'lessonCounter', 9, NOW);
+    expect(await applyRetention(db, new Date(NOW))).toBe(2);
+    expect(await trialsOfTarget(db, 'kid-a', 't-1')).toHaveLength(1);
+    expect(await lessonRunsOf(db, 'kid-a')).toEqual([]);
+    expect(await loadChildState(db, 'kid-a', 'lessonCounter')).toBe(9);
+  });
+
+  it('срок хранения не открывает удаление свежего', async () => {
+    const db = await memoryDb();
+    await appendTrial(db, 'kid-a', trial(), NOW);
+    await applyRetention(db, new Date(NOW));
+    await expect(db.run('DELETE FROM aba_trials')).rejects.toThrow(/только дописывание/);
+  });
+
+  it('граница — ровно 12 месяцев назад', () => {
+    expect(retentionCutoff(new Date('2026-09-30T10:00:00Z'))).toBe('2025-09-30T10:00:00.000Z');
   });
 });
