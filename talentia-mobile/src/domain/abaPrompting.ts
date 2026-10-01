@@ -499,7 +499,7 @@ export function applyPromptDependence(
  * поддержания со старта L1 не может дать самостоятельный ответ, и её провал был
  * бы назначен заранее.
  */
-const MEASURING_KINDS: ReadonlySet<AbaTrial['kind']> = new Set(['baseline', 'generalization', 'maintenance']);
+const MEASURING_KINDS: ReadonlySet<AbaTrial['kind']> = new Set(['baseline', 'generalization', 'maintenance', 'verification']);
 
 /** Противоречие внутри записи пробы. Непустой список — запись нельзя писать в лог. */
 export function trialInvariantErrors(t: AbaTrial): string[] {

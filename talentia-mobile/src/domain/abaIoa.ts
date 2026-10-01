@@ -14,6 +14,8 @@ import {
   type AbaIoaItem,
   type AbaIoaResult,
   type AbaObserver,
+  type AbaPhase,
+  type AbaSession,
   type AbaTarget,
   type AbaTargetState,
   type AbaTrial,
@@ -23,7 +25,14 @@ import {
 import { isMasteryMet, markMastered } from './abaCriterion';
 
 /** Пробы, по которым принимаются решения. Коррекция, разогрев и закрывающая не кодируются. */
-const IOA_KINDS: ReadonlySet<AbaTrialKind> = new Set(['baseline', 'teaching', 'transfer', 'generalization', 'maintenance']);
+const IOA_KINDS: ReadonlySet<AbaTrialKind> = new Set([
+  'baseline',
+  'teaching',
+  'transfer',
+  'generalization',
+  'maintenance',
+  'verification',
+]);
 
 /**
  * Строки листа: пробы, по которым принимаются решения, оценённые взрослым, — и прерванные
@@ -222,4 +231,41 @@ export function applyLateIoa(
     return markMastered(next, sessionIndex, 'criterion');
   }
   return next;
+}
+
+/** Покрытие IOA по фазе цели: сессий «Со взрослым» с целью и сколько из них с IOA. */
+export type IoaCoverage = { sessions: number; withIoa: number; ratio: number; below: boolean };
+
+/**
+ * Покрытие IOA по цели в фазах базовой линии и обучения (не меньше `IOA.coverage` сессий
+ * «Со взрослым»). Метрика отчёта и подсказка планировщику, не гейт. Фаза на сессию —
+ * по событиям смены фазы в записях сессий.
+ */
+export function ioaCoverage(
+  targetId: string,
+  sessions: readonly AbaSession[],
+  ioaSessionIds: ReadonlySet<string>,
+): Record<'baseline' | 'acquisition', IoaCoverage> {
+  const counts = { baseline: { sessions: 0, withIoa: 0 }, acquisition: { sessions: 0, withIoa: 0 } };
+  let phase: AbaPhase = 'baseline';
+  for (const s of [...sessions].sort((a, b) => a.index - b.index)) {
+    const bucket = phase === 'baseline' ? counts.baseline : phase === 'acquisition' ? counts.acquisition : null;
+    if (bucket && s.config === 'with_adult' && s.targetIds.includes(targetId)) {
+      bucket.sessions += 1;
+      if (ioaSessionIds.has(s.id)) bucket.withIoa += 1;
+    }
+    for (const e of s.events) if (e.kind === 'phase' && e.targetId === targetId) phase = e.to;
+  }
+  const of = (c: { sessions: number; withIoa: number }): IoaCoverage => {
+    const ratio = c.sessions === 0 ? 0 : c.withIoa / c.sessions;
+    return { ...c, ratio, below: c.sessions > 0 && ratio < IOA.coverage };
+  };
+  return { baseline: of(counts.baseline), acquisition: of(counts.acquisition) };
+}
+
+/** Подсказка: следующей сессии с этой целью нужна проверка вторым наблюдателем. */
+export function ioaDueNext(phase: AbaPhase, coverage: Record<'baseline' | 'acquisition', IoaCoverage>): boolean {
+  if (phase === 'baseline') return coverage.baseline.below || coverage.baseline.sessions === 0;
+  if (phase === 'acquisition') return coverage.acquisition.below || coverage.acquisition.sessions === 0;
+  return false;
 }

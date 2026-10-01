@@ -6,8 +6,9 @@
  * транзакции и закрывают его в той же транзакции. Без корзины и «7 дней на
  * восстановление»: данные ребёнка не держат в корзине.
  */
+import type { AbaIoaRecord, AbaObserver, AbaSession } from '../../types/aba';
 import type { ConsentEvent, GuardianRole } from '../../domain/consent';
-import { ABA_DELETED_KEYS } from './childState';
+import { ABA_DELETED_KEYS, ABA_STATE_KEYS } from './childState';
 import { insertConsentEvent, readConsentLog } from './consentLog';
 import { withDbLock } from './lock';
 import { RETENTION_MONTHS } from './schema';
@@ -204,4 +205,56 @@ async function collectExport(
     state,
     consentEvents: (await readConsentLog(db)).filter((e) => e.childId === childId || e.childId === null),
   };
+}
+
+/** Экспорт для специалиста центра: только данные ABA, без данных взрослых. */
+export type SpecialistExport = {
+  exportedAt: string;
+  abaTrials: unknown[];
+  abaSessions: unknown[];
+  abaIoa: unknown[];
+  /** Состояние ABA; наблюдатели — метками «наблюдатель N» с ролью и обучен ли. */
+  state: Record<string, unknown>;
+};
+
+/**
+ * Экспорт для специалиста — отдельный от родительского: без профиля, согласий, уроков и
+ * идентификаторов взрослых. id наблюдателей заменены метками «наблюдатель 1, 2…» в пределах
+ * файла (условия приватности, ABA.md). Копии, переданные в центр, приложение не удаляет —
+ * это сказано в тексте согласия.
+ */
+export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt: string): Promise<SpecialistExport> {
+  return db.transaction(async (tx) => {
+    const bodies = async <T>(table: string) =>
+      (await tx.all<{ body: string }>(`SELECT body FROM ${table} WHERE child_id = ? ORDER BY seq`, [childId])).map(
+        (r) => JSON.parse(r.body) as T,
+      );
+    const state = Object.fromEntries(
+      (
+        await tx.all<{ key: string; body: string }>(
+          `SELECT key, body FROM child_state WHERE child_id = ? AND key IN (${ABA_STATE_KEYS.map(() => '?').join(', ')})`,
+          [childId, ...ABA_STATE_KEYS],
+        )
+      ).map((r) => [r.key, JSON.parse(r.body)]),
+    );
+    const sessions = await bodies<AbaSession>('aba_sessions');
+    const ioa = await bodies<AbaIoaRecord>('aba_ioa');
+    const observers = (state.abaObservers ?? []) as AbaObserver[];
+
+    const labels = new Map<string, string>();
+    const label = (id: string | null) => {
+      if (id === null) return null;
+      if (!labels.has(id)) labels.set(id, `наблюдатель ${labels.size + 1}`);
+      return labels.get(id)!;
+    };
+    const abaSessions = sessions.map((s) => ({ ...s, primaryObserverId: label(s.primaryObserverId) }));
+    const abaIoa = ioa.map((r) => ({ ...r, secondaryObserverId: label(r.secondaryObserverId) }));
+    return {
+      exportedAt,
+      abaTrials: await bodies('aba_trials'),
+      abaSessions,
+      abaIoa,
+      state: { ...state, abaObservers: observers.map((o) => ({ id: label(o.id), role: o.role, trained: o.trained })) },
+    };
+  });
 }

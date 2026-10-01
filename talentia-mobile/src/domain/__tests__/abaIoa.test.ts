@@ -1,10 +1,12 @@
 /**
  * IOA — ABA.md, «Протокол взрослого», блок 5, и решение методиста по листу и прерываниям.
  */
-import type { AbaIoaItem, AbaObserver, AbaTarget, AbaTargetState, AbaTrial } from '../../types/aba';
+import type { AbaIoaItem, AbaObserver, AbaSession, AbaTarget, AbaTargetState, AbaTrial } from '../../types/aba';
 import {
   applyLateIoa,
   computeIoa,
+  ioaCoverage,
+  ioaDueNext,
   ioaPasses,
   ioaSheet,
   isVerified,
@@ -124,5 +126,31 @@ describe('подтверждение и освоение', () => {
     const s = applyLateIoa(met(false), 2, true, false);
     expect(s.criterionSessions?.find((x) => x.sessionIndex === 2)?.verified).toBe(true);
     expect(applyLateIoa(met(false), 2, false, true).flags).toContain('ioa_low');
+  });
+});
+
+describe('покрытие IOA', () => {
+  const session = (index: number, over: Partial<AbaSession> = {}): AbaSession => ({
+    id: `s-${index}`, index, startedAt: '', endedAt: '', config: 'with_adult', targetIds: ['A'], reinforcerId: 'r',
+    reinforcerChosenBy: 'child', tokensEarned: 0, exchangesMade: 0, endReason: 'completed', brokenTargetId: null,
+    boardSize: 5, endedOnSuccess: true, events: [], primaryObserverId: null, ...over,
+  });
+
+  it('по фазам; ниже 25% — следующей сессии нужна проверка', () => {
+    const sessions = [
+      session(1, { events: [{ kind: 'phase', at: '', targetId: 'A', from: 'baseline', to: 'acquisition', reason: 'baseline' }] }),
+      session(2),
+      session(3),
+      session(4),
+      session(5),
+      session(6, { config: 'alone' }),
+    ];
+    const cov = ioaCoverage('A', sessions, new Set(['s-1', 's-3']));
+    expect(cov.baseline).toMatchObject({ sessions: 1, withIoa: 1, below: false });
+    expect(cov.acquisition).toMatchObject({ sessions: 4, withIoa: 1, ratio: 0.25, below: false });
+    const low = ioaCoverage('A', sessions, new Set(['s-1']));
+    expect(low.acquisition.below).toBe(true);
+    expect(ioaDueNext('acquisition', low)).toBe(true);
+    expect(ioaDueNext('mastered', low)).toBe(false);
   });
 });

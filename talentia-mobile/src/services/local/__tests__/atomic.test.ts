@@ -8,7 +8,7 @@ import { commitAbaSession, commitIoa, commitLesson, recordAbaTrial, setAbaObserv
 import type { ConsentEvent } from '../../../domain/consent';
 import { appendConsentEvent, insertConsentEvent, readConsentLog } from '../consentLog';
 import { lessonRunsOf } from '../lessonRuns';
-import { abaDataSummary, exportChild, revokeAbaProcessing } from '../purge';
+import { abaDataSummary, exportChild, exportForSpecialist, revokeAbaProcessing } from '../purge';
 import { migrate } from '../schema';
 import { asAbaWriter, memoryDb } from './nodeSql';
 
@@ -357,5 +357,23 @@ describe('журнал IOA и наблюдатели — условия прив
     await commitIoa(db, 'kid', ioa(), {}, NOW);
     await expect(db.run("UPDATE aba_ioa SET body = '{}'")).rejects.toThrow(/только дописывание/);
     await expect(db.run('DELETE FROM aba_ioa')).rejects.toThrow(/только дописывание/);
+  });
+});
+
+describe('экспорт для специалиста', () => {
+  it('только данные ABA, наблюдатели — метками, без uuid взрослых', async () => {
+    const db = await dbWithAbaConsent();
+    await setAbaObservers(db, 'kid', [{ id: 'obs-uuid-1', role: 'specialist', trained: true }, { id: 'obs-uuid-2', role: 'parent', trained: false }], NOW);
+    await commitAbaSession(db, 'kid', { ...result(1), session: { ...session(1), primaryObserverId: 'obs-uuid-2' } }, NOW);
+    await commitIoa(db, 'kid', { id: 'i1', sessionId: 's-1', secondaryObserverId: 'obs-uuid-1', source: 'paper_entry', enteredAt: NOW, items: [], byTarget: {} }, {}, NOW);
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    const text = JSON.stringify(out);
+    expect(text).not.toContain('obs-uuid');
+    expect(out).not.toHaveProperty('profile');
+    expect(out).not.toHaveProperty('consentEvents');
+    expect(out.state.abaObservers).toEqual([
+      { id: 'наблюдатель 2', role: 'specialist', trained: true },
+      { id: 'наблюдатель 1', role: 'parent', trained: false },
+    ]);
   });
 });

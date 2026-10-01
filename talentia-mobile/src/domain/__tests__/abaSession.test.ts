@@ -1306,3 +1306,31 @@ describe('assent: правки по проверке методиста', () => 
     expect(nextStep(st, 10).step).toMatchObject({ kind: 'end', reason: 'assent_withdrawn', pairingCycle: true });
   });
 });
+
+describe('проверочная проба «получается дома» (блок 5)', () => {
+  const A = tgt('A');
+  const H = tgt('H');
+  const home = (t: AbaTarget) => ({ ...mastered(t), masteredBy: 'home_unverified' as const });
+  const verificationOf = (steps: AbaStep[]) => steps.filter((x): x is TrialStep => x.kind === 'trial' && x.trialKind === 'verification');
+
+  it('ведёт обученный — 5 проб без подсказок; 80% и выше — освоено по критерию', () => {
+    const { state, steps } = drive(begin([A, H], { A: acq(A, 0), H: home(H) }), () => 'ok');
+    const v = verificationOf(steps);
+    expect(v).toHaveLength(5);
+    for (const x of v) expect([x.startPromptLevel, x.allowEscalation, x.targetId]).toEqual([0, false, 'H']);
+    const r = finishAbaSession(state, '2026-10-01', 9e6);
+    expect(r.states.H.masteredBy).toBe('criterion');
+    expect(r.session.events).toContainEqual(expect.objectContaining({ kind: 'phase', targetId: 'H', reason: 'verification_passed' }));
+  });
+
+  it('не подтвердилось — обратно в обучение на последнем успешном уровне', () => {
+    const { state } = drive(begin([A, H], { A: acq(A, 0), H: home(H) }), (s) => (s.trialKind === 'verification' ? 'wrong' : 'ok'));
+    const r = finishAbaSession(state, '2026-10-01', 9e6);
+    expect([r.states.H.phase, r.states.H.masteredBy, r.states.H.startPromptLevel]).toEqual(['acquisition', undefined, 0]);
+  });
+
+  it('ведёт необученный взрослый — проверочной пробы нет', () => {
+    const st = begin([A, H], { A: acq(A, 0), H: home(H) }, { observers: [{ id: 'p', role: 'parent', trained: false }], primaryObserverId: 'p' });
+    expect(verificationOf(drive(st, () => 'ok').steps)).toHaveLength(0);
+  });
+});

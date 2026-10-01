@@ -27,6 +27,7 @@ import {
   MAINTENANCE_GAP,
   MASTERY,
   REFUSALS_TO_END,
+  VERIFICATION_TRIALS,
   REFUSAL_CARD_OFFER_MS,
   REFUSAL_QUIET_MS,
   UNRELIABLE_AFTER,
@@ -431,7 +432,7 @@ function pick<T>(items: readonly T[], rng: Rng): T {
 
 const MASTERED_PHASES = new Set(['mastered', 'maintenance']);
 const TEACHING_PHASES = new Set(['acquisition', 'generalization_check']);
-const MEASURING_KINDS: ReadonlySet<AbaTrialKind> = new Set(['baseline', 'generalization', 'maintenance']);
+const MEASURING_KINDS: ReadonlySet<AbaTrialKind> = new Set(['baseline', 'generalization', 'maintenance', 'verification']);
 const SUCCESS: ReadonlySet<AbaResponse> = new Set(['independent', 'prompted', 'approximation']);
 /** Причины, по которым в конце сессии бывает обмен. Уход и остановка взрослым — нет. */
 // отказ не отнимает заработанное: обмен — как при лимите
@@ -614,8 +615,18 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     : single.filter((t) => states[t.id].phase === 'baseline' && ready(t)).slice(0, Math.max(0, baselineRoom));
   const mastered = offered.filter((t) => isMastered(t.id));
 
+  // освоено «дома, без проверки», а сессию ведёт обученный наблюдатель — проверочная проба
+  // одной такой цели (давнее встречавшейся первой); цепочки — пока нет (вопрос методисту)
+  const primaryTrained =
+    config === 'with_adult' && (input.observers ?? []).some((o) => o.id === input.primaryObserverId && o.trained);
+  const toVerify = primaryTrained
+    ? mastered
+        .filter((t) => states[t.id].masteredBy === 'home_unverified' && !t.steps?.length && counts(t, config))
+        .sort((a, b) => states[a.id].lastSessionIndex - states[b.id].lastSessionIndex)[0]
+    : undefined;
+
   const due = mastered
-    .filter((t) => counts(t, config) && isMaintenanceDue(states[t.id], sessionIndex))
+    .filter((t) => t.id !== toVerify?.id && counts(t, config) && isMaintenanceDue(states[t.id], sessionIndex))
     .sort((a, b) => {
       const retest = Number(states[b.id].maintenanceFailsInRow > 0) - Number(states[a.id].maintenanceFailsInRow > 0);
       return retest || overdue(states[b.id], sessionIndex) - overdue(states[a.id], sessionIndex);
@@ -637,7 +648,18 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     probes.push(unit(t, { kind: 'maintenance', targetId: t.id, exemplarId: pick(teachingExemplars(t), rng).id }));
   }
 
-  const maintenanceIds = [...setDue, ...probes.filter((p) => p[0].kind === 'maintenance').map((p) => p[0].targetId)];
+  if (toVerify) {
+    const at = rotation(toVerify, rng);
+    probes.unshift(
+      Array.from({ length: VERIFICATION_TRIALS }, (_, i): PlannedTrial => ({ kind: 'verification', targetId: toVerify.id, exemplarId: at(i) })),
+    );
+  }
+
+  const maintenanceIds = [
+    ...setDue,
+    ...probes.filter((p) => p[0].kind === 'maintenance').map((p) => p[0].targetId),
+    ...(toVerify ? [toVerify.id] : []),
+  ];
   const highP = mastered.filter((t) => !t.steps?.length && !maintenanceIds.includes(t.id));
 
   const queue: QueueItem[] = [{ kind: 'reinforcer' }];
@@ -775,7 +797,7 @@ function trialStep(state: AbaSessionState, p: PlannedTrial): TrialStep {
     ...(target.format === 'voice_volume' ? { voiceHoldMs: VOICE_VOLUME_HOLD_MS } : {}),
     pauseBeforeMs: Math.max(p.pauseBeforeMs ?? 0, state.pendingPauseMs),
     scoredBy: sessionScoring(target, state.config),
-    allowEscalation: p.kind !== 'generalization' && p.kind !== 'baseline',
+    allowEscalation: p.kind !== 'generalization' && p.kind !== 'baseline' && p.kind !== 'verification',
     askAdultForL4: l4Available(state) && (p.adultAssist === true || (Boolean(p.stepId) && p.kind === 'teaching')),
     // звено цепочки: ошибка сразу поднимает уровень, цепочка завершается верно (блок 1)
     escalateOnIncorrect:
@@ -1823,6 +1845,27 @@ export function finishAbaSession(
       reason = s.phase === 'acquisition' ? 'maintenance_failed' : 'maintenance_passed';
       if (target.steps?.length && s.phase === 'acquisition') s = rollbackSteps(before, s, target, own);
     }
+    const verification = own.filter((t) => t.kind === 'verification' && t.response !== 'interrupted');
+    if (verification.length >= VERIFICATION_TRIALS && primary?.trained) {
+      const rate = verification.filter((t) => t.response === 'independent').length / verification.length;
+      if (rate >= MASTERY.minIndependentRate) {
+        s = { ...s, masteredBy: 'criterion' };
+        reason = 'verification_passed';
+      } else {
+        // не подтвердилось — обратно в обучение на последнем успешном уровне
+        s = {
+          ...s,
+          phase: 'acquisition',
+          masteredBy: undefined,
+          startPromptLevel: s.lastSuccessfulPromptLevel,
+          sessionsAtCriterion: 0,
+          criterionDays: [],
+          exemplarsAtCriterion: [],
+          criterionSessions: [],
+        };
+        reason = 'verification_failed';
+      }
+    }
     if (TEACHING_PHASES.has(s.phase) && state.teachingTargetIds.includes(id)) {
       if (isMasteryMet(s)) {
         const verdict = masteryVerdict(target, s, hasTrainedObserver);
@@ -1837,7 +1880,7 @@ export function finishAbaSession(
       }
     }
     s = withAssentConcern(s, isConcerning(state.trials.filter((t) => t.targetId === id)));
-    if (reason && s.phase !== from) {
+    if (reason && (s.phase !== from || reason === 'verification_passed')) {
       phaseEvents.push({ kind: 'phase', at: iso(endedAt), targetId: id, from, to: s.phase, reason });
     }
     states[id] = s;

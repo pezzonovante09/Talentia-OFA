@@ -190,7 +190,12 @@ export type AbaTrialKind =
    * остановку, не в задержку и не в зависимость; не маскируется ни под коррекцию —
    * число коррекций за сессию есть метрика нагрузки ошибок, — ни под разогрев.
    */
-  | 'closing';
+  | 'closing'
+  /**
+   * Проверочная проба цели, освоенной «дома, без проверки» (`home_unverified`), когда сессию
+   * ведёт обученный наблюдатель: 5 проб со старта L0, без подсказок. Измеряет, а не учит.
+   */
+  | 'verification';
 
 /**
  * Что сделал ребёнок. Шесть значений, а не булев `correct`.
@@ -573,6 +578,9 @@ export type AbaIoaRecord = {
   byTarget: Record<string, AbaIoaResult>;
 };
 
+/** Проб в проверочной пробе цели `home_unverified`. Порог — как у критерия освоения. */
+export const VERIFICATION_TRIALS = 5;
+
 /** Порог IOA (решение методиста 2026-10-01). */
 export const IOA = {
   minPercent: 80,
@@ -652,7 +660,13 @@ export type AbaSessionEvent =
       targetId: string;
       from: AbaPhase;
       to: AbaPhase;
-      reason: 'baseline' | 'criterion' | 'maintenance_failed' | 'maintenance_passed';
+      reason:
+        | 'baseline'
+        | 'criterion'
+        | 'maintenance_failed'
+        | 'maintenance_passed'
+        | 'verification_passed'
+        | 'verification_failed';
     };
 
 /** Критерий освоения. Проверяется программно — в прежней версии его не было в коде вообще. */
