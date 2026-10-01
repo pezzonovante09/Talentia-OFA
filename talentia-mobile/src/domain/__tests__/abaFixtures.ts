@@ -21,6 +21,7 @@ let seq = 0;
 
 export function trial(over: Partial<AbaTrial> = {}): AbaTrial {
   seq += 1;
+  const latencyMs = over.latencyMs !== undefined ? over.latencyMs : over.response === 'no_response' ? null : 1200;
   return {
     id: `tr-${seq}`,
     sessionId: 's-1',
@@ -33,7 +34,11 @@ export function trial(over: Partial<AbaTrial> = {}): AbaTrial {
     presentations: 1,
     response: 'independent',
     emittedBeforePrompt: true,
-    latencyMs: 1200,
+    latencyMs,
+    latencyFromFirstSdMs: latencyMs,
+    latencySource: latencyMs === null ? null : 'adult_press',
+    promptDelayMs: null,
+    responseWindowMs: 5000,
     sdEndedAt: '2026-09-24T10:00:00Z',
     scoredBy: 'adult',
     tokens: 0,

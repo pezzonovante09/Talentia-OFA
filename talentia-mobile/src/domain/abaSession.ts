@@ -41,11 +41,12 @@ import {
   applyTrialToFading,
   clampToApp,
   correctionLevel,
-  effectiveDelayMs,
   initialTargetState,
   isBreakdown,
   isPromptDependent,
+  promptDelayMs,
   promptStateOf,
+  responseWindowMs,
   trialInvariantErrors,
   type SessionTrials,
 } from './abaPrompting';
@@ -204,8 +205,17 @@ export type TrialStep = {
    */
   field?: string[];
   startPromptLevel: PromptLevel;
-  /** Пауза после конца озвучки SD. */
-  delayMs: number;
+  /**
+   * Сколько ждать после конца SD до первой подсказки на старте L0; `null` — подсказки по
+   * задержке нет (старт L1+, измерительные пробы, разогрев, закрывающая).
+   *
+   * Ход пробы на экране: SD → `promptDelayMs ?? responseWindowMs` → если ответа нет и
+   * эскалация разрешена — подсказка → `responseWindowMs` → … Ответ до конца
+   * `promptDelayMs` — самостоятельный.
+   */
+  promptDelayMs: number | null;
+  /** Окно ответа после каждого предъявления, включая полную модель. */
+  responseWindowMs: number;
   /** Пауза перед пробой. */
   pauseBeforeMs: number;
   /** Кто засчитывает. В конфигурации «сам» взрослого нет. */
@@ -674,6 +684,7 @@ function trialStep(state: AbaSessionState, p: PlannedTrial): TrialStep {
   const start: PromptLevel =
     p.fixedStart ?? (MEASURING_KINDS.has(p.kind) ? 0 : clampToApp(promptStateOf(s, p.stepId).startPromptLevel));
   const withAdult = state.config === 'with_adult';
+  const windowMs = responseWindowMs(target, p.stepId);
   return {
     kind: 'trial',
     trialKind: p.kind,
@@ -684,7 +695,8 @@ function trialStep(state: AbaSessionState, p: PlannedTrial): TrialStep {
     ...(p.sdVariantKey ? { sdVariantKey: p.sdVariantKey } : {}),
     ...(p.field ? { field: p.field } : {}),
     startPromptLevel: start,
-    delayMs: effectiveDelayMs(s, start),
+    promptDelayMs: promptDelayMs(s, p.kind, start, windowMs),
+    responseWindowMs: windowMs,
     pauseBeforeMs: Math.max(p.pauseBeforeMs ?? 0, state.pendingPauseMs),
     scoredBy: sessionScoring(target, state.config),
     allowEscalation: p.kind !== 'generalization' && p.kind !== 'baseline',
@@ -1056,6 +1068,8 @@ function mismatch(input: AbaTrialInput, expected: TrialStep, state: AbaSessionSt
   if (!same(input.field, expected.field)) errors.push('не то поле карточек');
   if (!same(input.closes, expected.closes)) errors.push('не то, что закрывает проба');
   if (input.startPromptLevel !== expected.startPromptLevel) errors.push('не тот стартовый уровень');
+  if (input.promptDelayMs !== expected.promptDelayMs) errors.push('не та задержка до подсказки');
+  if (input.responseWindowMs !== expected.responseWindowMs) errors.push('не то окно ответа');
   if (input.scoredBy !== expected.scoredBy) errors.push('не тот источник оценки');
   if (!expected.allowEscalation && input.promptLevelUsed !== input.startPromptLevel) {
     errors.push('подсказка в пробе, которая измеряет');

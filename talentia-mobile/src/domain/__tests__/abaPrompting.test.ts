@@ -3,11 +3,12 @@ import {
   applyBlockToDelay,
   applyPromptDependence,
   applyTrialToFading,
-  effectiveDelayMs,
   initialTargetState,
   isBreakdown,
   isPromptDependent,
   nextEscalation,
+  promptDelayMs,
+  responseWindowMs,
   trialInvariantErrors,
   type SessionTrials,
 } from '../abaPrompting';
@@ -159,8 +160,36 @@ describe('задержка', () => {
   const clean = () => Array.from({ length: 5 }, () => trial());
   const guess = () => trial({ startPromptLevel: 0, promptLevelUsed: 1, response: 'prompted', emittedBeforePrompt: true });
 
-  it('на полной модели ждать нечего', () => {
-    expect([effectiveDelayMs(at(3), 3), effectiveDelayMs(at(0), 0)]).toEqual([0, 3000]);
+  it('задержка до подсказки — только на старте L0 в обучении и переносе, окно — всегда', () => {
+    const w = responseWindowMs(target);
+    expect(w).toBe(5000);
+    expect([
+      promptDelayMs(at(0), 'teaching', 0, w),
+      promptDelayMs(at(0), 'transfer', 0, w),
+      promptDelayMs(at(1), 'teaching', 1, w),
+      promptDelayMs(at(3), 'teaching', 3, w),
+      promptDelayMs(at(0), 'baseline', 0, w),
+      promptDelayMs(at(0), 'maintenance', 0, w),
+      promptDelayMs(at(0), 'high_p', 0, w),
+    ]).toEqual([3000, 3000, null, null, null, null, null]);
+  });
+
+  it('задержка не длиннее окна ответа', () => {
+    expect(promptDelayMs({ ...at(0), currentDelayMs: 8000 }, 'teaching', 0, 5000)).toBe(5000);
+  });
+
+  it('окно по формату и полосе; у звена цепочки — своё или 10 с', () => {
+    expect(responseWindowMs({ ...target, format: 'repeat_word', band: '5-6' })).toBe(6000);
+    expect(responseWindowMs({ ...target, format: 'repeat_word', band: '7' })).toBe(5000);
+    const chain: AbaTarget = {
+      ...target,
+      format: 'do_action',
+      steps: [
+        { id: 's1', order: 1, sdKey: 'a', criterionKey: 'b', modelKey: 'c' },
+        { id: 's2', order: 2, sdKey: 'a', criterionKey: 'b', modelKey: 'c', responseWindowMs: 15000 },
+      ],
+    };
+    expect([responseWindowMs(chain, 's1'), responseWindowMs(chain, 's2')]).toEqual([10000, 15000]);
   });
 
   it('прогрессивная растёт на шаг за блок без ошибок до подсказки', () => {
@@ -344,5 +373,30 @@ describe('инварианты записи пробы', () => {
   it('попытка до подсказки при старте с полной модели — противоречие', () => {
     const t = trial({ startPromptLevel: 3, promptLevelUsed: 3, response: 'prompted', emittedBeforePrompt: true });
     expect(trialInvariantErrors(t)).toContain('попытка до подсказки при старте с полной модели');
+  });
+});
+
+describe('латентность и окно в записи пробы', () => {
+  it('согласованная запись проходит', () => {
+    expect(trialInvariantErrors(trial())).toEqual([]);
+    expect(trialInvariantErrors(trial({ response: 'no_response', promptLevelUsed: 3, emittedBeforePrompt: false }))).toEqual([]);
+  });
+
+  it('противоречия латентности, задержки и окна ловятся', () => {
+    const errs = (over: Partial<AbaTrial>) => trialInvariantErrors(trial(over));
+    expect(errs({ response: 'no_response', latencyMs: 900, emittedBeforePrompt: false, promptLevelUsed: 3 })).toContain(
+      'латентность у отсутствия ответа',
+    );
+    expect(errs({ latencySource: null })).toContain('латентность без источника или источник без латентности');
+    expect(errs({ latencyFromFirstSdMs: 2000 })).toContain(
+      'у самостоятельного ответа время от первого SD отличается от латентности',
+    );
+    expect(
+      errs({ response: 'prompted', promptLevelUsed: 1, emittedBeforePrompt: false, latencyMs: 900, latencyFromFirstSdMs: 500 }),
+    ).toContain('время от первого SD меньше латентности');
+    expect(errs({ startPromptLevel: 1, promptLevelUsed: 1, response: 'prompted', emittedBeforePrompt: false, promptDelayMs: 1000 })).toContain(
+      'задержка до подсказки при старте с подсказки',
+    );
+    expect(errs({ promptDelayMs: 6000, responseWindowMs: 5000 })).toContain('задержка до подсказки длиннее окна ответа');
   });
 });

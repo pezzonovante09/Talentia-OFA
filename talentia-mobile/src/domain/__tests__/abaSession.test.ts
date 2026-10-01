@@ -141,7 +141,11 @@ function trialFor(state: AbaSessionState, step: TrialStep, how: How): Omit<AbaTr
     presentations: h.used > start ? 3 : 1,
     response: h.response as AbaResponse,
     emittedBeforePrompt: h.emitted,
-    latencyMs: 1000,
+    latencyMs: h.response === 'no_response' ? null : 1000,
+    latencyFromFirstSdMs: h.response === 'no_response' ? null : h.used > start ? 9000 : 1000,
+    latencySource: h.response === 'no_response' ? null : 'adult_press',
+    promptDelayMs: step.promptDelayMs,
+    responseWindowMs: step.responseWindowMs,
     sdEndedAt: '2026-09-29T10:00:00Z',
     scoredBy: step.scoredBy,
   };
@@ -577,7 +581,9 @@ describe('цепочки', () => {
           id: `c-${run}-${step}`, sessionId: 's', targetId: 'C', exemplarId: 'C-1', stepId: step, runIndex: run,
           index: trials.length, kind: 'teaching', startPromptLevel: 0, promptLevelUsed: bad ? 1 : 0,
           presentations: 1, response: bad ? 'prompted' : 'independent', emittedBeforePrompt: !bad,
-          latencyMs: 900, sdEndedAt: '2026-09-29T10:00:00Z', scoredBy: 'adult', tokens: 0,
+          latencyMs: 900, latencyFromFirstSdMs: bad ? 4000 : 900, latencySource: 'adult_press',
+          promptDelayMs: 1000, responseWindowMs: 10000,
+          sdEndedAt: '2026-09-29T10:00:00Z', scoredBy: 'adult', tokens: 0,
         });
       }
     }
@@ -723,8 +729,12 @@ describe('базовая линия', () => {
     responses.map((response, i): AbaTrial => ({
       id: `b-${i}`, sessionId: 's', targetId: 'N', exemplarId: i % 2 ? 'N-2' : 'N-1', index: i, kind: 'baseline',
       startPromptLevel: 0, promptLevelUsed: 0, presentations: 1, response,
-      emittedBeforePrompt: response !== 'no_response', latencyMs: 900, sdEndedAt: '2026-09-29T10:00:00Z',
-      scoredBy: 'adult', tokens: 0,
+      emittedBeforePrompt: response !== 'no_response',
+      latencyMs: response === 'no_response' ? null : 900,
+      latencyFromFirstSdMs: response === 'no_response' ? null : 900,
+      latencySource: response === 'no_response' ? null : 'adult_press',
+      promptDelayMs: null, responseWindowMs: 5000,
+      sdEndedAt: '2026-09-29T10:00:00Z', scoredBy: 'adult', tokens: 0,
     }));
 
   it('новая цель начинает с базовой линии', () => {
@@ -918,5 +928,47 @@ describe('застрявшая цель', () => {
     expect(st.teachingTargetIds).toEqual(['B', 'C']);
     const alone = begin([A, B], { A: acq(A, 1, { flags: ['no_progress'] }), B: acq(B) });
     expect(alone.teachingTargetIds).toEqual(['B', 'A']);
+  });
+});
+
+describe('окно ответа и задержка до подсказки (D1)', () => {
+  const P = tgt('P', { delayMode: 'progressive' });
+  const Q = tgt('Q', { format: 'repeat_word' });
+  const trialsOf = (steps: AbaStep[]) => steps.filter((s): s is TrialStep => s.kind === 'trial');
+
+  it('базовая линия ждёт полное окно, а не 1 с прогрессивной задержки', () => {
+    const { steps } = drive(begin([P], { P: initialTargetState(P) }), () => 'ok');
+    const baseline = trialsOf(steps).filter((s) => s.trialKind === 'baseline');
+    expect(baseline.length).toBeGreaterThan(0);
+    for (const s of baseline) expect([s.promptDelayMs, s.responseWindowMs]).toEqual([null, 5000]);
+  });
+
+  it('на старте L0 в обучении — задержка до подсказки; на L1+ и в разогреве — только окно', () => {
+    const { steps } = drive(begin([P, Q], { P: acq(P, 0), Q: acq(Q, 1) }), () => 'ok');
+    const teaching = trialsOf(steps).filter((s) => s.trialKind === 'teaching');
+    const p0 = teaching.filter((s) => s.targetId === 'P' && s.startPromptLevel === 0);
+    const q1 = teaching.filter((s) => s.targetId === 'Q' && s.startPromptLevel === 1);
+    expect(p0.length).toBeGreaterThan(0);
+    expect(q1.length).toBeGreaterThan(0);
+    for (const s of p0) expect([s.promptDelayMs, s.responseWindowMs]).toEqual([1000, 5000]);
+    for (const s of q1) expect(s.promptDelayMs).toBeNull();
+    for (const s of trialsOf(steps).filter((x) => x.trialKind === 'high_p')) expect(s.promptDelayMs).toBeNull();
+  });
+
+  it('полная модель тоже даёт окно на ответ', () => {
+    const { steps } = drive(begin([Q], { Q: acq(Q, 3) }), () => 'ok');
+    const l3 = trialsOf(steps).filter((s) => s.trialKind === 'teaching' && s.startPromptLevel === 3);
+    expect(l3.length).toBeGreaterThan(0);
+    for (const s of l3) expect(s.responseWindowMs).toBe(5000);
+  });
+
+  it('проба с другим окном или задержкой, чем ждала сессия, не пишется', () => {
+    const st = begin([P], { P: acq(P, 0) });
+    const next = nextStep(st, 1000);
+    if (next.step.kind !== 'trial') throw new Error('ждали пробу');
+    const t = trialFor(next.state, next.step, 'ok');
+    const wrongWindow = recordTrial(next.state, { ...t, responseWindowMs: 1000 }, 1000);
+    const wrongDelay = recordTrial(next.state, { ...t, promptDelayMs: 4000 }, 1000);
+    expect([wrongWindow.ok, wrongDelay.ok]).toEqual([false, false]);
   });
 });

@@ -9,10 +9,12 @@
  */
 import {
   APP_MAX_PROMPT,
+  CHAIN_STEP_RESPONSE_WINDOW_MS,
   DELAY_STEP_MS,
   MAX_DELAY_MS,
   MAX_ESCALATIONS_PER_TRIAL,
   PROMPT_DEPENDENCE,
+  RESPONSE_WINDOW_MS,
   type AbaResponse,
   type AbaFormat,
   type AbaTarget,
@@ -140,11 +142,39 @@ export function correctionLevel(s: AbaTargetState, failed: AbaTrial, format: Aba
 }
 
 /**
- * Сколько ждать ответа после конца озвучки SD. На полной модели — ноль: модель
- * звучит сразу, ждать нечего, это и есть нулевая задержка безошибочного старта.
+ * Окно ответа пробы: после каждого предъявления, включая полную модель, — сколько ждать
+ * начала реакции. У звена цепочки — своё (`AbaChainStep.responseWindowMs` или
+ * `CHAIN_STEP_RESPONSE_WINDOW_MS`).
  */
-export function effectiveDelayMs(s: AbaTargetState, level: PromptLevel): number {
-  return level >= APP_MAX_PROMPT ? 0 : s.currentDelayMs;
+export function responseWindowMs(target: AbaTarget, stepId?: string): number {
+  if (stepId) {
+    return target.steps?.find((x) => x.id === stepId)?.responseWindowMs ?? CHAIN_STEP_RESPONSE_WINDOW_MS;
+  }
+  return RESPONSE_WINDOW_MS[target.format][target.band];
+}
+
+/** Пробы, где на старте L0 есть задержка до первой подсказки: обучение и перенос. */
+const DELAYED_PROMPT_KINDS: ReadonlySet<AbaTrial['kind']> = new Set(['teaching', 'transfer']);
+
+/**
+ * Задержка до первой подсказки (D1, ABA.md «Протокол взрослого», блок 2). Есть только при
+ * старте L0 в обучающих пробах и пробах переноса: `currentDelayMs` (прогрессивная растёт
+ * по мере успеха, постоянная равна `delayMs` цели), но не больше окна ответа. Иначе `null`:
+ * при старте L1+ подсказка идёт вместе с SD, а измерительные пробы, разогрев и закрывающая
+ * ждут полное окно.
+ *
+ * Прежде одно поле значило и задержку, и окно: на базовой линии, переносе и поддержании
+ * ребёнку давалась 1 с на ответ (прогрессивная задержка на старте) — ложный ноль на базовой
+ * линии, известный навык учился с полной модели.
+ */
+export function promptDelayMs(
+  s: AbaTargetState,
+  kind: AbaTrial['kind'],
+  start: PromptLevel,
+  windowMs: number,
+): number | null {
+  if (start !== 0 || !DELAYED_PROMPT_KINDS.has(kind)) return null;
+  return Math.min(s.currentDelayMs, windowMs);
 }
 
 /** Что сделать после того, как ребёнок не ответил на предъявление. */
@@ -403,5 +433,17 @@ export function trialInvariantErrors(t: AbaTrial): string[] {
   if (t.startPromptLevel >= APP_MAX_PROMPT && t.emittedBeforePrompt) {
     errors.push('попытка до подсказки при старте с полной модели');
   }
+  if ((t.latencyMs === null) !== (t.latencySource === null)) errors.push('латентность без источника или источник без латентности');
+  if (t.latencyMs === null && t.latencyFromFirstSdMs !== null) errors.push('время от первого SD без латентности');
+  if (t.latencyMs !== null && (t.latencyFromFirstSdMs === null || t.latencyFromFirstSdMs < t.latencyMs)) {
+    errors.push('время от первого SD меньше латентности');
+  }
+  if (t.response === 'independent' && t.latencyFromFirstSdMs !== t.latencyMs) {
+    errors.push('у самостоятельного ответа время от первого SD отличается от латентности');
+  }
+  if (t.response === 'no_response' && t.latencyMs !== null) errors.push('латентность у отсутствия ответа');
+  if (t.promptDelayMs !== null && t.startPromptLevel !== 0) errors.push('задержка до подсказки при старте с подсказки');
+  if (t.promptDelayMs !== null && t.promptDelayMs > t.responseWindowMs) errors.push('задержка до подсказки длиннее окна ответа');
+  if (t.responseWindowMs <= 0) errors.push('нет окна ответа');
   return errors;
 }
