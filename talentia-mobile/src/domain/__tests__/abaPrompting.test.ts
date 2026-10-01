@@ -3,6 +3,7 @@ import {
   applyBlockToDelay,
   applyPromptDependence,
   applyTrialToFading,
+  fadeClass,
   initialTargetState,
   isBreakdown,
   isPromptDependent,
@@ -398,5 +399,77 @@ describe('латентность и окно в записи пробы', () => 
       'задержка до подсказки при старте с подсказки',
     );
     expect(errs({ promptDelayMs: 6000, responseWindowMs: 5000 })).toContain('задержка до подсказки длиннее окна ответа');
+  });
+});
+
+describe('затухание без качелей L0↔L1 (D2)', () => {
+  const T: AbaTarget = { ...target, format: 'repeat_word', band: '7', delayMode: 'progressive' };
+  const waited = (over: Partial<AbaTrial> = {}) =>
+    trial({ startPromptLevel: 0, promptLevelUsed: 1, response: 'prompted', emittedBeforePrompt: false, latencyMs: 900, latencyFromFirstSdMs: 2900, ...over });
+
+  it('классы пробы', () => {
+    expect([
+      fadeClass(trial()),
+      fadeClass(waited()),
+      fadeClass(waited({ emittedBeforePrompt: true })),
+      fadeClass(waited({ startPromptLevel: 1, promptLevelUsed: 1 })),
+      fadeClass(trial({ startPromptLevel: 0, promptLevelUsed: 3, response: 'prompted', emittedBeforePrompt: false })),
+      fadeClass(trial({ startPromptLevel: 1, promptLevelUsed: 2, response: 'prompted', emittedBeforePrompt: false })),
+      fadeClass(trial({ response: 'incorrect', emittedBeforePrompt: true })),
+      fadeClass(trial({ response: 'approximation', emittedBeforePrompt: true })),
+    ]).toEqual(['at_start', 'waited', 'above', 'at_start', 'above', 'above', 'above', 'approximation']);
+  });
+
+  it('пример методиста: «дождался» на L0 старт не поднимает, задержка держится', () => {
+    let s: AbaTargetState = { ...initialTargetState(T), phase: 'acquisition', startPromptLevel: 1, lastSuccessfulPromptLevel: 1, currentDelayMs: 1000 };
+    const atL1 = () => trial({ startPromptLevel: 1, promptLevelUsed: 1, response: 'prompted', emittedBeforePrompt: false });
+    const steps: [AbaTrial, PromptLevel][] = [
+      [atL1(), 1],
+      [atL1(), 0],
+      [waited(), 0],
+      [waited(), 0],
+      [trial({ latencyMs: 700, latencyFromFirstSdMs: 700 }), 0],
+      [trial({ startPromptLevel: 0, promptLevelUsed: 3, response: 'prompted', emittedBeforePrompt: false }), 0],
+      [waited(), 0],
+      [trial({ response: 'incorrect', emittedBeforePrompt: true, latencyMs: 500, latencyFromFirstSdMs: 500 }), 0],
+      [trial({ kind: 'transfer', latencyMs: 900, latencyFromFirstSdMs: 900 }), 0],
+    ];
+    const block: AbaTrial[] = [];
+    for (const [t, start] of steps) {
+      s = applyTrialToFading(s, t, T.format);
+      block.push(t);
+      expect(s.startPromptLevel).toBe(start);
+    }
+    expect([s.consecutiveAboveStart, s.consecutiveFailures]).toEqual([0, 0]);
+    // возврат на L0 не удлиняет задержку; ошибка до подсказки в блоке — задержка держится
+    expect(s.currentDelayMs).toBe(1000);
+    expect(applyBlockToDelay(s, T, block).currentDelayMs).toBe(1000);
+    // будь проба 8 «дождался», задержка выросла бы на шаг
+    const clean = block.map((t, i) => (i === 7 ? waited() : t));
+    expect(applyBlockToDelay(s, T, clean).currentDelayMs).toBe(2000);
+  });
+
+  it('прежние качели: две «дождался» подряд больше не поднимают старт', () => {
+    const s0: AbaTargetState = { ...initialTargetState(T), phase: 'acquisition', startPromptLevel: 0 };
+    const s = applyTrialToFading(applyTrialToFading(s0, waited(), T.format), waited(), T.format);
+    expect([s.startPromptLevel, s.lastSuccessfulPromptLevel]).toEqual([0, 1]);
+  });
+
+  it('две пробы с моделью подряд со старта L0 по-прежнему поднимают старт', () => {
+    const s0: AbaTargetState = { ...initialTargetState(T), phase: 'acquisition', startPromptLevel: 0 };
+    const modelled = () => trial({ startPromptLevel: 0, promptLevelUsed: 3, response: 'prompted', emittedBeforePrompt: false });
+    expect(applyTrialToFading(applyTrialToFading(s0, modelled(), T.format), modelled(), T.format).startPromptLevel).toBe(1);
+  });
+
+  it('возврат старта с L1 на L0 укорачивает задержку на шаг, но не ниже шага', () => {
+    const s0: AbaTargetState = { ...initialTargetState(T), phase: 'acquisition', startPromptLevel: 1, currentDelayMs: 3000 };
+    const atL1 = () => trial({ startPromptLevel: 1, promptLevelUsed: 1, response: 'prompted', emittedBeforePrompt: false });
+    expect(applyTrialToFading(applyTrialToFading(s0, atL1(), T.format), atL1(), T.format).currentDelayMs).toBe(2000);
+  });
+
+  it('шаг задержки вверх — только при трёх обучающих пробах со старта L0 в блоке', () => {
+    const s: AbaTargetState = { ...initialTargetState(T), currentDelayMs: 1000 };
+    expect(applyBlockToDelay(s, T, [trial(), trial()]).currentDelayMs).toBe(1000);
+    expect(applyBlockToDelay(s, T, [trial(), waited(), trial()]).currentDelayMs).toBe(2000);
   });
 });

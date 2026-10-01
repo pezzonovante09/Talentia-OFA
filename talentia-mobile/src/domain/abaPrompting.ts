@@ -36,6 +36,13 @@ export const FADE_AFTER = 2;
  */
 export const FAILURES_TO_RAISE = 2;
 
+/**
+ * Шаг прогрессивной задержки вверх — только если в блоке хотя бы столько обучающих проб со
+ * старта L0: иначе одна удачная L0-проба двигала бы задержку (ABA.md, «Протокол
+ * взрослого», блок 5).
+ */
+export const MIN_L0_TRIALS_FOR_DELAY_STEP = 3;
+
 /** Уровень, который приложение может выдать. L4 даёт только взрослый — стартовым он не бывает. */
 export function clampToApp(level: PromptLevel): PromptLevel {
   return Math.min(level, APP_MAX_PROMPT) as PromptLevel;
@@ -219,11 +226,42 @@ const FAILURE: ReadonlySet<AbaResponse> = new Set(['incorrect', 'no_response']);
  *
  * Два провала подряд (`FAILURES_TO_RAISE`) — старт сразу до уровня, несущего ответ
  * (не ниже), но не обязательно до полной модели.
+ *
+ * «Дождался подсказки» (`waited`) старт не поднимает (блок 14 аудита): иначе две такие
+ * пробы поднимали старт до L1, две верных на L1 опускали обратно, и прогрессивная задержка
+ * не работала. При возврате старта с L1 на L0 задержка на шаг короче: ребёнок не встречает
+ * самую длинную паузу сразу после возврата.
  */
 export function applyTrialToFading(s: AbaTargetState, t: AbaTrial, format: AbaFormat): AbaTargetState {
   if (t.response === 'interrupted') return s;
   if (t.kind !== 'teaching' && t.kind !== 'transfer') return s;
-  return withPromptState(s, t.stepId, fadeStep(promptStateOf(s, t.stepId), t, FIRST_ANSWER_LEVEL[format]));
+  const before = promptStateOf(s, t.stepId);
+  const after = fadeStep(before, t, FIRST_ANSWER_LEVEL[format]);
+  const next = withPromptState(s, t.stepId, after);
+  if (before.startPromptLevel === 1 && after.startPromptLevel === 0) {
+    return { ...next, currentDelayMs: Math.max(DELAY_STEP_MS, next.currentDelayMs - DELAY_STEP_MS) };
+  }
+  return next;
+}
+
+/**
+ * Класс пробы для затухания (ABA.md, «Протокол взрослого», блок 5):
+ * - `at_start` — успех на стартовом уровне;
+ * - `waited` — **только со старта L0**: ребёнок не пробовал до подсказки, дождался первой
+ *   (L1) и ответил. В процедуре временной задержки это ожидаемый путь, а не признак
+ *   слишком низкого старта: старт L1 — задержка 0 с, старт L0 — задержка d;
+ * - `above` — провал или успех, которому понадобилось больше старта, кроме `waited`;
+ * - `approximation` — рвёт обе серии.
+ */
+export type FadeClass = 'at_start' | 'waited' | 'above' | 'approximation';
+
+export function fadeClass(t: AbaTrial): FadeClass {
+  if (t.response === 'approximation') return 'approximation';
+  if (FAILURE.has(t.response)) return 'above';
+  if (t.startPromptLevel === 0 && t.response === 'prompted' && t.promptLevelUsed === 1 && !t.emittedBeforePrompt) {
+    return 'waited';
+  }
+  return t.promptLevelUsed > t.startPromptLevel ? 'above' : 'at_start';
 }
 
 function fadeStep(ps: StepPromptState, t: AbaTrial, answerLevel: PromptLevel): StepPromptState {
@@ -241,11 +279,14 @@ function fadeStep(ps: StepPromptState, t: AbaTrial, answerLevel: PromptLevel): S
       consecutiveFailures: 0,
     };
   }
-  if (t.response === 'approximation') {
+  const cls = fadeClass(t);
+  if (cls === 'approximation') {
     return { ...base, consecutiveIndependentAtStart: 0, consecutiveAboveStart: 0 };
   }
+  // Дождался подсказки: нейтрально — серия подъёма рвётся, серия спуска не трогается.
+  if (cls === 'waited') return { ...base, consecutiveAboveStart: 0 };
 
-  const above = FAILURE.has(t.response) || t.promptLevelUsed > t.startPromptLevel;
+  const above = cls === 'above';
   if (t.kind === 'transfer' && !above) return { ...base, consecutiveAboveStart: 0 };
 
   const independentRun = above ? 0 : ps.consecutiveIndependentAtStart + 1;
@@ -287,6 +328,10 @@ function erredBeforePrompt(t: AbaTrial): boolean {
  * каждый такой блок выглядел бы безошибочным: задержка доросла бы до потолка,
  * пока цель ещё на полной модели, и самая длинная пауза встретила бы ребёнка
  * ровно тогда, когда он впервые должен отвечать сам.
+ *
+ * «Дождался подсказки» — чистая проба: ошибки до подсказки не было. Шаг вверх — только
+ * при `MIN_L0_TRIALS_FOR_DELAY_STEP` таких пробах в блоке. Ребёнок, который всегда ждёт,
+ * дорастит задержку до потолка — его ловит флаг `prompt_dependent`.
  */
 export function applyBlockToDelay(s: AbaTargetState, target: AbaTarget, block: AbaTrial[]): AbaTargetState {
   if (target.delayMode !== 'progressive') return s;
@@ -298,6 +343,7 @@ export function applyBlockToDelay(s: AbaTargetState, target: AbaTarget, block: A
   const twoInRow = trials.some((t, i) => i > 0 && erredBeforePrompt(t) && erredBeforePrompt(trials[i - 1]));
   if (twoInRow) return { ...s, currentDelayMs: Math.max(DELAY_STEP_MS, s.currentDelayMs - DELAY_STEP_MS) };
   if (trials.some(erredBeforePrompt)) return s;
+  if (trials.length < MIN_L0_TRIALS_FOR_DELAY_STEP) return s;
   return { ...s, currentDelayMs: Math.min(MAX_DELAY_MS[target.band], s.currentDelayMs + DELAY_STEP_MS) };
 }
 

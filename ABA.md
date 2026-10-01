@@ -668,7 +668,7 @@ AbaFlag += 'assent_concern'   // 2 сессии подряд с l4_resisted ил
 ### Порядок реализации
 
 1. ~~Окно ответа (D1): `promptDelayMs`, `responseWindowMs`, таблица окон, `latencyFromFirstSdMs`, `latencySource`~~ — сделано 2026-10-01 (`RESPONSE_WINDOW_MS`, `promptDelayMs()`, `responseWindowMs()`, инварианты латентности).
-2. Затухание (D2): класс `waited`, задержка при возврате на L0, `MIN_L0_TRIALS_FOR_DELAY_STEP`.
+2. ~~Затухание (D2): класс `waited`, задержка при возврате на L0, `MIN_L0_TRIALS_FOR_DELAY_STEP`~~ — сделано 2026-10-01 (`fadeClass`, тест на пример выше).
 3. Панель: `presentationLog`, `scoreTrial`, инварианты D3 и D4, `escalateOnIncorrect` у звеньев.
 4. Assent: перерыв с лимитами и повтором, «Отказ», `physicalPromptAllowed`, остановка L4, `assent_withdrawn`.
 5. IOA: наблюдатели, `paper_entry`, формула, гейт верификации, `home_unverified`.
