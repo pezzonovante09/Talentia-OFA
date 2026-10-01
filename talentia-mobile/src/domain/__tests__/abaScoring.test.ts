@@ -203,7 +203,14 @@ describe('панель взрослого', () => {
 
   it('после провала на полной модели — карточка L4, если L4 разрешена', () => {
     expect(adultPanelButtons('with_adult', step(), true)).toEqual(['l4_done', 'l4_resisted', 'l4_skipped', 'refusal']);
-    expect(adultPanelButtons('with_adult', step({ askAdultForL4: false }), true)).toEqual(['refusal']);
+    // без L4 и не звено — карточки нет: окно ответа как обычно, провал закроется сам
+    expect(adultPanelButtons('with_adult', step({ askAdultForL4: false }), true)).toEqual([
+      'correct',
+      'approximation',
+      'incorrect',
+      'adult_prompted',
+      'refusal',
+    ]);
   });
 
   it('при старте с помощи взрослого — сразу карточка L4, без «Я подсказал(а)»', () => {
@@ -273,5 +280,15 @@ describe('правки по проверке методиста', () => {
 
   it('«Отказ» — в любой момент, проба прервана', () => {
     expect(fields(ctx(), [{ level: 0, outcome: 'refusal' }])).toMatchObject({ response: 'interrupted', interruptedBy: 'assent', latencyMs: null });
+  });
+});
+
+describe('звено за ребёнка — только после полной модели в обучении', () => {
+  it('на L0 в обучающем звене не пишется, в измерении — пишется', () => {
+    const teach = ctx({ chainStep: true, escalateOnIncorrect: true });
+    const r = scoreTrial(log(teach, [{ level: 0, outcome: 'adult_completed' }]), teach);
+    expect(r.ok === false && r.errors).toContain('звено за ребёнка — только после полной модели');
+    const measure = ctx({ chainStep: true, allowEscalation: false, promptDelayMs: null });
+    expect(scoreTrial(log(measure, [{ level: 0, outcome: 'adult_completed' }]), measure).ok).toBe(true);
   });
 });

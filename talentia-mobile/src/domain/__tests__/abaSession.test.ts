@@ -104,6 +104,9 @@ function begin(
     tokenTraining: TRAINED,
     // большинство сценариев — со взрослым, которому L4 разрешена; по умолчанию в приложении — нет
     physicalPromptAllowed: true,
+    // сессию ведёт обученный специалист центра: освоение подтверждено
+    observers: [{ id: 'obs-spec', role: 'specialist', trained: true }],
+    primaryObserverId: 'obs-spec',
     ...over,
   });
   const first = nextStep(st, 0);
@@ -1184,5 +1187,67 @@ describe('согласие ребёнка — assent (блок 4)', () => {
     expect(results).toEqual([false, true, false]);
     expect(st.endReason).toBe('assent_withdrawn');
     expect(st.events.at(-1)).toMatchObject({ kind: 'assent', by: 'device_inactivity', action: 'end' });
+  });
+});
+
+describe('assent: правки по проверке методиста', () => {
+  const A = tgt('A');
+  const M = tgt('M');
+  function interrupt(state: AbaSessionState, now: number, outcome: 'child_break' | 'refusal') {
+    const next = nextStep(state, now);
+    if (next.step.kind !== 'trial') throw new Error(`ждали пробу, а шаг ${next.step.kind}`);
+    const input = trialFor(next.state, next.step, 'ok');
+    const { respondedAt: _drop, ...rest } = input.presentationLog[0];
+    const res = recordTrial(next.state, { ...input, presentationLog: [{ ...rest, outcome }] }, now);
+    if (!res.ok) throw new Error(res.errors.join('; '));
+    return res;
+  }
+  const passBreak = (st: AbaSessionState, now: number) => finishBreak(nextStep(st, now).state, now + 1).state;
+
+  it('без высоковероятной — перед повтором снятой пробы нейтральная пауза', () => {
+    const st = begin([A], { A: acq(A, 0) });
+    const broke = interrupt(st, 1, 'refusal');
+    const after = passBreak(broke.state, 2);
+    const again = nextStep(after, 4).step as TrialStep;
+    expect([again.trialKind, again.pauseBeforeMs]).toEqual(['teaching', NEUTRAL_PAUSE_MS]);
+  });
+
+  it('повтор снят снова, потом предъявлен — сессия не нейтральна', () => {
+    let st = begin([M, A], { M: mastered(M), A: acq(A, 0) });
+    // до первой обучающей A
+    for (let i = 0; i < 10; i += 1) {
+      const n = nextStep(st, i);
+      if (n.step.kind === 'trial' && n.step.trialKind === 'teaching') break;
+      st = answer(st, i, 'ok').state;
+    }
+    st = passBreak(interrupt(st, 20, 'child_break').state, 21);
+    st = answer(st, 23, 'ok').state; // высоковероятная
+    st = passBreak(interrupt(st, 24, 'refusal').state, 25); // повтор снят «Отказом»
+    st = answer(st, 27, 'ok').state; // высоковероятная
+    const again = answer(st, 28, 'ok');
+    expect(again.res.trial.requeuedFromTrialId).toBeDefined();
+    const ended = withdrawAssent(again.state, 40, 'adult_observed');
+    // сессия кончилась отказом — нейтральна; но снятых непредъявленных проб нет
+    const trials = ended.trials.filter((t) => t.targetId === 'A');
+    const presented = new Set(trials.map((t) => t.requeuedFromTrialId));
+    const dropped = trials.filter((t) => t.response === 'interrupted');
+    expect(dropped.length).toBe(2);
+    expect(dropped.some((t) => presented.has(t.id))).toBe(true);
+  });
+
+  it('старт 4 без просьбы к взрослому понижается до полной модели', () => {
+    const st = begin([M, A], { M: mastered(M), A: acq(A, 3) }, { physicalPromptAllowed: false });
+    const s1 = answer(answer(st, 1, 'ok').state, 2, 'ok').state;
+    const failed = answer(s1, 3, 'silent_at_model');
+    const next = nextStep(failed.state, 4).step as TrialStep;
+    expect(next.startPromptLevel).not.toBe(4);
+  });
+
+  it('«Сам»: после конца по тишине — сразу конец, без закрывающей пробы', () => {
+    const V = tgt('V', { format: 'voice_volume', scoredBy: 'device_loudness' });
+    let st = begin([V], { V: acq(V, 0) }, { config: 'alone' });
+    for (let i = 0; i < 3; i += 1) st = answer(st, i + 1, 'silent_at_model').state;
+    expect(st.queue.some((q) => q.kind === 'trial')).toBe(false);
+    expect(nextStep(st, 10).step).toMatchObject({ kind: 'end', reason: 'assent_withdrawn', pairingCycle: true });
   });
 });

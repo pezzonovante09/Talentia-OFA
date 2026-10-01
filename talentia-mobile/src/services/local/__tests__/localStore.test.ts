@@ -55,6 +55,7 @@ function session(id: string, index: number): AbaSession {
     boardSize: 5,
     endedOnSuccess: true,
     events: [],
+    primaryObserverId: null,
   };
 }
 

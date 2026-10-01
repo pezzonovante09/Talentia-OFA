@@ -29,6 +29,8 @@ import {
   VOICE_VOLUME_HOLD_MS,
   type AbaConfig,
   type AbaExemplar,
+  type AbaIoaRecord,
+  type AbaObserver,
   type AbaResponse,
   type AbaSession,
   type AbaSessionEndReason,
@@ -57,6 +59,7 @@ import {
   type SessionTrials,
 } from './abaPrompting';
 import { scoreTrial, type ScoredFields } from './abaScoring';
+import { ioaPasses, isVerified, masteryVerdict } from './abaIoa';
 import {
   applyBaseline,
   applyGeneralizationProbe,
@@ -288,6 +291,8 @@ export type AbaSessionState = {
   sessionIndex: number;
   config: AbaConfig;
   physicalPromptAllowed: boolean;
+  observers: AbaObserver[];
+  primaryObserverId: string | null;
   /** Ребёнок сопротивлялся физическому ведению: до конца сессии L4 нет ни у одной цели. */
   l4Stopped: boolean;
   /** Просьбы о перерыве по детской карточке (перерывы по расписанию не в счёт). */
@@ -373,6 +378,10 @@ export type StartInput = {
    * сопротивлении» (ABA.md, «Условия приватности для блоков 4 и 5»).
    */
   physicalPromptAllowed?: boolean;
+  /** Наблюдатели ребёнка (ABA-состояние, без имён). Есть обученный — освоение подтверждается. */
+  observers?: AbaObserver[];
+  /** Кто ведёт сессию; `null` в «Сам». */
+  primaryObserverId?: string | null;
   startedAt: number;
   seed: number;
 };
@@ -671,6 +680,8 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     sessionIndex,
     config,
     physicalPromptAllowed: input.physicalPromptAllowed === true,
+    observers: input.observers ?? [],
+    primaryObserverId: config === 'alone' ? null : (input.primaryObserverId ?? null),
     l4Stopped: false,
     childBreaks: 0,
     firstTrialAfterChildBreak: false,
@@ -735,8 +746,9 @@ function trialStep(state: AbaSessionState, p: PlannedTrial): TrialStep {
   const s = state.states[p.targetId];
   const planned: PromptLevel =
     p.fixedStart ?? (MEASURING_KINDS.has(p.kind) ? 0 : clampToApp(promptStateOf(s, p.stepId).startPromptLevel));
-  // коррекцию «сразу помощь взрослого» поставили до сопротивления — теперь это полная модель
-  const start: PromptLevel = planned === 4 && !l4Available(state) ? APP_MAX_PROMPT : planned;
+  // старт 4 — только с просьбой к взрослому: коррекцию поставили до сопротивления или без
+  // помощи взрослого — теперь это полная модель
+  const start: PromptLevel = planned === 4 && !(l4Available(state) && p.adultAssist) ? APP_MAX_PROMPT : planned;
   const withAdult = state.config === 'with_adult';
   const windowMs = responseWindowMs(target, p.stepId);
   return {
@@ -1022,7 +1034,11 @@ function handleInterruption(state: AbaSessionState, trial: AbaTrial, planned: Pl
 
   const r = seeded(state.seed);
   const others = state.highPTargetIds.filter((id) => id !== trial.targetId);
-  const again: QueueItem = { kind: 'trial', trial: { ...planned, requeuedFromTrialId: trial.id } };
+  // высоковероятной нет — перед повтором нейтральная пауза, как в коррекции
+  const again: QueueItem = {
+    kind: 'trial',
+    trial: { ...planned, requeuedFromTrialId: trial.id, ...(others.length ? {} : { pauseBeforeMs: NEUTRAL_PAUSE_MS }) },
+  };
   const queue: QueueItem[] = [
     { kind: 'break', initiatedBy: child ? 'child_card' : 'adult', maxMs: CHILD_BREAK_MS[state.band] },
     ...(others.length ? [{ kind: 'trial' as const, trial: highPTrial(state.targets[pick(others, r.rng)], r.rng) }] : []),
@@ -1613,13 +1629,24 @@ export type AbaSessionResult = {
  *   остановке; после ухода или остановки взрослым подкрепитель сразу не приходит —
  *   доска ждёт первого перерыва следующей сессии.
  *
- * `pastSessions` — прошлые сессии цели для проверки зависимости, свежие в конце.
+ * `pastSessions` — прошлые сессии цели для проверки зависимости, свежие в конце. `ioa` —
+ * запись второго наблюдателя, если её внесли до итога; внесённую позже учитывает
+ * `abaIoa.applyLateIoa`.
+ *
+ * Освоение цели, которую оценивает взрослый, — только с подтверждённой сессией в серии
+ * (`masteryVerdict`, блок 5).
  */
 /** Проба цели снята (перерыв, отказ, сопротивление L4) и в этой сессии не предъявлена снова. */
 function hasUnpresentedDrop(trials: readonly AbaTrial[], targetId: string): boolean {
-  const again = new Set(trials.filter((t) => t.response !== 'interrupted').map((t) => t.requeuedFromTrialId));
+  // повтор мог быть снят снова: предъявленной считается вся цепочка до исходной пробы
+  const from = new Map(trials.map((t) => [t.id, t.requeuedFromTrialId]));
+  const presented = new Set<string>();
+  for (const t of trials) {
+    if (t.response === 'interrupted') continue;
+    for (let id = t.requeuedFromTrialId; id !== undefined; id = from.get(id)) presented.add(id);
+  }
   return trials.some(
-    (t) => t.targetId === targetId && t.response === 'interrupted' && t.interruptedBy !== undefined && !again.has(t.id),
+    (t) => t.targetId === targetId && t.response === 'interrupted' && t.interruptedBy !== undefined && !presented.has(t.id),
   );
 }
 
@@ -1635,8 +1662,14 @@ export function finishAbaSession(
   day: string,
   endedAt: number,
   pastSessions: Readonly<Record<string, SessionTrials[]>> = {},
+  ioa?: AbaIoaRecord,
 ): AbaSessionResult {
   if (state.endReason === null) throw new Error('Сессия ещё идёт');
+  if (ioa && ioa.sessionId !== state.sessionId) throw new Error('IOA другой сессии');
+  const observer = (id: string | null | undefined) => state.observers.find((o) => o.id === id) ?? null;
+  const primary = observer(state.primaryObserverId);
+  const secondary = ioa ? observer(ioa.secondaryObserverId) : null;
+  const hasTrainedObserver = state.observers.some((o) => o.trained);
   const idx = state.sessionIndex;
   const states = { ...state.states };
   // цель, на которой сессия кончилась по отказу, — тоже затронута, даже если проб у неё ещё нет
@@ -1665,7 +1698,13 @@ export function finishAbaSession(
       // не продлевает; «рвёт» по-прежнему рвёт
       const neutral = state.endReason === 'assent_withdrawn' || hasUnpresentedDrop(state.trials, id);
       const summary = neutral && raw.outcome === 'meets' ? { ...raw, outcome: 'neutral' as const } : raw;
-      s = applySession(s, summary, idx, day);
+      const result = ioa?.byTarget[id];
+      const verified = isVerified({ primary, ...(secondary ? { ioa: { secondary, result } } : {}) });
+      s = applySession(s, summary, idx, day, verified);
+      // оба обучены, а согласие ниже порога — определение цели допускает толкование
+      if (primary?.trained && secondary?.trained && result && !ioaPasses(result) && !s.flags.includes('ioa_low')) {
+        s = { ...s, flags: [...s.flags, 'ioa_low'] };
+      }
       if (summary.counted) s = applyProgress(s, target, idx, summary.independentRate);
     }
     if (state.set?.memberIds.includes(id)) s = { ...s, lastFieldSize: state.set.memberIds.length };
@@ -1680,8 +1719,13 @@ export function finishAbaSession(
     }
     if (TEACHING_PHASES.has(s.phase) && state.teachingTargetIds.includes(id)) {
       if (isMasteryMet(s)) {
-        s = markMastered(s, idx);
-        reason = 'criterion';
+        const verdict = masteryVerdict(target, s, hasTrainedObserver);
+        if (verdict === 'needs_verification') {
+          s = s.flags.includes('needs_verification') ? s : { ...s, flags: [...s.flags, 'needs_verification'] };
+        } else {
+          s = markMastered(s, idx, verdict);
+          reason = 'criterion';
+        }
       } else if (isPromptDependent(s, [...(pastSessions[id] ?? []), { index: idx, trials: own }])) {
         s = applyPromptDependence(s, target, idx);
       }
@@ -1728,8 +1772,9 @@ export function finishAbaSession(
       endReason: state.endReason,
       brokenTargetId: state.brokenTargetId,
       boardSize: state.board.size,
-      endedOnSuccess: !last || SUCCESS.has(last.response),
+      endedOnSuccess: state.endReason !== 'assent_withdrawn' && (!last || SUCCESS.has(last.response)),
       events,
+      primaryObserverId: state.primaryObserverId,
     },
     states,
     trials: state.trials,

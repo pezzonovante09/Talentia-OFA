@@ -387,7 +387,11 @@ export type AbaFlag =
    * цели. Только на цели, без сводки на ребёнке; родителю — «цель стоит пересмотреть со
    * специалистом», без ярлыка «сопротивляется» (условия приватности, ABA.md).
    */
-  | 'assent_concern';
+  | 'assent_concern'
+  /** Критерий выполнен, но ни одна сессия серии не подтверждена обученным наблюдателем. */
+  | 'needs_verification'
+  /** IOA ниже порога при двух обученных: операциональное определение допускает толкование. */
+  | 'ioa_low';
 
 /**
  * Где стоит цель. Персистится: прежняя версия держала уровень подсказки в
@@ -453,7 +457,12 @@ export type AbaTargetState = {
    * Откуда «освоено»: по полному критерию или по базовой линии, где навык оказался уже
    * известен. Родителю «освоено» по одной сессии не показывается.
    */
-  masteredBy?: 'criterion' | 'baseline';
+  masteredBy?: 'criterion' | 'baseline' | 'home_unverified';
+  /**
+   * Сессии текущей серии критерия и подтверждена ли каждая обученным наблюдателем. «Освоено»
+   * у цели, которую оценивает взрослый, — только если подтверждена хотя бы одна (блок 5).
+   */
+  criterionSessions?: { sessionIndex: number; verified: boolean }[];
   /**
    * Последние сессии обучения цели: стартовый уровень после сессии и доля самостоятельных.
    * По ним ставится флаг `no_progress`: пять сессий без снижения уровня и без роста доли —
@@ -495,6 +504,59 @@ export type AbaSessionEndReason =
    */
   | 'assent_withdrawn';
 
+/**
+ * Наблюдатель — взрослый, который оценивает пробы. **Без имени, телефона, табельного номера
+ * и поля «кто это»** (условия приватности, ABA.md): локальный uuid, роль, обучен ли. Живёт в
+ * ABA-состоянии ребёнка, в облако не уходит. Оценки «нужна калибровка» у родителя нет —
+ * до ответа юриста (решение владельца №25).
+ */
+export type AbaObserver = {
+  id: string;
+  role: 'specialist' | 'parent' | 'other_adult';
+  /** В пилоте обучен только специалист центра-партнёра. */
+  trained: boolean;
+};
+
+/** Оценка второго наблюдателя по одной пробе — коды листа `+ / P / ≈ / − / 0`. */
+export type AbaIoaItem = {
+  trialId: string;
+  response: AbaResponse;
+  emittedBeforePrompt: boolean;
+};
+
+/** Согласие наблюдателей по цели: trial-by-trial и по самостоятельным ответам. */
+export type AbaIoaResult = {
+  units: number;
+  agreements: number;
+  percent: number;
+  /** Единицы, где хоть один поставил `independent`; согласие — где оба. Нет таких — `null`. */
+  independentOccurrence: { units: number; agreements: number; percent: number | null };
+};
+
+/**
+ * Запись IOA: второй наблюдатель кодировал сессию независимо, не видя оценок основного.
+ * Отдельный журнал (`aba_ioa`), без комментариев, свободного текста и фото листа.
+ */
+export type AbaIoaRecord = {
+  id: string;
+  sessionId: string;
+  secondaryObserverId: string;
+  /** Пилот — бумажный лист, перенесённый в приложение; второе устройство — после пилота. */
+  source: 'paper_entry';
+  enteredAt: string;
+  items: AbaIoaItem[];
+  /** По целям сессии. */
+  byTarget: Record<string, AbaIoaResult>;
+};
+
+/** Порог IOA (решение методиста 2026-10-01). */
+export const IOA = {
+  minPercent: 80,
+  minUnits: 5,
+  /** Не меньше такой доли сессий «Со взрослым» по цели в каждой фазе — метрика, не гейт. */
+  coverage: 0.25,
+} as const;
+
 export type AbaSession = {
   id: string;
   /** Сквозной номер. Интервалы поддержания считаются в сессиях: пропуск недели не обнуляет расписание. */
@@ -521,6 +583,8 @@ export type AbaSession = {
   endedOnSuccess: boolean;
   /** Перерывы, обмены и жетоны за участие — по ним восстанавливается хронология сессии. */
   events: AbaSessionEvent[];
+  /** Основной наблюдатель; `null` в «Сам». */
+  primaryObserverId: string | null;
 };
 
 export type AbaSessionEvent =

@@ -74,6 +74,7 @@ const session = (index: number): AbaSession => ({
   boardSize: 5,
   endedOnSuccess: true,
   events: [],
+  primaryObserverId: null,
 });
 
 const result = (index: number): AbaSessionResult =>

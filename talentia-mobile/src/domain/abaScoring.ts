@@ -135,6 +135,8 @@ function logErrors(log: readonly AbaPresentation[], ctx: ScoreContext): string[]
     if (p.outcome === 'adult_completed') {
       if (!ctx.chainStep) errors.push('выполнить за ребёнка можно только звено цепочки');
       if (p.by !== 'app') errors.push('звено выполняет взрослый вместо L4 — после предъявления приложения');
+      // в обучении — только после всей иерархии подсказок; в измерении подсказок нет вовсе
+      if (ctx.allowEscalation && p.level !== APP_MAX_PROMPT) errors.push('звено за ребёнка — только после полной модели');
     }
   });
   return errors;
@@ -263,13 +265,16 @@ export type PanelStep = {
  *
  * - окно ответа — «Верно / Почти / Неверно» и «Я подсказал(а)», «Отказ». «Почти» нет, если
  *   цель оценивает устройство (касание, громкость): приближение там не наблюдается;
- * - карточка L4 — сразу при старте с помощи взрослого или после провала на полной модели:
- *   «Сделали вместе / Сопротивляется / Пропустить», если L4 разрешена; у звена цепочки ещё
- *   «Сделал(а) звено сам(а)»; «Отказ» — всегда.
+ * - карточка L4 — сразу при старте с помощи взрослого или после провала на полной модели,
+ *   если L4 разрешена или это звено цепочки: «Сделали вместе / Сопротивляется / Пропустить»
+ *   (при разрешённой L4), у звена — «Сделал(а) звено сам(а)», и «Отказ». Без них карточки
+ *   нет: одна кнопка «Отказ» подменяла бы провал отказом.
  */
 export function adultPanelButtons(config: AbaConfig, step: PanelStep, failedAtModel: boolean): PanelButton[] {
   if (config !== 'with_adult') return [];
-  if (step.startPromptLevel === 4 || failedAtModel) {
+  // без L4 и не звено цепочки карточки нет: провал на модели закрывается сам — по окну
+  const l4Card = step.askAdultForL4 || Boolean(step.stepId);
+  if (step.startPromptLevel === 4 || (failedAtModel && l4Card)) {
     return [
       ...(step.askAdultForL4 ? (['l4_done', 'l4_resisted', 'l4_skipped'] as const) : []),
       ...(step.stepId ? (['adult_completed'] as const) : []),

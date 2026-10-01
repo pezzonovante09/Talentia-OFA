@@ -146,6 +146,8 @@ export function applySession(
   summary: AbaSessionSummary,
   sessionIndex: number,
   day: string,
+  /** Сессия подтверждена обученным наблюдателем (`abaIoa.isVerified`). */
+  verified = false,
 ): AbaTargetState {
   const base = { ...s, lastSessionIndex: sessionIndex };
   const recentIndependentRates = summary.counted
@@ -160,6 +162,7 @@ export function applySession(
       sessionsAtCriterion: 0,
       criterionDays: [],
       exemplarsAtCriterion: [],
+      criterionSessions: [],
     };
   }
   return {
@@ -168,6 +171,7 @@ export function applySession(
     sessionsAtCriterion: s.sessionsAtCriterion + 1,
     criterionDays: s.criterionDays.includes(day) ? s.criterionDays : [...s.criterionDays, day],
     exemplarsAtCriterion: [...new Set([...s.exemplarsAtCriterion, ...summary.independentExemplars])],
+    criterionSessions: [...(s.criterionSessions ?? []), { sessionIndex, verified }],
   };
 }
 
@@ -307,12 +311,13 @@ export function applyBaseline(
 export function markMastered(
   s: AbaTargetState,
   sessionIndex: number,
-  by: 'criterion' | 'baseline' = 'criterion',
+  by: 'criterion' | 'baseline' | 'home_unverified' = 'criterion',
 ): AbaTargetState {
   return {
     ...s,
     phase: 'mastered',
     masteredBy: by,
+    flags: s.flags.filter((f) => f !== 'needs_verification'),
     maintenanceGapIndex: 0,
     maintenanceFailsInRow: 0,
     lastMaintenanceSessionIndex: sessionIndex,
