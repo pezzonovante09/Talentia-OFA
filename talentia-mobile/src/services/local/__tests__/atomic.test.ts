@@ -235,11 +235,11 @@ describe('согласие на данные ABA', () => {
     await recordAbaTrial(db, 'sib', trial('tr-sib'), inProgress, NOW);
     const run: LessonRun = { id: 'r-1', childId: 'kid', lessonId: 'l', startedAt: NOW, taskSeconds: [5], reviewTasks: 0 };
     await commitLesson(db, 'kid', { run, skills: [emptySkill('count')], atlas: [], nextLessonNumber: 2 }, NOW);
-    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 1, trials: 1, ioaRecords: 0 });
+    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 1, trials: 1, ioaRecords: 0, observers: 0, settings: true });
 
     await revokeAbaProcessing(db, abaConsent('revoke', { at: '2026-09-30T11:00:00Z' }), 'owner');
 
-    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 0, trials: 0, ioaRecords: 0 });
+    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 0, trials: 0, ioaRecords: 0, observers: 0, settings: false });
     for (const key of [
       'abaTargets',
       'abaBoard',
@@ -352,6 +352,16 @@ describe('журнал IOA и наблюдатели — условия прив
     expect(await loadChildState(db, 'kid', 'abaObservers')).toBeUndefined();
   });
 
+  it('запись IOA — только поля схемы; срок хранения — по дате сессии', async () => {
+    const db = await dbWithAbaConsent();
+    const extra = { ...ioa('i-x'), comment: 'плакал' } as unknown as AbaIoaRecord;
+    await expect(commitIoa(db, 'kid', extra, {}, NOW)).rejects.toThrow(/лишнее поле/);
+    await commitAbaSession(db, 'kid', { ...result(1), session: { ...session(1), id: 's-1' } }, '2026-09-30T09:30:00Z');
+    await commitIoa(db, 'kid', ioa('i-2'), {}, '2026-10-05T10:00:00Z');
+    const [row] = await db.all<{ recorded_at: string }>("SELECT recorded_at FROM aba_ioa WHERE id = 'i-2'");
+    expect(row.recorded_at).toBe('2026-09-30T09:30:00Z');
+  });
+
   it('журнал IOA только дописывается', async () => {
     const db = await dbWithAbaConsent();
     await commitIoa(db, 'kid', ioa(), {}, NOW);
@@ -372,8 +382,8 @@ describe('экспорт для специалиста', () => {
     expect(out).not.toHaveProperty('profile');
     expect(out).not.toHaveProperty('consentEvents');
     expect(out.state.abaObservers).toEqual([
-      { id: 'наблюдатель 2', role: 'specialist', trained: true },
-      { id: 'наблюдатель 1', role: 'parent', trained: false },
+      { id: 'O2', role: 'specialist', trained: true },
+      { id: 'O1', role: 'parent', trained: false },
     ]);
   });
 });

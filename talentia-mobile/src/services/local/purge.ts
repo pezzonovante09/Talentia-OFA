@@ -8,7 +8,7 @@
  */
 import type { AbaIoaRecord, AbaObserver, AbaSession } from '../../types/aba';
 import type { ConsentEvent, GuardianRole } from '../../domain/consent';
-import { ABA_DELETED_KEYS, ABA_STATE_KEYS } from './childState';
+import { ABA_DELETED_KEYS, ABA_STATE_KEYS, loadChildState } from './childState';
 import { insertConsentEvent, readConsentLog } from './consentLog';
 import { withDbLock } from './lock';
 import { RETENTION_MONTHS } from './schema';
@@ -131,10 +131,22 @@ export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actor
 export async function abaDataSummary(
   db: SqlDb,
   childId: string,
-): Promise<{ sessions: number; trials: number; ioaRecords: number }> {
+): Promise<{ sessions: number; trials: number; ioaRecords: number; observers: number; settings: boolean }> {
   const count = async (table: string) =>
     (await db.all<{ n: number }>(`SELECT count(*) AS n FROM ${table} WHERE child_id = ?`, [childId]))[0].n;
-  return { sessions: await count('aba_sessions'), trials: await count('aba_trials'), ioaRecords: await count('aba_ioa') };
+  const observers = await loadChildState(db, childId, 'abaObservers');
+  const [settings] = await db.all<{ n: number }>(
+    "SELECT count(*) AS n FROM child_state WHERE child_id = ? AND key IN ('physicalPromptAllowed', 'abaPaused')",
+    [childId],
+  );
+  // экран перед отзывом называет и состояние: наблюдателей и разрешение физической подсказки
+  return {
+    sessions: await count('aba_sessions'),
+    trials: await count('aba_trials'),
+    ioaRecords: await count('aba_ioa'),
+    observers: observers?.length ?? 0,
+    settings: settings.n > 0,
+  };
 }
 
 /**
@@ -213,14 +225,14 @@ export type SpecialistExport = {
   abaTrials: unknown[];
   abaSessions: unknown[];
   abaIoa: unknown[];
-  /** Состояние ABA; наблюдатели — метками «наблюдатель N» с ролью и обучен ли. */
+  /** Состояние ABA; наблюдатели — метками `O1`, `O2`… с ролью и обучен ли. */
   state: Record<string, unknown>;
 };
 
 /**
  * Экспорт для специалиста — отдельный от родительского: без профиля, согласий, уроков и
- * идентификаторов взрослых. id наблюдателей заменены метками «наблюдатель 1, 2…» в пределах
- * файла (условия приватности, ABA.md). Копии, переданные в центр, приложение не удаляет —
+ * идентификаторов взрослых. id наблюдателей заменены метками `O1`, `O2`… в пределах файла:
+ * между двумя выгрузками «O1» может быть разными людьми (условия приватности, ABA.md). Копии, переданные в центр, приложение не удаляет —
  * это сказано в тексте согласия.
  */
 export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt: string): Promise<SpecialistExport> {
@@ -244,7 +256,8 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
     const labels = new Map<string, string>();
     const label = (id: string | null) => {
       if (id === null) return null;
-      if (!labels.has(id)) labels.set(id, `наблюдатель ${labels.size + 1}`);
+      // метка без языка; номера стабильны только в пределах одного файла
+      if (!labels.has(id)) labels.set(id, `O${labels.size + 1}`);
       return labels.get(id)!;
     };
     const abaSessions = sessions.map((s) => ({ ...s, primaryObserverId: label(s.primaryObserverId) }));

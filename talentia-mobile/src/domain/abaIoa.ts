@@ -12,6 +12,7 @@ import {
   IOA,
   MASTERY,
   type AbaIoaItem,
+  type AbaIoaRecord,
   type AbaIoaResult,
   type AbaObserver,
   type AbaPhase,
@@ -268,4 +269,21 @@ export function ioaDueNext(phase: AbaPhase, coverage: Record<'baseline' | 'acqui
   if (phase === 'baseline') return coverage.baseline.below || coverage.baseline.sessions === 0;
   if (phase === 'acquisition') return coverage.acquisition.below || coverage.acquisition.sessions === 0;
   return false;
+}
+
+const RECORD_KEYS = new Set(['id', 'sessionId', 'secondaryObserverId', 'source', 'enteredAt', 'items', 'byTarget']);
+const ITEM_KEYS = new Set(['trialId', 'response', 'emittedBeforePrompt', 'interruption']);
+
+/**
+ * Запись IOA перед сохранением: только поля схемы — без комментариев, свободного текста и
+ * фото листа (условия приватности). Тип этого не гарантирует: в хранилище уходит JSON.
+ */
+export function ioaRecordErrors(record: AbaIoaRecord): string[] {
+  const errors: string[] = [];
+  for (const k of Object.keys(record)) if (!RECORD_KEYS.has(k)) errors.push(`лишнее поле записи IOA: ${k}`);
+  if (record.source !== 'paper_entry') errors.push('источник IOA — только бумажный лист');
+  for (const item of record.items) {
+    for (const k of Object.keys(item)) if (!ITEM_KEYS.has(k)) errors.push(`лишнее поле строки IOA: ${k}`);
+  }
+  return errors;
 }

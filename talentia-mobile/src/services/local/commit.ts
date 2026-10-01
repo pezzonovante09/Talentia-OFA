@@ -12,6 +12,7 @@ import type { AbaSessionResult, AbaSessionState } from '../../domain/abaSession'
 import type { AtlasEntry } from '../../domain/lessonAssembly';
 import type { SkillState } from '../../domain/mastery';
 import type { LessonRun } from '../../domain/parentReport';
+import { ioaRecordErrors } from '../../domain/abaIoa';
 import { appendIoa, appendSession, appendTrial, withAbaWrite } from './abaLog';
 import { saveChildState } from './childState';
 import { readConsentLog } from './consentLog';
@@ -120,8 +121,15 @@ export async function commitIoa(
   states: Record<string, AbaTargetState>,
   at: string,
 ): Promise<void> {
+  const errors = ioaRecordErrors(record);
+  if (errors.length) throw new Error(`IOA не записан: ${errors.join('; ')}`);
   await withAbaWrite(db, childId, async (tx) => {
-    await appendIoa(tx, childId, record, at);
+    // срок хранения — по дате сессии, а не ввода: запись IOA не переживает свою сессию
+    const [session] = await tx.all<{ recorded_at: string }>(
+      'SELECT recorded_at FROM aba_sessions WHERE child_id = ? AND id = ?',
+      [childId, record.sessionId],
+    );
+    await appendIoa(tx, childId, record, session?.recorded_at ?? at);
     await saveChildState(tx, childId, 'abaTargets', states, at);
   });
 }
