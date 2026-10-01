@@ -20,7 +20,7 @@ function event(over: Partial<ConsentEvent> = {}): ConsentEvent {
     textVersion: 'v1',
     confirmedBy: 'biometric',
     actorId: 'parent-1',
-    at: `2026-09-${String(10 + seq).padStart(2, '0')}T10:00:00Z`,
+    at: new Date(Date.UTC(2026, 8, 10, 10) + seq * 86_400_000).toISOString(),
     ...over,
   };
 }
@@ -72,6 +72,11 @@ describe('журнал согласий', () => {
     const after = appendConsent(log, event({ action: 'revoke', at: '2026-09-19T10:00:00Z' }), 'owner');
     expect(after[1].at).toBe('2026-09-20T10:00:00Z');
     expect(consentStatus(after, 'cloud_sync', 'kid-1', 'v1')).toBe('revoked');
+  });
+
+  it('время сравнивается по моменту, а не строкой', () => {
+    const log = build(event({ at: '2026-09-20T10:00:00Z' }));
+    expect(appendConsent(log, event({ at: '2026-09-20T10:00:00.000Z' }), 'owner')).toHaveLength(2);
   });
 
   it('повтор идентификатора отклоняется', () => {

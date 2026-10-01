@@ -47,14 +47,17 @@ export async function requireAbaConsent(tx: SqlDb, childId: string): Promise<voi
 }
 
 /**
- * Запись данных ABA ребёнка внутри транзакции `tx`: проверка согласия и паузы, ворота
- * открыты только на время `fn` и закрываются в той же транзакции.
+ * Запись данных ABA ребёнка: проверка согласия и паузы, ворота открыты только на время
+ * `fn` и закрываются в той же транзакции. Транзакцию открывает сама — вызов на `tx`
+ * идёт в той же, вызов на базе открывает свою: сбой внутри откатывает и ворота.
  */
-export async function withAbaWrite(tx: SqlDb, childId: string, fn: () => Promise<void>): Promise<void> {
-  await requireAbaConsent(tx, childId);
-  await tx.run('INSERT INTO aba_write_gate (child_id) VALUES (?)', [childId]);
-  await fn();
-  await tx.run('DELETE FROM aba_write_gate WHERE child_id = ?', [childId]);
+export async function withAbaWrite(db: SqlDb, childId: string, fn: (tx: SqlDb) => Promise<void>): Promise<void> {
+  await db.transaction(async (tx) => {
+    await requireAbaConsent(tx, childId);
+    await tx.run('INSERT INTO aba_write_gate (child_id) VALUES (?)', [childId]);
+    await fn(tx);
+    await tx.run('DELETE FROM aba_write_gate WHERE child_id = ?', [childId]);
+  });
 }
 
 export async function appendTrial(db: SqlDb, childId: string, trial: AbaTrial, recordedAt: string): Promise<void> {

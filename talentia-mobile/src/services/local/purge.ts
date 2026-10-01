@@ -109,7 +109,6 @@ export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actor
   const childId = revoke.childId;
   await withDbLock(db, () =>
     db.transaction(async (tx) => {
-      await insertConsentEvent(tx, revoke, actorRole);
       await tx.run('INSERT INTO purge_gate (child_id) VALUES (?)', [childId]);
       await tx.run('DELETE FROM aba_trials WHERE child_id = ?', [childId]);
       await tx.run('DELETE FROM aba_sessions WHERE child_id = ?', [childId]);
@@ -118,6 +117,8 @@ export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actor
         [childId, ...ABA_DELETED_KEYS],
       );
       await tx.run('DELETE FROM purge_gate WHERE child_id = ?', [childId]);
+      // событие — после удаления: отзыв при оставшихся данных база не примет (миграция 4)
+      await insertConsentEvent(tx, revoke, actorRole);
     }),
   );
   await compactAfterDelete(db);

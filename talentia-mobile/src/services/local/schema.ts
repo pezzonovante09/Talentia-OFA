@@ -168,9 +168,37 @@ BEGIN SELECT RAISE(ABORT, 'child_state: состояние ABA только че
   )
   .join('\n')}
 `,
+  // 4 — отзыв согласия на ABA только вместе с удалением (повторная проверка приватности)
+  //
+  // Отзыв без удаления оставляет данные о здоровье без основания. Отзыв aba_processing
+  // база принимает, только когда у ребёнка уже нет проб, сессий и состояния ABA:
+  // revokeAbaProcessing удаляет их той же транзакцией до вставки события.
+  `
+CREATE TRIGGER consent_events_aba_revoke_needs_purge BEFORE INSERT ON consent_events
+WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
+  EXISTS (SELECT 1 FROM aba_trials WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_sessions WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM child_state WHERE child_id = NEW.child_id AND key IN
+    ('abaTargets', 'tokenTraining', 'identifySets', 'abaBoard', 'abaSessionIndex', 'abaSessionInProgress', 'abaPaused'))
+)
+BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
+`,
 ];
 
-/** Накатить недостающие миграции. Каждая — своей транзакцией вместе с номером версии. */
+/**
+ * Ворота удаления, срока хранения и записи ABA открываются и закрываются внутри одной
+ * транзакции. Если строка всё же осталась (сбой посреди записи вне транзакции), она бы
+ * пропускала записи без проверки — и после перезапуска. Поэтому при каждом открытии базы
+ * ворота закрываются.
+ */
+async function closeGates(db: SqlDb): Promise<void> {
+  await db.exec('DELETE FROM aba_write_gate; DELETE FROM purge_gate; DELETE FROM retention_gate;');
+}
+
+/**
+ * Накатить недостающие миграции — при каждом открытии базы. Каждая — своей транзакцией
+ * вместе с номером версии. После — закрыть ворота (`closeGates`).
+ */
 export async function migrate(db: SqlDb): Promise<void> {
   const [{ user_version: current }] = await db.all<{ user_version: number }>('PRAGMA user_version');
   for (let v = current; v < MIGRATIONS.length; v += 1) {
@@ -179,4 +207,5 @@ export async function migrate(db: SqlDb): Promise<void> {
       await tx.exec(`PRAGMA user_version = ${v + 1}`);
     });
   }
+  await closeGates(db);
 }

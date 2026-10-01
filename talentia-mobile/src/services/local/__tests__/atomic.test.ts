@@ -3,12 +3,13 @@ import type { AbaSessionResult, AbaSessionState } from '../../../domain/abaSessi
 import { emptySkill } from '../../../domain/mastery';
 import type { LessonRun } from '../../../domain/parentReport';
 import { AbaConsentRequiredError, AbaPausedError, appendTrial, sessionsOf, trialsOfTarget } from '../abaLog';
-import { loadChildState, saveChildState } from '../childState';
+import { ABA_STATE_KEYS, loadChildState, saveChildState } from '../childState';
 import { commitAbaSession, commitLesson, recordAbaTrial, setAbaPaused } from '../commit';
 import type { ConsentEvent } from '../../../domain/consent';
-import { appendConsentEvent, readConsentLog } from '../consentLog';
+import { appendConsentEvent, insertConsentEvent, readConsentLog } from '../consentLog';
 import { lessonRunsOf } from '../lessonRuns';
 import { abaDataSummary, revokeAbaProcessing } from '../purge';
+import { migrate } from '../schema';
 import { asAbaWriter, memoryDb } from './nodeSql';
 
 const NOW = '2026-09-30T10:00:00Z';
@@ -283,5 +284,34 @@ describe('согласие на данные ABA', () => {
     await revoke;
     await write.catch((e) => expect(e).toBeInstanceOf(AbaConsentRequiredError));
     expect(await trialsOfTarget(db, 'kid', 't')).toEqual([]);
+  });
+
+  it('ни один ключ состояния ABA не пишется в обход согласия', async () => {
+    const db = await dbWithAbaConsent();
+    for (const key of ABA_STATE_KEYS) {
+      await expect(saveChildState(db, 'kid', key, null as never, NOW)).rejects.toThrow(/при согласии/);
+    }
+  });
+
+  it('отзыв ABA мимо удаления база не примет, даже в обход appendConsentEvent', async () => {
+    const db = await dbWithAbaConsent();
+    await recordAbaTrial(db, 'kid', trial('tr-1'), inProgress, NOW);
+    await expect(
+      db.transaction((tx) => insertConsentEvent(tx, abaConsent('revoke', { at: '2026-09-30T12:00:00Z' }), 'owner')),
+    ).rejects.toThrow(/вместе с удалением/);
+    expect(await trialsOfTarget(db, 'kid', 't')).toHaveLength(1);
+  });
+
+  it('забытые ворота закрываются при открытии базы', async () => {
+    const db = await dbWithAbaConsent();
+    await db.run('INSERT INTO aba_write_gate (child_id) VALUES (?)', ['kid']);
+    await migrate(db);
+    await expect(appendTrial(db, 'kid', trial('tr-1'), NOW)).rejects.toThrow(/при согласии/);
+  });
+
+  it('пауза у ребёнка, которому согласие не давали, не создаёт метку режима', async () => {
+    const db = await memoryDb();
+    await setAbaPaused(db, 'kid', true, NOW);
+    expect(await loadChildState(db, 'kid', 'abaPaused')).toBeUndefined();
   });
 });

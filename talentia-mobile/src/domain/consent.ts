@@ -111,6 +111,7 @@ export function consentEventErrors(e: ConsentEvent): string[] {
   }
   if (e.action === 'revoke' && e.confirmedBy === 'signup') errors.push('отзыв подтверждается гейтом');
   if (!e.textVersion) errors.push('нет версии текста');
+  if (Number.isNaN(Date.parse(e.at))) errors.push('время события не распознано');
   return errors;
 }
 
@@ -133,7 +134,8 @@ export function consentActorError(e: ConsentEvent, actorRole: GuardianRole | nul
  * раньше последнего события — отзыв всё равно идёт после всего, что было до него.
  */
 export function placeConsentEvent(lastAt: string | undefined, e: ConsentEvent): ConsentEvent {
-  if (!lastAt || e.at >= lastAt) return e;
+  // По моменту, а не строкой: `…00Z` и `…00.000Z` — одно время, а строкой второе «раньше».
+  if (!lastAt || Date.parse(e.at) >= Date.parse(lastAt)) return e;
   if (e.action === 'revoke') return { ...e, at: lastAt };
   throw new Error('Согласие не записано: событие раньше последнего в журнале');
 }
