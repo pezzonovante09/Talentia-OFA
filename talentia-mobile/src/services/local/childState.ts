@@ -33,14 +33,19 @@ export type ChildStateValues = {
    * сессию не начать, пробы не пишутся. Отзыв согласия, в отличие от паузы, удаляет.
    */
   abaPaused: boolean;
+  /**
+   * Разрешена ли физическая подсказка (L4) — в ABA-состоянии, а не в профиле: профиль уходит
+   * в облако, и флаг выдал бы режим. Без имени: только кто включил по роли.
+   */
+  physicalPromptAllowed: { value: boolean; setAt: string; setByRole: 'owner' | 'guardian' | 'specialist' };
 };
 
 export type ChildStateKey = keyof ChildStateValues;
 
 /**
  * Ключи ABA, которые пишутся только при согласии на данные ABA. Запись в обход
- * `commit.ts` отклоняет сама база (`schema.ts`, миграция 3, — список там продублирован:
- * миграции не правятся).
+ * `commit.ts` отклоняет сама база (`schema.ts`, миграции 3 и 5, — список там продублирован:
+ * миграции не правятся, новый ключ — новая миграция).
  */
 export const ABA_STATE_KEYS = [
   'abaTargets',
@@ -49,6 +54,7 @@ export const ABA_STATE_KEYS = [
   'abaBoard',
   'abaSessionIndex',
   'abaSessionInProgress',
+  'physicalPromptAllowed',
 ] as const satisfies readonly ChildStateKey[];
 
 /** Что удаляет отзыв согласия на ABA: состояние и пауза — пауза тоже говорит, что режим был. */

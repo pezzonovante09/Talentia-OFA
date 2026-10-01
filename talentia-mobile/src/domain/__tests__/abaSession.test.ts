@@ -22,6 +22,7 @@ import {
   recordTrial,
   startAbaSession,
   stopSession,
+  withdrawAssent,
   type AbaSessionState,
   type AbaStep,
   type RecordResult,
@@ -1069,5 +1070,119 @@ describe('окно звена цепочки', () => {
       steps: [{ id: 'h1', order: 1, sdKey: 'a', criterionKey: 'b', modelKey: 'c', responseWindowMs: 3000 }],
     });
     expect(targetErrors(H)).toContain('окно звена h1 короче потолка задержки полосы');
+  });
+});
+
+describe('согласие ребёнка — assent (блок 4)', () => {
+  const A = tgt('A');
+  const M = tgt('M');
+
+  /** Ответить на текущую пробу исходом журнала, который закрывает пробу без ответа. */
+  function interrupt(state: AbaSessionState, now: number, outcome: 'child_break' | 'refusal') {
+    const next = nextStep(state, now);
+    if (next.step.kind !== 'trial') throw new Error(`ждали пробу, а шаг ${next.step.kind}`);
+    const input = trialFor(next.state, next.step, 'ok');
+    const [first] = input.presentationLog;
+    const { respondedAt: _drop, ...rest } = first;
+    const res = recordTrial(next.state, { ...input, presentationLog: [{ ...rest, outcome }] }, now);
+    if (!res.ok) throw new Error(res.errors.join('; '));
+    return { state: res.state, step: next.step, res };
+  }
+  /** Дойти до первой обучающей пробы цели A. */
+  function toTeaching(st: AbaSessionState) {
+    let s = st;
+    for (let i = 0; i < 10; i += 1) {
+      const n = nextStep(s, i);
+      if (n.step.kind === 'trial' && n.step.trialKind === 'teaching' && n.step.targetId === 'A') return n.state;
+      if (n.step.kind === 'break') s = finishBreak(n.state, i).state;
+      else s = answer(s, i, 'ok').state;
+    }
+    throw new Error('обучающая проба A не наступила');
+  }
+
+  it('карточка «перерыв»: проба снята, перерыв по карточке, высоковероятная, та же проба снова', () => {
+    const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0) }));
+    const broke = interrupt(st, 100, 'child_break');
+    expect([broke.res.trial.response, broke.res.trial.interruptedBy]).toEqual(['interrupted', 'child_break']);
+    const brk = nextStep(broke.state, 101);
+    expect(brk.step).toMatchObject({ kind: 'break', initiatedBy: 'child_card', maxMs: 90_000 });
+    const after = finishBreak(brk.state, 102).state;
+    expect(after.events.find((e) => e.kind === 'break')).toMatchObject({ initiatedBy: 'child_card' });
+    const hp = answer(after, 103, 'ok');
+    expect(hp.step.trialKind).toBe('high_p');
+    const again = answer(hp.state, 104, 'ok');
+    expect([again.step.targetId, again.step.exemplarId]).toEqual([broke.step.targetId, broke.step.exemplarId]);
+    expect(again.res.trial.requeuedFromTrialId).toBe(broke.res.trial.id);
+    expect(again.state.events.filter((e) => e.kind === 'assent').map((e) => (e.kind === 'assent' ? e.action : ''))).toEqual(['break']);
+  });
+
+  it('перерыв в первой же пробе после возврата — конец сессии по отказу, без закрывающей и с сопряжением', () => {
+    const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0) }));
+    const broke = interrupt(st, 100, 'child_break');
+    const after = finishBreak(nextStep(broke.state, 101).state, 102).state;
+    const ended = interrupt(after, 103, 'child_break');
+    expect(ended.state.endReason).toBe('assent_withdrawn');
+    const end = nextStep(ended.state, 104).step;
+    expect(end).toMatchObject({ kind: 'end', reason: 'assent_withdrawn', endedOnSuccess: false, pairingCycle: true });
+  });
+
+  it('второй «Отказ» от взрослого кончает сессию; первый — перерыв', () => {
+    const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0) }));
+    const first = interrupt(st, 100, 'refusal');
+    expect([first.res.trial.interruptedBy, first.state.endReason]).toEqual(['assent', null]);
+    expect(nextStep(first.state, 101).step).toMatchObject({ kind: 'break', initiatedBy: 'adult' });
+    let s = finishBreak(nextStep(first.state, 101).state, 102).state;
+    s = interrupt(s, 103, 'refusal').state;
+    expect(s.endReason).toBe('assent_withdrawn');
+  });
+
+  it('отказ не отнимает заработанное: полная доска обменивается в конце', () => {
+    const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0) }, { board: { earned: 5, nonContingent: 0 } }));
+    const ended = withdrawAssent(st, 200, 'adult_observed', { targetId: 'A' });
+    const r = finishAbaSession(ended, '2026-10-01', 300);
+    expect(r.exchanged).toBeGreaterThan(0);
+    expect(r.session.endReason).toBe('assent_withdrawn');
+  });
+
+  it('отказ до начала работы — событие not_started', () => {
+    const st = startAbaSession({
+      sessionId: 's', sessionIndex: 1, config: 'with_adult', band: '7', targets: [A], states: { A: acq(A) },
+      reinforcerPool: POOL, reinforcerHistory: [], startedAt: 0, seed: 1, tokenTraining: TRAINED,
+    });
+    const ended = withdrawAssent(st, 10, 'child_card');
+    expect(ended.events.at(-1)).toMatchObject({ kind: 'assent', action: 'not_started' });
+  });
+
+  it('сессия, кончившаяся по отказу, серию критерия не продлевает', () => {
+    let st = begin([A], { A: acq(A, 0, { sessionsAtCriterion: 1 }) });
+    for (let i = 0; i < 6; i += 1) {
+      const n = nextStep(st, i);
+      if (n.step.kind !== 'trial') break;
+      st = answer(st, i, 'ok').state;
+    }
+    const ended = withdrawAssent(st, 50, 'adult_observed', { targetId: 'A' });
+    expect(finishAbaSession(ended, '2026-10-01', 60).states.A.sessionsAtCriterion).toBe(1);
+  });
+
+  it('две сессии подряд с концом по отказу на цели — флаг assent_concern', () => {
+    const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0, { assentSessionsInRow: 1 }) }));
+    const ended = withdrawAssent(st, 200, 'adult_observed', { targetId: 'A' });
+    const r = finishAbaSession(ended, '2026-10-01', 300);
+    expect(r.states.A.flags).toContain('assent_concern');
+    expect(r.states.A.assentSessionsInRow).toBe(2);
+  });
+
+  it('«Сам»: две пробы без активности — предложить перерыв, третья — конец сессии', () => {
+    const V = tgt('V', { format: 'voice_volume', scoredBy: 'device_loudness' });
+    let st = begin([V], { V: acq(V, 0) }, { config: 'alone' });
+    const results: boolean[] = [];
+    for (let i = 0; i < 3; i += 1) {
+      const r = answer(st, i + 1, 'silent_at_model');
+      results.push(r.res.suggestBreak);
+      st = r.state;
+    }
+    expect(results).toEqual([false, true, false]);
+    expect(st.endReason).toBe('assent_withdrawn');
+    expect(st.events.at(-1)).toMatchObject({ kind: 'assent', by: 'device_inactivity', action: 'end' });
   });
 });

@@ -244,7 +244,9 @@ export type PresentationOutcome =
   /** «Сделал(а) звено сам(а)»: у звена цепочки вместо L4, когда L4 не дана или запрещена. */
   | 'adult_completed'
   /** «Отказ»: наблюдаемые признаки отказа — в любой момент пробы. Категория не пишется. */
-  | 'refusal';
+  | 'refusal'
+  /** Детская карточка «перерыв» — в обеих конфигурациях, в любой момент пробы. */
+  | 'child_break';
 
 /**
  * Одно предъявление внутри пробы: SD, подсказка, модель — или подсказка взрослого вне
@@ -329,6 +331,11 @@ export type AbaTrial = {
   interruptedBy?: AbaInterruptedBy;
   /** Звено выполнил взрослый вместо ребёнка — проба ребёнка `no_response`. */
   adultCompleted?: true;
+  /**
+   * Повтор пробы, снятой перерывом ребёнка или отказом: просьба о перерыве выполняется
+   * сразу, но требование возвращается — кнопка не учит убирать трудные пробы.
+   */
+  requeuedFromTrialId?: string;
   /** Момент окончания озвучки SD. По нему восстанавливается темп сессии. */
   sdEndedAt: string;
   scoredBy: ScoringSource;
@@ -371,7 +378,16 @@ export type AbaPhase =
   | 'mastered'
   | 'maintenance';
 
-export type AbaFlag = 'prompt_dependent' | 'no_progress' | 'needs_easier_step';
+export type AbaFlag =
+  | 'prompt_dependent'
+  | 'no_progress'
+  | 'needs_easier_step'
+  /**
+   * Две сессии подряд с сопротивлением физическому ведению или с концом по отказу на этой
+   * цели. Только на цели, без сводки на ребёнке; родителю — «цель стоит пересмотреть со
+   * специалистом», без ярлыка «сопротивляется» (условия приватности, ABA.md).
+   */
+  | 'assent_concern';
 
 /**
  * Где стоит цель. Персистится: прежняя версия держала уровень подсказки в
@@ -446,6 +462,8 @@ export type AbaTargetState = {
   progressWindow?: { sessionIndex: number; startPromptLevel: PromptLevel; independentRate: number }[];
   /** Размер поля последнего набора цели `identify`: по нему — поле вне набора. */
   lastFieldSize?: number;
+  /** Сессий подряд с сопротивлением L4 или концом по отказу на цели — для `assent_concern`. */
+  assentSessionsInRow?: number;
 };
 
 /** Состояние подсказки одного звена цепочки. */
@@ -469,7 +487,13 @@ export type AbaSessionEndReason =
   /** Три подряд пробы без самостоятельного ответа на максимальном уровне. */
   | 'breakdown'
   | 'adult_stopped'
-  | 'abandoned';
+  | 'abandoned'
+  /**
+   * Ребёнок отказался: третья просьба о перерыве, перерыв в первой же пробе после возврата,
+   * второй «Отказ», нет возврата после перерыва, в «Сам» — три пробы без активности. Без
+   * закрывающей пробы-требования; жетоны не сгорают и обмениваются, как при лимите.
+   */
+  | 'assent_withdrawn';
 
 export type AbaSession = {
   id: string;
@@ -500,7 +524,19 @@ export type AbaSession = {
 };
 
 export type AbaSessionEvent =
-  | { kind: 'break'; startedAt: string; endedAt: string }
+  | { kind: 'break'; startedAt: string; endedAt: string; initiatedBy?: 'child_card' | 'schedule' | 'adult' }
+  /**
+   * Ход процедуры при отказе: кто прервал и что сделали — **без причины и категории**
+   * (решение владельца №21): справка о признаках отказа — на экране, в данные — ничего.
+   */
+  | {
+      kind: 'assent';
+      at: string;
+      by: 'child_card' | 'adult_observed' | 'device_inactivity';
+      action: 'break' | 'end' | 'l4_stopped' | 'not_started';
+      targetId?: string;
+      trialId?: string;
+    }
   | { kind: 'exchange'; at: string; tokens: number }
   /** Доступ к подкрепителю после обмена при обучении доске — фактическое время. */
   | { kind: 'access'; startedAt: string; endedAt: string }
@@ -593,6 +629,27 @@ export const CHAIN_STEP_RESPONSE_WINDOW_MS = 10000;
 
 /** `voice_volume`: после начала звука — сколько ещё ждать удержания громкости в нужном диапазоне. */
 export const VOICE_VOLUME_HOLD_MS = 3000;
+
+/** Перерыв по детской карточке. Ребёнок может закончить раньше. */
+export const CHILD_BREAK_MS: Record<AgeBand, number> = {
+  '5-6': 60_000,
+  '7': 90_000,
+  '8': 90_000,
+  '9-10': 90_000,
+};
+
+/** Какая по счёту просьба о перерыве кончает сессию. Перерывы по расписанию не в счёт. */
+export const CHILD_BREAKS_TO_END = 3;
+
+/** Какой по счёту «Отказ» от взрослого кончает сессию. */
+export const REFUSALS_TO_END = 2;
+
+/** «Сам»: столько проб подряд без активности устройства — Tali предлагает перерыв; ещё одна — конец. */
+export const ALONE_SILENT_TO_OFFER_BREAK = 2;
+export const ALONE_SILENT_TO_END = 3;
+
+/** Нет касания после перерыва — повторное приглашение через столько; снова нет — конец сессии. */
+export const RETURN_INVITE_AFTER_MS = 30_000;
 
 /** Сколько эскалаций допускается внутри пробы. Три предъявления одного SD — уже натаскивание. */
 export const MAX_ESCALATIONS_PER_TRIAL = 2;

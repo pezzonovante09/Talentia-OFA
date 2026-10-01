@@ -52,7 +52,7 @@ export type ScoreContext = {
 const RESPONSES: ReadonlySet<PresentationOutcome> = new Set(['correct', 'approximation', 'incorrect']);
 const L4: ReadonlySet<PresentationOutcome> = new Set(['l4_done', 'l4_resisted', 'l4_skipped']);
 /** Исходы, после которых проба кончается при любом уровне. */
-const CLOSING: ReadonlySet<PresentationOutcome> = new Set([...L4, 'refusal', 'adult_completed']);
+const CLOSING: ReadonlySet<PresentationOutcome> = new Set([...L4, 'refusal', 'adult_completed', 'child_break']);
 
 /** Нажатие взрослого отстаёт от реакции, касание и звук — нет; специалист видит, откуда число. */
 export const LATENCY_SOURCE: Record<ScoringSource, LatencySource> = {
@@ -150,7 +150,8 @@ function logErrors(log: readonly AbaPresentation[], ctx: ScoreContext): string[]
  *   «Сопротивляется» — `interrupted` (`l4_resisted`) на 3; при старте 4 уровень 3 значит
  *   «L4 запланирована, но не дана»;
  * - «Взрослый выполнил звено сам» — `no_response`, `adultCompleted`;
- * - «Отказ» — `interrupted` (`assent`), в любой момент;
+ * - «Отказ» — `interrupted` (`assent`), детская карточка «перерыв» — `interrupted`
+ *   (`child_break`), обе в любой момент;
  * - неплановая подсказка взрослого (`by: 'adult'`) — самостоятельного ответа уже нет, уровень
  *   не ниже 1 для любого исхода (нижняя граница, не измеренный уровень), `adultUnplannedPrompt`;
  * - попытка до подсказки — только при старте L0 и ответе на первом предъявлении: при старте
@@ -193,6 +194,11 @@ export function scoreTrial(
       response = 'interrupted';
       promptLevelUsed = atLeastOne(level);
       interruptedBy = 'assent';
+      break;
+    case 'child_break':
+      response = 'interrupted';
+      promptLevelUsed = atLeastOne(level);
+      interruptedBy = 'child_break';
       break;
     case 'l4_done':
       response = 'prompted';

@@ -15,6 +15,7 @@ import type { LessonRun } from '../../domain/parentReport';
 import { appendSession, appendTrial, withAbaWrite } from './abaLog';
 import { saveChildState } from './childState';
 import { readConsentLog } from './consentLog';
+import type { GuardianRole } from '../../domain/consent';
 import { appendLessonRun } from './lessonRuns';
 import type { SqlDb } from './sql';
 
@@ -91,4 +92,19 @@ export async function setAbaPaused(db: SqlDb, childId: string, paused: boolean, 
   const asked = (await readConsentLog(db)).some((e) => e.scope === 'aba_processing' && e.childId === childId);
   if (!asked) return;
   await saveChildState(db, childId, 'abaPaused', paused, at);
+}
+
+/**
+ * Разрешение физической подсказки (L4) — в ABA-состоянии ребёнка, только при согласии на
+ * данные ABA. Включение экран ставит за PIN (уровень 1+) и после правила «мягко направлять,
+ * прекращать при сопротивлении»; выключение — без гейта. Без имени — только роль.
+ */
+export async function setPhysicalPromptAllowed(
+  db: SqlDb,
+  childId: string,
+  value: boolean,
+  at: string,
+  setByRole: GuardianRole,
+): Promise<void> {
+  await withAbaWrite(db, childId, (tx) => saveChildState(tx, childId, 'physicalPromptAllowed', { value, setAt: at, setByRole }, at));
 }

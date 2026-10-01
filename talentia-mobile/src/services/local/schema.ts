@@ -183,6 +183,33 @@ WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
 )
 BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
 `,
+  // 5 — разрешение физической подсказки в ABA-состоянии (условия приватности, блок 4)
+  //
+  // Ключ physicalPromptAllowed пишется только при согласии и только через commit.ts, а отзыв
+  // при нём не принимается — как у остальных ключей ABA. Триггеры миграций 3 и 4
+  // пересоздаются с новым списком.
+  `
+${['insert', 'update'].map((op) => `DROP TRIGGER child_state_aba_need_consent_${op};`).join('\n')}
+${['INSERT', 'UPDATE']
+  .map(
+    (op) => `
+CREATE TRIGGER child_state_aba_need_consent_${op.toLowerCase()} BEFORE ${op} ON child_state
+WHEN NEW.key IN ('abaTargets', 'tokenTraining', 'identifySets', 'abaBoard', 'abaSessionIndex', 'abaSessionInProgress', 'physicalPromptAllowed')
+  AND NOT EXISTS (SELECT 1 FROM aba_write_gate WHERE child_id = NEW.child_id)
+BEGIN SELECT RAISE(ABORT, 'child_state: состояние ABA только через commit.ts при согласии на данные ABA'); END;`,
+  )
+  .join('\n')}
+DROP TRIGGER consent_events_aba_revoke_needs_purge;
+CREATE TRIGGER consent_events_aba_revoke_needs_purge BEFORE INSERT ON consent_events
+WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
+  EXISTS (SELECT 1 FROM aba_trials WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_sessions WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM child_state WHERE child_id = NEW.child_id AND key IN
+    ('abaTargets', 'tokenTraining', 'identifySets', 'abaBoard', 'abaSessionIndex', 'abaSessionInProgress', 'abaPaused',
+     'physicalPromptAllowed'))
+)
+BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
+`,
 ];
 
 /**
