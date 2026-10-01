@@ -25,9 +25,17 @@ import { isMasteryMet, markMastered } from './abaCriterion';
 /** Пробы, по которым принимаются решения. Коррекция, разогрев и закрывающая не кодируются. */
 const IOA_KINDS: ReadonlySet<AbaTrialKind> = new Set(['baseline', 'teaching', 'transfer', 'generalization', 'maintenance']);
 
-/** Единицы IOA сессии: проба (у цепочки — звено), оценённая взрослым, не прерванная. */
+/**
+ * Строки листа: пробы, по которым принимаются решения, оценённые взрослым, — и прерванные
+ * тоже (прерывание кодирует и второй наблюдатель). Порядок — предъявления.
+ */
+function sheetTrials(trials: readonly AbaTrial[]): AbaTrial[] {
+  return trials.filter((t) => IOA_KINDS.has(t.kind) && t.scoredBy === 'adult');
+}
+
+/** Строки, которые сравниваются: все, кроме перерыва по карточке — его фиксирует устройство. */
 export function ioaUnits(trials: readonly AbaTrial[]): AbaTrial[] {
-  return trials.filter((t) => IOA_KINDS.has(t.kind) && t.scoredBy === 'adult' && t.response !== 'interrupted');
+  return sheetTrials(trials).filter((t) => t.interruptedBy !== 'child_break');
 }
 
 /** Строка листа второго наблюдателя. Кодов основного на листе нет — это и независимость IOA. */
@@ -39,33 +47,51 @@ export type IoaSheetRow = {
   exemplarId: string;
   stepId?: string;
   startPromptLevel: PromptLevel;
+  /** Повтор снятой пробы — новая строка с пометкой «повтор строки N». */
+  repeatOfRow?: number;
+  /** «ПР» — перерыв по карточке, его фиксирует устройство; второй наблюдатель строку не кодирует. */
+  deviceMark?: 'ПР';
 };
 
 /**
  * Лист проб для второго наблюдателя — показывается на экране для переписывания, без печати
  * (решение владельца №24). На нём нет имени ребёнка, слова «ABA», программ, флагов, прошлых
- * результатов и кодов основного наблюдателя. Код сессии — её номер у ребёнка, не id.
+ * результатов и кодов основного наблюдателя. Код сессии — её номер у ребёнка, не id. Номера
+ * строк — по порядку предъявления, одинаково на листе и в приложении.
  */
 export function ioaSheet(sessionIndex: number, trials: readonly AbaTrial[]): { code: string; rows: IoaSheetRow[] } {
-  return {
-    code: `#${sessionIndex}`,
-    rows: ioaUnits(trials).map((t, i) => ({
+  const rowOf = new Map<string, number>();
+  const rows = sheetTrials(trials).map((t, i) => {
+    rowOf.set(t.id, i + 1);
+    const origin = t.requeuedFromTrialId ? rowOf.get(t.requeuedFromTrialId) : undefined;
+    return {
       n: i + 1,
       trialId: t.id,
       targetId: t.targetId,
       exemplarId: t.exemplarId,
       ...(t.stepId ? { stepId: t.stepId } : {}),
       startPromptLevel: t.startPromptLevel,
-    })),
-  };
+      ...(origin !== undefined ? { repeatOfRow: origin } : {}),
+      ...(t.interruptedBy === 'child_break' ? { deviceMark: 'ПР' as const } : {}),
+    };
+  });
+  return { code: `#${sessionIndex}`, rows };
 }
 
 const pct = (a: number, n: number) => (n === 0 ? 0 : (a / n) * 100);
 
+/** Прерывание основной записи в кодах листа: «ОТ» или «СТ»; остальное — исход. */
+const primaryMark = (t: AbaTrial) =>
+  t.interruptedBy === 'assent' || t.interruptedBy === 'l4_resisted' ? t.interruptedBy : undefined;
+
 /**
- * Согласие по целям сессии, trial-by-trial: согласие — совпали и реакция, и попытка до
- * подсказки. Кодов должно быть ровно по единицам: пропущенная или лишняя проба — ошибка
- * ввода, а не несогласие.
+ * Согласие по целям сессии (решение методиста 2026-10-01):
+ * - по исходам, trial-by-trial — только строки, где оба поставили исход без прерывания;
+ *   согласие — совпали и реакция, и попытка до подсказки;
+ * - по прерываниям — отдельно, по всем строкам кроме «ПР»: оба отметили одно и то же или оба
+ *   ничего; «ОТ» у одного и исход у другого — расхождение здесь, и строка не в исходах.
+ *
+ * Кодов должно быть ровно по строкам: пропущенная или лишняя — ошибка ввода, а не несогласие.
  */
 export function computeIoa(
   trials: readonly AbaTrial[],
@@ -77,17 +103,28 @@ export function computeIoa(
   if (byId.size !== items.length) errors.push('проба закодирована дважды');
   for (const u of units) if (!byId.has(u.id)) errors.push(`нет кода для пробы ${u.id}`);
   const ids = new Set(units.map((u) => u.id));
-  for (const x of items) if (!ids.has(x.trialId)) errors.push(`код для пробы, которой нет на листе: ${x.trialId}`);
+  for (const x of items) {
+    if (!ids.has(x.trialId)) errors.push(`код для пробы, которой нет на листе: ${x.trialId}`);
+    if ((x.interruption !== undefined) !== (x.response === 'interrupted')) errors.push(`строка ${x.trialId}: прерывание без кода или код без прерывания`);
+  }
   if (errors.length) return { ok: false, errors };
 
   const byTarget: Record<string, AbaIoaResult> = {};
   for (const targetId of new Set(units.map((u) => u.targetId))) {
     const own = units.filter((u) => u.targetId === targetId);
+    let outcomeUnits = 0;
     let agreements = 0;
     let indUnits = 0;
     let indAgreements = 0;
+    let markAgreements = 0;
+    let marked = 0;
     for (const u of own) {
       const x = byId.get(u.id)!;
+      const mine = primaryMark(u);
+      if (mine === x.interruption) markAgreements += 1;
+      if (mine !== undefined || x.interruption !== undefined) marked += 1;
+      if (u.response === 'interrupted' || x.response === 'interrupted') continue;
+      outcomeUnits += 1;
       if (x.response === u.response && x.emittedBeforePrompt === u.emittedBeforePrompt) agreements += 1;
       if (u.response === 'independent' || x.response === 'independent') {
         indUnits += 1;
@@ -95,24 +132,32 @@ export function computeIoa(
       }
     }
     byTarget[targetId] = {
-      units: own.length,
+      units: outcomeUnits,
       agreements,
-      percent: pct(agreements, own.length),
+      percent: pct(agreements, outcomeUnits),
       independentOccurrence: {
         units: indUnits,
         agreements: indAgreements,
         percent: indUnits === 0 ? null : pct(indAgreements, indUnits),
+      },
+      interruptions: {
+        units: own.length,
+        agreements: markAgreements,
+        marked,
+        percent: marked < IOA.minUnits ? null : pct(markAgreements, own.length),
       },
     };
   }
   return { ok: true, byTarget };
 }
 
-/** IOA по цели прошёл порог. */
+/** IOA по цели прошёл порог — и по исходам, и по прерываниям (когда их хватает для процента). */
 export function ioaPasses(r: AbaIoaResult | undefined): boolean {
   if (!r || r.units < IOA.minUnits || r.percent < IOA.minPercent) return false;
   const ind = r.independentOccurrence.percent;
-  return ind === null || ind >= IOA.minPercent;
+  if (ind !== null && ind < IOA.minPercent) return false;
+  const marks = r.interruptions.percent;
+  return marks === null || marks >= IOA.minPercent;
 }
 
 /** Подтверждение этой сессии по цели: что известно о наблюдателях и IOA. */

@@ -7,12 +7,12 @@
  * на `UNIQUE(child_id, session_index)`; ABA у ребёнка ломалось навсегда. Здесь — или всё,
  * или ничего.
  */
-import type { AbaTrial } from '../../types/aba';
+import type { AbaIoaRecord, AbaObserver, AbaTargetState, AbaTrial } from '../../types/aba';
 import type { AbaSessionResult, AbaSessionState } from '../../domain/abaSession';
 import type { AtlasEntry } from '../../domain/lessonAssembly';
 import type { SkillState } from '../../domain/mastery';
 import type { LessonRun } from '../../domain/parentReport';
-import { appendSession, appendTrial, withAbaWrite } from './abaLog';
+import { appendIoa, appendSession, appendTrial, withAbaWrite } from './abaLog';
 import { saveChildState } from './childState';
 import { readConsentLog } from './consentLog';
 import type { GuardianRole } from '../../domain/consent';
@@ -107,4 +107,36 @@ export async function setPhysicalPromptAllowed(
   setByRole: GuardianRole,
 ): Promise<void> {
   await withAbaWrite(db, childId, (tx) => saveChildState(tx, childId, 'physicalPromptAllowed', { value, setAt: at, setByRole }, at));
+}
+
+/**
+ * IOA сессии и состояния целей после него (`abaIoa.applyLateIoa`) — вместе, при согласии.
+ * Без комментариев, свободного текста и фото листа (условия приватности).
+ */
+export async function commitIoa(
+  db: SqlDb,
+  childId: string,
+  record: AbaIoaRecord,
+  states: Record<string, AbaTargetState>,
+  at: string,
+): Promise<void> {
+  await withAbaWrite(db, childId, async (tx) => {
+    await appendIoa(tx, childId, record, at);
+    await saveChildState(tx, childId, 'abaTargets', states, at);
+  });
+}
+
+/** Наблюдатели ребёнка — без имён; при согласии. */
+export async function setAbaObservers(db: SqlDb, childId: string, observers: AbaObserver[], at: string): Promise<void> {
+  await withAbaWrite(db, childId, (tx) => saveChildState(tx, childId, 'abaObservers', observers, at));
+}
+
+/** Состояния целей вне итога сессии — например, «цель пересмотрена» (`reviewAssentConcern`). */
+export async function saveAbaTargets(
+  db: SqlDb,
+  childId: string,
+  states: Record<string, AbaTargetState>,
+  at: string,
+): Promise<void> {
+  await withAbaWrite(db, childId, (tx) => saveChildState(tx, childId, 'abaTargets', states, at));
 }

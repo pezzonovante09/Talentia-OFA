@@ -6,7 +6,7 @@
  * Состояние — производное: навыки выводятся из прохождений, цели ABA — из проб. Его
  * можно перезаписывать; доказательства лежат в журналах (`abaLog.ts`, `lessonRuns.ts`).
  */
-import type { AbaTargetState } from '../../types/aba';
+import type { AbaObserver, AbaTargetState } from '../../types/aba';
 import type { SkillState } from '../../domain/mastery';
 import type { AtlasEntry } from '../../domain/lessonAssembly';
 import type { TokenBoard } from '../../domain/abaTokens';
@@ -38,13 +38,15 @@ export type ChildStateValues = {
    * в облако, и флаг выдал бы режим. Без имени: только кто включил по роли.
    */
   physicalPromptAllowed: { value: boolean; setAt: string; setByRole: 'owner' | 'guardian' | 'specialist' };
+  /** Наблюдатели ребёнка — без имён: uuid, роль, обучен ли. В облако не уходят. */
+  abaObservers: AbaObserver[];
 };
 
 export type ChildStateKey = keyof ChildStateValues;
 
 /**
  * Ключи ABA, которые пишутся только при согласии на данные ABA. Запись в обход
- * `commit.ts` отклоняет сама база (`schema.ts`, миграции 3 и 5, — список там продублирован:
+ * `commit.ts` отклоняет сама база (`schema.ts`, миграции 3, 5 и 6, — список там продублирован:
  * миграции не правятся, новый ключ — новая миграция).
  */
 export const ABA_STATE_KEYS = [
@@ -55,6 +57,7 @@ export const ABA_STATE_KEYS = [
   'abaSessionIndex',
   'abaSessionInProgress',
   'physicalPromptAllowed',
+  'abaObservers',
 ] as const satisfies readonly ChildStateKey[];
 
 /** Что удаляет отзыв согласия на ABA: состояние и пауза — пауза тоже говорит, что режим был. */

@@ -1,14 +1,14 @@
-import type { AbaSession, AbaTrial } from '../../../types/aba';
+import type { AbaIoaRecord, AbaObserver, AbaSession, AbaTrial } from '../../../types/aba';
 import type { AbaSessionResult, AbaSessionState } from '../../../domain/abaSession';
 import { emptySkill } from '../../../domain/mastery';
 import type { LessonRun } from '../../../domain/parentReport';
-import { AbaConsentRequiredError, AbaPausedError, appendTrial, sessionsOf, trialsOfTarget } from '../abaLog';
+import { AbaConsentRequiredError, AbaPausedError, appendTrial, ioaOfSession, sessionsOf, trialsOfTarget } from '../abaLog';
 import { ABA_STATE_KEYS, loadChildState, saveChildState } from '../childState';
-import { commitAbaSession, commitLesson, recordAbaTrial, setAbaPaused } from '../commit';
+import { commitAbaSession, commitIoa, commitLesson, recordAbaTrial, setAbaObservers, setAbaPaused } from '../commit';
 import type { ConsentEvent } from '../../../domain/consent';
 import { appendConsentEvent, insertConsentEvent, readConsentLog } from '../consentLog';
 import { lessonRunsOf } from '../lessonRuns';
-import { abaDataSummary, revokeAbaProcessing } from '../purge';
+import { abaDataSummary, exportChild, revokeAbaProcessing } from '../purge';
 import { migrate } from '../schema';
 import { asAbaWriter, memoryDb } from './nodeSql';
 
@@ -235,11 +235,11 @@ describe('согласие на данные ABA', () => {
     await recordAbaTrial(db, 'sib', trial('tr-sib'), inProgress, NOW);
     const run: LessonRun = { id: 'r-1', childId: 'kid', lessonId: 'l', startedAt: NOW, taskSeconds: [5], reviewTasks: 0 };
     await commitLesson(db, 'kid', { run, skills: [emptySkill('count')], atlas: [], nextLessonNumber: 2 }, NOW);
-    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 1, trials: 1 });
+    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 1, trials: 1, ioaRecords: 0 });
 
     await revokeAbaProcessing(db, abaConsent('revoke', { at: '2026-09-30T11:00:00Z' }), 'owner');
 
-    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 0, trials: 0 });
+    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 0, trials: 0, ioaRecords: 0 });
     for (const key of [
       'abaTargets',
       'abaBoard',
@@ -315,5 +315,47 @@ describe('согласие на данные ABA', () => {
     const db = await memoryDb();
     await setAbaPaused(db, 'kid', true, NOW);
     expect(await loadChildState(db, 'kid', 'abaPaused')).toBeUndefined();
+  });
+});
+
+describe('журнал IOA и наблюдатели — условия приватности', () => {
+  const ioa = (id = 'ioa-1'): AbaIoaRecord => ({
+    id,
+    sessionId: 's-1',
+    secondaryObserverId: 'obs-2',
+    source: 'paper_entry',
+    enteredAt: NOW,
+    items: [],
+    byTarget: {},
+  });
+  const observers: AbaObserver[] = [{ id: 'obs-1', role: 'specialist', trained: true }];
+
+  it('без согласия не пишется ни IOA, ни наблюдатели', async () => {
+    const db = await memoryDb();
+    await expect(commitIoa(db, 'kid', ioa(), {}, NOW)).rejects.toBeInstanceOf(AbaConsentRequiredError);
+    await expect(setAbaObservers(db, 'kid', observers, NOW)).rejects.toBeInstanceOf(AbaConsentRequiredError);
+    await expect(db.run("INSERT INTO aba_ioa (child_id, id, session_id, body, recorded_at) VALUES ('kid', 'x', 's', '{}', ?)", [NOW])).rejects.toThrow(
+      /при согласии/,
+    );
+  });
+
+  it('IOA и наблюдатели — в экспорте, в подсчёте перед отзывом и удаляются отзывом', async () => {
+    const db = await dbWithAbaConsent();
+    await commitIoa(db, 'kid', ioa(), {}, NOW);
+    await setAbaObservers(db, 'kid', observers, NOW);
+    expect(await ioaOfSession(db, 'kid', 's-1')).toHaveLength(1);
+    expect((await abaDataSummary(db, 'kid')).ioaRecords).toBe(1);
+    const exported = await exportChild(db, 'kid', NOW, {});
+    expect([exported.abaIoa.length, exported.state.abaObservers]).toEqual([1, observers]);
+    await revokeAbaProcessing(db, abaConsent('revoke', { at: '2026-09-30T11:00:00Z' }), 'owner');
+    expect(await ioaOfSession(db, 'kid', 's-1')).toEqual([]);
+    expect(await loadChildState(db, 'kid', 'abaObservers')).toBeUndefined();
+  });
+
+  it('журнал IOA только дописывается', async () => {
+    const db = await dbWithAbaConsent();
+    await commitIoa(db, 'kid', ioa(), {}, NOW);
+    await expect(db.run("UPDATE aba_ioa SET body = '{}'")).rejects.toThrow(/только дописывание/);
+    await expect(db.run('DELETE FROM aba_ioa')).rejects.toThrow(/только дописывание/);
   });
 });

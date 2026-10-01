@@ -13,7 +13,7 @@ import { withDbLock } from './lock';
 import { RETENTION_MONTHS } from './schema';
 import type { SqlDb } from './sql';
 
-const JOURNALS = ['aba_trials', 'aba_sessions', 'lesson_runs'] as const;
+const JOURNALS = ['aba_trials', 'aba_sessions', 'aba_ioa', 'lesson_runs'] as const;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -53,6 +53,7 @@ export async function applyRetention(db: SqlDb, now: Date): Promise<number> {
     for (const [t, col] of [
       ['aba_trials', 'recorded_at'],
       ['aba_sessions', 'recorded_at'],
+      ['aba_ioa', 'recorded_at'],
       ['lesson_runs', 'started_at'],
     ] as const) {
       removed += (await tx.run(`DELETE FROM ${t} WHERE ${col} < ?`, [before])).changes;
@@ -112,6 +113,7 @@ export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actor
       await tx.run('INSERT INTO purge_gate (child_id) VALUES (?)', [childId]);
       await tx.run('DELETE FROM aba_trials WHERE child_id = ?', [childId]);
       await tx.run('DELETE FROM aba_sessions WHERE child_id = ?', [childId]);
+      await tx.run('DELETE FROM aba_ioa WHERE child_id = ?', [childId]);
       await tx.run(
         `DELETE FROM child_state WHERE child_id = ? AND key IN (${ABA_DELETED_KEYS.map(() => '?').join(', ')})`,
         [childId, ...ABA_DELETED_KEYS],
@@ -125,10 +127,13 @@ export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actor
 }
 
 /** Сколько удалит отзыв — для экрана перед отзывом: «будет удалено N сессий». */
-export async function abaDataSummary(db: SqlDb, childId: string): Promise<{ sessions: number; trials: number }> {
+export async function abaDataSummary(
+  db: SqlDb,
+  childId: string,
+): Promise<{ sessions: number; trials: number; ioaRecords: number }> {
   const count = async (table: string) =>
     (await db.all<{ n: number }>(`SELECT count(*) AS n FROM ${table} WHERE child_id = ?`, [childId]))[0].n;
-  return { sessions: await count('aba_sessions'), trials: await count('aba_trials') };
+  return { sessions: await count('aba_sessions'), trials: await count('aba_trials'), ioaRecords: await count('aba_ioa') };
 }
 
 /**
@@ -151,6 +156,7 @@ export type ChildExport = {
   profile: Record<string, unknown>;
   abaTrials: unknown[];
   abaSessions: unknown[];
+  abaIoa: unknown[];
   lessonRuns: unknown[];
   state: Record<string, unknown>;
   consentEvents: ConsentEvent[];
@@ -193,6 +199,7 @@ async function collectExport(
     profile,
     abaTrials: await bodies('aba_trials'),
     abaSessions: await bodies('aba_sessions'),
+    abaIoa: await bodies('aba_ioa'),
     lessonRuns: await bodies('lesson_runs'),
     state,
     consentEvents: (await readConsentLog(db)).filter((e) => e.childId === childId || e.childId === null),

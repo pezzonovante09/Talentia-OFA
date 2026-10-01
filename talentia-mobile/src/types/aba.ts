@@ -527,20 +527,34 @@ export type AbaObserver = {
   trained: boolean;
 };
 
-/** Оценка второго наблюдателя по одной пробе — коды листа `+ / P / ≈ / − / 0`. */
+/**
+ * Оценка второго наблюдателя по строке листа: исход — коды `+ / P / ≈ / − / 0`, или
+ * прерывание — «ОТ» (проба снята взрослым) или «СТ» (ведение L4 остановлено). Только ход
+ * процедуры, без признаков и причин (решение владельца №21). «ПР» — перерыв по карточке —
+ * фиксирует устройство, второй наблюдатель его не кодирует.
+ */
 export type AbaIoaItem = {
   trialId: string;
   response: AbaResponse;
   emittedBeforePrompt: boolean;
+  /** Отметил прерывание; тогда `response` — `interrupted`. */
+  interruption?: 'assent' | 'l4_resisted';
 };
 
-/** Согласие наблюдателей по цели: trial-by-trial и по самостоятельным ответам. */
+/** Согласие наблюдателей по цели (решение методиста 2026-10-01, ABA.md). */
 export type AbaIoaResult = {
+  /** По исходам — только строки, где оба поставили исход без прерывания. */
   units: number;
   agreements: number;
   percent: number;
   /** Единицы, где хоть один поставил `independent`; согласие — где оба. Нет таких — `null`. */
   independentOccurrence: { units: number; agreements: number; percent: number | null };
+  /**
+   * По прерываниям — отдельно, по всем строкам кроме «ПР»: оба отметили одно и то же
+   * («ОТ» / «СТ») или оба ничего. Строк с прерыванием у кого-то меньше 5 — `percent: null`,
+   * показывается «совпало k из n».
+   */
+  interruptions: { units: number; agreements: number; marked: number; percent: number | null };
 };
 
 /**

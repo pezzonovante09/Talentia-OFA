@@ -16,7 +16,7 @@
  * Обе ошибки — штатный ход, а не сбой: в Sentry их не отправлять, само сообщение связывает
  * устройство с ABA-режимом (ABA.md, «Согласие `aba_processing`»).
  */
-import type { AbaSession, AbaTrial } from '../../types/aba';
+import type { AbaIoaRecord, AbaSession, AbaTrial } from '../../types/aba';
 import { trialInvariantErrors, type SessionTrials } from '../../domain/abaPrompting';
 import { isGranted } from '../../domain/consent';
 import { CURRENT_CONSENT_TEXTS } from '../../domain/consentTexts';
@@ -124,4 +124,25 @@ export async function pastSessionsOfTarget(
   const bySession = new Map<number, AbaTrial[]>();
   for (const r of rows) bySession.set(r.session_index, [...(bySession.get(r.session_index) ?? []), JSON.parse(r.body)]);
   return [...bySession.entries()].map(([index, trials]) => ({ index, trials })).slice(-limit);
+}
+
+/** Запись IOA — отдельный журнал (вносится после сессии). Кирпич для `commit.ts`. */
+export async function appendIoa(db: SqlDb, childId: string, record: AbaIoaRecord, recordedAt: string): Promise<void> {
+  await db.run('INSERT INTO aba_ioa (child_id, id, session_id, body, recorded_at) VALUES (?, ?, ?, ?, ?)', [
+    childId,
+    record.id,
+    record.sessionId,
+    JSON.stringify(record),
+    recordedAt,
+  ]);
+}
+
+/** Записи IOA сессии ребёнка. */
+export async function ioaOfSession(db: SqlDb, childId: string, sessionId: string): Promise<AbaIoaRecord[]> {
+  return parse(
+    await db.all<{ body: string }>('SELECT body FROM aba_ioa WHERE child_id = ? AND session_id = ? ORDER BY seq', [
+      childId,
+      sessionId,
+    ]),
+  );
 }
