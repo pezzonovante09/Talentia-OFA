@@ -25,7 +25,7 @@ function event(over: Partial<ConsentEvent> = {}): ConsentEvent {
   };
 }
 
-const build = (...events: ConsentEvent[]) => events.reduce<ConsentEvent[]>(appendConsent, []);
+const build = (...events: ConsentEvent[]) => events.reduce<ConsentEvent[]>((log, e) => appendConsent(log, e, 'owner'), []);
 
 describe('журнал согласий', () => {
   it('не спрашивали — не то же, что отказ', () => {
@@ -58,18 +58,38 @@ describe('журнал согласий', () => {
 
   it('журнал только дописывается: прежний массив не меняется', () => {
     const before = build(event());
-    const after = appendConsent(before, event({ action: 'revoke' }));
+    const after = appendConsent(before, event({ action: 'revoke' }), 'owner');
     expect({ до: before.length, после: after.length }).toEqual({ до: 1, после: 2 });
   });
 
   it('прошлое в журнал не вписывается', () => {
     const log = build(event({ at: '2026-09-20T10:00:00Z' }));
-    expect(() => appendConsent(log, event({ at: '2026-09-19T10:00:00Z' }))).toThrow();
+    expect(() => appendConsent(log, event({ at: '2026-09-19T10:00:00Z' }), 'owner')).toThrow();
+  });
+
+  it('отзыв при сбитых часах не отклоняется, а встаёт за последним событием', () => {
+    const log = build(event({ at: '2026-09-20T10:00:00Z' }));
+    const after = appendConsent(log, event({ action: 'revoke', at: '2026-09-19T10:00:00Z' }), 'owner');
+    expect(after[1].at).toBe('2026-09-20T10:00:00Z');
+    expect(consentStatus(after, 'cloud_sync', 'kid-1', 'v1')).toBe('revoked');
   });
 
   it('повтор идентификатора отклоняется', () => {
     const e = event();
-    expect(() => appendConsent([e], { ...e, at: '2026-12-01T00:00:00Z' })).toThrow();
+    expect(() => appendConsent([e], { ...e, at: '2026-12-01T00:00:00Z' }, 'owner')).toThrow();
+  });
+
+  it('действует любая текущая версия — по одной на язык', () => {
+    const log = build(event({ textVersion: 'ru-2' }));
+    expect(isGranted(log, 'cloud_sync', 'kid-1', ['ru-2', 'en-2', 'ky-2'])).toBe(true);
+    expect(isGranted(log, 'cloud_sync', 'kid-1', ['ru-3', 'en-3'])).toBe(false);
+  });
+
+  it('роль проверяется при записи: второй родитель не даёт того, что даёт владелец', () => {
+    expect(() => appendConsent([], event({ scope: 'aba_processing' }), 'guardian')).toThrow(/роль/);
+    expect(() => appendConsent([], event({ scope: 'aba_processing' }), null)).toThrow(/роль/);
+    expect(appendConsent([], event({ scope: 'telemetry', action: 'revoke' }), 'guardian')).toHaveLength(1);
+    expect(appendConsent([], event({ scope: 'account_local', childId: null }), null)).toHaveLength(1);
   });
 });
 
@@ -98,6 +118,7 @@ describe('отзыв и удаление', () => {
     expect(REVOCATION_EFFECTS.cloud_sync).toEqual(['delete_cloud_rows']);
     expect(REVOCATION_EFFECTS.companion_ai).toContain('companion_bank_only');
     expect(REVOCATION_EFFECTS.voice_asr).toEqual(['hide_microphone']);
+    expect(REVOCATION_EFFECTS.aba_processing).toEqual(['close_aba_mode', 'delete_aba_data']);
   });
 
   const KID_P = '6f1c1a8e-0000-4000-8000-000000000001';
@@ -134,6 +155,16 @@ describe('кто управляет согласием', () => {
       true,
       true,
       true,
+    ]);
+  });
+
+  it('данные ABA — согласие на ребёнка, даёт только владелец, специалист центра — нет', () => {
+    expect(consentEventErrors({ ...event(), scope: 'aba_processing', childId: null })).toContain('согласие на ребёнка без ребёнка');
+    expect(consentEventErrors({ ...event(), scope: 'aba_processing' })).toEqual([]);
+    expect((['owner', 'guardian', 'specialist'] as const).map((r) => canManageConsent('aba_processing', r))).toEqual([
+      true,
+      false,
+      false,
     ]);
   });
 

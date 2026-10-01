@@ -142,6 +142,32 @@ CREATE TABLE sync_problems (
   PRIMARY KEY (child_id, event_id)
 );
 `,
+  // 3 — данные ABA пишутся только при согласии (аудит приватности 2026-10-01)
+  //
+  // Согласие проверяет commit.ts внутри транзакции записи и на это время открывает
+  // aba_write_gate для ребёнка. Вставка проб и сессий и запись состояния ABA без открытых
+  // ворот отклоняются базой: обойти проверку импортом appendTrial или saveChildState
+  // нельзя. Удаление не гейтится — его держат purge_gate и retention_gate.
+  `
+CREATE TABLE aba_write_gate (child_id TEXT PRIMARY KEY);
+${['aba_trials', 'aba_sessions']
+  .map(
+    (t) => `
+CREATE TRIGGER ${t}_need_consent BEFORE INSERT ON ${t}
+WHEN NOT EXISTS (SELECT 1 FROM aba_write_gate WHERE child_id = NEW.child_id)
+BEGIN SELECT RAISE(ABORT, '${t}: запись только через commit.ts при согласии на данные ABA'); END;`,
+  )
+  .join('\n')}
+${['INSERT', 'UPDATE']
+  .map(
+    (op) => `
+CREATE TRIGGER child_state_aba_need_consent_${op.toLowerCase()} BEFORE ${op} ON child_state
+WHEN NEW.key IN ('abaTargets', 'tokenTraining', 'identifySets', 'abaBoard', 'abaSessionIndex', 'abaSessionInProgress')
+  AND NOT EXISTS (SELECT 1 FROM aba_write_gate WHERE child_id = NEW.child_id)
+BEGIN SELECT RAISE(ABORT, 'child_state: состояние ABA только через commit.ts при согласии на данные ABA'); END;`,
+  )
+  .join('\n')}
+`,
 ];
 
 /** Накатить недостающие миграции. Каждая — своей транзакцией вместе с номером версии. */

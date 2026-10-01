@@ -12,7 +12,7 @@ import type { AbaSessionResult, AbaSessionState } from '../../domain/abaSession'
 import type { AtlasEntry } from '../../domain/lessonAssembly';
 import type { SkillState } from '../../domain/mastery';
 import type { LessonRun } from '../../domain/parentReport';
-import { appendSession, appendTrial } from './abaLog';
+import { appendSession, appendTrial, withAbaWrite } from './abaLog';
 import { saveChildState } from './childState';
 import { appendLessonRun } from './lessonRuns';
 import type { SqlDb } from './sql';
@@ -39,6 +39,9 @@ export async function commitLesson(db: SqlDb, childId: string, c: LessonCommit, 
 /**
  * Проба ABA — сразу в журнал и вместе со снимком сессии в работе: свёрнутое посреди
  * приложение продолжит с той пробы, что уже записана, а не с предыдущей.
+ *
+ * Только при согласии на данные ABA и не на паузе; иначе `AbaConsentRequiredError` или
+ * `AbaPausedError`, и не пишется ничего — ни проба, ни снимок.
  */
 export async function recordAbaTrial(
   db: SqlDb,
@@ -47,15 +50,18 @@ export async function recordAbaTrial(
   inProgress: AbaSessionState,
   at: string,
 ): Promise<void> {
-  await db.transaction(async (tx) => {
-    await appendTrial(tx, childId, trial, at);
-    await saveChildState(tx, childId, 'abaSessionInProgress', inProgress, at);
-  });
+  await db.transaction((tx) =>
+    withAbaWrite(tx, childId, async () => {
+      await appendTrial(tx, childId, trial, at);
+      await saveChildState(tx, childId, 'abaSessionInProgress', inProgress, at);
+    }),
+  );
 }
 
 /**
  * Итог ABA-сессии: запись сессии, состояния целей, доска, обучение доске, наборы, номер
- * следующей сессии, и сессия в работе снимается — вместе.
+ * следующей сессии, и сессия в работе снимается — вместе. Тоже только при согласии на
+ * данные ABA и не на паузе.
  */
 export async function commitAbaSession(
   db: SqlDb,
@@ -63,13 +69,23 @@ export async function commitAbaSession(
   result: AbaSessionResult,
   at: string,
 ): Promise<void> {
-  await db.transaction(async (tx) => {
-    await appendSession(tx, childId, result.session, at);
-    await saveChildState(tx, childId, 'abaTargets', result.states, at);
-    await saveChildState(tx, childId, 'abaBoard', { earned: result.board.earned, nonContingent: result.board.nonContingent }, at);
-    await saveChildState(tx, childId, 'tokenTraining', result.tokenTraining, at);
-    await saveChildState(tx, childId, 'identifySets', result.identifySets, at);
-    await saveChildState(tx, childId, 'abaSessionIndex', result.session.index + 1, at);
-    await saveChildState(tx, childId, 'abaSessionInProgress', null, at);
-  });
+  await db.transaction((tx) =>
+    withAbaWrite(tx, childId, async () => {
+      await appendSession(tx, childId, result.session, at);
+      await saveChildState(tx, childId, 'abaTargets', result.states, at);
+      await saveChildState(tx, childId, 'abaBoard', { earned: result.board.earned, nonContingent: result.board.nonContingent }, at);
+      await saveChildState(tx, childId, 'tokenTraining', result.tokenTraining, at);
+      await saveChildState(tx, childId, 'identifySets', result.identifySets, at);
+      await saveChildState(tx, childId, 'abaSessionIndex', result.session.index + 1, at);
+      await saveChildState(tx, childId, 'abaSessionInProgress', null, at);
+    }),
+  );
+}
+
+/**
+ * Пауза ABA — без удаления и без согласия: выключить режим можно всегда. Сессия в работе
+ * не снимается — после паузы её можно продолжить, а при отзыве её удалит отзыв.
+ */
+export async function setAbaPaused(db: SqlDb, childId: string, paused: boolean, at: string): Promise<void> {
+  await saveChildState(db, childId, 'abaPaused', paused, at);
 }

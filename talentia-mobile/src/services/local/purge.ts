@@ -6,8 +6,10 @@
  * транзакции и закрывают его в той же транзакции. Без корзины и «7 дней на
  * восстановление»: данные ребёнка не держат в корзине.
  */
-import type { ConsentEvent } from '../../domain/consent';
-import { readConsentLog } from './consentLog';
+import type { ConsentEvent, GuardianRole } from '../../domain/consent';
+import { ABA_DELETED_KEYS } from './childState';
+import { insertConsentEvent, readConsentLog } from './consentLog';
+import { withDbLock } from './lock';
 import { RETENTION_MONTHS } from './schema';
 import type { SqlDb } from './sql';
 
@@ -90,6 +92,42 @@ export async function clearChildProgress(db: SqlDb, childId: string): Promise<vo
     await tx.run('DELETE FROM child_state WHERE child_id = ?', [childId]);
     await tx.run('DELETE FROM sync_cursor WHERE child_id = ?', [childId]);
   });
+}
+
+/**
+ * Отзыв согласия на данные ABA: событие отзыва и удаление проб, сессий и состояния ABA
+ * ребёнка — одной транзакцией. Или отзыв записан и данных нет, или не случилось ничего:
+ * отзыв без удаления оставил бы данные о здоровье без основания, удаление без отзыва —
+ * режим, который снова пишет. Остальное о ребёнке (уроки, навыки, согласия) не трогается.
+ * Экспорт — до вызова: после него экспортировать нечего. Отзыв не отклоняется и при сбитых
+ * часах (`placeConsentEvent`); отклоняется только чужая роль — отзывает владелец.
+ */
+export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actorRole: GuardianRole): Promise<void> {
+  if (revoke.scope !== 'aba_processing' || revoke.action !== 'revoke' || !revoke.childId) {
+    throw new Error('Ожидается отзыв согласия на данные ABA для ребёнка');
+  }
+  const childId = revoke.childId;
+  await withDbLock(db, () =>
+    db.transaction(async (tx) => {
+      await insertConsentEvent(tx, revoke, actorRole);
+      await tx.run('INSERT INTO purge_gate (child_id) VALUES (?)', [childId]);
+      await tx.run('DELETE FROM aba_trials WHERE child_id = ?', [childId]);
+      await tx.run('DELETE FROM aba_sessions WHERE child_id = ?', [childId]);
+      await tx.run(
+        `DELETE FROM child_state WHERE child_id = ? AND key IN (${ABA_DELETED_KEYS.map(() => '?').join(', ')})`,
+        [childId, ...ABA_DELETED_KEYS],
+      );
+      await tx.run('DELETE FROM purge_gate WHERE child_id = ?', [childId]);
+    }),
+  );
+  await compactAfterDelete(db);
+}
+
+/** Сколько удалит отзыв — для экрана перед отзывом: «будет удалено N сессий». */
+export async function abaDataSummary(db: SqlDb, childId: string): Promise<{ sessions: number; trials: number }> {
+  const count = async (table: string) =>
+    (await db.all<{ n: number }>(`SELECT count(*) AS n FROM ${table} WHERE child_id = ?`, [childId]))[0].n;
+  return { sessions: await count('aba_sessions'), trials: await count('aba_trials') };
 }
 
 /**

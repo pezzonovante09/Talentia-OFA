@@ -4,10 +4,58 @@
  * Каждая проба пишется сразу, отдельной строкой, без троттлинга и без пачек: прогресс
  * считается только отсюда, а не из сводных полей живой сессии — они приблизительны по
  * построению. Противоречивая проба (`trialInvariantErrors`) в журнал не попадает.
+ *
+ * **Без согласия на данные ABA не пишется ничего** (`aba_processing`, решение владельца
+ * 2026-10-01, №1), и на паузе тоже. Экраны пишут только через `commit.ts`: он вызывает
+ * `withAbaWrite`, который проверяет согласие и паузу внутри той же эксклюзивной
+ * транзакции, что и запись, — отзыв не проскочит между проверкой и вставкой. На время
+ * записи открываются ворота `aba_write_gate`; без них вставку проб, сессий и состояния ABA
+ * отклоняет сама база (`schema.ts`, миграция 3). `appendTrial` и `appendSession` —
+ * кирпичи для `commit.ts`, а не вход для экранов.
+ *
+ * Обе ошибки — штатный ход, а не сбой: в Sentry их не отправлять, само сообщение связывает
+ * устройство с ABA-режимом (ABA.md, «Согласие `aba_processing`»).
  */
 import type { AbaSession, AbaTrial } from '../../types/aba';
 import { trialInvariantErrors, type SessionTrials } from '../../domain/abaPrompting';
+import { isGranted } from '../../domain/consent';
+import { CURRENT_CONSENT_TEXTS } from '../../domain/consentTexts';
+import { loadChildState } from './childState';
+import { readConsentLog } from './consentLog';
 import type { SqlDb } from './sql';
+
+/** Согласия на данные ABA нет, оно отозвано или дано на прежний текст. Экран закрывает режим. */
+export class AbaConsentRequiredError extends Error {
+  constructor(readonly childId: string) {
+    super('Нет согласия на данные ABA: проба не записана');
+  }
+}
+
+/** Режим на паузе: сессию не начать, пробы не пишутся. */
+export class AbaPausedError extends Error {
+  constructor(readonly childId: string) {
+    super('ABA на паузе: проба не записана');
+  }
+}
+
+/** Согласие на текущий текст (любой язык) и не на паузе. Вызывать внутри транзакции записи. */
+export async function requireAbaConsent(tx: SqlDb, childId: string): Promise<void> {
+  if (!isGranted(await readConsentLog(tx), 'aba_processing', childId, CURRENT_CONSENT_TEXTS.aba_processing)) {
+    throw new AbaConsentRequiredError(childId);
+  }
+  if (await loadChildState(tx, childId, 'abaPaused')) throw new AbaPausedError(childId);
+}
+
+/**
+ * Запись данных ABA ребёнка внутри транзакции `tx`: проверка согласия и паузы, ворота
+ * открыты только на время `fn` и закрываются в той же транзакции.
+ */
+export async function withAbaWrite(tx: SqlDb, childId: string, fn: () => Promise<void>): Promise<void> {
+  await requireAbaConsent(tx, childId);
+  await tx.run('INSERT INTO aba_write_gate (child_id) VALUES (?)', [childId]);
+  await fn();
+  await tx.run('DELETE FROM aba_write_gate WHERE child_id = ?', [childId]);
+}
 
 export async function appendTrial(db: SqlDb, childId: string, trial: AbaTrial, recordedAt: string): Promise<void> {
   const errors = trialInvariantErrors(trial);

@@ -24,10 +24,23 @@ export type ConsentScope =
   | 'companion_ai'
   /** Распознавание голоса. Уходит запись, и уходит не туда же, куда реплики компаньона. */
   | 'voice_asr'
+  /**
+   * Запись проб и сессий ABA. Отдельное явное согласие: само включение режима говорит об
+   * особенностях развития, это данные о здоровье (решение владельца 2026-10-01, №1 —
+   * пока да, окончательно с юристом). Без него пробы не пишутся. Данные остаются на
+   * устройстве — согласие не на передачу, а на саму запись.
+   */
+  | 'aba_processing'
   | 'telemetry';
 
 /** Области, которые относятся к конкретному ребёнку. `account_local` — к аккаунту целиком. */
-const CHILD_SCOPES: ReadonlySet<ConsentScope> = new Set(['cloud_sync', 'companion_ai', 'voice_asr', 'telemetry']);
+const CHILD_SCOPES: ReadonlySet<ConsentScope> = new Set([
+  'cloud_sync',
+  'companion_ai',
+  'voice_asr',
+  'aba_processing',
+  'telemetry',
+]);
 
 /**
  * Чем подтверждено. `signup` — только для согласия при создании аккаунта: там
@@ -64,9 +77,14 @@ export type GuardianRole = 'owner' | 'guardian' | 'specialist';
  * Может ли взрослый с этой ролью давать и отзывать согласие.
  *
  * ИИ-разговор и голос — только владелец: наружу уходит то, за что отвечает он.
- * Облако — тоже: его отзыв удаляет ребёнка из облака целиком, а удалять ребёнка
- * может только владелец. Телеметрию может отключить и второй родитель. Специалист
- * согласий не даёт. То же правило проверяет сервер политикой на `consent_events`.
+ * Данные ABA — тоже: это данные о здоровье, и отзыв их удаляет. Специалист центра
+ * работает на устройстве родителя, но согласия не даёт. Облако — тоже: его отзыв удаляет
+ * ребёнка из облака целиком, а удалять ребёнка может только владелец. Телеметрию может
+ * отключить и второй родитель. Специалист согласий не даёт.
+ *
+ * Проверяется при записи события на устройстве (`consentLog.ts`), а для областей, которые
+ * уходят в облако, ещё и сервером — политикой на `consent_events`. Согласие на ABA в
+ * облако не уходит, и сервер про него не знает.
  */
 export function canManageConsent(scope: ConsentScope, role: GuardianRole): boolean {
   if (role === 'specialist') return false;
@@ -97,41 +115,69 @@ export function consentEventErrors(e: ConsentEvent): string[] {
 }
 
 /**
- * Дописать событие. Возвращает новый журнал: прежний не мутируется.
- *
- * События, идущие раньше последнего, отклоняются: журнал, в который можно
- * вписать прошлое, так же ничего не доказывает, как журнал с правками.
+ * Может ли этот взрослый записать событие. Согласие на аккаунт — сам за себя; на ребёнка —
+ * по роли (`canManageConsent`). Роль знает вызывающий: профиль ребёнка не в журнале.
  */
-export function appendConsent(log: readonly ConsentEvent[], e: ConsentEvent): ConsentEvent[] {
-  const errors = consentEventErrors(e);
-  if (errors.length) throw new Error(`Согласие не записано: ${errors.join('; ')}`);
-  const last = log[log.length - 1];
-  if (last && e.at < last.at) throw new Error('Согласие не записано: событие раньше последнего в журнале');
-  if (log.some((x) => x.id === e.id)) throw new Error('Согласие не записано: повтор идентификатора');
-  return [...log, e];
+export function consentActorError(e: ConsentEvent, actorRole: GuardianRole | null): string | null {
+  if (e.childId === null) return null;
+  if (actorRole === null) return 'не указана роль взрослого при ребёнке';
+  return canManageConsent(e.scope, actorRole) ? null : 'эта роль не управляет этим согласием';
 }
 
-/** Состояние согласия сейчас — по последнему событию этой области и этого ребёнка. */
+/**
+ * Куда событие встаёт в журнале после события со временем `lastAt`.
+ *
+ * Выдача раньше последнего отклоняется: журнал, в который можно вписать прошлое, так же
+ * ничего не доказывает, как журнал с правками. **Отзыв не отклоняется никогда**: иначе
+ * сбитые часы устройства не дают родителю отозвать согласие. Его время выставляется не
+ * раньше последнего события — отзыв всё равно идёт после всего, что было до него.
+ */
+export function placeConsentEvent(lastAt: string | undefined, e: ConsentEvent): ConsentEvent {
+  if (!lastAt || e.at >= lastAt) return e;
+  if (e.action === 'revoke') return { ...e, at: lastAt };
+  throw new Error('Согласие не записано: событие раньше последнего в журнале');
+}
+
+/** Дописать событие. Возвращает новый журнал: прежний не мутируется. */
+export function appendConsent(
+  log: readonly ConsentEvent[],
+  e: ConsentEvent,
+  actorRole: GuardianRole | null,
+): ConsentEvent[] {
+  const errors = consentEventErrors(e);
+  const actorError = consentActorError(e, actorRole);
+  if (actorError) errors.push(actorError);
+  if (errors.length) throw new Error(`Согласие не записано: ${errors.join('; ')}`);
+  if (log.some((x) => x.id === e.id)) throw new Error('Согласие не записано: повтор идентификатора');
+  return [...log, placeConsentEvent(log[log.length - 1]?.at, e)];
+}
+
+/**
+ * Состояние согласия сейчас — по последнему событию этой области и этого ребёнка.
+ * Текущих версий может быть несколько — по одной на язык (`consentTexts.ts`): действует
+ * любая из них.
+ */
 export function consentStatus(
   log: readonly ConsentEvent[],
   scope: ConsentScope,
   childId: string | null,
-  currentTextVersion: string,
+  currentTextVersions: string | readonly string[],
 ): ConsentStatus {
   let last: ConsentEvent | undefined;
   for (const e of log) if (e.scope === scope && e.childId === childId) last = e;
   if (!last) return 'not_asked';
   if (last.action === 'revoke') return 'revoked';
-  return last.textVersion === currentTextVersion ? 'granted' : 'outdated';
+  const current = typeof currentTextVersions === 'string' ? [currentTextVersions] : currentTextVersions;
+  return current.includes(last.textVersion) ? 'granted' : 'outdated';
 }
 
 export function isGranted(
   log: readonly ConsentEvent[],
   scope: ConsentScope,
   childId: string | null,
-  currentTextVersion: string,
+  currentTextVersions: string | readonly string[],
 ): boolean {
-  return consentStatus(log, scope, childId, currentTextVersion) === 'granted';
+  return consentStatus(log, scope, childId, currentTextVersions) === 'granted';
 }
 
 /**
@@ -145,6 +191,14 @@ export type RevocationEffect =
   | 'hide_microphone'
   /** Облачные строки этого ребёнка удаляются; локальные остаются. */
   | 'delete_cloud_rows'
+  /** Режим ABA закрывается: сессию не начать, идущая обрывается без записи. Пауза — отдельно и без удаления. */
+  | 'close_aba_mode'
+  /**
+   * Пробы, сессии и состояние ABA удаляются с устройства (`revokeAbaProcessing`). Отзыв
+   * согласия на данные о здоровье — это и требование их стереть. Перед отзывом экран
+   * предлагает экспорт: специалисту центра история может быть нужна.
+   */
+  | 'delete_aba_data'
   | 'clear_telemetry_queue'
   | 'delete_account';
 
@@ -153,6 +207,7 @@ export const REVOCATION_EFFECTS: Record<ConsentScope, readonly RevocationEffect[
   cloud_sync: ['delete_cloud_rows'],
   companion_ai: ['companion_bank_only', 'hide_free_talk'],
   voice_asr: ['hide_microphone'],
+  aba_processing: ['close_aba_mode', 'delete_aba_data'],
   telemetry: ['clear_telemetry_queue'],
 };
 

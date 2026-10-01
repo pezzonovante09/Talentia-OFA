@@ -7,8 +7,8 @@ import { loadChildState, saveChildState } from '../childState';
 import { appendConsentEvent, readConsentLog } from '../consentLog';
 import { appendLessonRun, lessonRunsOf } from '../lessonRuns';
 import { applyRetention, clearChildProgress, exportChild, purgeChild, retentionCutoff, wipeDevice } from '../purge';
-import { migrate } from '../schema';
-import { memoryDb } from './nodeSql';
+import { MIGRATIONS, migrate } from '../schema';
+import { asAbaWriter, memoryDb } from './nodeSql';
 
 let n = 0;
 function trial(over: Partial<AbaTrial> = {}): AbaTrial {
@@ -84,15 +84,15 @@ describe('схема', () => {
   it('миграции накатываются один раз', async () => {
     const db = await memoryDb();
     await migrate(db);
-    expect(await db.all('PRAGMA user_version')).toEqual([{ user_version: 2 }]);
+    expect(await db.all('PRAGMA user_version')).toEqual([{ user_version: MIGRATIONS.length }]);
   });
 });
 
 describe('журнал проб ABA', () => {
   it('каждая проба пишется сразу, две подряд за миллисекунду — обе на месте', async () => {
     const db = await memoryDb();
-    await appendTrial(db, 'kid-a', trial(), NOW);
-    await appendTrial(db, 'kid-a', trial(), NOW);
+    await asAbaWriter(db, 'kid-a', (tx) => appendTrial(tx, 'kid-a', trial(), NOW));
+    await asAbaWriter(db, 'kid-a', (tx) => appendTrial(tx, 'kid-a', trial(), NOW));
     expect(await trialsOfTarget(db, 'kid-a', 't-1')).toHaveLength(2);
   });
 
@@ -107,7 +107,7 @@ describe('журнал проб ABA', () => {
   it('только дописывание: ни правки, ни удаления обычным запросом, ни повтора id', async () => {
     const db = await memoryDb();
     const t = trial();
-    await appendTrial(db, 'kid-a', t, NOW);
+    await asAbaWriter(db, 'kid-a', (tx) => appendTrial(tx, 'kid-a', t, NOW));
     await expect(db.run("UPDATE aba_trials SET body = '{}'")).rejects.toThrow(/только дописывание/);
     await expect(db.run('DELETE FROM aba_trials')).rejects.toThrow(/только дописывание/);
     await expect(appendTrial(db, 'kid-a', t, NOW)).rejects.toThrow();
@@ -115,18 +115,18 @@ describe('журнал проб ABA', () => {
 
   it('пробы одного ребёнка не видны другому', async () => {
     const db = await memoryDb();
-    await appendTrial(db, 'kid-a', trial(), NOW);
+    await asAbaWriter(db, 'kid-a', (tx) => appendTrial(tx, 'kid-a', trial(), NOW));
     expect(await trialsOfTarget(db, 'kid-b', 't-1')).toEqual([]);
     expect(await trialsOfSession(db, 'kid-a', 's-1')).toHaveLength(1);
   });
 
   it('прошлые сессии цели — по номеру сессии, для проверки зависимости', async () => {
     const db = await memoryDb();
-    await appendSession(db, 'kid-a', session('s-1', 3), NOW);
-    await appendSession(db, 'kid-a', session('s-2', 4), NOW);
-    await appendTrial(db, 'kid-a', trial({ sessionId: 's-1' }), NOW);
-    await appendTrial(db, 'kid-a', trial({ sessionId: 's-2' }), NOW);
-    await appendTrial(db, 'kid-a', trial({ sessionId: 's-2', targetId: 't-2' }), NOW);
+    await asAbaWriter(db, 'kid-a', (tx) => appendSession(tx, 'kid-a', session('s-1', 3), NOW));
+    await asAbaWriter(db, 'kid-a', (tx) => appendSession(tx, 'kid-a', session('s-2', 4), NOW));
+    await asAbaWriter(db, 'kid-a', (tx) => appendTrial(tx, 'kid-a', trial({ sessionId: 's-1' }), NOW));
+    await asAbaWriter(db, 'kid-a', (tx) => appendTrial(tx, 'kid-a', trial({ sessionId: 's-2' }), NOW));
+    await asAbaWriter(db, 'kid-a', (tx) => appendTrial(tx, 'kid-a', trial({ sessionId: 's-2', targetId: 't-2' }), NOW));
     const past = await pastSessionsOfTarget(db, 'kid-a', 't-1');
     expect(past.map((s) => [s.index, s.trials.length])).toEqual([
       [3, 1],
@@ -140,23 +140,23 @@ describe('журнал согласий', () => {
     const db = await memoryDb();
     const a = consent();
     const b = consent({ action: 'revoke' });
-    await appendConsentEvent(db, a);
-    await appendConsentEvent(db, b);
+    await appendConsentEvent(db, a, 'owner');
+    await appendConsentEvent(db, b, 'owner');
     expect(await readConsentLog(db)).toEqual([a, b]);
   });
 
   it('событие раньше последнего и противоречивое событие не пишутся', async () => {
     const db = await memoryDb();
-    await appendConsentEvent(db, consent({ at: '2026-09-30T11:00:00Z' }));
-    await expect(appendConsentEvent(db, consent({ at: '2026-09-30T10:00:00Z' }))).rejects.toThrow(/раньше последнего/);
-    await expect(appendConsentEvent(db, consent({ childId: null, at: '2026-09-30T12:00:00Z' }))).rejects.toThrow(
+    await appendConsentEvent(db, consent({ at: '2026-09-30T11:00:00Z' }), 'owner');
+    await expect(appendConsentEvent(db, consent({ at: '2026-09-30T10:00:00Z' }), 'owner')).rejects.toThrow(/раньше последнего/);
+    await expect(appendConsentEvent(db, consent({ childId: null, at: '2026-09-30T12:00:00Z' }), 'owner')).rejects.toThrow(
       /без ребёнка/,
     );
   });
 
   it('правка и удаление отклоняются базой', async () => {
     const db = await memoryDb();
-    await appendConsentEvent(db, consent());
+    await appendConsentEvent(db, consent(), 'owner');
     await expect(db.run("UPDATE consent_events SET action = 'revoke'")).rejects.toThrow(/только дописывание/);
     await expect(db.run('DELETE FROM consent_events')).rejects.toThrow(/только дописывание/);
   });
@@ -184,11 +184,11 @@ describe('удаление и экспорт', () => {
   async function filled() {
     const db = await memoryDb();
     for (const kid of ['kid-a', 'kid-b']) {
-      await appendTrial(db, kid, trial(), NOW);
-      await appendSession(db, kid, session(`${kid}-s`, 1), NOW);
+      await asAbaWriter(db, kid, (tx) => appendTrial(tx, kid, trial(), NOW));
+      await asAbaWriter(db, kid, (tx) => appendSession(tx, kid, session(`${kid}-s`, 1), NOW));
       await appendLessonRun(db, run(kid, `${kid}-run`));
       await saveChildState(db, kid, 'lessonCounter', 7, NOW);
-      await appendConsentEvent(db, consent({ childId: kid }));
+      await appendConsentEvent(db, consent({ childId: kid }), 'owner');
     }
     return db;
   }
@@ -243,8 +243,8 @@ describe('псевдоним и срок хранения', () => {
 
   it('журналы старше 12 месяцев удаляются, свежие — нет, состояние не трогается', async () => {
     const db = await memoryDb();
-    await appendTrial(db, 'kid-a', trial(), '2025-08-01T10:00:00Z');
-    await appendTrial(db, 'kid-a', trial(), '2026-09-01T10:00:00Z');
+    await asAbaWriter(db, 'kid-a', (tx) => appendTrial(tx, 'kid-a', trial(), '2025-08-01T10:00:00Z'));
+    await asAbaWriter(db, 'kid-a', (tx) => appendTrial(tx, 'kid-a', trial(), '2026-09-01T10:00:00Z'));
     await appendLessonRun(db, { ...run('kid-a', 'old'), startedAt: '2025-07-01T09:00:00Z' });
     await saveChildState(db, 'kid-a', 'lessonCounter', 9, NOW);
     expect(await applyRetention(db, new Date(NOW))).toBe(2);
@@ -255,7 +255,7 @@ describe('псевдоним и срок хранения', () => {
 
   it('срок хранения не открывает удаление свежего', async () => {
     const db = await memoryDb();
-    await appendTrial(db, 'kid-a', trial(), NOW);
+    await asAbaWriter(db, 'kid-a', (tx) => appendTrial(tx, 'kid-a', trial(), NOW));
     await applyRetention(db, new Date(NOW));
     await expect(db.run('DELETE FROM aba_trials')).rejects.toThrow(/только дописывание/);
   });

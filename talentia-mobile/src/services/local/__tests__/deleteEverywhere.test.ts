@@ -3,7 +3,7 @@ import { appendTrial, trialsOfTarget } from '../abaLog';
 import { appendConsentEvent, readConsentLog } from '../consentLog';
 import type { CleanedPart, DeviceStore } from '../device';
 import { deleteChildEverywhere, wipeAccountEverywhere } from '../deleteEverywhere';
-import { memoryDb } from './nodeSql';
+import { asAbaWriter, memoryDb } from './nodeSql';
 
 const PSEUDO = '5f0c2a8e-3b1d-4c6e-9a7f-2d8b1e4c7a90';
 const NOW = '2026-09-30T10:00:00Z';
@@ -45,8 +45,8 @@ function fakeDevice(keys: string[]) {
 
 async function filled() {
   const db = await memoryDb();
-  await appendTrial(db, 'kid-a', trial, NOW);
-  await appendTrial(db, 'kid-b', { ...trial, id: 'tr-2' }, NOW);
+  await asAbaWriter(db, 'kid-a', (tx) => appendTrial(tx, 'kid-a', trial, NOW));
+  await asAbaWriter(db, 'kid-b', (tx) => appendTrial(tx, 'kid-b', { ...trial, id: 'tr-2' }, NOW));
   await appendConsentEvent(db, {
     id: 'g',
     scope: 'cloud_sync',
@@ -56,7 +56,7 @@ async function filled() {
     confirmedBy: 'pin',
     actorId: 'parent',
     at: NOW,
-  });
+  }, 'owner');
   return db;
 }
 

@@ -60,3 +60,16 @@ export async function memoryDb(): Promise<SqlDb> {
   await migrate(root);
   return root;
 }
+
+/**
+ * Запись данных ABA в обход проверки согласия — только для тестов, которым согласие не
+ * предмет (порядок журнала, удаление, срок хранения). Открывает те же ворота, что
+ * `withAbaWrite` в `commit.ts`, внутри одной транзакции.
+ */
+export async function asAbaWriter(db: SqlDb, childId: string, fn: (tx: SqlDb) => Promise<void>): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx.run('INSERT INTO aba_write_gate (child_id) VALUES (?)', [childId]);
+    await fn(tx);
+    await tx.run('DELETE FROM aba_write_gate WHERE child_id = ?', [childId]);
+  });
+}

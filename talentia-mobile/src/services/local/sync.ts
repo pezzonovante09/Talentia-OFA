@@ -23,7 +23,9 @@
  * написано в его тексте). Облачные строки при сменившемся тексте не удаляются, но новое не
  * уходит.
  *
- * **Пробы ABA в облако не уходят**: облачной копии пока нет — решение владельца.
+ * **Пробы ABA в облако не уходят**: облачной копии пока нет — решение владельца. Согласие
+ * на данные ABA тоже не уходит (решение №18): само событие говорит о здоровье ребёнка, а
+ * серверу оно не нужно — `LOCAL_ONLY_SCOPES`.
  *
  * Каждый проход — через `syncWithRetry`: сбой не блокирует игру и не пропадает молча.
  * Операции `RemotePort` обязаны быть идемпотентными: курсор пишется после отправки, и
@@ -68,6 +70,9 @@ const DATA_STREAMS: readonly SyncStream[] = ['skill_state', 'lesson_runs'];
 
 const isCloud = (e: ConsentEvent) => e.scope === 'cloud_sync';
 
+/** Согласия, которые живут только на устройстве и в облако не отправляются никогда. */
+export const LOCAL_ONLY_SCOPES: ReadonlySet<ConsentEvent['scope']> = new Set(['aba_processing']);
+
 async function delivered(db: SqlDb): Promise<Set<string>> {
   return new Set((await db.all<{ id: string }>('SELECT id FROM consent_delivered')).map((r) => r.id));
 }
@@ -90,7 +95,7 @@ export function consentPlan(
   let pending: ConsentEvent[] = [];
   let inCloud = false;
   for (const e of events) {
-    if (failed.has(e.id)) continue;
+    if (failed.has(e.id) || LOCAL_ONLY_SCOPES.has(e.scope)) continue;
     if (isCloud(e) && e.action === 'grant') {
       plan.push(e);
       plan.push(...pending);

@@ -28,9 +28,31 @@ export type ChildStateValues = {
   abaSessionIndex: number;
   /** Сессия, свёрнутая посреди: её состояние — обычный объект, продолжается как было. */
   abaSessionInProgress: AbaSessionState | null;
+  /**
+   * Пауза ABA (решение владельца 2026-10-01, №17): режим выключен без удаления данных —
+   * сессию не начать, пробы не пишутся. Отзыв согласия, в отличие от паузы, удаляет.
+   */
+  abaPaused: boolean;
 };
 
 export type ChildStateKey = keyof ChildStateValues;
+
+/**
+ * Ключи ABA, которые пишутся только при согласии на данные ABA. Запись в обход
+ * `commit.ts` отклоняет сама база (`schema.ts`, миграция 3, — список там продублирован:
+ * миграции не правятся).
+ */
+export const ABA_STATE_KEYS = [
+  'abaTargets',
+  'tokenTraining',
+  'identifySets',
+  'abaBoard',
+  'abaSessionIndex',
+  'abaSessionInProgress',
+] as const satisfies readonly ChildStateKey[];
+
+/** Что удаляет отзыв согласия на ABA: состояние и пауза — пауза тоже говорит, что режим был. */
+export const ABA_DELETED_KEYS = [...ABA_STATE_KEYS, 'abaPaused'] as const satisfies readonly ChildStateKey[];
 
 export async function saveChildState<K extends ChildStateKey>(
   db: SqlDb,
