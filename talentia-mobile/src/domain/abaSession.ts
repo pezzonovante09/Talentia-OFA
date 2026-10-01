@@ -27,6 +27,8 @@ import {
   MAINTENANCE_GAP,
   MASTERY,
   REFUSALS_TO_END,
+  IOA_AFTER_FAILED_VERIFICATION,
+  VERIFICATION_CHAIN_RUNS,
   VERIFICATION_TRIALS,
   REFUSAL_CARD_OFFER_MS,
   REFUSAL_QUIET_MS,
@@ -54,6 +56,7 @@ import {
   applyTrialToFading,
   clampToApp,
   correctionLevel,
+  FIRST_ANSWER_LEVEL,
   initialTargetState,
   isBreakdown,
   isPromptDependent,
@@ -616,12 +619,12 @@ export function startAbaSession(input: StartInput): AbaSessionState {
   const mastered = offered.filter((t) => isMastered(t.id));
 
   // освоено «дома, без проверки», а сессию ведёт обученный наблюдатель — проверочная проба
-  // одной такой цели (давнее встречавшейся первой); цепочки — пока нет (вопрос методисту)
+  // одной такой цели (давнее встречавшейся первой): 5 проб или у цепочки один полный прогон
   const primaryTrained =
     config === 'with_adult' && (input.observers ?? []).some((o) => o.id === input.primaryObserverId && o.trained);
   const toVerify = primaryTrained
     ? mastered
-        .filter((t) => states[t.id].masteredBy === 'home_unverified' && !t.steps?.length && counts(t, config))
+        .filter((t) => states[t.id].masteredBy === 'home_unverified' && counts(t, config))
         .sort((a, b) => states[a.id].lastSessionIndex - states[b.id].lastSessionIndex)[0]
     : undefined;
 
@@ -651,7 +654,9 @@ export function startAbaSession(input: StartInput): AbaSessionState {
   if (toVerify) {
     const at = rotation(toVerify, rng);
     probes.unshift(
-      Array.from({ length: VERIFICATION_TRIALS }, (_, i): PlannedTrial => ({ kind: 'verification', targetId: toVerify.id, exemplarId: at(i) })),
+      toVerify.steps?.length
+        ? unit(toVerify, { kind: 'verification', targetId: toVerify.id, exemplarId: at(0) })
+        : Array.from({ length: VERIFICATION_TRIALS }, (_, i): PlannedTrial => ({ kind: 'verification', targetId: toVerify.id, exemplarId: at(i) })),
     );
   }
 
@@ -660,7 +665,10 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     ...probes.filter((p) => p[0].kind === 'maintenance').map((p) => p[0].targetId),
     ...(toVerify ? [toVerify.id] : []),
   ];
-  const highP = mastered.filter((t) => !t.steps?.length && !maintenanceIds.includes(t.id));
+  // для разогрева и отвлекающих — проверенные навыки, если они есть: непроверенный ненадёжен
+  const highPAll = mastered.filter((t) => !t.steps?.length && !maintenanceIds.includes(t.id));
+  const highPChecked = highPAll.filter((t) => states[t.id].masteredBy !== 'home_unverified');
+  const highP = highPChecked.length ? highPChecked : highPAll;
 
   const queue: QueueItem[] = [{ kind: 'reinforcer' }];
   if (highP.length) {
@@ -803,7 +811,8 @@ function trialStep(state: AbaSessionState, p: PlannedTrial): TrialStep {
     escalateOnIncorrect:
       p.escalateOnIncorrect === true || (Boolean(p.stepId) && (p.kind === 'teaching' || p.kind === 'transfer')),
     praiseAttentionBeforeSd: p.kind === 'baseline',
-    adultCompletesOnFail: withAdult && Boolean(p.stepId) && (p.kind === 'baseline' || p.kind === 'generalization'),
+    adultCompletesOnFail:
+      withAdult && Boolean(p.stepId) && (p.kind === 'baseline' || p.kind === 'generalization' || p.kind === 'verification'),
     ...(p.closes ? { closes: p.closes } : {}),
   };
 }
@@ -1075,7 +1084,8 @@ function handleInterruption(state: AbaSessionState, trial: AbaTrial, planned: Pl
   const childBreaks = state.childBreaks + (child ? 1 : 0);
   const refusals = state.refusals + (child ? 0 : 1);
   const by = child ? ('child_card' as const) : ('adult_observed' as const);
-  const ends = child ? childBreaks >= CHILD_BREAKS_TO_END || inGuardWindow(state) : refusals >= REFUSALS_TO_END;
+  // в защитном окне любое прерывание — второй уход от того же требования (решение методиста)
+  const ends = inGuardWindow(state) || (child ? childBreaks >= CHILD_BREAKS_TO_END : refusals >= REFUSALS_TO_END);
   if (ends) return withdrawAssent({ ...state, childBreaks, refusals }, now, by, where);
 
   const r = seeded(state.seed);
@@ -1733,6 +1743,84 @@ export type AbaSessionResult = {
  * Освоение цели, которую оценивает взрослый, — только с подтверждённой сессией в серии
  * (`masteryVerdict`, блок 5).
  */
+/**
+ * Итог проверочной пробы цели `home_unverified` (обученный наблюдатель):
+ * - дискретная — 5 проб с L0; ≥ 80% самостоятельных — освоено по критерию и засчитано как
+ *   пройденная проба поддержания; меньше — обучение: при 0–2 из 5 со старта первого уровня,
+ *   несущего ответ, при 3 — с последнего успешного;
+ * - цепочка — по одному полному прогону в сессию; решают два: каждый ≥ 80% звеньев сам и ни
+ *   одно звено не провалено в обоих; иначе в обучение возвращаются только проваленные звенья
+ *   (решения методиста 2026-10-01).
+ * Прерванная или неполная проверка не решает ничего. После провала — `ioaDueSessions`.
+ */
+function verificationVerdict(
+  s: AbaTargetState,
+  target: AbaTarget,
+  own: AbaTrial[],
+  idx: number,
+): { state: AbaTargetState; reason: PhaseReason | null } | null {
+  const v = own.filter((t) => t.kind === 'verification' && t.response !== 'interrupted');
+  const passed = (st: AbaTargetState): { state: AbaTargetState; reason: PhaseReason } => ({
+    state: {
+      ...st,
+      masteredBy: 'criterion',
+      chainVerificationRuns: [],
+      lastMaintenanceSessionIndex: idx,
+      maintenanceGapIndex: Math.min(st.maintenanceGapIndex + 1, MAINTENANCE_GAP.length - 1) as AbaTargetState['maintenanceGapIndex'],
+      maintenanceFailsInRow: 0,
+    },
+    reason: 'verification_passed',
+  });
+  const backToTeaching = (st: AbaTargetState): AbaTargetState => ({
+    ...st,
+    phase: 'acquisition',
+    masteredBy: undefined,
+    sessionsAtCriterion: 0,
+    criterionDays: [],
+    exemplarsAtCriterion: [],
+    criterionSessions: [],
+    chainVerificationRuns: [],
+    ioaDueSessions: IOA_AFTER_FAILED_VERIFICATION,
+  });
+
+  const steps = target.steps ?? [];
+  if (!steps.length) {
+    if (v.length < VERIFICATION_TRIALS) return null;
+    const independent = v.filter((t) => t.response === 'independent').length;
+    if (independent / v.length >= MASTERY.minIndependentRate) return passed(s);
+    const start = independent <= 2 ? FIRST_ANSWER_LEVEL[target.format] : s.lastSuccessfulPromptLevel;
+    return { state: { ...backToTeaching(s), startPromptLevel: start }, reason: 'verification_failed' };
+  }
+
+  // цепочка: прогон в зачёт, только если в нём есть все звенья
+  if (!steps.every((st) => v.some((t) => t.stepId === st.id))) return null;
+  const failedStepIds = steps.filter((st) => v.find((t) => t.stepId === st.id)!.response !== 'independent').map((st) => st.id);
+  const runs = [
+    ...(s.chainVerificationRuns ?? []),
+    { sessionIndex: idx, failedStepIds, independentRate: (steps.length - failedStepIds.length) / steps.length },
+  ];
+  // первый прогон ещё ничего не решает: цепочка остаётся «получается дома»
+  if (runs.length < VERIFICATION_CHAIN_RUNS) return { state: { ...s, chainVerificationRuns: runs }, reason: null };
+  const [r1, r2] = runs.slice(-VERIFICATION_CHAIN_RUNS);
+  const failedBoth = r1.failedStepIds.filter((id) => r2.failedStepIds.includes(id));
+  if (runs.slice(-VERIFICATION_CHAIN_RUNS).every((r) => r.independentRate >= MASTERY.minIndependentRate) && !failedBoth.length) {
+    return passed(s);
+  }
+  // в обучение — только звенья, проваленные хоть в одном прогоне; остальные — с L0
+  const failedAny = new Set([...r1.failedStepIds, ...r2.failedStepIds]);
+  const stepPrompts = Object.fromEntries(
+    steps.map((st) => {
+      const prev = promptStateOf(s, st.id);
+      const level: PromptLevel = failedAny.has(st.id) ? FIRST_ANSWER_LEVEL[target.format] : 0;
+      return [
+        st.id,
+        { ...prev, startPromptLevel: level, lastSuccessfulPromptLevel: level, consecutiveIndependentAtStart: 0, consecutiveAboveStart: 0, consecutiveFailures: 0 },
+      ];
+    }),
+  );
+  return { state: { ...backToTeaching(s), stepPrompts }, reason: 'verification_failed' };
+}
+
 /** Проба цели снята (перерыв, отказ, сопротивление L4) и в этой сессии не предъявлена снова. */
 function hasUnpresentedDrop(trials: readonly AbaTrial[], targetId: string): boolean {
   // повтор ссылается на исходную пробу; снятая проба (исходная или повтор, снятый снова)
@@ -1753,7 +1841,9 @@ function hasUnpresentedDrop(trials: readonly AbaTrial[], targetId: string): bool
  * цели не приписываются (решение методиста).
  */
 function isConcerning(own: readonly AbaTrial[]): boolean {
-  const interrupted = own.filter((t) => t.response === 'interrupted' && t.interruptedBy !== undefined);
+  const interrupted = own.filter(
+    (t) => t.interruptedBy === 'child_break' || t.interruptedBy === 'assent' || t.interruptedBy === 'l4_resisted',
+  );
   return interrupted.some((t) => t.interruptedBy === 'l4_resisted') || interrupted.length >= INTERRUPTIONS_FOR_CONCERN;
 }
 
@@ -1799,7 +1889,6 @@ export function finishAbaSession(
   const hasTrainedObserver = state.observers.some((o) => o.trained);
   const idx = state.sessionIndex;
   const states = { ...state.states };
-  // цель, на которой сессия кончилась по отказу, — тоже затронута, даже если проб у неё ещё нет
   const touched = [
     ...new Set(state.trials.map((t) => t.targetId)),
   ];
@@ -1813,7 +1902,9 @@ export function finishAbaSession(
     let s: AbaTargetState = { ...states[id], lastSessionIndex: idx };
     let reason: PhaseReason | null = null;
 
-    if (state.baselineTargetIds.includes(id)) {
+    // измерение ненадёжно — сессия для цели нейтральна в любой фазе
+    const unreliable = state.unreliableTargetIds.includes(id);
+    if (state.baselineTargetIds.includes(id) && !unreliable) {
       s = applyBaseline(s, own, idx, target);
       reason = 'baseline';
     }
@@ -1836,34 +1927,27 @@ export function finishAbaSession(
       if (summary.counted) s = applyProgress(s, target, idx, summary.independentRate);
     }
     if (state.set?.memberIds.includes(id)) s = { ...s, lastFieldSize: state.set.memberIds.length };
-    for (const t of probesOf(target, own, 'generalization')) {
+    for (const t of unreliable ? [] : probesOf(target, own, 'generalization')) {
       s = { ...applyGeneralizationProbe(s, t), lastGeneralizationSessionIndex: idx };
     }
-    for (const t of probesOf(target, own, 'maintenance')) {
+    for (const t of unreliable ? [] : probesOf(target, own, 'maintenance')) {
       const before = s;
       s = applyMaintenanceProbe(s, t, idx);
       reason = s.phase === 'acquisition' ? 'maintenance_failed' : 'maintenance_passed';
       if (target.steps?.length && s.phase === 'acquisition') s = rollbackSteps(before, s, target, own);
     }
-    const verification = own.filter((t) => t.kind === 'verification' && t.response !== 'interrupted');
-    if (verification.length >= VERIFICATION_TRIALS && primary?.trained) {
-      const rate = verification.filter((t) => t.response === 'independent').length / verification.length;
-      if (rate >= MASTERY.minIndependentRate) {
-        s = { ...s, masteredBy: 'criterion' };
-        reason = 'verification_passed';
-      } else {
-        // не подтвердилось — обратно в обучение на последнем успешном уровне
-        s = {
-          ...s,
-          phase: 'acquisition',
-          masteredBy: undefined,
-          startPromptLevel: s.lastSuccessfulPromptLevel,
-          sessionsAtCriterion: 0,
-          criterionDays: [],
-          exemplarsAtCriterion: [],
-          criterionSessions: [],
-        };
-        reason = 'verification_failed';
+    if (primary?.trained && !unreliable) {
+      const verdict = verificationVerdict(s, target, own, idx);
+      if (verdict) {
+        s = verdict.state;
+        if (verdict.reason) reason = verdict.reason;
+      }
+    }
+    // после проваленной проверки — проверка IOA, пока сессии с целью не подтверждены
+    if ((s.ioaDueSessions ?? 0) > 0 && reason !== 'verification_failed') {
+      const result = ioa?.byTarget[id];
+      if (isVerified({ primary, ...(secondary ? { ioa: { secondary, result } } : {}) }) && secondary) {
+        s = { ...s, ioaDueSessions: (s.ioaDueSessions ?? 0) - 1 };
       }
     }
     if (TEACHING_PHASES.has(s.phase) && state.teachingTargetIds.includes(id)) {

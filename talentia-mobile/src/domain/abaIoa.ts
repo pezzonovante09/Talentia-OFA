@@ -40,7 +40,10 @@ const IOA_KINDS: ReadonlySet<AbaTrialKind> = new Set([
  * тоже (прерывание кодирует и второй наблюдатель). Порядок — предъявления.
  */
 function sheetTrials(trials: readonly AbaTrial[]): AbaTrial[] {
-  return trials.filter((t) => IOA_KINDS.has(t.kind) && t.scoredBy === 'adult');
+  // прерванное взрослым или приложением по технической причине — не ход процедуры, кода нет
+  return trials.filter(
+    (t) => IOA_KINDS.has(t.kind) && t.scoredBy === 'adult' && t.interruptedBy !== 'adult' && t.interruptedBy !== 'app',
+  );
 }
 
 /** Строки, которые сравниваются: все, кроме перерыва по карточке — его фиксирует устройство. */
@@ -264,8 +267,16 @@ export function ioaCoverage(
   return { baseline: of(counts.baseline), acquisition: of(counts.acquisition) };
 }
 
-/** Подсказка: следующей сессии с этой целью нужна проверка вторым наблюдателем. */
-export function ioaDueNext(phase: AbaPhase, coverage: Record<'baseline' | 'acquisition', IoaCoverage>): boolean {
+/**
+ * Подсказка: следующей сессии с этой целью нужна проверка вторым наблюдателем — покрытие ниже
+ * нормы или проверка «получается дома» только что провалилась (`ioaDueSessions`).
+ */
+export function ioaDueNext(
+  phase: AbaPhase,
+  coverage: Record<'baseline' | 'acquisition', IoaCoverage>,
+  s?: Pick<AbaTargetState, 'ioaDueSessions'>,
+): boolean {
+  if ((s?.ioaDueSessions ?? 0) > 0) return true;
   if (phase === 'baseline') return coverage.baseline.below || coverage.baseline.sessions === 0;
   if (phase === 'acquisition') return coverage.acquisition.below || coverage.acquisition.sessions === 0;
   return false;

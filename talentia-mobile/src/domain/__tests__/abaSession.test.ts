@@ -1323,14 +1323,106 @@ describe('проверочная проба «получается дома» (�
     expect(r.session.events).toContainEqual(expect.objectContaining({ kind: 'phase', targetId: 'H', reason: 'verification_passed' }));
   });
 
-  it('не подтвердилось — обратно в обучение на последнем успешном уровне', () => {
+  it('0 из 5 — обратно в обучение с уровня, несущего ответ, и следующим сессиям нужна проверка IOA', () => {
     const { state } = drive(begin([A, H], { A: acq(A, 0), H: home(H) }), (s) => (s.trialKind === 'verification' ? 'wrong' : 'ok'));
     const r = finishAbaSession(state, '2026-10-01', 9e6);
-    expect([r.states.H.phase, r.states.H.masteredBy, r.states.H.startPromptLevel]).toEqual(['acquisition', undefined, 0]);
+    expect([r.states.H.phase, r.states.H.masteredBy, r.states.H.startPromptLevel, r.states.H.ioaDueSessions]).toEqual([
+      'acquisition',
+      undefined,
+      2,
+      2,
+    ]);
+  });
+
+  it('3 из 5 — обратно в обучение с последнего успешного уровня', () => {
+    let n = 0;
+    const { state } = drive(begin([A, H], { A: acq(A, 0), H: home(H) }), (s) =>
+      s.trialKind === 'verification' ? (n++ < 3 ? 'ok' : 'wrong') : 'ok',
+    );
+    const r = finishAbaSession(state, '2026-10-01', 9e6);
+    expect([r.states.H.phase, r.states.H.startPromptLevel]).toEqual(['acquisition', 0]);
+  });
+
+  it('пройденная проверка засчитана как проба поддержания', () => {
+    const { state } = drive(begin([A, H], { A: acq(A, 0), H: home(H) }), () => 'ok');
+    const r = finishAbaSession(state, '2026-10-01', 9e6);
+    expect([r.states.H.lastMaintenanceSessionIndex, r.states.H.maintenanceGapIndex]).toEqual([10, 1]);
+  });
+
+  it('непроверенные навыки не идут в разогрев, когда есть проверенные', () => {
+    const M = tgt('M');
+    const { steps } = drive(begin([A, H, M], { A: acq(A, 0), H: home(H), M: mastered(M) }), () => 'ok');
+    const warm = steps.filter((x): x is TrialStep => x.kind === 'trial' && x.trialKind === 'high_p');
+    expect(warm.length).toBeGreaterThan(0);
+    for (const x of warm) expect(x.targetId).toBe('M');
+  });
+
+  it('цепочка: один полный прогон за сессию; решают два, провал возвращает только проваленные звенья', () => {
+    const C = tgt('C', {
+      format: 'do_action',
+      steps: [
+        { id: 'c1', order: 1, sdKey: 'a', criterionKey: 'b', modelKey: 'c' },
+        { id: 'c2', order: 2, sdKey: 'a', criterionKey: 'b', modelKey: 'c' },
+      ],
+    });
+    const first = drive(begin([A, C], { A: acq(A, 0), C: home(C) }), () => 'ok');
+    const v = first.steps.filter((x): x is TrialStep => x.kind === 'trial' && x.trialKind === 'verification');
+    expect(v.map((x) => x.stepId)).toEqual(['c1', 'c2']);
+    const r1 = finishAbaSession(first.state, '2026-10-01', 9e6);
+    expect([r1.states.C.masteredBy, r1.states.C.chainVerificationRuns?.length]).toEqual(['home_unverified', 1]);
+    const second = drive(begin([A, C], { A: acq(A, 0), C: r1.states.C }, { sessionIndex: 11 }), (s) =>
+      s.trialKind === 'verification' && s.stepId === 'c2' ? 'wrong' : 'ok',
+    );
+    const r2 = finishAbaSession(second.state, '2026-10-02', 9e6);
+    expect(r2.states.C.phase).toBe('acquisition');
+    expect([r2.states.C.stepPrompts?.c1.startPromptLevel, r2.states.C.stepPrompts?.c2.startPromptLevel]).toEqual([0, 2]);
   });
 
   it('ведёт необученный взрослый — проверочной пробы нет', () => {
     const st = begin([A, H], { A: acq(A, 0), H: home(H) }, { observers: [{ id: 'p', role: 'parent', trained: false }], primaryObserverId: 'p' });
     expect(verificationOf(drive(st, () => 'ok').steps)).toHaveLength(0);
+  });
+});
+
+describe('итоговая проверка методиста: защитное окно', () => {
+  const A = tgt('A');
+  const M = tgt('M');
+  function interrupt(state: AbaSessionState, now: number, outcome: 'child_break' | 'refusal') {
+    const next = nextStep(state, now);
+    if (next.step.kind !== 'trial') throw new Error(`ждали пробу, а шаг ${next.step.kind}`);
+    const input = trialFor(next.state, next.step, 'ok');
+    const { respondedAt: _drop, ...rest } = input.presentationLog[0];
+    const res = recordTrial(next.state, { ...input, presentationLog: [{ ...rest, outcome }] }, now);
+    if (!res.ok) throw new Error(res.errors.join('; '));
+    return res;
+  }
+
+  it('отказ в защитном окне после карточки — тоже конец сессии', () => {
+    let st = begin([M, A], { M: mastered(M), A: acq(A, 0) });
+    for (let i = 0; i < 10; i += 1) {
+      const n = nextStep(st, i);
+      if (n.step.kind === 'trial' && n.step.trialKind === 'teaching') break;
+      st = answer(st, i, 'ok').state;
+    }
+    const back = finishBreak(nextStep(interrupt(st, 20, 'child_break').state, 21).state, 22).state;
+    expect(interrupt(back, 23, 'refusal').state.endReason).toBe('assent_withdrawn');
+  });
+});
+
+describe('ненадёжное измерение нейтрально в любой фазе', () => {
+  it('цель на базовой линии в «Сам» с активностью без реакции — базовая линия не засчитана', () => {
+    const V = tgt('V', { format: 'voice_volume', scoredBy: 'device_loudness' });
+    let st = begin([V], { V: initialTargetState(V) }, { config: 'alone' });
+    for (let i = 0; i < 3; i += 1) {
+      const next = nextStep(st, i + 1);
+      if (next.step.kind !== 'trial') break;
+      const input = trialFor(next.state, next.step, 'silent_at_model');
+      const res = recordTrial(next.state, { ...input, presentationLog: input.presentationLog.map((p) => ({ ...p, activity: true })) }, i + 1);
+      if (!res.ok) throw new Error(res.errors.join('; '));
+      st = res.state;
+    }
+    expect(st.unreliableTargetIds).toEqual(['V']);
+    const r = finishAbaSession(st, '2026-10-01', 9e6);
+    expect(r.states.V.phase).toBe('baseline');
   });
 });

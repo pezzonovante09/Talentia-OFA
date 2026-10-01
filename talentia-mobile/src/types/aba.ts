@@ -484,6 +484,14 @@ export type AbaTargetState = {
   lastFieldSize?: number;
   /** Тревожных сессий подряд на цели — для `assent_concern` (решение методиста, ABA.md). */
   assentSessionsInRow?: number;
+  /**
+   * Проверочные прогоны цепочки `home_unverified` (решение методиста): по одному полному
+   * прогону с L0 в разных сессиях; решают два — звенья, проваленные в нём, и доля
+   * самостоятельных.
+   */
+  chainVerificationRuns?: { sessionIndex: number; failedStepIds: string[]; independentRate: number }[];
+  /** После проваленной проверки — столько следующих сессий с целью нужна проверка IOA. */
+  ioaDueSessions?: number;
   /** Взрослый отметил «цель пересмотрена» и снял `assent_concern` — кто по роли и когда. */
   assentConcernReviewed?: { role: 'owner' | 'guardian' | 'specialist'; at: string };
 };
@@ -580,6 +588,12 @@ export type AbaIoaRecord = {
 
 /** Проб в проверочной пробе цели `home_unverified`. Порог — как у критерия освоения. */
 export const VERIFICATION_TRIALS = 5;
+
+/** Проверочных прогонов цепочки — в разных сессиях, по одному за сессию. */
+export const VERIFICATION_CHAIN_RUNS = 2;
+
+/** После проваленной проверки — столько сессий с целью подряд нужна проверка IOA. */
+export const IOA_AFTER_FAILED_VERIFICATION = 2;
 
 /** Порог IOA (решение методиста 2026-10-01). */
 export const IOA = {

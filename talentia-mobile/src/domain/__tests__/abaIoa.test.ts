@@ -152,5 +152,7 @@ describe('покрытие IOA', () => {
     expect(low.acquisition.below).toBe(true);
     expect(ioaDueNext('acquisition', low)).toBe(true);
     expect(ioaDueNext('mastered', low)).toBe(false);
+    // после проваленной проверки «получается дома» — проверка нужна, даже если покрытие в норме
+    expect(ioaDueNext('acquisition', cov, { ioaDueSessions: 1 })).toBe(true);
   });
 });
