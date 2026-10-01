@@ -101,6 +101,8 @@ function begin(
     startedAt: 0,
     seed: 42,
     tokenTraining: TRAINED,
+    // большинство сценариев — со взрослым, которому L4 разрешена; по умолчанию в приложении — нет
+    physicalPromptAllowed: true,
     ...over,
   });
   const first = nextStep(st, 0);
@@ -296,10 +298,33 @@ describe('К1: уровень пробы коррекции', () => {
     expect(t.startPromptLevel).toBe(0);
   });
 
-  it('не ответил и на полной модели, со взрослым — сразу его помощь (L4), без повтора модели', () => {
+  it('не ответил и на полной модели, со взрослым — сразу его помощь (L4): одна полная модель', () => {
     const st = answer(afterWarmup(acq(A, 3)), 3, 'silent_at_model').state;
     const step = nextStep(st, 4).step as TrialStep;
     expect([step.trialKind, step.startPromptLevel, step.askAdultForL4]).toEqual(['correction', 4, true]);
+  });
+
+  it('физическая подсказка по умолчанию запрещена: ни коррекции с L4, ни просьбы к взрослому', () => {
+    let st = begin([M, A], { M: mastered(M), A: acq(A, 3) }, { physicalPromptAllowed: undefined });
+    st = answer(answer(st, 1, 'ok').state, 2, 'ok').state;
+    const failed = answer(st, 3, 'silent_at_model');
+    expect(failed.step.askAdultForL4).toBe(false);
+    const next = nextStep(failed.state, 4).step as TrialStep;
+    expect(next.trialKind).not.toBe('correction');
+  });
+
+  it('сопротивление физическому ведению выключает L4 до конца сессии', () => {
+    const st = answer(afterWarmup(acq(A, 3)), 3, 'silent_at_model').state;
+    const next = nextStep(st, 4);
+    const step = next.step as TrialStep;
+    expect([step.trialKind, step.startPromptLevel]).toEqual(['correction', 4]);
+    const input = trialFor(next.state, step, 'silent_at_model');
+    const resisted = recordTrial(next.state, { ...input, presentationLog: [{ ...input.presentationLog[0], outcome: 'l4_resisted' }] }, 4);
+    if (!resisted.ok) throw new Error(resisted.errors.join('; '));
+    expect([resisted.trial.response, resisted.trial.interruptedBy, resisted.trial.promptLevelUsed]).toEqual(['interrupted', 'l4_resisted', 3]);
+    expect(resisted.state.l4Stopped).toBe(true);
+    const { steps } = drive(resisted.state, () => 'ok');
+    for (const s of steps) if (s.kind === 'trial') expect(s.askAdultForL4).toBe(false);
   });
 
   it('не ответил и на полной модели, без взрослого — шаг коррекции пропускается', () => {

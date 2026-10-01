@@ -271,6 +271,9 @@ export type AbaSessionState = {
   sessionId: string;
   sessionIndex: number;
   config: AbaConfig;
+  physicalPromptAllowed: boolean;
+  /** Ребёнок сопротивлялся физическому ведению: до конца сессии L4 нет ни у одной цели. */
+  l4Stopped: boolean;
   band: AgeBand;
   startedAt: number;
   /** Начало работы — выбор подкрепителя сделан. От него считается лимит. */
@@ -338,6 +341,12 @@ export type StartInput = {
   identifySets?: IdentifySet[];
   /** Взрослый может уменьшить лимит, но не увеличить. */
   timeLimitMs?: number;
+  /**
+   * Разрешена ли физическая подсказка (L4) — из ABA-состояния ребёнка, по умолчанию нет.
+   * Включает специалист или родитель за PIN после правила «мягко направлять, прекращать при
+   * сопротивлении» (ABA.md, «Условия приватности для блоков 4 и 5»).
+   */
+  physicalPromptAllowed?: boolean;
   startedAt: number;
   seed: number;
 };
@@ -634,6 +643,8 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     sessionId: input.sessionId,
     sessionIndex,
     config,
+    physicalPromptAllowed: input.physicalPromptAllowed === true,
+    l4Stopped: false,
     band,
     startedAt: input.startedAt,
     workStartedAt: null,
@@ -682,11 +693,18 @@ export function startAbaSession(input: StartInput): AbaSessionState {
 
 const iso = (ms: number) => new Date(ms).toISOString();
 
+/** Можно ли сейчас просить взрослого о физической подсказке. */
+function l4Available(state: AbaSessionState): boolean {
+  return state.config === 'with_adult' && state.physicalPromptAllowed && !state.l4Stopped;
+}
+
 function trialStep(state: AbaSessionState, p: PlannedTrial): TrialStep {
   const target = state.targets[p.targetId];
   const s = state.states[p.targetId];
-  const start: PromptLevel =
+  const planned: PromptLevel =
     p.fixedStart ?? (MEASURING_KINDS.has(p.kind) ? 0 : clampToApp(promptStateOf(s, p.stepId).startPromptLevel));
+  // коррекцию «сразу помощь взрослого» поставили до сопротивления — теперь это полная модель
+  const start: PromptLevel = planned === 4 && !l4Available(state) ? APP_MAX_PROMPT : planned;
   const withAdult = state.config === 'with_adult';
   const windowMs = responseWindowMs(target, p.stepId);
   return {
@@ -705,7 +723,7 @@ function trialStep(state: AbaSessionState, p: PlannedTrial): TrialStep {
     pauseBeforeMs: Math.max(p.pauseBeforeMs ?? 0, state.pendingPauseMs),
     scoredBy: sessionScoring(target, state.config),
     allowEscalation: p.kind !== 'generalization' && p.kind !== 'baseline',
-    askAdultForL4: withAdult && (p.adultAssist === true || (Boolean(p.stepId) && p.kind === 'teaching')),
+    askAdultForL4: l4Available(state) && (p.adultAssist === true || (Boolean(p.stepId) && p.kind === 'teaching')),
     // звено цепочки: ошибка сразу поднимает уровень, цепочка завершается верно (блок 1)
     escalateOnIncorrect:
       p.escalateOnIncorrect === true || (Boolean(p.stepId) && (p.kind === 'teaching' || p.kind === 'transfer')),
@@ -1066,7 +1084,7 @@ export type RecordResult =
   /** Запись противоречива или не та, что ждала сессия, — в лог она не идёт. */
   | { ok: false; errors: string[] };
 
-function mismatch(input: Omit<AbaTrial, 'tokens' | 'tokenReason'>, expected: TrialStep, state: AbaSessionState): string[] {
+function mismatch(input: AbaTrialInput, expected: TrialStep, state: AbaSessionState): string[] {
   const errors: string[] = [];
   const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
   if (input.sessionId !== state.sessionId) errors.push('проба из другой сессии');
@@ -1120,12 +1138,16 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
   const target = state.targets[input.targetId] ?? state.targets[expected.targetId];
   const targetState = state.states[target.id];
   const countsHere = COUNTS_TOWARD_MASTERY[input.scoredBy];
+  // сначала — та ли это проба, что ждала сессия: иначе журнал оценивался бы по чужому шагу
+  const wrong = mismatch(input, expected, state);
+  if (wrong.length) return { ok: false, errors: wrong };
   const scored = scoreTrial(input.presentationLog, {
-    startPromptLevel: input.startPromptLevel,
-    scoredBy: input.scoredBy,
+    startPromptLevel: expected.startPromptLevel,
+    scoredBy: expected.scoredBy,
     allowEscalation: expected.allowEscalation,
     escalateOnIncorrect: expected.escalateOnIncorrect,
     askAdultForL4: expected.askAdultForL4,
+    chainStep: Boolean(expected.stepId),
     promptDelayMs: expected.promptDelayMs,
     responseWindowMs: expected.responseWindowMs,
   });
@@ -1142,7 +1164,7 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
     counts: countsHere,
   });
   const trial: AbaTrial = { ...full, tokens: award.tokens, ...(award.reason ? { tokenReason: award.reason } : {}) };
-  const errors = [...mismatch(full, expected, state), ...trialInvariantErrors(trial)];
+  const errors = trialInvariantErrors(trial);
   if (errors.length) return { ok: false, errors };
 
   let st: AbaSessionState = {
@@ -1153,6 +1175,7 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
     tokensEarned: state.tokensEarned + award.tokens,
     schedule: award.schedule,
     highPTokenPaid: state.highPTokenPaid || (trial.kind === 'high_p' && award.tokens > 0),
+    l4Stopped: state.l4Stopped || trial.interruptedBy === 'l4_resisted',
     states: countsHere ? { ...state.states, [trial.targetId]: applyTrialToFading(targetState, trial, state.targets[trial.targetId]) } : state.states,
     // блок набора — один блок: участие пишется на набор, как и в конце половины
     openBlockTargetId:
@@ -1312,8 +1335,9 @@ function correctionFor(state: AbaSessionState, failed: AbaTrial): QueueItem[] {
   const items: QueueItem[] = [];
   const withAdult = state.config === 'with_adult';
   const level = correctionLevel(state.states[failed.targetId], failed, state.targets[failed.targetId].format);
-  // молчание и на полной модели: со взрослым — сразу его помощь (L4), без повтора модели
-  const start: PromptLevel | null = level ?? (withAdult ? 4 : null);
+  // молчание и на полной модели: если L4 разрешена — одна полная модель, которую взрослый
+  // сразу выполняет вместе с ребёнком (старт 4); иначе шаг пропускается
+  const start: PromptLevel | null = level ?? (l4Available(state) ? 4 : null);
   if (start !== null) {
     items.push({
       kind: 'trial',

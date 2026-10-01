@@ -139,8 +139,9 @@ export const FIRST_ANSWER_LEVEL: Record<AbaFormat, PromptLevel> = {
  * ответа при любом провале: до полной модели, со взрослым — до L4.
  *
  * `null` — ребёнок не ответил даже на полной модели: модель только что прозвучала и
- * реакции не вызвала. Со взрослым вместо повтора модели взрослый сразу даёт L4, без
- * взрослого шаг пропускается — дальше отвлекающая проба и перенос.
+ * реакции не вызвала. Если L4 разрешена, коррекция — одна полная модель, которую взрослый
+ * сразу выполняет вместе с ребёнком (старт 4); иначе шаг пропускается — дальше
+ * отвлекающая проба и перенос.
  */
 export function correctionLevel(s: AbaTargetState, failed: AbaTrial, format: AbaFormat): PromptLevel | null {
   if (failed.response === 'no_response' && failed.promptLevelUsed >= APP_MAX_PROMPT) return null;
@@ -507,7 +508,10 @@ export function trialInvariantErrors(t: AbaTrial): string[] {
     errors.push('самостоятельный ответ после подсказки');
   }
   if (t.response === 'prompted' && t.promptLevelUsed === 0) errors.push('подсказанный ответ без подсказки');
-  if (t.promptLevelUsed < t.startPromptLevel) errors.push('понадобилось меньше, чем стартовый уровень');
+  // старт с помощи взрослого, L4 не дана («Пропустить», «Сопротивляется», отказ) — уровень 3
+  const l4NotGiven =
+    t.startPromptLevel === 4 && t.promptLevelUsed === APP_MAX_PROMPT && (t.response === 'no_response' || t.response === 'interrupted');
+  if (t.promptLevelUsed < t.startPromptLevel && !l4NotGiven) errors.push('понадобилось меньше, чем стартовый уровень');
   if (t.presentations > MAX_ESCALATIONS_PER_TRIAL + 1) errors.push('больше трёх предъявлений одного SD');
   if (t.response === 'independent' && !t.emittedBeforePrompt) {
     errors.push('самостоятельный ответ без попытки до подсказки');

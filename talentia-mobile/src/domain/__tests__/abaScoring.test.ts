@@ -3,7 +3,7 @@
  * блок 1.
  */
 import type { AbaPresentation, PresentationOutcome, PromptLevel } from '../../types/aba';
-import { adultPanelButtons, scoreTrial, type ScoreContext } from '../abaScoring';
+import { adultPanelButtons, scoreTrial, type PanelStep, type ScoreContext } from '../abaScoring';
 
 const T0 = Date.UTC(2026, 9, 1, 10);
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -14,6 +14,7 @@ const ctx = (over: Partial<ScoreContext> = {}): ScoreContext => ({
   allowEscalation: true,
   escalateOnIncorrect: false,
   askAdultForL4: true,
+  chainStep: false,
   promptDelayMs: 2000,
   responseWindowMs: 5000,
   ...over,
@@ -184,22 +185,93 @@ describe('журнал, который не пишется', () => {
 });
 
 describe('панель взрослого', () => {
+  const step = (over: Partial<PanelStep> = {}): PanelStep => ({ scoredBy: 'adult', startPromptLevel: 0, askAdultForL4: true, ...over });
+
   it('в «Сам» панели нет', () => {
-    expect(adultPanelButtons('alone', 'adult', 'window')).toEqual([]);
+    expect(adultPanelButtons('alone', step(), false)).toEqual([]);
   });
 
   it('окно ответа: «Почти» — только когда оценивает взрослый', () => {
-    expect(adultPanelButtons('with_adult', 'adult', 'window')).toEqual([
+    expect(adultPanelButtons('with_adult', step(), false)).toEqual(['correct', 'approximation', 'incorrect', 'adult_prompted', 'refusal']);
+    expect(adultPanelButtons('with_adult', step({ scoredBy: 'device_tap' }), false)).toEqual([
       'correct',
-      'approximation',
       'incorrect',
       'adult_prompted',
       'refusal',
     ]);
-    expect(adultPanelButtons('with_adult', 'device_tap', 'window')).toEqual(['correct', 'incorrect', 'adult_prompted', 'refusal']);
   });
 
-  it('после провала на полной модели — карточка L4', () => {
-    expect(adultPanelButtons('with_adult', 'adult', 'l4')).toEqual(['l4_done', 'l4_resisted', 'l4_skipped', 'refusal']);
+  it('после провала на полной модели — карточка L4, если L4 разрешена', () => {
+    expect(adultPanelButtons('with_adult', step(), true)).toEqual(['l4_done', 'l4_resisted', 'l4_skipped', 'refusal']);
+    expect(adultPanelButtons('with_adult', step({ askAdultForL4: false }), true)).toEqual(['refusal']);
+  });
+
+  it('при старте с помощи взрослого — сразу карточка L4, без «Я подсказал(а)»', () => {
+    expect(adultPanelButtons('with_adult', step({ startPromptLevel: 4 }), false)).toEqual(['l4_done', 'l4_resisted', 'l4_skipped', 'refusal']);
+  });
+
+  it('у звена цепочки — ещё «Сделал(а) звено сам(а)», и без L4 тоже', () => {
+    expect(adultPanelButtons('with_adult', step({ stepId: 's1' }), true)).toContain('adult_completed');
+    expect(adultPanelButtons('with_adult', step({ stepId: 's1', askAdultForL4: false }), true)).toEqual(['adult_completed', 'refusal']);
+  });
+});
+
+describe('правки по проверке методиста', () => {
+  const errors = (c: ScoreContext, l: AbaPresentation[]) => {
+    const r = scoreTrial(l, c);
+    return r.ok ? [] : r.errors;
+  };
+
+  it('старт 4: «Пропустить» и «Сопротивляется» пишутся уровнем 3, «Отказ» — тоже', () => {
+    const c = ctx({ startPromptLevel: 4, promptDelayMs: null });
+    expect(fields(c, [{ level: 3, outcome: 'l4_skipped' }])).toMatchObject({ response: 'no_response', promptLevelUsed: 3 });
+    expect(fields(c, [{ level: 3, outcome: 'l4_resisted' }])).toMatchObject({ response: 'interrupted', interruptedBy: 'l4_resisted' });
+    expect(fields(c, [{ level: 3, outcome: 'refusal' }])).toMatchObject({ response: 'interrupted', interruptedBy: 'assent' });
+  });
+
+  it('подсказка взрослого — внутри окна текущего предъявления, на его уровне', () => {
+    const c = ctx();
+    const p0 = log(c, [{ level: 0, outcome: 'none' }])[0];
+    const adult = (startOffset: number, level: PromptLevel): AbaPresentation => ({
+      level,
+      by: 'adult',
+      startedAt: iso(Date.parse(p0.endedAt) + startOffset),
+      endedAt: iso(Date.parse(p0.endedAt) + startOffset),
+      windowMs: c.responseWindowMs,
+      outcome: 'correct',
+      respondedAt: iso(Date.parse(p0.endedAt) + startOffset + 700),
+    });
+    // через 1 с после конца SD, внутри задержки 2 с — пишется
+    const ok = scoreTrial([p0, adult(1000, 0)], c);
+    expect(ok.ok && ok.fields).toMatchObject({ response: 'prompted', promptLevelUsed: 1, adultUnplannedPrompt: true, latencyMs: 700 });
+    expect(errors(c, [p0, adult(1000, 2)])).toContain('предъявление 2: подсказка взрослого не на уровне текущего предъявления');
+    expect(errors(c, [p0, adult(9000, 0)])).toContain('предъявление 2: подсказка взрослого вне окна текущего предъявления');
+  });
+
+  it('в пробе с помощью взрослого «Я подсказал(а)» нет', () => {
+    const c = ctx({ startPromptLevel: 4, promptDelayMs: null });
+    const [m] = log(c, [{ level: 3, outcome: 'none' }]);
+    const adult: AbaPresentation = { ...m, by: 'adult', outcome: 'l4_done', startedAt: m.endedAt, windowMs: c.responseWindowMs };
+    expect(errors(c, [m, adult])).toContain('в пробе с помощью взрослого «Я подсказал(а)» нет');
+  });
+
+  it('«Почти» в журнале — только когда оценивает взрослый', () => {
+    const c = ctx({ scoredBy: 'device_tap' });
+    expect(errors(c, log(c, [{ level: 0, outcome: 'approximation' }]))).toContain('«Почти» — только когда оценивает взрослый');
+  });
+
+  it('«Сделал(а) звено сам(а)» — только у звена цепочки', () => {
+    const chain = ctx({ chainStep: true, escalateOnIncorrect: true });
+    const path = [
+      { level: 0 as const, outcome: 'none' as const },
+      { level: 1 as const, outcome: 'none' as const },
+      { level: 3 as const, outcome: 'adult_completed' as const },
+    ];
+    expect(fields(chain, path)).toMatchObject({ response: 'no_response', promptLevelUsed: 3, adultCompleted: true });
+    expect(errors(ctx(), log(ctx(), path))).toContain('выполнить за ребёнка можно только звено цепочки');
+  });
+
+  it('«Отказ» — в любой момент, проба прервана', () => {
+    expect(fields(ctx(), [{ level: 0, outcome: 'refusal' }])).toMatchObject({ response: 'interrupted', interruptedBy: 'assent', latencyMs: null });
   });
 });

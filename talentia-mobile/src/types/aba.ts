@@ -240,7 +240,11 @@ export type PresentationOutcome =
   /** «Сопротивляется»: ведение прекращено сразу. */
   | 'l4_resisted'
   /** «Пропустить». */
-  | 'l4_skipped';
+  | 'l4_skipped'
+  /** «Сделал(а) звено сам(а)»: у звена цепочки вместо L4, когда L4 не дана или запрещена. */
+  | 'adult_completed'
+  /** «Отказ»: наблюдаемые признаки отказа — в любой момент пробы. Категория не пишется. */
+  | 'refusal';
 
 /**
  * Одно предъявление внутри пробы: SD, подсказка, модель — или подсказка взрослого вне
@@ -323,6 +327,8 @@ export type AbaTrial = {
    */
   adultUnplannedPrompt?: true;
   interruptedBy?: AbaInterruptedBy;
+  /** Звено выполнил взрослый вместо ребёнка — проба ребёнка `no_response`. */
+  adultCompleted?: true;
   /** Момент окончания озвучки SD. По нему восстанавливается темп сессии. */
   sdEndedAt: string;
   scoredBy: ScoringSource;
