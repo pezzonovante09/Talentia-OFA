@@ -266,6 +266,12 @@ export type AbaPresentation = {
   outcome: PresentationOutcome;
   /** Первое нажатие «Верно / Почти / Неверно», касание или начало звука. */
   respondedAt?: string;
+  /**
+   * Признак процесса: была ли в окне хоть какая-то активность — касание (и мимо карточек, и во
+   * время SD) или сигнал выше шумового порога, — даже если реакция не засчитана. Отличает
+   * тишину от нераспознанной реакции в «Сам».
+   */
+  activity?: boolean;
 };
 
 /** Почему проба прервана. */
@@ -471,8 +477,10 @@ export type AbaTargetState = {
   progressWindow?: { sessionIndex: number; startPromptLevel: PromptLevel; independentRate: number }[];
   /** Размер поля последнего набора цели `identify`: по нему — поле вне набора. */
   lastFieldSize?: number;
-  /** Сессий подряд с сопротивлением L4 или концом по отказу на цели — для `assent_concern`. */
+  /** Тревожных сессий подряд на цели — для `assent_concern` (решение методиста, ABA.md). */
   assentSessionsInRow?: number;
+  /** Взрослый отметил «цель пересмотрена» и снял `assent_concern` — кто по роли и когда. */
+  assentConcernReviewed?: { role: 'owner' | 'guardian' | 'specialist'; at: string };
 };
 
 /** Состояние подсказки одного звена цепочки. */
@@ -502,7 +510,9 @@ export type AbaSessionEndReason =
    * второй «Отказ», нет возврата после перерыва, в «Сам» — три пробы без активности. Без
    * закрывающей пробы-требования; жетоны не сгорают и обмениваются, как при лимите.
    */
-  | 'assent_withdrawn';
+  | 'assent_withdrawn'
+  /** «Сам»: у всех целей измерение ненадёжно (активность есть, реакция не засчитывается). Не отказ. */
+  | 'unreliable_measurement';
 
 /**
  * Наблюдатель — взрослый, который оценивает пробы. **Без имени, телефона, табельного номера
@@ -588,7 +598,16 @@ export type AbaSession = {
 };
 
 export type AbaSessionEvent =
-  | { kind: 'break'; startedAt: string; endedAt: string; initiatedBy?: 'child_card' | 'schedule' | 'adult' }
+  | {
+      kind: 'break';
+      startedAt: string;
+      endedAt: string;
+      initiatedBy?: 'child_card' | 'schedule' | 'adult';
+      /** После отказа ребёнок коснулся подсвеченной карточки: полный перерыв, а не тихая пауза. */
+      cardTaken?: true;
+    }
+  /** Цель снята до конца сессии: активность была, а реакция не засчитывалась (решение методиста). */
+  | { kind: 'measurement'; at: string; targetId: string; action: 'unreliable' }
   /**
    * Ход процедуры при отказе: кто прервал и что сделали — **без причины и категории**
    * (решение владельца №21): справка о признаках отказа — на экране, в данные — ничего.
@@ -711,6 +730,16 @@ export const REFUSALS_TO_END = 2;
 /** «Сам»: столько проб подряд без активности устройства — Tali предлагает перерыв; ещё одна — конец. */
 export const ALONE_SILENT_TO_OFFER_BREAK = 2;
 export const ALONE_SILENT_TO_END = 3;
+
+/** «Сам»: столько проб цели подряд с активностью, но без засчитанной реакции — цель снимается. */
+export const UNRELIABLE_AFTER = 3;
+
+/** После отказа: сколько ждать касания подсвеченной карточки и сколько длится тихая пауза. */
+export const REFUSAL_CARD_OFFER_MS = 10_000;
+export const REFUSAL_QUIET_MS = 30_000;
+
+/** Прерываний на пробах цели за сессию, при которых сессия для неё тревожна. */
+export const INTERRUPTIONS_FOR_CONCERN = 2;
 
 /** Нет касания после перерыва — повторное приглашение через столько; снова нет — конец сессии. */
 export const RETURN_INVITE_AFTER_MS = 30_000;

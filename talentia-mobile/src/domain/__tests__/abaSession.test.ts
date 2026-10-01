@@ -21,7 +21,9 @@ import {
   NEUTRAL_PAUSE_MS,
   recordTrial,
   startAbaSession,
+  reviewAssentConcern,
   stopSession,
+  takeBreakCard,
   withdrawAssent,
   type AbaSessionState,
   type AbaStep,
@@ -1167,12 +1169,65 @@ describe('согласие ребёнка — assent (блок 4)', () => {
     expect(finishAbaSession(ended, '2026-10-01', 60).states.A.sessionsAtCriterion).toBe(1);
   });
 
-  it('две сессии подряд с концом по отказу на цели — флаг assent_concern', () => {
+  it('два прерывания на пробах цели во второй сессии подряд — флаг assent_concern', () => {
     const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0, { assentSessionsInRow: 1 }) }));
-    const ended = withdrawAssent(st, 200, 'adult_observed', { targetId: 'A' });
-    const r = finishAbaSession(ended, '2026-10-01', 300);
+    let s = finishBreak(nextStep(interrupt(st, 100, 'child_break').state, 101).state, 102).state;
+    s = answer(s, 103, 'ok').state; // высоковероятная
+    s = interrupt(s, 104, 'refusal').state; // повтор A снят отказом — второе прерывание на A
+    const r = finishAbaSession(withdrawAssent(s, 200, 'adult_observed'), '2026-10-01', 300);
     expect(r.states.A.flags).toContain('assent_concern');
     expect(r.states.A.assentSessionsInRow).toBe(2);
+  });
+
+  it('конец по отказу вне пробы цели ей не приписывается, а спокойная сессия обнуляет счётчик', () => {
+    const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0, { assentSessionsInRow: 1 }) }));
+    const s = answer(st, 100, 'ok').state;
+    const r = finishAbaSession(withdrawAssent(s, 200, 'adult_observed', { targetId: 'A' }), '2026-10-01', 300);
+    expect(r.states.A.flags).not.toContain('assent_concern');
+    expect(r.states.A.assentSessionsInRow).toBe(0);
+  });
+
+  it('флаг снимает только взрослый отметкой «цель пересмотрена»', () => {
+    const flagged = { ...acq(A), flags: ['assent_concern' as const], assentSessionsInRow: 3 };
+    const reviewed = reviewAssentConcern(flagged, 'specialist', '2026-10-01T10:00:00Z');
+    expect([reviewed.flags, reviewed.assentSessionsInRow, reviewed.assentConcernReviewed?.role]).toEqual([[], 0, 'specialist']);
+  });
+
+  it('отказ: карточка подсвечена 10 с — коснулся, полный перерыв без счёта карточек; нет — тихая пауза 30 с', () => {
+    const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0) }));
+    const refused = interrupt(st, 100, 'refusal').state;
+    const pause = nextStep(refused, 101);
+    expect(pause.step).toMatchObject({ kind: 'break', initiatedBy: 'adult', maxMs: 30_000, offerCardMs: 10_000 });
+    const taken = takeBreakCard(pause.state, 105);
+    expect(nextStep(taken, 106).step).toMatchObject({ kind: 'break', maxMs: 90_000 });
+    expect(nextStep(taken, 106).step).not.toHaveProperty('offerCardMs');
+    expect(taken.childBreaks).toBe(0);
+    expect(() => takeBreakCard(pause.state, 101 + 20_000)).toThrow(/вышло/);
+    const done = finishBreak(taken, 200).state;
+    expect(done.events.find((e) => e.kind === 'break')).toMatchObject({ initiatedBy: 'adult', cardTaken: true });
+  });
+
+  it('защитное окно: карточка на высоковероятной перед повтором кончает сессию', () => {
+    const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0) }));
+    const back = finishBreak(nextStep(interrupt(st, 100, 'refusal').state, 101).state, 102).state;
+    expect(interrupt(back, 103, 'child_break').state.endReason).toBe('assent_withdrawn');
+  });
+
+  it('«Сам»: активность без засчитанной реакции три раза — цель снята, не отказ; без целей — техническая причина', () => {
+    const V = tgt('V', { format: 'voice_volume', scoredBy: 'device_loudness' });
+    let st = begin([V], { V: acq(V, 0) }, { config: 'alone' });
+    for (let i = 0; i < 3; i += 1) {
+      const next = nextStep(st, i + 1);
+      if (next.step.kind !== 'trial') throw new Error('ждали пробу');
+      const input = trialFor(next.state, next.step, 'silent_at_model');
+      const res = recordTrial(next.state, { ...input, presentationLog: input.presentationLog.map((p) => ({ ...p, activity: true })) }, i + 1);
+      if (!res.ok) throw new Error(res.errors.join('; '));
+      expect(res.suggestBreak).toBe(false);
+      st = res.state;
+    }
+    expect(st.unreliableTargetIds).toEqual(['V']);
+    expect(st.endReason).toBe('unreliable_measurement');
+    expect(st.events.at(-1)).toMatchObject({ kind: 'measurement', targetId: 'V', action: 'unreliable' });
   });
 
   it('«Сам»: две пробы без активности — предложить перерыв, третья — конец сессии', () => {

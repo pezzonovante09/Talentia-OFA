@@ -19,6 +19,7 @@
 import {
   ALONE_SILENT_TO_END,
   ALONE_SILENT_TO_OFFER_BREAK,
+  INTERRUPTIONS_FOR_CONCERN,
   APP_MAX_PROMPT,
   CHILD_BREAKS_TO_END,
   CHILD_BREAK_MS,
@@ -26,6 +27,9 @@ import {
   MAINTENANCE_GAP,
   MASTERY,
   REFUSALS_TO_END,
+  REFUSAL_CARD_OFFER_MS,
+  REFUSAL_QUIET_MS,
+  UNRELIABLE_AFTER,
   VOICE_VOLUME_HOLD_MS,
   type AbaConfig,
   type AbaExemplar,
@@ -199,7 +203,7 @@ type QueueItem =
       members?: string[];
     }
   /** Перерыв: по расписанию, по детской карточке или по отказу (тогда с потолком длительности). */
-  | { kind: 'break'; initiatedBy?: 'child_card' | 'adult'; maxMs?: number }
+  | { kind: 'break'; initiatedBy?: 'child_card' | 'adult'; maxMs?: number; offerCardMs?: number; cardTaken?: true }
   /** Доступ к подкрепителю после обмена при обучении доске. */
   | { kind: 'access'; durationMs: number };
 
@@ -265,8 +269,13 @@ export type AbaStep =
       pauseBeforeMs: number;
       /** Не по расписанию: по детской карточке или по отказу. Возврат — по действию ребёнка. */
       initiatedBy?: 'child_card' | 'adult';
-      /** Потолок перерыва по карточке; ребёнок может закончить раньше. */
+      /** Потолок перерыва; ребёнок может закончить раньше. */
       maxMs?: number;
+      /**
+       * После отказа: столько подсвечена карточка «перерыв» (взрослый показывает на неё жестом).
+       * Коснулся — `takeBreakCard`, полный перерыв; нет — тихая пауза до `maxMs`.
+       */
+      offerCardMs?: number;
     }
   /** Доступ к подкрепителю после обмена: экран показывает его и зовёт `finishAccess`. */
   | { kind: 'access'; durationMs: number }
@@ -297,14 +306,14 @@ export type AbaSessionState = {
   l4Stopped: boolean;
   /** Просьбы о перерыве по детской карточке (перерывы по расписанию не в счёт). */
   childBreaks: number;
-  /** Следующая проба — первая после перерыва по карточке: перерыв в ней кончает сессию. */
-  firstTrialAfterChildBreak: boolean;
   /** «Отказ» от взрослого за сессию. */
   refusals: number;
   /** «Сам»: пробы подряд без активности устройства. */
   aloneSilentRun: number;
-  /** Цель, на пробе которой сессия кончилась по отказу. */
-  assentEndTargetId: string | null;
+  /** «Сам»: по целям — пробы подряд с активностью, но без засчитанной реакции. */
+  unreliableRun: Record<string, number>;
+  /** Цели, снятые до конца сессии: измерение ненадёжно. Для них сессия нейтральна. */
+  unreliableTargetIds: string[];
   band: AgeBand;
   startedAt: number;
   /** Начало работы — выбор подкрепителя сделан. От него считается лимит. */
@@ -684,10 +693,10 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     primaryObserverId: config === 'alone' ? null : (input.primaryObserverId ?? null),
     l4Stopped: false,
     childBreaks: 0,
-    firstTrialAfterChildBreak: false,
     refusals: 0,
     aloneSilentRun: 0,
-    assentEndTargetId: null,
+    unreliableRun: {},
+    unreliableTargetIds: [],
     band,
     startedAt: input.startedAt,
     workStartedAt: null,
@@ -886,6 +895,7 @@ export function nextStep(
           pauseBeforeMs: pause,
           ...(head.initiatedBy ? { initiatedBy: head.initiatedBy } : {}),
           ...(head.maxMs ? { maxMs: head.maxMs } : {}),
+          ...(head.offerCardMs && !head.cardTaken ? { offerCardMs: head.offerCardMs } : {}),
         },
       );
     case 'access':
@@ -927,7 +937,13 @@ export function finishBreak(state: AbaSessionState, now: number): { state: AbaSe
   const head = state.queue[0];
   const events: AbaSessionEvent[] = [
     ...state.events,
-    { kind: 'break', startedAt: iso(startedAt), endedAt: iso(now), initiatedBy: head.initiatedBy ?? 'schedule' },
+    {
+      kind: 'break',
+      startedAt: iso(startedAt),
+      endedAt: iso(now),
+      initiatedBy: head.initiatedBy ?? 'schedule',
+      ...(head.cardTaken ? { cardTaken: true as const } : {}),
+    },
   ];
   if (exchanged > 0) events.push({ kind: 'exchange', at: iso(now), tokens: exchanged });
   return {
@@ -993,7 +1009,6 @@ export function withdrawAssent(
   return {
     ...state,
     endReason: 'assent_withdrawn',
-    assentEndTargetId: where.targetId ?? null,
     queue: state.queue.filter((q) => q.kind === 'access'),
     participationOwed: null,
     openBlockTargetId: null,
@@ -1007,11 +1022,22 @@ export function withdrawAssent(
 }
 
 /**
- * Проба снята перерывом ребёнка или отказом. Первые разы — перерыв, затем одна
- * высоковероятная проба и **та же** проба снова: просьба выполняется сразу, требование
- * возвращается. Лимиты: третья просьба о перерыве (или просьба в первой пробе после
- * возврата) и второй «Отказ» кончают сессию. Сопротивление L4 пробу не возвращает, но
- * выключает L4 до конца сессии (`l4Stopped`).
+ * Защитное окно после возврата с перерыва (решение методиста): открыто, пока в очереди ждёт
+ * повтор снятой пробы, — в него входят и высоковероятная, и сам повтор. Карточка в окне
+ * кончает сессию.
+ */
+function inGuardWindow(state: AbaSessionState): boolean {
+  return state.queue.some((q) => q.kind === 'trial' && q.trial.requeuedFromTrialId !== undefined);
+}
+
+/**
+ * Проба снята перерывом ребёнка или отказом (блок 4 и решения методиста после его проверки):
+ * - карточка — полный перерыв, высоковероятная, та же проба снова; третья просьба или
+ *   просьба в защитном окне — конец;
+ * - отказ — требование снимается, карточка подсвечивается на `REFUSAL_CARD_OFFER_MS`:
+ *   коснулся — полный перерыв (в счётчик карточек не идёт), нет — тихая пауза до
+ *   `REFUSAL_QUIET_MS`; дальше тот же возврат; второй отказ — конец;
+ * - сопротивление L4 — проба не возвращается, L4 выключается до конца сессии.
  */
 function handleInterruption(state: AbaSessionState, trial: AbaTrial, planned: PlannedTrial, now: number): AbaSessionState {
   const where = { targetId: trial.targetId, trialId: trial.id };
@@ -1027,20 +1053,23 @@ function handleInterruption(state: AbaSessionState, trial: AbaTrial, planned: Pl
   const childBreaks = state.childBreaks + (child ? 1 : 0);
   const refusals = state.refusals + (child ? 0 : 1);
   const by = child ? ('child_card' as const) : ('adult_observed' as const);
-  const ends = child
-    ? childBreaks >= CHILD_BREAKS_TO_END || state.firstTrialAfterChildBreak
-    : refusals >= REFUSALS_TO_END;
+  const ends = child ? childBreaks >= CHILD_BREAKS_TO_END || inGuardWindow(state) : refusals >= REFUSALS_TO_END;
   if (ends) return withdrawAssent({ ...state, childBreaks, refusals }, now, by, where);
 
   const r = seeded(state.seed);
   const others = state.highPTargetIds.filter((id) => id !== trial.targetId);
+  // повторяется исходная проба: повтор, снятый снова, ссылается на исходную
+  const origin = planned.requeuedFromTrialId ?? trial.id;
   // высоковероятной нет — перед повтором нейтральная пауза, как в коррекции
   const again: QueueItem = {
     kind: 'trial',
-    trial: { ...planned, requeuedFromTrialId: trial.id, ...(others.length ? {} : { pauseBeforeMs: NEUTRAL_PAUSE_MS }) },
+    trial: { ...planned, requeuedFromTrialId: origin, ...(others.length ? {} : { pauseBeforeMs: NEUTRAL_PAUSE_MS }) },
   };
+  const pause: QueueItem = child
+    ? { kind: 'break', initiatedBy: 'child_card', maxMs: CHILD_BREAK_MS[state.band] }
+    : { kind: 'break', initiatedBy: 'adult', maxMs: REFUSAL_QUIET_MS, offerCardMs: REFUSAL_CARD_OFFER_MS };
   const queue: QueueItem[] = [
-    { kind: 'break', initiatedBy: child ? 'child_card' : 'adult', maxMs: CHILD_BREAK_MS[state.band] },
+    pause,
     ...(others.length ? [{ kind: 'trial' as const, trial: highPTrial(state.targets[pick(others, r.rng)], r.rng) }] : []),
     again,
     ...state.queue,
@@ -1049,10 +1078,55 @@ function handleInterruption(state: AbaSessionState, trial: AbaTrial, planned: Pl
     ...state,
     childBreaks,
     refusals,
-    firstTrialAfterChildBreak: child,
     queue,
     seed: r.seed(),
     events: [...state.events, { kind: 'assent', at: iso(now), by, action: 'break', ...where }],
+  };
+}
+
+/**
+ * После отказа ребёнок коснулся подсвеченной карточки (сам или после жеста взрослого) в
+ * течение `REFUSAL_CARD_OFFER_MS`: тихая пауза становится полным перерывом. Пишется как ход
+ * отказа, в счётчик карточек не идёт.
+ */
+export function takeBreakCard(state: AbaSessionState, now: number): AbaSessionState {
+  const head = state.queue[0];
+  if (head?.kind !== 'break' || !head.offerCardMs || head.cardTaken) throw new Error('Сейчас карточку не предлагали');
+  const startedAt = state.breakStartedAt ?? now;
+  if (now - startedAt > head.offerCardMs) throw new Error('Время предложения карточки вышло');
+  return {
+    ...state,
+    queue: [{ ...head, cardTaken: true, maxMs: CHILD_BREAK_MS[state.band] }, ...state.queue.slice(1)],
+  };
+}
+
+/**
+ * «Сам»: у цели три пробы подряд с активностью, но без засчитанной реакции — измерение
+ * ненадёжно: цель снимается до конца сессии (сессия для неё нейтральна). Не осталось проб —
+ * конец с технической причиной, не отказ.
+ */
+function trackUnreliable(state: AbaSessionState, trial: AbaTrial, now: number): AbaSessionState {
+  if (state.config !== 'alone') return state;
+  const active = trial.presentationLog.some((p) => p.activity === true);
+  const unscored = trial.response === 'no_response' && active;
+  const run = unscored ? (state.unreliableRun[trial.targetId] ?? 0) + 1 : 0;
+  const unreliableRun = { ...state.unreliableRun, [trial.targetId]: run };
+  if (run < UNRELIABLE_AFTER || state.unreliableTargetIds.includes(trial.targetId)) return { ...state, unreliableRun };
+  const queue = state.queue.filter((q) => !(q.kind === 'trial' && q.trial.targetId === trial.targetId));
+  const next: AbaSessionState = {
+    ...state,
+    unreliableRun,
+    unreliableTargetIds: [...state.unreliableTargetIds, trial.targetId],
+    queue,
+    events: [...state.events, { kind: 'measurement', at: iso(now), targetId: trial.targetId, action: 'unreliable' }],
+  };
+  if (queue.some((q) => q.kind === 'trial')) return next;
+  return {
+    ...next,
+    endReason: 'unreliable_measurement',
+    queue: queue.filter((q) => q.kind === 'access'),
+    participationOwed: null,
+    openBlockTargetId: null,
   };
 }
 
@@ -1337,9 +1411,10 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
 
   // согласие ребёнка (блок 4): перерыв по карточке, «Отказ», сопротивление L4
   if (trial.response === 'interrupted') st = handleInterruption(st, trial, head.trial, now);
-  else st = { ...st, firstTrialAfterChildBreak: false };
-  // «Сам»: пробы без активности устройства подряд — предложить перерыв, потом конец
-  const silent = st.config === 'alone' && trial.response === 'no_response';
+  st = trackUnreliable(st, trial, now);
+  // «Сам»: пробы без всякой активности устройства подряд — предложить перерыв, потом конец
+  const silent =
+    st.config === 'alone' && trial.response === 'no_response' && !trial.presentationLog.some((p) => p.activity === true);
   st = { ...st, aloneSilentRun: silent ? st.aloneSilentRun + 1 : trial.response === 'interrupted' ? st.aloneSilentRun : 0 };
   if (st.endReason === null && st.aloneSilentRun >= ALONE_SILENT_TO_END) {
     st = withdrawAssent(st, now, 'device_inactivity', { targetId: trial.targetId, trialId: trial.id });
@@ -1638,23 +1713,53 @@ export type AbaSessionResult = {
  */
 /** Проба цели снята (перерыв, отказ, сопротивление L4) и в этой сессии не предъявлена снова. */
 function hasUnpresentedDrop(trials: readonly AbaTrial[], targetId: string): boolean {
-  // повтор мог быть снят снова: предъявленной считается вся цепочка до исходной пробы
-  const from = new Map(trials.map((t) => [t.id, t.requeuedFromTrialId]));
-  const presented = new Set<string>();
-  for (const t of trials) {
-    if (t.response === 'interrupted') continue;
-    for (let id = t.requeuedFromTrialId; id !== undefined; id = from.get(id)) presented.add(id);
-  }
+  // повтор ссылается на исходную пробу; снятая проба (исходная или повтор, снятый снова)
+  // предъявлена, если её исходную потом предъявили без прерывания
+  const presented = new Set(trials.filter((t) => t.response !== 'interrupted').map((t) => t.requeuedFromTrialId));
   return trials.some(
-    (t) => t.targetId === targetId && t.response === 'interrupted' && t.interruptedBy !== undefined && !presented.has(t.id),
+    (t) =>
+      t.targetId === targetId &&
+      t.response === 'interrupted' &&
+      t.interruptedBy !== undefined &&
+      !presented.has(t.requeuedFromTrialId ?? t.id),
   );
 }
 
-/** Две сессии подряд с сопротивлением L4 или концом по отказу на цели — флаг специалисту. */
+/**
+ * Тревожна ли сессия для цели: на её пробе было «Сопротивляется» или хотя бы два прерывания
+ * пришлись на её пробы. Конец по тишине, отказ вне пробы и разбросанные по целям прерывания
+ * цели не приписываются (решение методиста).
+ */
+function isConcerning(own: readonly AbaTrial[]): boolean {
+  const interrupted = own.filter((t) => t.response === 'interrupted' && t.interruptedBy !== undefined);
+  return interrupted.some((t) => t.interruptedBy === 'l4_resisted') || interrupted.length >= INTERRUPTIONS_FOR_CONCERN;
+}
+
+/**
+ * Две тревожные сессии подряд (среди сессий, где цель предъявлялась) — флаг специалисту.
+ * Спокойная обнуляет счётчик. Сам флаг не снимается — только `reviewAssentConcern`.
+ */
 function withAssentConcern(s: AbaTargetState, concern: boolean): AbaTargetState {
   const inRow = concern ? (s.assentSessionsInRow ?? 0) + 1 : 0;
   const flags = inRow >= 2 && !s.flags.includes('assent_concern') ? [...s.flags, 'assent_concern' as const] : s.flags;
   return { ...s, assentSessionsInRow: inRow, flags };
+}
+
+/**
+ * Взрослый за PIN отметил «цель пересмотрена»: `assent_concern` снимается, счётчик
+ * обнуляется, пишется роль снявшего (без имени).
+ */
+export function reviewAssentConcern(
+  s: AbaTargetState,
+  role: 'owner' | 'guardian' | 'specialist',
+  at: string,
+): AbaTargetState {
+  return {
+    ...s,
+    flags: s.flags.filter((f) => f !== 'assent_concern'),
+    assentSessionsInRow: 0,
+    assentConcernReviewed: { role, at },
+  };
 }
 
 export function finishAbaSession(
@@ -1674,7 +1779,7 @@ export function finishAbaSession(
   const states = { ...state.states };
   // цель, на которой сессия кончилась по отказу, — тоже затронута, даже если проб у неё ещё нет
   const touched = [
-    ...new Set([...state.trials.map((t) => t.targetId), ...(state.assentEndTargetId ? [state.assentEndTargetId] : [])]),
+    ...new Set(state.trials.map((t) => t.targetId)),
   ];
 
   const phaseEvents: AbaSessionEvent[] = [];
@@ -1696,7 +1801,8 @@ export function finishAbaSession(
       const raw = summarizeSession(target, own, endReason);
       // сессия, кончившаяся по отказу или со снятой и не предъявленной снова пробой, серию
       // не продлевает; «рвёт» по-прежнему рвёт
-      const neutral = state.endReason === 'assent_withdrawn' || hasUnpresentedDrop(state.trials, id);
+      const neutral =
+        state.endReason === 'assent_withdrawn' || hasUnpresentedDrop(state.trials, id) || state.unreliableTargetIds.includes(id);
       const summary = neutral && raw.outcome === 'meets' ? { ...raw, outcome: 'neutral' as const } : raw;
       const result = ioa?.byTarget[id];
       const verified = isVerified({ primary, ...(secondary ? { ioa: { secondary, result } } : {}) });
@@ -1730,7 +1836,7 @@ export function finishAbaSession(
         s = applyPromptDependence(s, target, idx);
       }
     }
-    s = withAssentConcern(s, own.some((t) => t.interruptedBy === 'l4_resisted') || state.assentEndTargetId === id);
+    s = withAssentConcern(s, isConcerning(state.trials.filter((t) => t.targetId === id)));
     if (reason && s.phase !== from) {
       phaseEvents.push({ kind: 'phase', at: iso(endedAt), targetId: id, from, to: s.phase, reason });
     }
