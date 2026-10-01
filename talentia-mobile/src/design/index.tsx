@@ -1,14 +1,12 @@
 /**
  * Провайдер дизайн-системы направления B.
  *
- * Живёт рядом со старым `src/theme/index.tsx` и не конфликтует с ним:
- * экраны, переведённые на новую систему, читают `useDesign()`,
- * остальные продолжают читать `useAppTheme()` из старой темы.
+ * Экраны читают `useDesign()`. Спокойный и фокус-режим передаёт тот, кто хранит
+ * настройки ребёнка, — провайдер сам их не хранит.
  */
 import React, { PropsWithChildren, createContext, useContext, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 
-import { useSettingsStore } from '../store/settingsStore';
 import { type AppTheme, type Scheme, buildTheme } from './tokens';
 
 export * from './tokens';
@@ -17,9 +15,11 @@ const DesignContext = createContext<AppTheme>(
   buildTheme({ scheme: 'light', calmMode: false, focusMode: false }),
 );
 
-export function DesignProvider({ children }: PropsWithChildren) {
-  const calmMode = useSettingsStore((state) => state.calmMode);
-  const focusMode = useSettingsStore((state) => state.focusMode);
+export function DesignProvider({
+  children,
+  calmMode = false,
+  focusMode = false,
+}: PropsWithChildren<{ calmMode?: boolean; focusMode?: boolean }>) {
   const systemScheme = useColorScheme();
 
   // Схема — независимая ось. Старая тема включала тёмные цвета только

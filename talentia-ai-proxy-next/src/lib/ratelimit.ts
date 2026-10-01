@@ -14,23 +14,13 @@ function redisFromEnv(): Redis | null {
 
 const redis = redisFromEnv();
 
-/** Tali, reports, ping — 20 req/min per IP (global sliding window). */
+/** Tali, ping — 20 req/min per IP (global sliding window). */
 export const ratelimitApi =
   redis !== null
     ? new Ratelimit({
         redis,
         limiter: Ratelimit.slidingWindow(20, "1 m"),
         prefix: "talentia:api",
-      })
-    : null;
-
-/** TTS synthesis — 10 req/min per IP (stricter). */
-export const ratelimitTts =
-  redis !== null
-    ? new Ratelimit({
-        redis,
-        limiter: Ratelimit.slidingWindow(10, "1 m"),
-        prefix: "talentia:tts",
       })
     : null;
 

@@ -5,14 +5,17 @@
 ## О проекте
 
 Talentia — образовательное приложение для детей 5–10 лет (возрастные полосы `5-6`, `7`, `8`, `9-10`)
-на русском, английском и кыргызском, с поддержкой ABA-методики и ИИ-компаньоном Tali.
+на русском, английском и кыргызском, с отдельным ABA-режимом и ИИ-компаньоном Tali.
+
+**Идёт пересборка с нуля** — вход `AUDIT.md`, затем «С чего начать новой сессии» в `REBUILD.md`.
+Прежнее приложение удалено из кода 2026-10-01 (не было опубликовано; код — в истории git до
+`38f57a7`). Экранов в коде сейчас нет.
 
 | Часть | Путь | Стек |
 |---|---|---|
-| Мобильное приложение | `talentia-mobile/` | Expo SDK 54, RN 0.81, React 19, expo-router, Zustand + AsyncStorage |
-| AI-прокси | `talentia-ai-proxy-next/` | Next.js 16 на Vercel: `/api/tali`, `/api/tts`, `/api/report*` |
-| База | `supabase/migrations/` | Supabase: PostgreSQL + RLS + Realtime |
-| Программа обучения | `talentia-mobile/curricula/` | Markdown по классам (grade-0 … grade-4), RU |
+| Мобильное приложение | `talentia-mobile/` | Expo SDK 54, RN 0.81, React 19, expo-router, expo-sqlite |
+| AI-прокси | `talentia-ai-proxy-next/` | Next.js 16 на Vercel: `/api/v2/tali`, `/api/account/delete`, `/api/ping` |
+| База | `supabase/migrations/` | Supabase: PostgreSQL + RLS; тесты в PGlite (`npm run test:db`) |
 
 Подробности: [`ARCHITECTURE.md`](ARCHITECTURE.md), [`README.md`](README.md).
 
@@ -23,12 +26,10 @@ npm run install:all     # установить зависимости обоих
 npm run lint            # ESLint в обоих пакетах
 npm run typecheck       # tsc --noEmit в обоих пакетах
 npm test                # Jest (mobile) + Vitest (proxy)
+npm run test:db         # RLS и функции базы в PGlite
 npm run build:api       # сборка прокси
 npm run dev             # expo start
 npm run dev:api         # прокси локально
-
-# из talentia-mobile/
-npm run check:i18n      # проверка используемых ключей в ru/en/ky
 ```
 
 ## Субагенты
@@ -150,13 +151,14 @@ npm run check:i18n      # проверка используемых ключей
 
 ## Соглашения по коду
 
-- Слои: `app/` (экраны) → `src/store/` (Zustand) → `src/services/` (I/O). Прямые вызовы Supabase из
-  экранов не добавляем.
+- Слои: `src/domain/` — чистая логика без I/O; `src/services/local/` — данные на устройстве.
+  Итоги урока и ABA пишутся только через `services/local/commit.ts` (одна транзакция); журналы —
+  только дописывание. Прямые вызовы Supabase из экранов не добавляем.
 - Фоновая синхронизация идёт через `syncWithRetry` (`src/services/syncStatus.ts`), а не через
   голый `.catch(() => {})`.
 - Все пользовательские строки — через `t()` и локали `ru` / `en` / `ky`; хардкод текста не
   добавляем.
-- Цвета и размеры — через токены `src/theme/index.tsx`, а не хардкодом в стилях.
+- Цвета и размеры — через токены `src/design/` (`tokens.ts`, `abaTokens.ts`, `parentTokens.ts`), а не хардкодом в стилях.
 - Ключи провайдеров (DeepSeek, ElevenLabs, Hugging Face) никогда не попадают в мобильное
   приложение — только через прокси.
 - Каждый новый роут прокси: Supabase JWT + Zod-схема на тело + rate limit.

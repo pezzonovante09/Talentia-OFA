@@ -38,9 +38,6 @@ jobs:
       - name: Test
         run: npm test -- --ci
 
-      - name: Check i18n keys
-        run: npm run check:i18n
-
   proxy:
     name: talentia-ai-proxy-next (lint, typecheck, test, build)
     runs-on: ubuntu-latest
