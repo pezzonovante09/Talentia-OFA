@@ -52,7 +52,8 @@
   по урокам и дням: 3 / 7 дней), `companionSituations.ts`.
 - **ABA:** `types/aba.ts`; `domain/abaPrompting.ts`, `abaCriterion.ts`, `abaTokens.ts`,
   `abaTokenTraining.ts` (сопряжение, ступени доски), `abaIdentifySet.ts` (наборы «покажи…»),
-  `abaTargetRules.ts`, `abaSession.ts` (оркестратор). Проверено методистом трижды.
+  `abaTargetRules.ts`, `abaSession.ts` (оркестратор), `abaScoring.ts` (журнал предъявлений →
+  поля пробы, панель взрослого). Проверено методистом трижды; протокол взрослого — ABA.md.
 - **Родительский раздел:** `domain/consent.ts`, `consentTexts.ts` (текущие версии текстов — одно
   место, пока черновые), `parentReport.ts`, `parentGate.ts`. Согласие на данные ABA
   `aba_processing` — ABA.md, «Согласие `aba_processing`».
@@ -73,7 +74,7 @@
   озвучка внутри, потолок 30 реплик в день на ребёнка); `/api/account/delete`; `/api/ping`;
   лимиты на пользователя; Sentry без идентификаторов.
 - **CI:** Node 22 (`.nvmrc`), ветки `master` и ветка пересборки, джобы mobile, proxy, db.
-- **Тесты:** мобильный пакет 663, прокси 64, база 103.
+- **Тесты:** мобильный пакет 696, прокси 64, база 103.
 
 ### Дальше — по порядку AUDIT.md
 

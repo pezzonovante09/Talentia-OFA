@@ -21,6 +21,7 @@ import {
   COUNTS_TOWARD_MASTERY,
   MAINTENANCE_GAP,
   MASTERY,
+  VOICE_VOLUME_HOLD_MS,
   type AbaConfig,
   type AbaExemplar,
   type AbaResponse,
@@ -50,6 +51,7 @@ import {
   trialInvariantErrors,
   type SessionTrials,
 } from './abaPrompting';
+import { scoreTrial, type ScoredFields } from './abaScoring';
 import {
   applyBaseline,
   applyGeneralizationProbe,
@@ -216,6 +218,8 @@ export type TrialStep = {
   promptDelayMs: number | null;
   /** Окно ответа после каждого предъявления, включая полную модель. */
   responseWindowMs: number;
+  /** Только `voice_volume`: после начала звука — сколько ещё ждать удержания громкости. */
+  voiceHoldMs?: number;
   /** Пауза перед пробой. */
   pauseBeforeMs: number;
   /** Кто засчитывает. В конфигурации «сам» взрослого нет. */
@@ -695,13 +699,16 @@ function trialStep(state: AbaSessionState, p: PlannedTrial): TrialStep {
     ...(p.sdVariantKey ? { sdVariantKey: p.sdVariantKey } : {}),
     ...(p.field ? { field: p.field } : {}),
     startPromptLevel: start,
-    promptDelayMs: promptDelayMs(s, p.kind, start, windowMs),
+    promptDelayMs: promptDelayMs(s, target, p.kind, start, windowMs, p.stepId),
     responseWindowMs: windowMs,
+    ...(target.format === 'voice_volume' ? { voiceHoldMs: VOICE_VOLUME_HOLD_MS } : {}),
     pauseBeforeMs: Math.max(p.pauseBeforeMs ?? 0, state.pendingPauseMs),
     scoredBy: sessionScoring(target, state.config),
     allowEscalation: p.kind !== 'generalization' && p.kind !== 'baseline',
     askAdultForL4: withAdult && (p.adultAssist === true || (Boolean(p.stepId) && p.kind === 'teaching')),
-    escalateOnIncorrect: p.escalateOnIncorrect === true,
+    // звено цепочки: ошибка сразу поднимает уровень, цепочка завершается верно (блок 1)
+    escalateOnIncorrect:
+      p.escalateOnIncorrect === true || (Boolean(p.stepId) && (p.kind === 'teaching' || p.kind === 'transfer')),
     praiseAttentionBeforeSd: p.kind === 'baseline',
     adultCompletesOnFail: withAdult && Boolean(p.stepId) && (p.kind === 'baseline' || p.kind === 'generalization'),
     ...(p.closes ? { closes: p.closes } : {}),
@@ -1039,7 +1046,11 @@ function ensureSuccessfulEnd(state: AbaSessionState, now: number): AbaSessionSta
 }
 
 /** Проба, как её записал экран. Жетоны проставляет сессия. */
-export type AbaTrialInput = Omit<AbaTrial, 'tokens' | 'tokenReason'>;
+/**
+ * Что присылает экран: всё о пробе, кроме того, что выводится из журнала предъявлений
+ * (`ScoredFields`), и жетона — их считает сессия.
+ */
+export type AbaTrialInput = Omit<AbaTrial, 'tokens' | 'tokenReason' | keyof ScoredFields>;
 
 export type RecordResult =
   | {
@@ -1055,7 +1066,7 @@ export type RecordResult =
   /** Запись противоречива или не та, что ждала сессия, — в лог она не идёт. */
   | { ok: false; errors: string[] };
 
-function mismatch(input: AbaTrialInput, expected: TrialStep, state: AbaSessionState): string[] {
+function mismatch(input: Omit<AbaTrial, 'tokens' | 'tokenReason'>, expected: TrialStep, state: AbaSessionState): string[] {
   const errors: string[] = [];
   const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
   if (input.sessionId !== state.sessionId) errors.push('проба из другой сессии');
@@ -1071,10 +1082,6 @@ function mismatch(input: AbaTrialInput, expected: TrialStep, state: AbaSessionSt
   if (input.promptDelayMs !== expected.promptDelayMs) errors.push('не та задержка до подсказки');
   if (input.responseWindowMs !== expected.responseWindowMs) errors.push('не то окно ответа');
   if (input.scoredBy !== expected.scoredBy) errors.push('не тот источник оценки');
-  if (!expected.allowEscalation && input.promptLevelUsed !== input.startPromptLevel) {
-    errors.push('подсказка в пробе, которая измеряет');
-  }
-  if (input.promptLevelUsed === 4 && !expected.askAdultForL4) errors.push('L4 без просьбы к взрослому');
   // минимизация: громкость — только там, где она и есть критерий
   if (input.loudnessDb !== undefined && state.targets[expected.targetId].format !== 'voice_volume') {
     errors.push('громкость пишется только в целях на громкость');
@@ -1113,9 +1120,20 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
   const target = state.targets[input.targetId] ?? state.targets[expected.targetId];
   const targetState = state.states[target.id];
   const countsHere = COUNTS_TOWARD_MASTERY[input.scoredBy];
+  const scored = scoreTrial(input.presentationLog, {
+    startPromptLevel: input.startPromptLevel,
+    scoredBy: input.scoredBy,
+    allowEscalation: expected.allowEscalation,
+    escalateOnIncorrect: expected.escalateOnIncorrect,
+    askAdultForL4: expected.askAdultForL4,
+    promptDelayMs: expected.promptDelayMs,
+    responseWindowMs: expected.responseWindowMs,
+  });
+  if (!scored.ok) return { ok: false, errors: scored.errors };
+  const full = { ...input, ...scored.fields };
 
   const r = seeded(state.seed);
-  const award = awardForTrial(input, {
+  const award = awardForTrial(full, {
     phase: targetState.phase,
     schedule: state.schedule,
     board: state.board,
@@ -1123,8 +1141,8 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
     highPTokenPaid: state.highPTokenPaid,
     counts: countsHere,
   });
-  const trial: AbaTrial = { ...input, tokens: award.tokens, ...(award.reason ? { tokenReason: award.reason } : {}) };
-  const errors = [...mismatch(input, expected, state), ...trialInvariantErrors(trial)];
+  const trial: AbaTrial = { ...full, tokens: award.tokens, ...(award.reason ? { tokenReason: award.reason } : {}) };
+  const errors = [...mismatch(full, expected, state), ...trialInvariantErrors(trial)];
   if (errors.length) return { ok: false, errors };
 
   let st: AbaSessionState = {
@@ -1135,7 +1153,7 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
     tokensEarned: state.tokensEarned + award.tokens,
     schedule: award.schedule,
     highPTokenPaid: state.highPTokenPaid || (trial.kind === 'high_p' && award.tokens > 0),
-    states: countsHere ? { ...state.states, [trial.targetId]: applyTrialToFading(targetState, trial, state.targets[trial.targetId].format) } : state.states,
+    states: countsHere ? { ...state.states, [trial.targetId]: applyTrialToFading(targetState, trial, state.targets[trial.targetId]) } : state.states,
     // блок набора — один блок: участие пишется на набор, как и в конце половины
     openBlockTargetId:
       trial.kind === 'teaching'
@@ -1387,6 +1405,7 @@ function rollbackSteps(before: AbaTargetState, after: AbaTargetState, target: Ab
       return [
         st.id,
         {
+          currentDelayMs: prev.currentDelayMs,
           startPromptLevel: level,
           lastSuccessfulPromptLevel: level,
           consecutiveIndependentAtStart: 0,

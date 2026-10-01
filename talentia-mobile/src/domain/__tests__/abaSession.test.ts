@@ -4,6 +4,8 @@
  */
 import type {
   AbaExemplar,
+  AbaPresentation,
+  PresentationOutcome,
   AbaResponse,
   AbaTarget,
   AbaTargetState,
@@ -24,6 +26,7 @@ import {
   type AbaStep,
   type RecordResult,
   type StartInput,
+  type AbaTrialInput,
   type TrialStep,
 } from '../abaSession';
 import { correctionLevel, initialTargetState, promptStateOf } from '../abaPrompting';
@@ -110,18 +113,54 @@ type How = 'ok' | 'wrong' | 'silent_at_model' | 'approx' | { response: AbaRespon
 
 let seq = 0;
 
-function trialFor(state: AbaSessionState, step: TrialStep, how: How): Omit<AbaTrial, 'tokens' | 'tokenReason'> {
+/**
+ * Журнал предъявлений, который дал бы такой исход: путь эскалации от старта до нужного
+ * уровня (как `nextEscalation`: не больше трёх предъявлений, третье — полная модель), на
+ * промежуточных — тишина, на первом — неверная попытка, если она была; на последнем — исход.
+ */
+function logFor(step: TrialStep, h: { response: AbaResponse; used: PromptLevel; emitted: boolean }): AbaPresentation[] {
+  const s = Math.min(step.startPromptLevel, 3) as PromptLevel;
+  const top = Math.min(h.used, 3) as PromptLevel;
+  const path: PromptLevel[] = s === top ? [s] : top - s <= 2 ? Array.from({ length: top - s + 1 }, (_, i) => (s + i) as PromptLevel) : [s, (s + 1) as PromptLevel, top];
+  const last: PresentationOutcome =
+    h.used === 4
+      ? 'l4_done'
+      : h.response === 'independent' || h.response === 'prompted'
+        ? 'correct'
+        : h.response === 'no_response'
+          ? 'none'
+          : (h.response as PresentationOutcome);
+  const t0 = Date.UTC(2026, 8, 29, 10);
+  const windowOf = (i: number) => (i === 0 ? (step.promptDelayMs ?? step.responseWindowMs) : step.responseWindowMs);
+  return path.map((level, i) => {
+    const startedAt = t0 + i * 20_000;
+    const endedAt = startedAt + 1000;
+    const outcome: PresentationOutcome = i === path.length - 1 ? last : i === 0 && h.emitted ? 'incorrect' : 'none';
+    const responded = outcome === 'correct' || outcome === 'incorrect' || outcome === 'approximation';
+    return {
+      level,
+      by: 'app' as const,
+      startedAt: new Date(startedAt).toISOString(),
+      endedAt: new Date(endedAt).toISOString(),
+      windowMs: windowOf(i),
+      outcome,
+      ...(responded ? { respondedAt: new Date(endedAt + 1000).toISOString() } : {}),
+    };
+  });
+}
+
+function trialFor(state: AbaSessionState, step: TrialStep, how: How): AbaTrialInput {
   const start = step.startPromptLevel;
   const max = (step.allowEscalation ? Math.max(3, start) : start) as PromptLevel;
   const h =
     how === 'ok'
       ? { response: start === 0 ? 'independent' : 'prompted', used: start, emitted: start === 0 }
       : how === 'wrong'
-        ? { response: 'incorrect', used: max, emitted: start < 3 }
+        ? { response: 'incorrect', used: max, emitted: max === start && start === 0 }
         : how === 'silent_at_model'
           ? { response: 'no_response', used: max, emitted: false }
           : how === 'approx'
-            ? { response: 'approximation', used: start, emitted: start < 3 }
+            ? { response: 'approximation', used: start, emitted: start === 0 }
             : how;
   seq += 1;
   return {
@@ -137,13 +176,7 @@ function trialFor(state: AbaSessionState, step: TrialStep, how: How): Omit<AbaTr
     index: state.trials.length,
     kind: step.trialKind,
     startPromptLevel: start,
-    promptLevelUsed: h.used as PromptLevel,
-    presentations: h.used > start ? 3 : 1,
-    response: h.response as AbaResponse,
-    emittedBeforePrompt: h.emitted,
-    latencyMs: h.response === 'no_response' ? null : 1000,
-    latencyFromFirstSdMs: h.response === 'no_response' ? null : h.used > start ? 9000 : 1000,
-    latencySource: h.response === 'no_response' ? null : 'adult_press',
+    presentationLog: logFor(step, h as { response: AbaResponse; used: PromptLevel; emitted: boolean }),
     promptDelayMs: step.promptDelayMs,
     responseWindowMs: step.responseWindowMs,
     sdEndedAt: '2026-09-29T10:00:00Z',
@@ -249,7 +282,8 @@ describe('К1: уровень пробы коррекции', () => {
   });
 
   it('не ниже того, что ребёнку только что понадобилось, плюс ступень', () => {
-    const st = answer(afterWarmup(acq(A, 0)), 3, { response: 'incorrect', used: 1, emitted: true }).state;
+    // молчал до подсказки, на L1 ответил неверно: в дискретной пробе ошибка закрывает пробу
+    const st = answer(afterWarmup(acq(A, 0)), 3, { response: 'incorrect', used: 1, emitted: false }).state;
     expect((nextStep(st, 4).step as TrialStep).startPromptLevel).toBe(2);
   });
 
@@ -276,7 +310,7 @@ describe('К1: уровень пробы коррекции', () => {
   });
 
   it('коррекция на полной модели со взрослым — просьба помочь (L4)', () => {
-    const st = answer(afterWarmup(acq(A, 2)), 3, { response: 'incorrect', used: 3, emitted: true }).state;
+    const st = answer(afterWarmup(acq(A, 2)), 3, { response: 'incorrect', used: 3, emitted: false }).state;
     const step = nextStep(st, 4).step as TrialStep;
     expect([step.trialKind, step.startPromptLevel, step.askAdultForL4]).toEqual(['correction', 3, true]);
   });
@@ -582,7 +616,7 @@ describe('цепочки', () => {
           index: trials.length, kind: 'teaching', startPromptLevel: 0, promptLevelUsed: bad ? 1 : 0,
           presentations: 1, response: bad ? 'prompted' : 'independent', emittedBeforePrompt: !bad,
           latencyMs: 900, latencyFromFirstSdMs: bad ? 4000 : 900, latencySource: 'adult_press',
-          promptDelayMs: 1000, responseWindowMs: 10000,
+          promptDelayMs: 1000, responseWindowMs: 10000, presentationLog: [],
           sdEndedAt: '2026-09-29T10:00:00Z', scoredBy: 'adult', tokens: 0,
         });
       }
@@ -733,7 +767,7 @@ describe('базовая линия', () => {
       latencyMs: response === 'no_response' ? null : 900,
       latencyFromFirstSdMs: response === 'no_response' ? null : 900,
       latencySource: response === 'no_response' ? null : 'adult_press',
-      promptDelayMs: null, responseWindowMs: 5000,
+      promptDelayMs: null, responseWindowMs: 5000, presentationLog: [],
       sdEndedAt: '2026-09-29T10:00:00Z', scoredBy: 'adult', tokens: 0,
     }));
 
@@ -795,7 +829,7 @@ describe('проверка записи', () => {
     const st = begin([A], { A: acq(A, 1) });
     const next = nextStep(st, 1);
     const input = trialFor(next.state, next.step as TrialStep, 'ok');
-    const res = recordTrial(next.state, { ...input, startPromptLevel: 0, promptLevelUsed: 0, response: 'independent', emittedBeforePrompt: true }, 1);
+    const res = recordTrial(next.state, { ...input, startPromptLevel: 0, presentationLog: input.presentationLog.map((p) => ({ ...p, level: 0 as PromptLevel })) }, 1);
     expect(res.ok === false && res.errors).toContain('не тот стартовый уровень');
   });
 
@@ -955,6 +989,35 @@ describe('окно ответа и задержка до подсказки (D1)
     for (const s of trialsOf(steps).filter((x) => x.trialKind === 'high_p')) expect(s.promptDelayMs).toBeNull();
   });
 
+  it('разогрев освоенной целью — без задержки до подсказки, с полным окном', () => {
+    const M = tgt('M');
+    const { steps } = drive(begin([P, M], { P: acq(P, 0), M: mastered(M) }), () => 'ok');
+    const highP = trialsOf(steps).filter((s) => s.trialKind === 'high_p');
+    expect(highP.length).toBeGreaterThan(0);
+    for (const s of highP) expect([s.promptDelayMs, s.responseWindowMs]).toEqual([null, 5000]);
+  });
+
+  it('у звена цепочки — окно 10 с или своё', () => {
+    const H = tgt('H', {
+      format: 'do_action',
+      steps: [
+        { id: 'h1', order: 1, sdKey: 'a', criterionKey: 'b', modelKey: 'c' },
+        { id: 'h2', order: 2, sdKey: 'a', criterionKey: 'b', modelKey: 'c', responseWindowMs: 15000 },
+      ],
+    });
+    const { steps } = drive(begin([H], { H: acq(H, 0) }), () => 'ok');
+    const byStep = (id: string) => trialsOf(steps).filter((s) => s.stepId === id);
+    expect(byStep('h1').length).toBeGreaterThan(0);
+    for (const s of byStep('h1')) expect(s.responseWindowMs).toBe(10000);
+    for (const s of byStep('h2')) expect(s.responseWindowMs).toBe(15000);
+  });
+
+  it('voice_volume — удержание громкости в шаге пробы', () => {
+    const V = tgt('V', { format: 'voice_volume' });
+    const { steps } = drive(begin([V], { V: acq(V, 0) }), () => 'ok');
+    expect(trialsOf(steps).find((s) => s.targetId === 'V')?.voiceHoldMs).toBe(3000);
+  });
+
   it('полная модель тоже даёт окно на ответ', () => {
     const { steps } = drive(begin([Q], { Q: acq(Q, 3) }), () => 'ok');
     const l3 = trialsOf(steps).filter((s) => s.trialKind === 'teaching' && s.startPromptLevel === 3);
@@ -970,5 +1033,16 @@ describe('окно ответа и задержка до подсказки (D1)
     const wrongWindow = recordTrial(next.state, { ...t, responseWindowMs: 1000 }, 1000);
     const wrongDelay = recordTrial(next.state, { ...t, promptDelayMs: 4000 }, 1000);
     expect([wrongWindow.ok, wrongDelay.ok]).toEqual([false, false]);
+  });
+});
+
+describe('окно звена цепочки', () => {
+  it('окно звена короче потолка задержки — цель не годится', () => {
+    const H = tgt('H', {
+      format: 'do_action',
+      band: '7',
+      steps: [{ id: 'h1', order: 1, sdKey: 'a', criterionKey: 'b', modelKey: 'c', responseWindowMs: 3000 }],
+    });
+    expect(targetErrors(H)).toContain('окно звена h1 короче потолка задержки полосы');
   });
 });

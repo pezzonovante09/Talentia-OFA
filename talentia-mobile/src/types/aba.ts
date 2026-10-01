@@ -228,6 +228,43 @@ export type AbaTokenReason =
    */
   | 'high_p';
 
+/** Что произошло на предъявлении. L4 — исход полной модели, а не отдельное предъявление. */
+export type PresentationOutcome =
+  | 'correct'
+  | 'approximation'
+  | 'incorrect'
+  /** Окно истекло без начала реакции. */
+  | 'none'
+  /** «Сделали вместе»: физическая подсказка взрослого. */
+  | 'l4_done'
+  /** «Сопротивляется»: ведение прекращено сразу. */
+  | 'l4_resisted'
+  /** «Пропустить». */
+  | 'l4_skipped';
+
+/**
+ * Одно предъявление внутри пробы: SD, подсказка, модель — или подсказка взрослого вне
+ * процедуры (`by: 'adult'`, уровень — того предъявления, во время которого она была).
+ * Из журнала предъявлений выводятся поля пробы (`abaScoring.scoreTrial`).
+ */
+export type AbaPresentation = {
+  level: PromptLevel;
+  by: 'app' | 'adult';
+  startedAt: string;
+  /**
+   * Конец аудио SD+подсказки или модели; у визуальной подсказки — позднее из конца аудио и
+   * начала визуала. От него считается латентность.
+   */
+  endedAt: string;
+  windowMs: number;
+  outcome: PresentationOutcome;
+  /** Первое нажатие «Верно / Почти / Неверно», касание или начало звука. */
+  respondedAt?: string;
+};
+
+/** Почему проба прервана. */
+export type AbaInterruptedBy = 'child_break' | 'assent' | 'l4_resisted' | 'adult' | 'app';
+
 /**
  * Чем измерена латентность. Нажатие взрослого отстаёт от начала реакции на 0.3–0.5 с —
  * специалист должен видеть, откуда число.
@@ -277,6 +314,15 @@ export type AbaTrial = {
   promptDelayMs: number | null;
   /** Окно ответа после каждого предъявления в этой пробе. */
   responseWindowMs: number;
+  /** Что происходило внутри пробы. Источник истины для полей ответа, уровня и латентности. */
+  presentationLog: AbaPresentation[];
+  /**
+   * Взрослый подсказал вне процедуры («Я подсказал(а)»). Самостоятельного ответа нет; в
+   * затухание и задержку проба не идёт — это ошибка процедуры, а не данные о ребёнке;
+   * специалисту — метрика точности процедуры.
+   */
+  adultUnplannedPrompt?: true;
+  interruptedBy?: AbaInterruptedBy;
   /** Момент окончания озвучки SD. По нему восстанавливается темп сессии. */
   sdEndedAt: string;
   scoredBy: ScoringSource;
@@ -399,6 +445,11 @@ export type AbaTargetState = {
 /** Состояние подсказки одного звена цепочки. */
 export type StepPromptState = Pick<
   AbaTargetState,
+  /**
+   * Задержка у звена своя (решение методиста 2026-10-01): звенья разной трудности, и
+   * задержка — свойство пары «звено + ребёнок». Новое звено наследует задержку цели.
+   */
+  | 'currentDelayMs'
   | 'startPromptLevel'
   | 'consecutiveIndependentAtStart'
   | 'consecutiveAboveStart'

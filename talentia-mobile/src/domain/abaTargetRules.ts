@@ -54,6 +54,12 @@ export function targetErrors(t: AbaTarget): string[] {
     const max = t.band === '5-6' ? MAX_CHAIN_STEPS.young : MAX_CHAIN_STEPS.older;
     if (t.steps.length > max) errors.push(`звеньев ${t.steps.length}, на полосе ${t.band} не больше ${max}`);
     if (new Set(t.steps.map((s) => s.order)).size < t.steps.length) errors.push('порядок звеньев повторяется');
+    // окно не меньше потолка задержки: иначе задержка молча обрезается окном
+    for (const s of t.steps) {
+      if (s.responseWindowMs !== undefined && s.responseWindowMs < MAX_DELAY_MS[t.band]) {
+        errors.push(`окно звена ${s.id} короче потолка задержки полосы`);
+      }
+    }
   }
   if (t.chaining === 'backward') {
     errors.push('обратное сцепление не реализовано: как total task его выполнять нельзя — данные солгут');

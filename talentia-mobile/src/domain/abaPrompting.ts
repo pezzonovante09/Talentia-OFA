@@ -23,6 +23,7 @@ import {
   type PromptLevel,
   type StepPromptState,
 } from '../types/aba';
+import { LATENCY_SOURCE } from './abaScoring';
 
 /** Сколько подряд проб нужно, чтобы стартовый уровень сдвинулся. */
 export const FADE_AFTER = 2;
@@ -92,6 +93,7 @@ export function initialTargetState(target: AbaTarget): AbaTargetState {
  */
 export function promptStateOf(s: AbaTargetState, stepId?: string): StepPromptState {
   const own: StepPromptState = {
+    currentDelayMs: s.currentDelayMs,
     startPromptLevel: s.startPromptLevel,
     consecutiveIndependentAtStart: s.consecutiveIndependentAtStart,
     consecutiveAboveStart: s.consecutiveAboveStart,
@@ -165,8 +167,9 @@ const DELAYED_PROMPT_KINDS: ReadonlySet<AbaTrial['kind']> = new Set(['teaching',
 
 /**
  * Задержка до первой подсказки (D1, ABA.md «Протокол взрослого», блок 2). Есть только при
- * старте L0 в обучающих пробах и пробах переноса: `currentDelayMs` (прогрессивная растёт
- * по мере успеха, постоянная равна `delayMs` цели), но не больше окна ответа. Иначе `null`:
+ * старте L0 в обучающих пробах и пробах переноса. Прогрессивная — `currentDelayMs` цели
+ * или звена цепочки (у звена своя); постоянная — всегда `delayMs` цели с потолком по
+ * полосе, её не сдвигает ничто. Не больше окна ответа. Иначе `null`:
  * при старте L1+ подсказка идёт вместе с SD, а измерительные пробы, разогрев и закрывающая
  * ждут полное окно.
  *
@@ -176,12 +179,18 @@ const DELAYED_PROMPT_KINDS: ReadonlySet<AbaTrial['kind']> = new Set(['teaching',
  */
 export function promptDelayMs(
   s: AbaTargetState,
+  target: AbaTarget,
   kind: AbaTrial['kind'],
   start: PromptLevel,
   windowMs: number,
+  stepId?: string,
 ): number | null {
   if (start !== 0 || !DELAYED_PROMPT_KINDS.has(kind)) return null;
-  return Math.min(s.currentDelayMs, windowMs);
+  const delay =
+    target.delayMode === 'constant'
+      ? Math.min(target.delayMs, MAX_DELAY_MS[target.band])
+      : promptStateOf(s, stepId).currentDelayMs;
+  return Math.min(delay, windowMs);
 }
 
 /** Что сделать после того, как ребёнок не ответил на предъявление. */
@@ -232,16 +241,20 @@ const FAILURE: ReadonlySet<AbaResponse> = new Set(['incorrect', 'no_response']);
  * не работала. При возврате старта с L1 на L0 задержка на шаг короче: ребёнок не встречает
  * самую длинную паузу сразу после возврата.
  */
-export function applyTrialToFading(s: AbaTargetState, t: AbaTrial, format: AbaFormat): AbaTargetState {
-  if (t.response === 'interrupted') return s;
+export function applyTrialToFading(s: AbaTargetState, t: AbaTrial, target: AbaTarget): AbaTargetState {
+  // подсказка взрослого вне процедуры — ошибка процедуры, а не данные о ребёнке
+  if (t.response === 'interrupted' || t.adultUnplannedPrompt) return s;
   if (t.kind !== 'teaching' && t.kind !== 'transfer') return s;
   const before = promptStateOf(s, t.stepId);
-  const after = fadeStep(before, t, FIRST_ANSWER_LEVEL[format]);
-  const next = withPromptState(s, t.stepId, after);
-  if (before.startPromptLevel === 1 && after.startPromptLevel === 0) {
-    return { ...next, currentDelayMs: Math.max(DELAY_STEP_MS, next.currentDelayMs - DELAY_STEP_MS) };
-  }
-  return next;
+  const after = fadeStep(before, t, FIRST_ANSWER_LEVEL[target.format]);
+  // возврат на L0 укорачивает задержку того, у кого старт перешёл: цели или звена;
+  // постоянную задержку не сдвигает ничто
+  const back = target.delayMode === 'progressive' && before.startPromptLevel === 1 && after.startPromptLevel === 0;
+  return withPromptState(
+    s,
+    t.stepId,
+    back ? { ...after, currentDelayMs: Math.max(DELAY_STEP_MS, after.currentDelayMs - DELAY_STEP_MS) } : after,
+  );
 }
 
 /**
@@ -332,19 +345,31 @@ function erredBeforePrompt(t: AbaTrial): boolean {
  * «Дождался подсказки» — чистая проба: ошибки до подсказки не было. Шаг вверх — только
  * при `MIN_L0_TRIALS_FOR_DELAY_STEP` таких пробах в блоке. Ребёнок, который всегда ждёт,
  * дорастит задержку до потолка — его ловит флаг `prompt_dependent`.
+ *
+ * У цепочки — по каждому звену отдельно: «подряд» — в пробах этого звена, порог — в его
+ * пробах (одна на прогон), потолок — у каждого звена.
  */
 export function applyBlockToDelay(s: AbaTargetState, target: AbaTarget, block: AbaTrial[]): AbaTargetState {
   if (target.delayMode !== 'progressive') return s;
   const trials = block.filter(
-    (t) => t.kind === 'teaching' && t.startPromptLevel === 0 && t.response !== 'interrupted',
+    (t) => t.kind === 'teaching' && t.startPromptLevel === 0 && t.response !== 'interrupted' && !t.adultUnplannedPrompt,
   );
-  if (trials.length === 0) return s;
+  const byStep = new Map<string, AbaTrial[]>();
+  for (const t of trials) byStep.set(t.stepId ?? '', [...(byStep.get(t.stepId ?? '') ?? []), t]);
 
-  const twoInRow = trials.some((t, i) => i > 0 && erredBeforePrompt(t) && erredBeforePrompt(trials[i - 1]));
-  if (twoInRow) return { ...s, currentDelayMs: Math.max(DELAY_STEP_MS, s.currentDelayMs - DELAY_STEP_MS) };
-  if (trials.some(erredBeforePrompt)) return s;
-  if (trials.length < MIN_L0_TRIALS_FOR_DELAY_STEP) return s;
-  return { ...s, currentDelayMs: Math.min(MAX_DELAY_MS[target.band], s.currentDelayMs + DELAY_STEP_MS) };
+  let next = s;
+  for (const [key, own] of byStep) {
+    const stepId = key || undefined;
+    const ps = promptStateOf(next, stepId);
+    const twoInRow = own.some((t, i) => i > 0 && erredBeforePrompt(t) && erredBeforePrompt(own[i - 1]));
+    let delay = ps.currentDelayMs;
+    if (twoInRow) delay = Math.max(DELAY_STEP_MS, delay - DELAY_STEP_MS);
+    else if (!own.some(erredBeforePrompt) && own.length >= MIN_L0_TRIALS_FOR_DELAY_STEP) {
+      delay = Math.min(MAX_DELAY_MS[target.band], delay + DELAY_STEP_MS);
+    }
+    if (delay !== ps.currentDelayMs) next = withPromptState(next, stepId, { ...ps, currentDelayMs: delay });
+  }
+  return next;
 }
 
 /** Проба закончилась ничем даже на полной модели. */
@@ -408,7 +433,11 @@ export function isPromptDependent(s: AbaTargetState, sessions: SessionTrials[]):
   // построению, и доли выполнялись бы сами собой
   const trials = window
     .flatMap((x) => x.trials)
-    .filter((t) => t.kind === 'teaching' && t.startPromptLevel === 0 && t.response !== 'interrupted');
+    // перенос не в счёт: выборка условная (только после ошибки) — решение методиста 2026-10-01;
+    // подсказка взрослого вне процедуры — не данные о ребёнке
+    .filter(
+      (t) => t.kind === 'teaching' && t.startPromptLevel === 0 && t.response !== 'interrupted' && !t.adultUnplannedPrompt,
+    );
   const promptedTrials = trials.filter((t) => t.response === 'prompted');
   if (promptedTrials.length < PROMPT_DEPENDENCE.minSilentEvidence) return false;
 
@@ -424,18 +453,21 @@ export function isPromptDependent(s: AbaTargetState, sessions: SessionTrials[]):
 }
 
 /**
- * Реакция на зависимость: задержка на шаг длиннее (не выше потолка) и старт с L0
- * на следующую сессию. Флаг видит специалист, не ребёнок.
+ * Реакция на зависимость: задержка на шаг длиннее (не выше потолка; постоянная не
+ * меняется) и старт с L0 на следующую сессию — у цели и у каждого звена. Флаг видит
+ * специалист, не ребёнок.
  */
 export function applyPromptDependence(
   s: AbaTargetState,
   target: AbaTarget,
   sessionIndex: number,
 ): AbaTargetState {
+  const longer = (ms: number) =>
+    target.delayMode === 'progressive' ? Math.min(MAX_DELAY_MS[target.band], ms + DELAY_STEP_MS) : ms;
   return {
     ...s,
     flags: s.flags.includes('prompt_dependent') ? s.flags : [...s.flags, 'prompt_dependent'],
-    currentDelayMs: Math.min(MAX_DELAY_MS[target.band], s.currentDelayMs + DELAY_STEP_MS),
+    currentDelayMs: longer(s.currentDelayMs),
     startPromptLevel: 0,
     consecutiveIndependentAtStart: 0,
     consecutiveAboveStart: 0,
@@ -445,7 +477,14 @@ export function applyPromptDependence(
           stepPrompts: Object.fromEntries(
             Object.entries(s.stepPrompts).map(([id, ps]) => [
               id,
-              { ...ps, startPromptLevel: 0 as PromptLevel, consecutiveIndependentAtStart: 0, consecutiveAboveStart: 0, consecutiveFailures: 0 },
+              {
+                ...ps,
+                currentDelayMs: longer(ps.currentDelayMs),
+                startPromptLevel: 0 as PromptLevel,
+                consecutiveIndependentAtStart: 0,
+                consecutiveAboveStart: 0,
+                consecutiveFailures: 0,
+              },
             ]),
           ),
         }
@@ -476,9 +515,15 @@ export function trialInvariantErrors(t: AbaTrial): string[] {
   if (MEASURING_KINDS.has(t.kind) && t.startPromptLevel !== 0) {
     errors.push('измерительная проба начата с подсказки');
   }
-  if (t.startPromptLevel >= APP_MAX_PROMPT && t.emittedBeforePrompt) {
-    errors.push('попытка до подсказки при старте с полной модели');
+  // D3: при старте L1+ подсказка идёт вместе с SD — окна «до подсказки» нет
+  if (t.startPromptLevel >= 1 && t.emittedBeforePrompt) {
+    errors.push('попытка до подсказки при старте с подсказки');
   }
+  // в дискретной пробе неверный ответ закрывает пробу — подсказанного после попытки не бывает
+  if ((t.kind === 'teaching' || t.kind === 'transfer') && !t.stepId && t.response === 'prompted' && t.emittedBeforePrompt) {
+    errors.push('подсказанный ответ после попытки в дискретной пробе');
+  }
+  if (t.adultUnplannedPrompt && t.response === 'independent') errors.push('самостоятельный ответ после подсказки взрослого');
   if ((t.latencyMs === null) !== (t.latencySource === null)) errors.push('латентность без источника или источник без латентности');
   if (t.latencyMs === null && t.latencyFromFirstSdMs !== null) errors.push('время от первого SD без латентности');
   if (t.latencyMs !== null && (t.latencyFromFirstSdMs === null || t.latencyFromFirstSdMs < t.latencyMs)) {
@@ -488,7 +533,23 @@ export function trialInvariantErrors(t: AbaTrial): string[] {
     errors.push('у самостоятельного ответа время от первого SD отличается от латентности');
   }
   if (t.response === 'no_response' && t.latencyMs !== null) errors.push('латентность у отсутствия ответа');
-  if (t.promptDelayMs !== null && t.startPromptLevel !== 0) errors.push('задержка до подсказки при старте с подсказки');
+  const delayed = (t.kind === 'teaching' || t.kind === 'transfer') && t.startPromptLevel === 0;
+  if (delayed !== (t.promptDelayMs !== null)) {
+    errors.push('задержка до подсказки — только и всегда при старте L0 в обучении и переносе');
+  }
+  if (t.response === 'independent' && t.latencyMs !== null && t.latencyMs > (t.promptDelayMs ?? t.responseWindowMs)) {
+    errors.push('самостоятельный ответ позже первой подсказки');
+  }
+  if (
+    t.response === 'prompted' &&
+    t.promptLevelUsed > t.startPromptLevel &&
+    t.latencyMs !== null &&
+    t.latencyFromFirstSdMs !== null &&
+    t.latencyFromFirstSdMs < (t.promptDelayMs ?? 0) + t.latencyMs
+  ) {
+    errors.push('подсказанный ответ раньше, чем закончилась задержка');
+  }
+  if (t.latencySource !== null && t.latencySource !== LATENCY_SOURCE[t.scoredBy]) errors.push('источник латентности не тот, что оценивает');
   if (t.promptDelayMs !== null && t.promptDelayMs > t.responseWindowMs) errors.push('задержка до подсказки длиннее окна ответа');
   if (t.responseWindowMs <= 0) errors.push('нет окна ответа');
   return errors;

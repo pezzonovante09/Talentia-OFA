@@ -242,7 +242,9 @@ function baselineTrials(trials: AbaTrial[]): AbaTrial[] {
   );
 }
 
-const fresh = (start: PromptLevel): StepPromptState => ({
+/** Состояние подсказки после базовой линии; задержка — прежняя (у звена — задержка цели). */
+const fresh = (start: PromptLevel, currentDelayMs: number): StepPromptState => ({
+  currentDelayMs,
   startPromptLevel: start,
   lastSuccessfulPromptLevel: start,
   consecutiveIndependentAtStart: 0,
@@ -282,7 +284,7 @@ export function applyBaseline(
       target.steps.map((st, i) => {
         const ok = byStep[i].filter((t) => t.response === 'independent').length;
         const level: PromptLevel = ok >= BASELINE_CHAIN_RUNS ? 0 : ok > 0 ? 1 : APP_MAX_PROMPT;
-        return [st.id, fresh(level)];
+        return [st.id, fresh(level, s.currentDelayMs)];
       }),
     );
     return { ...s, phase: 'acquisition', stepPrompts };
@@ -292,13 +294,13 @@ export function applyBaseline(
     if (own.length < IDENTIFY_BASELINE.trials) return s;
     const ok = own.filter((t) => t.response === 'independent').length;
     const level: PromptLevel = ok >= IDENTIFY_BASELINE.fromL0 ? 0 : ok >= IDENTIFY_BASELINE.fromL1 ? 1 : APP_MAX_PROMPT;
-    return { ...s, phase: 'acquisition', ...fresh(level) };
+    return { ...s, phase: 'acquisition', ...fresh(level, s.currentDelayMs) };
   }
 
   if (own.length < BASELINE_TRIALS) return s;
   const independent = own.filter((t) => t.response === 'independent').length;
   if (independent === own.length) return markMastered(s, sessionIndex, 'baseline');
-  return { ...s, phase: 'acquisition', ...fresh(independent > 0 ? 1 : APP_MAX_PROMPT) };
+  return { ...s, phase: 'acquisition', ...fresh(independent > 0 ? 1 : APP_MAX_PROMPT, s.currentDelayMs) };
 }
 
 /** Перевести освоенную цель в поддержание: расписание начинается с этой сессии и первого интервала. */
