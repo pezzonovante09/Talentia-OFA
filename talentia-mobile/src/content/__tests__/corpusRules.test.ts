@@ -921,10 +921,13 @@ describe('гард корпуса: build по полосе', () => {
     expectRed('build', c, 'вводится цифрами');
   });
 
-  it('ловит трёхзначное число на полосе 7', () => {
+  it('ловит четырёхзначное число на полосе 7 (решение №45: до трёх цифр)', () => {
     const c = goodCorpus();
     lessonAt(c, 1).band = '7';
-    expectRed('build', c, '3-значный, для 7 не больше 2');
+    const t = lessonAt(c, 1).tasks.find((x) => x.format === 'build' && x.fragments === undefined);
+    if (!t || t.format !== 'build') throw new Error('в фикстуре нет build без фишек');
+    t.answer = '1000';
+    expectRed('build', c, '4-значный, для 7 не больше 3');
   });
 });
 
@@ -1242,6 +1245,24 @@ describe('гард корпуса: отрывок и числа', () => {
     expect(run('build', c)).toEqual([]);
     t.answer = '10000000';
     expectRed('build', c, '8-значный, для 9-10 не больше 7');
+    t.answer = '1000001';
+    expectRed('build', c, 'ответ 1000001 больше 1000000');
+  });
+
+  it('на 7 пропускает ответ 100 и ловит 101, на 8 пропускает 1000 и ловит 1001 (решение №45)', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 1).tasks.find((x) => x.format === 'build' && x.fragments === undefined);
+    if (!t || t.format !== 'build') throw new Error('в фикстуре нет build без фишек');
+    lessonAt(c, 1).band = '7';
+    t.answer = '100';
+    expect(run('build', c)).toEqual([]);
+    t.answer = '101';
+    expectRed('build', c, 'ответ 101 больше 100');
+    lessonAt(c, 1).band = '8';
+    t.answer = '1000';
+    expect(run('build', c)).toEqual([]);
+    t.answer = '1001';
+    expectRed('build', c, 'ответ 1001 больше 1000');
   });
 
   it('новые ключи — шаги, объяснение, отрывок — проверяются на существование', () => {
@@ -1461,6 +1482,10 @@ describe('гард корпуса: приватность текста — по 
     ['en', 'Are you a boy or a girl?'],
     ['en', 'Does your granny bake?'],
     ['en', 'And you?'],
+    ['ru', 'У тебя пять яблок. Сколько останется?'],
+    ['ru', 'У тебя было 3 конфеты.'],
+    ['en', 'You have 3 apples.'],
+    ['ky', 'Сенде 10 алма бар.'],
   ] as const)('ловит: %s «%s»', (lang, text) => {
     expect(promptRed(text, lang).join('\n')).toContain('спроси о жителе или Tali');
   });
@@ -1474,6 +1499,8 @@ describe('гард корпуса: приватность текста — по 
     'Помоги утёнку найти свою маму.',
     'Расставь числа друг за другом.',
     'Найди брать или взять?',
+    'У Ачи пять яблок. Сколько останется?',
+    'У тебя получилось три!',
   ])('пропускает игровую речь и обычное задание: «%s»', (text) => {
     expect(promptRed(text)).toEqual([]);
   });

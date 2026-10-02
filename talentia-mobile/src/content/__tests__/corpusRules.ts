@@ -18,6 +18,7 @@ import {
   BUBBLE_CHARS,
   BUILD_DIGITS,
   BUILD_FRAGMENTS,
+  BUILD_MAX,
   chooseOptions,
   EXPLAIN_CHARS,
   EXPLAIN_LINES,
@@ -327,6 +328,8 @@ export const PERSONAL_TEXT: Record<'ru' | 'en' | 'ky', PersonalLang> = {
         '(?:расскажи|нарисуй|покажи|назови)\\s+(?:о\\s+|про\\s+)?(?:сво\\p{L}*|себ\\p{L}*)',
         'ты\\s+(?:мальчик|девочка|кыргыз|русск|казах|узбек)',
         'а\\s+у\\s+тебя\\s*\\?|а\\s+ты\\s*\\?|а\\s+тво\\p{L}+\\s*\\?',
+        // Решение №46: и задача «у тебя пять яблок» — о жителе, а не о ребёнке.
+        'у\\s+тебя\\s+(?:(?:было|есть|будет|осталось)\\s+)?(?:\\d+|од(?:ин|на|но)|дв[аей]|три|четыре|пять|шесть|семь|восемь|девять|десять|\\p{L}*дцать|сорок|сто|несколько|много)(?!\\p{L})',
       ].join('|'),
     ),
     myTitle: words('мо(?:й|я|ё|е|и)|наш\\p{L}*|мне|меня|я', true),
@@ -352,6 +355,7 @@ export const PERSONAL_TEXT: Record<'ru' | 'en' | 'ky', PersonalLang> = {
         "what'?s\\s+your\\s+name|what\\s+is\\s+your\\s+name|how\\s+old\\s+are\\s+you|where\\s+do\\s+you\\s+live",
         'who\\s+do\\s+you\\s+live\\s+with|lives?\\s+with\\s+you|tell\\s+me\\s+about\\s+yourself|are\\s+you\\s+a\\s+(?:boy|girl)',
         '(?:and|what\\s+about)\\s+you(?:rs)?\\s*\\?',
+        'you\\s+(?:have|had|got)\\s+(?:\\d+|one|two|three|four|five|six|seven|eight|nine|ten|some|many)(?!\\p{L})',
       ].join('|'),
     ),
     myTitle: words('my|our|me', true),
@@ -370,7 +374,7 @@ export const PERSONAL_TEXT: Record<'ru' | 'en' | 'ky', PersonalLang> = {
       ].join('|'),
     ),
     direct: words(
-      'атың\\s+ким|атыңыз\\s+ким|канча\\s+жаштасың|канча\\s+жаштасыз|кайда\\s+жашайсың|кайда\\s+жашайсыз|үй-бүлөң|а\\s+сен(?:чи|де)\\s*\\??',
+      'атың\\s+ким|атыңыз\\s+ким|канча\\s+жаштасың|канча\\s+жаштасыз|кайда\\s+жашайсың|кайда\\s+жашайсыз|үй-бүлөң|а\\s+сен(?:чи|де)\\s*\\??|сенде\\s+(?:\\d+|бир|эки|үч|төрт|беш|алты|жети|сегиз|тогуз|он)(?!\\p{L})',
     ),
     own: words(
       '(?:апа|ата|эне|ага|байке|эже|ини|сиңди|карындаш|үй-бүлө|үй|мектеб|мектеп|мугалим|дарег|дарек|айыл|шаар|көчө|ит|мышыг|мышык|бөлмө|акча|ысым|ат)\\p{L}{0,3}(?:ң|ңыз|ңуз|ңүз|ңиз)',
@@ -623,7 +627,7 @@ export const RULES = {
     // Из фрагментов — три фишки в ряд на SE: ответ ≤ 3 фишек, лоток ≤ 6, фишка
     // ≤ 6 знаков, и ответ действительно собирается из фишек. Без фрагментов —
     // своя цифровая клавиатура: ответ из цифр, разрядность по программе полосы.
-    title: 'build: ответ собирается из ≤ 3 фишек, лоток 2–6, фишка ≤ 6 знаков; без фишек — число с разрядностью по полосе',
+    title: 'build: ответ собирается из ≤ 3 фишек, лоток 2–6, фишка ≤ 6 знаков; без фишек — число с разрядностью и не больше границы нумерации полосы',
     check: (corpus, { ru }) =>
       formatTasksOf(corpus).flatMap(({ task, at, lesson }) => {
         if (task.format !== 'build') return [];
@@ -633,6 +637,9 @@ export const RULES = {
           const digits = BUILD_DIGITS[lesson.band];
           if (!/^\d+$/.test(task.answer)) bad.push(`${at}: без фишек ответ вводится цифрами, а answer «${task.answer}»`);
           else if (task.answer.length > digits) bad.push(`${at}: ответ ${task.answer.length}-значный, для ${lesson.band} не больше ${digits}`);
+          else if (Number(task.answer) > BUILD_MAX[lesson.band]) {
+            bad.push(`${at}: ответ ${task.answer} больше ${BUILD_MAX[lesson.band]} — за нумерацией полосы ${lesson.band}`);
+          }
           return bad;
         }
         const n = task.fragments.length;
