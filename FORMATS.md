@@ -382,7 +382,8 @@ BaseTask.passage?: { textKey: string; image?: string };
   предложений по полосе, лимит показанных — в каждой локали; на 5-6 и 7 есть `image`.
 - Числа в `passage`, `promptKey` и числовом `answer` не длиннее `BUILD_DIGITS[band]`;
   числовой `answer` — только цифры.
-- Все новые ключи (`lineKey`, `explainKey`, `passage.textKey`) есть в `ru`, `en`, `ky`.
+- Все новые ключи (`lineKey`, `explainKey`, `passage.textKey`) есть в `ru`; `en` и `ky`
+  — когда до них дойдёт локализация, а длины в них проверяются уже сейчас, где ключ есть.
 
 Эти правила проверяет гард `src/content/__tests__/corpus.test.ts`. Ещё проверяет
 только автор и методист — машинно их не отличить:

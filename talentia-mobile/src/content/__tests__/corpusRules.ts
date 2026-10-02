@@ -15,20 +15,27 @@
  * экспорт темы. Так правило обнаружения остаётся без списка исключений.
  */
 import {
+  BUBBLE_CHARS,
   BUILD_DIGITS,
   BUILD_FRAGMENTS,
   chooseOptions,
+  EXPLAIN_CHARS,
+  EXPLAIN_LINES,
   groupLimits,
   INTRO_MIN,
   matchOrderCount,
+  MODEL_STEPS,
+  PASSAGE_FORMATS,
+  PASSAGE_LIMITS,
   POINT_TARGET_GAP,
   pointTargets,
   TASKS_PER_LESSON,
   TEXT_LIMITS,
+  textDigits,
   type Range,
 } from '../../domain/lessonLimits';
 import { FORMAT_MIN_BAND } from '../../types/task';
-import type { AgeBand, Lesson, Media, Region, Task, Topic } from '../../types/task';
+import type { AgeBand, Lesson, Media, ModelExample, Region, Task, Topic } from '../../types/task';
 
 export type CorpusEntry = { file: string; topic: Topic };
 export type Corpus = CorpusEntry[];
@@ -58,6 +65,24 @@ function tasksOf(corpus: Corpus): LocatedTask[] {
   return lessonsOf(corpus).flatMap((l) => l.lesson.tasks.map((task) => ({ ...l, task, at: `${l.where}/${task.id}` })));
 }
 
+/**
+ * Задания вместе с задачами разобранных примеров — для правил формата и полосы:
+ * пример идёт на экране того же формата, и лимиты вёрстки, картинки на 5-6 и
+ * разрешённые форматы для него те же. Правила оценки (подсказка, объяснение, отрывок)
+ * берут только `tasksOf`: пример не оценивается.
+ */
+function formatTasksOf(corpus: Corpus): LocatedTask[] {
+  return [
+    ...tasksOf(corpus),
+    ...lessonsOf(corpus).flatMap((l) => {
+      const m = l.lesson.model;
+      if (!m) return [];
+      const task = { ...m.example, id: `${l.lesson.id}#model`, skill: m.skill, hintKey: '' } as Task;
+      return [{ ...l, task, at: `${l.where}/model` }];
+    }),
+  ];
+}
+
 /** Значение по точечному ключу `content.numbers.l1.title`. */
 export function lookup(locale: unknown, key: string): unknown {
   let node: unknown = locale;
@@ -69,16 +94,18 @@ export function lookup(locale: unknown, key: string): unknown {
 }
 
 /**
- * Все ключи локали внутри значения: любое строковое поле, чьё имя кончается на
- * `Key`, на любой глубине. Обход общий, а не по списку полей, чтобы новое поле
- * схемы (скажем, `explainKey`) попало под проверку без правки гарда.
+ * Все ключи локали внутри значения: любое поле, чьё имя кончается на `Key`, — строка
+ * или список строк (`explainKey`), на любой глубине. Обход общий, а не по списку полей,
+ * чтобы новое поле схемы попало под проверку без правки гарда.
  */
 export function keysIn(value: unknown): string[] {
   if (Array.isArray(value)) return value.flatMap(keysIn);
   if (typeof value !== 'object' || value === null) return [];
-  return Object.entries(value as Record<string, unknown>).flatMap(([k, v]) =>
-    k.endsWith('Key') && typeof v === 'string' ? [v] : keysIn(v),
-  );
+  return Object.entries(value as Record<string, unknown>).flatMap(([k, v]) => {
+    if (k.endsWith('Key') && typeof v === 'string') return [v];
+    if (k.endsWith('Key') && Array.isArray(v) && v.every((x) => typeof x === 'string')) return v as string[];
+    return keysIn(v);
+  });
 }
 
 /**
@@ -168,6 +195,80 @@ function composable(answer: string, parts: string[], maxParts: number): boolean 
   return go(target, new Set(), 0);
 }
 
+const chars = (s: string) => [...s].length;
+
+/**
+ * Строка длиннее лимита: русская — своего (`ruMax`), остальные локали, где ключ есть, —
+ * показанного (`shownMax`, `null` — текст не показывается). Пустые en/ky не проверяются:
+ * локализация отложена.
+ */
+function tooLong(locales: Locales, key: string, ruMax: number, shownMax: number | null, what: string): string[] {
+  const out: string[] = [];
+  for (const [lang, locale] of Object.entries(locales) as [string, unknown][]) {
+    const text = lookup(locale, key);
+    if (typeof text !== 'string') continue;
+    const max = lang === 'ru' ? ruMax : shownMax;
+    if (max !== null && chars(text) > max) out.push(`${what}: ${lang} ${chars(text)} знаков, нужно ≤ ${max}`);
+  }
+  return out;
+}
+
+const sentencesIn = (text: string) => text.split(/[.!?…]+/).filter((s) => s.trim() !== '').length;
+
+/**
+ * Числа в тексте, классы через пробел склеены: «10 000» — пятизначное. Пробел между
+ * отдельными числами («3 120») прочтётся как одно — в тексте задачи такого не пишут.
+ */
+const numbersIn = (text: string) =>
+  (text.match(/\d{1,3}(?:[   ]\d{3})+|\d+/g) ?? []).map((n) => n.replace(/\D/g, ''));
+
+/** id элементов задания или примера — на них ссылается `ModelStep.reveal`. */
+function elementIds(task: Task | ModelExample): string[] {
+  const t = task as unknown as Record<string, unknown>;
+  return ['options', 'targets', 'pairs', 'items', 'groups', 'fragments'].flatMap((field) => {
+    const list = t[field];
+    return Array.isArray(list) ? list.map((x) => String((x as { id?: unknown }).id)) : [];
+  });
+}
+
+/** Содержание без ключей локали и id: два задания с разными ключами, но одним стимулом — одно. */
+function strip(v: unknown): unknown {
+  if (Array.isArray(v)) return v.map(strip);
+  if (typeof v !== 'object' || v === null) return v;
+  return Object.fromEntries(
+    Object.entries(v as Record<string, unknown>)
+      .filter(([k]) => !k.endsWith('Key') && k !== 'id')
+      .map(([k, x]) => [k, strip(x)]),
+  );
+}
+
+/**
+ * Стимул и ответ задания — то, что пример не должен повторять: иначе первое задание
+ * превращается в списывание. Порядок показа вариантов не важен — он перемешивается.
+ */
+function answerSignature(t: Task | ModelExample): string {
+  const s = (v: unknown) => JSON.stringify(strip(v));
+  const sorted = (list: unknown[]) => list.map(s).sort();
+  switch (t.format) {
+    case 'choose':
+      return s(['choose', t.stimulus, t.options.find((o) => o.correct)]);
+    case 'point':
+      return s(['point', t.scene, t.targets.find((z) => z.correct)]);
+    case 'match':
+      return s(['match', t.stimulus, sorted(t.pairs)]);
+    case 'order':
+      return s(['order', t.stimulus, [...t.items].sort((a, b) => a.position - b.position)]);
+    case 'group':
+      return s([
+        'group',
+        t.stimulus,
+        sorted(t.items.map(({ groupId, ...item }) => [item, t.groups.find((g) => g.id === groupId)])),
+      ]);
+    case 'build':
+      return s(['build', t.stimulus, t.answer]);
+  }
+}
+
 export const RULES = {
   corpusIds: {
     // Задание адресуется по id в прогрессе, интервальном повторении и
@@ -195,7 +296,7 @@ export const RULES = {
     // засчитается и соседний.
     title: 'id вариантов, целей, пар, элементов, групп и фрагментов уникальны внутри задания',
     check: (corpus) =>
-      tasksOf(corpus).flatMap(({ task, at }) => {
+      formatTasksOf(corpus).flatMap(({ task, at }) => {
         const t = task as unknown as Record<string, unknown>;
         return ['options', 'targets', 'pairs', 'items', 'groups', 'fragments'].flatMap((field) => {
           const list = t[field];
@@ -212,7 +313,7 @@ export const RULES = {
     // Верхняя — четыре с 7 лет, три на 5–6: больше пятилетка не удерживает.
     title: 'choose: 3 варианта на 5–6, 3–4 с 7 лет (знакомство — от 2), ровно один верный',
     check: (corpus) =>
-      tasksOf(corpus).flatMap(({ task, at, lesson }) => {
+      formatTasksOf(corpus).flatMap(({ task, at, lesson }) => {
         if (task.format !== 'choose') return [];
         const bad: string[] = [];
         const range = outOfRange(task.options.length, chooseOptions(lesson.band), task.intro, 'вариантов');
@@ -235,7 +336,7 @@ export const RULES = {
     // неоднозначен; целиком в кадре — иначе в часть зоны не попасть.
     title: 'point: 3–4 цели (знакомство — от 2), одна верная, r ≥ 0.1, зона целиком в кадре, зоны не ближе r₁ + r₂ + 0.05, у каждой своё название',
     check: (corpus) =>
-      tasksOf(corpus).flatMap(({ task, at }) => {
+      formatTasksOf(corpus).flatMap(({ task, at }) => {
         if (task.format !== 'point') return [];
         const bad: string[] = [];
         const range = outOfRange(task.targets.length, pointTargets(), task.intro, 'целей');
@@ -277,7 +378,7 @@ export const RULES = {
     // ошибку во второй — тот же выбор из двух. Текстовые на четыре не помещаются.
     title: 'match: 3 пары на 5–6 и в тексте, 3–4 картинками с 7 лет (знакомство — от 2)',
     check: (corpus) =>
-      tasksOf(corpus).flatMap(({ task, at, lesson }) => {
+      formatTasksOf(corpus).flatMap(({ task, at, lesson }) => {
         if (task.format !== 'match') return [];
         const range = outOfRange(task.pairs.length, matchOrderCount(lesson.band, task.presentation), task.intro, 'пар');
         return range ? [`${at}: ${range}`] : [];
@@ -290,7 +391,7 @@ export const RULES = {
     // неверный порядок.
     title: 'order: 3 элемента на 5–6 и в тексте, 3–4 картинками с 7 лет (знакомство — от 2), position — перестановка 0..n-1',
     check: (corpus) =>
-      tasksOf(corpus).flatMap(({ task, at, lesson }) => {
+      formatTasksOf(corpus).flatMap(({ task, at, lesson }) => {
         if (task.format !== 'order') return [];
         const bad: string[] = [];
         const n = task.items.length;
@@ -312,7 +413,7 @@ export const RULES = {
     // предметов, три группы только картинками: подписи в три корзины не помещаются.
     title: 'group: на 5–6 две группы и 3–4 предмета, с 7 лет 2–3 группы (три — только картинками) и 3–6 предметов; groupId существует, в каждой группе есть элемент',
     check: (corpus) =>
-      tasksOf(corpus).flatMap(({ task, at, lesson }) => {
+      formatTasksOf(corpus).flatMap(({ task, at, lesson }) => {
         if (task.format !== 'group') return [];
         const bad: string[] = [];
         const limits = groupLimits(lesson.band, task.presentation);
@@ -337,7 +438,7 @@ export const RULES = {
     // своя цифровая клавиатура: ответ из цифр, разрядность по программе полосы.
     title: 'build: ответ собирается из ≤ 3 фишек, лоток 2–6, фишка ≤ 6 знаков; без фишек — число с разрядностью по полосе',
     check: (corpus, { ru }) =>
-      tasksOf(corpus).flatMap(({ task, at, lesson }) => {
+      formatTasksOf(corpus).flatMap(({ task, at, lesson }) => {
         if (task.format !== 'build') return [];
         const bad: string[] = [];
         if (!isNonEmptyString(task.answer)) return [`${at}: пустой answer`];
@@ -418,7 +519,7 @@ export const RULES = {
     // остальные правила его бы молча пропустили.
     title: 'формат разрешён для полосы урока по FORMAT_MIN_BAND',
     check: (corpus) =>
-      tasksOf(corpus).flatMap(({ task, lesson, at }) => {
+      formatTasksOf(corpus).flatMap(({ task, lesson, at }) => {
         const band = BANDS.indexOf(lesson.band);
         if (band < 0) return [`${at}: неизвестная полоса урока ${String(lesson.band)}`];
         const min = (FORMAT_MIN_BAND as Record<string, AgeBand | undefined>)[task.format];
@@ -434,7 +535,7 @@ export const RULES = {
     // тыкает, есть картинка и labelKey (он же адрес озвучки).
     title: 'полоса 5-6: presentation только picture, у каждого варианта/элемента/стороны пары есть labelKey и картинка',
     check: (corpus) =>
-      tasksOf(corpus).flatMap(({ task, lesson, at }) => {
+      formatTasksOf(corpus).flatMap(({ task, lesson, at }) => {
         if (lesson.band !== '5-6') return [];
         const bad: string[] = [];
         if ('presentation' in task && task.presentation !== 'picture') {
@@ -455,7 +556,7 @@ export const RULES = {
     // — значок корзины, и `count` схема группе не даёт.
     title: 'shape только вместе с count и наоборот, count — целое ≥ 1',
     check: (corpus) =>
-      tasksOf(corpus).flatMap(({ task, at }) =>
+      formatTasksOf(corpus).flatMap(({ task, at }) =>
         mediaOf(task, true).flatMap(({ m, at: el }) => {
           const bad: string[] = [];
           if ((m.shape === undefined) !== (m.count === undefined)) {
@@ -592,6 +693,142 @@ export const RULES = {
       }
       return bad;
     },
+  },
+
+  newSkillModel: {
+    // Новое правило ребёнок должен сначала увидеть решённым, а не как тест (AUDIT.md,
+    // блокер 16). Новый навык — впервые в корпусе своей полосы (решение №26): ребёнок
+    // может начать с 7, минуя 5-6. Порядок — порядок файлов, тем и уроков в корпусе.
+    // Два новых навыка в уроке — два правила в одном уроке и один пример на оба.
+    // Реестра навыков нет, и опечатка в skill выглядит как новый навык — отсюда
+    // «или опечатка» в сообщениях.
+    title: 'в уроке не больше одного нового навыка своей полосы; есть новый — есть model на него, нет — нет model',
+    check: (corpus) => {
+      const seen = new Map<AgeBand, Set<string>>();
+      return lessonsOf(corpus).flatMap(({ lesson, where }) => {
+        const band = seen.get(lesson.band) ?? new Set<string>();
+        seen.set(lesson.band, band);
+        const fresh = [...new Set(lesson.tasks.map((t) => t.skill))].filter((s) => !band.has(s));
+        lesson.tasks.forEach((t) => band.add(t.skill));
+        const bad: string[] = [];
+        if (fresh.length > 1) {
+          bad.push(`${where}: новых навыков ${fresh.length} (${fresh.join(', ')}), нужно не больше одного — или опечатка в skill`);
+        } else if (fresh.length === 1 && !lesson.model) {
+          bad.push(`${where}: новый навык ${fresh[0]} без разобранного примера (model) — или опечатка в skill`);
+        } else if (fresh.length === 1 && lesson.model && lesson.model.skill !== fresh[0]) {
+          bad.push(`${where}: пример на ${lesson.model.skill}, а новый навык урока — ${fresh[0]}`);
+        } else if (fresh.length === 0 && lesson.model) {
+          bad.push(`${where}: разобранный пример без нового навыка — ${lesson.model.skill} уже был в полосе ${lesson.band}`);
+        }
+        return bad;
+      });
+    },
+  },
+
+  model: {
+    // FORMATS.md, «Разобранный пример». Шагов по полосе — время: на 5-6 больше 10–12 с
+    // подряд без действия пятилетка не слушает. Пример с тем же стимулом и ответом, что
+    // задание урока, превращает первое задание в списывание. Знакомство с форматом
+    // после примера — 15–20 с без зачёта: «теперь ты» уже знакомит (решение №28).
+    title: 'разобранный пример: шагов Tali по полосе, реплика ≤ 36 (в других локалях ≤ пузыря), reveal на элемент примера, без отрывка, формат как у первого задания навыка, не совпадает с заданиями урока; в уроке нет знакомства; на 5-6 завязка ≤ 36 и первое задание — того же навыка и формата, без отрывка',
+    check: (corpus, locales) =>
+      lessonsOf(corpus).flatMap(({ lesson, where }) => {
+        const m = lesson.model;
+        if (!m) return [];
+        const at = `${where}/model`;
+        const bad: string[] = [];
+        const steps = outOfRange(m.steps.length, MODEL_STEPS[lesson.band], false, 'шагов Tali');
+        if (steps) bad.push(`${at}: ${steps} (без «теперь ты»)`);
+        const ids = new Set(elementIds(m.example));
+        m.steps.forEach((step, i) => {
+          bad.push(...tooLong(locales, step.lineKey, TEXT_LIMITS.hintChars, BUBBLE_CHARS, `${at}: шаг ${i + 1}`));
+          if (step.reveal !== undefined && !ids.has(step.reveal)) bad.push(`${at}: шаг ${i + 1} — в примере нет элемента ${step.reveal}`);
+        });
+        if ('passage' in m.example) bad.push(`${at}: в примере отрывок — план задачи показывается на условии в одну фразу`);
+        const first = lesson.tasks.find((t) => t.skill === m.skill);
+        if (first && first.format !== m.example.format) {
+          bad.push(`${at}: пример в формате ${m.example.format}, а первое задание навыка ${first.id} — ${first.format}`);
+        }
+        const sig = answerSignature(m.example);
+        for (const t of lesson.tasks) {
+          if (answerSignature(t) === sig) bad.push(`${at}: тот же стимул и ответ, что у ${t.id}, — первое задание превратится в списывание`);
+        }
+        for (const t of lesson.tasks) if (t.intro) bad.push(`${where}/${t.id}: знакомство с форматом в уроке с примером`);
+        if (lesson.band === '5-6') {
+          bad.push(...tooLong(locales, lesson.hook.lineKey, TEXT_LIMITS.hintChars, BUBBLE_CHARS, `${where}: завязка в уроке с примером`));
+          const t0 = lesson.tasks[0];
+          if (t0 && (t0.skill !== m.skill || t0.format !== m.example.format)) {
+            bad.push(`${where}/${t0.id}: первое задание после примера — ${t0.skill}/${t0.format}, нужно ${m.skill}/${m.example.format}`);
+          }
+          if (t0?.passage) bad.push(`${where}/${t0.id}: первое задание после примера с отрывком — ещё ≈10 с слушания`);
+        }
+        return bad;
+      }),
+  },
+
+  explain: {
+    // Показ ответа без «почему» учит тапать показанное, а не понимать (AUDIT.md, блокер
+    // 17). Пузырь Tali — три строки, ≈90 знаков кыргызского; вторая реплика сменяет первую.
+    // Объяснение, совпадающее с подсказкой, ответа не называет.
+    title: `объяснение (explainKey) у каждого оценочного задания: 1 реплика на 5-6, 1–2 с 7 лет; по-русски ≤ ${EXPLAIN_CHARS}, в других локалях ≤ ${BUBBLE_CHARS}; не повторяет подсказку`,
+    check: (corpus, locales) =>
+      tasksOf(corpus).flatMap(({ task, lesson, at }) => {
+        const lines = task.explainKey;
+        if (lines === undefined) return task.intro ? [] : [`${at}: нет объяснения (explainKey) — показ ответа без «почему»`];
+        const bad: string[] = [];
+        const n = outOfRange(lines.length, EXPLAIN_LINES[lesson.band], false, 'реплик объяснения');
+        if (n) bad.push(`${at}: ${n}`);
+        const hint = lookup(locales.ru, task.hintKey);
+        lines.forEach((key, i) => {
+          if (key === task.hintKey || (typeof hint === 'string' && lookup(locales.ru, key) === hint)) {
+            bad.push(`${at}: объяснение ${i + 1} повторяет подсказку`);
+          }
+          bad.push(...tooLong(locales, key, EXPLAIN_CHARS, BUBBLE_CHARS, `${at}: объяснение ${i + 1}`));
+        });
+        return bad;
+      }),
+  },
+
+  passage: {
+    // AUDIT.md, блокер 18; лимиты — расчёт по экрану iPhone SE (`PASSAGE_LIMITS`). На 5-6
+    // и 7 картинка — единственная опора для того, кто не читает или читает по слогам.
+    title: 'отрывок (passage) только в choose, order, build; длина по-русски и показанная в каждой локали, число предложений по полосе; на 5-6 и 7 с картинкой',
+    check: (corpus, locales) =>
+      tasksOf(corpus).flatMap(({ task, lesson, at }) => {
+        const p = task.passage;
+        if (!p) return [];
+        const lim = PASSAGE_LIMITS[lesson.band];
+        const bad: string[] = [];
+        if (!PASSAGE_FORMATS.includes(task.format)) bad.push(`${at}: отрывок в ${task.format} — экран занят сценой или раскладкой`);
+        if (lim.image && !isNonEmptyString(p.image)) bad.push(`${at}: на ${lesson.band} у отрывка нужна картинка`);
+        bad.push(...tooLong(locales, p.textKey, lim.ruChars, lim.shownChars, `${at}: отрывок`));
+        const ru = lookup(locales.ru, p.textKey);
+        if (lim.sentences !== null && typeof ru === 'string' && sentencesIn(ru) > lim.sentences) {
+          bad.push(`${at}: в отрывке ${sentencesIn(ru)} предложений, на ${lesson.band} не больше ${lim.sentences}`);
+        }
+        return bad;
+      }),
+  },
+
+  textNumbers: {
+    // Число длиннее разрядности полосы — тема не той полосы, а на клавиатуре его не
+    // набрать. На 5-6 клавиатуры нет, но числа до 10 в тексте есть.
+    title: 'числа в вопросе и отрывке не длиннее разрядности полосы (textDigits)',
+    check: (corpus, { ru }) =>
+      tasksOf(corpus).flatMap(({ task, lesson, at }) => {
+        const max = textDigits(lesson.band);
+        const texts: [string | undefined, string][] = [
+          [task.promptKey, 'вопросе'],
+          [task.passage?.textKey, 'отрывке'],
+        ];
+        return texts.flatMap(([key, where]) => {
+          const text = key === undefined ? undefined : lookup(ru, key);
+          if (typeof text !== 'string') return [];
+          return numbersIn(text)
+            .filter((n) => n.length > max)
+            .map((n) => `${at}: число ${n} в ${where} — для ${lesson.band} не больше ${max} цифр`);
+        });
+      }),
   },
 } satisfies Record<string, Rule>;
 

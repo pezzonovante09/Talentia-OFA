@@ -13,7 +13,7 @@
  * Верхняя граница — вёрстка: всё помещается на iPhone SE без прокрутки, с зоной
  * нажатия ≥ 60 pt (SCREENS.md, 3.1–3.6).
  */
-import type { AgeBand, Presentation } from '../types/task';
+import type { AgeBand, Presentation, TaskFormat } from '../types/task';
 
 export type Range = readonly [min: number, max: number];
 
@@ -51,16 +51,73 @@ export function groupLimits(band: AgeBand, presentation: Presentation): { groups
 export const BUILD_FRAGMENTS = { maxInAnswer: 3, maxInTray: 6, maxChars: 6 } as const;
 
 /**
- * Разрядность числа при вводе с клавиатуры — по программе, а не по вёрстке:
- * клавиатура вмещает четыре цифры, но семилетка многозначных чисел ещё не знает.
+ * Разрядность числа при вводе с клавиатуры — по программе, а не по вёрстке: 7 — числа до
+ * 20, 8 — до 100, 9-10 — нумерация до миллиона в 4 классе (решение №31; подтвердить по
+ * стандарту КР). Клавиши 74×60 проходят по моторике на всех полосах; поле шире четырёх
+ * цифр не встаёт в строку с выражением, и выражение уходит в блок вопроса (FORMATS.md,
+ * «Клавиатура для чисел»).
  */
-export const BUILD_DIGITS: Record<AgeBand, number> = { '5-6': 0, '7': 2, '8': 3, '9-10': 4 };
+export const BUILD_DIGITS: Record<AgeBand, number> = { '5-6': 0, '7': 2, '8': 3, '9-10': 7 };
+
+/**
+ * Сколько цифр в числе, которое ребёнок видит в вопросе или отрывке. На 5-6 клавиатуры
+ * нет, но числа до 10 в тексте есть — поэтому не меньше двух.
+ */
+export const textDigits = (band: AgeBand): number => Math.max(BUILD_DIGITS[band], 2);
 
 /**
  * Длина вопроса и подсказки по-русски. Кыргызская строка до ×2.3 длиннее: вопрос
  * ≤ 40 знаков помещается в 3 строки по 18 pt, подсказка ≤ 36 — в пузырь Tali.
  */
 export const TEXT_LIMITS = { promptChars: 40, hintChars: 36 } as const;
+
+/**
+ * Сколько показанных знаков вмещает пузырь Tali: три строки по 16 pt, ≈90 знаков
+ * кыргызского (`child-ux-specialist`, 2026-10-02). Предел для не-русских локалей у
+ * реплик примера и объяснения — русская строка ограничена своим лимитом.
+ */
+export const BUBBLE_CHARS = 90;
+
+/**
+ * Шагов Tali в разобранном примере (`Lesson.model`), без последнего «теперь ты» — его
+ * строит приложение. На 5-6 ровно два: навык, которому нужно три, — это два навыка.
+ */
+export const MODEL_STEPS: Record<AgeBand, Range> = { '5-6': [2, 2], '7': [2, 3], '8': [2, 3], '9-10': [2, 4] };
+
+/**
+ * Полное время примера — голос, анимации, паузы, без ожидания тапа ребёнка. На 5-6
+ * больше 10–12 с подряд без действия пятилетка не слушает. Проверяется по файлам
+ * озвучки после её сборки, а не по числу знаков.
+ */
+export const MODEL_SECONDS: Record<AgeBand, number> = { '5-6': 15, '7': 30, '8': 30, '9-10': 35 };
+
+/**
+ * Объяснение при показе ответа (`explainKey`): сколько реплик и длина реплики
+ * по-русски. На 5-6 одна — там объясняет подсветка; с 7 лет вторая только в связке
+ * «правило → применение» (решение №33). 36 — педагогический минимум 28 с запасом;
+ * в других локалях — `BUBBLE_CHARS`.
+ */
+export const EXPLAIN_LINES: Record<AgeBand, Range> = { '5-6': [1, 1], '7': [1, 2], '8': [1, 2], '9-10': [1, 2] };
+export const EXPLAIN_CHARS = 36;
+
+/**
+ * Отрывок с условием задачи (`passage`). `ruChars` — русских знаков, `shownChars` —
+ * показанных в любой локали (на 5-6 текст не показывается, только звучит), `sentences`
+ * — предложений, `image` — обязательна ли картинка. Числа — расчёт `child-ux-specialist`
+ * по экрану iPhone SE в состоянии «Текст»; на 9-10 русских 240, а не 300 (FORMATS.md).
+ */
+export const PASSAGE_LIMITS: Record<
+  AgeBand,
+  { ruChars: number; shownChars: number | null; sentences: number | null; image: boolean }
+> = {
+  '5-6': { ruChars: 90, shownChars: null, sentences: 2, image: true },
+  '7': { ruChars: 100, shownChars: 135, sentences: 3, image: true },
+  '8': { ruChars: 180, shownChars: 250, sentences: null, image: false },
+  '9-10': { ruChars: 240, shownChars: 340, sentences: null, image: false },
+};
+
+/** Где отрывок допустим: в `point`, `match`, `group` экран занят сценой или раскладкой. */
+export const PASSAGE_FORMATS: readonly TaskFormat[] = ['choose', 'order', 'build'];
 
 /** Минимальный зазор между зонами `point`, в долях ширины: не ближе `r₁ + r₂ + 0.05`. */
 export const POINT_TARGET_GAP = 0.05;

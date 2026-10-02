@@ -20,7 +20,9 @@ const k = (s: string) => `content.fx.${s}`;
 
 /**
  * Урок 5-6: четыре формата по одному. Пятый доступный малышам, `group`, — во втором
- * уроке (`lessonPictureTwo`): автор урока 5–6 пишет ровно четыре задания.
+ * уроке (`lessonPictureTwo`): автор урока 5–6 пишет ровно четыре задания. Все задания на
+ * один навык — он новый в полосе, поэтому у урока разобранный пример в формате первого
+ * задания.
  */
 function lessonPicture(): Lesson {
   return {
@@ -29,14 +31,30 @@ function lessonPicture(): Lesson {
     band: '5-6',
     hook: { taliPose: 'puzzled', lineKey: k('a.l1.hook') },
     atlasEntryKey: k('a.l1.atlas'),
+    model: {
+      skill: 'count-to-3',
+      example: {
+        format: 'choose',
+        presentation: 'picture',
+        promptKey: k('a.l1.m.prompt'),
+        stimulus: { labelKey: k('a.l1.m.stimulus'), shape: 'leaf', count: 3 },
+        options: [
+          { id: 'a', labelKey: 'content.common.one', shape: 'dot', count: 1, correct: false },
+          { id: 'b', labelKey: 'content.common.two', shape: 'dot', count: 2, correct: false },
+          { id: 'c', labelKey: 'content.common.three', shape: 'dot', count: 3, correct: true },
+        ],
+      },
+      steps: [{ lineKey: k('a.l1.m.s1') }, { lineKey: k('a.l1.m.s2'), reveal: 'c' }],
+    },
     tasks: [
       {
         id: 'fx-a-l1-t1',
-        skill: 'subitize-1-3',
+        skill: 'count-to-3',
         format: 'choose',
         presentation: 'picture',
         promptKey: k('a.l1.t1.prompt'),
         hintKey: k('a.l1.t1.hint'),
+        explainKey: [k('a.l1.t1.explain')],
         stimulus: { labelKey: k('a.l1.t1.stimulus'), shape: 'stone', count: 2 },
         options: [
           { id: 'a', labelKey: 'content.common.one', shape: 'dot', count: 1, correct: false },
@@ -46,10 +64,11 @@ function lessonPicture(): Lesson {
       },
       {
         id: 'fx-a-l1-t2',
-        skill: 'count-objects-in-scene',
+        skill: 'count-to-3',
         format: 'point',
         promptKey: k('a.l1.t2.prompt'),
         hintKey: k('a.l1.t2.hint'),
+        explainKey: [k('a.l1.t2.explain')],
         scene: 'region-numbers',
         targets: [
           { id: 'x', x: 0.2, y: 0.3, r: 0.1, correct: true, labelKey: k('a.l1.t2.x') },
@@ -59,11 +78,12 @@ function lessonPicture(): Lesson {
       },
       {
         id: 'fx-a-l1-t3',
-        skill: 'match-count-to-word',
+        skill: 'count-to-3',
         format: 'match',
         presentation: 'picture',
         promptKey: k('a.l1.t3.prompt'),
         hintKey: k('a.l1.t3.hint'),
+        explainKey: [k('a.l1.t3.explain')],
         pairs: [
           { id: 'p1', left: { labelKey: k('a.l1.t3.l1'), shape: 'berry', count: 1 }, right: { labelKey: 'content.common.one', image: 'card-one' } },
           { id: 'p2', left: { labelKey: k('a.l1.t3.l2'), shape: 'berry', count: 2 }, right: { labelKey: 'content.common.two', image: 'card-two' } },
@@ -72,11 +92,12 @@ function lessonPicture(): Lesson {
       },
       {
         id: 'fx-a-l1-t4',
-        skill: 'order-by-count',
+        skill: 'count-to-3',
         format: 'order',
         presentation: 'picture',
         promptKey: k('a.l1.t4.prompt'),
         hintKey: k('a.l1.t4.hint'),
+        explainKey: [k('a.l1.t4.explain')],
         items: [
           { id: 'i1', labelKey: k('a.l1.t4.i1'), shape: 'leaf', count: 3, position: 2 },
           { id: 'i2', labelKey: k('a.l1.t4.i2'), shape: 'leaf', count: 1, position: 0 },
@@ -98,6 +119,24 @@ function lessonPictureTwo(): Lesson {
     band: '5-6',
     hook: { taliPose: 'found', lineKey: k('a.l2.hook') },
     atlasEntryKey: k('a.l2.atlas'),
+    model: {
+      skill: 'sort-by-kind',
+      example: {
+        format: 'group',
+        presentation: 'picture',
+        promptKey: k('a.l2.m.prompt'),
+        groups: [
+          { id: 'g1', labelKey: k('a.l2.m.g1'), shape: 'berry' },
+          { id: 'g2', labelKey: k('a.l2.m.g2') },
+        ],
+        items: [
+          { id: 'i1', labelKey: k('a.l2.m.i1'), shape: 'berry', count: 2, groupId: 'g1' },
+          { id: 'i2', labelKey: k('a.l2.m.i2'), image: 'leaf-small', groupId: 'g2' },
+          { id: 'i3', labelKey: k('a.l2.m.i3'), image: 'leaf-big', groupId: 'g2' },
+        ],
+      },
+      steps: [{ lineKey: k('a.l2.m.s1'), reveal: 'i1' }, { lineKey: k('a.l2.m.s2'), reveal: 'i2' }],
+    },
     tasks: [
       {
         id: 'fx-a-l2-t1',
@@ -106,6 +145,7 @@ function lessonPictureTwo(): Lesson {
         presentation: 'picture',
         promptKey: k('a.l2.t1.prompt'),
         hintKey: k('a.l2.t1.hint'),
+        explainKey: [k('a.l2.t1.explain')],
         groups: [
           { id: 'g1', labelKey: k('a.l2.t1.g1'), shape: 'stone' },
           { id: 'g2', labelKey: k('a.l2.t1.g2') },
@@ -121,23 +161,33 @@ function lessonPictureTwo(): Lesson {
   };
 }
 
-/** Урок 9-10: текстовая подача, build с фрагментами и без, общий ключ. */
+/**
+ * Урок 9-10: текстовая подача, build с фрагментами и без, общий ключ, отрывок, объяснение
+ * из двух реплик. Один навык — новый, пример в формате первого задания (`build`).
+ */
 function lessonText(): Lesson {
-  const t = (n: number) => ({ promptKey: k(`b.l1.t${n}.prompt`), hintKey: k(`b.l1.t${n}.hint`) });
+  const t = (n: number) => ({ promptKey: k(`b.l1.t${n}.prompt`), hintKey: k(`b.l1.t${n}.hint`), explainKey: [k(`b.l1.t${n}.explain`)] });
   return {
     id: 'fx-b-l1',
     titleKey: k('b.l1.title'),
     band: '9-10',
     hook: { taliPose: 'write', lineKey: k('b.l1.hook') },
     atlasEntryKey: k('b.l1.atlas'),
+    model: {
+      skill: 'read-words',
+      example: { format: 'build', promptKey: k('b.l1.m.prompt'), answer: 'дом', fragments: [{ id: 'f1', labelKey: k('b.l1.m.f1') }, { id: 'f2', labelKey: k('b.l1.m.f2') }] },
+      steps: [{ lineKey: k('b.l1.m.s1'), reveal: 'f1' }, { lineKey: k('b.l1.m.s2'), reveal: 'f2' }, { lineKey: k('b.l1.m.s3') }],
+    },
     tasks: [
-      { id: 'fx-b-l1-t1', skill: 'spell-word', format: 'build', ...t(1), answer: 'кот', fragments: [{ id: 'f1', labelKey: k('b.l1.t1.f1') }, { id: 'f2', labelKey: k('b.l1.t1.f2') }] },
+      { id: 'fx-b-l1-t1', skill: 'read-words', format: 'build', ...t(1), answer: 'кот', fragments: [{ id: 'f1', labelKey: k('b.l1.t1.f1') }, { id: 'f2', labelKey: k('b.l1.t1.f2') }] },
       {
         id: 'fx-b-l1-t2',
-        skill: 'pick-word',
+        skill: 'read-words',
         format: 'choose',
         presentation: 'text',
         ...t(2),
+        explainKey: [k('b.l1.t2.explain'), k('b.l1.t2.explain2')],
+        passage: { textKey: k('b.l1.t2.passage') },
         options: [
           { id: 'a', labelKey: 'content.common.one', correct: true },
           { id: 'b', labelKey: k('b.l1.t2.b'), correct: false },
@@ -145,12 +195,12 @@ function lessonText(): Lesson {
           { id: 'd', labelKey: k('b.l1.t2.d'), correct: false },
         ],
       },
-      { id: 'fx-b-l1-t3', skill: 'multiply-2-by-1', format: 'build', ...t(3), answer: '256' },
-      { id: 'fx-b-l1-t4', skill: 'find-on-map', format: 'point', ...t(4), scene: 'region-words', targets: [{ id: 'z', x: 0.5, y: 0.5, r: 0.15, correct: true, labelKey: k('b.l1.t4.z') }, { id: 'w', x: 0.15, y: 0.25, r: 0.15, correct: false, labelKey: k('b.l1.t4.w') }, { id: 'u', x: 0.85, y: 0.25, r: 0.15, correct: false, labelKey: k('b.l1.t4.u') }] },
-      { id: 'fx-b-l1-t5', skill: 'match-words', format: 'match', presentation: 'text', ...t(5), pairs: [{ id: 'p1', left: { labelKey: k('b.l1.t5.l1') }, right: { labelKey: k('b.l1.t5.r1') } }, { id: 'p2', left: { labelKey: k('b.l1.t5.l2') }, right: { labelKey: k('b.l1.t5.r2') } }, { id: 'p3', left: { labelKey: k('b.l1.t5.l3') }, right: { labelKey: k('b.l1.t5.r3') } }] },
-      { id: 'fx-b-l1-t6', skill: 'order-words', format: 'order', presentation: 'text', ...t(6), items: [{ id: 'a', labelKey: k('b.l1.t6.a'), position: 1 }, { id: 'b', labelKey: k('b.l1.t6.b'), position: 0 }, { id: 'c', labelKey: k('b.l1.t6.c'), position: 2 }] },
-      { id: 'fx-b-l1-t7', skill: 'sort-words', format: 'group', presentation: 'text', ...t(7), groups: [{ id: 'g1', labelKey: k('b.l1.t7.g1') }, { id: 'g2', labelKey: k('b.l1.t7.g2') }], items: [{ id: 'a', labelKey: k('b.l1.t7.a'), groupId: 'g1' }, { id: 'b', labelKey: k('b.l1.t7.b'), groupId: 'g2' }, { id: 'c', labelKey: k('b.l1.t7.c'), groupId: 'g1' }] },
-      { id: 'fx-b-l1-t8', skill: 'pick-word', format: 'choose', presentation: 'text', ...t(8), options: [{ id: 'a', labelKey: k('b.l1.t8.a'), correct: false }, { id: 'b', labelKey: k('b.l1.t8.b'), correct: true }, { id: 'c', labelKey: k('b.l1.t8.c'), correct: false }] },
+      { id: 'fx-b-l1-t3', skill: 'read-words', format: 'build', ...t(3), answer: '256' },
+      { id: 'fx-b-l1-t4', skill: 'read-words', format: 'point', ...t(4), scene: 'region-words', targets: [{ id: 'z', x: 0.5, y: 0.5, r: 0.15, correct: true, labelKey: k('b.l1.t4.z') }, { id: 'w', x: 0.15, y: 0.25, r: 0.15, correct: false, labelKey: k('b.l1.t4.w') }, { id: 'u', x: 0.85, y: 0.25, r: 0.15, correct: false, labelKey: k('b.l1.t4.u') }] },
+      { id: 'fx-b-l1-t5', skill: 'read-words', format: 'match', presentation: 'text', ...t(5), pairs: [{ id: 'p1', left: { labelKey: k('b.l1.t5.l1') }, right: { labelKey: k('b.l1.t5.r1') } }, { id: 'p2', left: { labelKey: k('b.l1.t5.l2') }, right: { labelKey: k('b.l1.t5.r2') } }, { id: 'p3', left: { labelKey: k('b.l1.t5.l3') }, right: { labelKey: k('b.l1.t5.r3') } }] },
+      { id: 'fx-b-l1-t6', skill: 'read-words', format: 'order', presentation: 'text', ...t(6), items: [{ id: 'a', labelKey: k('b.l1.t6.a'), position: 1 }, { id: 'b', labelKey: k('b.l1.t6.b'), position: 0 }, { id: 'c', labelKey: k('b.l1.t6.c'), position: 2 }] },
+      { id: 'fx-b-l1-t7', skill: 'read-words', format: 'group', presentation: 'text', ...t(7), groups: [{ id: 'g1', labelKey: k('b.l1.t7.g1') }, { id: 'g2', labelKey: k('b.l1.t7.g2') }], items: [{ id: 'a', labelKey: k('b.l1.t7.a'), groupId: 'g1' }, { id: 'b', labelKey: k('b.l1.t7.b'), groupId: 'g2' }, { id: 'c', labelKey: k('b.l1.t7.c'), groupId: 'g1' }] },
+      { id: 'fx-b-l1-t8', skill: 'read-words', format: 'choose', presentation: 'text', ...t(8), options: [{ id: 'a', labelKey: k('b.l1.t8.a'), correct: false }, { id: 'b', labelKey: k('b.l1.t8.b'), correct: true }, { id: 'c', labelKey: k('b.l1.t8.c'), correct: false }] },
     ],
   };
 }
@@ -169,12 +219,15 @@ function goodCorpus(): Corpus {
 const FIXTURE_TEXT: Record<string, string> = {
   [k('b.l1.t1.f1')]: 'ко',
   [k('b.l1.t1.f2')]: 'т',
+  [k('b.l1.m.f1')]: 'до',
+  [k('b.l1.m.f2')]: 'м',
 };
 
 /** Локаль, в которой каждый ключ корпуса — непустая строка. */
 function localeFor(corpus: Corpus): Record<string, unknown> {
   const root: Record<string, unknown> = {};
-  for (const key of keysIn(corpus)) setKey(root, key, FIXTURE_TEXT[key] ?? 'текст');
+  // Объяснение отличается от подсказки по тексту — иначе правило explain его не пропустит.
+  for (const key of keysIn(corpus)) setKey(root, key, FIXTURE_TEXT[key] ?? (/\.explain\d*$/.test(key) ? 'Вот так: это ответ.' : 'текст'));
   return root;
 }
 
@@ -869,6 +922,274 @@ describe('гард корпуса: знакомство и длина текст
     setKey(locale, t.promptKey, 'а'.repeat(40));
     setKey(locale, t.hintKey, 'б'.repeat(36));
     expect(run('textLength', c, { ru: locale })).toEqual([]);
+  });
+});
+
+/* ------------------------------------------------------------------------ */
+/* Разобранный пример, объяснение, отрывок (FORMATS.md, шаг 5)               */
+/* ------------------------------------------------------------------------ */
+
+const modelAt = (c: Corpus, i: 0 | 1) => {
+  const m = lessonAt(c, i).model;
+  if (!m) throw new Error('в фикстуре урок без примера');
+  return m;
+};
+
+describe('гард корпуса: новый навык и пример', () => {
+  it('ловит два новых навыка в уроке', () => {
+    const c = goodCorpus();
+    lessonAt(c, 0).tasks[1].skill = 'count-to-5';
+    expectRed('newSkillModel', c, 'новых навыков 2 (count-to-3, count-to-5)');
+  });
+
+  it('ловит новый навык без примера — или опечатку', () => {
+    const c = goodCorpus();
+    delete lessonAt(c, 0).model;
+    expectRed('newSkillModel', c, 'новый навык count-to-3 без разобранного примера (model) — или опечатка в skill');
+  });
+
+  it('ловит пример в уроке без нового навыка', () => {
+    const c = goodCorpus();
+    c[0].topic.lessons[1].tasks[0].skill = 'count-to-3';
+    expectRed('newSkillModel', c, 'разобранный пример без нового навыка');
+  });
+
+  it('ловит пример не на новый навык урока', () => {
+    const c = goodCorpus();
+    modelAt(c, 0).skill = 'count-to-5';
+    expectRed('newSkillModel', c, 'пример на count-to-5, а новый навык урока — count-to-3');
+  });
+
+  it('считает навык новым в пределах полосы: навык 5-6 на 7 снова новый', () => {
+    const c = goodCorpus();
+    c.push({ file: 'numbers-7.ts', topic: { id: 'fx-c', titleKey: k('c.title'), lessons: [{ ...lessonPicture(), id: 'fx-c-l1', band: '7' }] } });
+    expect(run('newSkillModel', c)).toEqual([]);
+    delete c[2].topic.lessons[0].model;
+    expectRed('newSkillModel', c, 'fx-c-l1: новый навык count-to-3 без разобранного примера');
+  });
+});
+
+describe('гард корпуса: разобранный пример', () => {
+  it.each([
+    [0, 3, 'шагов Tali 3, нужно 2'],
+    [1, 5, 'шагов Tali 5, нужно 2–4'],
+    [1, 1, 'шагов Tali 1, нужно 2–4'],
+  ] as const)('ловит в уроке %s пример из %s шагов', (i, n, message) => {
+    const c = goodCorpus();
+    modelAt(c, i).steps = Array.from({ length: n }, (_, j) => ({ lineKey: k(`m.s${j}`) }));
+    expectRed('model', c, message);
+  });
+
+  it('ловит reveal на несуществующий элемент', () => {
+    const c = goodCorpus();
+    modelAt(c, 0).steps[1].reveal = 'zz';
+    expectRed('model', c, 'шаг 2 — в примере нет элемента zz');
+  });
+
+  it('ловит длинную реплику шага по-русски и в ky', () => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    const ky: Record<string, unknown> = {};
+    setKey(ru, k('a.l1.m.s1'), 'а'.repeat(37));
+    setKey(ky, k('a.l1.m.s2'), 'а'.repeat(91));
+    const out = run('model', c, { ru, ky }).join('\n');
+    expect(out).toContain('шаг 1: ru 37 знаков, нужно ≤ 36');
+    expect(out).toContain('шаг 2: ky 91 знаков, нужно ≤ 90');
+  });
+
+  it('ловит отрывок в примере', () => {
+    const c = goodCorpus();
+    Object.assign(modelAt(c, 1).example, { passage: { textKey: k('b.l1.m.passage') } });
+    expectRed('model', c, 'в примере отрывок');
+  });
+
+  it('ловит пример не в формате первого задания навыка', () => {
+    const c = goodCorpus();
+    modelAt(c, 1).example = { format: 'choose', presentation: 'text', promptKey: k('b.l1.m.prompt'), options: [{ id: 'a', labelKey: k('b.l1.m.a'), correct: true }, { id: 'b', labelKey: k('b.l1.m.b'), correct: false }, { id: 'c', labelKey: k('b.l1.m.c'), correct: false }] };
+    expectRed('model', c, 'пример в формате choose, а первое задание навыка fx-b-l1-t1 — build');
+  });
+
+  it('ловит пример с тем же стимулом и ответом, что задание урока, — ключи и порядок вариантов не спасают', () => {
+    const c = goodCorpus();
+    const ex = modelAt(c, 0).example;
+    if (ex.format !== 'choose') throw new Error('пример 5-6 — choose');
+    ex.stimulus = { labelKey: k('a.l1.m.other'), shape: 'stone', count: 2 };
+    ex.options = [
+      { id: 'z', labelKey: 'content.common.three', shape: 'dot', count: 3, correct: false },
+      { id: 'y', labelKey: 'content.common.two', shape: 'dot', count: 2, correct: true },
+      { id: 'x', labelKey: 'content.common.one', shape: 'dot', count: 1, correct: false },
+    ];
+    expectRed('model', c, 'тот же стимул и ответ, что у fx-a-l1-t1');
+  });
+
+  it('ловит знакомство с форматом в уроке с примером', () => {
+    const c = goodCorpus();
+    lessonAt(c, 0).tasks[0].intro = true;
+    expectRed('model', c, 'fx-a-l1-t1: знакомство с форматом в уроке с примером');
+  });
+
+  it('на 5-6 ловит длинную завязку в уроке с примером', () => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    setKey(ru, k('a.l1.hook'), 'а'.repeat(37));
+    expectRed('model', c, 'завязка в уроке с примером: ru 37 знаков', { ru });
+  });
+
+  it('на 5-6 ловит первое задание другого формата после примера', () => {
+    const c = goodCorpus();
+    const l = lessonAt(c, 0);
+    l.tasks = [l.tasks[1], l.tasks[0], ...l.tasks.slice(2)];
+    expectRed('model', c, 'fx-a-l1-t2: первое задание после примера — count-to-3/point, нужно count-to-3/choose');
+  });
+
+  it('на 5-6 ловит отрывок в первом задании после примера', () => {
+    const c = goodCorpus();
+    lessonAt(c, 0).tasks[0].passage = { textKey: k('a.l1.t1.passage'), image: 'basket' };
+    expectRed('model', c, 'первое задание после примера с отрывком');
+  });
+
+  it('проверяет пример правилами формата и полосы', () => {
+    const c = goodCorpus();
+    const ex = modelAt(c, 0).example;
+    if (ex.format !== 'choose') throw new Error('пример 5-6 — choose');
+    ex.options = ex.options.slice(1);
+    delete ex.options[0].shape;
+    delete ex.options[0].count;
+    expectRed('choose', c, 'fx-a/fx-a-l1/model: вариантов 2, нужно 3');
+    expectRed('picture56', c, 'fx-a/fx-a-l1/model: options[b] без картинки');
+  });
+});
+
+describe('гард корпуса: объяснение', () => {
+  it('ловит оценочное задание без объяснения', () => {
+    const c = goodCorpus();
+    delete lessonAt(c, 0).tasks[1].explainKey;
+    expectRed('explain', c, 'fx-a-l1-t2: нет объяснения (explainKey)');
+  });
+
+  it('пропускает знакомство без объяснения', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 1).tasks[0];
+    t.intro = true;
+    delete t.explainKey;
+    expect(run('explain', c)).toEqual([]);
+  });
+
+  it('ловит две реплики на 5-6 и три на 9-10, пропускает две на 7', () => {
+    const c = goodCorpus();
+    lessonAt(c, 0).tasks[0].explainKey = [k('a.l1.t1.explain'), k('a.l1.t1.explain2')];
+    lessonAt(c, 1).tasks[0].explainKey = [k('b.l1.t1.explain'), k('b.l1.t1.explain2'), k('b.l1.t1.explain3')];
+    const out = run('explain', c).join('\n');
+    expect(out).toContain('fx-a-l1-t1: реплик объяснения 2, нужно 1');
+    expect(out).toContain('fx-b-l1-t1: реплик объяснения 3, нужно 1–2');
+    const seven = goodCorpus();
+    lessonAt(seven, 1).band = '7';
+    expect(run('explain', seven)).toEqual([]);
+  });
+
+  it('ловит объяснение, повторяющее подсказку ключом или текстом', () => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    const [a, b] = lessonAt(c, 0).tasks;
+    a.explainKey = [a.hintKey];
+    setKey(ru, b.explainKey![0], 'Посчитай по одному.');
+    setKey(ru, b.hintKey, 'Посчитай по одному.');
+    const out = run('explain', c, { ru }).join('\n');
+    expect(out).toContain('fx-a-l1-t1: объяснение 1 повторяет подсказку');
+    expect(out).toContain('fx-a-l1-t2: объяснение 1 повторяет подсказку');
+  });
+
+  it('ловит длинное объяснение по-русски и в ky, пропускает границы 36 и 90', () => {
+    const c = goodCorpus();
+    const key = lessonAt(c, 0).tasks[0].explainKey![0];
+    const ru = localeFor(c);
+    const ky: Record<string, unknown> = {};
+    setKey(ru, key, 'а'.repeat(37));
+    setKey(ky, key, 'а'.repeat(91));
+    const out = run('explain', c, { ru, ky }).join('\n');
+    expect(out).toContain('объяснение 1: ru 37 знаков, нужно ≤ 36');
+    expect(out).toContain('объяснение 1: ky 91 знаков, нужно ≤ 90');
+    setKey(ru, key, 'а'.repeat(36));
+    setKey(ky, key, 'а'.repeat(90));
+    expect(run('explain', c, { ru, ky })).toEqual([]);
+  });
+});
+
+describe('гард корпуса: отрывок и числа', () => {
+  it('ловит отрывок в point', () => {
+    const c = goodCorpus();
+    taskOf(c, 1, 'point').passage = { textKey: k('b.l1.t4.passage') };
+    expectRed('passage', c, 'отрывок в point');
+  });
+
+  it('ловит отрывок без картинки на 7', () => {
+    const c = goodCorpus();
+    lessonAt(c, 1).band = '7';
+    expectRed('passage', c, 'на 7 у отрывка нужна картинка');
+  });
+
+  it('на 9-10 ловит 241 русский и 341 показанный в ky, пропускает 240 и 340', () => {
+    const c = goodCorpus();
+    const key = k('b.l1.t2.passage');
+    const ru = localeFor(c);
+    const ky: Record<string, unknown> = {};
+    setKey(ru, key, 'а'.repeat(241));
+    setKey(ky, key, 'а'.repeat(341));
+    const out = run('passage', c, { ru, ky }).join('\n');
+    expect(out).toContain('отрывок: ru 241 знаков, нужно ≤ 240');
+    expect(out).toContain('отрывок: ky 341 знаков, нужно ≤ 340');
+    setKey(ru, key, 'а'.repeat(240));
+    setKey(ky, key, 'а'.repeat(340));
+    expect(run('passage', c, { ru, ky })).toEqual([]);
+  });
+
+  it('на 5-6 ловит три предложения; длину ky не проверяет — текст не показывается', () => {
+    const c = goodCorpus();
+    const key = k('a.l1.t4.passage');
+    taskOf(c, 0, 'order').passage = { textKey: key, image: 'basket' };
+    const ru = localeFor(c);
+    const ky: Record<string, unknown> = {};
+    setKey(ru, key, 'Раз. Два. Три!');
+    setKey(ky, key, 'а'.repeat(200));
+    expectRed('passage', c, 'в отрывке 3 предложений, на 5-6 не больше 2', { ru, ky });
+    setKey(ru, key, 'Раз. Два!');
+    expect(run('passage', c, { ru, ky })).toEqual([]);
+  });
+
+  it('ловит восьмизначное число в отрывке на 9-10, пропускает «1 000 000»', () => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    setKey(ru, k('b.l1.t2.passage'), 'В библиотеке 12 345 678 книг.');
+    expectRed('textNumbers', c, 'число 12345678 в отрывке — для 9-10 не больше 7 цифр', { ru });
+    setKey(ru, k('b.l1.t2.passage'), 'В городе 1 000 000 жителей.');
+    expect(run('textNumbers', c, { ru })).toEqual([]);
+  });
+
+  it('ловит трёхзначное число в вопросе на 5-6', () => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    setKey(ru, k('a.l1.t1.prompt'), 'Где 100 камней?');
+    expectRed('textNumbers', c, 'число 100 в вопросе — для 5-6 не больше 2 цифр', { ru });
+  });
+
+  it('на 9-10 пропускает семизначный ответ с клавиатуры и ловит восьмизначный', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 1).tasks.find((x) => x.format === 'build' && x.fragments === undefined);
+    if (!t || t.format !== 'build') throw new Error('в фикстуре нет build без фишек');
+    t.answer = '1000000';
+    expect(run('build', c)).toEqual([]);
+    t.answer = '10000000';
+    expectRed('build', c, '8-значный, для 9-10 не больше 7');
+  });
+
+  it('новые ключи — шаги, объяснение, отрывок — проверяются на существование', () => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    modelAt(c, 0).steps[0].lineKey = k('missing.step');
+    lessonAt(c, 0).tasks[0].explainKey = [k('missing.explain')];
+    lessonAt(c, 1).tasks[1].passage = { textKey: k('missing.passage') };
+    const out = run('keysExist', c, { ru }).join('\n');
+    for (const key of ['step', 'explain', 'passage']) expect(out).toContain(k(`missing.${key}`));
   });
 });
 
