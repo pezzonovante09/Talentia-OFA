@@ -4,12 +4,14 @@ import type { AbaFormat, AbaTarget, AbaTrial } from '../../types/aba';
  * Место цели в сетке по формату — для фикстур, которые меняют только формат. Подражание и
  * самообслуживание проверяются своими тестами.
  */
-export const GRID_FOR: Record<AbaFormat, Pick<AbaTarget, 'level' | 'area' | 'sdKind'>> = {
+export const GRID_FOR: Record<AbaFormat, Pick<AbaTarget, 'level' | 'area' | 'sdKind' | 'fieldSize'>> = {
   imitate_sound: { level: 1, area: 'echoic' },
   repeat_word: { level: 1, area: 'echoic' },
   voice_volume: { level: 2, area: 'voice_control', sdKind: 'instruction' },
   do_action: { level: 1, area: 'receptive_instructions', sdKind: 'instruction' },
   identify: { level: 1, area: 'receptive_identify', sdKind: 'name' },
+  match: { level: 1, area: 'matching', fieldSize: 3 },
+  say: { level: 2, area: 'tact', sdKind: 'picture' },
 };
 
 export const target: AbaTarget = {

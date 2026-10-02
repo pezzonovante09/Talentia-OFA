@@ -585,7 +585,8 @@ export function startAbaSession(input: StartInput): AbaSessionState {
   const states: Record<string, AbaTargetState> = {};
   for (const t of input.targets) states[t.id] = input.states[t.id] ?? initialTargetState(t);
 
-  const offered = input.targets.filter((t) => !(config === 'alone' && t.format === 'do_action'));
+  // В «сам» нет do_action и say: неверное слово получило бы то же последствие, что и верное.
+  const offered = input.targets.filter((t) => !(config === 'alone' && (t.format === 'do_action' || t.format === 'say')));
   const isMastered = (id: string) => states[id] !== undefined && MASTERED_PHASES.has(states[id].phase);
   const ready = (t: AbaTarget) => counts(t, config) && (t.prerequisiteTargetIds ?? []).every(isMastered);
 

@@ -129,6 +129,9 @@ export const FIRST_ANSWER_LEVEL: Record<AbaFormat, PromptLevel> = {
   voice_volume: 2,
   do_action: 2,
   identify: 1,
+  /** L2 «верный и один дистрактор» ответа не несёт — коррекция с L3 (методист, 2026-10-02). */
+  match: 3,
+  say: 2,
 };
 
 /**
@@ -141,13 +144,23 @@ export const FIRST_ANSWER_LEVEL: Record<AbaFormat, PromptLevel> = {
  *   выделением, по слогам или фазам), дно приложения; дальше — только взрослый (L4). Без этого
  *   «полная модель» совпадала с L0, и проба повтора SD писалась подсказанной.
  */
-export type PromptLadder = 'standard' | 'imitative';
+export type PromptLadder = 'standard' | 'imitative' | 'two_choice';
 
-export function promptLadder(t: Pick<AbaTarget, 'format' | 'sdKind'>): PromptLadder {
-  return t.format === 'imitate_sound' || t.format === 'repeat_word' || t.sdKind === 'imitation' ? 'imitative' : 'standard';
+/**
+ * `two_choice` — выбор из двух (`match` с полем 2, сортировка): L2 «оставить два» ничего не
+ * убирает, поэтому L2 нет, а коррекция и подъём — по `FIRST_ANSWER_LEVEL` (у `match` — L3).
+ */
+export function promptLadder(t: Pick<AbaTarget, 'format' | 'sdKind' | 'fieldSize' | 'matchMode'>): PromptLadder {
+  if (t.format === 'imitate_sound' || t.format === 'repeat_word' || t.sdKind === 'imitation') return 'imitative';
+  if (t.format === 'match' && (t.fieldSize === 2 || t.matchMode === 'sort')) return 'two_choice';
+  return 'standard';
 }
 
-const LADDER_LEVELS: Record<PromptLadder, readonly PromptLevel[]> = { standard: [0, 1, 2, 3], imitative: [0, 1, 3] };
+const LADDER_LEVELS: Record<PromptLadder, readonly PromptLevel[]> = {
+  standard: [0, 1, 2, 3],
+  imitative: [0, 1, 3],
+  two_choice: [0, 1, 3],
+};
 
 /** Следующий уровень лестницы вверх, не выше того, что выдаёт приложение. */
 export function ladderUp(level: PromptLevel, ladder: PromptLadder): PromptLevel {
@@ -163,7 +176,7 @@ export function ladderDown(level: PromptLevel, ladder: PromptLadder): PromptLeve
  * Уровень, с которого коррекция и возврат в обучение несут ответ. У лестницы подражания ответ
  * несёт уже L0, на котором ребёнок и ошибся, — поэтому коррекция идёт на усиленной модели L3.
  */
-export function answerLevel(target: Pick<AbaTarget, 'format' | 'sdKind'>): PromptLevel {
+export function answerLevel(target: Pick<AbaTarget, 'format' | 'sdKind' | 'fieldSize' | 'matchMode'>): PromptLevel {
   return promptLadder(target) === 'imitative' ? APP_MAX_PROMPT : FIRST_ANSWER_LEVEL[target.format];
 }
 
@@ -182,7 +195,7 @@ export function answerLevel(target: Pick<AbaTarget, 'format' | 'sdKind'>): Promp
 export function correctionLevel(
   s: AbaTargetState,
   failed: AbaTrial,
-  target: Pick<AbaTarget, 'format' | 'sdKind'>,
+  target: Pick<AbaTarget, 'format' | 'sdKind' | 'fieldSize' | 'matchMode'>,
 ): PromptLevel | null {
   if (failed.response === 'no_response' && failed.promptLevelUsed >= APP_MAX_PROMPT) return null;
   // Лестница подражания: коррекция — на усиленной модели; провал и на ней — к взрослому (L4).

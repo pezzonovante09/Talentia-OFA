@@ -311,7 +311,7 @@ export function applyBaseline(
 export function markMastered(
   s: AbaTargetState,
   sessionIndex: number,
-  by: 'criterion' | 'baseline' | 'home_unverified' = 'criterion',
+  by: 'criterion' | 'baseline' | 'home_unverified' | 'inferred' = 'criterion',
 ): AbaTargetState {
   return {
     ...s,
