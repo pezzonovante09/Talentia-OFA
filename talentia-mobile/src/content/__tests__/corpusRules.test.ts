@@ -19,8 +19,8 @@ import type { ChooseTask, Lesson, Task, TaskFormat, Topic } from '../../types/ta
 const k = (s: string) => `content.fx.${s}`;
 
 /**
- * Урок 5-6: четыре формата по одному. Пятый доступный малышам, `group`, — во втором
- * уроке (`lessonPictureTwo`): автор урока 5–6 пишет ровно четыре задания. Все задания на
+ * Урок 5-6: choose, point, match, choose. `group` и `order` — во втором уроке
+ * (`lessonPictureTwo`): автор урока 5–6 пишет ровно четыре задания. Все задания на
  * один навык — он новый в полосе, поэтому у урока разобранный пример в формате первого
  * задания.
  */
@@ -93,26 +93,45 @@ function lessonPicture(): Lesson {
       {
         id: 'fx-a-l1-t4',
         skill: 'count-to-3',
-        format: 'order',
+        format: 'choose',
         presentation: 'picture',
         promptKey: k('a.l1.t4.prompt'),
         hintKey: k('a.l1.t4.hint'),
         explainKey: [k('a.l1.t4.explain')],
-        items: [
-          { id: 'i1', labelKey: k('a.l1.t4.i1'), shape: 'leaf', count: 3, position: 2 },
-          { id: 'i2', labelKey: k('a.l1.t4.i2'), shape: 'leaf', count: 1, position: 0 },
-          { id: 'i3', labelKey: k('a.l1.t4.i3'), shape: 'leaf', count: 2, position: 1 },
+        stimulus: { labelKey: k('a.l1.t4.stimulus'), shape: 'berry', count: 1 },
+        options: [
+          { id: 'a', labelKey: 'content.common.one', shape: 'dot', count: 1, correct: true },
+          { id: 'b', labelKey: 'content.common.two', shape: 'dot', count: 2, correct: false },
+          { id: 'c', labelKey: 'content.common.three', shape: 'dot', count: 3, correct: false },
         ],
       },
     ],
   };
 }
 
-/** Второй урок 5-6: `group` и три задания первого урока под своими ключами. */
+/**
+ * Второй урок 5-6: `group` (новый навык и формат примера), два задания первого урока под
+ * своими ключами и `order`. Составные форматы разнесены по урокам: в уроке 5-6 с примером
+ * не больше одного нового (`newCompositeFormat`).
+ */
 function lessonPictureTwo(): Lesson {
   const renamed = JSON.parse(
-    JSON.stringify(lessonPicture().tasks.slice(0, 3)).replace(/fx-a-l1-t(\d)/g, (_, n) => `fx-a-l2-t${Number(n) + 1}`).replace(/a\.l1\.t(\d)\./g, (_, n) => `a.l2.t${Number(n) + 1}.`),
+    JSON.stringify(lessonPicture().tasks.slice(0, 2)).replace(/fx-a-l1-t(\d)/g, (_, n) => `fx-a-l2-t${Number(n) + 1}`).replace(/a\.l1\.t(\d)\./g, (_, n) => `a.l2.t${Number(n) + 1}.`),
   ) as Task[];
+  const order: Task = {
+    id: 'fx-a-l2-t4',
+    skill: 'count-to-3',
+    format: 'order',
+    presentation: 'picture',
+    promptKey: k('a.l2.t4.prompt'),
+    hintKey: k('a.l2.t4.hint'),
+    explainKey: [k('a.l2.t4.explain')],
+    items: [
+      { id: 'i1', labelKey: k('a.l2.t4.i1'), shape: 'leaf', count: 3, position: 2 },
+      { id: 'i2', labelKey: k('a.l2.t4.i2'), shape: 'leaf', count: 1, position: 0 },
+      { id: 'i3', labelKey: k('a.l2.t4.i3'), shape: 'leaf', count: 2, position: 1 },
+    ],
+  };
   return {
     id: 'fx-a-l2',
     titleKey: k('a.l2.title'),
@@ -157,6 +176,7 @@ function lessonPictureTwo(): Lesson {
         ],
       },
       ...renamed,
+      order,
     ],
   };
 }
@@ -594,6 +614,12 @@ describe('гард корпуса: shape и count', () => {
     expectRed('shapeCount', c, 'stimulus — shape и count задаются только вместе');
   });
 
+  it('ловит layout без shape', () => {
+    const c = goodCorpus();
+    taskOf(c, 0, 'match').pairs[0].right.layout = 'dice';
+    expectRed('shapeCount', c, 'pairs[p1].right — layout без shape');
+  });
+
   it.each([0, -1, 1.5])('ловит count=%s', (count) => {
     const c = goodCorpus();
     taskOf(c, 0, 'order').items[0].count = count;
@@ -984,6 +1010,23 @@ describe('гард корпуса: разобранный пример', () => {
     const c = goodCorpus();
     modelAt(c, 0).steps[1].reveal = 'zz';
     expectRed('model', c, 'шаг 2 — в примере нет элемента zz');
+  });
+
+  it('подсветка стимула: пропускает у примера со стимулом, ловит без него', () => {
+    const c = goodCorpus();
+    modelAt(c, 0).steps[0].reveal = 'stimulus';
+    expect(run('model', c)).toEqual([]);
+    modelAt(c, 1).steps[0].reveal = 'stimulus';
+    expectRed('model', c, 'fx-b-l1/model: шаг 1 подсвечивает стимул, а у примера его нет');
+  });
+
+  it('на 5-6 ловит два новых составных формата в уроке с примером, формат примера не считает', () => {
+    const c = goodCorpus();
+    expect(run('newCompositeFormat', c)).toEqual([]);
+    const l1 = lessonAt(c, 0);
+    const order = c[0].topic.lessons[1].tasks[3];
+    l1.tasks[3] = { ...order, id: 'fx-a-l1-t9' };
+    expectRed('newCompositeFormat', c, 'fx-a-l1: новых составных форматов 2 (match, order)');
   });
 
   it('ловит длинную реплику шага по-русски и в ky', () => {

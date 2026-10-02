@@ -34,8 +34,8 @@ import {
   textDigits,
   type Range,
 } from '../../domain/lessonLimits';
-import { FORMAT_MIN_BAND } from '../../types/task';
-import type { AgeBand, Lesson, Media, ModelExample, Region, Task, Topic } from '../../types/task';
+import { FORMAT_MIN_BAND, REVEAL_STIMULUS } from '../../types/task';
+import type { AgeBand, Lesson, Media, ModelExample, Region, Task, TaskFormat, Topic } from '../../types/task';
 
 export type CorpusEntry = { file: string; topic: Topic };
 export type Corpus = CorpusEntry[];
@@ -554,7 +554,7 @@ export const RULES = {
     // сколько рисовать; число без фигуры — нечего рисовать; ноль фигур —
     // пустая карточка в задании на счёт. Группы не проверяются: у них `shape`
     // — значок корзины, и `count` схема группе не даёт.
-    title: 'shape только вместе с count и наоборот, count — целое ≥ 1',
+    title: 'shape только вместе с count и наоборот, count — целое ≥ 1, layout — только у фигур',
     check: (corpus) =>
       formatTasksOf(corpus).flatMap(({ task, at }) =>
         mediaOf(task, true).flatMap(({ m, at: el }) => {
@@ -562,6 +562,7 @@ export const RULES = {
           if ((m.shape === undefined) !== (m.count === undefined)) {
             bad.push(`${at}: ${el} — shape и count задаются только вместе`);
           }
+          if (m.layout !== undefined && m.shape === undefined) bad.push(`${at}: ${el} — layout без shape: раскладывать нечего`);
           if (m.count !== undefined && !(Number.isInteger(m.count) && m.count >= 1)) {
             bad.push(`${at}: ${el} count=${m.count}, нужно целое ≥ 1`);
           }
@@ -742,7 +743,11 @@ export const RULES = {
         const ids = new Set(elementIds(m.example));
         m.steps.forEach((step, i) => {
           bad.push(...tooLong(locales, step.lineKey, TEXT_LIMITS.hintChars, BUBBLE_CHARS, `${at}: шаг ${i + 1}`));
-          if (step.reveal !== undefined && !ids.has(step.reveal)) bad.push(`${at}: шаг ${i + 1} — в примере нет элемента ${step.reveal}`);
+          if (step.reveal === REVEAL_STIMULUS) {
+            if (!m.example.stimulus) bad.push(`${at}: шаг ${i + 1} подсвечивает стимул, а у примера его нет`);
+          } else if (step.reveal !== undefined && !ids.has(step.reveal)) {
+            bad.push(`${at}: шаг ${i + 1} — в примере нет элемента ${step.reveal}`);
+          }
         });
         if ('passage' in m.example) bad.push(`${at}: в примере отрывок — план задачи показывается на условии в одну фразу`);
         const first = lesson.tasks.find((t) => t.skill === m.skill);
@@ -764,6 +769,30 @@ export const RULES = {
         }
         return bad;
       }),
+  },
+
+  newCompositeFormat: {
+    // Составной формат (match, order, group) при первой встрече ребёнок не знает, как
+    // выполнять: Tali сам делает первую половину действия (рантайм, `child-ux-specialist`,
+    // решение №35). Две такие демонстрации в одном уроке 5-6 с примером, вдобавок к
+    // примеру, — перегрузка. Формат примера знакомит сам («теперь ты»).
+    title: 'на 5-6 в уроке с примером — не больше одного составного формата (match, order, group), впервые появляющегося в полосе, кроме формата примера',
+    check: (corpus) => {
+      const composite = new Set<TaskFormat>(['match', 'order', 'group']);
+      const seen = new Map<AgeBand, Set<TaskFormat>>();
+      return lessonsOf(corpus).flatMap(({ lesson, where }) => {
+        const band = seen.get(lesson.band) ?? new Set<TaskFormat>();
+        seen.set(lesson.band, band);
+        const fresh = [...new Set(lesson.tasks.map((t) => t.format))].filter(
+          (f) => composite.has(f) && !band.has(f) && f !== lesson.model?.example.format,
+        );
+        if (lesson.model) band.add(lesson.model.example.format);
+        lesson.tasks.forEach((t) => band.add(t.format));
+        return lesson.band === '5-6' && lesson.model && fresh.length > 1
+          ? [`${where}: новых составных форматов ${fresh.length} (${fresh.join(', ')}), в уроке с примером не больше одного`]
+          : [];
+      });
+    },
   },
 
   explain: {

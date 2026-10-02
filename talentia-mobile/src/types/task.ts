@@ -45,6 +45,12 @@ export type Media = {
   image?: string;
   /** Сколько фигур нарисовать. Только вместе с `shape`. */
   count?: number;
+  /**
+   * Как разложены фигуры. Раскладка — рычаг трудности задания на счёт: ряд считается
+   * легче россыпи, а точки «как на кубике» узнаются сразу, без пересчёта. Без поля — ряд.
+   * Только вместе с `shape`.
+   */
+  layout?: 'row' | 'scatter' | 'dice';
 };
 
 type BaseTask = {
@@ -184,8 +190,14 @@ type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K>
  */
 export type ModelExample = DistributiveOmit<Task, 'id' | 'skill' | 'hintKey' | 'explainKey' | 'intro' | 'passage'>;
 
-/** Шаг примера: реплика Tali и одно действие — элемент `example`, который он ставит или подсвечивает. */
+/**
+ * Шаг примера: реплика Tali и одно действие — элемент `example` (его id), который он
+ * ставит или подсвечивает, или `'stimulus'` — сам стимул («гляжу на все листья разом»).
+ */
 export type ModelStep = { lineKey: string; reveal?: string };
+
+/** Значение `ModelStep.reveal` для стимула: у стимула нет id. */
+export const REVEAL_STIMULUS = 'stimulus';
 
 /**
  * Разобранный пример: новое правило ребёнок сначала видит решённым, а не как тест.
