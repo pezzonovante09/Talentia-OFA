@@ -1,6 +1,6 @@
 /**
- * Числовая долина, полоса 5–6. Пилотный контент: тема «Сколько их?», первые два урока из
- * трёх по `CURRICULUM.md`.
+ * Числовая долина, полоса 5–6. Пилотный контент: тема «Сколько их?», три урока по
+ * `CURRICULUM.md` — узнать до трёх, сосчитать до пяти, сосчитать до десяти.
  *
  * Сетка тем — `CURRICULUM.md`, схема форматов — `FORMATS.md`. Спецификация уроков —
  * `curriculum-content-reviewer`, 2026-10-02 (решения владельца №26–36 в AUDIT.md).
@@ -13,10 +13,14 @@
  */
 import type { Lesson, Media, Topic } from '../types/task';
 
-const COMMON = ['', 'one', 'two', 'three', 'four', 'five'].map((n) => `content.common.${n}`);
+const COMMON = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'].map(
+  (n) => `content.common.${n}`,
+);
+
+type Count = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 
 /** Вариант-точки «как на кубике»: озвучен числом, поэтому верный нельзя найти по слуху. */
-const dots = (id: string, count: 1 | 2 | 3 | 4 | 5, correct: boolean) => ({
+const dots = (id: string, count: Count, correct: boolean) => ({
   id,
   labelKey: COMMON[count],
   shape: 'dot' as const,
@@ -26,7 +30,7 @@ const dots = (id: string, count: 1 | 2 | 3 | 4 | 5, correct: boolean) => ({
 });
 
 /** Сторона пары «точки» в `match`. */
-const dotSide = (count: 1 | 2 | 3 | 4 | 5): Media => ({ labelKey: COMMON[count], shape: 'dot', count, layout: 'dice' });
+const dotSide = (count: Count): Media => ({ labelKey: COMMON[count], shape: 'dot', count, layout: 'dice' });
 
 /**
  * Урок 1. Начинается с узнавания количества, а не со счёта: до трёх ребёнок видит
@@ -209,8 +213,94 @@ const lessonCountToFive: Lesson = {
   ],
 };
 
+/**
+ * Урок 3. Счёт до десяти: тот же пересчёт по одному, но число длиннее, чем видно разом, и
+ * ошибка уже в том, чтобы пропустить предмет или сосчитать его дважды. Поэтому подсказки
+ * про то, как вести счёт («трогай каждый по разу»), а не про то, что видно.
+ *
+ * Роль Tali по номеру урока — он сбился со счёта, ребёнок помогает (TALI.md, «Роли Tali»).
+ * Пример — шесть листьев: самый короткий счёт за пятёрку, реплика укладывается в пузырь.
+ * Третье задание — спираль на счёт до пяти из второго урока, ягоды вразброс: передышка
+ * перед парами до десяти. Новых составных форматов нет — `order` и `match` ребёнок уже
+ * видел. Варианты-точки от шести до десяти — «как на кубике» в два ряда (рамка десятка):
+ * вид решает `design-lead`.
+ */
+const lessonCountToTen: Lesson = {
+  id: 'nv-count-l3',
+  titleKey: 'content.numbers.l3.title',
+  band: '5-6',
+  hook: { taliPose: 'puzzled', lineKey: 'content.numbers.l3.hook' },
+  atlasEntryKey: 'content.numbers.l3.atlas',
+  model: {
+    skill: 'count-to-10',
+    example: {
+      format: 'choose',
+      presentation: 'picture',
+      promptKey: 'content.numbers.l3.model.prompt',
+      stimulus: { labelKey: 'content.numbers.l3.model.stimulus', shape: 'leaf', count: 6, layout: 'row' },
+      options: [dots('a', 5, false), dots('b', 6, true), dots('c', 7, false)],
+    },
+    steps: [
+      { lineKey: 'content.numbers.l3.model.s1', reveal: 'stimulus' },
+      { lineKey: 'content.numbers.l3.model.s2', reveal: 'b' },
+    ],
+  },
+  tasks: [
+    {
+      id: 'nv-count-l3-t1',
+      skill: 'count-to-10',
+      format: 'choose',
+      presentation: 'picture',
+      promptKey: 'content.numbers.l3.t1.prompt',
+      hintKey: 'content.numbers.l3.t1.hint',
+      explainKey: ['content.numbers.l3.t1.explain'],
+      stimulus: { labelKey: 'content.numbers.l3.t1.stimulus', shape: 'stone', count: 8, layout: 'row' },
+      options: [dots('a', 7, false), dots('b', 8, true), dots('c', 9, false)],
+    },
+    {
+      id: 'nv-count-l3-t2',
+      skill: 'count-to-10',
+      format: 'order',
+      presentation: 'picture',
+      promptKey: 'content.numbers.l3.t2.prompt',
+      hintKey: 'content.numbers.l3.t2.hint',
+      explainKey: ['content.numbers.l3.t2.explain'],
+      items: [
+        { id: 'i1', labelKey: 'content.numbers.l3.t2.berries', shape: 'berry', count: 7, position: 1 },
+        { id: 'i2', labelKey: 'content.numbers.l3.t2.stones', shape: 'stone', count: 8, position: 2 },
+        { id: 'i3', labelKey: 'content.numbers.l3.t2.leaves', shape: 'leaf', count: 6, position: 0 },
+      ],
+    },
+    {
+      id: 'nv-count-l3-t3',
+      skill: 'count-to-5',
+      format: 'choose',
+      presentation: 'picture',
+      promptKey: 'content.numbers.l3.t3.prompt',
+      hintKey: 'content.numbers.l3.t3.hint',
+      explainKey: ['content.numbers.l3.t3.explain'],
+      stimulus: { labelKey: 'content.numbers.l3.t3.stimulus', shape: 'berry', count: 4, layout: 'scatter' },
+      options: [dots('a', 3, false), dots('b', 4, true), dots('c', 5, false)],
+    },
+    {
+      id: 'nv-count-l3-t4',
+      skill: 'count-to-10',
+      format: 'match',
+      presentation: 'picture',
+      promptKey: 'content.numbers.l3.t4.prompt',
+      hintKey: 'content.numbers.l3.t4.hint',
+      explainKey: ['content.numbers.l3.t4.explain'],
+      pairs: [
+        { id: 'p1', left: { labelKey: 'content.numbers.l3.t4.stones', shape: 'stone', count: 9 }, right: dotSide(9) },
+        { id: 'p2', left: { labelKey: 'content.numbers.l3.t4.berries', shape: 'berry', count: 7 }, right: dotSide(7) },
+        { id: 'p3', left: { labelKey: 'content.numbers.l3.t4.leaves', shape: 'leaf', count: 10 }, right: dotSide(10) },
+      ],
+    },
+  ],
+};
+
 export const countingTopic: Topic = {
   id: 'nv-count',
   titleKey: 'content.numbers.count.title',
-  lessons: [lessonOneTwoThree, lessonCountToFive],
+  lessons: [lessonOneTwoThree, lessonCountToFive, lessonCountToTen],
 };

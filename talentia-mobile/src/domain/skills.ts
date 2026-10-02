@@ -42,6 +42,7 @@ export const SKILLS: readonly SkillEntry[] = [
   // Числовая долина, 5-6, тема «Сколько их?» — пилот (`content/numbers-5-6.ts`).
   { id: 'subitize-1-3', region: 'numbers', band: '5-6', prerequisites: [], source: 'norm' },
   { id: 'count-to-5', region: 'numbers', band: '5-6', prerequisites: ['subitize-1-3'], source: 'norm' },
+  { id: 'count-to-10', region: 'numbers', band: '5-6', prerequisites: ['count-to-5'], source: 'norm' },
 ];
 
 export const SKILL_BY_ID: ReadonlyMap<string, SkillEntry> = new Map(SKILLS.map((s) => [s.id, s]));
