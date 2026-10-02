@@ -23,6 +23,11 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/dictionary-words-reminder.js\"",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/aba-reminder.js\"",
+            "timeout": 10
           }
         ]
       }
