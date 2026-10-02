@@ -68,8 +68,8 @@ import {
   type SessionTrials,
 } from './abaPrompting';
 import { scoreTrial, type ScoredFields } from './abaScoring';
-import { applyChoiceBias } from './abaBarriers';
-import { applyPlacementProbe, formatUnlockedAlone, isPlacementProbe, placementCandidates } from './abaPlacement';
+import { applyChoiceBias, sessionSignals, type SessionSignal, type SignalSession } from './abaBarriers';
+import { applyPlacementProbe, formatUnlockedAlone, isPlacementProbe, ladderBelow, placementCandidates } from './abaPlacement';
 import { sessionParamsErrors, type AbaSessionParams } from './abaSessionParams';
 import { ioaPasses, isVerified, masteryVerdict } from './abaIoa';
 import {
@@ -101,7 +101,7 @@ import {
   type TokenBoard,
   type TokenSchedule,
 } from './abaTokens';
-import { targetErrors } from './abaTargetRules';
+import { programErrors, targetErrors } from './abaTargetRules';
 import { arrange, baselineMembers, poolErrors, setHalves, updateSets, type IdentifySet } from './abaIdentifySet';
 import {
   applyStageSession,
@@ -622,15 +622,26 @@ function withParamsBand(input: StartInput): StartInput {
   return { ...input, band, targets: input.targets.map((t) => ({ ...t, band })) };
 }
 
+/** Форма ответа: касанием, голосом или телом. */
+const RESPONSE_FORM: Record<AbaFormat, 'tap' | 'voice' | 'body'> = {
+  identify: 'tap',
+  match: 'tap',
+  imitate_sound: 'voice',
+  repeat_word: 'voice',
+  voice_volume: 'voice',
+  say: 'voice',
+  do_action: 'body',
+};
+
 /**
- * Цели на базовую линию: без повторов, не больше `room`; две — из разных областей (методист,
- * 2026-10-02), иначе вторая ждёт следующей сессии.
+ * Цели на базовую линию: без повторов, не больше `room`; две — из разных областей и с разной формой
+ * ответа (методист, 2026-10-02), иначе вторая ждёт следующей сессии.
  */
 function baselineChoice(candidates: readonly AbaTarget[], room: number): AbaTarget[] {
   const out: AbaTarget[] = [];
   for (const t of candidates) {
     if (out.length >= room) break;
-    if (out.some((x) => x.id === t.id || x.area === t.area)) continue;
+    if (out.some((x) => x.id === t.id || x.area === t.area || RESPONSE_FORM[x.format] === RESPONSE_FORM[t.format])) continue;
     out.push(t);
   }
   return out;
@@ -649,7 +660,7 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
     const errors = targetErrors(t);
     if (errors.length) throw new Error(`Цель ${t.id}: ${errors.join('; ')}`);
   }
-  const pools = poolErrors(input.targets);
+  const pools = [...poolErrors(input.targets), ...programErrors(input.targets)];
   if (pools.length) throw new Error(pools.join('; '));
 
   if (!input.tokenTraining.pairingDone) {
@@ -698,8 +709,8 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
     : baselineChoice(
         [
           // проверка сверху вниз — первой: она может снять с лестницы сразу несколько целей
-          ...(input.autoPlacement ? placementCandidates(single, states).filter((t) => counts(t, config)) : []),
-          ...single.filter((t) => states[t.id].phase === 'baseline' && ready(t)),
+          ...(input.autoPlacement && config === 'with_adult' ? placementCandidates(single, states).filter((t) => counts(t, config)) : []),
+          ...single.filter((t) => states[t.id].phase === 'baseline' && ready(t) && teachableHere(t)),
         ],
         Math.max(0, baselineRoom),
       );
@@ -877,7 +888,10 @@ function trialStep(state: AbaSessionState, p: PlannedTrial): TrialStep {
   // помощи взрослого — теперь это полная модель
   const start: PromptLevel = planned === 4 && !(l4Available(state) && p.adultAssist) ? APP_MAX_PROMPT : planned;
   const withAdult = state.config === 'with_adult';
-  const windowMs = (!p.stepId && state.windowOverrideMs?.[target.format]) || responseWindowMs(target, p.stepId);
+  const own = responseWindowMs(target, p.stepId);
+  const override = state.windowOverrideMs?.[target.format];
+  // у звена — не короче его собственного окна: «закрыть кран» и «намылить» разной длины
+  const windowMs = override ? Math.max(own, override) : own;
   return {
     kind: 'trial',
     trialKind: p.kind,
@@ -972,7 +986,10 @@ function withMatchField(state: AbaSessionState, planned: PlannedTrial, target: A
   let field: string[];
   let sample: string;
   if (target.matchMode === 'sort') {
-    field = before[0]?.field ?? shuffle([...target.sortCategories!], r.rng);
+    // порядок неизменен в сессии и меняется местами между сессиями: иначе позиция совпадала бы с
+    // категорией, и смещение по позиции не отличить от предпочтения карточки
+    const [a, b] = target.sortCategories!;
+    field = state.sessionIndex % 2 === 0 ? [a, b] : [b, a];
     sample = exemplar.category!;
   } else {
     const cards = exemplar.cards!;
@@ -987,6 +1004,23 @@ function withMatchField(state: AbaSessionState, planned: PlannedTrial, target: A
   }
   const trial = { ...planned, field, sampleCardId: sample };
   return { ...state, queue: [{ kind: 'trial', trial }, ...state.queue.slice(1)], seed: r.seed() };
+}
+
+/**
+ * Проверка сверху вниз требует 100%: после первой ошибки остаток её проб — провалы без пользы для
+ * измерения и риск избегания. Остаток снимается; вместо него — высоковероятные пробы освоенных
+ * целей, если они есть (методист, 2026-10-02).
+ */
+function stopPlacementOnFailure(state: AbaSessionState, trial: AbaTrial, r: { rng: Rng }): AbaSessionState {
+  if (trial.kind !== 'baseline' || trial.response === 'independent' || trial.response === 'interrupted') return state;
+  const target = state.targets[trial.targetId];
+  if (!isPlacementProbe(target, state.states)) return state;
+  const highP = state.highPTargetIds.map((id) => state.targets[id]);
+  const queue: QueueItem[] = state.queue.flatMap((q) => {
+    if (q.kind !== 'trial' || q.trial.targetId !== trial.targetId || q.trial.kind !== 'baseline') return [q];
+    return highP.length ? [{ kind: 'trial' as const, trial: highPTrial(pick(highP, r.rng), r.rng) }] : [];
+  });
+  return { ...state, queue };
 }
 
 function workedMs(state: AbaSessionState, now: number): number {
@@ -1612,6 +1646,7 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
     }
   }
 
+  st = stopPlacementOnFailure(st, trial, r);
   st = bridgeFailedBlock(st, trial);
 
   let participation = false;
@@ -1869,6 +1904,11 @@ export type AbaSessionResult = {
   tokenTraining: TokenTrainingState;
   /** Наборы `identify` после этой сессии. */
   identifySets: IdentifySet[];
+  /**
+   * Сигналы сессии (перебор, слабая мотивация) — если передана история сессий ребёнка
+   * (`abaBarriers.sessionSignals`). Только сигнал специалисту и родителю.
+   */
+  signals?: SessionSignal[];
 };
 
 /**
@@ -2027,6 +2067,8 @@ export function finishAbaSession(
   endedAt: number,
   pastSessions: Readonly<Record<string, SessionTrials[]>> = {},
   ioa?: AbaIoaRecord,
+  /** История сессий ребёнка (свежие в конце) и сигналы после прошлой — для сигналов сессии. */
+  signalHistory?: { sessions: readonly SignalSession[]; previous: readonly SessionSignal[] },
 ): AbaSessionResult {
   if (state.endReason === null) throw new Error('Сессия ещё идёт');
   if (ioa && ioa.sessionId !== state.sessionId) throw new Error('IOA другой сессии');
@@ -2055,6 +2097,11 @@ export function finishAbaSession(
       if (isPlacementProbe(target, state.states)) {
         // проверка сверху вниз: прошла — освоена, предпосылки по лестнице выведены
         const placed = applyPlacementProbe({ ...states, [id]: s }, Object.values(state.targets), target, own, idx, state.config);
+        for (const p of ladderBelow(target, Object.values(state.targets))) {
+          if (placed[p.id] && states[p.id] && placed[p.id].phase !== states[p.id].phase) {
+            phaseEvents.push({ kind: 'phase', at: iso(endedAt), targetId: p.id, from: states[p.id].phase, to: placed[p.id].phase, reason: 'inferred' });
+          }
+        }
         for (const [k, v] of Object.entries(placed)) if (k !== id) states[k] = v;
         s = placed[id];
       } else {
@@ -2118,7 +2165,7 @@ export function finishAbaSession(
       }
     }
     s = withAssentConcern(s, isConcerning(state.trials.filter((t) => t.targetId === id)));
-    if (!unreliable) s = applyChoiceBias(s, [...(pastSessions[id] ?? []), { index: idx, trials: own }], target.format);
+    if (!unreliable) s = applyChoiceBias(s, biasWindow(state, id, pastSessions), target.format);
     if (reason && (s.phase !== from || reason === 'verification_passed')) {
       phaseEvents.push({ kind: 'phase', at: iso(endedAt), targetId: id, from, to: s.phase, reason });
     }
@@ -2170,5 +2217,27 @@ export function finishAbaSession(
     exchanged,
     tokenTraining,
     identifySets: state.identifySets.map((x) => (x.id === state.set?.id ? { ...x, lastSetSessionIndex: idx } : x)),
+    ...(signalHistory
+      ? {
+          signals: sessionSignals(
+            [...signalHistory.sessions, { index: idx, trials: state.trials, formatOf: (id: string) => state.targets[id].format }],
+            signalHistory.previous,
+          ),
+        }
+      : {}),
   };
+}
+
+/**
+ * Окно флагов смещения: у участника набора `identify` — пробы всего набора по сессиям (любимую
+ * карточку видно на пробах других целей, а проб на L0 одной цели набора за три сессии мало); у
+ * остальных — пробы цели.
+ */
+function biasWindow(state: AbaSessionState, id: string, pastSessions: Readonly<Record<string, SessionTrials[]>>): SessionTrials[] {
+  const members = state.set?.memberIds.includes(id) ? state.set.memberIds : [id];
+  const byIndex = new Map<number, AbaTrial[]>();
+  for (const m of members) for (const x of pastSessions[m] ?? []) byIndex.set(x.index, [...(byIndex.get(x.index) ?? []), ...x.trials]);
+  const past = [...byIndex].sort((a, b) => a[0] - b[0]).map(([index, trials]) => ({ index, trials }));
+  const now = state.trials.filter((t) => members.includes(t.targetId) && COUNTS_TOWARD_MASTERY[t.scoredBy]);
+  return [...past, { index: state.sessionIndex, trials: now }];
 }

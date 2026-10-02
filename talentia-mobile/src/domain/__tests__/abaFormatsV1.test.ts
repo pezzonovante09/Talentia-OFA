@@ -45,6 +45,7 @@ const sort: AbaTarget = {
   matchMode: 'sort',
   sortCategories: ['food', 'clothes'],
   prerequisiteTargetIds: ['m'],
+  blockSize: 10,
   exemplars: [
     ...['f1', 'f2', 'f3'].map((id) => item(id, 'food')),
     item('fg', 'food', 'generalization'),
@@ -106,6 +107,8 @@ describe('сортировка', () => {
     const stray = { ...sort, exemplars: [...sort.exemplars.slice(0, 7), item('x', 'toys')] };
     expect(targetErrors(stray).join('\n')).toContain('нет категории из двух');
     expect(targetErrors({ ...sort, level: 1 }).join('\n')).toContain('сортировка — ступень 2');
+    expect(targetErrors({ ...sort, blockSize: 5 }).join('\n')).toContain('сортировка с полосы 7 — блоком 10');
+    expect(targetErrors({ ...sort, band: '5-6', blockSize: 5 })).toEqual([]);
   });
 });
 

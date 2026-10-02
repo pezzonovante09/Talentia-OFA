@@ -959,8 +959,8 @@ describe('обучение доске в сессии', () => {
   });
 
   it('ступени 1–2: на базовой линии не больше одной цели', () => {
-    // вторая — из другой области: две базовые линии одной области в сессии не ставятся
-    const N2 = tgt('N2', { format: 'voice_volume' });
+    // вторая — из другой области и с другой формой ответа (телом, а не голосом)
+    const N2 = tgt('N2', { format: 'do_action' });
     expect(begin([N, N2], {}, { tokenTraining: stage(2) }).baselineTargetIds).toEqual(['N']);
     expect(begin([N, N2], {}, { tokenTraining: stage(3) }).baselineTargetIds).toEqual(['N', 'N2']);
   });
@@ -1443,7 +1443,8 @@ describe('итоговая проверка методиста: защитное
 describe('ненадёжное измерение нейтрально в любой фазе', () => {
   it('цель на базовой линии в «Сам» с активностью без реакции — базовая линия не засчитана', () => {
     const V = tgt('V', { format: 'voice_volume', scoredBy: 'device_loudness' });
-    let st = begin([V], { V: initialTargetState(V) }, { config: 'alone' });
+    const [U, u] = unlocking('voice_volume', { scoredBy: 'device_loudness' });
+    let st = begin([V, U], { V: initialTargetState(V), [U.id]: u }, { config: 'alone' });
     for (let i = 0; i < 3; i += 1) {
       const next = nextStep(st, i + 1);
       if (next.step.kind !== 'trial') break;
@@ -1453,7 +1454,8 @@ describe('ненадёжное измерение нейтрально в люб
       st = res.state;
     }
     expect(st.unreliableTargetIds).toEqual(['V']);
-    const r = finishAbaSession(st, '2026-10-01', 9e6);
+    // у открывающей цели осталась проба поддержания — доводим сессию до конца
+    const r = finishAbaSession(drive(st, () => 'ok').state, '2026-10-01', 9e6);
     expect(r.states.V.phase).toBe('baseline');
   });
 });
@@ -1562,6 +1564,7 @@ describe('ABA v1: поле match и сортировка в сессии', () =>
       sortCategories: ['food', 'clothes'],
       scoredBy: 'device_tap',
       blockSize: 10,
+      prerequisiteTargetIds: ['M'],
       exemplars: [
         ...['f1', 'f2', 'f3'].map((id) => item(id, 'food')),
         item('fg', 'food', 'generalization'),
@@ -1569,11 +1572,59 @@ describe('ABA v1: поле match и сортировка в сессии', () =>
         item('cg', 'clothes', 'generalization'),
       ],
     });
-    const { state } = drive(begin([S], { S: acq(S) }), () => 'ok');
+    const { state } = drive(begin([M, S], { M: mastered(M), S: acq(S) }), () => 'ok');
     const own = state.trials.filter((t) => t.targetId === 'S' && t.kind === 'teaching');
     const cats = own.map((t) => t.sampleCardId!);
     expect(cats.filter((c) => c === 'food')).toHaveLength(5);
     expect(cats.some((c, i) => i >= 2 && c === cats[i - 1] && c === cats[i - 2])).toBe(false);
     expect(new Set(own.map((t) => t.field!.join()))).toHaveProperty('size', 1);
+    // в следующей сессии карточки категорий меняются местами
+    const next = drive(begin([M, S], { M: mastered(M), S: acq(S) }, { sessionIndex: 11 }), () => 'ok').state;
+    expect(next.trials.find((t) => t.targetId === 'S' && t.field)!.field).toEqual([...own[0].field!].reverse());
+  });
+});
+
+describe('ABA v1: правки по проверке методиста', () => {
+  const A = tgt('A');
+  const B = tgt('B', { prerequisiteTargetIds: ['A'] });
+  const C = tgt('C', { prerequisiteTargetIds: ['B'] });
+
+  it('первая ошибка проверки сверху вниз снимает остаток её проб', () => {
+    const st = begin([A, B, C], {}, { autoPlacement: true });
+    const failed = answer(st, 1, 'wrong').state;
+    expect(failed.queue.some((q) => q.kind === 'trial' && q.trial.targetId === 'C' && q.trial.kind === 'baseline')).toBe(false);
+  });
+
+  it('проверка сверху вниз — только со взрослым; в «сам» базовая линия — только в открытом формате', () => {
+    expect(begin([A, B, C], {}, { autoPlacement: true, config: 'alone' }).baselineTargetIds).toEqual([]);
+  });
+
+  it('выведенные цели получают событие для специалиста', () => {
+    const { state } = drive(begin([A, B, C], {}, { autoPlacement: true }), () => 'ok');
+    const r = finishAbaSession(state, '2026-10-02', 99_000);
+    const inferred = r.session.events.filter((e) => e.kind === 'phase' && e.reason === 'inferred').map((e) => (e as { targetId: string }).targetId);
+    expect(inferred.sort()).toEqual(['A', 'B']);
+  });
+
+  it('окно специалиста действует и на звенья цепочки — не короче окна звена', () => {
+    const D = tgt('D', {
+      format: 'do_action',
+      steps: [
+        { id: 's1', order: 0, sdKey: 'sd1', criterionKey: 'c1', modelKey: 'm1' },
+        { id: 's2', order: 1, sdKey: 'sd2', criterionKey: 'c2', modelKey: 'm2', responseWindowMs: 12_000 },
+      ],
+    });
+    const st = begin([D], { D: acq(D) }, { params: { responseWindowMs: { do_action: 10_000 } } });
+    const { steps } = drive(st, () => 'ok');
+    const windows = steps.filter((x): x is TrialStep => x.kind === 'trial' && x.targetId === 'D').map((x) => [x.stepId, x.responseWindowMs]);
+    expect(windows).toContainEqual(['s1', 10_000]);
+    expect(windows).toContainEqual(['s2', 12_000]);
+  });
+
+  it('сигналы сессии считаются в конце, если передана история', () => {
+    const { state } = drive(begin([A], { A: acq(A) }), () => 'ok');
+    const r = finishAbaSession(state, '2026-10-02', 99_000, {}, undefined, { sessions: [], previous: ['low_motivation'] });
+    // истории мало — сигнал держится, как был
+    expect(r.signals).toEqual(['low_motivation']);
   });
 });

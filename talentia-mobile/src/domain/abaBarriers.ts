@@ -114,8 +114,14 @@ const median = (xs: readonly number[]): number => {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 };
 
+/**
+ * Латентность для сравнения — только самостоятельные ответы со старта L0: пробы с задержкой до
+ * подсказки и форматы с длинным окном (`say`) иначе давали бы ложную «слабую мотивацию».
+ */
 const latencies = (x: SignalSession) =>
-  x.trials.filter((t) => t.latencyMs !== null && t.response !== 'interrupted').map((t) => t.latencyMs as number);
+  x.trials
+    .filter((t) => t.latencyMs !== null && t.response === 'independent' && t.startPromptLevel === 0)
+    .map((t) => t.latencyMs as number);
 
 /** Условие слабой мотивации на сессии `i` истории. */
 function lowMotivationAt(history: readonly SignalSession[], i: number): boolean {
@@ -134,15 +140,23 @@ function lowMotivationAt(history: readonly SignalSession[], i: number): boolean 
 export type SessionSignal = 'over_tapping' | 'low_motivation';
 
 /**
- * Сигналы по истории сессий ребёнка (свежие в конце): условие держится в двух последних сессиях
- * подряд. Снимается само — когда в двух последних его нет.
+ * Сигналы по истории сессий ребёнка (свежие в конце) с гистерезисом: ставится, когда условие
+ * держится в двух последних сессиях подряд; снимается, когда его нет в двух последних подряд;
+ * иначе остаётся как было (`previous`) — родитель не видит мигающий сигнал.
  */
-export function sessionSignals(history: readonly SignalSession[]): SessionSignal[] {
+export function sessionSignals(history: readonly SignalSession[], previous: readonly SessionSignal[] = []): SessionSignal[] {
   const n = BARRIERS.sessionsInRow;
-  if (history.length < n) return [];
   const last = history.map((_, i) => i).slice(-n);
-  const out: SessionSignal[] = [];
-  if (last.every((i) => overTappingIn(history[i]))) out.push('over_tapping');
-  if (last.every((i) => lowMotivationAt(history, i))) out.push('low_motivation');
-  return out;
+  const checks: [SessionSignal, (i: number) => boolean][] = [
+    ['over_tapping', (i) => overTappingIn(history[i])],
+    ['low_motivation', (i) => lowMotivationAt(history, i)],
+  ];
+  return checks
+    .filter(([signal, at]) => {
+      if (last.length < n) return previous.includes(signal);
+      if (last.every(at)) return true;
+      if (last.every((i) => !at(i))) return false;
+      return previous.includes(signal);
+    })
+    .map(([signal]) => signal);
 }

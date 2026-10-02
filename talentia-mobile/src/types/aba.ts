@@ -792,7 +792,9 @@ export type AbaSessionEvent =
         | 'maintenance_failed'
         | 'maintenance_passed'
         | 'verification_passed'
-        | 'verification_failed';
+        | 'verification_failed'
+        /** Освоена выводом: верхняя цель лестницы прошла проверку сверху вниз (автоподбор, №56). */
+        | 'inferred';
     };
 
 /** Критерий освоения. Проверяется программно — в прежней версии его не было в коде вообще. */

@@ -74,15 +74,30 @@ export function placementCandidates(targets: readonly AbaTarget[], states: Reado
     // верхняя — от неё внутри лестницы ничего не зависит
     let cur: AbaTarget | undefined = ladder.find((x) => !ladder.some((y) => (y.prerequisiteTargetIds ?? []).includes(x.id)));
     while (cur && states[cur.id]?.placementTriedAt !== undefined) cur = ladderPrerequisites(cur, byId)[0];
+    // по базовой линии не осваивается (match с полем 2, сортировка) — ниже по лестнице
+    while (cur && !masterableByBaseline(cur)) cur = ladderPrerequisites(cur, byId)[0];
     // дошли до низа лестницы — дальше обычная базовая линия снизу вверх
     if (cur && ladderPrerequisites(cur, byId).length > 0) out.push(cur);
   }
   return out;
 }
 
-/** Прошла ли проверка: пороги базовой линии — 3/3, касанием 5/5 при поле ≥ 3, цепочка — 2 прогона. */
+/**
+ * Можно ли освоить цель по базовой линии: у `match` с полем 2 и у сортировки 5/5 угадывается в 3%
+ * случаев — они только начинают обучение с L0, поэтому вершиной проверки не бывают (методист).
+ */
+export function masterableByBaseline(t: AbaTarget): boolean {
+  return !(t.format === 'match' && (t.matchMode === 'sort' || (t.fieldSize ?? 2) < MATCH_BASELINE.minFieldForMastery));
+}
+
+/**
+ * Прошла ли проверка: пороги базовой линии — 3/3, касанием 5/5 при поле ≥ 3, цепочка — 2 прогона.
+ * Первая ошибка решает сразу: проверка сверху вниз требует 100%, и остаток проб — провалы без
+ * пользы для измерения (сессия снимает их, `stopPlacementOnFailure`).
+ */
 export function placementPassed(t: AbaTarget, trials: readonly AbaTrial[]): boolean | null {
   const own = trials.filter((x) => x.targetId === t.id && x.kind === 'baseline' && x.response !== 'interrupted');
+  if (own.some((x) => x.response !== 'independent')) return false;
   if (t.steps?.length) {
     const byStep = t.steps.map((st) => own.filter((x) => x.stepId === st.id));
     if (byStep.some((x) => x.length < BASELINE_CHAIN_RUNS)) return null;
@@ -122,6 +137,14 @@ export function applyPlacementProbe(
   return out;
 }
 
+/**
+ * Пройдена ли хоть одна проба поддержания: индекс интервала растёт только после пройденной и
+ * обнуляется при провале, а фаза `maintenance` ставится и после первого провала.
+ */
+export function passedMaintenance(s: AbaTargetState): boolean {
+  return s.phase === 'maintenance' && s.maintenanceGapIndex > 0;
+}
+
 /** Цель на проверке сверху вниз: на базовой линии, а предпосылки ещё не освоены. */
 export function isPlacementProbe(t: AbaTarget, states: Readonly<Record<string, AbaTargetState | undefined>>): boolean {
   return (states[t.id]?.phase ?? 'baseline') === 'baseline' && (t.prerequisiteTargetIds ?? []).some((id) => !MASTERED.has(states[id]?.phase ?? 'baseline'));
@@ -141,7 +164,7 @@ export function formatUnlockedAlone(
     const s = states[t.id];
     if (t.format !== format || !s || !MASTERED.has(s.phase) || s.masteredConfig !== 'with_adult') return false;
     if (s.masteredBy === 'criterion' || s.masteredBy === 'home_unverified') return true;
-    return s.masteredBy === 'baseline' && s.phase === 'maintenance';
+    return s.masteredBy === 'baseline' && passedMaintenance(s);
   });
 }
 
@@ -164,9 +187,13 @@ export function transitionOffer(
   const solid = (t: AbaTarget) => {
     const s = states[t.id];
     if (!s || !MASTERED.has(s.phase)) return false;
-    return s.masteredBy === 'criterion' || (s.masteredBy === 'baseline' && s.phase === 'maintenance');
+    return s.masteredBy === 'criterion' || (s.masteredBy === 'baseline' && passedMaintenance(s));
   };
-  const mastered = (t: AbaTarget) => MASTERED.has(states[t.id]?.phase ?? 'baseline');
+  // в долю ступеней 1–2 не идут выведенные и освоенные по базовой линии без проверки
+  const mastered = (t: AbaTarget) => {
+    const s = states[t.id];
+    return !!s && MASTERED.has(s.phase) && s.masteredBy !== 'inferred' && !(s.masteredBy === 'baseline' && !passedMaintenance(s));
+  };
   // процедурный order ступени 3 и пробы на появление в счёт не идут — их в v1 нет среди целей
   const third = targets.filter((t) => t.level === 3);
   if (!third.length) reasons.push('ступени 3 нет');
@@ -174,6 +201,12 @@ export function transitionOffer(
   const lower = targets.filter((t) => t.level === 1 || t.level === 2);
   if (lower.length && lower.filter(mastered).length / lower.length < TRANSITION_LOWER_SHARE) reasons.push('ступени 1–2 освоены меньше чем на 90%');
   if (targets.some((t) => (states[t.id]?.maintenanceFailsInRow ?? 0) > 0)) reasons.push('есть провал поддержания');
+  // повторное обучение: цель уже была освоена (masteredBy сохраняется) и снова учится
+  const reteaching = (t: AbaTarget) => {
+    const s = states[t.id];
+    return !!s && (s.phase === 'acquisition' || s.phase === 'generalization_check') && s.masteredBy !== undefined;
+  };
+  if (targets.some(reteaching)) reasons.push('есть цели в повторном обучении');
   if (opts.promptDependentInLast3) reasons.push('зависимость от подсказки в последних трёх сессиях');
   if (opts.declinedAtSession !== undefined && opts.sessionIndex - opts.declinedAtSession < TRANSITION_RETRY_SESSIONS) {
     reasons.push('недавно отказались');

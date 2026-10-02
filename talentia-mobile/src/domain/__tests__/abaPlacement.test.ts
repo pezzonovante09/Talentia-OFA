@@ -1,6 +1,7 @@
 import type { AbaTarget, AbaTargetState } from '../../types/aba';
 import { applyBaseline, applyMaintenanceProbe, markMastered } from '../abaCriterion';
 import {
+  placementPassed as placementPassedOf,
   applyPlacementProbe,
   formatUnlockedAlone,
   isPlacementProbe,
@@ -34,6 +35,19 @@ describe('проверка сверху вниз', () => {
     const out = applyPlacementProbe(fresh(ladder), ladder, C, ok('C', 3), 4, 'with_adult');
     expect([out.C.phase, out.C.masteredBy, out.C.masteredConfig]).toEqual(['mastered', 'baseline', 'with_adult']);
     expect([out.A.masteredBy, out.B.masteredBy]).toEqual(['inferred', 'inferred']);
+  });
+
+  it('первая ошибка решает сразу: остаток проб не нужен', () => {
+    expect(placementPassedOf(C, [trial({ targetId: 'C', kind: 'baseline', response: 'incorrect' })])).toBe(false);
+    expect(placementPassedOf(C, ok('C', 2))).toBeNull();
+  });
+
+  it('цель, которую нельзя освоить по базовой линии, вершиной не бывает — проба идёт ниже', () => {
+    const M1 = t('M1', { ...GRID_FOR.match, format: 'match', scoredBy: 'device_tap' });
+    const M2 = t('M2', { ...GRID_FOR.match, format: 'match', scoredBy: 'device_tap', prerequisiteTargetIds: ['M1'] });
+    const M3 = t('M3', { ...GRID_FOR.match, format: 'match', scoredBy: 'device_tap', fieldSize: 2, prerequisiteTargetIds: ['M2'] });
+    const all = [M1, M2, M3];
+    expect(placementCandidates(all, fresh(all)).map((x) => x.id)).toEqual(['M2']);
   });
 
   it('не прошла — отметка и следующая на пробу — прямая предпосылка; низ лестницы — обычная базовая линия', () => {
@@ -80,7 +94,9 @@ describe('допуск формата в «сам» (№60)', () => {
     expect(formatUnlockedAlone('voice_volume', [V], s({ masteredBy: 'criterion', masteredConfig: 'with_adult' }))).toBe(true);
     expect(formatUnlockedAlone('voice_volume', [V], s({ masteredBy: 'home_unverified', masteredConfig: 'with_adult' }))).toBe(true);
     expect(formatUnlockedAlone('voice_volume', [V], s({ masteredBy: 'baseline', masteredConfig: 'with_adult' }))).toBe(false);
-    expect(formatUnlockedAlone('voice_volume', [V], s({ masteredBy: 'baseline', masteredConfig: 'with_adult', phase: 'maintenance' }))).toBe(true);
+    expect(formatUnlockedAlone('voice_volume', [V], s({ masteredBy: 'baseline', masteredConfig: 'with_adult', phase: 'maintenance', maintenanceGapIndex: 1 }))).toBe(true);
+    // фаза maintenance ставится и после первого провала — индекс интервала тогда 0
+    expect(formatUnlockedAlone('voice_volume', [V], s({ masteredBy: 'baseline', masteredConfig: 'with_adult', phase: 'maintenance', maintenanceGapIndex: 0 }))).toBe(false);
   });
 
   it('не открывают: освоенная в «сам», выведенная, другой формат', () => {
@@ -98,6 +114,12 @@ describe('переход в основное приложение (№59)', () =
 
   it('без ступени 3 не предлагается — пустой список не «всё освоено»', () => {
     expect(transitionOffer([L1], { L1: done(L1) }, opts)).toEqual({ eligible: false, reasons: ['ступени 3 нет'] });
+  });
+
+  it('цель в повторном обучении или выведенная — перехода нет', () => {
+    const states = { L1: done(L1), L3: done(L3) };
+    expect(transitionOffer([L1, L3], { ...states, L1: { ...states.L1, phase: 'acquisition' } }, opts).reasons).toContain('есть цели в повторном обучении');
+    expect(transitionOffer([L1, L3], { ...states, L1: { ...states.L1, masteredBy: 'inferred' } }, opts).eligible).toBe(false);
   });
 
   it('всё освоено — предлагается; недавний отказ, зависимость или провал поддержания — нет', () => {

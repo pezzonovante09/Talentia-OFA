@@ -80,6 +80,8 @@ function matchErrors(t: AbaTarget): string[] {
     }
     if (t.exemplars.some((e) => !cats?.includes(e.category ?? ''))) errors.push('у предмета сортировки нет категории из двух');
     if (t.exemplars.some((e) => !e.image)) errors.push('у предмета сортировки нет картинки');
+    // выбор из двух: при блоке 5 «4 из 5» угадывается в 18,75%, при блоке 10 «8 из 10» — в 5,5%
+    if (t.band !== '5-6' && t.blockSize !== 10) errors.push('сортировка с полосы 7 — блоком 10');
     return errors;
   }
   if (t.fieldSize === undefined) errors.push('у match нет размера поля (fieldSize)');
