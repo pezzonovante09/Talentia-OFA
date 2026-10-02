@@ -11,6 +11,25 @@
 import { CHOOSE_SHARE_MIN_TASKS, RULES, collectCorpus, keysIn } from './corpusRules';
 import type { Corpus, Locales, RuleId } from './corpusRules';
 import type { ChooseTask, Lesson, Task, TaskFormat, Topic } from '../../types/task';
+import { SKILL_BY_ID } from '../../domain/skills';
+import type { SkillEntry } from '../../domain/skills';
+
+/**
+ * Реестр навыков фикстур вместо настоящего: у фикстур свои навыки. Все — с полосы 5-6 и
+ * без пререквизитов, чтобы `skillRegistry` молчал на хорошем корпусе; тесты правила
+ * дописывают в карту то, что им нужно.
+ */
+jest.mock('../../domain/skills', () => {
+  const actual = jest.requireActual('../../domain/skills');
+  const SKILLS = ['count-to-3', 'sort-by-kind', 'read-words', 'spell', 's'].map((id) => ({
+    id,
+    region: 'numbers',
+    band: '5-6',
+    prerequisites: [],
+    source: 'norm',
+  }));
+  return { ...actual, SKILLS, SKILL_BY_ID: new Map(SKILLS.map((x) => [x.id, x])) };
+});
 
 /* ------------------------------------------------------------------------ */
 /* Фикстуры                                                                  */
@@ -228,7 +247,7 @@ function lessonText(): Lesson {
 function goodCorpus(): Corpus {
   return [
     { file: 'numbers-5-6.ts', topic: { id: 'fx-a', titleKey: k('a.title'), lessons: [lessonPicture(), lessonPictureTwo()] } },
-    { file: 'words-9-10.ts', topic: { id: 'fx-b', titleKey: k('b.title'), lessons: [lessonText()] } },
+    { file: 'words-9-10.ts', topic: { id: 'fx-b', titleKey: k('b.title'), grade: 3, lessons: [lessonText()] } },
   ];
 }
 
@@ -1273,5 +1292,139 @@ describe('гард корпуса: обнаружение тем в модуля
       { file: 'words-9-10.ts', exports: { default: { id: 'words', titleKey: k('r'), topics: [b] } } },
     ]);
     expect({ ids: corpus.map((e) => e.topic.id), problems }).toEqual({ ids: ['fx-a', 'fx-b'], problems: [] });
+  });
+});
+
+describe('гард корпуса: приватность текста', () => {
+  const withText = (key: string, text: string, lang: 'ru' | 'en' | 'ky' = 'ru') => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    const locales: Locales = { ru };
+    const target: Record<string, unknown> = lang === 'ru' ? ru : {};
+    if (lang !== 'ru') locales[lang] = target;
+    setKey(target, key, text);
+    return { c, locales };
+  };
+
+  it.each([
+    ['ru', 'У тебя есть брат?'],
+    ['ru', 'Что делает твоя мама?'],
+    ['ru', 'Как тебя зовут?'],
+    ['ru', 'Где ты живёшь?'],
+    ['ru', 'Какой праздник в вашей семье?'],
+    ['en', "What's your name?"],
+    ['en', 'Do you have a dog?'],
+    ['ky', 'Сенин үй-бүлөң кандай?'],
+    ['ky', 'Атың ким?'],
+  ] as const)('ловит вопрос о ребёнке: %s «%s»', (lang, text) => {
+    const { c, locales } = withText(lessonAt(goodCorpus(), 0).tasks[0].promptKey, text, lang);
+    expectRed('aboutCharacter', c, 'спроси о жителе или Tali', locales);
+  });
+
+  it.each([
+    'Сколько ты видишь камней?',
+    'У Ачи три брата. Сколько всего детей?',
+    'Какой дом стоит у реки?',
+    'Помоги Tali найти маму утёнка.',
+    'This is Tali’s family.',
+  ])('пропускает вопрос о персонаже: «%s»', (text) => {
+    const { c, locales } = withText(lessonAt(goodCorpus(), 0).tasks[0].promptKey, text);
+    expect(run('aboutCharacter', c, locales)).toEqual([]);
+  });
+
+  it('ловит заголовок темы и урока от первого лица, но не такой же текст в задании', () => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    setKey(ru, c[0].topic.titleKey, 'Моя семья');
+    setKey(ru, lessonAt(c, 1).titleKey, 'My room');
+    setKey(ru, lessonAt(c, 0).tasks[0].promptKey, 'Мой дом у реки — где он?');
+    const out = run('aboutCharacter', c, { ru }).join('\n');
+    expect(out).toContain('заголовок «Моя семья» от первого лица');
+    expect(out).toContain('заголовок «My room» от первого лица');
+    expect(out).not.toContain('Мой дом у реки');
+  });
+
+  it.each(['Зайди на www.site.kg', 'Пиши на tali@mail.ru', 'Найди @tali_kg', 'Звони +996 555 12 34 56', 'tel:103', 'Номер 555-12-34'])(
+    'ловит контакт: «%s»',
+    (text) => {
+      const { c, locales } = withText(lessonAt(goodCorpus(), 1).tasks[0].promptKey, text);
+      expectRed('contacts', c, 'контакт', locales);
+    },
+  );
+
+  it('пропускает экстренные номера и большие числа', () => {
+    const { c, locales } = withText(lessonAt(goodCorpus(), 1).tasks[0].promptKey, 'Пожар — звони 101. Было 1 000 000.');
+    expect(run('contacts', c, locales)).toEqual([]);
+  });
+
+  it('пропускает имя в завязке и шаге примера, ловит в задании и заголовке темы', () => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    const l = lessonAt(c, 0);
+    setKey(ru, l.hook.lineKey, 'Привет, {{name}}!');
+    setKey(ru, l.model!.steps[0].lineKey, 'Смотри, {{name}}.');
+    expect(run('nameOnlyInTali', c, { ru })).toEqual([]);
+    setKey(ru, l.tasks[0].promptKey, '{{name}}, сколько камней?');
+    setKey(ru, c[0].topic.titleKey, 'Счёт {{name}}');
+    const out = run('nameOnlyInTali', c, { ru }).join('\n');
+    expect(out).toContain(`${l.tasks[0].promptKey} — имя ребёнка вне реплик Tali`);
+    expect(out).toContain(`${c[0].topic.titleKey} — имя ребёнка вне реплик Tali`);
+  });
+});
+
+describe('гард корпуса: реестр навыков', () => {
+  const registry = SKILL_BY_ID as Map<string, SkillEntry>;
+  const add = (e: SkillEntry) => registry.set(e.id, e);
+  afterEach(() => {
+    registry.delete('later-skill');
+    registry.delete('needs-sort');
+  });
+
+  it('ловит навык не из реестра — в задании и в примере', () => {
+    const c = goodCorpus();
+    lessonAt(c, 0).tasks[1].skill = 'count-to-three';
+    lessonAt(c, 0).model!.skill = 'count-to-tree';
+    const out = run('skillRegistry', c).join('\n');
+    expect(out).toContain('навыка count-to-three нет в реестре');
+    expect(out).toContain('навыка count-to-tree нет в реестре');
+  });
+
+  it('ловит навык раньше его полосы', () => {
+    add({ id: 'later-skill', region: 'numbers', band: '7', prerequisites: [], source: 'kr' });
+    const c = goodCorpus();
+    lessonAt(c, 0).tasks[1].skill = 'later-skill';
+    expectRed('skillRegistry', c, 'навык later-skill вводится на 7, а урок — 5-6');
+  });
+
+  it('ловит навык раньше пререквизита той же полосы', () => {
+    add({ id: 'needs-sort', region: 'numbers', band: '5-6', prerequisites: ['sort-by-kind'], source: 'norm' });
+    const c = goodCorpus();
+    lessonAt(c, 0).tasks[1].skill = 'needs-sort';
+    expectRed('skillRegistry', c, 'навык needs-sort раньше своего пререквизита sort-by-kind');
+  });
+});
+
+describe('гард корпуса: класс и завязка', () => {
+  it('ловит тему 9-10 без класса, класс у темы 5-6 и тему 3 класса после 4-го', () => {
+    const c = goodCorpus();
+    delete c[1].topic.grade;
+    c[0].topic.grade = 3;
+    let out = run('grade', c).join('\n');
+    expect(out).toContain('fx-b: у темы 9-10 нет класса');
+    expect(out).toContain('fx-a: класс у темы полосы 5-6');
+    const order = goodCorpus();
+    order[1].topic.grade = 4;
+    order.push({ file: 'words-9-10.ts', topic: { ...order[1].topic, id: 'fx-c', grade: 3 } });
+    out = run('grade', order).join('\n');
+    expect(out).toContain('fx-c: тема 3 класса после темы 4-го');
+  });
+
+  it('на 5-6 ловит длинную завязку урока без примера', () => {
+    const c = goodCorpus();
+    const l = lessonAt(c, 0);
+    delete l.model;
+    const ru = localeFor(c);
+    setKey(ru, l.hook.lineKey, 'а'.repeat(37));
+    expectRed('hook56', c, 'завязка: ru 37 знаков, нужно ≤ 36', { ru });
   });
 });

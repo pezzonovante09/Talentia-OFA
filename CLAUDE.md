@@ -123,6 +123,7 @@ npm run dev:api         # прокси локально
 |---|---|
 | `lesson-author` | написать уроки и задания для темы сетки в `src/content/` |
 | `textbook-ingest` | разобрать стандарт, учебник или программу в заметки по темам |
+| `rebuild-log` | записать решение, закрыть или добавить шаг, обновить вход в `REBUILD.md` и таблицу `AUDIT.md` |
 
 Облачные сессии ставят зависимости хуком `.claude/hooks/session-start.sh`, поэтому
 гарды (`corpus.test.ts`, `registry.test.ts`, `npm run test:db`) запускаются сразу.
@@ -144,7 +145,6 @@ npm run dev:api         # прокси локально
 | новая миграция, таблица, колонка, RLS-политика | `db-migration` |
 | новый роут `/api/*` в прокси | `proxy-route` |
 | озвучка корпуса, TTS, ElevenLabs | `voice-build` |
-| принято решение, закрыт этап, правка `REBUILD.md` | `rebuild-log` |
 | EAS-сборка, обновление Expo SDK, нативные модули, `app.json` | внешний: Expo Skills |
 | подключение облачного Supabase, накат миграций на ветку | внешний: Supabase Agent Skills |
 | анимация Tali кодом, Reanimated, производительность карты | внешний: Vercel `react-native-skills` |

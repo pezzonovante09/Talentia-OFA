@@ -34,6 +34,7 @@ import {
   textDigits,
   type Range,
 } from '../../domain/lessonLimits';
+import { bandIndex, registryProblems, SKILL_BY_ID, SKILLS } from '../../domain/skills';
 import { FORMAT_MIN_BAND, REVEAL_STIMULUS } from '../../types/task';
 import type { AgeBand, Lesson, Media, ModelExample, Region, Task, TaskFormat, Topic } from '../../types/task';
 
@@ -50,7 +51,7 @@ const BANDS: AgeBand[] = ['5-6', '7', '8', '9-10'];
  * потребовать ровно тот же набор, что в схеме: добавят регион в `task.ts` —
  * здесь не скомпилируется, пока его не допишут.
  */
-const REGION_IDS: Record<Region['id'], true> = { numbers: true, words: true, nature: true, workshop: true };
+const REGION_IDS: Record<Region['id'], true> = { numbers: true, words: true, nature: true, workshop: true, kyrgyz: true };
 
 type LocatedLesson = { file: string; topic: Topic; lesson: Lesson; where: string };
 type LocatedTask = LocatedLesson & { task: Task; at: string };
@@ -268,6 +269,82 @@ function answerSignature(t: Task | ModelExample): string {
       return s(['build', t.stimulus, t.answer]);
   }
 }
+
+/* ------------------------------------------------------------------------ */
+/* Приватность текста: задание о персонаже, а не о ребёнке                   */
+/* ------------------------------------------------------------------------ */
+
+/**
+ * `\b` в JavaScript не видит кириллицу, поэтому границы слова — через `\p{L}`. Основа
+ * без хвостовой границы ловит формы слова: «семь(я|и|ей)».
+ */
+const words = (alts: string, tail = false) => new RegExp(`(?<!\\p{L})(?:${alts})${tail ? '(?!\\p{L})' : ''}`, 'iu');
+
+/**
+ * Обращение к ребёнку «твой / у тебя» вместе с личной темой превращает выбранный вариант в
+ * факт о нём: «у тебя есть брат?» — ответ ложится в журнал и уходит в синхронизацию (AUDIT.md,
+ * С1, С2; `child-privacy-compliance` 2026-10-02). «Сколько ты видишь камней?» — не о ребёнке и
+ * не ловится: нужна пара «принадлежность + тема» или прямой вопрос о нём. Все три языка
+ * проверяются на любом тексте: английское слово Мастерской лежит в ru.json.
+ */
+export const PERSONAL_TEXT = {
+  ru: {
+    yours: words('тво(?:й|я|ё|е|и|его|ей|их|им|ими|ём|ем|ю)|ваш\\p{L}*|у\\s+(?:тебя|вас)', true),
+    topic: words(
+      'сем(?:ья|ьи|ье|ью|ьёй|ьей)|мам|пап|брат|сестр|бабушк|дедушк|родител|адрес|улиц|сел[оаеу](?!\\p{L})|деревн|город|район|област|школ|класс|учител|вер[аыуе](?!\\p{L})|бог(?:а|у|ом|е)?(?!\\p{L})|религи|национальн|болезн|боле(?:ешь|ет|л)|вес(?:а|е)?(?!\\p{L})|рост(?!\\p{L})|деньг|денег|зарплат|комнат|квартир|дом(?:а|е|ом|у)?(?!\\p{L})|им(?:я|ени)(?!\\p{L})|питом|собак|кошк|день\\s+рождения',
+    ),
+    direct: words(
+      'как\\s+тебя\\s+зовут|сколько\\s+тебе\\s+лет|где\\s+ты\\s+живёшь|где\\s+ты\\s+живешь|с\\s+кем\\s+ты\\s+живёшь|с\\s+кем\\s+ты\\s+живешь|ты\\s+болеешь|какой\\s+ты\\s+веры|кто\\s+ты\\s+по\\s+национальности|в\\s+какой\\s+школе\\s+ты',
+    ),
+    myTitle: /^\s*(?:мой|моя|моё|мое|мои)(?!\p{L})/iu,
+  },
+  en: {
+    yours: words('your|yours|you\\s+live|you\\s+have|have\\s+you\\s+got|do\\s+you\\s+have', true),
+    topic: words(
+      'famil|mom|mum|mother|dad|father|brother|sister|grand(?:ma|pa|mother|father)|parent|address|street|village|town|city|school|teacher|class|religio|god(?!\\p{L})|nationality|money|room|house|home|pet|dog|cat(?!\\p{L})|name(?!\\p{L})|age(?!\\p{L})|birthday|weight|sick|ill(?!\\p{L})',
+    ),
+    direct: words("what'?s\\s+your\\s+name|what\\s+is\\s+your\\s+name|how\\s+old\\s+are\\s+you|where\\s+do\\s+you\\s+live|who\\s+do\\s+you\\s+live\\s+with"),
+    myTitle: /^\s*my(?!\p{L})/iu,
+  },
+  ky: {
+    yours: words('сенин|сиздин|сенде|сизде|сага|сизге', true),
+    topic: words(
+      'үй-бүлө|апа|ата(?!\\p{L})|ага(?!\\p{L})|эже|ини(?!\\p{L})|сиңди|чоң\\s+(?:ата|эне)|дарек|көчө|айыл|шаар|район|облус|мектеп|класс|мугалим|дин(?!\\p{L})|кудай|улут|акча|бөлмө|үй(?!\\p{L})|ит(?!\\p{L})|мышык',
+    ),
+    direct: words('атың\\s+ким|атыңыз\\s+ким|канча\\s+жаштасың|канча\\s+жаштасыз|кайда\\s+жашайсың|кайда\\s+жашайсыз|үй-бүлөң'),
+    myTitle: /^\s*менин(?!\p{L})/iu,
+  },
+};
+
+/** Что в тексте выдаёт вопрос о ребёнке; `null` — ничего. */
+export function personalProbe(text: string): string | null {
+  for (const p of Object.values(PERSONAL_TEXT)) {
+    const direct = p.direct.exec(text);
+    if (direct) return `вопрос о ребёнке «${direct[0]}»`;
+    const yours = p.yours.exec(text);
+    const topic = p.topic.exec(text);
+    if (yours && topic) return `«${yours[0]}» + личная тема «${topic[0]}»`;
+  }
+  return null;
+}
+
+/**
+ * Ссылки, почта, ники, телефоны: в детском контенте их нет вовсе (С2, С18). Номера экстренных
+ * служб 101/102/103/112 — трёхзначные и сюда не попадают; ссылки `tel:` ловятся.
+ */
+export const CONTACT_TEXT = [
+  /https?:\/\/|www\./i,
+  /(?<![\p{L}\d])[a-z0-9-]+\.(?:com|ru|kg|org|net|io|me|app)(?![\p{L}\d])/iu,
+  /[\p{L}\d._%+-]+@[\p{L}\d.-]+\.\p{L}{2,}/u,
+  /(?<![\p{L}\d])@[\p{L}\d_]{2,}/u,
+  /tel:|\+\d|\d{3}[-‐–]\d{2}[-‐–]\d{2}|\(\d{3,4}\)\s*\d/,
+];
+
+/**
+ * Подстановка имени ребёнка (i18next `{{name}}`). Имя — только в репликах Tali: завязке и шагах
+ * примера (решение №42); в задании оно сделало бы ответ личным, а текст — непереиспользуемым.
+ */
+export const NAME_PLACEHOLDER = /\{\{?\s*(?:name|childName|имя)\s*\}\}?/i;
 
 export const RULES = {
   corpusIds: {
@@ -701,8 +778,8 @@ export const RULES = {
     // блокер 16). Новый навык — впервые в корпусе своей полосы (решение №26): ребёнок
     // может начать с 7, минуя 5-6. Порядок — порядок файлов, тем и уроков в корпусе.
     // Два новых навыка в уроке — два правила в одном уроке и один пример на оба.
-    // Реестра навыков нет, и опечатка в skill выглядит как новый навык — отсюда
-    // «или опечатка» в сообщениях.
+    // Опечатка в skill выглядит как новый навык; её ловит `skillRegistry`, а здесь
+    // «или опечатка» в сообщениях — подсказка, куда смотреть.
     title: 'в уроке не больше одного нового навыка своей полосы; есть новый — есть model на него, нет — нет model',
     check: (corpus) => {
       const seen = new Map<AgeBand, Set<string>>();
@@ -858,6 +935,131 @@ export const RULES = {
             .map((n) => `${at}: число ${n} в ${where} — для ${lesson.band} не больше ${max} цифр`);
         });
       }),
+  },
+
+  aboutCharacter: {
+    // AUDIT.md С1, решение №39: задание спрашивает о жителе, о Tali или о картинке, а не о
+    // ребёнке. Заголовок «Моя семья» ребёнок видит, и он сам задаёт ожидание рассказать о
+    // себе — темы называются «Семья Tali», «Улица и дом». Проверяются все локали, где ключ есть.
+    title: 'задание о персонаже, а не о ребёнке: нет «твой / у тебя / your / сенин» вместе с личной темой и прямых вопросов о ребёнке; заголовки темы и урока не начинаются с «Мой / My / Менин»',
+    check: (corpus, locales) => {
+      const titles = new Set([...corpus.map((e) => e.topic.titleKey), ...lessonsOf(corpus).map((l) => l.lesson.titleKey)]);
+      return keyUsages(corpus).flatMap(({ key, context }) =>
+        (Object.entries(locales) as [string, unknown][]).flatMap(([lang, locale]) => {
+          const text = lookup(locale, key);
+          if (typeof text !== 'string') return [];
+          const bad: string[] = [];
+          const probe = personalProbe(text);
+          if (probe) bad.push(`${context}: ${lang} ${key} — ${probe}: спроси о жителе или Tali`);
+          if (titles.has(key) && Object.values(PERSONAL_TEXT).some((p) => p.myTitle.test(text))) {
+            bad.push(`${context}: ${lang} ${key} — заголовок «${text}» от первого лица, назови тему о персонаже`);
+          }
+          return bad;
+        }),
+      );
+    },
+  },
+
+  contacts: {
+    // AUDIT.md С2, С18: в детском тексте нет ссылок, почты, ников и телефонов — ни настоящих,
+    // ни выдуманных: выдуманный адрес тоже ведёт куда-то в сети.
+    title: 'в текстах нет ссылок, почты, @ников, телефонов и tel:',
+    check: (corpus, locales) =>
+      keyUsages(corpus).flatMap(({ key, context }) =>
+        (Object.entries(locales) as [string, unknown][]).flatMap(([lang, locale]) => {
+          const text = lookup(locale, key);
+          if (typeof text !== 'string') return [];
+          const hit = CONTACT_TEXT.map((re) => re.exec(text)).find((m) => m !== null);
+          return hit ? [`${context}: ${lang} ${key} — контакт «${hit[0]}»`] : [];
+        }),
+      ),
+  },
+
+  nameOnlyInTali: {
+    // Решение №42: имя ребёнка — только в репликах Tali, завязке и шагах примера.
+    title: 'подстановка имени {{name}} — только в завязке и шагах примера, не в задании, заголовке и атласе',
+    check: (corpus, locales) =>
+      lessonsOf(corpus).flatMap(({ topic, lesson, where }) => {
+        const tali = new Set([lesson.hook.lineKey, ...(lesson.model?.steps.map((s) => s.lineKey) ?? [])]);
+        const keys = [...keysIn(lesson).filter((key) => !tali.has(key)), topic.titleKey];
+        return keys.flatMap((key) =>
+          (Object.entries(locales) as [string, unknown][]).flatMap(([lang, locale]) => {
+            const text = lookup(locale, key);
+            return typeof text === 'string' && NAME_PLACEHOLDER.test(text)
+              ? [`${where}: ${lang} ${key} — имя ребёнка вне реплик Tali`]
+              : [];
+          }),
+        );
+      }),
+  },
+
+  skillRegistry: {
+    // AUDIT.md С10. Опечатка в skill без реестра выглядела новым навыком. Навык не
+    // встречается раньше полосы, где вводится, а его пререквизит той же полосы — введён в
+    // корпусе раньше: иначе пример опирается на то, чего ребёнок ещё не видел.
+    title: 'skill задания и примера записан в реестре domain/skills.ts, не раньше своей полосы; пререквизит той же полосы встречается в корпусе раньше',
+    check: (corpus) => {
+      const bad = registryProblems(SKILLS).map((p) => `реестр навыков: ${p}`);
+      const seen = new Map<AgeBand, Set<string>>();
+      for (const { lesson, where } of lessonsOf(corpus)) {
+        const band = seen.get(lesson.band) ?? new Set<string>();
+        seen.set(lesson.band, band);
+        const used = [...(lesson.model ? [lesson.model.skill] : []), ...lesson.tasks.map((t) => t.skill)];
+        for (const skill of new Set(used)) {
+          const entry = SKILL_BY_ID.get(skill);
+          if (!entry) {
+            bad.push(`${where}: навыка ${skill} нет в реестре domain/skills.ts — запиши или исправь опечатку`);
+            continue;
+          }
+          if (bandIndex(lesson.band) < bandIndex(entry.band)) {
+            bad.push(`${where}: навык ${skill} вводится на ${entry.band}, а урок — ${lesson.band}`);
+          }
+          if (!band.has(skill)) {
+            for (const p of entry.prerequisites) {
+              const pre = SKILL_BY_ID.get(p);
+              if (pre && pre.band === lesson.band && !band.has(p)) {
+                bad.push(`${where}: навык ${skill} раньше своего пререквизита ${p}`);
+              }
+            }
+          }
+        }
+        used.forEach((s) => band.add(s));
+      }
+      return bad;
+    },
+  },
+
+  grade: {
+    // Решение №40: полоса 9-10 — два класса, и ребёнок может начать с 4-го. Без пометки не
+    // найти первую тему 4 класса; тема 3 класса после темы 4-го — сломанный порядок.
+    title: 'у тем полосы 9-10 класс 3 или 4, темы 4 класса после тем 3-го; у тем других полос класса нет',
+    check: (corpus) => {
+      const bad: string[] = [];
+      let fourth = false;
+      for (const { file, topic } of corpus) {
+        const band = topic.lessons[0]?.band;
+        if (band !== '9-10') {
+          if (topic.grade !== undefined) bad.push(`${file} ${topic.id}: класс у темы полосы ${band} — пишется только на 9-10`);
+          continue;
+        }
+        if (topic.grade !== 3 && topic.grade !== 4) bad.push(`${file} ${topic.id}: у темы 9-10 нет класса (3 или 4)`);
+        if (topic.grade === 4) fourth = true;
+        else if (topic.grade === 3 && fourth) bad.push(`${file} ${topic.id}: тема 3 класса после темы 4-го`);
+      }
+      return bad;
+    },
+  },
+
+  hook56: {
+    // Решение №41 (`child-ux-specialist`): на 5-6 до первого действия не больше ≈10 с
+    // слушания. Для урока с примером то же проверяет `model`; здесь — остальные уроки.
+    title: `на 5-6 завязка урока без примера ≤ ${TEXT_LIMITS.hintChars} знаков по-русски (в других локалях ≤ ${BUBBLE_CHARS})`,
+    check: (corpus, locales) =>
+      lessonsOf(corpus).flatMap(({ lesson, where }) =>
+        lesson.band === '5-6' && !lesson.model
+          ? tooLong(locales, lesson.hook.lineKey, TEXT_LIMITS.hintChars, BUBBLE_CHARS, `${where}: завязка`)
+          : [],
+      ),
   },
 } satisfies Record<string, Rule>;
 
