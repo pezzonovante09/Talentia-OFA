@@ -186,8 +186,10 @@ export type PlannedTrial = {
   sdVariantKey?: string;
   /** Уровень задан процедурой, а не стартовым уровнем: коррекция, закрытие. */
   fixedStart?: PromptLevel;
-  /** Поле `identify`; заполняется, когда проба становится текущей. */
+  /** Поле `identify` и `match`; заполняется, когда проба становится текущей. */
   field?: string[];
+  /** `match`: карточка-образец (она же верная); у сортировки — верная категория. */
+  sampleCardId?: string;
   pauseBeforeMs?: number;
   /** Со взрослым: после полной модели попросить взрослого помочь (L4). */
   adultAssist?: true;
@@ -230,6 +232,11 @@ export type TrialStep = {
    * пишется полное поле.
    */
   field?: string[];
+  /**
+   * `match`: образец сверху — эта карточка, она же верная среди `field`; у сортировки — верная
+   * категория, а образец — предмет `exemplarId`. Варианты неактивны, пока не коснулись образца.
+   */
+  sampleCardId?: string;
   startPromptLevel: PromptLevel;
   /**
    * Сколько ждать после конца SD до первой подсказки на старте L0; `null` — подсказки по
@@ -500,11 +507,38 @@ function teachingBlock(target: AbaTarget, rng: Rng): PlannedTrial[] {
       chainRun(target, { kind: 'teaching', targetId: target.id, exemplarId: at(run) }, run),
     ).flat();
   }
+  if (target.matchMode === 'sort') return sortBlock(target, rng).map((exemplarId) => ({ kind: 'teaching' as const, targetId: target.id, exemplarId }));
   return Array.from({ length: target.blockSize }, (_, i) => ({
     kind: 'teaching' as const,
     targetId: target.id,
     exemplarId: at(i),
   }));
+}
+
+/**
+ * Блок сортировки: категории поровну (в блоке 5 — 3/2, какой три — случайно; в 10 — 5/5), одна
+ * категория не больше двух раз подряд; предметы категории — по кругу.
+ */
+function sortBlock(target: AbaTarget, rng: Rng): string[] {
+  const [a, b] = shuffle([...target.sortCategories!], rng);
+  const n = target.blockSize;
+  const left: Record<string, number> = { [a]: Math.ceil(n / 2), [b]: Math.floor(n / 2) };
+  const items = (c: string) => shuffle(teachingExemplars(target).filter((e) => e.category === c), rng);
+  const queue: Record<string, AbaExemplar[]> = { [a]: items(a), [b]: items(b) };
+  const out: string[] = [];
+  const cats: string[] = [];
+  for (let i = 0; i < n; i += 1) {
+    const run = cats.length >= MAX_SAME_POSITION && cats.slice(-MAX_SAME_POSITION).every((c) => c === cats[cats.length - 1]);
+    const options = [a, b].filter((c) => left[c] > 0 && !(run && c === cats[cats.length - 1]));
+    // больше осталось — тот и первый: иначе в конце блока выпадет серия
+    const c = (options.length ? options : [a, b].filter((x) => left[x] > 0)).sort((x, y) => left[y] - left[x])[0];
+    const list = queue[c];
+    const e = list[cats.filter((x) => x === c).length % list.length];
+    left[c] -= 1;
+    cats.push(c);
+    out.push(e.id);
+  }
+  return out;
 }
 
 /**
@@ -853,6 +887,7 @@ function trialStep(state: AbaSessionState, p: PlannedTrial): TrialStep {
     ...(p.runIndex !== undefined ? { runIndex: p.runIndex } : {}),
     ...(p.sdVariantKey ? { sdVariantKey: p.sdVariantKey } : {}),
     ...(p.field ? { field: p.field } : {}),
+    ...(p.sampleCardId ? { sampleCardId: p.sampleCardId } : {}),
     startPromptLevel: start,
     promptDelayMs: promptDelayMs(s, target, p.kind, start, windowMs, p.stepId),
     responseWindowMs: windowMs,
@@ -880,6 +915,7 @@ function withField(state: AbaSessionState): AbaSessionState {
   const head = state.queue[0];
   if (head?.kind !== 'trial' || head.trial.field) return state;
   const target = state.targets[head.trial.targetId];
+  if (target.format === 'match') return withMatchField(state, head.trial, target);
   if (target.format !== 'identify') return state;
 
   const r = seeded(state.seed);
@@ -900,7 +936,7 @@ function withField(state: AbaSessionState): AbaSessionState {
 
   // позиция верной — по всему блоку, а не по цели: иначе ребёнок учит место
   const recent = state.trials
-    .filter((t) => t.field)
+    .filter((t) => t.field && state.targets[t.targetId]?.format === 'identify')
     .slice(-MAX_SAME_POSITION)
     .map((t) => t.field!.indexOf(t.exemplarId));
   const at = field.indexOf(head.trial.exemplarId);
@@ -910,6 +946,46 @@ function withField(state: AbaSessionState): AbaSessionState {
     [field[at], field[to]] = [field[to], field[at]];
   }
   const trial = { ...head.trial, field };
+  return { ...state, queue: [{ kind: 'trial', trial }, ...state.queue.slice(1)], seed: r.seed() };
+}
+
+/** Наименее использованное из `options`, кроме `avoid` (если есть другие); равные — случайно. */
+function leastUsed<T>(options: readonly T[], used: readonly T[], rng: Rng, avoid: readonly T[] = []): T {
+  const allowed = options.filter((o) => !avoid.includes(o));
+  const pool = allowed.length ? allowed : options;
+  const count = (o: T) => used.filter((u) => u === o).length;
+  const min = Math.min(...pool.map(count));
+  return pick(pool.filter((o) => count(o) === min), rng);
+}
+
+/**
+ * Поле `match` (ABA.md, «Спецификация первой версии»). Сопоставление: образец — карточка экземпляра,
+ * реже других бывшая образцом в этой сессии и не та же, что в прошлый раз (контрбалансировка: иначе
+ * учится любимая карточка); его место в поле — реже других занятое верной у этой цели и не третий
+ * раз подряд. Сортировка: поле — две карточки категорий, их порядок неизменен в сессии; верная —
+ * категория предмета.
+ */
+function withMatchField(state: AbaSessionState, planned: PlannedTrial, target: AbaTarget): AbaSessionState {
+  const r = seeded(state.seed);
+  const before = state.trials.filter((t) => t.targetId === target.id && t.field);
+  const exemplar = target.exemplars.find((e) => e.id === planned.exemplarId)!;
+  let field: string[];
+  let sample: string;
+  if (target.matchMode === 'sort') {
+    field = before[0]?.field ?? shuffle([...target.sortCategories!], r.rng);
+    sample = exemplar.category!;
+  } else {
+    const cards = exemplar.cards!;
+    const samples = before.filter((t) => t.exemplarId === exemplar.id).map((t) => t.sampleCardId!);
+    sample = leastUsed(cards, samples, r.rng, samples.slice(-1));
+    const positions = before.map((t) => t.field!.indexOf(t.sampleCardId!));
+    const last2 = positions.slice(-MAX_SAME_POSITION);
+    const ban = last2.length === MAX_SAME_POSITION && last2.every((p) => p === last2[0]) ? [last2[0]] : [];
+    const at = leastUsed(cards.map((_, i) => i), positions, r.rng, ban);
+    const rest = shuffle(cards.filter((c) => c !== sample), r.rng);
+    field = [...rest.slice(0, at), sample, ...rest.slice(at)];
+  }
+  const trial = { ...planned, field, sampleCardId: sample };
   return { ...state, queue: [{ kind: 'trial', trial }, ...state.queue.slice(1)], seed: r.seed() };
 }
 
@@ -1399,6 +1475,17 @@ function mismatch(input: AbaTrialInput, expected: TrialStep, state: AbaSessionSt
   if (!same(input.runIndex, expected.runIndex)) errors.push('не тот прогон цепочки');
   if (!same(input.sdVariantKey, expected.sdVariantKey)) errors.push('не та формулировка SD');
   if (!same(input.field, expected.field)) errors.push('не то поле карточек');
+  if (!same(input.sampleCardId, expected.sampleCardId)) errors.push('не тот образец');
+  // данные касаний — только у проб касанием, и выбранная карточка — из поля
+  const touch = expected.field !== undefined;
+  if (!touch && (input.chosenCardId !== undefined || input.tapCount !== undefined || input.fieldSizeAtResponse !== undefined)) {
+    errors.push('касания пишутся только в пробах с полем карточек');
+  }
+  if (touch && input.chosenCardId !== undefined && !expected.field!.includes(input.chosenCardId)) errors.push('выбрана карточка не из поля');
+  if (input.tapCount !== undefined && !(Number.isInteger(input.tapCount) && input.tapCount >= 0)) errors.push('число касаний — целое ≥ 0');
+  if ((input.observingPrompted || input.observingLatencyMs !== undefined) && state.targets[expected.targetId].format !== 'match') {
+    errors.push('реакция наблюдения — только у match');
+  }
   if (!same(input.closes, expected.closes)) errors.push('не то, что закрывает проба');
   if (input.startPromptLevel !== expected.startPromptLevel) errors.push('не тот стартовый уровень');
   if (input.promptDelayMs !== expected.promptDelayMs) errors.push('не та задержка до подсказки');
@@ -1435,7 +1522,8 @@ function mismatch(input: AbaTrialInput, expected: TrialStep, state: AbaSessionSt
 export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: number): RecordResult {
   const head = state.queue[0];
   if (head?.kind !== 'trial') return { ok: false, errors: ['сессия сейчас не ждёт пробу'] };
-  if (state.targets[head.trial.targetId].format === 'identify' && !head.trial.field) {
+  const headFormat = state.targets[head.trial.targetId].format;
+  if ((headFormat === 'identify' || headFormat === 'match') && !head.trial.field) {
     return { ok: false, errors: ['поле карточек ещё не выложено: сначала nextStep'] };
   }
   const expected = trialStep(state, head.trial);
@@ -1456,6 +1544,10 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
     responseWindowMs: expected.responseWindowMs,
   });
   if (!scored.ok) return { ok: false, errors: scored.errors };
+  // образца не коснулись вовремя — дана L1, самостоятельной проба быть не может
+  if (input.observingPrompted && scored.fields.response === 'independent') {
+    return { ok: false, errors: ['после подсказки к образцу проба не бывает самостоятельной'] };
+  }
   const full = { ...input, ...scored.fields };
 
   const r = seeded(state.seed);

@@ -191,6 +191,7 @@ function trialFor(state: AbaSessionState, step: TrialStep, how: How): AbaTrialIn
     ...(step.runIndex !== undefined ? { runIndex: step.runIndex } : {}),
     ...(step.sdVariantKey ? { sdVariantKey: step.sdVariantKey } : {}),
     ...(step.field ? { field: step.field } : {}),
+    ...(step.sampleCardId ? { sampleCardId: step.sampleCardId } : {}),
     ...(step.closes ? { closes: step.closes } : {}),
     index: state.trials.length,
     kind: step.trialKind,
@@ -1491,5 +1492,88 @@ describe('ABA v1: автоподбор и параметры специалис�
     const { steps } = drive(st, () => 'ok');
     const a = steps.find((x): x is TrialStep => x.kind === 'trial' && x.targetId === 'A')!;
     expect(a.responseWindowMs).toBe(9000);
+  });
+});
+
+describe('ABA v1: поле match и сортировка в сессии', () => {
+  const ex = (id: string, role: 'teaching' | 'generalization' = 'teaching'): AbaTarget['exemplars'][number] => ({
+    id,
+    role,
+    targetKey: `k.${id}`,
+    modelKey: `m.${id}`,
+    partialModelKeys: [],
+    cards: [`${id}-a`, `${id}-b`, `${id}-c`],
+  });
+  const M = tgt('M', {
+    format: 'match',
+    area: 'matching',
+    level: 1,
+    sdKind: undefined,
+    fieldSize: 3,
+    scoredBy: 'device_tap',
+    blockSize: 10,
+    exemplars: [ex('e1'), ex('e2'), ex('g1', 'generalization'), ex('g2', 'generalization')],
+  });
+
+  it('образец — карточка экземпляра по очереди, верная не стоит на одном месте трижды подряд', () => {
+    const { state } = drive(begin([M], { M: acq(M) }), () => 'ok');
+    const own = state.trials.filter((t) => t.targetId === 'M' && t.kind === 'teaching');
+    expect(own.length).toBe(10);
+    for (const t of own) {
+      expect(t.field).toHaveLength(3);
+      expect(t.field).toContain(t.sampleCardId);
+      expect(M.exemplars.find((e) => e.id === t.exemplarId)!.cards).toContain(t.sampleCardId);
+    }
+    const at = own.map((t) => t.field!.indexOf(t.sampleCardId!));
+    expect(at.some((p, i) => i >= 2 && p === at[i - 1] && p === at[i - 2])).toBe(false);
+    // контрбалансировка: у экземпляра каждая карточка — образец почти поровну
+    for (const e of ['e1', 'e2']) {
+      const samples = own.filter((t) => t.exemplarId === e).map((t) => t.sampleCardId);
+      const counts = [`${e}-a`, `${e}-b`, `${e}-c`].map((c) => samples.filter((x) => x === c).length);
+      expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('выбранная карточка — из поля; после подсказки к образцу самостоятельной пробы нет', () => {
+    const next = nextStep(begin([M], { M: acq(M) }), 1);
+    if (next.step.kind !== 'trial') throw new Error('ждали пробу');
+    const input = trialFor(next.state, next.step, 'ok');
+    expect(recordTrial(next.state, { ...input, chosenCardId: 'чужая' }, 2)).toMatchObject({ ok: false, errors: ['выбрана карточка не из поля'] });
+    expect(recordTrial(next.state, { ...input, observingPrompted: true }, 2)).toMatchObject({ ok: false });
+    expect(recordTrial(next.state, { ...input, chosenCardId: next.step.sampleCardId, tapCount: 2 }, 2).ok).toBe(true);
+  });
+
+  it('сортировка: категории поровну, одна не больше двух раз подряд, порядок карточек категорий в сессии неизменен', () => {
+    const item = (id: string, category: string, role: 'teaching' | 'generalization' = 'teaching') => ({
+      id,
+      role,
+      targetKey: `k.${id}`,
+      modelKey: `m.${id}`,
+      partialModelKeys: [],
+      image: `img.${id}`,
+      category,
+    });
+    const S = tgt('S', {
+      format: 'match',
+      area: 'matching',
+      level: 2,
+      sdKind: undefined,
+      matchMode: 'sort',
+      sortCategories: ['food', 'clothes'],
+      scoredBy: 'device_tap',
+      blockSize: 10,
+      exemplars: [
+        ...['f1', 'f2', 'f3'].map((id) => item(id, 'food')),
+        item('fg', 'food', 'generalization'),
+        ...['c1', 'c2', 'c3'].map((id) => item(id, 'clothes')),
+        item('cg', 'clothes', 'generalization'),
+      ],
+    });
+    const { state } = drive(begin([S], { S: acq(S) }), () => 'ok');
+    const own = state.trials.filter((t) => t.targetId === 'S' && t.kind === 'teaching');
+    const cats = own.map((t) => t.sampleCardId!);
+    expect(cats.filter((c) => c === 'food')).toHaveLength(5);
+    expect(cats.some((c, i) => i >= 2 && c === cats[i - 1] && c === cats[i - 2])).toBe(false);
+    expect(new Set(own.map((t) => t.field!.join()))).toHaveProperty('size', 1);
   });
 });
