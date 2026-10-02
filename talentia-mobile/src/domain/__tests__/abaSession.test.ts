@@ -70,6 +70,15 @@ function tgt(id: string, over: Partial<AbaTarget> = {}): AbaTarget {
   };
 }
 
+/**
+ * Формат открыт для «сам» (решение №60): цель того же формата освоена со взрослым по критерию и
+ * ждёт пробы поддержания — поэтому в разогрев не идёт и порядок проб сценария не сдвигает.
+ */
+function unlocking(format: AbaTarget['format'], over: Partial<AbaTarget> = {}): [AbaTarget, AbaTargetState] {
+  const t = tgt(`U-${format}`, { format, ...over });
+  return [t, mastered(t, 5, { masteredBy: 'criterion', masteredConfig: 'with_adult' })];
+}
+
 const acq = (t: AbaTarget, start: PromptLevel = 0, over: Partial<AbaTargetState> = {}): AbaTargetState => ({
   ...initialTargetState(t),
   phase: 'acquisition',
@@ -337,7 +346,8 @@ describe('К1: уровень пробы коррекции', () => {
 
   it('не ответил и на полной модели, без взрослого — шаг коррекции пропускается', () => {
     const V = tgt('V', { format: 'voice_volume' });
-    let st = begin([V], { V: acq(V, 3) }, { config: 'alone' });
+    const [U, u] = unlocking('voice_volume');
+    let st = begin([V, U], { V: acq(V, 3), [U.id]: u }, { config: 'alone' });
     st = answer(st, 1, 'silent_at_model').state;
     expect((nextStep(st, 2).step as TrialStep).trialKind).toBe('transfer');
   });
@@ -387,23 +397,24 @@ describe('К2: конфигурация «сам»', () => {
   const W = tgt('W', { format: 'repeat_word' });
   const D = tgt('D', { format: 'do_action' });
   const M = tgt('M', { format: 'repeat_word' });
-  const states = { V: acq(V), W: acq(W), D: acq(D), M: mastered(M) };
+  const [U, u] = unlocking('voice_volume');
+  const states = { V: acq(V), W: acq(W), D: acq(D), M: mastered(M), [U.id]: u };
 
   it('обучаются только цели с правом на критерий; do_action не предлагается', () => {
-    const st = begin([V, W, D, M], states, { config: 'alone' });
+    const st = begin([V, W, D, M, U], states, { config: 'alone' });
     expect(st.teachingTargetIds).toEqual(['V']);
     expect(st.highPTargetIds).toEqual(['M']);
   });
 
   it('громкость засчитывает устройство', () => {
-    const st = begin([V, W, D, M], states, { config: 'alone' });
+    const st = begin([V, W, D, M, U], states, { config: 'alone' });
     const { steps } = drive(st, () => 'ok');
     const v = steps.find((s): s is TrialStep => s.kind === 'trial' && s.targetId === 'V')!;
     expect(v.scoredBy).toBe('device_loudness');
   });
 
   it('проба без права на критерий: «Tali послушал», без жетона, состояние цели не меняется', () => {
-    const st = begin([V, W, D, M], states, { config: 'alone' });
+    const st = begin([V, W, D, M, U], states, { config: 'alone' });
     const warm = answer(st, 1, 'ok');
     expect(warm.step.scoredBy).toBe('device_onset');
     expect([warm.res.award.feedback, warm.res.award.tokens]).toEqual(['listened', 0]);
@@ -744,7 +755,8 @@ describe('набор identify', () => {
   });
 
   it('«сам»: касание засчитывает телефон', () => {
-    const st = begin(pool, acqAll(), { identifySets: withSet(), config: 'alone' });
+    const [U, u] = unlocking('identify', { identifyPoolKey: 'animals' });
+    const st = begin([...pool, U], { ...acqAll(), [U.id]: u }, { identifySets: withSet(), config: 'alone' });
     expect((nextStep(st, 1).step as TrialStep).scoredBy).toBe('device_tap');
   });
 
@@ -946,7 +958,8 @@ describe('обучение доске в сессии', () => {
   });
 
   it('ступени 1–2: на базовой линии не больше одной цели', () => {
-    const N2 = tgt('N2');
+    // вторая — из другой области: две базовые линии одной области в сессии не ставятся
+    const N2 = tgt('N2', { format: 'voice_volume' });
     expect(begin([N, N2], {}, { tokenTraining: stage(2) }).baselineTargetIds).toEqual(['N']);
     expect(begin([N, N2], {}, { tokenTraining: stage(3) }).baselineTargetIds).toEqual(['N', 'N2']);
   });
@@ -1215,26 +1228,40 @@ describe('согласие ребёнка — assent (блок 4)', () => {
     expect(interrupt(back, 103, 'child_break').state.endReason).toBe('assent_withdrawn');
   });
 
-  it('«Сам»: активность без засчитанной реакции три раза — цель снята, не отказ; без целей — техническая причина', () => {
+  it('«Сам»: активность без засчитанной реакции три раза — цель снята, не отказ и не срыв; без целей — техническая причина', () => {
     const V = tgt('V', { format: 'voice_volume', scoredBy: 'device_loudness' });
-    let st = begin([V], { V: acq(V, 0) }, { config: 'alone' });
-    for (let i = 0; i < 3; i += 1) {
-      const next = nextStep(st, i + 1);
-      if (next.step.kind !== 'trial') throw new Error('ждали пробу');
-      const input = trialFor(next.state, next.step, 'silent_at_model');
-      const res = recordTrial(next.state, { ...input, presentationLog: input.presentationLog.map((p) => ({ ...p, activity: true })) }, i + 1);
-      if (!res.ok) throw new Error(res.errors.join('; '));
-      expect(res.suggestBreak).toBe(false);
-      st = res.state;
-    }
-    expect(st.unreliableTargetIds).toEqual(['V']);
-    expect(st.endReason).toBe('unreliable_measurement');
-    expect(st.events.at(-1)).toMatchObject({ kind: 'measurement', targetId: 'V', action: 'unreliable' });
+    // открывающая цель освоена недавно: поддержание не к сроку, она — разогрев в начале сессии
+    const U = tgt('U-voice', { format: 'voice_volume', scoredBy: 'device_loudness' });
+    const u = mastered(U, 10, { masteredBy: 'criterion', masteredConfig: 'with_adult' });
+    const run = (st: AbaSessionState) => {
+      for (let i = 0; i < 20 && st.unreliableTargetIds.length === 0; i += 1) {
+        const next = nextStep(st, i + 1);
+        if (next.step.kind !== 'trial') throw new Error('ждали пробу');
+        const onV = next.step.targetId === 'V';
+        const input = trialFor(next.state, next.step, onV ? 'silent_at_model' : 'ok');
+        const log = onV ? input.presentationLog.map((p) => ({ ...p, activity: true })) : input.presentationLog;
+        const res = recordTrial(next.state, { ...input, presentationLog: log }, i + 1);
+        if (!res.ok) throw new Error(res.errors.join('; '));
+        expect(res.suggestBreak).toBe(false);
+        st = res.state;
+      }
+      return st;
+    };
+    const alone = run(begin([V, U], { V: acq(V, 0), [U.id]: u }, { config: 'alone' }));
+    expect(alone.unreliableTargetIds).toEqual(['V']);
+    expect(alone.endReason).toBe('unreliable_measurement');
+    expect(alone.events.at(-1)).toMatchObject({ kind: 'measurement', targetId: 'V', action: 'unreliable' });
+    // осталась другая цель — сессия идёт дальше, снятая цель не «срывается»
+    const [W, w] = unlocking('voice_volume', { scoredBy: 'device_loudness' });
+    const withOther = run(begin([V, W], { V: acq(V, 0), [W.id]: w }, { config: 'alone' }));
+    expect(withOther.unreliableTargetIds).toEqual(['V']);
+    expect(withOther.endReason).toBeNull();
   });
 
   it('«Сам»: две пробы без активности — предложить перерыв, третья — конец сессии', () => {
     const V = tgt('V', { format: 'voice_volume', scoredBy: 'device_loudness' });
-    let st = begin([V], { V: acq(V, 0) }, { config: 'alone' });
+    const [U, u] = unlocking('voice_volume', { scoredBy: 'device_loudness' });
+    let st = begin([V, U], { V: acq(V, 0), [U.id]: u }, { config: 'alone' });
     const results: boolean[] = [];
     for (let i = 0; i < 3; i += 1) {
       const r = answer(st, i + 1, 'silent_at_model');
@@ -1302,7 +1329,8 @@ describe('assent: правки по проверке методиста', () => 
 
   it('«Сам»: после конца по тишине — сразу конец, без закрывающей пробы', () => {
     const V = tgt('V', { format: 'voice_volume', scoredBy: 'device_loudness' });
-    let st = begin([V], { V: acq(V, 0) }, { config: 'alone' });
+    const [U, u] = unlocking('voice_volume', { scoredBy: 'device_loudness' });
+    let st = begin([V, U], { V: acq(V, 0), [U.id]: u }, { config: 'alone' });
     for (let i = 0; i < 3; i += 1) st = answer(st, i + 1, 'silent_at_model').state;
     expect(st.queue.some((q) => q.kind === 'trial')).toBe(false);
     expect(nextStep(st, 10).step).toMatchObject({ kind: 'end', reason: 'assent_withdrawn', pairingCycle: true });
@@ -1426,5 +1454,42 @@ describe('ненадёжное измерение нейтрально в люб
     expect(st.unreliableTargetIds).toEqual(['V']);
     const r = finishAbaSession(st, '2026-10-01', 9e6);
     expect(r.states.V.phase).toBe('baseline');
+  });
+});
+
+describe('ABA v1: автоподбор и параметры специалиста в сессии', () => {
+  const A = tgt('A');
+  const B = tgt('B', { prerequisiteTargetIds: ['A'] });
+  const C = tgt('C', { prerequisiteTargetIds: ['B'] });
+
+  it('автоподбор: на свежей лестнице базовая линия — у верхней цели; без него — у нижней', () => {
+    expect(begin([A, B, C], {}, { autoPlacement: true }).baselineTargetIds).toEqual(['C']);
+    expect(begin([A, B, C], {}).baselineTargetIds).toEqual(['A']);
+  });
+
+  it('верхняя прошла — освоена, предпосылки выведены и ждут поддержания', () => {
+    const { state } = drive(begin([A, B, C], {}, { autoPlacement: true }), () => 'ok');
+    const r = finishAbaSession(state, '2026-10-02', 99_000);
+    expect([r.states.C.phase, r.states.C.masteredBy]).toEqual(['mastered', 'baseline']);
+    expect([r.states.A.masteredBy, r.states.B.masteredBy]).toEqual(['inferred', 'inferred']);
+  });
+
+  it('полоса параметров специалиста меняет полосу сессии и целей; неверные параметры сессию не начинают', () => {
+    const st = begin([A], { A: acq(A) }, { params: { paramsBand: '5-6' } });
+    expect([st.band, st.targets.A.band]).toEqual(['5-6', '5-6']);
+    expect(() => begin([A], { A: acq(A) }, { params: { timeLimitMs: 60_000 } })).toThrow('вне 3–');
+  });
+
+  it('одна обучаемая цель, если так задал специалист', () => {
+    const D = tgt('D', { format: 'voice_volume' });
+    expect(begin([A, D], { A: acq(A), D: acq(D) }).teachingTargetIds).toHaveLength(2);
+    expect(begin([A, D], { A: acq(A), D: acq(D) }, { params: { maxTeachingTargets: 1 } }).teachingTargetIds).toHaveLength(1);
+  });
+
+  it('удлинённое окно ответа специалиста приходит в шаг пробы', () => {
+    const st = begin([A], { A: acq(A) }, { params: { responseWindowMs: { imitate_sound: 9000 } } });
+    const { steps } = drive(st, () => 'ok');
+    const a = steps.find((x): x is TrialStep => x.kind === 'trial' && x.targetId === 'A')!;
+    expect(a.responseWindowMs).toBe(9000);
   });
 });

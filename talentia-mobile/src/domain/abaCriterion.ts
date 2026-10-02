@@ -12,6 +12,7 @@ import {
   MAINTENANCE_FAILS_TO_REACQUIRE,
   MAINTENANCE_GAP,
   MASTERY,
+  type AbaConfig,
   type AbaSessionEndReason,
   type AbaTarget,
   type AbaTargetState,
@@ -240,6 +241,13 @@ export const MAX_BASELINE_TARGETS = 2;
  */
 export const IDENTIFY_BASELINE = { trials: 5, fromL0: 5, fromL1: 4 } as const;
 
+/**
+ * Базовая линия `match` (методист, 2026-10-02): 5 проб в поле полного размера. 5/5 при поле ≥ 3 —
+ * сразу освоено (угадать — 0,4%); при поле 2 и у сортировки — обучение с L0 (угадать 5/5 — 3%);
+ * 4/5 — старт L1; меньше — L3.
+ */
+export const MATCH_BASELINE = { trials: 5, masteredFrom: 5, fromL1: 4, minFieldForMastery: 3 } as const;
+
 function baselineTrials(trials: AbaTrial[]): AbaTrial[] {
   return trials.filter(
     (t) => t.kind === 'baseline' && t.response !== 'interrupted' && COUNTS_TOWARD_MASTERY[t.scoredBy],
@@ -277,6 +285,7 @@ export function applyBaseline(
   trials: AbaTrial[],
   sessionIndex: number,
   target: AbaTarget,
+  config?: AbaConfig,
 ): AbaTargetState {
   if (s.phase !== 'baseline') return s;
   const own = baselineTrials(trials);
@@ -294,6 +303,15 @@ export function applyBaseline(
     return { ...s, phase: 'acquisition', stepPrompts };
   }
 
+  if (target.format === 'match') {
+    if (own.length < MATCH_BASELINE.trials) return s;
+    const ok = own.filter((t) => t.response === 'independent').length;
+    const wide = target.matchMode !== 'sort' && (target.fieldSize ?? 2) >= MATCH_BASELINE.minFieldForMastery;
+    if (ok >= MATCH_BASELINE.masteredFrom && wide) return markMastered(s, sessionIndex, 'baseline', config);
+    const level: PromptLevel = ok >= MATCH_BASELINE.masteredFrom ? 0 : ok >= MATCH_BASELINE.fromL1 ? 1 : APP_MAX_PROMPT;
+    return { ...s, phase: 'acquisition', ...fresh(level, s.currentDelayMs) };
+  }
+
   if (target.format === 'identify') {
     if (own.length < IDENTIFY_BASELINE.trials) return s;
     const ok = own.filter((t) => t.response === 'independent').length;
@@ -303,7 +321,7 @@ export function applyBaseline(
 
   if (own.length < BASELINE_TRIALS) return s;
   const independent = own.filter((t) => t.response === 'independent').length;
-  if (independent === own.length) return markMastered(s, sessionIndex, 'baseline');
+  if (independent === own.length) return markMastered(s, sessionIndex, 'baseline', config);
   return { ...s, phase: 'acquisition', ...fresh(independent > 0 ? 1 : APP_MAX_PROMPT, s.currentDelayMs) };
 }
 
@@ -312,11 +330,13 @@ export function markMastered(
   s: AbaTargetState,
   sessionIndex: number,
   by: 'criterion' | 'baseline' | 'home_unverified' | 'inferred' = 'criterion',
+  config?: AbaConfig,
 ): AbaTargetState {
   return {
     ...s,
     phase: 'mastered',
     masteredBy: by,
+    ...(config ? { masteredConfig: config } : {}),
     flags: s.flags.filter((f) => f !== 'needs_verification'),
     maintenanceGapIndex: 0,
     maintenanceFailsInRow: 0,
@@ -369,6 +389,17 @@ export function applyMaintenanceProbe(
     };
   }
 
+  // Выведенная по проверке сверху вниз (автоподбор) — назад на базовую линию с первого провала:
+  // уровня последнего успеха у неё нет, учить с него нечего (методист, 2026-10-02).
+  if (s.masteredBy === 'inferred') {
+    return {
+      ...base,
+      phase: 'baseline',
+      masteredBy: undefined,
+      maintenanceGapIndex: 0 as GapIndex,
+      maintenanceFailsInRow: 0,
+    };
+  }
   const lastSuccessfulPromptLevel =
     t.response === 'prompted' ? clampToApp(t.promptLevelUsed) : clampToApp(s.lastSuccessfulPromptLevel);
   const fails = s.maintenanceFailsInRow + 1;

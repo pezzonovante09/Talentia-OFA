@@ -36,6 +36,7 @@ import {
   VOICE_VOLUME_HOLD_MS,
   type AbaConfig,
   type AbaExemplar,
+  type AbaFormat,
   type AbaIoaRecord,
   type AbaObserver,
   type AbaResponse,
@@ -67,6 +68,9 @@ import {
   type SessionTrials,
 } from './abaPrompting';
 import { scoreTrial, type ScoredFields } from './abaScoring';
+import { applyChoiceBias } from './abaBarriers';
+import { applyPlacementProbe, formatUnlockedAlone, isPlacementProbe, placementCandidates } from './abaPlacement';
+import { sessionParamsErrors, type AbaSessionParams } from './abaSessionParams';
 import { ioaPasses, isVerified, masteryVerdict } from './abaIoa';
 import {
   applyBaseline,
@@ -75,6 +79,7 @@ import {
   applySession,
   BASELINE_CHAIN_RUNS,
   BASELINE_TRIALS,
+  MATCH_BASELINE,
   generalizationPasses,
   isMaintenanceDue,
   isMasteryMet,
@@ -319,6 +324,8 @@ export type AbaSessionState = {
   /** Цели, снятые до конца сессии: измерение ненадёжно. Для них сессия нейтральна. */
   unreliableTargetIds: string[];
   band: AgeBand;
+  /** Окно ответа по формату, удлинённое специалистом (`AbaSessionParams.responseWindowMs`). */
+  windowOverrideMs?: Partial<Record<AbaFormat, number>>;
   startedAt: number;
   /** Начало работы — выбор подкрепителя сделан. От него считается лимит. */
   workStartedAt: number | null;
@@ -385,6 +392,13 @@ export type StartInput = {
   identifySets?: IdentifySet[];
   /** Взрослый может уменьшить лимит, но не увеличить. */
   timeLimitMs?: number;
+  /** Параметры специалиста (решение №61, `abaSessionParams.ts`). */
+  params?: AbaSessionParams;
+  /**
+   * Автоподбор старта без специалиста (решение №56): на свежих лестницах — проверка сверху вниз
+   * (`abaPlacement.ts`). Со специалистом — выключен: стартовые цели выбирает он.
+   */
+  autoPlacement?: boolean;
   /**
    * Разрешена ли физическая подсказка (L4) — из ABA-состояния ребёнка, по умолчанию нет.
    * Включает специалист или родитель за PIN после правила «мягко направлять, прекращать при
@@ -449,7 +463,7 @@ const EXCHANGE_AT_END: ReadonlySet<AbaSessionEndReason> = new Set(['completed', 
 export function sessionScoring(target: AbaTarget, config: AbaConfig): ScoringSource {
   if (config === 'with_adult') return target.scoredBy;
   if (target.format === 'voice_volume') return 'device_loudness';
-  if (target.format === 'identify') return 'device_tap';
+  if (target.format === 'identify' || target.format === 'match') return 'device_tap';
   return 'device_onset';
 }
 
@@ -506,7 +520,8 @@ function baselineBlock(target: AbaTarget, highP: AbaTarget[], rng: Rng): Planned
     ).flat();
   }
   const out: PlannedTrial[] = [];
-  for (let i = 0; i < BASELINE_TRIALS; i += 1) {
+  const n = target.format === 'match' ? MATCH_BASELINE.trials : BASELINE_TRIALS;
+  for (let i = 0; i < n; i += 1) {
     if (i > 0 && highP.length) out.push(highPTrial(pick(highP, rng), rng));
     out.push({ kind: 'baseline', targetId: target.id, exemplarId: at(i) });
   }
@@ -566,7 +581,32 @@ function overdue(s: AbaTargetState, sessionIndex: number): number {
  *   закрывающие пробы: иначе поддержание измеряет только что отработанное. Цепочки
  *   туда тоже не попадают: высоковероятная проба короткая, а прогон — нет.
  */
-export function startAbaSession(input: StartInput): AbaSessionState {
+/** Полоса параметров специалиста — полоса сессии и каждой цели (решение №61). */
+function withParamsBand(input: StartInput): StartInput {
+  const band = input.params?.paramsBand;
+  if (!band || band === input.band) return input;
+  return { ...input, band, targets: input.targets.map((t) => ({ ...t, band })) };
+}
+
+/**
+ * Цели на базовую линию: без повторов, не больше `room`; две — из разных областей (методист,
+ * 2026-10-02), иначе вторая ждёт следующей сессии.
+ */
+function baselineChoice(candidates: readonly AbaTarget[], room: number): AbaTarget[] {
+  const out: AbaTarget[] = [];
+  for (const t of candidates) {
+    if (out.length >= room) break;
+    if (out.some((x) => x.id === t.id || x.area === t.area)) continue;
+    out.push(t);
+  }
+  return out;
+}
+
+export function startAbaSession(raw: StartInput): AbaSessionState {
+  const paramErrors = sessionParamsErrors(raw.params, raw.band);
+  if (paramErrors.length) throw new Error(paramErrors.join('; '));
+  // полоса параметров специалиста заменяет полосу профиля во всех параметрах сразу (№61)
+  const input = withParamsBand(raw);
   const { config, band, sessionIndex } = input;
   const r = seeded(input.seed);
   const rng = r.rng;
@@ -589,34 +629,46 @@ export function startAbaSession(input: StartInput): AbaSessionState {
   const offered = input.targets.filter((t) => !(config === 'alone' && (t.format === 'do_action' || t.format === 'say')));
   const isMastered = (id: string) => states[id] !== undefined && MASTERED_PHASES.has(states[id].phase);
   const ready = (t: AbaTarget) => counts(t, config) && (t.prerequisiteTargetIds ?? []).every(isMastered);
+  // «Сам»: обучать новому — только в формате, освоенном со взрослым (№60); до этого — поддержание
+  const teachableHere = (t: AbaTarget) => config !== 'alone' || formatUnlockedAlone(t.format, input.targets, states);
+  const maxTeaching = input.params?.maxTeachingTargets ?? MAX_TEACHING_TARGETS;
 
   const single = offered.filter((t) => t.format !== 'identify');
   // застрявшая цель уступает слот следующей по программе; сама — если больше некому
   const stuck = (t: AbaTarget) => Number(states[t.id].flags.includes('no_progress'));
   const regular = single
-    .filter((t) => TEACHING_PHASES.has(states[t.id].phase) && ready(t))
+    .filter((t) => TEACHING_PHASES.has(states[t.id].phase) && ready(t) && teachableHere(t))
     .sort((a, b) => stuck(a) - stuck(b))
-    .slice(0, MAX_TEACHING_TARGETS);
+    .slice(0, maxTeaching);
 
   // identify — только набором. Набор занимает оба слота обучения; готовы и набор, и
   // обычные цели — сессии чередуются
   const identifySets = updateSets(input.identifySets ?? [], offered, states, sessionIndex, ready);
   // наборов несколько (пулов несколько) — давнее обучавшийся первым
-  const candidate = [...identifySets].sort((a, b) => a.lastSetSessionIndex - b.lastSetSessionIndex)[0] ?? null;
+  const candidate = teachableHere({ format: 'identify' } as AbaTarget)
+    ? ([...identifySets].sort((a, b) => a.lastSetSessionIndex - b.lastSetSessionIndex)[0] ?? null)
+    : null;
   const regularLast = Math.max(-1, ...regular.map((t) => states[t.id].lastSessionIndex));
   const set = candidate && (regular.length === 0 || candidate.lastSetSessionIndex <= regularLast) ? candidate : null;
   const setMembers = set ? set.memberIds.map((id) => input.targets.find((t) => t.id === id)!) : [];
   const teaching = set ? setMembers.filter((t) => TEACHING_PHASES.has(states[t.id].phase)) : regular;
   // 5–6: базовая линия занимает слоты обучения — иначе сессия малыша вдвое длиннее нормы
   const baselineRoom = Math.min(
-    band === '5-6' ? MAX_TEACHING_TARGETS - teaching.length : MAX_BASELINE_TARGETS,
+    band === '5-6' ? maxTeaching - teaching.length : MAX_BASELINE_TARGETS,
     // на ступенях 1–2 обучения доске — не больше одной новой цели
     input.tokenTraining.stage <= 2 ? 1 : MAX_BASELINE_TARGETS,
   );
   const setBaselineLimit = input.tokenTraining.stage <= 2 ? 1 : MAX_BASELINE_TARGETS;
   const baseline = set
     ? baselineMembers(set, states, setBaselineLimit).map((id) => setMembers.find((t) => t.id === id)!)
-    : single.filter((t) => states[t.id].phase === 'baseline' && ready(t)).slice(0, Math.max(0, baselineRoom));
+    : baselineChoice(
+        [
+          // проверка сверху вниз — первой: она может снять с лестницы сразу несколько целей
+          ...(input.autoPlacement ? placementCandidates(single, states).filter((t) => counts(t, config)) : []),
+          ...single.filter((t) => states[t.id].phase === 'baseline' && ready(t)),
+        ],
+        Math.max(0, baselineRoom),
+      );
   const mastered = offered.filter((t) => isMastered(t.id));
 
   // освоено «дома, без проверки», а сессию ведёт обученный наблюдатель — проверочная проба
@@ -729,9 +781,10 @@ export function startAbaSession(input: StartInput): AbaSessionState {
     unreliableRun: {},
     unreliableTargetIds: [],
     band,
+    ...(input.params?.responseWindowMs ? { windowOverrideMs: input.params.responseWindowMs } : {}),
     startedAt: input.startedAt,
     workStartedAt: null,
-    timeLimitMs: Math.min(input.timeLimitMs ?? Infinity, SESSION_TIME_LIMIT_MS[band]),
+    timeLimitMs: Math.min(input.timeLimitMs ?? Infinity, input.params?.timeLimitMs ?? SESSION_TIME_LIMIT_MS[band]),
     pausedMs: 0,
     breakStartedAt: null,
     accessStartedAt: null,
@@ -790,7 +843,7 @@ function trialStep(state: AbaSessionState, p: PlannedTrial): TrialStep {
   // помощи взрослого — теперь это полная модель
   const start: PromptLevel = planned === 4 && !(l4Available(state) && p.adultAssist) ? APP_MAX_PROMPT : planned;
   const withAdult = state.config === 'with_adult';
-  const windowMs = responseWindowMs(target, p.stepId);
+  const windowMs = (!p.stepId && state.windowOverrideMs?.[target.format]) || responseWindowMs(target, p.stepId);
   return {
     kind: 'trial',
     trialKind: p.kind,
@@ -1455,7 +1508,8 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
   const suggestBreak = st.endReason === null && st.aloneSilentRun === ALONE_SILENT_TO_OFFER_BREAK;
 
   const failed = trial.response === 'incorrect' || trial.response === 'no_response';
-  if (countsHere && st.endReason === null) {
+  // цель только что снята как ненадёжная — сессия для неё нейтральна: ни срыва, ни коррекции
+  if (countsHere && st.endReason === null && !st.unreliableTargetIds.includes(trial.targetId)) {
     const counted = st.trials.filter((t) => COUNTS_TOWARD_MASTERY[t.scoredBy]);
     if (isBreakdown(counted, trial.targetId)) {
       st = closeOut(st, 'breakdown', now, trial.targetId);
@@ -1906,7 +1960,14 @@ export function finishAbaSession(
     // измерение ненадёжно — сессия для цели нейтральна в любой фазе
     const unreliable = state.unreliableTargetIds.includes(id);
     if (state.baselineTargetIds.includes(id) && !unreliable) {
-      s = applyBaseline(s, own, idx, target);
+      if (isPlacementProbe(target, state.states)) {
+        // проверка сверху вниз: прошла — освоена, предпосылки по лестнице выведены
+        const placed = applyPlacementProbe({ ...states, [id]: s }, Object.values(state.targets), target, own, idx, state.config);
+        for (const [k, v] of Object.entries(placed)) if (k !== id) states[k] = v;
+        s = placed[id];
+      } else {
+        s = applyBaseline(s, own, idx, target, state.config);
+      }
       reason = 'baseline';
     }
     if (state.teachingTargetIds.includes(id)) {
@@ -1957,7 +2018,7 @@ export function finishAbaSession(
         if (verdict === 'needs_verification') {
           s = s.flags.includes('needs_verification') ? s : { ...s, flags: [...s.flags, 'needs_verification'] };
         } else {
-          s = markMastered(s, idx, verdict);
+          s = markMastered(s, idx, verdict, state.config);
           reason = 'criterion';
         }
       } else if (isPromptDependent(s, [...(pastSessions[id] ?? []), { index: idx, trials: own }])) {
@@ -1965,6 +2026,7 @@ export function finishAbaSession(
       }
     }
     s = withAssentConcern(s, isConcerning(state.trials.filter((t) => t.targetId === id)));
+    if (!unreliable) s = applyChoiceBias(s, [...(pastSessions[id] ?? []), { index: idx, trials: own }], target.format);
     if (reason && (s.phase !== from || reason === 'verification_passed')) {
       phaseEvents.push({ kind: 'phase', at: iso(endedAt), targetId: id, from, to: s.phase, reason });
     }
