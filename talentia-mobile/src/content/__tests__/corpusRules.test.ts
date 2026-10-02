@@ -1428,3 +1428,95 @@ describe('гард корпуса: класс и завязка', () => {
     expectRed('hook56', c, 'завязка: ru 37 знаков, нужно ≤ 36', { ru });
   });
 });
+
+describe('гард корпуса: приватность текста — по проверке child-privacy-compliance', () => {
+  const promptRed = (text: string, lang: 'ru' | 'en' | 'ky' = 'ru') => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    const locales: Locales = { ru };
+    const target: Record<string, unknown> = lang === 'ru' ? ru : {};
+    if (lang !== 'ru') locales[lang] = target;
+    setKey(target, lessonAt(c, 0).tasks[0].promptKey, text);
+    return run('aboutCharacter', c, locales);
+  };
+
+  it.each([
+    ['ky', 'Апаң эмне иштейт?'],
+    ['ky', 'Сенин агаң барбы?'],
+    ['ky', 'Мектебиң кайсы?'],
+    ['ky', 'Мышыгың барбы?'],
+    ['ky', 'А сенчи?'],
+    ['ru', 'Что подарить твоему папе?'],
+    ['ru', 'В каком городе ты живёшь?'],
+    ['ru', 'Тебя как зовут?'],
+    ['ru', 'Кто живёт с тобой?'],
+    ['ru', 'Расскажи о своей семье.'],
+    ['ru', 'Ты мальчик или девочка?'],
+    ['ru', 'А у тебя?'],
+    ['ru', 'Что у тебя болит?'],
+    ['ru', 'У тебя есть кот?'],
+    ['ru', 'Как зовут твоего друга?'],
+    ['en', 'Who lives with you?'],
+    ['en', 'Tell me about yourself.'],
+    ['en', 'Are you a boy or a girl?'],
+    ['en', 'Does your granny bake?'],
+    ['en', 'And you?'],
+  ] as const)('ловит: %s «%s»', (lang, text) => {
+    expect(promptRed(text, lang).join('\n')).toContain('спроси о жителе или Tali');
+  });
+
+  it.each([
+    'Класс! У тебя получилось!',
+    'Твой ход: какой дом у реки?',
+    'Your turn! Find the cat.',
+    'Name the animal on your card.',
+    'Count the petals on the flower.',
+    'Помоги утёнку найти свою маму.',
+    'Расставь числа друг за другом.',
+    'Найди брать или взять?',
+  ])('пропускает игровую речь и обычное задание: «%s»', (text) => {
+    expect(promptRed(text)).toEqual([]);
+  });
+
+  it.each(['Я и моя семья', 'Наша семья', 'Обо мне', 'All about me', 'Our home', 'Үй-бүлөм', 'Биздин үй'])(
+    'ловит заголовок от первого лица: «%s»',
+    (title) => {
+      const c = goodCorpus();
+      const ru = localeFor(c);
+      setKey(ru, c[0].topic.titleKey, title);
+      expect(run('aboutCharacter', c, { ru }).join('\n')).toContain('от первого лица');
+    },
+  );
+
+  const contact = (text: string) => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    setKey(ru, lessonAt(c, 1).tasks[0].promptKey, text);
+    return run('contacts', c, { ru });
+  };
+
+  it.each(['Звони 0555 123 456', 'Номер 89991234567', 'Смотри на youtu.be', 'Зайди на сайт.рф', 'Найди нас в TikTok', 'Сфотографируй комнату', 'Позвони по номеру 555-12'])(
+    'ловит контакт: «%s»',
+    (text) => {
+      expect(contact(text).join('\n')).toContain('контакт');
+    },
+  );
+
+  it.each(['5+3=8', 'Продолжи ряд: 100–90–80', 'Считай: 1 2 3 4 5 6 7 8 9', 'Пожар — звони 101.', '+1 звезда'])('пропускает: «%s»', (text) => {
+    expect(contact(text)).toEqual([]);
+  });
+
+  it('имя — только обращением в начале или конце реплики Tali, в любой форме подстановки', () => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    const l = lessonAt(c, 0);
+    setKey(ru, l.hook.lineKey, '{{name}}, смотри!');
+    setKey(ru, l.model!.steps[0].lineKey, 'Молодец, {{name, capitalize}}!');
+    expect(run('nameOnlyInTali', c, { ru })).toEqual([]);
+    setKey(ru, l.hook.lineKey, 'Смотри, {{name}} нашёл камни');
+    setKey(ru, l.titleKey, 'Урок {{child_name}}');
+    const out = run('nameOnlyInTali', c, { ru }).join('\n');
+    expect(out).toContain(`${l.hook.lineKey} — имя посреди фразы`);
+    expect(out).toContain(`${l.titleKey} — имя ребёнка вне реплик Tali`);
+  });
+});

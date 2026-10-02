@@ -280,71 +280,181 @@ function answerSignature(t: Task | ModelExample): string {
  */
 const words = (alts: string, tail = false) => new RegExp(`(?<!\\p{L})(?:${alts})${tail ? '(?!\\p{L})' : ''}`, 'iu');
 
+type PersonalLang = {
+  /** Игровая речь Tali, вырезается до проверки: «Твой ход», «Your turn», «У тебя получилось». */
+  safe: RegExp;
+  yours: RegExp;
+  topic: RegExp;
+  direct: RegExp;
+  /** Тема с притяжательным суффиксом 2-го лица — уже вопрос о ребёнке (кыргызский). */
+  own?: RegExp;
+  myTitle: RegExp;
+};
+
 /**
  * Обращение к ребёнку «твой / у тебя» вместе с личной темой превращает выбранный вариант в
  * факт о нём: «у тебя есть брат?» — ответ ложится в журнал и уходит в синхронизацию (AUDIT.md,
- * С1, С2; `child-privacy-compliance` 2026-10-02). «Сколько ты видишь камней?» — не о ребёнке и
- * не ловится: нужна пара «принадлежность + тема» или прямой вопрос о нём. Все три языка
- * проверяются на любом тексте: английское слово Мастерской лежит в ru.json.
+ * С1, С2; `child-privacy-compliance` 2026-10-02, словари дополнены по его проверке гарда).
+ * «Сколько ты видишь камней?» — не о ребёнке и не ловится: нужна пара «принадлежность + тема»,
+ * прямой вопрос о нём или (в кыргызском) тема с притяжательным суффиксом 2-го лица. Все три
+ * языка проверяются на любом тексте: английское слово Мастерской лежит в ru.json. Ложные
+ * срабатывания на игровой речи Tali вырезаются заранее (`safe`) — иначе они приучили бы
+ * авторов обходить гард.
  */
-export const PERSONAL_TEXT = {
+export const PERSONAL_TEXT: Record<'ru' | 'en' | 'ky', PersonalLang> = {
   ru: {
-    yours: words('тво(?:й|я|ё|е|и|его|ей|их|им|ими|ём|ем|ю)|ваш\\p{L}*|у\\s+(?:тебя|вас)', true),
+    safe: words('у\\s+тебя\\s+получил\\p{L}*|тво(?:й|я|ё)\\s+(?:ход|очередь|ответ|выбор)'),
+    yours: words(
+      'тво(?:й|я|ё|е|и|его|ему|ей|их|им|ими|ём|ем|ю)|ваш\\p{L}*|у\\s+(?:тебя|вас)|тебе|тобой|ты\\s+(?:живёшь|живешь|ходишь|учишься)',
+      true,
+    ),
     topic: words(
-      'сем(?:ья|ьи|ье|ью|ьёй|ьей)|мам|пап|брат|сестр|бабушк|дедушк|родител|адрес|улиц|сел[оаеу](?!\\p{L})|деревн|город|район|област|школ|класс|учител|вер[аыуе](?!\\p{L})|бог(?:а|у|ом|е)?(?!\\p{L})|религи|национальн|болезн|боле(?:ешь|ет|л)|вес(?:а|е)?(?!\\p{L})|рост(?!\\p{L})|деньг|денег|зарплат|комнат|квартир|дом(?:а|е|ом|у)?(?!\\p{L})|им(?:я|ени)(?!\\p{L})|питом|собак|кошк|день\\s+рождения',
+      [
+        'сем(?:ья|ьи|ье|ью|ьёй|ьей)|мам|пап(?:а|ы|е|у|ой|ин)(?!\\p{L})|брат(?!ь)|сестр|бабушк|бабул|дедушк|дед(?!\\p{L})',
+        'мать|матер|от(?:ец|ц)|тёт|тет[яиеу]|дяд|родител',
+        'адрес|улиц|сел[оаеу](?!\\p{L})|деревн|город|район|област|квартир|комнат|дом(?:а|е|ом|у)?(?!\\p{L})',
+        'школ|класс(?:е|у|ом|а|ы)(?!\\p{L})|одноклассн|учител|садик|детск\\p{L}*\\s+сад|воспитател|друг(?!\\s+(?:за|друг))|друз|подруг',
+        'вер[аыуе](?!\\p{L})|бог(?:а|у|ом|е)?(?!\\p{L})|религи|мечет|церк|храм|молит|намаз|национальн',
+        'болезн|бол(?:ит|ят|ел|еешь|еет)(?!\\p{L})|врач|лекарств|аллерги|вес(?:а|е)?(?!\\p{L})|рост(?!\\p{L})|глаз|волос|кож[аиуе](?!\\p{L})|зуб|тел[оау](?!\\p{L})',
+        'деньг|денег|зарплат|им(?:я|ени)(?!\\p{L})|фамили|телефон|питом|собак|кошк|кот(?:а|у|ом|е|ы|ик|ёнок|енок)?(?!\\p{L})|день\\s+рождения',
+      ].join('|'),
     ),
     direct: words(
-      'как\\s+тебя\\s+зовут|сколько\\s+тебе\\s+лет|где\\s+ты\\s+живёшь|где\\s+ты\\s+живешь|с\\s+кем\\s+ты\\s+живёшь|с\\s+кем\\s+ты\\s+живешь|ты\\s+болеешь|какой\\s+ты\\s+веры|кто\\s+ты\\s+по\\s+национальности|в\\s+какой\\s+школе\\s+ты',
+      [
+        'как\\s+тебя\\s+зовут|тебя\\s+как\\s+зовут|как\\s+зовут\\s+тебя|сколько\\s+тебе\\s+лет|тебе\\s+сколько\\s+лет|сколько\\s+лет\\s+тебе',
+        'где\\s+ты\\s+жив[ёе]шь|в\\s+каком\\s+городе\\s+ты|с\\s+кем\\s+ты\\s+жив[ёе]шь|кто\\s+живёт\\s+с\\s+тобой|с\\s+тобой\\s+живёт',
+        'ты\\s+болеешь|какой\\s+ты\\s+веры|кто\\s+ты\\s+по\\s+национальности|в\\s+какой\\s+школе\\s+ты',
+        '(?:расскажи|нарисуй|покажи|назови)\\s+(?:о\\s+|про\\s+)?(?:сво\\p{L}*|себ\\p{L}*)',
+        'ты\\s+(?:мальчик|девочка|кыргыз|русск|казах|узбек)',
+        'а\\s+у\\s+тебя\\s*\\?|а\\s+ты\\s*\\?|а\\s+тво\\p{L}+\\s*\\?',
+      ].join('|'),
     ),
-    myTitle: /^\s*(?:мой|моя|моё|мое|мои)(?!\p{L})/iu,
+    myTitle: words('мо(?:й|я|ё|е|и)|наш\\p{L}*|мне|меня|я', true),
   },
   en: {
-    yours: words('your|yours|you\\s+live|you\\s+have|have\\s+you\\s+got|do\\s+you\\s+have', true),
-    topic: words(
-      'famil|mom|mum|mother|dad|father|brother|sister|grand(?:ma|pa|mother|father)|parent|address|street|village|town|city|school|teacher|class|religio|god(?!\\p{L})|nationality|money|room|house|home|pet|dog|cat(?!\\p{L})|name(?!\\p{L})|age(?!\\p{L})|birthday|weight|sick|ill(?!\\p{L})',
+    safe: words('your\\s+(?:turn|answer|finger\\p{L}*|card\\p{L}*)'),
+    yours: words(
+      'your|yours|yourself|you\\s+live|you\\s+have|have\\s+you\\s+got|do\\s+you\\s+have|are\\s+you|you\\s+(?:go|attend)',
+      true,
     ),
-    direct: words("what'?s\\s+your\\s+name|what\\s+is\\s+your\\s+name|how\\s+old\\s+are\\s+you|where\\s+do\\s+you\\s+live|who\\s+do\\s+you\\s+live\\s+with"),
-    myTitle: /^\s*my(?!\p{L})/iu,
+    topic: words(
+      [
+        'famil|mom|mum|mother|dad|father|brother|sister|gran\\p{L}*|aunt|uncle|cousin|parents?(?!\\p{L})',
+        'address|street|village|town|city|room|house|home',
+        'school|kindergarten|nursery|teacher|class(?:mate|room)?(?!\\p{L})|friend',
+        'religio|god(?!\\p{L})|mosque|church|pray|nationality',
+        'sick|ill(?!\\p{L})|doctor|medicine|weight|eyes?(?!\\p{L})|hair|skin|teeth|tooth|body',
+        'money|pets?(?!\\p{L})|dog|cat(?!\\p{L})|name(?!\\p{L})|surname|age(?!\\p{L})|birthday|phone',
+      ].join('|'),
+    ),
+    direct: words(
+      [
+        "what'?s\\s+your\\s+name|what\\s+is\\s+your\\s+name|how\\s+old\\s+are\\s+you|where\\s+do\\s+you\\s+live",
+        'who\\s+do\\s+you\\s+live\\s+with|lives?\\s+with\\s+you|tell\\s+me\\s+about\\s+yourself|are\\s+you\\s+a\\s+(?:boy|girl)',
+        '(?:and|what\\s+about)\\s+you(?:rs)?\\s*\\?',
+      ].join('|'),
+    ),
+    myTitle: words('my|our|me', true),
   },
   ky: {
-    yours: words('сенин|сиздин|сенде|сизде|сага|сизге', true),
+    safe: words('сенин\\s+кезегиң'),
+    yours: words('сенин|сиздин|сенде|сизде|сага|сизге|сен|сиз|сени|сизди', true),
     topic: words(
-      'үй-бүлө|апа|ата(?!\\p{L})|ага(?!\\p{L})|эже|ини(?!\\p{L})|сиңди|чоң\\s+(?:ата|эне)|дарек|көчө|айыл|шаар|район|облус|мектеп|класс|мугалим|дин(?!\\p{L})|кудай|улут|акча|бөлмө|үй(?!\\p{L})|ит(?!\\p{L})|мышык',
+      [
+        'үй-бүлө|апа|ата(?!\\p{L})|эне|ага(?!\\p{L})|байке|эже|ини(?!\\p{L})|сиңди|карындаш|таеже|тайке|бир\\s+тууган|чоң\\s+(?:ата|эне)',
+        'дарек|көчө|айыл|шаар|район|облус|бөлмө|үй(?!\\p{L})',
+        'мектеп|класс|мугалим|бала\\s+бакча|дос',
+        'дин(?!\\p{L})|кудай|мечит|намаз|орозо|улут',
+        'оору|дары|дарыгер|көз|чач|тери|тиш|дене|салмак',
+        'акча|ит(?!\\p{L})|мышык|үй\\s+жаныбар|телефон|туулган\\s+күн',
+      ].join('|'),
     ),
-    direct: words('атың\\s+ким|атыңыз\\s+ким|канча\\s+жаштасың|канча\\s+жаштасыз|кайда\\s+жашайсың|кайда\\s+жашайсыз|үй-бүлөң'),
-    myTitle: /^\s*менин(?!\p{L})/iu,
+    direct: words(
+      'атың\\s+ким|атыңыз\\s+ким|канча\\s+жаштасың|канча\\s+жаштасыз|кайда\\s+жашайсың|кайда\\s+жашайсыз|үй-бүлөң|а\\s+сен(?:чи|де)\\s*\\??',
+    ),
+    own: words(
+      '(?:апа|ата|эне|ага|байке|эже|ини|сиңди|карындаш|үй-бүлө|үй|мектеб|мектеп|мугалим|дарег|дарек|айыл|шаар|көчө|ит|мышыг|мышык|бөлмө|акча|ысым|ат)\\p{L}{0,3}(?:ң|ңыз|ңуз|ңүз|ңиз)',
+      true,
+    ),
+    myTitle: words('менин|биздин|үй-бүлөм|үйүм|мектебим|апам|атам', true),
   },
 };
 
 /** Что в тексте выдаёт вопрос о ребёнке; `null` — ничего. */
 export function personalProbe(text: string): string | null {
   for (const p of Object.values(PERSONAL_TEXT)) {
-    const direct = p.direct.exec(text);
+    const t = text.replace(new RegExp(p.safe.source, 'giu'), ' ');
+    const direct = p.direct.exec(t) ?? p.own?.exec(t);
     if (direct) return `вопрос о ребёнке «${direct[0]}»`;
-    const yours = p.yours.exec(text);
-    const topic = p.topic.exec(text);
+    const yours = p.yours.exec(t);
+    const topic = p.topic.exec(t);
     if (yours && topic) return `«${yours[0]}» + личная тема «${topic[0]}»`;
   }
   return null;
 }
 
+/** Заголовок от первого лица где угодно в строке: «Моя семья», «Я и моя семья», «All about me». */
+export const firstPersonTitle = (text: string): boolean => Object.values(PERSONAL_TEXT).some((p) => p.myTitle.test(text));
+
 /**
- * Ссылки, почта, ники, телефоны: в детском контенте их нет вовсе (С2, С18). Номера экстренных
- * служб 101/102/103/112 — трёхзначные и сюда не попадают; ссылки `tel:` ловятся.
+ * Ссылки, почта, ники, платформы, призыв сфотографировать или отправить фото, номер рядом со
+ * словом «позвони»: в детском контенте их нет вовсе (С2, С18). Номера экстренных служб
+ * 101/102/103/112 — трёхзначные и не ловятся; «5+3=8» и ряд «100–90–80» — тоже.
  */
 export const CONTACT_TEXT = [
-  /https?:\/\/|www\./i,
-  /(?<![\p{L}\d])[a-z0-9-]+\.(?:com|ru|kg|org|net|io|me|app)(?![\p{L}\d])/iu,
+  /https?:\/\/|www\.|tel:/i,
+  /(?<![\p{L}\d])[\p{L}\d-]+\.(?:com|ru|kg|kz|uz|org|net|io|me|app|su|рф|ly|be|co|tv|info|online|site)(?![\p{L}\d])/iu,
   /[\p{L}\d._%+-]+@[\p{L}\d.-]+\.\p{L}{2,}/u,
   /(?<![\p{L}\d])@[\p{L}\d_]{2,}/u,
-  /tel:|\+\d|\d{3}[-‐–]\d{2}[-‐–]\d{2}|\(\d{3,4}\)\s*\d/,
+  words('youtube|tiktok|whatsapp|telegram|roblox|instagram|ютуб|тикток|ватсап|телеграм|инстаграм'),
+  words('сфотограф|отправ\\p{L}*\\s+фото|take\\s+a\\s+photo|сүрөткө\\s+тарт'),
+  words('(?:звон|позвон|телефон|номер|call|phone|чал)\\p{L}*\\D{0,12}\\d{3}[‐–-]\\d{2}'),
 ];
 
 /**
- * Подстановка имени ребёнка (i18next `{{name}}`). Имя — только в репликах Tali: завязке и шагах
- * примера (решение №42); в задании оно сделало бы ответ личным, а текст — непереиспользуемым.
+ * Телефон: девять и больше цифр подряд или через пробелы, скобки и дефисы, и только первая
+ * группа может быть из одной цифры («8 999 123 45 67»). Счёт «1 2 3 4 5 6 7 8 9» и «1 000 000»
+ * — не телефон.
  */
-export const NAME_PLACEHOLDER = /\{\{?\s*(?:name|childName|имя)\s*\}\}?/i;
+function phoneIn(text: string): string | null {
+  for (const m of text.matchAll(/\+?\d[\d\s()‐–-]*\d/g)) {
+    const groups = m[0]
+      .replace(/^\+/, '')
+      .split(/[\s()‐–-]+/)
+      .filter(Boolean);
+    if (groups.join('').length >= 9 && groups.slice(1).every((g) => g.length >= 2)) return m[0];
+  }
+  return null;
+}
+
+/** Первый контакт в тексте; `null` — нет. */
+export function contactIn(text: string): string | null {
+  for (const re of CONTACT_TEXT) {
+    const m = re.exec(text);
+    if (m) return m[0];
+  }
+  return phoneIn(text);
+}
+
+/**
+ * Подстановка имени ребёнка (i18next `{{name}}` и варианты). Имя — только в репликах Tali:
+ * завязке и шагах примера (решение №42); в задании оно сделало бы ответ личным.
+ */
+export const NAME_PLACEHOLDER =
+  /\{\{-?\s*(?:name|childName|child_name|kidName|userName|nickname|имя|\w+\.name)\s*(?:,[^}]*)?\}\}|\{\s*(?:name|имя)\s*\}/i;
+
+/**
+ * Имя — только обращением в начале или в конце реплики («{{name}}, смотри!», «Молодец,
+ * {{name}}!»). Озвучка готовится заранее и без имени: файл записывается по тексту с вырезанным
+ * обращением, и имя ребёнка не уходит в синтез речи. Имя посреди фразы вырезать нельзя.
+ */
+export function nameOutsideVocative(text: string): boolean {
+  const re = NAME_PLACEHOLDER.source;
+  const rest = text
+    .replace(new RegExp(`^\\s*(?:${re})\\s*[,!]\\s*`, 'i'), '')
+    .replace(new RegExp(`,\\s*(?:${re})\\s*[!.?…]*\\s*$`, 'i'), '');
+  return NAME_PLACEHOLDER.test(rest);
+}
 
 export const RULES = {
   corpusIds: {
@@ -941,7 +1051,7 @@ export const RULES = {
     // AUDIT.md С1, решение №39: задание спрашивает о жителе, о Tali или о картинке, а не о
     // ребёнке. Заголовок «Моя семья» ребёнок видит, и он сам задаёт ожидание рассказать о
     // себе — темы называются «Семья Tali», «Улица и дом». Проверяются все локали, где ключ есть.
-    title: 'задание о персонаже, а не о ребёнке: нет «твой / у тебя / your / сенин» вместе с личной темой и прямых вопросов о ребёнке; заголовки темы и урока не начинаются с «Мой / My / Менин»',
+    title: 'задание о персонаже, а не о ребёнке: нет «твой / у тебя / your / сенин» вместе с личной темой, кыргызской темы с суффиксом 2-го лица и прямых вопросов о ребёнке; в заголовках темы и урока нет первого лица («мой», «наш», «я», my, our, менин)',
     check: (corpus, locales) => {
       const titles = new Set([...corpus.map((e) => e.topic.titleKey), ...lessonsOf(corpus).map((l) => l.lesson.titleKey)]);
       return keyUsages(corpus).flatMap(({ key, context }) =>
@@ -951,7 +1061,7 @@ export const RULES = {
           const bad: string[] = [];
           const probe = personalProbe(text);
           if (probe) bad.push(`${context}: ${lang} ${key} — ${probe}: спроси о жителе или Tali`);
-          if (titles.has(key) && Object.values(PERSONAL_TEXT).some((p) => p.myTitle.test(text))) {
+          if (titles.has(key) && firstPersonTitle(text)) {
             bad.push(`${context}: ${lang} ${key} — заголовок «${text}» от первого лица, назови тему о персонаже`);
           }
           return bad;
@@ -963,33 +1073,48 @@ export const RULES = {
   contacts: {
     // AUDIT.md С2, С18: в детском тексте нет ссылок, почты, ников и телефонов — ни настоящих,
     // ни выдуманных: выдуманный адрес тоже ведёт куда-то в сети.
-    title: 'в текстах нет ссылок, почты, @ников, телефонов и tel:',
+    title: 'в текстах нет ссылок, почты, @ников, платформ, телефонов, tel: и призыва сфотографировать',
     check: (corpus, locales) =>
       keyUsages(corpus).flatMap(({ key, context }) =>
         (Object.entries(locales) as [string, unknown][]).flatMap(([lang, locale]) => {
           const text = lookup(locale, key);
           if (typeof text !== 'string') return [];
-          const hit = CONTACT_TEXT.map((re) => re.exec(text)).find((m) => m !== null);
-          return hit ? [`${context}: ${lang} ${key} — контакт «${hit[0]}»`] : [];
+          const hit = contactIn(text);
+          return hit ? [`${context}: ${lang} ${key} — контакт «${hit}»`] : [];
         }),
       ),
   },
 
   nameOnlyInTali: {
     // Решение №42: имя ребёнка — только в репликах Tali, завязке и шагах примера.
-    title: 'подстановка имени {{name}} — только в завязке и шагах примера, не в задании, заголовке и атласе',
+    title: 'подстановка имени {{name}} — только в завязке и шагах примера и только обращением в начале или конце реплики; не в задании, примере, заголовке и атласе',
     check: (corpus, locales) =>
       lessonsOf(corpus).flatMap(({ topic, lesson, where }) => {
-        const tali = new Set([lesson.hook.lineKey, ...(lesson.model?.steps.map((s) => s.lineKey) ?? [])]);
-        const keys = [...keysIn(lesson).filter((key) => !tali.has(key)), topic.titleKey];
-        return keys.flatMap((key) =>
+        const tali = [lesson.hook.lineKey, ...(lesson.model?.steps.map((s) => s.lineKey) ?? [])];
+        const other = [
+          ...keysIn(lesson.tasks),
+          ...keysIn(lesson.model?.example ?? {}),
+          lesson.titleKey,
+          lesson.atlasEntryKey,
+          topic.titleKey,
+        ];
+        const texts = (key: string) =>
           (Object.entries(locales) as [string, unknown][]).flatMap(([lang, locale]) => {
             const text = lookup(locale, key);
-            return typeof text === 'string' && NAME_PLACEHOLDER.test(text)
-              ? [`${where}: ${lang} ${key} — имя ребёнка вне реплик Tali`]
-              : [];
-          }),
-        );
+            return typeof text === 'string' ? [[lang, text] as const] : [];
+          });
+        return [
+          ...other.flatMap((key) =>
+            texts(key)
+              .filter(([, text]) => NAME_PLACEHOLDER.test(text))
+              .map(([lang]) => `${where}: ${lang} ${key} — имя ребёнка вне реплик Tali`),
+          ),
+          ...tali.flatMap((key) =>
+            texts(key)
+              .filter(([, text]) => nameOutsideVocative(text))
+              .map(([lang]) => `${where}: ${lang} ${key} — имя посреди фразы: только обращением в начале или конце, иначе озвучку без имени не собрать`),
+          ),
+        ];
       }),
   },
 
