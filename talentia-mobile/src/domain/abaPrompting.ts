@@ -132,6 +132,42 @@ export const FIRST_ANSWER_LEVEL: Record<AbaFormat, PromptLevel> = {
 };
 
 /**
+ * Лестница подсказок цели (ABA.md, «Подсказки», «Лестница подражания»; `aba-pedagogy-specialist`
+ * 2026-10-02). Решает содержание SD, а не название формата.
+ *
+ * - `standard` — SD словесный или картинка, модель — подсказка: L0 → L1 → L2 → L3.
+ * - `imitative` — SD **и есть модель** (эхоика, подражание движениям, «скажи как Tali»): частичная
+ *   модель даёт меньше, чем SD, поэтому L2 нет; L3 — **усиленная** модель (медленнее, с
+ *   выделением, по слогам или фазам), дно приложения; дальше — только взрослый (L4). Без этого
+ *   «полная модель» совпадала с L0, и проба повтора SD писалась подсказанной.
+ */
+export type PromptLadder = 'standard' | 'imitative';
+
+export function promptLadder(t: Pick<AbaTarget, 'format' | 'sdKind'>): PromptLadder {
+  return t.format === 'imitate_sound' || t.format === 'repeat_word' || t.sdKind === 'imitation' ? 'imitative' : 'standard';
+}
+
+const LADDER_LEVELS: Record<PromptLadder, readonly PromptLevel[]> = { standard: [0, 1, 2, 3], imitative: [0, 1, 3] };
+
+/** Следующий уровень лестницы вверх, не выше того, что выдаёт приложение. */
+export function ladderUp(level: PromptLevel, ladder: PromptLadder): PromptLevel {
+  return LADDER_LEVELS[ladder].find((l) => l > level) ?? APP_MAX_PROMPT;
+}
+
+/** Следующий уровень лестницы вниз; L0 остаётся L0. */
+export function ladderDown(level: PromptLevel, ladder: PromptLadder): PromptLevel {
+  return [...LADDER_LEVELS[ladder]].reverse().find((l) => l < level) ?? 0;
+}
+
+/**
+ * Уровень, с которого коррекция и возврат в обучение несут ответ. У лестницы подражания ответ
+ * несёт уже L0, на котором ребёнок и ошибся, — поэтому коррекция идёт на усиленной модели L3.
+ */
+export function answerLevel(target: Pick<AbaTarget, 'format' | 'sdKind'>): PromptLevel {
+  return promptLadder(target) === 'imitative' ? APP_MAX_PROMPT : FIRST_ANSWER_LEVEL[target.format];
+}
+
+/**
  * Уровень пробы коррекции — не ниже того, что ребёнку только что понадобилось, плюс
  * ступень, и никогда не L0: коррекция на L0 — то самое «неверно, попробуй ещё». Не
  * ниже последнего успешного уровня, а после неверного ответа — не ниже первого уровня,
@@ -143,10 +179,16 @@ export const FIRST_ANSWER_LEVEL: Record<AbaFormat, PromptLevel> = {
  * сразу выполняет вместе с ребёнком (старт 4); иначе шаг пропускается — дальше
  * отвлекающая проба и перенос.
  */
-export function correctionLevel(s: AbaTargetState, failed: AbaTrial, format: AbaFormat): PromptLevel | null {
+export function correctionLevel(
+  s: AbaTargetState,
+  failed: AbaTrial,
+  target: Pick<AbaTarget, 'format' | 'sdKind'>,
+): PromptLevel | null {
   if (failed.response === 'no_response' && failed.promptLevelUsed >= APP_MAX_PROMPT) return null;
+  // Лестница подражания: коррекция — на усиленной модели; провал и на ней — к взрослому (L4).
+  if (promptLadder(target) === 'imitative') return failed.promptLevelUsed >= APP_MAX_PROMPT ? null : APP_MAX_PROMPT;
   const ps = promptStateOf(s, failed.stepId);
-  const floor = failed.response === 'incorrect' ? FIRST_ANSWER_LEVEL[format] : 1;
+  const floor = failed.response === 'incorrect' ? FIRST_ANSWER_LEVEL[target.format] : 1;
   const level = Math.max(floor, ps.lastSuccessfulPromptLevel, failed.promptLevelUsed + 1);
   return clampToApp(Math.min(level, APP_MAX_PROMPT) as PromptLevel);
 }
@@ -211,11 +253,16 @@ export type EscalationStep =
  *
  * Перенос и базовая линия измеряют, а не учат: подсказки нет.
  */
-export function nextEscalation(trial: Pick<AbaTrial, 'kind'>, level: PromptLevel, presentations: number): EscalationStep {
+export function nextEscalation(
+  trial: Pick<AbaTrial, 'kind'>,
+  level: PromptLevel,
+  presentations: number,
+  ladder: PromptLadder = 'standard',
+): EscalationStep {
   if (trial.kind === 'generalization' || trial.kind === 'baseline') return { kind: 'close' };
   if (level >= APP_MAX_PROMPT || presentations > MAX_ESCALATIONS_PER_TRIAL) return { kind: 'close' };
-  const next = presentations === MAX_ESCALATIONS_PER_TRIAL ? APP_MAX_PROMPT : level + 1;
-  return { kind: 'present', level: next as PromptLevel };
+  const next = presentations === MAX_ESCALATIONS_PER_TRIAL ? APP_MAX_PROMPT : ladderUp(level, ladder);
+  return { kind: 'present', level: next };
 }
 
 const SUCCESS: ReadonlySet<AbaResponse> = new Set(['independent', 'prompted']);
@@ -247,7 +294,10 @@ export function applyTrialToFading(s: AbaTargetState, t: AbaTrial, target: AbaTa
   if (t.response === 'interrupted' || t.adultUnplannedPrompt) return s;
   if (t.kind !== 'teaching' && t.kind !== 'transfer') return s;
   const before = promptStateOf(s, t.stepId);
-  const after = fadeStep(before, t, FIRST_ANSWER_LEVEL[target.format]);
+  const ladder = promptLadder(target);
+  // Подъём после двух провалов — «на ступень, но не ниже уровня, несущего ответ» (№12); у
+  // лестницы подражания ответ несёт и L1 (повтор того же SD), поэтому пол — L1.
+  const after = fadeStep(before, t, ladder === 'imitative' ? 1 : FIRST_ANSWER_LEVEL[target.format], ladder);
   // возврат на L0 укорачивает задержку того, у кого старт перешёл: цели или звена;
   // постоянную задержку не сдвигает ничто
   const back = target.delayMode === 'progressive' && before.startPromptLevel === 1 && after.startPromptLevel === 0;
@@ -278,7 +328,7 @@ export function fadeClass(t: AbaTrial): FadeClass {
   return t.promptLevelUsed > t.startPromptLevel ? 'above' : 'at_start';
 }
 
-function fadeStep(ps: StepPromptState, t: AbaTrial, answerLevel: PromptLevel): StepPromptState {
+function fadeStep(ps: StepPromptState, t: AbaTrial, answerFloor: PromptLevel, ladder: PromptLadder): StepPromptState {
   const succeeded = SUCCESS.has(t.response);
   const lastSuccessfulPromptLevel = succeeded ? clampToApp(t.promptLevelUsed) : ps.lastSuccessfulPromptLevel;
   const failures = FAILURE.has(t.response) ? ps.consecutiveFailures + 1 : 0;
@@ -287,7 +337,7 @@ function fadeStep(ps: StepPromptState, t: AbaTrial, answerLevel: PromptLevel): S
   if (failures >= FAILURES_TO_RAISE) {
     return {
       ...base,
-      startPromptLevel: Math.min(APP_MAX_PROMPT, Math.max(ps.startPromptLevel + 1, answerLevel)) as PromptLevel,
+      startPromptLevel: Math.max(ladderUp(ps.startPromptLevel, ladder), answerFloor) as PromptLevel,
       consecutiveIndependentAtStart: 0,
       consecutiveAboveStart: 0,
       consecutiveFailures: 0,
@@ -309,7 +359,7 @@ function fadeStep(ps: StepPromptState, t: AbaTrial, answerLevel: PromptLevel): S
   if (independentRun >= FADE_AFTER && ps.startPromptLevel > 0) {
     return {
       ...base,
-      startPromptLevel: (ps.startPromptLevel - 1) as PromptLevel,
+      startPromptLevel: ladderDown(ps.startPromptLevel, ladder),
       consecutiveIndependentAtStart: 0,
       consecutiveAboveStart: 0,
     };
@@ -317,7 +367,7 @@ function fadeStep(ps: StepPromptState, t: AbaTrial, answerLevel: PromptLevel): S
   if (aboveRun >= FADE_AFTER && ps.startPromptLevel < APP_MAX_PROMPT) {
     return {
       ...base,
-      startPromptLevel: (ps.startPromptLevel + 1) as PromptLevel,
+      startPromptLevel: ladderUp(ps.startPromptLevel, ladder),
       consecutiveIndependentAtStart: 0,
       consecutiveAboveStart: 0,
     };

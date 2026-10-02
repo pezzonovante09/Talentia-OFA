@@ -62,6 +62,8 @@ export function poolErrors(targets: readonly AbaTarget[]): string[] {
   for (const [key, pool] of pools) {
     if (pool.length < SET_SIZE.min) errors.push(`пул ${key}: целей ${pool.length}, нужно не меньше ${SET_SIZE.min}`);
     if (new Set(pool.map((t) => t.band)).size > 1) errors.push(`пул ${key}: цели разных полос`);
+    // «Покажи ложку» и «покажи, чем едят» вперемешку дали бы один процент из двух навыков.
+    if (new Set(pool.map((t) => t.sdKind)).size > 1) errors.push(`пул ${key}: цели разного вида инструкции`);
     const images = pool.flatMap((t) => t.exemplars.map((e) => e.image));
     if (new Set(images).size < images.length) errors.push(`пул ${key}: изображения повторяются`);
   }

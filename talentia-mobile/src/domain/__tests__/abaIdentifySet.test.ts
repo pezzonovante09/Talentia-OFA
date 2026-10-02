@@ -1,6 +1,7 @@
 import type { AbaExemplar, AbaTarget, AbaTargetState } from '../../types/aba';
 import { initialTargetState } from '../abaPrompting';
 import { poolErrors, setHalves, updateSets, type IdentifySet } from '../abaIdentifySet';
+import { GRID_FOR } from './abaFixtures';
 
 const ex = (id: string, role: AbaExemplar['role'] = 'teaching'): AbaExemplar => ({
   id,
@@ -23,6 +24,7 @@ const idt = (id: string, over: Partial<AbaTarget> = {}): AbaTarget => ({
   blockSize: 5,
   scoredBy: 'adult',
   identifyPoolKey: 'animals',
+  ...GRID_FOR.identify,
   ...over,
 });
 

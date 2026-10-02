@@ -56,7 +56,7 @@ import {
   applyTrialToFading,
   clampToApp,
   correctionLevel,
-  FIRST_ANSWER_LEVEL,
+  answerLevel,
   initialTargetState,
   isBreakdown,
   isPromptDependent,
@@ -1601,7 +1601,7 @@ function correctionFor(state: AbaSessionState, failed: AbaTrial): QueueItem[] {
   const same = { targetId: failed.targetId, exemplarId: failed.exemplarId };
   const items: QueueItem[] = [];
   const withAdult = state.config === 'with_adult';
-  const level = correctionLevel(state.states[failed.targetId], failed, state.targets[failed.targetId].format);
+  const level = correctionLevel(state.states[failed.targetId], failed, state.targets[failed.targetId]);
   // молчание и на полной модели: если L4 разрешена — одна полная модель, которую взрослый
   // сразу выполняет вместе с ребёнком (старт 4); иначе шаг пропускается
   const start: PromptLevel | null = level ?? (l4Available(state) ? 4 : null);
@@ -1788,7 +1788,7 @@ function verificationVerdict(
     if (v.length < VERIFICATION_TRIALS) return null;
     const independent = v.filter((t) => t.response === 'independent').length;
     if (independent / v.length >= MASTERY.minIndependentRate) return passed(s);
-    const start = independent <= 2 ? FIRST_ANSWER_LEVEL[target.format] : s.lastSuccessfulPromptLevel;
+    const start = independent <= 2 ? answerLevel(target) : s.lastSuccessfulPromptLevel;
     return { state: { ...backToTeaching(s), startPromptLevel: start }, reason: 'verification_failed' };
   }
 
@@ -1811,7 +1811,7 @@ function verificationVerdict(
   const stepPrompts = Object.fromEntries(
     steps.map((st) => {
       const prev = promptStateOf(s, st.id);
-      const level: PromptLevel = failedAny.has(st.id) ? FIRST_ANSWER_LEVEL[target.format] : 0;
+      const level: PromptLevel = failedAny.has(st.id) ? answerLevel(target) : 0;
       return [
         st.id,
         { ...prev, startPromptLevel: level, lastSuccessfulPromptLevel: level, consecutiveIndependentAtStart: 0, consecutiveAboveStart: 0, consecutiveFailures: 0 },

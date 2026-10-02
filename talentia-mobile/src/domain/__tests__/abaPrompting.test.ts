@@ -7,8 +7,12 @@ import {
   initialTargetState,
   isBreakdown,
   isPromptDependent,
+  correctionLevel,
+  ladderDown,
+  ladderUp,
   nextEscalation,
   promptDelayMs,
+  promptLadder,
   promptStateOf,
   responseWindowMs,
   trialInvariantErrors,
@@ -16,7 +20,13 @@ import {
 } from '../abaPrompting';
 import { target, trial } from './abaFixtures';
 
-const fade = (s: AbaTargetState, trials: AbaTrial[]) => trials.reduce((acc: AbaTargetState, t: AbaTrial) => applyTrialToFading(acc, t, target), s);
+/**
+ * Цель со стандартной лестницей (инструкция словами, модель — подсказка): на ней проверяются
+ * общие правила затухания. Лестница подражания — отдельный describe ниже.
+ */
+const standard: AbaTarget = { ...target, format: 'voice_volume', area: 'voice_control', level: 2, sdKind: 'instruction' };
+const fade = (s: AbaTargetState, trials: AbaTrial[], t: AbaTarget = standard) =>
+  trials.reduce((acc: AbaTargetState, x: AbaTrial) => applyTrialToFading(acc, x, t), s);
 const at = (level: PromptLevel): AbaTargetState => ({ ...initialTargetState(target), startPromptLevel: level });
 
 /** Прогнать пробу, где ребёнок не отвечает ни разу: какие уровни прозвучат. */
@@ -564,5 +574,74 @@ describe('задержка: постоянная, звенья цепочки, �
     expect(applyTrialToFading(s0, t, P)).toBe(s0);
     const sessions: SessionTrials[] = [1, 2, 3].map((index) => ({ index, trials: Array.from({ length: 5 }, () => waited({ adultUnplannedPrompt: true })) }));
     expect(isPromptDependent(s0, sessions)).toBe(false);
+  });
+});
+
+describe('лестница подражания: SD и есть модель (ABA.md, «Лестница подражания»)', () => {
+  const imitation: AbaTarget = { ...standard, format: 'do_action', area: 'motor_imitation', level: 1, sdKind: 'imitation' };
+
+  it('эхоика, подражание движениям и «скажи как Tali» — лестница подражания; инструкция — стандартная', () => {
+    expect(promptLadder(target)).toBe('imitative');
+    expect(promptLadder({ format: 'repeat_word' })).toBe('imitative');
+    expect(promptLadder(imitation)).toBe('imitative');
+    expect(promptLadder({ format: 'voice_volume', sdKind: 'imitation' })).toBe('imitative');
+    expect(promptLadder(standard)).toBe('standard');
+    expect(promptLadder({ format: 'do_action', sdKind: 'instruction' })).toBe('standard');
+  });
+
+  it('L2 у лестницы подражания нет: вверх L0 → L1 → L3, вниз L3 → L1 → L0', () => {
+    expect([ladderUp(0, 'imitative'), ladderUp(1, 'imitative'), ladderUp(3, 'imitative')]).toEqual([1, 3, 3]);
+    expect([ladderDown(3, 'imitative'), ladderDown(1, 'imitative'), ladderDown(0, 'imitative')]).toEqual([1, 0, 0]);
+    expect([ladderUp(1, 'standard'), ladderDown(3, 'standard')]).toEqual([2, 2]);
+  });
+
+  it('подъём внутри пробы: с L0 — L1, потом L3; с L1 — сразу L3; после L3 проба закрывается', () => {
+    expect(nextEscalation({ kind: 'teaching' }, 0, 1, 'imitative')).toEqual({ kind: 'present', level: 1 });
+    expect(nextEscalation({ kind: 'teaching' }, 1, 2, 'imitative')).toEqual({ kind: 'present', level: 3 });
+    expect(nextEscalation({ kind: 'teaching' }, 1, 1, 'imitative')).toEqual({ kind: 'present', level: 3 });
+    expect(nextEscalation({ kind: 'teaching' }, 3, 1, 'imitative')).toEqual({ kind: 'close' });
+  });
+
+  it('затухание со старта L3 идёт на L1, а не на L2', () => {
+    const s = fade(
+      initialTargetState(imitation),
+      [
+        trial({ startPromptLevel: 3, promptLevelUsed: 3, response: 'prompted' }),
+        trial({ startPromptLevel: 3, promptLevelUsed: 3, response: 'prompted' }),
+      ],
+      imitation,
+    );
+    expect(s.startPromptLevel).toBe(1);
+  });
+
+  it('подъём со старта L1 — сразу на L3', () => {
+    const s = fade(
+      at(1),
+      [
+        trial({ startPromptLevel: 1, promptLevelUsed: 3, response: 'prompted' }),
+        trial({ startPromptLevel: 1, promptLevelUsed: 3, response: 'prompted' }),
+      ],
+      imitation,
+    );
+    expect(s.startPromptLevel).toBe(3);
+  });
+
+  it('два провала подряд со старта L0 — на L1: ответ несёт уже повтор SD', () => {
+    const s = fade(
+      at(0),
+      [
+        trial({ startPromptLevel: 0, promptLevelUsed: 3, response: 'incorrect' }),
+        trial({ startPromptLevel: 0, promptLevelUsed: 3, response: 'no_response' }),
+      ],
+      imitation,
+    );
+    expect(s.startPromptLevel).toBe(1);
+  });
+
+  it('коррекция — на усиленной модели L3; провал на L3 — к взрослому (null)', () => {
+    const s = initialTargetState(imitation);
+    expect(correctionLevel(s, trial({ startPromptLevel: 0, promptLevelUsed: 0, response: 'incorrect' }), imitation)).toBe(3);
+    expect(correctionLevel(s, trial({ startPromptLevel: 1, promptLevelUsed: 1, response: 'incorrect' }), imitation)).toBe(3);
+    expect(correctionLevel(s, trial({ startPromptLevel: 3, promptLevelUsed: 3, response: 'incorrect' }), imitation)).toBeNull();
   });
 });

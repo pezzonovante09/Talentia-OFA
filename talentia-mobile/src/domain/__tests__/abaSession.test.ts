@@ -37,6 +37,7 @@ import { applyBaseline, summarizeSession } from '../abaCriterion';
 import { targetErrors } from '../abaTargetRules';
 import { initialTokenTraining, type TokenTrainingState } from '../abaTokenTraining';
 import type { IdentifySet } from '../abaIdentifySet';
+import { GRID_FOR } from './abaFixtures';
 
 /** Ребёнок, прошедший сопряжение и обучение доске: финальная ступень. */
 const TRAINED: TokenTrainingState = { ...initialTokenTraining(), pairingDone: true, stage: 5 };
@@ -64,6 +65,7 @@ function tgt(id: string, over: Partial<AbaTarget> = {}): AbaTarget {
     delayMode: 'constant',
     blockSize: 5,
     scoredBy: 'adult',
+    ...GRID_FOR[over.format ?? 'imitate_sound'],
     ...over,
   };
 }
@@ -269,7 +271,7 @@ describe('порядок сессии', () => {
 
 describe('К1: уровень пробы коррекции', () => {
   const M = tgt('M');
-  const A = tgt('A');
+  const A = tgt('A', { format: 'do_action' }) // стандартная лестница: инструкция словами;
 
   function afterWarmup(s: AbaTargetState) {
     let st = begin([M, A], { M: mastered(M), A: s });
@@ -361,13 +363,13 @@ describe('К1: уровень пробы коррекции', () => {
   it('correctionLevel: провал на полной модели с неверным ответом — снова полная модель', () => {
     const s = acq(A, 1);
     const t = { kind: 'teaching', response: 'incorrect', promptLevelUsed: 3 } as AbaTrial;
-    expect(correctionLevel(s, t, 'imitate_sound')).toBe(3);
+    expect(correctionLevel(s, t, { format: 'voice_volume', sdKind: 'instruction' })).toBe(3);
   });
 
   it('correctionLevel: в identify ответ несёт уже жест (L1)', () => {
     const t = { kind: 'teaching', response: 'incorrect', promptLevelUsed: 0 } as AbaTrial;
-    expect(correctionLevel(acq(A, 0), t, 'identify')).toBe(1);
-    expect(correctionLevel(acq(A, 0), t, 'repeat_word')).toBe(2);
+    expect(correctionLevel(acq(A, 0), t, { format: 'identify' })).toBe(1);
+    expect(correctionLevel(acq(A, 0), t, { format: 'voice_volume' })).toBe(2);
   });
 
   it('два провала подряд — старт до уровня, несущего ответ, а не сразу на полную модель', () => {
@@ -1308,8 +1310,8 @@ describe('assent: правки по проверке методиста', () => 
 });
 
 describe('проверочная проба «получается дома» (блок 5)', () => {
-  const A = tgt('A');
-  const H = tgt('H');
+  const A = tgt('A', { format: 'do_action' }) // стандартная лестница: инструкция словами;
+  const H = tgt('H', { format: 'do_action' });
   const home = (t: AbaTarget) => ({ ...mastered(t), masteredBy: 'home_unverified' as const });
   const verificationOf = (steps: AbaStep[]) => steps.filter((x): x is TrialStep => x.kind === 'trial' && x.trialKind === 'verification');
 

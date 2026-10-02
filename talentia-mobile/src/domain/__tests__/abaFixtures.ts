@@ -1,10 +1,24 @@
-import type { AbaTarget, AbaTrial } from '../../types/aba';
+import type { AbaFormat, AbaTarget, AbaTrial } from '../../types/aba';
+
+/**
+ * Место цели в сетке по формату — для фикстур, которые меняют только формат. Подражание и
+ * самообслуживание проверяются своими тестами.
+ */
+export const GRID_FOR: Record<AbaFormat, Pick<AbaTarget, 'level' | 'area' | 'sdKind'>> = {
+  imitate_sound: { level: 1, area: 'echoic' },
+  repeat_word: { level: 1, area: 'echoic' },
+  voice_volume: { level: 2, area: 'voice_control', sdKind: 'instruction' },
+  do_action: { level: 1, area: 'receptive_instructions', sdKind: 'instruction' },
+  identify: { level: 1, area: 'receptive_identify', sdKind: 'name' },
+};
 
 export const target: AbaTarget = {
   id: 't-meow',
   programId: 'p-sounds',
   format: 'imitate_sound',
   band: '5-6',
+  level: 1,
+  area: 'echoic',
   sdKey: 'aba.sd.meow',
   exemplars: [
     { id: 'cat-1', role: 'teaching', targetKey: 'k1', modelKey: 'm1', partialModelKeys: [] },
