@@ -214,16 +214,20 @@ const lessonCountToFive: Lesson = {
 };
 
 /**
- * Урок 3. Счёт до десяти: тот же пересчёт по одному, но число длиннее, чем видно разом, и
- * ошибка уже в том, чтобы пропустить предмет или сосчитать его дважды. Поэтому подсказки
- * про то, как вести счёт («трогай каждый по разу»), а не про то, что видно.
+ * Урок 3. Счёт до десяти: тот же пересчёт по одному, но предметов больше, чем видно разом, и
+ * ошибка уже в том, чтобы пропустить предмет или сосчитать его дважды. Новое в уроке — способ:
+ * трогать каждый предмет по разу, последнее число и есть ответ. Его показывает пример, к нему
+ * ведут подсказки.
  *
- * Роль Tali по номеру урока — он сбился со счёта, ребёнок помогает (TALI.md, «Роли Tali»).
- * Пример — шесть листьев: самый короткий счёт за пятёрку, реплика укладывается в пузырь.
- * Третье задание — спираль на счёт до пяти из второго урока, ягоды вразброс: передышка
- * перед парами до десяти. Новых составных форматов нет — `order` и `match` ребёнок уже
- * видел. Варианты-точки от шести до десяти — «как на кубике» в два ряда (рамка десятка):
- * вид решает `design-lead`.
+ * Роль Tali по номеру урока — он сбился со счёта, и средство от сбоя — счёт по одному
+ * (TALI.md, «Роли Tali»). Пример — шесть листьев: самый короткий счёт за пятёрку.
+ *
+ * Нагрузка — по ревью 2026-10-02 (`curriculum-content-reviewer`, `aba-pedagogy-specialist`,
+ * `child-ux-specialist`): кучки в `order` — 5, 6, 7, ряд начинается со знакомой пятёрки;
+ * десятка — одной кучкой в `choose`, а не в парах `match` (пары по 7–10 — пятьдесят актов
+ * счёта, пятилетке в одиночку не пройти). Верный вариант стоит на разных местах. Урок
+ * заканчивается спиралью на счёт до пяти — лёгким успехом перед атласом. Больше пяти фигур —
+ * только рядом (`row`): разброс до десяти пятилетка не пересчитает (гард `scatter56`).
  */
 const lessonCountToTen: Lesson = {
   id: 'nv-count-l3',
@@ -238,11 +242,11 @@ const lessonCountToTen: Lesson = {
       presentation: 'picture',
       promptKey: 'content.numbers.l3.model.prompt',
       stimulus: { labelKey: 'content.numbers.l3.model.stimulus', shape: 'leaf', count: 6, layout: 'row' },
-      options: [dots('a', 5, false), dots('b', 6, true), dots('c', 7, false)],
+      options: [dots('a', 5, false), dots('b', 7, false), dots('c', 6, true)],
     },
     steps: [
       { lineKey: 'content.numbers.l3.model.s1', reveal: 'stimulus' },
-      { lineKey: 'content.numbers.l3.model.s2', reveal: 'b' },
+      { lineKey: 'content.numbers.l3.model.s2', reveal: 'c' },
     ],
   },
   tasks: [
@@ -255,7 +259,7 @@ const lessonCountToTen: Lesson = {
       hintKey: 'content.numbers.l3.t1.hint',
       explainKey: ['content.numbers.l3.t1.explain'],
       stimulus: { labelKey: 'content.numbers.l3.t1.stimulus', shape: 'stone', count: 8, layout: 'row' },
-      options: [dots('a', 7, false), dots('b', 8, true), dots('c', 9, false)],
+      options: [dots('a', 6, false), dots('b', 7, false), dots('c', 8, true)],
     },
     {
       id: 'nv-count-l3-t2',
@@ -266,35 +270,32 @@ const lessonCountToTen: Lesson = {
       hintKey: 'content.numbers.l3.t2.hint',
       explainKey: ['content.numbers.l3.t2.explain'],
       items: [
-        { id: 'i1', labelKey: 'content.numbers.l3.t2.berries', shape: 'berry', count: 7, position: 1 },
-        { id: 'i2', labelKey: 'content.numbers.l3.t2.stones', shape: 'stone', count: 8, position: 2 },
-        { id: 'i3', labelKey: 'content.numbers.l3.t2.leaves', shape: 'leaf', count: 6, position: 0 },
+        { id: 'i1', labelKey: 'content.numbers.l3.t2.berries', shape: 'berry', count: 6, layout: 'row', position: 1 },
+        { id: 'i2', labelKey: 'content.numbers.l3.t2.stones', shape: 'stone', count: 7, layout: 'row', position: 2 },
+        { id: 'i3', labelKey: 'content.numbers.l3.t2.leaves', shape: 'leaf', count: 5, layout: 'row', position: 0 },
       ],
     },
     {
       id: 'nv-count-l3-t3',
-      skill: 'count-to-5',
+      skill: 'count-to-10',
       format: 'choose',
       presentation: 'picture',
       promptKey: 'content.numbers.l3.t3.prompt',
       hintKey: 'content.numbers.l3.t3.hint',
       explainKey: ['content.numbers.l3.t3.explain'],
-      stimulus: { labelKey: 'content.numbers.l3.t3.stimulus', shape: 'berry', count: 4, layout: 'scatter' },
-      options: [dots('a', 3, false), dots('b', 4, true), dots('c', 5, false)],
+      stimulus: { labelKey: 'content.numbers.l3.t3.stimulus', shape: 'leaf', count: 10, layout: 'row' },
+      options: [dots('a', 10, true), dots('b', 8, false), dots('c', 9, false)],
     },
     {
       id: 'nv-count-l3-t4',
-      skill: 'count-to-10',
-      format: 'match',
+      skill: 'count-to-5',
+      format: 'choose',
       presentation: 'picture',
       promptKey: 'content.numbers.l3.t4.prompt',
       hintKey: 'content.numbers.l3.t4.hint',
       explainKey: ['content.numbers.l3.t4.explain'],
-      pairs: [
-        { id: 'p1', left: { labelKey: 'content.numbers.l3.t4.stones', shape: 'stone', count: 9 }, right: dotSide(9) },
-        { id: 'p2', left: { labelKey: 'content.numbers.l3.t4.berries', shape: 'berry', count: 7 }, right: dotSide(7) },
-        { id: 'p3', left: { labelKey: 'content.numbers.l3.t4.leaves', shape: 'leaf', count: 10 }, right: dotSide(10) },
-      ],
+      stimulus: { labelKey: 'content.numbers.l3.t4.stimulus', shape: 'berry', count: 4, layout: 'scatter' },
+      options: [dots('a', 4, true), dots('b', 5, false), dots('c', 6, false)],
     },
   ],
 };

@@ -1520,3 +1520,16 @@ describe('гард корпуса: приватность текста — по 
     expect(out).toContain(`${l.titleKey} — имя ребёнка вне реплик Tali`);
   });
 });
+
+describe('гард корпуса: разброс на 5-6', () => {
+  it('ловит шесть фигур вразброс на 5-6, пропускает пять и ряд', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0] as ChooseTask;
+    t.stimulus = { labelKey: t.stimulus!.labelKey, shape: 'berry', count: 6, layout: 'scatter' };
+    expectRed('scatter56', c, '6 фигур вразброс');
+    t.stimulus = { ...t.stimulus, count: 5 };
+    expect(run('scatter56', c)).toEqual([]);
+    t.stimulus = { ...t.stimulus, count: 8, layout: 'row' };
+    expect(run('scatter56', c)).toEqual([]);
+  });
+});
