@@ -118,9 +118,9 @@ const median = (xs: readonly number[]): number => {
  * Латентность для сравнения — только самостоятельные ответы со старта L0: пробы с задержкой до
  * подсказки и форматы с длинным окном (`say`) иначе давали бы ложную «слабую мотивацию».
  */
-const latencies = (x: SignalSession) =>
+const latencies = (x: SignalSession, format: AbaFormat) =>
   x.trials
-    .filter((t) => t.latencyMs !== null && t.response === 'independent' && t.startPromptLevel === 0)
+    .filter((t) => t.latencyMs !== null && t.response === 'independent' && t.startPromptLevel === 0 && x.formatOf(t.targetId) === format)
     .map((t) => t.latencyMs as number);
 
 /** Условие слабой мотивации на сессии `i` истории. */
@@ -131,10 +131,16 @@ function lowMotivationAt(history: readonly SignalSession[], i: number): boolean 
   if (counted.length >= BARRIERS.noResponseMinTrials && silent.length / counted.length >= BARRIERS.noResponseShare) return true;
   if (silent.filter((t) => t.kind === 'high_p').length >= BARRIERS.highPNoResponse) return true;
   const past = history.slice(Math.max(0, i - BARRIERS.latencyHistorySessions), i);
-  const now = latencies(x);
-  const before = past.flatMap(latencies);
-  if (past.length < BARRIERS.latencyHistorySessions || now.length < BARRIERS.latencyMinAnswers || !before.length) return false;
-  return median(now) >= BARRIERS.latencyRatio * median(before);
+  if (past.length < BARRIERS.latencyHistorySessions) return false;
+  // медиана сравнивается внутри формата: у `say` окно длиннее, и сессия с большей долей голосовых
+  // целей иначе давала бы ложную «слабую мотивацию» (проверка методиста)
+  const formats = new Set(x.trials.map((t) => x.formatOf(t.targetId)));
+  return [...formats].some((f) => {
+    const now = latencies(x, f);
+    const before = past.flatMap((p) => latencies(p, f));
+    if (now.length < BARRIERS.latencyMinAnswers || before.length < BARRIERS.latencyMinAnswers) return false;
+    return median(now) >= BARRIERS.latencyRatio * median(before);
+  });
 }
 
 export type SessionSignal = 'over_tapping' | 'low_motivation';

@@ -11,6 +11,7 @@ import {
 } from '../abaPlacement';
 import { initialTargetState } from '../abaPrompting';
 import { sessionParamsErrors } from '../abaSessionParams';
+import { programErrors as programErrorsOf } from '../abaTargetRules';
 import { GRID_FOR, target, trial } from './abaFixtures';
 
 /** Автоподбор, допуск формата в «сам», переход и параметры (ABA.md, «Спецификация первой версии»). */
@@ -138,5 +139,24 @@ describe('параметры специалиста (№61)', () => {
     expect(sessionParamsErrors({ paramsBand: '5-6', timeLimitMs: 16 * 60_000 }, '9-10')[0]).toContain('вне 3–15');
     expect(sessionParamsErrors({ responseWindowMs: { identify: 11_000 } }, '7')[0]).toContain('вне 5000–10000');
     expect(sessionParamsErrors({ responseWindowMs: { identify: 8000 } }, '7')).toEqual([]);
+  });
+});
+
+describe('лестница: одно условие спуска и цикл', () => {
+  it('пробованная цель ниже неосваиваемой не берётся снова; низ с полем 2 — обычная базовая линия', () => {
+    const MA = t('MA', { ...GRID_FOR.match, format: 'match', scoredBy: 'device_tap', fieldSize: 2 });
+    const MB = t('MB', { ...GRID_FOR.match, format: 'match', scoredBy: 'device_tap', prerequisiteTargetIds: ['MA'] });
+    const MC = t('MC', { ...GRID_FOR.match, format: 'match', scoredBy: 'device_tap', matchMode: 'sort', fieldSize: undefined, level: 2, prerequisiteTargetIds: ['MB'] });
+    const all = [MA, MB, MC];
+    const s = fresh(all);
+    expect(placementCandidates(all, s).map((x) => x.id)).toEqual(['MB']);
+    expect(placementCandidates(all, { ...s, MB: { ...s.MB, placementTriedAt: 3 } })).toEqual([]);
+  });
+
+  it('цикл предпосылок не вешает спуск и ловится правилами программы', () => {
+    const X = t('X', { prerequisiteTargetIds: ['Y'] });
+    const Y = t('Y', { prerequisiteTargetIds: ['X'] });
+    expect(placementCandidates([X, Y], fresh([X, Y]))).toEqual([]);
+    expect(programErrorsOf([X, Y]).join(' ')).toContain('цикл предпосылок');
   });
 });

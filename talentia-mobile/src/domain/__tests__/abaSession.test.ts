@@ -1578,8 +1578,10 @@ describe('ABA v1: поле match и сортировка в сессии', () =>
     expect(cats.filter((c) => c === 'food')).toHaveLength(5);
     expect(cats.some((c, i) => i >= 2 && c === cats[i - 1] && c === cats[i - 2])).toBe(false);
     expect(new Set(own.map((t) => t.field!.join()))).toHaveProperty('size', 1);
-    // в следующей сессии карточки категорий меняются местами
-    const next = drive(begin([M, S], { M: mastered(M), S: acq(S) }, { sessionIndex: 11 }), () => 'ok').state;
+    // в следующей сессии с этой целью карточки категорий меняются местами — по её сессиям, а не
+    // по чётности номера: номер сессии здесь тот же
+    const r = finishAbaSession(state, '2026-10-02', 99_000);
+    const next = drive(begin([M, S], r.states), () => 'ok').state;
     expect(next.trials.find((t) => t.targetId === 'S' && t.field)!.field).toEqual([...own[0].field!].reverse());
   });
 });
@@ -1626,5 +1628,51 @@ describe('ABA v1: правки по проверке методиста', () => 
     const r = finishAbaSession(state, '2026-10-02', 99_000, {}, undefined, { sessions: [], previous: ['low_motivation'] });
     // истории мало — сигнал держится, как был
     expect(r.signals).toEqual(['low_motivation']);
+  });
+});
+
+describe('ABA v1: вторая проверка методиста', () => {
+  const A = tgt('A');
+  const B = tgt('B', { prerequisiteTargetIds: ['A'] });
+  const C = tgt('C', { prerequisiteTargetIds: ['B'] });
+  const M = tgt('M');
+
+  it('после ошибки проверки сверху вниз — не больше двух высоковероятных проб взамен', () => {
+    const st = begin([A, B, C, M], { M: mastered(M) }, { autoPlacement: true });
+    const first = nextStep(st, 1);
+    // разогрев освоенной M — дойти до пробы C
+    let cur = st;
+    let i = 1;
+    for (; i < 10; i += 1) {
+      const n = nextStep(cur, i);
+      if (n.step.kind === 'trial' && n.step.targetId === 'C') break;
+      cur = answer(cur, i, 'ok').state;
+    }
+    expect(first.step.kind).toBe('trial');
+    const failed = answer(cur, i, 'wrong').state;
+    const pending = failed.queue.filter((q) => q.kind === 'trial');
+    expect(pending.some((q) => q.kind === 'trial' && q.trial.targetId === 'C' && q.trial.kind === 'baseline')).toBe(false);
+    expect(pending.filter((q) => q.kind === 'trial' && q.trial.kind === 'high_p').length).toBeLessThanOrEqual(2);
+  });
+
+  it('проверка сверху вниз пишет событие и при провале', () => {
+    const { state } = drive(begin([A, B, C], {}, { autoPlacement: true }), () => 'wrong');
+    const r = finishAbaSession(state, '2026-10-02', 99_000);
+    expect(r.session.events).toContainEqual(expect.objectContaining({ kind: 'placement', targetId: 'C', passed: false }));
+    expect(r.states.C.placementTriedAt).toBe(10);
+  });
+
+  it('выведенная цель, провалившая поддержание, — событие «вывод не подтвердился»', () => {
+    const inferred = { ...mastered(A, 5), masteredBy: 'inferred' as const };
+    const { state } = drive(begin([A], { A: inferred }), () => 'wrong');
+    const r = finishAbaSession(state, '2026-10-02', 99_000);
+    expect(r.states.A.phase).toBe('baseline');
+    expect(r.session.events).toContainEqual(expect.objectContaining({ kind: 'phase', targetId: 'A', reason: 'inferred_not_confirmed' }));
+  });
+
+  it('первый провал поддержания освоенной цели — событие провала, а не «пройдено»', () => {
+    const { state } = drive(begin([A], { A: mastered(A, 5, { masteredBy: 'criterion' }) }), () => 'wrong');
+    const r = finishAbaSession(state, '2026-10-02', 99_000);
+    expect(r.session.events).toContainEqual(expect.objectContaining({ kind: 'phase', targetId: 'A', reason: 'maintenance_failed' }));
   });
 });

@@ -73,9 +73,16 @@ export function placementCandidates(targets: readonly AbaTarget[], states: Reado
     const byId = new Map(targets.map((x) => [x.id, x]));
     // верхняя — от неё внутри лестницы ничего не зависит
     let cur: AbaTarget | undefined = ladder.find((x) => !ladder.some((y) => (y.prerequisiteTargetIds ?? []).includes(x.id)));
-    while (cur && states[cur.id]?.placementTriedAt !== undefined) cur = ladderPrerequisites(cur, byId)[0];
-    // по базовой линии не осваивается (match с полем 2, сортировка) — ниже по лестнице
-    while (cur && !masterableByBaseline(cur)) cur = ladderPrerequisites(cur, byId)[0];
+    // одно условие спуска: уже пробованная или не осваиваемая по базовой линии (match с полем 2,
+    // сортировка) — ниже по лестнице. Двумя циклами подряд пробованная цель ниже неосваиваемой
+    // бралась снова каждую сессию (проверка методиста). При ветвлении — по первой предпосылке:
+    // первой авторы ставят ближайшую к вершине. `visited` — защита от цикла предпосылок.
+    const visited = new Set<string>();
+    while (cur && !visited.has(cur.id) && (states[cur.id]?.placementTriedAt !== undefined || !masterableByBaseline(cur))) {
+      visited.add(cur.id);
+      cur = ladderPrerequisites(cur, byId)[0];
+    }
+    if (cur && visited.has(cur.id)) cur = undefined;
     // дошли до низа лестницы — дальше обычная базовая линия снизу вверх
     if (cur && ladderPrerequisites(cur, byId).length > 0) out.push(cur);
   }

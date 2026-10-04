@@ -90,3 +90,19 @@ describe('сигналы сессии', () => {
     expect(BARRIERS.latencyRatio).toBe(1.5);
   });
 });
+
+describe('латентность — внутри формата', () => {
+  it('больше голосовых целей с длинным окном — не «слабая мотивация»', () => {
+    const fmtOf = (id: string): AbaFormat => (id === 'say' ? 'say' : 'identify');
+    const at = (i: number, sayShare: number) => ({
+      index: i,
+      trials: [
+        ...Array.from({ length: 6 }, () => trial({ targetId: 'id', latencyMs: 1000 })),
+        ...Array.from({ length: sayShare }, () => trial({ targetId: 'say', latencyMs: 4000 })),
+      ],
+      formatOf: fmtOf,
+    });
+    const past = [1, 2, 3, 4, 5].map((i) => at(i, 0));
+    expect(sessionSignals([...past, at(6, 10), at(7, 10)])).not.toContain('low_motivation');
+  });
+});

@@ -108,6 +108,19 @@ export function programErrors(targets: readonly AbaTarget[]): string[] {
   const byId = new Map(targets.map((t) => [t.id, t]));
   const pre = (t: AbaTarget) => (t.prerequisiteTargetIds ?? []).map((id) => byId.get(id)).filter((x): x is AbaTarget => !!x);
   const errors: string[] = [];
+  // цикл предпосылок: ни одна цель цикла не откроется, а спуск по лестнице не кончится
+  const state = new Map<string, 'open' | 'done'>();
+  const visit = (t: AbaTarget, path: string[]): void => {
+    if (state.get(t.id) === 'done') return;
+    if (state.get(t.id) === 'open') {
+      errors.push(`цикл предпосылок: ${[...path.slice(path.indexOf(t.id)), t.id].join(' → ')}`);
+      return;
+    }
+    state.set(t.id, 'open');
+    for (const p of pre(t)) visit(p, [...path, t.id]);
+    state.set(t.id, 'done');
+  };
+  for (const t of targets) visit(t, []);
   for (const t of targets) {
     if (t.format === 'say' && !pre(t).some((p) => p.format === 'repeat_word')) {
       errors.push(`${t.id}: у say среди предпосылок нет цели repeat_word`);

@@ -69,7 +69,14 @@ import {
 } from './abaPrompting';
 import { scoreTrial, type ScoredFields } from './abaScoring';
 import { applyChoiceBias, sessionSignals, type SessionSignal, type SignalSession } from './abaBarriers';
-import { applyPlacementProbe, formatUnlockedAlone, isPlacementProbe, ladderBelow, placementCandidates } from './abaPlacement';
+import {
+  applyPlacementProbe,
+  formatUnlockedAlone,
+  isPlacementProbe,
+  ladderBelow,
+  placementCandidates,
+  placementPassed,
+} from './abaPlacement';
 import { sessionParamsErrors, type AbaSessionParams } from './abaSessionParams';
 import { ioaPasses, isVerified, masteryVerdict } from './abaIoa';
 import {
@@ -963,6 +970,13 @@ function withField(state: AbaSessionState): AbaSessionState {
   return { ...state, queue: [{ kind: 'trial', trial }, ...state.queue.slice(1)], seed: r.seed() };
 }
 
+/** Устойчивый хеш строки (djb2): одинаковый на всех устройствах. */
+function stableHash(s: string): number {
+  let h = 5381;
+  for (let i = 0; i < s.length; i += 1) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+  return h;
+}
+
 /** Наименее использованное из `options`, кроме `avoid` (если есть другие); равные — случайно. */
 function leastUsed<T>(options: readonly T[], used: readonly T[], rng: Rng, avoid: readonly T[] = []): T {
   const allowed = options.filter((o) => !avoid.includes(o));
@@ -986,10 +1000,13 @@ function withMatchField(state: AbaSessionState, planned: PlannedTrial, target: A
   let field: string[];
   let sample: string;
   if (target.matchMode === 'sort') {
-    // порядок неизменен в сессии и меняется местами между сессиями: иначе позиция совпадала бы с
-    // категорией, и смещение по позиции не отличить от предпочтения карточки
+    // порядок неизменен в сессии и меняется местами между сессиями **этой цели**: иначе позиция
+    // совпадала бы с категорией, и смещение по позиции не отличить от предпочтения карточки.
+    // Номер сессии не годится — обычные цели и наборы чередуются, и сортировка попадала бы всегда
+    // на одну чётность (проверка методиста). Стартовый порядок — от id цели.
     const [a, b] = target.sortCategories!;
-    field = state.sessionIndex % 2 === 0 ? [a, b] : [b, a];
+    const flip = (state.states[target.id].sortFlipped ? 1 : 0) ^ (stableHash(target.id) % 2);
+    field = flip ? [b, a] : [a, b];
     sample = exemplar.category!;
   } else {
     const cards = exemplar.cards!;
@@ -1015,13 +1032,36 @@ function stopPlacementOnFailure(state: AbaSessionState, trial: AbaTrial, r: { rn
   if (trial.kind !== 'baseline' || trial.response === 'independent' || trial.response === 'interrupted') return state;
   const target = state.targets[trial.targetId];
   if (!isPlacementProbe(target, state.states)) return state;
-  const highP = state.highPTargetIds.map((id) => state.targets[id]);
-  const queue: QueueItem[] = state.queue.flatMap((q) => {
-    if (q.kind !== 'trial' || q.trial.targetId !== trial.targetId || q.trial.kind !== 'baseline') return [q];
-    return highP.length ? [{ kind: 'trial' as const, trial: highPTrial(pick(highP, r.rng), r.rng) }] : [];
+  // снимается весь остаток, у цепочки — и остаток прогона: его доводит взрослый, без записи
+  const isRest = (q: QueueItem) => q.kind === 'trial' && q.trial.targetId === trial.targetId && q.trial.kind === 'baseline';
+  const removedAt = state.queue.findIndex(isRest);
+  if (removedAt < 0) return state;
+  // вместе с остатком — высоковероятные, вставленные между его пробами (`baselineBlock`), и та, что
+  // стоит сразу после проваленной: всё это один блок
+  let lastRest = removedAt;
+  state.queue.forEach((q, i) => {
+    if (isRest(q)) lastRest = i;
   });
+  const inBlock = (q: QueueItem, i: number) => i < lastRest && q.kind === 'trial' && q.trial.kind === 'high_p';
+  const before = state.queue.slice(0, removedAt).filter((q, i) => !inBlock(q, i)).length;
+  let queue: QueueItem[] = state.queue.filter((q, i) => !(isRest(q) || inBlock(q, i)));
+  // взамен — не больше двух высоковероятных проб освоенных целей
+  const highP = state.highPTargetIds.map((id) => state.targets[id]);
+  const fill: QueueItem[] = highP.length
+    ? Array.from({ length: PLACEMENT_FILL_MAX }, () => ({ kind: 'trial' as const, trial: highPTrial(pick(highP, r.rng), r.rng) }))
+    : [];
+  // освоенных нет, а дальше снова измерение — сначала обучающая проба на её стартовом уровне
+  const next = queue.slice(before).find((q) => q.kind === 'trial');
+  const teach = state.teachingTargetIds.map((id) => state.targets[id]).find((t) => !t.steps?.length);
+  if (!fill.length && next?.kind === 'trial' && MEASURING_KINDS.has(next.trial.kind) && teach) {
+    fill.push({ kind: 'trial', trial: { kind: 'teaching', targetId: teach.id, exemplarId: pick(teachingExemplars(teach), r.rng).id } });
+  }
+  queue = [...queue.slice(0, before), ...fill, ...queue.slice(before)];
   return { ...state, queue };
 }
+
+/** Высоковероятных проб взамен снятой проверки сверху вниз — не больше. */
+export const PLACEMENT_FILL_MAX = 2;
 
 function workedMs(state: AbaSessionState, now: number): number {
   if (state.workStartedAt === null) return 0;
@@ -2097,6 +2137,8 @@ export function finishAbaSession(
       if (isPlacementProbe(target, state.states)) {
         // проверка сверху вниз: прошла — освоена, предпосылки по лестнице выведены
         const placed = applyPlacementProbe({ ...states, [id]: s }, Object.values(state.targets), target, own, idx, state.config);
+        const passed = placementPassed(target, own);
+        if (passed !== null) phaseEvents.push({ kind: 'placement', at: iso(endedAt), targetId: id, passed });
         for (const p of ladderBelow(target, Object.values(state.targets))) {
           if (placed[p.id] && states[p.id] && placed[p.id].phase !== states[p.id].phase) {
             phaseEvents.push({ kind: 'phase', at: iso(endedAt), targetId: p.id, from: states[p.id].phase, to: placed[p.id].phase, reason: 'inferred' });
@@ -2134,7 +2176,12 @@ export function finishAbaSession(
     for (const t of unreliable ? [] : probesOf(target, own, 'maintenance')) {
       const before = s;
       s = applyMaintenanceProbe(s, t, idx);
-      reason = s.phase === 'acquisition' ? 'maintenance_failed' : 'maintenance_passed';
+      reason =
+        before.masteredBy === 'inferred' && s.phase === 'baseline'
+          ? 'inferred_not_confirmed'
+          : t.response === 'independent'
+            ? 'maintenance_passed'
+            : 'maintenance_failed';
       if (target.steps?.length && s.phase === 'acquisition') s = rollbackSteps(before, s, target, own);
     }
     if (primary?.trained && !unreliable) {
@@ -2166,6 +2213,8 @@ export function finishAbaSession(
     }
     s = withAssentConcern(s, isConcerning(state.trials.filter((t) => t.targetId === id)));
     if (!unreliable) s = applyChoiceBias(s, biasWindow(state, id, pastSessions), target.format);
+    // сортировка: в следующей сессии с целью карточки категорий меняются местами
+    if (target.matchMode === 'sort' && own.some((t) => t.field)) s = { ...s, sortFlipped: !s.sortFlipped };
     if (reason && (s.phase !== from || reason === 'verification_passed')) {
       phaseEvents.push({ kind: 'phase', at: iso(endedAt), targetId: id, from, to: s.phase, reason });
     }
