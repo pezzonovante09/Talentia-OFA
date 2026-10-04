@@ -223,7 +223,9 @@ type QueueItem =
   /** Перерыв: по расписанию, по детской карточке или по отказу (тогда с потолком длительности). */
   | { kind: 'break'; initiatedBy?: 'child_card' | 'adult'; maxMs?: number; offerCardMs?: number; cardTaken?: true }
   /** Доступ к подкрепителю после обмена при обучении доске. */
-  | { kind: 'access'; durationMs: number };
+  | { kind: 'access'; durationMs: number }
+  /** Взрослый доводит прогон цепочки до конца без записи проб (снятая проверка сверху вниз). */
+  | { kind: 'adult_finish_chain'; targetId: string; stepIds: string[] };
 
 export type TrialStep = {
   kind: 'trial';
@@ -302,6 +304,12 @@ export type AbaStep =
     }
   /** Доступ к подкрепителю после обмена: экран показывает его и зовёт `finishAccess`. */
   | { kind: 'access'; durationMs: number }
+  /**
+   * Проверка сверху вниз снята посреди цепочки: рутина не обрывается (руки не остаются в мыле) —
+   * экран просит взрослого довести оставшиеся звенья вместе с ребёнком. Проб не пишется; дальше —
+   * `finishChainByAdult`.
+   */
+  | { kind: 'adult_finish_chain'; targetId: string; stepIds: string[] }
   /** `endedOnSuccess: false` — спокойный экран «закончили» без оценки и до обмена. */
   | {
       kind: 'end';
@@ -1044,19 +1052,25 @@ function stopPlacementOnFailure(state: AbaSessionState, trial: AbaTrial, r: { rn
   });
   const inBlock = (q: QueueItem, i: number) => i < lastRest && q.kind === 'trial' && q.trial.kind === 'high_p';
   const before = state.queue.slice(0, removedAt).filter((q, i) => !inBlock(q, i)).length;
+  // у цепочки оставшиеся звенья текущего прогона доводит взрослый — без записи проб
+  const runRest = trial.stepId
+    ? state.queue.flatMap((q) => (isRest(q) && q.kind === 'trial' && q.trial.runIndex === trial.runIndex && q.trial.stepId ? [q.trial.stepId] : []))
+    : [];
   let queue: QueueItem[] = state.queue.filter((q, i) => !(isRest(q) || inBlock(q, i)));
+  if (runRest.length) queue = [...queue.slice(0, before), { kind: 'adult_finish_chain', targetId: trial.targetId, stepIds: runRest }, ...queue.slice(before)];
+  const at = before + (runRest.length ? 1 : 0);
   // взамен — не больше двух высоковероятных проб освоенных целей
   const highP = state.highPTargetIds.map((id) => state.targets[id]);
   const fill: QueueItem[] = highP.length
     ? Array.from({ length: PLACEMENT_FILL_MAX }, () => ({ kind: 'trial' as const, trial: highPTrial(pick(highP, r.rng), r.rng) }))
     : [];
   // освоенных нет, а дальше снова измерение — сначала обучающая проба на её стартовом уровне
-  const next = queue.slice(before).find((q) => q.kind === 'trial');
+  const next = queue.slice(at).find((q) => q.kind === 'trial');
   const teach = state.teachingTargetIds.map((id) => state.targets[id]).find((t) => !t.steps?.length);
   if (!fill.length && next?.kind === 'trial' && MEASURING_KINDS.has(next.trial.kind) && teach) {
     fill.push({ kind: 'trial', trial: { kind: 'teaching', targetId: teach.id, exemplarId: pick(teachingExemplars(teach), r.rng).id } });
   }
-  queue = [...queue.slice(0, before), ...fill, ...queue.slice(before)];
+  queue = [...queue.slice(0, at), ...fill, ...queue.slice(at)];
   return { ...state, queue };
 }
 
@@ -1136,6 +1150,8 @@ export function nextStep(
     case 'access':
       if (st.accessStartedAt === null) st = { ...st, accessStartedAt: now };
       return done(st, { kind: 'access', durationMs: head.durationMs });
+    case 'adult_finish_chain':
+      return done({ ...st, pendingPauseMs: 0 }, { kind: 'adult_finish_chain', targetId: head.targetId, stepIds: head.stepIds });
     case 'trial': {
       st = withField(st);
       const step = trialStep(st, (st.queue[0] as { trial: PlannedTrial }).trial);
@@ -1199,6 +1215,12 @@ export function finishBreak(state: AbaSessionState, now: number): { state: AbaSe
  * Доступ к подкрепителю после обмена кончился. Пишется фактическое время: экран может
  * прервать или продлить доступ, и рабочее время не должно на этом теряться.
  */
+/** Взрослый довёл прогон цепочки до конца — данных нет, сессия идёт дальше. */
+export function finishChainByAdult(state: AbaSessionState): AbaSessionState {
+  if (state.queue[0]?.kind !== 'adult_finish_chain') throw new Error('Сейчас не доведение прогона взрослым');
+  return { ...state, queue: state.queue.slice(1) };
+}
+
 export function finishAccess(state: AbaSessionState, now: number): AbaSessionState {
   if (state.queue[0]?.kind !== 'access') throw new Error('Сейчас не доступ к подкрепителю');
   const startedAt = state.accessStartedAt ?? now;

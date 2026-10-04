@@ -31,6 +31,7 @@ import {
   type StartInput,
   type AbaTrialInput,
   type TrialStep,
+  finishChainByAdult,
 } from '../abaSession';
 import { correctionLevel, initialTargetState, promptStateOf } from '../abaPrompting';
 import { applyBaseline, summarizeSession } from '../abaCriterion';
@@ -229,6 +230,10 @@ function drive(state: AbaSessionState, policy: (step: TrialStep) => How, clock =
     }
     if (next.step.kind === 'access') {
       st = finishAccess(st, clock.now);
+      continue;
+    }
+    if (next.step.kind === 'adult_finish_chain') {
+      st = finishChainByAdult(st);
       continue;
     }
     if (next.step.kind !== 'trial') throw new Error(`неожиданный шаг ${next.step.kind}`);
@@ -1674,5 +1679,30 @@ describe('ABA v1: вторая проверка методиста', () => {
     const { state } = drive(begin([A], { A: mastered(A, 5, { masteredBy: 'criterion' }) }), () => 'wrong');
     const r = finishAbaSession(state, '2026-10-02', 99_000);
     expect(r.session.events).toContainEqual(expect.objectContaining({ kind: 'phase', targetId: 'A', reason: 'maintenance_failed' }));
+  });
+});
+
+describe('ABA v1: проверка сверху вниз в цепочке', () => {
+  const chain = (id: string, pre?: string[]) =>
+    tgt(id, {
+      format: 'do_action',
+      steps: [
+        { id: `${id}-1`, order: 0, sdKey: 'sd1', criterionKey: 'c1', modelKey: 'm1' },
+        { id: `${id}-2`, order: 1, sdKey: 'sd2', criterionKey: 'c2', modelKey: 'm2' },
+        { id: `${id}-3`, order: 2, sdKey: 'sd3', criterionKey: 'c3', modelKey: 'm3' },
+      ],
+      ...(pre ? { prerequisiteTargetIds: pre } : {}),
+    });
+  const A = chain('A');
+  const B = chain('B', ['A']);
+
+  it('ошибка на звене — оставшиеся звенья прогона доводит взрослый, без записи проб', () => {
+    let st = begin([A, B], {}, { autoPlacement: true });
+    expect(st.baselineTargetIds).toEqual(['B']);
+    st = answer(st, 1, 'wrong').state;
+    const { steps, state } = drive(st, () => 'ok');
+    const finish = steps.find((x) => x.kind === 'adult_finish_chain');
+    expect(finish).toEqual({ kind: 'adult_finish_chain', targetId: 'B', stepIds: ['B-2', 'B-3'] });
+    expect(state.trials.filter((t) => t.targetId === 'B')).toHaveLength(1);
   });
 });
