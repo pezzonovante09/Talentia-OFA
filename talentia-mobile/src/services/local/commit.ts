@@ -16,7 +16,8 @@ import { ioaRecordErrors } from '../../domain/abaIoa';
 import { appendIoa, appendSession, appendTrial, withAbaWrite } from './abaLog';
 import { saveChildState } from './childState';
 import { readConsentLog } from './consentLog';
-import type { GuardianRole } from '../../domain/consent';
+import { consentStatus, type GuardianRole } from '../../domain/consent';
+import { CURRENT_CONSENT_TEXTS } from '../../domain/consentTexts';
 import { appendLessonRun } from './lessonRuns';
 import type { SqlDb } from './sql';
 
@@ -82,17 +83,44 @@ export async function commitAbaSession(
 }
 
 /**
- * Пауза ABA — без удаления и без согласия: выключить режим можно всегда. Сессия в работе
- * не снимается — после паузы её можно продолжить, а при отзыве её удалит отзыв.
- *
- * У ребёнка, которому согласие на ABA не давали ни разу, паузы не бывает: строка
- * `abaPaused` сама была бы меткой «режим был». Снятие паузы возобновляет запись — экран
- * ставит его за гейт (уровень 1+), включение — без гейта.
+ * Итог паузы: `no_consent` — согласия на ABA нет или оно отозвано, режим и так выключен,
+ * ничего не записано; `consent_required` — снять паузу нельзя, согласие дано на прежний
+ * текст: экран ведёт в согласие.
  */
-export async function setAbaPaused(db: SqlDb, childId: string, paused: boolean, at: string): Promise<void> {
-  const asked = (await readConsentLog(db)).some((e) => e.scope === 'aba_processing' && e.childId === childId);
-  if (!asked) return;
-  await saveChildState(db, childId, 'abaPaused', paused, at);
+export type AbaPauseResult = 'saved' | 'no_consent' | 'consent_required';
+
+/**
+ * Пауза ABA — без удаления: выключить режим можно всегда, пока согласие не отозвано, в том
+ * числе при согласии на прежний текст. Сессия в работе не снимается — после паузы её можно
+ * продолжить, а при отзыве её удалит отзыв. Снятие паузы возобновляет запись, поэтому
+ * требует согласия на текущий текст; экран ставит его за гейт (уровень 1+), включение — без
+ * гейта.
+ *
+ * Без действующего согласия — ни разу не давали или отозвано — строка `abaPaused` не пишется:
+ * она сама метка «режим был», а отзыв её удаляет (аудит 2026-10-06, А1). Проверка и запись —
+ * в одной эксклюзивной транзакции: отзыв не встанет между ними.
+ */
+export async function setAbaPaused(db: SqlDb, childId: string, paused: boolean, at: string): Promise<AbaPauseResult> {
+  return db.transaction(async (tx) => {
+    const status = consentStatus(await readConsentLog(tx), 'aba_processing', childId, CURRENT_CONSENT_TEXTS.aba_processing);
+    switch (status) {
+      case 'not_asked':
+      case 'revoked':
+        return 'no_consent';
+      case 'outdated':
+        if (!paused) return 'consent_required';
+        break;
+      case 'granted':
+        break;
+      default: {
+        // новый статус согласия не дойдёт до записи молча: его надо разобрать здесь
+        const unhandled: never = status;
+        throw new Error(`Пауза ABA: необработанный статус согласия ${String(unhandled)}`);
+      }
+    }
+    await saveChildState(tx, childId, 'abaPaused', paused, at);
+    return 'saved';
+  });
 }
 
 /**

@@ -11,6 +11,7 @@ import { lessonRunsOf } from '../lessonRuns';
 import { abaDataSummary, exportChild, exportForSpecialist, revokeAbaProcessing } from '../purge';
 import { migrate } from '../schema';
 import { asAbaWriter, memoryDb } from './nodeSql';
+import type { SqlDb, SqlValue } from '../sql';
 
 const NOW = '2026-09-30T10:00:00Z';
 /** Текущая версия текста согласия на ABA — из `consentTexts.ts`. */
@@ -313,8 +314,92 @@ describe('согласие на данные ABA', () => {
 
   it('пауза у ребёнка, которому согласие не давали, не создаёт метку режима', async () => {
     const db = await memoryDb();
-    await setAbaPaused(db, 'kid', true, NOW);
+    expect(await setAbaPaused(db, 'kid', true, NOW)).toBe('no_consent');
     expect(await loadChildState(db, 'kid', 'abaPaused')).toBeUndefined();
+  });
+
+  const REVOKE_AT = '2026-09-30T11:00:00Z';
+
+  it('пауза после отзыва не возвращает метку режима (А1)', async () => {
+    const db = await dbWithAbaConsent();
+    await revokeAbaProcessing(db, abaConsent('revoke', { at: REVOKE_AT }), 'owner');
+    expect(await setAbaPaused(db, 'kid', true, NOW)).toBe('no_consent');
+    expect(await setAbaPaused(db, 'kid', false, NOW)).toBe('no_consent');
+    expect(await loadChildState(db, 'kid', 'abaPaused')).toBeUndefined();
+  });
+
+  it('после повторного согласия пауза снова работает', async () => {
+    const db = await dbWithAbaConsent();
+    await revokeAbaProcessing(db, abaConsent('revoke', { at: REVOKE_AT }), 'owner');
+    await appendConsentEvent(db, abaConsent('grant', { at: '2026-09-30T12:00:00Z' }), 'owner');
+    expect(await setAbaPaused(db, 'kid', true, NOW)).toBe('saved');
+    expect(await loadChildState(db, 'kid', 'abaPaused')).toBe(true);
+  });
+
+  it('согласие на прежний текст: поставить паузу можно, снять — только после нового согласия', async () => {
+    const db = await memoryDb();
+    await appendConsentEvent(db, abaConsent('grant', { at: '2026-09-30T09:00:00Z', textVersion: 'ru-draft-0' }), 'owner');
+    expect(await setAbaPaused(db, 'kid', true, NOW)).toBe('saved');
+    expect(await setAbaPaused(db, 'kid', false, NOW)).toBe('consent_required');
+    expect(await loadChildState(db, 'kid', 'abaPaused')).toBe(true);
+  });
+
+  it('отзыв у одного ребёнка не мешает паузе другого', async () => {
+    const db = await dbWithAbaConsent();
+    await appendConsentEvent(db, abaConsent('grant', { childId: 'sib', at: '2026-09-30T09:30:00Z' }), 'owner');
+    await revokeAbaProcessing(db, abaConsent('revoke', { childId: 'sib', at: REVOKE_AT }), 'owner');
+    expect(await setAbaPaused(db, 'kid', true, NOW)).toBe('saved');
+    expect(await setAbaPaused(db, 'sib', true, NOW)).toBe('no_consent');
+    expect(await loadChildState(db, 'kid', 'abaPaused')).toBe(true);
+    expect(await loadChildState(db, 'sib', 'abaPaused')).toBeUndefined();
+  });
+
+  it('пауза, затем отзыв — метки режима не остаётся', async () => {
+    const db = await dbWithAbaConsent();
+    await setAbaPaused(db, 'kid', true, NOW);
+    await revokeAbaProcessing(db, abaConsent('revoke', { at: REVOKE_AT }), 'owner');
+    expect(await loadChildState(db, 'kid', 'abaPaused')).toBeUndefined();
+  });
+
+  /**
+   * Чтение журнала согласий останавливается после ответа базы и ждёт `release`: отзыв
+   * запускается ровно в окне «прочитали журнал → записали паузу». На старом
+   * `setAbaPaused` (чтение мимо транзакции) отзыв проходил в этом окне, и метка оставалась.
+   */
+  function pauseAfterConsentRead(db: SqlDb) {
+    let release!: () => void;
+    let reached!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const hit = new Promise<void>((r) => (reached = r));
+    let armed = true;
+    const wrap = (d: SqlDb): SqlDb => ({
+      run: (sql, params) => d.run(sql, params),
+      exec: (sql) => d.exec(sql),
+      all: async <T,>(sql: string, params?: readonly SqlValue[]) => {
+        const rows = await d.all<T>(sql, params);
+        if (armed && sql.startsWith('SELECT * FROM consent_events')) {
+          armed = false;
+          reached();
+          await gate;
+        }
+        return rows;
+      },
+      transaction: (fn) => d.transaction((tx) => fn(wrap(tx))),
+    });
+    return { db: wrap(db), hit, release };
+  }
+
+  it('отзыв между чтением журнала и записью паузы — метки режима не остаётся', async () => {
+    const db = await dbWithAbaConsent();
+    const gated = pauseAfterConsentRead(db);
+    const pause = setAbaPaused(gated.db, 'kid', true, NOW);
+    await gated.hit;
+    const revoke = revokeAbaProcessing(db, abaConsent('revoke', { at: REVOKE_AT }), 'owner');
+    await new Promise((r) => setTimeout(r, 0));
+    gated.release();
+    await Promise.all([pause, revoke]);
+    expect(await loadChildState(db, 'kid', 'abaPaused')).toBeUndefined();
+    expect((await readConsentLog(db)).at(-1)).toMatchObject({ scope: 'aba_processing', action: 'revoke', childId: 'kid' });
   });
 });
 
