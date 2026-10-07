@@ -12,8 +12,6 @@
       "supportsTablet": true,
       "infoPlist": {
         "CFBundleDisplayName": "Talentia",
-        "NSSpeechRecognitionUsageDescription": "Talentia uses speech recognition to understand your child's voice answers.",
-        "NSMicrophoneUsageDescription": "Talentia uses the microphone so your child can answer by voice during lessons.",
         "ITSAppUsesNonExemptEncryption": false
       },
       "bundleIdentifier": "com.talentia.mobile",
@@ -22,7 +20,6 @@
     "android": {
       "versionCode": 1,
       "package": "com.talentia.mobile",
-      "label": "Talentia",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -31,8 +28,12 @@
       },
       "predictiveBackGestureEnabled": false,
       "allowBackup": false,
-      "permissions": [
-        "android.permission.RECORD_AUDIO"
+      "permissions": [],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW"
       ]
     },
     "web": {
@@ -41,8 +42,6 @@
     },
     "plugins": [
       "expo-router",
-      "expo-notifications",
-      "expo-speech-recognition",
       [
         "expo-splash-screen",
         {
@@ -56,7 +55,6 @@
         }
       ],
       "expo-localization",
-      "expo-video",
       "expo-font",
       "expo-secure-store",
       "./plugins/withNoDataBackup",
@@ -68,7 +66,6 @@
           }
         }
       ],
-      "@sentry/react-native",
       "expo-sqlite"
     ],
     "experiments": {

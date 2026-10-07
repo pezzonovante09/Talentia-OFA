@@ -13,8 +13,8 @@
  * отклоняет сама база (`schema.ts`, миграция 3). `appendTrial` и `appendSession` —
  * кирпичи для `commit.ts`, а не вход для экранов.
  *
- * Обе ошибки — штатный ход, а не сбой: в Sentry их не отправлять, само сообщение связывает
- * устройство с ABA-режимом (ABA.md, «Согласие `aba_processing`»).
+ * Обе ошибки — штатный ход, а не сбой: в отчёты об ошибках их не отправлять, само сообщение
+ * связывает устройство с ABA-режимом (ABA.md, «Согласие `aba_processing`»).
  */
 import type { AbaIoaRecord, AbaSession, AbaTrial } from '../../types/aba';
 import { trialInvariantErrors, type SessionTrials } from '../../domain/abaPrompting';

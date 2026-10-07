@@ -1,10 +1,16 @@
 /**
- * Порт устройства на модулях Expo: AsyncStorage, SecureStore, файловая система, уведомления.
+ * Порт устройства на модулях Expo: AsyncStorage, SecureStore, файловая система.
+ *
+ * Уведомлений приложение не планирует, и модуля `expo-notifications` в сборке нет: его
+ * плагин ставится автоматически и безусловно добавляет iOS push-entitlement и Android
+ * `POST_NOTIFICATIONS` / `RECEIVE_BOOT_COMPLETED` — разрешения без функции (аудит
+ * 2026-10-06, А3). Снимать нечего, поэтому снятие — пустое. Появятся напоминания
+ * (PARENT.md, «Настройки ребёнка») — вернуть модуль, только локальные уведомления, и
+ * config-плагин, убирающий `aps-environment`.
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { Directory, Paths } from 'expo-file-system';
-import * as Notifications from 'expo-notifications';
 import type { DeviceStore } from './device';
 
 export function expoDevice(): DeviceStore {
@@ -20,12 +26,7 @@ export function expoDevice(): DeviceStore {
       const dir = new Directory(Paths.cache, ...path);
       if (dir.exists) dir.delete();
     },
-    async cancelChildNotifications(childId) {
-      const scheduled = await Notifications.getAllScheduledNotificationsAsync();
-      for (const n of scheduled) {
-        if (n.content.data?.childId === childId) await Notifications.cancelScheduledNotificationAsync(n.identifier);
-      }
-    },
-    cancelAllNotifications: () => Notifications.cancelAllScheduledNotificationsAsync(),
+    async cancelChildNotifications() {},
+    async cancelAllNotifications() {},
   };
 }
