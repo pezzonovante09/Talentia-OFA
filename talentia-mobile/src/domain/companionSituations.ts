@@ -76,3 +76,35 @@ export function pickVariant(used: number[], total: number, random = Math.random)
 export function lineKey(s: Situation, variant: number): string {
   return `companion.${s}.${variant}`;
 }
+
+/**
+ * Как Tali обращается к ребёнку (решение владельца №71, условия `child-privacy-compliance`
+ * 2026-10-07). Родителя спрашивают не «пол», а форму речи с примером: «ты справилась» /
+ * «ты справился» / «у тебя получилось». Хранится **только на устройстве**: не уходит ни в
+ * облако, ни в ИИ, ни в телеметрию, ни в отчёт и экспорт; удаляется вместе с профилем.
+ * Читает её только выбор реплики — подбирать по ней темы, задания или цвета нельзя.
+ */
+export type AddressForm = 'feminine' | 'masculine' | 'neutral';
+
+/** «Не указывать» — равноправный вариант и значение по умолчанию. */
+export const DEFAULT_ADDRESS_FORM: AddressForm = 'neutral';
+
+/** Настройки речи Tali для ребёнка — на устройстве, рядом с языковыми (`ChildLanguageSettings`). */
+export type ChildSpeechSettings = {
+  addressForm: AddressForm;
+};
+
+const FORM_SUFFIX: Record<Exclude<AddressForm, 'neutral'>, string> = { feminine: 'f', masculine: 'm' };
+
+/**
+ * Ключ реплики с учётом формы обращения. Основная реплика — безродовая
+ * (`companion.<ситуация>.<n>`), она есть всегда; родовая (`….f`, `….m`) — необязательная
+ * надстройка там, где русская фраза о ребёнке без рода звучит натянуто. Нет родовой — звучит
+ * основная. В en и ky рода во 2-м лице нет: там родовых ключей не заводят.
+ */
+export function lineKeyFor(s: Situation, variant: number, form: AddressForm, exists: (key: string) => boolean): string {
+  const base = lineKey(s, variant);
+  if (form === 'neutral') return base;
+  const gendered = `${base}.${FORM_SUFFIX[form]}`;
+  return exists(gendered) ? gendered : base;
+}

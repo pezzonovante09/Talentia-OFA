@@ -12,8 +12,8 @@ vi.mock("@/lib/supabaseUser", () => ({
 vi.mock("@/lib/consentCheck", () => ({ hasConsent: vi.fn(async () => true) }));
 
 import { hasConsent } from "@/lib/consentCheck";
-import { CRISIS_REPLY, SAFE_FALLBACK } from "@/lib/taliSafety";
-import { POST, TaliV2RequestSchema } from "./route";
+import { CRISIS_REPLY, PRIVACY_NUDGE, SAFE_FALLBACK } from "@/lib/taliSafety";
+import { POST, systemPrompt, TaliV2RequestSchema, userMessage } from "./route";
 
 const KID = "00000000-0000-4000-8000-0000000000c1";
 
@@ -82,7 +82,13 @@ describe("/api/v2/tali", () => {
   });
 
   it("лишние поля о ребёнке отклоняются схемой", () => {
-    for (const extra of [{ childMode: "special" }, { methodology: "aba" }, { parentContext: "отчёт" }]) {
+    for (const extra of [
+      { childMode: "special" },
+      { methodology: "aba" },
+      { parentContext: "отчёт" },
+      { addressForm: "feminine" },
+      { gender: "f" },
+    ]) {
       expect(TaliV2RequestSchema.safeParse({ childId: KID, language: "ru", message: "a", ...extra }).success).toBe(false);
     }
     expect(TaliV2RequestSchema.safeParse({ childId: "not-a-uuid", language: "ru", message: "a" }).success).toBe(false);
@@ -100,5 +106,62 @@ describe("/api/v2/tali", () => {
     expect(JSON.parse(String(ttsCall![1].body)).text).toBe(SAFE_FALLBACK.ru);
     delete process.env.ELEVENLABS_API_KEY;
     delete process.env.ELEVENLABS_VOICE_ID;
+  });
+
+  it("личное в сообщении — реплика «лучше не рассказывать», модель не вызывается", async () => {
+    const res = await POST(request({ childId: KID, language: "ru", message: "мой номер 0555 123 456" }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ reply: PRIVACY_NUDGE.ru, crisis: false, filtered: true });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("тревожное важнее личного", async () => {
+    const res = await POST(request({ childId: KID, language: "ru", message: "меня зовут Аня, я не хочу жить" }));
+    expect(await res.json()).toEqual({ reply: CRISIS_REPLY.ru, crisis: true });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("телефон в ответе на задание — модель не вызывается", async () => {
+    const res = await POST(
+      request({
+        childId: KID,
+        language: "ru",
+        mode: "explain_error",
+        task: { question: "Сколько камней?" },
+        childAnswer: "+996 555 123 456",
+      }),
+    );
+    expect((await res.json()).filtered).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("ответ, совпадающий с вариантом задания, и число-ответ уходят в модель", async () => {
+    deepseekReplies("Посчитай ещё раз!");
+    const option = { childId: KID, language: "ru", mode: "explain_error", task: { question: "Где дом?", options: ["улица 5", "лес"] }, childAnswer: "улица 5" };
+    expect((await (await POST(request(option))).json()).filtered).toBeUndefined();
+    const number = { childId: KID, language: "ru", mode: "explain_error", task: { question: "Миллион цифрами?" }, childAnswer: "1000000" };
+    expect((await (await POST(request(number))).json()).filtered).toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("чистый текст уходит в модель как есть", async () => {
+    deepseekReplies("Давай посчитаем!");
+    const body = { childId: KID, language: "ru" as const, mode: "chat" as const, message: "сколько будет 7 плюс 5?", speak: false };
+    await POST(request(body));
+    const { messages } = JSON.parse(String(fetchMock.mock.calls[0][1].body));
+    expect(messages[1].content).toBe(userMessage(body));
+  });
+
+  it("в промпте — безродовое обращение к ребёнку (№71)", () => {
+    expect(systemPrompt("ru", "chat")).toMatch(/gender-neutral/);
+  });
+
+  it("текст ребёнка не попадает в логи", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    delete process.env.DEEPSEEK_API_KEY;
+    await POST(request({ childId: KID, language: "ru", message: "меня зовут Аня" }));
+    await POST(request({ childId: KID, language: "ru", message: "секретное слово банан" }));
+    for (const call of spy.mock.calls) expect(JSON.stringify(call)).not.toMatch(/Аня|банан/);
+    spy.mockRestore();
   });
 });
