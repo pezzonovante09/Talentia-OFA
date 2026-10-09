@@ -299,6 +299,10 @@ FORMATS.md, CURRICULUM.md).
 права по умолчанию, `amr` с `otp`; `SUPABASE_ANON_KEY` в прокси. Удаление аккаунта — только
 жёсткое.
 
+- **Сверка с PDF стандарта КР** (по `curriculum-content-reviewer`, 2026-10-10): строка «обучение
+  грамоте» 1 класса (табл. 2, с. 23–25) — снять пометку `check-kr` у `read-syllables`
+  (`docs/sources/russian-1-4.md`) через `textbook-ingest`.
+
 **Открытые вопросы** — в конце этого файла.
 
 ## Решение: полная пересборка
