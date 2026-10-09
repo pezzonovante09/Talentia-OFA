@@ -19,7 +19,7 @@ import TaliPoint from '../../assets/images/tali/tali-point.svg';
 import TaliPuzzled from '../../assets/images/tali/tali-puzzled.svg';
 import TaliWrite from '../../assets/images/tali/tali-write.svg';
 
-import RegionLogic from '../../assets/images/regions/region-logic.svg';
+import RegionWorkshop from '../../assets/images/regions/region-workshop.svg';
 import RegionNature from '../../assets/images/regions/region-nature.svg';
 import RegionNumbers from '../../assets/images/regions/region-numbers.svg';
 import RegionWords from '../../assets/images/regions/region-words.svg';
@@ -63,7 +63,7 @@ export const REGION_PANORAMAS = {
   numbers: RegionNumbers,
   words: RegionWords,
   nature: RegionNature,
-  workshop: RegionLogic,
+  workshop: RegionWorkshop,
   kyrgyz: null,
 } satisfies Record<RegionId, Svg | null>;
 

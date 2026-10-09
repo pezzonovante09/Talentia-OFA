@@ -415,7 +415,7 @@ Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
 No characters, no animals, no people, no text, no frame.
 ```
 
-**`region-logic.svg` — Мастерская (`workshop`), английский**
+**`region-workshop.svg` — Мастерская (`workshop`), английский** (до 2026-10-10 — `region-logic.svg`, решение №82)
 
 Файл назван по прежнему id; в реестре он уже стоит под ключом `workshop`. Переименовать в
 `region-workshop.svg` — вместе с правкой `REGION_PANORAMAS` и `registry.test.ts`
