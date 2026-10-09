@@ -16,6 +16,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/audit-gate.js\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/screens-reminder.js\"",
             "timeout": 10
           },
