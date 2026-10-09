@@ -12,6 +12,7 @@ import {
   MAINTENANCE_FAILS_TO_REACQUIRE,
   MAINTENANCE_GAP,
   MASTERY,
+  ROUTINE,
   type AbaConfig,
   type AbaSessionEndReason,
   type AbaTarget,
@@ -119,6 +120,13 @@ export function summarizeSession(
   endReason: AbaSessionEndReason | null = null,
 ): AbaSessionSummary {
   const own = sessionTrials.filter((t) => t.targetId === target.id);
+
+  // у рутины серии сессий нет: её критерий — окно прогонов по дням (`applyRoutineRun`)
+  if (isRoutine(target)) {
+    const runs = chainRuns(target, own);
+    const whole = runs.filter((run) => run.every((t) => t.response === 'independent')).length;
+    return { trials: runs.length, independentRate: runs.length ? whole / runs.length : 0, outcome: 'neutral', counted: false, independentExemplars: [] };
+  }
 
   let summary: AbaSessionSummary;
   if (!target.steps?.length) {
@@ -251,6 +259,109 @@ export const IDENTIFY_BASELINE = { trials: 5, fromL0: 5, fromL1: 4 } as const;
  * 4/5 — старт L1; меньше — L3.
  */
 export const MATCH_BASELINE = { trials: 5, masteredFrom: 5, fromL1: 4, minFieldForMastery: 3 } as const;
+
+/** Рутина самообслуживания: цепочка области `self_care` (`ROUTINE`). Отдельного флага нет — один источник истины. */
+export function isRoutine(t: Pick<AbaTarget, 'area' | 'steps'>): boolean {
+  return t.area === 'self_care' && !!t.steps?.length;
+}
+
+/** Выполнен ли критерий рутины на последних прогонах. */
+export function routineMasteryMet(runs: readonly { day: string; whole: boolean }[]): boolean {
+  const w = runs.slice(-ROUTINE.windowRuns);
+  return (
+    w.length === ROUTINE.windowRuns &&
+    w.filter((r) => r.whole).length >= ROUTINE.minWhole &&
+    new Set(w.map((r) => r.day)).size >= ROUTINE.minDistinctDays &&
+    w[w.length - 1].whole
+  );
+}
+
+/**
+ * Прогон рутины в обучении — в окно. Промах — любое звено не самостоятельно, в том числе
+ * доделанное взрослым; прерванный прогон неполон и в окно не идёт (`chainRuns`). Критерий
+ * выполнен — «освоено»: `by` — `criterion`, если сессию вёл обученный наблюдатель, иначе
+ * `home_unverified` (блок 5: освоение у цели взрослого — только с подтверждением).
+ */
+export function applyRoutineRun(
+  s: AbaTargetState,
+  run: readonly AbaTrial[],
+  day: string,
+  sessionIndex: number,
+  by: 'criterion' | 'home_unverified',
+  config?: AbaConfig,
+): AbaTargetState {
+  const routineRuns = [...(s.routineRuns ?? []), { day, whole: run.every((t) => t.response === 'independent') }].slice(-ROUTINE.keepRuns);
+  const others = s.flags.filter((f) => f !== 'no_progress');
+  if (routineMasteryMet(routineRuns)) {
+    // окно обнуляется: после возврата в обучение освоение снова требует своих прогонов и дней,
+    // а не одного прогона поверх старых (методист, 2026-10-09)
+    return { ...markMastered({ ...s, routineRuns: [], flags: others }, sessionIndex, by, config), lastMaintenanceDay: day };
+  }
+  return { ...s, routineRuns, lastSessionIndex: sessionIndex, flags: routineStuck(routineRuns) ? [...others, 'no_progress'] : others };
+}
+
+/**
+ * Рутина застряла — аналог `no_progress` по окну прогонов: `ROUTINE.noProgressRuns` прогонов
+ * не меньше чем за `noProgressDays` разных дней, а доля целиком самостоятельных во второй
+ * половине не выше, чем в первой. Иначе рутина стояла бы неделями, и специалист не увидел бы.
+ */
+export function routineStuck(runs: readonly { day: string; whole: boolean }[]): boolean {
+  if (runs.length < ROUTINE.noProgressRuns || new Set(runs.map((r) => r.day)).size < ROUTINE.noProgressDays) return false;
+  const half = Math.floor(runs.length / 2);
+  const share = (xs: readonly { whole: boolean }[]) => xs.filter((r) => r.whole).length / xs.length;
+  return share(runs.slice(half)) <= share(runs.slice(0, half));
+}
+
+/**
+ * Базовая линия рутины — `ROUTINE.baselineRuns` прогона **в разные дни**, по одному в сессию,
+ * множеством возможностей (несделанное звено доделывает взрослый, ребёнок продолжает). Второй
+ * прогон в тот же день не в счёт. Оба целиком сами — освоено по базовой линии; иначе старт звена:
+ * сам в обоих — L0, в одном — L1, ни в одном — полная модель.
+ */
+export function applyRoutineBaseline(
+  s: AbaTargetState,
+  trials: readonly AbaTrial[],
+  day: string,
+  sessionIndex: number,
+  target: AbaTarget,
+  config?: AbaConfig,
+): AbaTargetState {
+  if (s.phase !== 'baseline') return s;
+  const run = chainRuns(target, trials, isBaselineCountable)[0];
+  const acc = s.routineBaseline ?? { days: [], independentByStep: {} };
+  if (!run || acc.days.includes(day)) return s;
+  const independentByStep = { ...acc.independentByStep };
+  for (const t of run) {
+    if (t.stepId && t.response === 'independent') independentByStep[t.stepId] = (independentByStep[t.stepId] ?? 0) + 1;
+  }
+  const days = [...acc.days, day];
+  if (days.length < ROUTINE.baselineRuns) return { ...s, routineBaseline: { days, independentByStep } };
+  const done: AbaTargetState = { ...s };
+  delete done.routineBaseline;
+  const steps = target.steps ?? [];
+  if (steps.every((st) => (independentByStep[st.id] ?? 0) >= ROUTINE.baselineRuns)) {
+    return { ...markMastered(done, sessionIndex, 'baseline', config), lastMaintenanceDay: day };
+  }
+  const stepPrompts = Object.fromEntries(
+    steps.map((st) => {
+      const ok = independentByStep[st.id] ?? 0;
+      const level: PromptLevel = ok >= ROUTINE.baselineRuns ? 0 : ok > 0 ? 1 : APP_MAX_PROMPT;
+      return [st.id, fresh(level, s.currentDelayMs)];
+    }),
+  );
+  return { ...done, phase: 'acquisition', stepPrompts };
+}
+
+/**
+ * Пора ли проба поддержания рутины: интервалы `ROUTINE.maintenanceGapDays` — в днях от последней
+ * пробы (или освоения). Индекс интервала — общий `maintenanceGapIndex`.
+ */
+export function isRoutineMaintenanceDue(s: AbaTargetState, day: string): boolean {
+  if (s.phase !== 'mastered' && s.phase !== 'maintenance') return false;
+  if (!s.lastMaintenanceDay) return true;
+  const days = Math.round((Date.parse(day) - Date.parse(s.lastMaintenanceDay)) / 86_400_000);
+  return days >= ROUTINE.maintenanceGapDays[s.maintenanceGapIndex];
+}
 
 /** Проба базовой линии, которая имеет право решать о старте: не прервана, засчитана не детектором. */
 export function isBaselineCountable(t: AbaTrial): boolean {

@@ -25,6 +25,7 @@ import {
   CHILD_BREAK_MS,
   COUNTS_TOWARD_MASTERY,
   MAINTENANCE_GAP,
+  ROUTINE,
   MASTERY,
   REFUSALS_TO_END,
   IOA_AFTER_FAILED_VERIFICATION,
@@ -83,6 +84,8 @@ import {
   applyBaseline,
   applyGeneralizationProbe,
   applyMaintenanceProbe,
+  applyRoutineBaseline,
+  applyRoutineRun,
   applySession,
   BASELINE_CHAIN_RUNS,
   BASELINE_TRIALS,
@@ -91,6 +94,8 @@ import {
   generalizationPasses,
   isMaintenanceDue,
   isMasteryMet,
+  isRoutine,
+  isRoutineMaintenanceDue,
   markMastered,
   MAX_BASELINE_TARGETS,
   needsGeneralizationProbe,
@@ -400,6 +405,8 @@ export type AbaSessionState = {
 export type StartInput = {
   sessionId: string;
   sessionIndex: number;
+  /** Календарный день сессии (YYYY-MM-DD) — для поддержания рутин по дням; по умолчанию из `startedAt`. */
+  day?: string;
   config: AbaConfig;
   band: AgeBand;
   /** Цели программ в порядке программы: обучаемые берутся первыми по этому порядку. */
@@ -521,7 +528,8 @@ function unit(target: AbaTarget, base: PlannedTrial, runIndex = 0): PlannedTrial
 function teachingBlock(target: AbaTarget, rng: Rng): PlannedTrial[] {
   const at = rotation(target, rng);
   if (target.steps?.length) {
-    return Array.from({ length: CHAIN_RUNS_PER_BLOCK }, (_, run) =>
+    // рутина — один естественный прогон за сессию, а не три подряд (А8)
+    return Array.from({ length: isRoutine(target) ? 1 : CHAIN_RUNS_PER_BLOCK }, (_, run) =>
       chainRun(target, { kind: 'teaching', targetId: target.id, exemplarId: at(run) }, run),
     ).flat();
   }
@@ -567,7 +575,8 @@ function sortBlock(target: AbaTarget, rng: Rng): string[] {
 function baselineBlock(target: AbaTarget, highP: AbaTarget[], rng: Rng): PlannedTrial[] {
   const at = rotation(target, rng);
   if (target.steps?.length) {
-    return Array.from({ length: BASELINE_CHAIN_RUNS }, (_, run) =>
+    // рутина — по прогону в сессию, базовая линия копится по дням (`applyRoutineBaseline`)
+    return Array.from({ length: isRoutine(target) ? 1 : BASELINE_CHAIN_RUNS }, (_, run) =>
       chainRun(target, { kind: 'baseline', targetId: target.id, exemplarId: at(run) }, run),
     ).flat();
   }
@@ -611,6 +620,13 @@ function generalizationProbe(target: AbaTarget, s: AbaTargetState, rng: Rng): Pl
 /** На сколько сессий просрочена проба поддержания. */
 function overdue(s: AbaTargetState, sessionIndex: number): number {
   return sessionIndex - s.lastMaintenanceSessionIndex - MAINTENANCE_GAP[s.maintenanceGapIndex];
+}
+
+/** Просрочка поддержания рутины — в днях, как и её интервалы. */
+function routineOverdue(s: AbaTargetState, day: string): number {
+  if (!s.lastMaintenanceDay) return ROUTINE.maintenanceGapDays[s.maintenanceGapIndex];
+  const days = Math.round((Date.parse(day) - Date.parse(s.lastMaintenanceDay)) / 86_400_000);
+  return days - ROUTINE.maintenanceGapDays[s.maintenanceGapIndex];
 }
 
 /**
@@ -671,6 +687,8 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
   // полоса параметров специалиста заменяет полосу профиля во всех параметрах сразу (№61)
   const input = withParamsBand(raw);
   const { config, band, sessionIndex } = input;
+  // день сессии — для интервалов поддержания рутин (в днях, а не в сессиях)
+  const sessionDay = input.day ?? new Date(input.startedAt).toISOString().slice(0, 10);
   const r = seeded(input.seed);
   const rng = r.rng;
 
@@ -750,17 +768,24 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
     : undefined;
 
   const due = mastered
-    .filter((t) => t.id !== toVerify?.id && counts(t, config) && isMaintenanceDue(states[t.id], sessionIndex))
+    .filter(
+      (t) =>
+        t.id !== toVerify?.id &&
+        counts(t, config) &&
+        (isRoutine(t) ? isRoutineMaintenanceDue(states[t.id], sessionDay) : isMaintenanceDue(states[t.id], sessionIndex)),
+    )
     .sort((a, b) => {
       const retest = Number(states[b.id].maintenanceFailsInRow > 0) - Number(states[a.id].maintenanceFailsInRow > 0);
-      return retest || overdue(states[b.id], sessionIndex) - overdue(states[a.id], sessionIndex);
+      const late = (t: AbaTarget) => (isRoutine(t) ? routineOverdue(states[t.id], sessionDay) : overdue(states[t.id], sessionIndex));
+      return retest || late(b) - late(a);
     });
 
   // поддержание участника набора — внутри блока набора, первой его пробой
   const setDue = set ? due.filter((t) => set.memberIds.includes(t.id)).map((t) => t.id) : [];
   const probes: PlannedTrial[][] = [];
   const genTarget = teaching
-    .filter((t) => needsGeneralizationProbe(states[t.id]))
+    // у рутины экранных проб переноса нет: перенос — отметка взрослого вне экрана
+    .filter((t) => !isRoutine(t) && needsGeneralizationProbe(states[t.id]))
     .sort(
       (a, b) =>
         states[a.id].lastGeneralizationSessionIndex - states[b.id].lastGeneralizationSessionIndex ||
@@ -2181,6 +2206,8 @@ export function finishAbaSession(
         }
         for (const [k, v] of Object.entries(placed)) if (k !== id) states[k] = v;
         s = placed[id];
+      } else if (isRoutine(target)) {
+        s = applyRoutineBaseline(s, own, day, idx, target, state.config);
       } else {
         s = applyBaseline(s, own, idx, target, state.config);
       }
@@ -2198,6 +2225,13 @@ export function finishAbaSession(
       const result = ioa?.byTarget[id];
       const verified = isVerified({ primary, ...(secondary ? { ioa: { secondary, result } } : {}) });
       s = applySession(s, summary, idx, day, verified);
+      // рутина: прогон — в окно критерия по дням; подтверждённая сессия даёт «освоено по критерию»
+      const routineRun = isRoutine(target) && !neutral ? chainRuns(target, own.filter((t) => t.kind === 'teaching'))[0] : undefined;
+      if (routineRun) {
+        const before = s.phase;
+        s = applyRoutineRun(s, routineRun, day, idx, verified ? 'criterion' : 'home_unverified', state.config);
+        if (s.phase !== before) reason = 'criterion';
+      }
       // оба обучены, а согласие ниже порога — определение цели допускает толкование
       if (primary?.trained && secondary?.trained && result && !ioaPasses(result) && !s.flags.includes('ioa_low')) {
         s = { ...s, flags: [...s.flags, 'ioa_low'] };
@@ -2211,6 +2245,7 @@ export function finishAbaSession(
     for (const t of unreliable ? [] : probesOf(target, own, 'maintenance')) {
       const before = s;
       s = applyMaintenanceProbe(s, t, idx);
+      if (isRoutine(target)) s = { ...s, lastMaintenanceDay: day };
       reason =
         before.masteredBy === 'inferred' && s.phase === 'baseline'
           ? 'inferred_not_confirmed'

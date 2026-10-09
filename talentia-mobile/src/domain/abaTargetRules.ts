@@ -129,6 +129,9 @@ export function programErrors(targets: readonly AbaTarget[]): string[] {
       errors.push(`${t.id}: у сортировки среди предпосылок нет match`);
     }
     errors.push(...includesErrors(t, byId));
+    if (t.area === 'self_care' && pre(t).some((p) => p.area === 'self_care')) {
+      errors.push(`${t.id}: рутина не открывается другой рутиной — они друг друга не включают`);
+    }
   }
   return errors;
 }
@@ -184,9 +187,12 @@ export function targetErrors(t: AbaTarget): string[] {
     errors.push(`экземпляров ${t.exemplars.length}, нужно ${EXEMPLARS.min}–${EXEMPLARS.max}`);
   }
   if (teaching.length < 2) errors.push('обучающих экземпляров меньше двух: критерий требует двух разных');
-  if (general.length < 1) errors.push('нет экземпляра переноса');
+  // перенос рутины самообслуживания — отметка взрослого вне экрана (другой взрослый, другое
+  // место), а не экранная проба: экземпляр переноса и пары ей не нужны (методист, 2026-10-09)
+  const routine = t.area === 'self_care' && !!t.steps?.length;
+  if (!routine && general.length < 1) errors.push('нет экземпляра переноса');
   const pairs = general.length * Math.max(1, t.sdVariantKeys?.length ?? 0);
-  if (general.length && pairs < MIN_GENERALIZATION_PAIRS) {
+  if (!routine && general.length && pairs < MIN_GENERALIZATION_PAIRS) {
     errors.push('для переноса меньше двух пар «экземпляр × формулировка»: критерий недостижим');
   }
   if (new Set(t.exemplars.map(signature)).size < t.exemplars.length) {
@@ -242,6 +248,9 @@ export function targetErrors(t: AbaTarget): string[] {
   if (t.level === 'cross' && t.area !== 'self_care') errors.push('сквозной блок — только самообслуживание');
   if (t.area === 'self_care' && t.level !== 'cross') errors.push('самообслуживание — сквозной блок, не ступень');
   if (t.area === 'self_care' && !t.steps?.length) errors.push('самообслуживание — цепочка с картинками шагов');
+  // рутину засчитывает взрослый целым прогоном (А8): прогон в естественный момент, не на экране
+  if (t.area === 'self_care' && t.chaining !== 'total_task') errors.push('самообслуживание — только total task');
+  if (t.area === 'self_care' && t.scoredBy !== 'adult') errors.push('самообслуживание засчитывает только взрослый');
 
   // Лестница подражания (ABA.md, «Лестница подражания»): SD и есть модель.
   if (promptLadder(t) === 'imitative') {

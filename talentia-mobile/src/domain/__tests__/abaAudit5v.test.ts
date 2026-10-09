@@ -4,18 +4,27 @@
  */
 import type { AbaTarget, AbaTargetState, AbaTrial } from '../../types/aba';
 import { choiceBiasIn } from '../abaBarriers';
-import { chainRuns, markMastered } from '../abaCriterion';
+import {
+  applyMaintenanceProbe,
+  applyRoutineBaseline,
+  applyRoutineRun,
+  chainRuns,
+  isRoutineMaintenanceDue,
+  markMastered,
+  summarizeSession,
+} from '../abaCriterion';
 import { computeIoa } from '../abaIoa';
 import {
   aloneFormatKey,
   applyPlacementProbe,
   formatUnlockedAlone,
   ladderBelow,
+  placementCandidates,
   placementPassed,
 } from '../abaPlacement';
 import { initialTargetState } from '../abaPrompting';
 import { isConcerning, probesOf, verificationVerdict } from '../abaSession';
-import { programErrors } from '../abaTargetRules';
+import { programErrors, targetErrors } from '../abaTargetRules';
 import { GRID_FOR, target, trial } from './abaFixtures';
 
 const t = (id: string, over: Partial<AbaTarget> = {}): AbaTarget => ({ ...target, id, band: '7', ...GRID_FOR.imitate_sound, ...over });
@@ -247,5 +256,122 @@ describe('проверка цепочки: второй прогон решае�
     const sp = second.state.stepPrompts!;
     expect([sp.s1.startPromptLevel, sp.s3.startPromptLevel]).toEqual([0, 0]);
     expect(sp.s2.startPromptLevel).toBeGreaterThan(0);
+  });
+});
+
+describe('А8: рутины самообслуживания (№74, №75)', () => {
+  const R = t('R', {
+    level: 'cross',
+    area: 'self_care',
+    format: 'do_action',
+    sdKind: 'instruction',
+    scoredBy: 'adult',
+    chaining: 'total_task',
+    steps,
+  });
+  const runOf = (whole: boolean, kind: AbaTrial['kind'] = 'teaching', runIndex = 0) =>
+    steps.map((st, i) =>
+      trial({
+        targetId: 'R',
+        kind,
+        stepId: st.id,
+        runIndex,
+        ...(whole || i !== 1 ? { response: 'independent' } : { response: 'no_response', adultCompleted: true, latencyMs: null }),
+      }),
+    );
+  const acqR: AbaTargetState = { ...initialTargetState(R), phase: 'acquisition' };
+  const feed = (days: string[], wholes: boolean[]) =>
+    days.reduce((s, day, i) => applyRoutineRun(s, runOf(wholes[i]), day, 10 + i, 'criterion', 'with_adult'), acqR);
+
+  it('правила: только цепочка total task, засчитывает взрослый; рутина не открывается рутиной', () => {
+    expect(targetErrors({ ...R, scoredBy: 'device_tap' }).join()).toMatch(/только взрослый/);
+    expect(targetErrors({ ...R, chaining: undefined }).join()).toMatch(/total task/);
+    expect(targetErrors(R)).toEqual([]);
+    const R2 = { ...R, id: 'R2', prerequisiteTargetIds: ['R'] };
+    expect(programErrors([R, R2]).join()).toMatch(/другой рутиной/);
+  });
+
+  it('4 из 5, три дня, последний сам — освоено', () => {
+    const s = feed(['2026-10-01', '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-03'], [true, false, true, true, true]);
+    expect([s.phase, s.masteredBy, s.lastMaintenanceDay]).toEqual(['mastered', 'criterion', '2026-10-03']);
+  });
+
+  it('5 из 5, но за два дня — не освоено; последний провален — не освоено; 3 из 5 — не освоено', () => {
+    expect(feed(['2026-10-01', '2026-10-01', '2026-10-01', '2026-10-02', '2026-10-02'], [true, true, true, true, true]).phase).toBe('acquisition');
+    expect(feed(['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05'], [true, true, true, true, false]).phase).toBe('acquisition');
+    expect(feed(['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05'], [true, false, true, false, true]).phase).toBe('acquisition');
+  });
+
+  it('без подтверждения обученным наблюдателем — «получается дома»', () => {
+    const days = ['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05'];
+    const s = days.reduce((x, day, i) => applyRoutineRun(x, runOf(true), day, i, 'home_unverified', 'with_adult'), acqR);
+    expect(s.masteredBy).toBe('home_unverified');
+  });
+
+  it('серии сессий у рутины нет: итог сессии нейтральный и не засчитан', () => {
+    expect(summarizeSession(R, runOf(true))).toMatchObject({ outcome: 'neutral', counted: false });
+  });
+
+  it('прогон, прерванный приложением, — не прогон: окно не меняется', () => {
+    const cutRun = [...runOf(true).slice(0, 1), interrupted({ targetId: 'R', kind: 'teaching', stepId: 's2', runIndex: 0, interruptedBy: 'app' }), ...runOf(true).slice(2)];
+    expect(chainRuns(R, cutRun)).toEqual([]);
+  });
+
+  it('базовая линия: два прогона в один день — ещё базовая линия; в два дня — освоено', () => {
+    const b0: AbaTargetState = initialTargetState(R);
+    const sameDay = applyRoutineBaseline(applyRoutineBaseline(b0, runOf(true, 'baseline'), '2026-10-01', 1, R), runOf(true, 'baseline'), '2026-10-01', 2, R);
+    expect(sameDay.phase).toBe('baseline');
+    const twoDays = applyRoutineBaseline(applyRoutineBaseline(b0, runOf(true, 'baseline'), '2026-10-01', 1, R), runOf(true, 'baseline'), '2026-10-02', 2, R, 'with_adult');
+    expect([twoDays.phase, twoDays.masteredBy, twoDays.routineBaseline]).toEqual(['mastered', 'baseline', undefined]);
+  });
+
+  it('базовая линия: звено сам в одном из двух прогонов — старт L1, в обоих — L0', () => {
+    const b0: AbaTargetState = initialTargetState(R);
+    const s = applyRoutineBaseline(applyRoutineBaseline(b0, runOf(true, 'baseline'), '2026-10-01', 1, R), runOf(false, 'baseline'), '2026-10-02', 2, R);
+    expect(s.phase).toBe('acquisition');
+    expect([s.stepPrompts?.s1.startPromptLevel, s.stepPrompts?.s2.startPromptLevel, s.stepPrompts?.s3.startPromptLevel]).toEqual([0, 1, 0]);
+  });
+
+  it('проверки сверху вниз у рутин нет', () => {
+    const R2 = { ...R, id: 'R2', prerequisiteTargetIds: ['R'], includesTargetIds: undefined };
+    expect(placementCandidates([R, R2], fresh([R, R2]))).toEqual([]);
+  });
+
+  it('после освоения окно обнуляется: в повторном обучении один прогон — ещё не освоено', () => {
+    const s = feed(['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05'], [true, true, true, true, true]);
+    expect([s.phase, s.routineRuns]).toEqual(['mastered', []]);
+    const fail = trial({ targetId: 'R', kind: 'maintenance', response: 'incorrect' });
+    const back = applyMaintenanceProbe(applyMaintenanceProbe(s, fail, 20), fail, 21);
+    expect(back.phase).toBe('acquisition');
+    expect(applyRoutineRun(back, runOf(true), '2026-10-10', 22, 'criterion', 'with_adult').phase).toBe('acquisition');
+  });
+
+  it('застряла: 10 прогонов за 5 дней, доля целых не растёт — флаг; растёт — нет', () => {
+    const days = ['2026-10-01', '2026-10-01', '2026-10-02', '2026-10-02', '2026-10-03', '2026-10-03', '2026-10-04', '2026-10-04', '2026-10-05', '2026-10-05'];
+    const flat = [true, true, false, false, false, true, true, false, false, false];
+    expect(feed(days, flat).flags).toContain('no_progress');
+    const growing = [true, false, false, false, false, true, true, true, false, false];
+    expect(feed(days, growing).flags).not.toContain('no_progress');
+  });
+
+  it('перенос рутины — вне экрана: экземпляр переноса и пары не нужны', () => {
+    const teachingOnly = [
+      ...target.exemplars.filter((e) => e.role === 'teaching'),
+      { id: 'cat-5', role: 'teaching' as const, targetKey: 'k5', modelKey: 'm5', partialModelKeys: [] },
+    ];
+    const bare = { ...R, exemplars: teachingOnly, sdVariantKeys: undefined };
+    expect(targetErrors(bare)).toEqual([]);
+  });
+
+  it('прогон поддержания рутины, прерванный приложением, — не проба', () => {
+    const maint = runOf(true, 'maintenance');
+    const cut = [maint[0], interrupted({ targetId: 'R', kind: 'maintenance', stepId: 's2', runIndex: 0, interruptedBy: 'app' }), maint[2]];
+    expect(probesOf(R, cut, 'maintenance')).toEqual([]);
+  });
+
+  it('поддержание — по дням: на следующий день после освоения рано, через два дня пора', () => {
+    const s = { ...markMastered(acqR, 5, 'criterion', 'with_adult'), lastMaintenanceDay: '2026-10-03' };
+    expect(isRoutineMaintenanceDue(s, '2026-10-04')).toBe(false);
+    expect(isRoutineMaintenanceDue(s, '2026-10-05')).toBe(true);
   });
 });

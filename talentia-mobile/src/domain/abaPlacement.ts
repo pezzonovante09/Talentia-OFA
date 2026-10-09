@@ -16,7 +16,7 @@
  * только цель, которую план сессии взял из `placementCandidates` (`placementTargetIds` сессии):
  * цель специалиста поверх неосвоенных предпосылок идёт обычной базовой линией.
  */
-import { BASELINE_CHAIN_RUNS, BASELINE_TRIALS, chainRuns, isBaselineCountable, markMastered, MATCH_BASELINE } from './abaCriterion';
+import { BASELINE_CHAIN_RUNS, BASELINE_TRIALS, chainRuns, isBaselineCountable, isRoutine, markMastered, MATCH_BASELINE } from './abaCriterion';
 import type { AbaConfig, AbaFormat, AbaTarget, AbaTargetState, AbaTrial } from '../types/aba';
 
 const MASTERED: ReadonlySet<AbaTargetState['phase']> = new Set(['mastered', 'maintenance']);
@@ -79,7 +79,8 @@ export function placementCandidates(targets: readonly AbaTarget[], states: Reado
   const out: AbaTarget[] = [];
   const seen = new Set<string>();
   for (const t of targets) {
-    if (seen.has(t.id) || t.format === 'identify') continue;
+    // рутины друг друга не включают (зубы не выводятся из рук), а два прогона за сессию им нельзя
+    if (seen.has(t.id) || t.format === 'identify' || isRoutine(t)) continue;
     const ladder = ladderOf(t, targets);
     ladder.forEach((x) => seen.add(x.id));
     if (ladder.length < 2 || !ladder.every((x) => phase(x) === 'baseline')) continue;

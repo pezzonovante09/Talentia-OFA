@@ -1465,6 +1465,60 @@ describe('ненадёжное измерение нейтрально в люб
   });
 });
 
+describe('А8: рутина в сессии', () => {
+  const R = tgt('R', {
+    level: 'cross',
+    area: 'self_care',
+    format: 'do_action',
+    sdKind: 'instruction',
+    chaining: 'total_task',
+    steps: [
+      { id: 'r1', order: 1, sdKey: 'a', criterionKey: 'b', modelKey: 'c' },
+      { id: 'r2', order: 2, sdKey: 'a', criterionKey: 'b', modelKey: 'c' },
+    ],
+  });
+
+  it('в обучении — один естественный прогон за сессию, а не три подряд', () => {
+    const { steps } = drive(begin([R], { R: acq(R) }), () => 'ok');
+    const teaching = steps.filter((x): x is TrialStep => x.kind === 'trial' && x.trialKind === 'teaching' && x.targetId === 'R');
+    expect(teaching.map((x) => x.stepId)).toEqual(['r1', 'r2']);
+  });
+
+  const nearlyThere = (): AbaTargetState => ({
+    ...acq(R),
+    routineRuns: [
+      { day: '2026-09-28', whole: true },
+      { day: '2026-09-29', whole: true },
+      { day: '2026-09-30', whole: false },
+      { day: '2026-09-30', whole: true },
+    ],
+  });
+
+  it('итог сессии: прогон с днём сессии в окне; подтверждённая сессия — «освоено по критерию»', () => {
+    const r = finishAbaSession(drive(begin([R], { R: nearlyThere() }), () => 'ok').state, '2026-10-01', 9e6);
+    expect([r.states.R.phase, r.states.R.masteredBy, r.states.R.lastMaintenanceDay]).toEqual(['mastered', 'criterion', '2026-10-01']);
+  });
+
+  it('без обученного наблюдателя — «получается дома»', () => {
+    const parent = { observers: [{ id: 'par', role: 'parent' as const, trained: false }], primaryObserverId: 'par' };
+    const r = finishAbaSession(drive(begin([R], { R: nearlyThere() }, parent), () => 'ok').state, '2026-10-01', 9e6);
+    expect(r.states.R.masteredBy).toBe('home_unverified');
+  });
+
+  it('проб переноса на экране у рутины нет', () => {
+    const { steps } = drive(begin([R], { R: { ...acq(R), recentIndependentRates: [0.9, 1] } }), () => 'ok');
+    expect(steps.some((x) => x.kind === 'trial' && x.trialKind === 'generalization')).toBe(false);
+  });
+
+  it('на базовой линии — тоже один прогон: она копится по дням', () => {
+    const { state, steps } = drive(begin([R], {}), () => 'ok');
+    const baseline = steps.filter((x): x is TrialStep => x.kind === 'trial' && x.trialKind === 'baseline' && x.targetId === 'R');
+    expect(baseline).toHaveLength(2);
+    const r = finishAbaSession(state, '2026-10-01', 9e6);
+    expect([r.states.R.phase, r.states.R.routineBaseline?.days]).toEqual(['baseline', ['2026-10-01']]);
+  });
+});
+
 describe('ABA v1: автоподбор и параметры специалиста в сессии', () => {
   const A = tgt('A');
   const B = tgt('B', { prerequisiteTargetIds: ['A'], includesTargetIds: ['A'] });
