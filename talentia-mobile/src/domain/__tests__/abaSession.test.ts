@@ -1467,8 +1467,8 @@ describe('ненадёжное измерение нейтрально в люб
 
 describe('ABA v1: автоподбор и параметры специалиста в сессии', () => {
   const A = tgt('A');
-  const B = tgt('B', { prerequisiteTargetIds: ['A'] });
-  const C = tgt('C', { prerequisiteTargetIds: ['B'] });
+  const B = tgt('B', { prerequisiteTargetIds: ['A'], includesTargetIds: ['A'] });
+  const C = tgt('C', { prerequisiteTargetIds: ['B'], includesTargetIds: ['B'] });
 
   it('автоподбор: на свежей лестнице базовая линия — у верхней цели; без него — у нижней', () => {
     expect(begin([A, B, C], {}, { autoPlacement: true }).baselineTargetIds).toEqual(['C']);
@@ -1480,6 +1480,39 @@ describe('ABA v1: автоподбор и параметры специалис�
     const r = finishAbaSession(state, '2026-10-02', 99_000);
     expect([r.states.C.phase, r.states.C.masteredBy]).toEqual(['mastered', 'baseline']);
     expect([r.states.A.masteredBy, r.states.B.masteredBy]).toEqual(['inferred', 'inferred']);
+  });
+
+  it('проверки сверху вниз и новые цели делят один бюджет: не больше двух, разных областей и форм ответа', () => {
+    const E1 = tgt('E1');
+    const E2 = tgt('E2', { prerequisiteTargetIds: ['E1'] });
+    const V1 = tgt('V1', { format: 'voice_volume' });
+    const V2 = tgt('V2', { format: 'voice_volume', prerequisiteTargetIds: ['V1'] });
+    const D1 = tgt('D1', { format: 'do_action' });
+    const D2 = tgt('D2', { format: 'do_action', prerequisiteTargetIds: ['D1'] });
+    const all = [E1, E2, V1, V2, D1, D2];
+    const st = begin(all, {}, { autoPlacement: true });
+    // эхоика и голос — одна форма ответа: из них одна
+    expect(st.placementTargetIds).toEqual(['E2', 'D2']);
+    // на ступенях 1–2 обучения доске — одна
+    expect(begin(all, {}, { autoPlacement: true, tokenTraining: { ...TRAINED, stage: 2 } }).placementTargetIds).toHaveLength(1);
+  });
+
+  it('цель с неосвоенной предпосылкой из другой области — не проба сверху вниз: после ошибки базовая линия идёт дальше', () => {
+    const Y = tgt('Y', { format: 'do_action' });
+    const X = tgt('X', { prerequisiteTargetIds: ['Y'] });
+    const st = begin([Y, X], {}, { autoPlacement: true });
+    expect(st.placementTargetIds).toEqual([]);
+    const first = st.baselineTargetIds[0];
+    let wrongOnce = false;
+    const { steps } = drive(st, (x) => {
+      if (x.trialKind === 'baseline' && x.targetId === first && !wrongOnce) {
+        wrongOnce = true;
+        return 'wrong';
+      }
+      return 'ok';
+    });
+    const ofFirst = steps.filter((x): x is TrialStep => x.kind === 'trial' && x.trialKind === 'baseline' && x.targetId === first);
+    expect(ofFirst.length).toBeGreaterThan(1);
   });
 
   it('полоса параметров специалиста меняет полосу сессии и целей; неверные параметры сессию не начинают', () => {
@@ -1593,8 +1626,8 @@ describe('ABA v1: поле match и сортировка в сессии', () =>
 
 describe('ABA v1: правки по проверке методиста', () => {
   const A = tgt('A');
-  const B = tgt('B', { prerequisiteTargetIds: ['A'] });
-  const C = tgt('C', { prerequisiteTargetIds: ['B'] });
+  const B = tgt('B', { prerequisiteTargetIds: ['A'], includesTargetIds: ['A'] });
+  const C = tgt('C', { prerequisiteTargetIds: ['B'], includesTargetIds: ['B'] });
 
   it('первая ошибка проверки сверху вниз снимает остаток её проб', () => {
     const st = begin([A, B, C], {}, { autoPlacement: true });

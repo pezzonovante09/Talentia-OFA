@@ -128,6 +128,46 @@ export function programErrors(targets: readonly AbaTarget[]): string[] {
     if (t.format === 'match' && t.matchMode === 'sort' && !pre(t).some((p) => p.format === 'match' && p.matchMode !== 'sort')) {
       errors.push(`${t.id}: у сортировки среди предпосылок нет match`);
     }
+    errors.push(...includesErrors(t, byId));
+  }
+  return errors;
+}
+
+/**
+ * «Включает» (`includesTargetIds`, А9): по нему проверка сверху вниз выводит освоенность, поэтому
+ * связь узкая — нижняя цель из предпосылок (транзитивно), та же область, формат, оперант и вид
+ * сопоставления, у `match` поле не больше; не `identify` (там 5/5 — старт L0, а не «освоено») и
+ * не сортировка — у неё другая форма ответа.
+ */
+function includesErrors(t: AbaTarget, byId: ReadonlyMap<string, AbaTarget>): string[] {
+  const ids = t.includesTargetIds ?? [];
+  if (!ids.length) return [];
+  if (t.format === 'identify') return [`${t.id}: у identify не бывает «включает»`];
+  const below = new Set<string>();
+  const walk = (x: AbaTarget) => {
+    for (const id of x.prerequisiteTargetIds ?? []) {
+      const p = byId.get(id);
+      if (!p || below.has(id)) continue;
+      below.add(id);
+      walk(p);
+    }
+  };
+  walk(t);
+  const errors: string[] = [];
+  for (const id of ids) {
+    const low = byId.get(id);
+    if (!low) {
+      errors.push(`${t.id}: «включает» неизвестную цель ${id}`);
+      continue;
+    }
+    if (!below.has(id)) errors.push(`${t.id}: «включает» ${id}, но её нет среди предпосылок`);
+    if (low.area !== t.area || low.format !== t.format || low.sdKind !== t.sdKind || low.matchMode !== t.matchMode) {
+      errors.push(`${t.id}: «включает» ${id} другой области, формата, операнта или вида сопоставления`);
+    }
+    if (t.matchMode === 'sort') errors.push(`${t.id}: сортировка ничего не включает — другая форма ответа`);
+    if (t.format === 'match' && (low.fieldSize ?? 2) > (t.fieldSize ?? 2)) {
+      errors.push(`${t.id}: «включает» ${id} с полем больше своего`);
+    }
   }
   return errors;
 }

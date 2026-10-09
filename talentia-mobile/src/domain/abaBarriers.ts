@@ -72,9 +72,24 @@ export function choiceBiasIn(sessions: readonly SessionTrials[], format: AbaForm
     const threshold = BARRIERS.shareAt[n];
     if (threshold === undefined || group.length < BARRIERS.minTrials) continue;
     if (topShare(group.map((t) => t.field!.indexOf(t.chosenCardId!))) >= threshold) out.add('position_bias');
-    if (topShare(group.map((t) => t.chosenCardId!)) >= threshold) out.add('card_preference');
+    if (prefersCard(group, threshold)) out.add('card_preference');
   }
   return [...out];
+}
+
+/**
+ * Предпочтение карточки — доля её выбора среди проб, где она **была на поле** (аудит 2026-10-06,
+ * А21): при пуле больше поля карточка, выбранная каждый раз, когда видна, по всем пробам группы
+ * до порога не дотягивала.
+ */
+function prefersCard(group: readonly AbaTrial[], threshold: number): boolean {
+  const cards = new Set(group.flatMap((t) => t.field!));
+  for (const c of cards) {
+    const shown = group.filter((t) => t.field!.includes(c));
+    if (shown.length < BARRIERS.minTrials) continue;
+    if (shown.filter((t) => t.chosenCardId === c).length / shown.length >= threshold) return true;
+  }
+  return false;
 }
 
 /**

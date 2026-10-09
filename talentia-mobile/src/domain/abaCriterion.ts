@@ -80,18 +80,22 @@ function summarizeGroup(trials: AbaTrial[], min: number): AbaSessionSummary {
 }
 
 /**
- * Прогоны цепочки. Номер прогона — `runIndex`; без него k-я проба каждого звена
- * считается k-м прогоном. Прогон в зачёте, только если в нём есть все звенья.
+ * Прогоны цепочки по `runIndex`. Прогон в зачёте, только если в нём есть все звенья. Проба звена
+ * без `runIndex` в прогоны не идёт: прежний запасной путь («k-я проба звена — k-й прогон») после
+ * прерванного звена склеивал звенья разных прогонов в один «полный» (аудит 2026-10-06, А21) —
+ * оркестратор пишет `runIndex` всегда. `filter` — какие пробы считаются: обучающие по умолчанию,
+ * базовой линии — `baselineTrials`.
  */
-export function chainRuns(target: AbaTarget, trials: AbaTrial[]): AbaTrial[][] {
+export function chainRuns(
+  target: AbaTarget,
+  trials: readonly AbaTrial[],
+  filter: (t: AbaTrial) => boolean = countable,
+): AbaTrial[][] {
   const steps = target.steps ?? [];
-  const seen = new Map<string, number>();
   const runs = new Map<number, AbaTrial[]>();
-  for (const t of trials.filter(countable)) {
-    const step = t.stepId ?? '';
-    const k = t.runIndex ?? seen.get(step) ?? 0;
-    seen.set(step, (seen.get(step) ?? 0) + 1);
-    runs.set(k, [...(runs.get(k) ?? []), t]);
+  for (const t of trials.filter(filter)) {
+    if (t.runIndex === undefined) continue;
+    runs.set(t.runIndex, [...(runs.get(t.runIndex) ?? []), t]);
   }
   return [...runs.values()].filter((run) => steps.every((st) => run.some((t) => t.stepId === st.id)));
 }
@@ -248,10 +252,13 @@ export const IDENTIFY_BASELINE = { trials: 5, fromL0: 5, fromL1: 4 } as const;
  */
 export const MATCH_BASELINE = { trials: 5, masteredFrom: 5, fromL1: 4, minFieldForMastery: 3 } as const;
 
+/** Проба базовой линии, которая имеет право решать о старте: не прервана, засчитана не детектором. */
+export function isBaselineCountable(t: AbaTrial): boolean {
+  return t.kind === 'baseline' && t.response !== 'interrupted' && COUNTS_TOWARD_MASTERY[t.scoredBy];
+}
+
 function baselineTrials(trials: AbaTrial[]): AbaTrial[] {
-  return trials.filter(
-    (t) => t.kind === 'baseline' && t.response !== 'interrupted' && COUNTS_TOWARD_MASTERY[t.scoredBy],
-  );
+  return trials.filter(isBaselineCountable);
 }
 
 /** Состояние подсказки после базовой линии; задержка — прежняя (у звена — задержка цели). */

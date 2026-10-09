@@ -4,7 +4,6 @@ import {
   placementPassed as placementPassedOf,
   applyPlacementProbe,
   formatUnlockedAlone,
-  isPlacementProbe,
   ladderBelow,
   placementCandidates,
   transitionOffer,
@@ -19,8 +18,8 @@ import { GRID_FOR, target, trial } from './abaFixtures';
 const t = (id: string, over: Partial<AbaTarget> = {}): AbaTarget => ({ ...target, id, band: '7', ...GRID_FOR.imitate_sound, ...over });
 // лестница эхоики: гласные → слоги → слова; LRFFC — другая область
 const A = t('A');
-const B = t('B', { prerequisiteTargetIds: ['A'] });
-const C = t('C', { prerequisiteTargetIds: ['B'] });
+const B = t('B', { prerequisiteTargetIds: ['A'], includesTargetIds: ['A'] });
+const C = t('C', { prerequisiteTargetIds: ['B'], includesTargetIds: ['B'] });
 const ladder = [A, B, C];
 const fresh = (ts: AbaTarget[]) => Object.fromEntries(ts.map((x) => [x.id, initialTargetState(x)])) as Record<string, AbaTargetState>;
 const ok = (id: string, n: number) => Array.from({ length: n }, () => trial({ targetId: id, kind: 'baseline', response: 'independent' }));
@@ -28,7 +27,6 @@ const ok = (id: string, n: number) => Array.from({ length: n }, () => trial({ ta
 describe('проверка сверху вниз', () => {
   it('на свежей лестнице первой пробуется верхняя цель', () => {
     expect(placementCandidates(ladder, fresh(ladder)).map((x) => x.id)).toEqual(['C']);
-    expect(isPlacementProbe(C, fresh(ladder))).toBe(true);
     expect(ladderBelow(C, ladder).map((x) => x.id).sort()).toEqual(['A', 'B']);
   });
 
@@ -61,7 +59,7 @@ describe('проверка сверху вниз', () => {
 
   it('предпосылки из другой области не выводятся', () => {
     const L = t('L', { format: 'identify', ...GRID_FOR.identify, identifyPoolKey: 'p' });
-    const D = t('D', { prerequisiteTargetIds: ['C', 'L'] });
+    const D = t('D', { prerequisiteTargetIds: ['C', 'L'], includesTargetIds: ['C'] });
     const all = [...ladder, L, D];
     const out = applyPlacementProbe(fresh(all), all, D, ok('D', 3), 4, 'with_adult');
     expect(out.L.phase).toBe('baseline');

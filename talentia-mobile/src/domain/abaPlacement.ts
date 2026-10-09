@@ -10,8 +10,13 @@
  * Не прошла — отметка `placementTriedAt`, на пробу идёт прямая предпосылка, и так вниз. Потом —
  * обычная базовая линия снизу вверх. Предпосылки из других областей не выводятся никогда;
  * наборы `identify` под проверку не попадают (5/5 там даёт старт L0, а не «освоено»).
+ *
+ * Выводятся только цели из `includesTargetIds` (транзитивно): `prerequisiteTargetIds` — порядок
+ * открытия и путь спуска, а не «включает» (аудит 2026-10-06, А9). Пробой сверху вниз считается
+ * только цель, которую план сессии взял из `placementCandidates` (`placementTargetIds` сессии):
+ * цель специалиста поверх неосвоенных предпосылок идёт обычной базовой линией.
  */
-import { BASELINE_CHAIN_RUNS, BASELINE_TRIALS, markMastered, MATCH_BASELINE } from './abaCriterion';
+import { BASELINE_CHAIN_RUNS, BASELINE_TRIALS, chainRuns, isBaselineCountable, markMastered, MATCH_BASELINE } from './abaCriterion';
 import type { AbaConfig, AbaFormat, AbaTarget, AbaTargetState, AbaTrial } from '../types/aba';
 
 const MASTERED: ReadonlySet<AbaTargetState['phase']> = new Set(['mastered', 'maintenance']);
@@ -23,12 +28,20 @@ function ladderPrerequisites(t: AbaTarget, byId: ReadonlyMap<string, AbaTarget>)
     .filter((p): p is AbaTarget => !!p && p.area === t.area && p.format === t.format);
 }
 
-/** Все предпосылки по лестнице вниз, без повторов. */
+/**
+ * Что выводит пройденная проверка сверху вниз: цели, включённые в эту (`includesTargetIds`),
+ * транзитивно, только в той же области и формате. Без «включает» не выводится ничего — нижняя
+ * пройдёт свою базовую линию (А9).
+ */
 export function ladderBelow(t: AbaTarget, targets: readonly AbaTarget[]): AbaTarget[] {
   const byId = new Map(targets.map((x) => [x.id, x]));
   const out = new Map<string, AbaTarget>();
+  const included = (x: AbaTarget) =>
+    (x.includesTargetIds ?? [])
+      .map((id) => byId.get(id))
+      .filter((p): p is AbaTarget => !!p && p.area === x.area && p.format === x.format);
   const walk = (x: AbaTarget) => {
-    for (const p of ladderPrerequisites(x, byId)) {
+    for (const p of included(x)) {
       if (out.has(p.id)) continue;
       out.set(p.id, p);
       walk(p);
@@ -103,12 +116,12 @@ export function masterableByBaseline(t: AbaTarget): boolean {
  * пользы для измерения (сессия снимает их, `stopPlacementOnFailure`).
  */
 export function placementPassed(t: AbaTarget, trials: readonly AbaTrial[]): boolean | null {
-  const own = trials.filter((x) => x.targetId === t.id && x.kind === 'baseline' && x.response !== 'interrupted');
+  // засчитанное детектором «ответил / нет» знает, а верно ли — нет: решать «освоено» не может
+  const own = trials.filter((x) => x.targetId === t.id && isBaselineCountable(x));
   if (own.some((x) => x.response !== 'independent')) return false;
   if (t.steps?.length) {
-    const byStep = t.steps.map((st) => own.filter((x) => x.stepId === st.id));
-    if (byStep.some((x) => x.length < BASELINE_CHAIN_RUNS)) return null;
-    return byStep.every((x) => x.every((y) => y.response === 'independent'));
+    // полные прогоны, а не пробы по звеньям: куски неполных прогонов прогоном не считаются
+    return chainRuns(t, own, isBaselineCountable).length >= BASELINE_CHAIN_RUNS ? true : null;
   }
   const need = t.format === 'match' ? MATCH_BASELINE.trials : BASELINE_TRIALS;
   if (own.length < need) return null;
@@ -152,24 +165,29 @@ export function passedMaintenance(s: AbaTargetState): boolean {
   return s.phase === 'maintenance' && s.maintenanceGapIndex > 0;
 }
 
-/** Цель на проверке сверху вниз: на базовой линии, а предпосылки ещё не освоены. */
-export function isPlacementProbe(t: AbaTarget, states: Readonly<Record<string, AbaTargetState | undefined>>): boolean {
-  return (states[t.id]?.phase ?? 'baseline') === 'baseline' && (t.prerequisiteTargetIds ?? []).some((id) => !MASTERED.has(states[id]?.phase ?? 'baseline'));
+/**
+ * Формат для допуска в «сам»: сортировка — отдельно от `match` (№67), у неё другая форма ответа
+ * (предмет, потом категория) и угадывание 50%.
+ */
+export type AloneFormatKey = AbaFormat | 'sort';
+
+export function aloneFormatKey(t: Pick<AbaTarget, 'format' | 'matchMode'>): AloneFormatKey {
+  return t.format === 'match' && t.matchMode === 'sort' ? 'sort' : t.format;
 }
 
 /**
  * Открыт ли формат для обучения в «сам» (№60): есть цель того же формата, освоенная со взрослым,
  * — по критерию, «дома» или по базовой линии с пройденной пробой поддержания. Выведенная
- * (`inferred`) формат не открывает.
+ * (`inferred`) формат не открывает. Сортировка и `match` по образцу друг друга не открывают (№67).
  */
 export function formatUnlockedAlone(
-  format: AbaFormat,
+  format: AloneFormatKey,
   targets: readonly AbaTarget[],
   states: Readonly<Record<string, AbaTargetState | undefined>>,
 ): boolean {
   return targets.some((t) => {
     const s = states[t.id];
-    if (t.format !== format || !s || !MASTERED.has(s.phase) || s.masteredConfig !== 'with_adult') return false;
+    if (aloneFormatKey(t) !== format || !s || !MASTERED.has(s.phase) || s.masteredConfig !== 'with_adult') return false;
     if (s.masteredBy === 'criterion' || s.masteredBy === 'home_unverified') return true;
     return s.masteredBy === 'baseline' && passedMaintenance(s);
   });

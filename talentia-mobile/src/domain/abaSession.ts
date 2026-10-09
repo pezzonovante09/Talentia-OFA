@@ -71,8 +71,8 @@ import { scoreTrial, type ScoredFields } from './abaScoring';
 import { applyChoiceBias, sessionSignals, type SessionSignal, type SignalSession } from './abaBarriers';
 import {
   applyPlacementProbe,
+  aloneFormatKey,
   formatUnlockedAlone,
-  isPlacementProbe,
   ladderBelow,
   placementCandidates,
   placementPassed,
@@ -86,6 +86,7 @@ import {
   applySession,
   BASELINE_CHAIN_RUNS,
   BASELINE_TRIALS,
+  chainRuns,
   MATCH_BASELINE,
   generalizationPasses,
   isMaintenanceDue,
@@ -360,6 +361,8 @@ export type AbaSessionState = {
   targets: Record<string, AbaTarget>;
   states: Record<string, AbaTargetState>;
   baselineTargetIds: string[];
+  /** Цели базовой линии на проверке сверху вниз — взятые планом из `placementCandidates`. */
+  placementTargetIds: string[];
   /** Цели блоков A и B. */
   teachingTargetIds: string[];
   /** Цели с пробой поддержания в этой сессии: практикой их не загрязняем. */
@@ -690,7 +693,7 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
   const isMastered = (id: string) => states[id] !== undefined && MASTERED_PHASES.has(states[id].phase);
   const ready = (t: AbaTarget) => counts(t, config) && (t.prerequisiteTargetIds ?? []).every(isMastered);
   // «Сам»: обучать новому — только в формате, освоенном со взрослым (№60); до этого — поддержание
-  const teachableHere = (t: AbaTarget) => config !== 'alone' || formatUnlockedAlone(t.format, input.targets, states);
+  const teachableHere = (t: AbaTarget) => config !== 'alone' || formatUnlockedAlone(aloneFormatKey(t), input.targets, states);
   const maxTeaching = input.params?.maxTeachingTargets ?? MAX_TEACHING_TARGETS;
 
   const single = offered.filter((t) => t.format !== 'identify');
@@ -719,16 +722,21 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
     input.tokenTraining.stage <= 2 ? 1 : MAX_BASELINE_TARGETS,
   );
   const setBaselineLimit = input.tokenTraining.stage <= 2 ? 1 : MAX_BASELINE_TARGETS;
+  // проверка сверху вниз — только цели из `placementCandidates`: цель специалиста поверх
+  // неосвоенных предпосылок идёт обычной базовой линией (А21)
+  const placement =
+    set || !(input.autoPlacement && config === 'with_adult') ? [] : placementCandidates(single, states).filter((t) => counts(t, config));
   const baseline = set
     ? baselineMembers(set, states, setBaselineLimit).map((id) => setMembers.find((t) => t.id === id)!)
     : baselineChoice(
         [
           // проверка сверху вниз — первой: она может снять с лестницы сразу несколько целей
-          ...(input.autoPlacement && config === 'with_adult' ? placementCandidates(single, states).filter((t) => counts(t, config)) : []),
+          ...placement,
           ...single.filter((t) => states[t.id].phase === 'baseline' && ready(t) && teachableHere(t)),
         ],
         Math.max(0, baselineRoom),
       );
+  const placementTargetIds = baseline.filter((t) => placement.some((p) => p.id === t.id)).map((t) => t.id);
   const mastered = offered.filter((t) => isMastered(t.id));
 
   // освоено «дома, без проверки», а сессию ведёт обученный наблюдатель — проверочная проба
@@ -852,6 +860,7 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
     targets: Object.fromEntries(input.targets.map((t) => [t.id, t])),
     states,
     baselineTargetIds: baseline.map((t) => t.id),
+    placementTargetIds,
     teachingTargetIds: teaching.map((t) => t.id),
     maintenanceTargetIds: maintenanceIds,
     highPTargetIds: highP.map((t) => t.id),
@@ -1039,7 +1048,7 @@ function withMatchField(state: AbaSessionState, planned: PlannedTrial, target: A
 function stopPlacementOnFailure(state: AbaSessionState, trial: AbaTrial, r: { rng: Rng }): AbaSessionState {
   if (trial.kind !== 'baseline' || trial.response === 'independent' || trial.response === 'interrupted') return state;
   const target = state.targets[trial.targetId];
-  if (!isPlacementProbe(target, state.states)) return state;
+  if (!state.placementTargetIds.includes(target.id)) return state;
   // снимается весь остаток, у цепочки — и остаток прогона: его доводит взрослый, без записи
   const isRest = (q: QueueItem) => q.kind === 'trial' && q.trial.targetId === trial.targetId && q.trial.kind === 'baseline';
   const removedAt = state.queue.findIndex(isRest);
@@ -1902,14 +1911,16 @@ function applyProgress(s: AbaTargetState, target: AbaTarget, sessionIndex: numbe
  * Пробы переноса или поддержания цели — по одной на прогон. У цепочки прогон — это все
  * звенья, и зачёт у него, только если все звенья выполнены самостоятельно: иначе
  * перенос «помыть руки» засчитывался бы по первому звену.
+ *
+ * Прерванная проба пробой не считается: звено, прерванное взрослым или приложением, давало
+ * «провал поддержания» освоенной цели из-за сбоя, а не ребёнка (методист, 2026-10-09). Прогоны
+ * — через `chainRuns`: по `runIndex`, прогон без какого-то звена неполон и не считается.
  */
-function probesOf(target: AbaTarget, own: AbaTrial[], kind: 'generalization' | 'maintenance'): AbaTrial[] {
-  const trials = own.filter((t) => t.kind === kind);
-  if (!target.steps?.length) return trials;
-  const runs = new Map<number, AbaTrial[]>();
-  for (const t of trials) runs.set(t.runIndex ?? 0, [...(runs.get(t.runIndex ?? 0) ?? []), t]);
-  return [...runs.values()]
-    .filter((run) => (target.steps ?? []).every((st) => run.some((t) => t.stepId === st.id)))
+/** Экспорт — для тестов (методист, 2026-10-09). */
+export function probesOf(target: AbaTarget, own: AbaTrial[], kind: 'generalization' | 'maintenance'): AbaTrial[] {
+  const probe = (t: AbaTrial) => t.kind === kind && t.response !== 'interrupted';
+  if (!target.steps?.length) return own.filter(probe);
+  return chainRuns(target, own, probe)
     .map((run) => {
       const response: AbaResponse = run.every((t) => t.response === 'independent')
         ? 'independent'
@@ -2002,7 +2013,8 @@ export type AbaSessionResult = {
  *   (решения методиста 2026-10-01).
  * Прерванная или неполная проверка не решает ничего. После провала — `ioaDueSessions`.
  */
-function verificationVerdict(
+/** Экспорт — для тестов проверки (А26); в сессии вызывается из `finishAbaSession`. */
+export function verificationVerdict(
   s: AbaTargetState,
   target: AbaTarget,
   own: AbaTrial[],
@@ -2089,7 +2101,8 @@ function hasUnpresentedDrop(trials: readonly AbaTrial[], targetId: string): bool
  * пришлись на её пробы. Конец по тишине, отказ вне пробы и разбросанные по целям прерывания
  * цели не приписываются (решение методиста).
  */
-function isConcerning(own: readonly AbaTrial[]): boolean {
+/** Экспорт — для тестов (А26). */
+export function isConcerning(own: readonly AbaTrial[]): boolean {
   const interrupted = own.filter(
     (t) => t.interruptedBy === 'child_break' || t.interruptedBy === 'assent' || t.interruptedBy === 'l4_resisted',
   );
@@ -2156,7 +2169,7 @@ export function finishAbaSession(
     // измерение ненадёжно — сессия для цели нейтральна в любой фазе
     const unreliable = state.unreliableTargetIds.includes(id);
     if (state.baselineTargetIds.includes(id) && !unreliable) {
-      if (isPlacementProbe(target, state.states)) {
+      if (state.placementTargetIds.includes(id)) {
         // проверка сверху вниз: прошла — освоена, предпосылки по лестнице выведены
         const placed = applyPlacementProbe({ ...states, [id]: s }, Object.values(state.targets), target, own, idx, state.config);
         const passed = placementPassed(target, own);
