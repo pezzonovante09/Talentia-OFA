@@ -461,6 +461,9 @@ export function nameOutsideVocative(text: string): boolean {
   return NAME_PLACEHOLDER.test(rest);
 }
 
+/** Аффикс к подстановке — сразу, через кавычку или дефис: `{{t}}ны`, `{{t}}»ны`, `{{t}}-ны`. */
+export const AFFIX_AFTER_SLOT = /\}\}[»"'’\-]?\p{L}/u;
+
 export const RULES = {
   corpusIds: {
     // Задание адресуется по id в прогрессе, интервальном повторении и
@@ -1314,6 +1317,40 @@ export const RULES = {
           return task.pairs.filter((p) => same(p.left, p.right)).map((p) => `${at}: пара ${p.id} одного силуэта — соединится без счёта`);
         }
         return [];
+      }),
+  },
+
+  promptInserts: {
+    // А23 (`localization-qa`): «Найди букву {{t}}» — вставка на другом языке стоит
+    // плейсхолдером, потому что в ky она на другом месте. Плейсхолдер вопроса — значит, у
+    // задания есть вставка с языком; набор плейсхолдеров одинаков во всех локалях; после `}}`
+    // не идёт буква — аффикс к вставке нельзя.
+    title: 'плейсхолдеры вопроса — в inserts с lang, одинаковы во всех локалях, без аффикса; текст вставки не переводится; на 5-6 у вставки audioKey',
+    check: (corpus, locales) =>
+      formatTasksOf(corpus).flatMap(({ task, lesson, at }) => {
+        const bad: string[] = [];
+        const holders = (text: unknown) =>
+          typeof text === 'string' ? [...text.matchAll(/\{\{\s*(\w+)\s*\}\}/g)].map((m) => m[1]).sort() : [];
+        const byLang = (['ru', 'en', 'ky'] as const)
+          .filter((l) => locales[l] !== undefined && lookup(locales[l], task.promptKey) !== undefined)
+          .map((l) => ({ l, text: lookup(locales[l], task.promptKey), ph: holders(lookup(locales[l], task.promptKey)) }));
+        const ru = byLang.find((x) => x.l === 'ru');
+        for (const p of ru?.ph ?? []) {
+          if (!task.inserts?.[p]?.lang) bad.push(`${at}: в вопросе {{${p}}}, а в inserts нет вставки с языком`);
+        }
+        for (const x of byLang) {
+          if (ru && x.ph.join() !== ru.ph.join()) bad.push(`${at}: в ${x.l} плейсхолдеры ${x.ph.join(',')} вместо ${ru.ph.join(',')}`);
+          if (typeof x.text === 'string' && AFFIX_AFTER_SLOT.test(x.text)) bad.push(`${at}: в ${x.l} к вставке приклеен аффикс`);
+        }
+        for (const [slot, ins] of Object.entries(task.inserts ?? {})) {
+          // «Ж» — материал, а не перевод: текст вставки одинаков во всех локалях
+          const texts = (['ru', 'en', 'ky'] as const)
+            .filter((l) => locales[l] !== undefined && lookup(locales[l], ins.textKey) !== undefined)
+            .map((l) => lookup(locales[l], ins.textKey));
+          if (new Set(texts).size > 1) bad.push(`${at}: текст вставки ${slot} разный в локалях — материал не переводится`);
+          if (lesson.band === '5-6' && !ins.audioKey) bad.push(`${at}: на 5-6 у вставки ${slot} нет audioKey — вопрос звучит голосом`);
+        }
+        return bad;
       }),
   },
 

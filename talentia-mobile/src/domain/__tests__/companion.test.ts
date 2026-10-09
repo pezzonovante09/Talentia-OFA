@@ -1,6 +1,9 @@
 import {
   DEFAULT_ADDRESS_FORM,
   lineKeyFor,
+  OBJECT_CONSTRUCTIONS,
+  objectFormKey,
+  regionPhraseKey,
   pickVariant,
   lineKey,
   SITUATIONS,
@@ -30,7 +33,7 @@ describe('реплики компаньона', () => {
   });
 
   describe('форма обращения (№71)', () => {
-    const bank = new Set(['companion.correct-after-hint.0', 'companion.correct-after-hint.0.f', 'companion.correct-after-hint.0.m']);
+    const bank = new Set(['companion.correct-after-hint.0', 'companion.correct-after-hint.0_f', 'companion.correct-after-hint.0_m']);
     const exists = (k: string) => bank.has(k);
 
     it('по умолчанию — «не указывать», и тогда звучит безродовая реплика', () => {
@@ -39,13 +42,23 @@ describe('реплики компаньона', () => {
     });
 
     it('родовая реплика — если она есть в банке', () => {
-      expect(lineKeyFor('correct-after-hint', 0, 'feminine', exists)).toBe('companion.correct-after-hint.0.f');
-      expect(lineKeyFor('correct-after-hint', 0, 'masculine', exists)).toBe('companion.correct-after-hint.0.m');
+      expect(lineKeyFor('correct-after-hint', 0, 'feminine', exists)).toBe('companion.correct-after-hint.0_f');
+      expect(lineKeyFor('correct-after-hint', 0, 'masculine', exists)).toBe('companion.correct-after-hint.0_m');
     });
 
     it('нет родовой — звучит безродовая', () => {
       expect(lineKeyFor('correct-first', 1, 'feminine', exists)).toBe('companion.correct-first.1');
     });
+  });
+
+  it('предмет и регион — ключом формы под конструкцию, а не строкой (А15)', () => {
+    expect(OBJECT_CONSTRUCTIONS.map((c) => objectFormKey('berry', c))).toEqual([
+      'content.objects.berry.count',
+      'content.objects.berry.howMany',
+      'content.objects.berry.acc',
+      'content.objects.berry.nom',
+    ]);
+    expect(regionPhraseKey('words', 'in')).toBe('content.regions.words.in');
   });
 
   it('ситуации не дублируются', () => {

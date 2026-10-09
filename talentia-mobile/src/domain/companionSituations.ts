@@ -13,11 +13,13 @@
  * ситуациям, а не свален списком добрых фраз.
  */
 
+import type { Region } from '../types/task';
+
 export const SITUATIONS = [
   /* вход */
   'lesson-start-first',        // урок открыт впервые
   'lesson-start-repeat',       // урок проходят заново
-  'return-after-break',        // не заходил три дня и больше
+  'return-after-break',        // перерыв три дня и больше
   'new-topic',                 // открылась новая тема
   'new-region',                // открылся новый регион
 
@@ -25,7 +27,7 @@ export const SITUATIONS = [
   'correct-first',             // первый верный ответ в уроке
   'correct-streak-2',
   'correct-streak-3plus',
-  'correct-after-hint',        // справился со второй попытки
+  'correct-after-hint',        // верно со второй попытки
   'correct-previously-failed', // раньше этот навык не давался — самая ценная реплика
   'error-first',               // первая ошибка, задание сузится
   'error-second',              // ответ показали
@@ -49,13 +51,53 @@ export type Situation = (typeof SITUATIONS)[number];
 /**
  * Подстановки в реплику. Без них банк звучит как автоответчик: «Сколько их?»
  * вместо «Сколько там ягод, Айым?».
+ *
+ * Предмет и регион — не готовой строкой, а id: строка ломала падежи в ru («ягода» вместо
+ * «ягод») и аффиксы в ky (аудит 2026-10-06, А15). Форма берётся из словаря по конструкции
+ * реплики (`objectFormKey`, `regionPhraseKey`); правила — TALI.md, «Подстановки».
  */
 export type Slots = {
+  /** Только обращением через запятую, в именительном; аффикс к имени нельзя. */
   name?: string;
+  /** Только в plural-ключе (`_one / _few / _many / _other`). */
   count?: number;
+  /** id предмета из словаря `content.objects.<id>`. */
   object?: string;
-  region?: string;
+  region?: Region['id'];
 };
+
+/**
+ * Конструкции, под которые у предмета есть готовые формы — закрытый список: в ky аффиксы не
+ * генерируются, у каждого предмета ряд записанных форм (их проверяет носитель).
+ * - `count` — после числа: «5 ягод» (plural-ключ; в ky — ед. ч.);
+ * - `howMany` — после «сколько»: «сколько ягод» (в ky после «канча» — ед. ч.);
+ * - `acc` — «найди / возьми …»: «найди ягоду»;
+ * - `nom` — именительный: «вот ягода».
+ */
+export const OBJECT_CONSTRUCTIONS = ['count', 'howMany', 'acc', 'nom'] as const;
+
+/**
+ * Имена подстановок в реплике — закрытый список (TALI.md, «Подстановки»; гард
+ * `companionLines.test.ts`): `{{obj}}` или `{{item}}` вместо них не пройдут.
+ */
+export const COMPANION_SLOTS = [
+  'name',
+  'count',
+  ...OBJECT_CONSTRUCTIONS.map((c) => `object_${c}` as const),
+  'region_in',
+  'region_to',
+] as const;
+export type ObjectConstruction = (typeof OBJECT_CONSTRUCTIONS)[number];
+
+/** Ключ формы предмета под конструкцию: `content.objects.<id>.<конструкция>`. */
+export function objectFormKey(object: string, construction: ObjectConstruction): string {
+  return `content.objects.${object}.${construction}`;
+}
+
+/** Регион — готовой фразой «где» (`in`, «на Побережье слов») или «куда» (`to`), а не падежом. */
+export function regionPhraseKey(region: Region['id'], phrase: 'in' | 'to'): string {
+  return `content.regions.${region}.${phrase}`;
+}
 
 /** Сколько вариантов держать на ситуацию, чтобы не повторяться заметно. */
 export const VARIANTS_PER_SITUATION = 4;
@@ -98,13 +140,14 @@ const FORM_SUFFIX: Record<Exclude<AddressForm, 'neutral'>, string> = { feminine:
 
 /**
  * Ключ реплики с учётом формы обращения. Основная реплика — безродовая
- * (`companion.<ситуация>.<n>`), она есть всегда; родовая (`….f`, `….m`) — необязательная
+ * (`companion.<ситуация>.<n>`), она есть всегда; родовая (`…_f`, `…_m`) — необязательная
  * надстройка там, где русская фраза о ребёнке без рода звучит натянуто. Нет родовой — звучит
  * основная. В en и ky рода во 2-м лице нет: там родовых ключей не заводят.
  */
 export function lineKeyFor(s: Situation, variant: number, form: AddressForm, exists: (key: string) => boolean): string {
   const base = lineKey(s, variant);
   if (form === 'neutral') return base;
-  const gendered = `${base}.${FORM_SUFFIX[form]}`;
+  // суффиксом, как context в i18next: точкой нельзя — в JSON ключ `<n>` уже строка
+  const gendered = `${base}_${FORM_SUFFIX[form]}`;
   return exists(gendered) ? gendered : base;
 }

@@ -1692,3 +1692,43 @@ describe('правила пилота: граничные случаи (пров
     expect(run('answerRank', c)).toEqual([]);
   });
 });
+
+describe('вставки в вопрос (аудит 2026-10-06, А23)', () => {
+  it('promptInserts: плейсхолдер без вставки — красно; со вставкой и языком — нет', () => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    setKey(ru, k('a.l1.t1.prompt'), 'Найди букву {{t}}');
+    expectRed('promptInserts', c, 'в inserts нет вставки', { ru });
+    lessonAt(c, 0).tasks[0].inserts = { t: { textKey: k('a.l1.t1.letter'), lang: 'ru', audioKey: k('a.l1.t1.letter-audio') } };
+    expect(run('promptInserts', c, { ru })).toEqual([]);
+  });
+
+  it('promptInserts: в ky другой набор плейсхолдеров — красно; аффикс к вставке — красно', () => {
+    const c = goodCorpus();
+    lessonAt(c, 0).tasks[0].inserts = { t: { textKey: k('a.l1.t1.letter'), lang: 'ru', audioKey: k('a.l1.t1.letter-audio') } };
+    const ru = localeFor(c);
+    const ky = localeFor(c);
+    setKey(ru, k('a.l1.t1.prompt'), 'Найди букву {{t}}');
+    setKey(ky, k('a.l1.t1.prompt'), 'Тамганы тап');
+    expectRed('promptInserts', c, 'в ky плейсхолдеры', { ru, ky });
+    setKey(ky, k('a.l1.t1.prompt'), '{{t}}ны тап');
+    expectRed('promptInserts', c, 'в ky к вставке приклеен аффикс', { ru, ky });
+  });
+});
+
+describe('вставки в вопрос: проверка localization-qa 2026-10-10', () => {
+  it('promptInserts: «Ж» переведена в ky — красно; на 5-6 без audioKey — красно; аффикс через дефис — красно', () => {
+    const c = goodCorpus();
+    lessonAt(c, 0).tasks[0].inserts = { t: { textKey: k('a.l1.t1.letter'), lang: 'ru' } };
+    const ru = localeFor(c);
+    const ky = localeFor(c);
+    setKey(ru, k('a.l1.t1.prompt'), 'Найди букву {{t}}');
+    setKey(ky, k('a.l1.t1.prompt'), '{{t}} тамгасын тап');
+    setKey(ru, k('a.l1.t1.letter'), 'Ж');
+    setKey(ky, k('a.l1.t1.letter'), 'Жэ');
+    expectRed('promptInserts', c, 'материал не переводится', { ru, ky });
+    expectRed('promptInserts', c, 'нет audioKey', { ru, ky });
+    setKey(ky, k('a.l1.t1.prompt'), '{{t}}-ны тап');
+    expectRed('promptInserts', c, 'приклеен аффикс', { ru, ky });
+  });
+});
