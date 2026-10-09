@@ -7,7 +7,7 @@
  *
  * Считаемые предметы рисуются вектором по полю `shape`, а не картинками: камень кружком
  * выходит дешевле отдельного ассета и гарантированно совпадает по стилю, а количество и
- * раскладка (`layout`) задаются точно. Заданий `point` пока нет: панорама региона для счёта
+ * раскладка (`layout`) задаются точно. Варианты-числа (`numeral`) рисуются крупной цифрой без фигур. Заданий `point` пока нет: панорама региона для счёта
  * не годится — чистых групп предметов на ней нет, — а сцен для счёта ещё не нарисовали
  * (решение №36). Вернуть, когда сцены будут.
  */
@@ -29,19 +29,8 @@ const dots = (id: string, count: Count, correct: boolean) => ({
   correct,
 });
 
-/**
- * Вариант-кучка «число → кучка»: при числе больше пяти ряд и рамка точек дают один силуэт
- * «пять и остаток», и ответ находится сравнением узоров, а не счётом (аудит 2026-10-06, А12).
- * Стимула нет, ярлык числа не называет — остаётся считать.
- */
-const pile = (id: string, labelKey: string, shape: 'leaf' | 'stone' | 'berry', count: Count, correct: boolean) => ({
-  id,
-  labelKey,
-  shape,
-  count,
-  layout: 'row' as const,
-  correct,
-});
+/** Карточка-число: крупная цифра-подпись, озвучена числом (решение №81). Цифр ещё не проходили — опора на звук. */
+const numeral = (id: string, n: Count, correct: boolean) => ({ id, labelKey: COMMON[n], numeral: n, correct });
 
 /** Сторона пары «точки» в `match`. */
 const dotSide = (count: Count): Media => ({ labelKey: COMMON[count], shape: 'dot', count, layout: 'dice' });
@@ -240,13 +229,15 @@ const lessonCountToFive: Lesson = {
  * Нагрузка — по ревью 2026-10-02 (`curriculum-content-reviewer`, `aba-pedagogy-specialist`,
  * `child-ux-specialist`): кучки в `order` — 5, 6, 7, ряд начинается со знакомой пятёрки;
  * 7–10 — в `choose`, а не в парах `match` (пары по 7–10 — пятьдесят актов счёта, пятилетке в
- * одиночку не пройти). Три кучки 8/9/10 на экране — до 27 фигур: нагрузку проверяет
- * `child-ux-specialist` вместе с макетом шага 6. При числе больше пяти задание идёт «число → кучка»
- * (`pile`): стимул «пять и остаток» и точки дали бы один силуэт (А12). Варианты перемешиваются,
- * разброс верного по рангу держит гард `answerRank`. Урок заканчивается спиралью на счёт до
- * пяти парами `match` — лёгким успехом перед атласом; `choose` в уроке два (`choosePerLesson`).
- * Больше пяти фигур — только рядом (`row`): разброс до десяти пятилетка не пересчитает (гард
- * `scatter56`).
+ * одиночку не пройти). При числе больше пяти задание идёт «кучка → число» (решение №81): одна
+ * кучка в ряд (`stimulus`, `row`) и три карточки-числа (`numeral`), каждая озвучена числом.
+ * Точек в вариантах нет: ряд и точки дали бы один силуэт «пять и остаток» (А12). Цифра здесь
+ * только подпись, опора — звучащее число: цифры — следующая тема. Варианты соседние, верный по
+ * величине: пример — средний (6 из 5/6/7), t1 — меньший (7 из 7/8/9), t3 — больший (10 из
+ * 8/9/10). Так правило «бери самое большое» не проходит, разброс держит `answerRank`. На экране
+ * не больше десяти фигур. Урок заканчивается спиралью на счёт до пяти парами `match` — лёгким
+ * успехом перед атласом; `choose` в уроке два (`choosePerLesson`). Больше пяти фигур — только
+ * рядом (`row`): разброс до десяти пятилетка не пересчитает (гард `scatter56`).
  */
 const lessonCountToTen: Lesson = {
   id: 'nv-count-l3',
@@ -260,14 +251,11 @@ const lessonCountToTen: Lesson = {
       format: 'choose',
       presentation: 'picture',
       promptKey: 'content.numbers.l3.model.prompt',
-      options: [
-        pile('a', 'content.numbers.l3.model.pile', 'leaf', 5, false),
-        pile('b', 'content.numbers.l3.model.pile', 'leaf', 6, true),
-        pile('c', 'content.numbers.l3.model.pile', 'leaf', 7, false),
-      ],
+      stimulus: { labelKey: 'content.numbers.l3.model.stimulus', shape: 'leaf', count: 6, layout: 'row' },
+      options: [numeral('a', 5, false), numeral('b', 6, true), numeral('c', 7, false)],
     },
     steps: [
-      { lineKey: 'content.numbers.l3.model.s1', reveal: 'b' },
+      { lineKey: 'content.numbers.l3.model.s1', reveal: 'stimulus' },
       { lineKey: 'content.numbers.l3.model.s2', reveal: 'b' },
     ],
   },
@@ -280,11 +268,8 @@ const lessonCountToTen: Lesson = {
       promptKey: 'content.numbers.l3.t1.prompt',
       hintKey: 'content.numbers.l3.t1.hint',
       explainKey: ['content.numbers.l3.t1.explain'],
-      options: [
-        pile('a', 'content.numbers.l3.t1.pile', 'stone', 6, false),
-        pile('b', 'content.numbers.l3.t1.pile', 'stone', 7, true),
-        pile('c', 'content.numbers.l3.t1.pile', 'stone', 8, false),
-      ],
+      stimulus: { labelKey: 'content.numbers.l3.t1.stimulus', shape: 'stone', count: 7, layout: 'row' },
+      options: [numeral('a', 7, true), numeral('b', 8, false), numeral('c', 9, false)],
     },
     {
       id: 'nv-count-l3-t2',
@@ -308,11 +293,8 @@ const lessonCountToTen: Lesson = {
       promptKey: 'content.numbers.l3.t3.prompt',
       hintKey: 'content.numbers.l3.t3.hint',
       explainKey: ['content.numbers.l3.t3.explain'],
-      options: [
-        pile('a', 'content.numbers.l3.t3.pile', 'leaf', 8, false),
-        pile('b', 'content.numbers.l3.t3.pile', 'leaf', 9, false),
-        pile('c', 'content.numbers.l3.t3.pile', 'leaf', 10, true),
-      ],
+      stimulus: { labelKey: 'content.numbers.l3.t3.stimulus', shape: 'leaf', count: 10, layout: 'row' },
+      options: [numeral('a', 8, false), numeral('b', 9, false), numeral('c', 10, true)],
     },
     {
       id: 'nv-count-l3-t4',

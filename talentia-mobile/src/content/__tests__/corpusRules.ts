@@ -741,7 +741,9 @@ export const RULES = {
         }
         for (const { m, at: el } of mediaOf(task, false)) {
           if (!isNonEmptyString(m.labelKey)) bad.push(`${at}: ${el} без labelKey — нечего озвучить`);
-          if (m.shape === undefined && m.image === undefined) bad.push(`${at}: ${el} без картинки (shape или image)`);
+          if (m.shape === undefined && m.image === undefined && m.numeral === undefined) {
+            bad.push(`${at}: ${el} без картинки (shape, image или numeral)`);
+          }
         }
         return bad;
       }),
@@ -761,6 +763,10 @@ export const RULES = {
             bad.push(`${at}: ${el} — shape и count задаются только вместе`);
           }
           if (m.layout !== undefined && m.shape === undefined) bad.push(`${at}: ${el} — layout без shape: раскладывать нечего`);
+          if (m.numeral !== undefined) {
+            if (m.shape !== undefined || m.count !== undefined || m.image !== undefined) bad.push(`${at}: ${el} — карточка-число без фигур и картинки`);
+            if (!(Number.isInteger(m.numeral) && m.numeral >= 0 && m.numeral <= 10)) bad.push(`${at}: ${el} numeral=${m.numeral}, нужно целое 0–10`);
+          }
           if (m.count !== undefined && !(Number.isInteger(m.count) && m.count >= 1)) {
             bad.push(`${at}: ${el} count=${m.count}, нужно целое ≥ 1`);
           }
@@ -1220,7 +1226,9 @@ export const RULES = {
     title: 'count в заданиях и примере навыка ≤ maxCount навыка в реестре; у навыка с count maxCount задан',
     check: (corpus) =>
       formatTasksOf(corpus).flatMap(({ task, at }) => {
-        const counts = mediaOf(task, true).filter(({ m }) => m.count !== undefined);
+        const counts = mediaOf(task, true)
+          .filter(({ m }) => m.count !== undefined || m.numeral !== undefined)
+          .map(({ m, at: el }) => ({ m: { ...m, count: m.count ?? m.numeral }, at: el }));
         if (!counts.length) return [];
         const entry = SKILL_BY_ID.get(task.skill);
         if (!entry) return [];
@@ -1239,9 +1247,11 @@ export const RULES = {
     check: (corpus) => {
       const bad: string[] = [];
       const rank = (t: Task): 'max' | 'min' | 'mid' | null => {
-        if (t.format !== 'choose' || !t.options.every((o) => o.count !== undefined)) return null;
-        const right = t.options.find((o) => o.correct)?.count;
-        const all = t.options.map((o) => o.count!);
+        const num = (o: Media) => o.count ?? o.numeral;
+        if (t.format !== 'choose' || !t.options.every((o) => num(o) !== undefined)) return null;
+        const r = t.options.find((o) => o.correct);
+        const right = r ? num(r) : undefined;
+        const all = t.options.map((o) => num(o)!);
         if (right === undefined) return null;
         return right === Math.max(...all) ? 'max' : right === Math.min(...all) ? 'min' : 'mid';
       };
@@ -1273,11 +1283,12 @@ export const RULES = {
     check: (corpus) =>
       formatTasksOf(corpus).flatMap(({ task, at }) => {
         const bad: string[] = [];
-        if (task.format === 'choose' && task.options.every((o) => o.count !== undefined)) {
-          if (duplicates(task.options.map((o) => String(o.count))).length) bad.push(`${at}: у вариантов повторяется число`);
+        const num = (o: Media) => o.count ?? o.numeral;
+        if (task.format === 'choose' && task.options.every((o) => num(o) !== undefined)) {
+          if (duplicates(task.options.map((o) => String(num(o)))).length) bad.push(`${at}: у вариантов повторяется число`);
           const right = task.options.find((o) => o.correct);
-          if (task.stimulus?.count !== undefined && right && right.count !== task.stimulus.count) {
-            bad.push(`${at}: у стимула ${task.stimulus.count}, у верного ${right.count}`);
+          if (task.stimulus?.count !== undefined && right && num(right) !== task.stimulus.count) {
+            bad.push(`${at}: у стимула ${task.stimulus.count}, у верного ${num(right)}`);
           }
         }
         if (task.format === 'match') {

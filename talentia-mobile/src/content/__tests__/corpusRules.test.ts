@@ -1732,3 +1732,38 @@ describe('вставки в вопрос: проверка localization-qa 2026-
     expectRed('promptInserts', c, 'приклеен аффикс', { ru, ky });
   });
 });
+
+describe('карточка-число (решение №81)', () => {
+  const asNumerals = (t: ChooseTask) => {
+    t.options = t.options.map((o) => ({ id: o.id, labelKey: o.labelKey, numeral: o.count, correct: o.correct }));
+  };
+
+  it('карточка-число вместо точек проходит все правила картинок и чисел', () => {
+    const c = goodCorpus();
+    asNumerals(lessonAt(c, 0).tasks[0] as ChooseTask);
+    for (const id of ['picture56', 'shapeCount', 'countConsistency', 'answerRank', 'skillCountCap'] as const) {
+      expect(run(id, c)).toEqual([]);
+    }
+  });
+
+  it('shapeCount: число вместе с фигурой — красно; число вне 0–10 — красно', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0] as ChooseTask;
+    asNumerals(t);
+    t.options[0] = { ...t.options[0], shape: 'dot', count: 1 };
+    expectRed('shapeCount', c, 'карточка-число без фигур');
+    const c2 = goodCorpus();
+    const t2 = lessonAt(c2, 0).tasks[0] as ChooseTask;
+    asNumerals(t2);
+    t2.options[2] = { ...t2.options[2], numeral: 11 };
+    expectRed('shapeCount', c2, 'numeral=11');
+  });
+
+  it('countConsistency: стимул не равен числу верной карточки — красно', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0] as ChooseTask;
+    asNumerals(t);
+    t.stimulus = { ...t.stimulus!, count: 3 };
+    expectRed('countConsistency', c, 'у стимула 3, у верного 2');
+  });
+});
