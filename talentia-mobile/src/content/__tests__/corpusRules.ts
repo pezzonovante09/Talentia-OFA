@@ -36,6 +36,7 @@ import {
   type Range,
 } from '../../domain/lessonLimits';
 import { bandIndex, registryProblems, SKILL_BY_ID, SKILLS } from '../../domain/skills';
+import { countSilhouette } from '../../domain/countLayout';
 import { FORMAT_MIN_BAND, REVEAL_STIMULUS } from '../../types/task';
 import type { AgeBand, Lesson, Media, ModelExample, Region, Task, TaskFormat, Topic } from '../../types/task';
 
@@ -1194,6 +1195,139 @@ export const RULES = {
           : mediaOf(task, true)
               .filter(({ m }) => m.layout === 'scatter' && (m.count ?? 0) > 5)
               .map(({ m, at: el }) => `${at}: ${el} — ${m.count} фигур вразброс, на 5-6 не больше пяти`),
+      ),
+  },
+
+  choosePerLesson: {
+    // Аудит 2026-10-06, А13: в пилоте choose было 7 из 12, а корпусной `chooseShare`
+    // включается только с 50 заданий — первые уроки по образцу прошли бы, а потом упал бы
+    // весь корпус. На урок — не больше половины заданий; пример не оценивается и не в счёт.
+    title: 'choose в уроке — не больше половины заданий (пример не в счёт)',
+    check: (corpus) =>
+      lessonsOf(corpus).flatMap(({ lesson, where }) => {
+        const choose = lesson.tasks.filter((t) => t.format === 'choose').length;
+        const max = Math.floor(lesson.tasks.length / 2);
+        return choose > max ? [`${where}: choose ${choose} из ${lesson.tasks.length}, не больше ${max}`] : [];
+      }),
+  },
+
+  skillCountCap: {
+    // А13: правило «в вариантах только 1–3» держалось на комментарии. Число фигур в
+    // заданиях и примере навыка — не больше его `maxCount` в реестре.
+    title: 'count в заданиях и примере навыка ≤ maxCount навыка в реестре; у навыка с count maxCount задан',
+    check: (corpus) =>
+      formatTasksOf(corpus).flatMap(({ task, at }) => {
+        const counts = mediaOf(task, true).filter(({ m }) => m.count !== undefined);
+        if (!counts.length) return [];
+        const entry = SKILL_BY_ID.get(task.skill);
+        if (!entry) return [];
+        if (entry.maxCount === undefined) return [`${at}: у навыка ${task.skill} нет maxCount в реестре, а в задании есть count`];
+        return counts
+          .filter(({ m }) => (m.count ?? 0) > entry.maxCount!)
+          .map(({ m, at: el }) => `${at}: ${el} — ${m.count} фигур, у навыка ${task.skill} не больше ${entry.maxCount}`);
+      }),
+  },
+
+  answerRank: {
+    // А11: в 5 из 7 choose пилота верный был самой большой кучкой — «жми самую большую»
+    // давало почти 100%. Позиция не проверяется: варианты перемешиваются при показе
+    // (REBUILD.md, «Ход урока — к экранам»). Только задания на счёт, где число есть у всех.
+    title: 'choose на счёт: в уроке верный не всегда наибольший (наименьший); по теме наибольший — не больше половины',
+    check: (corpus) => {
+      const bad: string[] = [];
+      const rank = (t: Task): 'max' | 'min' | 'mid' | null => {
+        if (t.format !== 'choose' || !t.options.every((o) => o.count !== undefined)) return null;
+        const right = t.options.find((o) => o.correct)?.count;
+        const all = t.options.map((o) => o.count!);
+        if (right === undefined) return null;
+        return right === Math.max(...all) ? 'max' : right === Math.min(...all) ? 'min' : 'mid';
+      };
+      for (const { topic, file } of corpus) {
+        const ranks: ('max' | 'min' | 'mid')[] = [];
+        for (const lesson of topic.lessons) {
+          const r = lesson.tasks.map(rank).filter((x): x is 'max' | 'min' | 'mid' => x !== null);
+          ranks.push(...r);
+          for (const one of ['max', 'min'] as const) {
+            if (r.length >= 2 && r.every((x) => x === one)) {
+              bad.push(`${file} ${topic.id}/${lesson.id}: во всех choose на счёт верный — ${one === 'max' ? 'наибольший' : 'наименьший'}`);
+            }
+          }
+        }
+        const max = ranks.filter((x) => x === 'max').length;
+        if (ranks.length >= 2 && max > ranks.length / 2) {
+          bad.push(`${file} ${topic.id}: верный — наибольший в ${max} из ${ranks.length} choose на счёт`);
+        }
+      }
+      return bad;
+    },
+  },
+
+  countConsistency: {
+    // А13: та же причина ошибок, что и у силуэта, — ловится дёшево. Варианты choose с
+    // разными числами; стимул с числом — столько же, сколько у верного; пары match — поровну;
+    // в order позиция растёт вместе с числом.
+    title: 'числа в задании согласованы: варианты разные, стимул = верный, пары поровну, order по возрастанию',
+    check: (corpus) =>
+      formatTasksOf(corpus).flatMap(({ task, at }) => {
+        const bad: string[] = [];
+        if (task.format === 'choose' && task.options.every((o) => o.count !== undefined)) {
+          if (duplicates(task.options.map((o) => String(o.count))).length) bad.push(`${at}: у вариантов повторяется число`);
+          const right = task.options.find((o) => o.correct);
+          if (task.stimulus?.count !== undefined && right && right.count !== task.stimulus.count) {
+            bad.push(`${at}: у стимула ${task.stimulus.count}, у верного ${right.count}`);
+          }
+        }
+        if (task.format === 'match') {
+          for (const p of task.pairs) {
+            if (p.left.count !== undefined && p.right.count !== undefined && p.left.count !== p.right.count) {
+              bad.push(`${at}: пара ${p.id} — ${p.left.count} и ${p.right.count}`);
+            }
+          }
+        }
+        if (task.format === 'order' && task.items.every((i) => i.count !== undefined)) {
+          const sorted = [...task.items].sort((a, b) => a.position - b.position);
+          if (sorted.some((x, i) => i > 0 && x.count! <= sorted[i - 1].count!)) bad.push(`${at}: позиции order не растут вместе с числом`);
+        }
+        return bad;
+      }),
+  },
+
+  silhouette: {
+    // А12: стимул «пять и остаток» и точки в рамке десятка при одном числе — один силуэт, и
+    // навык счёта засчитывался за сравнение узоров. У стимула и верного варианта choose, у
+    // сторон пары match силуэты разные (`domain/countLayout.ts` — то же, что рисует экран).
+    title: 'стимул и верный вариант choose, стороны пары match — разного силуэта (count ≥ 2)',
+    check: (corpus) =>
+      formatTasksOf(corpus).flatMap(({ task, at }) => {
+        const same = (a: Media, b: Media) =>
+          a.shape !== undefined &&
+          b.shape !== undefined &&
+          a.count !== undefined &&
+          b.count !== undefined &&
+          a.count >= 2 &&
+          countSilhouette(a.layout, a.count) === countSilhouette(b.layout, b.count);
+        if (task.format === 'choose' && task.stimulus) {
+          const right = task.options.find((o) => o.correct);
+          return right && same(task.stimulus, right) ? [`${at}: стимул и верный вариант одного силуэта — найдётся без счёта`] : [];
+        }
+        if (task.format === 'match') {
+          return task.pairs.filter((p) => same(p.left, p.right)).map((p) => `${at}: пара ${p.id} одного силуэта — соединится без счёта`);
+        }
+        return [];
+      }),
+  },
+
+  dice56: {
+    // Временное, пока design-lead не определит, как выглядят точки 6–10 (рамка десятка —
+    // шаг 6): на 5-6 точки «как на кубике» — до пяти.
+    title: 'на 5-6 точки как на кубике (dice) — не больше пяти',
+    check: (corpus) =>
+      formatTasksOf(corpus).flatMap(({ task, lesson, at }) =>
+        lesson.band !== '5-6'
+          ? []
+          : mediaOf(task, true)
+              .filter(({ m }) => m.layout === 'dice' && (m.count ?? 0) > 5)
+              .map(({ m, at: el }) => `${at}: ${el} — ${m.count} точек кубиком, на 5-6 не больше пяти`),
       ),
   },
 

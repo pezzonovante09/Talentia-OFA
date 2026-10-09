@@ -7,6 +7,7 @@ const e = (id: string, band: SkillEntry['band'], prerequisites: string[] = []): 
   band,
   prerequisites,
   source: 'kr',
+  titleKey: `content.skills.${id}`,
 });
 
 describe('реестр навыков', () => {
@@ -34,5 +35,13 @@ describe('реестр навыков', () => {
   it('ловит цикл пререквизитов', () => {
     const out = registryProblems([e('x', '7', ['z']), e('y', '7', ['x']), e('z', '7', ['y'])]).join('\n');
     expect(out).toContain('цикл пререквизитов');
+  });
+});
+
+describe('названия навыков', () => {
+  it('у каждого навыка реестра есть название в ru.json — для отчёта родителю', () => {
+    const ru = require('../../i18n/locales/ru.json') as Record<string, unknown>;
+    const at = (key: string) => key.split('.').reduce<unknown>((n, k) => (n as Record<string, unknown> | undefined)?.[k], ru);
+    expect(SKILLS.filter((s) => typeof at(s.titleKey) !== 'string').map((s) => s.id)).toEqual([]);
   });
 });

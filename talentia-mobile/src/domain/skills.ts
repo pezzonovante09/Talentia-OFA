@@ -34,15 +34,23 @@ export type SkillEntry = {
    */
   prerequisites: readonly string[];
   source: SkillSource;
+  /** Название навыка для отчёта родителю — ключ `content.skills.<id>` в ru.json. */
+  titleKey: string;
+  /**
+   * Сколько предметов самое большее встречается в заданиях навыка на счёт (гард
+   * `skillCountCap`): «узнать до трёх» с четырьмя фигурами учит уже другому. Обязателен у
+   * навыка, в заданиях которого есть `count`.
+   */
+  maxCount?: number;
 };
 
 export const MAX_PREREQUISITES = 3;
 
 export const SKILLS: readonly SkillEntry[] = [
   // Числовая долина, 5-6, тема «Сколько их?» — пилот (`content/numbers-5-6.ts`).
-  { id: 'subitize-1-3', region: 'numbers', band: '5-6', prerequisites: [], source: 'norm' },
-  { id: 'count-to-5', region: 'numbers', band: '5-6', prerequisites: ['subitize-1-3'], source: 'norm' },
-  { id: 'count-to-10', region: 'numbers', band: '5-6', prerequisites: ['count-to-5'], source: 'norm' },
+  { id: 'subitize-1-3', region: 'numbers', band: '5-6', prerequisites: [], source: 'norm', titleKey: 'content.skills.subitize-1-3', maxCount: 3 },
+  { id: 'count-to-5', region: 'numbers', band: '5-6', prerequisites: ['subitize-1-3'], source: 'norm', titleKey: 'content.skills.count-to-5', maxCount: 5 },
+  { id: 'count-to-10', region: 'numbers', band: '5-6', prerequisites: ['count-to-5'], source: 'norm', titleKey: 'content.skills.count-to-10', maxCount: 10 },
 ];
 
 export const SKILL_BY_ID: ReadonlyMap<string, SkillEntry> = new Map(SKILLS.map((s) => [s.id, s]));
@@ -63,6 +71,8 @@ export function registryProblems(list: readonly SkillEntry[]): string[] {
     if (byId.has(s.id)) bad.push(`навык ${s.id} записан дважды`);
     byId.set(s.id, s);
     if (!KEBAB.test(s.id)) bad.push(`навык «${s.id}» не kebab-case латиницей`);
+    if (s.titleKey !== `content.skills.${s.id}`) bad.push(`${s.id}: titleKey должен быть content.skills.${s.id}`);
+    if (s.maxCount !== undefined && !(Number.isInteger(s.maxCount) && s.maxCount >= 1)) bad.push(`${s.id}: maxCount — целое ≥ 1`);
     if (s.prerequisites.length > MAX_PREREQUISITES) {
       bad.push(`${s.id}: пререквизитов ${s.prerequisites.length}, не больше ${MAX_PREREQUISITES}`);
     }

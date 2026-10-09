@@ -9,6 +9,7 @@
  * контент.
  */
 import { CHOOSE_SHARE_MIN_TASKS, RULES, collectCorpus, keysIn } from './corpusRules';
+import { countSilhouette } from '../../domain/countLayout';
 import type { Corpus, Locales, RuleId } from './corpusRules';
 import type { ChooseTask, Lesson, Task, TaskFormat, Topic } from '../../types/task';
 import { SKILL_BY_ID } from '../../domain/skills';
@@ -27,6 +28,8 @@ jest.mock('../../domain/skills', () => {
     band: '5-6',
     prerequisites: [],
     source: 'norm',
+    titleKey: `content.skills.${id}`,
+    maxCount: 10,
   }));
   return { ...actual, SKILLS, SKILL_BY_ID: new Map(SKILLS.map((x) => [x.id, x])) };
 });
@@ -58,9 +61,9 @@ function lessonPicture(): Lesson {
         promptKey: k('a.l1.m.prompt'),
         stimulus: { labelKey: k('a.l1.m.stimulus'), shape: 'leaf', count: 3 },
         options: [
-          { id: 'a', labelKey: 'content.common.one', shape: 'dot', count: 1, correct: false },
-          { id: 'b', labelKey: 'content.common.two', shape: 'dot', count: 2, correct: false },
-          { id: 'c', labelKey: 'content.common.three', shape: 'dot', count: 3, correct: true },
+          { id: 'a', labelKey: 'content.common.one', shape: 'dot', layout: 'dice', count: 1, correct: false },
+          { id: 'b', labelKey: 'content.common.two', shape: 'dot', layout: 'dice', count: 2, correct: false },
+          { id: 'c', labelKey: 'content.common.three', shape: 'dot', layout: 'dice', count: 3, correct: true },
         ],
       },
       steps: [{ lineKey: k('a.l1.m.s1') }, { lineKey: k('a.l1.m.s2'), reveal: 'c' }],
@@ -76,9 +79,9 @@ function lessonPicture(): Lesson {
         explainKey: [k('a.l1.t1.explain')],
         stimulus: { labelKey: k('a.l1.t1.stimulus'), shape: 'stone', count: 2 },
         options: [
-          { id: 'a', labelKey: 'content.common.one', shape: 'dot', count: 1, correct: false },
-          { id: 'b', labelKey: 'content.common.two', shape: 'dot', count: 2, correct: true },
-          { id: 'c', labelKey: 'content.common.three', shape: 'dot', count: 3, correct: false },
+          { id: 'a', labelKey: 'content.common.one', shape: 'dot', layout: 'dice', count: 1, correct: false },
+          { id: 'b', labelKey: 'content.common.two', shape: 'dot', layout: 'dice', count: 2, correct: true },
+          { id: 'c', labelKey: 'content.common.three', shape: 'dot', layout: 'dice', count: 3, correct: false },
         ],
       },
       {
@@ -119,9 +122,9 @@ function lessonPicture(): Lesson {
         explainKey: [k('a.l1.t4.explain')],
         stimulus: { labelKey: k('a.l1.t4.stimulus'), shape: 'berry', count: 1 },
         options: [
-          { id: 'a', labelKey: 'content.common.one', shape: 'dot', count: 1, correct: true },
-          { id: 'b', labelKey: 'content.common.two', shape: 'dot', count: 2, correct: false },
-          { id: 'c', labelKey: 'content.common.three', shape: 'dot', count: 3, correct: false },
+          { id: 'a', labelKey: 'content.common.one', shape: 'dot', layout: 'dice', count: 1, correct: true },
+          { id: 'b', labelKey: 'content.common.two', shape: 'dot', layout: 'dice', count: 2, correct: false },
+          { id: 'c', labelKey: 'content.common.three', shape: 'dot', layout: 'dice', count: 3, correct: false },
         ],
       },
     ],
@@ -821,7 +824,7 @@ describe('гард корпуса: лимиты по полосе', () => {
 
   it('ловит четыре варианта choose на полосе 5–6', () => {
     const c = goodCorpus();
-    taskOf(c, 0, 'choose').options.push({ id: 'd', labelKey: 'content.common.two', shape: 'dot', count: 4, correct: false });
+    taskOf(c, 0, 'choose').options.push({ id: 'd', labelKey: 'content.common.two', shape: 'dot', layout: 'dice', count: 4, correct: false });
     expectRed('choose', c, 'вариантов 4, нужно 3');
   });
 
@@ -1080,9 +1083,9 @@ describe('гард корпуса: разобранный пример', () => {
     if (ex.format !== 'choose') throw new Error('пример 5-6 — choose');
     ex.stimulus = { labelKey: k('a.l1.m.other'), shape: 'stone', count: 2 };
     ex.options = [
-      { id: 'z', labelKey: 'content.common.three', shape: 'dot', count: 3, correct: false },
-      { id: 'y', labelKey: 'content.common.two', shape: 'dot', count: 2, correct: true },
-      { id: 'x', labelKey: 'content.common.one', shape: 'dot', count: 1, correct: false },
+      { id: 'z', labelKey: 'content.common.three', shape: 'dot', layout: 'dice', count: 3, correct: false },
+      { id: 'y', labelKey: 'content.common.two', shape: 'dot', layout: 'dice', count: 2, correct: true },
+      { id: 'x', labelKey: 'content.common.one', shape: 'dot', layout: 'dice', count: 1, correct: false },
     ];
     expectRed('model', c, 'тот же стимул и ответ, что у fx-a-l1-t1');
   });
@@ -1411,14 +1414,14 @@ describe('гард корпуса: реестр навыков', () => {
   });
 
   it('ловит навык раньше его полосы', () => {
-    add({ id: 'later-skill', region: 'numbers', band: '7', prerequisites: [], source: 'kr' });
+    add({ id: 'later-skill', region: 'numbers', band: '7', prerequisites: [], source: 'kr', titleKey: 'content.skills.later-skill' });
     const c = goodCorpus();
     lessonAt(c, 0).tasks[1].skill = 'later-skill';
     expectRed('skillRegistry', c, 'навык later-skill вводится на 7, а урок — 5-6');
   });
 
   it('ловит навык раньше пререквизита той же полосы', () => {
-    add({ id: 'needs-sort', region: 'numbers', band: '5-6', prerequisites: ['sort-by-kind'], source: 'norm' });
+    add({ id: 'needs-sort', region: 'numbers', band: '5-6', prerequisites: ['sort-by-kind'], source: 'norm', titleKey: 'content.skills.needs-sort' });
     const c = goodCorpus();
     lessonAt(c, 0).tasks[1].skill = 'needs-sort';
     expectRed('skillRegistry', c, 'навык needs-sort раньше своего пререквизита sort-by-kind');
@@ -1558,5 +1561,134 @@ describe('гард корпуса: разброс на 5-6', () => {
     expect(run('scatter56', c)).toEqual([]);
     t.stimulus = { ...t.stimulus, count: 8, layout: 'row' };
     expect(run('scatter56', c)).toEqual([]);
+  });
+});
+
+describe('правила пилота (аудит 2026-10-06, А11–А13)', () => {
+  it('choosePerLesson: третий choose из четырёх — красно', () => {
+    const c = goodCorpus();
+    const l = lessonAt(c, 0);
+    l.tasks[1] = { ...(l.tasks[0] as ChooseTask), id: 'fx-a-l1-t2' };
+    expectRed('choosePerLesson', c, 'choose 3 из 4, не больше 2');
+  });
+
+  it('skillCountCap: фигур больше потолка навыка — красно; у навыка нет потолка — красно', () => {
+    const entry = SKILL_BY_ID.get('count-to-3') as SkillEntry & { maxCount?: number };
+    const saved = entry.maxCount;
+    try {
+      entry.maxCount = 2;
+      expectRed('skillCountCap', goodCorpus(), 'не больше 2');
+      delete entry.maxCount;
+      expectRed('skillCountCap', goodCorpus(), 'нет maxCount');
+    } finally {
+      entry.maxCount = saved;
+    }
+  });
+
+  it('answerRank: во всех choose урока верный — наибольший — красно', () => {
+    const c = goodCorpus();
+    for (const t of lessonAt(c, 0).tasks) {
+      if (t.format !== 'choose') continue;
+      const top = Math.max(...t.options.map((o) => o.count ?? 0));
+      t.options = t.options.map((o) => ({ ...o, correct: o.count === top }));
+      if (t.stimulus) t.stimulus = { ...t.stimulus, count: top };
+    }
+    expectRed('answerRank', c, 'верный — наибольший');
+  });
+
+  it('countConsistency: повтор числа у вариантов, стимул не равен верному, пара не поровну — красно', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0] as ChooseTask;
+    t.options = t.options.map((o) => (o.id === 'c' ? { ...o, count: 2 } : o));
+    expectRed('countConsistency', c, 'повторяется число');
+    const c2 = goodCorpus();
+    (lessonAt(c2, 0).tasks[0] as ChooseTask).stimulus = { labelKey: k('a.l1.t1.stimulus'), shape: 'stone', count: 3 };
+    expectRed('countConsistency', c2, 'у стимула 3, у верного 2');
+  });
+
+  it('silhouette: стимул и верный вариант одной раскладки и числа — красно; россыпь против ряда — нет', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0] as ChooseTask;
+    t.stimulus = { ...t.stimulus!, layout: 'dice' };
+    expectRed('silhouette', c, 'одного силуэта');
+    t.stimulus = { ...t.stimulus, layout: 'scatter' };
+    expect(run('silhouette', c)).toEqual([]);
+  });
+
+  it('dice56: шесть точек кубиком на 5-6 — красно', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0] as ChooseTask;
+    t.options = t.options.map((o) => (o.id === 'c' ? { ...o, count: 6 } : o));
+    expectRed('dice56', c, '6 точек кубиком');
+  });
+});
+
+describe('правила пилота: граничные случаи (проверка методиста 2026-10-09)', () => {
+  it('silhouette: ряд 8 против точек 8 — «пять и остаток» с обеих сторон — красно', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0] as ChooseTask;
+    t.stimulus = { ...t.stimulus!, count: 8, layout: 'row' };
+    t.options = t.options.map((o) => (o.correct ? { ...o, count: 8 } : o));
+    expectRed('silhouette', c, 'одного силуэта');
+  });
+
+  it('silhouette: пара match ряд 3 ↔ ряд 3 — красно; пара по одной фигуре — нет', () => {
+    const c = goodCorpus();
+    const m = lessonAt(c, 0).tasks[2] as Extract<Task, { format: 'match' }>;
+    m.pairs[2] = { ...m.pairs[2], right: { labelKey: m.pairs[2].right.labelKey, shape: 'stone', count: 3, layout: 'row' } };
+    expectRed('silhouette', c, 'пара p3 одного силуэта');
+    const c2 = goodCorpus();
+    const m2 = lessonAt(c2, 0).tasks[2] as Extract<Task, { format: 'match' }>;
+    m2.pairs[0] = { ...m2.pairs[0], right: { labelKey: m2.pairs[0].right.labelKey, shape: 'stone', count: 1 } };
+    expect(run('silhouette', c2)).toEqual([]);
+  });
+
+  it('countSilhouette: ряд и точки при 6–10 совпадают, при 2–5 различаются', () => {
+    for (let n = 6; n <= 10; n += 1) expect(countSilhouette('row', n)).toBe(countSilhouette('dice', n));
+    for (let n = 2; n <= 5; n += 1) expect(countSilhouette('row', n)).not.toBe(countSilhouette('dice', n));
+  });
+
+  it('countConsistency: пара 2 ↔ 3 — красно; order, где позиция не растёт с числом, — красно', () => {
+    const c = goodCorpus();
+    const m = lessonAt(c, 0).tasks[2] as Extract<Task, { format: 'match' }>;
+    m.pairs[1] = { ...m.pairs[1], right: { labelKey: m.pairs[1].right.labelKey, shape: 'stone', count: 3 } };
+    expectRed('countConsistency', c, 'пара p2 — 2 и 3');
+    const c2 = goodCorpus();
+    const o = taskOf(c2, 0, 'order');
+    o.items = o.items.map((i) => ({ ...i, position: i.count === 1 ? 2 : i.count === 3 ? 0 : 1 }));
+    expectRed('countConsistency', c2, 'позиции order не растут');
+  });
+
+  it('answerRank: во всех choose урока верный — наименьший — красно', () => {
+    const c = goodCorpus();
+    for (const t of lessonAt(c, 0).tasks) {
+      if (t.format !== 'choose') continue;
+      const low = Math.min(...t.options.map((o) => o.count ?? 0));
+      t.options = t.options.map((o) => ({ ...o, correct: o.count === low }));
+      if (t.stimulus) t.stimulus = { ...t.stimulus, count: low };
+    }
+    expectRed('answerRank', c, 'верный — наименьший');
+  });
+
+  it('answerRank: по теме наибольший больше чем в половине — красно, хотя ни один урок сам не нарушает; ровно половина — нет', () => {
+    const toMax = (t: ChooseTask) => {
+      const top = Math.max(...t.options.map((o) => o.count ?? 0));
+      t.options = t.options.map((o) => ({ ...o, correct: o.count === top }));
+      if (t.stimulus) t.stimulus = { ...t.stimulus, count: top };
+    };
+    const c = goodCorpus();
+    const [l1, l2] = c[0].topic.lessons;
+    toMax(l1.tasks[0] as ChooseTask); // урок 1: наибольший и наименьший; урок 2: середина — 1 из 3
+    expect(run('answerRank', c)).toEqual([]);
+    const l2choose = l2.tasks.find((t): t is ChooseTask => t.format === 'choose')!;
+    toMax(l2choose); // урок 2 с одним choose — наибольший: по теме 2 из 3
+    expectRed('answerRank', c, 'наибольший в 2 из 3');
+    // ещё урок с одним choose в середине — ровно половина, 2 из 4
+    const mid = { ...l2, id: 'fx-a-l9', tasks: l2.tasks.map((t) => ({ ...t, id: `${t.id}-9` })) };
+    const at = mid.tasks.findIndex((t) => t.format === 'choose');
+    const t0 = mid.tasks[at] as ChooseTask;
+    mid.tasks[at] = { ...t0, options: t0.options.map((o) => ({ ...o, correct: o.count === 2 })), stimulus: { ...t0.stimulus!, count: 2 } };
+    c[0].topic.lessons.push(mid);
+    expect(run('answerRank', c)).toEqual([]);
   });
 });
