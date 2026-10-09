@@ -6,15 +6,21 @@
  * Решения и обоснования — в REBUILD.md в корне репозитория.
  *
  * Все контрастные коэффициенты в комментариях посчитаны по WCAG 2.1
- * и проверены скриптом; менять цвет без пересчёта нельзя.
+ * (`contrast.ts`) и проверены тестами; менять цвет без пересчёта нельзя.
  */
+import type { Region } from '../types/task';
 
 export type Scheme = 'light' | 'dark';
 
 /** Плотность интерфейса. Заменяет множитель кеглей: шрифты не масштабируются никогда. */
 export type Density = 'default' | 'roomy';
 
-export type RegionId = 'numbers' | 'words' | 'nature' | 'logic';
+/**
+ * Регион — **один тип на всё приложение**: схема курса (`types/task.ts`) — источник,
+ * токены и реестр ассетов (`assets/registry.ts`) его только читают. Раньше здесь был
+ * свой список с `logic`, а в реестре — `workshop` (аудит 2026-10-06, А25).
+ */
+export type RegionId = Region['id'];
 
 export type RegionPalette = Record<RegionId, string>;
 
@@ -40,7 +46,7 @@ export type ColorTokens = {
 
   /** Основное действие — заливка. */
   primary: string;
-  /** То же действие в виде мелкого текста; ≥4.5:1 к фону. */
+  /** То же действие в виде мелкого текста; ≥4.5:1 на каждой поверхности `INK_SURFACES`. */
   primaryInk: string;
   onPrimary: string;
 
@@ -50,7 +56,7 @@ export type ColorTokens = {
 
   /** Награда. Сам по себе даёт 1.45:1 к фону — ВСЕГДА только с контуром. */
   accent: string;
-  /** Тот же смысл для текста; ≥4.5:1 к фону. */
+  /** Тот же смысл для текста; ≥4.5:1 на каждой поверхности `INK_SURFACES`. */
   accentInk: string;
   onAccent: string;
 
@@ -59,6 +65,7 @@ export type ColorTokens = {
   successInk: string;
   onSuccess: string;
 
+  /** Ошибка. Служит и заливкой (с `onError`), и текстом — поэтому тоже чернила. */
   error: string;
   onError: string;
 
@@ -68,9 +75,21 @@ export type ColorTokens = {
   regions: RegionPalette;
   /** Текст поверх заливки региона. В светлой схеме тёмный, в тёмной — светлый. */
   onRegion: string;
-  /** Регион в виде текста или мелкой метки; ≥4.5:1 к фону. */
+  /** Регион в виде текста или мелкой метки; ≥4.5:1 на каждой поверхности `INK_SURFACES`. */
   regionsInk: RegionPalette;
 };
+
+/**
+ * Где гарантированы чернила — детский аналог `REGION_INK_SURFACE` из `parentTokens.ts`.
+ * Все `*Ink`, `error` и `regionsInk` проходят 4.5:1 на **каждой** из этих поверхностей,
+ * во всех четырёх палитрах. Раньше гарантия была только к фону, и на `surfaceSunken`
+ * чернила давали 3.6:1 (аудит 2026-10-06, А25).
+ *
+ * Связывающие поверхности: в светлых схемах — `surfaceSunken` (самая тёмная, чернила
+ * держат ≥4.66:1), в тёмных — `surfaceAlt` (самая светлая, ≥4.67:1). Проверяет
+ * `__tests__/tokens.test.ts`.
+ */
+export const INK_SURFACES = ['background', 'surface', 'surfaceAlt', 'surfaceSunken'] as const satisfies readonly (keyof ColorTokens)[];
 
 export type TypeStyle = {
   size: number;
@@ -101,7 +120,7 @@ export type SpacingTokens = Record<'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'x
 export type RadiiTokens = Record<'sm' | 'md' | 'lg' | 'xl' | 'pill', number>;
 export type StrokeTokens = Record<'hairline' | 'base' | 'bold', number>;
 export type TouchTokens = Record<'min' | 'comfortable' | 'primary' | 'gap', number>;
-export type MotionTokens = Record<'instant' | 'quick' | 'base' | 'slow' | 'celebrate', number>;
+export type MotionTokens = Record<'instant' | 'press' | 'quick' | 'base' | 'slow' | 'celebrate', number>;
 export type ElevationTokens = Record<'flat' | 'raised' | 'overlay', ElevationSpec>;
 
 export type AppTheme = {
@@ -166,6 +185,11 @@ export const touch: TouchTokens = {
 
 export const motion: MotionTokens = {
   instant: 0,
+  /**
+   * Отклик плоского нажимаемого — сжатие, а не посадка на подушку (решение №69):
+   * Tali, пузырь, стимул отвечают на тап не дольше 100 мс.
+   */
+  press: 90,
   quick: 140,
   base: 220,
   slow: 360,
@@ -184,6 +208,28 @@ export const elevationCalm: ElevationTokens = {
   flat: { offsetY: 0 },
   raised: { offsetY: 2 },
   overlay: { offsetY: 3 },
+};
+
+/**
+ * У кого подушка (решения №10, №68, №69). Подушка значит «это кнопка»: она есть у
+ * вариантов ответа, управления (выход, повтор, действие) и у плитки «разложен» в
+ * `group`. Tali, пузырь и стимул плоские — тап по ним только повторяет звук, и лишние
+ * «кнопки» спорили бы с вариантами; их отклик — сжатие за `motion.press`. Жетоны ABA
+ * плоские — они не нажимаются вовсе (`abaTokens.ts`).
+ *
+ * Calm только утончает подушку (`elevationCalm`), focus и тёмная схема карту не меняют:
+ * «нажимаемость» — свойство роли, а не режима.
+ */
+export type CushionRole = 'answerOption' | 'control' | 'groupPlaced' | 'tali' | 'bubble' | 'stimulus' | 'abaToken';
+
+export const cushionByRole: Record<CushionRole, 'raised' | 'flat'> = {
+  answerOption: 'raised',
+  control: 'raised',
+  groupPlaced: 'raised',
+  tali: 'flat',
+  bubble: 'flat',
+  stimulus: 'flat',
+  abaToken: 'flat',
 };
 
 /* ───────────────────────── типографика ───────────────────────── */
@@ -241,34 +287,53 @@ const lightColors: ColorTokens = {
   onPrimary: '#FFFFFF', // на primary: 7.71:1
 
   secondary: '#D93A1E', // 4.19:1 — только крупное и иконки
-  secondaryInk: '#CE371D', // 4.58:1 — для текста
+  // Чернила ниже — «к фону / к surfaceSunken» (самая тёмная поверхность светлой схемы).
+  // Прежние #CE371D, #906800, #C42020 давали на surfaceSunken 3.68 / 3.70 / 4.31.
+  secondaryInk: '#B12E17', // 5.86 / 4.70
   onSecondary: '#FFFFFF', // на secondary: 4.59:1
 
   accent: '#FFC42E', // 1.45:1 — только заливка с контуром
-  accentInk: '#906800', // 4.60:1 — для текста
+  accentInk: '#7C5900', // 5.84 / 4.68
   onAccent: '#2A1A12', // на accent: 10.51:1
 
   success: '#12855A',
-  successInk: '#0D6B48', // 5.97:1
+  successInk: '#0D6B48', // 5.97 / 4.79
   onSuccess: '#FFFFFF', // на success: 4.64:1
 
-  error: '#C42020', // 5.37:1
-  onError: '#FFFFFF', // на error: 5.87:1
+  error: '#BB1E1E', // 5.78 / 4.64; был #C42020 — тот же красный на полтона глубже
+  onError: '#FFFFFF', // на error: 6.33:1
 
-  focusRing: '#5A34C4',
+  focusRing: '#5A34C4', // primaryInk тот же: 7.04 / 5.65
 
   regions: {
     numbers: '#F2B705', // с onRegion: 9.20:1
     words: '#0E8FBF', // 4.54:1
     nature: '#2FA24E', // 5.10:1
-    logic: '#9671DB', // осветлён с #7A4BD1: тот давал 2.99:1 под тёмным текстом
+    workshop: '#9671DB', // осветлён с #7A4BD1: тот давал 2.99:1 под тёмным текстом
+    /**
+     * Кыргызский (А17) — малиновый. С onRegion 5.38:1. Цвет новой роли: ни один регион
+     * и ни один сигнал не занимает тон 340°.
+     *
+     * Отличимость от сигналов. От `error` #BB1E1E: тон 340° против 0°, яркость 2.03:1.
+     * От `secondary` #D93A1E: 340° против 9°, яркость 1.48:1 — самая близкая пара.
+     * При дейтеранопии (Viénot 1999) малиновый становится нейтрально-серым ≈#9B9B90,
+     * error — тёмной оливой ≈#6E6E07 (1.95:1), secondary — оливой ≈#858500 (1.42:1):
+     * различие держат и насыщенность, и яркость. При протанопии ≈#808094 против
+     * ≈#494921 (2.38:1) и ≈#5F5F22 (1.71:1). Ближе всех при дейтеранопии «Мастерская»
+     * ≈#7D7DDB (1.29:1) — серый против синего; регион всё равно не кодируется одним
+     * цветом: на карте его несут панорама и подпись (А25).
+     */
+    kyrgyz: '#E36A93',
   },
   onRegion: '#2A1A12',
+  // Затемнены до ≥4.5 на surfaceSunken: прежние (#8C6A03, #0C78A0, #25803E, #7A4BD1)
+  // проходили только к фону, на surfaceSunken давали 3.63–4.10. Тон сохранён.
   regionsInk: {
-    numbers: '#8C6A03', // 4.59:1
-    words: '#0C78A0', // 4.56:1
-    nature: '#25803E', // 4.53:1
-    logic: '#7A4BD1', // 5.11:1
+    numbers: '#785A02', // к фону 5.88, surfaceAlt 5.33, surfaceSunken 4.72
+    words: '#096689', // 5.86 / 5.32 / 4.70
+    nature: '#1E6D34', // 5.83 / 5.28 / 4.68
+    workshop: '#7044C0', // 5.85 / 5.31 / 4.70
+    kyrgyz: '#964460', // 5.83 / 5.28 / 4.68; как текст рядом с error различается тоном
   },
 };
 
@@ -288,7 +353,9 @@ const darkColors: ColorTokens = {
   border: '#775F4D', // 3.06:1 (#4A3B30 давал 1.70:1 и был отвергнут)
 
   primary: '#9B7CFF', // 5.82:1
-  primaryInk: '#9B7CFF',
+  // Чернила тёмной схемы — «к фону / к surfaceAlt» (самая светлая поверхность).
+  // primaryInk отделён от заливки: #9B7CFF на surfaceAlt давал 4.39.
+  primaryInk: '#A68AFF', // 6.67 / 5.03
   onPrimary: '#1B1410',
 
   secondary: '#FF7455', // 6.83:1
@@ -313,41 +380,49 @@ const darkColors: ColorTokens = {
     numbers: '#8C6A03', // с onRegion: 4.59:1
     words: '#0C78A0', // 4.56:1
     nature: '#25803E', // 4.53:1
-    logic: '#8255D4', // 4.57:1
+    workshop: '#8255D4', // 4.57:1
+    kyrgyz: '#AC4F6E', // 4.68:1; к dark error 1.85, к dark secondary 1.92
   },
   onRegion: '#FFF3E3',
+  // Осветлены до ≥4.5 на surfaceAlt: прежние #0E8FBF / #2FA24E / #916AD9 давали там
+  // 3.72 / 4.18 / 3.44. «Мастерская» сдвинута к красному (264°), чтобы не слиться с
+  // primaryInk (254°); различие с действием по-прежнему держит форма.
   regionsInk: {
-    numbers: '#F2B705', // 10.01:1
-    words: '#0E8FBF', // 4.94:1
-    nature: '#2FA24E', // 5.54:1
-    logic: '#916AD9', // 4.56:1
+    numbers: '#F2B705', // к фону 10.01, surfaceAlt 7.54
+    words: '#11A2D8', // 6.22 / 4.69
+    nature: '#33AD54', // 6.28 / 4.73
+    workshop: '#B08AE6', // 6.61 / 4.98
+    kyrgyz: '#EB6E98', // 6.25 / 4.71
   },
 };
 
 /** Спокойный режим: насыщенность акцентов вниз на 40%, значения пересчитаны. */
 const lightCalmColors: ColorTokens = {
   ...lightColors,
+  // Чернила — «к фону / к surfaceSunken», как в светлой схеме.
   primary: '#6851A7', // 5.77:1
-  primaryInk: '#6851A7',
+  primaryInk: '#6851A7', // 5.77 / 4.63
   secondary: '#B45443',
-  secondaryInk: '#B25342', // 4.56:1
+  secondaryInk: '#984637', // 5.87 / 4.71; был #B25342 — 3.66 на surfaceSunken
   accent: '#D5B258', // заливка с контуром
-  accentInk: '#7A6234',
-  success: '#296E54', // 5.56:1
-  successInk: '#296E54',
-  error: '#A34141', // 5.66:1
+  accentInk: '#725C30', // 5.83 / 4.68; был #7A6234 — 4.25
+  success: '#296E54', // 5.56:1, onSuccess 6.08
+  successInk: '#276A51', // 5.87 / 4.71; отделён от заливки — #296E54 давал 4.46
+  error: '#A34141', // 5.66 / 4.54
   focusRing: '#6851A7',
   regions: {
     numbers: '#C39F34', // с onRegion: 6.64:1
     words: '#378EAF', // 4.50:1
     nature: '#4B955F', // 4.59:1
-    logic: '#9C86C6', // 5.29:1
+    workshop: '#9C86C6', // 5.29:1
+    kyrgyz: '#CA819A', // 5.67:1; насыщенность 68% → 41%; к error 2.10, к secondary 1.66
   },
   regionsInk: {
-    numbers: '#7A6420',
-    words: '#2E7793', // 4.59:1
-    nature: '#3B7549',
-    logic: '#7D60B3', // 4.57:1
+    numbers: '#715D1D', // 5.84 / 4.69
+    words: '#26667E', // 5.84 / 4.69
+    nature: '#356A41', // 5.83 / 4.68
+    workshop: '#6B529A', // 5.82 / 4.67
+    kyrgyz: '#815161', // 5.84 / 4.69
   },
 };
 
@@ -367,7 +442,18 @@ const darkCalmColors: ColorTokens = {
     numbers: '#715C1E', // с onRegion: 5.90:1
     words: '#2A6A82', // 5.51:1
     nature: '#376E46', // 5.51:1
-    logic: '#7D60B4', // 4.56:1
+    workshop: '#7D60B4', // 4.56:1
+    kyrgyz: '#875466', // 5.50:1; к error 2.33, к secondary 2.29
+  },
+  // Раньше calm-тёмная схема наследовала насыщенные чернила обычной (А25): спокойный
+  // режим гасил заливки, а текст региона оставался кричащим. Насыщенность −40…45%,
+  // контраст «к фону / к surfaceAlt» не ниже 4.78.
+  regionsInk: {
+    numbers: '#C9A94F', // 8.03 / 6.05 — охра вместо чистого жёлтого
+    words: '#52A2C4', // 6.35 / 4.78
+    nature: '#62AD76', // 6.72 / 5.06
+    workshop: '#B198D0', // 7.17 / 5.40; от calm-primary #A996E5 отведён тоном (267° / 254°)
+    kyrgyz: '#D48DA5', // 7.06 / 5.32
   },
 };
 

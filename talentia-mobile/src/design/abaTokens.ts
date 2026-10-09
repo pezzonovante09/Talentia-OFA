@@ -31,7 +31,7 @@ export type AbaColors = {
   plateOutline: string;
   /** Текст инструкции и метки подсказки — на фоне экрана. */
   ink: string;
-  /** Пустой слот доски жетонов. */
+  /** Пустой слот доски жетонов. Утоплен цветом заливки, не смещением — доска плоская. */
   tokenSlot: string;
   /** Контур пустого слота — пунктир. */
   tokenSlotOutline: string;
@@ -108,6 +108,11 @@ export const abaControls = {
 /**
  * Доска жетонов. **Жетоны не интерактивны**, поэтому правило `touch.min` 60 pt к
  * ним не применяется — это зафиксировано здесь, чтобы размер не отметили как дефект.
+ *
+ * **Жетоны плоские** (решения №10, №69; `cushionByRole.abaToken` в `tokens.ts`): подушка
+ * значит «нажми меня», а жетон не нажимается — с подушкой ребёнок тыкал бы в доску
+ * вместо стимула. Calm понижает общий контур 3 → 2, но контур жетона остаётся 3:
+ * у пустого слота он — пунктир, и тоньше 3 pt пунктир на 32 pt перестаёт читаться.
  */
 export const abaTokenBoard = {
   interactive: false,
@@ -117,22 +122,23 @@ export const abaTokenBoard = {
   minSize: 32,
   maxPerRow: 8,
   stroke: 3,
-  /** Подушка у заработанного, у пустого слота — нет (он утоплен). */
-  cushion: 4,
 } as const;
 
-/** Состояние ячейки доски. Различаются четырьмя признаками, ни одного — по прозрачности. */
+/**
+ * Состояние ячейки доски. Пустой и заработанный различаются тремя признаками —
+ * заливкой, контуром (пунктир / сплошной) и звездой; ни одним — по прозрачности или
+ * рельефу. Обесцветьте доску — останутся контур и звезда.
+ */
 export type TokenCellStyle = {
   fill: 'slot' | 'earned';
   outline: 'dashed' | 'solid';
   star: 'none' | 'solid' | 'outline';
-  relief: 'sunken' | 'cushion';
 };
 
 export const tokenCell: Record<'empty' | 'earnedIndependent' | 'earnedPrompted', TokenCellStyle> = {
-  empty: { fill: 'slot', outline: 'dashed', star: 'none', relief: 'sunken' },
-  earnedIndependent: { fill: 'earned', outline: 'solid', star: 'solid', relief: 'cushion' },
-  earnedPrompted: { fill: 'earned', outline: 'solid', star: 'outline', relief: 'cushion' },
+  empty: { fill: 'slot', outline: 'dashed', star: 'none' },
+  earnedIndependent: { fill: 'earned', outline: 'solid', star: 'solid' },
+  earnedPrompted: { fill: 'earned', outline: 'solid', star: 'outline' },
 };
 
 /**

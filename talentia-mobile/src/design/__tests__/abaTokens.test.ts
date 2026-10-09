@@ -14,7 +14,7 @@ import {
   type AbaColors,
 } from '../abaTokens';
 import { contrast, SHAPE_CONTRAST, TEXT_CONTRAST } from '../contrast';
-import { buildTheme, palettes, touch, type Scheme } from '../tokens';
+import { buildTheme, cushionByRole, palettes, touch, type Scheme } from '../tokens';
 
 const SCHEMES: Scheme[] = ['light', 'dark'];
 
@@ -92,11 +92,19 @@ describe('жетоны', () => {
     });
   });
 
-  it('пустой и заработанный различаются четырьмя признаками, не прозрачностью', () => {
-    const a = tokenCell.empty;
-    const b = tokenCell.earnedIndependent;
-    const diffs = (Object.keys(a) as (keyof typeof a)[]).filter((k) => a[k] !== b[k]);
-    expect(diffs.sort()).toEqual(['fill', 'outline', 'relief', 'star']);
+  it('пустой и заработанный различаются заливкой, контуром и звездой — не прозрачностью', () => {
+    (['earnedIndependent', 'earnedPrompted'] as const).forEach((earned) => {
+      const a = tokenCell.empty;
+      const b = tokenCell[earned];
+      const diffs = (Object.keys(a) as (keyof typeof a)[]).filter((k) => a[k] !== b[k]);
+      expect(diffs.sort()).toEqual(['fill', 'outline', 'star']);
+    });
+  });
+
+  it('жетоны плоские: ни подушки, ни рельефа (решения №10, №69)', () => {
+    expect(abaTokenBoard).not.toHaveProperty('cushion');
+    Object.values(tokenCell).forEach((cell) => expect(cell).not.toHaveProperty('relief'));
+    expect(cushionByRole.abaToken).toBe('flat');
   });
 
   it('жетон за самостоятельный и за подсказанный различимы — звездой', () => {

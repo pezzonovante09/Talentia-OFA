@@ -51,5 +51,7 @@ describe('реестр векторных ассетов', () => {
     const PANORAMA_PENDING = ['kyrgyz'];
     const inSchema = [...ids.matchAll(/'(\w+)'/g)].map((m) => m[1]).filter((id) => !PANORAMA_PENDING.includes(id)).sort();
     expect(inRegistry).toEqual(inSchema);
+    // Ожидающая панорама объявлена в реестре заготовкой `null`, а не пропущена молча.
+    PANORAMA_PENDING.forEach((id) => expect(src).toMatch(new RegExp(`^\\s{2}${id}: null,$`, 'm')));
   });
 });

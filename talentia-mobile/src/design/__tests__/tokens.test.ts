@@ -6,6 +6,9 @@
  */
 import {
   buildTheme,
+  cushionByRole,
+  INK_SURFACES,
+  motion,
   palettes,
   spacing,
   touch,
@@ -15,7 +18,8 @@ import {
 } from '../tokens';
 import { contrast, luminance } from '../contrast';
 
-const REGIONS: RegionId[] = ['numbers', 'words', 'nature', 'logic'];
+/** Все регионы схемы курса (`Region['id']`), включая кыргызский (А17). */
+const REGIONS: RegionId[] = ['numbers', 'words', 'nature', 'workshop', 'kyrgyz'];
 const SCHEMES: Scheme[] = ['light', 'dark'];
 const VARIANTS: (keyof (typeof palettes)['light'])[] = ['normal', 'calm'];
 
@@ -42,9 +46,12 @@ describe('контраст палитр', () => {
           });
         });
 
-        it('чернильные варианты акцентов пригодны для текста', () => {
-          [c.primaryInk, c.secondaryInk, c.accentInk, c.successInk, c.error].forEach((ink) => {
-            expect(contrast(ink, c.background)).toBeGreaterThanOrEqual(TEXT);
+        it('чернильные варианты акцентов читаются на каждой поверхности, а не только на фоне', () => {
+          // А25: прежние чернила проходили к фону и давали 3.7:1 на surfaceSunken
+          INK_SURFACES.forEach((surface) => {
+            [c.primaryInk, c.secondaryInk, c.accentInk, c.successInk, c.error].forEach((ink) => {
+              expect(contrast(ink, c[surface])).toBeGreaterThanOrEqual(TEXT);
+            });
           });
         });
 
@@ -69,10 +76,24 @@ describe('контраст палитр', () => {
           });
         });
 
-        it('чернильный вариант региона пригоден для текста', () => {
-          REGIONS.forEach((region) => {
-            expect(contrast(c.regionsInk[region], c.background)).toBeGreaterThanOrEqual(TEXT);
+        it('чернила региона читаются на фоне, карточке, surfaceAlt и surfaceSunken', () => {
+          INK_SURFACES.forEach((surface) => {
+            REGIONS.forEach((region) => {
+              expect(contrast(c.regionsInk[region], c[surface])).toBeGreaterThanOrEqual(TEXT);
+            });
           });
+        });
+
+        it('палитра регионов объявляет ровно регионы схемы курса', () => {
+          expect(Object.keys(c.regions).sort()).toEqual([...REGIONS].sort());
+          expect(Object.keys(c.regionsInk).sort()).toEqual([...REGIONS].sort());
+        });
+
+        it('кыргызский регион не спутать с ошибкой и вниманием по яркости', () => {
+          // Тон 340° против 0–9° у error/secondary; плюс яркость не ближе 1.4:1 —
+          // это то, что остаётся при дейтеранопии (комментарий к regions.kyrgyz).
+          expect(contrast(c.regions.kyrgyz, c.error)).toBeGreaterThanOrEqual(1.4);
+          expect(contrast(c.regions.kyrgyz, c.secondary)).toBeGreaterThanOrEqual(1.4);
         });
 
         it('контур различим на фоне и на поверхностях', () => {
@@ -165,5 +186,33 @@ describe('сборка темы', () => {
     const keys = (c: ColorTokens) => Object.keys(c).sort().join(',');
     expect(keys(palettes.dark.normal)).toBe(keys(palettes.light.normal));
     expect(keys(palettes.dark.calm)).toBe(keys(palettes.light.calm));
+  });
+
+  it('спокойный режим гасит и чернила регионов, а не только заливки', () => {
+    // А25: тёмная calm-схема наследовала насыщенные чернила обычной
+    SCHEMES.forEach((scheme) => {
+      REGIONS.forEach((r) => {
+        expect(palettes[scheme].calm.regionsInk[r]).not.toBe(palettes[scheme].normal.regionsInk[r]);
+      });
+    });
+  });
+});
+
+describe('подушка и отклик (решения №10, №68, №69)', () => {
+  it('подушка у вариантов, управления и «разложен»; Tali, пузырь, стимул и жетоны плоские', () => {
+    expect(cushionByRole.answerOption).toBe('raised');
+    expect(cushionByRole.control).toBe('raised');
+    expect(cushionByRole.groupPlaced).toBe('raised');
+    expect([cushionByRole.tali, cushionByRole.bubble, cushionByRole.stimulus, cushionByRole.abaToken]).toEqual([
+      'flat',
+      'flat',
+      'flat',
+      'flat',
+    ]);
+  });
+
+  it('отклик плоского нажимаемого не дольше 100 мс', () => {
+    expect(motion.press).toBeGreaterThan(0);
+    expect(motion.press).toBeLessThanOrEqual(100);
   });
 });

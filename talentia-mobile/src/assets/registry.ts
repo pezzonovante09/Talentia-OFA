@@ -9,6 +9,8 @@
 import type * as React from 'react';
 import type { SvgProps } from 'react-native-svg';
 
+import type { RegionId } from '../design/tokens';
+
 import TaliCheer from '../../assets/images/tali/tali-cheer.svg';
 import TaliFound from '../../assets/images/tali/tali-found.svg';
 import TaliHello from '../../assets/images/tali/tali-hello.svg';
@@ -47,15 +49,23 @@ export const TALI_POSES = {
 
 export type TaliPose = keyof typeof TALI_POSES;
 
-/** Панорамы регионов. Ключи совпадают с id региона в схеме курса. */
+/**
+ * Панорамы регионов. Ключи — `RegionId`, то есть id региона из схемы курса
+ * (`types/task.ts`); `satisfies` не даст забыть регион. Своего типа региона у реестра
+ * больше нет (аудит 2026-10-06, А25).
+ *
+ * `kyrgyz: null` — заготовка: панорамы ещё нет (А17, ТЗ — шаг 6). Экран карты рисует
+ * на её месте плоскую заливку `regions.kyrgyz` с подписью региона. Когда файл появится —
+ * импорт `RegionKyrgyz`, строка `kyrgyz: RegionKyrgyz,` и снять `PANORAMA_PENDING`
+ * в `__tests__/registry.test.ts`.
+ */
 export const REGION_PANORAMAS = {
   numbers: RegionNumbers,
   words: RegionWords,
   nature: RegionNature,
   workshop: RegionLogic,
-} satisfies Record<string, Svg>;
-
-export type RegionId = keyof typeof REGION_PANORAMAS;
+  kyrgyz: null,
+} satisfies Record<RegionId, Svg | null>;
 
 export const ICONS = {
   check: UiCheck,
