@@ -28,15 +28,21 @@
 #D93A1E   внимание, сумка
 #5A34C4   основное действие
 #F2B705   Числовая долина
+#9671DB   Мастерская
+#E36A93   Кыргызский язык
 #12855A   верно
 ```
+
+Это цвета **иллюстраций**. Цвета интерфейса (текст, ошибка, чернила) берутся только из
+`talentia-mobile/src/design/tokens.ts`, в ассеты не зашиваются: иконки интерфейса —
+одноцветные (шаг 4).
 
 ### Модели
 
 | Что генерируем | Модель | Тип стиля |
 |---|---|---|
 | Пробный кадр, Tali, иконки | **Recraft V4.1 Vector** | Vector illustration |
-| Четыре панорамы | **Recraft V4.1 Pro Vector** | Vector illustration |
+| Пять панорам | **Recraft V4.1 Pro Vector** | Vector illustration |
 | Иконки интерфейса | Recraft V4.1 Vector | **Icon** |
 
 Не берите «Digital illustration» — она даёт мягкие переходы, которые выпадут
@@ -263,7 +269,11 @@ shadow, no text, no watermark.
 
 ---
 
-## Шаг 3. Четыре панорамы регионов
+## Шаг 3. Пять панорам регионов
+
+Четыре готовы (`numbers`, `words`, `nature`, `workshop`), пятой — кыргызской — нет; её ТЗ
+в конце шага. Имена регионов — `RegionId` из `types/task.ts`; `logic` больше не
+существует (А25).
 
 **Pro Vector**, формат **16:9 ландшафтный**, фон не прозрачный, ссылка на стиль.
 
@@ -405,7 +415,11 @@ Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
 No characters, no animals, no people, no text, no frame.
 ```
 
-**`region-logic.svg` — Мастерская, логика и задачи**
+**`region-logic.svg` — Мастерская (`workshop`), английский**
+
+Файл назван по прежнему id; в реестре он уже стоит под ключом `workshop`. Переименовать в
+`region-workshop.svg` — вместе с правкой `REGION_PANORAMAS` и `registry.test.ts`
+(SCREENS.md, открытый вопрос 11). Промпт ниже не меняется.
 
 ```
 A rich, detailed cartoon workshop village: cosy cubic houses with tiled roofs,
@@ -434,6 +448,55 @@ Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
 No characters, no animals, no people, no text, no frame.
 ```
 
+**`region-kyrgyz.svg` — Кыргызский язык (`kyrgyz`)** — ТЗ, шаг 6
+
+| Параметр | Требование |
+|---|---|
+| Файл | `talentia-mobile/assets/images/regions/region-kyrgyz.svg`, вектор, `viewBox="0 0 1264 848"` — как у четырёх готовых (≈ 3:2), фон непрозрачный, ≤ 300 КБ, от 250 путей узора |
+| Сцена | горная долина-жайлоо: зубчатые снежные пики на горизонте, луговые террасы, горная речка, одна-две юрты с войлочным узором, арча (можжевельник) — **не** ели и кроны (это Живой лес) |
+| Силуэт горизонта | острые снежные пики — главный отличительный признак против холмов, волны, крон и крыш; ориентир региона — юрта (купол с решёткой) |
+| Тон | малиновый `#E36A93` доминирует, как жёлтый в Числовой долине и фиолетовый в Мастерской: розовый свет на снегу на рассвете. Палитра: `#E36A93`, глубокий малиновый `#964460`, светло-розовый `#F6C3D3`, снег `#FFFFFF`, крем `#FFE6C7`, красный узор `#D93A1E`, жёлтый `#FFC42E` — точечно; зелёного не больше одного-двух мелких пятен (иначе спор с Живым лесом); ближний план — тёмная полоса `#4A2033` |
+| Контур | `#2A1A12`, толстый, как у остальных панорам и у Tali; глубина — только сменой цвета планов, без светотени |
+| Поля | нижняя четверть спокойная (там Tali и реплика); смысловой центр — юрта — в средней трети по горизонтали; значимое не ближе 5% к левому и правому краю; горизонт в верхней трети |
+| Нельзя | флаг, герб, солнце-тюндюк как государственный символ, культовые здания, надписи и буквы (в том числе в орнаменте), люди, животные, персонажи; этнические сравнения (CURRICULUM.md, С3) |
+| Проверка | обесцветить кадр рядом с четырьмя готовыми: регион узнаётся по пикам и юрте без цвета; в calm он же сводится к ориентиру «юрта» иконкой 32 — силуэт иконки совпадает с юртой панорамы; сцену смотрит носитель (орнамент, юрта, жайлоо) |
+
+```
+A rich, detailed cartoon mountain valley in Kyrgyzstan at sunrise: jagged
+snow-capped peaks along the horizon glowing pink, terraced alpine meadows, a
+winding mountain stream with round stones, juniper bushes, and one or two
+round felt yurts with bold geometric felt-rug patterns on their walls.
+
+Style: BOLD THICK dark outlines #2A1A12 — heavy confident linework, the same
+chunky weight as a kawaii vinyl sticker, never thin or delicate. Flat vivid
+colours, soft rounded forms. Polished professional vector illustration,
+generously detailed and lovingly finished, warm and inviting.
+
+DEPTH THROUGH COLOUR, never through shading: the sky, the far ground, the
+middle ground and the near ground must EACH be a different colour from the
+palette. Never use one colour for both the sky and the land. Every layer is
+clearly separated by having its own colour, not by a line.
+
+VARIETY: many different kinds of peak, rock, bush and felt pattern, in several
+different sizes — never one shape repeated over and over. No pine or spruce
+trees, almost no green.
+
+Palette: raspberry pink #E36A93, deep raspberry #964460, pale pink #F6C3D3,
+snow white #FFFFFF, cream #FFE6C7, red #D93A1E, a little yellow #FFC42E. The
+foreground is a band of deep shadowed plum earth #4A2033 where a character will
+stand.
+
+No gradients, no airbrush, no texture, no glossy highlights.
+Wide 3:2 landscape, full bleed to every edge. Horizon in the upper third.
+No flags, no emblems, no religious buildings, no letters or writing anywhere,
+no characters, no animals, no people, no text, no frame.
+```
+
+Когда файл готов: импорт `RegionKyrgyz` и строка `kyrgyz: RegionKyrgyz` в
+`REGION_PANORAMAS` (`src/assets/registry.ts`), снять `PANORAMA_PENDING` в
+`__tests__/registry.test.ts`. До этого экран рисует плоскую заливку `regions.kyrgyz` с
+силуэтом пиков и подписью.
+
 **Нижняя четверть обязана остаться спокойной.** Если модель забила её деталями,
 перегенерируйте: обрезать потом не выйдет, композиция поедет.
 
@@ -447,80 +510,70 @@ No characters, no animals, no people, no text, no frame.
 
 ### Сколько их нужно
 
-**Шесть, а не двадцать две.** Первоначальный список был перенесён из текущего
-приложения не глядя, хотя оно пересобирается с нуля. Список обязан выводиться
-из новых экранов, а не наследоваться от старых.
+**Столько, сколько требуют собранные экраны** — после спецификации урока, карты, атласа
+и ABA (шаг 6) это шесть готовых плюс список ниже. Первоначальные двадцать две были
+перенесены из прежнего приложения не глядя. Список обязан выводиться из новых экранов,
+а не наследоваться от старых.
 
 Правило: **иконка под несуществующую механику заставляет потом придумывать
 механику, чтобы оправдать иконку.** Это работа задом наперёд, и в текущем
 приложении она уже случилась — двенадцать форматов заданий существуют по два
 экземпляра, потому что их сделали до того, как поняли зачем.
 
-### Промпты
+### Правило: одноцветные (шаг 6, А16)
 
+Первые шесть иконок сгенерированы многоцветными (жёлтый динамик, зелёная галочка, цветная
+карта). Так нельзя: в тёмной теме тёмные детали пропадают, а в ABA жёлтый динамик
+становится четвёртым цветом экрана пробы (AUDIT.md, блокеры 21 и 25). Правило для всех
+иконок интерфейса:
 
-**`ui-check.svg`** — верный ответ, пройденный узел карты
+- **ровно два цвета в файле**: заливка глифа `currentColor` и контур `#2A1A12`; сборка
+  подменяет `#2A1A12` на `colors.outline` (svgr `replaceAttrValues`), `currentColor` берёт
+  цвет места (`text`, `onPrimary`, `primaryInk`, `ink` в ABA). Линейные детали (волны,
+  шеврон) — штрих `currentColor`;
+- **сетка 32**, контур 3, скруглённые концы; при 24 (ненажимаемые значки) контур тот же,
+  деталей меньше;
+- одна иконка — один смысл; состояние меняет силуэт, а не прозрачность.
+
+Генерация — в Recraft одним цветом, затем в редакторе заливка → `currentColor`:
 
 ```
-A single check mark icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: green #12855A mark.
+A single {ПРЕДМЕТ} icon, flat vector cut-out style, ONE solid fill colour only
+(pure black #000000) and a thick uniform outline in #2A1A12, rounded line ends,
+no second colour, no details in other colours, no gradients, no texture, no
+shadows. Simple bold silhouette readable at 24 px.
 Centered, filling the frame, square format.
 Transparent background, no text, no letters, no frame, no border.
 ```
 
-**`ui-x.svg`** — неверный ответ
+**Перерисовать по правилу** (файлы есть, цвет зашит): `ui-check.svg`, `ui-x.svg`,
+`ui-lock.svg`, `ui-sound.svg`, `ui-map.svg`. `ui-bulb.svg` на экранах не используется
+(подсказку даёт Tali) — удалить вместе со строкой реестра или оставить до решения;
+`ui-help` не делать по той же причине.
 
-```
-A single cross mark icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: red #C42020 cross.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
+**Нарисовать** (SCREENS.md, 9; DESIGN_PROMPTS.md, «Иконки — одно правило»):
 
-**`ui-lock.svg`** — закрытый узел карты
+| Файл | Предмет для промпта | Где |
+|---|---|---|
+| `ui-star.svg` | five-pointed star with rounded points | атлас с 7 лет, «сам» |
+| `ui-star-helped.svg` | the same star with a round hole in the centre | атлас, «с помощью» |
+| `ui-stamp-open.svg` | round stamp with a zigzag edge and a three-toed dinosaur footprint inside | атлас 5–6, «открыто» |
+| `ui-token.svg` | rounded square with a star inside | ABA, доска и подкрепление |
+| `ui-chevron.svg` | open V-shaped chevron pointing down, outline only | ABA, подсказка L1 |
+| `ui-triangle.svg` | solid triangle pointing down | «показан», ABA L2–L3 |
+| `ui-pin.svg` | push pin with a round head | «закреплён», маркер `point` |
+| `ui-arrow.svg` | thick arrow pointing right | «Дальше», «Занято», открытый узел |
+| `ui-backspace.svg` | tag-shaped key with a cross inside | клавиатура 4×3 |
+| `ui-book.svg` | open book | «Остаться», «к атласу» |
+| `ui-waves.svg` | three sound arcs, outline only | звучит реплика |
+| `ui-sound-on.svg` | speaker with three sound arcs | повтор, пока звучит |
+| `ui-sleep.svg` | crescent moon | узел «спит» |
+| `ui-review.svg` | two arrows chasing each other in a circle | узел «повторение» |
+| `ui-socket.svg`, `ui-circle.svg`, `ui-square.svg`, `ui-triangle-shape.svg`, `ui-rhombus.svg` | empty ring; plain shapes | пары и группы |
+| `ui-region-numbers/words/nature/workshop/kyrgyz.svg` | stepped hill; lighthouse; spruce; gear; yurt | ориентир региона: calm, атлас, шапка карты |
 
-```
-A single closed padlock icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: cream #FFE6C7 body, brown #8C6A03 shackle.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-sound.svg`** — «послушать ещё раз»
-
-```
-A single speaker with two sound waves icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: gold #FFC42E speaker, warm near-black #2A1A12 waves.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-map.svg`** — возврат на карту из урока
-
-```
-A single folded paper map icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: cream #FFE6C7 paper, green #2FA24E and blue #0E8FBF markings, red #D93A1E pin.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-**`ui-bulb.svg`** — подсказка в обычном режиме
-
-```
-A single light bulb icon, flat vector cut-out style, thick uniform outline
-in warm near-black #2A1A12, completely flat fills, no gradients, no texture,
-no shadows. Colours: gold #FFC42E glass, cream #FFE6C7 screw base.
-Centered, filling the frame, square format.
-Transparent background, no text, no letters, no frame, no border.
-```
-
-`ui-help` под вопросом: помощь в этом продукте — это Tali. Отдельная иконка
-может оказаться лишней сущностью. Решается, когда соберём экран урока.
+Каждый новый файл — строка в `ICONS` (`src/assets/registry.ts`): тест реестра не пустит
+файл, которого там нет.
 
 ### Что отложено и почему
 
@@ -528,14 +581,14 @@ Transparent background, no text, no letters, no frame, no border.
 
 | Иконка | Механика | Почему отложена |
 |---|---|---|
-| `ui-stars` | звёзды урока | рисуются кодом: `StarsRow` — SVG с двумя силуэтами, заполненным и пунктирным |
+| ~~`ui-stars`~~ | звёзды урока | **снято**: по №7 пустых слотов нет, нужны две звезды «сам» / «с помощью» — `ui-star.svg`, `ui-star-helped.svg` выше |
 | `ui-heart` | жизни | механики нет и не будет: «жизни» — наказание за ошибку, а в системе записано, что наказательных механик нет |
 | `ui-lightning`, `ui-meteor` | быстрый ответ, бонус | поощрение за скорость противоречит ABA-режиму и вообще детям, которым нужно время подумать |
 | `ui-trophy`, `ui-medal`, `ui-level-up` | достижения | экран достижений в новой структуре не подтверждён |
 | `ui-flame`, `ui-streak` | серия дней | не решено, переносим ли стрик; для пятилетки «ты пропустил день» — сомнительная мотивация |
 | `ui-gift`, `ui-egg` | коллекция | коллекция стала атласом, его страницы — иллюстрации находок, а не иконки |
 | `ui-backpack` | снаряжение | механики нет |
-| `ui-book`, `ui-book-bookmark` | урок, тема | на карте узлы, а не книжки |
+| `ui-book-bookmark` | урок, тема | на карте узлы, а не книжки (`ui-book` нужен — «Остаться» и «к атласу», см. выше) |
 | `ui-pencil-paper` | задание на ввод | тип задания виден по самому заданию, метка не нужна |
 
 Расход: примерно 40 кредитов вместо 130.
@@ -612,9 +665,9 @@ npm run assets:import-nano
 Целевые пути в проекте:
 
 ```
-assets/images/tali/       шесть поз
-assets/images/regions/    четыре панорамы
-assets/icons/             22 иконки
+assets/images/tali/       семь поз (кроп для урока — прямоугольником, не файлами)
+assets/images/regions/    пять панорам (кыргызская — по ТЗ шага 3)
+assets/icons/             одноцветные иконки по списку шага 4
 assets/images/tasks/      предметы к заданиям
 ```
 
@@ -627,12 +680,14 @@ assets/images/tasks/      предметы к заданиям
 | Калибровка стиля | ~50 |
 | Tali: эталон плюс пять поз | ~60 |
 | Четыре панорамы | ~65 |
-| 6 иконок | ~40 |
+| Кыргызская панорама | ~20 |
+| 6 иконок (первая партия) | ~40 |
+| Перерисовка 5 иконок в один цвет и ~30 новых | ~70 |
 | Запас на переделки | ~200 |
-| **Итого** | **~415** |
+| **Итого** | **~505** |
 
-Тариф Basic даёт 1000 кредитов в месяц: весь набор укладывается меньше чем
-в половину. Векторная генерация стоит 2 кредита, растровая — 1.
+Тариф Basic даёт 1000 кредитов в месяц: весь набор укладывается примерно в
+половину. Векторная генерация стоит 2 кредита, растровая — 1.
 
 ---
 
