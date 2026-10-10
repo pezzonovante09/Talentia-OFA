@@ -38,6 +38,17 @@ export class AbaPausedError extends Error {
   }
 }
 
+/**
+ * IOA для сессии, которой нет на устройстве (не записана, удалена отзывом или сроком хранения).
+ * Срок хранения IOA считается по дате сессии — без сессии запись пережила бы её; экран
+ * предлагает выбрать сессию заново.
+ */
+export class AbaSessionMissingError extends Error {
+  constructor(readonly sessionId: string) {
+    super('Нет сессии для IOA: запись не сделана');
+  }
+}
+
 /** Согласие на текущий текст (любой язык) и не на паузе. Вызывать внутри транзакции записи. */
 export async function requireAbaConsent(tx: SqlDb, childId: string): Promise<void> {
   if (!isGranted(await readConsentLog(tx), 'aba_processing', childId, CURRENT_CONSENT_TEXTS.aba_processing)) {

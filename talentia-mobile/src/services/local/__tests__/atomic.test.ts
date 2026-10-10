@@ -1,8 +1,8 @@
-import type { AbaIoaRecord, AbaObserver, AbaSession, AbaTrial } from '../../../types/aba';
+import type { AbaIoaRecord, AbaObserver, AbaSession, AbaTargetState, AbaTrial } from '../../../types/aba';
 import type { AbaSessionResult, AbaSessionState } from '../../../domain/abaSession';
 import { emptySkill } from '../../../domain/mastery';
 import type { LessonRun } from '../../../domain/parentReport';
-import { AbaConsentRequiredError, AbaPausedError, appendTrial, ioaOfSession, sessionsOf, trialsOfTarget } from '../abaLog';
+import { AbaConsentRequiredError, AbaPausedError, AbaSessionMissingError, appendTrial, ioaOfSession, sessionsOf, trialsOfTarget } from '../abaLog';
 import { ABA_STATE_KEYS, loadChildState, saveChildState } from '../childState';
 import { commitAbaSession, commitIoa, commitLesson, recordAbaTrial, setAbaObservers, setAbaPaused } from '../commit';
 import type { ConsentEvent } from '../../../domain/consent';
@@ -426,6 +426,7 @@ describe('журнал IOA и наблюдатели — условия прив
 
   it('IOA и наблюдатели — в экспорте, в подсчёте перед отзывом и удаляются отзывом', async () => {
     const db = await dbWithAbaConsent();
+    await commitAbaSession(db, 'kid', result(1), NOW);
     await commitIoa(db, 'kid', ioa(), {}, NOW);
     await setAbaObservers(db, 'kid', observers, NOW);
     expect(await ioaOfSession(db, 'kid', 's-1')).toHaveLength(1);
@@ -447,8 +448,16 @@ describe('журнал IOA и наблюдатели — условия прив
     expect(row.recorded_at).toBe('2026-09-30T09:30:00Z');
   });
 
+  it('IOA без сессии на устройстве — типизированный отказ, ничего не записано', async () => {
+    const db = await dbWithAbaConsent();
+    await expect(commitIoa(db, 'kid', ioa(), { t: {} as AbaTargetState }, NOW)).rejects.toBeInstanceOf(AbaSessionMissingError);
+    expect(await ioaOfSession(db, 'kid', 's-1')).toEqual([]);
+    expect(await loadChildState(db, 'kid', 'abaTargets')).toBeUndefined();
+  });
+
   it('журнал IOA только дописывается', async () => {
     const db = await dbWithAbaConsent();
+    await commitAbaSession(db, 'kid', result(1), NOW);
     await commitIoa(db, 'kid', ioa(), {}, NOW);
     await expect(db.run("UPDATE aba_ioa SET body = '{}'")).rejects.toThrow(/только дописывание/);
     await expect(db.run('DELETE FROM aba_ioa')).rejects.toThrow(/только дописывание/);

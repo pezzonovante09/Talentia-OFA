@@ -13,6 +13,7 @@ import {
   syncProblems,
   UndeliverableError,
   type RemotePort,
+  type SyncProblemCode,
 } from '../sync';
 import { memoryDb } from './nodeSql';
 
@@ -20,6 +21,8 @@ let clock = 0;
 const at = () =>
   `2026-09-30T10:${String(Math.floor(clock / 60)).padStart(2, '0')}:${String(clock++ % 60).padStart(2, '0')}Z`;
 const NOW = '2026-09-30T12:00:00Z';
+/** Профиль для создания ребёнка в облаке — только полоса. */
+const OPTS = { profileOf: async () => ({ band: '5-6' as const }) };
 
 const ev = (over: Partial<ConsentEvent>): ConsentEvent => ({
   id: `c-${clock}`,
@@ -42,14 +45,16 @@ const run = (id: string): LessonRun => ({
   reviewTasks: 0,
 });
 
-function remote(reject: (e: ConsentEvent) => string | null = () => null) {
+function remote(reject: (e: ConsentEvent) => SyncProblemCode | null = () => null) {
   const sent = { consent: [] as string[], skills: [] as SkillState[][], runs: [] as LessonRun[][] };
+  const push = async (e: ConsentEvent) => {
+    const reason = reject(e);
+    if (reason) throw new UndeliverableError(reason);
+    sent.consent.push(e.id);
+  };
   const port: RemotePort = {
-    pushConsentEvent: async (e) => {
-      const reason = reject(e);
-      if (reason) throw new UndeliverableError(reason);
-      sent.consent.push(e.id);
-    },
+    pushCloudConsent: async (cmd) => push(cmd.event),
+    pushConsentEvent: async (e) => push(e),
     pushSkillStates: async (_, s) => void sent.skills.push(s),
     pushLessonRuns: async (_, r) => void sent.runs.push(r),
   };
@@ -89,7 +94,7 @@ describe('синхронизация только при согласии на �
     const db = await withData();
     await appendConsentEvent(db, ev({ id: 'ai', scope: 'companion_ai' }), 'owner');
     const { port, sent } = remote();
-    expect((await syncChild(db, port, 'kid-a', 'ru-1', NOW)).blocked).toBe(true);
+    expect((await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS)).blocked).toBe(true);
     expect(sent).toEqual({ consent: [], skills: [], runs: [] });
   });
 
@@ -97,13 +102,13 @@ describe('синхронизация только при согласии на �
     const db = await withData();
     await appendConsentEvent(db, ev({ id: 'g-1' }), 'owner');
     const { port, sent } = remote();
-    expect(await syncChild(db, port, 'kid-a', 'ru-1', NOW)).toMatchObject({
+    expect(await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS)).toMatchObject({
       blocked: false,
       lessonRuns: 1,
       skills: true,
       consent: 1,
     });
-    expect(await syncChild(db, port, 'kid-a', 'ru-1', NOW)).toMatchObject({ lessonRuns: 0, skills: false, consent: 0 });
+    expect(await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS)).toMatchObject({ lessonRuns: 0, skills: false, consent: 0 });
     expect([sent.runs.length, sent.skills.length]).toEqual([1, 1]);
   });
 
@@ -111,15 +116,15 @@ describe('синхронизация только при согласии на �
     const db = await withData();
     await appendConsentEvent(db, ev({ id: 'g-1' }), 'owner');
     const { port, sent } = remote();
-    await syncChild(db, port, 'kid-a', 'ru-1', NOW);
+    await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS);
     await appendConsentEvent(db, ev({ id: 'rv-1', action: 'revoke' }), 'owner');
     await appendLessonRun(db, run('r-2'));
-    expect((await syncChild(db, port, 'kid-a', 'ru-1', NOW)).blocked).toBe(true);
+    expect((await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS)).blocked).toBe(true);
     expect(sent.consent).toEqual(['g-1', 'rv-1']);
     expect(sent.runs).toHaveLength(1);
 
     await appendConsentEvent(db, ev({ id: 'g-2' }), 'owner');
-    await syncChild(db, port, 'kid-a', 'ru-1', NOW);
+    await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS);
     expect(sent.runs[1].map((r) => r.id)).toEqual(['r-1', 'r-2']);
   });
 
@@ -128,9 +133,9 @@ describe('синхронизация только при согласии на �
     await appendConsentEvent(db, ev({ id: 'g-1' }), 'owner');
     await appendConsentEvent(db, ev({ id: 'rv-1', action: 'revoke' }), 'owner');
     const { port, sent } = remote();
-    await syncChild(db, port, 'kid-a', 'ru-1', NOW);
+    await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS);
     await appendConsentEvent(db, ev({ id: 'ai-off', scope: 'companion_ai', action: 'revoke' }), 'owner');
-    await syncChild(db, port, 'kid-a', 'ru-1', NOW);
+    await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS);
     expect(sent.consent).toEqual(['g-1', 'rv-1']);
   });
 
@@ -138,7 +143,7 @@ describe('синхронизация только при согласии на �
     const db = await withData();
     await appendConsentEvent(db, ev({ id: 'g-1', textVersion: 'ru-0' }), 'owner');
     const { port, sent } = remote();
-    expect((await syncChild(db, port, 'kid-a', 'ru-1', NOW)).blocked).toBe(true);
+    expect((await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS)).blocked).toBe(true);
     expect(sent.runs).toEqual([]);
   });
 
@@ -146,41 +151,43 @@ describe('синхронизация только при согласии на �
     const db = await withData();
     await appendConsentEvent(db, ev({ id: 'g-b', childId: 'kid-b' }), 'owner');
     const { port, sent } = remote();
-    expect((await syncChild(db, port, 'kid-a', 'ru-1', NOW)).blocked).toBe(true);
+    expect((await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS)).blocked).toBe(true);
     expect(sent.runs).toEqual([]);
   });
 
   it('отклонённое по существу не повторяется вечно и ждёт родителя; данные не уходят', async () => {
     const db = await withData();
     await appendConsentEvent(db, ev({ id: 'g-old' }), 'owner');
-    const { port, sent } = remote((e) => (e.id === 'g-old' ? 'outdated consent text' : null));
-    const r = await syncChild(db, port, 'kid-a', 'ru-1', NOW);
+    const { port, sent } = remote((e) => (e.id === 'g-old' ? 'outdated_text' : null));
+    const r = await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS);
     expect([r.problem, r.blocked]).toEqual([true, true]);
-    expect(await syncProblems(db)).toEqual([{ childId: 'kid-a', eventId: 'g-old', reason: 'outdated consent text' }]);
-    await syncChild(db, port, 'kid-a', 'ru-1', NOW);
+    expect(await syncProblems(db)).toEqual([{ childId: 'kid-a', kind: 'consent', ref: 'g-old', reason: 'outdated_text' }]);
+    await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS);
     expect(sent.runs).toEqual([]);
   });
 
-  it('отзыв посреди прохода ждёт замка и не пропускает данные', async () => {
+  it('отзыв посреди прохода ждёт замка и останавливает данные в том же проходе', async () => {
     const db = await withData();
     await appendConsentEvent(db, ev({ id: 'g-1' }), 'owner');
-    let revoke: Promise<void> = Promise.resolve();
+    let revoke: Promise<void> | null = null;
     const { port, sent } = remote();
     const slow: RemotePort = {
       ...port,
-      pushConsentEvent: async (e) => {
-        await port.pushConsentEvent(e);
-        // родитель отзывает, пока проход ещё идёт
-        revoke = appendConsentEvent(db, ev({ id: 'rv-1', action: 'revoke' }), 'owner');
+      pushCloudConsent: async (cmd, signal) => {
+        await port.pushCloudConsent(cmd, signal);
+        // родитель отзывает, пока проход ещё идёт — запись ждёт замка
+        revoke ??= appendConsentEvent(db, ev({ id: 'rv-1', action: 'revoke' }), 'owner');
       },
     };
-    await syncChild(db, slow, 'kid-a', 'ru-1', NOW);
+    await syncChild(db, slow, 'kid-a', 'ru-1', NOW, OPTS);
     await revoke;
-    // проход закончился до записи отзыва: данные ушли по действовавшему согласию
-    expect(sent.runs).toHaveLength(1);
+    // каждое согласие — своя секция под замком: отзыв записан между ними и ушёл тем же проходом,
+    // данные не ушли
+    expect(sent.consent).toEqual(['g-1', 'rv-1']);
+    expect(sent.runs).toHaveLength(0);
     await appendLessonRun(db, run('r-2'));
-    expect((await syncChild(db, port, 'kid-a', 'ru-1', NOW)).blocked).toBe(true);
-    expect(sent.runs).toHaveLength(1);
+    expect((await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS)).blocked).toBe(true);
+    expect(sent.runs).toHaveLength(0);
   });
 
   it('события аккаунта уходят всегда', async () => {
@@ -196,13 +203,16 @@ describe('синхронизация только при согласии на �
     const db = await withData();
     await appendConsentEvent(db, ev({ id: 'g-1' }), 'owner');
     const failing: RemotePort = {
+      pushCloudConsent: async () => {
+        throw new Error('offline');
+      },
       pushConsentEvent: async () => {
         throw new Error('offline');
       },
       pushSkillStates: async () => undefined,
       pushLessonRuns: async () => undefined,
     };
-    await runBackgroundSync(db, failing, ['kid-a'], 'ru-1', () => NOW, { retries: 1, baseDelayMs: 1 });
+    await runBackgroundSync(db, failing, ['kid-a'], 'ru-1', () => NOW, { retries: 1, baseDelayMs: 1 }, OPTS);
     expect(useSyncStatusStore.getState().errorsBySource['local-sync:kid-a']).toBe('offline');
   });
 });

@@ -45,7 +45,16 @@ export const runtime = "nodejs";
  * - **Озвучка — здесь же**, по флагу `speak`: свободного текста в озвучку в пересборке нет.
  *
  * Лимиты: по IP, по пользователю в минуту, дневной бюджет разговора и символов озвучки.
+ * Порядок (`backend-auditor` 2026-10-10, А20): IP → JWT → схема → согласие → лимит в минуту →
+ * дневной бюджет → модель. Лимит в минуту и бюджет — только перед вызовом модели: кривой
+ * запрос, запрос без согласия и готовые реплики («расскажи взрослому», «лучше не
+ * рассказывать») их не тратят — тревожная реплика доходит до ребёнка при любом исчерпанном
+ * лимите пользователя (`child-privacy-compliance` 2026-10-10).
+ * Модель не ответила за {@link MODEL_TIMEOUT_MS} (запрос или чтение ответа) — 504: клиент
+ * отвечает из банка реплик.
  */
+
+export const MODEL_TIMEOUT_MS = 20_000;
 
 const TaskSchema = z.object({
   question: z.string().max(200),
@@ -130,10 +139,6 @@ export async function POST(req: NextRequest) {
   try {
     const auth = await verifyAuth(req);
     if (!auth.ok) return authJsonError(req, auth);
-    const userLimited =
-      (await enforceRateLimit(req, ratelimitApiUser, auth.userId)) ??
-      (await enforceRateLimit(req, taliDailyUser, auth.userId));
-    if (userLimited) return userLimited;
 
     const parsed = TaliV2RequestSchema.safeParse(await req.json().catch(() => null));
     if (!parsed.success) return corsJson({ error: "Invalid request" }, 400, req);
@@ -148,9 +153,6 @@ export async function POST(req: NextRequest) {
     if (!(await hasConsent(asUser, body.childId, "companion_ai"))) {
       return corsJson({ error: "consent_required" }, 403, req);
     }
-    const childKey = createHash("sha256").update(body.childId).digest("hex");
-    const childLimited = await enforceRateLimit(req, taliDailyChild, childKey);
-    if (childLimited) return childLimited;
 
     const language = body.language;
     let reply: string;
@@ -169,6 +171,12 @@ export async function POST(req: NextRequest) {
         console.error("[v2/tali] DEEPSEEK_API_KEY is not configured");
         return corsJson({ error: "Service unavailable" }, 503, req);
       }
+      const childKey = createHash("sha256").update(body.childId).digest("hex");
+      const budgetLimited =
+        (await enforceRateLimit(req, ratelimitApiUser, auth.userId)) ??
+        (await enforceRateLimit(req, taliDailyUser, auth.userId)) ??
+        (await enforceRateLimit(req, taliDailyChild, childKey));
+      if (budgetLimited) return budgetLimited;
       const r = await fetch("https://api.deepseek.com/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
@@ -181,9 +189,21 @@ export async function POST(req: NextRequest) {
           temperature: 0.5,
           max_tokens: 160,
         }),
-        signal: AbortSignal.timeout(20_000),
+        signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
+      }).catch((e: unknown) => {
+        if (e instanceof Error && e.name === "TimeoutError") return null;
+        throw e;
       });
-      const ds = await r.json().catch(() => ({}));
+      if (!r) {
+        console.error("[v2/tali] DeepSeek timeout");
+        return corsJson({ error: "Upstream AI timeout" }, 504, req);
+      }
+      // таймаут может прийти и во время чтения тела — тоже 504, а не пустой ответ
+      const ds = await r.json().catch((e: unknown) => (e instanceof Error && e.name === "TimeoutError" ? null : {}));
+      if (ds === null) {
+        console.error("[v2/tali] DeepSeek timeout");
+        return corsJson({ error: "Upstream AI timeout" }, 504, req);
+      }
       if (!r.ok) {
         console.error("[v2/tali] DeepSeek error", r.status);
         return corsJson({ error: "Upstream AI service error" }, 502, req);

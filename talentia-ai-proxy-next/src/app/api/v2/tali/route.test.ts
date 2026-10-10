@@ -10,8 +10,22 @@ vi.mock("@/lib/supabaseUser", () => ({
   bearerToken: vi.fn(() => "jwt"),
 }));
 vi.mock("@/lib/consentCheck", () => ({ hasConsent: vi.fn(async () => true) }));
+// лимитеры — именами, чтобы видеть порядок проверок
+vi.mock("@/lib/ratelimit", () => ({
+  enforceRateLimit: vi.fn(async () => null),
+  ratelimitApi: "ip",
+  ratelimitApiUser: "user-minute",
+  taliDailyUser: "user-day",
+  taliDailyChild: "child-day",
+  ratelimitTtsUser: "tts-minute",
+  ttsCharsDailyUser: "tts-chars",
+}));
+
+import { NextResponse } from "next/server";
 
 import { hasConsent } from "@/lib/consentCheck";
+import { enforceRateLimit } from "@/lib/ratelimit";
+import { verifyAuth } from "@/lib/verifyAuth";
 import { CRISIS_REPLY, PRIVACY_NUDGE, SAFE_FALLBACK } from "@/lib/taliSafety";
 import { POST, systemPrompt, TaliV2RequestSchema, userMessage } from "./route";
 
@@ -40,8 +54,27 @@ beforeEach(() => {
   process.env.DEEPSEEK_API_KEY = "test";
   vi.stubGlobal("fetch", fetchMock);
   fetchMock.mockReset();
-  vi.mocked(hasConsent).mockResolvedValue(true);
+  vi.mocked(hasConsent).mockReset().mockResolvedValue(true);
+  vi.mocked(enforceRateLimit).mockReset().mockResolvedValue(null);
 });
+
+/** Шаги обработки по порядку: auth, consent и имена лимитеров. */
+function trace(): string[] {
+  const steps: string[] = [];
+  vi.mocked(verifyAuth).mockImplementationOnce(async () => {
+    steps.push("auth");
+    return { ok: true, userId: "parent-1" } as Awaited<ReturnType<typeof verifyAuth>>;
+  });
+  vi.mocked(hasConsent).mockImplementation(async () => {
+    steps.push("consent");
+    return true;
+  });
+  vi.mocked(enforceRateLimit).mockImplementation(async (_req, limiter) => {
+    steps.push(String(limiter));
+    return null;
+  });
+  return steps;
+}
 afterEach(() => {
   vi.unstubAllGlobals();
 });
@@ -163,5 +196,69 @@ describe("/api/v2/tali", () => {
     await POST(request({ childId: KID, language: "ru", message: "секретное слово банан" }));
     for (const call of spy.mock.calls) expect(JSON.stringify(call)).not.toMatch(/Аня|банан/);
     spy.mockRestore();
+  });
+  it("порядок: IP → JWT → схема → согласие → минута → дневной бюджет → модель", async () => {
+    const steps = trace();
+    deepseekReplies("Посчитай по одному!");
+    await POST(request({ childId: KID, language: "ru", message: "привет" }));
+    expect(steps).toEqual(["ip", "auth", "consent", "user-minute", "user-day", "child-day"]);
+  });
+
+  it("кривой запрос и запрос без согласия бюджет не тратят", async () => {
+    const steps = trace();
+    expect((await POST(request({ childId: "x", language: "ru", message: "a" }))).status).toBe(400);
+    expect(steps).toEqual(["ip", "auth"]);
+    steps.length = 0;
+    const later = trace();
+    vi.mocked(hasConsent).mockImplementation(async () => {
+      later.push("consent");
+      return false;
+    });
+    expect((await POST(request({ childId: KID, language: "ru", message: "a" }))).status).toBe(403);
+    expect(later).toEqual(["ip", "auth", "consent"]);
+  });
+
+  it("тревожная реплика доходит и при исчерпанных лимитах пользователя", async () => {
+    vi.mocked(enforceRateLimit).mockImplementation(async (_req, limiter) =>
+      String(limiter) === "ip" ? null : NextResponse.json({ error: "limit" }, { status: 429 }),
+    );
+    const res = await POST(request({ childId: KID, language: "ru", message: "я не хочу жить" }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ reply: CRISIS_REPLY.ru, crisis: true });
+    const chat = await POST(request({ childId: KID, language: "ru", message: "привет" }));
+    expect(chat.status).toBe(429);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("«лучше не рассказывать» не тратит ни минутный лимит, ни бюджет", async () => {
+    const steps = trace();
+    const res = await POST(request({ childId: KID, language: "ru", message: "мой номер 0555 123 456" }));
+    expect((await res.json()).filtered).toBe(true);
+    expect(steps).toEqual(["ip", "auth", "consent"]);
+  });
+
+  it("таймаут при чтении ответа модели — тоже 504", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => {
+        throw new DOMException("The operation was aborted due to timeout", "TimeoutError");
+      },
+    });
+    const res = await POST(request({ childId: KID, language: "ru", message: "привет" }));
+    expect(res.status).toBe(504);
+  });
+
+  it("модель не ответила вовремя — 504, клиент отвечает из банка", async () => {
+    fetchMock.mockRejectedValue(new DOMException("The operation was aborted due to timeout", "TimeoutError"));
+    const res = await POST(request({ childId: KID, language: "ru", message: "привет" }));
+    expect(res.status).toBe(504);
+    expect(await res.json()).toEqual({ error: "Upstream AI timeout" });
+  });
+
+  it("сбой сети к модели — по-прежнему 500, не 504", async () => {
+    fetchMock.mockRejectedValue(new TypeError("fetch failed"));
+    const res = await POST(request({ childId: KID, language: "ru", message: "привет" }));
+    expect(res.status).toBe(500);
   });
 });

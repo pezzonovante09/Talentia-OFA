@@ -13,7 +13,7 @@ import type { AtlasEntry } from '../../domain/lessonAssembly';
 import type { SkillState } from '../../domain/mastery';
 import type { LessonRun } from '../../domain/parentReport';
 import { ioaRecordErrors } from '../../domain/abaIoa';
-import { appendIoa, appendSession, appendTrial, withAbaWrite } from './abaLog';
+import { AbaSessionMissingError, appendIoa, appendSession, appendTrial, withAbaWrite } from './abaLog';
 import { saveChildState } from './childState';
 import { readConsentLog } from './consentLog';
 import { consentStatus, type GuardianRole } from '../../domain/consent';
@@ -140,7 +140,8 @@ export async function setPhysicalPromptAllowed(
 
 /**
  * IOA сессии и состояния целей после него (`abaIoa.applyLateIoa`) — вместе, при согласии.
- * Без комментариев, свободного текста и фото листа (условия приватности).
+ * Без комментариев, свободного текста и фото листа (условия приватности). Сессии нет —
+ * `AbaSessionMissingError`, ничего не пишется.
  */
 export async function commitIoa(
   db: SqlDb,
@@ -157,7 +158,8 @@ export async function commitIoa(
       'SELECT recorded_at FROM aba_sessions WHERE child_id = ? AND id = ?',
       [childId, record.sessionId],
     );
-    await appendIoa(tx, childId, record, session?.recorded_at ?? at);
+    if (!session) throw new AbaSessionMissingError(record.sessionId);
+    await appendIoa(tx, childId, record, session.recorded_at);
     await saveChildState(tx, childId, 'abaTargets', states, at);
   });
 }

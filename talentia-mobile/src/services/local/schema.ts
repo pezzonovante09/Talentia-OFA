@@ -258,6 +258,19 @@ WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
 )
 BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
 `,
+  // 7 — проблемы синхронизации не только у событий (аудит 2026-10-06, А7)
+  //
+  // Сервер может отклонить по существу и данные — прохождения, навыки. Раньше такой отказ
+  // уходил в бесконечные повторы. Вид проблемы: `consent` — событие (event_id — id события),
+  // `lesson_runs` и `skill_state` — поток данных (event_id — имя потока), `lesson_run` — одно
+  // прохождение (event_id — его id).
+  // reason — стабильный код (`SyncProblemCode`), не текст сервера. Отдельное прохождение
+  // (`lesson_run`) курсор уже обошёл — «повторить» ставит retry = 1, и проход отправляет его
+  // снова отдельно от пачек.
+  `
+ALTER TABLE sync_problems ADD COLUMN kind TEXT NOT NULL DEFAULT 'consent';
+ALTER TABLE sync_problems ADD COLUMN retry INTEGER NOT NULL DEFAULT 0;
+`,
 ];
 
 /**
