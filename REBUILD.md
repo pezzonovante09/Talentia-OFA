@@ -1211,3 +1211,4 @@ Rive советовался, когда предполагался художн�
 - `2625ed6` — ворота аудита видят запись через Bash, PowerShell и NotebookEdit (№91).
 - `3686ce3` — скилл `db-migration`; `supabase/tests/run.mjs` подхватывает все `*.test.mjs` (раунд 2, `qa-engineer` В2).
 - `6a5813f` — Р1, Р2: миграция `20261011120000` (занятый id ребёнка, время отзыва), тест `consent_clock_and_taken_ids` (43), `migratedDb` в harness.
+- `ff08ce2` — скилл `tali-lines`.
