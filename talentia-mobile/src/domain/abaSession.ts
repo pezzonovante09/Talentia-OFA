@@ -34,7 +34,6 @@ import {
   REFUSAL_CARD_OFFER_MS,
   REFUSAL_QUIET_MS,
   UNRELIABLE_AFTER,
-  VOICE_VOLUME_HOLD_MS,
   type AbaConfig,
   type AbaExemplar,
   type AbaFormat,
@@ -62,13 +61,10 @@ import {
   initialTargetState,
   isBreakdown,
   isPromptDependent,
-  promptDelayMs,
   promptStateOf,
-  responseWindowMs,
   trialInvariantErrors,
   type SessionTrials,
 } from './abaPrompting';
-import { scoreTrial, type ScoredFields } from './abaScoring';
 import { applyChoiceBias, sessionSignals, type SessionSignal, type SignalSession } from './abaBarriers';
 import {
   applyPlacementProbe,
@@ -116,6 +112,15 @@ import {
 } from './abaTokens';
 import { programErrors, targetErrors } from './abaTargetRules';
 import { pick, seeded, shuffle } from './abaRandom';
+import {
+  buildTrialStep,
+  MEASURING_KINDS,
+  scoreAgainst,
+  type AbaTrialInput,
+  type PlannedTrial,
+  type TrialStep,
+} from './abaTrialStep';
+
 import { arrange, baselineMembers, poolErrors, setHalves, updateSets, type IdentifySet } from './abaIdentifySet';
 import {
   applyStageSession,
@@ -125,6 +130,8 @@ import {
   workingBoardSize,
   type TokenTrainingState,
 } from './abaTokenTraining';
+
+export type { AbaTrialInput, PlannedTrial, TrialStep } from './abaTrialStep';
 
 // ---------------------------------------------------------------------------
 // Константы сессии
@@ -191,30 +198,6 @@ export const NO_PROGRESS_SESSIONS = 5;
 // ---------------------------------------------------------------------------
 
 /** Проба в плане сессии. Уровень подсказки и поле определяются, когда до неё дошла очередь. */
-export type PlannedTrial = {
-  kind: AbaTrialKind;
-  targetId: string;
-  exemplarId: string;
-  stepId?: string;
-  runIndex?: number;
-  sdVariantKey?: string;
-  /** Уровень задан процедурой, а не стартовым уровнем: коррекция, закрытие. */
-  fixedStart?: PromptLevel;
-  /** Поле `identify` и `match`; заполняется, когда проба становится текущей. */
-  field?: string[];
-  /** `match`: карточка-образец (она же верная); у сортировки — верная категория. */
-  sampleCardId?: string;
-  pauseBeforeMs?: number;
-  /** Со взрослым: после полной модели попросить взрослого помочь (L4). */
-  adultAssist?: true;
-  /** Проба коррекции доводится до верного ответа при любом провале, не только при молчании. */
-  escalateOnIncorrect?: true;
-  /** Повтор пробы, снятой перерывом ребёнка или отказом. */
-  requeuedFromTrialId?: string;
-  /** Закрывающая проба: блок или сессию. */
-  closes?: 'block' | 'session';
-};
-
 type QueueItem =
   | { kind: 'reinforcer' }
   | { kind: 'trial'; trial: PlannedTrial }
@@ -233,62 +216,6 @@ type QueueItem =
   | { kind: 'access'; durationMs: number }
   /** Взрослый доводит прогон цепочки до конца без записи проб (снятая проверка сверху вниз). */
   | { kind: 'adult_finish_chain'; targetId: string; stepIds: string[] };
-
-export type TrialStep = {
-  kind: 'trial';
-  trialKind: AbaTrialKind;
-  targetId: string;
-  exemplarId: string;
-  stepId?: string;
-  runIndex?: number;
-  sdVariantKey?: string;
-  /**
-   * Поле `identify` слева направо, верная — `exemplarId`. На L3 дистракторы убираются
-   * (поле из одной карточки), на L2 — пассивны: это решает экран по уровню, в данные
-   * пишется полное поле.
-   */
-  field?: string[];
-  /**
-   * `match`: образец сверху — эта карточка, она же верная среди `field`; у сортировки — верная
-   * категория, а образец — предмет `exemplarId`. Варианты неактивны, пока не коснулись образца.
-   */
-  sampleCardId?: string;
-  startPromptLevel: PromptLevel;
-  /**
-   * Сколько ждать после конца SD до первой подсказки на старте L0; `null` — подсказки по
-   * задержке нет (старт L1+, измерительные пробы, разогрев, закрывающая).
-   *
-   * Ход пробы на экране: SD → `promptDelayMs ?? responseWindowMs` → если ответа нет и
-   * эскалация разрешена — подсказка → `responseWindowMs` → … Ответ до конца
-   * `promptDelayMs` — самостоятельный.
-   */
-  promptDelayMs: number | null;
-  /** Окно ответа после каждого предъявления, включая полную модель. */
-  responseWindowMs: number;
-  /** Только `voice_volume`: после начала звука — сколько ещё ждать удержания громкости. */
-  voiceHoldMs?: number;
-  /** Пауза перед пробой. */
-  pauseBeforeMs: number;
-  /** Кто засчитывает. В конфигурации «сам» взрослого нет. */
-  scoredBy: ScoringSource;
-  /** Перенос и базовая линия измеряют: подсказки нет. */
-  allowEscalation: boolean;
-  /** После полной модели попросить взрослого выполнить вместе и записать L4. */
-  askAdultForL4: boolean;
-  /** Эскалировать и после неверного ответа, а не только после молчания: проба коррекции. */
-  escalateOnIncorrect: boolean;
-  /**
-   * Похвалить внимание **до** инструкции: базовая линия подкрепляет внимание, но не
-   * ответ, — после ответа реакция нейтральная.
-   */
-  praiseAttentionBeforeSd: boolean;
-  /**
-   * Проба без подсказок в цепочке (базовая линия, перенос): проваленное звено выполняет
-   * взрослый, пробой ребёнка это не пишется, и прогон идёт дальше.
-   */
-  adultCompletesOnFail: boolean;
-  closes?: 'block' | 'session';
-};
 
 /** Что показать сейчас. */
 export type AbaStep =
@@ -452,7 +379,6 @@ export type StartInput = {
 
 const MASTERED_PHASES = new Set(['mastered', 'maintenance']);
 const TEACHING_PHASES = new Set(['acquisition', 'generalization_check']);
-const MEASURING_KINDS: ReadonlySet<AbaTrialKind> = new Set(['baseline', 'generalization', 'maintenance', 'verification']);
 const SUCCESS: ReadonlySet<AbaResponse> = new Set(['independent', 'prompted', 'approximation']);
 /** Причины, по которым в конце сессии бывает обмен. Уход и остановка взрослым — нет. */
 // отказ не отнимает заработанное: обмен — как при лимите
@@ -901,43 +827,13 @@ function l4Available(state: AbaSessionState): boolean {
 
 function trialStep(state: AbaSessionState, p: PlannedTrial): TrialStep {
   const target = state.targets[p.targetId];
-  const s = state.states[p.targetId];
-  const planned: PromptLevel =
-    p.fixedStart ?? (MEASURING_KINDS.has(p.kind) ? 0 : clampToApp(promptStateOf(s, p.stepId).startPromptLevel));
-  // старт 4 — только с просьбой к взрослому: коррекцию поставили до сопротивления или без
-  // помощи взрослого — теперь это полная модель
-  const start: PromptLevel = planned === 4 && !(l4Available(state) && p.adultAssist) ? APP_MAX_PROMPT : planned;
-  const withAdult = state.config === 'with_adult';
-  const own = responseWindowMs(target, p.stepId);
-  const override = state.windowOverrideMs?.[target.format];
-  // у звена — не короче его собственного окна: «закрыть кран» и «намылить» разной длины
-  const windowMs = override ? Math.max(own, override) : own;
-  return {
-    kind: 'trial',
-    trialKind: p.kind,
-    targetId: p.targetId,
-    exemplarId: p.exemplarId,
-    ...(p.stepId ? { stepId: p.stepId } : {}),
-    ...(p.runIndex !== undefined ? { runIndex: p.runIndex } : {}),
-    ...(p.sdVariantKey ? { sdVariantKey: p.sdVariantKey } : {}),
-    ...(p.field ? { field: p.field } : {}),
-    ...(p.sampleCardId ? { sampleCardId: p.sampleCardId } : {}),
-    startPromptLevel: start,
-    promptDelayMs: promptDelayMs(s, target, p.kind, start, windowMs, p.stepId),
-    responseWindowMs: windowMs,
-    ...(target.format === 'voice_volume' ? { voiceHoldMs: VOICE_VOLUME_HOLD_MS } : {}),
-    pauseBeforeMs: Math.max(p.pauseBeforeMs ?? 0, state.pendingPauseMs),
+  return buildTrialStep(target, state.states[p.targetId], p, {
+    withAdult: state.config === 'with_adult',
+    l4Available: l4Available(state),
     scoredBy: sessionScoring(target, state.config),
-    allowEscalation: p.kind !== 'generalization' && p.kind !== 'baseline' && p.kind !== 'verification',
-    askAdultForL4: l4Available(state) && (p.adultAssist === true || (Boolean(p.stepId) && p.kind === 'teaching')),
-    // звено цепочки: ошибка сразу поднимает уровень, цепочка завершается верно (блок 1)
-    escalateOnIncorrect:
-      p.escalateOnIncorrect === true || (Boolean(p.stepId) && (p.kind === 'teaching' || p.kind === 'transfer')),
-    praiseAttentionBeforeSd: p.kind === 'baseline',
-    adultCompletesOnFail:
-      withAdult && Boolean(p.stepId) && (p.kind === 'baseline' || p.kind === 'generalization' || p.kind === 'verification'),
-    ...(p.closes ? { closes: p.closes } : {}),
-  };
+    windowOverrideMs: state.windowOverrideMs,
+    pendingPauseMs: state.pendingPauseMs,
+  });
 }
 
 /**
@@ -1547,8 +1443,6 @@ function ensureSuccessfulEnd(state: AbaSessionState, now: number): AbaSessionSta
  * Что присылает экран: всё о пробе, кроме того, что выводится из журнала предъявлений
  * (`ScoredFields`), и жетона — их считает сессия.
  */
-export type AbaTrialInput = Omit<AbaTrial, 'tokens' | 'tokenReason' | keyof ScoredFields>;
-
 export type RecordResult =
   | {
       ok: true;
@@ -1564,40 +1458,6 @@ export type RecordResult =
     }
   /** Запись противоречива или не та, что ждала сессия, — в лог она не идёт. */
   | { ok: false; errors: string[] };
-
-function mismatch(input: AbaTrialInput, expected: TrialStep, state: AbaSessionState): string[] {
-  const errors: string[] = [];
-  const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
-  if (input.sessionId !== state.sessionId) errors.push('проба из другой сессии');
-  if (input.targetId !== expected.targetId) errors.push('не та цель');
-  if (input.exemplarId !== expected.exemplarId) errors.push('не тот экземпляр');
-  if (input.kind !== expected.trialKind) errors.push('не то назначение пробы');
-  if (!same(input.stepId, expected.stepId)) errors.push('не то звено цепочки');
-  if (!same(input.runIndex, expected.runIndex)) errors.push('не тот прогон цепочки');
-  if (!same(input.sdVariantKey, expected.sdVariantKey)) errors.push('не та формулировка SD');
-  if (!same(input.field, expected.field)) errors.push('не то поле карточек');
-  if (!same(input.sampleCardId, expected.sampleCardId)) errors.push('не тот образец');
-  // данные касаний — только у проб касанием, и выбранная карточка — из поля
-  const touch = expected.field !== undefined;
-  if (!touch && (input.chosenCardId !== undefined || input.tapCount !== undefined || input.fieldSizeAtResponse !== undefined)) {
-    errors.push('касания пишутся только в пробах с полем карточек');
-  }
-  if (touch && input.chosenCardId !== undefined && !expected.field!.includes(input.chosenCardId)) errors.push('выбрана карточка не из поля');
-  if (input.tapCount !== undefined && !(Number.isInteger(input.tapCount) && input.tapCount >= 0)) errors.push('число касаний — целое ≥ 0');
-  if ((input.observingPrompted || input.observingLatencyMs !== undefined) && state.targets[expected.targetId].format !== 'match') {
-    errors.push('реакция наблюдения — только у match');
-  }
-  if (!same(input.closes, expected.closes)) errors.push('не то, что закрывает проба');
-  if (input.startPromptLevel !== expected.startPromptLevel) errors.push('не тот стартовый уровень');
-  if (input.promptDelayMs !== expected.promptDelayMs) errors.push('не та задержка до подсказки');
-  if (input.responseWindowMs !== expected.responseWindowMs) errors.push('не то окно ответа');
-  if (input.scoredBy !== expected.scoredBy) errors.push('не тот источник оценки');
-  // минимизация: громкость — только там, где она и есть критерий
-  if (input.loudnessDb !== undefined && state.targets[expected.targetId].format !== 'voice_volume') {
-    errors.push('громкость пишется только в целях на громкость');
-  }
-  return errors;
-}
 
 /**
  * Записать пробу.
@@ -1631,25 +1491,9 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
   const target = state.targets[input.targetId] ?? state.targets[expected.targetId];
   const targetState = state.states[target.id];
   const countsHere = COUNTS_TOWARD_MASTERY[input.scoredBy];
-  // сначала — та ли это проба, что ждала сессия: иначе журнал оценивался бы по чужому шагу
-  const wrong = mismatch(input, expected, state);
-  if (wrong.length) return { ok: false, errors: wrong };
-  const scored = scoreTrial(input.presentationLog, {
-    startPromptLevel: expected.startPromptLevel,
-    scoredBy: expected.scoredBy,
-    allowEscalation: expected.allowEscalation,
-    escalateOnIncorrect: expected.escalateOnIncorrect,
-    askAdultForL4: expected.askAdultForL4,
-    chainStep: Boolean(expected.stepId),
-    promptDelayMs: expected.promptDelayMs,
-    responseWindowMs: expected.responseWindowMs,
-  });
-  if (!scored.ok) return { ok: false, errors: scored.errors };
-  // образца не коснулись вовремя — дана L1, самостоятельной проба быть не может
-  if (input.observingPrompted && scored.fields.response === 'independent') {
-    return { ok: false, errors: ['после подсказки к образцу проба не бывает самостоятельной'] };
-  }
-  const full = { ...input, ...scored.fields };
+  const checked = scoreAgainst(input, expected, state.sessionId, state.targets[expected.targetId].format);
+  if (!checked.ok) return { ok: false, errors: checked.errors };
+  const full = checked.full;
 
   const r = seeded(state.seed);
   const award = awardForTrial(full, {
