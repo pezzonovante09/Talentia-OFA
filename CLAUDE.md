@@ -125,6 +125,7 @@ npm run dev:api         # прокси локально
 | `textbook-ingest` | разобрать стандарт, учебник или программу в заметки по темам |
 | `rebuild-log` | записать решение, закрыть или добавить шаг, обновить вход в `REBUILD.md` и таблицу `AUDIT.md` |
 | `db-migration` | новая миграция, таблица, колонка, функция, триггер, RLS-политика — и тесты в PGlite |
+| `tali-lines` | реплики Tali по ситуациям, правила подстановок, сюжетные события, `companionSituations.ts` |
 
 Облачные сессии ставят зависимости хуком `.claude/hooks/session-start.sh`, поэтому
 гарды (`corpus.test.ts`, `registry.test.ts`, `npm run test:db`) запускаются сразу.
@@ -141,7 +142,6 @@ npm run dev:api         # прокси локально
 | Работа | Скилл |
 |---|---|
 | экраны форматов `choose` / `point` / `match` / `order` / `group` / `build` | `format-screen` |
-| реплики Tali, завязки уроков, сюжетные события, `companionSituations.ts` | `tali-lines` |
 | новые картинки, иконки, предметы, жители; Recraft, Nano Banana, `registry.ts` | `asset-pipeline` |
 | новый роут `/api/*` в прокси | `proxy-route` |
 | озвучка корпуса, TTS, ElevenLabs | `voice-build` |
