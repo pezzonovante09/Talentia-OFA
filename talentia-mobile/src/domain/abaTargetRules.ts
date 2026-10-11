@@ -181,15 +181,26 @@ export function targetErrors(t: AbaTarget): string[] {
   const teaching = t.exemplars.filter((e) => e.role === 'teaching');
   const general = t.exemplars.filter((e) => e.role === 'generalization');
 
-  // У сортировки предметов 8 — своё правило (`matchErrors`).
+  // У сортировки предметов 8 — своё правило (`matchErrors`). У рутины самообслуживания SD
+  // фиксирован (ABA.md:200-202): один обучающий экземпляр, звенья с картинками, без вариантов
+  // формулировки — разнообразие дают место и взрослый (раунд 2, Р4, методист 2026-10-11).
   const sort = t.format === 'match' && t.matchMode === 'sort';
-  if (!sort && (t.exemplars.length < EXEMPLARS.min || t.exemplars.length > EXEMPLARS.max)) {
-    errors.push(`экземпляров ${t.exemplars.length}, нужно ${EXEMPLARS.min}–${EXEMPLARS.max}`);
-  }
-  if (teaching.length < 2) errors.push('обучающих экземпляров меньше двух: критерий требует двух разных');
   // перенос рутины самообслуживания — отметка взрослого вне экрана (другой взрослый, другое
   // место), а не экранная проба: экземпляр переноса и пары ей не нужны (методист, 2026-10-09)
   const routine = t.area === 'self_care' && !!t.steps?.length;
+  if (!sort && !routine && (t.exemplars.length < EXEMPLARS.min || t.exemplars.length > EXEMPLARS.max)) {
+    errors.push(`экземпляров ${t.exemplars.length}, нужно ${EXEMPLARS.min}–${EXEMPLARS.max}`);
+  }
+  if (!routine && teaching.length < 2) errors.push('обучающих экземпляров меньше двух: критерий требует двух разных');
+  if (routine) {
+    if (teaching.length !== 1) errors.push(`у рутины обучающих экземпляров ${teaching.length}, нужен ровно один: SD рутины фиксирован`);
+    if (t.sdVariantKeys?.length) errors.push('у рутины нет вариантов формулировки: SD рутины фиксирован');
+    const images = t.steps!.map((s) => s.image);
+    if (images.some((i) => !i)) errors.push('у звена рутины нет картинки');
+    if (new Set(images.filter(Boolean)).size < images.filter(Boolean).length) {
+      errors.push('картинки звеньев рутины повторяются: две одинаковые картинки — один SD');
+    }
+  }
   if (!routine && general.length < 1) errors.push('нет экземпляра переноса');
   const pairs = general.length * Math.max(1, t.sdVariantKeys?.length ?? 0);
   if (!routine && general.length && pairs < MIN_GENERALIZATION_PAIRS) {

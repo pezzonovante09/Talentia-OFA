@@ -1473,9 +1473,10 @@ describe('А8: рутина в сессии', () => {
     sdKind: 'instruction',
     chaining: 'total_task',
     steps: [
-      { id: 'r1', order: 1, sdKey: 'a', criterionKey: 'b', modelKey: 'c' },
-      { id: 'r2', order: 2, sdKey: 'a', criterionKey: 'b', modelKey: 'c' },
+      { id: 'r1', order: 1, sdKey: 'a', criterionKey: 'b', modelKey: 'c', image: 'wash-1' },
+      { id: 'r2', order: 2, sdKey: 'a', criterionKey: 'b', modelKey: 'c', image: 'wash-2' },
     ],
+    exemplars: [ex('R-1')],
   });
 
   it('в обучении — один естественный прогон за сессию, а не три подряд', () => {

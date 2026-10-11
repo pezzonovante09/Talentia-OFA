@@ -267,7 +267,8 @@ describe('А8: рутины самообслуживания (№74, №75)', ()
     sdKind: 'instruction',
     scoredBy: 'adult',
     chaining: 'total_task',
-    steps,
+    steps: steps.map((s) => ({ ...s, image: `wash-${s.id}` })),
+    exemplars: [target.exemplars[0]],
   });
   const runOf = (whole: boolean, kind: AbaTrial['kind'] = 'teaching', runIndex = 0) =>
     steps.map((st, i) =>
@@ -287,6 +288,18 @@ describe('А8: рутины самообслуживания (№74, №75)', ()
     expect(targetErrors({ ...R, scoredBy: 'device_tap' }).join()).toMatch(/только взрослый/);
     expect(targetErrors({ ...R, chaining: undefined }).join()).toMatch(/total task/);
     expect(targetErrors(R)).toEqual([]);
+  });
+
+  it('Р4: у звеньев рутины картинки, разные; один обучающий экземпляр; без вариантов SD', () => {
+    const noImage = { ...R, steps: R.steps!.map((s, i) => (i === 1 ? { ...s, image: undefined } : s)) };
+    expect(targetErrors(noImage).join()).toMatch(/у звена рутины нет картинки/);
+    const dup = { ...R, steps: R.steps!.map((s) => ({ ...s, image: 'same' })) };
+    expect(targetErrors(dup).join()).toMatch(/картинки звеньев рутины повторяются/);
+    expect(targetErrors({ ...R, exemplars: target.exemplars }).join()).toMatch(/нужен ровно один/);
+    expect(targetErrors({ ...R, sdVariantKeys: ['v'] }).join()).toMatch(/нет вариантов формулировки/);
+    // обычная цепочка без картинок и не-рутина с 3–5 экземплярами — прежние правила
+    expect(targetErrors(chain).join()).not.toMatch(/картинк/);
+    expect(targetErrors({ ...chain, exemplars: [target.exemplars[0]] }).join()).toMatch(/экземпляров 1/);
     const R2 = { ...R, id: 'R2', prerequisiteTargetIds: ['R'] };
     expect(programErrors([R, R2]).join()).toMatch(/другой рутиной/);
   });
@@ -354,12 +367,8 @@ describe('А8: рутины самообслуживания (№74, №75)', ()
     expect(feed(days, growing).flags).not.toContain('no_progress');
   });
 
-  it('перенос рутины — вне экрана: экземпляр переноса и пары не нужны', () => {
-    const teachingOnly = [
-      ...target.exemplars.filter((e) => e.role === 'teaching'),
-      { id: 'cat-5', role: 'teaching' as const, targetKey: 'k5', modelKey: 'm5', partialModelKeys: [] },
-    ];
-    const bare = { ...R, exemplars: teachingOnly, sdVariantKeys: undefined };
+  it('перенос рутины — вне экрана: экземпляр переноса и пары не нужны, один обучающий экземпляр', () => {
+    const bare = { ...R, exemplars: [target.exemplars[0]], sdVariantKeys: undefined };
     expect(targetErrors(bare)).toEqual([]);
   });
 
