@@ -1200,3 +1200,4 @@ Rive советовался, когда предполагался художн�
   (`docs/audit/round2-2026-10-11.md`).
 - `14be24c` — решения №88–92 (вопросы 17–21 раунда 2).
 - `2625ed6` — ворота аудита видят запись через Bash, PowerShell и NotebookEdit (№91).
+- `3686ce3` — скилл `db-migration`; `supabase/tests/run.mjs` подхватывает все `*.test.mjs` (раунд 2, `qa-engineer` В2).
