@@ -54,7 +54,8 @@ import type { SqlDb } from './sql';
  * Почему сервер отказал по существу — стабильный код для экрана родителя
  * (`t('sync.problem.' + code)`), а не текст сервера: сырые сообщения в базу не попадают.
  * Код по SQLSTATE ставит адаптер: 22023 устаревший текст — `outdated_text`, 23514 —
- * `device_clock`, 42501 — `no_access` (у `create_child` — `child_id_taken`), 23503 —
+ * `device_clock` (только у выдачи: время отзыва сервер ограничивает своим, миграция
+ * `20261011120000`), 42501 — `no_access` (у `create_child` — `child_id_taken`), 23503 —
  * `child_gone`, 22P02 / 23505 — `invalid_data`.
  */
 export type SyncProblemCode = 'outdated_text' | 'device_clock' | 'no_access' | 'child_id_taken' | 'child_gone' | 'invalid_data';

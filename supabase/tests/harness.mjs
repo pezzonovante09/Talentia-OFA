@@ -20,6 +20,16 @@ import { fileURLToPath } from 'node:url';
 const MIGRATIONS = join(dirname(fileURLToPath(import.meta.url)), '..', 'migrations');
 
 export async function freshDb() {
+  return migratedDb();
+}
+
+/**
+ * То же, что freshDb, но накатываются только миграции, имя файла которых проходит
+ * `accept`. Для проверки самой миграции на данных, созданных до неё (например, DO-блок,
+ * который должен упасть): `migratedDb((f) => f < '20261011120000')`. Отсекать только хвост
+ * списка: пропуск миграции из середины даёт схему, которой не бывает.
+ */
+export async function migratedDb(accept = () => true) {
   const db = new PGlite();
   await db.exec(`
     CREATE ROLE anon NOLOGIN;
@@ -37,7 +47,7 @@ export async function freshDb() {
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
     CREATE PUBLICATION supabase_realtime;
   `);
-  for (const f of readdirSync(MIGRATIONS).filter((f) => f.endsWith('.sql')).sort()) {
+  for (const f of readdirSync(MIGRATIONS).filter((f) => f.endsWith('.sql') && accept(f)).sort()) {
     try {
       await db.exec(readFileSync(join(MIGRATIONS, f), 'utf8'));
     } catch (e) {
