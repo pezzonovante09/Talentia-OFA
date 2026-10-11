@@ -101,13 +101,14 @@ export function lookup(locale: unknown, key: string): unknown {
  * или список строк (`explainKey`), на любой глубине. Обход общий, а не по списку полей,
  * чтобы новое поле схемы попало под проверку без правки гарда.
  */
-export function keysIn(value: unknown): string[] {
-  if (Array.isArray(value)) return value.flatMap(keysIn);
+export function keysIn(value: unknown, skip: readonly string[] = []): string[] {
+  if (Array.isArray(value)) return value.flatMap((v) => keysIn(v, skip));
   if (typeof value !== 'object' || value === null) return [];
   return Object.entries(value as Record<string, unknown>).flatMap(([k, v]) => {
+    if (skip.includes(k)) return [];
     if (k.endsWith('Key') && typeof v === 'string') return [v];
     if (k.endsWith('Key') && Array.isArray(v) && v.every((x) => typeof x === 'string')) return v as string[];
-    return keysIn(v);
+    return keysIn(v, skip);
   });
 }
 
@@ -463,6 +464,85 @@ export function nameOutsideVocative(text: string): boolean {
 
 /** Аффикс к подстановке — сразу, через кавычку или дефис: `{{t}}ны`, `{{t}}»ны`, `{{t}}-ны`. */
 export const AFFIX_AFTER_SLOT = /\}\}[»"'’\-]?\p{L}/u;
+
+/**
+ * Род ребёнка в ru-тексте (решение №71; TALI.md, «Форма обращения к ребёнку»; раунд 2, Р17,
+ * `localization-qa` 2026-10-11). Одна функция на банк реплик и на уроки, чтобы исключения не
+ * разошлись. Эвристика: ловит не всё (приставочные «перепутал», «отгадал» — глазами).
+ *
+ * - «ты …л(а)», «ты … -ый / -ая» («ты большой молодец»), «какой / какая ты» — всегда;
+ *   запятые для этих веток не рвут фразу («Ты, наверное, устал»);
+ * - «сам / сама», краткие прилагательные («готов / рада») и прошедшее время частых глаголов —
+ *   если ближайшее подлежащее перед ними в той же фразе — из `THIRD_PERSON` (о Tali, жителях и
+ *   персонажах задач можно: «Тали нашёл…»; Tali о себе — в мужском роде: «я перепутал»), а не
+ *   «ты» и не отсутствует. «Сам / сама» — только если подлежащее вплотную, через ≤ 2 слова.
+ *
+ * «один / одна» не ловятся: в уроках счёта это числительное при предмете.
+ */
+export const PAST_ROOTS = ['справил', 'смог', 'нашёл', 'нашел', 'нашл', 'угадал', 'решил', 'сделал', 'посчитал', 'понял', 'запомнил', 'путал'];
+/**
+ * Подлежащие задач и жителей, кроме местоимений и Tali: имена жителей (из реестра, когда
+ * появится) и нарицательные персонажи задач («заяц», «мама»). Иначе гард примет «Айбек нашёл»
+ * за обращение к ребёнку. В нижнем регистре.
+ */
+export const KNOWN_SUBJECTS: string[] = [];
+const THIRD_PERSON = ['я', 'мы', 'он', 'она', 'оно', 'они', 'кто', 'тали', 'tali'];
+/** Слова, которые выглядят родовыми после «ты», но не о ребёнке: «ты сначала…», «ты мой друг». */
+const NOT_GENDERED = ['сначала', 'мой', 'твой', 'свой'];
+// Среднее слово после «ты» — не глагол 2-го лица: «Ты видишь угол?» — не род ребёнка.
+const YOU_MIDDLE = String.raw`(?:(?!\p{L}*шь(?:ся)?\s)\p{L}+\s+)?`;
+const YOU_GENDERED = [
+  new RegExp(String.raw`(?<!\p{L})ты\s+${YOU_MIDDLE}(\p{L}+(?:л|ла|лся|лась))(?!\p{L})`, 'giu'),
+  new RegExp(String.raw`(?<!\p{L})ты\s+${YOU_MIDDLE}(\p{L}+(?:ый|ий|ой|ая|яя))(?!\p{L})`, 'giu'),
+  /(?<!\p{L})(какой|какая|такой|такая)\s+ты(?!\p{L})/giu,
+];
+const SELF = /(?<!\p{L})(сам|сама)(?!\p{L})/giu;
+const GENDERED_WITHOUT_SUBJECT = [
+  // окончание — только родовое: «посчитали» (мы) и «нашлось» — не род ребёнка
+  new RegExp(String.raw`(?<!\p{L})((?:${PAST_ROOTS.join('|')})(?:а|ла|ся|ась|лся|лась)?)(?!\p{L})`, 'giu'),
+  /(?<!\p{L})(готов|готова|рад|рада|прав|права|уверен|уверена|должен|должна|согласен|согласна)(?!\p{L})/giu,
+];
+
+/** Ближайшее перед позицией слово из подлежащих или «ты»; `null` — подлежащего нет. */
+function nearestSubject(words: string[]): string | null {
+  for (let i = words.length - 1; i >= 0; i--) {
+    if (words[i] === 'ты' || THIRD_PERSON.includes(words[i]) || KNOWN_SUBJECTS.includes(words[i])) return words[i];
+  }
+  return null;
+}
+
+/**
+ * Фрагменты ru-текста, которые выдают род ребёнка; пустой список — текст безродовый.
+ * `youOnly` — только обороты с «ты»: для подписей и текстов для чтения, где прошедшее время
+ * о персонаже без подлежащего — норма («Заяц нашёл…»), а «Ты нашёл 3 гриба» — нет.
+ */
+export function childGenderHits(text: string, { youOnly = false }: { youOnly?: boolean } = {}): string[] {
+  const hits: string[] = [];
+  for (const clause of text.split(/[.!?…:;]/)) {
+    const flat = clause.replace(/,/g, ' ');
+    const youHits: string[] = [];
+    for (const re of YOU_GENDERED) {
+      for (const m of flat.matchAll(re)) if (!NOT_GENDERED.includes((m[1] ?? '').toLowerCase())) youHits.push(m[0].replace(/\s+/g, ' '));
+    }
+    hits.push(...youHits);
+    if (youOnly) continue;
+    // одна ошибка — одна строка: «ты сделал» уже найдено, «сделал» отдельно не нужно
+    const covered = (hit: string) => youHits.some((h) => h.toLowerCase().includes(hit.toLowerCase()));
+    const wordsBefore = (i: number) => clause.slice(0, i).toLowerCase().match(/\p{L}+/gu) ?? [];
+    for (const re of GENDERED_WITHOUT_SUBJECT) {
+      for (const m of clause.matchAll(re)) {
+        const subject = nearestSubject(wordsBefore(m.index));
+        if ((subject === null || subject === 'ты') && !covered(m[0])) hits.push(m[0]);
+      }
+    }
+    for (const m of clause.matchAll(SELF)) {
+      const near = wordsBefore(m.index).slice(-3);
+      const subject = nearestSubject(near);
+      if ((subject === null || subject === 'ты') && !covered(m[0])) hits.push(m[0]);
+    }
+  }
+  return hits;
+}
 
 export const RULES = {
   corpusIds: {
@@ -1389,6 +1469,37 @@ export const RULES = {
           ? tooLong(locales, lesson.hook.lineKey, TEXT_LIMITS.hintChars, BUBBLE_CHARS, `${where}: завязка`)
           : [],
       ),
+  },
+
+  childGenderNeutral: {
+    // Решение №71, раунд 2, Р17 (`localization-qa`): безродовость проверялась только в банке
+    // реплик, а Tali говорит с ребёнком и в уроке. Охват — весь текст урока, обходом, как у
+    // nameOnlyInTali (новое поле задания не выпадет). Подписи и тексты для чтения (`labelKey`,
+    // `textKey`) — только на обороты с «ты»: «Заяц нашёл 5 морковок» в условии — норма,
+    // «Ты нашёл 3 гриба» — нет.
+    title: 'ru-текст урока не выдаёт род ребёнка: без «ты …л(а)», «сам / сама», «готов / рад» и прошедшего времени без подлежащего (TALI.md, «Форма обращения к ребёнку»)',
+    check: (corpus, locales) =>
+      lessonsOf(corpus).flatMap(({ lesson, where }) => {
+        const speech = (v: unknown) => keysIn(v, ['labelKey', 'textKey']);
+        const keys = [
+          lesson.hook.lineKey,
+          ...(lesson.model?.steps.map((s) => s.lineKey) ?? []),
+          ...speech(lesson.tasks),
+          ...speech(lesson.model?.example ?? {}),
+          lesson.atlasEntryKey,
+        ];
+        const full = new Set(keys);
+        const reading = [...keysIn(lesson.tasks), ...keysIn(lesson.model?.example ?? {})].filter((k) => !full.has(k));
+        return [...[...full].map((key) => [key, false] as const), ...[...new Set(reading)].map((key) => [key, true] as const)].flatMap(([key, youOnly]) => {
+          const text = lookup(locales.ru, key);
+          return typeof text === 'string'
+            ? childGenderHits(text, { youOnly }).map(
+                (hit) =>
+                  `${where}: ru ${key} — «${hit}»: род ребёнка. О ребёнке — настоящее или будущее время, «у тебя получилось»; о Tali, жителях и персонажах — с подлежащим в той же фразе (новое имя или персонаж — в KNOWN_SUBJECTS)`,
+              )
+            : [];
+        });
+      }),
   },
 } satisfies Record<string, Rule>;
 

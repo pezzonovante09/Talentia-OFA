@@ -8,7 +8,7 @@
  * Фикстуры живут здесь, а не в `src/content`, — иначе гард принял бы их за
  * контент.
  */
-import { CHOOSE_SHARE_MIN_TASKS, RULES, collectCorpus, keysIn } from './corpusRules';
+import { CHOOSE_SHARE_MIN_TASKS, RULES, childGenderHits, collectCorpus, keysIn } from './corpusRules';
 import { countSilhouette } from '../../domain/countLayout';
 import type { Corpus, Locales, RuleId } from './corpusRules';
 import type { ChooseTask, Lesson, Task, TaskFormat, Topic } from '../../types/task';
@@ -1548,6 +1548,70 @@ describe('гард корпуса: приватность текста — по 
     const out = run('nameOnlyInTali', c, { ru }).join('\n');
     expect(out).toContain(`${l.hook.lineKey} — имя посреди фразы`);
     expect(out).toContain(`${l.titleKey} — имя ребёнка вне реплик Tali`);
+  });
+});
+
+describe('гард корпуса: род ребёнка в уроке', () => {
+  it('ловит прошедшее время без подлежащего и «ты готов»; о Tali с подлежащим и «ты сначала» — можно', () => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    const l = lessonAt(c, 0);
+    setKey(ru, l.hook.lineKey, 'Тали нашёл 3 гриба. Сколько грибов у Тали?');
+    setKey(ru, l.tasks[0].hintKey, 'Ты сначала посчитай, потом сравни. У тебя получится!');
+    expect(run('childGenderNeutral', c, { ru })).toEqual([]);
+    setKey(ru, l.model!.steps[0].lineKey, 'Нашёл? Теперь посчитай, сколько их.');
+    setKey(ru, l.tasks[0].promptKey, 'Ты готов? Начинаем!');
+    setKey(ru, l.atlasEntryKey, 'Ты большой молодец!');
+    const out = run('childGenderNeutral', c, { ru }).join('\n');
+    expect(out).toContain(`ru ${l.model!.steps[0].lineKey} — «Нашёл»: род ребёнка`);
+    expect(out).toContain(`ru ${l.tasks[0].promptKey} — «готов»: род ребёнка`);
+    expect(out).toContain(`ru ${l.atlasEntryKey} — «Ты большой»: род ребёнка`);
+  });
+
+  it.each([
+    'Ты справилась!',
+    'Сделала!',
+    'Сама смогла!',
+    'Ты всё посчитал.',
+    'Готова? Поехали!',
+    'Я рад, ты готов?',
+    'Тали ждёт, ты готов?',
+    'Я подскажу, а посчитай сам.',
+    'Ты, наверное, устал.',
+    'Какая ты умница!',
+  ])('ловит: «%s»', (text) => {
+    expect(childGenderHits(text)).not.toEqual([]);
+  });
+
+  it.each([
+    'У тебя получилось!',
+    'Ты молодец!',
+    'Я перепутал!',
+    'Я рад!',
+    'Тали сам не понял.',
+    'Найди, где одна точка.',
+    'Ты сначала посчитай.',
+    'Ты видишь угол?',
+    'Ты найдёшь синий шарик?',
+    'Посчитали? Теперь сравним.',
+    'Всё нашлось!',
+    'Ты мой друг!',
+  ])('пропускает: «%s»', (text) => {
+    expect(childGenderHits(text)).toEqual([]);
+  });
+
+  it('подписи и тексты для чтения — только обороты с «ты»', () => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    const t = lessonAt(c, 0).tasks[0] as ChooseTask;
+    setKey(ru, t.options[0].labelKey, 'Заяц нашёл 5 морковок.');
+    expect(run('childGenderNeutral', c, { ru })).toEqual([]);
+    setKey(ru, t.options[0].labelKey, 'Ты нашёл 3 гриба.');
+    expect(run('childGenderNeutral', c, { ru }).join('\n')).toContain(`ru ${t.options[0].labelKey} — «Ты нашёл»: род ребёнка`);
+  });
+
+  it('одна ошибка — одна строка', () => {
+    expect(childGenderHits('Ты сделал!')).toEqual(['Ты сделал']);
   });
 });
 
