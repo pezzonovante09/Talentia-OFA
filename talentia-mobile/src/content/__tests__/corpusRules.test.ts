@@ -149,7 +149,7 @@ function lessonPictureTwo(): Lesson {
     hintKey: k('a.l2.t4.hint'),
     explainKey: [k('a.l2.t4.explain')],
     items: [
-      { id: 'i1', labelKey: k('a.l2.t4.i1'), shape: 'leaf', count: 3, position: 2 },
+      { id: 'i1', labelKey: k('a.l2.t4.i1'), shape: 'leaf', count: 3, layout: 'scatter', position: 2 },
       { id: 'i2', labelKey: k('a.l2.t4.i2'), shape: 'leaf', count: 1, position: 0 },
       { id: 'i3', labelKey: k('a.l2.t4.i3'), shape: 'leaf', count: 2, position: 1 },
     ],
@@ -1548,6 +1548,125 @@ describe('гард корпуса: приватность текста — по 
     const out = run('nameOnlyInTali', c, { ru }).join('\n');
     expect(out).toContain(`${l.hook.lineKey} — имя посреди фразы`);
     expect(out).toContain(`${l.titleKey} — имя ребёнка вне реплик Tali`);
+  });
+});
+
+describe('гард корпуса: немой проверяемый символ (№88)', () => {
+  const entry = SKILL_BY_ID.get('count-to-3') as SkillEntry;
+  afterEach(() => {
+    delete entry.symbol;
+  });
+  const word = ['', 'one', 'two', 'three'];
+  const numerals = (voice: boolean) =>
+    [1, 2, 3].map((n) => ({
+      id: 'abc'[n - 1],
+      labelKey: `content.common.${word[n]}`,
+      numeral: n,
+      correct: n === 2,
+      ...(voice ? { voice: 'select' as const } : {}),
+    }));
+
+  it('навык-символ: цифра-вариант и цифра-стимул без voice — красно, с voice: select — нет', () => {
+    entry.symbol = 'numeral';
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0] as ChooseTask;
+    t.options = numerals(false);
+    const out = run('symbolVoice', c);
+    expect(out.filter((s) => s.includes('символ звучит именем до ответа'))).toHaveLength(3);
+    t.options = numerals(true);
+    expect(run('symbolVoice', c)).toEqual([]);
+    t.stimulus = { labelKey: k('a.l1.t1.stimulus'), numeral: 2 };
+    expectRed('symbolVoice', c, 'stimulus: символ звучит именем');
+  });
+
+  it('забытый symbol: озвученные цифры без кучки в навыке счёта — красно; с кучкой-стимулом — нет', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0] as ChooseTask;
+    t.options = numerals(false);
+    expect(run('symbolVoice', c)).toEqual([]);
+    delete t.stimulus;
+    expectRed('symbolVoice', c, 'нужен symbol в реестре');
+  });
+
+  it('build с фрагментами в навыке-символе — красно: у фрагмента нет voice', () => {
+    entry.symbol = 'numeral';
+    const c = goodCorpus();
+    const l = lessonAt(c, 0);
+    l.tasks[0] = {
+      id: 'fx-a-l1-tb',
+      skill: 'count-to-3',
+      format: 'build',
+      promptKey: k('a.l1.tb.prompt'),
+      hintKey: k('a.l1.tb.hint'),
+      answer: 'a',
+      fragments: [{ id: 'a', labelKey: k('a.l1.tb.a') }],
+    } as Task;
+    expectRed('symbolVoice', c, 'фрагменты build в навыке-символе');
+  });
+
+  it('немая карточка в навыке счёта и у кучки в навыке-символе — красно', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0] as ChooseTask;
+    t.options = numerals(true);
+    expectRed('symbolVoice', c, 'немая карточка вне проверки символа');
+    entry.symbol = 'numeral';
+    const c2 = goodCorpus();
+    const t2 = lessonAt(c2, 0).tasks[0] as ChooseTask;
+    t2.stimulus = { ...t2.stimulus!, voice: 'select' };
+    expectRed('symbolVoice', c2, 'stimulus: немая карточка вне проверки символа');
+  });
+});
+
+describe('гард корпуса: пример не повторяет задание (Р14)', () => {
+  it('«листья 2 — две точки» и «камни 2 в ряд — две точки» — один ответ', () => {
+    const c = goodCorpus();
+    const l = lessonAt(c, 0);
+    const ex = l.model!.example as ChooseTask;
+    ex.stimulus = { labelKey: k('a.l1.m.stimulus'), shape: 'leaf', count: 2 };
+    ex.options = ex.options.map((o) => ({ ...o, correct: o.id === 'b' }));
+    (l.tasks[0] as ChooseTask).stimulus = { labelKey: k('a.l1.t1.stimulus'), shape: 'stone', count: 2, layout: 'row' };
+    expectRed('model', c, 'списывание');
+  });
+
+  it('«листья 3 в ряд» и «камни 3 вразброс» — разные', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0] as ChooseTask;
+    t.stimulus = { labelKey: k('a.l1.t1.stimulus'), shape: 'stone', count: 3, layout: 'scatter' };
+    t.options = t.options.map((o) => ({ ...o, correct: o.id === 'c' }));
+    expect(run('model', c).filter((s) => s.includes('списывание'))).toEqual([]);
+  });
+});
+
+describe('гард корпуса: кучка в плитке (Р15)', () => {
+  it('больше пяти в варианте и 4–5 в ряд — красно; 4 вразброс — нет', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0] as ChooseTask;
+    t.options = t.options.map((o) => (o.id === 'c' ? { ...o, count: 6 } : o));
+    expectRed('tile', c, 'больше пяти — только в стимуле');
+    t.options = t.options.map((o) => (o.id === 'c' ? { ...o, count: 4, layout: 'row' as const } : o));
+    expectRed('tile', c, 'не больше трёх в ряд');
+    t.options = t.options.map((o) => (o.id === 'c' ? { ...o, count: 4, layout: 'scatter' as const } : o));
+    expect(run('tile', c)).toEqual([]);
+  });
+
+  it('на 5-6 больше 12 фигур на пересчёт в плитках — красно; кубик не в счёт', () => {
+    const c = goodCorpus();
+    const t = c[0].topic.lessons[1].tasks.find((x) => x.format === 'order')!;
+    if (t.format !== 'order') throw new Error('нет order');
+    t.items = t.items.map((i) => ({ ...i, count: 4, layout: 'scatter' as const }));
+    expect(run('screenLoad', c)).toEqual([]);
+    t.items = [...t.items, { id: 'i4', labelKey: k('a.l2.t4.i4'), shape: 'leaf', count: 2, layout: 'scatter', position: 3 }];
+    expectRed('screenLoad', c, '14 фигур на пересчёт');
+    t.items = t.items.map((i) => ({ ...i, layout: 'dice' as const }));
+    expect(run('screenLoad', c)).toEqual([]);
+  });
+
+  it('кучки order все в ряд — красно (silhouette)', () => {
+    const c = goodCorpus();
+    const t = c[0].topic.lessons[1].tasks.find((x) => x.format === 'order')!;
+    if (t.format !== 'order') throw new Error('нет order');
+    t.items = t.items.map((i) => ({ ...i, layout: 'row' as const }));
+    expectRed('silhouette', c, 'по длине ряда');
   });
 });
 

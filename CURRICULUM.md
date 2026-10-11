@@ -108,6 +108,9 @@
 
 `skill`: `subitize-1-3` · `count-to-5` · `count-to-10` | `numeral-1-5` · `zero` · `numeral-6-10` | `compare-groups` · `equal-groups` · `compose-to-5` | `position-words` · `left-right` · `parts-of-day`
 
+Навыки-символы (решение №88, `SkillEntry.symbol`, карточки — `voice: 'select'`): `numeral-1-5`,
+`numeral-6-10` — `numeral`. `zero` — без `symbol`: ответ ищут по пустой корзинке, а не по знаку.
+
 «Цифры» (№72, №77): цифра — подпись к количеству, без письма и без знаков; ноль — раньше
 десяти, потому что 10 пишется двумя знаками, 1 и 0, и рисуется пустой корзинкой (картинкой
 `image`, не `count: 0`). Как выглядит цифра на экране — design-lead и скилл `format-screen`.
@@ -201,6 +204,9 @@
 
 `skill`: `sound-first` · `sound-last` · `sound-same` | `syllable-count` · `word-length` · `sentence-word-count` | `tale-characters` · `tale-sequence` · `tale-character-trait` | `letter-sound` · `letter-vowel` · `letter-consonant`
 
+Навыки-символы (№88): `letter-sound`, `letter-vowel`, `letter-consonant` — `letter`. `sound-*` — без
+`symbol`: ответ ищут по картинке, а не по знаку.
+
 Сказка дробится на эпизоды ≤ 90 знаков, у каждого картинка; сказки народные, пересказ свой.
 Ударение — с 7.
 
@@ -217,6 +223,9 @@
 | Слово и предложение | Кто? Что? · Какой? Что делает? · Предложение |
 
 `skill`: `read-syllables` · `voiced-voiceless` · `alphabet-order` | `hard-soft-sound` · `iotated-vowels` · `soft-sign-softness` | `genre-tale-story-poem` · `riddle-solve` · `proverb-meaning` | `syllable-split` · `word-stress` · `hyphenation-basic` | `zhi-shi-cha-shcha` · `chk-chn` · `capital-proper-names` | `text-topic-title` · `text-main-idea` · `text-event-order` | `word-object-question` · `word-sign-action-question` · `sentence-boundary`
+
+Навыки-символы (№88): `alphabet-order`, `iotated-vowels` — `letter`; `read-syllables` —
+`syllable`.
 
 «Читаем слоги» (№72): обучение чтению слогов-слияний — до «Читаем и понимаем»; у
 `text-topic-title` пререквизит `read-syllables`. «Гласные и согласные» стандарта (с. 37,

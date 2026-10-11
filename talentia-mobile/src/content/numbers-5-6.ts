@@ -29,7 +29,10 @@ const dots = (id: string, count: Count, correct: boolean) => ({
   correct,
 });
 
-/** Карточка-число: крупная цифра-подпись, озвучена числом (решение №81). Цифр ещё не проходили — опора на звук. */
+/**
+ * Карточка-число: крупная цифра-подпись, озвучена числом (решение №81). Цифр ещё не проходили — опора на звук.
+ * Только для навыков счёта: в навыке с `symbol` («Цифры») карточка немая — `voice: 'select'` (№88).
+ */
 const numeral = (id: string, n: Count, correct: boolean) => ({ id, labelKey: COMMON[n], numeral: n, correct });
 
 /** Сторона пары «точки» в `match`. */
@@ -57,12 +60,14 @@ const lessonOneTwoThree: Lesson = {
       format: 'choose',
       presentation: 'picture',
       promptKey: 'content.numbers.l1.model.prompt',
-      stimulus: { labelKey: 'content.numbers.l1.model.stimulus', shape: 'leaf', count: 2 },
-      options: [dots('a', 1, false), dots('b', 2, true), dots('c', 3, false)],
+      // Три листа, а не два: первое задание — два камня, и пример с тем же ответом превратил
+      // бы его в списывание (раунд 2, Р14).
+      stimulus: { labelKey: 'content.numbers.l1.model.stimulus', shape: 'leaf', count: 3 },
+      options: [dots('a', 1, false), dots('b', 2, false), dots('c', 3, true)],
     },
     steps: [
       { lineKey: 'content.numbers.l1.model.s1', reveal: 'stimulus' },
-      { lineKey: 'content.numbers.l1.model.s2', reveal: 'b' },
+      { lineKey: 'content.numbers.l1.model.s2', reveal: 'c' },
     ],
   },
   tasks: [
@@ -183,10 +188,12 @@ const lessonCountToFive: Lesson = {
       promptKey: 'content.numbers.l2.t2.prompt',
       hintKey: 'content.numbers.l2.t2.hint',
       explainKey: ['content.numbers.l2.t2.explain'],
+      // Кучки не все в ряд: иначе порядок находится по длине ряда, а не счётом; в плитке не
+      // больше трёх в ряд (раунд 2, Р15, гарды `silhouette` и `tile`).
       items: [
-        { id: 'i1', labelKey: 'content.numbers.l2.t2.stones', shape: 'stone', count: 5, position: 2 },
-        { id: 'i2', labelKey: 'content.numbers.l2.t2.berries', shape: 'berry', count: 3, position: 0 },
-        { id: 'i3', labelKey: 'content.numbers.l2.t2.leaves', shape: 'leaf', count: 4, position: 1 },
+        { id: 'i1', labelKey: 'content.numbers.l2.t2.stones', shape: 'stone', count: 5, layout: 'scatter', position: 2 },
+        { id: 'i2', labelKey: 'content.numbers.l2.t2.berries', shape: 'berry', count: 3, layout: 'row', position: 0 },
+        { id: 'i3', labelKey: 'content.numbers.l2.t2.leaves', shape: 'leaf', count: 4, layout: 'scatter', position: 1 },
       ],
     },
     {
@@ -208,10 +215,12 @@ const lessonCountToFive: Lesson = {
       promptKey: 'content.numbers.l2.t4.prompt',
       hintKey: 'content.numbers.l2.t4.hint',
       explainKey: ['content.numbers.l2.t4.explain'],
+      // Четыре и пять — вразброс: в плитке не больше трёх в ряд (Р15). Не «кубик»: кубик против
+      // точек-кубика соединялся бы по узору (А12).
       pairs: [
-        { id: 'p1', left: { labelKey: 'content.numbers.l2.t4.berries', shape: 'berry', count: 5 }, right: dotSide(5) },
-        { id: 'p2', left: { labelKey: 'content.numbers.l2.t4.stones', shape: 'stone', count: 3 }, right: dotSide(3) },
-        { id: 'p3', left: { labelKey: 'content.numbers.l2.t4.leaves', shape: 'leaf', count: 4 }, right: dotSide(4) },
+        { id: 'p1', left: { labelKey: 'content.numbers.l2.t4.berries', shape: 'berry', count: 5, layout: 'scatter' }, right: dotSide(5) },
+        { id: 'p2', left: { labelKey: 'content.numbers.l2.t4.stones', shape: 'stone', count: 3, layout: 'row' }, right: dotSide(3) },
+        { id: 'p3', left: { labelKey: 'content.numbers.l2.t4.leaves', shape: 'leaf', count: 4, layout: 'scatter' }, right: dotSide(4) },
       ],
     },
   ],
@@ -227,15 +236,17 @@ const lessonCountToFive: Lesson = {
  * (TALI.md, «Роли Tali»). Пример — шесть листьев: самый короткий счёт за пятёрку.
  *
  * Нагрузка — по ревью 2026-10-02 (`curriculum-content-reviewer`, `aba-pedagogy-specialist`,
- * `child-ux-specialist`): кучки в `order` — 5, 6, 7, ряд начинается со знакомой пятёрки;
- * 7–10 — в `choose`, а не в парах `match` (пары по 7–10 — пятьдесят актов счёта, пятилетке в
- * одиночку не пройти). При числе больше пяти задание идёт «кучка → число» (решение №81): одна
+ * `child-ux-specialist`) и раунду 2 (Р15): кучка больше пяти — только в стимуле, в плитке
+ * варианта она не пересчитывается (гард `tile`). Поэтому `order` (t2) — спираль на способ урока
+ * до пяти: кучки 3, 4, 5 вразброс, трогать по разу (решение №93; с `build` вернуть на счёт до
+ * десяти). 7–10 — в `choose`, а не в парах `match` (пары по 7–10 — пятьдесят актов счёта,
+ * пятилетке в одиночку не пройти). При числе больше пяти задание идёт «кучка → число» (решение №81): одна
  * кучка в ряд (`stimulus`, `row`) и три карточки-числа (`numeral`), каждая озвучена числом.
  * Точек в вариантах нет: ряд и точки дали бы один силуэт «пять и остаток» (А12). Цифра здесь
  * только подпись, опора — звучащее число: цифры — следующая тема. Варианты соседние, верный по
  * величине: пример — средний (6 из 5/6/7), t1 — меньший (7 из 7/8/9), t3 — больший (10 из
- * 8/9/10). Так правило «бери самое большое» не проходит, разброс держит `answerRank`. На экране
- * не больше десяти фигур. Урок заканчивается спиралью на счёт до пяти парами `match` — лёгким
+ * 8/9/10). Так правило «бери самое большое» не проходит, разброс держит `answerRank`. Урок
+ * заканчивается спиралью на счёт до пяти парами `match` — лёгким
  * успехом перед атласом; `choose` в уроке два (`choosePerLesson`). Больше пяти фигур — только
  * рядом (`row`): разброс до десяти пятилетка не пересчитает (гард `scatter56`).
  */
@@ -272,17 +283,19 @@ const lessonCountToTen: Lesson = {
       options: [numeral('a', 7, true), numeral('b', 8, false), numeral('c', 9, false)],
     },
     {
+      // Спираль на способ урока до пяти: кучки 6–7 в плитку не помещаются (Р15, решение №93).
+      // С форматом `build` («положи шесть камней») — вернуть на `count-to-10`.
       id: 'nv-count-l3-t2',
-      skill: 'count-to-10',
+      skill: 'count-to-5',
       format: 'order',
       presentation: 'picture',
       promptKey: 'content.numbers.l3.t2.prompt',
       hintKey: 'content.numbers.l3.t2.hint',
       explainKey: ['content.numbers.l3.t2.explain'],
       items: [
-        { id: 'i1', labelKey: 'content.numbers.l3.t2.berries', shape: 'berry', count: 6, layout: 'row', position: 1 },
-        { id: 'i2', labelKey: 'content.numbers.l3.t2.stones', shape: 'stone', count: 7, layout: 'row', position: 2 },
-        { id: 'i3', labelKey: 'content.numbers.l3.t2.leaves', shape: 'leaf', count: 5, layout: 'row', position: 0 },
+        { id: 'i1', labelKey: 'content.numbers.l3.t2.berries', shape: 'berry', count: 4, layout: 'scatter', position: 1 },
+        { id: 'i2', labelKey: 'content.numbers.l3.t2.stones', shape: 'stone', count: 3, layout: 'scatter', position: 0 },
+        { id: 'i3', labelKey: 'content.numbers.l3.t2.leaves', shape: 'leaf', count: 5, layout: 'scatter', position: 2 },
       ],
     },
     {
@@ -304,10 +317,11 @@ const lessonCountToTen: Lesson = {
       promptKey: 'content.numbers.l3.t4.prompt',
       hintKey: 'content.numbers.l3.t4.hint',
       explainKey: ['content.numbers.l3.t4.explain'],
+      // Не те же 3/4/5, что в t2 (`order`): иначе два задания урока считают одно и то же.
       pairs: [
-        { id: 'p1', left: { labelKey: 'content.numbers.l3.t4.berries', shape: 'berry', count: 3, layout: 'scatter' }, right: dotSide(3) },
-        { id: 'p2', left: { labelKey: 'content.numbers.l3.t4.stones', shape: 'stone', count: 4, layout: 'scatter' }, right: dotSide(4) },
-        { id: 'p3', left: { labelKey: 'content.numbers.l3.t4.leaves', shape: 'leaf', count: 5, layout: 'scatter' }, right: dotSide(5) },
+        { id: 'p1', left: { labelKey: 'content.numbers.l3.t4.stones', shape: 'stone', count: 5, layout: 'scatter' }, right: dotSide(5) },
+        { id: 'p2', left: { labelKey: 'content.numbers.l3.t4.leaves', shape: 'leaf', count: 2, layout: 'row' }, right: dotSide(2) },
+        { id: 'p3', left: { labelKey: 'content.numbers.l3.t4.berries', shape: 'berry', count: 4, layout: 'scatter' }, right: dotSide(4) },
       ],
     },
   ],

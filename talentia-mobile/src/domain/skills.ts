@@ -42,6 +42,13 @@ export type SkillEntry = {
    * навыка, в заданиях которого есть `count`.
    */
   maxCount?: number;
+  /**
+   * Навык проверяет узнавание символа — цифры, буквы, слога (решение №88): элементы без
+   * `shape` и `image` в его заданиях — «немые» (`Media.voice: 'select'`), иначе ответ
+   * находится на слух, в том числе в «кучка → цифра». В навыках счёта цифра звучит (№81).
+   * Гард `symbolVoice` смотрит, есть ли поле.
+   */
+  symbol?: 'numeral' | 'letter' | 'syllable';
 };
 
 export const MAX_PREREQUISITES = 3;

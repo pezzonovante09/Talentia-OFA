@@ -235,13 +235,19 @@ function elementIds(task: Task | ModelExample): string[] {
   });
 }
 
-/** Содержание без ключей локали и id: два задания с разными ключами, но одним стимулом — одно. */
+/**
+ * Содержание без ключей локали, id и озвучки: два задания с разными ключами, но одним стимулом —
+ * одно. У кучки (`count`) не важно, что нарисовано: «2 листа — две точки» и «2 камня — две
+ * точки» — один ответ (раунд 2, Р14); раскладка без поля — ряд.
+ */
 function strip(v: unknown): unknown {
   if (Array.isArray(v)) return v.map(strip);
   if (typeof v !== 'object' || v === null) return v;
+  const o = v as Record<string, unknown>;
+  const pile = o.count !== undefined;
   return Object.fromEntries(
-    Object.entries(v as Record<string, unknown>)
-      .filter(([k]) => !k.endsWith('Key') && k !== 'id')
+    Object.entries(pile ? { ...o, layout: o.layout ?? 'row' } : o)
+      .filter(([k]) => !k.endsWith('Key') && k !== 'id' && k !== 'voice' && !(pile && k === 'shape'))
       .map(([k, x]) => [k, strip(x)]),
   );
 }
@@ -461,6 +467,9 @@ export function nameOutsideVocative(text: string): boolean {
     .replace(new RegExp(`,\\s*(?:${re})\\s*[!.?…]*\\s*$`, 'i'), '');
   return NAME_PLACEHOLDER.test(rest);
 }
+
+/** Фигур на пересчёт в плитках одного задания на 5-6 (`screenLoad`, `child-ux-specialist`). */
+export const SCREEN_COUNT_56 = 12;
 
 /** Аффикс к подстановке — сразу, через кавычку или дефис: `{{t}}ны`, `{{t}}»ны`, `{{t}}-ны`. */
 export const AFFIX_AFTER_SLOT = /\}\}[»"'’\-]?\p{L}/u;
@@ -1319,6 +1328,66 @@ export const RULES = {
       }),
   },
 
+  symbolVoice: {
+    // Решение №88 (раунд 2, Р13; `curriculum-content-reviewer`, `child-ux-specialist`): в навыке
+    // узнавания символа цифра, буква, слог до ответа не называются — иначе ответ находится на
+    // слух, и в «кучка → цифра» тоже. Символ — элемент без shape и image. В навыках счёта
+    // цифра — подпись и звучит (№81): «немая» карточка там — ошибка.
+    // Забытый `symbol` у нового навыка «Цифр»: цифры без кучки в задании — это узнавание
+    // символа, а не счёт, и озвученными быть не могут. У `build` фрагментов поля voice нет —
+    // в навыке-символе сначала расширить схему.
+    title: 'навык с symbol: символ (цифра или элемент без shape и image) — voice: select; вне навыка-символа и у кучки или картинки voice нет; цифры без кучки — только в навыке с symbol; build с fragments в навыке-символе — нет',
+    check: (corpus) =>
+      formatTasksOf(corpus).flatMap(({ task, at }) => {
+        const symbolSkill = SKILL_BY_ID.get(task.skill)?.symbol !== undefined;
+        const media = mediaOf(task, true);
+        const hasPile = media.some(({ m }) => m.shape !== undefined && m.count !== undefined);
+        const bad = media.flatMap(({ m, at: el }) => {
+          const isSymbol = m.numeral !== undefined || (m.shape === undefined && m.image === undefined);
+          if (symbolSkill && isSymbol && m.voice !== 'select') return [`${at}: ${el}: символ звучит именем до ответа — найдётся на слух (№88)`];
+          if (m.voice === 'select' && (!symbolSkill || !isSymbol)) return [`${at}: ${el}: немая карточка вне проверки символа (№88)`];
+          if (!symbolSkill && m.numeral !== undefined && !hasPile) {
+            return [`${at}: ${el}: цифра без кучки в задании — это узнавание символа: навыку ${task.skill} нужен symbol в реестре (№88)`];
+          }
+          return [];
+        });
+        if (symbolSkill && task.format === 'build' && task.fragments?.length) {
+          bad.push(`${at}: фрагменты build в навыке-символе звучат по тапу, а поля voice у них нет — сначала расширить схему (№88)`);
+        }
+        return bad;
+      }),
+  },
+
+  tile: {
+    // Раунд 2, Р15 (`child-ux-specialist`, `curriculum-content-reviewer`): в плитке варианта 104 pt
+    // кучка больше пяти или ряд из 4–5 даёт фигуру ≈ 14 pt — не пересчитать. Стимул свободен:
+    // большая кучка — только в нём. Размер фигуры (≥ 24 pt, шаг ≥ 28) — дело экрана.
+    title: 'кучка в варианте, стороне match, элементе order/group — не больше 5 фигур, при 4–5 не рядом (layout не row)',
+    check: (corpus) =>
+      formatTasksOf(corpus).flatMap(({ task, at }) =>
+        mediaOf(task, false).flatMap(({ m, at: el }) => {
+          if (m.count === undefined) return [];
+          if (m.count > 5) return [`${at}: ${el} — ${m.count} фигур в плитке: больше пяти — только в стимуле`];
+          if (m.count > 3 && (m.layout ?? 'row') === 'row') return [`${at}: ${el} — ${m.count} фигур рядом в плитке: не больше трёх в ряд`];
+          return [];
+        }),
+      ),
+  },
+
+  screenLoad: {
+    // Раунд 2, «важно» `child-ux-specialist`: пары 5/5/5 с россыпью на обеих сторонах — 30
+    // фигур на пересчёт на одном экране. Точки «кубиком» узнаются узором, не считаются.
+    title: `полоса 5-6: в плитках задания не больше ${SCREEN_COUNT_56} фигур на пересчёт (кубик не в счёт)`,
+    check: (corpus) =>
+      formatTasksOf(corpus).flatMap(({ task, lesson, at }) => {
+        if (lesson.band !== '5-6') return [];
+        const total = mediaOf(task, false)
+          .filter(({ m }) => m.count !== undefined && m.layout !== 'dice')
+          .reduce((sum, { m }) => sum + (m.count ?? 0), 0);
+        return total > SCREEN_COUNT_56 ? [`${at}: ${total} фигур на пересчёт в плитках — больше ${SCREEN_COUNT_56}`] : [];
+      }),
+  },
+
   answerRank: {
     // А11: в 5 из 7 choose пилота верный был самой большой кучкой — «жми самую большую»
     // давало почти 100%. Позиция не проверяется: варианты перемешиваются при показе
@@ -1390,7 +1459,9 @@ export const RULES = {
     // А12: стимул «пять и остаток» и точки в рамке десятка при одном числе — один силуэт, и
     // навык счёта засчитывался за сравнение узоров. У стимула и верного варианта choose, у
     // сторон пары match силуэты разные (`domain/countLayout.ts` — то же, что рисует экран).
-    title: 'стимул и верный вариант choose, стороны пары match — разного силуэта (count ≥ 2)',
+    // Раунд 2 (`curriculum-content-reviewer`, «важно» 2): order кучек, все в ряд, решается длиной
+    // ряда, а не счётом.
+    title: 'стимул и верный вариант choose, стороны пары match — разного силуэта (count ≥ 2); кучки order не все в ряд',
     check: (corpus) =>
       formatTasksOf(corpus).flatMap(({ task, at }) => {
         const same = (a: Media, b: Media) =>
@@ -1406,6 +1477,12 @@ export const RULES = {
         }
         if (task.format === 'match') {
           return task.pairs.filter((p) => same(p.left, p.right)).map((p) => `${at}: пара ${p.id} одного силуэта — соединится без счёта`);
+        }
+        if (task.format === 'order') {
+          const piles = task.items.filter((i) => i.shape !== undefined && i.count !== undefined && i.count >= 2);
+          return piles.length >= 2 && piles.every((i) => (i.layout ?? 'row') === 'row')
+            ? [`${at}: кучки order все в ряд — порядок найдётся по длине ряда`]
+            : [];
         }
         return [];
       }),
