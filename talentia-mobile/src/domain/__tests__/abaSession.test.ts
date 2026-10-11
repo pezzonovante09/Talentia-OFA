@@ -107,6 +107,8 @@ function begin(
   const st = startAbaSession({
     sessionId: 's',
     sessionIndex: 10,
+    // локальный день сессии (В5); тесты с несколькими днями задают его в `over`
+    day: '2026-09-29',
     config: 'with_adult',
     band: '7',
     targets,
@@ -473,7 +475,7 @@ describe('остановка и закрытие', () => {
 
   it('остановка рвёт серию только своей цели и видна в итоге', () => {
     const { state } = toBreakdown();
-    const result = finishAbaSession(state, '2026-09-29', 99_000);
+    const result = finishAbaSession(state, 99_000);
     expect(result.session).toMatchObject({ brokenTargetId: 'A', endReason: 'breakdown', endedOnSuccess: true });
   });
 
@@ -490,7 +492,7 @@ describe('остановка и закрытие', () => {
     s = answer(s, 2000, 'wrong').state;
     const { state, steps } = drive(s, () => 'wrong', { now: 2000 });
     expect(kinds(steps)).toEqual(['closing', 'closing', 'end']);
-    const result = finishAbaSession(state, '2026-09-29', 9000);
+    const result = finishAbaSession(state, 9000);
     expect(result.session).toMatchObject({ endReason: 'time_limit', endedOnSuccess: false });
     expect(state.events.some((e) => e.kind === 'participation')).toBe(false);
   });
@@ -499,7 +501,7 @@ describe('остановка и закрытие', () => {
     const st = begin([A], { A: acq(A) }, { board: { earned: 5, nonContingent: 0 } });
     const s = stopSession(answer(st, 1, 'wrong').state, 'adult_stopped');
     expect(nextStep(s, 2).step).toMatchObject({ kind: 'end', reason: 'adult_stopped', endedOnSuccess: false, pairingCycle: false });
-    const result = finishAbaSession(s, '2026-09-29', 3);
+    const result = finishAbaSession(s, 3);
     expect([result.exchanged, result.board.earned]).toEqual([0, 5]);
   });
 
@@ -529,7 +531,7 @@ describe('остановка и закрытие', () => {
 
   it('по плану полная доска в конце обменивается', () => {
     const { state } = drive(begin([A], { A: acq(A) }, { board: { earned: 4, nonContingent: 0 } }), () => 'ok');
-    const result = finishAbaSession(state, '2026-09-29', 99_000);
+    const result = finishAbaSession(state, 99_000);
     expect(result.exchanged).toBeGreaterThanOrEqual(5);
     expect(result.session.events.some((e) => e.kind === 'exchange')).toBe(true);
   });
@@ -539,7 +541,7 @@ describe('выбор подкрепителя', () => {
   it('кто выбрал — пишется: выбор взрослого не данные о предпочтениях', () => {
     const A = tgt('A');
     const st = stopSession(begin([A], { A: acq(A) }, {}, 'adult'), 'abandoned');
-    expect(finishAbaSession(st, '2026-09-29', 1).session.reinforcerChosenBy).toBe('adult');
+    expect(finishAbaSession(st, 1).session.reinforcerChosenBy).toBe('adult');
   });
 });
 
@@ -630,7 +632,7 @@ describe('цепочки', () => {
     const { state } = drive(begin([C], {}), (s) =>
       s.stepId === 's2' && s.runIndex === 1 ? { response: 'no_response', used: 0, emitted: false } : 'ok',
     );
-    const result = finishAbaSession(state, '2026-09-29', 99_000);
+    const result = finishAbaSession(state, 99_000);
     expect(promptStateOf(result.states.C, 's1').startPromptLevel).toBe(0);
     expect(promptStateOf(result.states.C, 's2').startPromptLevel).toBe(1);
     expect(result.states.C.phase).toBe('acquisition');
@@ -643,7 +645,7 @@ describe('цепочки', () => {
     );
     const probe = steps.filter((s): s is TrialStep => s.kind === 'trial' && s.trialKind === 'maintenance');
     expect(probe.map((s) => s.stepId)).toEqual(['s1', 's2']);
-    const result = finishAbaSession(state, '2026-09-29', 99_000);
+    const result = finishAbaSession(state, 99_000);
     expect(result.states.C.phase).toBe('acquisition');
     expect(promptStateOf(result.states.C, 's1').startPromptLevel).toBe(0);
     expect(promptStateOf(result.states.C, 's2').startPromptLevel).toBe(2);
@@ -709,17 +711,17 @@ describe('набор identify', () => {
       n += 1;
       return n === 1 ? { response: 'incorrect', used: 0, emitted: true } : 'ok';
     });
-    const first = finishAbaSession(state, '2026-09-29', 99_000);
+    const first = finishAbaSession(state, 99_000);
     expect(first.states.I1).toMatchObject({ phase: 'acquisition', startPromptLevel: 0 });
     expect(first.states.I2).toMatchObject({ phase: 'acquisition', startPromptLevel: 1 });
     expect(first.states.I3.phase).toBe('baseline');
     expect(first.identifySets[0].lastSetSessionIndex).toBe(10);
 
     // вторая сессия: базовая линия третьей и обучение первых двух в тех же половинах
-    const second = begin(pool, first.states, { identifySets: first.identifySets, sessionIndex: 11 });
+    const second = begin(pool, first.states, { identifySets: first.identifySets, sessionIndex: 11, day: '2026-09-30' });
     expect([second.baselineTargetIds, second.teachingTargetIds]).toEqual([['I3'], ['I1', 'I2']]);
     const { state: s2 } = drive(second, (s) => (s.targetId === 'I3' ? 'wrong' : 'ok'));
-    expect(finishAbaSession(s2, '2026-09-30', 199_000).states.I3).toMatchObject({ phase: 'acquisition', startPromptLevel: 3 });
+    expect(finishAbaSession(s2, 199_000).states.I3).toMatchObject({ phase: 'acquisition', startPromptLevel: 3 });
   });
 
   it('поддержание освоенного участника — первой его пробой в наборе, без отдельной пробы в конце', () => {
@@ -857,7 +859,7 @@ describe('базовая линия', () => {
     const { state } = drive(r.state, () => 'ok');
     expect(state.events.some((e) => e.kind === 'participation')).toBe(false);
     expect(state.queue).toEqual([]);
-    const result = finishAbaSession(state, '2026-09-29', 10_000);
+    const result = finishAbaSession(state, 10_000);
     expect(result.states.N).toMatchObject({ phase: 'acquisition', startPromptLevel: 1 });
     expect(result.session.events).toContainEqual(
       expect.objectContaining({ kind: 'phase', targetId: 'N', from: 'baseline', to: 'acquisition', reason: 'baseline' }),
@@ -980,7 +982,7 @@ describe('обучение доске в сессии', () => {
   it('сессия из одной базовой линии кончается циклом сопряжения', () => {
     const { state, steps } = drive(begin([N], {}), () => 'ok');
     expect(steps[steps.length - 1]).toMatchObject({ kind: 'end', pairingCycle: true });
-    expect(finishAbaSession(state, '2026-09-29', 99_000).session.events).toContainEqual(
+    expect(finishAbaSession(state, 99_000).session.events).toContainEqual(
       expect.objectContaining({ kind: 'pairing' }),
     );
   });
@@ -988,7 +990,7 @@ describe('обучение доске в сессии', () => {
   it('две сессии подряд с двумя обменами — ступень растёт, событие в итоге', () => {
     const tt = stage(1, { atStage: [{ sessionIndex: 9, exchanges: 3, endReason: 'completed' }] });
     const { state } = drive(begin([A], { A: acq(A) }, { tokenTraining: tt }), () => 'ok');
-    const result = finishAbaSession(state, '2026-09-29', 99_000);
+    const result = finishAbaSession(state, 99_000);
     expect(result.tokenTraining.stage).toBe(2);
     expect(result.session.events).toContainEqual(expect.objectContaining({ kind: 'board_stage', from: 1, to: 2 }));
     expect(result.session.boardSize).toBe(1);
@@ -1001,10 +1003,10 @@ describe('застрявшая цель', () => {
   it('пять сессий без снижения уровня и без роста доли — флаг no_progress', () => {
     let states: Record<string, AbaTargetState> = { A: acq(A, 1) };
     for (let i = 0; i < 5; i += 1) {
-      const st = begin([A], states, { sessionIndex: 10 + i });
+      const st = begin([A], states, { sessionIndex: 10 + i, day: `2026-10-0${i + 1}` });
       // одни приближения: доля самостоятельных 0, уровень не двигается
       const { state } = drive(st, () => 'approx');
-      states = finishAbaSession(state, `2026-10-0${i + 1}`, 99_000).states;
+      states = finishAbaSession(state, 99_000).states;
     }
     expect(states.A.flags).toContain('no_progress');
   });
@@ -1163,16 +1165,16 @@ describe('согласие ребёнка — assent (блок 4)', () => {
   });
 
   it('отказ не отнимает заработанное: полная доска обменивается в конце', () => {
-    const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0) }, { board: { earned: 5, nonContingent: 0 } }));
+    const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0) }, { board: { earned: 5, nonContingent: 0 }, day: '2026-10-01' }));
     const ended = withdrawAssent(st, 200, 'adult_observed', { targetId: 'A' });
-    const r = finishAbaSession(ended, '2026-10-01', 300);
+    const r = finishAbaSession(ended, 300);
     expect(r.exchanged).toBeGreaterThan(0);
     expect(r.session.endReason).toBe('assent_withdrawn');
   });
 
   it('отказ до начала работы — событие not_started', () => {
     const st = startAbaSession({
-      sessionId: 's', sessionIndex: 1, config: 'with_adult', band: '7', targets: [A], states: { A: acq(A) },
+      sessionId: 's', sessionIndex: 1, day: '2026-10-01', config: 'with_adult', band: '7', targets: [A], states: { A: acq(A) },
       reinforcerPool: POOL, reinforcerHistory: [], startedAt: 0, seed: 1, tokenTraining: TRAINED,
     });
     const ended = withdrawAssent(st, 10, 'child_card');
@@ -1180,30 +1182,30 @@ describe('согласие ребёнка — assent (блок 4)', () => {
   });
 
   it('сессия, кончившаяся по отказу, серию критерия не продлевает', () => {
-    let st = begin([A], { A: acq(A, 0, { sessionsAtCriterion: 1 }) });
+    let st = begin([A], { A: acq(A, 0, { sessionsAtCriterion: 1 }) }, { day: '2026-10-01' });
     for (let i = 0; i < 6; i += 1) {
       const n = nextStep(st, i);
       if (n.step.kind !== 'trial') break;
       st = answer(st, i, 'ok').state;
     }
     const ended = withdrawAssent(st, 50, 'adult_observed', { targetId: 'A' });
-    expect(finishAbaSession(ended, '2026-10-01', 60).states.A.sessionsAtCriterion).toBe(1);
+    expect(finishAbaSession(ended, 60).states.A.sessionsAtCriterion).toBe(1);
   });
 
   it('два прерывания на пробах цели во второй сессии подряд — флаг assent_concern', () => {
-    const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0, { assentSessionsInRow: 1 }) }));
+    const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0, { assentSessionsInRow: 1 }) }, { day: '2026-10-01' }));
     let s = finishBreak(nextStep(interrupt(st, 100, 'child_break').state, 101).state, 102).state;
     s = answer(s, 103, 'ok').state; // высоковероятная
     s = interrupt(s, 104, 'refusal').state; // повтор A снят отказом — второе прерывание на A
-    const r = finishAbaSession(withdrawAssent(s, 200, 'adult_observed'), '2026-10-01', 300);
+    const r = finishAbaSession(withdrawAssent(s, 200, 'adult_observed'), 300);
     expect(r.states.A.flags).toContain('assent_concern');
     expect(r.states.A.assentSessionsInRow).toBe(2);
   });
 
   it('конец по отказу вне пробы цели ей не приписывается, а спокойная сессия обнуляет счётчик', () => {
-    const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0, { assentSessionsInRow: 1 }) }));
+    const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0, { assentSessionsInRow: 1 }) }, { day: '2026-10-01' }));
     const s = answer(st, 100, 'ok').state;
-    const r = finishAbaSession(withdrawAssent(s, 200, 'adult_observed', { targetId: 'A' }), '2026-10-01', 300);
+    const r = finishAbaSession(withdrawAssent(s, 200, 'adult_observed', { targetId: 'A' }), 300);
     expect(r.states.A.flags).not.toContain('assent_concern');
     expect(r.states.A.assentSessionsInRow).toBe(0);
   });
@@ -1350,18 +1352,18 @@ describe('проверочная проба «получается дома» (�
   const verificationOf = (steps: AbaStep[]) => steps.filter((x): x is TrialStep => x.kind === 'trial' && x.trialKind === 'verification');
 
   it('ведёт обученный — 5 проб без подсказок; 80% и выше — освоено по критерию', () => {
-    const { state, steps } = drive(begin([A, H], { A: acq(A, 0), H: home(H) }), () => 'ok');
+    const { state, steps } = drive(begin([A, H], { A: acq(A, 0), H: home(H) }, { day: '2026-10-01' }), () => 'ok');
     const v = verificationOf(steps);
     expect(v).toHaveLength(5);
     for (const x of v) expect([x.startPromptLevel, x.allowEscalation, x.targetId]).toEqual([0, false, 'H']);
-    const r = finishAbaSession(state, '2026-10-01', 9e6);
+    const r = finishAbaSession(state, 9e6);
     expect(r.states.H.masteredBy).toBe('criterion');
     expect(r.session.events).toContainEqual(expect.objectContaining({ kind: 'phase', targetId: 'H', reason: 'verification_passed' }));
   });
 
   it('0 из 5 — обратно в обучение с уровня, несущего ответ, и следующим сессиям нужна проверка IOA', () => {
-    const { state } = drive(begin([A, H], { A: acq(A, 0), H: home(H) }), (s) => (s.trialKind === 'verification' ? 'wrong' : 'ok'));
-    const r = finishAbaSession(state, '2026-10-01', 9e6);
+    const { state } = drive(begin([A, H], { A: acq(A, 0), H: home(H) }, { day: '2026-10-01' }), (s) => (s.trialKind === 'verification' ? 'wrong' : 'ok'));
+    const r = finishAbaSession(state, 9e6);
     expect([r.states.H.phase, r.states.H.masteredBy, r.states.H.startPromptLevel, r.states.H.ioaDueSessions]).toEqual([
       'acquisition',
       undefined,
@@ -1372,16 +1374,16 @@ describe('проверочная проба «получается дома» (�
 
   it('3 из 5 — обратно в обучение с последнего успешного уровня', () => {
     let n = 0;
-    const { state } = drive(begin([A, H], { A: acq(A, 0), H: home(H) }), (s) =>
+    const { state } = drive(begin([A, H], { A: acq(A, 0), H: home(H) }, { day: '2026-10-01' }), (s) =>
       s.trialKind === 'verification' ? (n++ < 3 ? 'ok' : 'wrong') : 'ok',
     );
-    const r = finishAbaSession(state, '2026-10-01', 9e6);
+    const r = finishAbaSession(state, 9e6);
     expect([r.states.H.phase, r.states.H.startPromptLevel]).toEqual(['acquisition', 0]);
   });
 
   it('пройденная проверка засчитана как проба поддержания', () => {
-    const { state } = drive(begin([A, H], { A: acq(A, 0), H: home(H) }), () => 'ok');
-    const r = finishAbaSession(state, '2026-10-01', 9e6);
+    const { state } = drive(begin([A, H], { A: acq(A, 0), H: home(H) }, { day: '2026-10-01' }), () => 'ok');
+    const r = finishAbaSession(state, 9e6);
     expect([r.states.H.lastMaintenanceSessionIndex, r.states.H.maintenanceGapIndex]).toEqual([10, 1]);
   });
 
@@ -1401,15 +1403,15 @@ describe('проверочная проба «получается дома» (�
         { id: 'c2', order: 2, sdKey: 'a', criterionKey: 'b', modelKey: 'c' },
       ],
     });
-    const first = drive(begin([A, C], { A: acq(A, 0), C: home(C) }), () => 'ok');
+    const first = drive(begin([A, C], { A: acq(A, 0), C: home(C) }, { day: '2026-10-01' }), () => 'ok');
     const v = first.steps.filter((x): x is TrialStep => x.kind === 'trial' && x.trialKind === 'verification');
     expect(v.map((x) => x.stepId)).toEqual(['c1', 'c2']);
-    const r1 = finishAbaSession(first.state, '2026-10-01', 9e6);
+    const r1 = finishAbaSession(first.state, 9e6);
     expect([r1.states.C.masteredBy, r1.states.C.chainVerificationRuns?.length]).toEqual(['home_unverified', 1]);
-    const second = drive(begin([A, C], { A: acq(A, 0), C: r1.states.C }, { sessionIndex: 11 }), (s) =>
+    const second = drive(begin([A, C], { A: acq(A, 0), C: r1.states.C }, { sessionIndex: 11, day: '2026-10-02' }), (s) =>
       s.trialKind === 'verification' && s.stepId === 'c2' ? 'wrong' : 'ok',
     );
-    const r2 = finishAbaSession(second.state, '2026-10-02', 9e6);
+    const r2 = finishAbaSession(second.state, 9e6);
     expect(r2.states.C.phase).toBe('acquisition');
     expect([r2.states.C.stepPrompts?.c1.startPromptLevel, r2.states.C.stepPrompts?.c2.startPromptLevel]).toEqual([0, 2]);
   });
@@ -1449,7 +1451,7 @@ describe('ненадёжное измерение нейтрально в люб
   it('цель на базовой линии в «Сам» с активностью без реакции — базовая линия не засчитана', () => {
     const V = tgt('V', { format: 'voice_volume', scoredBy: 'device_loudness' });
     const [U, u] = unlocking('voice_volume', { scoredBy: 'device_loudness' });
-    let st = begin([V, U], { V: initialTargetState(V), [U.id]: u }, { config: 'alone' });
+    let st = begin([V, U], { V: initialTargetState(V), [U.id]: u }, { config: 'alone', day: '2026-10-01' });
     for (let i = 0; i < 3; i += 1) {
       const next = nextStep(st, i + 1);
       if (next.step.kind !== 'trial') break;
@@ -1460,12 +1462,12 @@ describe('ненадёжное измерение нейтрально в люб
     }
     expect(st.unreliableTargetIds).toEqual(['V']);
     // у открывающей цели осталась проба поддержания — доводим сессию до конца
-    const r = finishAbaSession(drive(st, () => 'ok').state, '2026-10-01', 9e6);
+    const r = finishAbaSession(drive(st, () => 'ok').state, 9e6);
     expect(r.states.V.phase).toBe('baseline');
   });
 });
 
-describe('А8: рутина в сессии', () => {
+describe('Р3: рутина вне сессии — общий план', () => {
   const R = tgt('R', {
     level: 'cross',
     area: 'self_care',
@@ -1478,45 +1480,49 @@ describe('А8: рутина в сессии', () => {
     ],
     exemplars: [ex('R-1')],
   });
+  const A = tgt('A');
+  const M = tgt('M');
+  const inPlan = (st: AbaSessionState) => [
+    ...st.baselineTargetIds,
+    ...st.placementTargetIds,
+    ...st.teachingTargetIds,
+    ...st.maintenanceTargetIds,
+    ...st.highPTargetIds,
+  ];
+  const routineTrials = (steps: AbaStep[]) => steps.filter((x) => x.kind === 'trial' && x.targetId === 'R');
 
-  it('в обучении — один естественный прогон за сессию, а не три подряд', () => {
-    const { steps } = drive(begin([R], { R: acq(R) }), () => 'ok');
-    const teaching = steps.filter((x): x is TrialStep => x.kind === 'trial' && x.trialKind === 'teaching' && x.targetId === 'R');
-    expect(teaching.map((x) => x.stepId)).toEqual(['r1', 'r2']);
+  // каждое состояние рутины, которое в прежней сессии давало бы ей слот
+  const slots: [string, () => AbaTargetState][] = [
+    ['обучение', () => acq(R)],
+    ['базовая линия', () => initialTargetState(R)],
+    // поддержание просрочено и по сессиям, и по дням
+    ['поддержание', () => mastered(R, 0, { masteredBy: 'criterion', lastMaintenanceDay: '2026-09-01' })],
+    ['проверка «получается дома»', () => mastered(R, 10, { masteredBy: 'home_unverified' })],
+    ['перенос', () => acq(R, 0, { recentIndependentRates: [0.9, 1] })],
+    ['разогрев', () => mastered(R, 10, { masteredBy: 'criterion', lastMaintenanceDay: '2026-09-29' })],
+  ];
+
+  it.each(slots)('%s: рутины нет ни в плане сессии, ни в её пробах', (_, stateOf) => {
+    const st = begin([R, A, M], { R: stateOf(), A: acq(A, 0, { recentIndependentRates: [0.9, 1] }), M: mastered(M) });
+    expect(inPlan(st)).not.toContain('R');
+    expect(routineTrials(drive(st, () => 'ok').steps)).toEqual([]);
   });
 
-  const nearlyThere = (): AbaTargetState => ({
-    ...acq(R),
-    routineRuns: [
-      { day: '2026-09-28', whole: true },
-      { day: '2026-09-29', whole: true },
-      { day: '2026-09-30', whole: false },
-      { day: '2026-09-30', whole: true },
-    ],
+  it.each(slots)('%s: в итоге сессии рутины нет вовсе — её меняет только прогон', (_, stateOf) => {
+    const { state } = drive(begin([R, A, M], { R: stateOf(), A: acq(A), M: mastered(M) }), () => 'ok');
+    const { states } = finishAbaSession(state, 9e6);
+    expect(Object.keys(states).sort()).toEqual(['A', 'M']);
   });
 
-  it('итог сессии: прогон с днём сессии в окне; подтверждённая сессия — «освоено по критерию»', () => {
-    const r = finishAbaSession(drive(begin([R], { R: nearlyThere() }), () => 'ok').state, '2026-10-01', 9e6);
-    expect([r.states.R.phase, r.states.R.masteredBy, r.states.R.lastMaintenanceDay]).toEqual(['mastered', 'criterion', '2026-10-01']);
+  it('предпосылка на освоенную рутину открывает обычную цель', () => {
+    const P = tgt('P', { prerequisiteTargetIds: ['R'] });
+    const open = begin([R, P], { R: mastered(R, 10, { masteredBy: 'criterion', lastMaintenanceDay: '2026-09-29' }), P: acq(P) });
+    expect(open.teachingTargetIds).toEqual(['P']);
   });
 
-  it('без обученного наблюдателя — «получается дома»', () => {
-    const parent = { observers: [{ id: 'par', role: 'parent' as const, trained: false }], primaryObserverId: 'par' };
-    const r = finishAbaSession(drive(begin([R], { R: nearlyThere() }, parent), () => 'ok').state, '2026-10-01', 9e6);
-    expect(r.states.R.masteredBy).toBe('home_unverified');
-  });
-
-  it('проб переноса на экране у рутины нет', () => {
-    const { steps } = drive(begin([R], { R: { ...acq(R), recentIndependentRates: [0.9, 1] } }), () => 'ok');
-    expect(steps.some((x) => x.kind === 'trial' && x.trialKind === 'generalization')).toBe(false);
-  });
-
-  it('на базовой линии — тоже один прогон: она копится по дням', () => {
-    const { state, steps } = drive(begin([R], {}), () => 'ok');
-    const baseline = steps.filter((x): x is TrialStep => x.kind === 'trial' && x.trialKind === 'baseline' && x.targetId === 'R');
-    expect(baseline).toHaveLength(2);
-    const r = finishAbaSession(state, '2026-10-01', 9e6);
-    expect([r.states.R.phase, r.states.R.routineBaseline?.days]).toEqual(['baseline', ['2026-10-01']]);
+  it('предпосылка на неосвоенную рутину цель не открывает', () => {
+    const P = tgt('P', { prerequisiteTargetIds: ['R'] });
+    expect(begin([R, P, A], { R: acq(R), P: acq(P), A: acq(A) }).teachingTargetIds).toEqual(['A']);
   });
 });
 
@@ -1531,8 +1537,8 @@ describe('ABA v1: автоподбор и параметры специалис�
   });
 
   it('верхняя прошла — освоена, предпосылки выведены и ждут поддержания', () => {
-    const { state } = drive(begin([A, B, C], {}, { autoPlacement: true }), () => 'ok');
-    const r = finishAbaSession(state, '2026-10-02', 99_000);
+    const { state } = drive(begin([A, B, C], {}, { autoPlacement: true, day: '2026-10-02' }), () => 'ok');
+    const r = finishAbaSession(state, 99_000);
     expect([r.states.C.phase, r.states.C.masteredBy]).toEqual(['mastered', 'baseline']);
     expect([r.states.A.masteredBy, r.states.B.masteredBy]).toEqual(['inferred', 'inferred']);
   });
@@ -1665,7 +1671,7 @@ describe('ABA v1: поле match и сортировка в сессии', () =>
         item('cg', 'clothes', 'generalization'),
       ],
     });
-    const { state } = drive(begin([M, S], { M: mastered(M), S: acq(S) }), () => 'ok');
+    const { state } = drive(begin([M, S], { M: mastered(M), S: acq(S) }, { day: '2026-10-02' }), () => 'ok');
     const own = state.trials.filter((t) => t.targetId === 'S' && t.kind === 'teaching');
     const cats = own.map((t) => t.sampleCardId!);
     expect(cats.filter((c) => c === 'food')).toHaveLength(5);
@@ -1673,7 +1679,7 @@ describe('ABA v1: поле match и сортировка в сессии', () =>
     expect(new Set(own.map((t) => t.field!.join()))).toHaveProperty('size', 1);
     // в следующей сессии с этой целью карточки категорий меняются местами — по её сессиям, а не
     // по чётности номера: номер сессии здесь тот же
-    const r = finishAbaSession(state, '2026-10-02', 99_000);
+    const r = finishAbaSession(state, 99_000);
     const next = drive(begin([M, S], r.states), () => 'ok').state;
     expect(next.trials.find((t) => t.targetId === 'S' && t.field)!.field).toEqual([...own[0].field!].reverse());
   });
@@ -1695,8 +1701,8 @@ describe('ABA v1: правки по проверке методиста', () => 
   });
 
   it('выведенные цели получают событие для специалиста', () => {
-    const { state } = drive(begin([A, B, C], {}, { autoPlacement: true }), () => 'ok');
-    const r = finishAbaSession(state, '2026-10-02', 99_000);
+    const { state } = drive(begin([A, B, C], {}, { autoPlacement: true, day: '2026-10-02' }), () => 'ok');
+    const r = finishAbaSession(state, 99_000);
     const inferred = r.session.events.filter((e) => e.kind === 'phase' && e.reason === 'inferred').map((e) => (e as { targetId: string }).targetId);
     expect(inferred.sort()).toEqual(['A', 'B']);
   });
@@ -1717,8 +1723,8 @@ describe('ABA v1: правки по проверке методиста', () => 
   });
 
   it('сигналы сессии считаются в конце, если передана история', () => {
-    const { state } = drive(begin([A], { A: acq(A) }), () => 'ok');
-    const r = finishAbaSession(state, '2026-10-02', 99_000, {}, undefined, { sessions: [], previous: ['low_motivation'] });
+    const { state } = drive(begin([A], { A: acq(A) }, { day: '2026-10-02' }), () => 'ok');
+    const r = finishAbaSession(state, 99_000, {}, undefined, { sessions: [], previous: ['low_motivation'] });
     // истории мало — сигнал держится, как был
     expect(r.signals).toEqual(['low_motivation']);
   });
@@ -1749,23 +1755,23 @@ describe('ABA v1: вторая проверка методиста', () => {
   });
 
   it('проверка сверху вниз пишет событие и при провале', () => {
-    const { state } = drive(begin([A, B, C], {}, { autoPlacement: true }), () => 'wrong');
-    const r = finishAbaSession(state, '2026-10-02', 99_000);
+    const { state } = drive(begin([A, B, C], {}, { autoPlacement: true, day: '2026-10-02' }), () => 'wrong');
+    const r = finishAbaSession(state, 99_000);
     expect(r.session.events).toContainEqual(expect.objectContaining({ kind: 'placement', targetId: 'C', passed: false }));
     expect(r.states.C.placementTriedAt).toBe(10);
   });
 
   it('выведенная цель, провалившая поддержание, — событие «вывод не подтвердился»', () => {
     const inferred = { ...mastered(A, 5), masteredBy: 'inferred' as const };
-    const { state } = drive(begin([A], { A: inferred }), () => 'wrong');
-    const r = finishAbaSession(state, '2026-10-02', 99_000);
+    const { state } = drive(begin([A], { A: inferred }, { day: '2026-10-02' }), () => 'wrong');
+    const r = finishAbaSession(state, 99_000);
     expect(r.states.A.phase).toBe('baseline');
     expect(r.session.events).toContainEqual(expect.objectContaining({ kind: 'phase', targetId: 'A', reason: 'inferred_not_confirmed' }));
   });
 
   it('первый провал поддержания освоенной цели — событие провала, а не «пройдено»', () => {
-    const { state } = drive(begin([A], { A: mastered(A, 5, { masteredBy: 'criterion' }) }), () => 'wrong');
-    const r = finishAbaSession(state, '2026-10-02', 99_000);
+    const { state } = drive(begin([A], { A: mastered(A, 5, { masteredBy: 'criterion' }) }, { day: '2026-10-02' }), () => 'wrong');
+    const r = finishAbaSession(state, 99_000);
     expect(r.session.events).toContainEqual(expect.objectContaining({ kind: 'phase', targetId: 'A', reason: 'maintenance_failed' }));
   });
 });

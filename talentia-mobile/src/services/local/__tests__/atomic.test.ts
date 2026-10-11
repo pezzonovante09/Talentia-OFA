@@ -236,11 +236,11 @@ describe('согласие на данные ABA', () => {
     await recordAbaTrial(db, 'sib', trial('tr-sib'), inProgress, NOW);
     const run: LessonRun = { id: 'r-1', childId: 'kid', lessonId: 'l', startedAt: NOW, taskSeconds: [5], reviewTasks: 0 };
     await commitLesson(db, 'kid', { run, skills: [emptySkill('count')], atlas: [], nextLessonNumber: 2 }, NOW);
-    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 1, trials: 1, ioaRecords: 0, observers: 0, settings: true });
+    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 1, trials: 1, ioaRecords: 0, routineRuns: 0, observers: 0, settings: true });
 
     await revokeAbaProcessing(db, abaConsent('revoke', { at: '2026-09-30T11:00:00Z' }), 'owner');
 
-    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 0, trials: 0, ioaRecords: 0, observers: 0, settings: false });
+    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 0, trials: 0, ioaRecords: 0, routineRuns: 0, observers: 0, settings: false });
     for (const key of [
       'abaTargets',
       'abaBoard',

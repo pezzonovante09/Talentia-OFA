@@ -6,7 +6,7 @@
  * транзакции и закрывают его в той же транзакции. Без корзины и «7 дней на
  * восстановление»: данные ребёнка не держат в корзине.
  */
-import type { AbaIoaRecord, AbaObserver, AbaSession } from '../../types/aba';
+import type { AbaIoaRecord, AbaObserver, AbaRoutineRun, AbaSession } from '../../types/aba';
 import type { ConsentEvent, GuardianRole } from '../../domain/consent';
 import { ABA_DELETED_KEYS, ABA_STATE_KEYS, loadChildState } from './childState';
 import { insertConsentEvent, readConsentLog } from './consentLog';
@@ -14,7 +14,26 @@ import { withDbLock } from './lock';
 import { RETENTION_MONTHS } from './schema';
 import type { SqlDb } from './sql';
 
-const JOURNALS = ['aba_trials', 'aba_sessions', 'aba_ioa', 'lesson_runs'] as const;
+const JOURNALS = ['aba_trials', 'aba_sessions', 'aba_ioa', 'aba_routine_runs', 'lesson_runs'] as const;
+
+/**
+ * Состояние ABA для специалиста — явный список, а не все ключи ABA (`child-privacy-compliance`,
+ * раунд 2, Р3): снимки «в работе» (`abaSessionInProgress`, `abaRoutineRunInProgress`) несут
+ * настоящие uuid наблюдателей, а их пробы и так в `abaTrials`. Новый ключ ABA специалисту не
+ * уходит сам — нужно решение и строка здесь.
+ */
+export const SPECIALIST_STATE_KEYS = [
+  'abaTargets',
+  'tokenTraining',
+  'identifySets',
+  'abaBoard',
+  'abaSessionIndex',
+  'physicalPromptAllowed',
+  'abaObservers',
+] as const satisfies readonly (typeof ABA_STATE_KEYS)[number][];
+
+/** Снимки «в работе»: срок хранения — по их началу (копии проб в них живут не дольше журнала). */
+const IN_PROGRESS_KEYS = ['abaSessionInProgress', 'abaRoutineRunInProgress'] as const;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -55,10 +74,19 @@ export async function applyRetention(db: SqlDb, now: Date): Promise<number> {
       ['aba_trials', 'recorded_at'],
       ['aba_sessions', 'recorded_at'],
       ['aba_ioa', 'recorded_at'],
+      ['aba_routine_runs', 'recorded_at'],
       ['lesson_runs', 'started_at'],
     ] as const) {
       removed += (await tx.run(`DELETE FROM ${t} WHERE ${col} < ?`, [before])).changes;
     }
+    // брошенный снимок «в работе» старше срока — копии его проб не переживают журнал
+    removed += (
+      await tx.run(
+        `DELETE FROM child_state WHERE key IN (${IN_PROGRESS_KEYS.map(() => '?').join(', ')})
+           AND json_extract(body, '$.startedAt') < ?`,
+        [...IN_PROGRESS_KEYS, Date.parse(before)],
+      )
+    ).changes;
     await tx.run('DELETE FROM retention_gate');
   });
   if (removed) await compactAfterDelete(db);
@@ -115,6 +143,7 @@ export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actor
       await tx.run('DELETE FROM aba_trials WHERE child_id = ?', [childId]);
       await tx.run('DELETE FROM aba_sessions WHERE child_id = ?', [childId]);
       await tx.run('DELETE FROM aba_ioa WHERE child_id = ?', [childId]);
+      await tx.run('DELETE FROM aba_routine_runs WHERE child_id = ?', [childId]);
       await tx.run(
         `DELETE FROM child_state WHERE child_id = ? AND key IN (${ABA_DELETED_KEYS.map(() => '?').join(', ')})`,
         [childId, ...ABA_DELETED_KEYS],
@@ -131,7 +160,7 @@ export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actor
 export async function abaDataSummary(
   db: SqlDb,
   childId: string,
-): Promise<{ sessions: number; trials: number; ioaRecords: number; observers: number; settings: boolean }> {
+): Promise<{ sessions: number; trials: number; ioaRecords: number; routineRuns: number; observers: number; settings: boolean }> {
   const count = async (table: string) =>
     (await db.all<{ n: number }>(`SELECT count(*) AS n FROM ${table} WHERE child_id = ?`, [childId]))[0].n;
   const observers = await loadChildState(db, childId, 'abaObservers');
@@ -144,6 +173,7 @@ export async function abaDataSummary(
     sessions: await count('aba_sessions'),
     trials: await count('aba_trials'),
     ioaRecords: await count('aba_ioa'),
+    routineRuns: await count('aba_routine_runs'),
     observers: observers?.length ?? 0,
     settings: settings.n > 0,
   };
@@ -170,6 +200,7 @@ export type ChildExport = {
   abaTrials: unknown[];
   abaSessions: unknown[];
   abaIoa: unknown[];
+  abaRoutineRuns: unknown[];
   lessonRuns: unknown[];
   state: Record<string, unknown>;
   consentEvents: ConsentEvent[];
@@ -213,6 +244,7 @@ async function collectExport(
     abaTrials: await bodies('aba_trials'),
     abaSessions: await bodies('aba_sessions'),
     abaIoa: await bodies('aba_ioa'),
+    abaRoutineRuns: await bodies('aba_routine_runs'),
     lessonRuns: await bodies('lesson_runs'),
     state,
     consentEvents: (await readConsentLog(db)).filter((e) => e.childId === childId || e.childId === null),
@@ -225,6 +257,8 @@ export type SpecialistExport = {
   abaTrials: unknown[];
   abaSessions: unknown[];
   abaIoa: unknown[];
+  /** Прогоны рутин; ведущий наблюдатель — той же меткой. */
+  abaRoutineRuns: unknown[];
   /** Состояние ABA; наблюдатели — метками `O1`, `O2`… с ролью и обучен ли. */
   state: Record<string, unknown>;
 };
@@ -244,13 +278,14 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
     const state = Object.fromEntries(
       (
         await tx.all<{ key: string; body: string }>(
-          `SELECT key, body FROM child_state WHERE child_id = ? AND key IN (${ABA_STATE_KEYS.map(() => '?').join(', ')})`,
-          [childId, ...ABA_STATE_KEYS],
+          `SELECT key, body FROM child_state WHERE child_id = ? AND key IN (${SPECIALIST_STATE_KEYS.map(() => '?').join(', ')})`,
+          [childId, ...SPECIALIST_STATE_KEYS],
         )
       ).map((r) => [r.key, JSON.parse(r.body)]),
     );
     const sessions = await bodies<AbaSession>('aba_sessions');
     const ioa = await bodies<AbaIoaRecord>('aba_ioa');
+    const routineRuns = await bodies<AbaRoutineRun>('aba_routine_runs');
     const observers = (state.abaObservers ?? []) as AbaObserver[];
 
     const labels = new Map<string, string>();
@@ -262,11 +297,13 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
     };
     const abaSessions = sessions.map((s) => ({ ...s, primaryObserverId: label(s.primaryObserverId) }));
     const abaIoa = ioa.map((r) => ({ ...r, secondaryObserverId: label(r.secondaryObserverId) }));
+    const abaRoutineRuns = routineRuns.map((r) => ({ ...r, primaryObserverId: label(r.primaryObserverId) }));
     return {
       exportedAt,
       abaTrials: await bodies('aba_trials'),
       abaSessions,
       abaIoa,
+      abaRoutineRuns,
       state: { ...state, abaObservers: observers.map((o) => ({ id: label(o.id), role: o.role, trained: o.trained })) },
     };
   });

@@ -11,6 +11,7 @@ import {
   chainRuns,
   isRoutineMaintenanceDue,
   markMastered,
+  routineRunRecord,
   summarizeSession,
 } from '../abaCriterion';
 import { computeIoa } from '../abaIoa';
@@ -282,7 +283,7 @@ describe('А8: рутины самообслуживания (№74, №75)', ()
     );
   const acqR: AbaTargetState = { ...initialTargetState(R), phase: 'acquisition' };
   const feed = (days: string[], wholes: boolean[]) =>
-    days.reduce((s, day, i) => applyRoutineRun(s, runOf(wholes[i]), day, 10 + i, 'criterion', 'with_adult'), acqR);
+    days.reduce((s, day, i) => applyRoutineRun(s, routineRunRecord(R, s, runOf(wholes[i]), day), 10 + i, 'criterion', 'with_adult'), acqR);
 
   it('правила: только цепочка total task, засчитывает взрослый; рутина не открывается рутиной', () => {
     expect(targetErrors({ ...R, scoredBy: 'device_tap' }).join()).toMatch(/только взрослый/);
@@ -317,12 +318,12 @@ describe('А8: рутины самообслуживания (№74, №75)', ()
 
   it('без подтверждения обученным наблюдателем — «получается дома»', () => {
     const days = ['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05'];
-    const s = days.reduce((x, day, i) => applyRoutineRun(x, runOf(true), day, i, 'home_unverified', 'with_adult'), acqR);
+    const s = days.reduce((x, day, i) => applyRoutineRun(x, routineRunRecord(R, x, runOf(true), day), i, 'home_unverified', 'with_adult'), acqR);
     expect(s.masteredBy).toBe('home_unverified');
   });
 
-  it('серии сессий у рутины нет: итог сессии нейтральный и не засчитан', () => {
-    expect(summarizeSession(R, runOf(true))).toMatchObject({ outcome: 'neutral', counted: false });
+  it('рутина не проходит через сессию: итог сессии по ней — ошибка (Р3)', () => {
+    expect(() => summarizeSession(R, runOf(true))).toThrow(/не проходит через сессию/);
   });
 
   it('прогон, прерванный приложением, — не прогон: окно не меняется', () => {
@@ -356,7 +357,7 @@ describe('А8: рутины самообслуживания (№74, №75)', ()
     const fail = trial({ targetId: 'R', kind: 'maintenance', response: 'incorrect' });
     const back = applyMaintenanceProbe(applyMaintenanceProbe(s, fail, 20), fail, 21);
     expect(back.phase).toBe('acquisition');
-    expect(applyRoutineRun(back, runOf(true), '2026-10-10', 22, 'criterion', 'with_adult').phase).toBe('acquisition');
+    expect(applyRoutineRun(back, routineRunRecord(R, back, runOf(true), '2026-10-10'), 22, 'criterion', 'with_adult').phase).toBe('acquisition');
   });
 
   it('застряла: 10 прогонов за 5 дней, доля целых не растёт — флаг; растёт — нет', () => {

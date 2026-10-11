@@ -13,6 +13,7 @@ import type { TokenBoard } from '../../domain/abaTokens';
 import type { TokenTrainingState } from '../../domain/abaTokenTraining';
 import type { IdentifySet } from '../../domain/abaIdentifySet';
 import type { AbaSessionState } from '../../domain/abaSession';
+import type { RoutineRunState } from '../../domain/abaRoutineRun';
 import type { SqlDb } from './sql';
 
 export type ChildStateValues = {
@@ -40,13 +41,15 @@ export type ChildStateValues = {
   physicalPromptAllowed: { value: boolean; setAt: string; setByRole: 'owner' | 'guardian' | 'specialist' };
   /** Наблюдатели ребёнка — без имён: uuid, роль, обучен ли. В облако не уходят. */
   abaObservers: AbaObserver[];
+  /** Прогон рутины, свёрнутый посреди (`abaRoutineRun.ts`): продолжается как был. */
+  abaRoutineRunInProgress: RoutineRunState | null;
 };
 
 export type ChildStateKey = keyof ChildStateValues;
 
 /**
  * Ключи ABA, которые пишутся только при согласии на данные ABA. Запись в обход
- * `commit.ts` отклоняет сама база (`schema.ts`, миграции 3, 5 и 6, — список там продублирован:
+ * `commit.ts` отклоняет сама база (`schema.ts`, миграции 3, 5, 6 и 8, — список там продублирован:
  * миграции не правятся, новый ключ — новая миграция).
  */
 export const ABA_STATE_KEYS = [
@@ -58,6 +61,7 @@ export const ABA_STATE_KEYS = [
   'abaSessionInProgress',
   'physicalPromptAllowed',
   'abaObservers',
+  'abaRoutineRunInProgress',
 ] as const satisfies readonly ChildStateKey[];
 
 /** Что удаляет отзыв согласия на ABA: состояние и пауза — пауза тоже говорит, что режим был. */

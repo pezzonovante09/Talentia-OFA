@@ -1,0 +1,405 @@
+/**
+ * Журнал прогонов рутин (миграция 8; раунд 2, Р3): запись — только через `commit.ts` при
+ * согласии на данные ABA и одной транзакцией; журнал только дописывается; удаление, срок
+ * хранения, отзыв и экспорт видят прогоны.
+ */
+import type { AbaRoutineRun, AbaSession, AbaTargetState, AbaTrial } from '../../../types/aba';
+import type { RoutineRunResult, RoutineRunState } from '../../../domain/abaRoutineRun';
+import type { AbaSessionResult, AbaSessionState } from '../../../domain/abaSession';
+import type { ConsentEvent } from '../../../domain/consent';
+import { AbaConsentRequiredError, appendRoutineRun, routineRunsOf, trialsOfTarget } from '../abaLog';
+import { ABA_STATE_KEYS, loadChildState, saveChildState } from '../childState';
+import { commitAbaSession, commitRoutineRun, recordAbaTrial, recordRoutineStep, setAbaObservers } from '../commit';
+import { appendConsentEvent, insertConsentEvent } from '../consentLog';
+import {
+  abaDataSummary,
+  applyRetention,
+  clearChildProgress,
+  exportChild,
+  exportForSpecialist,
+  purgeChild,
+  revokeAbaProcessing,
+  SPECIALIST_STATE_KEYS,
+} from '../purge';
+import type { SqlDb, SqlValue } from '../sql';
+import { asAbaWriter, memoryDb } from './nodeSql';
+
+const NOW = '2026-10-11T10:00:00Z';
+const ABA_TEXT = 'ru-draft-1';
+const PSEUDO = '5f0c2a8e-3b1d-4c6e-9a7f-2d8b1e4c7a90';
+const OBSERVER = 'obs-uuid-7';
+
+const abaConsent = (action: 'grant' | 'revoke', over: Partial<ConsentEvent> = {}): ConsentEvent => ({
+  id: `aba-${action}-${over.childId ?? 'kid'}-${over.at ?? NOW}`,
+  scope: 'aba_processing',
+  action,
+  childId: 'kid',
+  textVersion: ABA_TEXT,
+  confirmedBy: 'biometric',
+  actorId: 'parent',
+  at: NOW,
+  ...over,
+});
+
+async function dbWithAbaConsent(...children: string[]) {
+  const db = await memoryDb();
+  for (const [i, childId] of (children.length ? children : ['kid']).entries()) {
+    await appendConsentEvent(db, abaConsent('grant', { childId, at: `2026-10-11T09:0${i}:00Z` }), 'owner');
+  }
+  return db;
+}
+
+const routineRun = (id = 'run-1', over: Partial<AbaRoutineRun> = {}): AbaRoutineRun => ({
+  id,
+  targetId: 'R',
+  day: '2026-10-11',
+  kind: 'teaching',
+  startedAt: '2026-10-11T08:00:00.000Z',
+  endedAt: '2026-10-11T08:05:00.000Z',
+  interrupted: null,
+  setting: 'usual',
+  token: 'at_start_level',
+  exchanged: 0,
+  phase: null,
+  primaryObserverId: OBSERVER,
+  ...over,
+});
+
+const rState = { targetId: 'R', phase: 'acquisition', lastRoutineRunDay: '2026-10-11' } as AbaTargetState;
+const aState = { targetId: 'A', phase: 'mastered' } as AbaTargetState;
+
+const result = (id = 'run-1', over: Partial<RoutineRunResult> = {}): RoutineRunResult => ({
+  trials: [],
+  state: rState,
+  board: { size: 5, earned: 3, nonContingent: 1 },
+  token: 'at_start_level',
+  record: routineRun(id),
+  ...over,
+});
+
+const stepTrial = (id: string): AbaTrial => ({
+  id,
+  sessionId: 'run-1',
+  targetId: 'R',
+  exemplarId: 'R-e',
+  stepId: 'R-s1',
+  runIndex: 0,
+  index: 0,
+  kind: 'teaching',
+  startPromptLevel: 0,
+  promptLevelUsed: 0,
+  presentations: 1,
+  response: 'independent',
+  emittedBeforePrompt: true,
+  latencyMs: 500,
+  latencyFromFirstSdMs: 500,
+  latencySource: 'adult_press',
+  promptDelayMs: 3000,
+  responseWindowMs: 10000,
+  presentationLog: [],
+  sdEndedAt: NOW,
+  scoredBy: 'adult',
+  tokens: 0,
+});
+
+const inProgress = { runId: 'run-1', observers: [], primaryObserverId: null, done: 1 } as unknown as RoutineRunState;
+
+/** Ребёнок с ABA-состоянием до прогона: номер следующей сессии, цели, доска. */
+async function seeded(db: SqlDb, childId = 'kid') {
+  await asAbaWriter(db, childId, async (tx) => {
+    await saveChildState(tx, childId, 'abaSessionIndex', 5, NOW);
+    await saveChildState(tx, childId, 'abaTargets', { A: aState }, NOW);
+    await saveChildState(tx, childId, 'abaBoard', { earned: 2, nonContingent: 1 }, NOW);
+  });
+}
+
+describe('итог прогона рутины (commitRoutineRun)', () => {
+  it('запись прогона, состояние рутины, доска и снятие свёрнутого прогона — вместе', async () => {
+    const db = await dbWithAbaConsent();
+    await seeded(db);
+    await recordRoutineStep(db, 'kid', stepTrial('tr-1'), inProgress, NOW);
+    await commitRoutineRun(db, 'kid', result(), NOW);
+    expect(await routineRunsOf(db, 'kid')).toEqual([routineRun()]);
+    expect(await routineRunsOf(db, 'kid', 'R')).toHaveLength(1);
+    expect(await routineRunsOf(db, 'kid', 'A')).toEqual([]);
+    expect(await loadChildState(db, 'kid', 'abaTargets')).toEqual({ A: aState, R: rState });
+    expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 3, nonContingent: 1 });
+    expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toBeNull();
+  });
+
+  it('прогон не двигает номер сессии', async () => {
+    const db = await dbWithAbaConsent();
+    await seeded(db);
+    await commitRoutineRun(db, 'kid', result(), NOW);
+    expect(await loadChildState(db, 'kid', 'abaSessionIndex')).toBe(5);
+  });
+
+  it('звено прогона и снимок свёрнутого прогона пишутся вместе', async () => {
+    const db = await dbWithAbaConsent();
+    await recordRoutineStep(db, 'kid', stepTrial('tr-1'), inProgress, NOW);
+    expect(await trialsOfTarget(db, 'kid', 'R')).toHaveLength(1);
+    expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toEqual(inProgress);
+    // противоречивая проба не пишется — снимок прежний
+    const bad = { ...stepTrial('tr-2'), promptLevelUsed: 2 as const };
+    await expect(recordRoutineStep(db, 'kid', bad, { ...inProgress, done: 2 }, NOW)).rejects.toThrow();
+    expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toEqual(inProgress);
+  });
+
+  it('повтор того же прогона — сбой, и ничего из итога не записано', async () => {
+    const db = await dbWithAbaConsent();
+    await seeded(db);
+    await commitRoutineRun(db, 'kid', result(), NOW);
+    await recordRoutineStep(db, 'kid', stepTrial('tr-2'), inProgress, NOW);
+    const again = result('run-1', { state: { ...rState, phase: 'mastered' }, board: { size: 5, earned: 4, nonContingent: 1 } });
+    await expect(commitRoutineRun(db, 'kid', again, NOW)).rejects.toThrow();
+    expect(await routineRunsOf(db, 'kid')).toHaveLength(1);
+    expect(await loadChildState(db, 'kid', 'abaTargets')).toEqual({ A: aState, R: rState });
+    expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 3, nonContingent: 1 });
+    expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toEqual(inProgress);
+  });
+
+  /** Порт, который роняет запись снимка прогона — последнюю запись итога. */
+  function failingLastWrite(db: SqlDb): SqlDb {
+    const wrap = (d: SqlDb): SqlDb => ({
+      run: async (sql: string, params?: readonly SqlValue[]) => {
+        if (sql.startsWith('INSERT INTO child_state') && params?.[1] === 'abaRoutineRunInProgress') throw new Error('диск полон');
+        return d.run(sql, params);
+      },
+      all: (sql, params) => d.all(sql, params),
+      exec: (sql) => d.exec(sql),
+      transaction: (fn) => d.transaction((tx) => fn(wrap(tx))),
+    });
+    return wrap(db);
+  }
+
+  it('сбой на последней записи итога откатывает весь итог', async () => {
+    const db = await dbWithAbaConsent();
+    await seeded(db);
+    await recordRoutineStep(db, 'kid', stepTrial('tr-1'), inProgress, NOW);
+    await expect(commitRoutineRun(failingLastWrite(db), 'kid', result(), NOW)).rejects.toThrow(/диск полон/);
+    expect(await routineRunsOf(db, 'kid')).toEqual([]);
+    expect(await loadChildState(db, 'kid', 'abaTargets')).toEqual({ A: aState });
+    expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 2, nonContingent: 1 });
+    expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toEqual(inProgress);
+  });
+});
+
+describe('согласие и неизменяемость журнала прогонов', () => {
+  it('без согласия на ABA не пишется ни звено, ни итог прогона', async () => {
+    const db = await memoryDb();
+    await expect(recordRoutineStep(db, 'kid', stepTrial('tr-1'), inProgress, NOW)).rejects.toBeInstanceOf(AbaConsentRequiredError);
+    await expect(commitRoutineRun(db, 'kid', result(), NOW)).rejects.toBeInstanceOf(AbaConsentRequiredError);
+    expect(await routineRunsOf(db, 'kid')).toEqual([]);
+    expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toBeUndefined();
+  });
+
+  it('в обход commit.ts база не пускает ни прогон, ни снимок прогона — даже при согласии', async () => {
+    const db = await dbWithAbaConsent();
+    await expect(appendRoutineRun(db, 'kid', routineRun(), NOW)).rejects.toThrow(/при согласии/);
+    await expect(
+      db.run("INSERT INTO aba_routine_runs (child_id, id, target_id, day, body, recorded_at) VALUES ('kid', 'x', 'R', '2026-10-11', '{}', ?)", [NOW]),
+    ).rejects.toThrow(/при согласии/);
+    await expect(saveChildState(db, 'kid', 'abaRoutineRunInProgress', inProgress, NOW)).rejects.toThrow(/при согласии/);
+    expect(await routineRunsOf(db, 'kid')).toEqual([]);
+  });
+
+  it('журнал прогонов только дописывается: UPDATE и DELETE отклоняются', async () => {
+    const db = await dbWithAbaConsent();
+    await commitRoutineRun(db, 'kid', result(), NOW);
+    await expect(db.run("UPDATE aba_routine_runs SET body = '{}'")).rejects.toThrow(/только дописывание/);
+    await expect(db.run('DELETE FROM aba_routine_runs')).rejects.toThrow(/только дописывание/);
+    expect(await routineRunsOf(db, 'kid')).toHaveLength(1);
+  });
+});
+
+describe('удаление, срок хранения и отзыв видят прогоны', () => {
+  async function twoKids() {
+    const db = await dbWithAbaConsent('kid', 'sib');
+    for (const kid of ['kid', 'sib']) {
+      await recordRoutineStep(db, kid, { ...stepTrial(`tr-${kid}`) }, inProgress, NOW);
+      await commitRoutineRun(db, kid, result(`run-${kid}`), NOW);
+      await recordRoutineStep(db, kid, { ...stepTrial(`tr2-${kid}`) }, inProgress, NOW);
+    }
+    return db;
+  }
+
+  it('purgeChild удаляет прогоны и свёрнутый прогон ребёнка, другого не трогает', async () => {
+    const db = await twoKids();
+    await purgeChild(db, 'kid', PSEUDO);
+    expect(await routineRunsOf(db, 'kid')).toEqual([]);
+    expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toBeUndefined();
+    expect(await routineRunsOf(db, 'sib')).toHaveLength(1);
+  });
+
+  it('clearChildProgress удаляет прогоны ребёнка', async () => {
+    const db = await twoKids();
+    await clearChildProgress(db, 'kid');
+    expect(await routineRunsOf(db, 'kid')).toEqual([]);
+    expect(await routineRunsOf(db, 'sib')).toHaveLength(1);
+  });
+
+  it('revokeAbaProcessing удаляет прогоны и свёрнутый прогон, подсчёт перед отзывом их видит', async () => {
+    const db = await twoKids();
+    expect((await abaDataSummary(db, 'kid')).routineRuns).toBe(1);
+    await revokeAbaProcessing(db, abaConsent('revoke', { at: '2026-10-11T11:00:00Z' }), 'owner');
+    expect(await abaDataSummary(db, 'kid')).toMatchObject({ routineRuns: 0, trials: 0, settings: false });
+    expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toBeUndefined();
+    expect(await routineRunsOf(db, 'sib')).toHaveLength(1);
+  });
+
+  it('срок хранения удаляет старые прогоны, свежие остаются, удаление свежего не открывается', async () => {
+    const db = await dbWithAbaConsent();
+    await commitRoutineRun(db, 'kid', result('run-old'), '2025-09-01T10:00:00Z');
+    await commitRoutineRun(db, 'kid', result('run-new'), '2026-10-01T10:00:00Z');
+    expect(await applyRetention(db, new Date(NOW))).toBe(1);
+    expect((await routineRunsOf(db, 'kid')).map((r) => r.id)).toEqual(['run-new']);
+    await expect(db.run('DELETE FROM aba_routine_runs')).rejects.toThrow(/только дописывание/);
+  });
+
+  it('отзыв мимо удаления при оставшемся прогоне база не примет', async () => {
+    const db = await dbWithAbaConsent();
+    await asAbaWriter(db, 'kid', (tx) => appendRoutineRun(tx, 'kid', routineRun(), NOW));
+    await expect(
+      db.transaction((tx) => insertConsentEvent(tx, abaConsent('revoke', { at: '2026-10-11T12:00:00Z' }), 'owner')),
+    ).rejects.toThrow(/вместе с удалением/);
+    expect(await routineRunsOf(db, 'kid')).toHaveLength(1);
+  });
+
+  it('отзыв мимо удаления при свёрнутом прогоне база не примет', async () => {
+    const db = await dbWithAbaConsent();
+    await asAbaWriter(db, 'kid', (tx) => saveChildState(tx, 'kid', 'abaRoutineRunInProgress', inProgress, NOW));
+    await expect(
+      db.transaction((tx) => insertConsentEvent(tx, abaConsent('revoke', { at: '2026-10-11T12:00:00Z' }), 'owner')),
+    ).rejects.toThrow(/вместе с удалением/);
+    expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toEqual(inProgress);
+  });
+});
+
+describe('экспорт видит прогоны', () => {
+  it('родителю — прогоны как записаны', async () => {
+    const db = await dbWithAbaConsent();
+    await commitRoutineRun(db, 'kid', result(), NOW);
+    const out = await exportChild(db, 'kid', NOW, {});
+    expect(out.abaRoutineRuns).toEqual([routineRun()]);
+  });
+
+  it('специалисту — прогоны, ведущий наблюдатель меткой O1, без uuid взрослого', async () => {
+    const db = await dbWithAbaConsent();
+    await setAbaObservers(db, 'kid', [{ id: OBSERVER, role: 'parent', trained: false }], NOW);
+    await commitRoutineRun(db, 'kid', result(), NOW);
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    expect(out.abaRoutineRuns).toEqual([{ ...routineRun(), primaryObserverId: 'O1' }]);
+    expect(out.state.abaObservers).toEqual([{ id: 'O1', role: 'parent', trained: false }]);
+    expect(JSON.stringify(out)).not.toContain(OBSERVER);
+  });
+});
+
+describe('сессия, свёрнутая на время прогона рутины', () => {
+  const session: AbaSession = {
+    id: 's-5',
+    index: 5,
+    startedAt: NOW,
+    endedAt: NOW,
+    config: 'with_adult',
+    targetIds: ['A'],
+    reinforcerId: 'puzzle',
+    reinforcerChosenBy: 'child',
+    tokensEarned: 1,
+    exchangesMade: 0,
+    endReason: 'completed',
+    brokenTargetId: null,
+    boardSize: 5,
+    endedOnSuccess: true,
+    events: [],
+    primaryObserverId: null,
+  };
+  const aAfter = { targetId: 'A', phase: 'maintenance' } as AbaTargetState;
+  // итог сессии рутин не содержит (`finishAbaSession`): только её цели
+  const sessionResult = {
+    session,
+    states: { A: aAfter },
+    trials: [],
+    board: { size: 5, earned: 4, nonContingent: 1 },
+    exchanged: 0,
+    tokenTraining: { pairingDone: true, pairingSessions: 2, pairingStreak: 2, stage: 5, atStage: [], flags: [] },
+    identifySets: [],
+  } as AbaSessionResult;
+
+  it('итог прогона, записанный посреди сессии, переживает итог сессии', async () => {
+    const db = await dbWithAbaConsent();
+    await seeded(db);
+    const rBefore = { targetId: 'R', phase: 'acquisition' } as AbaTargetState;
+    await asAbaWriter(db, 'kid', (tx) => saveChildState(tx, 'kid', 'abaTargets', { A: aState, R: rBefore }, NOW));
+    // сессия начата и свёрнута на шаге
+    await recordAbaTrial(db, 'kid', { ...stepTrial('tr-s'), sessionId: 's-5', targetId: 'A', stepId: undefined, runIndex: undefined }, { sessionId: 's-5' } as AbaSessionState, NOW);
+    // прогон рутины прошёл и зафиксирован
+    await commitRoutineRun(db, 'kid', result(), NOW);
+    expect((await loadChildState(db, 'kid', 'abaTargets'))?.R).toEqual(rState);
+    // сессию продолжили и закончили
+    await commitAbaSession(db, 'kid', sessionResult, NOW);
+    expect(await loadChildState(db, 'kid', 'abaTargets')).toEqual({ A: aAfter, R: rState });
+  });
+});
+
+describe('экспорт специалисту без снимков «в работе»', () => {
+  it('при свёрнутых сессии и прогоне в выгрузке нет uuid наблюдателя', async () => {
+    const db = await dbWithAbaConsent();
+    const observers = [{ id: OBSERVER, role: 'parent' as const, trained: false }];
+    await setAbaObservers(db, 'kid', observers, NOW);
+    await recordAbaTrial(
+      db,
+      'kid',
+      { ...stepTrial('tr-s'), sessionId: 's-5', targetId: 'A', stepId: undefined, runIndex: undefined },
+      { sessionId: 's-5', observers, primaryObserverId: OBSERVER } as unknown as AbaSessionState,
+      NOW,
+    );
+    await recordRoutineStep(db, 'kid', stepTrial('tr-r'), { ...inProgress, observers, primaryObserverId: OBSERVER } as RoutineRunState, NOW);
+    expect(await loadChildState(db, 'kid', 'abaSessionInProgress')).not.toBeUndefined();
+    expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).not.toBeUndefined();
+
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    expect(JSON.stringify(out)).not.toContain(OBSERVER);
+    expect(out.state).not.toHaveProperty('abaSessionInProgress');
+    expect(out.state).not.toHaveProperty('abaRoutineRunInProgress');
+    expect(out.abaTrials).toHaveLength(2);
+  });
+
+  it('фиксатор: специалисту не уходят ровно два ключа ABA — снимки «в работе»', () => {
+    const excluded = ABA_STATE_KEYS.filter((k) => !(SPECIALIST_STATE_KEYS as readonly string[]).includes(k));
+    expect(excluded).toEqual(['abaSessionInProgress', 'abaRoutineRunInProgress']);
+  });
+});
+
+describe('срок хранения снимков «в работе»', () => {
+  const OLD = Date.parse('2025-09-01T10:00:00Z');
+  const FRESH = Date.parse('2026-10-10T10:00:00Z');
+
+  it('старый снимок удалён, свежий остался, у другого ребёнка не тронут', async () => {
+    const db = await dbWithAbaConsent('kid', 'sib');
+    await asAbaWriter(db, 'kid', async (tx) => {
+      await saveChildState(tx, 'kid', 'abaSessionInProgress', { sessionId: 's-old', startedAt: OLD } as AbaSessionState, NOW);
+      await saveChildState(tx, 'kid', 'abaRoutineRunInProgress', { ...inProgress, startedAt: FRESH } as RoutineRunState, NOW);
+      await saveChildState(tx, 'kid', 'abaSessionIndex', 3, NOW);
+    });
+    await asAbaWriter(db, 'sib', (tx) =>
+      saveChildState(tx, 'sib', 'abaRoutineRunInProgress', { ...inProgress, startedAt: FRESH } as RoutineRunState, NOW),
+    );
+
+    expect(await applyRetention(db, new Date(NOW))).toBe(1);
+    expect(await loadChildState(db, 'kid', 'abaSessionInProgress')).toBeUndefined();
+    expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toMatchObject({ startedAt: FRESH });
+    expect(await loadChildState(db, 'kid', 'abaSessionIndex')).toBe(3);
+    expect(await loadChildState(db, 'sib', 'abaRoutineRunInProgress')).toMatchObject({ startedAt: FRESH });
+  });
+
+  it('старый снимок прогона рутины тоже удаляется, снятый (null) — не мешает', async () => {
+    const db = await dbWithAbaConsent();
+    await asAbaWriter(db, 'kid', async (tx) => {
+      await saveChildState(tx, 'kid', 'abaRoutineRunInProgress', { ...inProgress, startedAt: OLD } as RoutineRunState, NOW);
+      await saveChildState(tx, 'kid', 'abaSessionInProgress', null, NOW);
+    });
+    expect(await applyRetention(db, new Date(NOW))).toBe(1);
+    expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toBeUndefined();
+    expect(await loadChildState(db, 'kid', 'abaSessionInProgress')).toBeNull();
+  });
+});

@@ -271,6 +271,53 @@ BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA 
 ALTER TABLE sync_problems ADD COLUMN kind TEXT NOT NULL DEFAULT 'consent';
 ALTER TABLE sync_problems ADD COLUMN retry INTEGER NOT NULL DEFAULT 0;
 `,
+  // 8 — прогоны рутин самообслуживания (раунд 2, Р3; `aba-pedagogy-specialist` 2026-10-11)
+  //
+  // Рутина проходит в свой естественный момент, вне сессии: свой журнал прогонов (в журнале
+  // сессий номер сессии уникален, а прогон его не двигает). Как пробы: только дописывание,
+  // удаление — по ребёнку или сроку, запись — только через ворота согласия на данные ABA.
+  // Прогон, свёрнутый посреди, — ключ ABA-состояния abaRoutineRunInProgress. Отзыв согласия
+  // при оставшихся прогонах или свёрнутом прогоне база не принимает.
+  `
+CREATE TABLE aba_routine_runs (
+  seq         INTEGER PRIMARY KEY AUTOINCREMENT,
+  child_id    TEXT NOT NULL,
+  id          TEXT NOT NULL UNIQUE,
+  target_id   TEXT NOT NULL,
+  day         TEXT NOT NULL,
+  body        TEXT NOT NULL,
+  recorded_at TEXT NOT NULL
+);
+CREATE INDEX aba_routine_runs_target ON aba_routine_runs (child_id, target_id, seq);
+${gated('aba_routine_runs')}
+${retained('aba_routine_runs', 'recorded_at')}
+CREATE TRIGGER aba_routine_runs_need_consent BEFORE INSERT ON aba_routine_runs
+WHEN NOT EXISTS (SELECT 1 FROM aba_write_gate WHERE child_id = NEW.child_id)
+BEGIN SELECT RAISE(ABORT, 'aba_routine_runs: запись только через commit.ts при согласии на данные ABA'); END;
+${['insert', 'update'].map((op) => `DROP TRIGGER child_state_aba_need_consent_${op};`).join('\n')}
+${['INSERT', 'UPDATE']
+  .map(
+    (op) => `
+CREATE TRIGGER child_state_aba_need_consent_${op.toLowerCase()} BEFORE ${op} ON child_state
+WHEN NEW.key IN ('abaTargets', 'tokenTraining', 'identifySets', 'abaBoard', 'abaSessionIndex', 'abaSessionInProgress',
+                 'physicalPromptAllowed', 'abaObservers', 'abaRoutineRunInProgress')
+  AND NOT EXISTS (SELECT 1 FROM aba_write_gate WHERE child_id = NEW.child_id)
+BEGIN SELECT RAISE(ABORT, 'child_state: состояние ABA только через commit.ts при согласии на данные ABA'); END;`,
+  )
+  .join('\n')}
+DROP TRIGGER consent_events_aba_revoke_needs_purge;
+CREATE TRIGGER consent_events_aba_revoke_needs_purge BEFORE INSERT ON consent_events
+WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
+  EXISTS (SELECT 1 FROM aba_trials WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_sessions WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_ioa WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_routine_runs WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM child_state WHERE child_id = NEW.child_id AND key IN
+    ('abaTargets', 'tokenTraining', 'identifySets', 'abaBoard', 'abaSessionIndex', 'abaSessionInProgress', 'abaPaused',
+     'physicalPromptAllowed', 'abaObservers', 'abaRoutineRunInProgress'))
+)
+BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
+`,
 ];
 
 /**

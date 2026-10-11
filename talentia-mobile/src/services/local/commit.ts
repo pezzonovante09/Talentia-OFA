@@ -9,12 +9,13 @@
  */
 import type { AbaIoaRecord, AbaObserver, AbaTargetState, AbaTrial } from '../../types/aba';
 import type { AbaSessionResult, AbaSessionState } from '../../domain/abaSession';
+import type { RoutineRunResult, RoutineRunState } from '../../domain/abaRoutineRun';
 import type { AtlasEntry } from '../../domain/lessonAssembly';
 import type { SkillState } from '../../domain/mastery';
 import type { LessonRun } from '../../domain/parentReport';
 import { ioaRecordErrors } from '../../domain/abaIoa';
-import { AbaSessionMissingError, appendIoa, appendSession, appendTrial, withAbaWrite } from './abaLog';
-import { saveChildState } from './childState';
+import { AbaSessionMissingError, appendIoa, appendRoutineRun, appendSession, appendTrial, withAbaWrite } from './abaLog';
+import { loadChildState, saveChildState } from './childState';
 import { readConsentLog } from './consentLog';
 import { consentStatus, type GuardianRole } from '../../domain/consent';
 import { CURRENT_CONSENT_TEXTS } from '../../domain/consentTexts';
@@ -73,12 +74,47 @@ export async function commitAbaSession(
 ): Promise<void> {
   await withAbaWrite(db, childId, async (tx) => {
     await appendSession(tx, childId, result.session, at);
-    await saveChildState(tx, childId, 'abaTargets', result.states, at);
+    // слияние с текущей картой: рутины меняет только прогон рутины, и его итог, записанный, пока
+    // сессия была свёрнута, не затирается (методист, раунд 2, Р3)
+    const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
+    await saveChildState(tx, childId, 'abaTargets', { ...targets, ...result.states }, at);
     await saveChildState(tx, childId, 'abaBoard', { earned: result.board.earned, nonContingent: result.board.nonContingent }, at);
     await saveChildState(tx, childId, 'tokenTraining', result.tokenTraining, at);
     await saveChildState(tx, childId, 'identifySets', result.identifySets, at);
     await saveChildState(tx, childId, 'abaSessionIndex', result.session.index + 1, at);
     await saveChildState(tx, childId, 'abaSessionInProgress', null, at);
+  });
+}
+
+/**
+ * Звено прогона рутины — сразу в журнал проб вместе со снимком прогона (`abaRoutineRunInProgress`):
+ * свёрнутый посреди прогон продолжится с записанного звена. Только при согласии и не на паузе.
+ */
+export async function recordRoutineStep(
+  db: SqlDb,
+  childId: string,
+  trial: AbaTrial,
+  inProgress: RoutineRunState,
+  at: string,
+): Promise<void> {
+  await withAbaWrite(db, childId, async (tx) => {
+    await appendTrial(tx, childId, trial, at);
+    await saveChildState(tx, childId, 'abaRoutineRunInProgress', inProgress, at);
+  });
+}
+
+/**
+ * Итог прогона рутины — одной транзакцией: запись прогона, состояние этой рутины в карте целей,
+ * доска (общая с сессиями), и свёрнутый прогон снимается. Номер сессии не меняется: прогон
+ * его не двигает (методист, Р3).
+ */
+export async function commitRoutineRun(db: SqlDb, childId: string, result: RoutineRunResult, at: string): Promise<void> {
+  await withAbaWrite(db, childId, async (tx) => {
+    const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
+    await appendRoutineRun(tx, childId, result.record, at);
+    await saveChildState(tx, childId, 'abaTargets', { ...targets, [result.record.targetId]: result.state }, at);
+    await saveChildState(tx, childId, 'abaBoard', { earned: result.board.earned, nonContingent: result.board.nonContingent }, at);
+    await saveChildState(tx, childId, 'abaRoutineRunInProgress', null, at);
   });
 }
 

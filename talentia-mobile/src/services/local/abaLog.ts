@@ -16,7 +16,7 @@
  * Обе ошибки — штатный ход, а не сбой: в отчёты об ошибках их не отправлять, само сообщение
  * связывает устройство с ABA-режимом (ABA.md, «Согласие `aba_processing`»).
  */
-import type { AbaIoaRecord, AbaSession, AbaTrial } from '../../types/aba';
+import type { AbaIoaRecord, AbaRoutineRun, AbaSession, AbaTrial } from '../../types/aba';
 import { trialInvariantErrors, type SessionTrials } from '../../domain/abaPrompting';
 import { isGranted } from '../../domain/consent';
 import { CURRENT_CONSENT_TEXTS } from '../../domain/consentTexts';
@@ -84,6 +84,14 @@ export async function appendSession(db: SqlDb, childId: string, session: AbaSess
   await db.run(
     'INSERT INTO aba_sessions (child_id, id, session_index, body, recorded_at) VALUES (?, ?, ?, ?, ?)',
     [childId, session.id, session.index, JSON.stringify(session), recordedAt],
+  );
+}
+
+/** Прогон рутины — кирпич для `commit.ts` (раунд 2, Р3). */
+export async function appendRoutineRun(db: SqlDb, childId: string, run: AbaRoutineRun, recordedAt: string): Promise<void> {
+  await db.run(
+    'INSERT INTO aba_routine_runs (child_id, id, target_id, day, body, recorded_at) VALUES (?, ?, ?, ?, ?, ?)',
+    [childId, run.id, run.targetId, run.day, JSON.stringify(run), recordedAt],
   );
 }
 
@@ -155,5 +163,14 @@ export async function ioaOfSession(db: SqlDb, childId: string, sessionId: string
       childId,
       sessionId,
     ]),
+  );
+}
+
+/** Прогоны рутины ребёнка в порядке записи. */
+export async function routineRunsOf(db: SqlDb, childId: string, targetId?: string): Promise<AbaRoutineRun[]> {
+  return parse(
+    targetId
+      ? await db.all<{ body: string }>('SELECT body FROM aba_routine_runs WHERE child_id = ? AND target_id = ? ORDER BY seq', [childId, targetId])
+      : await db.all<{ body: string }>('SELECT body FROM aba_routine_runs WHERE child_id = ? ORDER BY seq', [childId]),
   );
 }
