@@ -24,6 +24,7 @@ import {
   type StepPromptState,
 } from '../types/aba';
 import { LATENCY_SOURCE } from './abaScoring';
+import { pick, seeded } from './abaRandom';
 
 /** Сколько подряд проб нужно, чтобы стартовый уровень сдвинулся. */
 export const FADE_AFTER = 2;
@@ -620,4 +621,76 @@ export function trialInvariantErrors(t: AbaTrial): string[] {
   if (t.promptDelayMs !== null && t.promptDelayMs > t.responseWindowMs) errors.push('задержка до подсказки длиннее окна ответа');
   if (t.responseWindowMs <= 0) errors.push('нет окна ответа');
   return errors;
+}
+
+// ---------------------------------------------------------------------------
+// Что видно на экране выбора на каждом уровне подсказки
+// ---------------------------------------------------------------------------
+
+/** Проба выбора: какие карточки на экране, какая верная; образец `match` или предмет сортировки. */
+export type PromptChoiceTrial = {
+  correctId: string;
+  /** Карточки выбора в порядке показа — позиции не меняются ни на каком уровне. */
+  choiceIds: readonly string[];
+  sampleId?: string;
+  itemId?: string;
+};
+
+/**
+ * Подсказка на экране выбора. `activeChoiceIds` принимают нажатие; остальные **приглушены**, не
+ * скрыты (позиции не меняются: перестройка сетки — сама подсказка местом) и не доступны
+ * экранному чтецу. Степень приглушения и вид метки — токены `design-lead` (`design/abaTokens.ts`).
+ */
+export type PromptVisualPlan = {
+  focus: { on: 'sample' | 'item' | 'choice'; id: string; pulse: boolean } | null;
+  activeChoiceIds: readonly string[];
+  /** Выделить верную карточку — только у `identify`, где жест L1 и несёт ответ. */
+  highlightCorrect: boolean;
+  /** L4: экран как на L3, в панели взрослого — «мягко направь руку, прекрати при сопротивлении». */
+  adultPhysical: boolean;
+};
+
+/**
+ * Подсказка по формату (раунд 2, Р5, `aba-pedagogy-specialist` 2026-10-11). В `match` и сортировке
+ * L1–L2 ответа не раскрывают (`FIRST_ANSWER_LEVEL.match` = 3): L1 — метка и пульс над образцом
+ * (над предметом у сортировки), активны все; L2 — активны верный и один случайный дистрактор,
+ * верный не выделен (у выбора из двух L2 нет); L3 — активен только верный. У `identify` жест к
+ * карточке и есть ответ — она выделена с L1. Дистрактор L2 тянется из `seed` пробы: при
+ * восстановлении сессии он тот же, новая проба тянет заново. Форматы без экрана выбора
+ * (речь, действие) — подсказка моделью, а не экраном: план нейтральный.
+ */
+export function promptVisualFor(
+  target: Pick<AbaTarget, 'format' | 'sdKind' | 'fieldSize' | 'matchMode'>,
+  level: PromptLevel,
+  trial: PromptChoiceTrial,
+  seed: number,
+): PromptVisualPlan {
+  const all = trial.choiceIds;
+  const adultPhysical = level === 4;
+  const shown = Math.min(level, APP_MAX_PROMPT);
+  const plan = (p: Partial<PromptVisualPlan>): PromptVisualPlan => ({ focus: null, activeChoiceIds: all, highlightCorrect: false, adultPhysical, ...p });
+  if (shown === 0) return plan({});
+  if (target.format === 'identify') {
+    return plan({
+      focus: { on: 'choice', id: trial.correctId, pulse: false },
+      activeChoiceIds: shown === 3 ? [trial.correctId] : all,
+      highlightCorrect: true,
+    });
+  }
+  if (target.format !== 'match') return plan({});
+  if (shown === 1) {
+    const sort = target.matchMode === 'sort';
+    const id = sort ? trial.itemId : trial.sampleId;
+    if (!id) throw new Error(sort ? 'у пробы сортировки нет предмета' : 'у пробы match нет образца');
+    return plan({ focus: { on: sort ? 'item' : 'sample', id, pulse: true } });
+  }
+  if (shown === 2) {
+    if (promptLadder(target) === 'two_choice') throw new Error('у выбора из двух уровня L2 нет: «оставить два» ничего не убирает');
+    const distractor = pick(
+      all.filter((id) => id !== trial.correctId),
+      seeded(seed).rng,
+    );
+    return plan({ activeChoiceIds: all.filter((id) => id === trial.correctId || id === distractor) });
+  }
+  return plan({ activeChoiceIds: [trial.correctId] });
 }
