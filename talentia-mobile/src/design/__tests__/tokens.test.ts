@@ -6,11 +6,23 @@
  */
 import {
   buildTheme,
+  countMark,
+  countSizes,
   cushionByRole,
+  digitGroup,
+  groupDigits,
   INK_SURFACES,
+  lessonTiming,
+  mapBackdrop,
+  mapLayout,
   motion,
+  numeralOption,
   palettes,
+  pressFeedback,
+  pressScale,
   spacing,
+  symbolGlyph,
+  symbolGlyphMaxFontMultiplier,
   touch,
   type ColorTokens,
   type RegionId,
@@ -214,5 +226,121 @@ describe('подушка и отклик (решения №10, №68, №69)', 
   it('отклик плоского нажимаемого не дольше 100 мс', () => {
     expect(motion.press).toBeGreaterThan(0);
     expect(motion.press).toBeLessThanOrEqual(100);
+  });
+
+  it('calm и обычный режим сжимают одинаково; calm добавляет только гаптику (№69, Р12)', () => {
+    const plain = pressFeedback({ calmMode: false });
+    const calm = pressFeedback({ calmMode: true });
+    expect(calm.scale).toEqual(plain.scale);
+    expect(calm.durationMs).toBe(plain.durationMs);
+    expect(plain.haptic).toBe('none');
+    expect(calm.haptic).toBe('light');
+    expect(pressScale.tali).toBeLessThanOrEqual(0.96);
+    expect(pressScale.mapNode).toBeLessThanOrEqual(0.96);
+    expect(pressScale.wide).toBeLessThanOrEqual(0.98);
+    expect(pressScale).not.toHaveProperty('calm');
+  });
+});
+
+describe('правило перевода в тёмную схему (Р8)', () => {
+  (['normal', 'calm'] as const).forEach((variant) => {
+    it(`dark / ${variant}: текст и глифы на цветных заливках — цвет фона, не белый`, () => {
+      const c = palettes.dark[variant];
+      [c.onPrimary, c.onSecondary, c.onAccent, c.onSuccess, c.onError].forEach((on) => expect(on).toBe(c.background));
+      // белое на этих заливках не проходит — именно поэтому правило перевода «#FFFFFF → #1B1410»
+      [c.primary, c.secondary, c.accent, c.success, c.error].forEach((fill) => {
+        expect(contrast(c.onPrimary, fill)).toBeGreaterThanOrEqual(4.5);
+      });
+    });
+  });
+
+  it('dark: белый глиф на success и error не проходит порог — прежние 2.13 и 2.77', () => {
+    const c = palettes.dark.normal;
+    expect(contrast('#FFFFFF', c.success)).toBeLessThan(3);
+    expect(contrast('#FFFFFF', c.error)).toBeLessThan(3);
+  });
+
+  it('подложка под картинкой: контур предмета #2A1A12 различим в обеих схемах, calm её не меняет', () => {
+    SCHEMES.forEach((scheme) => {
+      expect(contrast('#2A1A12', palettes[scheme].normal.picturePlate)).toBeGreaterThanOrEqual(3);
+      expect(palettes[scheme].calm.picturePlate).toBe(palettes[scheme].normal.picturePlate);
+    });
+    // на тёмной карточке тот же контур исчезает — поэтому подложка светлая
+    expect(contrast('#2A1A12', palettes.dark.normal.surface)).toBeLessThan(3);
+  });
+});
+
+describe('карта региона (решение №89, Р9)', () => {
+  it('панорама — только светлая обычная; тёмная — сплошной регион; calm — песок и полоса', () => {
+    expect(mapBackdrop({ scheme: 'light', calmMode: false })).toBe('panorama');
+    expect(mapBackdrop({ scheme: 'dark', calmMode: false })).toBe('flat_region');
+    expect(mapBackdrop({ scheme: 'light', calmMode: true })).toBe('sand_strip');
+    expect(mapBackdrop({ scheme: 'dark', calmMode: true })).toBe('sand_strip');
+  });
+
+  it('тёмная карта: контур горизонта, тропы и узлов и текст шапки читаются на каждой заливке региона', () => {
+    const c = palettes.dark.normal;
+    (Object.keys(c.regions) as RegionId[]).forEach((r) => {
+      expect(contrast(c.outline, c.regions[r])).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(c.onRegion, c.regions[r])).toBeGreaterThanOrEqual(4.5);
+    });
+  });
+
+  it('ориентир региона не меньше 64, узел 72 с расстоянием между центрами ≥ 88', () => {
+    expect(mapLayout.landmarkMin).toBeGreaterThanOrEqual(64);
+    expect(mapLayout.node).toBe(touch.comfortable);
+    expect(mapLayout.nodeGapMin).toBeGreaterThanOrEqual(mapLayout.node + touch.gap);
+  });
+});
+
+describe('счёт на 5–6 (SCREENS.md 3.8)', () => {
+  it('метка «сосчитано»: точка 12 в кольце 2, цвета фиксированы и контрастны друг другу', () => {
+    expect(countMark.dot).toBe(12);
+    expect(countMark.ring).toBe(2);
+    expect(contrast(countMark.dotColor, countMark.ringColor)).toBeGreaterThanOrEqual(7);
+    // шаг фигур ≥ 44: радиус 32 перекрывает соседей (32 > 22), поэтому правило одно — ближайшая
+    expect(countMark.snapRadius).toBe(32);
+    expect(countMark.snapRadius).toBeGreaterThan(countSizes.stepMin / 2);
+    expect(countMark.snapRule).toBe('nearest');
+  });
+
+  it('знак в карточке-символе не растёт с системным шрифтом', () => {
+    expect(symbolGlyphMaxFontMultiplier).toBe(1);
+  });
+
+  it('ответ из 5+ цифр показывается с тонким пробелом и помещается в поле на SE', () => {
+    expect(groupDigits('1234')).toBe('1234');
+    expect(groupDigits('12345')).toBe('12 345');
+    expect(groupDigits('1234567')).toBe('1 234 567');
+    expect(groupDigits('abc')).toBe('abc');
+    // 7 цифр title 28 табличные ≈ 17.4 + два разделителя в поле W − 16 = 327 (SE)
+    expect(7 * 17.4 + 2 * digitGroup.gap).toBeLessThanOrEqual(343 - 16);
+  });
+
+  it('кучка в плитке: поле = две ячейки шага плюс фигура; фигура ≥ 24, шаг ≥ 28, ≤ 3 в ряд, ≤ 5 фигур', () => {
+    expect(countSizes.tileFigure).toBeGreaterThanOrEqual(24);
+    expect(countSizes.tileStep).toBeGreaterThanOrEqual(28);
+    expect(countSizes.tileStep * (countSizes.tileMaxPerRow - 1) + countSizes.tileFigure).toBe(countSizes.tileField);
+    expect(countSizes.tileMaxFigures).toBeLessThanOrEqual(5);
+  });
+
+  it('карточка-число: поле 88 и цифра 64 в плитке 103.7×112 с запасом', () => {
+    // поля по бокам считаются от внешнего края плитки (контур 3 входит в 7.85 на SE)
+    expect(numeralOption.plate).toBeLessThanOrEqual(103.7);
+    expect(numeralOption.plate + 2 * 12).toBeLessThanOrEqual(112);
+    expect(numeralOption.digit).toBeLessThan(numeralOption.plate);
+  });
+
+  it('знак символа: самое длинное слово из 4 знаков помещается в поле 88 (ширина ≈ 0.65 кегля на знак)', () => {
+    ([1, 2, 3, 4] as const).forEach((n) => {
+      expect(n * symbolGlyph[n] * 0.65).toBeLessThanOrEqual(numeralOption.plate);
+    });
+    expect(symbolGlyph[1]).toBe(numeralOption.digit);
+    expect(symbolGlyph[4]).toBeGreaterThanOrEqual(32);
+  });
+
+  it('защита «Дальше» короче разблокировки', () => {
+    expect(lessonTiming.nextGuard).toBeGreaterThan(0);
+    expect(lessonTiming.nextGuard).toBeLessThan(lessonTiming.nextUnlock);
   });
 });
