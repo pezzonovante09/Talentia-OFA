@@ -20,6 +20,7 @@ import {
   type AbaTrial,
   type PromptLevel,
   type RoutineRunRecord,
+  type RoutineSetting,
   type StepPromptState,
 } from '../types/aba';
 import { clampToApp, promptStateOf } from './abaPrompting';
@@ -262,8 +263,8 @@ export function isRoutine(t: Pick<AbaTarget, 'area' | 'steps'>): boolean {
   return t.area === 'self_care' && !!t.steps?.length;
 }
 
-/** Выполнен ли критерий рутины на последних прогонах. */
-export function routineMasteryMet(runs: readonly { day: string; whole: boolean }[]): boolean {
+/** Выполнен ли критерий рутины на последних прогонах (без условия переноса — `routineTransferMet`). */
+export function routineCriterionMet(runs: readonly { day: string; whole: boolean }[]): boolean {
   const w = runs.slice(-ROUTINE.windowRuns);
   return (
     w.length === ROUTINE.windowRuns &&
@@ -271,6 +272,25 @@ export function routineMasteryMet(runs: readonly { day: string; whole: boolean }
     new Set(w.map((r) => r.day)).size >= ROUTINE.minDistinctDays &&
     w[w.length - 1].whole
   );
+}
+
+/**
+ * Перенос (генерализация) рутины: в окне критерия есть целиком самостоятельный прогон, без срыва,
+ * вне привычного контекста — другой взрослый ИЛИ другое место (`setting ≠ usual`, методист
+ * 2026-10-12, Г4). Без отметки `setting` — `usual`: засчитывается безопасная сторона. Прогон вне
+ * окна из последних `windowRuns` не считается — свежесть доказательства важнее удобства.
+ */
+export function routineTransferMet(runs: readonly { whole: boolean; interrupted?: true; setting?: RoutineSetting }[]): boolean {
+  return runs
+    .slice(-ROUTINE.windowRuns)
+    .some((r) => r.whole && !r.interrupted && (r.setting === 'other_adult' || r.setting === 'other_place'));
+}
+
+/** Рутина освоена по окну прогонов: критерий выполнен **и** перенос подтверждён. */
+export function routineMasteryMet(
+  runs: readonly { day: string; whole: boolean; interrupted?: true; setting?: RoutineSetting }[],
+): boolean {
+  return routineCriterionMet(runs) && routineTransferMet(runs);
 }
 
 /**
@@ -310,12 +330,14 @@ export function applyRoutineRun(
   config?: AbaConfig,
 ): AbaTargetState {
   const routineRuns = [...(s.routineRuns ?? []), record].slice(-ROUTINE.keepRuns);
-  const others = s.flags.filter((f) => f !== 'no_progress');
+  const others = s.flags.filter((f) => f !== 'no_progress' && f !== 'needs_transfer');
   if (routineMasteryMet(routineRuns)) {
     // окно обнуляется: после возврата в обучение освоение снова требует своих прогонов и дней,
     // а не одного прогона поверх старых (методист, 2026-10-09)
     return { ...markMastered({ ...s, routineRuns: [], flags: others }, sessionIndex, by, config), lastMaintenanceDay: record.day };
   }
+  // критерий выполнен, переноса нет — «почти»: фаза прежняя, окно сохранено, флаг родителю и специалисту
+  if (routineCriterionMet(routineRuns)) return { ...s, routineRuns, flags: [...others, 'needs_transfer'] };
   return { ...s, routineRuns, flags: routineStuck(routineRuns) ? [...others, 'no_progress'] : others };
 }
 
@@ -327,6 +349,8 @@ export function applyRoutineRun(
  * без второго условия флаг ложный. Иначе рутина стояла бы неделями, и специалист не увидел бы.
  */
 export function routineStuck(runs: readonly RoutineRunRecord[]): boolean {
+  // ребёнок на 100% в усвоенном контексте и ждёт переноса не застрял: доли равны, уровни уже 0
+  if (routineCriterionMet(runs)) return false;
   if (runs.length < ROUTINE.noProgressRuns || new Set(runs.map((r) => r.day)).size < ROUTINE.noProgressDays) return false;
   const half = Math.floor(runs.length / 2);
   const [early, late] = [runs.slice(0, half), runs.slice(half)];
@@ -338,8 +362,13 @@ export function routineStuck(runs: readonly RoutineRunRecord[]): boolean {
 /**
  * Базовая линия рутины — `ROUTINE.baselineRuns` прогона **в разные дни**, по одному в сессию,
  * множеством возможностей (несделанное звено доделывает взрослый, ребёнок продолжает). Второй
- * прогон в тот же день не в счёт. Оба целиком сами — освоено по базовой линии; иначе старт звена:
- * сам в обоих — L0, в одном — L1, ни в одном — полная модель.
+ * прогон в тот же день не в счёт. Оба целиком сами **и был целиком самостоятельный прогон вне
+ * привычного контекста** — освоено по базовой линии (перенос, Г4; методист 2026-10-12); иначе
+ * старт звена: сам в обоих — L0, в одном — L1, ни в одном — полная модель.
+ *
+ * Оба целиком сами, но переноса не было — фаза остаётся `baseline` с флагом `needs_transfer`;
+ * следующий прогон решает: целиком сам вне контекста — освоено; любое звено не сам — обучение;
+ * целиком сам в привычном — состояние держится; срыв — без изменений.
  */
 export function applyRoutineBaseline(
   s: AbaTargetState,
@@ -353,6 +382,8 @@ export function applyRoutineBaseline(
    * недойденные звенья — «не сам». Сдвиг в сторону большей помощи — безопасный.
    */
   interrupted = false,
+  /** Где и с кем прошёл прогон; нет отметки — `usual`. */
+  setting: RoutineSetting = 'usual',
 ): AbaTargetState {
   if (s.phase !== 'baseline') return s;
   const run = interrupted
@@ -360,22 +391,36 @@ export function applyRoutineBaseline(
     : chainRuns(target, trials, isBaselineCountable)[0];
   const acc = s.routineBaseline ?? { days: [], independentByStep: {} };
   if (!run || acc.days.includes(day)) return s;
+  const steps = target.steps ?? [];
+  const independentNow = new Set(run.filter((t) => t.stepId && t.response === 'independent').map((t) => t.stepId!));
+  const wholeNow = !interrupted && steps.every((st) => independentNow.has(st.id));
+  const held = acc.days.length >= ROUTINE.baselineRuns;
+  // срыв на ожидающей переноса базовой линии про навык ничего не говорит
+  if (held && interrupted) return s;
+
   const independentByStep = { ...acc.independentByStep };
   for (const t of run) {
     if (t.stepId && t.response === 'independent') independentByStep[t.stepId] = (independentByStep[t.stepId] ?? 0) + 1;
   }
   const days = [...acc.days, day];
-  if (days.length < ROUTINE.baselineRuns) return { ...s, routineBaseline: { days, independentByStep } };
-  const done: AbaTargetState = { ...s };
+  const transferSeen = acc.transferSeen === true || (wholeNow && setting !== 'usual');
+  const rest = s.flags.filter((f) => f !== 'needs_transfer');
+  if (days.length < ROUTINE.baselineRuns) return { ...s, routineBaseline: { days, independentByStep, transferSeen } };
+
+  const allIndependent = steps.every((st) => (independentByStep[st.id] ?? 0) >= ROUTINE.baselineRuns);
+  const done: AbaTargetState = { ...s, flags: rest };
   delete done.routineBaseline;
-  const steps = target.steps ?? [];
-  if (steps.every((st) => (independentByStep[st.id] ?? 0) >= ROUTINE.baselineRuns)) {
-    return { ...markMastered(done, sessionIndex, 'baseline', config), lastMaintenanceDay: day };
+  // в held-состоянии звено, не сделанное самим в этом прогоне, возвращает в обучение, даже если счёт накопленный
+  if (allIndependent && (!held || wholeNow)) {
+    if (transferSeen) return { ...markMastered(done, sessionIndex, 'baseline', config), lastMaintenanceDay: day };
+    return { ...s, flags: [...rest, 'needs_transfer'], routineBaseline: { days, independentByStep, transferSeen } };
   }
   const stepPrompts = Object.fromEntries(
     steps.map((st) => {
       const ok = independentByStep[st.id] ?? 0;
-      const level: PromptLevel = ok >= ROUTINE.baselineRuns ? 0 : ok > 0 ? 1 : APP_MAX_PROMPT;
+      let level: PromptLevel;
+      if (held) level = independentNow.has(st.id) ? 0 : ok > 0 ? 1 : APP_MAX_PROMPT;
+      else level = ok >= ROUTINE.baselineRuns ? 0 : ok > 0 ? 1 : APP_MAX_PROMPT;
       return [st.id, fresh(level, s.currentDelayMs)];
     }),
   );

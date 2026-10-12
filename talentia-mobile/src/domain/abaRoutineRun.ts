@@ -88,13 +88,18 @@ export function routinesDue(input: {
   day: string;
   observers?: readonly AbaObserver[];
   primaryObserverId?: string | null;
-}): { targetId: string; kind: RoutineRunKind | null }[] {
+}): { targetId: string; kind: RoutineRunKind | null; hint?: 'transfer' }[] {
   if (!DAY.test(input.day)) throw new Error('День прогона — локальная дата YYYY-MM-DD');
   const mastered = (id: string) => input.states[id] !== undefined && MASTERED_PHASES.has(input.states[id].phase);
   const rows = input.targets
     .filter((t) => isRoutine(t) && (t.prerequisiteTargetIds ?? []).every(mastered))
-    .map((t) => ({ targetId: t.id, kind: routineRunKind(input.states[t.id], input.day, input) }))
-    .filter((r): r is { targetId: string; kind: RoutineRunKind | null } => r.kind !== undefined);
+    .map((t) => ({
+      targetId: t.id,
+      kind: routineRunKind(input.states[t.id], input.day, input),
+      // «почти освоено»: нужен прогон в другом месте или с другим взрослым (Г4); не напоминание, только метка в списке
+      ...(input.states[t.id]?.flags.includes('needs_transfer') ? { hint: 'transfer' as const } : {}),
+    }))
+    .filter((r): r is { targetId: string; kind: RoutineRunKind | null; hint?: 'transfer' } => r.kind !== undefined);
   return [...rows.filter((r) => r.kind !== null), ...rows.filter((r) => r.kind === null)];
 }
 
@@ -397,7 +402,7 @@ export function finishRoutineRun(run: RoutineRunState, endedAt: number, sessionI
         );
         break;
       case 'baseline':
-        s = applyRoutineBaseline(s, run.trials, day, sessionIndex, target, 'with_adult', breakdown);
+        s = applyRoutineBaseline(s, run.trials, day, sessionIndex, target, 'with_adult', breakdown, run.setting);
         break;
       case 'maintenance': {
         // оборванный срывом — провал поддержания

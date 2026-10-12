@@ -2,7 +2,7 @@
  * Правки ABA по аудиту 2026-10-06 (AUDIT.md, А9, А21, А26; решение №67) — по спецификации
  * `aba-pedagogy-specialist` 2026-10-09.
  */
-import type { AbaTarget, AbaTargetState, AbaTrial } from '../../types/aba';
+import type { AbaTarget, AbaTargetState, AbaTrial, RoutineSetting } from '../../types/aba';
 import { choiceBiasIn } from '../abaBarriers';
 import {
   applyMaintenanceProbe,
@@ -282,8 +282,13 @@ describe('А8: рутины самообслуживания (№74, №75)', ()
       }),
     );
   const acqR: AbaTargetState = { ...initialTargetState(R), phase: 'acquisition' };
-  const feed = (days: string[], wholes: boolean[]) =>
-    days.reduce((s, day, i) => applyRoutineRun(s, routineRunRecord(R, s, runOf(wholes[i]), day), 10 + i, 'criterion', 'with_adult'), acqR);
+  /** `settings[i]` — где прошёл i-й прогон; нет отметки — привычный контекст (перенос — Г4). */
+  const feed = (days: string[], wholes: boolean[], settings: (RoutineSetting | undefined)[] = []) =>
+    days.reduce(
+      (s, day, i) =>
+        applyRoutineRun(s, routineRunRecord(R, s, runOf(wholes[i]), day, settings[i] ? { setting: settings[i] } : {}), 10 + i, 'criterion', 'with_adult'),
+      acqR,
+    );
 
   it('правила: только цепочка total task, засчитывает взрослый; рутина не открывается рутиной', () => {
     expect(targetErrors({ ...R, scoredBy: 'device_tap' }).join()).toMatch(/только взрослый/);
@@ -305,8 +310,8 @@ describe('А8: рутины самообслуживания (№74, №75)', ()
     expect(programErrors([R, R2]).join()).toMatch(/другой рутиной/);
   });
 
-  it('4 из 5, три дня, последний сам — освоено', () => {
-    const s = feed(['2026-10-01', '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-03'], [true, false, true, true, true]);
+  it('4 из 5, три дня, последний сам, перенос есть — освоено', () => {
+    const s = feed(['2026-10-01', '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-03'], [true, false, true, true, true], [undefined, undefined, undefined, undefined, 'other_place']);
     expect([s.phase, s.masteredBy, s.lastMaintenanceDay]).toEqual(['mastered', 'criterion', '2026-10-03']);
   });
 
@@ -318,7 +323,10 @@ describe('А8: рутины самообслуживания (№74, №75)', ()
 
   it('без подтверждения обученным наблюдателем — «получается дома»', () => {
     const days = ['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05'];
-    const s = days.reduce((x, day, i) => applyRoutineRun(x, routineRunRecord(R, x, runOf(true), day), i, 'home_unverified', 'with_adult'), acqR);
+    const s = days.reduce(
+      (x, day, i) => applyRoutineRun(x, routineRunRecord(R, x, runOf(true), day, i === 4 ? { setting: 'other_adult' } : {}), i, 'home_unverified', 'with_adult'),
+      acqR,
+    );
     expect(s.masteredBy).toBe('home_unverified');
   });
 
@@ -335,7 +343,16 @@ describe('А8: рутины самообслуживания (№74, №75)', ()
     const b0: AbaTargetState = initialTargetState(R);
     const sameDay = applyRoutineBaseline(applyRoutineBaseline(b0, runOf(true, 'baseline'), '2026-10-01', 1, R), runOf(true, 'baseline'), '2026-10-01', 2, R);
     expect(sameDay.phase).toBe('baseline');
-    const twoDays = applyRoutineBaseline(applyRoutineBaseline(b0, runOf(true, 'baseline'), '2026-10-01', 1, R), runOf(true, 'baseline'), '2026-10-02', 2, R, 'with_adult');
+    const twoDays = applyRoutineBaseline(
+      applyRoutineBaseline(b0, runOf(true, 'baseline'), '2026-10-01', 1, R),
+      runOf(true, 'baseline'),
+      '2026-10-02',
+      2,
+      R,
+      'with_adult',
+      false,
+      'other_place',
+    );
     expect([twoDays.phase, twoDays.masteredBy, twoDays.routineBaseline]).toEqual(['mastered', 'baseline', undefined]);
   });
 
@@ -352,7 +369,7 @@ describe('А8: рутины самообслуживания (№74, №75)', ()
   });
 
   it('после освоения окно обнуляется: в повторном обучении один прогон — ещё не освоено', () => {
-    const s = feed(['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05'], [true, true, true, true, true]);
+    const s = feed(['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05'], [true, true, true, true, true], [undefined, undefined, undefined, undefined, 'other_adult']);
     expect([s.phase, s.routineRuns]).toEqual(['mastered', []]);
     const fail = trial({ targetId: 'R', kind: 'maintenance', response: 'incorrect' });
     const back = applyMaintenanceProbe(applyMaintenanceProbe(s, fail, 20), fail, 21);

@@ -11,9 +11,10 @@ import type {
   PresentationOutcome,
   PromptLevel,
   RoutineRunRecord,
+  RoutineSetting,
 } from '../../types/aba';
 import { ROUTINE } from '../../types/aba';
-import { applyRoutineBaseline, applyRoutineRun, routineMasteryMet, routineStuck } from '../abaCriterion';
+import { applyMaintenanceProbe, applyRoutineBaseline, applyRoutineRun, routineMasteryMet, routineStuck, routineTransferMet } from '../abaCriterion';
 import { initialTargetState } from '../abaPrompting';
 import {
   finishRoutineByAdult,
@@ -198,6 +199,12 @@ function fullRun(
   return finishRoutineRun(play(start(state, d, over), hows), Date.parse(`${d}T08:05:00Z`), 7);
 }
 
+/** Прогон целиком с отметкой «где и с кем». */
+function runAt(state: AbaTargetState | undefined, d: string, hows: How[], setting: RoutineSetting, over: Partial<RoutineRunInput> = {}): RoutineRunResult {
+  const run = setRoutineSetting(play(start(state, d, over), hows), setting);
+  return finishRoutineRun(run, Date.parse(`${d}T08:05:00Z`), 7);
+}
+
 const due = (states: Record<string, AbaTargetState>, d: string, targets: AbaTarget[] = [R], primaryObserverId = SPEC.id) =>
   routinesDue({ targets, states, day: d, observers: [SPEC, PARENT], primaryObserverId });
 
@@ -348,14 +355,15 @@ describe('Р3: критерий через модуль совпадает с п
     let s = acq();
     const records: RoutineRunRecord[] = [];
     plan.forEach((hows, i) => {
-      const r = fullRun(s, day(i + 1), hows);
+      // последний прогон — в другом месте: без переноса освоения нет (Г4)
+      const r = i === 4 ? runAt(s, day(i + 1), hows, 'other_place') : fullRun(s, day(i + 1), hows);
       if (r.state.phase === 'acquisition') records.push(r.state.routineRuns!.at(-1)!);
       s = r.state;
     });
     expect([s.phase, s.masteredBy, s.lastMaintenanceDay, s.routineRuns]).toEqual(['mastered', 'criterion', day(5), []]);
 
     // те же записи прямой функцией: окно до последнего прогона, затем последний
-    const lastRecord: RoutineRunRecord = { day: day(5), whole: true, startLevelSum: records.at(-1)!.startLevelSum, setting: 'usual' };
+    const lastRecord: RoutineRunRecord = { day: day(5), whole: true, startLevelSum: records.at(-1)!.startLevelSum, setting: 'other_place' };
     expect(routineMasteryMet([...records, lastRecord])).toBe(true);
     expect(records.map((r) => r.whole)).toEqual([true, false, true, true]);
     const direct = [...records, lastRecord].reduce((x, rec) => applyRoutineRun(x, rec, 7, 'criterion', 'with_adult'), acq());
@@ -364,7 +372,10 @@ describe('Р3: критерий через модуль совпадает с п
 
   it('освоение без обученного ведущего — «получается дома»', () => {
     let s = acq();
-    for (let i = 1; i <= 5; i += 1) s = fullRun(s, day(i), ['ok', 'ok', 'ok'], { primaryObserverId: PARENT.id }).state;
+    for (let i = 1; i <= 5; i += 1) {
+      const run = start(s, day(i), { primaryObserverId: PARENT.id });
+      s = finishRoutineRun(setRoutineSetting(play(run, ['ok', 'ok', 'ok']), i === 5 ? 'other_adult' : 'usual'), Date.parse(`${day(i)}T08:05:00Z`), 7).state;
+    }
     expect([s.phase, s.masteredBy]).toEqual(['mastered', 'home_unverified']);
   });
 
@@ -402,7 +413,7 @@ describe('В1: обрыв прогона', () => {
   it('срыв на базовой линии: день засчитан, недойденные звенья — «не сам»', () => {
     const run = interruptRoutineRun(play(start(undefined, day(1)), ['ok']), 'breakdown');
     const d1 = finishRoutineRun(finishRoutineByAdult(run), 0, 7);
-    expect(d1.state.routineBaseline).toEqual({ days: [day(1)], independentByStep: { [S1]: 1 } });
+    expect(d1.state.routineBaseline).toEqual({ days: [day(1)], independentByStep: { [S1]: 1 }, transferSeen: false });
   });
 
   it('внешняя причина: в окно не пишется, состояние как до прогона, день не занят', () => {
@@ -663,5 +674,249 @@ describe('Р4: SD звена рутины постоянен', () => {
     expect(reference.map((x) => x.stepId)).toEqual([S1, S2, S3]);
     expect(new Set(reference.map((x) => x.image)).size).toBe(3);
     for (let seed = 2; seed <= 10; seed += 1) expect(sdOf(seed * 7919)).toEqual(reference);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Г4: перенос рутины (методист, 2026-10-12)
+
+describe('Г4: перенос — критерий и окно', () => {
+  type Spec = [whole: boolean, setting?: RoutineSetting, interrupted?: true];
+  const recs = (specs: Spec[]): RoutineRunRecord[] =>
+    specs.map(([whole, setting, interrupted], i) => ({
+      day: day(1 + i),
+      whole,
+      startLevelSum: 0,
+      ...(setting ? { setting } : {}),
+      ...(interrupted ? { interrupted } : {}),
+    }));
+  const feedRecs = (specs: Spec[], from: AbaTargetState = acq()) =>
+    recs(specs).reduce((s, rec) => applyRoutineRun(s, rec, 7, 'criterion', 'with_adult'), from);
+  const USUAL5: Spec[] = [[true, 'usual'], [true, 'usual'], [true, 'usual'], [true, 'usual'], [true, 'usual']];
+
+  it('окно выполнено, все пять прогонов в привычном контексте — обучение, флаг needs_transfer, окно сохранено', () => {
+    const s = feedRecs(USUAL5);
+    expect([s.phase, s.masteredBy, s.flags.includes('needs_transfer'), s.routineRuns?.length]).toEqual(['acquisition', undefined, true, 5]);
+  });
+
+  it('прогоны без отметки setting считаются привычным контекстом: переноса нет', () => {
+    const s = feedRecs(USUAL5.map(([w]) => [w] as Spec));
+    expect([s.phase, s.flags.includes('needs_transfer')]).toEqual(['acquisition', true]);
+  });
+
+  it.each(['other_place', 'other_adult'] as const)('окно выполнено и один прогон целиком сам с setting %s — освоено, окно обнуляется', (setting) => {
+    const s = feedRecs([[true, 'usual'], [true, 'usual'], [true, setting], [true, 'usual'], [true, 'usual']]);
+    expect([s.phase, s.masteredBy, s.routineRuns, s.flags.includes('needs_transfer')]).toEqual(['mastered', 'criterion', [], false]);
+  });
+
+  it('перенос в первом прогоне окна из пяти ещё в окне — освоено', () => {
+    expect(feedRecs([[true, 'other_place'], [true, 'usual'], [true, 'usual'], [true, 'usual'], [true, 'usual']]).phase).toBe('mastered');
+  });
+
+  it('прогон вне контекста, но не целиком сам, перенос не засчитывает', () => {
+    const s = feedRecs([[true, 'usual'], [false, 'other_place'], [true, 'usual'], [true, 'usual'], [true, 'usual']]);
+    expect([s.phase, s.flags.includes('needs_transfer')]).toEqual(['acquisition', true]);
+  });
+
+  it('прогон вне контекста, оборванный срывом, перенос не засчитывает', () => {
+    const s = feedRecs([[true, 'usual'], [false, 'other_adult', true], [true, 'usual'], [true, 'usual'], [true, 'usual']]);
+    expect([s.phase, s.flags.includes('needs_transfer')]).toEqual(['acquisition', true]);
+  });
+
+  it('routineTransferMet: оборванный прогон вне контекста не переносит, даже если помечен whole', () => {
+    expect(routineTransferMet([{ whole: true, interrupted: true, setting: 'other_place' }])).toBe(false);
+    expect(routineTransferMet([{ whole: true, setting: 'other_place' }])).toBe(true);
+    expect(routineTransferMet([])).toBe(false);
+  });
+
+  it('перенос выпал из окна из пяти — не засчитан', () => {
+    // окно уже было [перенос, 3 обычных, провал]: освоения нет; шестой прогон выталкивает перенос из окна
+    const before = acq(0, { routineRuns: recs([[true, 'other_place'], [true, 'usual'], [true, 'usual'], [true, 'usual'], [false, 'usual']]) });
+    const sixth: RoutineRunRecord = { day: day(6), whole: true, startLevelSum: 0, setting: 'usual' };
+    const window = [...before.routineRuns!, sixth];
+    expect([routineTransferMet(window.slice(0, 5)), routineTransferMet(window)]).toEqual([true, false]);
+    const s = applyRoutineRun(before, sixth, 7, 'criterion', 'with_adult');
+    expect([s.phase, s.flags.includes('needs_transfer')]).toEqual(['acquisition', true]);
+  });
+
+  it('перенос есть, а окно не выполнено (3 из 5) — не освоено и не «почти»', () => {
+    const s = feedRecs([[true, 'other_place'], [false], [false], [true], [true]]);
+    expect([s.phase, s.flags.includes('needs_transfer')]).toEqual(['acquisition', false]);
+  });
+
+  it('перенос есть, но последний прогон не сам — не освоено', () => {
+    const s = feedRecs([[true, 'other_place'], [true], [true], [true], [false]]);
+    expect([s.phase, s.flags.includes('needs_transfer')]).toEqual(['acquisition', false]);
+  });
+
+  it('перенос есть, но дней меньше трёх — не освоено', () => {
+    const same = recs([[true, 'other_place'], [true], [true], [true], [true]]).map((r, i) => ({ ...r, day: day(i < 3 ? 1 : 2) }));
+    expect(routineMasteryMet(same)).toBe(false);
+  });
+
+  it('флаг снимается при освоении: шестой прогон вне контекста', () => {
+    const waiting = feedRecs(USUAL5);
+    expect(waiting.flags).toContain('needs_transfer');
+    const s = applyRoutineRun(waiting, { day: day(6), whole: true, startLevelSum: 0, setting: 'other_place' }, 7, 'criterion', 'with_adult');
+    expect([s.phase, s.flags.includes('needs_transfer')]).toEqual(['mastered', false]);
+  });
+
+  it('флаг снимается при понижении: после «почти» прогон не сам — критерий не выполнен', () => {
+    const waiting = feedRecs(USUAL5);
+    const s = applyRoutineRun(waiting, { day: day(6), whole: false, startLevelSum: 0 }, 7, 'criterion', 'with_adult');
+    expect([s.phase, s.flags.includes('needs_transfer')]).toEqual(['acquisition', false]);
+  });
+
+  it('routineStuck: «почти» (критерий выполнен, переноса нет) не ставит no_progress', () => {
+    const ten: RoutineRunRecord[] = Array.from({ length: 10 }, (_, i) => ({
+      day: day(1 + Math.floor(i / 2)),
+      whole: true,
+      startLevelSum: 0,
+      setting: 'usual' as const,
+    }));
+    expect(routineStuck(ten)).toBe(false);
+    const s = ten.reduce((x, rec) => applyRoutineRun(x, rec, 7, 'criterion', 'with_adult'), acq());
+    expect([s.flags.includes('needs_transfer'), s.flags.includes('no_progress')]).toEqual([true, false]);
+  });
+
+  it('откат из поддержания (два провала) требует перенос заново', () => {
+    const first = feedRecs([[true, 'usual'], [true, 'usual'], [true, 'other_place'], [true, 'usual'], [true, 'usual']]);
+    expect(first.phase).toBe('mastered');
+    const failed = fullRun(mastered(), day(10), ['ok', 'adult', 'ok']);
+    const fail = { ...failed.trials[1], kind: 'maintenance' as const, response: 'incorrect' as const };
+    const back = applyMaintenanceProbe(applyMaintenanceProbe(first, fail, 20), fail, 21);
+    expect(back.phase).toBe('acquisition');
+    const again = recs(USUAL5).reduce((x, rec) => applyRoutineRun(x, rec, 22, 'criterion', 'with_adult'), back);
+    expect([again.phase, again.flags.includes('needs_transfer')]).toEqual(['acquisition', true]);
+  });
+});
+
+describe('Г4: перенос — прогоны через finishRoutineRun', () => {
+  const teachToWaiting = () => {
+    let s = acq();
+    for (let i = 1; i <= 5; i += 1) s = fullRun(s, day(i)).state;
+    return s;
+  };
+
+  it('setting протянут в обучение: прогон вне контекста в окне даёт освоение', () => {
+    let s = acq();
+    for (let i = 1; i <= 4; i += 1) s = fullRun(s, day(i)).state;
+    expect(s.phase).toBe('acquisition');
+    const r = runAt(s, day(5), ['ok', 'ok', 'ok'], 'other_adult');
+    expect([r.state.phase, r.record.phase]).toEqual(['mastered', { from: 'acquisition', to: 'mastered' }]);
+  });
+
+  it('пять прогонов в привычном контексте — рутина «почти»: фаза прежняя, флаг стоит', () => {
+    const waiting = teachToWaiting();
+    expect([waiting.phase, waiting.flags.includes('needs_transfer')]).toEqual(['acquisition', true]);
+  });
+
+  it('routinesDue отдаёт hint transfer при флаге и не отдаёт без него', () => {
+    const waiting = teachToWaiting();
+    expect(due({ R: waiting }, day(6))).toEqual([{ targetId: 'R', kind: 'teaching', hint: 'transfer' }]);
+    expect(due({ R: acq() }, day(6))).toEqual([{ targetId: 'R', kind: 'teaching' }]);
+  });
+
+  it('после освоения переносом routinesDue подсказки не даёт', () => {
+    const done = runAt(teachToWaiting(), day(6), ['ok', 'ok', 'ok'], 'other_place').state;
+    expect(done.phase).toBe('mastered');
+    expect(due({ R: done }, day(7))).toEqual([]);
+    expect(due({ R: done }, day(6 + ROUTINE.maintenanceGapDays[0]))).toEqual([{ targetId: 'R', kind: 'maintenance' }]);
+  });
+
+  it('home_unverified и criterion ведут себя одинаково: без переноса оба «почти», с переносом оба освоены', () => {
+    const outcomes = (primaryObserverId: string, lastSetting: RoutineSetting) => {
+      let s = acq();
+      for (let i = 1; i <= 5; i += 1) s = runAt(s, day(i), ['ok', 'ok', 'ok'], i === 5 ? lastSetting : 'usual', { primaryObserverId }).state;
+      return [s.phase, s.masteredBy, s.flags.includes('needs_transfer')];
+    };
+    expect(outcomes(SPEC.id, 'usual')).toEqual(['acquisition', undefined, true]);
+    expect(outcomes(PARENT.id, 'usual')).toEqual(['acquisition', undefined, true]);
+    expect(outcomes(SPEC.id, 'other_place')).toEqual(['mastered', 'criterion', false]);
+    expect(outcomes(PARENT.id, 'other_place')).toEqual(['mastered', 'home_unverified', false]);
+  });
+
+  it('проверка «получается дома» перенос не требует: два прогона в привычном контексте — criterion', () => {
+    const home = mastered({ masteredBy: 'home_unverified', lastMaintenanceDay: day(1) });
+    const second = fullRun(fullRun(home, day(2)).state, day(3));
+    expect([second.state.masteredBy, second.state.flags.includes('needs_transfer')]).toEqual(['criterion', false]);
+  });
+
+  it('откат из проваленной проверки требует перенос заново', () => {
+    const home = mastered({ masteredBy: 'home_unverified', lastMaintenanceDay: day(1) });
+    const failed = fullRun(fullRun(home, day(2), ['ok', 'adult', 'ok']).state, day(3), ['ok', 'adult', 'ok']).state;
+    expect(failed.phase).toBe('acquisition');
+    // окно не переносится через откат: пять целых прогонов в привычном — снова только «почти»
+    const again = Array.from({ length: 5 }, (_, i): RoutineRunRecord => ({ day: day(4 + i), whole: true, startLevelSum: 0, setting: 'usual' })).reduce(
+      (x, rec) => applyRoutineRun(x, rec, 7, 'criterion', 'with_adult'),
+      failed,
+    );
+    expect([again.phase, again.flags.includes('needs_transfer')]).toEqual(['acquisition', true]);
+  });
+});
+
+describe('Г4: перенос — базовая линия', () => {
+  /** Два прогона целиком сами в привычном контексте: ждёт переноса. */
+  const waiting = () => fullRun(fullRun(undefined, day(1)).state, day(2)).state;
+
+  it('оба прогона целиком сами в привычном — фаза baseline, needs_transfer, transferSeen false', () => {
+    const s = waiting();
+    expect([s.phase, s.flags.includes('needs_transfer'), s.routineBaseline?.transferSeen, s.masteredBy]).toEqual(['baseline', true, false, undefined]);
+  });
+
+  it('целиком сам вне контекста уже в первый из двух дней — освоено по базовой линии', () => {
+    const s = runAt(runAt(undefined, day(1), ['ok', 'ok', 'ok'], 'other_place').state, day(2), ['ok', 'ok', 'ok'], 'usual').state;
+    expect([s.phase, s.masteredBy, s.routineBaseline, s.flags.includes('needs_transfer')]).toEqual(['mastered', 'baseline', undefined, false]);
+  });
+
+  it('вне контекста, но звено не сам — перенос не засчитан: обучение, а не освоение', () => {
+    const s = runAt(runAt(undefined, day(1), ['ok', 'ok', 'ok'], 'usual').state, day(2), ['ok', 'adult', 'ok'], 'other_place').state;
+    expect([s.phase, s.masteredBy]).toEqual(['acquisition', undefined]);
+  });
+
+  it('следующий прогон: целиком сам вне контекста — освоено, masteredBy baseline, флаг снят', () => {
+    const s = runAt(waiting(), day(3), ['ok', 'ok', 'ok'], 'other_adult').state;
+    expect([s.phase, s.masteredBy, s.routineBaseline, s.flags.includes('needs_transfer'), s.lastMaintenanceDay]).toEqual(['mastered', 'baseline', undefined, false, day(3)]);
+  });
+
+  it('следующий прогон: звено не сам — обучение, сделанное самим L0, не сделанное L1, флаг снят', () => {
+    const s = fullRun(waiting(), day(3), ['ok', 'adult', 'ok']).state;
+    expect(s.phase).toBe('acquisition');
+    expect([S1, S2, S3].map((id) => s.stepPrompts?.[id].startPromptLevel)).toEqual([0, 1, 0]);
+    expect([s.flags.includes('needs_transfer'), s.routineBaseline]).toEqual([false, undefined]);
+  });
+
+  it('следующий прогон: звено не сам вне контекста — тоже обучение, перенос не спасает', () => {
+    const s = runAt(waiting(), day(3), ['adult', 'ok', 'ok'], 'other_place').state;
+    expect([s.phase, s.stepPrompts?.[S1].startPromptLevel, s.stepPrompts?.[S2].startPromptLevel]).toEqual(['acquisition', 1, 0]);
+  });
+
+  it('следующий прогон: целиком сам в привычном — состояние держится, ждёт переноса', () => {
+    const s = fullRun(waiting(), day(3)).state;
+    expect([s.phase, s.flags.includes('needs_transfer'), s.routineBaseline?.transferSeen]).toEqual(['baseline', true, false]);
+  });
+
+  it('срыв в held-состоянии — состояние без изменений, кроме занятого дня', () => {
+    const before = waiting();
+    const run = interruptRoutineRun(play(start(before, day(3)), ['ok']), 'breakdown');
+    const r = finishRoutineRun(finishRoutineByAdult(run), 0, 7);
+    expect(r.state).toEqual({ ...before, lastRoutineRunDay: day(3) });
+  });
+
+  it('срыв в первый день базовой линии transferSeen не ставит, даже вне контекста', () => {
+    const run = setRoutineSetting(interruptRoutineRun(play(start(undefined, day(1)), ['ok']), 'breakdown'), 'other_place');
+    const r = finishRoutineRun(finishRoutineByAdult(run), 0, 7);
+    expect(r.state.routineBaseline?.transferSeen).toBe(false);
+  });
+
+  it('setting протянут в базовую линию: transferSeen ставит только целиком сам прогон вне контекста', () => {
+    const away = runAt(undefined, day(1), ['ok', 'ok', 'ok'], 'other_place').state;
+    expect(away.routineBaseline?.transferSeen).toBe(true);
+    const awayPartial = runAt(undefined, day(1), ['ok', 'adult', 'ok'], 'other_place').state;
+    expect(awayPartial.routineBaseline?.transferSeen).toBe(false);
+  });
+
+  it('routinesDue: ждущая переноса базовая линия помечена hint transfer', () => {
+    expect(due({ R: waiting() }, day(3))).toEqual([{ targetId: 'R', kind: 'baseline', hint: 'transfer' }]);
   });
 });
