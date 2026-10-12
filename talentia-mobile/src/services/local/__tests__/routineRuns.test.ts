@@ -10,7 +10,7 @@ import { initialTokenTraining, type TokenTrainingState } from '../../../domain/a
 import type { ConsentEvent } from '../../../domain/consent';
 import { AbaConsentRequiredError, appendRoutineRun, routineRunsOf, trialsOfTarget } from '../abaLog';
 import { ABA_STATE_KEYS, loadChildState, saveChildState } from '../childState';
-import { commitAbaSession, commitRoutineRun, recordAbaTrial, recordRoutineStep, resumeAbaSession, setAbaObservers } from '../commit';
+import { commitAbaSession, commitIoa, commitRoutineRun, recordAbaTrial, recordRoutineStep, resumeAbaSession, setAbaObservers } from '../commit';
 import { appendConsentEvent, insertConsentEvent } from '../consentLog';
 import {
   abaDataSummary,
@@ -356,15 +356,15 @@ describe('экспорт специалисту: пробы звеньев ру�
     expect([t.latencyMs, t.latencyFromFirstSdMs]).toEqual([500, 500]);
   });
 
-  it('пробы сессии не меняются: даты как записаны', async () => {
+  it('пробы сессии без записи сессии (свёрнута) не теряются, но и времени суток не несут: отсчёт от самой ранней пробы', async () => {
     const db = await exported();
     const sessionTrial = { ...timedStep('tr-s'), sessionId: 's-5', targetId: 'A', stepId: undefined, runIndex: undefined };
     const snapshot = { sessionId: 's-5', board: { size: 5, earned: 1, nonContingent: 0 }, boardRev: 1, observers: [], primaryObserverId: null } as unknown as AbaSessionState;
     await recordAbaTrial(db, 'kid', sessionTrial, snapshot, NOW);
     const out = (await exportForSpecialist(db, 'kid', NOW)).abaTrials as (Exported & { sessionId: string })[];
-    const s = out.find((t) => t.sessionId === 's-5')!;
-    expect(s.sdEndedAt).toBe(at(2000));
-    expect(s.presentationLog[0].startedAt).toBe(at(1000));
+    const orphan = out.find((t) => t.sessionId === 's-5');
+    expect(orphan?.sdEndedAt).toBe(0);
+    expect(JSON.stringify(orphan)).not.toMatch(/\d{4}-\d{2}-\d{2}T/);
   });
 
   it('родителю пробы рутины уходят с датами как записано', async () => {
@@ -461,6 +461,171 @@ describe('экспорт специалисту без снимков «в ра�
   it('фиксатор: специалисту не уходят ровно два ключа ABA — снимки «в работе»', () => {
     const excluded = ABA_STATE_KEYS.filter((k) => !(SPECIALIST_STATE_KEYS as readonly string[]).includes(k));
     expect(excluded).toEqual(['abaSessionInProgress', 'abaRoutineRunInProgress']);
+  });
+});
+
+describe('экспорт специалисту: сессии, пробы сессий, IOA и состояние без времени суток (№96)', () => {
+  const ISO_DATETIME = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
+  const START = '2026-10-11T07:31:15.000Z';
+  const at = (ms: number) => new Date(Date.parse(START) + ms).toISOString();
+  const SESSION: AbaSession = {
+    id: 's-7',
+    index: 7,
+    startedAt: START,
+    endedAt: at(600_000),
+    config: 'with_adult',
+    targetIds: ['A'],
+    reinforcerId: 'puzzle',
+    reinforcerChosenBy: 'child',
+    tokensEarned: 1,
+    exchangesMade: 1,
+    endReason: 'completed',
+    brokenTargetId: null,
+    boardSize: 5,
+    endedOnSuccess: true,
+    events: [
+      { kind: 'break', startedAt: at(60_000), endedAt: at(90_000) },
+      { kind: 'exchange', at: at(120_000), tokens: 1 },
+      { kind: 'access', startedAt: at(121_000), endedAt: at(151_000) },
+    ],
+    primaryObserverId: null,
+  };
+  const sessionResult = (session: AbaSession): AbaSessionResult =>
+    ({
+      session,
+      states: {},
+      trials: [],
+      board: { size: 5, earned: 0, nonContingent: 0 },
+      boardRev: 0,
+      exchanged: 1,
+      tokenTraining: { pairingDone: true, pairingSessions: 2, pairingStreak: 2, stage: 5, atStage: [], flags: [] },
+      identifySets: [],
+    }) as AbaSessionResult;
+  const timedTrial: AbaTrial = {
+    ...stepTrial('tr-7'),
+    sessionId: 's-7',
+    targetId: 'A',
+    stepId: undefined,
+    runIndex: undefined,
+    sdEndedAt: at(5000),
+    latencyMs: 700,
+    latencyFromFirstSdMs: 700,
+    presentationLog: [
+      { level: 0, by: 'app', startedAt: at(1000), endedAt: at(4000), windowMs: 10000, outcome: 'correct', respondedAt: at(2700) },
+    ],
+  };
+  const snap = { sessionId: 's-7', board: { size: 5, earned: 0, nonContingent: 0 }, boardRev: 0, observers: [], primaryObserverId: null } as unknown as AbaSessionState;
+  const ioaRecord = {
+    id: 'ioa-1',
+    sessionId: 's-7',
+    secondaryObserverId: 'obs-2',
+    source: 'paper_entry' as const,
+    enteredAt: '2026-10-12T21:45:30.000Z',
+    items: [],
+    byTarget: {},
+  };
+
+  async function withSession(session: AbaSession = SESSION) {
+    const db = await dbWithAbaConsent();
+    await recordAbaTrial(db, 'kid', timedTrial, snap, NOW);
+    await commitAbaSession(db, 'kid', sessionResult(session), NOW);
+    return db;
+  }
+  type ExportedSession = Record<string, unknown> & { events: Record<string, unknown>[] };
+
+  it('сессия: нет ISO-датавремени и часов начала, есть day и durationSec', async () => {
+    const db = await withSession();
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    const json = JSON.stringify(out.abaSessions);
+    expect(json).not.toMatch(ISO_DATETIME);
+    expect(json).not.toContain('07:31');
+    const [s] = out.abaSessions as ExportedSession[];
+    expect([s.day, s.durationSec]).toEqual(['2026-10-11', 600]);
+    expect(s).not.toHaveProperty('startedAt');
+    expect(s).not.toHaveProperty('endedAt');
+  });
+
+  it('сессия: времена событий — смещения в мс от начала сессии', async () => {
+    const db = await withSession();
+    const [s] = (await exportForSpecialist(db, 'kid', NOW)).abaSessions as ExportedSession[];
+    expect(s.events).toEqual([
+      { kind: 'break', startedAt: 60_000, endedAt: 90_000 },
+      { kind: 'exchange', at: 120_000, tokens: 1 },
+      { kind: 'access', startedAt: 121_000, endedAt: 151_000 },
+    ]);
+  });
+
+  it('незавершённая сессия (endedAt = null): durationSec = null', async () => {
+    const db = await withSession({ ...SESSION, endedAt: null });
+    const [s] = (await exportForSpecialist(db, 'kid', NOW)).abaSessions as ExportedSession[];
+    expect(s.durationSec).toBeNull();
+    expect(JSON.stringify(s)).not.toMatch(ISO_DATETIME);
+  });
+
+  it('пробы сессии: нет ISO, даты — смещения от начала своей сессии, латентности целы', async () => {
+    const db = await withSession();
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    expect(JSON.stringify(out.abaTrials)).not.toMatch(ISO_DATETIME);
+    const [t] = out.abaTrials as { sdEndedAt: unknown; latencyMs: unknown; latencyFromFirstSdMs: unknown; presentationLog: Record<string, unknown>[] }[];
+    expect(t.sdEndedAt).toBe(5000);
+    expect(t.presentationLog[0]).toMatchObject({ startedAt: 1000, endedAt: 4000, respondedAt: 2700, windowMs: 10000 });
+    expect([t.latencyMs, t.latencyFromFirstSdMs]).toEqual([700, 700]);
+  });
+
+  it('пробы сессии и пробы рутины считаются каждая от своего начала', async () => {
+    const db = await withSession();
+    const runAt = (ms: number) => new Date(Date.parse('2026-10-11T08:00:00.000Z') + ms).toISOString();
+    await recordRoutineStep(db, 'kid', { ...stepTrial('tr-r'), sdEndedAt: runAt(2000) }, inProgress, NOW);
+    await commitRoutineRun(db, 'kid', result(), NOW);
+    const out = (await exportForSpecialist(db, 'kid', NOW)).abaTrials as { id: string; sdEndedAt: unknown }[];
+    expect(out.map((t) => [t.id, t.sdEndedAt])).toEqual([
+      ['tr-7', 5000],
+      ['tr-r', 2000],
+    ]);
+  });
+
+  it('IOA: нет enteredAt, есть enteredDay', async () => {
+    const db = await withSession();
+    await commitIoa(db, 'kid', ioaRecord, {}, NOW);
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    const [r] = out.abaIoa as Record<string, unknown>[];
+    expect(r).not.toHaveProperty('enteredAt');
+    expect(r.enteredDay).toBe('2026-10-12');
+    expect(JSON.stringify(out.abaIoa)).not.toMatch(ISO_DATETIME);
+  });
+
+  it('состояние: assentConcernReviewed.at и physicalPromptAllowed.setAt — только даты', async () => {
+    const db = await dbWithAbaConsent();
+    await asAbaWriter(db, 'kid', async (tx) => {
+      await saveChildState(
+        tx,
+        'kid',
+        'abaTargets',
+        { A: { ...aState, assentConcernReviewed: { role: 'specialist', at: '2026-10-09T18:20:00.000Z' } } },
+        NOW,
+      );
+      await saveChildState(tx, 'kid', 'physicalPromptAllowed', { value: true, setAt: '2026-10-10T06:05:00.000Z', setByRole: 'owner' }, NOW);
+    });
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    const targets = out.state.abaTargets as Record<string, { assentConcernReviewed: { role: string; at: string } }>;
+    expect(targets.A.assentConcernReviewed).toEqual({ role: 'specialist', at: '2026-10-09' });
+    expect(out.state.physicalPromptAllowed).toEqual({ value: true, setAt: '2026-10-10', setByRole: 'owner' });
+    expect(JSON.stringify(out.state)).not.toMatch(ISO_DATETIME);
+  });
+
+  it('родителю (exportChild) всё как записано: даты и время суток целы', async () => {
+    const db = await withSession();
+    await commitIoa(db, 'kid', ioaRecord, {}, NOW);
+    await asAbaWriter(db, 'kid', (tx) =>
+      saveChildState(tx, 'kid', 'physicalPromptAllowed', { value: true, setAt: '2026-10-10T06:05:00.000Z', setByRole: 'owner' }, NOW),
+    );
+    const out = await exportChild(db, 'kid', NOW, {});
+    const [s] = out.abaSessions as AbaSession[];
+    expect([s.startedAt, s.endedAt, s.events]).toEqual([SESSION.startedAt, SESSION.endedAt, SESSION.events]);
+    const [t] = out.abaTrials as AbaTrial[];
+    expect([t.sdEndedAt, t.presentationLog[0].startedAt]).toEqual([at(5000), at(1000)]);
+    expect((out.abaIoa as { enteredAt: string }[])[0].enteredAt).toBe('2026-10-12T21:45:30.000Z');
+    expect(out.state.physicalPromptAllowed).toMatchObject({ setAt: '2026-10-10T06:05:00.000Z' });
   });
 });
 

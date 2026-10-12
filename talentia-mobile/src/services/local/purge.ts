@@ -288,11 +288,24 @@ function relativeTimes<T>(value: T, origin: number): T {
   return value;
 }
 
+/** Все строки-даты внутри значения заменены датой без времени суток (`YYYY-MM-DD`). */
+function dayOnly<T>(value: T): T {
+  if (typeof value === 'string' && ISO_TIME.test(value)) return value.slice(0, 10) as T;
+  if (Array.isArray(value)) return value.map(dayOnly) as T;
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, dayOnly(v)])) as T;
+  }
+  return value;
+}
+
 /** Экспорт для специалиста центра: только данные ABA, без данных взрослых. */
 export type SpecialistExport = {
   exportedAt: string;
+  /** Пробы рутин и сессий: время — смещения в мс от начала прогона или сессии (№95, №96). */
   abaTrials: unknown[];
+  /** Сессии: `day`, `durationSec`, прочее время — смещения в мс от начала сессии (№96). */
   abaSessions: unknown[];
+  /** IOA: `enteredDay` вместо времени ввода (№96). Состояние ниже — даты без времени суток. */
   abaIoa: unknown[];
   /**
    * Прогоны рутин: день и длительность в секундах, без точных `startedAt` / `endedAt` (№95);
@@ -335,8 +348,24 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
       if (!labels.has(id)) labels.set(id, `O${labels.size + 1}`);
       return labels.get(id)!;
     };
-    const abaSessions = sessions.map((s) => ({ ...s, primaryObserverId: label(s.primaryObserverId) }));
-    const abaIoa = ioa.map((r) => ({ ...r, secondaryObserverId: label(r.secondaryObserverId) }));
+    // время суток сессий и IOA — тот же режим дня дома (№96): день, длительность и смещения в мс
+    // от начала сессии; день — по UTC-дате метки (локальный день в записи сессии не хранится)
+    const sessionStart = new Map(sessions.map((s) => [s.id, Date.parse(s.startedAt)]));
+    const abaSessions = sessions.map(({ startedAt, endedAt, ...s }) => {
+      const origin = Date.parse(startedAt);
+      const seconds = endedAt === null ? NaN : Math.round((Date.parse(endedAt) - origin) / 1000);
+      return {
+        ...relativeTimes(s, origin),
+        day: startedAt.slice(0, 10),
+        durationSec: Number.isFinite(seconds) ? Math.max(0, seconds) : null,
+        primaryObserverId: label(s.primaryObserverId),
+      };
+    });
+    const abaIoa = ioa.map(({ enteredAt, ...r }) => ({
+      ...r,
+      enteredDay: String(enteredAt).slice(0, 10),
+      secondaryObserverId: label(r.secondaryObserverId),
+    }));
     // точное время прогона выдаёт расписание дня ребёнка дома (туалет, одевание) — решение №95:
     // специалисту день и длительность; варианты обмена — тоже не его данные
     const abaRoutineRuns = routineRuns.map(({ startedAt, endedAt, exchangeOptions: _options, ...r }) => {
@@ -349,18 +378,24 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
     });
     // пробы звеньев рутины несут абсолютное время (`sdEndedAt`, журнал предъявлений) — то же
     // расписание дома: вместо дат смещения в мс от начала прогона (латентности — отдельные числа)
-    const runStart = new Map(routineRuns.map((r) => [r.id, Date.parse(r.startedAt)]));
-    const abaTrials = (await bodies<{ sessionId: string }>('aba_trials')).map((t) => {
-      const origin = runStart.get(t.sessionId);
-      return origin === undefined ? t : relativeTimes(t, origin);
-    });
+    const runStart = new Map([...sessionStart, ...routineRuns.map((r): [string, number] => [r.id, Date.parse(r.startedAt)])]);
+    const trials = await bodies<{ sessionId: string; sdEndedAt?: string }>('aba_trials');
+    // проба свёрнутой, ещё не записанной сессии: записи сессии нет — отсчёт от самой ранней пробы
+    // этой сессии, чтобы абсолютное время не ушло специалисту
+    const orphanStart = new Map<string, number>();
+    for (const t of trials) {
+      if (runStart.has(t.sessionId)) continue;
+      const at = Date.parse(t.sdEndedAt ?? '');
+      if (Number.isFinite(at)) orphanStart.set(t.sessionId, Math.min(orphanStart.get(t.sessionId) ?? at, at));
+    }
+    const abaTrials = trials.map((t) => relativeTimes(t, runStart.get(t.sessionId) ?? orphanStart.get(t.sessionId) ?? 0));
     return {
       exportedAt,
       abaTrials,
       abaSessions,
       abaIoa,
       abaRoutineRuns,
-      state: { ...state, abaObservers: observers.map((o) => ({ id: label(o.id), role: o.role, trained: o.trained })) },
+      state: { ...dayOnly(state), abaObservers: observers.map((o) => ({ id: label(o.id), role: o.role, trained: o.trained })) },
     };
   });
 }
