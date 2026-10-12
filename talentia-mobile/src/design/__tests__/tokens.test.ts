@@ -10,9 +10,11 @@ import {
   countSizes,
   cushionByRole,
   digitGroup,
+  emptyOutlineColor,
   groupDigits,
   INK_SURFACES,
   lessonTiming,
+  listeningCue,
   mapBackdrop,
   mapLayout,
   motion,
@@ -20,7 +22,10 @@ import {
   palettes,
   pressFeedback,
   pressScale,
+  progressSegment,
+  selectedStroke,
   spacing,
+  stroke,
   symbolGlyph,
   symbolGlyphMaxFontMultiplier,
   touch,
@@ -290,6 +295,85 @@ describe('карта региона (решение №89, Р9)', () => {
     expect(mapLayout.landmarkMin).toBeGreaterThanOrEqual(64);
     expect(mapLayout.node).toBe(touch.comfortable);
     expect(mapLayout.nodeGapMin).toBeGreaterThanOrEqual(mapLayout.node + touch.gap);
+  });
+
+  it('ориентир: 64 в обычных видах, 32 в полосе calm (V22) — исключение одно и названо; верх панорамы 64 pt без деталей (Г7)', () => {
+    expect(mapLayout.landmarkCalmStrip).toBe(32);
+    expect(mapLayout.landmarkCalmStrip).toBeLessThan(mapLayout.landmarkMin);
+    expect(mapLayout.titleZone).toBe(64);
+    // calm — единственный вид без панорамы-носителя ориентира на карте
+    expect(mapBackdrop({ scheme: 'light', calmMode: true })).toBe('sand_strip');
+  });
+
+  it('текст шапки #2A1A12 на заливке региона светлой схемы ≥ 4.5 — зона 64 pt без деталей держит этот контраст', () => {
+    const c = palettes.light.normal;
+    (Object.keys(c.regions) as RegionId[]).forEach((r) => {
+      expect(contrast(c.onRegion, c.regions[r])).toBeGreaterThanOrEqual(TEXT);
+    });
+  });
+});
+
+describe('рабочие остатки раунда 3 (V1, V4, V5, V6, V2/V3)', () => {
+  SCHEMES.forEach((scheme) =>
+    VARIANTS.forEach((variant) => {
+      const c = palettes[scheme][variant];
+
+      it(`${scheme}/${variant}: пройденный сегмент прогресса — не primary, контур 3 держит границу (V1)`, () => {
+        expect(progressSegment.done.fill).toBe('surfaceAlt');
+        expect(progressSegment.done.fill).not.toBe('primary');
+        expect(stroke[progressSegment.done.stroke]).toBe(3);
+        expect(contrast(c.outline, c[progressSegment.done.fill])).toBeGreaterThanOrEqual(3);
+      });
+
+      it(`${scheme}/${variant}: пунктир «пусто» (${emptyOutlineColor}) различим на заливке заглушки ≥ 3 (V6)`, () => {
+        expect(contrast(c[emptyOutlineColor], c.surfaceSunken)).toBeGreaterThanOrEqual(3);
+        expect(contrast(c[emptyOutlineColor], c.background)).toBeGreaterThanOrEqual(3);
+      });
+
+      it(`${scheme}/${variant}: значок «волны» подсветки читается на surfaceAlt ≥ 3 (V5)`, () => {
+        expect(listeningCue.fill).toBe('surfaceAlt');
+        expect(contrast(c.outline, c.surfaceAlt)).toBeGreaterThanOrEqual(3);
+      });
+    }),
+  );
+
+  it('прежний пунктир border на заливке заглушки не проходил — регрессия V6', () => {
+    expect(contrast(palettes.light.normal.border, palettes.light.normal.surfaceSunken)).toBeLessThan(3);
+    expect(contrast(palettes.dark.normal.border, palettes.dark.normal.surfaceSunken)).toBeLessThan(3);
+  });
+
+  it('подсветка при перечислении: контур не меняется, движения нет; она не «ждёт» и не «выбрано»', () => {
+    expect(listeningCue.outlineChanges).toBe(false);
+    expect(listeningCue.animated).toBe(false);
+    expect(listeningCue.badge).toBe(24);
+    expect(listeningCue.badge).toBeLessThan(touch.min); // ненажимаемый значок, а не цель
+  });
+
+  it('цвет контура «выбрано»: primary в уроке, на карте и в атласе; outline в ABA (V4)', () => {
+    expect(selectedStroke.lesson).toBe('primary');
+    expect(selectedStroke.map).toBe('primary');
+    expect(selectedStroke.atlas).toBe('primary');
+    expect(selectedStroke.aba).toBe('outline');
+    SCHEMES.forEach((scheme) => {
+      const c = palettes[scheme].normal;
+      // фиолетовый контур 6 различим на карточке в обеих схемах (тёмная — самая слабая пара, 5.05)
+      expect(contrast(c[selectedStroke.lesson], c.surface)).toBeGreaterThanOrEqual(3);
+      expect(contrast(c[selectedStroke.aba], c.surface)).toBeGreaterThanOrEqual(3);
+    });
+  });
+
+  it('метка «сосчитано»: отклик ≤ 100 мс от касания вниз; повтор — кольцо 2→4 за 90; мимо — кольцо 24 без звука (V2, V3, I-2)', () => {
+    expect(countMark.feedbackMs).toBeLessThanOrEqual(100);
+    expect(countMark.feedbackTrigger).toBe('touch_down');
+    expect(countMark.repeatRing).toEqual({ from: 2, to: 4, durationMs: motion.press });
+    expect(countMark.repeatRing.from).toBe(countMark.ring);
+    expect(countMark.repeatRing.durationMs).toBe(90);
+    expect(countMark.missRing.size).toBe(24);
+    expect(countMark.missRing.color).toBe('outline');
+    expect(countMark.missRing.sound).toBe(false);
+    expect(countMark.missRing.records).toBe(false);
+    // один радиус привязки во всех документах: 32 (в DESIGN_PROMPTS.md и SCREENS.md не должно остаться 24)
+    expect(countMark.snapRadius).toBe(32);
   });
 });
 

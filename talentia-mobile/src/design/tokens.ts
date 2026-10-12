@@ -345,7 +345,60 @@ export const countMark = {
    */
   snapRadius: 32,
   snapRule: 'nearest',
+  /**
+   * Отклик метки — от касания **вниз**, не от отпускания, и не позже этого (V3, I-2): позже
+   * ребёнок считает, что касание не засчитано, и тапает снова.
+   */
+  feedbackMs: 100,
+  feedbackTrigger: 'touch_down',
+  /** Повторное касание отмеченной фигуры: метку не снимает, белое кольцо растёт 2 → 4 и назад. */
+  repeatRing: { from: 2, to: 4, durationMs: motion.press },
+  /** Касание мимо (дальше `snapRadius` от любой фигуры): кольцо в точке касания, без звука и записи. */
+  missRing: { size: 24, color: 'outline', durationMs: motion.press, sound: false, records: false },
 } as const;
+
+/**
+ * Подсветка «звучит сейчас» при перечислении вариантов (I-1, V5): значок «волны» 24 в правом
+ * верхнем углу **внутри** карточки и заливка `surfaceAlt` на время слова. Контур не меняется
+ * (прежний «контур primary + импульс» совпадал с видом «ждёт», а различие в 1 pt невидимо), движения
+ * нет ни в одном режиме — вид один в обычном, calm, focus и reduce motion.
+ */
+export const listeningCue = {
+  badge: 24,
+  corner: 'top_right',
+  inset: 4,
+  fill: 'surfaceAlt',
+  outlineChanges: false,
+  animated: false,
+} as const;
+
+/**
+ * Прогресс урока (SCREENS.md 1.2, V1). Пройденный сегмент — `surfaceAlt` с контуром 3, а не
+ * `primary`: второй залитый фиолетовый на экране конкурировал бы с кнопкой действия. Три
+ * состояния различаются высотой и толщиной контура — без цвета.
+ */
+export const progressSegment = {
+  upcoming: { fill: 'surfaceSunken', stroke: 'hairline', height: 16 },
+  current: { fill: 'surface', stroke: 'base', height: 24 },
+  done: { fill: 'surfaceAlt', stroke: 'base', height: 16 },
+} as const satisfies Record<string, { fill: keyof ColorTokens; stroke: keyof StrokeTokens; height: number }>;
+
+/**
+ * Цвет контура 6 «выбрано» (V4). Урок, карта, атлас — `primary`; ABA (2.3 «Выбор подкрепителя»,
+ * 2.6 «Со взрослым / Сам») — `outline`: фиолетовый в ABA живёт только на экране подкрепления.
+ */
+export const selectedStroke = {
+  lesson: 'primary',
+  map: 'primary',
+  atlas: 'primary',
+  aba: 'outline',
+} as const satisfies Record<string, keyof ColorTokens>;
+
+/**
+ * Цвет пунктирного контура «здесь пусто» (заглушка, тень, заплатка, штриховка заплатки; V6).
+ * `border` давал на заливке заглушки 1.63:1 (светлая) и 2.88:1 (тёмная) — ниже порога 3.
+ */
+export const emptyOutlineColor = 'textMuted' as const satisfies keyof ColorTokens;
 
 /* ───────────────────── карта региона (решение №89, Р9) ───────────────────── */
 
@@ -355,8 +408,15 @@ export const mapLayout = {
   nodeGapMin: 88,
   trailStroke: 3,
   horizonStroke: 3,
-  /** Ориентир региона на карте: одинаков по месту во всех видах. */
+  /** Ориентир региона на карте: ≥ 64 и на одном месте в обоих обычных видах (светлом и тёмном). */
   landmarkMin: 64,
+  /** В calm ориентир живёт в полосе-заголовке и равен 32 (V22): панорамы, на которой он стоял бы, нет. */
+  landmarkCalmStrip: 32,
+  /**
+   * Верхняя зона панорамы под заголовком карты — без деталей (Г7): текст шапки `#2A1A12`
+   * обязан держать на ней ≥ 4.5:1. Высота зоны — высота полосы заголовка.
+   */
+  titleZone: 64,
 } as const;
 
 export type MapBackdrop = 'panorama' | 'flat_region' | 'sand_strip';

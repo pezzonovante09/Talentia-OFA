@@ -12,6 +12,7 @@
  * эмодзи. Проверяет `__tests__/abaTokens.test.ts`.
  */
 import type { PanelButton } from '../domain/abaScoring';
+import type { RoutineRunKind } from '../types/aba';
 import { parentColors } from './parentTokens';
 import { motion, type Scheme } from './tokens';
 
@@ -118,8 +119,10 @@ export const ABA_STIMULUS_STROKE = 3;
  */
 export const abaLayout = {
   /**
-   * Полоса 68: слева выход 60 (+ подушка 4), в центре счётчик «Проба 3 из 10» (ненажимаемый
-   * Caption), справа детская карточка «перерыв» 64 (+ подушка 4 = 68) — постоянное место (Р7).
+   * Полоса 68: слева выход 60 (+ подушка 4), справа детская карточка «перерыв» 64 (+ подушка
+   * 4 = 68) — постоянное место (Р7). **Счётчика проб ребёнку нет** (I-3, В7 методиста: «Проба 3
+   * из 10» превращается в срок, и к концу блока растёт протест; о длине блока говорит доска
+   * жетонов). Центр полосы в сессии пуст; в прогоне рутины там точки звеньев (`abaRoutine.run`).
    */
   topBar: 68,
   tokenBoard: 48,
@@ -239,20 +242,40 @@ export function abaDeadZone(tier: AbaTier, availableHeight: number): number {
 }
 
 /**
- * Политика окна (Б1). Тир выбирается **один раз на сессию**, плиты на лету не пересчитываются:
- * смена окна (мультиоконность, поворот, складной экран) — предупреждение взрослому на панели,
- * не перестройка. Окно ниже `ABA_MIN_AVAILABLE_HEIGHT` — предупреждение взрослому на
- * родительском экране при включении режима, не посреди сессии (запрещать ли — решает
- * владелец, REBUILD.md). Предупреждение — причина с выходом, не только блок: «экран слишком
- * мал для режима» + действия «вернуться» и «оставить обычные уроки» (кнопка включения остаётся
- * недоступной, но объяснённой).
+ * Политика окна — **запрет с причиной** (решение №100, Г9; пересмотр №97 «только
+ * предупреждение»: при нём `abaTierFor` давал `null` и показывать пробу было нечем). Тир
+ * выбирается **один раз на сессию**, плиты на лету не пересчитываются. Три шага:
+ *
+ * 1. Родительский экран при включении режима — мягкая **оценка** «возможно, экрану мало места»,
+ *    кнопка включения НЕ блокируется (`parentScreenBlocks: false`): оценка по размеру окна на
+ *    родительском экране — не приговор.
+ * 2. Окончательная проверка — **при старте пробы** по `onLayout` экрана пробы: `abaTierFor` даёт
+ *    `null` → ребёнок пробу не видит, взрослому — экран «экран слишком мал для режима» с двумя
+ *    кнопками высотой 56: «Обычные уроки» и «Назад».
+ * 3. Сжатие окна в сессии (мультиоконность, поворот, складной экран) — **пауза**: плита и доска
+ *    скрыты, проба в работе уходит в очередь с `interruptedBy: 'app'`, взрослому — карточка
+ *    «верните размер окна», панель закреплена внизу над системной полосой; перестройки нет.
  */
 export const abaWindowPolicy = {
   tierChosen: 'once_per_session',
-  onWindowChange: 'warn_adult_no_relayout',
-  belowMin: 'warn_adult_on_enable',
+  parentScreen: 'soft_estimate',
+  parentScreenBlocks: false,
+  finalCheck: 'on_trial_start',
+  belowMin: 'block_with_reason',
   belowMinReason: 'screen_too_small',
-  belowMinHasExit: true,
+  belowMinButtons: ['regular_lessons', 'back'],
+  /** Кнопки экрана «слишком мал» — взрослые, но крупные: рука может быть с ребёнком на коленях. */
+  belowMinButtonHeight: 56,
+  childSeesTrial: false,
+  onWindowChange: 'pause',
+  pause: {
+    stimulusHidden: true,
+    trialInterruptedBy: 'app',
+    requeue: true,
+    adultCard: 'restore_window_size',
+    panelPinnedBottom: true,
+    relayout: false,
+  },
 } as const;
 
 /** Экран пробы — только портрет: в ландшафте телефон даёт ≈ 360 pt высоты, это ни один тир. */
@@ -291,7 +314,7 @@ export const abaControls = {
   /**
    * Поле справа от карточки «перерыв»: жест «назад» Android забирает край экрана. Тот же
    * отступ слева у выхода — полоса симметрична. «Перерыв» — `accessibilityLabel`
-   * (через `t()`), карточку вводят в начале сессии (SCREENS.md, 8.1).
+   * (через `t()`); карточку обучают настоящим перерывом 15–20 с (`abaBreak`, SCREENS.md 8.1).
    */
   edgeInset: 16,
   /**
@@ -347,23 +370,35 @@ export const abaAdultPanel = {
   /** Ужатие длинной подписи вместо третьей строки. */
   minimumFontScale: 0.86,
   /**
-   * Тап ребёнка (по плите или мимо) блокирует панель на это время. Честно о границах (В-2):
-   * блокировка защищает только **вторую** часть цепочки «плита → панель» (ребёнок тапнул, а
-   * следом рука взрослого попадает в панель). **Первую** — промах ладонью сразу по кнопке
-   * панели — закрывают мёртвая зона и «взрослый вид» панели, не блокировка.
+   * Тап ребёнка (по плите или мимо) ставит нажатия панели «в очередь» на это время. Честно о
+   * границах (В-2): окно защищает только **вторую** часть цепочки «плита → панель» (ребёнок
+   * тапнул, а следом рука взрослого попадает в панель). **Первую** — промах ладонью сразу по
+   * кнопке панели — закрывают мёртвая зона и «взрослый вид» панели, не окно.
    */
   childTapLockMs: 400,
   /**
-   * Правила блокировки: окно открывается первым тапом и **не продлевается** серией (не более
-   * `childTapLockMs` подряд; потолок серии `seriesCapMs`), следующий тап после снятия открывает
-   * новое окно. Тапы взрослого в окне гасятся **без отклика** (панель не мерцает «недоступна»).
+   * Правила окна (Г2, методист Б3, UX B-1). Окно открывается первым тапом ребёнка и **не
+   * продлевается** серией; следующий тап после снятия открывает новое окно. Прежняя редакция
+   * («тапы взрослого в окне гасятся без отклика», потолок серии 1000 мс) теряла «Отказ» и
+   * «Сопротивляется» без следа: при протесте 4–6 тапов/с панель была закрыта почти непрерывно, а
+   * взрослый не знал, что записи нет, и жал повторно. Теперь нажатие НЕ теряется:
+   * - кнопка показывает «нажата» не позже `pressedStateMaxMs` (`adultTapFeedback: 'pressed_queued'`);
+   * - действие применяется по снятии окна, не позже `applyAfterWindowMaxMs` после тапа ребёнка;
+   * - `respondedAt` = момент касания взрослого (`touch_down`), а не момент применения;
+   * - две кнопки в одном окне — применяется первая (`first_wins`), вторая гасится;
+   * - `neverBlocked` — «Отказ» и «Сопротивляется» применяются сразу, как выход и «перерыв»;
+   * - ошибочную кнопку страхует «Исправить отметку» (`undo`, 5 с).
    * После первой отметки обе группы кнопок недоступны до следующего окна ответа (двойное
-   * нажатие). Тап по «перерыв» и по выходу блокировку не включает.
+   * нажатие).
    */
   childTapLock: {
     extendedBySeries: false,
-    seriesCapMs: 1000,
-    adultTapFeedback: 'none',
+    adultTapFeedback: 'pressed_queued',
+    pressedStateMaxMs: 100,
+    applyAfterWindowMaxMs: 400,
+    respondedAt: 'touch_down',
+    twoButtonsInWindow: 'first_wins',
+    neverBlocked: ['refusal', 'l4_resisted'] as readonly PanelButton[],
     lockAfterMark: true,
     triggeredByBreakOrExit: false,
   },
@@ -372,8 +407,10 @@ export const abaAdultPanel = {
    * открытие следующего окна ответа немедленно возвращает ряд 2 («Я подсказал(а)» + «Отказ»),
    * отмена исчезает, а не вытесняет. Кнопка — в **левом слоте** ряда 2 (место «Я подсказал(а)»),
    * не на всю ширину; правый слот («Отказ») остаётся недоступным без поля, поэтому позиция
-   * «Отказ» с позицией отмены не пересекается. Один уровень: после тапа кнопка исчезает, повтор
-   * ничего не стирает. Процедуру отмены (что пишется в журнал) определяет методист.
+   * «Отказ» с позицией отмены не пересекается (недоступность правого слота — от фазы подкрепления,
+   * а не от окна защиты `childTapLock`). Один уровень: после тапа кнопка исчезает, повтор ничего
+   * не стирает. Процедура отмены — ABA.md «Отмена отметки и карточка «перерыв»» (№99): журнал
+   * только дописывается, жетон не отнимается, окно закрывается с началом следующего SD.
    */
   undo: { windowMs: 5000, row: 1, col: 0, span: 'slot', levels: 1, endsWith: 'reinforcement_phase' },
 } as const;
@@ -416,13 +453,58 @@ export const abaAdultPanelUndoStage = ['undo'] as const;
  */
 export const abaTokenBoard = {
   interactive: false,
-  /** Рекомендуемый размер: на 390 pt помещается пять. */
+  /** Рекомендуемый размер в полосе пробы: на 390 pt помещается пять. */
   size: 48,
+  /** Доска в полосе пробы на экране шириной ≤ `narrowWidth` (Г8, I-8): ячейка 44. */
+  sizeNarrow: 44,
+  narrowWidth: 360,
   /** Предел ряда — восемь по 32 pt. */
   minSize: 32,
   maxPerRow: 8,
+  /** Зазор между ячейками. */
+  gap: 8,
+  /** Крупная доска (экран подкрепления): ячейка не больше. */
+  largeMax: 64,
   stroke: 3,
 } as const;
+
+/** Ячейка доски в полосе пробы по ширине экрана. */
+export function abaStripCell(screenWidth: number): number {
+  return screenWidth <= abaTokenBoard.narrowWidth ? abaTokenBoard.sizeNarrow : abaTokenBoard.size;
+}
+
+/**
+ * Ячейка крупной доски (экран подкрепления, перерыв, выбор подкрепителя) для `n` ячеек в ряд
+ * (Г8): `min(64, 4·floor((inner − (n − 1)·8)/(4n)))`, где `inner` — ширина контента (экран
+ * минус 2×16), кратно 4. Для пяти ячеек это `min(64, 4·floor((inner − 32)/20))`: 64 на 390, 60 на
+ * 375, 56 на 360. Прежние 5 × 64 + 4 × 8 = 352 не помещались в 328 (экран 360).
+ */
+export function abaBoardCell(inner: number, n = 5): number {
+  const gaps = (n - 1) * abaTokenBoard.gap;
+  return Math.min(abaTokenBoard.largeMax, 4 * Math.floor((inner - gaps) / (4 * n)));
+}
+
+/**
+ * Карточка выбора подкрепителя (экран 2.3, Г8): три карточки — две в ряд, одна под ними.
+ * Сторона квадрата — `min(160, floor((W − 16)/2), floor((H − 72 − 48 − 88 − 64 − 16)/2))`,
+ * где `W` — ширина контента, `H` — доступная высота экрана; 72 инструкция, 48 доска, 88
+ * кнопка, 64 — четыре зазора по 16, 16 — зазор между рядами карточек. Прежние 160×160
+ * давали 2 × 160 + 16 = 336 > 328 и не помещались на экране 360.
+ */
+export const abaReinforcerCard = {
+  max: 160,
+  gap: 16,
+  /** Вертикальные блоки экрана, pt: инструкция + доска + кнопка + четыре зазора + зазор между рядами. */
+  reservedHeight: 72 + 48 + 88 + 64 + 16,
+} as const;
+
+export function abaReinforcerCardSize(contentWidth: number, availableHeight: number): number {
+  return Math.min(
+    abaReinforcerCard.max,
+    Math.floor((contentWidth - abaReinforcerCard.gap) / 2),
+    Math.floor((availableHeight - abaReinforcerCard.reservedHeight) / 2),
+  );
+}
 
 /**
  * Состояние ячейки доски. Пустой и заработанный различаются **тремя** признаками —
@@ -454,17 +536,23 @@ export const tokenCell: Record<'empty' | 'earnedIndependent' | 'earnedPrompted',
  * легибельную стрелку не поставить.
  *
  * - `identify` — жест к верной плите и есть ответ (`highlightCorrect`): метка над верной с L1,
- *   контур 6 с L2, на L3 активна только она, к ней идёт пунктирная направляющая.
+ *   контур 6 с L2, на L3 активна только она. Пунктирной направляющей нет (Г5): в полосе
+ *   подсказки 40 от метки 32 до плиты остаётся ≈ 8 pt, на таком отрезке пунктир нечитаем, а L2
+ *   и L3 различает число активных плит.
  * - `match` и сортировка — L1–L2 ответа не раскрывают: L1 — метка и пульс над образцом (над
  *   предметом у сортировки), верная не выделена; L2 — активны верная и один случайный
  *   дистрактор (у выбора из двух L2 нет), остальные неактивны; L3 — активна только верная,
  *   метки нет. Выделения верной плиты нет ни на каком уровне.
+ * - `single` — одна плита (эхоика, подражание, действие, громкость; Г5): L0, L1 (открытый
+ *   шеврон 32 над плитой), L3 (сплошной треугольник и контур 6). У эхоики и подражания L2 нет
+ *   вообще (лестница L0 → L1 → L3, ABA.md); у действия и громкости экран L2 = экран L3, а L2 от
+ *   L3 различают звук или анимация модели и панель взрослого (`promptVisualSingleLevel`).
  * - L4 на экране как L3 (`adultPhysical` меняет только панель взрослого).
  */
 export type PromptVisual = {
   mark: 'none' | 'chevron_open' | 'triangle_solid';
-  /** Над чем метка: над верной плитой (`identify`) или над образцом / предметом (`match`). */
-  markOn: 'none' | 'correct_choice' | 'source';
+  /** Над чем метка: над верной плитой (`identify`), образцом / предметом (`match`), единственной плитой (`single`). */
+  markOn: 'none' | 'correct_choice' | 'source' | 'plate';
   markSize: number;
   /** Однократный пульс 1 → `PROMPT_PULSE.scale` → 1 при появлении метки; только `match`, L1. */
   pulse: boolean;
@@ -472,7 +560,8 @@ export type PromptVisual = {
   plateStroke: number;
   /** Какие плиты выбора принимают нажатие; остальные — `inactiveChoice`. */
   activeChoices: 'all' | 'correct_and_one' | 'correct_only';
-  guide: 'none' | 'dashed';
+  /** Направляющей нет нигде (Г5): тип оставлен, чтобы тест ловил её возвращение. */
+  guide: 'none';
 };
 
 const NO_PROMPT: PromptVisual = {
@@ -485,7 +574,12 @@ const NO_PROMPT: PromptVisual = {
   guide: 'none',
 };
 
-export const promptVisual: Record<'identify' | 'match', Record<0 | 1 | 2 | 3, PromptVisual>> = {
+export const promptVisual: {
+  identify: Record<0 | 1 | 2 | 3, PromptVisual>;
+  match: Record<0 | 1 | 2 | 3, PromptVisual>;
+  /** Одна плита: уровня 2 в таблице нет (см. `promptVisualSingleLevel`). */
+  single: Record<0 | 1 | 3, PromptVisual>;
+} = {
   identify: {
     0: NO_PROMPT,
     1: { ...NO_PROMPT, mark: 'chevron_open', markOn: 'correct_choice', markSize: 32 },
@@ -497,7 +591,6 @@ export const promptVisual: Record<'identify' | 'match', Record<0 | 1 | 2 | 3, Pr
       markSize: 32,
       plateStroke: 6,
       activeChoices: 'correct_only',
-      guide: 'dashed',
     },
   },
   match: {
@@ -506,13 +599,33 @@ export const promptVisual: Record<'identify' | 'match', Record<0 | 1 | 2 | 3, Pr
     2: { ...NO_PROMPT, activeChoices: 'correct_and_one' },
     3: { ...NO_PROMPT, activeChoices: 'correct_only' },
   },
+  single: {
+    0: NO_PROMPT,
+    1: { ...NO_PROMPT, mark: 'chevron_open', markOn: 'plate', markSize: 32 },
+    3: { ...NO_PROMPT, mark: 'triangle_solid', markOn: 'plate', markSize: 32, plateStroke: 6 },
+  },
 };
 
 /**
+ * Какой из трёх экранов одной плиты показывать на данном уровне подсказки. L2 (есть только у
+ * стандартной лестницы: действие и громкость с инструкцией) выглядит как L3 — отличает его звук
+ * или анимация модели и панель взрослого, не рисунок плиты; L4 на экране тоже как L3
+ * (`adultPhysical` меняет панель). У эхоики и подражания L2 не бывает (лестница `imitative`).
+ */
+export function promptVisualSingleLevel(level: 0 | 1 | 2 | 3 | 4): 0 | 1 | 3 {
+  if (level === 0) return 0;
+  if (level === 1) return 1;
+  return 3;
+}
+
+/**
  * Неактивная плита выбора: **приглушена, не скрыта** — позиции не меняются (перестройка сетки
- * сама была бы подсказкой местом). Штриховка 45° цветом `ink`, подушки нет, контур сплошной
- * 3 (пунктир значит «пусто»), прозрачности нет. Нажатие по ней ничего не делает и не
- * пишется; экранному чтецу она не доступна.
+ * сама была бы подсказкой местом). Штриховка 45° цветом **`plateOutline`** (Г6; не `ink`: в
+ * тёмной схеме `ink` светлый `#FFF3E3`, а плита `#EDE7DC` — ≈ 1.2:1, и L3 не читался;
+ * `plateOutline` `#2A1A12` даёт 16.73:1 / 13.60:1), подушки нет, контур сплошной 3 (пунктир
+ * значит «пусто»), прозрачности нет. Нажатие по ней ничего не делает (`reactsToTap`) и не
+ * пишется; экранному чтецу она не доступна. Но касание не остаётся молчаливым (I-6): плита
+ * сжимается `tapPress` и возвращается — без звука и без записи.
  */
 export const inactiveChoice = {
   pattern: 'hatched_45',
@@ -520,10 +633,20 @@ export const inactiveChoice = {
   hatchStep: 8,
   /** Calm: реже штрихи — меньше мелькающей текстуры; толщина штриха 2 остаётся. */
   hatchStepCalm: 12,
+  /** Цвет штриховки — поле `AbaColors`, одно и то же в обеих схемах (`inactiveHatchColor`). */
+  hatchColor: 'plateOutline',
   cushion: false,
+  /** Действия нет: ответ не принимается и не пишется. */
   reactsToTap: false,
+  /** Видимый отклик на касание, как у широких плоских (0.98 за `motion.press`), в calm тот же. */
+  tapPress: { scale: 0.98, durationMs: motion.press, sound: false, records: false },
   hiddenFromScreenReader: true,
 } as const;
+
+/** Цвет штриховки неактивной плиты в данной схеме — всегда контур плиты. */
+export function inactiveHatchColor(scheme: Scheme): string {
+  return abaColors[scheme][inactiveChoice.hatchColor];
+}
 
 /**
  * Пульс образца на L1 `match`: один раз, `motion.slow`. Масштабируется **образец** (120 / 88 / 80),
@@ -534,3 +657,120 @@ export const PROMPT_PULSE = { scale: 1.04, durationMs: motion.slow, count: 1 } a
 
 /** Контур утолщается внутрь плиты: внешний габарит стимула не зависит от уровня. */
 export const PLATE_STROKE_INSET = true;
+
+/* ───────────────── перерыв: один экран для трёх инициаторов (Г3) ───────────────── */
+
+/**
+ * Экран перерыва (DESIGN_PROMPTS.md 2.4, 2.4а; SCREENS.md 8.1; ABA.md «Отмена отметки и карточка
+ * «перерыв»»). Один экран на трёх инициаторов — карточка ребёнка, расписание, предложение
+ * устройства. Обучение карточке — **настоящий перерыв** 15–20 с (№99), а не «касание без
+ * награды»: касание без последствия гасит просьбу.
+ *
+ * Для карточки: без Tali, жетонов, доски, похвалы и выбора подкрепителя; иконка «две планки»
+ * 120 в кольце-таймере 160 без чисел (в calm — шагами по 1 с), внизу кнопка «Вернуться» 88.
+ * Приглашение вернуться — по окончании таймера и через 30 с: один тихий сигнал и статичный
+ * контур 6, без пульса и эскалации; после второго приглашения и ещё 30 с без касания — конец
+ * сессии нейтральным экраном (без Tali-прощания и «молодец»). Вне пробы карточка как просьба не
+ * принимается (№106).
+ */
+export const abaBreak = {
+  initiators: ['child_card', 'schedule', 'device_offer'],
+  /** Обучающий перерыв по карточке (№99). */
+  trainingSeconds: { min: 15, max: 20 },
+  /** Касание карточки → экран перерыва. */
+  reactionMaxMs: 300,
+  /** Иконка «две планки» внутри кольца. */
+  icon: 120,
+  timerRing: 160,
+  timerNumbers: false,
+  /** Calm и reduce motion: заполнение шагами по 1 с, не плавной развёрткой. */
+  timerCalmStepMs: 1000,
+  returnButton: 88,
+  /** Tali на экране перерыва: у карточки ребёнка слот пуст (место не занято). */
+  taliSlot: { child_card: false, schedule: true, device_offer: true },
+  childCardShows: { tali: false, tokens: false, praise: false, choice: false },
+  invite: {
+    atTimerEnd: true,
+    repeatAfterMs: 30_000,
+    signalsPerInvite: 1,
+    /** Статичный контур вокруг «Вернуться»: толщина = `stroke.bold`. */
+    contour: 6,
+    pulse: false,
+    escalation: false,
+    invitesBeforeEnd: 2,
+    endAfterLastInviteMs: 30_000,
+  },
+  endScreen: { tali: false, farewell: false, praise: false },
+  /** «Tali предлагает перерыв» между пробами (две пробы без активности в «Сам»). */
+  offer: { tali: 88, card: 120, cardIcon: 64, nextButton: 88, minGapCardToNext: 48, gapTaliToCard: 24 },
+  /** Решение №106: вне пробы (подкрепление, переход, обмен, перерыв) карточка просьбой не принимается. */
+  outsideTrialCardAccepted: false,
+} as const;
+
+/* ───────────────── calm в ABA (V10, I-4) ───────────────── */
+
+/**
+ * Calm на экране подкрепления: жетон появляется НА СВОЁМ МЕСТЕ без падения; плашка подкрепления
+ * контурная (заливка фона, контур 3 цветом `reinforcement`, текст `ink`), а не залитая
+ * фиолетовым — самая насыщенная площадь режима. Залитая площадь цвета подкрепления — не более
+ * `maxFilledShare` экрана.
+ */
+export const abaCalm = {
+  tokenArrival: 'in_place',
+  reinforcementPanel: 'outline_only',
+  panelStroke: 3,
+  maxFilledShare: 0.25,
+} as const;
+
+/* ───────────────── рутины самообслуживания (Г8) ───────────────── */
+
+/** Ключи подписей вида прогона (`t()`; русские слова — «Базовая линия» · «Обучение» · «Поддержание» · «Проверка дома»). */
+export const abaRoutineKindLabelKey: Record<RoutineRunKind, string> = {
+  baseline: 'abaRoutine.kind.baseline',
+  teaching: 'abaRoutine.kind.teaching',
+  maintenance: 'abaRoutine.kind.maintenance',
+  verification: 'abaRoutine.kind.verification',
+};
+
+/**
+ * Экраны рутины (DESIGN_PROMPTS.md 2.7–2.10). Список «ждут прогона» — взрослая тональность
+ * (строка 64 ≥ `touchAdult`); расписание до старта — ребёнок смотрит картинки звеньев, плиты не
+ * нажимаются (60 pt к ним не применяется); прогон — экран пробы, где плита = картинка текущего
+ * звена, а центр верхней полосы занимает прогресс звеньев точками (счётчика проб нет).
+ * Жетон рутины ребёнку показывается ≤ 3 с после последнего звена; запись и PIN — после.
+ */
+export const abaRoutine = {
+  dueList: { rowHeight: 64, picture: 40, doneTodayPosition: 'bottom', doneTodayActive: false },
+  schedule: {
+    interactive: false,
+    gap: 8,
+    /** 5–6 лет: один ряд до 5 плит по 56: 5 × 56 + 4 × 8 = 312. */
+    band56: { tile: 56, maxSteps: 5, perRow: 5 },
+    /** С 7 лет: две строки по 4 плиты 72: 4 × 72 + 3 × 8 = 312. */
+    band7: { tile: 72, maxSteps: 8, perRow: 4 },
+  },
+  run: {
+    /** Плита стимула — картинка текущего звена (`AbaChainStep.image`). */
+    plate: 'step_picture',
+    trialCounterForChild: false,
+    /**
+     * Точки звеньев в центре верхней полосы: пройдено — сплошной диск 14; текущее — кольцо 16 с
+     * контуром 3 и точкой 6; впереди — пустое кольцо 14 с контуром 2. Три состояния различаются
+     * формой, цвет один.
+     */
+    dots: { done: 14, upcoming: 14, current: 16, gap: 8, currentStroke: 3, upcomingStroke: 2, centerDot: 6, max: 8 },
+  },
+  reward: {
+    /** Жетон ребёнку — не позже, чем через столько после отметки последнего звена. */
+    childSeesTokenWithinMs: 3000,
+    commitAfter: 'adult_form',
+    /** PIN после каждого прогона не спрашивается: «взрослый режим рутины» на 10 минут. */
+    pinAfterEveryRun: false,
+    biometrics: false,
+    adultModeMinutes: 10,
+    adultModeScope: 'routines_only',
+    formRowHeight: 56,
+  },
+  /** Новый выбор после обмена рутины (`reinforcerStale`) — экран 2.3 без вступления. */
+  reinforcerRepick: { screen: 'reinforcer_choice', intro: false },
+} as const;
