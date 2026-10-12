@@ -17,7 +17,10 @@ import {
   abaRoutine,
   abaRoutineKindLabelKey,
   abaStripCell,
+  ABA_STRIP_SILHOUETTE,
+  ABA_STRIP_SILHOUETTE_GAP,
   inactiveHatchColor,
+  inactiveTapTravel,
   promptVisualSingleLevel,
   ABA_CONTROL_STROKE,
   ABA_DEAD_ZONE_MIN,
@@ -61,7 +64,7 @@ import {
 } from '../abaTokens';
 import { contrast, SHAPE_CONTRAST, TEXT_CONTRAST } from '../contrast';
 import { touchAdult } from '../parentTokens';
-import { buildTheme, cushionByRole, elevation, motion, palettes, touch, type Scheme } from '../tokens';
+import { buildTheme, cushionByRole, elevation, motion, palettes, pressScale, touch, type Scheme } from '../tokens';
 
 const SCHEMES: Scheme[] = ['light', 'dark'];
 
@@ -303,10 +306,16 @@ describe('уровни подсказки без цвета', () => {
     expect(inactiveChoice.hiddenFromScreenReader).toBe(true);
   });
 
-  it('тап по неактивной плите: сжатие 0.98 за 90 мс, без звука и без записи (I-6)', () => {
-    expect(inactiveChoice.tapPress).toEqual({ scale: 0.98, durationMs: motion.press, sound: false, records: false });
+  it('тап по неактивной плите: сжатие 0.94 за 90 мс, без звука и без записи (I-6, V-9)', () => {
+    expect(inactiveChoice.tapPress).toEqual({ scale: 0.94, durationMs: motion.press, sound: false, records: false });
     expect(inactiveChoice.tapPress.durationMs).toBe(90);
     expect(inactiveChoice.tapPress.durationMs).toBeLessThanOrEqual(100);
+    // 0.98 давало 1 pt на 96 и 0.7 pt на 72 — незаметно; 0.94 — ≈ 2.9 и ≈ 2.2
+    expect(inactiveChoice.tapPress.scale).toBeLessThan(pressScale.wide);
+    expect(inactiveTapTravel(96)).toBeGreaterThanOrEqual(2.8);
+    expect(inactiveTapTravel(72)).toBeGreaterThanOrEqual(2);
+    expect(inactiveTapTravel(56)).toBeGreaterThanOrEqual(1.5); // плита расписания 5–6 лет на 360 — самая тонкая
+    expect((72 * (1 - pressScale.wide)) / 2).toBeLessThan(1); // прежний ход края на 72: 0.72 pt
   });
 
   describe('штриховка неактивной плиты — plateOutline в обеих схемах (Г6)', () => {
@@ -521,22 +530,36 @@ describe('раскладка экрана пробы (три тира)', () => {
   });
 
   describe('политика окна — запрет с причиной (№100, Г9)', () => {
-    it('тир один раз на сессию; на родительском экране мягкая оценка без блока; проверка — при старте пробы', () => {
+    it('тир один раз на сессию; на родительском экране мягкая оценка без блока; проверка — на корне первого экрана ABA (V-5)', () => {
       expect(abaWindowPolicy.tierChosen).toBe('once_per_session');
       expect(abaWindowPolicy.parentScreen).toBe('soft_estimate');
       expect(abaWindowPolicy.parentScreenBlocks).toBe(false);
-      expect(abaWindowPolicy.finalCheck).toBe('on_trial_start');
+      expect(abaWindowPolicy.finalCheck).toBe('on_first_aba_screen');
+      expect(abaWindowPolicy.finalCheckScreen).toBe('config_choice');
+      expect(abaWindowPolicy.keepListening).toBe(true);
+      expect(abaWindowPolicy.passesOnGrow).toBe('auto');
     });
 
-    it('ниже порога: блок с причиной и двумя кнопками 56; ребёнок пробу не видит', () => {
+    it('ниже порога: блок с причиной без чисел и двумя кнопками 56 через зазор ≥ 16; «Обычные уроки» — разовый переход', () => {
       expect(abaWindowPolicy.belowMin).toBe('block_with_reason');
       expect(abaWindowPolicy.belowMinReason).toBe('screen_too_small');
+      expect(abaWindowPolicy.belowMinReasonHasNumbers).toBe(false);
       expect([...abaWindowPolicy.belowMinButtons]).toEqual(['regular_lessons', 'back']);
       expect(abaWindowPolicy.belowMinButtonHeight).toBe(56);
       expect(abaWindowPolicy.belowMinButtonHeight).toBeGreaterThanOrEqual(touchAdult);
+      expect(abaWindowPolicy.belowMinButtonGap).toBeGreaterThanOrEqual(16);
+      expect(abaWindowPolicy.regularLessons).toEqual({ oneShot: true, writesMode: false });
       expect(abaWindowPolicy.childSeesTrial).toBe(false);
       // токены согласованы с политикой: на окне ниже порога тира нет, показывать пробу нечем
       expect(abaTierFor(ABA_MIN_AVAILABLE_HEIGHT - 1, 48)).toBeNull();
+    });
+
+    it('известный риск (V-5): 360×640 с тремя кнопками — запас над порогом всего 8 pt; описан в токене', () => {
+      expect(568 - ABA_MIN_AVAILABLE_HEIGHT).toBe(8);
+      expect(abaTierFor(ABA_MIN_AVAILABLE_HEIGHT + 8, 48)).toBe('tight');
+      expect(abaTierFor(ABA_MIN_AVAILABLE_HEIGHT - 1, 48)).toBeNull();
+      const src = fs.readFileSync(path.join(__dirname, '..', 'abaTokens.ts'), 'utf8');
+      expect(src).toMatch(/ИЗВЕСТНЫЙ РИСК \(V-5\)/);
     });
 
     it('сжатие окна в сессии — пауза: плита скрыта, проба interruptedBy app в очередь, панель внизу, без перестройки', () => {
@@ -596,6 +619,33 @@ describe('панель взрослого (Р6)', () => {
       expect(lock.respondedAt).toBe('touch_down');
       expect(lock.twoButtonsInWindow).toBe('first_wins');
       expect(lock.lockAfterMark).toBe(true);
+    });
+
+    it('две кнопки в окне: вторая не вдавливается, первая остаётся вдавленной до применения (V-1)', () => {
+      expect(lock.twoButtonsInWindow).toBe('first_wins');
+      expect(lock.secondButtonPressed).toBe(false);
+      expect(lock.firstStaysPressedUntil).toBe('applied');
+    });
+
+    it('«Отказ»/«Сопротивляется» отменяют отложенную отметку и показывают её снятой; очередь привязана к пробе (V-2)', () => {
+      expect(lock.pendingMark).toEqual({
+        cancelledByNeverBlocked: true,
+        cancelledShownAs: 'released',
+        boundTo: 'trialId_at_touch_down',
+        resetOnPhaseChange: true,
+      });
+    });
+
+    it('«Отказ» доступен всегда, слот не меняется и отмена его не вытесняет (V-3)', () => {
+      const r = abaAdultPanel.refusal;
+      expect(r.alwaysAvailable).toBe(true);
+      expect(r.inAnswerWindow).toBe('trial_refusal');
+      expect(r.outsideTrial).toBe('withdraw_assent');
+      expect(r.displacedByUndo).toBe(false);
+      expect(r.slot).toEqual(abaAdultPanelSlot.refusal);
+      // слот отмены — левый слот ряда 2, «Отказ» — правый: пересечения нет
+      expect(abaAdultPanelSlot.undo).not.toEqual(r.slot);
+      expect(abaAdultPanelSlot.undo.row).toBe(r.slot.row);
     });
 
     it('«Отказ» и «Сопротивляется» не блокируются никогда — как выход и «перерыв»', () => {
@@ -829,6 +879,36 @@ describe('экран перерыва: один для трёх инициато
     expect(stack + abaLayout.topBar).toBeLessThanOrEqual(ABA_MIN_AVAILABLE_HEIGHT);
   });
 
+  it('к концу таймера кольцо убирается, иконка и кнопка остаются на месте, ничего не движется (V-4а)', () => {
+    const e = abaBreak.atTimerEnd;
+    expect(e.ringHidden).toBe(true);
+    expect(e.iconStays).toBe(abaBreak.icon);
+    expect(e.buttonStays).toBe(abaBreak.returnButton);
+    expect(e.ringSlotReserved).toBe(true);
+    expect(e.animated).toBe(false);
+    expect(abaBreak.invite.contour).toBe(6); // статичный контур остаётся
+    expect(abaBreak.invite.pulse).toBe(false);
+  });
+
+  it('«Вернуться»: значок не стрелка, а контурные «две планки»; не «карта» — она у выхода взрослого (V-4б)', () => {
+    expect(abaBreak.returnIcon).toEqual({ glyph: 'pause_bars_outline', size: 32, replacesArrow: true });
+    expect(abaBreak.returnIcon.glyph).not.toMatch(/arrow|map/);
+  });
+
+  it('у взрослого есть выход с экрана перерыва: слева сверху, 60, удержание 1500 / 300 без отклика, как на пробе (V-4в)', () => {
+    const x = abaBreak.adultExit;
+    expect(x.position).toBe('top_left');
+    expect(x.size).toBe(abaControls.exitSize);
+    expect(x.holdMs).toBe(abaControls.exitHoldMs);
+    expect(x.idleMs).toBe(abaControls.exitHoldIdleMs);
+    expect(x.sameAsTrial).toBe(true);
+  });
+
+  it('«Tali предлагает перерыв» без касания 60 с — нейтральный конец сессии, не автоперерыв (У-3)', () => {
+    expect(abaBreak.offer.idleEndMs).toBe(60_000);
+    expect(abaBreak.offer.idleEnd).toBe('neutral_end');
+  });
+
   it('вне пробы карточка просьбой не принимается (№106)', () => {
     expect(abaBreak.outsideTrialCardAccepted).toBe(false);
   });
@@ -874,23 +954,39 @@ describe('доска и карточки подкрепителя по шири�
     }
   });
 
-  it('доска в полосе пробы: 48, на ширине ≤ 360 — 44; пять ячеек и силуэт подкрепителя помещаются', () => {
-    expect(abaStripCell(390)).toBe(48);
-    expect(abaStripCell(361)).toBe(48);
-    expect(abaStripCell(360)).toBe(44);
-    expect(abaStripCell(320)).toBe(44);
-    [390, 375, 360].forEach((w) => {
-      const cell = abaStripCell(w);
-      const row = 5 * cell + 4 * abaTokenBoard.gap;
-      expect(abaControls.edgeInset * 2 + 40 + 8 + row).toBeLessThanOrEqual(w); // поля + силуэт 40 + зазор 8 + ряд
+  it('доска в полосе пробы (У-1): до пяти ячеек всегда 48 и помещается на 360; сужение только при n > 5', () => {
+    [390, 375, 361, 360].forEach((w) => {
+      [1, 3, 5].forEach((n) => expect(abaStripCell(w, n)).toBe(48));
+      const row = 5 * abaStripCell(w) + 4 * abaTokenBoard.gap;
+      // поля + силуэт 40 + зазор 8 + ряд; на 360 это ровно 328 + 32 = 360
+      expect(abaControls.edgeInset * 2 + ABA_STRIP_SILHOUETTE + ABA_STRIP_SILHOUETTE_GAP + row).toBeLessThanOrEqual(w);
     });
+    expect(ABA_STRIP_SILHOUETTE + ABA_STRIP_SILHOUETTE_GAP + 5 * 48 + 4 * 8).toBe(320); // ≤ 328
+    // n > 5: сужаем ровно настолько, чтобы ряд с силуэтом поместился, но не ниже minSize
+    expect(abaStripCell(360, 6)).toBe(40);
+    expect(abaStripCell(390, 6)).toBe(45);
+    expect(abaStripCell(360, 7)).toBe(33);
+    [6, 7].forEach((n) => {
+      [360, 375, 390].forEach((w) => {
+        const c = abaStripCell(w, n);
+        expect(c).toBeLessThanOrEqual(48);
+        expect(c).toBeGreaterThanOrEqual(abaTokenBoard.minSize);
+        expect(32 + ABA_STRIP_SILHOUETTE + ABA_STRIP_SILHOUETTE_GAP + n * c + (n - 1) * abaTokenBoard.gap).toBeLessThanOrEqual(w);
+      });
+    });
+    // известное ограничение: восемь ячеек с силуэтом на 360 не помещаются даже по 32
+    expect(32 + ABA_STRIP_SILHOUETTE + ABA_STRIP_SILHOUETTE_GAP + 8 * 32 + 7 * 8).toBeGreaterThan(360);
   });
 
-  it('карточки выбора подкрепителя: 160 на 390 и SE, 140 на 360×640 с тремя кнопками; две в ряд помещаются', () => {
+  it('карточки выбора подкрепителя: 160 на 390 и SE, 136 на 360×640 с тремя кнопками (запас 8, У-7); две в ряд помещаются', () => {
     expect(abaReinforcerCardSize(358, 763)).toBe(160);
     expect(abaReinforcerCardSize(343, 647)).toBe(160);
-    expect(abaReinforcerCardSize(328, 568)).toBe(140);
-    expect(abaReinforcerCard.reservedHeight).toBe(288);
+    expect(abaReinforcerCardSize(328, 568)).toBe(136);
+    expect(abaReinforcerCard.reservedHeight).toBe(296);
+    expect(abaReinforcerCard.heightReserve).toBeGreaterThanOrEqual(8);
+    // без запаса было 2 × 140 + 288 = 568 = H — ноль
+    expect(568 - (2 * abaReinforcerCardSize(328, 568) + abaReinforcerCard.reservedHeight)).toBe(0);
+    expect(568 - (2 * abaReinforcerCardSize(328, 568) + (abaReinforcerCard.reservedHeight - abaReinforcerCard.heightReserve))).toBe(8);
     // прежние 160×160 в 328: 336 > 328
     expect(2 * 160 + abaReinforcerCard.gap).toBeGreaterThan(328);
     const cases: [number, number][] = [[328, 568], [328, 560], [343, 647], [358, 763], [358, 900]];
@@ -915,10 +1011,21 @@ describe('рутины самообслуживания (Г8)', () => {
     expect(new Set(Object.values(abaRoutineKindLabelKey)).size).toBe(4);
   });
 
-  it('расписание до старта: 5×56+4×8=312 на 5–6, две строки по 4×72 на 7+; в контент 328 (экран 360) помещается', () => {
+  it('расписание до старта (У-2): 5–6 лет — плиты abaBoardCell(W, 5): 64 / 60 / 56; с 7 — две строки по 4×72; в контент помещается', () => {
     const s = abaRoutine.schedule;
     const g = s.gap;
-    expect(s.band56.maxSteps * s.band56.tile + (s.band56.maxSteps - 1) * g).toBe(312);
+    expect(s.band56.tile).toBe('abaBoardCell');
+    expect(abaBoardCell(358, 5)).toBe(64);
+    expect(abaBoardCell(343, 5)).toBe(60);
+    expect(abaBoardCell(328, 5)).toBe(56);
+    [358, 343, 328].forEach((w) => {
+      const t = abaBoardCell(w, s.band56.perRow);
+      expect(t).toBeGreaterThanOrEqual(s.band56.tileMin);
+      expect(s.band56.perRow * t + (s.band56.perRow - 1) * g).toBeLessThanOrEqual(w);
+    });
+    expect(s.band56.maxSteps * s.band56.tileMin + (s.band56.maxSteps - 1) * g).toBe(312);
+    // V-10: плиты не нажимаются, но отзываются так же, как неактивная плита выбора
+    expect(s.tilePress).toBe('inactiveChoice.tapPress');
     expect(s.band7.perRow * s.band7.tile + (s.band7.perRow - 1) * g).toBe(312);
     expect(s.band7.maxSteps).toBe(2 * s.band7.perRow);
     expect(312).toBeLessThanOrEqual(328);
@@ -941,15 +1048,36 @@ describe('рутины самообслуживания (Г8)', () => {
     });
   });
 
-  it('жетон ребёнку ≤ 3 с, запись и PIN после; PIN не после каждого прогона, биометрии нет, режим 10 минут', () => {
+  it('жетон ребёнку: цель ≤ 1 с, потолок 3 с; отметка звена видна ≤ 300 мс (У-5); запись и PIN после', () => {
     const w = abaRoutine.reward;
+    expect(w.childSeesTokenTargetMs).toBeLessThanOrEqual(1000);
     expect(w.childSeesTokenWithinMs).toBeLessThanOrEqual(3000);
+    expect(w.childSeesTokenTargetMs).toBeLessThan(w.childSeesTokenWithinMs);
+    expect(w.linkMarkResponseMaxMs).toBeLessThanOrEqual(300);
     expect(w.commitAfter).toBe('adult_form');
+  });
+
+  it('взрослый режим рутины — один срок 5 минут, скользящий, как окно свежести PIN (V-7); PIN не после каждого прогона, биометрии нет', () => {
+    const w = abaRoutine.reward;
     expect(w.pinAfterEveryRun).toBe(false);
     expect(w.biometrics).toBe(false);
-    expect(w.adultModeMinutes).toBe(10);
+    expect(w.adultModeMinutes).toBe(5);
+    expect(w.adultModeSliding).toBe(true);
     expect(w.adultModeScope).toBe('routines_only');
     expect(w.formRowHeight).toBeGreaterThanOrEqual(touchAdult);
+    const parent = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'PARENT.md'), 'utf8');
+    expect(parent).toMatch(/Окно свежести 5 минут/); // тот же срок, что в Уровне 2
+  });
+
+  it('«Продолжить» на экране передачи — кнопка с удержанием, как выход; форма недоступна двумя тапами (V-6, V-7)', () => {
+    const h = abaRoutine.reward.handoverContinue;
+    expect(h.kind).toBe('hold');
+    expect(h.height).toBeGreaterThanOrEqual(touchAdult);
+    expect(h.idleMs).toBe(abaControls.exitHoldIdleMs);
+    expect(h.holdMs).toBe(abaControls.exitHoldMs);
+    expect(h.tapHint).toBe(true);
+    expect(h.requiredWhenModeOpen).toBe(true);
+    expect(abaRoutine.reward.form).toEqual({ reachableOnlyViaHold: true, preselected: false, saveNeedsSelection: true });
   });
 
   it('новый выбор подкрепителя после обмена рутины — экран выбора без вступления', () => {

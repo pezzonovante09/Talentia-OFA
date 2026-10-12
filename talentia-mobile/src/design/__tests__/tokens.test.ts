@@ -297,6 +297,14 @@ describe('карта региона (решение №89, Р9)', () => {
     expect(mapLayout.nodeGapMin).toBeGreaterThanOrEqual(mapLayout.node + touch.gap);
   });
 
+  it('ориентир не читается как кнопка: отклик 0.96 как у узла без подушки, без звука и действия; форма — не круг узла (У-8)', () => {
+    expect(mapLayout.landmarkTap.scale).toBe(pressScale.mapNode);
+    expect(mapLayout.landmarkTap.durationMs).toBe(motion.press);
+    expect(mapLayout.landmarkTap.sound).toBe(false);
+    expect(mapLayout.landmarkTap.action).toBe('none');
+    expect(mapLayout.landmarkPlate).toBe('arch');
+  });
+
   it('ориентир: 64 в обычных видах, 32 в полосе calm (V22) — исключение одно и названо; верх панорамы 64 pt без деталей (Г7)', () => {
     expect(mapLayout.landmarkCalmStrip).toBe(32);
     expect(mapLayout.landmarkCalmStrip).toBeLessThan(mapLayout.landmarkMin);
@@ -365,10 +373,16 @@ describe('рабочие остатки раунда 3 (V1, V4, V5, V6, V2/V3)',
   it('метка «сосчитано»: отклик ≤ 100 мс от касания вниз; повтор — кольцо 2→4 за 90; мимо — кольцо 24 без звука (V2, V3, I-2)', () => {
     expect(countMark.feedbackMs).toBeLessThanOrEqual(100);
     expect(countMark.feedbackTrigger).toBe('touch_down');
-    expect(countMark.repeatRing).toEqual({ from: 2, to: 4, durationMs: motion.press });
+    expect(countMark.repeatRing).toEqual({
+      from: 2, to: 4, durationMs: motion.press, shownUntil: 'touch_up', tailMs: motion.press, haptic: 'light',
+    });
     expect(countMark.repeatRing.from).toBe(countMark.ring);
     expect(countMark.repeatRing.durationMs).toBe(90);
-    expect(countMark.missRing.size).toBe(24);
+    // V-8: отклик не короче касания — до отпускания + 90 мс; палец (≈ 40–50 pt) не закрывает «мимо» целиком
+    expect(countMark.repeatRing.tailMs).toBe(90);
+    expect(countMark.missRing.shownUntil).toBe('touch_up');
+    expect(countMark.missRing.tailMs).toBe(90);
+    expect(countMark.missRing.size).toBeGreaterThanOrEqual(64);
     expect(countMark.missRing.color).toBe('outline');
     expect(countMark.missRing.sound).toBe(false);
     expect(countMark.missRing.records).toBe(false);
