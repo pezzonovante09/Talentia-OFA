@@ -49,6 +49,19 @@ export class AbaSessionMissingError extends Error {
   }
 }
 
+/**
+ * Доску изменила другая процедура (рутина) между сверкой сессии и этой записью: не записано
+ * ничего. Экран возобновляет сессию (`resumeAbaSession`) и повторяет шаг по живой доске.
+ */
+export class AbaBoardConflictError extends Error {
+  constructor(
+    readonly expectedRev: number,
+    readonly actualRev: number,
+  ) {
+    super('Доска жетонов изменилась: шаг не записан, сессию нужно возобновить');
+  }
+}
+
 /** Согласие на текущий текст (любой язык) и не на паузе. Вызывать внутри транзакции записи. */
 export async function requireAbaConsent(tx: SqlDb, childId: string): Promise<void> {
   if (!isGranted(await readConsentLog(tx), 'aba_processing', childId, CURRENT_CONSENT_TEXTS.aba_processing)) {
@@ -93,6 +106,69 @@ export async function appendRoutineRun(db: SqlDb, childId: string, run: AbaRouti
     'INSERT INTO aba_routine_runs (child_id, id, target_id, day, body, recorded_at) VALUES (?, ?, ?, ?, ?, ?)',
     [childId, run.id, run.targetId, run.day, JSON.stringify(run), recordedAt],
   );
+}
+
+export type ReinforcerChoice = {
+  source: 'session' | 'routine';
+  sourceId: string;
+  reinforcerId: string;
+  chosenBy: 'child' | 'adult';
+};
+
+/**
+ * Выбор подкрепителя — в историю в момент выбора (только дописывание). Кирпич для `commit.ts`.
+ * Пустой `reinforcerId` (выбора не было) не пишется.
+ */
+export async function appendReinforcerChoice(db: SqlDb, childId: string, c: ReinforcerChoice, chosenAt: string): Promise<void> {
+  if (!c.reinforcerId) throw new Error('Выбор без подкрепителя в историю не пишется');
+  // порядок истории — по строке chosen_at: формат один (UTC, миллисекунды), иначе сравнение собьётся
+  const at = new Date(chosenAt);
+  if (Number.isNaN(at.getTime())) throw new Error('Время выбора — не дата');
+  await db.run(
+    'INSERT INTO aba_reinforcer_choices (child_id, chosen_at, source, source_id, reinforcer_id, chosen_by) VALUES (?, ?, ?, ?, ?, ?)',
+    [childId, at.toISOString(), c.source, c.sourceId, c.reinforcerId, c.chosenBy],
+  );
+}
+
+/**
+ * История выборов подкрепителя, свежие в конце: по времени выбора, затем по порядку записи. Входит
+ * любой выбор, в том числе взрослого. Читать в той же транзакции, где считаются варианты.
+ */
+export async function reinforcerHistoryOf(db: SqlDb, childId: string): Promise<string[]> {
+  return (
+    await db.all<{ reinforcer_id: string }>(
+      'SELECT reinforcer_id FROM aba_reinforcer_choices WHERE child_id = ? ORDER BY chosen_at, seq',
+      [childId],
+    )
+  ).map((r) => r.reinforcer_id);
+}
+
+/**
+ * Был ли после `sinceMs` обмен рутины — прогон с `exchanged > 0`, зафиксированный позже. По журналу
+ * прогонов, а не выборов: обмен, после которого приложение убили до выбора, тоже обмен.
+ */
+export async function routineExchangedSince(db: SqlDb, childId: string, sinceMs: number): Promise<boolean> {
+  // по времени фиксации (recorded_at), а не конца последнего звена: между ними идут выбор «где и с
+  // кем» и PIN, и сессия, возобновлённая в этом промежутке, обмена иначе не заметила бы
+  const rows = await db.all<{ n: number }>(
+    "SELECT 1 AS n FROM aba_routine_runs WHERE child_id = ? AND json_extract(body, '$.exchanged') > 0 AND recorded_at > ? LIMIT 1",
+    [childId, new Date(sinceMs).toISOString()],
+  );
+  return rows.length > 0;
+}
+
+/** Обмен рутины, после которого выбор подкрепителя не сделан (приложение убили): прогон и его варианты. */
+export type PendingRoutineExchange = { runId: string; tokens: number; options: string[] };
+
+export async function pendingRoutineExchanges(db: SqlDb, childId: string): Promise<PendingRoutineExchange[]> {
+  const runs = await db.all<{ body: string }>(
+    `SELECT body FROM aba_routine_runs
+      WHERE child_id = ? AND json_extract(body, '$.exchanged') > 0
+        AND id NOT IN (SELECT source_id FROM aba_reinforcer_choices WHERE child_id = ? AND source = 'routine')
+      ORDER BY seq`,
+    [childId, childId],
+  );
+  return parse<AbaRoutineRun>(runs).map((r) => ({ runId: r.id, tokens: r.exchanged, options: r.exchangeOptions ?? [] }));
 }
 
 const parse = <T>(rows: { body: string }[]): T[] => rows.map((r) => JSON.parse(r.body) as T);

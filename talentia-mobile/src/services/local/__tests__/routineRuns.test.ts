@@ -6,10 +6,11 @@
 import type { AbaRoutineRun, AbaSession, AbaTargetState, AbaTrial } from '../../../types/aba';
 import type { RoutineRunResult, RoutineRunState } from '../../../domain/abaRoutineRun';
 import type { AbaSessionResult, AbaSessionState } from '../../../domain/abaSession';
+import { initialTokenTraining, type TokenTrainingState } from '../../../domain/abaTokenTraining';
 import type { ConsentEvent } from '../../../domain/consent';
 import { AbaConsentRequiredError, appendRoutineRun, routineRunsOf, trialsOfTarget } from '../abaLog';
 import { ABA_STATE_KEYS, loadChildState, saveChildState } from '../childState';
-import { commitAbaSession, commitRoutineRun, recordAbaTrial, recordRoutineStep, setAbaObservers } from '../commit';
+import { commitAbaSession, commitRoutineRun, recordAbaTrial, recordRoutineStep, resumeAbaSession, setAbaObservers } from '../commit';
 import { appendConsentEvent, insertConsentEvent } from '../consentLog';
 import {
   abaDataSummary,
@@ -41,10 +42,15 @@ const abaConsent = (action: 'grant' | 'revoke', over: Partial<ConsentEvent> = {}
   ...over,
 });
 
+/** Сопряжение закончено, ступень 5: итог прогона без обучения доске `commitRoutineRun` не пишет. */
+const TRAINED: TokenTrainingState = { ...initialTokenTraining(), pairingDone: true, stage: 5 };
+const POOL = ['puzzle', 'bubbles', 'drum', 'stickers', 'train', 'balloon'];
+
 async function dbWithAbaConsent(...children: string[]) {
   const db = await memoryDb();
   for (const [i, childId] of (children.length ? children : ['kid']).entries()) {
     await appendConsentEvent(db, abaConsent('grant', { childId, at: `2026-10-11T09:0${i}:00Z` }), 'owner');
+    await asAbaWriter(db, childId, (tx) => saveChildState(tx, childId, 'tokenTraining', TRAINED, NOW));
   }
   return db;
 }
@@ -65,15 +71,23 @@ const routineRun = (id = 'run-1', over: Partial<AbaRoutineRun> = {}): AbaRoutine
   ...over,
 });
 
+/** Запись прогона без того, что решает доска на момент фиксации. */
+const recordBase = (id: string) => {
+  const { token: _t, exchanged: _e, exchangeOptions: _o, ...base } = routineRun(id);
+  return base;
+};
+
 const rState = { targetId: 'R', phase: 'acquisition', lastRoutineRunDay: '2026-10-11' } as AbaTargetState;
 const aState = { targetId: 'A', phase: 'mastered' } as AbaTargetState;
 
 const result = (id = 'run-1', over: Partial<RoutineRunResult> = {}): RoutineRunResult => ({
   trials: [],
   state: rState,
-  board: { size: 5, earned: 3, nonContingent: 1 },
-  token: 'at_start_level',
-  record: routineRun(id),
+  claim: { token: 'at_start_level', tokens: 1, nonContingent: false },
+  record: recordBase(id),
+  band: '7',
+  reinforcerPool: POOL,
+  seed: 7,
   ...over,
 });
 
@@ -123,7 +137,7 @@ describe('итог прогона рутины (commitRoutineRun)', () => {
     expect(await routineRunsOf(db, 'kid', 'R')).toHaveLength(1);
     expect(await routineRunsOf(db, 'kid', 'A')).toEqual([]);
     expect(await loadChildState(db, 'kid', 'abaTargets')).toEqual({ A: aState, R: rState });
-    expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 3, nonContingent: 1 });
+    expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 3, nonContingent: 1, rev: 1 });
     expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toBeNull();
   });
 
@@ -150,11 +164,11 @@ describe('итог прогона рутины (commitRoutineRun)', () => {
     await seeded(db);
     await commitRoutineRun(db, 'kid', result(), NOW);
     await recordRoutineStep(db, 'kid', stepTrial('tr-2'), inProgress, NOW);
-    const again = result('run-1', { state: { ...rState, phase: 'mastered' }, board: { size: 5, earned: 4, nonContingent: 1 } });
+    const again = result('run-1', { state: { ...rState, phase: 'mastered' } });
     await expect(commitRoutineRun(db, 'kid', again, NOW)).rejects.toThrow();
     expect(await routineRunsOf(db, 'kid')).toHaveLength(1);
     expect(await loadChildState(db, 'kid', 'abaTargets')).toEqual({ A: aState, R: rState });
-    expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 3, nonContingent: 1 });
+    expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 3, nonContingent: 1, rev: 1 });
     expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toEqual(inProgress);
   });
 
@@ -288,9 +302,82 @@ describe('экспорт видит прогоны', () => {
     await setAbaObservers(db, 'kid', [{ id: OBSERVER, role: 'parent', trained: false }], NOW);
     await commitRoutineRun(db, 'kid', result(), NOW);
     const out = await exportForSpecialist(db, 'kid', NOW);
-    expect(out.abaRoutineRuns).toEqual([{ ...routineRun(), primaryObserverId: 'O1' }]);
+    const { startedAt: _s, endedAt: _e, ...rest } = routineRun();
+    expect(out.abaRoutineRuns).toEqual([{ ...rest, durationSec: 300, primaryObserverId: 'O1' }]);
     expect(out.state.abaObservers).toEqual([{ id: 'O1', role: 'parent', trained: false }]);
     expect(JSON.stringify(out)).not.toContain(OBSERVER);
+  });
+});
+
+describe('экспорт специалисту: пробы звеньев рутины без абсолютного времени', () => {
+  // прогон стартовал в 08:00:00.000Z (routineRun): все времена звена — смещения от него
+  const at = (ms: number) => new Date(Date.parse('2026-10-11T08:00:00.000Z') + ms).toISOString();
+  const timedStep = (id: string): AbaTrial => ({
+    ...stepTrial(id),
+    sdEndedAt: at(2000),
+    latencyMs: 500,
+    latencyFromFirstSdMs: 500,
+    presentationLog: [
+      { level: 0, by: 'app', startedAt: at(1000), endedAt: at(4000), windowMs: 10000, outcome: 'correct', respondedAt: at(3500) },
+    ],
+    // поля, которого нет в типе сегодня: любая ISO-дата внутри пробы тоже заменяется
+    ...({ futureAt: at(9000) } as object),
+  });
+  type Exported = {
+    sdEndedAt: unknown;
+    latencyMs: unknown;
+    latencyFromFirstSdMs: unknown;
+    futureAt?: unknown;
+    presentationLog: Record<string, unknown>[];
+  };
+
+  async function exported(startedAt = '2026-10-11T08:00:00.000Z') {
+    const db = await dbWithAbaConsent();
+    await recordRoutineStep(db, 'kid', timedStep('tr-r'), inProgress, NOW);
+    await commitRoutineRun(db, 'kid', result('run-1', { record: { ...recordBase('run-1'), startedAt } }), NOW);
+    return db;
+  }
+
+  it('в пробах рутины нет ни одной ISO-даты и часов прогона', async () => {
+    const db = await exported();
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    const json = JSON.stringify(out.abaTrials);
+    expect(json).not.toMatch(/\d{4}-\d{2}-\d{2}T/);
+    expect(json).not.toContain('2026-10-11');
+    expect(json).not.toContain('08:00');
+  });
+
+  it('даты заменены смещениями в мс от начала прогона, латентности сохранены', async () => {
+    const db = await exported();
+    const [t] = (await exportForSpecialist(db, 'kid', NOW)).abaTrials as Exported[];
+    expect(t.sdEndedAt).toBe(2000);
+    expect(t.futureAt).toBe(9000);
+    expect(t.presentationLog[0]).toMatchObject({ startedAt: 1000, endedAt: 4000, respondedAt: 3500, windowMs: 10000 });
+    expect([t.latencyMs, t.latencyFromFirstSdMs]).toEqual([500, 500]);
+  });
+
+  it('пробы сессии не меняются: даты как записаны', async () => {
+    const db = await exported();
+    const sessionTrial = { ...timedStep('tr-s'), sessionId: 's-5', targetId: 'A', stepId: undefined, runIndex: undefined };
+    const snapshot = { sessionId: 's-5', board: { size: 5, earned: 1, nonContingent: 0 }, boardRev: 1, observers: [], primaryObserverId: null } as unknown as AbaSessionState;
+    await recordAbaTrial(db, 'kid', sessionTrial, snapshot, NOW);
+    const out = (await exportForSpecialist(db, 'kid', NOW)).abaTrials as (Exported & { sessionId: string })[];
+    const s = out.find((t) => t.sessionId === 's-5')!;
+    expect(s.sdEndedAt).toBe(at(2000));
+    expect(s.presentationLog[0].startedAt).toBe(at(1000));
+  });
+
+  it('родителю пробы рутины уходят с датами как записано', async () => {
+    const db = await exported();
+    const [t] = (await exportChild(db, 'kid', NOW, {})).abaTrials as Exported[];
+    expect(t.sdEndedAt).toBe(at(2000));
+  });
+
+  it('битая дата начала прогона: durationSec = null, а даты проб не остаются ISO', async () => {
+    const db = await exported('не дата');
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    expect((out.abaRoutineRuns as { durationSec: number | null }[])[0].durationSec).toBeNull();
+    expect(JSON.stringify(out.abaTrials)).not.toMatch(/\d{4}-\d{2}-\d{2}T/);
   });
 });
 
@@ -314,12 +401,15 @@ describe('сессия, свёрнутая на время прогона рут
     primaryObserverId: null,
   };
   const aAfter = { targetId: 'A', phase: 'maintenance' } as AbaTargetState;
+  const sessionSnapshot = () =>
+    ({ sessionId: 's-5', startedAt: Date.parse(NOW), seed: 1, reinforcerChosenAt: null, board: { size: 5, earned: 2, nonContingent: 1 }, boardRev: 0 }) as unknown as AbaSessionState;
   // итог сессии рутин не содержит (`finishAbaSession`): только её цели
   const sessionResult = {
     session,
     states: { A: aAfter },
     trials: [],
     board: { size: 5, earned: 4, nonContingent: 1 },
+    boardRev: 1,
     exchanged: 0,
     tokenTraining: { pairingDone: true, pairingSessions: 2, pairingStreak: 2, stage: 5, atStage: [], flags: [] },
     identifySets: [],
@@ -331,17 +421,21 @@ describe('сессия, свёрнутая на время прогона рут
     const rBefore = { targetId: 'R', phase: 'acquisition' } as AbaTargetState;
     await asAbaWriter(db, 'kid', (tx) => saveChildState(tx, 'kid', 'abaTargets', { A: aState, R: rBefore }, NOW));
     // сессия начата и свёрнута на шаге
-    await recordAbaTrial(db, 'kid', { ...stepTrial('tr-s'), sessionId: 's-5', targetId: 'A', stepId: undefined, runIndex: undefined }, { sessionId: 's-5' } as AbaSessionState, NOW);
+    await recordAbaTrial(db, 'kid', { ...stepTrial('tr-s'), sessionId: 's-5', targetId: 'A', stepId: undefined, runIndex: undefined }, sessionSnapshot(), NOW);
     // прогон рутины прошёл и зафиксирован
     await commitRoutineRun(db, 'kid', result(), NOW);
     expect((await loadChildState(db, 'kid', 'abaTargets'))?.R).toEqual(rState);
-    // сессию продолжили и закончили
+    // сессию возобновили по живой доске (рутина добавила жетон) и закончили
+    const resumed = await resumeAbaSession(db, 'kid', POOL);
+    expect([resumed?.board.earned, resumed?.boardRev]).toEqual([3, 1]);
     await commitAbaSession(db, 'kid', sessionResult, NOW);
     expect(await loadChildState(db, 'kid', 'abaTargets')).toEqual({ A: aAfter, R: rState });
   });
 });
 
 describe('экспорт специалисту без снимков «в работе»', () => {
+  const sessionSnapshotBase = { sessionId: 's-5', board: { size: 5, earned: 0, nonContingent: 0 }, boardRev: 0 };
+
   it('при свёрнутых сессии и прогоне в выгрузке нет uuid наблюдателя', async () => {
     const db = await dbWithAbaConsent();
     const observers = [{ id: OBSERVER, role: 'parent' as const, trained: false }];
@@ -350,7 +444,7 @@ describe('экспорт специалисту без снимков «в ра�
       db,
       'kid',
       { ...stepTrial('tr-s'), sessionId: 's-5', targetId: 'A', stepId: undefined, runIndex: undefined },
-      { sessionId: 's-5', observers, primaryObserverId: OBSERVER } as unknown as AbaSessionState,
+      { ...sessionSnapshotBase, observers, primaryObserverId: OBSERVER } as unknown as AbaSessionState,
       NOW,
     );
     await recordRoutineStep(db, 'kid', stepTrial('tr-r'), { ...inProgress, observers, primaryObserverId: OBSERVER } as RoutineRunState, NOW);

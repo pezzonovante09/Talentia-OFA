@@ -896,6 +896,11 @@ export type AbaRoutineRun = {
   token: 'at_start_level' | 'whole_independent' | 'participation' | null;
   /** Жетонов ушло в обмен (доска заполнилась). */
   exchanged: number;
+  /**
+   * Три подкрепителя, предложенные на обмен (при `exchanged > 0`): приложение убили до выбора —
+   * при следующем открытии те же варианты (Р3, «живая доска»). Специалисту не уходят.
+   */
+  exchangeOptions?: string[];
   /** Смена фазы рутины — для отсечек на графике специалиста. */
   phase: { from: AbaTargetState['phase']; to: AbaTargetState['phase'] } | null;
   primaryObserverId: string | null;

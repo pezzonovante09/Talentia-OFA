@@ -14,7 +14,7 @@ import { withDbLock } from './lock';
 import { RETENTION_MONTHS } from './schema';
 import type { SqlDb } from './sql';
 
-const JOURNALS = ['aba_trials', 'aba_sessions', 'aba_ioa', 'aba_routine_runs', 'lesson_runs'] as const;
+const JOURNALS = ['aba_trials', 'aba_sessions', 'aba_ioa', 'aba_routine_runs', 'aba_reinforcer_choices', 'lesson_runs'] as const;
 
 /**
  * Состояние ABA для специалиста — явный список, а не все ключи ABA (`child-privacy-compliance`,
@@ -75,6 +75,7 @@ export async function applyRetention(db: SqlDb, now: Date): Promise<number> {
       ['aba_sessions', 'recorded_at'],
       ['aba_ioa', 'recorded_at'],
       ['aba_routine_runs', 'recorded_at'],
+      ['aba_reinforcer_choices', 'chosen_at'],
       ['lesson_runs', 'started_at'],
     ] as const) {
       removed += (await tx.run(`DELETE FROM ${t} WHERE ${col} < ?`, [before])).changes;
@@ -144,6 +145,7 @@ export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actor
       await tx.run('DELETE FROM aba_sessions WHERE child_id = ?', [childId]);
       await tx.run('DELETE FROM aba_ioa WHERE child_id = ?', [childId]);
       await tx.run('DELETE FROM aba_routine_runs WHERE child_id = ?', [childId]);
+      await tx.run('DELETE FROM aba_reinforcer_choices WHERE child_id = ?', [childId]);
       await tx.run(
         `DELETE FROM child_state WHERE child_id = ? AND key IN (${ABA_DELETED_KEYS.map(() => '?').join(', ')})`,
         [childId, ...ABA_DELETED_KEYS],
@@ -160,7 +162,15 @@ export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actor
 export async function abaDataSummary(
   db: SqlDb,
   childId: string,
-): Promise<{ sessions: number; trials: number; ioaRecords: number; routineRuns: number; observers: number; settings: boolean }> {
+): Promise<{
+  sessions: number;
+  trials: number;
+  ioaRecords: number;
+  routineRuns: number;
+  reinforcerChoices: number;
+  observers: number;
+  settings: boolean;
+}> {
   const count = async (table: string) =>
     (await db.all<{ n: number }>(`SELECT count(*) AS n FROM ${table} WHERE child_id = ?`, [childId]))[0].n;
   const observers = await loadChildState(db, childId, 'abaObservers');
@@ -174,6 +184,7 @@ export async function abaDataSummary(
     trials: await count('aba_trials'),
     ioaRecords: await count('aba_ioa'),
     routineRuns: await count('aba_routine_runs'),
+    reinforcerChoices: await count('aba_reinforcer_choices'),
     observers: observers?.length ?? 0,
     settings: settings.n > 0,
   };
@@ -201,6 +212,8 @@ export type ChildExport = {
   abaSessions: unknown[];
   abaIoa: unknown[];
   abaRoutineRuns: unknown[];
+  /** История выборов подкрепителя (по порядку выбора). */
+  abaReinforcerChoices: unknown[];
   lessonRuns: unknown[];
   state: Record<string, unknown>;
   consentEvents: ConsentEvent[];
@@ -220,6 +233,14 @@ export async function exportChild(
   profile: Record<string, unknown>,
 ): Promise<ChildExport> {
   return db.transaction((tx) => collectExport(tx, childId, exportedAt, profile));
+}
+
+async function choicesOf(db: SqlDb, childId: string): Promise<unknown[]> {
+  return db.all(
+    `SELECT chosen_at AS chosenAt, source, source_id AS sourceId, reinforcer_id AS reinforcerId, chosen_by AS chosenBy
+       FROM aba_reinforcer_choices WHERE child_id = ? ORDER BY chosen_at, seq`,
+    [childId],
+  );
 }
 
 async function collectExport(
@@ -245,10 +266,26 @@ async function collectExport(
     abaSessions: await bodies('aba_sessions'),
     abaIoa: await bodies('aba_ioa'),
     abaRoutineRuns: await bodies('aba_routine_runs'),
+    abaReinforcerChoices: await choicesOf(db, childId),
     lessonRuns: await bodies('lesson_runs'),
     state,
     consentEvents: (await readConsentLog(db)).filter((e) => e.childId === childId || e.childId === null),
   };
+}
+
+const ISO_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
+
+/** Все строки-даты внутри значения заменены смещением в мс от `origin` (не дата — без изменений). */
+function relativeTimes<T>(value: T, origin: number): T {
+  if (typeof value === 'string' && ISO_TIME.test(value)) {
+    const ms = Date.parse(value) - origin;
+    return (Number.isFinite(ms) ? ms : null) as T;
+  }
+  if (Array.isArray(value)) return value.map((v) => relativeTimes(v, origin)) as T;
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, relativeTimes(v, origin)])) as T;
+  }
+  return value;
 }
 
 /** Экспорт для специалиста центра: только данные ABA, без данных взрослых. */
@@ -257,7 +294,10 @@ export type SpecialistExport = {
   abaTrials: unknown[];
   abaSessions: unknown[];
   abaIoa: unknown[];
-  /** Прогоны рутин; ведущий наблюдатель — той же меткой. */
+  /**
+   * Прогоны рутин: день и длительность в секундах, без точных `startedAt` / `endedAt` (№95);
+   * ведущий наблюдатель — той же меткой.
+   */
   abaRoutineRuns: unknown[];
   /** Состояние ABA; наблюдатели — метками `O1`, `O2`… с ролью и обучен ли. */
   state: Record<string, unknown>;
@@ -297,10 +337,26 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
     };
     const abaSessions = sessions.map((s) => ({ ...s, primaryObserverId: label(s.primaryObserverId) }));
     const abaIoa = ioa.map((r) => ({ ...r, secondaryObserverId: label(r.secondaryObserverId) }));
-    const abaRoutineRuns = routineRuns.map((r) => ({ ...r, primaryObserverId: label(r.primaryObserverId) }));
+    // точное время прогона выдаёт расписание дня ребёнка дома (туалет, одевание) — решение №95:
+    // специалисту день и длительность; варианты обмена — тоже не его данные
+    const abaRoutineRuns = routineRuns.map(({ startedAt, endedAt, exchangeOptions: _options, ...r }) => {
+      const seconds = Math.round((Date.parse(endedAt) - Date.parse(startedAt)) / 1000);
+      return {
+        ...r,
+        durationSec: Number.isFinite(seconds) ? Math.max(0, seconds) : null,
+        primaryObserverId: label(r.primaryObserverId),
+      };
+    });
+    // пробы звеньев рутины несут абсолютное время (`sdEndedAt`, журнал предъявлений) — то же
+    // расписание дома: вместо дат смещения в мс от начала прогона (латентности — отдельные числа)
+    const runStart = new Map(routineRuns.map((r) => [r.id, Date.parse(r.startedAt)]));
+    const abaTrials = (await bodies<{ sessionId: string }>('aba_trials')).map((t) => {
+      const origin = runStart.get(t.sessionId);
+      return origin === undefined ? t : relativeTimes(t, origin);
+    });
     return {
       exportedAt,
-      abaTrials: await bodies('aba_trials'),
+      abaTrials,
       abaSessions,
       abaIoa,
       abaRoutineRuns,

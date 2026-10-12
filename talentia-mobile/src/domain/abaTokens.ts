@@ -57,6 +57,15 @@ export type Feedback = 'token_praise' | 'praise' | 'neutral' | 'listened';
  */
 export type TokenBoard = { size: BoardStage; earned: number; nonContingent: number };
 
+/**
+ * Доска на устройстве между процедурами (`abaBoard`): единственный источник жетонов. `rev` растёт
+ * при каждой записи, которая меняет доску; сессия помнит версию, с которой начала, и запись
+ * поверх чужой отклоняется (`AbaBoardConflictError`). Без `rev` (старая запись) — 0.
+ */
+export type BoardRecord = Pick<TokenBoard, 'earned' | 'nonContingent'> & { rev?: number };
+
+export const boardRevOf = (b: BoardRecord | undefined): number => b?.rev ?? 0;
+
 export function emptyBoard(size: BoardStage): TokenBoard {
   return { size, earned: 0, nonContingent: 0 };
 }

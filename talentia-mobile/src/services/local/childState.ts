@@ -9,7 +9,7 @@
 import type { AbaObserver, AbaTargetState } from '../../types/aba';
 import type { SkillState } from '../../domain/mastery';
 import type { AtlasEntry } from '../../domain/lessonAssembly';
-import type { TokenBoard } from '../../domain/abaTokens';
+import type { BoardRecord } from '../../domain/abaTokens';
 import type { TokenTrainingState } from '../../domain/abaTokenTraining';
 import type { IdentifySet } from '../../domain/abaIdentifySet';
 import type { AbaSessionState } from '../../domain/abaSession';
@@ -24,8 +24,11 @@ export type ChildStateValues = {
   abaTargets: Record<string, AbaTargetState>;
   tokenTraining: TokenTrainingState;
   identifySets: IdentifySet[];
-  /** Жетоны на доске между сессиями: не сгорают. */
-  abaBoard: Pick<TokenBoard, 'earned' | 'nonContingent'>;
+  /**
+   * Жетоны на доске — единственный источник для сессии и рутины: не сгорают. `rev` растёт при
+   * каждой записи, меняющей доску; сессия сверяет версию (`AbaBoardConflictError`).
+   */
+  abaBoard: BoardRecord;
   abaSessionIndex: number;
   /** Сессия, свёрнутая посреди: её состояние — обычный объект, продолжается как было. */
   abaSessionInProgress: AbaSessionState | null;

@@ -23,13 +23,14 @@ import {
   recordRoutineStep,
   routinesDue,
   setRoutineSetting,
+  settleRoutineBoard,
   startRoutineRun,
   type RoutineRunInput,
   type RoutineRunResult,
   type RoutineRunState,
 } from '../abaRoutineRun';
 import { REINFORCER_CHOICES } from '../abaTokens';
-import { initialTokenTraining, type TokenTrainingState } from '../abaTokenTraining';
+import { initialTokenTraining, type BoardStage, type TokenTrainingState } from '../abaTokenTraining';
 import type { AbaTrialInput, TrialStep } from '../abaTrialStep';
 
 const TRAINED: TokenTrainingState = { ...initialTokenTraining(), pairingDone: true, stage: 5 };
@@ -93,6 +94,14 @@ const mastered = (over: Partial<AbaTargetState> = {}, t: AbaTarget = R): AbaTarg
 /** День `n` октября 2026, локальный. */
 const day = (n: number) => `2026-10-${String(n).padStart(2, '0')}`;
 
+/** Выплата прогона по живой доске: что раньше решал прогон со снимком доски, теперь решает `settleRoutineBoard`. */
+const settle = (
+  r: RoutineRunResult,
+  live: { earned: number; nonContingent: number } = { earned: 0, nonContingent: 0 },
+  size: BoardStage = BOARD,
+  history: string[] = [],
+) => settleRoutineBoard(live, size, r.claim, { pool: POOL, history, seed: r.seed });
+
 function start(state: AbaTargetState | undefined, d: string, over: Partial<RoutineRunInput> = {}): RoutineRunState {
   return startRoutineRun({
     runId: `run-${d}`,
@@ -102,7 +111,6 @@ function start(state: AbaTargetState | undefined, d: string, over: Partial<Routi
     band: '7',
     tokenTraining: TRAINED,
     reinforcerPool: POOL,
-    reinforcerHistory: [],
     observers: [SPEC, PARENT],
     primaryObserverId: SPEC.id,
     startedAt: Date.parse(`${d}T08:00:00Z`),
@@ -369,7 +377,7 @@ describe('Р3: критерий через модуль совпадает с п
 
 describe('В1: обрыв прогона', () => {
   it('срыв: остаток доводит взрослый без проб, в окне — не целиком и interrupted', () => {
-    let run = play(start(acq(), day(3), { board: { earned: 2, nonContingent: 0 } }), ['ok']);
+    let run = play(start(acq(), day(3)), ['ok']);
     run = interruptRoutineRun(run, 'breakdown');
     expect(nextRoutineStep(run)).toEqual({ kind: 'adult_finish_chain', targetId: 'R', stepIds: [S2, S3] });
     // звено во время доведения взрослым не пишется
@@ -380,13 +388,13 @@ describe('В1: обрыв прогона', () => {
     const r = finishRoutineRun(finishRoutineByAdult(run), Date.parse('2026-10-03T08:05:00Z'), 7);
     expect(r.trials).toHaveLength(1);
     expect(r.state.routineRuns?.at(-1)).toMatchObject({ day: day(3), whole: false, interrupted: true });
-    expect([r.token, r.record.token, r.record.interrupted]).toEqual([null, null, 'breakdown']);
+    expect([r.claim.token, settle(r).token, r.record.interrupted]).toEqual([null, null, 'breakdown']);
   });
 
   it('срыв: заработанные жетоны не отнимаются, день занят', () => {
-    const run = interruptRoutineRun(play(start(acq(), day(3), { board: { earned: 2, nonContingent: 1 } }), ['ok']), 'breakdown');
+    const run = interruptRoutineRun(play(start(acq(), day(3)), ['ok']), 'breakdown');
     const r = finishRoutineRun(finishRoutineByAdult(run), 0, 7);
-    expect([r.board.earned, r.board.nonContingent]).toEqual([2, 1]);
+    expect(settle(r, { earned: 2, nonContingent: 1 }).board).toEqual({ earned: 2, nonContingent: 1 });
     expect(r.state.lastRoutineRunDay).toBe(day(3));
     expect(due({ R: r.state }, day(3))).toEqual([{ targetId: 'R', kind: null }]);
   });
@@ -399,11 +407,12 @@ describe('В1: обрыв прогона', () => {
 
   it('внешняя причина: в окно не пишется, состояние как до прогона, день не занят', () => {
     const before = acq(0, { routineRuns: [{ day: day(1), whole: true, startLevelSum: 0 }] });
-    const run = interruptRoutineRun(play(start(before, day(3), { board: { earned: 3, nonContingent: 0 } }), ['ok', 'adult']), 'external');
+    const run = interruptRoutineRun(play(start(before, day(3)), ['ok', 'adult']), 'external');
     expect(nextRoutineStep(run)).toEqual({ kind: 'end' });
     const r = finishRoutineRun(run, 0, 7);
     expect(r.state).toEqual(before);
-    expect([r.token, r.board.earned, r.record.interrupted, r.record.phase]).toEqual([null, 3, 'external', null]);
+    const paid = settle(r, { earned: 3, nonContingent: 0 });
+    expect([paid.token, paid.board.earned, r.record.interrupted, r.record.phase]).toEqual([null, 3, 'external', null]);
     expect(due({ R: r.state }, day(3))).toEqual([{ targetId: 'R', kind: 'teaching' }]);
     expect(start(r.state, day(3)).kind).toBe('teaching');
   });
@@ -445,12 +454,12 @@ describe('В6: поддержание прогоном', () => {
     expect(nextRoutineStep(run)).toMatchObject({ kind: 'trial', stepId: S3 });
     run = record(run, 'ok');
     const r = finishRoutineRun(run, 0, 7);
-    expect([r.state.phase, r.state.maintenanceFailsInRow, r.state.lastMaintenanceDay, r.token]).toEqual(['maintenance', 1, day(10), null]);
+    expect([r.state.phase, r.state.maintenanceFailsInRow, r.state.lastMaintenanceDay, r.claim.token]).toEqual(['maintenance', 1, day(10), null]);
   });
 
   it('прогон целиком сам — поддержание пройдено, интервал растёт, жетон за целиком сам', () => {
     const r = fullRun(mastered(), day(10));
-    expect([r.state.phase, r.state.maintenanceGapIndex, r.state.lastMaintenanceDay, r.token]).toEqual(['maintenance', 1, day(10), 'whole_independent']);
+    expect([r.state.phase, r.state.maintenanceGapIndex, r.state.lastMaintenanceDay, r.claim.token]).toEqual(['maintenance', 1, day(10), 'whole_independent']);
   });
 
   it('два провала подряд в разные дни — повторное обучение со звеньев от их последнего успеха', () => {
@@ -507,50 +516,65 @@ describe('В6: поддержание прогоном', () => {
 
 describe('Жетон после прогона', () => {
   it('обучение: каждое звено на своём стартовом уровне — жетон at_start_level, даже не целиком сам', () => {
-    const r = fullRun(acq(1), day(1), ['ok', 'ok', 'ok'], { board: { earned: 1, nonContingent: 0 } });
+    const r = fullRun(acq(1), day(1));
     expect(r.trials.every((t) => t.response === 'prompted')).toBe(true);
-    expect([r.token, r.board.earned]).toEqual(['at_start_level', 2]);
+    const s = settle(r, { earned: 1, nonContingent: 0 });
+    expect([s.token, s.board.earned]).toEqual(['at_start_level', 2]);
   });
 
   it('обучение: понадобилась эскалация — без жетона', () => {
-    const r = fullRun(acq(1), day(1), ['ok', 'escalate', 'ok'], { board: { earned: 1, nonContingent: 0 } });
-    expect([r.token, r.board.earned]).toEqual([null, 1]);
+    const r = fullRun(acq(1), day(1), ['ok', 'escalate', 'ok']);
+    const s = settle(r, { earned: 1, nonContingent: 0 });
+    expect([s.token, s.board.earned]).toEqual([null, 1]);
   });
 
   it('обучение: взрослый доделал звено — без жетона', () => {
-    const r = fullRun(acq(0), day(1), ['ok', 'ok', 'adult'], { board: { earned: 1, nonContingent: 0 } });
-    expect([r.token, r.board.earned]).toEqual([null, 1]);
+    const r = fullRun(acq(0), day(1), ['ok', 'ok', 'adult']);
+    const s = settle(r, { earned: 1, nonContingent: 0 });
+    expect([s.token, s.board.earned]).toEqual([null, 1]);
   });
 
   it('полная доска — обмен сразу после прогона с выбором подкрепителя', () => {
-    const r = fullRun(acq(), day(1), ['ok', 'ok', 'ok'], { board: { earned: BOARD - 1, nonContingent: 0 } });
-    expect(r.exchange?.tokens).toBe(BOARD);
-    expect(r.exchange?.options).toHaveLength(REINFORCER_CHOICES);
-    for (const o of r.exchange!.options) expect(POOL).toContain(o);
-    expect([r.board.earned, r.record.exchanged]).toEqual([0, BOARD]);
+    const s = settle(fullRun(acq(), day(1)), { earned: BOARD - 1, nonContingent: 0 });
+    expect(s.exchange?.tokens).toBe(BOARD);
+    expect(s.exchange?.options).toHaveLength(REINFORCER_CHOICES);
+    for (const o of s.exchange!.options) expect(POOL).toContain(o);
+    expect(s.board.earned).toBe(0);
   });
 
   it('неполная доска — обмена нет', () => {
-    const r = fullRun(acq(), day(1), ['ok', 'ok', 'ok'], { board: { earned: 1, nonContingent: 0 } });
-    expect([r.exchange, r.record.exchanged]).toEqual([undefined, 0]);
+    const s = settle(fullRun(acq(), day(1)), { earned: 1, nonContingent: 0 });
+    expect([s.exchange, s.board.earned]).toEqual([undefined, 2]);
   });
 
-  it('базовая линия: жетон за участие, не за результат', () => {
-    const r = fullRun(undefined, day(1), ['adult', 'adult', 'adult'], { board: { earned: 0, nonContingent: 0 } });
-    expect([r.token, r.board.earned, r.board.nonContingent]).toEqual(['participation', 1, 1]);
+  it('запись прогона не несёт того, что решает доска: ни жетона, ни обмена', () => {
+    const r = fullRun(acq(), day(1));
+    expect(r.record).not.toHaveProperty('token');
+    expect(r.record).not.toHaveProperty('exchanged');
+    expect(r.record).not.toHaveProperty('exchangeOptions');
+  });
+
+  it('базовая линия: заявка на жетон за участие, не за результат', () => {
+    const r = fullRun(undefined, day(1), ['adult', 'adult', 'adult']);
+    expect(r.claim).toEqual({ token: 'participation', tokens: 1, nonContingent: true });
+    const s = settle(r, { earned: 0, nonContingent: 0 });
+    expect([s.token, s.board.earned, s.board.nonContingent]).toEqual(['participation', 1, 1]);
   });
 
   it('жетон за участие учитывается в лимите size − 1 на цикл доски', () => {
-    const atLimit = fullRun(undefined, day(1), ['ok', 'ok', 'ok'], { board: { earned: BOARD - 1, nonContingent: BOARD - 1 } });
+    const r = fullRun(undefined, day(1));
+    const atLimit = settle(r, { earned: BOARD - 1, nonContingent: BOARD - 1 });
     expect([atLimit.token, atLimit.board.earned, atLimit.exchange]).toEqual([null, BOARD - 1, undefined]);
-    const below = fullRun(undefined, day(1), ['ok', 'ok', 'ok'], { board: { earned: BOARD - 2, nonContingent: BOARD - 2 } });
+    const below = settle(r, { earned: BOARD - 2, nonContingent: BOARD - 2 });
     expect([below.token, below.board.nonContingent]).toEqual(['participation', BOARD - 1]);
   });
 
   it('за звено жетона нет: жетон — только после прогона', () => {
     const run = play(start(acq(), day(1)), ['ok', 'ok', 'ok']);
     expect(run.trials.map((t) => t.tokens)).toEqual([0, 0, 0]);
-    expect(run.board.earned).toBe(0);
+    // доски в состоянии прогона нет: она живёт на устройстве и общая с сессиями
+    expect(run).not.toHaveProperty('board');
+    expect(finishRoutineRun(run, 0, 7).claim).toEqual({ token: 'at_start_level', tokens: 1, nonContingent: false });
   });
 });
 
@@ -605,7 +629,7 @@ describe('П1: проверка «получается дома» прогона
     expect([first.state.masteredBy, first.state.chainVerificationRuns?.length]).toEqual(['home_unverified', 1]);
     expect(() => start(first.state, day(2))).toThrow(/сегодня/);
     const second = fullRun(first.state, day(3));
-    expect([second.state.masteredBy, second.state.lastMaintenanceDay, second.token]).toEqual(['criterion', day(3), 'whole_independent']);
+    expect([second.state.masteredBy, second.state.lastMaintenanceDay, second.claim.token]).toEqual(['criterion', day(3), 'whole_independent']);
   });
 
   it('проваленное в обоих прогонах звено — обратно в обучение', () => {

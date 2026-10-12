@@ -84,10 +84,15 @@ const result = (index: number): AbaSessionResult =>
     states: {},
     trials: [],
     board: { size: 5, earned: 2, nonContingent: 1 },
+    boardRev: 0,
     exchanged: 0,
     tokenTraining: { pairingDone: true, pairingSessions: 2, pairingStreak: 2, stage: 5, atStage: [], flags: [] },
     identifySets: [],
   }) as AbaSessionResult;
+
+/** Снимок сессии в работе: из него хранилище берёт доску и версию, с которой сессия сверялась. */
+const snapshot = (over: Partial<AbaSessionState> = {}): AbaSessionState =>
+  ({ sessionId: 's-1', board: { size: 5, earned: 0, nonContingent: 0 }, boardRev: 0, ...over }) as AbaSessionState;
 
 describe('эксклюзивные транзакции', () => {
   it('откат согласия не стирает пробу, записанную в то же время', async () => {
@@ -127,7 +132,7 @@ describe('атомарная запись итогов', () => {
     await commitAbaSession(db, 'kid', result(1), NOW);
     expect(await loadChildState(db, 'kid', 'abaSessionIndex')).toBe(2);
     expect(await loadChildState(db, 'kid', 'abaSessionInProgress')).toBeNull();
-    expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 2, nonContingent: 1 });
+    expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 2, nonContingent: 1, rev: 1 });
   });
 
   it('сбой посреди фиксации — не записано ничего, номер сессии не сдвинут', async () => {
@@ -135,7 +140,7 @@ describe('атомарная запись итогов', () => {
     await commitAbaSession(db, 'kid', result(1), NOW);
     // повтор того же номера — сессия с index 1 уже есть: фиксация падает
     await expect(
-      commitAbaSession(db, 'kid', { ...result(1), session: { ...session(1), id: 's-dup' } }, NOW),
+      commitAbaSession(db, 'kid', { ...result(1), boardRev: 1, session: { ...session(1), id: 's-dup' } }, NOW),
     ).rejects.toThrow();
     expect(await sessionsOf(db, 'kid')).toHaveLength(1);
     expect(await loadChildState(db, 'kid', 'abaSessionIndex')).toBe(2);
@@ -143,13 +148,13 @@ describe('атомарная запись итогов', () => {
 
   it('проба и снимок сессии в работе — вместе', async () => {
     const db = await dbWithAbaConsent();
-    const inProgress = { sessionId: 's-1' } as AbaSessionState;
+    const inProgress = snapshot();
     await recordAbaTrial(db, 'kid', trial('tr-1'), inProgress, NOW);
     expect(await trialsOfTarget(db, 'kid', 't')).toHaveLength(1);
     expect(await loadChildState(db, 'kid', 'abaSessionInProgress')).toEqual(inProgress);
     // противоречивая проба не пишется — и снимок остаётся прежним
     await expect(
-      recordAbaTrial(db, 'kid', { ...trial('tr-2'), response: 'independent', promptLevelUsed: 2 }, { sessionId: 'x' } as AbaSessionState, NOW),
+      recordAbaTrial(db, 'kid', { ...trial('tr-2'), response: 'independent', promptLevelUsed: 2 }, snapshot({ sessionId: 'x' }), NOW),
     ).rejects.toThrow();
     expect(await loadChildState(db, 'kid', 'abaSessionInProgress')).toEqual(inProgress);
   });
@@ -174,7 +179,7 @@ describe('атомарная запись итогов', () => {
 });
 
 describe('согласие на данные ABA', () => {
-  const inProgress = { sessionId: 's-1' } as AbaSessionState;
+  const inProgress = snapshot();
 
   it('без согласия не пишется ни проба, ни снимок, ни итог сессии', async () => {
     const db = await memoryDb();
@@ -236,11 +241,11 @@ describe('согласие на данные ABA', () => {
     await recordAbaTrial(db, 'sib', trial('tr-sib'), inProgress, NOW);
     const run: LessonRun = { id: 'r-1', childId: 'kid', lessonId: 'l', startedAt: NOW, taskSeconds: [5], reviewTasks: 0 };
     await commitLesson(db, 'kid', { run, skills: [emptySkill('count')], atlas: [], nextLessonNumber: 2 }, NOW);
-    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 1, trials: 1, ioaRecords: 0, routineRuns: 0, observers: 0, settings: true });
+    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 1, trials: 1, ioaRecords: 0, routineRuns: 0, reinforcerChoices: 0, observers: 0, settings: true });
 
     await revokeAbaProcessing(db, abaConsent('revoke', { at: '2026-09-30T11:00:00Z' }), 'owner');
 
-    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 0, trials: 0, ioaRecords: 0, routineRuns: 0, observers: 0, settings: false });
+    expect(await abaDataSummary(db, 'kid')).toEqual({ sessions: 0, trials: 0, ioaRecords: 0, routineRuns: 0, reinforcerChoices: 0, observers: 0, settings: false });
     for (const key of [
       'abaTargets',
       'abaBoard',

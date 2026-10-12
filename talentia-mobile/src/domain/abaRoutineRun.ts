@@ -10,7 +10,8 @@
  * поддержание обычных целей считается по сессиям.
  *
  * Экран: `startRoutineRun` → `nextRoutineStep` / `recordRoutineStep` по звеньям →
- * (`interruptRoutineRun` → `finishRoutineByAdult`) → `setRoutineSetting` → `finishRoutineRun`.
+ * (`interruptRoutineRun` → `finishRoutineByAdult`) → `setRoutineSetting` → `finishRoutineRun` →
+ * `commitRoutineRun` (хранилище): жетон и обмен решает он, по живой доске (`settleRoutineBoard`).
  * Состояние — обычный объект с генератором (`seed`): прогон переживает сворачивание.
  */
 import {
@@ -45,7 +46,7 @@ import {
   tryExchange,
   type TokenBoard,
 } from './abaTokens';
-import { workingBoardSize, type TokenTrainingState } from './abaTokenTraining';
+import type { BoardStage, TokenTrainingState } from './abaTokenTraining';
 import { buildTrialStep, scoreAgainst, type AbaTrialInput, type PlannedTrial, type TrialStep } from './abaTrialStep';
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
@@ -103,12 +104,14 @@ export type RoutineRunInput = {
   day: string;
   target: AbaTarget;
   state?: AbaTargetState;
+  /** Полоса размера доски — та же, по которой считает сессия (с учётом параметров специалиста). */
   band: AgeBand;
-  /** Доска — общая с сессиями: жетоны не сгорают. */
-  board?: Pick<TokenBoard, 'earned' | 'nonContingent'>;
+  /**
+   * Доски во входе нет: она общая с сессиями и живёт в `abaBoard`. Жетон и обмен прогона решает
+   * `commitRoutineRun` по доске на момент фиксации (`settleRoutineBoard`), а не по снимку со старта.
+   */
   tokenTraining: TokenTrainingState;
   reinforcerPool: string[];
-  reinforcerHistory: string[];
   physicalPromptAllowed?: boolean;
   observers?: AbaObserver[];
   primaryObserverId: string | null;
@@ -132,9 +135,8 @@ export type RoutineRunState = {
   /** Сколько звеньев записано. */
   done: number;
   trials: AbaTrial[];
-  board: TokenBoard;
+  band: AgeBand;
   reinforcerPool: string[];
-  reinforcerHistory: string[];
   status: 'running' | 'adult_finish' | 'finished';
   interrupted: 'breakdown' | 'external' | null;
   setting: RoutineSetting;
@@ -168,13 +170,8 @@ export function startRoutineRun(input: RoutineRunInput): RoutineRunState {
     stepIds: [...target.steps!].sort((a, b) => a.order - b.order).map((s) => s.id),
     done: 0,
     trials: [],
-    board: {
-      size: workingBoardSize(input.tokenTraining, input.band),
-      earned: input.board?.earned ?? 0,
-      nonContingent: input.board?.nonContingent ?? 0,
-    },
+    band: input.band,
     reinforcerPool: input.reinforcerPool,
-    reinforcerHistory: input.reinforcerHistory,
     status: 'running',
     interrupted: null,
     setting: 'usual',
@@ -276,25 +273,42 @@ export function setRoutineSetting(run: RoutineRunState, setting: RoutineSetting)
   return { ...run, setting };
 }
 
+/** Запись прогона без того, что решает доска на момент фиксации: жетон и обмен (`settleRoutineBoard`). */
+export type RoutineRunRecordBase = Omit<AbaRoutineRun, 'token' | 'exchanged' | 'exchangeOptions'>;
+
+/**
+ * Заявка прогона на жетон: что он заработал по ходу. Доску прогон не трогает — выплату решает
+ * `settleRoutineBoard` по живой доске (Р3): жетон за участие зависит от места на ней.
+ */
+export type RoutineClaim = {
+  token: AbaRoutineRun['token'];
+  tokens: 0 | 1;
+  /** Жетон не за результат — идёт в счёт `nonContingent` и ограничен местом на доске. */
+  nonContingent: boolean;
+};
+
 export type RoutineRunResult = {
-  /** Пробы звеньев — уже записаны по ходу (`recordAbaTrial`); здесь для итога. */
+  /** Пробы звеньев — уже записаны по ходу (`recordRoutineStep`); здесь для итога. */
   trials: AbaTrial[];
   state: AbaTargetState;
-  board: TokenBoard;
-  token: AbaRoutineRun['token'];
-  /** Доска заполнилась — обмен сразу после прогона: экран предлагает выбор. */
-  exchange?: { tokens: number; options: string[] };
-  record: AbaRoutineRun;
+  claim: RoutineClaim;
+  record: RoutineRunRecordBase;
+  /** Для расчёта в `commitRoutineRun`: полоса (размер доски), пул подкрепителей, затравка вариантов. */
+  band: AgeBand;
+  reinforcerPool: string[];
+  seed: number;
 };
 
 /**
  * Жетон после прогона — аналог №11 (методист, Р3, п. 8): обучение — за прогон, где каждое звено
  * сделано не выше своего стартового уровня без эскалации и без взрослого; поддержание и проверка —
  * только за прогон целиком сам; базовая линия — за участие, в пределах жетонов не за результат
- * (`size − 1` на цикл доски). Обрыв — без жетона; заработанные жетоны не отнимаются.
+ * (`size − 1` на цикл доски — проверяет `settleRoutineBoard`). Обрыв — без жетона; заработанные
+ * жетоны не отнимаются.
  */
-function routineToken(run: RoutineRunState): { token: AbaRoutineRun['token']; tokens: number; nonContingent: boolean } {
-  if (run.interrupted) return { token: null, tokens: 0, nonContingent: false };
+function routineClaim(run: RoutineRunState): RoutineClaim {
+  const none: RoutineClaim = { token: null, tokens: 0, nonContingent: false };
+  if (run.interrupted) return none;
   const steps = run.trials;
   const whole = steps.length === run.stepIds.length && steps.every((t) => t.response === 'independent');
   switch (run.kind) {
@@ -304,16 +318,52 @@ function routineToken(run: RoutineRunState): { token: AbaRoutineRun['token']; to
         steps.every(
           (t) => !t.adultCompleted && t.promptLevelUsed <= t.startPromptLevel && (t.response === 'independent' || t.response === 'prompted'),
         );
-      return atStart ? { token: 'at_start_level', tokens: 1, nonContingent: false } : { token: null, tokens: 0, nonContingent: false };
+      return atStart ? { token: 'at_start_level', tokens: 1, nonContingent: false } : none;
     }
     case 'maintenance':
     case 'verification':
-      return whole ? { token: 'whole_independent', tokens: 1, nonContingent: false } : { token: null, tokens: 0, nonContingent: false };
-    case 'baseline': {
-      const award = participationAward(run.board);
-      return award.tokens ? { token: 'participation', tokens: 1, nonContingent: true } : { token: null, tokens: 0, nonContingent: false };
-    }
+      return whole ? { token: 'whole_independent', tokens: 1, nonContingent: false } : none;
+    case 'baseline':
+      return { token: 'participation', tokens: 1, nonContingent: true };
   }
+}
+
+export type RoutineSettlement = {
+  board: Pick<TokenBoard, 'earned' | 'nonContingent'>;
+  /** Жетон, выплаченный на самом деле: за участие мог не поместиться на доску — тогда `null`. */
+  token: AbaRoutineRun['token'];
+  /** Доска заполнилась — обмен сразу после прогона: экран предлагает выбор из `options`. */
+  exchange?: { tokens: number; options: string[] };
+};
+
+/**
+ * Выплата по живой доске: заявка прогона ложится на доску, как она лежит на момент фиксации, а не
+ * как лежала на старте (Р3). Участие — только пока на доске есть место для жетонов не за результат
+ * (`participationAward`); размер доски — по текущей ступени; полная доска (`earned >= size`) —
+ * обмен всех жетонов, варианты подкрепителей — по живой истории выборов и затравке прогона.
+ */
+export function settleRoutineBoard(
+  live: Pick<TokenBoard, 'earned' | 'nonContingent'>,
+  size: BoardStage,
+  claim: RoutineClaim,
+  ctx: { pool: string[]; history: string[]; seed: number },
+): RoutineSettlement {
+  const current: TokenBoard = { size, earned: live.earned, nonContingent: live.nonContingent };
+  const paid = claim.nonContingent ? participationAward(current).tokens : claim.tokens;
+  let board = addTokens(current, paid, claim.nonContingent);
+  let exchange: RoutineSettlement['exchange'];
+  // обмен — только если прогон выплатил жетон: доска, полная с прошлой сессии, ждёт своего момента,
+  // а не обменивается сразу после срыва (методист, 2026-10-12)
+  if (paid > 0 && isBoardFull(board)) {
+    const ex = tryExchange(board);
+    board = ex.board;
+    exchange = { tokens: ex.exchanged, options: reinforcerChoices(ctx.pool, ctx.history, seeded(ctx.seed).rng) };
+  }
+  return {
+    board: { earned: board.earned, nonContingent: board.nonContingent },
+    token: paid ? claim.token : null,
+    ...(exchange ? { exchange } : {}),
+  };
 }
 
 /**
@@ -372,16 +422,7 @@ export function finishRoutineRun(run: RoutineRunState, endedAt: number, sessionI
     }
   }
 
-  const award = routineToken(run);
-  let board = addTokens(run.board, award.tokens, award.nonContingent);
-  let exchange: RoutineRunResult['exchange'];
-  if (isBoardFull(board)) {
-    const ex = tryExchange(board);
-    board = ex.board;
-    exchange = { tokens: ex.exchanged, options: reinforcerChoices(run.reinforcerPool, run.reinforcerHistory, seeded(run.seed).rng) };
-  }
-
-  const record: AbaRoutineRun = {
+  const record: RoutineRunRecordBase = {
     id: run.runId,
     targetId: target.id,
     day,
@@ -390,12 +431,18 @@ export function finishRoutineRun(run: RoutineRunState, endedAt: number, sessionI
     endedAt: iso(endedAt),
     interrupted: run.interrupted,
     setting: run.setting,
-    token: award.token,
-    exchanged: exchange?.tokens ?? 0,
     phase: s.phase !== before.phase ? { from: before.phase, to: s.phase } : null,
     primaryObserverId: run.primaryObserverId,
   };
-  return { trials: run.trials, state: s, board, token: award.token, ...(exchange ? { exchange } : {}), record };
+  return {
+    trials: run.trials,
+    state: s,
+    claim: routineClaim(run),
+    record,
+    band: run.band,
+    reinforcerPool: run.reinforcerPool,
+    seed: run.seed,
+  };
 }
 
 /** Срыв до первого звена: проба поддержания без записанных звеньев — провал по форме первого звена. */

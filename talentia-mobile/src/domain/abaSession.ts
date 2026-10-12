@@ -307,9 +307,23 @@ export type AbaSessionState = {
   reinforcerOptions: string[];
   reinforcerId: string | null;
   reinforcerChosenBy: 'child' | 'adult' | null;
+  /** Когда сделан последний выбор подкрепителя (мс); от него считается «обмен рутины, пока сессия свёрнута». */
+  reinforcerChosenAt: number | null;
+  /**
+   * Пока сессия была свёрнута, рутина обменяла жетоны: «работаю за X» потеряло основание. До нового
+   * выбора из трёх (по живой истории) обмен в сессии не выдаётся; старый `reinforcerId` остаётся
+   * фактом утреннего выбора (методист, 2026-10-12).
+   */
+  reinforcerStale?: boolean;
   queue: QueueItem[];
   trials: AbaTrial[];
   board: TokenBoard;
+  /**
+   * Версия `abaBoard`, с которой сессия последний раз сверялась. Запись доски при другой версии —
+   * `AbaBoardConflictError`: доску изменила рутина; экран возобновляет сессию (`resumeAbaSession`)
+   * и повторяет шаг.
+   */
+  boardRev: number;
   tokenTraining: TokenTrainingState;
   /** Обучение доске: обмен сразу, как доска полна, а не на перерыве. */
   immediateExchange: boolean;
@@ -348,6 +362,8 @@ export type StartInput = {
   reinforcerHistory: string[];
   /** Доска с прошлой сессии: жетоны не сгорают. Размер — по ступени обучения доске. */
   board?: Pick<TokenBoard, 'earned' | 'nonContingent'>;
+  /** Версия `abaBoard`, из которой взята доска (`BoardRecord.rev`; нет записи — 0). */
+  boardRev?: number;
   /** Сопряжение и обучение доске — на ребёнке. Без сопряжения рабочая сессия не начинается. */
   tokenTraining: TokenTrainingState;
   /** Наборы `identify` ребёнка. */
@@ -788,6 +804,7 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
     reinforcerOptions,
     reinforcerId: null,
     reinforcerChosenBy: null,
+    reinforcerChosenAt: null,
     queue,
     trials: [],
     board: {
@@ -795,6 +812,7 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
       earned: input.board?.earned ?? 0,
       nonContingent: input.board?.nonContingent ?? 0,
     },
+    boardRev: input.boardRev ?? 0,
     tokenTraining: input.tokenTraining,
     immediateExchange: immediateExchange(input.tokenTraining, band),
     tokensEarned: 0,
@@ -1010,6 +1028,18 @@ export function nextStep(
 
   const pause = st.pendingPauseMs;
   const head = st.queue[0];
+  // подкрепитель устарел после обмена рутины, а доска полна: выбор из трёх — в ближайшей точке,
+  // где обмен возможен (сразу при обучении доске, перед перерывом, перед концом); иначе токен
+  // остался бы без обмена (методист, 2026-10-12)
+  if (
+    st.reinforcerStale &&
+    isBoardFull(st.board) &&
+    head?.kind !== 'access' &&
+    head?.kind !== 'reinforcer' &&
+    (st.immediateExchange || !head || head.kind === 'break')
+  ) {
+    return done(st, { kind: 'choose_reinforcer', options: st.reinforcerOptions, adultChoosesAfterMs: REINFORCER_CHOICE_TIMEOUT_MS });
+  }
   if (!head) {
     const last = lastTrial(st);
     const pairingCycle = needsPairingCycle(st);
@@ -1038,7 +1068,7 @@ export function nextStep(
         { ...st, pendingPauseMs: 0 },
         {
           kind: 'break',
-          canExchange: isBoardFull(st.board),
+          canExchange: isBoardFull(st.board) && !st.reinforcerStale,
           pauseBeforeMs: pause,
           ...(head.initiatedBy ? { initiatedBy: head.initiatedBy } : {}),
           ...(head.maxMs ? { maxMs: head.maxMs } : {}),
@@ -1070,9 +1100,45 @@ export function chooseReinforcer(
   now: number,
   by: 'child' | 'adult' = 'child',
 ): AbaSessionState {
+  if (state.reinforcerStale && state.reinforcerId !== null) {
+    // повторный выбор после обмена рутины: время работы не сбрасывается, очередь не трогается
+    if (!state.reinforcerOptions.includes(id)) throw new Error(`Подкрепитель ${id} не предлагался`);
+    const chosen: AbaSessionState = { ...state, reinforcerId: id, reinforcerChosenBy: by, reinforcerChosenAt: now };
+    delete chosen.reinforcerStale;
+    // полная доска, ждавшая выбора, обменивается сейчас (обучение доске)
+    return settleBoard(chosen, now).state;
+  }
   if (state.queue[0]?.kind !== 'reinforcer') throw new Error('Сейчас не выбор подкрепителя');
   if (!state.reinforcerOptions.includes(id)) throw new Error(`Подкрепитель ${id} не предлагался`);
-  return { ...state, reinforcerId: id, reinforcerChosenBy: by, workStartedAt: now, queue: state.queue.slice(1) };
+  return { ...state, reinforcerId: id, reinforcerChosenBy: by, reinforcerChosenAt: now, workStartedAt: now, queue: state.queue.slice(1) };
+}
+
+/** Доска на устройстве, как её видит сессия при возобновлении. */
+export type LiveBoard = Pick<TokenBoard, 'earned' | 'nonContingent'> & { rev: number };
+
+/**
+ * Возобновить свёрнутую сессию по живой доске (`abaBoard`) — единственный путь продолжить (Р3,
+ * «живая доска»). Размер доски — из снимка; `earned`, `nonContingent` и версия — с устройства;
+ * собственные счётчики сессии (`tokensEarned`, `exchangesMade`) не трогаются.
+ *
+ * Если пока сессия была свёрнута, рутина обменяла жетоны (`routineExchanged`), «работаю за X»
+ * потеряло основание: у сессии, уже выбравшей подкрепитель, он помечается устаревшим (до нового
+ * выбора из `options` обмена в сессии нет); у ещё не выбравшей — просто обновляются варианты.
+ * `options` — три подкрепителя по живой истории; нужны, когда `routineExchanged`.
+ */
+export function resumeAbaSession(
+  state: AbaSessionState,
+  live: LiveBoard,
+  ctx: { routineExchanged: boolean; options?: string[] },
+): AbaSessionState {
+  const next: AbaSessionState = {
+    ...state,
+    board: { size: state.board.size, earned: live.earned, nonContingent: live.nonContingent },
+    boardRev: live.rev,
+  };
+  if (!ctx.routineExchanged) return next;
+  if (!ctx.options?.length) throw new Error('Обмен рутины: нужны варианты подкрепителя для нового выбора');
+  return { ...next, reinforcerOptions: ctx.options, ...(state.reinforcerId !== null ? { reinforcerStale: true } : {}) };
 }
 
 /**
@@ -1082,7 +1148,8 @@ export function chooseReinforcer(
 export function finishBreak(state: AbaSessionState, now: number): { state: AbaSessionState; exchanged: number } {
   if (state.queue[0]?.kind !== 'break') throw new Error('Сейчас не перерыв');
   const startedAt = state.breakStartedAt ?? now;
-  const { board, exchanged } = tryExchange(state.board);
+  // пока подкрепитель устарел (обмен рутины), обмена нет: жетоны не сгорают, ждут нового выбора
+  const { board, exchanged } = state.reinforcerStale ? { board: state.board, exchanged: 0 } : tryExchange(state.board);
   const head = state.queue[0];
   const events: AbaSessionEvent[] = [
     ...state.events,
@@ -1303,7 +1370,7 @@ function payParticipation(state: AbaSessionState, targetId: string, now: number)
  * за обмен в рабочее время не идёт.
  */
 function settleBoard(state: AbaSessionState, now: number): { state: AbaSessionState; exchanged: number } {
-  if (!state.immediateExchange || !isBoardFull(state.board)) return { state, exchanged: 0 };
+  if (!state.immediateExchange || state.reinforcerStale || !isBoardFull(state.board)) return { state, exchanged: 0 };
   const { board, exchanged } = tryExchange(state.board);
   const access: QueueItem = { kind: 'access', durationMs: EXCHANGE_ACCESS_MS[state.board.size] };
   return {
@@ -1813,6 +1880,8 @@ export type AbaSessionResult = {
   trials: AbaTrial[];
   /** Доска на следующую сессию: жетоны не сгорают. */
   board: TokenBoard;
+  /** Версия `abaBoard`, с которой сессия сверялась: `commitAbaSession` пишет доску только при совпадении. */
+  boardRev: number;
   /** Сколько жетонов ушло в обмен в конце. 0 — доска неполная или обмена по этой причине нет. */
   exchanged: number;
   /** Обучение доске после этой сессии. */
@@ -1985,6 +2054,11 @@ export function finishAbaSession(
   ioa?: AbaIoaRecord,
   /** История сессий ребёнка (свежие в конце) и сигналы после прошлой — для сигналов сессии. */
   signalHistory?: { sessions: readonly SignalSession[]; previous: readonly SessionSignal[] },
+  /**
+   * В окне сессии (старт → фиксация) был обмен рутины — `routineExchangedSince` (`abaLog.ts`). Сессия
+   * с нулём обменов при этом ступень доски не решает (`applyStageSession`).
+   */
+  extra: { routineExchangeInWindow?: boolean } = {},
 ): AbaSessionResult {
   if (state.endReason === null) throw new Error('Сессия ещё идёт');
   if (ioa && ioa.sessionId !== state.sessionId) throw new Error('IOA другой сессии');
@@ -2098,13 +2172,14 @@ export function finishAbaSession(
     states[id] = s;
   }
 
-  const canExchange = EXCHANGE_AT_END.has(state.endReason);
+  const canExchange = EXCHANGE_AT_END.has(state.endReason) && !state.reinforcerStale;
   const { board, exchanged } = canExchange ? tryExchange(state.board) : { board: state.board, exchanged: 0 };
   const exchangesMade = state.exchangesMade + (exchanged > 0 ? 1 : 0);
   const tokenTraining = applyStageSession(state.tokenTraining, state.band, {
     sessionIndex: idx,
     exchanges: exchangesMade,
     endReason: state.endReason,
+    ...(extra.routineExchangeInWindow ? { routineExchangeInWindow: true as const } : {}),
   });
   const at = iso(endedAt);
   const events: AbaSessionEvent[] = [
@@ -2140,6 +2215,7 @@ export function finishAbaSession(
     states: Object.fromEntries(Object.entries(states).filter(([id]) => !isRoutine(state.targets[id] ?? { area: 'matching' }))),
     trials: state.trials,
     board,
+    boardRev: state.boardRev,
     exchanged,
     tokenTraining,
     identifySets: state.identifySets.map((x) => (x.id === state.set?.id ? { ...x, lastSetSessionIndex: idx } : x)),

@@ -318,6 +318,53 @@ WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
 )
 BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
 `,
+  // 9 — журнал выборов подкрепителя (раунд 2, Р3, «живая доска»; методист 2026-10-12)
+  //
+  // История выборов — единственный источник для «не предлагать выбранное дважды подряд»: выбирают и
+  // сессия, и обмен после прогона рутины, и порядок между ними решает время выбора, а не конец
+  // сессии. Входит любой выбор с подкрепителем, в том числе взрослого. Только дописывание;
+  // удаление — по ребёнку или сроку; запись — только через ворота согласия на данные ABA. В облако
+  // не уходит. Выбор рутины — один на прогон (частичный уникальный индекс); выборов сессии бывает
+  // несколько (повторный — после обмена рутины, пока сессия свёрнута). Отзыв согласия при оставшихся
+  // выборах база не принимает. Прежняя история (по одному выбору на сессию) переносится из журнала
+  // сессий — до создания триггеров.
+  `
+CREATE TABLE aba_reinforcer_choices (
+  seq           INTEGER PRIMARY KEY AUTOINCREMENT,
+  child_id      TEXT NOT NULL,
+  chosen_at     TEXT NOT NULL,
+  source        TEXT NOT NULL CHECK (source IN ('session', 'routine')),
+  source_id     TEXT NOT NULL,
+  reinforcer_id TEXT NOT NULL CHECK (reinforcer_id <> ''),
+  chosen_by     TEXT NOT NULL CHECK (chosen_by IN ('child', 'adult'))
+);
+CREATE INDEX aba_reinforcer_choices_order ON aba_reinforcer_choices (child_id, chosen_at, seq);
+CREATE UNIQUE INDEX aba_reinforcer_choices_one_per_run ON aba_reinforcer_choices (child_id, source_id) WHERE source = 'routine';
+INSERT INTO aba_reinforcer_choices (child_id, chosen_at, source, source_id, reinforcer_id, chosen_by)
+  SELECT child_id, recorded_at, 'session', id, json_extract(body, '$.reinforcerId'),
+         COALESCE(json_extract(body, '$.reinforcerChosenBy'), 'child')
+    FROM aba_sessions
+   WHERE COALESCE(json_extract(body, '$.reinforcerId'), '') <> ''
+   ORDER BY session_index;
+${gated('aba_reinforcer_choices')}
+${retained('aba_reinforcer_choices', 'chosen_at')}
+CREATE TRIGGER aba_reinforcer_choices_need_consent BEFORE INSERT ON aba_reinforcer_choices
+WHEN NOT EXISTS (SELECT 1 FROM aba_write_gate WHERE child_id = NEW.child_id)
+BEGIN SELECT RAISE(ABORT, 'aba_reinforcer_choices: запись только через commit.ts при согласии на данные ABA'); END;
+DROP TRIGGER consent_events_aba_revoke_needs_purge;
+CREATE TRIGGER consent_events_aba_revoke_needs_purge BEFORE INSERT ON consent_events
+WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
+  EXISTS (SELECT 1 FROM aba_trials WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_sessions WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_ioa WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_routine_runs WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_reinforcer_choices WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM child_state WHERE child_id = NEW.child_id AND key IN
+    ('abaTargets', 'tokenTraining', 'identifySets', 'abaBoard', 'abaSessionIndex', 'abaSessionInProgress', 'abaPaused',
+     'physicalPromptAllowed', 'abaObservers', 'abaRoutineRunInProgress'))
+)
+BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
+`,
 ];
 
 /**

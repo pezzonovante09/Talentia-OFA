@@ -45,7 +45,17 @@ export const EXCHANGES_TO_GROW = 2;
 export type TokenTrainingFlag = 'pairing_not_established' | 'token_training_stalled';
 
 /** Итог сессии на ступени — для решения о переходе. */
-export type StageSession = { sessionIndex: number; exchanges: number; endReason: AbaSessionEndReason };
+export type StageSession = {
+  sessionIndex: number;
+  exchanges: number;
+  endReason: AbaSessionEndReason;
+  /**
+   * В окне сессии (старт → фиксация) был обмен рутины (методист, 2026-10-12). Рутинные обмены в
+   * `exchanges` не идут и ступень не растят; но ноль обменов сессии при таком обмене ничего не
+   * говорит об обучении доске — её опустошила рутина.
+   */
+  routineExchangeInWindow?: boolean;
+};
 
 export type TokenTrainingState = {
   pairingDone: boolean;
@@ -113,9 +123,12 @@ export function applyPairingSession(
  *   ступени 1 отката нет: ноль обменов на доске из одной ячейки — это ноль верных ответов
  *   на стартовом уровне, проблема не в доске; ставится флаг специалисту.
  * - Остановка взрослым в решениях не участвует. Жетоны при смене ступени сохраняются.
+ * - Сессия с нулём обменов, в окне которой был обмен рутины, не участвует так же: ни вверх, ни
+ *   вниз, серия не рвётся.
  */
 export function applyStageSession(t: TokenTrainingState, band: AgeBand, session: StageSession): TokenTrainingState {
   if (!t.pairingDone || session.endReason === 'adult_stopped') return t;
+  if (session.routineExchangeInWindow && session.exchanges === 0) return t;
   const atStage = [...t.atStage, session].slice(-STAGE_WINDOW);
   if (atStage.length < STAGE_WINDOW) return { ...t, atStage };
 
