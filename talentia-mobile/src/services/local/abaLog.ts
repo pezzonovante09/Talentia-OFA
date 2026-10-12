@@ -104,7 +104,7 @@ export async function appendSession(db: SqlDb, childId: string, session: AbaSess
 export async function appendRoutineRun(db: SqlDb, childId: string, run: AbaRoutineRun, recordedAt: string): Promise<void> {
   await db.run(
     'INSERT INTO aba_routine_runs (child_id, id, target_id, day, body, recorded_at) VALUES (?, ?, ?, ?, ?, ?)',
-    [childId, run.id, run.targetId, run.day, JSON.stringify(run), recordedAt],
+    [childId, run.id, run.targetId, run.day, JSON.stringify(run), new Date(recordedAt).toISOString()],
   );
 }
 

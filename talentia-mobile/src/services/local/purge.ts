@@ -388,7 +388,8 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
       const at = Date.parse(t.sdEndedAt ?? '');
       if (Number.isFinite(at)) orphanStart.set(t.sessionId, Math.min(orphanStart.get(t.sessionId) ?? at, at));
     }
-    const abaTrials = trials.map((t) => relativeTimes(t, runStart.get(t.sessionId) ?? orphanStart.get(t.sessionId) ?? 0));
+    // нет отсчёта вовсе (проба без парсируемого времени и без записи сессии) — даты вымываются в null, а не в абсолютные мс
+    const abaTrials = trials.map((t) => relativeTimes(t, runStart.get(t.sessionId) ?? orphanStart.get(t.sessionId) ?? Number.NaN));
     return {
       exportedAt,
       abaTrials,
