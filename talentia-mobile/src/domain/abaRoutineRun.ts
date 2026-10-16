@@ -28,6 +28,7 @@ import type { AgeBand } from '../types/task';
 import {
   applyMaintenanceProbe,
   applyRoutineBaseline,
+  applyRoutineBreakdown,
   applyRoutineRun,
   isRoutine,
   isRoutineMaintenanceDue,
@@ -35,7 +36,7 @@ import {
 } from './abaCriterion';
 import { applyTrialToFading, initialTargetState, trialInvariantErrors } from './abaPrompting';
 import { seeded } from './abaRandom';
-import { MASTERED_PHASES, probesOf, rollbackSteps, TEACHING_PHASES, verificationVerdict } from './abaSession';
+import { MASTERED_PHASES, probesOf, rollbackSteps, TEACHING_PHASES, verificationVerdict, withAssentConcern } from './abaSession';
 import { targetErrors } from './abaTargetRules';
 import {
   addTokens,
@@ -43,7 +44,6 @@ import {
   MIN_REINFORCER_POOL,
   participationAward,
   reinforcerChoices,
-  tryExchange,
   type TokenBoard,
 } from './abaTokens';
 import type { BoardStage, TokenTrainingState } from './abaTokenTraining';
@@ -279,7 +279,7 @@ export function setRoutineSetting(run: RoutineRunState, setting: RoutineSetting)
 }
 
 /** Запись прогона без того, что решает доска на момент фиксации: жетон и обмен (`settleRoutineBoard`). */
-export type RoutineRunRecordBase = Omit<AbaRoutineRun, 'token' | 'exchanged' | 'exchangeOptions'>;
+export type RoutineRunRecordBase = Omit<AbaRoutineRun, 'token' | 'exchangeOffer'>;
 
 /**
  * Заявка прогона на жетон: что он заработал по ходу. Доску прогон не трогает — выплату решает
@@ -339,8 +339,11 @@ export type RoutineSettlement = {
   board: Pick<TokenBoard, 'earned' | 'nonContingent'>;
   /** Жетон, выплаченный на самом деле: за участие мог не поместиться на доску — тогда `null`. */
   token: AbaRoutineRun['token'];
-  /** Доска заполнилась — обмен сразу после прогона: экран предлагает выбор из `options`. */
-  exchange?: { tokens: number; options: string[] };
+  /**
+   * Доска заполнилась — предложен обмен: экран даёт выбор из `options`. Доска при этом **не**
+   * обнуляется: жетоны уходят только вместе с выбором (`commitRoutineExchange`).
+   */
+  offer?: { tokens: number; boardSize: BoardStage; options: string[] };
 };
 
 /**
@@ -358,18 +361,16 @@ export function settleRoutineBoard(
   const current: TokenBoard = { size, earned: live.earned, nonContingent: live.nonContingent };
   const paid = claim.nonContingent ? participationAward(current).tokens : claim.tokens;
   let board = addTokens(current, paid, claim.nonContingent);
-  let exchange: RoutineSettlement['exchange'];
-  // обмен — только если прогон выплатил жетон: доска, полная с прошлой сессии, ждёт своего момента,
-  // а не обменивается сразу после срыва (методист, 2026-10-12)
+  let offer: RoutineSettlement['offer'];
+  // предложение — только если прогон выплатил жетон: доска, полная с прошлой сессии, ждёт своего
+  // момента, а не предлагается сразу после срыва (методист, 2026-10-12)
   if (paid > 0 && isBoardFull(board)) {
-    const ex = tryExchange(board);
-    board = ex.board;
-    exchange = { tokens: ex.exchanged, options: reinforcerChoices(ctx.pool, ctx.history, seeded(ctx.seed).rng) };
+    offer = { tokens: board.earned, boardSize: size, options: reinforcerChoices(ctx.pool, ctx.history, seeded(ctx.seed).rng) };
   }
   return {
     board: { earned: board.earned, nonContingent: board.nonContingent },
     token: paid ? claim.token : null,
-    ...(exchange ? { exchange } : {}),
+    ...(offer ? { offer } : {}),
   };
 }
 
@@ -395,22 +396,32 @@ export function finishRoutineRun(run: RoutineRunState, endedAt: number, sessionI
     s = { ...run.state, lastRoutineRunDay: day };
     switch (run.kind) {
       case 'teaching':
+        if (breakdown) {
+          // срыв — не промах навыка: в окно не идёт, копится отдельно (методист 2026-10-12)
+          s = applyRoutineBreakdown(s, { day, kind: 'teaching', setting: run.setting, atStep: run.done });
+          break;
+        }
         s = applyRoutineRun(
           s,
-          routineRunRecord(target, before, run.trials, day, { ...(breakdown ? { interrupted: true as const } : {}), setting: run.setting }),
+          routineRunRecord(target, before, run.trials, day, { setting: run.setting }),
           sessionIndex,
           verified ? 'criterion' : 'home_unverified',
           'with_adult',
         );
         break;
       case 'baseline':
-        s = applyRoutineBaseline(s, run.trials, day, sessionIndex, target, 'with_adult', breakdown, run.setting);
+        // срыв на базовой линии ни в каком случае не засчитывается; день занят
+        if (breakdown) s = applyRoutineBreakdown(s, { day, kind: 'baseline', setting: run.setting, atStep: run.done });
+        else s = applyRoutineBaseline(s, run.trials, day, sessionIndex, target, 'with_adult', false, run.setting);
         break;
       case 'maintenance': {
-        // оборванный срывом — провал поддержания
-        const probe = breakdown
-          ? { ...(run.trials[0] ?? fallbackProbe(run)), stepId: undefined, response: 'incorrect' as const }
-          : probesOf(target, run.trials, 'maintenance')[0];
+        // срыв — «не показал навык в этом контексте», а не провал навыка: пробы поддержания нет,
+        // `maintenanceFailsInRow` и `lastMaintenanceDay` не двигаются, рутина снова ждёт завтра
+        if (breakdown) {
+          s = applyRoutineBreakdown(s, { day, kind: 'maintenance', setting: run.setting, atStep: run.done });
+          break;
+        }
+        const probe = probesOf(target, run.trials, 'maintenance')[0];
         if (probe) {
           // прогон не двигает индексы сессий: поддержание обычных целей считается по сессиям
           const keep = { lastSessionIndex: s.lastSessionIndex, lastMaintenanceSessionIndex: s.lastMaintenanceSessionIndex };
@@ -422,11 +433,14 @@ export function finishRoutineRun(run: RoutineRunState, endedAt: number, sessionI
       }
       case 'verification': {
         // оборванная срывом проверка ничего не решает: рутина остаётся «получается дома»
+        if (breakdown) s = applyRoutineBreakdown(s, { day, kind: 'verification', setting: run.setting, atStep: run.done });
         const verdict = breakdown || !verified ? null : verificationVerdict(s, target, run.trials, sessionIndex);
         if (verdict) s = verdict.state.masteredBy === 'criterion' ? { ...verdict.state, lastMaintenanceDay: day } : verdict.state;
         break;
       }
     }
+    // два срыва подряд (любой вид прогона) — `assent_concern`; спокойный прогон счётчик обнуляет
+    s = withAssentConcern(s, breakdown);
   }
 
   const record: RoutineRunRecordBase = {
@@ -450,32 +464,5 @@ export function finishRoutineRun(run: RoutineRunState, endedAt: number, sessionI
     band: run.band,
     reinforcerPool: run.reinforcerPool,
     seed: run.seed,
-  };
-}
-
-/** Срыв до первого звена: проба поддержания без записанных звеньев — провал по форме первого звена. */
-function fallbackProbe(run: RoutineRunState): AbaTrial {
-  const step = expectedStep(run, run.stepIds[0]);
-  return {
-    id: `${run.runId}#breakdown`,
-    sessionId: run.runId,
-    targetId: run.target.id,
-    exemplarId: step.exemplarId,
-    index: 0,
-    kind: 'maintenance',
-    startPromptLevel: 0,
-    promptLevelUsed: 0,
-    presentations: 0,
-    response: 'incorrect',
-    emittedBeforePrompt: false,
-    latencyMs: null,
-    latencyFromFirstSdMs: null,
-    latencySource: null,
-    promptDelayMs: null,
-    responseWindowMs: step.responseWindowMs,
-    presentationLog: [],
-    sdEndedAt: new Date(run.startedAt).toISOString(),
-    scoredBy: 'adult',
-    tokens: 0,
   };
 }

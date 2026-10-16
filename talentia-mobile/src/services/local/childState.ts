@@ -14,6 +14,7 @@ import type { TokenTrainingState } from '../../domain/abaTokenTraining';
 import type { IdentifySet } from '../../domain/abaIdentifySet';
 import type { AbaSessionState } from '../../domain/abaSession';
 import type { RoutineRunState } from '../../domain/abaRoutineRun';
+import type { BreakCardState } from '../../domain/abaBreakCard';
 import type { SqlDb } from './sql';
 
 export type ChildStateValues = {
@@ -46,6 +47,8 @@ export type ChildStateValues = {
   abaObservers: AbaObserver[];
   /** Прогон рутины, свёрнутый посреди (`abaRoutineRun.ts`): продолжается как был. */
   abaRoutineRunInProgress: RoutineRunState | null;
+  /** Обучение карточке «перерыв» — на ребёнке (`abaBreakCard.ts`). */
+  breakCard: BreakCardState;
 };
 
 export type ChildStateKey = keyof ChildStateValues;
@@ -65,6 +68,7 @@ export const ABA_STATE_KEYS = [
   'physicalPromptAllowed',
   'abaObservers',
   'abaRoutineRunInProgress',
+  'breakCard',
 ] as const satisfies readonly ChildStateKey[];
 
 /** Что удаляет отзыв согласия на ABA: состояние и пауза — пауза тоже говорит, что режим был. */

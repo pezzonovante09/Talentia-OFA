@@ -175,6 +175,28 @@ export function tryExchange(board: TokenBoard): { board: TokenBoard; exchanged: 
   return { board: emptyBoard(board.size), exchanged: board.earned };
 }
 
+/** Предложение обмена после прогона рутины (`AbaRoutineRun.exchangeOffer` и прогон, который его сделал). */
+export type RoutineOffer = { runId: string; day: string; tokens: number; boardSize: number; options: string[] };
+
+/**
+ * Открытое предложение обмена после рутины: последнее по порядку записи, по нему нет выбора,
+ * доска всё ещё полна (сессия могла обменять раньше) и локальный день тот же — на следующий день
+ * предложение закрыто без записи, жетоны остаются на доске и уходят в ближайшей точке обмена
+ * (обучение доске, перерыв и конец сессии, выплаченный жетон следующей рутины).
+ */
+export function openRoutineOffer(input: {
+  lastOffer: RoutineOffer | null;
+  chosenRunIds: readonly string[];
+  board: Pick<TokenBoard, 'earned'>;
+  today: string;
+}): RoutineOffer | null {
+  const o = input.lastOffer;
+  if (!o || input.chosenRunIds.includes(o.runId)) return null;
+  if (input.board.earned < o.boardSize) return null;
+  if (o.day !== input.today) return null;
+  return o;
+}
+
 /** Сколько подкрепителей предлагается на выбор в начале сессии. */
 export const REINFORCER_CHOICES = 3;
 

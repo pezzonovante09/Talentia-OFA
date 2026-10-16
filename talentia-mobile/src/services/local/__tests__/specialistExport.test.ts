@@ -11,7 +11,7 @@ import type { RoutineRunResult, RoutineRunState } from '../../../domain/abaRouti
 import type { AbaSessionResult, AbaSessionState } from '../../../domain/abaSession';
 import { initialTokenTraining, type TokenTrainingState } from '../../../domain/abaTokenTraining';
 import type { ConsentEvent } from '../../../domain/consent';
-import { appendRoutineRun, routineExchangedSince } from '../abaLog';
+import { appendReinforcerChoice, appendRoutineRun, routineExchangedSince } from '../abaLog';
 import { saveChildState } from '../childState';
 import { commitAbaSession, commitIoa, commitRoutineRun, recordAbaTrial, recordRoutineStep, setAbaObservers } from '../commit';
 import { appendConsentEvent } from '../consentLog';
@@ -121,14 +121,13 @@ const routineRun = (id = 'run-1', over: Partial<AbaRoutineRun> = {}): AbaRoutine
   interrupted: null,
   setting: 'usual',
   token: 'at_start_level',
-  exchanged: 0,
   phase: null,
   primaryObserverId: OBSERVER,
   ...over,
 });
 const rState = { targetId: 'R', phase: 'acquisition', lastRoutineRunDay: '2026-10-11' } as AbaTargetState;
 const routineResult = (id: string, record: Partial<AbaRoutineRun> = {}): RoutineRunResult => {
-  const { token: _t, exchanged: _e, exchangeOptions: _o, ...base } = routineRun(id, record);
+  const { token: _t, exchangeOffer: _o, ...base } = routineRun(id, record);
   return { trials: [], state: rState, before: { targetId: 'R', phase: 'acquisition' } as AbaTargetState, claim: { token: 'at_start_level', tokens: 1, nonContingent: false }, record: base, band: '7', reinforcerPool: POOL, seed: 7 };
 };
 const stepTrial = (id: string, over: Partial<AbaTrial> = {}): AbaTrial => ({
@@ -305,34 +304,44 @@ describe('время записи прогона рутины (appendRoutineRun)
     expect(await recordedAtOf(db)).toEqual([]);
   });
 
-  it('обмен рутины, записанный в ту же секунду, но до отметки (.000 против .500), «после» не считается', async () => {
+  // обмен рутины — это выбор подкрепителя (`source = 'routine'`, время выбора), а не запись прогона
+  const choose = (db: SqlDb, kid: string, runId: string, at: string, source: 'routine' | 'session' = 'routine') =>
+    asAbaWriter(db, kid, (tx) => appendReinforcerChoice(tx, kid, { source, sourceId: runId, reinforcerId: 'drum', chosenBy: 'child' }, at));
+
+  it('выбор рутины в ту же секунду, но до отметки (.000 против .500), «после» не считается', async () => {
     const db = await dbWithConsent();
-    await write(db, routineRun('r1', { exchanged: 3 }), '2026-10-11T10:00:00Z');
+    await choose(db, 'kid', 'r1', '2026-10-11T10:00:00Z');
     expect(await routineExchangedSince(db, 'kid', Date.parse('2026-10-11T10:00:00.500Z'))).toBe(false);
   });
 
-  it('обмен рутины строго после отметки считается', async () => {
+  it('выбор рутины строго после отметки считается', async () => {
     const db = await dbWithConsent();
-    await write(db, routineRun('r1', { exchanged: 3 }), '2026-10-11T10:00:01Z');
+    await choose(db, 'kid', 'r1', '2026-10-11T10:00:01Z');
     expect(await routineExchangedSince(db, 'kid', Date.parse('2026-10-11T10:00:00.500Z'))).toBe(true);
   });
 
-  it('обмен ровно в момент отметки «после» не считается', async () => {
+  it('выбор ровно в момент отметки «после» не считается', async () => {
     const db = await dbWithConsent();
-    await write(db, routineRun('r1', { exchanged: 3 }), '2026-10-11T10:00:00Z');
+    await choose(db, 'kid', 'r1', '2026-10-11T10:00:00Z');
     expect(await routineExchangedSince(db, 'kid', Date.parse('2026-10-11T10:00:00.000Z'))).toBe(false);
   });
 
-  it('прогон без обмена (exchanged = 0) не считается, как бы поздно ни был записан', async () => {
+  it('прогон с предложением, но без выбора, не считается, как бы поздно ни был записан', async () => {
     const db = await dbWithConsent();
-    await write(db, routineRun('r1', { exchanged: 0 }), '2026-10-11T12:00:00Z');
+    await write(db, routineRun('r1', { exchangeOffer: { tokens: 5, boardSize: 5, options: ['a', 'b', 'c'] } }), '2026-10-11T12:00:00Z');
     expect(await routineExchangedSince(db, 'kid', Date.parse('2026-10-11T10:00:00.000Z'))).toBe(false);
   });
 
-  it('обмен чужого ребёнка не считается', async () => {
+  it('выбор сессии (source = session) обменом рутины не считается', async () => {
+    const db = await dbWithConsent();
+    await choose(db, 'kid', 's-1', '2026-10-11T12:00:00Z', 'session');
+    expect(await routineExchangedSince(db, 'kid', Date.parse('2026-10-11T10:00:00.000Z'))).toBe(false);
+  });
+
+  it('выбор рутины чужого ребёнка не считается', async () => {
     const db = await dbWithConsent();
     await appendConsentEvent(db, grant('sib', '2026-10-11T09:01:00Z'), 'owner');
-    await asAbaWriter(db, 'sib', (tx) => appendRoutineRun(tx, 'sib', routineRun('r-sib', { exchanged: 3 }), '2026-10-11T12:00:00Z'));
+    await choose(db, 'sib', 'r-sib', '2026-10-11T12:00:00Z');
     expect(await routineExchangedSince(db, 'kid', Date.parse('2026-10-11T10:00:00.000Z'))).toBe(false);
   });
 });

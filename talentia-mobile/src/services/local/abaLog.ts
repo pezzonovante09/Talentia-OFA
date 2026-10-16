@@ -19,6 +19,7 @@
 import type { AbaIoaRecord, AbaRoutineRun, AbaSession, AbaTrial } from '../../types/aba';
 import { trialInvariantErrors, type SessionTrials } from '../../domain/abaPrompting';
 import { isGranted } from '../../domain/consent';
+import { openRoutineOffer, type RoutineOffer } from '../../domain/abaTokens';
 import { CURRENT_CONSENT_TEXTS } from '../../domain/consentTexts';
 import { loadChildState } from './childState';
 import { readConsentLog } from './consentLog';
@@ -59,6 +60,16 @@ export class AbaBoardConflictError extends Error {
     readonly actualRev: number,
   ) {
     super('Доска жетонов изменилась: шаг не записан, сессию нужно возобновить');
+  }
+}
+
+/**
+ * Обмен после рутины закрыт: предложения нет, выбор уже сделан, доска не полна (сессия обменяла
+ * раньше) или подкрепитель не из предложенных. Экран молча идёт дальше, без доступа.
+ */
+export class ExchangeNotOpenError extends Error {
+  constructor() {
+    super('Обмен после рутины уже закрыт');
   }
 }
 
@@ -136,11 +147,34 @@ export async function appendRoutineRun(db: SqlDb, childId: string, run: AbaRouti
   );
 }
 
+export type TrialCorrectionRow = {
+  trialId: string;
+  replacementId: string;
+  sessionId: string;
+  msSinceOriginal: number;
+  fromResponse: string;
+  toResponse: string;
+  tokenKept: 0 | 1;
+  tokenAdded: 0 | 1;
+};
+
+/** Исправление отметки — кирпич для `commit.ts`: только дописывание, причина одна, без свободного текста. */
+export async function appendTrialCorrection(db: SqlDb, childId: string, c: TrialCorrectionRow, recordedAt: string): Promise<void> {
+  await db.run(
+    `INSERT INTO aba_trial_corrections
+       (child_id, trial_id, replacement_id, session_id, recorded_at, ms_since_original, from_response, to_response, token_kept, token_added, reason)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'adult_misentry')`,
+    [childId, c.trialId, c.replacementId, c.sessionId, new Date(recordedAt).toISOString(), c.msSinceOriginal, c.fromResponse, c.toResponse, c.tokenKept, c.tokenAdded],
+  );
+}
+
 export type ReinforcerChoice = {
   source: 'session' | 'routine';
   sourceId: string;
   reinforcerId: string;
   chosenBy: 'child' | 'adult';
+  /** Сколько жетонов ушло в обмен с этим выбором (только `routine`; для сессии сумма в `events`). */
+  tokens?: number;
 };
 
 /**
@@ -153,8 +187,8 @@ export async function appendReinforcerChoice(db: SqlDb, childId: string, c: Rein
   const at = new Date(chosenAt);
   if (Number.isNaN(at.getTime())) throw new Error('Время выбора — не дата');
   await db.run(
-    'INSERT INTO aba_reinforcer_choices (child_id, chosen_at, source, source_id, reinforcer_id, chosen_by) VALUES (?, ?, ?, ?, ?, ?)',
-    [childId, at.toISOString(), c.source, c.sourceId, c.reinforcerId, c.chosenBy],
+    'INSERT INTO aba_reinforcer_choices (child_id, chosen_at, source, source_id, reinforcer_id, chosen_by, tokens) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [childId, at.toISOString(), c.source, c.sourceId, c.reinforcerId, c.chosenBy, c.tokens ?? null],
   );
 }
 
@@ -172,32 +206,49 @@ export async function reinforcerHistoryOf(db: SqlDb, childId: string): Promise<s
 }
 
 /**
- * Был ли после `sinceMs` обмен рутины — прогон с `exchanged > 0`, зафиксированный позже. По журналу
- * прогонов, а не выборов: обмен, после которого приложение убили до выбора, тоже обмен.
+ * Был ли после `sinceMs` обмен рутины — реальный выбор подкрепителя после прогона
+ * (`source = 'routine'`), а не предложение: жетоны уходят вместе с выбором. По времени выбора
+ * (`chosen_at`), поэтому сессия, возобновлённая между прогоном и выбором, обмена не пропустит.
  */
 export async function routineExchangedSince(db: SqlDb, childId: string, sinceMs: number): Promise<boolean> {
-  // по времени фиксации (recorded_at), а не конца последнего звена: между ними идут выбор «где и с
-  // кем» и PIN, и сессия, возобновлённая в этом промежутке, обмена иначе не заметила бы
   const rows = await db.all<{ n: number }>(
-    "SELECT 1 AS n FROM aba_routine_runs WHERE child_id = ? AND json_extract(body, '$.exchanged') > 0 AND recorded_at > ? LIMIT 1",
+    "SELECT 1 AS n FROM aba_reinforcer_choices WHERE child_id = ? AND source = 'routine' AND chosen_at > ? LIMIT 1",
     [childId, new Date(sinceMs).toISOString()],
   );
   return rows.length > 0;
 }
 
-/** Обмен рутины, после которого выбор подкрепителя не сделан (приложение убили): прогон и его варианты. */
-export type PendingRoutineExchange = { runId: string; tokens: number; options: string[] };
-
-export async function pendingRoutineExchanges(db: SqlDb, childId: string): Promise<PendingRoutineExchange[]> {
-  const runs = await db.all<{ body: string }>(
-    `SELECT body FROM aba_routine_runs
-      WHERE child_id = ? AND json_extract(body, '$.exchanged') > 0
-        AND id NOT IN (SELECT source_id FROM aba_reinforcer_choices WHERE child_id = ? AND source = 'routine')
-      ORDER BY seq`,
-    [childId, childId],
+/**
+ * Открытое предложение обмена после рутины (`openRoutineOffer`): последний прогон с
+ * `exchangeOffer`, по нему нет выбора, доска всё ещё полна, локальный день прежний. `today` —
+ * локальная дата `YYYY-MM-DD`, её считает вызывающий код.
+ */
+export async function openRoutineOfferOf(db: SqlDb, childId: string, today: string): Promise<RoutineOffer | null> {
+  const [row] = await db.all<{ body: string }>(
+    "SELECT body FROM aba_routine_runs WHERE child_id = ? AND json_extract(body, '$.exchangeOffer') IS NOT NULL ORDER BY seq DESC LIMIT 1",
+    [childId],
   );
-  return parse<AbaRoutineRun>(runs).map((r) => ({ runId: r.id, tokens: r.exchanged, options: r.exchangeOptions ?? [] }));
+  const run = row ? (JSON.parse(row.body) as AbaRoutineRun) : null;
+  const chosen = await db.all<{ source_id: string }>(
+    "SELECT source_id FROM aba_reinforcer_choices WHERE child_id = ? AND source = 'routine'",
+    [childId],
+  );
+  const board = (await loadChildState(db, childId, 'abaBoard')) ?? { earned: 0, nonContingent: 0 };
+  return openRoutineOffer({
+    lastOffer: run?.exchangeOffer ? { runId: run.id, day: run.day, ...run.exchangeOffer } : null,
+    chosenRunIds: chosen.map((r) => r.source_id),
+    board,
+    today,
+  });
 }
+
+/**
+ * «Действующие пробы»: исходная проба, которую заменило исправление отметки (`aba_trial_corrections`),
+ * не читается. Все читатели проб идут через это условие (таблица `t`); сырое чтение — только
+ * `purge.ts` (срок хранения, удаление, выгрузки «сырое + исправления»).
+ */
+export const EFFECTIVE =
+  'AND NOT EXISTS (SELECT 1 FROM aba_trial_corrections c WHERE c.child_id = t.child_id AND c.trial_id = t.id)';
 
 const parse = <T>(rows: { body: string }[]): T[] => rows.map((r) => JSON.parse(r.body) as T);
 
@@ -205,7 +256,7 @@ const parse = <T>(rows: { body: string }[]): T[] => rows.map((r) => JSON.parse(r
 export async function trialsOfTarget(db: SqlDb, childId: string, targetId: string): Promise<AbaTrial[]> {
   return parse(
     await db.all<{ body: string }>(
-      'SELECT body FROM aba_trials WHERE child_id = ? AND target_id = ? ORDER BY seq',
+      `SELECT t.body FROM aba_trials t WHERE t.child_id = ? AND t.target_id = ? ${EFFECTIVE} ORDER BY t.seq`,
       [childId, targetId],
     ),
   );
@@ -214,7 +265,7 @@ export async function trialsOfTarget(db: SqlDb, childId: string, targetId: strin
 export async function trialsOfSession(db: SqlDb, childId: string, sessionId: string): Promise<AbaTrial[]> {
   return parse(
     await db.all<{ body: string }>(
-      'SELECT body FROM aba_trials WHERE child_id = ? AND session_id = ? ORDER BY seq',
+      `SELECT t.body FROM aba_trials t WHERE t.child_id = ? AND t.session_id = ? ${EFFECTIVE} ORDER BY t.seq`,
       [childId, sessionId],
     ),
   );
@@ -240,7 +291,7 @@ export async function pastSessionsOfTarget(
   const rows = await db.all<{ session_index: number; body: string }>(
     `SELECT s.session_index, t.body
        FROM aba_trials t JOIN aba_sessions s ON s.id = t.session_id AND s.child_id = t.child_id
-      WHERE t.child_id = ? AND t.target_id = ?
+      WHERE t.child_id = ? AND t.target_id = ? ${EFFECTIVE}
       ORDER BY s.session_index, t.seq`,
     [childId, targetId],
   );

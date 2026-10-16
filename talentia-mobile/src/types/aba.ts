@@ -441,6 +441,11 @@ export type AbaTrial = {
    */
   adultUnplannedPrompt?: true;
   interruptedBy?: AbaInterruptedBy;
+  /**
+   * Только при `interruptedBy === 'child_break'`: сколько мс прошло от конца SD до касания карточки.
+   * Отличает просьбу от случайного касания; специалисту — распределение по целям (без флагов).
+   */
+  msSinceSd?: number;
   /** Звено выполнил взрослый вместо ребёнка — проба ребёнка `no_response`. */
   adultCompleted?: true;
   /**
@@ -627,6 +632,12 @@ export type AbaTargetState = {
   chainVerificationRuns?: { sessionIndex: number; failedStepIds: string[]; independentRate: number }[];
   /** Рутина: последние прогоны обучения (`ROUTINE.keepRuns`) — окно критерия. */
   routineRuns?: RoutineRunRecord[];
+  /**
+   * Рутина: прогоны **обучения**, оборванные срывом (последние 10): в окно критерия не идут — оно
+   * измеряет навык, а не состояние ребёнка (методист 2026-10-12, смещает ответ В1 от 2026-10-11).
+   * Два срыва подряд (любого вида прогона) ставят `assent_concern`.
+   */
+  routineBreakdowns?: { day: string; kind: 'baseline' | 'teaching' | 'maintenance' | 'verification'; setting: RoutineSetting; atStep: number }[];
   /** Рутина: базовая линия копится по дням — по прогону в день; самостоятельных по звеньям. */
   routineBaseline?: {
     days: string[];
@@ -794,9 +805,25 @@ export type AbaSessionEvent =
       kind: 'break';
       startedAt: string;
       endedAt: string;
-      initiatedBy?: 'child_card' | 'schedule' | 'adult';
+      initiatedBy?: 'child_card' | 'schedule' | 'adult' | 'device_offer';
       /** После отказа ребёнок коснулся подсвеченной карточки: полный перерыв, а не тихая пауза. */
       cardTaken?: true;
+      /** Обучающий перерыв по карточке (`break_card_training`): в `childBreaks` не идёт. */
+      training?: true;
+    }
+  /**
+   * Обучение карточке «перерыв» (методист 2026-10-12): `model` — касается взрослый, `prompted` —
+   * жест без слов, `independent` — ждать 10 с, затем жест. `touched` — коснулся ли ребёнок;
+   * `gestureGiven` — был ли жест; без этих полей «три возможности без касания» не отличить от «не
+   * давали». Обучающие касания в `childBreaks` не идут и сессию не кончают.
+   */
+  | {
+      kind: 'break_card_training';
+      at: string;
+      step: 'model' | 'prompted' | 'independent';
+      touched: boolean;
+      gestureGiven: boolean;
+      latencyMs: number | null;
     }
   /** Цель снята до конца сессии: активность была, а реакция не засчитывалась (решение методиста). */
   | { kind: 'measurement'; at: string; targetId: string; action: 'unreliable' }
@@ -910,13 +937,13 @@ export type AbaRoutineRun = {
   setting: RoutineSetting;
   /** Жетон после прогона и за что; `null` — только похвала. */
   token: 'at_start_level' | 'whole_independent' | 'participation' | null;
-  /** Жетонов ушло в обмен (доска заполнилась). */
-  exchanged: number;
   /**
-   * Три подкрепителя, предложенные на обмен (при `exchanged > 0`): приложение убили до выбора —
-   * при следующем открытии те же варианты (Р3, «живая доска»). Специалисту не уходят.
+   * Прогон заполнил доску — предложен обмен (методист 2026-10-12, пересмотр В4): жетоны уходят
+   * **только вместе с выбором подкрепителя** (`commitRoutineExchange`), а не при фиксации прогона;
+   * полная доска и есть ожидающий обмен. Приложение убили до выбора — в тот же день те же варианты.
+   * `options` специалисту не уходят.
    */
-  exchangeOptions?: string[];
+  exchangeOffer?: { tokens: number; boardSize: number; options: string[] };
   /** Смена фазы рутины — для отсечек на графике специалиста. */
   phase: { from: AbaTargetState['phase']; to: AbaTargetState['phase'] } | null;
   primaryObserverId: string | null;

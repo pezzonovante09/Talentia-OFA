@@ -14,7 +14,15 @@ import { withDbLock } from './lock';
 import { RETENTION_MONTHS } from './schema';
 import type { SqlDb } from './sql';
 
-const JOURNALS = ['aba_trials', 'aba_sessions', 'aba_ioa', 'aba_routine_runs', 'aba_reinforcer_choices', 'lesson_runs'] as const;
+const JOURNALS = [
+  'aba_trials',
+  'aba_sessions',
+  'aba_ioa',
+  'aba_routine_runs',
+  'aba_reinforcer_choices',
+  'aba_trial_corrections',
+  'lesson_runs',
+] as const;
 
 /**
  * Состояние ABA для специалиста — явный список, а не все ключи ABA (`child-privacy-compliance`,
@@ -30,6 +38,7 @@ export const SPECIALIST_STATE_KEYS = [
   'abaSessionIndex',
   'physicalPromptAllowed',
   'abaObservers',
+  'breakCard',
 ] as const satisfies readonly (typeof ABA_STATE_KEYS)[number][];
 
 /** Снимки «в работе»: срок хранения — по их началу (копии проб в них живут не дольше журнала). */
@@ -76,6 +85,7 @@ export async function applyRetention(db: SqlDb, now: Date): Promise<number> {
       ['aba_ioa', 'recorded_at'],
       ['aba_routine_runs', 'recorded_at'],
       ['aba_reinforcer_choices', 'chosen_at'],
+      ['aba_trial_corrections', 'recorded_at'],
       ['lesson_runs', 'started_at'],
     ] as const) {
       removed += (await tx.run(`DELETE FROM ${t} WHERE ${col} < ?`, [before])).changes;
@@ -146,6 +156,7 @@ export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actor
       await tx.run('DELETE FROM aba_ioa WHERE child_id = ?', [childId]);
       await tx.run('DELETE FROM aba_routine_runs WHERE child_id = ?', [childId]);
       await tx.run('DELETE FROM aba_reinforcer_choices WHERE child_id = ?', [childId]);
+      await tx.run('DELETE FROM aba_trial_corrections WHERE child_id = ?', [childId]);
       await tx.run(
         `DELETE FROM child_state WHERE child_id = ? AND key IN (${ABA_DELETED_KEYS.map(() => '?').join(', ')})`,
         [childId, ...ABA_DELETED_KEYS],
@@ -214,6 +225,8 @@ export type ChildExport = {
   abaRoutineRuns: unknown[];
   /** История выборов подкрепителя (по порядку выбора). */
   abaReinforcerChoices: unknown[];
+  /** Исправления отметок взрослого: исходные пробы остаются в `abaTrials`, замены — отдельными строками. */
+  abaTrialCorrections: unknown[];
   lessonRuns: unknown[];
   state: Record<string, unknown>;
   consentEvents: ConsentEvent[];
@@ -243,6 +256,15 @@ async function choicesOf(db: SqlDb, childId: string): Promise<unknown[]> {
   );
 }
 
+async function correctionsOf(db: SqlDb, childId: string): Promise<unknown[]> {
+  return db.all(
+    `SELECT trial_id AS trialId, replacement_id AS replacementId, session_id AS sessionId, ms_since_original AS msSinceOriginal,
+            from_response AS fromResponse, to_response AS toResponse, token_kept AS tokenKept, token_added AS tokenAdded, reason
+       FROM aba_trial_corrections WHERE child_id = ? ORDER BY seq`,
+    [childId],
+  );
+}
+
 async function collectExport(
   db: SqlDb,
   childId: string,
@@ -267,6 +289,7 @@ async function collectExport(
     abaIoa: await bodies('aba_ioa'),
     abaRoutineRuns: await bodies('aba_routine_runs'),
     abaReinforcerChoices: await choicesOf(db, childId),
+    abaTrialCorrections: await correctionsOf(db, childId),
     lessonRuns: await bodies('lesson_runs'),
     state,
     consentEvents: (await readConsentLog(db)).filter((e) => e.childId === childId || e.childId === null),
@@ -288,6 +311,14 @@ function relativeTimes<T>(value: T, origin: number): T {
   return value;
 }
 
+/** Карточка «перерыв» специалисту — без uuid наблюдателя и устройства (остаются только на ребёнке). */
+function withoutBreakCardIds(state: Record<string, unknown>): Record<string, unknown> {
+  const card = state.breakCard as Record<string, unknown> | undefined;
+  if (!card) return state;
+  const { observerId: _o, deviceId: _d, ...rest } = card;
+  return { ...state, breakCard: rest };
+}
+
 /** Все строки-даты внутри значения заменены датой без времени суток (`YYYY-MM-DD`). */
 function dayOnly<T>(value: T): T {
   if (typeof value === 'string' && ISO_TIME.test(value)) return value.slice(0, 10) as T;
@@ -307,6 +338,8 @@ export type SpecialistExport = {
   abaSessions: unknown[];
   /** IOA: `enteredDay` вместо времени ввода (№96). Состояние ниже — даты без времени суток. */
   abaIoa: unknown[];
+  /** Исправления отметок: без времени суток (только `msSinceOriginal`); исходные пробы остаются в `abaTrials`. */
+  abaTrialCorrections: unknown[];
   /**
    * Прогоны рутин: день и длительность в секундах, без точных `startedAt` / `endedAt` (№95);
    * ведущий наблюдатель — той же меткой.
@@ -369,10 +402,12 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
     }));
     // точное время прогона выдаёт расписание дня ребёнка дома (туалет, одевание) — решение №95:
     // специалисту день и длительность; варианты обмена — тоже не его данные
-    const abaRoutineRuns = routineRuns.map(({ startedAt, endedAt, exchangeOptions: _options, ...r }) => {
+    const abaRoutineRuns = routineRuns.map(({ startedAt, endedAt, exchangeOffer, ...r }) => {
       const seconds = Math.round((Date.parse(endedAt) - Date.parse(startedAt)) / 1000);
       return {
         ...r,
+        // сколько жетонов предложено на обмен — да, варианты подкрепителей специалисту не нужны
+        ...(exchangeOffer ? { exchangeOffer: { tokens: exchangeOffer.tokens, boardSize: exchangeOffer.boardSize } } : {}),
         durationSec: Number.isFinite(seconds) ? Math.max(0, seconds) : null,
         primaryObserverId: label(r.primaryObserverId),
       };
@@ -396,8 +431,9 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
       abaTrials,
       abaSessions,
       abaIoa,
+      abaTrialCorrections: await correctionsOf(tx, childId),
       abaRoutineRuns,
-      state: { ...dayOnly(state), abaObservers: observers.map((o) => ({ id: label(o.id), role: o.role, trained: o.trained })) },
+      state: { ...dayOnly(withoutBreakCardIds(state)), abaObservers: observers.map((o) => ({ id: label(o.id), role: o.role, trained: o.trained })) },
     };
   });
 }

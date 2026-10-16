@@ -65,7 +65,6 @@ const routineRun = (id = 'run-1', over: Partial<AbaRoutineRun> = {}): AbaRoutine
   interrupted: null,
   setting: 'usual',
   token: 'at_start_level',
-  exchanged: 0,
   phase: null,
   primaryObserverId: OBSERVER,
   ...over,
@@ -73,7 +72,7 @@ const routineRun = (id = 'run-1', over: Partial<AbaRoutineRun> = {}): AbaRoutine
 
 /** Запись прогона без того, что решает доска на момент фиксации. */
 const recordBase = (id: string) => {
-  const { token: _t, exchanged: _e, exchangeOptions: _o, ...base } = routineRun(id);
+  const { token: _t, exchangeOffer: _o, ...base } = routineRun(id);
   return base;
 };
 

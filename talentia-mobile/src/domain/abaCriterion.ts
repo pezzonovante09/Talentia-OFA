@@ -342,6 +342,17 @@ export function applyRoutineRun(
 }
 
 /**
+ * Срыв в прогоне обучения: в окно критерия **не идёт** (окно измеряет навык, а не состояние
+ * ребёнка), а копится в `routineBreakdowns`. Затухание по уже записанным звеньям остаётся.
+ */
+export function applyRoutineBreakdown(
+  s: AbaTargetState,
+  record: { day: string; kind: 'baseline' | 'teaching' | 'maintenance' | 'verification'; setting: RoutineSetting; atStep: number },
+): AbaTargetState {
+  return { ...s, routineBreakdowns: [...(s.routineBreakdowns ?? []), record].slice(-10) };
+}
+
+/**
  * Рутина застряла — аналог `no_progress` по окну прогонов: `ROUTINE.noProgressRuns` прогонов
  * не меньше чем за `noProgressDays` разных дней, а во второй половине окна **и** доля целиком
  * самостоятельных не выше, чем в первой, **и** стартовые уровни звеньев не снизились (В2,
@@ -389,14 +400,15 @@ export function applyRoutineBaseline(
   const run = interrupted
     ? trials.filter((t) => t.targetId === target.id && isBaselineCountable(t))
     : chainRuns(target, trials, isBaselineCountable)[0];
+  // срыв про навык ничего не говорит: прогон не засчитывается ни как «сам», ни как «не сам»
+  // (день занят — `lastRoutineRunDay`, его ставит `finishRoutineRun`)
+  if (interrupted) return s;
   const acc = s.routineBaseline ?? { days: [], independentByStep: {} };
   if (!run || acc.days.includes(day)) return s;
   const steps = target.steps ?? [];
   const independentNow = new Set(run.filter((t) => t.stepId && t.response === 'independent').map((t) => t.stepId!));
   const wholeNow = !interrupted && steps.every((st) => independentNow.has(st.id));
   const held = acc.days.length >= ROUTINE.baselineRuns;
-  // срыв на ожидающей переноса базовой линии про навык ничего не говорит
-  if (held && interrupted) return s;
 
   const independentByStep = { ...acc.independentByStep };
   for (const t of run) {

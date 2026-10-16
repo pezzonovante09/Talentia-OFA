@@ -12,6 +12,14 @@ import { resumeAbaSession as resumeSessionState, type AbaSessionResult, type Aba
 import { settleRoutineBoard, type RoutineRunResult, type RoutineRunState } from '../../domain/abaRoutineRun';
 import { boardRevOf, reinforcerChoices, type BoardRecord } from '../../domain/abaTokens';
 import { workingBoardSize } from '../../domain/abaTokenTraining';
+import {
+  applyBreakCardSession,
+  applyBreakCardTraining,
+  breakCardPlan,
+  breakCardRequestsOf,
+  initialBreakCard,
+  type BreakCardPlan,
+} from '../../domain/abaBreakCard';
 import { seeded } from '../../domain/abaRandom';
 import type { AtlasEntry } from '../../domain/lessonAssembly';
 import type { SkillState } from '../../domain/mastery';
@@ -20,6 +28,7 @@ import { ioaRecordErrors } from '../../domain/abaIoa';
 import {
   AbaBoardConflictError,
   AbaSessionMissingError,
+  ExchangeNotOpenError,
   RoutineAlreadyRunError,
   RoutineStateConflictError,
   RoutineWindowNotAccountedError,
@@ -28,10 +37,13 @@ import {
   appendRoutineRun,
   appendSession,
   appendTrial,
+  appendTrialCorrection,
+  openRoutineOfferOf,
   reinforcerHistoryOf,
   routineExchangedSince,
   withAbaWrite,
   type ReinforcerChoice,
+  type TrialCorrectionRow,
 } from './abaLog';
 import { loadChildState, saveChildState } from './childState';
 import { readConsentLog } from './consentLog';
@@ -113,6 +125,31 @@ export async function recordAbaTrial(
 }
 
 /**
+ * Исправление последней отметки взрослого (`abaUndo.ts`) — одной транзакцией: доска (могла получить
+ * недостающий жетон; версия сверяется), замена пробы в журнале, строка исправления, снимок сессии.
+ * Исходная проба остаётся в `aba_trials` и читателями не видна (`EFFECTIVE`). Возвращает снимок с
+ * новой версией доски.
+ */
+export async function commitTrialCorrection(
+  db: SqlDb,
+  childId: string,
+  correction: TrialCorrectionRow,
+  replacement: AbaTrial,
+  inProgress: AbaSessionState,
+  at: string,
+): Promise<AbaSessionState> {
+  let saved = inProgress;
+  await withAbaWrite(db, childId, async (tx) => {
+    const boardRev = await writeSessionBoard(tx, childId, inProgress.board, inProgress.boardRev, at);
+    saved = { ...inProgress, boardRev };
+    await appendTrial(tx, childId, replacement, at);
+    await appendTrialCorrection(tx, childId, correction, at);
+    await saveChildState(tx, childId, 'abaSessionInProgress', saved, at);
+  });
+  return saved;
+}
+
+/**
  * Шаг сессии без пробы — обмен в `finishBreak`, выбор подкрепителя, доступ: снимок и доска вместе,
  * та же проверка версии. `choice` — выбор подкрепителя, если он сделан на этом шаге: в историю в
  * той же транзакции, в момент выбора. Возвращает снимок с новой версией доски.
@@ -148,9 +185,14 @@ export async function resumeAbaSession(db: SqlDb, childId: string, reinforcerPoo
     if (!state) return null;
     const live = await readBoard(tx, childId);
     const since = Math.max(state.startedAt, state.reinforcerChosenAt ?? 0);
-    const routineExchanged = await routineExchangedSince(tx, childId, since);
+    // обмен рутины после выбора сессии ИЛИ открытое предложение рутины: жетоны рутины нельзя обменять
+    // по утреннему подкрепителю — выбор заново (методист 2026-10-12)
+    const exchangedByRoutine = await routineExchangedSince(tx, childId, since);
+    const openOffer = await openRoutineOfferOf(tx, childId, state.day);
+    const routineExchanged = exchangedByRoutine || openOffer !== null;
     const options = routineExchanged
-      ? reinforcerChoices(reinforcerPool, await reinforcerHistoryOf(tx, childId), seeded(state.seed + boardRevOf(live)).rng)
+      ? (openOffer?.options ??
+        reinforcerChoices(reinforcerPool, await reinforcerHistoryOf(tx, childId), seeded(state.seed + boardRevOf(live)).rng))
       : undefined;
     return resumeSessionState(
       state,
@@ -193,6 +235,27 @@ export async function commitAbaSession(
     const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
     await saveChildState(tx, childId, 'abaTargets', { ...targets, ...result.states }, at);
     await saveChildState(tx, childId, 'tokenTraining', result.tokenTraining, at);
+    // карточка «перерыв» на ребёнке: обучающие возможности и просьбы в пробе — из событий хода сессии
+    const events = result.session.events;
+    const card0 = (await loadChildState(tx, childId, 'breakCard')) ?? initialBreakCard();
+    const day = result.session.day ?? result.session.startedAt.slice(0, 10);
+    const trained = applyBreakCardTraining(
+      card0,
+      events.flatMap((e) => (e.kind === 'break_card_training' ? [{ step: e.step, touched: e.touched, gestureGiven: e.gestureGiven, latencyMs: e.latencyMs }] : [])),
+      { day, observerId: result.session.primaryObserverId },
+    );
+    const asked = breakCardRequestsOf(events);
+    await saveChildState(
+      tx,
+      childId,
+      'breakCard',
+      applyBreakCardSession(
+        trained,
+        { sessionIndex: result.session.index, day, requests: asked.requests, byLimit: asked.byLimit, endReason: result.session.endReason },
+        { observerId: result.session.primaryObserverId },
+      ),
+      at,
+    );
     await saveChildState(tx, childId, 'identifySets', result.identifySets, at);
     await saveChildState(tx, childId, 'abaSessionIndex', result.session.index + 1, at);
     await saveChildState(tx, childId, 'abaSessionInProgress', null, at);
@@ -221,8 +284,8 @@ export async function recordRoutineStep(
 export type RoutineCommitOutcome = {
   token: RoutineRunResult['claim']['token'];
   board: Pick<BoardRecord, 'earned' | 'nonContingent'>;
-  /** Доска заполнилась — обмен: выбор из `options`, затем `recordRoutineExchangeChoice`. */
-  exchange?: { tokens: number; options: string[] };
+  /** Доска заполнилась — предложен обмен: выбор из `options`, затем `commitRoutineExchange`. Доска не обнулена. */
+  offer?: { tokens: number; boardSize: number; options: string[] };
 };
 
 /**
@@ -264,8 +327,7 @@ export async function commitRoutineRun(
       {
         ...result.record,
         token: settled.token,
-        exchanged: settled.exchange?.tokens ?? 0,
-        ...(settled.exchange ? { exchangeOptions: settled.exchange.options } : {}),
+        ...(settled.offer ? { exchangeOffer: settled.offer } : {}),
       },
       at,
     );
@@ -274,31 +336,46 @@ export async function commitRoutineRun(
       await saveChildState(tx, childId, 'abaBoard', { ...settled.board, rev: boardRevOf(live) + 1 }, at);
     }
     await saveChildState(tx, childId, 'abaRoutineRunInProgress', null, at);
-    outcome = { token: settled.token, board: settled.board, ...(settled.exchange ? { exchange: settled.exchange } : {}) };
+    outcome = { token: settled.token, board: settled.board, ...(settled.offer ? { offer: settled.offer } : {}) };
   });
   return outcome!;
 }
 
 /**
- * Выбор подкрепителя для обмена после прогона рутины — в историю в момент выбора. Один на прогон;
- * только из вариантов этого обмена (они записаны в прогоне). Приложение убили до выбора — при
- * следующем открытии `pendingRoutineExchanges` вернёт тот же обмен с теми же вариантами.
+ * Обмен после рутины: выбор подкрепителя и обнуление доски — **одной транзакцией**. Жетоны уходят
+ * только вместе с выбором (методист 2026-10-12, пересмотр В4): полная доска и есть ожидающий обмен.
+ * Подкрепитель — из вариантов последнего предложения; доска ещё полна (сессия могла обменять
+ * раньше); по этому прогону выбора ещё нет. Иначе `ExchangeNotOpenError` — экран молча идёт
+ * дальше, без доступа. Уходят все жетоны, включая сверх доски. Возвращает сколько ушло.
  */
-export async function recordRoutineExchangeChoice(
+export async function commitRoutineExchange(
   db: SqlDb,
   childId: string,
   runId: string,
   reinforcerId: string,
   chosenBy: 'child' | 'adult',
   at: string,
-): Promise<void> {
+): Promise<{ tokens: number; boardSize: number }> {
+  let spent: { tokens: number; boardSize: number } | undefined;
   await withAbaWrite(db, childId, async (tx) => {
-    const [row] = await tx.all<{ body: string }>('SELECT body FROM aba_routine_runs WHERE child_id = ? AND id = ?', [childId, runId]);
-    const run = row ? (JSON.parse(row.body) as { exchanged: number; exchangeOptions?: string[] }) : null;
-    if (!run || run.exchanged <= 0) throw new Error('Обмена в этом прогоне не было');
-    if (!run.exchangeOptions?.includes(reinforcerId)) throw new Error('Этот подкрепитель не предлагался');
-    await appendReinforcerChoice(tx, childId, { source: 'routine', sourceId: runId, reinforcerId, chosenBy }, at);
+    const [last] = await tx.all<{ id: string; body: string }>(
+      "SELECT id, body FROM aba_routine_runs WHERE child_id = ? AND json_extract(body, '$.exchangeOffer') IS NOT NULL ORDER BY seq DESC LIMIT 1",
+      [childId],
+    );
+    const offer = last ? (JSON.parse(last.body) as { exchangeOffer: { boardSize: number; options: string[] } }).exchangeOffer : null;
+    const [done] = await tx.all<{ n: number }>(
+      "SELECT 1 AS n FROM aba_reinforcer_choices WHERE child_id = ? AND source = 'routine' AND source_id = ?",
+      [childId, runId],
+    );
+    const live = await readBoard(tx, childId);
+    if (!last || last.id !== runId || !offer || done || live.earned < offer.boardSize || !offer.options.includes(reinforcerId)) {
+      throw new ExchangeNotOpenError();
+    }
+    await appendReinforcerChoice(tx, childId, { source: 'routine', sourceId: runId, reinforcerId, chosenBy, tokens: live.earned }, at);
+    await saveChildState(tx, childId, 'abaBoard', { earned: 0, nonContingent: 0, rev: boardRevOf(live) + 1 }, at);
+    spent = { tokens: live.earned, boardSize: offer.boardSize };
   });
+  return spent!;
 }
 
 /**
@@ -402,4 +479,16 @@ export async function saveAbaTargets(
     const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
     await saveChildState(tx, childId, 'abaTargets', { ...targets, ...states }, at);
   });
+}
+
+/**
+ * План обучения карточке «перерыв» на сессию (`breakCardPlan`): три возможности, повтор или ничего.
+ * Читается перед стартом; состояние карточки на ребёнке.
+ */
+export async function loadBreakCardPlan(
+  db: SqlDb,
+  childId: string,
+  ctx: { config: 'with_adult' | 'alone'; day: string; observerId: string | null; deviceId?: string | null },
+): Promise<BreakCardPlan> {
+  return breakCardPlan((await loadChildState(db, childId, 'breakCard')) ?? initialBreakCard(), ctx);
 }

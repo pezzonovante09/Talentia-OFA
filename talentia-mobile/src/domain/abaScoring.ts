@@ -31,6 +31,7 @@ export type ScoredFields = Pick<
   | 'latencySource'
   | 'adultUnplannedPrompt'
   | 'interruptedBy'
+  | 'msSinceSd'
   | 'adultCompleted'
 >;
 
@@ -114,7 +115,10 @@ function logErrors(log: readonly AbaPresentation[], ctx: ScoreContext): string[]
     }
 
     const responded = RESPONSES.has(p.outcome);
-    if (responded !== (p.respondedAt !== undefined)) errors.push(`предъявление ${i + 1}: время ответа без ответа или ответ без времени`);
+    // касание детской карточки «перерыв» — не ответ, но момент касания записывается (msSinceSd), если он есть
+    if (p.outcome !== 'child_break' && responded !== (p.respondedAt !== undefined)) {
+      errors.push(`предъявление ${i + 1}: время ответа без ответа или ответ без времени`);
+    }
     if (p.respondedAt !== undefined) {
       const at = ms(p.respondedAt);
       // нажатие во время аудио относится к этому предъявлению: латентность 0
@@ -217,7 +221,8 @@ export function scoreTrial(
       break;
   }
 
-  const responded = last.respondedAt !== undefined;
+  // латентность — только у ответов; касание карточки идёт отдельным полем `msSinceSd`
+  const responded = last.respondedAt !== undefined && RESPONSES.has(last.outcome);
   const latencyMs = responded ? Math.max(0, ms(last.respondedAt!) - ms(last.endedAt)) : null;
   const fromFirst = responded ? Math.max(latencyMs!, ms(last.respondedAt!) - ms(log[0].endedAt)) : null;
 
@@ -233,6 +238,7 @@ export function scoreTrial(
       latencySource: latencyMs === null ? null : LATENCY_SOURCE[ctx.scoredBy],
       ...(unplanned ? { adultUnplannedPrompt: true as const } : {}),
       ...(interruptedBy ? { interruptedBy } : {}),
+      ...(interruptedBy === 'child_break' && last.respondedAt !== undefined ? { msSinceSd: Math.max(0, ms(last.respondedAt!) - ms(log[0].endedAt)) } : {}),
       ...(last.outcome === 'adult_completed' ? { adultCompleted: true as const } : {}),
     },
   };

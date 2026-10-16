@@ -195,6 +195,11 @@ export function targetErrors(t: AbaTarget): string[] {
   if (routine) {
     if (teaching.length !== 1) errors.push(`у рутины обучающих экземпляров ${teaching.length}, нужен ровно один: SD рутины фиксирован`);
     if (t.sdVariantKeys?.length) errors.push('у рутины нет вариантов формулировки: SD рутины фиксирован');
+    // одна проба на звено за прогон: порог `MIN_L0_TRIALS_FOR_DELAY_STEP` недостижим, и прогрессивная
+    // задержка навсегда осталась бы на стартовой — ловушка (ложное «ждал подсказку»). Зависимость от
+    // подсказки ловит `routineStuck` (методист 2026-10-12, В2)
+    if (t.delayMode !== 'constant') errors.push('у рутины задержка только постоянная (`delayMode: constant`): одной пробы на звено за прогон мало для прогрессивной');
+    if (t.delayMs < 3000) errors.push(`у рутины задержка ${t.delayMs} мс короче 3000: ребёнку нужно время на звено`);
     const images = t.steps!.map((s) => s.image);
     if (images.some((i) => !i)) errors.push('у звена рутины нет картинки');
     if (new Set(images.filter(Boolean)).size < images.filter(Boolean).length) {

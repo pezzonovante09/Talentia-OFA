@@ -43,22 +43,29 @@ describe('settleRoutineBoard: выплата прогона по живой до
     expect(s).toEqual({ board: { earned: 4, nonContingent: 2 }, token: null });
   });
 
-  it('Т2: размер 3, на доске 2 — жетон прогона заполняет доску, обмен всех жетонов один раз', () => {
+  it('Т2: размер 3, на доске 2 — жетон прогона заполняет доску: предложение обмена на все жетоны, доска НЕ обнуляется', () => {
     const s = settle({ earned: 2, nonContingent: 0 }, 3, WORK);
-    expect(s.exchange?.tokens).toBe(3);
-    expect(s.board).toEqual({ earned: 0, nonContingent: 0 });
+    expect(s.offer).toMatchObject({ tokens: 3, boardSize: 3 });
+    expect(s.board).toEqual({ earned: 3, nonContingent: 0 });
   });
 
-  it('Т2: после обмена доска пуста — тот же обмен второй раз не случается', () => {
+  it('Т2: предложение не уносит жетоны — повторный расчёт без жетона нового предложения не делает', () => {
     const first = settle({ earned: 2, nonContingent: 0 }, 3, WORK);
     const second = settle(first.board, 3, NONE);
-    expect([second.exchange, second.board.earned]).toEqual([undefined, 0]);
+    expect([second.offer, second.board.earned]).toEqual([undefined, 3]);
+  });
+
+  it('предложение несёт ровно REINFORCER_CHOICES вариантов из пула и размер доски на момент расчёта', () => {
+    const s = settle({ earned: 4, nonContingent: 0 }, 5, WORK);
+    expect(s.offer?.boardSize).toBe(5);
+    expect(s.offer?.options).toHaveLength(REINFORCER_CHOICES);
+    for (const o of s.offer!.options) expect(POOL).toContain(o);
   });
 
   it('Т3: обратный порядок — сессия обменяла раньше, прогон ложится на пустую доску без обмена', () => {
     const afterSessionExchange: TokenBoard = { size: 3, earned: 0, nonContingent: 0 };
     const s = settle(afterSessionExchange, 3, WORK);
-    expect([s.exchange, s.board.earned]).toEqual([undefined, 1]);
+    expect([s.offer, s.board.earned]).toEqual([undefined, 1]);
   });
 
   it('Т5: жетон за участие не помещается, когда не за результат уже size − 1', () => {
@@ -78,57 +85,57 @@ describe('settleRoutineBoard: выплата прогона по живой до
 
   it('Т5: жетон за результат лимитом не ограничен — последний жетон доски оплачен ответом', () => {
     const s = settle({ earned: 4, nonContingent: 4 }, 5, WORK);
-    expect(s.exchange?.tokens).toBe(5);
+    expect(s.offer?.tokens).toBe(5);
     expect(s.token).toBe('at_start_level');
   });
 
-  it('Т8: ступень упала 5 → 3, на доске 5, прогон выплатил жетон — обмен всех шести, а не трёх', () => {
+  it('Т8: ступень упала 5 → 3, на доске 5, прогон выплатил жетон — предложены все шесть, а не три; доска остаётся с шестью', () => {
     const s = settle({ earned: 5, nonContingent: 0 }, 3, WORK);
-    expect(s.exchange?.tokens).toBe(6);
-    expect(s.board.earned).toBe(0);
+    expect(s.offer?.tokens).toBe(6);
+    expect(s.board.earned).toBe(6);
   });
 
-  it('Т8: ступень упала 5 → 3, на доске 4 и жетон прогона — обмен пяти', () => {
+  it('Т8: ступень упала 5 → 3, на доске 4 и жетон прогона — предложение на пять', () => {
     const s = settle({ earned: 4, nonContingent: 0 }, 3, WORK);
-    expect(s.exchange?.tokens).toBe(5);
+    expect(s.offer?.tokens).toBe(5);
   });
 
-  it('Т8: ступень упала 5 → 3, на доске 5, прогон без жетона — доска в покое не обменивается', () => {
+  it('Т8: ступень упала 5 → 3, на доске 5, прогон без жетона — доска в покое не предлагается', () => {
     const s = settle({ earned: 5, nonContingent: 0 }, 3, NONE);
-    expect([s.exchange, s.board.earned]).toEqual([undefined, 5]);
+    expect([s.offer, s.board.earned]).toEqual([undefined, 5]);
   });
 
   it('Т8: ступень выросла 3 → 5 — трёх жетонов с жетоном прогона на обмен не хватает', () => {
-    expect(settle({ earned: 3, nonContingent: 0 }, 5, WORK).exchange).toBeUndefined();
-    expect(settle({ earned: 3, nonContingent: 0 }, 3, WORK).exchange?.tokens).toBe(4);
+    expect(settle({ earned: 3, nonContingent: 0 }, 5, WORK).offer).toBeUndefined();
+    expect(settle({ earned: 3, nonContingent: 0 }, 3, WORK).offer?.tokens).toBe(4);
   });
 
-  it('В4: срыв (заявка без жетона) на полной доске — обмена нет, доска прежняя', () => {
+  it('В4: срыв (заявка без жетона) на полной доске — предложения нет, доска прежняя', () => {
     const s = settle({ earned: 5, nonContingent: 1 }, 5, NONE);
     expect(s).toEqual({ board: { earned: 5, nonContingent: 1 }, token: null });
   });
 
-  it('В4: жетон за участие не поместился (лимит) на полной доске — обмена нет', () => {
+  it('В4: жетон за участие не поместился (лимит) на полной доске — предложения нет', () => {
     const s = settle({ earned: 4, nonContingent: 4 }, 5, PARTICIPATION);
-    expect([s.exchange, s.token, s.board.earned]).toEqual([undefined, null, 4]);
+    expect([s.offer, s.token, s.board.earned]).toEqual([undefined, null, 4]);
   });
 
-  it('полная доска и прогон с жетоном — обмен всех жетонов, включая заработанный прогоном', () => {
+  it('полная доска и прогон с жетоном — предложение на все жетоны, включая заработанный прогоном; на доске их шесть (больше размера)', () => {
     const s = settle({ earned: 5, nonContingent: 0 }, 5, WORK);
-    expect([s.exchange?.tokens, s.board.earned]).toEqual([6, 0]);
+    expect([s.offer?.tokens, s.board.earned]).toEqual([6, 6]);
   });
 
-  it('Т9: выбранное дважды подряд в вариантах обмена не предлагается — по живой истории', () => {
+  it('Т9: выбранное дважды подряд в вариантах предложения не предлагается — по живой истории', () => {
     for (let seed = 1; seed <= 40; seed += 1) {
       const s = settle({ earned: 4, nonContingent: 0 }, 5, WORK, ['drum', 'train', 'train'], seed);
-      expect(s.exchange?.options).toHaveLength(REINFORCER_CHOICES);
-      expect(s.exchange?.options).not.toContain('train');
+      expect(s.offer?.options).toHaveLength(REINFORCER_CHOICES);
+      expect(s.offer?.options).not.toContain('train');
     }
   });
 
   it('Т10: затравка прогона даёт те же варианты при каждом пересчёте', () => {
     const live = { earned: 4, nonContingent: 0 };
-    expect(settle(live, 5, WORK, ['a', 'b'], 99).exchange?.options).toEqual(settle(live, 5, WORK, ['a', 'b'], 99).exchange?.options);
+    expect(settle(live, 5, WORK, ['a', 'b'], 99).offer?.options).toEqual(settle(live, 5, WORK, ['a', 'b'], 99).offer?.options);
   });
 
   it('входную доску не изменяет', () => {

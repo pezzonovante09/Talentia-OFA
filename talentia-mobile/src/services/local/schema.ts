@@ -365,6 +365,64 @@ WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
 )
 BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
 `,
+  // 10 — обмен рутины вместе с выбором, исправления отметок, карточка «перерыв»
+  //     (раунд 3; методист 2026-10-12)
+  //
+  // • aba_reinforcer_choices.tokens — сколько жетонов ушло с выбором рутины (жетоны уходят только
+  //   вместе с выбором: полная доска и есть ожидающий обмен).
+  // • aba_trial_corrections — отмена последней отметки взрослого в течение 5 с: исходная проба
+  //   остаётся в aba_trials, замена пишется отдельной строкой, здесь — связь и причина (без
+  //   свободного текста). Только дописывание, запись через ворота согласия, срок и удаление как у проб.
+  // • ключ ABA-состояния breakCard (обучение карточке «перерыв» на ребёнке) — в триггерах согласия и отзыва.
+  `
+ALTER TABLE aba_reinforcer_choices ADD COLUMN tokens INTEGER;
+
+CREATE TABLE aba_trial_corrections (
+  seq               INTEGER PRIMARY KEY AUTOINCREMENT,
+  child_id          TEXT NOT NULL,
+  trial_id          TEXT NOT NULL UNIQUE,
+  replacement_id    TEXT NOT NULL UNIQUE,
+  session_id        TEXT NOT NULL,
+  recorded_at       TEXT NOT NULL,
+  ms_since_original INTEGER NOT NULL,
+  from_response     TEXT NOT NULL,
+  to_response       TEXT NOT NULL,
+  token_kept        INTEGER NOT NULL CHECK (token_kept IN (0, 1)),
+  token_added       INTEGER NOT NULL CHECK (token_added IN (0, 1)),
+  reason            TEXT NOT NULL CHECK (reason = 'adult_misentry')
+);
+CREATE INDEX aba_trial_corrections_session ON aba_trial_corrections (child_id, session_id, seq);
+${gated('aba_trial_corrections')}
+${retained('aba_trial_corrections', 'recorded_at')}
+CREATE TRIGGER aba_trial_corrections_need_consent BEFORE INSERT ON aba_trial_corrections
+WHEN NOT EXISTS (SELECT 1 FROM aba_write_gate WHERE child_id = NEW.child_id)
+BEGIN SELECT RAISE(ABORT, 'aba_trial_corrections: запись только через commit.ts при согласии на данные ABA'); END;
+${['insert', 'update'].map((op) => `DROP TRIGGER child_state_aba_need_consent_${op};`).join('\n')}
+${['INSERT', 'UPDATE']
+  .map(
+    (op) => `
+CREATE TRIGGER child_state_aba_need_consent_${op.toLowerCase()} BEFORE ${op} ON child_state
+WHEN NEW.key IN ('abaTargets', 'tokenTraining', 'identifySets', 'abaBoard', 'abaSessionIndex', 'abaSessionInProgress',
+                 'physicalPromptAllowed', 'abaObservers', 'abaRoutineRunInProgress', 'breakCard')
+  AND NOT EXISTS (SELECT 1 FROM aba_write_gate WHERE child_id = NEW.child_id)
+BEGIN SELECT RAISE(ABORT, 'child_state: состояние ABA только через commit.ts при согласии на данные ABA'); END;`,
+  )
+  .join('\n')}
+DROP TRIGGER consent_events_aba_revoke_needs_purge;
+CREATE TRIGGER consent_events_aba_revoke_needs_purge BEFORE INSERT ON consent_events
+WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
+  EXISTS (SELECT 1 FROM aba_trials WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_sessions WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_ioa WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_routine_runs WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_reinforcer_choices WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_trial_corrections WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM child_state WHERE child_id = NEW.child_id AND key IN
+    ('abaTargets', 'tokenTraining', 'identifySets', 'abaBoard', 'abaSessionIndex', 'abaSessionInProgress', 'abaPaused',
+     'physicalPromptAllowed', 'abaObservers', 'abaRoutineRunInProgress', 'breakCard'))
+)
+BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
+`,
 ];
 
 /**

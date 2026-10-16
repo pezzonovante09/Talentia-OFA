@@ -117,6 +117,11 @@ import {
   type TrialStep,
 } from './abaTrialStep';
 
+import {
+  BREAK_CARD_MAX_OPPORTUNITIES,
+  BREAK_CARD_TRAINING_SECONDS,
+  type BreakCardStep,
+} from './abaBreakCard';
 import { arrange, baselineMembers, poolErrors, setHalves, updateSets, type IdentifySet } from './abaIdentifySet';
 import {
   applyStageSession,
@@ -207,7 +212,15 @@ type QueueItem =
       members?: string[];
     }
   /** Перерыв: по расписанию, по детской карточке или по отказу (тогда с потолком длительности). */
-  | { kind: 'break'; initiatedBy?: 'child_card' | 'adult'; maxMs?: number; offerCardMs?: number; cardTaken?: true }
+  | {
+      kind: 'break';
+      initiatedBy?: 'child_card' | 'adult' | 'device_offer';
+      maxMs?: number;
+      offerCardMs?: number;
+      cardTaken?: true;
+      /** Обучающий перерыв по карточке: в `childBreaks` не идёт. */
+      training?: true;
+    }
   /** Доступ к подкрепителю после обмена при обучении доске. */
   | { kind: 'access'; durationMs: number }
   /** Взрослый доводит прогон цепочки до конца без записи проб (снятая проверка сверху вниз). */
@@ -223,7 +236,7 @@ export type AbaStep =
       canExchange: boolean;
       pauseBeforeMs: number;
       /** Не по расписанию: по детской карточке или по отказу. Возврат — по действию ребёнка. */
-      initiatedBy?: 'child_card' | 'adult';
+      initiatedBy?: 'child_card' | 'adult' | 'device_offer';
       /** Потолок перерыва; ребёнок может закончить раньше. */
       maxMs?: number;
       /**
@@ -1159,6 +1172,7 @@ export function finishBreak(state: AbaSessionState, now: number): { state: AbaSe
       endedAt: iso(now),
       initiatedBy: head.initiatedBy ?? 'schedule',
       ...(head.cardTaken ? { cardTaken: true as const } : {}),
+      ...(head.training ? { training: true as const } : {}),
     },
   ];
   if (exchanged > 0) events.push({ kind: 'exchange', at: iso(now), tokens: exchanged });
@@ -1242,6 +1256,58 @@ export function withdrawAssent(
     ],
   };
 }
+
+/**
+ * Обучающая возможность карточки «перерыв» (`abaBreakCard.ts`, методист 2026-10-12): событие
+ * `break_card_training`; если ребёнок коснулся — настоящий перерыв `BREAK_CARD_TRAINING_SECONDS`
+ * (без жетона, Tali и похвалы). В `childBreaks` не идёт и сессию не кончает. Только со взрослым,
+ * не больше `BREAK_CARD_MAX_OPPORTUNITIES` за сессию, до начала работы или между пробами.
+ */
+export function recordBreakCardTraining(
+  state: AbaSessionState,
+  input: { step: BreakCardStep; touched: boolean; gestureGiven: boolean; latencyMs: number | null },
+  now: number,
+): AbaSessionState {
+  if (state.config === 'alone') throw new Error('Карточке обучают со взрослым: в «Сам» обучения нет');
+  if (state.endReason !== null) throw new Error('Сессия кончилась: обучать карточке поздно');
+  const done = state.events.filter((e) => e.kind === 'break_card_training').length;
+  if (done >= BREAK_CARD_MAX_OPPORTUNITIES) throw new Error('Обучающих возможностей за сессию не больше трёх');
+  if (input.step === 'model' && input.gestureGiven) throw new Error('На модели касается взрослый, жеста нет');
+  const events: AbaSessionEvent[] = [
+    ...state.events,
+    {
+      kind: 'break_card_training',
+      at: iso(now),
+      step: input.step,
+      touched: input.touched,
+      gestureGiven: input.gestureGiven,
+      latencyMs: input.latencyMs,
+    },
+  ];
+  if (!input.touched) return { ...state, events };
+  const pause: QueueItem = {
+    kind: 'break',
+    initiatedBy: 'child_card',
+    training: true,
+    maxMs: BREAK_CARD_TRAINING_SECONDS[state.band] * 1000,
+  };
+  return { ...state, events, queue: [pause, ...state.queue] };
+}
+
+/**
+ * «Tali предлагает перерыв» (две пробы без активности в «Сам», методист 2026-10-12): «да» — перерыв
+ * `device_offer`. В `childBreaks` и в просьбы карточки не идёт: это ответ «да» на вопрос, а не
+ * просьба. «Нет» — идём дальше без изменений; нет касания 60 с — `withdrawAssent(…,
+ * 'device_inactivity')`, нейтральный конец (автоперерыв подкрепил бы молчание).
+ */
+export function acceptBreakOffer(state: AbaSessionState): AbaSessionState {
+  if (state.endReason !== null) throw new Error('Сессия кончилась: предлагать перерыв поздно');
+  const pause: QueueItem = { kind: 'break', initiatedBy: 'device_offer', maxMs: CHILD_BREAK_MS[state.band] };
+  return { ...state, queue: [pause, ...state.queue] };
+}
+
+/** Тишина на предложении перерыва (`BREAK_OFFER_IDLE_END_MS`): нейтральный конец, не автоперерыв. */
+export const BREAK_OFFER_IDLE_END_MS = 60_000;
 
 /**
  * Защитное окно после возврата с перерыва (решение методиста): открыто, пока в очереди ждёт
@@ -1544,7 +1610,16 @@ export type RecordResult =
  *   перенос, а звено, проваленное и на полной модели, взрослый выполняет с ребёнком (L4).
  * - дошли до конца обучающего блока — жетон за участие.
  */
-export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: number): RecordResult {
+export function recordTrial(
+  state: AbaSessionState,
+  input: AbaTrialInput,
+  now: number,
+  /**
+   * Исправление отметки (`abaUndo.ts`): `tokenKept = 1` — жетон за исходную отметку остался, и
+   * замена жетона не даёт и расписание не двигает; `0` — обычная выплата по доске «после».
+   */
+  opts: { correction?: { tokenKept: 0 | 1 } } = {},
+): RecordResult {
   const head = state.queue[0];
   if (head?.kind !== 'trial') return { ok: false, errors: ['сессия сейчас не ждёт пробу'] };
   const headFormat = state.targets[head.trial.targetId].format;
@@ -1560,14 +1635,17 @@ export function recordTrial(state: AbaSessionState, input: AbaTrialInput, now: n
   const full = checked.full;
 
   const r = seeded(state.seed);
-  const award = awardForTrial(full, {
-    phase: targetState.phase,
-    schedule: state.schedule,
-    board: state.board,
-    rng: r.rng,
-    highPTokenPaid: state.highPTokenPaid,
-    counts: countsHere,
-  });
+  const award: TokenAward =
+    opts.correction?.tokenKept === 1
+      ? { tokens: 0, feedback: 'praise', schedule: state.schedule }
+      : awardForTrial(full, {
+          phase: targetState.phase,
+          schedule: state.schedule,
+          board: state.board,
+          rng: r.rng,
+          highPTokenPaid: state.highPTokenPaid,
+          counts: countsHere,
+        });
   const trial: AbaTrial = {
     ...full,
     ...(head.trial.requeuedFromTrialId ? { requeuedFromTrialId: head.trial.requeuedFromTrialId } : {}),
@@ -2031,7 +2109,7 @@ export function isConcerning(own: readonly AbaTrial[]): boolean {
  * Две тревожные сессии подряд (среди сессий, где цель предъявлялась) — флаг специалисту.
  * Спокойная обнуляет счётчик. Сам флаг не снимается — только `reviewAssentConcern`.
  */
-function withAssentConcern(s: AbaTargetState, concern: boolean): AbaTargetState {
+export function withAssentConcern(s: AbaTargetState, concern: boolean): AbaTargetState {
   const inRow = concern ? (s.assentSessionsInRow ?? 0) + 1 : 0;
   const flags = inRow >= 2 && !s.flags.includes('assent_concern') ? [...s.flags, 'assent_concern' as const] : s.flags;
   return { ...s, assentSessionsInRow: inRow, flags };

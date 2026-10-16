@@ -333,8 +333,10 @@ describe('Р3: критерий через модуль совпадает с п
     expect(d2.state.phase).toBe('acquisition');
     expect(d2.state.stepPrompts).toEqual(direct.stepPrompts);
     expect([d2.state.stepPrompts?.[S1].startPromptLevel, d2.state.stepPrompts?.[S2].startPromptLevel, d2.state.stepPrompts?.[S3].startPromptLevel]).toEqual([0, 1, 3]);
-    const { lastRoutineRunDay, ...rest } = d2.state;
+    // прогон дополнительно ведёт счётчик срывов (`assentSessionsInRow: 0` — спокойный прогон) и день прогона
+    const { lastRoutineRunDay, assentSessionsInRow, ...rest } = d2.state;
     expect(lastRoutineRunDay).toBe(day(2));
+    expect(assentSessionsInRow).toBe(0);
     expect(rest).toEqual(direct);
   });
 
@@ -387,7 +389,7 @@ describe('Р3: критерий через модуль совпадает с п
 });
 
 describe('В1: обрыв прогона', () => {
-  it('срыв: остаток доводит взрослый без проб, в окне — не целиком и interrupted', () => {
+  it('срыв в обучении: остаток доводит взрослый без проб; в окно критерия срыв не идёт, он копится в routineBreakdowns', () => {
     let run = play(start(acq(), day(3)), ['ok']);
     run = interruptRoutineRun(run, 'breakdown');
     expect(nextRoutineStep(run)).toEqual({ kind: 'adult_finish_chain', targetId: 'R', stepIds: [S2, S3] });
@@ -398,7 +400,8 @@ describe('В1: обрыв прогона', () => {
 
     const r = finishRoutineRun(finishRoutineByAdult(run), Date.parse('2026-10-03T08:05:00Z'), 7);
     expect(r.trials).toHaveLength(1);
-    expect(r.state.routineRuns?.at(-1)).toMatchObject({ day: day(3), whole: false, interrupted: true });
+    expect(r.state.routineRuns).toBeUndefined();
+    expect(r.state.routineBreakdowns).toEqual([{ day: day(3), kind: 'teaching', setting: 'usual', atStep: 1 }]);
     expect([r.claim.token, settle(r).token, r.record.interrupted]).toEqual([null, null, 'breakdown']);
   });
 
@@ -410,10 +413,12 @@ describe('В1: обрыв прогона', () => {
     expect(due({ R: r.state }, day(3))).toEqual([{ targetId: 'R', kind: null }]);
   });
 
-  it('срыв на базовой линии: день засчитан, недойденные звенья — «не сам»', () => {
+  it('срыв на базовой линии не засчитывается совсем: день базовой линии не набран, но день прогона занят', () => {
     const run = interruptRoutineRun(play(start(undefined, day(1)), ['ok']), 'breakdown');
     const d1 = finishRoutineRun(finishRoutineByAdult(run), 0, 7);
-    expect(d1.state.routineBaseline).toEqual({ days: [day(1)], independentByStep: { [S1]: 1 }, transferSeen: false });
+    expect(d1.state.routineBaseline).toBeUndefined();
+    expect(d1.state.lastRoutineRunDay).toBe(day(1));
+    expect(d1.state.routineBreakdowns).toEqual([{ day: day(1), kind: 'baseline', setting: 'usual', atStep: 1 }]);
   });
 
   it('внешняя причина: в окно не пишется, состояние как до прогона, день не занят', () => {
@@ -509,19 +514,22 @@ describe('В6: поддержание прогоном', () => {
     const before = mastered({ lastSessionIndex: 12, lastMaintenanceSessionIndex: 9 });
     const run = interruptRoutineRun(play(start(before, day(10)), ['ok']), 'breakdown');
     const r = finishRoutineRun(finishRoutineByAdult(run), 0, 7);
-    expect([r.state.maintenanceFailsInRow, r.state.lastSessionIndex, r.state.lastMaintenanceSessionIndex]).toEqual([1, 12, 9]);
+    expect([r.state.maintenanceFailsInRow, r.state.lastSessionIndex, r.state.lastMaintenanceSessionIndex]).toEqual([0, 12, 9]);
   });
 
-  it('срыв посреди поддержания — провал поддержания', () => {
+  it('срыв посреди поддержания — не провал навыка: проб нет, fails и день поддержания не двигаются, срыв записан', () => {
     const run = interruptRoutineRun(play(start(mastered(), day(10)), ['ok']), 'breakdown');
     const r = finishRoutineRun(finishRoutineByAdult(run), 0, 7);
-    expect([r.state.maintenanceFailsInRow, r.state.lastMaintenanceDay]).toEqual([1, day(10)]);
+    expect([r.state.maintenanceFailsInRow ?? 0, r.state.lastMaintenanceDay]).toEqual([0, '2026-09-01']);
+    expect(r.state.routineBreakdowns).toEqual([{ day: day(10), kind: 'maintenance', setting: 'usual', atStep: 1 }]);
   });
 
-  it('срыв до первого звена поддержания — тоже провал', () => {
+  it('срыв до первого звена поддержания — тоже не провал; день прогона занят, поддержание ждёт завтра', () => {
     const run = interruptRoutineRun(start(mastered(), day(10)), 'breakdown');
     const r = finishRoutineRun(finishRoutineByAdult(run), 0, 7);
-    expect([r.state.maintenanceFailsInRow, r.state.lastRoutineRunDay]).toEqual([1, day(10)]);
+    expect([r.state.maintenanceFailsInRow ?? 0, r.state.lastRoutineRunDay, r.state.lastMaintenanceDay]).toEqual([0, day(10), '2026-09-01']);
+    expect(due({ R: r.state }, day(10))).toEqual([{ targetId: 'R', kind: null }]);
+    expect(due({ R: r.state }, day(11))).toEqual([{ targetId: 'R', kind: 'maintenance' }]);
   });
 });
 
@@ -545,24 +553,23 @@ describe('Жетон после прогона', () => {
     expect([s.token, s.board.earned]).toEqual([null, 1]);
   });
 
-  it('полная доска — обмен сразу после прогона с выбором подкрепителя', () => {
+  it('полная доска — после прогона предложение обмена с выбором подкрепителя; жетоны остаются на доске до выбора', () => {
     const s = settle(fullRun(acq(), day(1)), { earned: BOARD - 1, nonContingent: 0 });
-    expect(s.exchange?.tokens).toBe(BOARD);
-    expect(s.exchange?.options).toHaveLength(REINFORCER_CHOICES);
-    for (const o of s.exchange!.options) expect(POOL).toContain(o);
-    expect(s.board.earned).toBe(0);
+    expect(s.offer?.tokens).toBe(BOARD);
+    expect(s.offer?.options).toHaveLength(REINFORCER_CHOICES);
+    for (const o of s.offer!.options) expect(POOL).toContain(o);
+    expect(s.board.earned).toBe(BOARD);
   });
 
-  it('неполная доска — обмена нет', () => {
+  it('неполная доска — предложения нет', () => {
     const s = settle(fullRun(acq(), day(1)), { earned: 1, nonContingent: 0 });
-    expect([s.exchange, s.board.earned]).toEqual([undefined, 2]);
+    expect([s.offer, s.board.earned]).toEqual([undefined, 2]);
   });
 
   it('запись прогона не несёт того, что решает доска: ни жетона, ни обмена', () => {
     const r = fullRun(acq(), day(1));
     expect(r.record).not.toHaveProperty('token');
-    expect(r.record).not.toHaveProperty('exchanged');
-    expect(r.record).not.toHaveProperty('exchangeOptions');
+    expect(r.record).not.toHaveProperty('exchangeOffer');
   });
 
   it('базовая линия: заявка на жетон за участие, не за результат', () => {
@@ -575,7 +582,7 @@ describe('Жетон после прогона', () => {
   it('жетон за участие учитывается в лимите size − 1 на цикл доски', () => {
     const r = fullRun(undefined, day(1));
     const atLimit = settle(r, { earned: BOARD - 1, nonContingent: BOARD - 1 });
-    expect([atLimit.token, atLimit.board.earned, atLimit.exchange]).toEqual([null, BOARD - 1, undefined]);
+    expect([atLimit.token, atLimit.board.earned, atLimit.offer]).toEqual([null, BOARD - 1, undefined]);
     const below = settle(r, { earned: BOARD - 2, nonContingent: BOARD - 2 });
     expect([below.token, below.board.nonContingent]).toEqual(['participation', BOARD - 1]);
   });
@@ -896,17 +903,25 @@ describe('Г4: перенос — базовая линия', () => {
     expect([s.phase, s.flags.includes('needs_transfer'), s.routineBaseline?.transferSeen]).toEqual(['baseline', true, false]);
   });
 
-  it('срыв в held-состоянии — состояние без изменений, кроме занятого дня', () => {
+  it('срыв в held-состоянии — базовая линия без изменений; прибавились только занятый день и запись срыва', () => {
     const before = waiting();
     const run = interruptRoutineRun(play(start(before, day(3)), ['ok']), 'breakdown');
     const r = finishRoutineRun(finishRoutineByAdult(run), 0, 7);
-    expect(r.state).toEqual({ ...before, lastRoutineRunDay: day(3) });
+    expect(r.state).toEqual({
+      ...before,
+      lastRoutineRunDay: day(3),
+      assentSessionsInRow: 1,
+      routineBreakdowns: [{ day: day(3), kind: 'baseline', setting: 'usual', atStep: 1 }],
+    });
+    expect(r.state.routineBaseline).toEqual(before.routineBaseline);
   });
 
-  it('срыв в первый день базовой линии transferSeen не ставит, даже вне контекста', () => {
+  it('срыв в первый день базовой линии transferSeen не ставит, даже вне контекста; базовая линия не начата', () => {
     const run = setRoutineSetting(interruptRoutineRun(play(start(undefined, day(1)), ['ok']), 'breakdown'), 'other_place');
     const r = finishRoutineRun(finishRoutineByAdult(run), 0, 7);
-    expect(r.state.routineBaseline?.transferSeen).toBe(false);
+    expect(r.state.routineBaseline?.transferSeen).not.toBe(true);
+    expect(r.state.routineBaseline).toBeUndefined();
+    expect(r.state.routineBreakdowns).toEqual([{ day: day(1), kind: 'baseline', setting: 'other_place', atStep: 1 }]);
   });
 
   it('setting протянут в базовую линию: transferSeen ставит только целиком сам прогон вне контекста', () => {
