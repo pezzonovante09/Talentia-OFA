@@ -62,6 +62,34 @@ export class AbaBoardConflictError extends Error {
   }
 }
 
+/** Рутина уже пройдена в этот день (локальный `YYYY-MM-DD`): второй прогон в тот же день не записывается. */
+export class RoutineAlreadyRunError extends Error {
+  constructor() {
+    super('Рутина сегодня уже пройдена: прогон не записан');
+  }
+}
+
+/**
+ * Состояние рутины изменилось, пока шёл прогон (другая запись той же цели): итог посчитан от
+ * устаревшего состояния и не записан. Экран предлагает начать прогон заново.
+ */
+export class RoutineStateConflictError extends Error {
+  constructor() {
+    super('Состояние рутины изменилось во время прогона: итог не записан');
+  }
+}
+
+/**
+ * Итог сессии посчитан без учёта обмена рутины в её окне: с нулём обменов такая сессия ложно
+ * опустила бы ступень доски. Экран считает признак (`routineExchangeInSessionWindow`) и передаёт его
+ * в `finishAbaSession`.
+ */
+export class RoutineWindowNotAccountedError extends Error {
+  constructor() {
+    super('Не учтён обмен рутины в окне сессии: итог не записан');
+  }
+}
+
 /** Согласие на текущий текст (любой язык) и не на паузе. Вызывать внутри транзакции записи. */
 export async function requireAbaConsent(tx: SqlDb, childId: string): Promise<void> {
   if (!isGranted(await readConsentLog(tx), 'aba_processing', childId, CURRENT_CONSENT_TEXTS.aba_processing)) {

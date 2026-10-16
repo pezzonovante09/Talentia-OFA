@@ -8,7 +8,7 @@ import type { RoutineRunResult, RoutineRunState } from '../../../domain/abaRouti
 import type { AbaSessionResult, AbaSessionState } from '../../../domain/abaSession';
 import { initialTokenTraining, type TokenTrainingState } from '../../../domain/abaTokenTraining';
 import type { ConsentEvent } from '../../../domain/consent';
-import { AbaConsentRequiredError, appendRoutineRun, routineRunsOf, trialsOfTarget } from '../abaLog';
+import { AbaConsentRequiredError, RoutineAlreadyRunError, RoutineStateConflictError, appendRoutineRun, routineRunsOf, trialsOfTarget } from '../abaLog';
 import { ABA_STATE_KEYS, loadChildState, saveChildState } from '../childState';
 import { commitAbaSession, commitIoa, commitRoutineRun, recordAbaTrial, recordRoutineStep, resumeAbaSession, setAbaObservers } from '../commit';
 import { appendConsentEvent, insertConsentEvent } from '../consentLog';
@@ -78,11 +78,14 @@ const recordBase = (id: string) => {
 };
 
 const rState = { targetId: 'R', phase: 'acquisition', lastRoutineRunDay: '2026-10-11' } as AbaTargetState;
+/** Состояние рутины на старте прогона (`RoutineRunResult.before`): ещё без прогонов. */
+const rBefore = { targetId: 'R', phase: 'acquisition' } as AbaTargetState;
 const aState = { targetId: 'A', phase: 'mastered' } as AbaTargetState;
 
 const result = (id = 'run-1', over: Partial<RoutineRunResult> = {}): RoutineRunResult => ({
   trials: [],
   state: rState,
+  before: rBefore,
   claim: { token: 'at_start_level', tokens: 1, nonContingent: false },
   record: recordBase(id),
   band: '7',
@@ -164,8 +167,16 @@ describe('итог прогона рутины (commitRoutineRun)', () => {
     await seeded(db);
     await commitRoutineRun(db, 'kid', result(), NOW);
     await recordRoutineStep(db, 'kid', stepTrial('tr-2'), inProgress, NOW);
-    const again = result('run-1', { state: { ...rState, phase: 'mastered' } });
-    await expect(commitRoutineRun(db, 'kid', again, NOW)).rejects.toThrow();
+    // другой день и верное «до»: правила дня и состояния пройдены, отказывает именно повтор id прогона
+    const again = result('run-1', {
+      state: { ...rState, phase: 'mastered', lastRoutineRunDay: '2026-10-12' },
+      before: rState,
+      record: { ...recordBase('run-1'), day: '2026-10-12' },
+    });
+    const err = await commitRoutineRun(db, 'kid', again, NOW).then(() => null, (e: unknown) => e);
+    expect(err).not.toBeNull();
+    expect(err).not.toBeInstanceOf(RoutineAlreadyRunError);
+    expect(err).not.toBeInstanceOf(RoutineStateConflictError);
     expect(await routineRunsOf(db, 'kid')).toHaveLength(1);
     expect(await loadChildState(db, 'kid', 'abaTargets')).toEqual({ A: aState, R: rState });
     expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 3, nonContingent: 1, rev: 1 });
@@ -264,7 +275,9 @@ describe('удаление, срок хранения и отзыв видят �
   it('срок хранения удаляет старые прогоны, свежие остаются, удаление свежего не открывается', async () => {
     const db = await dbWithAbaConsent();
     await commitRoutineRun(db, 'kid', result('run-old'), '2025-09-01T10:00:00Z');
-    await commitRoutineRun(db, 'kid', result('run-new'), '2026-10-01T10:00:00Z');
+    // тот же день занят: новый прогон — на следующий день, от итога первого
+    const next = { ...rState, lastRoutineRunDay: '2026-10-12' };
+    await commitRoutineRun(db, 'kid', result('run-new', { state: next, before: rState, record: { ...recordBase('run-new'), day: '2026-10-12' } }), '2026-10-01T10:00:00Z');
     expect(await applyRetention(db, new Date(NOW))).toBe(1);
     expect((await routineRunsOf(db, 'kid')).map((r) => r.id)).toEqual(['run-new']);
     await expect(db.run('DELETE FROM aba_routine_runs')).rejects.toThrow(/только дописывание/);
@@ -418,7 +431,6 @@ describe('сессия, свёрнутая на время прогона рут
   it('итог прогона, записанный посреди сессии, переживает итог сессии', async () => {
     const db = await dbWithAbaConsent();
     await seeded(db);
-    const rBefore = { targetId: 'R', phase: 'acquisition' } as AbaTargetState;
     await asAbaWriter(db, 'kid', (tx) => saveChildState(tx, 'kid', 'abaTargets', { A: aState, R: rBefore }, NOW));
     // сессия начата и свёрнута на шаге
     await recordAbaTrial(db, 'kid', { ...stepTrial('tr-s'), sessionId: 's-5', targetId: 'A', stepId: undefined, runIndex: undefined }, sessionSnapshot(), NOW);

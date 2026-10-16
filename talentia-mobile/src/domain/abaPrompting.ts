@@ -648,6 +648,13 @@ export type PromptVisualPlan = {
   highlightCorrect: boolean;
   /** L4: экран как на L3, в панели взрослого — «мягко направь руку, прекрати при сопротивлении». */
   adultPhysical: boolean;
+  /**
+   * Одна плита (эхоика, подражание, действие, громкость; Г5): метка над плитой — открытый шеврон на
+   * L1, сплошной треугольник и контур 6 на L2–L4 (L2 выглядит как L3, его отличает звук или
+   * анимация модели и панель взрослого). `null` — меток нет (L0 и форматы с экраном выбора).
+   * Вид метки — токен `promptVisual.single` (`design/abaTokens.ts`).
+   */
+  plateMark: 'chevron_open' | 'triangle_solid' | null;
 };
 
 /**
@@ -657,7 +664,8 @@ export type PromptVisualPlan = {
  * верный не выделен (у выбора из двух L2 нет); L3 — активен только верный. У `identify` жест к
  * карточке и есть ответ — она выделена с L1. Дистрактор L2 тянется из `seed` пробы: при
  * восстановлении сессии он тот же, новая проба тянет заново. Форматы без экрана выбора
- * (речь, действие) — подсказка моделью, а не экраном: план нейтральный.
+ * (речь, действие) — одна плита с меткой над ней (`plateMark`, Г5): шеврон на L1, треугольник
+ * на L2–L4; сама подсказка — модель звуком или движением, не экран.
  */
 export function promptVisualFor(
   target: Pick<AbaTarget, 'format' | 'sdKind' | 'fieldSize' | 'matchMode'>,
@@ -668,7 +676,14 @@ export function promptVisualFor(
   const all = trial.choiceIds;
   const adultPhysical = level === 4;
   const shown = Math.min(level, APP_MAX_PROMPT);
-  const plan = (p: Partial<PromptVisualPlan>): PromptVisualPlan => ({ focus: null, activeChoiceIds: all, highlightCorrect: false, adultPhysical, ...p });
+  const plan = (p: Partial<PromptVisualPlan>): PromptVisualPlan => ({
+    focus: null,
+    activeChoiceIds: all,
+    highlightCorrect: false,
+    adultPhysical,
+    plateMark: null,
+    ...p,
+  });
   if (shown === 0) return plan({});
   if (target.format === 'identify') {
     return plan({
@@ -677,7 +692,12 @@ export function promptVisualFor(
       highlightCorrect: true,
     });
   }
-  if (target.format !== 'match') return plan({});
+  if (target.format !== 'match') {
+    // одна плита: у эхоики и подражания лестница L0 → L1 → L3, уровня 2 нет (ABA.md); у действия
+    // и громкости L2 на экране как L3
+    if (shown === 2 && promptLadder(target) === 'imitative') throw new Error('у эхоики и подражания уровня L2 нет');
+    return plan({ plateMark: shown === 1 ? 'chevron_open' : 'triangle_solid' });
+  }
   if (shown === 1) {
     const sort = target.matchMode === 'sort';
     const id = sort ? trial.itemId : trial.sampleId;

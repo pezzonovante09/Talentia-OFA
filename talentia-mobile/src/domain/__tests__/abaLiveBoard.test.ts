@@ -245,6 +245,11 @@ describe('(а) ступень доски: сессия с нулём обмен�
       expect([r.tokenTraining.stage, r.tokenTraining.atStage]).toEqual([5, [ses(0, 'completed', 9)]]);
     });
 
+    it('с признаком false при обмене рутины в окне (контроль): ступень решается обычно, 5 → 3', () => {
+      const r = finishAbaSession(abandoned(prior), BASE_MS + 5000, {}, undefined, undefined, { routineExchangeInWindow: false });
+      expect(r.tokenTraining.stage).toBe(3);
+    });
+
     it('без признака: брошенная сессия с нулём обменов вторым подряд опускает ступень 5 → 3', () => {
       const r = finishAbaSession(abandoned(prior), BASE_MS + 5000);
       expect(r.tokenTraining.stage).toBe(3);

@@ -29,6 +29,7 @@ import {
   pendingRoutineExchanges,
   reinforcerHistoryOf,
   routineExchangedSince,
+  RoutineWindowNotAccountedError,
   routineRunsOf,
   sessionsOf,
   trialsOfSession,
@@ -98,14 +99,20 @@ const boardOf = (db: SqlDb, kid = 'kid') => loadChildState(db, kid, 'abaBoard');
 
 function routineResult(runId: string, claim: RoutineClaim, over: { endedMs?: number; band?: '5-6' | '7'; seed?: number } = {}): RoutineRunResult {
   const { endedMs = BASE_MS + 5000, band = '7', seed = 7 } = over;
+  // номер прогона из id: k-й прогон идёт в k-й день, а `before` — итог (k−1)-го (один прогон в день, без конфликта состояния)
+  const k = Number(/(\d+)$/.exec(runId)?.[1] ?? 1);
+  const dayOf = (n: number) => `2026-10-${String(11 + n).padStart(2, '0')}`;
+  const stateOf = (n: number) =>
+    ({ targetId: 'R', phase: 'acquisition', ...(n > 0 ? { lastRoutineRunDay: dayOf(n) } : {}) }) as AbaTargetState;
   return {
     trials: [],
-    state: { targetId: 'R', phase: 'acquisition' } as AbaTargetState,
+    state: stateOf(k),
+    before: stateOf(k - 1),
     claim,
     record: {
       id: runId,
       targetId: 'R',
-      day: '2026-10-12',
+      day: dayOf(k),
       kind: 'teaching',
       startedAt: iso(endedMs - 60_000),
       endedAt: iso(endedMs),
@@ -660,6 +667,73 @@ describe('(а) и (в) в хранилище', () => {
     await asAbaWriter(db, 'kid', (tx) => saveChildState(tx, 'kid', 'abaBoard', { earned: 4, nonContingent: 0, rev: 9 }, NOW));
     await commitRoutineRun(db, 'kid', routineResult('run-2', WORK, { endedMs: BASE_MS + 12_000 }), iso(BASE_MS + 12_000));
     expect((await resumeAbaSession(db, 'kid', POOL))!.reinforcerStale).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+
+describe('commitAbaSession: обмен рутины в окне сессии без учёта — отказ', () => {
+  const ses = (exchanges: number, sessionIndex: number): StageSession => ({ sessionIndex, exchanges, endReason: 'completed' });
+
+  /** Оборванная сессия со ступенью 5 и одной записью «0 обменов»; обмен рутины в её окне — по желанию. */
+  async function abandoned(withRoutineExchange: boolean) {
+    const db = await setup({ board: { earned: 4, nonContingent: 0 } });
+    const training: TokenTrainingState = { ...initialTokenTraining(), pairingDone: true, stage: 5, atStage: [ses(0, 9)] };
+    await asAbaWriter(db, 'kid', (tx) => saveChildState(tx, 'kid', 'tokenTraining', training, NOW));
+    const st = await startSession(db, { tokenTraining: training });
+    if (withRoutineExchange) await commitRoutineRun(db, 'kid', routineResult('run-1', WORK, { endedMs: BASE_MS + 5000 }), NOW);
+    const resumed = (await resumeAbaSession(db, 'kid', POOL))!;
+    const ended = stopSession({ ...resumed, sessionIndex: st.sessionIndex }, 'abandoned');
+    const finish = (extra?: { routineExchangeInWindow?: boolean }) =>
+      finishAbaSession(ended, BASE_MS + 9000, {}, undefined, undefined, extra);
+    return { db, finish, training };
+  }
+  const at = iso(BASE_MS + 9000);
+
+  it('ноль обменов, обмен рутины в окне, признак не передан: RoutineWindowNotAccountedError, ничего не записано', async () => {
+    const { db, finish, training } = await abandoned(true);
+    const boardBefore = await boardOf(db);
+    await expect(commitAbaSession(db, 'kid', finish(), at)).rejects.toBeInstanceOf(RoutineWindowNotAccountedError);
+    expect(await sessionsOf(db, 'kid')).toEqual([]);
+    expect(await loadChildState(db, 'kid', 'tokenTraining')).toEqual(training);
+    expect(await boardOf(db)).toEqual(boardBefore);
+    expect(await loadChildState(db, 'kid', 'abaSessionInProgress')).not.toBeNull();
+  });
+
+  it('тот же итог с признаком true: записан, ступень 5 не падает', async () => {
+    const { db, finish, training } = await abandoned(true);
+    await commitAbaSession(db, 'kid', finish({ routineExchangeInWindow: true }), at);
+    expect((await loadChildState(db, 'kid', 'tokenTraining'))!.stage).toBe(5);
+    expect((await loadChildState(db, 'kid', 'tokenTraining'))!.atStage).toEqual(training.atStage);
+    expect(await sessionsOf(db, 'kid')).toHaveLength(1);
+  });
+
+  it('признак false при обмене рутины в окне (контроль): отказа нет, ступень решается обычно, 5 → 3', async () => {
+    const { db, finish } = await abandoned(true);
+    await commitAbaSession(db, 'kid', finish({ routineExchangeInWindow: false }), at);
+    expect((await loadChildState(db, 'kid', 'tokenTraining'))!.stage).toBe(3);
+  });
+
+  it('признак не передан, но обмена рутины в окне не было: записывается', async () => {
+    const { db, finish } = await abandoned(false);
+    await commitAbaSession(db, 'kid', finish(), at);
+    expect(await sessionsOf(db, 'kid')).toHaveLength(1);
+  });
+
+  it('признак не передан и обмен рутины в окне, но у сессии обмены были (>0): без отказа', async () => {
+    const { db, finish } = await abandoned(true);
+    const r = finish();
+    await commitAbaSession(db, 'kid', { ...r, session: { ...r.session, exchangesMade: 2 } }, at);
+    expect(await sessionsOf(db, 'kid')).toHaveLength(1);
+  });
+
+  it('обмен рутины до старта сессии в окно не входит: признак не нужен', async () => {
+    const db = await setup({ board: { earned: 4, nonContingent: 0 } });
+    await commitRoutineRun(db, 'kid', routineResult('run-1', WORK, { endedMs: BASE_MS - 5000 }), iso(BASE_MS - 5000));
+    const st = await startSession(db);
+    const ended = stopSession({ ...((await resumeAbaSession(db, 'kid', POOL))!), sessionIndex: st.sessionIndex }, 'abandoned');
+    await commitAbaSession(db, 'kid', finishAbaSession(ended, BASE_MS + 9000), at);
+    expect(await sessionsOf(db, 'kid')).toHaveLength(1);
   });
 });
 

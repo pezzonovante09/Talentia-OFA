@@ -20,6 +20,9 @@ import { ioaRecordErrors } from '../../domain/abaIoa';
 import {
   AbaBoardConflictError,
   AbaSessionMissingError,
+  RoutineAlreadyRunError,
+  RoutineStateConflictError,
+  RoutineWindowNotAccountedError,
   appendIoa,
   appendReinforcerChoice,
   appendRoutineRun,
@@ -176,6 +179,14 @@ export async function commitAbaSession(
 ): Promise<void> {
   await withAbaWrite(db, childId, async (tx) => {
     await writeSessionBoard(tx, childId, result.board, result.boardRev, at);
+    // с нулём обменов и обменом рутины в окне без учёта признака ступень решилась бы ложно
+    if (
+      result.routineExchangeInWindow === undefined &&
+      result.session.exchangesMade === 0 &&
+      (await routineExchangedSince(tx, childId, Date.parse(result.session.startedAt)))
+    ) {
+      throw new RoutineWindowNotAccountedError();
+    }
     await appendSession(tx, childId, result.session, at);
     // слияние с текущей картой: рутины меняет только прогон рутины, и его итог, записанный, пока
     // сессия была свёрнута, не затирается (методист, раунд 2, Р3)
@@ -240,6 +251,13 @@ export async function commitRoutineRun(
       seed: result.seed,
     });
     const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
+    const current = targets[result.record.targetId];
+    // один прогон рутины в календарный день; внешний обрыв день не занимает и сюда не попадает
+    if (current?.lastRoutineRunDay === result.record.day && result.record.interrupted !== 'external') {
+      throw new RoutineAlreadyRunError();
+    }
+    // итог посчитан от состояния на старте: чужая запись той же цели за время прогона — конфликт
+    if (current && JSON.stringify(current) !== JSON.stringify(result.before)) throw new RoutineStateConflictError();
     await appendRoutineRun(
       tx,
       childId,
@@ -361,7 +379,9 @@ export async function commitIoa(
     );
     if (!session) throw new AbaSessionMissingError(record.sessionId);
     await appendIoa(tx, childId, record, session.recorded_at);
-    await saveChildState(tx, childId, 'abaTargets', states, at);
+    // слияние по ключам: рутины и другие цели, записанные за это время, не затираются
+    const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
+    await saveChildState(tx, childId, 'abaTargets', { ...targets, ...states }, at);
   });
 }
 
@@ -377,5 +397,9 @@ export async function saveAbaTargets(
   states: Record<string, AbaTargetState>,
   at: string,
 ): Promise<void> {
-  await withAbaWrite(db, childId, (tx) => saveChildState(tx, childId, 'abaTargets', states, at));
+  await withAbaWrite(db, childId, async (tx) => {
+    // слияние по ключам, как в `commitIoa`: пишутся только переданные цели
+    const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
+    await saveChildState(tx, childId, 'abaTargets', { ...targets, ...states }, at);
+  });
 }

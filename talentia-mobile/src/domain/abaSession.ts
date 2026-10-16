@@ -1872,7 +1872,8 @@ export function rollbackSteps(before: AbaTargetState, after: AbaTargetState, tar
 export type AbaSessionResult = {
   session: AbaSession;
   /**
-   * Состояния целей программы: затронутые — новыми, прочие — как были. **Без рутин**: их меняет
+   * Состояния только **затронутых** сессией целей (пробы, выведенные размещением предпосылки):
+   * `commitAbaSession` сливает их с текущей картой по ключам, а не пишет снимок со старта. **Без рутин**: их меняет
    * только прогон рутины, и свёрнутая на время прогона сессия не должна затереть его итог
    * (методист, раунд 2, Р3) — `commitAbaSession` сливает с текущей картой.
    */
@@ -1882,6 +1883,12 @@ export type AbaSessionResult = {
   board: TokenBoard;
   /** Версия `abaBoard`, с которой сессия сверялась: `commitAbaSession` пишет доску только при совпадении. */
   boardRev: number;
+  /**
+   * Что передал экран о обмене рутины в окне сессии (`finishAbaSession`, `extra`). Не передано
+   * (`undefined`) — `commitAbaSession` сам проверит журнал и откажет, если без учёта признака
+   * ступень доски решилась бы ложно.
+   */
+  routineExchangeInWindow?: boolean;
   /** Сколько жетонов ушло в обмен в конце. 0 — доска неполная или обмена по этой причине нет. */
   exchanged: number;
   /** Обучение доске после этой сессии. */
@@ -2072,6 +2079,8 @@ export function finishAbaSession(
   const touched = [
     ...new Set(state.trials.map((t) => t.targetId)),
   ];
+  // что сессия действительно изменила: затронутые цели и выведенные размещением предпосылки
+  const changedIds = new Set(touched);
 
   const phaseEvents: AbaSessionEvent[] = [];
 
@@ -2095,7 +2104,11 @@ export function finishAbaSession(
             phaseEvents.push({ kind: 'phase', at: iso(endedAt), targetId: p.id, from: states[p.id].phase, to: placed[p.id].phase, reason: 'inferred' });
           }
         }
-        for (const [k, v] of Object.entries(placed)) if (k !== id) states[k] = v;
+        for (const [k, v] of Object.entries(placed)) {
+          if (k === id) continue;
+          states[k] = v;
+          changedIds.add(k);
+        }
         s = placed[id];
       } else {
         s = applyBaseline(s, own, idx, target, state.config);
@@ -2200,6 +2213,7 @@ export function finishAbaSession(
       startedAt: iso(state.startedAt),
       endedAt: iso(endedAt),
       config: state.config,
+      day: state.day,
       targetIds: [...new Set([...state.baselineTargetIds, ...state.teachingTargetIds])],
       reinforcerId: state.reinforcerId ?? '',
       reinforcerChosenBy: state.reinforcerChosenBy,
@@ -2212,7 +2226,10 @@ export function finishAbaSession(
       events,
       primaryObserverId: state.primaryObserverId,
     },
-    states: Object.fromEntries(Object.entries(states).filter(([id]) => !isRoutine(state.targets[id] ?? { area: 'matching' }))),
+    states: Object.fromEntries(
+      Object.entries(states).filter(([id]) => changedIds.has(id) && !isRoutine(state.targets[id] ?? { area: 'matching' })),
+    ),
+    ...(extra.routineExchangeInWindow === undefined ? {} : { routineExchangeInWindow: extra.routineExchangeInWindow }),
     trials: state.trials,
     board,
     boardRev: state.boardRev,

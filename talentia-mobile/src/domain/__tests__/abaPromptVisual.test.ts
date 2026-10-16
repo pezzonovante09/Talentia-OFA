@@ -3,6 +3,7 @@
  * в `match` и сортировке L1–L2 ответа не раскрывают, у `identify` жест L1 и есть ответ.
  */
 import type { AbaTarget } from '../../types/aba';
+import { promptVisual, promptVisualSingleLevel } from '../../design/abaTokens';
 import { answerLevel, ladderUp, promptLadder, promptVisualFor } from '../abaPrompting';
 
 type Kind = Pick<AbaTarget, 'format' | 'sdKind' | 'fieldSize' | 'matchMode'>;
@@ -17,7 +18,7 @@ const two = { correctId: 'b', choiceIds: ['a', 'b'], sampleId: 's', itemId: 'i' 
 describe('Р5: подсказка на экране выбора', () => {
   it('L0 у всех — без метки, активны все, верный не выделен', () => {
     for (const [k, t] of [[identify, three], [match3, three], [sort, two]] as const) {
-      expect(promptVisualFor(k, 0, t, 1)).toEqual({ focus: null, activeChoiceIds: t.choiceIds, highlightCorrect: false, adultPhysical: false });
+      expect(promptVisualFor(k, 0, t, 1)).toEqual({ focus: null, activeChoiceIds: t.choiceIds, highlightCorrect: false, adultPhysical: false, plateMark: null });
     }
   });
 
@@ -33,6 +34,7 @@ describe('Р5: подсказка на экране выбора', () => {
       activeChoiceIds: ['a', 'b', 'c'],
       highlightCorrect: false,
       adultPhysical: false,
+      plateMark: null,
     });
   });
 
@@ -88,5 +90,72 @@ describe('Р5: подсказка на экране выбора', () => {
   it('образца или предмета нет на L1 — ошибка данных, а не пустая метка', () => {
     expect(() => promptVisualFor(match3, 1, { correctId: 'b', choiceIds: ['a', 'b', 'c'] }, 1)).toThrow(/образца/);
     expect(() => promptVisualFor(sort, 1, { correctId: 'b', choiceIds: ['a', 'b'] }, 1)).toThrow(/предмета/);
+  });
+});
+
+describe('Г5: одна плита (действие, громкость, эхоика, подражание) — plateMark', () => {
+  const action: Kind = { format: 'do_action' };
+  const volume: Kind = { format: 'voice_volume' };
+  const echo: Kind = { format: 'imitate_sound', sdKind: 'imitation' };
+  const imitation: Kind = { format: 'do_action', sdKind: 'imitation' };
+  const one = { correctId: 'p', choiceIds: ['p'] } as const;
+  const markOf = (k: Kind, level: 0 | 1 | 2 | 3 | 4) => promptVisualFor(k, level, one, 1).plateMark;
+
+  it.each([
+    [0, null],
+    [1, 'chevron_open'],
+    [2, 'triangle_solid'],
+    [3, 'triangle_solid'],
+    [4, 'triangle_solid'],
+  ] as const)('действие и громкость, L%i: метка %s', (level, mark) => {
+    expect(markOf(action, level)).toBe(mark);
+    expect(markOf(volume, level)).toBe(mark);
+  });
+
+  it('действие и громкость: L2 и L3 выглядят одинаково (различает звук или анимация модели)', () => {
+    expect(promptVisualFor(action, 2, one, 1)).toEqual(promptVisualFor(action, 3, one, 1));
+    expect(promptVisualFor(volume, 2, one, 1)).toEqual(promptVisualFor(volume, 3, one, 1));
+  });
+
+  it.each([0, 1, 3, 4] as const)('эхоика и подражание, L%i: метка по лестнице, без ошибки', (level) => {
+    for (const k of [echo, imitation, { format: 'repeat_word' } as Kind]) {
+      expect(promptLadder(k)).toBe('imitative');
+      expect(markOf(k, level)).toBe(promptVisualFor(action, level, one, 1).plateMark);
+    }
+  });
+
+  it('эхоика и подражание: L2 — ошибка данных, а не молчаливая метка', () => {
+    for (const k of [echo, imitation, { format: 'repeat_word' } as Kind]) {
+      expect(() => promptVisualFor(k, 2, one, 1)).toThrow(/у эхоики и подражания уровня L2 нет/);
+    }
+  });
+
+  it('одна плита: активна единственная, верный не выделен, фокуса нет; L4 — указание взрослому', () => {
+    expect(promptVisualFor(action, 1, one, 1)).toEqual({
+      focus: null,
+      activeChoiceIds: ['p'],
+      highlightCorrect: false,
+      adultPhysical: false,
+      plateMark: 'chevron_open',
+    });
+    expect(promptVisualFor(action, 4, one, 1)).toMatchObject({ plateMark: 'triangle_solid', adultPhysical: true });
+  });
+
+  it('форматы с экраном выбора метки одной плиты не получают (identify, match, сортировка)', () => {
+    for (const [k, t] of [[identify, three], [match3, three], [sort, two]] as const) {
+      for (const level of [0, 1, 2, 3, 4] as const) {
+        if ((k === sort) && level === 2) continue;
+        expect(promptVisualFor(k, level, t, 1).plateMark).toBeNull();
+      }
+    }
+  });
+
+  it('plateMark согласован с токеном promptVisual.single по promptVisualSingleLevel', () => {
+    for (const level of [0, 1, 2, 3, 4] as const) {
+      const token = promptVisual.single[promptVisualSingleLevel(level)];
+      const mark = markOf(action, level);
+      expect(mark ?? 'none').toBe(token.mark);
+      expect(token.markOn).toBe(mark === null ? 'none' : 'plate');
+    }
   });
 });

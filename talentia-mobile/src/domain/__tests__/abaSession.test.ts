@@ -714,7 +714,8 @@ describe('набор identify', () => {
     const first = finishAbaSession(state, 99_000);
     expect(first.states.I1).toMatchObject({ phase: 'acquisition', startPromptLevel: 0 });
     expect(first.states.I2).toMatchObject({ phase: 'acquisition', startPromptLevel: 1 });
-    expect(first.states.I3.phase).toBe('baseline');
+    // третья цель сессией не затронута (проб нет) — в итоге её нет: commitAbaSession сливает по ключам
+    expect(first.states.I3).toBeUndefined();
     expect(first.identifySets[0].lastSetSessionIndex).toBe(10);
 
     // вторая сессия: базовая линия третьей и обучение первых двух в тех же половинах
@@ -1798,5 +1799,36 @@ describe('ABA v1: проверка сверху вниз в цепочке', () 
     const finish = steps.find((x) => x.kind === 'adult_finish_chain');
     expect(finish).toEqual({ kind: 'adult_finish_chain', targetId: 'B', stepIds: ['B-2', 'B-3'] });
     expect(state.trials.filter((t) => t.targetId === 'B')).toHaveLength(1);
+  });
+});
+
+describe('finishAbaSession: что попадает в итог (слияние в commitAbaSession)', () => {
+  const A = tgt('A');
+  const B = tgt('B', { prerequisiteTargetIds: ['A'], includesTargetIds: ['A'] });
+  const C = tgt('C', { prerequisiteTargetIds: ['B'], includesTargetIds: ['B'] });
+
+  it('states: цель с пробами и выведенные размещением предпосылки попадают в итог', () => {
+    const X = tgt('X');
+    const { state } = drive(begin([A, B, C, X], { X: mastered(X, 10) }, { autoPlacement: true, day: '2026-10-02' }), () => 'ok');
+    const withTrials = new Set(state.trials.map((t) => t.targetId));
+    const r = finishAbaSession(state, 99_000);
+    // выведенные A и B проб не имели — но размещение их изменило
+    expect(withTrials.has('A') || withTrials.has('B')).toBe(false);
+    expect(withTrials.has('C')).toBe(true);
+    expect(Object.keys(r.states).sort()).toEqual([...new Set(['A', 'B', ...withTrials])].sort());
+  });
+
+  it('session.day — локальный день старта, а не UTC-дата метки', () => {
+    const { state } = drive(begin([tgt('D')], {}, { day: '2026-10-02' }), () => 'ok');
+    expect(finishAbaSession(state, 99_000).session.day).toBe('2026-10-02');
+  });
+
+  it('признак обмена рутины в окне передаётся в итог как есть: true, false; не передан — поля нет', () => {
+    const { state } = drive(begin([tgt('D')], {}), () => 'ok');
+    const flag = (extra?: { routineExchangeInWindow?: boolean }) => finishAbaSession(state, 99_000, {}, undefined, undefined, extra);
+    expect(flag({ routineExchangeInWindow: true }).routineExchangeInWindow).toBe(true);
+    expect(flag({ routineExchangeInWindow: false }).routineExchangeInWindow).toBe(false);
+    expect(flag({})).not.toHaveProperty('routineExchangeInWindow');
+    expect(flag()).not.toHaveProperty('routineExchangeInWindow');
   });
 });

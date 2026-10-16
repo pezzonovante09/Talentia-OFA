@@ -349,14 +349,15 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
       return labels.get(id)!;
     };
     // время суток сессий и IOA — тот же режим дня дома (№96): день, длительность и смещения в мс
-    // от начала сессии; день — по UTC-дате метки (локальный день в записи сессии не хранится)
+    // от начала сессии; день — локальный `day` записи сессии (старые записи — UTC-дата метки)
     const sessionStart = new Map(sessions.map((s) => [s.id, Date.parse(s.startedAt)]));
     const abaSessions = sessions.map(({ startedAt, endedAt, ...s }) => {
       const origin = Date.parse(startedAt);
       const seconds = endedAt === null ? NaN : Math.round((Date.parse(endedAt) - origin) / 1000);
       return {
         ...relativeTimes(s, origin),
-        day: startedAt.slice(0, 10),
+        // локальный день записи сессии; старые записи без него — UTC-дата метки
+        day: s.day ?? startedAt.slice(0, 10),
         durationSec: Number.isFinite(seconds) ? Math.max(0, seconds) : null,
         primaryObserverId: label(s.primaryObserverId),
       };

@@ -296,6 +296,8 @@ export type RoutineRunResult = {
   /** Пробы звеньев — уже записаны по ходу (`recordRoutineStep`); здесь для итога. */
   trials: AbaTrial[];
   state: AbaTargetState;
+  /** Состояние цели до прогона: `commitRoutineRun` не пишет итог поверх чужой записи той же цели. */
+  before: AbaTargetState;
   claim: RoutineClaim;
   record: RoutineRunRecordBase;
   /** Для расчёта в `commitRoutineRun`: полоса (размер доски), пул подкрепителей, затравка вариантов. */
@@ -442,6 +444,7 @@ export function finishRoutineRun(run: RoutineRunState, endedAt: number, sessionI
   return {
     trials: run.trials,
     state: s,
+    before,
     claim: routineClaim(run),
     record,
     band: run.band,

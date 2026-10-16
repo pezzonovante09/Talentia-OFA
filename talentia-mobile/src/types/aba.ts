@@ -758,6 +758,11 @@ export type AbaSession = {
   id: string;
   /** Сквозной номер. Интервалы поддержания считаются в сессиях: пропуск недели не обнуляет расписание. */
   index: number;
+  /**
+   * Локальный календарный день сессии (`YYYY-MM-DD`, `StartInput.day`): критерий «разных дней»
+   * и экспорт специалисту считают по нему, а не по UTC-дате метки. Старые записи — без поля.
+   */
+  day?: string;
   startedAt: string;
   endedAt: string | null;
   config: AbaConfig;
