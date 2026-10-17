@@ -10,7 +10,32 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# минимальные права токена: CI только читает репозиторий
+permissions:
+  contents: read
+
 jobs:
+  gate:
+    name: audit gate (hooks tests, экраны и контент до чистого раунда)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # три точки в `git diff base...HEAD` и `git show base:…` нужна полная история
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Hook and gate tests
+        run: npm run test:hooks
+
+      # Ворота аудита (решение №76) хук Claude Code держит только в сессии; здесь — всё, что вошло в
+      # PR или пуш любым путём. Состояние ворот берётся из базовой ветки, а не из PR.
+      - name: Screens and new content only after a clean audit round
+        run: node .claude/hooks/check-pr.js "${{ github.event.pull_request.base.sha || github.event.before }}" HEAD
+
   mobile:
     name: talentia-mobile (lint, typecheck, test)
     runs-on: ubuntu-latest

@@ -13,7 +13,8 @@
     "build:api": "npm run build --prefix talentia-ai-proxy-next",
     "lint": "npm run lint --prefix talentia-mobile && npm run lint --prefix talentia-ai-proxy-next",
     "typecheck": "npm run typecheck --prefix talentia-mobile && npm run typecheck --prefix talentia-ai-proxy-next",
-    "test": "npm run test --prefix talentia-mobile && npm run test --prefix talentia-ai-proxy-next",
+    "test": "npm run test --prefix talentia-mobile && npm run test --prefix talentia-ai-proxy-next && npm run test:hooks",
+    "test:hooks": "node --test .claude/hooks/hooks.test.js",
     "test:db": "npm test --prefix supabase",
     "install:all": "npm install --prefix talentia-mobile && npm install --prefix talentia-ai-proxy-next && npm install --prefix supabase"
   }

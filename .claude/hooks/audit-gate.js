@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * PreToolUse (Write|Edit|NotebookEdit|Bash|PowerShell): ворота аудита (решение владельца
+ * PreToolUse (Write|Edit|MultiEdit|NotebookEdit|Bash|PowerShell): ворота аудита (решение владельца
  * 2026-10-09). Пока полный аудит сделанного не прошёл раунд без блокеров, не начинается новая
  * работа поверх фундамента:
  *
@@ -9,33 +9,28 @@
  *
  * Правки существующего контента (например, пилота по находкам аудита) не блокируются.
  *
- * Bash и PowerShell (решение №91): команда, которая упоминает закрытую папку и похожа на запись
- * (перенаправление, `tee`, `sed -i`, `cp` / `mv` / `rm` / `touch`, `writeFile`, `git checkout`,
- * `Set-Content` и т. п.), блокируется целиком — новый файл от правки там не отличить. Чтение
- * (`cat`, `grep`, `ls`) проходит. NotebookEdit проверяется как Edit.
+ * Bash и PowerShell (решения №91 и раунд 3): команда, которая упоминает закрытую папку и похожа на
+ * запись, блокируется целиком — новый файл от правки там не отличить. «Упоминает» — это:
+ * - путь в тексте (полный, относительный, с шаблонами `ap*`, `{app,x}`);
+ * - любой путь-аргумент, который **относительно текущей папки сессии** (`cwd`) ведёт в закрытую папку:
+ *   `cd talentia-mobile/app` в одной команде и `echo > x.tsx` в другой не проходят;
+ * - для разрушающих команд (`rm`, `mv`, `Remove-Item`, `git clean` …) ещё и путь **выше** закрытой
+ *   папки (`rm -rf talentia-mobile`).
+ * «Запись» — перенаправление, `tee`, `cp` / `mv` / `rm`, псевдонимы PowerShell (`copy`, `move`,
+ * `ni`, `sc`, `ac`, `del`, `ren` …), `robocopy` / `xcopy`, `sed -i`, `perl -i`, `awk -i inplace`,
+ * `prettier --write`, `eslint --fix`, `curl -o` / `wget -O` / `-OutFile`, `writeFile` /
+ * `write_text` / `shutil`, `git checkout` и т. п. Чтение (`cat`, `grep`, `ls`) проходит.
+ * Известное ограничение: команда, где рядом стоят запись (даже в scratchpad) и закрытая папка
+ * (`jest src/content > out.txt`), блокируется целиком — разнести на две команды.
  *
  * Ворота открыты, когда в `.claude/audit-gate.json` последний раунд — все девять агентов из
- * `.claude/agents/` (дизайн и UX — последовательно) и **0 блокеров**. Раунд с блокерами
- * дописывается туда же; блокеры чинятся, и аудит повторяется, пока раунд не станет чистым.
- * Записывает раунд основной поток после сводки отчётов агентов — не раньше.
+ * `.claude/agents/` (дизайн и UX — последовательно) и **0 блокеров** (`gate-core.js`). То же в CI
+ * проверяет `check-pr.js`: хук видит только инструменты Claude, а PR может прийти любым путём.
  */
 const fs = require('fs');
 const path = require('path');
+const { classifyPath, gateState, hasGlob } = require('./gate-core');
 
-const AGENTS = [
-  'backend-auditor',
-  'child-privacy-compliance',
-  'aba-pedagogy-specialist',
-  'curriculum-content-reviewer',
-  'localization-qa',
-  'qa-engineer',
-  'release-readiness-auditor',
-  'design-lead',
-  'child-ux-specialist',
-];
-
-const SCREENS = /talentia-mobile\/(app|src\/screens|src\/components)\//i;
-const CONTENT = /talentia-mobile\/src\/content\//i;
 // Пути в команде оболочки — и полные, и относительные (`cd talentia-mobile && … > app/x.tsx`).
 // `app.json` и `__tests__` контента — не закрытые.
 const GUARDED_DIR = String.raw`(app|src\/screens|src\/components|src\/content(?!\/__tests__\/))(?=\/|[\s'"\`;|&)]|$)`;
@@ -47,15 +42,24 @@ const SHELL_WRITE = new RegExp(
   [
     String.raw`(^|[^<>&0-9])>{1,2}`,
     String.raw`\b(tee|touch|cp|mv|rm|rmdir|mkdir|ln|install|rsync|dd|truncate|unzip|tar|patch)\b`,
+    // псевдонимы и команды PowerShell / cmd
+    String.raw`\b(copy|cpi|ci|move|mi|del|erase|rd|ren|rni|md|ni|sc|ac|clc|si|robocopy|xcopy|attrib)\b`,
     String.raw`\bsed\b[^|;&]*\s-i`,
-    String.raw`\b(writeFile|appendFile|copyFile|rename|unlink|rmSync|mkdirSync|createWriteStream)`,
+    String.raw`\b(perl|ruby)\b[^|;&]*\s-\w*i`,
+    String.raw`\bawk\b[^|;&]*inplace`,
+    String.raw`--write\b|\bprettier\b[^|;&]*\s-w\b|\beslint\b[^|;&]*--fix\b|\bbiome\b[^|;&]*--(write|apply)`,
+    String.raw`\bcurl\b[^|;&]*\s-[oO]\b|\bwget\b[^|;&]*\s-O\b|-OutFile\b`,
+    String.raw`\b(writeFile|appendFile|copyFile|rename|unlink|rmSync|mkdirSync|createWriteStream|writeSync)`,
+    String.raw`\b(write_text|write_bytes)\b|\bshutil\.|\bos\.(rename|replace|remove|makedirs|mkdir|unlink)\b`,
     String.raw`\bopen\([^)]*['"][wax]`,
-    String.raw`\bgit\s+(checkout|restore|apply|am|mv|rm|reset|stash|cherry-pick|revert|merge|pull)\b`,
-    String.raw`\b(Set-Content|Add-Content|Out-File|New-Item|Copy-Item|Move-Item|Remove-Item|Rename-Item|Expand-Archive)\b`,
+    String.raw`\bgit\s+(checkout|restore|apply|am|mv|rm|reset|stash|cherry-pick|revert|merge|pull|clean)\b`,
+    String.raw`\b(Set-Content|Add-Content|Out-File|New-Item|Copy-Item|Move-Item|Remove-Item|Rename-Item|Expand-Archive|Clear-Content|Tee-Object|Export-Csv|Export-Clixml|Set-Item)\b`,
     String.raw`\[(System\.)?IO\.File\]`,
   ].join('|'),
   'i',
 );
+/** Разрушающие команды: для них закрытым считается и путь выше закрытой папки. */
+const SHELL_DESTRUCTIVE = /\b(rm|rmdir|del|erase|rd|rimraf|mv|move|Remove-Item|Move-Item|git\s+clean)\b/i;
 
 // Текст сообщения — не запись: тело heredoc для `git commit` / `git tag` / `gh` и `-m "…"`.
 // Heredoc для `node`, `python` и т. п. остаётся — там это код.
@@ -71,67 +75,90 @@ function dropMessages(cmd) {
     .replace(/(\s(-m|--message|--body|--title)[=\s]*)("(?:[^"\\]|\\.)*"|'[^']*')/g, '$1""');
 }
 
-/** Команда оболочки пишет в закрытую папку? Перенаправления в /dev/null и $null не в счёт. */
-function shellWritesGuarded(command) {
+/** Аргументы-пути команды: отбрасываем флаги и пустое; разделители — пробелы, кавычки, `;|&()<>=,`. */
+function pathTokens(cmd) {
+  return cmd
+    // запятая разделяет аргументы (PowerShell: `a,b`), но не альтернативы в `{app,src}`
+    .replace(/,(?![^{}]*})/g, ' ')
+    .split(/[\s'"`;|&()<>=]+/)
+    .map((t) => t.trim())
+    .filter((t) => t && !t.startsWith('-') && !/^\$/.test(t));
+}
+
+/** Путь-аргумент относительно `cwd` ведёт в закрытую папку? */
+function tokenGuarded(token, cwd, destructive) {
+  const t = token.replace(/\\/g, '/');
+  const absolute = t.startsWith('/') || /^[A-Za-z]:\//.test(t) || t.startsWith('~');
+  const full = absolute || !cwd ? t : `${cwd}/${t}`;
+  return classifyPath(full, { ancestors: destructive }) !== null;
+}
+
+/**
+ * Команда оболочки пишет в закрытую папку? Перенаправления в /dev/null и $null не в счёт.
+ * `cwd` — текущая папка сессии из входа хука (если есть).
+ */
+function shellWritesGuarded(command, cwd = '') {
   const cmd = dropMessages(String(command ?? ''))
     .replace(/\\/g, '/')
     .replace(/\d*>>?\s*(\/dev\/null|\$null|nul)\b/gi, ' ')
     .replace(/\d?>&\d/g, ' ');
-  return SHELL_PATH.test(cmd) && SHELL_WRITE.test(cmd);
+  if (!SHELL_WRITE.test(cmd)) return false;
+  if (SHELL_PATH.test(cmd)) return true;
+  const here = String(cwd ?? '').replace(/\\/g, '/');
+  const destructive = SHELL_DESTRUCTIVE.test(cmd);
+  return pathTokens(cmd).some((t) => tokenGuarded(t, here, destructive) || (hasGlob(t) && tokenGuarded(t, '', destructive)));
 }
 
-let raw = '';
-process.stdin.on('data', (c) => (raw += c));
-process.stdin.on('end', () => {
-  let input;
-  try {
-    input = JSON.parse(raw);
-  } catch {
-    return;
-  }
-  const tool = input?.tool_name;
-  const shell = tool === 'Bash' || tool === 'PowerShell';
-  const file = shell
-    ? String(input?.tool_input?.command ?? '')
-    : String(input?.tool_input?.file_path ?? input?.tool_input?.notebook_path ?? '').replace(/\\/g, '/');
-  const shellWrite = shell && shellWritesGuarded(file);
-  const screens = !shell && SCREENS.test(file);
-  const newContent =
-    !shell &&
-    CONTENT.test(file) &&
-    !/\/__tests__\//.test(file) &&
-    tool === 'Write' &&
-    !fs.existsSync(input.tool_input.file_path);
-  if (!screens && !newContent && !shellWrite) return;
+/** Путь, который правит инструмент записи (Write, Edit, MultiEdit, NotebookEdit), — в абсолютный. */
+function toolFile(input, cwd) {
+  const f = String(input?.tool_input?.file_path ?? input?.tool_input?.notebook_path ?? '').replace(/\\/g, '/');
+  if (!f) return '';
+  const abs = f.startsWith('/') || /^[A-Za-z]:\//.test(f) ? f : `${String(cwd).replace(/\\/g, '/')}/${f}`;
+  return path.posix.normalize(abs);
+}
 
-  const root = process.env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
-  let rounds = [];
-  try {
-    rounds = JSON.parse(fs.readFileSync(path.join(root, '.claude', 'audit-gate.json'), 'utf8')).rounds ?? [];
-  } catch {
-    rounds = [];
-  }
-  const last = rounds[rounds.length - 1];
-  const missing = last ? AGENTS.filter((a) => !(last.agents ?? []).includes(a)) : AGENTS;
-  if (last && last.blockers === 0 && missing.length === 0) return;
+function main() {
+  let raw = '';
+  process.stdin.on('data', (c) => (raw += c));
+  process.stdin.on('end', () => {
+    let input;
+    try {
+      input = JSON.parse(raw);
+    } catch {
+      return;
+    }
+    const tool = input?.tool_name;
+    const shell = tool === 'Bash' || tool === 'PowerShell';
+    const root = process.env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
+    const cwd = String(input.cwd || root);
+    const file = shell ? String(input?.tool_input?.command ?? '') : toolFile(input, cwd);
+    const shellWrite = shell && shellWritesGuarded(file, cwd);
+    const kind = !shell && file ? classifyPath(file) : null;
+    const screens = kind === 'screens';
+    // новый файл контента — только Write и только если файла ещё нет (Edit существующего не блокируется)
+    const newContent = kind === 'content' && (tool === 'Write' || tool === 'MultiEdit') && !fs.existsSync(file);
+    if (!screens && !newContent && !shellWrite) return;
 
-  const state = !last
-    ? 'раундов аудита ещё не было'
-    : missing.length
-      ? `в последнем раунде (${last.date}) не было агентов: ${missing.join(', ')}`
-      : `в последнем раунде (${last.date}) блокеров: ${last.blockers}`;
-  const what = shellWrite ? 'запись через оболочку в закрытую папку' : screens ? 'экранный код' : 'новый файл контента';
-  const reason = [
-    `Ворота аудита закрыты (${state}): ${what} — ${file}.`,
-    'Решение владельца 2026-10-09: перед заданиями, фронтом и подобным — полный аудит всего',
-    'сделанного всеми девятью агентами (design-lead → child-ux-specialist последовательно), раунд',
-    'за раундом, пока специалисты не перестанут находить блокеры. Каждый раунд — в',
-    '.claude/audit-gate.json ({ date, commit, agents, blockers }), блокеры — в AUDIT.md.',
-    'Скажи владельцу, что ворота закрыты, и предложи следующий раунд аудита.',
-  ].join(' ');
-  process.stdout.write(
-    JSON.stringify({
-      hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: reason },
-    }),
-  );
-});
+    const gate = gateState(root);
+    if (gate.open) return;
+
+    const what = shellWrite ? 'запись через оболочку в закрытую папку' : screens ? 'экранный код' : 'новый файл контента';
+    const reason = [
+      `Ворота аудита закрыты (${gate.state}): ${what} — ${file}.`,
+      'Решение владельца 2026-10-09: перед заданиями, фронтом и подобным — полный аудит всего',
+      'сделанного всеми девятью агентами (design-lead → child-ux-specialist последовательно), раунд',
+      'за раундом, пока специалисты не перестанут находить блокеры. Каждый раунд — в',
+      '.claude/audit-gate.json ({ date, commit, agents, blockers }), блокеры — в AUDIT.md.',
+      'Скажи владельцу, что ворота закрыты, и предложи следующий раунд аудита.',
+    ].join(' ');
+    process.stdout.write(
+      JSON.stringify({
+        hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: reason },
+      }),
+    );
+  });
+}
+
+if (require.main === module) main();
+
+module.exports = { shellWritesGuarded, toolFile, dropMessages };
