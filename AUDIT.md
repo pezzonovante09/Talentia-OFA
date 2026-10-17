@@ -350,6 +350,15 @@ edge и клиенте (`sentryPrivacyOptions`); выключатель ИИ `TA
 слов), промпт с названием языка и регистром; идентификаторы — `ids.ts` (UUIDv4, `leaksTime`), экспорт
 специалисту заменяет id со временем метками `A1…`. Кыргызские реплики и основы — черновики до носителя (№108).
 
+**Гигиена сторов и `app.json` — сделано 2026-10-17** (`release-readiness-auditor`: В1, В2, В4, В5, В6, В7, П2, V20):
+`supportsTablet: false`; `expo-secure-store` с `faceIDPermission: false`; `AD_ID` в `blockedPermissions`;
+`CFBundleLocalizations` ru/en/ky; значок и заставка на палитре (`#FFF3E3` / `#1B1410`); `appVersionSource: remote`;
+версии пакетов под SDK 54 (`expo install --check` чисто); убраны `expo-speech` (нет функции) и самозависимость
+`talentia-monorepo`; тест конфигурации `plugins/__tests__/appConfig.test.ts`. Оставлены `supabase-js`, `expo-sharing`,
+`expo-file-system`, `expo-haptics` — у каждого функция в плане (шаг 7, экспорт специалисту, отклик на касание).
+Остаётся: `PrivacyInfo.xcprivacy` — проверить после `expo prebuild`; `submit.production` пуст — нужны `ascAppId` и сервисный
+аккаунт Play (данные владельца); публичные политика, условия, страница удаления (П1).
+
 ## Сделано по прокси (2026-09-30)
 
 Обновление 2026-10-01: старые роуты `/api/tali`, `/api/tts`, `/api/report*` удалены вместе
