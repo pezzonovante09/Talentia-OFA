@@ -213,11 +213,11 @@ describe('панель взрослого', () => {
     ]);
   });
 
-  it('при старте с помощи взрослого — сразу карточка L4, без «Я подсказал(а)»', () => {
+  it('при старте с помощи взрослого — сразу карточка L4, без «Была подсказка»', () => {
     expect(adultPanelButtons('with_adult', step({ startPromptLevel: 4 }), false)).toEqual(['l4_done', 'l4_resisted', 'l4_skipped', 'refusal']);
   });
 
-  it('у звена цепочки — ещё «Сделал(а) звено сам(а)», и без L4 тоже', () => {
+  it('у звена цепочки — ещё «Звено — самостоятельно», и без L4 тоже', () => {
     expect(adultPanelButtons('with_adult', step({ stepId: 's1' }), true)).toContain('adult_completed');
     expect(adultPanelButtons('with_adult', step({ stepId: 's1', askAdultForL4: false }), true)).toEqual(['adult_completed', 'refusal']);
   });
@@ -255,11 +255,11 @@ describe('правки по проверке методиста', () => {
     expect(errors(c, [p0, adult(9000, 0)])).toContain('предъявление 2: подсказка взрослого вне окна текущего предъявления');
   });
 
-  it('в пробе с помощью взрослого «Я подсказал(а)» нет', () => {
+  it('в пробе с помощью взрослого «Была подсказка» нет', () => {
     const c = ctx({ startPromptLevel: 4, promptDelayMs: null });
     const [m] = log(c, [{ level: 3, outcome: 'none' }]);
     const adult: AbaPresentation = { ...m, by: 'adult', outcome: 'l4_done', startedAt: m.endedAt, windowMs: c.responseWindowMs };
-    expect(errors(c, [m, adult])).toContain('в пробе с помощью взрослого «Я подсказал(а)» нет');
+    expect(errors(c, [m, adult])).toContain('в пробе с помощью взрослого «Была подсказка» нет');
   });
 
   it('«Почти» в журнале — только когда оценивает взрослый', () => {
@@ -267,7 +267,7 @@ describe('правки по проверке методиста', () => {
     expect(errors(c, log(c, [{ level: 0, outcome: 'approximation' }]))).toContain('«Почти» — только когда оценивает взрослый');
   });
 
-  it('«Сделал(а) звено сам(а)» — только у звена цепочки', () => {
+  it('«Звено — самостоятельно» — только у звена цепочки', () => {
     const chain = ctx({ chainStep: true, escalateOnIncorrect: true });
     const path = [
       { level: 0 as const, outcome: 'none' as const },

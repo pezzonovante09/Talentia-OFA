@@ -665,7 +665,7 @@ describe('панель взрослого (Р6)', () => {
       windowMs: 5000, row: 1, col: 0, span: 'slot', levels: 1, endsWith: 'reinforcement_phase',
     });
     expect(abaAdultPanelSlot.undo).toEqual({ row: abaAdultPanel.undo.row, col: abaAdultPanel.undo.col });
-    // не пересекается с позицией «Отказ» и с рядом 1 окна ответа; делит слот только с «Я подсказал(а)»,
+    // не пересекается с позицией «Отказ» и с рядом 1 окна ответа; делит слот только с «Была подсказка»,
     // с которым во времени не сосуществует (фаза подкрепления ≠ окно ответа)
     const u = abaAdultPanelSlot.undo;
     const same = (id: PanelButton) => abaAdultPanelSlot[id].row === u.row && abaAdultPanelSlot[id].col === u.col;
@@ -696,12 +696,12 @@ describe('панель взрослого (Р6)', () => {
       correct: 'Верно',
       approximation: 'Почти',
       incorrect: 'Неверно',
-      adult_prompted: 'Я подсказал(а)',
+      adult_prompted: 'Была подсказка',
       refusal: 'Отказ',
       l4_done: 'Сделали вместе',
       l4_resisted: 'Сопротивляется',
       l4_skipped: 'Пропустить',
-      adult_completed: 'Звено сделал(а) сам(а)',
+      adult_completed: 'Звено — самостоятельно',
     };
     const CHAR = 0.56; // средний шаг знака Nunito 600, em; с запасом
     // масштаб шрифта: 1 и худший допустимый «потолок ×1.2, ужатый до minimumFontScale» (1.2 × 0.86)
