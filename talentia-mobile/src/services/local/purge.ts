@@ -11,6 +11,7 @@ import type { ConsentEvent, GuardianRole } from '../../domain/consent';
 import { ABA_DELETED_KEYS, ABA_STATE_KEYS, loadChildState } from './childState';
 import { insertConsentEvent, readConsentLog } from './consentLog';
 import { withDbLock } from './lock';
+import { leaksTime } from '../../domain/ids';
 import { RETENTION_MONTHS } from './schema';
 import type { SqlDb } from './sql';
 
@@ -319,6 +320,42 @@ function withoutBreakCardIds(state: Record<string, unknown>): Record<string, unk
   return { ...state, breakCard: rest };
 }
 
+/** Поля записей ABA, в которых лежат идентификаторы журнала (`ids.ts`). */
+const ID_FIELDS = ['id', 'sessionId', 'requeuedFromTrialId', 'trialId', 'replacementId'];
+
+function collectIds(value: unknown, into: Set<string>): void {
+  if (Array.isArray(value)) value.forEach((v) => collectIds(v, into));
+  else if (value && typeof value === 'object') {
+    for (const [k, v] of Object.entries(value)) {
+      if (typeof v === 'string' && ID_FIELDS.includes(k)) into.add(v);
+      else collectIds(v, into);
+    }
+  }
+}
+
+function renameStrings<T>(value: T, rename: ReadonlyMap<string, string>): T {
+  if (typeof value === 'string') return (rename.get(value) ?? value) as T;
+  if (Array.isArray(value)) return value.map((v) => renameStrings(v, rename)) as T;
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, renameStrings(v, rename)])) as T;
+  }
+  return value;
+}
+
+/**
+ * Идентификатор, из которого читается время (UUID v1/v6/v7, ULID, метка времени, дата), заменяется
+ * меткой `A1`, `A2`… в пределах файла — одинаково везде, где встречается, чтобы связи проб, сессий и
+ * исправлений не порвались. Идентификаторы UUIDv4 и не из времени не меняются. Без этого вся работа
+ * по смещениям вместо времени суток (№95, №96) терялась бы через id (раунд 3, В11).
+ */
+function aliasTimeLeakingIds<T extends unknown[]>(collections: T): T {
+  const ids = new Set<string>();
+  collectIds(collections, ids);
+  const rename = new Map<string, string>();
+  for (const id of ids) if (leaksTime(id)) rename.set(id, `A${rename.size + 1}`);
+  return rename.size === 0 ? collections : (renameStrings(collections, rename) as T);
+}
+
 /** Все строки-даты внутри значения заменены датой без времени суток (`YYYY-MM-DD`). */
 function dayOnly<T>(value: T): T {
   if (typeof value === 'string' && ISO_TIME.test(value)) return value.slice(0, 10) as T;
@@ -426,13 +463,20 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
     }
     // нет отсчёта вовсе (проба без парсируемого времени и без записи сессии) — даты вымываются в null, а не в абсолютные мс
     const abaTrials = trials.map((t) => relativeTimes(t, runStart.get(t.sessionId) ?? orphanStart.get(t.sessionId) ?? Number.NaN));
-    return {
-      exportedAt,
+    const [trialsOut, sessionsOut, ioaOut, correctionsOut, routineRunsOut] = aliasTimeLeakingIds([
       abaTrials,
       abaSessions,
       abaIoa,
-      abaTrialCorrections: await correctionsOf(tx, childId),
+      await correctionsOf(tx, childId),
       abaRoutineRuns,
+    ]);
+    return {
+      exportedAt,
+      abaTrials: trialsOut,
+      abaSessions: sessionsOut,
+      abaIoa: ioaOut,
+      abaTrialCorrections: correctionsOut,
+      abaRoutineRuns: routineRunsOut,
       state: { ...dayOnly(withoutBreakCardIds(state)), abaObservers: observers.map((o) => ({ id: label(o.id), role: o.role, trained: o.trained })) },
     };
   });

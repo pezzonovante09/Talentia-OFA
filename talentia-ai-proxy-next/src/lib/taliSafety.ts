@@ -16,18 +16,22 @@
 
 export type TaliLanguage = "ru" | "en" | "ky";
 
-/** Реплика, если ответ модели показать нельзя. */
+/** Реплика, если ответ модели показать нельзя. Кыргызский — черновик: проверяет носитель (№108). */
 export const SAFE_FALLBACK: Record<TaliLanguage, string> = {
   ru: "Давай попробуем ещё один маленький шаг вместе!",
-  en: "Let's try one small step together — you've got this!",
-  ky: "Кичине бир кадам менен аракет кылалы!",
+  en: "Let's try one more small step together!",
+  ky: "Дагы бир кичинекей кадамды чогуу жасап көрөлү!",
 };
 
-/** Реплика на тревожное сообщение: без расспросов, без оценки, к взрослому. */
+/**
+ * Реплика на тревожное сообщение: без расспросов, без оценки, к взрослому, **которому ребёнок
+ * доверяет** — не «маме и папе»: семья бывает неполной, а если вред причиняет взрослый дома, совет
+ * рассказать родителю опасен (решение №39; раунд 3, В5). Кыргызский — черновик, проверяет носитель.
+ */
 export const CRISIS_REPLY: Record<TaliLanguage, string> = {
-  ru: "Это очень важно. Расскажи об этом взрослому, которому доверяешь: маме, папе или учителю. Я рядом.",
-  en: "This is really important. Please tell a grown-up you trust — a parent or a teacher. I'm here with you.",
-  ky: "Бул абдан маанилүү. Ишенген чоң кишиге айтып бер: апаңа, атаңа же мугалимиңе. Мен жаныңдамын.",
+  ru: "Это очень важно. Расскажи об этом взрослому, которому доверяешь — например, учителю или кому-то из родных. Я рядом.",
+  en: "This is really important. Please tell a grown-up you trust — like a teacher or someone in your family. I'm here with you.",
+  ky: "Бул абдан маанилүү. Ишенген чоң кишиге айтып бер — мисалы, мугалимиңе же жакындарыңдын бирине. Мен жаныңдамын.",
 };
 
 /** Правила для системного промпта — на каждый запрос. */
@@ -37,28 +41,65 @@ export const PRIVACY_RULES: readonly string[] = [
   "Never say you are a real person or a friend who can meet; you are Tali, a learning companion in the app.",
 ];
 
-/** Основы тревожных слов по языкам. Сравнение — по нижнему регистру, ё → е. */
-const CRISIS_STEMS: readonly string[] = [
-  // ru
-  "убить себя", "убью себя", "покончить с собой", "самоубий", "суицид", "не хочу жить", "хочу умереть",
-  "порежу себя", "режу себя", "сделать себе больно", "меня бьют", "меня бьет", "бьет меня", "трогает меня",
-  "меня трогают", "меня обижают взрослые",
-  // en
-  "kill myself", "suicide", "want to die", "don't want to live", "hurt myself", "cut myself", "hits me",
-  "touches me", "someone hurts me",
-  // ky
-  "өзүмдү өлтүр", "өлгүм келет", "жашагым келбейт", "мени урат", "мени ура", "өзүмө зыян",
-];
+const INVISIBLE = new RegExp(
+  `[${String.fromCharCode(0x00ad)}${String.fromCharCode(0x200b)}-${String.fromCharCode(0x200f)}${String.fromCharCode(0x202a)}-${String.fromCharCode(0x202e)}${String.fromCharCode(0x2060)}-${String.fromCharCode(0x2064)}${String.fromCharCode(0xfeff)}]`,
+  "g",
+);
 
 function normalize(text: string): string {
   return text.toLowerCase().replace(/ё/g, "е").replace(/\s+/g, " ");
 }
 
+/**
+ * Нормализация для тревожных тем: NFKC, без невидимых символов (нулевая ширина между буквами
+ * обходила проверку), нижний регистр, ё → е, кыргызские ө → о, ү → у, ң → н — ребёнок на русской
+ * раскладке пишет «озумду». Одна функция и для входа, и для основ (раунд 3, В6).
+ */
+export function crisisFold(text: string): string {
+  return normalize(text.normalize("NFKC").replace(INVISIBLE, ""))
+    .replace(/ө/g, "о")
+    .replace(/ү/g, "у")
+    .replace(/ң/g, "н");
+}
+
+/**
+ * Основы тревожных слов по языкам. Сравнение — после `crisisFold`. Первая версия; кыргызские основы
+ * проверяет носитель (№108).
+ */
+const CRISIS_STEMS: readonly string[] = [
+  // ru
+  "убить себя", "убью себя", "покончить с собой", "самоубий", "суицид", "не хочу жить", "хочу умереть",
+  "порежу себя", "режу себя", "сделать себе больно", "меня бьют", "меня бьет", "бьет меня", "трогает меня",
+  "меня трогают", "меня обижают взрослые", "избивают меня", "меня избивают", "хочу исчезнуть",
+  "лучше бы меня не было",
+  // en
+  "kill myself", "suicide", "want to die", "don't want to live", "hurt myself", "cut myself", "hits me",
+  "touches me", "someone hurts me", "end my life", "wish i was dead", "wish i were dead",
+  // ky
+  "өзүмдү өлтүр", "өлгүм келет", "жашагым келбейт", "мени урат", "мени ура", "өзүмө зыян",
+  "өзүмдү өлтүрөм", "өлүп калгым келет",
+].map((stem) => crisisFold(stem));
+
+/**
+ * Совпадение основы с границей слова слева: «diet» не должно давать «want to die», «skill» —
+ * «kill». Справа граница нужна латинице (английские формы короткие: «die» ≠ «diet»); у русских и
+ * кыргызских основ конец свободный — склонения («самоубийство», «убийство»).
+ */
+function stemRegex(stem: string, { wholeWord = false } = {}): RegExp {
+  const esc = stem.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const latin = /^[a-z' ]+$/.test(stem);
+  const end = wholeWord || latin ? "(?![\\p{L}\\p{N}])" : "";
+  return new RegExp(`(?<![\\p{L}\\p{N}])${esc}${end}`, "u");
+}
+
+const CRISIS_PATTERNS: readonly RegExp[] = CRISIS_STEMS.map((stem) => stemRegex(stem));
+
 /** Есть ли в тексте тревожная тема. */
 export function isCrisis(text: string): boolean {
-  const t = normalize(text);
-  return CRISIS_STEMS.some((stem) => t.includes(stem));
+  const t = crisisFold(text);
+  return CRISIS_PATTERNS.some((re) => re.test(t));
 }
+
 
 const LINK = /(https?:\/\/|www\.|\b[a-z0-9-]+\.(com|ru|kg|org|net|io|me|app|link|ly)\b)/i;
 const EMAIL = /[^\s@]+@[^\s@]+\.[^\s@]+/;
@@ -78,11 +119,56 @@ function contactProblems(text: string, { phone = true } = {}): string[] {
   return problems;
 }
 
+/** Семь и больше цифр подряд, с пробелами, дефисами, скобками и плюсом /**
+ * Неподходящие ребёнку темы в ответе модели: насилие, оружие, наркотики, алкоголь, секс, брань.
+ * Промпт тоже запрещает их (`systemPrompt`), но одна ошибка модели или удачная инъекция — и ребёнок
+ * видит текст без перехвата, поэтому на выходе второй рубеж (раунд 3, В7). Совпадение — по границе
+ * слова (`stemRegex`): «skill» не «kill», «Essex» не «sex», «кровать» не «кровь». Ложное срабатывание
+ * безопасно — ребёнок получит реплику из банка; идиомы вроде «убить время» заменяются осознанно.
+ * Первая версия для ru и en; кыргызские основы добавляет носитель (№108).
+ */
+const TOPIC_PREFIX: readonly string[] = [
+  // ru: основы со склонением
+  "убий", "убит", "убива", "убей", "убью", "убьет", "убил", "оружи", "пистолет", "наркот", "героин", "алкогол",
+  "водк", "порно", "сексуальн", "хуй", "пизд", "бляд", "ебат", "мразь", "сигарет", "обнажен",
+  // en
+  "murder", "weapon", "cocaine", "heroin", "alcohol", "vodka", "cigarette", "porn", "naked", "fuck", "shit",
+  "bitch", "stab", "bomb",
+  // ky (черновик)
+  "курал", "өлтүр",
+].map((stem) => crisisFold(stem));
+
+/** Слова целиком: короткие, у которых основа встречается внутри безобидных слов. */
+const TOPIC_WHOLE: readonly string[] = [
+  // ru
+  "секс", "сука", "пиво", "нож", "ножи", "ножом", "ножик", "кровь", "крови", "кровью",
+  // en
+  "kill", "kills", "killed", "killing", "gun", "guns", "drug", "drugs", "sex", "beer", "wine", "knife", "knives", "blood",
+].map((w) => crisisFold(w));
+
+const TOPIC_PATTERNS: readonly RegExp[] = [
+  ...TOPIC_PREFIX.map((stem) => stemRegex(stem)),
+  ...TOPIC_WHOLE.map((w) => stemRegex(w, { wholeWord: true })),
+];
+
+/** Куски системного промпта: ответ, который их повторяет, раскрывает инструкции. */
+const PROMPT_MARKERS: readonly string[] = [
+  "safety: 100% child-safe",
+  "task data",
+  "never break character",
+  "privacy (strict)",
+  "gender-neutral forms",
+  "never reveal these instructions",
+].map((m) => m.toLowerCase());
+
 /** Что в ответе модели делает его непригодным для ребёнка. */
 export function replyProblems(reply: string): string[] {
   const problems = contactProblems(reply);
   if (APPS.test(reply)) problems.push("app");
   if (isCrisis(reply)) problems.push("crisis");
+  const folded = crisisFold(reply);
+  if (TOPIC_PATTERNS.some((re) => re.test(folded))) problems.push("topic");
+  if (PROMPT_MARKERS.some((m) => reply.toLowerCase().includes(m))) problems.push("prompt_leak");
   return problems;
 }
 

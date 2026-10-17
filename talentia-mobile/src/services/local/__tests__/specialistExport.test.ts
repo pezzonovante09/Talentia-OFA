@@ -11,11 +11,11 @@ import type { RoutineRunResult, RoutineRunState } from '../../../domain/abaRouti
 import type { AbaSessionResult, AbaSessionState } from '../../../domain/abaSession';
 import { initialTokenTraining, type TokenTrainingState } from '../../../domain/abaTokenTraining';
 import type { ConsentEvent } from '../../../domain/consent';
-import { appendReinforcerChoice, appendRoutineRun, routineExchangedSince } from '../abaLog';
+import { appendReinforcerChoice, appendRoutineRun, appendTrialCorrection, routineExchangedSince } from '../abaLog';
 import { saveChildState } from '../childState';
 import { commitAbaSession, commitIoa, commitRoutineRun, recordAbaTrial, recordRoutineStep, setAbaObservers } from '../commit';
 import { appendConsentEvent } from '../consentLog';
-import { exportForSpecialist } from '../purge';
+import { exportChild, exportForSpecialist } from '../purge';
 import type { SqlDb } from '../sql';
 import { asAbaWriter, memoryDb } from './nodeSql';
 
@@ -343,5 +343,146 @@ describe('время записи прогона рутины (appendRoutineRun)
     await appendConsentEvent(db, grant('sib', '2026-10-11T09:01:00Z'), 'owner');
     await choose(db, 'sib', 'r-sib', '2026-10-11T12:00:00Z');
     expect(await routineExchangedSince(db, 'kid', Date.parse('2026-10-11T10:00:00.000Z'))).toBe(false);
+  });
+});
+
+// --- идентификаторы, из которых читается время (раунд 3, В11) ----------------------------------
+
+describe('экспорт специалисту: идентификаторы со временем заменены метками', () => {
+  const V7_SESSION = '018f3b5e-7c2a-7d3e-9a1b-2c4d5e6f7a8b';
+  const V7_TRIAL = '018f3b5e-7c2b-7d3e-9a1b-2c4d5e6f7a8c';
+  const ULID_RUN = '01ARZ3NDEKTSV4RRFFQ69G5FAV';
+  const V4_SESSION = '3b241101-e2bb-4255-8caf-4136c566a962';
+  const EPOCH_ID = '1760000000000';
+  const UUID_V7 = /[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
+  async function dbWithV7() {
+    const db = await dbWithConsent();
+    await setAbaObservers(db, 'kid', [{ id: OBSERVER, role: 'parent', trained: false }], NOW);
+    await recordAbaTrial(db, 'kid', { ...baseTrial, id: V7_TRIAL, sessionId: V7_SESSION }, snapOf(V7_SESSION), NOW);
+    await recordAbaTrial(db, 'kid', { ...baseTrial, id: 'tr-8', sessionId: V7_SESSION, index: 1 }, snapOf(V7_SESSION), NOW);
+    await commitAbaSession(db, 'kid', sessionResult({ ...SESSION, id: V7_SESSION }), NOW);
+    return db;
+  }
+
+  it('исходного id сессии и пробы в выгрузке нет, шаблона UUIDv7 тоже', async () => {
+    const out = await exportForSpecialist(await dbWithV7(), 'kid', NOW);
+    const json = JSON.stringify(out);
+    expect(json).not.toContain(V7_SESSION);
+    expect(json).not.toContain(V7_TRIAL);
+    expect(json).not.toMatch(UUID_V7);
+  });
+
+  it('id сессии и sessionId её проб заменены одной и той же меткой (связь не порвана)', async () => {
+    const out = await exportForSpecialist(await dbWithV7(), 'kid', NOW);
+    const session = out.abaSessions[0] as { id: string };
+    const trials = out.abaTrials as { id: string; sessionId: string }[];
+    expect(session.id).toMatch(/^A\d+$/);
+    expect(trials.map((t) => t.sessionId)).toEqual([session.id, session.id]);
+  });
+
+  it('разные id получают разные метки, обычный id пробы остаётся', async () => {
+    const out = await exportForSpecialist(await dbWithV7(), 'kid', NOW);
+    const session = out.abaSessions[0] as { id: string };
+    const [leaky, plain] = out.abaTrials as { id: string }[];
+    expect(leaky.id).toMatch(/^A\d+$/);
+    expect(leaky.id).not.toBe(session.id);
+    expect(plain.id).toBe('tr-8');
+  });
+
+  it('остальные поля сессии и пробы те же, что без замены', async () => {
+    const withV7 = await exportForSpecialist(await dbWithV7(), 'kid', NOW);
+    const plainDb = await dbWithConsent();
+    await setAbaObservers(plainDb, 'kid', [{ id: OBSERVER, role: 'parent', trained: false }], NOW);
+    await recordAbaTrial(plainDb, 'kid', { ...baseTrial, id: 'tr-7', sessionId: 's-7' }, snapOf('s-7'), NOW);
+    await recordAbaTrial(plainDb, 'kid', { ...baseTrial, id: 'tr-8', sessionId: 's-7', index: 1 }, snapOf('s-7'), NOW);
+    await commitAbaSession(plainDb, 'kid', sessionResult(SESSION), NOW);
+    const plain = await exportForSpecialist(plainDb, 'kid', NOW);
+    const strip = (rows: unknown[]) => rows.map((r) => ({ ...(r as object), id: undefined, sessionId: undefined }));
+    expect(strip(withV7.abaSessions)).toEqual(strip(plain.abaSessions));
+    expect(strip(withV7.abaTrials)).toEqual(strip(plain.abaTrials));
+  });
+
+  it('ULID прогона рутины и sessionId его проб — одна метка, шаблона ULID в выгрузке нет', async () => {
+    const db = await dbWithConsent();
+    await asAbaWriter(db, 'kid', (tx) => appendRoutineRun(tx, 'kid', routineRun(ULID_RUN), NOW));
+    await recordRoutineStep(db, 'kid', stepTrial('tr-r', { sessionId: ULID_RUN }), { ...inProgress, runId: ULID_RUN } as RoutineRunState, NOW);
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    expect(JSON.stringify(out)).not.toContain(ULID_RUN);
+    const run = out.abaRoutineRuns[0] as { id: string };
+    const trial = out.abaTrials[0] as { sessionId: string };
+    expect(run.id).toMatch(/^A\d+$/);
+    expect(trial.sessionId).toBe(run.id);
+  });
+
+  it('id из метки времени (epoch) заменяется', async () => {
+    const db = await dbWithConsent();
+    await asAbaWriter(db, 'kid', (tx) => appendRoutineRun(tx, 'kid', routineRun(EPOCH_ID), NOW));
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    expect(JSON.stringify(out)).not.toContain(EPOCH_ID);
+    expect((out.abaRoutineRuns[0] as { id: string }).id).toMatch(/^A\d+$/);
+  });
+
+  it('UUIDv4 и обычные id (tr-7) не меняются', async () => {
+    const db = await dbWithConsent();
+    await recordAbaTrial(db, 'kid', { ...baseTrial, id: 'tr-7', sessionId: V4_SESSION }, snapOf(V4_SESSION), NOW);
+    await commitAbaSession(db, 'kid', sessionResult({ ...SESSION, id: V4_SESSION }), NOW);
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    expect((out.abaSessions[0] as { id: string }).id).toBe(V4_SESSION);
+    expect(out.abaTrials[0]).toMatchObject({ id: 'tr-7', sessionId: V4_SESSION });
+  });
+
+  it('метки A не пересекаются с метками наблюдателей O', async () => {
+    const out = await exportForSpecialist(await dbWithV7(), 'kid', NOW);
+    const session = out.abaSessions[0] as { id: string; primaryObserverId: string };
+    expect(session.primaryObserverId).toMatch(/^O\d+$/);
+    expect(session.id).toMatch(/^A\d+$/);
+  });
+
+  it('IOA с sessionId того же id получает ту же метку, что и сессия', async () => {
+    const db = await dbWithV7();
+    await commitIoa(
+      db,
+      'kid',
+      { id: 'ioa-1', sessionId: V7_SESSION, secondaryObserverId: 'obs-2', source: 'paper_entry', enteredAt: '2026-10-12T21:45:30.000Z', items: [], byTarget: {} },
+      {},
+      NOW,
+    );
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    expect((out.abaIoa[0] as { sessionId: string }).sessionId).toBe((out.abaSessions[0] as { id: string }).id);
+    expect(JSON.stringify(out)).not.toContain(V7_SESSION);
+  });
+
+  it('исправление: trialId той же пробы получает ту же метку, что и сама проба', async () => {
+    const db = await dbWithV7();
+    await asAbaWriter(db, 'kid', (tx) =>
+      appendTrialCorrection(tx, 'kid', { trialId: V7_TRIAL, replacementId: 'tr-r1', sessionId: V7_SESSION, msSinceOriginal: 2000, fromResponse: 'independent', toResponse: 'incorrect', tokenKept: 0, tokenAdded: 0 }, NOW),
+    );
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    const correction = out.abaTrialCorrections[0] as { trialId: string; sessionId: string };
+    expect(correction.trialId).toBe((out.abaTrials[0] as { id: string }).id);
+    expect(correction.sessionId).toBe((out.abaSessions[0] as { id: string }).id);
+    expect(JSON.stringify(out.abaTrialCorrections)).not.toMatch(UUID_V7);
+  });
+
+  it('проба, поставленная в очередь заново (requeuedFromTrialId), ссылается на ту же метку', async () => {
+    const db = await dbWithV7();
+    await recordAbaTrial(
+      db,
+      'kid',
+      { ...baseTrial, id: 'tr-9', sessionId: V7_SESSION, index: 2, requeuedFromTrialId: V7_TRIAL } as AbaTrial,
+      snapOf(V7_SESSION),
+      NOW,
+    );
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    const trials = out.abaTrials as { id: string; requeuedFromTrialId?: string }[];
+    expect(trials[2].requeuedFromTrialId).toBe(trials[0].id);
+    expect(JSON.stringify(out)).not.toContain(V7_TRIAL);
+  });
+
+  it('экспорт родителю не меняется: id как есть', async () => {
+    const out = await exportChild(await dbWithV7(), 'kid', NOW, {});
+    expect((out.abaSessions[0] as { id: string }).id).toBe(V7_SESSION);
+    expect(JSON.stringify(out.abaTrials)).toContain(V7_TRIAL);
   });
 });
