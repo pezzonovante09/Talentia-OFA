@@ -25,9 +25,17 @@ import {
   screenReply,
   type TaliLanguage,
 } from "@/lib/taliSafety";
+import { reportError } from "@/lib/reportError";
 import { authJsonError, verifyAuth } from "@/lib/verifyAuth";
 
 export const runtime = "nodejs";
+
+/**
+ * Худший случай маршрута: модель (`MODEL_TIMEOUT_MS` 20 с) + озвучка (`TTS_TIMEOUT_MS` 20 с) + сеть
+ * и лимитеры. Без явного значения платформа может оборвать функцию раньше наших таймаутов и 504 с
+ * запасной репликой не дойдёт до клиента. 60 с укладывается и в Hobby, и в Fluid.
+ */
+export const maxDuration = 60;
 
 /**
  * Живой разговор с Tali для пересборки. Спецификация — TALI.md («Живой путь»), PARENT.md
@@ -159,9 +167,10 @@ export async function POST(req: NextRequest) {
       console.error("[v2/tali] SUPABASE_URL / SUPABASE_ANON_KEY are not configured");
       return corsJson({ error: "Service unavailable" }, 503, req);
     }
-    if (!(await hasConsent(asUser, body.childId, "companion_ai"))) {
-      return corsJson({ error: "consent_required" }, 403, req);
-    }
+    // сбой Supabase — не «согласие отозвано»: 503, и клиент отвечает из банка реплик (В-8)
+    const consent = await hasConsent(asUser, body.childId, "companion_ai");
+    if (consent === "unavailable") return corsJson({ error: "Service unavailable" }, 503, req);
+    if (consent !== "granted") return corsJson({ error: "consent_required" }, 403, req);
 
     const language = body.language;
     let reply: string;
@@ -236,6 +245,7 @@ export async function POST(req: NextRequest) {
     );
   } catch (e: unknown) {
     console.error("[v2/tali] Server error", e);
+    reportError("v2/tali", e);
     return corsJson({ error: "Server error" }, 500, req);
   }
 }

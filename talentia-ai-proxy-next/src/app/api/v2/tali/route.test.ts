@@ -9,7 +9,8 @@ vi.mock("@/lib/supabaseUser", () => ({
   supabaseAsUser: vi.fn(() => ({})),
   bearerToken: vi.fn(() => "jwt"),
 }));
-vi.mock("@/lib/consentCheck", () => ({ hasConsent: vi.fn(async () => true) }));
+vi.mock("@/lib/consentCheck", () => ({ hasConsent: vi.fn(async () => "granted") }));
+vi.mock("@/lib/reportError", () => ({ reportError: vi.fn() }));
 // лимитеры — именами, чтобы видеть порядок проверок
 vi.mock("@/lib/ratelimit", () => ({
   enforceRateLimit: vi.fn(async () => null),
@@ -24,11 +25,13 @@ vi.mock("@/lib/ratelimit", () => ({
 import { NextResponse } from "next/server";
 
 import { hasConsent } from "@/lib/consentCheck";
+import { TTS_TIMEOUT_MS } from "@/lib/elevenLabs";
+import { reportError } from "@/lib/reportError";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { AI_PROVIDER } from "@/lib/aiConfig";
 import { CRISIS_REPLY, PRIVACY_NUDGE, replyProblems, SAFE_FALLBACK } from "@/lib/taliSafety";
-import { POST, systemPrompt, TaliV2RequestSchema, userMessage } from "./route";
+import { maxDuration, MODEL_TIMEOUT_MS, POST, systemPrompt, TaliV2RequestSchema, userMessage } from "./route";
 
 const KID = "00000000-0000-4000-8000-0000000000c1";
 
@@ -56,7 +59,7 @@ beforeEach(() => {
   process.env.DEEPSEEK_API_KEY = "test";
   vi.stubGlobal("fetch", fetchMock);
   fetchMock.mockReset();
-  vi.mocked(hasConsent).mockReset().mockResolvedValue(true);
+  vi.mocked(hasConsent).mockReset().mockResolvedValue("granted");
   vi.mocked(enforceRateLimit).mockReset().mockResolvedValue(null);
 });
 
@@ -69,7 +72,7 @@ function trace(): string[] {
   });
   vi.mocked(hasConsent).mockImplementation(async () => {
     steps.push("consent");
-    return true;
+    return "granted";
   });
   vi.mocked(enforceRateLimit).mockImplementation(async (_req, limiter) => {
     steps.push(String(limiter));
@@ -83,7 +86,7 @@ afterEach(() => {
 
 describe("/api/v2/tali", () => {
   it("без согласия родителя — 403, в модель не уходит ничего", async () => {
-    vi.mocked(hasConsent).mockResolvedValue(false);
+    vi.mocked(hasConsent).mockResolvedValue("denied");
     const res = await POST(request({ childId: KID, language: "ru", message: "привет" }));
     expect(res.status).toBe(403);
     expect(await res.json()).toEqual({ error: "consent_required" });
@@ -214,7 +217,7 @@ describe("/api/v2/tali", () => {
     const later = trace();
     vi.mocked(hasConsent).mockImplementation(async () => {
       later.push("consent");
-      return false;
+      return "denied";
     });
     expect((await POST(request({ childId: KID, language: "ru", message: "a" }))).status).toBe(403);
     expect(later).toEqual(["ip", "auth", "consent"]);
@@ -322,6 +325,166 @@ describe("выключатель ИИ (В3)", () => {
     expect(url).toBe(AI_PROVIDER.endpoint);
     expect(JSON.parse(String(init.body)).model).toBe(AI_PROVIDER.model);
     expect(JSON.stringify(init.headers)).toContain("key-123");
+  });
+});
+
+describe("сбой проверки согласия (В-8)", () => {
+  it("сбой Supabase — 503, а не 403: клиент не считает согласие отозванным", async () => {
+    vi.mocked(hasConsent).mockResolvedValue("unavailable");
+    const res = await POST(request({ childId: KID, language: "ru", message: "привет" }));
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: "Service unavailable" });
+  });
+
+  it("при unavailable не вызваны ни модель, ни бюджетные лимитеры", async () => {
+    const steps = trace();
+    vi.mocked(hasConsent).mockImplementation(async () => {
+      steps.push("consent");
+      return "unavailable";
+    });
+    await POST(request({ childId: KID, language: "ru", message: "привет" }));
+    expect(steps).toEqual(["ip", "auth", "consent"]);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("при unavailable тревожное сообщение не обрабатывается: ни модели, ни озвучки", async () => {
+    vi.mocked(hasConsent).mockResolvedValue("unavailable");
+    const res = await POST(request({ childId: KID, language: "ru", message: "я не хочу жить", speak: true }));
+    expect(res.status).toBe(503);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("denied по-прежнему 403 consent_required", async () => {
+    vi.mocked(hasConsent).mockResolvedValue("denied");
+    const res = await POST(request({ childId: KID, language: "ru", message: "привет" }));
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: "consent_required" });
+  });
+});
+
+describe("озвучка: сбой не роняет готовый текст (В-9)", () => {
+  const speak = () => POST(request({ childId: KID, language: "ru", message: "привет", speak: true }));
+  const ttsCalls = () => fetchMock.mock.calls.filter(([url]) => String(url).includes("elevenlabs"));
+
+  beforeEach(() => {
+    process.env.ELEVENLABS_API_KEY = "k";
+    process.env.ELEVENLABS_VOICE_ID = "v";
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+  });
+  afterEach(() => {
+    delete process.env.ELEVENLABS_API_KEY;
+    delete process.env.ELEVENLABS_VOICE_ID;
+    vi.restoreAllMocks();
+  });
+
+  function ttsBehaves(how: () => Promise<Response>) {
+    fetchMock.mockImplementation(async (url: string) => {
+      if (String(url).includes("deepseek")) {
+        return new Response(JSON.stringify({ choices: [{ message: { content: "Посчитай по одному!" } }] }), { status: 200 });
+      }
+      return how();
+    });
+  }
+
+  it("таймаут озвучки — 200 с текстом и audio: null", async () => {
+    ttsBehaves(async () => {
+      throw new DOMException("timeout", "TimeoutError");
+    });
+    const res = await speak();
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.reply).toBe("Посчитай по одному!");
+    expect(body.audio).toBeNull();
+  });
+
+  it("сетевой сбой озвучки — 200 с текстом и audio: null", async () => {
+    ttsBehaves(async () => {
+      throw new TypeError("fetch failed");
+    });
+    const res = await speak();
+    expect(res.status).toBe(200);
+    expect((await res.json()).audio).toBeNull();
+  });
+
+  it("ответ провайдера озвучки 500 — 200 с текстом и audio: null", async () => {
+    ttsBehaves(async () => new Response("err", { status: 500 }));
+    const res = await speak();
+    expect(res.status).toBe(200);
+    expect((await res.json()).audio).toBeNull();
+  });
+
+  it("обрыв при чтении тела озвучки — 200 с текстом и audio: null", async () => {
+    ttsBehaves(
+      async () =>
+        ({
+          ok: true,
+          status: 200,
+          arrayBuffer: async () => {
+            throw new DOMException("timeout", "TimeoutError");
+          },
+        }) as unknown as Response,
+    );
+    const res = await speak();
+    expect(res.status).toBe(200);
+    expect((await res.json()).audio).toBeNull();
+  });
+
+  it("сбой озвучки не доходит до общего catch: reportError не вызван", async () => {
+    vi.mocked(reportError).mockClear();
+    ttsBehaves(async () => {
+      throw new TypeError("fetch failed");
+    });
+    await speak();
+    expect(reportError).not.toHaveBeenCalled();
+  });
+
+  it("исчерпан минутный лимит озвучки — 200 с текстом, audio: null, провайдер озвучки не вызван", async () => {
+    deepseekReplies("Посчитай по одному!");
+    vi.mocked(enforceRateLimit).mockImplementation(async (_req, limiter) =>
+      String(limiter) === "tts-minute" ? NextResponse.json({ error: "limit" }, { status: 429 }) : null,
+    );
+    const res = await speak();
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ reply: "Посчитай по одному!", crisis: false, audio: null });
+    expect(ttsCalls()).toHaveLength(0);
+  });
+
+  it("исчерпан дневной лимит символов озвучки — 200 с текстом, audio: null", async () => {
+    deepseekReplies("Посчитай по одному!");
+    vi.mocked(enforceRateLimit).mockImplementation(async (_req, limiter) =>
+      String(limiter) === "tts-chars" ? NextResponse.json({ error: "limit" }, { status: 429 }) : null,
+    );
+    const res = await speak();
+    expect(res.status).toBe(200);
+    expect((await res.json()).audio).toBeNull();
+    expect(ttsCalls()).toHaveLength(0);
+  });
+
+  it("успех — audio base64 тех же байтов", async () => {
+    deepseekReplies("Посчитай по одному!");
+    const body = await (await speak()).json();
+    expect(body.audio).toBe(Buffer.from([1, 2, 3]).toString("base64"));
+  });
+});
+
+describe("maxDuration и общий catch", () => {
+  it("maxDuration (с) не меньше суммы таймаутов модели и озвучки", () => {
+    expect(maxDuration * 1000).toBeGreaterThanOrEqual(MODEL_TIMEOUT_MS + TTS_TIMEOUT_MS);
+  });
+
+  it("maxDuration оставляет запас на сеть и лимитеры", () => {
+    expect(maxDuration * 1000).toBeGreaterThan(MODEL_TIMEOUT_MS + TTS_TIMEOUT_MS);
+  });
+
+  it("неожиданный сбой — 500 и reportError с областью v2/tali", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    vi.mocked(reportError).mockClear();
+    const boom = new TypeError("fetch failed");
+    fetchMock.mockRejectedValue(boom);
+    const res = await POST(request({ childId: KID, language: "ru", message: "привет" }));
+    expect(res.status).toBe(500);
+    expect(reportError).toHaveBeenCalledWith("v2/tali", boom);
+    vi.restoreAllMocks();
   });
 });
 

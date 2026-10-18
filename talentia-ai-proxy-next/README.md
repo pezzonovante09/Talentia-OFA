@@ -9,7 +9,9 @@ Copy `.env.example` to `.env.local` and set at least:
 
 | Variable | Purpose |
 |----------|---------|
-| `DEEPSEEK_API_KEY` | Tali chat (`/api/v2/tali`). Provider is to be replaced (owner decision 2026-10-01, with the lawyer) |
+| `TALI_AI_ENABLED` | **Off by default.** `true` enables the AI conversation (`/api/v2/tali`); otherwise the route answers `503 ai_disabled` before any other check (owner decisions #66, #102: AI is the last stage) and the app replies from the on-device phrase bank. |
+| `DEEPSEEK_API_KEY` | Tali chat (`/api/v2/tali`), required when `TALI_AI_ENABLED=true`. Provider name/endpoint/model live in `src/lib/aiConfig.ts`; the provider is to be replaced (owner decision 2026-10-01, with the lawyer) |
+| `TALI_DAILY_REQUESTS_PER_USER` / `TALI_DAILY_REPLIES_PER_CHILD` / `TTS_DAILY_CHARS_PER_USER` | Optional daily caps (defaults 200 / 30 / 30000). |
 | `SUPABASE_URL` | Supabase project URL — required to verify user JWTs on every route except `/api/ping`. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key — used server-side only with `auth.getUser(jwt)` and `auth.admin.deleteUser`; never expose to clients. |
 | `SUPABASE_ANON_KEY` | Public anon key — `/api/account/delete` calls the database **as the user** (their JWT), so RLS and `transfer_child_ownership` check the rights, not this code. |
@@ -106,8 +108,23 @@ a `childId` from the request body the only access check.
 Before calling DeepSeek or a voice provider for a child, check consent with
 **`hasConsent(asUser, childId, scope)`** (`src/lib/consentCheck.ts`). It calls the database
 `has_consent` under the user's JWT: for a child the user has no access to, the answer is
-always `false`, so a foreign `childId` cannot "borrow" another child's consent. Any error
-means `false`.
+always `"denied"`, so a foreign `childId` cannot "borrow" another child's consent. The answer is
+one of three: `"granted"`, `"denied"` (403 `consent_required`) or `"unavailable"` — a database or
+network failure (503, the app replies from its phrase bank). A Supabase outage must never look like
+"consent withdrawn". Only `granted` lets anything leave the server.
+
+## Health check — `GET /api/ping`
+
+After the secret check it reports configuration flags (booleans only, never values):
+`ready.supabase` (URL + anon + service-role keys), `ready.upstash`, `features.ai.enabled` /
+`features.ai.configured`, `features.tts`. A misconfigured deploy must not look healthy.
+
+## Timeouts and errors
+
+`/api/v2/tali` has `maxDuration = 60`: model (20 s) + voice (20 s) + network fit inside it, so the
+platform never cuts the function before our own timeouts and the fallback reply. A voice failure
+never drops the reply text (`audio: null`). Handled errors are sent to Sentry through
+`src/lib/reportError.ts` — error class and code frames only, never ids or message text.
 
 `consent_active(child, scope)` is granted to `service_role` only and is for background jobs
 that have no user. Never widen `has_consent`'s grants to "fix" a `false`.
