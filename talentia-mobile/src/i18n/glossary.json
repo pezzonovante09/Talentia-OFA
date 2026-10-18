@@ -1,5 +1,5 @@
 {
-  "about": "Глоссарий терминов ru / en / ky (localization-qa, аудит 2026-10-06, А23). source — язык, на котором термин живёт в программе; status: draft — черновик, needs-native — ждёт носителя / учителя кыргызского, approved — утверждён. Кыргызские термины берутся из учебника, который назовёт учитель (Алиппе / программа 1–4 кл.); до утверждения в уроки не идут.",
+  "about": "Глоссарий терминов ru / en / ky (localization-qa, аудит 2026-10-06, А23). source — язык, на котором термин живёт в программе; status: draft — черновик, needs-native — ждёт носителя / учителя кыргызского, approved — утверждён. Кыргызские термины берутся из учебника, который назовёт учитель (Алиппе / программа 1–4 кл.); до утверждения в уроки не идут. Домены aba и interface (раунд 3, В6): ky не заполнен — ждёт носителя и специалиста (№108); en — по терминологии специалистов (BACB), в интерфейсе — коротко и без жаргона для ребёнка. «подсказка» в ABA (prompt) и «подсказка» в уроке (hint) — разные термины, не смешивать.",
   "terms": [
     {
       "id": "ky-letter",
@@ -219,6 +219,294 @@
       "en": "sentence",
       "ky": "сүйлөм",
       "status": "needs-native"
+    },
+    {
+      "id": "aba-trial",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "проба",
+      "en": "trial",
+      "status": "draft"
+    },
+    {
+      "id": "aba-discrete-trial",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "дискретная проба",
+      "en": "discrete trial",
+      "status": "draft"
+    },
+    {
+      "id": "aba-run",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "прогон",
+      "en": "run",
+      "status": "draft"
+    },
+    {
+      "id": "aba-task-analysis",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "анализ задачи",
+      "en": "task analysis",
+      "status": "draft"
+    },
+    {
+      "id": "aba-step",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "звено",
+      "en": "step",
+      "status": "draft"
+    },
+    {
+      "id": "aba-chain",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "цепочка",
+      "en": "chain",
+      "status": "draft"
+    },
+    {
+      "id": "aba-prompt",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "подсказка",
+      "en": "prompt",
+      "status": "draft"
+    },
+    {
+      "id": "aba-prompt-hierarchy",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "иерархия подсказок",
+      "en": "prompt hierarchy",
+      "status": "draft"
+    },
+    {
+      "id": "aba-least-to-most",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "от наименьшей к наибольшей",
+      "en": "least-to-most prompting",
+      "status": "draft"
+    },
+    {
+      "id": "aba-prompt-fading",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "затухание подсказок",
+      "en": "prompt fading",
+      "status": "draft"
+    },
+    {
+      "id": "aba-independent",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "самостоятельно",
+      "en": "independent",
+      "status": "draft"
+    },
+    {
+      "id": "aba-reinforcer",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "подкрепитель",
+      "en": "reinforcer",
+      "status": "draft"
+    },
+    {
+      "id": "aba-reinforcement",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "подкрепление",
+      "en": "reinforcement",
+      "status": "draft"
+    },
+    {
+      "id": "aba-token",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "жетон",
+      "en": "token",
+      "status": "draft"
+    },
+    {
+      "id": "aba-token-economy",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "жетонная система",
+      "en": "token economy",
+      "status": "draft"
+    },
+    {
+      "id": "aba-baseline",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "базовая линия",
+      "en": "baseline",
+      "status": "draft"
+    },
+    {
+      "id": "aba-teaching",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "обучение",
+      "en": "teaching",
+      "status": "draft"
+    },
+    {
+      "id": "aba-maintenance",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "поддержание",
+      "en": "maintenance",
+      "status": "draft"
+    },
+    {
+      "id": "aba-generalization",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "генерализация",
+      "en": "generalization",
+      "status": "draft"
+    },
+    {
+      "id": "aba-mastery-criterion",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "критерий освоения",
+      "en": "mastery criterion",
+      "status": "draft"
+    },
+    {
+      "id": "aba-percent-correct",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "доля верных ответов",
+      "en": "percent correct",
+      "status": "draft"
+    },
+    {
+      "id": "aba-ioa",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "согласие наблюдателей (IOA)",
+      "en": "interobserver agreement (IOA)",
+      "status": "draft"
+    },
+    {
+      "id": "aba-refusal",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "отказ",
+      "en": "refusal",
+      "status": "draft"
+    },
+    {
+      "id": "aba-break",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "перерыв",
+      "en": "break",
+      "status": "draft"
+    },
+    {
+      "id": "aba-break-card",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "карточка перерыва",
+      "en": "break card",
+      "status": "draft"
+    },
+    {
+      "id": "aba-stimulus",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "стимул",
+      "en": "stimulus",
+      "status": "draft"
+    },
+    {
+      "id": "aba-target-skill",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "целевой навык",
+      "en": "target skill",
+      "status": "draft"
+    },
+    {
+      "id": "aba-practitioner",
+      "domain": "aba",
+      "source": "ru",
+      "ru": "специалист",
+      "en": "practitioner",
+      "status": "draft"
+    },
+    {
+      "id": "ui-profile",
+      "domain": "interface",
+      "source": "ru",
+      "ru": "профиль",
+      "en": "profile",
+      "status": "draft"
+    },
+    {
+      "id": "ui-lesson",
+      "domain": "interface",
+      "source": "ru",
+      "ru": "урок",
+      "en": "lesson",
+      "status": "draft"
+    },
+    {
+      "id": "ui-task",
+      "domain": "interface",
+      "source": "ru",
+      "ru": "задание",
+      "en": "task",
+      "status": "draft"
+    },
+    {
+      "id": "ui-card",
+      "domain": "interface",
+      "source": "ru",
+      "ru": "карточка",
+      "en": "card",
+      "status": "draft"
+    },
+    {
+      "id": "ui-map",
+      "domain": "interface",
+      "source": "ru",
+      "ru": "карта",
+      "en": "map",
+      "status": "draft"
+    },
+    {
+      "id": "ui-atlas",
+      "domain": "interface",
+      "source": "ru",
+      "ru": "атлас",
+      "en": "atlas",
+      "status": "draft"
+    },
+    {
+      "id": "ui-parent-area",
+      "domain": "interface",
+      "source": "ru",
+      "ru": "родительский раздел",
+      "en": "parent area",
+      "status": "draft"
+    },
+    {
+      "id": "ui-hint",
+      "domain": "interface",
+      "source": "ru",
+      "ru": "подсказка в уроке",
+      "en": "hint",
+      "status": "draft"
     }
   ]
 }

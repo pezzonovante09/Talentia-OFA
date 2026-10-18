@@ -8,7 +8,7 @@
     "skip": "Skip",
     "prompted": "Prompted",
     "refused": "Refused",
-    "stepAlone": "Step done alone",
+    "stepAlone": "Step — independent",
     "undo": "Undo mark"
   },
   "abaScreen": {
@@ -59,5 +59,149 @@
   "a11y": {
     "option": "Card {{n}}",
     "breakCard": "Break"
+  },
+  "content": {
+    "common": {
+      "one": "one",
+      "two": "two",
+      "three": "three",
+      "four": "four",
+      "five": "five",
+      "six": "six",
+      "seven": "seven",
+      "eight": "eight",
+      "nine": "nine",
+      "ten": "ten"
+    },
+    "numbers": {
+      "count": {
+        "title": "How many are there?"
+      },
+      "l1": {
+        "title": "One, two, three",
+        "hook": "I'm drawing the valley. How many leaves are here?",
+        "atlas": "The valley is on the map! One, two, three: you can see it at a glance.",
+        "model": {
+          "prompt": "How many leaves are here?",
+          "stimulus": "leaves",
+          "s1": "I look at all the leaves at once: three.",
+          "s2": "I look for three dots. There they are!"
+        },
+        "t1": {
+          "prompt": "How many stones are here?",
+          "stimulus": "stones",
+          "hint": "Show the same number on your fingers.",
+          "explain": "Two stones, you can see it at a glance. Two!"
+        },
+        "t2": {
+          "prompt": "Match each pile to its dots.",
+          "hint": "Find the dots that match what you see.",
+          "explain": "One stone, two berries, three leaves.",
+          "stone": "stone",
+          "berries": "berries",
+          "leaves": "leaves"
+        },
+        "t3": {
+          "prompt": "How many berries are on the branch?",
+          "stimulus": "berries on the branch",
+          "hint": "Look at all the berries at once.",
+          "explain": "The berries are spread out, but there are still three."
+        },
+        "t4": {
+          "prompt": "Which pile has one, two, three?",
+          "hint": "Stones or berries, it's how many that matters.",
+          "explain": "One and one, two and two, three and three.",
+          "left-berry": "berry",
+          "left-stones": "stones",
+          "left-leaves": "leaves",
+          "right-leaf": "leaf",
+          "right-berries": "berries",
+          "right-stones": "stones"
+        }
+      },
+      "l2": {
+        "title": "Counting to five",
+        "hook": "So many leaves! Let's count!",
+        "atlas": "The map is bigger now: we counted up to five!",
+        "model": {
+          "prompt": "How many leaves are here?",
+          "stimulus": "leaves",
+          "s1": "I count: one, two, three, four.",
+          "s2": "The last number is four. So there are four!"
+        },
+        "t1": {
+          "prompt": "Count the stones. How many are there?",
+          "stimulus": "stones",
+          "hint": "Slide your finger along the stones as you count.",
+          "explain": "One, two, three, four, five. Five!"
+        },
+        "t2": {
+          "prompt": "Tap the piles: three, four, five.",
+          "hint": "Count each pile one by one.",
+          "explain": "Three, then four, then five!",
+          "stones": "stones",
+          "berries": "berries",
+          "leaves": "leaves"
+        },
+        "t3": {
+          "prompt": "How many berries are here?",
+          "stimulus": "berries",
+          "hint": "Look at all the berries at once.",
+          "explain": "Two berries, you can see it at a glance. Two!"
+        },
+        "t4": {
+          "prompt": "Count the piles and match them to the dots.",
+          "hint": "Count the pile and the dots.",
+          "explain": "Five berries, three stones, four leaves.",
+          "berries": "berries",
+          "stones": "stones",
+          "leaves": "leaves"
+        }
+      },
+      "l3": {
+        "title": "Counting to ten",
+        "hook": "Oops, I lost count! Want to count one by one?",
+        "atlas": "Tali and I counted all the way to ten!",
+        "model": {
+          "prompt": "How many leaves?",
+          "s1": "One, two, three, four, five, six!",
+          "s2": "The last number is six. So there are six!",
+          "stimulus": "leaves"
+        },
+        "t1": {
+          "prompt": "How many stones? Count them one by one.",
+          "hint": "Touch each stone once as you count.",
+          "explain": "The last number is seven. There are seven!",
+          "stimulus": "stones"
+        },
+        "t2": {
+          "prompt": "Tap the piles: three, four, five.",
+          "hint": "Touch each one once. Don't skip any.",
+          "explain": "Each one once: three, four, five!",
+          "berries": "berries",
+          "stones": "stones",
+          "leaves": "leaves"
+        },
+        "t3": {
+          "prompt": "How many leaves? Count them all.",
+          "hint": "Count the top first, then the bottom.",
+          "explain": "The last number is ten. There are ten!",
+          "stimulus": "leaves"
+        },
+        "t4": {
+          "prompt": "Count and match them to the dots.",
+          "hint": "Touch each one once as you count.",
+          "explain": "Five here, two here, and four here!",
+          "berries": "berries",
+          "stones": "stones",
+          "leaves": "leaves"
+        }
+      }
+    },
+    "skills": {
+      "subitize-1-3": "Sees one, two, three at a glance",
+      "count-to-5": "Counts to five",
+      "count-to-10": "Counts to ten"
+    }
   }
 }

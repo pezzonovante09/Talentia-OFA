@@ -3,7 +3,7 @@
  * ребёнку»; `localization-qa`, аудит 2026-10-06, А15, А23). Банка ещё нет: проверка обходит
  * то, что есть, и на пустом банке молчит; правила проверяются на примерах ниже.
  */
-import { AFFIX_AFTER_SLOT, childGenderHits } from '../../content/__tests__/corpusRules';
+import { AFFIX_AFTER_SLOT, childGenderHits, nameOutsideVocative } from '../../content/__tests__/corpusRules';
 import { COMPANION_SLOTS } from '../../domain/companionSituations';
 import en from '../locales/en.json';
 import ky from '../locales/ky.json';
@@ -41,9 +41,6 @@ const OBJECT_COUNT_AFTER_ACC_RU = /(?<!\p{L})(найди|возьми|полож
 const OBJECT_COUNT_AFTER_BE_EN = /\b(is|are|was|were)\s+\{\{\s*object_count/i;
 const OBJECT_COUNT_AFTER_VERB_RU = /\p{L}+(ят|ат|ут|ют)\s+\{\{\s*object_count/iu;
 
-/** Имя — только обращением через запятую в начале или в конце реплики. */
-const NAME_OK = /^\{\{\s*name\s*\}\},|,\s*\{\{\s*name\s*\}\}[.!?]?$/;
-
 export function companionProblems(banks: Partial<Record<Lang, Bank>>): string[] {
   const bad: string[] = [];
   const ruBank = banks.ru ?? {};
@@ -76,7 +73,7 @@ export function companionProblems(banks: Partial<Record<Lang, Bank>>): string[] 
       for (const s of slotsIn(text)) {
         if (!(COMPANION_SLOTS as readonly string[]).includes(s)) bad.push(`${lang} ${key}: подстановки {{${s}}} нет в списке`);
       }
-      if (slotsIn(text).includes('name') && !NAME_OK.test(text.trim())) bad.push(`${lang} ${key}: имя — только обращением в начале или в конце`);
+      if (slotsIn(text).includes('name') && nameOutsideVocative(text)) bad.push(`${lang} ${key}: имя — только обращением в начале или в конце`);
       if (lang === 'ru' && !gendered && childGenderHits(text).length) bad.push(`ru ${key}: в безродовой реплике род ребёнка`);
       // набор подстановок — как у ru-основы той же реплики
       const ruBase = Object.entries(ruBank).find(([k]) => base(k) === base(key) && !GENDER.test(k));
