@@ -9,6 +9,7 @@ import type { LessonRun } from '../../../domain/parentReport';
 import { saveChildState } from '../childState';
 import { appendConsentEvent } from '../consentLog';
 import { appendLessonRun } from '../lessonRuns';
+import { revokeAbaProcessing } from '../purge';
 import type { SqlDb } from '../sql';
 import {
   cloudKind,
@@ -373,6 +374,73 @@ describe('таймаут удалённого вызова', () => {
 
     expect(report.lessonRuns).toBe(3);
     expect(sent.runs).toEqual([['r-1', 'r-2', 'r-3']]);
+  });
+
+  describe('зависший profileOf под замком базы', () => {
+    const NEVER = { profileOf: () => new Promise<ChildProfile | null>(() => undefined), timeoutMs: 20 };
+
+    async function withCloudAndAbaGrants() {
+      const db = await memoryDb();
+      await appendConsentEvent(db, ev({ id: 'g-cloud' }), 'owner');
+      await appendConsentEvent(db, ev({ id: 'g-aba', scope: 'aba_processing', confirmedBy: 'biometric' }), 'owner');
+      return db;
+    }
+
+    it('зависший profileOf — проход бросает RemoteTimeoutError', async () => {
+      const db = await withCloudAndAbaGrants();
+      const { port } = recorder();
+
+      await expect(syncChild(db, port, 'kid-a', 'ru-1', NOW, NEVER)).rejects.toBeInstanceOf(RemoteTimeoutError);
+    });
+
+    it('после таймаута profileOf отзыв облачного согласия записывается сразу', async () => {
+      const db = await withCloudAndAbaGrants();
+      const { port } = recorder();
+      await syncChild(db, port, 'kid-a', 'ru-1', NOW, NEVER).catch(() => undefined);
+
+      const write = appendConsentEvent(db, ev({ id: 'rv-cloud', action: 'revoke' }), 'owner').then(() => 'written');
+      const stuck = new Promise((r) => setTimeout(() => r('stuck'), 500));
+
+      expect(await Promise.race([write, stuck])).toBe('written');
+    });
+
+    it('после таймаута profileOf отзыв ABA (revokeAbaProcessing) проходит быстро', async () => {
+      const db = await withCloudAndAbaGrants();
+      const { port } = recorder();
+      await syncChild(db, port, 'kid-a', 'ru-1', NOW, NEVER).catch(() => undefined);
+
+      const revoke = revokeAbaProcessing(
+        db,
+        ev({ id: 'rv-aba', scope: 'aba_processing', action: 'revoke', confirmedBy: 'biometric' }),
+        'owner',
+      ).then(() => 'revoked');
+      const stuck = new Promise((r) => setTimeout(() => r('stuck'), 500));
+
+      expect(await Promise.race([revoke, stuck])).toBe('revoked');
+    });
+
+    it('пока profileOf висит, замок держится не дольше таймаута: отзыв ждёт, но дожидается', async () => {
+      const db = await withCloudAndAbaGrants();
+      const { port } = recorder();
+      const pass = syncChild(db, port, 'kid-a', 'ru-1', NOW, NEVER).catch(() => 'timeout');
+
+      const write = appendConsentEvent(db, ev({ id: 'rv-cloud', action: 'revoke' }), 'owner').then(() => 'written');
+      const stuck = new Promise((r) => setTimeout(() => r('stuck'), 500));
+
+      expect(await Promise.race([write, stuck])).toBe('written');
+      expect(await pass).toBe('timeout');
+    });
+
+    it('после таймаута profileOf следующий проход с живым profileOf доставляет согласие', async () => {
+      const db = await withCloudAndAbaGrants();
+      const { port: first } = recorder();
+      await syncChild(db, first, 'kid-a', 'ru-1', NOW, NEVER).catch(() => undefined);
+      const { port, sent } = recorder();
+
+      await syncChild(db, port, 'kid-a', 'ru-1', NOW, { ...OPTS, timeoutMs: 20 });
+
+      expect(sent.cloud.map((c) => [c.kind, c.event.id])).toEqual([['open', 'g-cloud']]);
+    });
   });
 
   it('зависшее согласие на облако не считается доставленным и уходит снова', async () => {

@@ -25,6 +25,7 @@ import type { AtlasEntry } from '../../domain/lessonAssembly';
 import type { SkillState } from '../../domain/mastery';
 import type { LessonRun } from '../../domain/parentReport';
 import { ioaRecordErrors } from '../../domain/abaIoa';
+import { deepEqual } from '../../domain/deepEqual';
 import {
   AbaBoardConflictError,
   AbaSessionMissingError,
@@ -320,7 +321,7 @@ export async function commitRoutineRun(
       throw new RoutineAlreadyRunError();
     }
     // итог посчитан от состояния на старте: чужая запись той же цели за время прогона — конфликт
-    if (current && JSON.stringify(current) !== JSON.stringify(result.before)) throw new RoutineStateConflictError();
+    if (current && !deepEqual(current, result.before)) throw new RoutineStateConflictError();
     await appendRoutineRun(
       tx,
       childId,

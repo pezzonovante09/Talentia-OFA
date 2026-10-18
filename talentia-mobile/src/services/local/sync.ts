@@ -289,7 +289,7 @@ export async function syncChild(
           if (kind === 'revoke') {
             await timed((s) => remote.pushCloudConsent({ kind, event: e }, s), ms);
           } else {
-            const found = (await opts.profileOf?.(childId)) ?? null;
+            const found = await timed(async () => (await opts.profileOf?.(childId)) ?? null, ms);
             if (!found) return 'no_profile' as const;
             // профиль собирается заново: адаптер может вернуть полную запись ребёнка, а имя в
             // облако не уходит (PARENT.md «Минимизация»)

@@ -98,6 +98,12 @@ export function openLocalDb(accountId: string): Promise<SqlDb> {
     });
     entry = { raw, db };
     opened.set(name, entry);
+    // Сбой открытия или наката не должен навсегда остаться в кэше: повторный вызов пробует заново.
+    const failed = entry;
+    db.catch(() => {
+      if (opened.get(name) === failed) opened.delete(name);
+      raw.then((r) => r.closeAsync()).catch(() => undefined);
+    });
   }
   return entry.db;
 }

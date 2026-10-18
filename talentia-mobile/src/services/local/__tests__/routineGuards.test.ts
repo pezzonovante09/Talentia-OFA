@@ -181,6 +181,46 @@ describe('commitRoutineRun: конфликт состояния цели меж�
     expect(await routineRunsOf(db, 'kid')).toHaveLength(1);
   });
 
+  it('тот же before с другим порядком ключей: конфликта нет, прогон записан', async () => {
+    const db = await dbWithAba();
+    const stored = { targetId: 'R', phase: 'acquisition', lastSessionIndex: 3 } as AbaTargetState;
+    await seedTargets(db, { R: stored });
+    const reordered = { lastSessionIndex: 3, phase: 'acquisition', targetId: 'R' } as AbaTargetState;
+    await commitRoutineRun(db, 'kid', run('run-1', '2026-10-12', reordered), NOW);
+    expect(await routineRunsOf(db, 'kid')).toHaveLength(1);
+  });
+
+  it('вложенный объект в before с другим порядком ключей: конфликта нет', async () => {
+    const db = await dbWithAba();
+    const nested = (a: number, b: number, swap: boolean) =>
+      ({ targetId: 'R', phase: 'acquisition', stats: swap ? { b, a } : { a, b } }) as unknown as AbaTargetState;
+    await seedTargets(db, { R: nested(1, 2, false) });
+    await commitRoutineRun(db, 'kid', run('run-1', '2026-10-12', nested(1, 2, true)), NOW);
+    expect(await routineRunsOf(db, 'kid')).toHaveLength(1);
+  });
+
+  it('лишнее поле со значением undefined в before: конфликта нет', async () => {
+    const db = await dbWithAba();
+    await seedTargets(db, { R: state('R', { lastSessionIndex: 3 }) });
+    const withUndefined = { ...state('R', { lastSessionIndex: 3 }), lastRoutineRunDay: undefined } as AbaTargetState;
+    await commitRoutineRun(db, 'kid', run('run-1', '2026-10-12', withUndefined), NOW);
+    expect(await routineRunsOf(db, 'kid')).toHaveLength(1);
+  });
+
+  it('другой порядок ключей и undefined одновременно, но значение поля иное: конфликт', async () => {
+    const db = await dbWithAba();
+    await seedTargets(db, { R: { targetId: 'R', phase: 'acquisition', lastSessionIndex: 4 } as AbaTargetState });
+    const stale = { lastSessionIndex: 3, lastRoutineRunDay: undefined, phase: 'acquisition', targetId: 'R' } as AbaTargetState;
+    await expect(commitRoutineRun(db, 'kid', run('run-1', '2026-10-12', stale), NOW)).rejects.toBeInstanceOf(RoutineStateConflictError);
+    expect(await routineRunsOf(db, 'kid')).toEqual([]);
+  });
+
+  it('в базе появилось лишнее поле, которого нет в before: конфликт', async () => {
+    const db = await dbWithAba();
+    await seedTargets(db, { R: state('R', { lastSessionIndex: 3 }) });
+    await expect(commitRoutineRun(db, 'kid', run('run-1', '2026-10-12', state('R')), NOW)).rejects.toBeInstanceOf(RoutineStateConflictError);
+  });
+
   it('первый прогон цели, которой в карте ещё нет: конфликта нет', async () => {
     const db = await dbWithAba();
     await commitRoutineRun(db, 'kid', run('run-1', '2026-10-12', state('R')), NOW);

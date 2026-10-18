@@ -99,7 +99,17 @@ function makeConnection(file: FakeFile, conn: Conn, owner: string | null) {
 
   return {
     runAsync: (sql: string, _params?: unknown[]) => write(sql, () => ({ changes: 1, lastInsertRowId: 1 })),
-    execAsync: (sql: string) => write(sql, () => undefined),
+    execAsync: (sql: string) =>
+      write(sql, () => {
+        if (injected.failExecAfter !== null) {
+          if (injected.failExecAfter === 0) {
+            injected.failExecAfter = null;
+            throw new Error('диск полон (внедрённый сбой exec)');
+          }
+          injected.failExecAfter -= 1;
+        }
+        return undefined;
+      }),
     getAllAsync: async <T>(sql: string, _params?: unknown[]): Promise<T[]> => {
       file.events.push(`read:${conn.id}`);
       log(sql);
@@ -113,6 +123,28 @@ function makeConnection(file: FakeFile, conn: Conn, owner: string | null) {
 
 export const files = new Map<string, FakeFile>();
 
+/**
+ * Одноразовые сбои для тестов: срабатывают на ближайшем вызове и сбрасываются сами.
+ * `failNextOpen` — `openDatabaseAsync` отклоняется; `failNextExec` — следующий `execAsync`
+ * (на основном соединении или в транзакции) падает после того, как оператор записан в журнал.
+ */
+export const injected = { failNextOpen: false, failExecAfter: null as number | null, closeCalls: 0 };
+
+export function failNextOpen(): void {
+  injected.failNextOpen = true;
+}
+
+/** Упасть на ближайшем `execAsync`; `skip` — сколько `execAsync` пропустить до сбоя (накат: PRAGMA, транзакция, миграция). */
+export function failNextExec(skip = 0): void {
+  injected.failExecAfter = skip;
+}
+
+export function resetInjected(): void {
+  injected.failNextOpen = false;
+  injected.failExecAfter = null;
+  injected.closeCalls = 0;
+}
+
 export function fileOf(name: string): FakeFile {
   const f = files.get(name);
   if (!f) throw new Error(`файл ${name} не открывался`);
@@ -121,6 +153,10 @@ export function fileOf(name: string): FakeFile {
 
 export const fakeExpoSqlite = {
   async openDatabaseAsync(name: string) {
+    if (injected.failNextOpen) {
+      injected.failNextOpen = false;
+      throw new Error('не удалось открыть файл (внедрённый сбой open)');
+    }
     let file = files.get(name);
     if (!file) {
       file = new FakeFile(name);
@@ -131,6 +167,7 @@ export const fakeExpoSqlite = {
       ...makeConnection(f, f.mainConn, null),
       closeAsync: async () => {
         f.closed = true;
+        injected.closeCalls += 1;
       },
       async withExclusiveTransactionAsync(task: (txn: unknown) => Promise<void>) {
         if (f.holder !== null) throw new Error(`database is locked (BEGIN vs ${f.holder})`);
