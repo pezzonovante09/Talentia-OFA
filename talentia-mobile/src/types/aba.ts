@@ -652,6 +652,12 @@ export type AbaTargetState = {
    * рутину в календарный день (локальный, `YYYY-MM-DD`) — №74, методист 2026-10-11 (Р3).
    */
   lastRoutineRunDay?: string;
+  /**
+   * Рутина: сквозной счётчик завершённых прогонов (кроме отменённых извне). Только растёт и не
+   * выводится из журнала: после срока хранения (`applyRetention`) позиции в журнале сдвигаются, а
+   * `dependenceFlaggedAtSession` у рутины — именно этот номер (`AbaRoutineRun.runNo`).
+   */
+  routineRunSeq?: number;
   /** После проваленной проверки — столько следующих сессий с целью нужна проверка IOA. */
   ioaDueSessions?: number;
   /** Взрослый отметил «цель пересмотрена» и снял `assent_concern` — кто по роли и когда. */
@@ -934,6 +940,8 @@ export type AbaRoutineRun = {
   endedAt: string;
   /** Срыв — остаток довёл взрослый; внешняя причина — в окно и критерий не идёт, день не занят. */
   interrupted: 'breakdown' | 'external' | null;
+  /** Сквозной номер прогона рутины (`AbaTargetState.routineRunSeq` после него); у отменённых извне нет. */
+  runNo?: number;
   setting: RoutineSetting;
   /** Жетон после прогона и за что; `null` — только похвала. */
   token: 'at_start_level' | 'whole_independent' | 'participation' | null;

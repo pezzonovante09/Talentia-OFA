@@ -450,7 +450,7 @@ describe('журнал IOA и наблюдатели — условия прив
     await commitAbaSession(db, 'kid', { ...result(1), session: { ...session(1), id: 's-1' } }, '2026-09-30T09:30:00Z');
     await commitIoa(db, 'kid', ioa('i-2'), {}, '2026-10-05T10:00:00Z');
     const [row] = await db.all<{ recorded_at: string }>("SELECT recorded_at FROM aba_ioa WHERE id = 'i-2'");
-    expect(row.recorded_at).toBe('2026-09-30T09:30:00Z');
+    expect(row.recorded_at).toBe('2026-09-30T09:30:00.000Z');
   });
 
   it('IOA без сессии на устройстве — типизированный отказ, ничего не записано', async () => {

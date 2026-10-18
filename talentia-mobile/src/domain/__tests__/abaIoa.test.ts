@@ -33,7 +33,7 @@ describe('лист второго наблюдателя', () => {
     const sheet = ioaSheet(12, [a, hp, b]);
     expect(sheet.code).toBe('#12');
     expect(sheet.rows).toEqual([
-      expect.objectContaining({ n: 1, trialId: 'a', deviceMark: 'ПР' }),
+      expect.objectContaining({ n: 1, trialId: 'a', deviceMark: 'child_break' }),
       expect.objectContaining({ n: 2, trialId: 'b', repeatOfRow: 1 }),
     ]);
     for (const r of sheet.rows) {

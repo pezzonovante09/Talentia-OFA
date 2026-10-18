@@ -19,6 +19,7 @@ import { addTokens, REINFORCER_CHOICES, reinforcerChoices, type TokenBoard } fro
 import { applyStageSession, initialTokenTraining, type BoardStage, type StageSession, type TokenTrainingState } from '../abaTokenTraining';
 import { seeded } from '../abaRandom';
 import { answerNext, BASE_MS, beginSession, POOL, startedSession, trained } from './abaSessionDriver';
+import { finishSession, NO_HISTORY } from './abaFixtures';
 
 const NONE: RoutineClaim = { token: null, tokens: 0, nonContingent: false };
 const WORK: RoutineClaim = { token: 'at_start_level', tokens: 1, nonContingent: false };
@@ -177,7 +178,7 @@ describe('finishRoutineRun: доски в итоге прогона нет', () 
       seed: 31,
     });
     const interrupted = { ...run, interrupted: 'external' as const, status: 'finished' as const };
-    const r = finishRoutineRun(interrupted, BASE_MS + 1000, 1);
+    const r = finishRoutineRun(interrupted, BASE_MS + 1000, 1, NO_HISTORY);
     expect(r).toMatchObject({ band: '5-6', seed: 31, reinforcerPool: POOL, claim: NONE });
     expect(r).not.toHaveProperty('board');
     expect(r).not.toHaveProperty('token');
@@ -258,18 +259,18 @@ describe('(а) ступень доски: сессия с нулём обмен�
     });
 
     it('без признака: брошенная сессия с нулём обменов вторым подряд опускает ступень 5 → 3', () => {
-      const r = finishAbaSession(abandoned(prior), BASE_MS + 5000);
+      const r = finishSession(abandoned(prior), BASE_MS + 5000);
       expect(r.tokenTraining.stage).toBe(3);
     });
 
-    it('extra не передан — поведение прежнее', () => {
-      const a = finishAbaSession(abandoned(prior), BASE_MS + 5000);
-      const b = finishAbaSession(abandoned(prior), BASE_MS + 5000, {}, undefined, undefined, {});
+    it('признак пуст (JS-вызов без него) — как «обмена не было»', () => {
+      const a = finishSession(abandoned(prior), BASE_MS + 5000);
+      const b = finishAbaSession(abandoned(prior), BASE_MS + 5000, {}, undefined, undefined, {} as never);
       expect(b.tokenTraining).toEqual(a.tokenTraining);
     });
 
     it('в итог попадает версия доски, с которой сессия сверялась', () => {
-      const r = finishAbaSession({ ...abandoned(prior), boardRev: 7 }, BASE_MS + 5000);
+      const r = finishSession({ ...abandoned(prior), boardRev: 7 }, BASE_MS + 5000);
       expect(r.boardRev).toBe(7);
     });
   });
@@ -420,13 +421,13 @@ describe('(в) resumeAbaSession: обмен рутины, пока сессия 
   it('защита: finishAbaSession при устаревшем подкрепителе не обменивает, доска целиком уходит на следующую', () => {
     const full = beginSession({ board: { earned: 5, nonContingent: 0 } });
     const stale = resumeAbaSession(full, { earned: 5, nonContingent: 0, rev: 1 }, { routineExchanged: true, options: OPTIONS });
-    const r = finishAbaSession(stopSession({ ...stale, endReason: 'completed' }, 'adult_stopped'), BASE_MS + 9000);
+    const r = finishSession(stopSession({ ...stale, endReason: 'completed' }, 'adult_stopped'), BASE_MS + 9000);
     expect([r.exchanged, r.board.earned]).toEqual([0, 5]);
   });
 
   it('конец сессии без устаревшего подкрепителя при полной доске обменивает', () => {
     const full = beginSession({ board: { earned: 5, nonContingent: 0 } });
-    const r = finishAbaSession({ ...stopSession(full, 'adult_stopped'), endReason: 'completed' }, BASE_MS + 9000);
+    const r = finishSession({ ...stopSession(full, 'adult_stopped'), endReason: 'completed' }, BASE_MS + 9000);
     expect([r.exchanged, r.board.earned]).toEqual([5, 0]);
   });
 

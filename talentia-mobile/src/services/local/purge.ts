@@ -252,7 +252,7 @@ export async function exportChild(
 async function choicesOf(db: SqlDb, childId: string): Promise<unknown[]> {
   return db.all(
     `SELECT chosen_at AS chosenAt, source, source_id AS sourceId, reinforcer_id AS reinforcerId, chosen_by AS chosenBy
-       FROM aba_reinforcer_choices WHERE child_id = ? ORDER BY chosen_at, seq`,
+       FROM aba_reinforcer_choices WHERE child_id = ? ORDER BY seq`,
     [childId],
   );
 }

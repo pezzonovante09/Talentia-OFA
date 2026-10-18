@@ -6,9 +6,21 @@
 import type { AbaRoutineRun, AbaSession, AbaTargetState, AbaTrial } from '../../../types/aba';
 import type { RoutineRunResult, RoutineRunState } from '../../../domain/abaRoutineRun';
 import type { AbaSessionResult, AbaSessionState } from '../../../domain/abaSession';
+import { isPromptDependent } from '../../../domain/abaPrompting';
 import { initialTokenTraining, type TokenTrainingState } from '../../../domain/abaTokenTraining';
 import type { ConsentEvent } from '../../../domain/consent';
-import { AbaConsentRequiredError, RoutineAlreadyRunError, RoutineStateConflictError, appendRoutineRun, routineRunsOf, trialsOfTarget } from '../abaLog';
+import {
+  AbaConsentRequiredError,
+  RoutineAlreadyRunError,
+  RoutineStateConflictError,
+  appendIoa,
+  appendRoutineRun,
+  appendSession,
+  appendTrial,
+  routineHistoryOf,
+  routineRunsOf,
+  trialsOfTarget,
+} from '../abaLog';
 import { ABA_STATE_KEYS, loadChildState, saveChildState } from '../childState';
 import { commitAbaSession, commitIoa, commitRoutineRun, recordAbaTrial, recordRoutineStep, resumeAbaSession, setAbaObservers } from '../commit';
 import { appendConsentEvent, insertConsentEvent } from '../consentLog';
@@ -573,6 +585,12 @@ describe('экспорт специалисту: сессии, пробы сес
     expect(JSON.stringify(s)).not.toMatch(ISO_DATETIME);
   });
 
+  it('сессия: конец раньше начала (часы ушли назад) — durationSec = 0, а не отрицательное число', async () => {
+    const db = await withSession({ ...SESSION, endedAt: at(-90_000) });
+    const [s] = (await exportForSpecialist(db, 'kid', NOW)).abaSessions as ExportedSession[];
+    expect(s.durationSec).toBe(0);
+  });
+
   it('пробы сессии: нет ISO, даты — смещения от начала своей сессии, латентности целы', async () => {
     const db = await withSession();
     const out = await exportForSpecialist(db, 'kid', NOW);
@@ -603,6 +621,23 @@ describe('экспорт специалисту: сессии, пробы сес
     expect(r).not.toHaveProperty('enteredAt');
     expect(r.enteredDay).toBe('2026-10-12');
     expect(JSON.stringify(out.abaIoa)).not.toMatch(ISO_DATETIME);
+  });
+
+  it('сквозное: во всей выгрузке специалисту нет времени суток вида ЧЧ:ММ (кроме момента самой выгрузки)', async () => {
+    const db = await withSession();
+    await commitIoa(db, 'kid', ioaRecord, {}, NOW);
+    await recordRoutineStep(db, 'kid', { ...stepTrial('tr-r'), sdEndedAt: '2026-10-11T08:03:40.000Z' }, inProgress, NOW);
+    await commitRoutineRun(db, 'kid', result(), NOW);
+    await asAbaWriter(db, 'kid', async (tx) => {
+      await saveChildState(tx, 'kid', 'abaTargets', { A: { ...aState, assentConcernReviewed: { role: 'specialist', at: '2026-10-09T18:20:00.000Z' } } }, NOW);
+      await saveChildState(tx, 'kid', 'physicalPromptAllowed', { value: true, setAt: '2026-10-10T06:05:00.000Z', setByRole: 'owner' }, NOW);
+    });
+    const { exportedAt, ...rest } = await exportForSpecialist(db, 'kid', NOW);
+    expect(exportedAt).toBe(NOW);
+    const json = JSON.stringify(rest);
+    expect(json).not.toMatch(/dd:dd/);
+    // проверка не пустая: пробы, сессия, IOA, прогон рутины и состояние — на месте
+    expect([rest.abaTrials.length, rest.abaSessions.length, rest.abaIoa.length, rest.abaRoutineRuns.length]).toEqual([2, 1, 1, 1]);
   });
 
   it('состояние: assentConcernReviewed.at и physicalPromptAllowed.setAt — только даты', async () => {
@@ -671,5 +706,125 @@ describe('срок хранения снимков «в работе»', () => {
     expect(await applyRetention(db, new Date(NOW))).toBe(1);
     expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toBeUndefined();
     expect(await loadChildState(db, 'kid', 'abaSessionInProgress')).toBeNull();
+  });
+});
+
+describe('история прогонов рутины для детектора зависимости (routineHistoryOf)', () => {
+  const st = (d: string) => ({ targetId: 'R', phase: 'acquisition', lastRoutineRunDay: d }) as AbaTargetState;
+  async function finishRun(
+    db: SqlDb,
+    id: string,
+    d: string,
+    before: AbaTargetState,
+    after: AbaTargetState,
+    over: Partial<AbaRoutineRun> = {},
+    at = NOW,
+    trials: AbaTrial[] = [{ ...stepTrial(`tr-${id}`), sessionId: id }],
+  ) {
+    for (const t of trials) await recordRoutineStep(db, 'kid', { ...t, sessionId: id }, { ...inProgress, runId: id } as RoutineRunState, at);
+    await commitRoutineRun(db, 'kid', result(id, { before, state: after, record: { ...recordBase(id), day: d, ...over } }), at);
+  }
+
+  it('номера — сквозные `runNo`; входят только прогоны обучения, не отменённые извне и не оборванные срывом, с пробами', async () => {
+    const db = await dbWithAbaConsent();
+    await finishRun(db, 'run-1', '2026-10-11', rBefore, st('2026-10-11'), { runNo: 1 });
+    await finishRun(db, 'run-2', '2026-10-12', st('2026-10-11'), st('2026-10-12'), { kind: 'maintenance', runNo: 2 });
+    await finishRun(db, 'run-3', '2026-10-13', st('2026-10-12'), st('2026-10-12'), { interrupted: 'external' });
+    await finishRun(db, 'run-4', '2026-10-14', st('2026-10-12'), st('2026-10-14'), { interrupted: 'breakdown', runNo: 3 });
+    await finishRun(db, 'run-5', '2026-10-15', st('2026-10-14'), st('2026-10-15'), { runNo: 4 });
+    const history = await routineHistoryOf(db, 'kid', 'R');
+    expect(history.runs.map((x) => [x.index, x.trials.map((t) => t.id)])).toEqual([
+      [1, ['tr-run-1']],
+      [4, ['tr-run-5']],
+    ]);
+  });
+
+  it('пробы, не идущие в освоение (оценка устройством без права на освоение), в историю не входят — как в finishRoutineRun', async () => {
+    const db = await dbWithAbaConsent();
+    const own = { ...stepTrial('tr-own'), sessionId: 'run-1' };
+    const child = { ...stepTrial('tr-child'), sessionId: 'run-1', scoredBy: 'device_onset' as const, latencySource: 'device_onset' as const };
+    await finishRun(db, 'run-1', '2026-10-11', rBefore, st('2026-10-11'), { runNo: 1 }, NOW, [own, child]);
+    const [only] = (await routineHistoryOf(db, 'kid', 'R')).runs;
+    expect(only.trials.map((t) => t.id)).toEqual(['tr-own']);
+  });
+
+  it('рутина без прогонов: пусто; чужая рутина и чужой ребёнок не мешают', async () => {
+    const db = await dbWithAbaConsent('kid', 'sib');
+    expect(await routineHistoryOf(db, 'kid', 'R')).toEqual({ runs: [] });
+    await finishRun(db, 'run-1', '2026-10-11', rBefore, st('2026-10-11'), { runNo: 1 });
+    expect((await routineHistoryOf(db, 'kid', 'R2')).runs).toEqual([]);
+    expect((await routineHistoryOf(db, 'sib', 'R')).runs).toEqual([]);
+  });
+
+  it('окно ограничено limit: свежие прогоны, номера сохранены', async () => {
+    const db = await dbWithAbaConsent();
+    await finishRun(db, 'run-1', '2026-10-11', rBefore, st('2026-10-11'), { runNo: 1 });
+    await finishRun(db, 'run-2', '2026-10-12', st('2026-10-11'), st('2026-10-12'), { runNo: 2 });
+    await finishRun(db, 'run-3', '2026-10-13', st('2026-10-12'), st('2026-10-13'), { runNo: 3 });
+    const history = await routineHistoryOf(db, 'kid', 'R', 2);
+    expect(history.runs.map((x) => x.index)).toEqual([2, 3]);
+  });
+
+  it('после срока хранения номера не сдвигаются: детектор с флагом на прогоне 2 по-прежнему видит новые прогоны', async () => {
+    const db = await dbWithAbaConsent();
+    const OLD = '2025-01-01T00:00:00Z';
+    await finishRun(db, 'run-1', '2025-01-01', rBefore, st('2025-01-01'), { runNo: 1 }, OLD);
+    await finishRun(db, 'run-2', '2025-01-02', st('2025-01-01'), st('2025-01-02'), { runNo: 2 }, OLD);
+    // зависимость: «молчал до подсказки» — две пробы в прогоне, три прогона по пять с лишним
+    const dependent = (id: string, n: number): AbaTrial[] =>
+      [1, 2].map((k) => ({
+        ...stepTrial(`tr-${id}-${k}`),
+        sessionId: id,
+        stepId: `R-s${k}`,
+        response: 'prompted' as const,
+        promptLevelUsed: 1,
+        emittedBeforePrompt: false,
+        latencyFromFirstSdMs: 3500,
+        id: `tr-${id}-${k}-${n}`,
+      }));
+    await finishRun(db, 'run-3', '2026-10-11', st('2025-01-02'), st('2026-10-11'), { runNo: 3 }, NOW, dependent('run-3', 3));
+    await finishRun(db, 'run-4', '2026-10-12', st('2026-10-11'), st('2026-10-12'), { runNo: 4 }, NOW, dependent('run-4', 4));
+    await finishRun(db, 'run-5', '2026-10-13', st('2026-10-12'), st('2026-10-13'), { runNo: 5 }, NOW, dependent('run-5', 5));
+    expect((await routineHistoryOf(db, 'kid', 'R')).runs.map((x) => x.index)).toEqual([1, 2, 3, 4, 5]);
+
+    expect(await applyRetention(db, new Date(NOW))).toBeGreaterThan(0);
+
+    const { runs } = await routineHistoryOf(db, 'kid', 'R');
+    // позиции сдвинулись бы на 1..3, а флаг стоит на 2 — старый индекс отсёк бы два из трёх прогонов
+    expect(runs.map((x) => x.index)).toEqual([3, 4, 5]);
+    const flaggedAt2 = { ...(rState as AbaTargetState), dependenceFlaggedAtSession: 2 } as AbaTargetState;
+    expect(isPromptDependent(flaggedAt2, [...runs])).toBe(true);
+    // и флаг на прогоне 3 их, наоборот, честно отсекает: окно начинается заново
+    expect(isPromptDependent({ ...flaggedAt2, dependenceFlaggedAtSession: 3 }, [...runs])).toBe(false);
+  });
+});
+
+describe('время записи журнала — всегда UTC ISO с миллисекундами (В-4)', () => {
+  const session = { id: 's-1', index: 1 } as AbaSession;
+  const ioa = { id: 'i-1', sessionId: 's-1' } as never;
+  const stamp = async (db: SqlDb, table: string) => (await db.all<{ recorded_at: string }>(`SELECT recorded_at FROM ${table}`))[0].recorded_at;
+
+  it('пояс и доли секунды приводятся к UTC с миллисекундами в пробе, сессии, IOA и прогоне рутины', async () => {
+    const db = await dbWithAbaConsent();
+    await asAbaWriter(db, 'kid', async (tx) => {
+      await appendTrial(tx, 'kid', stepTrial('tr-1'), '2026-10-11T13:00:00+03:00');
+      await appendSession(tx, 'kid', session, '2026-10-11T10:00:00Z');
+      await appendIoa(tx, 'kid', ioa, '2026-10-11T10:00:00.5Z');
+      await appendRoutineRun(tx, 'kid', routineRun('run-1'), '2026-10-11T16:00:00+06:00');
+    });
+    expect(await stamp(db, 'aba_trials')).toBe('2026-10-11T10:00:00.000Z');
+    expect(await stamp(db, 'aba_sessions')).toBe('2026-10-11T10:00:00.000Z');
+    expect(await stamp(db, 'aba_ioa')).toBe('2026-10-11T10:00:00.500Z');
+    expect(await stamp(db, 'aba_routine_runs')).toBe('2026-10-11T10:00:00.000Z');
+  });
+
+  it('не дата — понятная ошибка, ничего не записано', async () => {
+    const db = await dbWithAbaConsent();
+    for (const bad of ['', 'вчера', '2026-13-45']) {
+      await expect(asAbaWriter(db, 'kid', (tx) => appendRoutineRun(tx, 'kid', routineRun('run-x'), bad))).rejects.toThrow(/не дата/);
+      await expect(asAbaWriter(db, 'kid', (tx) => appendTrial(tx, 'kid', stepTrial('tr-x'), bad))).rejects.toThrow(/не дата/);
+    }
+    expect(await db.all('SELECT 1 FROM aba_routine_runs')).toEqual([]);
+    expect(await db.all('SELECT 1 FROM aba_trials')).toEqual([]);
   });
 });

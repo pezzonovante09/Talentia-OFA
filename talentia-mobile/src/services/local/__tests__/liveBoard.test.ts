@@ -21,6 +21,7 @@ import { seeded } from '../../../domain/abaRandom';
 import { initialTokenTraining, type BoardStage, type StageSession, type TokenTrainingState } from '../../../domain/abaTokenTraining';
 import type { ConsentEvent } from '../../../domain/consent';
 import { correctInput, answerNext, BASE_MS, beginSession, POOL } from '../../../domain/__tests__/abaSessionDriver';
+import { finishSession } from '../../../domain/__tests__/abaFixtures';
 import {
   AbaBoardConflictError,
   AbaConsentRequiredError,
@@ -350,7 +351,7 @@ describe('Т6: конфликт версии — ничего не записа�
   it('commitAbaSession: конфликт, нет сессии, номер, ступень и сессия в работе прежние', async () => {
     const { db, st } = await conflicted();
     const stopped = { ...stopSession(st, 'adult_stopped'), endReason: 'completed' as const };
-    const result = finishAbaSession(stopped, BASE_MS + 9000);
+    const result = finishSession(stopped, BASE_MS + 9000);
     const indexBefore = await loadChildState(db, 'kid', 'abaSessionIndex');
     const inProgress = await loadChildState(db, 'kid', 'abaSessionInProgress');
     await expect(commitAbaSession(db, 'kid', result, NOW)).rejects.toBeInstanceOf(AbaBoardConflictError);
@@ -466,7 +467,7 @@ describe('В4: срыв прогона на полной доске', () => {
   });
 });
 
-describe('Т9: история выборов — по времени выбора, затем по порядку записи', () => {
+describe('Т9: история выборов — по порядку записи (seq), а не по часам', () => {
   const choice = (id: string, by: 'child' | 'adult' = 'child', source: 'session' | 'routine' = 'session') => ({
     source,
     sourceId: `${source}-${id}`,
@@ -474,14 +475,14 @@ describe('Т9: история выборов — по времени выбор�
     chosenBy: by,
   });
 
-  it('позднее записанный, но более ранний выбор встаёт раньше; при равном времени — по порядку записи', async () => {
+  it('часы ушли назад: позднее записанный выбор с более ранним временем остаётся последним (В-5)', async () => {
     const db = await setup();
     await asAbaWriter(db, 'kid', async (tx) => {
       await appendReinforcerChoice(tx, 'kid', choice('b'), '2026-10-12T09:00:00Z');
       await appendReinforcerChoice(tx, 'kid', choice('a'), '2026-10-12T08:00:00Z');
       await appendReinforcerChoice(tx, 'kid', choice('c', 'adult', 'routine'), '2026-10-12T08:00:00Z');
     });
-    expect(await reinforcerHistoryOf(db, 'kid')).toEqual(['a', 'c', 'b']);
+    expect(await reinforcerHistoryOf(db, 'kid')).toEqual(['b', 'a', 'c']);
   });
 
   it('выбор взрослого входит в историю', async () => {
@@ -513,16 +514,15 @@ describe('Т9: история выборов — по времени выбор�
     expect(rows.map((r) => r.chosen_at)).toEqual(['2026-10-12T10:00:00.000Z', '2026-10-12T10:00:00.000Z', '2026-10-12T10:00:00.250Z']);
   });
 
-  it('порядок истории корректен при смешанных форматах: без миллисекунд не встаёт позже выбора с миллисекундами', async () => {
+  it('порядок истории не зависит от формата и пояса времени выбора: только порядок записи', async () => {
     const db = await setup();
     await asAbaWriter(db, 'kid', async (tx) => {
-      // по голой строке '…:00Z' > '…:00.500Z' (символ Z после точки) — порядок был бы обратным
       await appendReinforcerChoice(tx, 'kid', choice('late'), '2026-10-12T09:00:00.500Z');
       await appendReinforcerChoice(tx, 'kid', choice('early'), '2026-10-12T09:00:00Z');
-      // 11:30 по +03:00 — это 08:30 UTC, раньше обоих
+      // 11:30 по +03:00 — 08:30 UTC, раньше обоих, но записан последним
       await appendReinforcerChoice(tx, 'kid', choice('zone'), '2026-10-12T11:30:00+03:00');
     });
-    expect(await reinforcerHistoryOf(db, 'kid')).toEqual(['zone', 'early', 'late']);
+    expect(await reinforcerHistoryOf(db, 'kid')).toEqual(['late', 'early', 'zone']);
   });
 
   it('невалидная дата выбора — ошибка, в историю ничего не попало', async () => {
@@ -818,8 +818,9 @@ describe('commitAbaSession: обмен рутины в окне сессии б�
     if (withRoutineExchange) await routineWithExchange(db, 'run-1', WORK, BASE_MS + 5000);
     const resumed = (await resumeAbaSession(db, 'kid', POOL))!;
     const ended = stopSession({ ...resumed, sessionIndex: st.sessionIndex }, 'abandoned');
-    const finish = (extra?: { routineExchangeInWindow?: boolean }) =>
-      finishAbaSession(ended, BASE_MS + 9000, {}, undefined, undefined, extra);
+    // признак не передан (устаревший итог или JS-вызов) — : поле остаётся пустым
+    const finish = (extra: { routineExchangeInWindow?: boolean } = {}) =>
+      finishAbaSession(ended, BASE_MS + 9000, {}, undefined, undefined, extra as { routineExchangeInWindow: boolean });
     return { db, finish, training };
   }
   const at = iso(BASE_MS + 9000);
@@ -867,7 +868,7 @@ describe('commitAbaSession: обмен рутины в окне сессии б�
     await commitRoutineRun(db, 'kid', routineResult('run-1', WORK, { endedMs: BASE_MS + 5000 }), iso(BASE_MS + 5000));
     const resumed = (await resumeAbaSession(db, 'kid', POOL))!;
     const ended = stopSession({ ...resumed, sessionIndex: st.sessionIndex }, 'abandoned');
-    await commitAbaSession(db, 'kid', finishAbaSession(ended, BASE_MS + 9000), at);
+    await commitAbaSession(db, 'kid', finishSession(ended, BASE_MS + 9000), at);
     expect(await sessionsOf(db, 'kid')).toHaveLength(1);
   });
 
@@ -876,7 +877,7 @@ describe('commitAbaSession: обмен рутины в окне сессии б�
     await routineWithExchange(db, 'run-1', WORK, BASE_MS - 4000, { endedMs: BASE_MS - 5000 });
     const st = await startSession(db);
     const ended = stopSession({ ...((await resumeAbaSession(db, 'kid', POOL))!), sessionIndex: st.sessionIndex }, 'abandoned');
-    await commitAbaSession(db, 'kid', finishAbaSession(ended, BASE_MS + 9000), at);
+    await commitAbaSession(db, 'kid', finishSession(ended, BASE_MS + 9000), at);
     expect(await sessionsOf(db, 'kid')).toHaveLength(1);
   });
 });

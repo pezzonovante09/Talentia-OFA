@@ -34,7 +34,14 @@ import {
   isRoutineMaintenanceDue,
   routineRunRecord,
 } from './abaCriterion';
-import { applyTrialToFading, initialTargetState, trialInvariantErrors } from './abaPrompting';
+import {
+  applyPromptDependence,
+  applyTrialToFading,
+  initialTargetState,
+  isPromptDependent,
+  trialInvariantErrors,
+  type SessionTrials,
+} from './abaPrompting';
 import { seeded } from './abaRandom';
 import { MASTERED_PHASES, probesOf, rollbackSteps, TEACHING_PHASES, verificationVerdict, withAssentConcern } from './abaSession';
 import { targetErrors } from './abaTargetRules';
@@ -375,12 +382,32 @@ export function settleRoutineBoard(
 }
 
 /**
+ * Прошлые прогоны обучения рутины для детектора зависимости, свежие в конце. `index` — сквозной
+ * номер прогона (`AbaRoutineRun.runNo`, как номер сессии у обычной цели): флаг зависимости
+ * запоминает номер прогона, и следующее окно смотрит только на прогоны после флага. Номер этого
+ * прогона берёт сама `finishRoutineRun` из счётчика в состоянии цели (`routineRunSeq`), а не из
+ * журнала: срок хранения сдвигает позиции в журнале.
+ */
+export type RoutineHistory = { runs: readonly SessionTrials[] };
+
+/**
  * Итог прогона по виду: обучение — запись в окно (`applyRoutineRun`); базовая линия — день
  * базовой линии; поддержание — проба поддержания прогоном (провал — `maintenanceFailsInRow`, два
  * подряд — повторное обучение со звеньями от их последнего успеха); проверка — `verificationVerdict`,
  * успешная — «освоено по критерию» и день поддержания (П1).
+ *
+ * `history` — прошлые прогоны обучения этой рутины для детектора зависимости от подсказки (раунд 3,
+ * методист В2): `routineHistoryOf` в `abaLog.ts`. Обязателен, как `extra` у `finishAbaSession`: забытый список молча отключил бы детектор.
+ * Окно — три прогона вместо трёх сессий; звено за прогон — одна проба, но звеньев несколько, и порог
+ * подсказанных проб (5) набирается. Прогрессивной задержки у рутин нет намеренно (`delayMode: constant`,
+ * гард `targetErrors`): реакция на зависимость — флаг `prompt_dependent` и старт звеньев с L0.
  */
-export function finishRoutineRun(run: RoutineRunState, endedAt: number, sessionIndex: number): RoutineRunResult {
+export function finishRoutineRun(
+  run: RoutineRunState,
+  endedAt: number,
+  sessionIndex: number,
+  history: RoutineHistory,
+): RoutineRunResult {
   if (run.status === 'adult_finish') throw new Error('Взрослый ещё доводит прогон');
   if (run.status === 'running' && run.done < run.stepIds.length) throw new Error('Прогон ещё идёт');
   const { target, before, day } = run;
@@ -389,11 +416,13 @@ export function finishRoutineRun(run: RoutineRunState, endedAt: number, sessionI
   const verified = primaryTrained(run.observers, run.primaryObserverId);
 
   let s: AbaTargetState;
+  let runNo: number | undefined;
   if (run.interrupted === 'external') {
     // в окно и критерий не идёт, день не занят: состояние — как до прогона
     s = before;
   } else {
-    s = { ...run.state, lastRoutineRunDay: day };
+    runNo = (before.routineRunSeq ?? 0) + 1;
+    s = { ...run.state, lastRoutineRunDay: day, routineRunSeq: runNo };
     switch (run.kind) {
       case 'teaching':
         if (breakdown) {
@@ -408,6 +437,12 @@ export function finishRoutineRun(run: RoutineRunState, endedAt: number, sessionI
           verified ? 'criterion' : 'home_unverified',
           'with_adult',
         );
+        // зависимость от подсказки — как в сессии, но только пока рутина учится и «почти» не наступило
+        if (TEACHING_PHASES.has(s.phase) && !s.flags.includes('needs_transfer')) {
+          const own = run.trials.filter((t) => COUNTS_TOWARD_MASTERY[t.scoredBy]);
+          const window = [...history.runs, { index: runNo, trials: own }];
+          if (isPromptDependent(s, window)) s = applyPromptDependence(s, target, runNo, window);
+        }
         break;
       case 'baseline':
         // срыв на базовой линии ни в каком случае не засчитывается; день занят
@@ -451,6 +486,7 @@ export function finishRoutineRun(run: RoutineRunState, endedAt: number, sessionI
     startedAt: iso(run.startedAt),
     endedAt: iso(endedAt),
     interrupted: run.interrupted,
+    ...(runNo !== undefined ? { runNo } : {}),
     setting: run.setting,
     phase: s.phase !== before.phase ? { from: before.phase, to: s.phase } : null,
     primaryObserverId: run.primaryObserverId,

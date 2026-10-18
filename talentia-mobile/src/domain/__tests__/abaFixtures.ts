@@ -1,4 +1,6 @@
 import type { AbaFormat, AbaTarget, AbaTrial } from '../../types/aba';
+import type { RoutineHistory } from '../abaRoutineRun';
+import { finishAbaSession } from '../abaSession';
 
 /**
  * Место цели в сетке по формату — для фикстур, которые меняют только формат. Подражание и
@@ -64,3 +66,22 @@ export function trial(over: Partial<AbaTrial> = {}): AbaTrial {
     ...over,
   };
 }
+
+/**
+ * `finishAbaSession` для тестов, где обмен рутины в окне сессии не важен: признак обязателен
+ * (`extra`, аудит раунда 3, В-2), здесь по умолчанию «обмена не было». Тесты, которым важен сам
+ * признак, зовут `finishAbaSession` напрямую.
+ */
+export function finishSession(
+  state: Parameters<typeof finishAbaSession>[0],
+  endedAt: number,
+  pastSessions: Parameters<typeof finishAbaSession>[2] = {},
+  ioa?: Parameters<typeof finishAbaSession>[3],
+  signalHistory?: Parameters<typeof finishAbaSession>[4],
+  extra: Parameters<typeof finishAbaSession>[5] = { routineExchangeInWindow: false },
+): ReturnType<typeof finishAbaSession> {
+  return finishAbaSession(state, endedAt, pastSessions, ioa, signalHistory, extra);
+}
+
+/** Прогонов рутины до этого не было: вход `finishRoutineRun` для тестов, где история не важна. */
+export const NO_HISTORY: RoutineHistory = { runs: [] };

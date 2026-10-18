@@ -488,28 +488,41 @@ export type SessionTrials = { index: number; trials: AbaTrial[] };
  * После флага окно начинается заново: на тех же сессиях второй раз не срабатывает.
  */
 export function isPromptDependent(s: AbaTargetState, sessions: SessionTrials[]): boolean {
+  const trials = dependenceTrials(s, sessions);
+  if (!trials) return false;
+  if (trials.filter((t) => t.response === 'prompted').length < PROMPT_DEPENDENCE.minSilentEvidence) return false;
+  return dependenceRates(trials);
+}
+
+/**
+ * Пробы окна детектора: последние `overSessions` сессий после флага, только обучающие со старта L0
+ * (на подсказанном старте самостоятельный ответ невозможен по построению, и доли выполнялись бы
+ * сами собой). `null` — окно ещё не набралось.
+ */
+function dependenceTrials(s: AbaTargetState, sessions: SessionTrials[]): AbaTrial[] | null {
   const fresh = sessions.filter(
     (x) => s.dependenceFlaggedAtSession === null || x.index > s.dependenceFlaggedAtSession,
   );
   const window = fresh.slice(-PROMPT_DEPENDENCE.overSessions);
-  if (window.length < PROMPT_DEPENDENCE.overSessions) return false;
+  if (window.length < PROMPT_DEPENDENCE.overSessions) return null;
+  return (
+    window
+      .flatMap((x) => x.trials)
+      // перенос не в счёт: выборка условная (только после ошибки) — решение методиста 2026-10-01;
+      // подсказка взрослого вне процедуры — не данные о ребёнке
+      .filter(
+        (t) => t.kind === 'teaching' && t.startPromptLevel === 0 && t.response !== 'interrupted' && !t.adultUnplannedPrompt,
+      )
+  );
+}
 
-  // Только старт с L0: на подсказанном старте самостоятельный ответ невозможен по
-  // построению, и доли выполнялись бы сами собой
-  const trials = window
-    .flatMap((x) => x.trials)
-    // перенос не в счёт: выборка условная (только после ошибки) — решение методиста 2026-10-01;
-    // подсказка взрослого вне процедуры — не данные о ребёнке
-    .filter(
-      (t) => t.kind === 'teaching' && t.startPromptLevel === 0 && t.response !== 'interrupted' && !t.adultUnplannedPrompt,
-    );
+/** Три условия детектора по пробам со старта L0 (без порога числа проб). */
+function dependenceRates(trials: AbaTrial[]): boolean {
   const promptedTrials = trials.filter((t) => t.response === 'prompted');
-  if (promptedTrials.length < PROMPT_DEPENDENCE.minSilentEvidence) return false;
-
+  if (trials.length === 0 || promptedTrials.length === 0) return false;
   const independent = trials.filter((t) => t.response === 'independent').length / trials.length;
   const prompted = promptedTrials.length / trials.length;
   const silent = promptedTrials.filter((t) => !t.emittedBeforePrompt).length / promptedTrials.length;
-
   return (
     prompted >= PROMPT_DEPENDENCE.minPromptedRate &&
     independent <= PROMPT_DEPENDENCE.maxIndependentRate &&
@@ -519,16 +532,22 @@ export function isPromptDependent(s: AbaTargetState, sessions: SessionTrials[]):
 
 /**
  * Реакция на зависимость: задержка на шаг длиннее (не выше потолка; постоянная не
- * меняется) и старт с L0 на следующую сессию — у цели и у каждого звена. Флаг видит
- * специалист, не ребёнок.
+ * меняется) и старт с L0 на следующую сессию — у цели и только у тех звеньев, где зависимость
+ * видна: у звена есть пробы со старта L0, и по ним выполнены те же три условия, что у детектора.
+ * Звенья на L2/L3, ещё не освоенные, остаются как были: сброс в L0 откатил бы обучение, а не
+ * зависимость. `sessions` — те же, что получил `isPromptDependent` (флаг у `s` ещё прежний).
+ * Флаг видит специалист, не ребёнок.
  */
 export function applyPromptDependence(
   s: AbaTargetState,
   target: AbaTarget,
   sessionIndex: number,
+  sessions: SessionTrials[],
 ): AbaTargetState {
   const longer = (ms: number) =>
     target.delayMode === 'progressive' ? Math.min(MAX_DELAY_MS[target.band], ms + DELAY_STEP_MS) : ms;
+  const window = dependenceTrials(s, sessions) ?? [];
+  const dependentStep = (id: string) => dependenceRates(window.filter((t) => t.stepId === id));
   return {
     ...s,
     flags: s.flags.includes('prompt_dependent') ? s.flags : [...s.flags, 'prompt_dependent'],
@@ -542,14 +561,16 @@ export function applyPromptDependence(
           stepPrompts: Object.fromEntries(
             Object.entries(s.stepPrompts).map(([id, ps]) => [
               id,
-              {
-                ...ps,
-                currentDelayMs: longer(ps.currentDelayMs),
-                startPromptLevel: 0 as PromptLevel,
-                consecutiveIndependentAtStart: 0,
-                consecutiveAboveStart: 0,
-                consecutiveFailures: 0,
-              },
+              dependentStep(id)
+                ? {
+                    ...ps,
+                    currentDelayMs: longer(ps.currentDelayMs),
+                    startPromptLevel: 0 as PromptLevel,
+                    consecutiveIndependentAtStart: 0,
+                    consecutiveAboveStart: 0,
+                    consecutiveFailures: 0,
+                  }
+                : ps,
             ]),
           ),
         }

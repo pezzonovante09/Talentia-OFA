@@ -2135,18 +2135,21 @@ export function reviewAssentConcern(
 export function finishAbaSession(
   state: AbaSessionState,
   endedAt: number,
-  pastSessions: Readonly<Record<string, SessionTrials[]>> = {},
-  ioa?: AbaIoaRecord,
+  pastSessions: Readonly<Record<string, SessionTrials[]>> | undefined,
+  ioa: AbaIoaRecord | undefined,
   /** История сессий ребёнка (свежие в конце) и сигналы после прошлой — для сигналов сессии. */
-  signalHistory?: { sessions: readonly SignalSession[]; previous: readonly SessionSignal[] },
+  signalHistory: { sessions: readonly SignalSession[]; previous: readonly SessionSignal[] } | undefined,
   /**
    * В окне сессии (старт → фиксация) был обмен рутины — `routineExchangedSince` (`abaLog.ts`). Сессия
-   * с нулём обменов при этом ступень доски не решает (`applyStageSession`).
+   * с нулём обменов при этом ступень доски не решает (`applyStageSession`). **Обязателен** (аудит
+   * раунда 3, В-2): забытый признак молча опустил бы ступень доски; экран берёт его из
+   * `routineExchangeInSessionWindow`.
    */
-  extra: { routineExchangeInWindow?: boolean } = {},
+  extra: { routineExchangeInWindow: boolean },
 ): AbaSessionResult {
   if (state.endReason === null) throw new Error('Сессия ещё идёт');
-  if (ioa && ioa.sessionId !== state.sessionId) throw new Error('IOA другой сессии');
+  const past = pastSessions ?? {};
+  if (ioa &&ioa.sessionId !== state.sessionId) throw new Error('IOA другой сессии');
   const observer = (id: string | null | undefined) => state.observers.find((o) => o.id === id) ?? null;
   const primary = observer(state.primaryObserverId);
   const secondary = ioa ? observer(ioa.secondaryObserverId) : null;
@@ -2249,12 +2252,12 @@ export function finishAbaSession(
           s = markMastered(s, idx, verdict, state.config);
           reason = 'criterion';
         }
-      } else if (isPromptDependent(s, [...(pastSessions[id] ?? []), { index: idx, trials: own }])) {
-        s = applyPromptDependence(s, target, idx);
+      } else if (isPromptDependent(s, [...(past[id] ?? []), { index: idx, trials: own }])) {
+        s = applyPromptDependence(s, target, idx, [...(past[id] ?? []), { index: idx, trials: own }]);
       }
     }
     s = withAssentConcern(s, isConcerning(state.trials.filter((t) => t.targetId === id)));
-    if (!unreliable) s = applyChoiceBias(s, biasWindow(state, id, pastSessions), target.format);
+    if (!unreliable) s = applyChoiceBias(s, biasWindow(state, id, past), target.format);
     // сортировка: в следующей сессии с целью карточки категорий меняются местами
     if (target.matchMode === 'sort' && own.some((t) => t.field)) s = { ...s, sortFlipped: !s.sortFlipped };
     if (reason && (s.phase !== from || reason === 'verification_passed')) {
@@ -2307,7 +2310,7 @@ export function finishAbaSession(
     states: Object.fromEntries(
       Object.entries(states).filter(([id]) => changedIds.has(id) && !isRoutine(state.targets[id] ?? { area: 'matching' })),
     ),
-    ...(extra.routineExchangeInWindow === undefined ? {} : { routineExchangeInWindow: extra.routineExchangeInWindow }),
+    routineExchangeInWindow: extra.routineExchangeInWindow,
     trials: state.trials,
     board,
     boardRev: state.boardRev,

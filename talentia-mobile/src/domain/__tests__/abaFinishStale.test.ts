@@ -4,7 +4,8 @@
  * Проверяем всё, что обмен менял бы: `exchanged`, `exchangesMade` сессии, доску, событие `exchange`
  * и ступень доски (через `exchanges` в `applyStageSession`). Контроль — те же сессии без stale.
  */
-import { finishAbaSession, resumeAbaSession, type AbaSessionState } from '../abaSession';
+import { resumeAbaSession, type AbaSessionState } from '../abaSession';
+import { finishSession } from './abaFixtures';
 import type { AbaSessionEndReason } from '../../types/aba';
 import { beginSession } from './abaSessionDriver';
 
@@ -24,36 +25,36 @@ const ended = (st: AbaSessionState, endReason: AbaSessionEndReason): AbaSessionS
 
 describe.each(EXCHANGE_REASONS)('finishAbaSession при устаревшем подкрепителе, причина %s', (reason) => {
   it('не делает обмена: exchanged = 0', () => {
-    const r = finishAbaSession(ended(staleFull(), reason), END_BASE);
+    const r = finishSession(ended(staleFull(), reason), END_BASE);
     expect(r.exchanged).toBe(0);
   });
 
   it('не засчитывает обмен сессии: exchangesMade прежний', () => {
     const before = staleFull();
-    const r = finishAbaSession(ended(before, reason), END_BASE);
+    const r = finishSession(ended(before, reason), END_BASE);
     expect(r.session.exchangesMade).toBe(before.exchangesMade);
   });
 
   it('оставляет доску как есть: жетоны не сгорают и уходят на следующую сессию', () => {
-    const r = finishAbaSession(ended(staleFull(), reason), END_BASE);
+    const r = finishSession(ended(staleFull(), reason), END_BASE);
     expect([r.board.earned, r.board.nonContingent]).toEqual([5, 0]);
   });
 
   it('не пишет в события сессии обмен', () => {
-    const r = finishAbaSession(ended(staleFull(), reason), END_BASE);
+    const r = finishSession(ended(staleFull(), reason), END_BASE);
     expect(r.session.events.filter((e) => e.kind === 'exchange')).toEqual([]);
   });
 
   it('контроль: та же полная доска без устаревшего выбора обменивается', () => {
     const fresh = beginSession({ board: { earned: 5, nonContingent: 0 } });
-    const r = finishAbaSession(ended(fresh, reason), END_BASE);
+    const r = finishSession(ended(fresh, reason), END_BASE);
     expect([r.exchanged, r.session.exchangesMade, r.board.earned]).toEqual([5, 1, 0]);
   });
 });
 
 describe('finishAbaSession: причины без обмена в конце', () => {
   it.each(['adult_stopped', 'abandoned', 'unreliable_measurement'] as const)('%s: полная доска не обменивается и без stale', (reason) => {
-    const r = finishAbaSession(ended(beginSession({ board: { earned: 5, nonContingent: 0 } }), reason), END_BASE);
+    const r = finishSession(ended(beginSession({ board: { earned: 5, nonContingent: 0 } }), reason), END_BASE);
     expect([r.exchanged, r.board.earned]).toEqual([0, 5]);
   });
 });

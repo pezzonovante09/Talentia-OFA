@@ -27,6 +27,7 @@ import { withAssentConcern } from '../abaSession';
 import { targetErrors } from '../abaTargetRules';
 import { initialTokenTraining } from '../abaTokenTraining';
 import type { AbaTrialInput, TrialStep } from '../abaTrialStep';
+import { NO_HISTORY } from './abaFixtures';
 
 const POOL = ['puzzle', 'bubbles', 'drum', 'stickers', 'train', 'balloon'];
 const SPEC = { id: 'obs-spec', role: 'specialist' as const, trained: true };
@@ -140,14 +141,14 @@ function broken(state: AbaTargetState | undefined, d: string, steps = 1, setting
   for (let i = 0; i < steps; i += 1) run = stepOk(run);
   run = interruptRoutineRun(run, 'breakdown');
   if (setting) run = setRoutineSetting(run, setting);
-  return finishRoutineRun(finishRoutineByAdult(run), Date.parse(`${d}T08:05:00Z`), 7);
+  return finishRoutineRun(finishRoutineByAdult(run), Date.parse(`${d}T08:05:00Z`), 7, NO_HISTORY);
 }
 
 /** Спокойный прогон: все звенья верно. */
 function calm(state: AbaTargetState | undefined, d: string) {
   let run = start(state, d);
   while (nextRoutineStep(run).kind === 'trial') run = stepOk(run);
-  return finishRoutineRun(run, Date.parse(`${d}T08:05:00Z`), 7);
+  return finishRoutineRun(run, Date.parse(`${d}T08:05:00Z`), 7, NO_HISTORY);
 }
 
 describe('срыв в обучении: не промах навыка', () => {
@@ -258,7 +259,7 @@ describe('внешний обрыв: состояние как до прогон
   it('state равен before, срыв не записан, счётчик срывов не тронут, день не занят', () => {
     const before = acq({ assentSessionsInRow: 1 });
     const run = interruptRoutineRun(stepOk(start(before, day(3))), 'external');
-    const r = finishRoutineRun(run, Date.parse(`${day(3)}T08:05:00Z`), 7);
+    const r = finishRoutineRun(run, Date.parse(`${day(3)}T08:05:00Z`), 7, NO_HISTORY);
     expect(r.state).toEqual(before);
     expect(r.state.routineBreakdowns).toBeUndefined();
     expect(r.state.lastRoutineRunDay).toBeUndefined();

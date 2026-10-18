@@ -335,7 +335,7 @@ describe('зависимость от подсказки', () => {
 
   it('на тех же сессиях второй раз не срабатывает — окно начинается заново', () => {
     const history = sessions(silent, 1, 4);
-    const flagged = applyPromptDependence(at(2), target, 4);
+    const flagged = applyPromptDependence(at(2), target, 4, history);
     expect(isPromptDependent(flagged, history)).toBe(false);
     expect(isPromptDependent(flagged, [...history, ...sessions(silent, 5, 3)])).toBe(true);
   });
@@ -343,7 +343,7 @@ describe('зависимость от подсказки', () => {
   const progressive: AbaTarget = { ...target, delayMode: 'progressive' };
 
   it('реакция: задержка на шаг, старт с L0, флаг не дублируется', () => {
-    const s = applyPromptDependence(applyPromptDependence(at(2), progressive, 3), progressive, 6);
+    const s = applyPromptDependence(applyPromptDependence(at(2), progressive, 3, []), progressive, 6, []);
     expect({ delay: s.currentDelayMs, уровень: s.startPromptLevel, флаги: s.flags }).toEqual({
       delay: 4000,
       уровень: 0,
@@ -353,12 +353,12 @@ describe('зависимость от подсказки', () => {
 
   it('задержка от флагов упирается в потолок', () => {
     let s = at(2);
-    for (let i = 0; i < 5; i += 1) s = applyPromptDependence(s, progressive, i);
+    for (let i = 0; i < 5; i += 1) s = applyPromptDependence(s, progressive, i, []);
     expect(s.currentDelayMs).toBe(4000);
   });
 
   it('постоянную задержку реакция на зависимость не меняет', () => {
-    expect(applyPromptDependence(at(2), target, 3).currentDelayMs).toBe(3000);
+    expect(applyPromptDependence(at(2), target, 3, []).currentDelayMs).toBe(3000);
   });
 });
 
@@ -564,7 +564,11 @@ describe('задержка: постоянная, звенья цепочки, �
   it('реакция на зависимость удлиняет задержку и звеньям', () => {
     let s = acqAt(chain, 1, 1000);
     s = applyTrialToFading(s, atL1({ stepId: 's1' }), chain);
-    const flagged = applyPromptDependence(s, chain, 3);
+    const sessions: SessionTrials[] = [1, 2, 3].map((index) => ({
+      index,
+      trials: [waited({ stepId: 's1' }), waited({ stepId: 's1' })],
+    }));
+    const flagged = applyPromptDependence(s, chain, 3, sessions);
     expect([flagged.currentDelayMs, promptStateOf(flagged, 's1').currentDelayMs]).toEqual([2000, 2000]);
   });
 

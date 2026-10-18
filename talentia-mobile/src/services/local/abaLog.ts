@@ -16,10 +16,11 @@
  * Обе ошибки — штатный ход, а не сбой: в отчёты об ошибках их не отправлять, само сообщение
  * связывает устройство с ABA-режимом (ABA.md, «Согласие `aba_processing`»).
  */
-import type { AbaIoaRecord, AbaRoutineRun, AbaSession, AbaTrial } from '../../types/aba';
+import { COUNTS_TOWARD_MASTERY, type AbaIoaRecord, type AbaRoutineRun, type AbaSession, type AbaTrial } from '../../types/aba';
 import { trialInvariantErrors, type SessionTrials } from '../../domain/abaPrompting';
 import { isGranted } from '../../domain/consent';
 import { openRoutineOffer, type RoutineOffer } from '../../domain/abaTokens';
+import type { RoutineHistory } from '../../domain/abaRoutineRun';
 import { CURRENT_CONSENT_TEXTS } from '../../domain/consentTexts';
 import { loadChildState } from './childState';
 import { readConsentLog } from './consentLog';
@@ -123,19 +124,30 @@ export async function withAbaWrite(db: SqlDb, childId: string, fn: (tx: SqlDb) =
   });
 }
 
+/**
+ * Время записи журнала — всегда UTC ISO с миллисекундами (`2026-10-12T10:00:00.000Z`): срок хранения
+ * (`retained` в `schema.ts`) сравнивает `recorded_at` как строки, а строка с поясом или без долей
+ * секунды сравнилась бы неверно (аудит раунда 3, В-4). Не дата — ошибка, а не молчаливая запись.
+ */
+export function recordedAtIso(at: string): string {
+  const d = new Date(at);
+  if (Number.isNaN(d.getTime())) throw new Error('Время записи — не дата');
+  return d.toISOString();
+}
+
 export async function appendTrial(db: SqlDb, childId: string, trial: AbaTrial, recordedAt: string): Promise<void> {
   const errors = trialInvariantErrors(trial);
   if (errors.length) throw new Error(`Проба ${trial.id} не записана: ${errors.join('; ')}`);
   await db.run(
     'INSERT INTO aba_trials (child_id, id, session_id, target_id, body, recorded_at) VALUES (?, ?, ?, ?, ?, ?)',
-    [childId, trial.id, trial.sessionId, trial.targetId, JSON.stringify(trial), recordedAt],
+    [childId, trial.id, trial.sessionId, trial.targetId, JSON.stringify(trial), recordedAtIso(recordedAt)],
   );
 }
 
 export async function appendSession(db: SqlDb, childId: string, session: AbaSession, recordedAt: string): Promise<void> {
   await db.run(
     'INSERT INTO aba_sessions (child_id, id, session_index, body, recorded_at) VALUES (?, ?, ?, ?, ?)',
-    [childId, session.id, session.index, JSON.stringify(session), recordedAt],
+    [childId, session.id, session.index, JSON.stringify(session), recordedAtIso(recordedAt)],
   );
 }
 
@@ -143,7 +155,7 @@ export async function appendSession(db: SqlDb, childId: string, session: AbaSess
 export async function appendRoutineRun(db: SqlDb, childId: string, run: AbaRoutineRun, recordedAt: string): Promise<void> {
   await db.run(
     'INSERT INTO aba_routine_runs (child_id, id, target_id, day, body, recorded_at) VALUES (?, ?, ?, ?, ?, ?)',
-    [childId, run.id, run.targetId, run.day, JSON.stringify(run), new Date(recordedAt).toISOString()],
+    [childId, run.id, run.targetId, run.day, JSON.stringify(run), recordedAtIso(recordedAt)],
   );
 }
 
@@ -164,7 +176,7 @@ export async function appendTrialCorrection(db: SqlDb, childId: string, c: Trial
     `INSERT INTO aba_trial_corrections
        (child_id, trial_id, replacement_id, session_id, recorded_at, ms_since_original, from_response, to_response, token_kept, token_added, reason)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'adult_misentry')`,
-    [childId, c.trialId, c.replacementId, c.sessionId, new Date(recordedAt).toISOString(), c.msSinceOriginal, c.fromResponse, c.toResponse, c.tokenKept, c.tokenAdded],
+    [childId, c.trialId, c.replacementId, c.sessionId, recordedAtIso(recordedAt), c.msSinceOriginal, c.fromResponse, c.toResponse, c.tokenKept, c.tokenAdded],
   );
 }
 
@@ -183,7 +195,7 @@ export type ReinforcerChoice = {
  */
 export async function appendReinforcerChoice(db: SqlDb, childId: string, c: ReinforcerChoice, chosenAt: string): Promise<void> {
   if (!c.reinforcerId) throw new Error('Выбор без подкрепителя в историю не пишется');
-  // порядок истории — по строке chosen_at: формат один (UTC, миллисекунды), иначе сравнение собьётся
+  // формат chosen_at один (UTC, миллисекунды): его сравнивает routineExchangedSince; порядок истории — по seq, часы назад его не собьют
   const at = new Date(chosenAt);
   if (Number.isNaN(at.getTime())) throw new Error('Время выбора — не дата');
   await db.run(
@@ -193,13 +205,13 @@ export async function appendReinforcerChoice(db: SqlDb, childId: string, c: Rein
 }
 
 /**
- * История выборов подкрепителя, свежие в конце: по времени выбора, затем по порядку записи. Входит
+ * История выборов подкрепителя, свежие в конце: по порядку записи (seq), а не по часам — время на устройстве может уйти назад (аудит раунда 3, В-5). Входит
  * любой выбор, в том числе взрослого. Читать в той же транзакции, где считаются варианты.
  */
 export async function reinforcerHistoryOf(db: SqlDb, childId: string): Promise<string[]> {
   return (
     await db.all<{ reinforcer_id: string }>(
-      'SELECT reinforcer_id FROM aba_reinforcer_choices WHERE child_id = ? ORDER BY chosen_at, seq',
+      'SELECT reinforcer_id FROM aba_reinforcer_choices WHERE child_id = ? ORDER BY seq',
       [childId],
     )
   ).map((r) => r.reinforcer_id);
@@ -296,7 +308,11 @@ export async function pastSessionsOfTarget(
     [childId, targetId],
   );
   const bySession = new Map<number, AbaTrial[]>();
-  for (const r of rows) bySession.set(r.session_index, [...(bySession.get(r.session_index) ?? []), JSON.parse(r.body)]);
+  for (const r of rows) {
+    const trial = JSON.parse(r.body) as AbaTrial;
+    // как `own` в `finishAbaSession`: оценка, не идущая в освоение, и в зависимость не идёт
+    if (COUNTS_TOWARD_MASTERY[trial.scoredBy]) bySession.set(r.session_index, [...(bySession.get(r.session_index) ?? []), trial]);
+  }
   return [...bySession.entries()].map(([index, trials]) => ({ index, trials })).slice(-limit);
 }
 
@@ -307,7 +323,7 @@ export async function appendIoa(db: SqlDb, childId: string, record: AbaIoaRecord
     record.id,
     record.sessionId,
     JSON.stringify(record),
-    recordedAt,
+    recordedAtIso(recordedAt),
   ]);
 }
 
@@ -319,6 +335,40 @@ export async function ioaOfSession(db: SqlDb, childId: string, sessionId: string
       sessionId,
     ]),
   );
+}
+
+/**
+ * Прошлые прогоны обучения рутины для детектора зависимости от подсказки (`finishRoutineRun`),
+ * свежие в конце. `index` — сквозной номер прогона из его записи (`runNo`), а не позиция в
+ * журнале: срок хранения удаляет старые прогоны, позиции сдвигаются, и флаг (он хранит `runNo`)
+ * отсекал бы новые прогоны. Номер следующего прогона — `routineRunSeq` в состоянии цели. Прогон
+ * без `runNo` (записан до счётчика) получает позицию. Входят только прогоны обучения, не
+ * отменённые извне (состояние откатывается) и не оборванные срывом (срыв — не промах навыка);
+ * пробы — только идущие в освоение (как `own` в `finishRoutineRun`); прогон без таких проб не входит.
+ */
+export async function routineHistoryOf(db: SqlDb, childId: string, targetId: string, limit = 10): Promise<RoutineHistory> {
+  const runs = await db.all<{ id: string; body: string }>(
+    'SELECT id, body FROM aba_routine_runs WHERE child_id = ? AND target_id = ? ORDER BY seq',
+    [childId, targetId],
+  );
+  const rows = await db.all<{ session_id: string; body: string }>(
+    `SELECT t.session_id, t.body FROM aba_trials t WHERE t.child_id = ? AND t.target_id = ? ${EFFECTIVE} ORDER BY t.seq`,
+    [childId, targetId],
+  );
+  const byRun = new Map<string, AbaTrial[]>();
+  for (const r of rows) {
+    const trial = JSON.parse(r.body) as AbaTrial;
+    if (COUNTS_TOWARD_MASTERY[trial.scoredBy]) byRun.set(r.session_id, [...(byRun.get(r.session_id) ?? []), trial]);
+  }
+  const past = runs
+    .map((r, i) => {
+      const run = JSON.parse(r.body) as AbaRoutineRun;
+      return { index: run.runNo ?? i + 1, run, trials: byRun.get(r.id) ?? [] };
+    })
+    .filter((x) => x.run.kind === 'teaching' && x.run.interrupted === null && x.trials.length > 0)
+    .map(({ index, trials }) => ({ index, trials }))
+    .slice(-limit);
+  return { runs: past };
 }
 
 /** Прогоны рутины ребёнка в порядке записи. */

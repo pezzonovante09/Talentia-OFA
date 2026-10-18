@@ -74,6 +74,36 @@ export async function commitLesson(db: SqlDb, childId: string, c: LessonCommit, 
 
 const EMPTY_BOARD: BoardRecord = { earned: 0, nonContingent: 0 };
 
+/**
+ * Слияние состояний целей по ключам (`commitAbaSession`, `commitIoa`, `saveAbaTargets`): пишутся
+ * только переданные цели, остальные не тронуты. Состояние рутины только «растёт»: день прогона
+ * (`lastRoutineRunDay`), счётчик прогонов (`routineRunSeq`), окно прогонов и срывов, флаг
+ * зависимости. Устаревшая копия — даже с тем же днём — стёрла бы прогоны и флаги, и хранилище
+ * приняло бы второй прогон за день (аудит раунда 3, В-1/В-3). Такая запись —
+ * `RoutineStateConflictError`, ничего не пишется.
+ */
+function isStaleRoutineState(stored: AbaTargetState | undefined, s: AbaTargetState): boolean {
+  if (!stored) return false;
+  if (stored.lastRoutineRunDay !== undefined && (s.lastRoutineRunDay === undefined || s.lastRoutineRunDay < stored.lastRoutineRunDay)) {
+    return true;
+  }
+  if ((s.routineRunSeq ?? 0) < (stored.routineRunSeq ?? 0)) return true;
+  // тот же счётчик, но записей меньше или флаг зависимости снят — копия снята до прогона/флага
+  if ((s.routineRuns?.length ?? 0) < (stored.routineRuns?.length ?? 0)) return true;
+  if ((s.routineBreakdowns?.length ?? 0) < (stored.routineBreakdowns?.length ?? 0)) return true;
+  return (s.dependenceFlaggedAtSession ?? -1) < (stored.dependenceFlaggedAtSession ?? -1);
+}
+
+function mergeTargets(
+  current: Record<string, AbaTargetState>,
+  incoming: Record<string, AbaTargetState>,
+): Record<string, AbaTargetState> {
+  for (const [id, s] of Object.entries(incoming)) {
+    if (isStaleRoutineState(current[id], s)) throw new RoutineStateConflictError();
+  }
+  return { ...current, ...incoming };
+}
+
 /** Доска на устройстве вместе с версией. */
 async function readBoard(tx: SqlDb, childId: string): Promise<BoardRecord> {
   return (await loadChildState(tx, childId, 'abaBoard')) ?? EMPTY_BOARD;
@@ -234,7 +264,7 @@ export async function commitAbaSession(
     // слияние с текущей картой: рутины меняет только прогон рутины, и его итог, записанный, пока
     // сессия была свёрнута, не затирается (методист, раунд 2, Р3)
     const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
-    await saveChildState(tx, childId, 'abaTargets', { ...targets, ...result.states }, at);
+    await saveChildState(tx, childId, 'abaTargets', mergeTargets(targets, result.states), at);
     await saveChildState(tx, childId, 'tokenTraining', result.tokenTraining, at);
     // карточка «перерыв» на ребёнке: обучающие возможности и просьбы в пробе — из событий хода сессии
     const events = result.session.events;
@@ -459,7 +489,7 @@ export async function commitIoa(
     await appendIoa(tx, childId, record, session.recorded_at);
     // слияние по ключам: рутины и другие цели, записанные за это время, не затираются
     const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
-    await saveChildState(tx, childId, 'abaTargets', { ...targets, ...states }, at);
+    await saveChildState(tx, childId, 'abaTargets', mergeTargets(targets, states), at);
   });
 }
 
@@ -478,7 +508,7 @@ export async function saveAbaTargets(
   await withAbaWrite(db, childId, async (tx) => {
     // слияние по ключам, как в `commitIoa`: пишутся только переданные цели
     const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
-    await saveChildState(tx, childId, 'abaTargets', { ...targets, ...states }, at);
+    await saveChildState(tx, childId, 'abaTargets', mergeTargets(targets, states), at);
   });
 }
 

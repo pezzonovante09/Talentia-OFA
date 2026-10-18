@@ -62,8 +62,12 @@ export type IoaSheetRow = {
   startPromptLevel: PromptLevel;
   /** Повтор снятой пробы — новая строка с пометкой «повтор строки N». */
   repeatOfRow?: number;
-  /** «ПР» — перерыв по карточке, его фиксирует устройство; второй наблюдатель строку не кодирует. */
-  deviceMark?: 'ПР';
+  /**
+   * Перерыв по карточке (на листе «ПР»), его фиксирует устройство; второй наблюдатель строку не
+   * кодирует. В данных — id, а не подпись: подпись берёт экран из ключа `aba.ioa.device.<id>`
+   * (раунд 3, локализация В2).
+   */
+  deviceMark?: 'child_break';
 };
 
 /**
@@ -85,7 +89,7 @@ export function ioaSheet(sessionIndex: number, trials: readonly AbaTrial[]): { c
       ...(t.stepId ? { stepId: t.stepId } : {}),
       startPromptLevel: t.startPromptLevel,
       ...(origin !== undefined ? { repeatOfRow: origin } : {}),
-      ...(t.interruptedBy === 'child_break' ? { deviceMark: 'ПР' as const } : {}),
+      ...(t.interruptedBy === 'child_break' ? { deviceMark: 'child_break' as const } : {}),
     };
   });
   return { code: `#${sessionIndex}`, rows };

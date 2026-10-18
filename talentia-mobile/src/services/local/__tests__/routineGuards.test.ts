@@ -7,6 +7,7 @@
 import type { AbaIoaRecord, AbaSession, AbaTargetState, AbaTrial } from '../../../types/aba';
 import type { RoutineRunResult, RoutineRunState } from '../../../domain/abaRoutineRun';
 import type { AbaSessionResult } from '../../../domain/abaSession';
+import { boardRevOf } from '../../../domain/abaTokens';
 import { initialTokenTraining, type TokenTrainingState } from '../../../domain/abaTokenTraining';
 import type { ConsentEvent } from '../../../domain/consent';
 import { RoutineAlreadyRunError, RoutineStateConflictError, routineRunsOf } from '../abaLog';
@@ -301,6 +302,96 @@ describe('слияние состояний целей по ключам', () =>
     const db = await dbWithSession();
     await saveAbaTargets(db, 'kid', {}, NOW);
     expect(await targetsOf(db)).toEqual({ A, R });
+  });
+
+  describe('день прогона рутины только растёт: устаревшая копия не открывает второй прогон за день (В-1/В-3)', () => {
+    const stale = state('R'); // копия до прогона: дня нет
+    const older = state('R', { lastRoutineRunDay: '2026-10-11' });
+
+    async function withRunToday() {
+      const db = await dbWithAba();
+      const first = run('run-1', '2026-10-12', state('R'));
+      await commitRoutineRun(db, 'kid', first, NOW);
+      return { db, first };
+    }
+
+    it.each([
+      ['без дня', stale],
+      ['с более ранним днём', older],
+    ])('saveAbaTargets с состоянием рутины %s отклонён, карта не тронута', async (_name, incoming) => {
+      const { db, first } = await withRunToday();
+      await expect(saveAbaTargets(db, 'kid', { R: incoming }, NOW)).rejects.toBeInstanceOf(RoutineStateConflictError);
+      expect(await targetsOf(db)).toEqual({ R: first.state });
+      // а значит второй прогон за день по-прежнему отвергается
+      await expect(commitRoutineRun(db, 'kid', run('run-2', '2026-10-12', first.state), NOW)).rejects.toBeInstanceOf(RoutineAlreadyRunError);
+    });
+
+    it('commitIoa с устаревшей рутиной отклонён целиком: IOA тоже не записан', async () => {
+      const db = await dbWithAba();
+      await commitAbaSession(db, 'kid', sessionResult({ A: state('A') }), NOW);
+      const first = run('run-1', '2026-10-12', state('R'));
+      await commitRoutineRun(db, 'kid', first, NOW);
+      await expect(commitIoa(db, 'kid', ioa, { R: stale }, NOW)).rejects.toBeInstanceOf(RoutineStateConflictError);
+      expect(await db.all('SELECT 1 FROM aba_ioa')).toEqual([]);
+      expect((await targetsOf(db))!.R).toEqual(first.state);
+    });
+
+    it('commitAbaSession с устаревшей рутиной в итоге отклонён целиком: сессия не записана', async () => {
+      const { db, first } = await withRunToday();
+      const live = { ...sessionResult({ R: stale }), boardRev: boardRevOf((await boardOf(db))!) };
+      await expect(commitAbaSession(db, 'kid', live, NOW)).rejects.toBeInstanceOf(RoutineStateConflictError);
+      expect(await db.all('SELECT 1 FROM aba_sessions')).toEqual([]);
+      expect((await targetsOf(db))!.R).toEqual(first.state);
+    });
+
+    describe('копия с тем же днём, но без прогонов, срывов и флага — устаревшая', () => {
+      const win = [{ whole: true }] as unknown as AbaTargetState['routineRuns'];
+      const breakdowns = [{ day: '2026-10-12', kind: 'teaching', setting: 'usual', atStep: 1 }] as AbaTargetState['routineBreakdowns'];
+      const fresh = state('R', {
+        lastRoutineRunDay: '2026-10-12',
+        routineRunSeq: 2,
+        routineRuns: win,
+        routineBreakdowns: breakdowns,
+        dependenceFlaggedAtSession: 2,
+      });
+      const sameDay = { lastRoutineRunDay: '2026-10-12' } as const;
+
+      async function withFresh() {
+        const db = await dbWithAba();
+        await commitAbaSession(db, 'kid', sessionResult({ A: state('A') }), NOW);
+        // итог прогона 2: состояние после него уже в карте
+        await commitRoutineRun(db, 'kid', { ...run('run-1', '2026-10-12', state('R')), state: fresh }, NOW);
+        return db;
+      }
+
+      it.each([
+        ['счётчик прогонов ниже', state('R', { ...sameDay, routineRunSeq: 1, routineRuns: win, routineBreakdowns: breakdowns, dependenceFlaggedAtSession: 2 })],
+        ['окна прогонов нет', state('R', { ...sameDay, routineRunSeq: 2, routineBreakdowns: breakdowns, dependenceFlaggedAtSession: 2 })],
+        ['срывов нет', state('R', { ...sameDay, routineRunSeq: 2, routineRuns: win, dependenceFlaggedAtSession: 2 })],
+        ['флаг зависимости снят', state('R', { ...sameDay, routineRunSeq: 2, routineRuns: win, routineBreakdowns: breakdowns })],
+      ])('saveAbaTargets и commitIoa: %s — RoutineStateConflictError, карта не тронута', async (_name, incoming) => {
+        const db = await withFresh();
+        await expect(saveAbaTargets(db, 'kid', { R: incoming }, NOW)).rejects.toBeInstanceOf(RoutineStateConflictError);
+        await expect(commitIoa(db, 'kid', ioa, { R: incoming }, NOW)).rejects.toBeInstanceOf(RoutineStateConflictError);
+        expect((await targetsOf(db))!.R).toEqual(fresh);
+      });
+
+      it('та же или более новая копия проходит', async () => {
+        const db = await withFresh();
+        const newer = { ...fresh, routineRunSeq: 3, dependenceFlaggedAtSession: 3 };
+        await saveAbaTargets(db, 'kid', { R: fresh }, NOW);
+        await saveAbaTargets(db, 'kid', { R: newer }, NOW);
+        expect((await targetsOf(db))!.R).toEqual(newer);
+      });
+    });
+
+    it('тот же или более поздний день проходит; рутина без дня в карте — тоже', async () => {
+      const { db } = await withRunToday();
+      const later = state('R', { lastRoutineRunDay: '2026-10-13' });
+      await saveAbaTargets(db, 'kid', { R: later }, NOW);
+      await saveAbaTargets(db, 'kid', { R: later, N: state('N') }, NOW);
+      expect(await targetsOf(db)).toEqual({ R: later, N: state('N') });
+    });
   });
 
   it('commitAbaSession пишет только затронутые цели и не затирает пересмотр, записанный за время свёрнутой сессии', async () => {
