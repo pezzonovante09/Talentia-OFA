@@ -54,6 +54,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Версии нативных пакетов должны совпадать с Expo SDK 54: расхождение ломает
+      # сборку или приложение в рантайме. Упадёт при любом расхождении (CI=1, без вопросов).
+      - name: Expo dependency versions match the SDK
+        run: npx expo install --check
+        env:
+          CI: '1'
+
       - name: Lint
         run: npm run lint
 
