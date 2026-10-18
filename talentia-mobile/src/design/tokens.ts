@@ -249,18 +249,23 @@ export const cushionByRole: Record<CushionRole, 'raised' | 'flat'> = {
  */
 export const pressScale = { tali: 0.96, mapNode: 0.96, wide: 0.98 } as const;
 
-/** Гаптика на каждом касании: в calm — лёгкая (`expo-haptics`, `ImpactFeedbackStyle.Light`). */
-export const pressHaptic = { calm: 'light', default: 'none' } as const;
+/**
+ * Гаптика на каждом касании: по умолчанию её нет ни в одном режиме. Calm создан снижать
+ * сенсорную нагрузку и вибрацию не добавляет (решение владельца 2026-10-18, вердикт UX);
+ * родитель включает её сам отдельной настройкой — тогда `light` (`expo-haptics`,
+ * `ImpactFeedbackStyle.Light`).
+ */
+export const pressHaptic = { parentEnabled: 'light', default: 'none' } as const;
 
 /**
- * Отклик на касание для данного режима. Calm и reduce motion дают ту же амплитуду и
- * длительность, что обычный режим; отличается только гаптика.
+ * Отклик на касание. Calm и reduce motion дают ту же амплитуду и длительность, что обычный
+ * режим; гаптика зависит только от настройки родителя, не от режима.
  */
-export function pressFeedback({ calmMode }: { calmMode: boolean }) {
+export function pressFeedback({ hapticsEnabled = false }: { calmMode?: boolean; hapticsEnabled?: boolean } = {}) {
   return {
     scale: pressScale,
     durationMs: motion.press,
-    haptic: calmMode ? pressHaptic.calm : pressHaptic.default,
+    haptic: hapticsEnabled ? pressHaptic.parentEnabled : pressHaptic.default,
   };
 }
 
@@ -277,6 +282,25 @@ export const lessonTiming = {
   /** `point`: тапов мимо зон до повтора вопроса. */
   missesBeforeRepeat: 3,
 } as const;
+
+/**
+ * Потолок системного шрифта на экране урока (I-11, раунд 3). Раньше `maxFontSizeMultiplier` был
+ * задан только в ABA (`abaInstruction`, `abaAdultPanel`) и у знака в карточке-символе; на уроке
+ * крупный системный шрифт выталкивал вопрос из слота 72 и реплику из пузыря 80. Слоты фиксированы
+ * (экран не прокручивается), поэтому множитель — не пожелание, а часть раскладки.
+ * - `prompt`: Comfortaa 22/30, 2 строки × 30 × 1.2 = 72 — ровно слот вопроса (как `abaInstruction`).
+ *   Запасной вид 18/24 в 3 строки = 72 только при множителе 1 (`promptFallback`): строка, которой не
+ *   хватило двух строк 22/30, включает запасной вид и отключает масштаб — иначе 3 × 24 × 1.2 = 86 > 72.
+ * - `bubble`: слот 80, вертикальное поле пузыря `bubblePadY` 6 → внутри 68; 18/26 × 2 × 1.1 = 57.2 и
+ *   запасной 16/20 × 3 × 1.1 = 66 — оба помещаются.
+ * - `action`: подпись кнопки действия 88 — одна строка, при нехватке ширины ужимается.
+ * - `fixed`: подписи на плитках, цифры, знаки, клавиши, столбик — геометрия задана пикселями, и размер
+ *   знака не должен подсказывать ответ; системный шрифт здесь не масштабируется, смысл несёт озвучка.
+ */
+export const lessonFontCaps = { prompt: 1.2, promptFallback: 1, bubble: 1.1, action: 1.2, fixed: 1 } as const;
+
+/** Вертикальное поле внутри пузыря реплики (слот 80 → 68 под текст). */
+export const bubblePadY = 6;
 
 /* ───────────────────── счёт и цифры на 5–6 (SCREENS.md 3.8) ───────────────────── */
 
@@ -375,6 +399,29 @@ export const countMark = {
 } as const;
 
 /**
+ * Формат `point` (SCREENS.md 3.2). Кольцо тапа мимо зон — то же, что `countMark.missRing`: диаметр 64,
+ * контур 3, до отпускания + 90 мс, без звука (прежнее кольцо 24 лежало под подушечкой пальца).
+ * Для 5–6 лет зона нажатия вместе с `hitSlop` не меньше `touch.min` по обеим сторонам, зазор между
+ * зонами по краю не меньше `touch.gap`; предмет меньше — расширяется невидимая зона, рисунок не трогаем.
+ */
+export const pointMiss = countMark.missRing;
+export const pointZone = { band: '5-6', hitMin: touch.min, edgeGapMin: touch.gap, expandHiddenZone: true } as const;
+
+/**
+ * Правила мелочей раунда UX (только данные для тестов и верстки):
+ * - текстовые ответы 9–10 лет не обрезаются, допускают перенос (`lessonFontCaps.fixed` их не касается);
+ * - «Помочь Tali» отстоит от нижнего края на safe area снизу (жест «домой») + `extra`;
+ * - в focus на карте кнопка динамика остаётся 60×60;
+ * - включение calm/focus озвучивается голосом (смысл не только на экране);
+ * - сумка Tali не различает позы и не нажимается (в тёмной она 2.99–3.96:1 — аксессуар, не сигнал).
+ */
+export const lessonTextAnswer = { band: '9-10', truncate: false, wrap: true } as const;
+export const helpTaliButton = { bottomInset: 'safeAreaBottom', extra: 16 } as const;
+export const mapSpeaker = { size: 60, keptInFocus: true } as const;
+export const modeToggleCue = { voiced: true } as const;
+export const taliSatchelRule = { distinguishesPose: false, pressable: false } as const;
+
+/**
  * Подсветка «звучит сейчас» при перечислении вариантов (I-1, V5): значок «волны» 24 в правом
  * верхнем углу **внутри** карточки и заливка `surfaceAlt` на время слова. Контур не меняется
  * (прежний «контур primary + импульс» совпадал с видом «ждёт», а различие в 1 pt невидимо), движения
@@ -460,6 +507,60 @@ export function mapBackdrop({ scheme, calmMode }: { scheme: Scheme; calmMode: bo
   if (calmMode) return 'sand_strip';
   return scheme === 'light' ? 'panorama' : 'flat_region';
 }
+
+/* ───────────────────────── Tali: слой иллюстрации (раунд 3, V12–V14) ───────────────────────── */
+
+/**
+ * Палитра персонажа — слой иллюстрации, как `countMark`: в обеих схемах и в calm **одна и та же**, Tali
+ * не перекрашивается (ASSETS.md, шаг 2). Цвета в UI-токены не входят и ролей интерфейса не несут:
+ * зелёный тела `#3FC08A` — не `success` (`#12855A`), красная сумка — не `error`.
+ */
+export const taliArt = {
+  body: '#3FC08A',
+  bodyShadow: '#2FA24E',
+  belly: '#FFE6C7',
+  accent: '#FFC42E',
+  satchel: '#D93A1E',
+  glass: '#0E8FBF',
+  outline: '#2A1A12',
+} as const;
+
+/**
+ * Единый кроп Tali «по пояс» (раздел 5 SCREENS.md, DESIGN_PROMPTS.md, блок 0): прямоугольник в долях
+ * квадратного кадра позы, слот 88×88 везде (нижняя панель урока, слой выхода, «нет перевода»,
+ * подкрепление и перерыв ABA). Кадры всех семи поз — 1:1, персонаж на одном месте и в одном масштабе
+ * (ASSETS.md, «Требования к набору»), голова ≈ половина кадра (`headFrameShare`), голова касается верха.
+ * - `w = h = 0.88`: голова в кропе 0.5 / 0.88 ≈ 57% высоты (норма 55–60%); низ кропа обрезает ноги, пояс
+ *   остаётся внутри;
+ * - `x = 0.06`: поле 6% слева и справа (центр кадра); `y = 0`: верхнее поле — собственное поле кадра
+ *   позы (≤ 2%), кроп от верха не отступает, иначе голова теряет 6% высоты;
+ * - масштаб показа: 88 / (0.88 × кадр) — у позы 1024 это 0.0977 pt на ед. viewBox.
+ * Значения стартовые, по пропорциям ТЗ: подтверждаются наложением кропа на семь готовых SVG
+ * (лапа `point` и поднятые лапы `cheer` — внутри; голова при повороте на `taliIdleTap.travel` не выходит
+ * за край). Не вошла поза — правится файл позы, второй кроп не заводится. У `tali-hello.svg` viewBox
+ * 2048, у остальных 1024: доли от этого не зависят, но содержимое hello обязано стоять в тех же долях.
+ */
+export const taliCrop = { x: 0.06, y: 0, w: 0.88, h: 0.88, slot: 88, headFrameShare: 0.5 } as const;
+
+/**
+ * Нейтральный отклик Tali на тап при пустом пузыре (SCREENS.md, раздел 5): моргание и поворот головы к
+ * ребёнку — `beats` шагов по `motion.quick`, ход края ≤ `travel` pt. Кивка нет (кивок = «да»). Во
+ * всех режимах одинаково; гаптика — только по настройке родителя (`pressFeedback`).
+ */
+export const taliIdleTap = { travel: 4, beats: 2, beatMs: motion.quick } as const;
+
+/**
+ * Где Tali стоит и чем держится его силуэт в тёмной схеме (V12). Наружный контур `taliArt.outline`
+ * `#2A1A12` на нейтральных тёмных поверхностях границы не несёт (1.09:1 к `background`), её несёт
+ * заливка тела (7.90:1 к `background`, 6.85:1 к `surface`). На заливке региона тёмной обычной карты —
+ * наоборот: заливка тела там 2.15–2.62:1, а границу несёт контур (3.27–3.38:1). Поэтому:
+ * - `neutral` — `background`, `surface`: держит тело;
+ * - `regionFill` — заливки `regions.*` тёмной обычной схемы: держит контур;
+ * - Tali не ставится на заливки `regions.*` тёмной calm (там карта — песок `sand_strip`, Tali стоит на
+ *   `background`), на заливку региона в тёмной завязке он не выходит — он внутри карточки `surface`.
+ * - Сумка `satchel` на `surfaceAlt` тёмной даёт 2.99:1 — аксессуар, не силуэт, допустимо.
+ */
+export const taliOnDark = { neutral: ['background', 'surface'], regionFill: 'regions', haloNeeded: false } as const;
 
 /* ───────────────────────── типографика ───────────────────────── */
 

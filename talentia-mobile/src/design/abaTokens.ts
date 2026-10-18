@@ -317,6 +317,28 @@ export const abaChoiceZone = {
   tight: { sample: 80, choice: 72 },
 } as const;
 
+/**
+ * Плиты `identify` (I-8, раунд 3): до трёх — один ряд; **четыре — сетка 2×2**, а не ряд из четырёх (4 × 96
+ * + 3 × 24 = 456 > 343 на SE, а 4 × 72 + 3 × 24 = 360 > 328 на 360×640 — в ряд не помещаются).
+ * Размер плиты тот же, что у ряда (`abaChoiceZone.*.choice`, ≥ 60), зазор `abaLayout.plateGap` 24 по обеим
+ * осям; два ряда не выше плиты стимула своего тира (216 ≤ 240, 200 ≤ 200, 168 ≤ 176), поэтому блоки
+ * экрана не сдвигаются. Порядок плит перемешан, как в ряду; верная не выделена цветом (L1–L3 — по
+ * `promptVisual.identify`).
+ */
+export const abaIdentifyGrid = { maxInRow: 3, fourLayout: 'grid_2x2', columnsForFour: 2 } as const;
+
+const IDENTIFY_PLATE: Record<AbaTier, number> = {
+  roomy: abaChoiceZone.regular.choice,
+  compact: abaChoiceZone.compact.choice,
+  tight: abaChoiceZone.tight.choice,
+};
+
+/** Высота блока плит `identify` для `count` плит (2–4) в тире, pt. */
+export function abaIdentifyHeight(tier: AbaTier, count: number): number {
+  const rows = count > abaIdentifyGrid.maxInRow ? Math.ceil(count / abaIdentifyGrid.columnsForFour) : 1;
+  return rows * IDENTIFY_PLATE[tier] + (rows - 1) * abaLayout.plateGap;
+}
+
 /** Управление: выход с удержанием, повтор, карточка «перерыв». */
 export const abaControls = {
   exitSize: 60,

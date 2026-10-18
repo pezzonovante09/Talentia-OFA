@@ -5,6 +5,7 @@
  * спокойным режимом — оба дефекта прошли незамеченными до аудита.
  */
 import {
+  bubblePadY,
   buildTheme,
   countMark,
   countSizes,
@@ -12,14 +13,21 @@ import {
   digitGroup,
   emptyOutlineColor,
   groupDigits,
+  helpTaliButton,
   INK_SURFACES,
+  lessonFontCaps,
+  lessonTextAnswer,
   lessonTiming,
   listeningCue,
   mapBackdrop,
   mapLayout,
+  mapSpeaker,
+  modeToggleCue,
   motion,
   numeralOption,
   palettes,
+  pointMiss,
+  pointZone,
   pressFeedback,
   pressScale,
   progressSegment,
@@ -28,6 +36,10 @@ import {
   stroke,
   symbolGlyph,
   symbolGlyphMaxFontMultiplier,
+  taliArt,
+  taliCrop,
+  taliIdleTap,
+  taliSatchelRule,
   touch,
   type ColorTokens,
   type RegionId,
@@ -233,13 +245,15 @@ describe('подушка и отклик (решения №10, №68, №69)', 
     expect(motion.press).toBeLessThanOrEqual(100);
   });
 
-  it('calm и обычный режим сжимают одинаково; calm добавляет только гаптику (№69, Р12)', () => {
+  it('calm и обычный режим сжимают одинаково; гаптика только по настройке родителя, calm её не добавляет', () => {
     const plain = pressFeedback({ calmMode: false });
     const calm = pressFeedback({ calmMode: true });
     expect(calm.scale).toEqual(plain.scale);
     expect(calm.durationMs).toBe(plain.durationMs);
     expect(plain.haptic).toBe('none');
-    expect(calm.haptic).toBe('light');
+    expect(calm.haptic).toBe('none');
+    expect(pressFeedback({ calmMode: true, hapticsEnabled: true }).haptic).toBe('light');
+    expect(pressFeedback({ hapticsEnabled: true }).haptic).toBe('light');
     expect(pressScale.tali).toBeLessThanOrEqual(0.96);
     expect(pressScale.mapNode).toBeLessThanOrEqual(0.96);
     expect(pressScale.wide).toBeLessThanOrEqual(0.98);
@@ -389,6 +403,26 @@ describe('рабочие остатки раунда 3 (V1, V4, V5, V6, V2/V3)',
     // один радиус привязки во всех документах: 32 (в DESIGN_PROMPTS.md и SCREENS.md не должно остаться 24)
     expect(countMark.snapRadius).toBe(32);
   });
+
+  it('point: кольцо мимо = missRing (64, а не 24); зоны 5–6 ≥ 60 с зазором ≥ 16', () => {
+    expect(pointMiss).toBe(countMark.missRing);
+    expect(pointMiss.size).toBe(64);
+    expect(pointMiss.stroke).toBe(3);
+    expect(pointZone.hitMin).toBeGreaterThanOrEqual(60);
+    expect(pointZone.edgeGapMin).toBeGreaterThanOrEqual(16);
+    expect(pointZone.expandHiddenZone).toBe(true);
+  });
+
+  it('мелочи UX: перенос ответов 9–10, отступ «Помочь Tali», динамик карты, сумка Tali', () => {
+    expect(lessonTextAnswer.truncate).toBe(false);
+    expect(lessonTextAnswer.wrap).toBe(true);
+    expect(helpTaliButton.extra).toBeGreaterThanOrEqual(16);
+    expect(mapSpeaker.size).toBeGreaterThanOrEqual(touch.min);
+    expect(mapSpeaker.keptInFocus).toBe(true);
+    expect(modeToggleCue.voiced).toBe(true);
+    expect(taliSatchelRule.distinguishesPose).toBe(false);
+    expect(taliSatchelRule.pressable).toBe(false);
+  });
 });
 
 describe('счёт на 5–6 (SCREENS.md 3.8)', () => {
@@ -440,5 +474,63 @@ describe('счёт на 5–6 (SCREENS.md 3.8)', () => {
   it('защита «Дальше» короче разблокировки', () => {
     expect(lessonTiming.nextGuard).toBeGreaterThan(0);
     expect(lessonTiming.nextGuard).toBeLessThan(lessonTiming.nextUnlock);
+  });
+});
+
+describe('потолок шрифта на уроке (I-11)', () => {
+  it('вопрос: две строки 22/30 × 1.2 = слот 72; запасной вид 18/24 в 3 строки — только при множителе 1', () => {
+    expect(2 * 30 * lessonFontCaps.prompt - 1e-9).toBeLessThanOrEqual(72);
+    expect(3 * 24 * lessonFontCaps.promptFallback).toBeLessThanOrEqual(72);
+    expect(3 * 24 * lessonFontCaps.prompt).toBeGreaterThan(72); // поэтому запасной вид масштаб отключает
+  });
+
+  it('реплика: оба вида помещаются в слот 80 за вычетом полей', () => {
+    const inner = 80 - 2 * bubblePadY;
+    expect(2 * 26 * lessonFontCaps.bubble).toBeLessThanOrEqual(inner);
+    expect(3 * 20 * lessonFontCaps.bubble).toBeLessThanOrEqual(inner);
+  });
+
+  it('плитки, цифры и знаки не масштабируются — размер знака не подсказывает ответ', () => {
+    expect(lessonFontCaps.fixed).toBe(1);
+    expect(lessonFontCaps.fixed).toBe(symbolGlyphMaxFontMultiplier);
+  });
+});
+
+describe('Tali: кроп, отклик на тап, тёмная схема (V12–V14)', () => {
+  it('кроп один: квадрат внутри кадра, слот 88, голова 55–60% высоты кропа, поле 6% по бокам', () => {
+    expect(taliCrop.w).toBe(taliCrop.h);
+    expect(taliCrop.x + taliCrop.w).toBeLessThanOrEqual(1);
+    expect(taliCrop.y + taliCrop.h).toBeLessThanOrEqual(1);
+    expect(taliCrop.x).toBeCloseTo(0.06, 5);
+    expect(1 - taliCrop.x - taliCrop.w).toBeCloseTo(0.06, 5);
+    const headShare = taliCrop.headFrameShare / taliCrop.h;
+    expect(headShare).toBeGreaterThanOrEqual(0.55);
+    expect(headShare).toBeLessThanOrEqual(0.6);
+    expect(taliCrop.slot).toBe(88);
+  });
+
+  it('нейтральный отклик на тап: два шага по motion.quick, ход ≤ 4 pt (кивка нет)', () => {
+    expect(taliIdleTap).toEqual({ travel: 4, beats: 2, beatMs: motion.quick });
+  });
+
+  it('палитра персонажа не входит в роли интерфейса: зелёный тела — не success, сумка — не error', () => {
+    SCHEMES.forEach((scheme) =>
+      VARIANTS.forEach((variant) => {
+        const c = palettes[scheme][variant];
+        expect(c.success.toLowerCase()).not.toBe(taliArt.body.toLowerCase());
+        expect(c.error.toLowerCase()).not.toBe(taliArt.satchel.toLowerCase());
+      }),
+    );
+  });
+
+  it('тёмная схема: на нейтральных поверхностях силуэт держит тело ≥ 3, на заливке региона — контур ≥ 3', () => {
+    const c = palettes.dark.normal;
+    expect(contrast(taliArt.body, c.background)).toBeGreaterThanOrEqual(3);
+    expect(contrast(taliArt.body, c.surface)).toBeGreaterThanOrEqual(3);
+    // наружный контур на нейтральной поверхности границы не несёт — это известное и принятое свойство
+    expect(contrast(taliArt.outline, c.background)).toBeLessThan(1.2);
+    (Object.keys(c.regions) as RegionId[]).forEach((r) => {
+      expect(contrast(taliArt.outline, c.regions[r])).toBeGreaterThanOrEqual(3);
+    });
   });
 });

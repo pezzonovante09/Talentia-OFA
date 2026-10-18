@@ -50,6 +50,8 @@ describe('app.json: разрешения и платформы', () => {
 
   it('палитра: значок и заставка на фоне приложения (#FFF3E3 светлая, #1B1410 тёмная), не шаблон Expo', () => {
     expect(app.android.adaptiveIcon.backgroundColor).toBe('#FFF3E3');
+    // фоновая картинка шаблона Expo (голубая сетка) перекрывает backgroundColor — её в конфиге быть не должно
+    expect(app.android.adaptiveIcon.backgroundImage).toBeUndefined();
     const splash = plugin('expo-splash-screen')[1];
     expect(splash.backgroundColor).toBe('#FFF3E3');
     expect(splash.dark.backgroundColor).toBe('#1B1410');

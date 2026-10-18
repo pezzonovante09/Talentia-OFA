@@ -12,6 +12,8 @@ import {
   abaBoardCell,
   abaBreak,
   abaCalm,
+  abaIdentifyGrid,
+  abaIdentifyHeight,
   abaReinforcerCard,
   abaReinforcerCardSize,
   abaRoutine,
@@ -527,6 +529,19 @@ describe('раскладка экрана пробы (три тира)', () => {
       expect(3 * z.choice + 2 * abaLayout.plateGap).toBeLessThanOrEqual(343);
     });
     expect(3 * abaChoiceZone.tight.choice + 2 * abaLayout.plateGap).toBe(264);
+  });
+
+  it('identify: четыре плиты — сетка 2×2 (в ряд не помещаются), блок не выше плиты стимула своего тира (I-8)', () => {
+    expect(abaIdentifyGrid.fourLayout).toBe('grid_2x2');
+    const byTier = { roomy: 'regular', compact: 'compact', tight: 'tight' } as const;
+    TIERS.forEach((t) => {
+      const plate = abaChoiceZone[byTier[t]].choice;
+      expect(4 * plate + 3 * abaLayout.plateGap).toBeGreaterThan(328); // ряд из четырёх не влезает ни в один тир
+      expect(abaIdentifyHeight(t, 3)).toBe(plate);
+      expect(abaIdentifyHeight(t, 4)).toBe(2 * plate + abaLayout.plateGap);
+      expect(abaIdentifyHeight(t, 4)).toBeLessThanOrEqual(abaLayoutByTier[t].stimulus);
+      expect(plate).toBeGreaterThanOrEqual(touch.min);
+    });
   });
 
   describe('политика окна — запрет с причиной (№100, Г9)', () => {
