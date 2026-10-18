@@ -423,6 +423,11 @@ WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
 )
 BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
 `,
+  // 11 — индекс журнала выборов по порядку записи (сессия 2026-10-18): история подкрепителей и
+  //     экспорт читают `WHERE child_id = ? ORDER BY seq`, а индекс `_order` идёт через chosen_at.
+  `
+CREATE INDEX aba_reinforcer_choices_seq ON aba_reinforcer_choices (child_id, seq);
+`,
 ];
 
 /**

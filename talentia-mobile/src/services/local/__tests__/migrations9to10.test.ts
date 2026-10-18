@@ -87,11 +87,22 @@ const insertCorrection = (tx: SqlDb, c = correction()) =>
   );
 
 describe('накат миграции 10 на базе с данными', () => {
-  it('миграций десять, база после наката — версия 10', async () => {
+  it('миграций одиннадцать, база после наката — версия 11', async () => {
     const db = await v9WithData();
     await migrate(db);
     const [{ user_version }] = await db.all<{ user_version: number }>('PRAGMA user_version');
-    expect([MIGRATIONS.length, user_version]).toEqual([10, 10]);
+    expect([MIGRATIONS.length, user_version]).toEqual([11, 11]);
+  });
+
+  it('миграция 11: история выборов по ребёнку и seq идёт по индексу, а не сортировкой', async () => {
+    const db = await v9WithData();
+    await migrate(db);
+    const plan = await db.all<{ detail: string }>(
+      "EXPLAIN QUERY PLAN SELECT reinforcer_id FROM aba_reinforcer_choices WHERE child_id = 'kid' ORDER BY seq",
+    );
+    const details = plan.map((r) => r.detail).join(' | ');
+    expect(details).toContain('aba_reinforcer_choices_seq');
+    expect(details).not.toContain('TEMP B-TREE');
   });
 
   it('данные версии 9 целы: ни одна строка таблиц версии 9 не потеряна и не изменена', async () => {
