@@ -121,7 +121,7 @@
       },
       "l2": {
         "title": "Counting to five",
-        "hook": "So many leaves! Let's count!",
+        "hook": "Help me count the leaves for the map!",
         "atlas": "The map is bigger now: we counted up to five!",
         "model": {
           "prompt": "How many leaves are here?",

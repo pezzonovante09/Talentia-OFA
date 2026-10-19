@@ -39,8 +39,9 @@ const COUNT_GLUED = /\{\{\s*count\s*\}\}\s*\p{L}/u;
 const OBJECT_COUNT_AFTER_ACC_RU = /(?<!\p{L})(найди|возьми|положи|дай|собери|покажи|принеси)\s+\{\{\s*object_count/iu;
 /** en is / are и ru глагол настоящего времени мн. ч. перед числом с предметом — только в plural-ключе. */
 const OBJECT_COUNT_AFTER_BE_EN = /\b(is|are|was|were)\s+\{\{\s*object_count/i;
-// настоящее 3 л. мн. ч. (и возвратное «катятся») и прошедшее «было / лежали / осталось» — раунд 3, В8
-const OBJECT_COUNT_AFTER_VERB_RU = /\p{L}+(?:(?:ят|ат|ут|ют)(?:ся)?|л[аои]?(?:сь|ся)?)\s+\{\{\s*object_count/iu;
+// настоящее 3 л. мн. и ед. ч. («лежат / лежит», возвратное «катятся / катится») и прошедшее
+// «было / лежали / осталось» — раунд 3, В8; ед. ч. — раунд 4
+const OBJECT_COUNT_AFTER_VERB_RU = /\p{L}+(?:(?:ят|ат|ут|ют|ит|ет|ёт)(?:ся)?|л[аои]?(?:сь|ся)?)\s+\{\{\s*object_count/iu;
 
 export function companionProblems(banks: Partial<Record<Lang, Bank>>): string[] {
   const bad: string[] = [];
@@ -182,6 +183,9 @@ describe('банк реплик Tali', () => {
       expect(one('ru', { 'companion.x.0': 'Тут было {{object_count}}.' }).join()).toMatch(/глагол согласуется/);
       expect(one('ru', { 'companion.x.0': 'Вот катятся {{object_count}}!' }).join()).toMatch(/глагол согласуется/);
       expect(one('ru', { 'companion.x.0': 'Осталось {{object_count}}.' }).join()).toMatch(/глагол согласуется/);
+      expect(one('ru', { 'companion.x.0': 'Вот лежит {{object_count}}.' }).join()).toMatch(/глагол согласуется/);
+      expect(one('ru', { 'companion.x.0': 'Тут растёт {{object_count}}.' }).join()).toMatch(/глагол согласуется/);
+      expect(one('ru', { 'companion.x.0': 'Вот катится {{object_count}}!' }).join()).toMatch(/глагол согласуется/);
       expect(one('en', { 'companion.x.0_one': 'Here is {{object_count}}!', 'companion.x.0_other': 'Here are {{object_count}}!' })).toEqual([]);
     });
 
