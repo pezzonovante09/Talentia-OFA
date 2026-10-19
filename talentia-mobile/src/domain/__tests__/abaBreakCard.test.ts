@@ -5,7 +5,9 @@
  */
 import type { AbaPresentation } from '../../types/aba';
 import {
+  applyBreakCardRoutine,
   applyBreakCardSession,
+  BREAK_CARD_ROUTINE_KEEP,
   applyBreakCardTraining,
   BREAK_CARD_LONG_GAP_DAYS,
   BREAK_CARD_MAX_OPPORTUNITIES,
@@ -103,9 +105,14 @@ describe('applyBreakCardTraining: итог обучающих возможнос
     expect(c).toMatchObject({ acquired: true, acquiredVia: 'training', acquiredAt: '2026-10-12', step: 'independent' });
   });
 
-  it('касание без жеста на model или prompted принятием не считается', () => {
-    const c = applyBreakCardTraining(initialBreakCard(), [touch('model', true, false), touch('prompted', true, false)], ctx());
+  it('касание без жеста на model принятием не считается: на этой ступени касается взрослый', () => {
+    const c = applyBreakCardTraining(initialBreakCard(), [touch('model', true, false)], ctx());
     expect(c.acquired).toBe(false);
+  });
+
+  it('касание без жеста на ступени prompted (жест ещё не дан) — самостоятельное: карточка принята', () => {
+    const c = applyBreakCardTraining({ ...initialBreakCard(), step: 'prompted' }, [touch('prompted', true, false)], ctx());
+    expect(c).toMatchObject({ acquired: true, acquiredVia: 'training', step: 'independent' });
   });
 
   it('не принята, ни одного касания: сессия обучения засчитана, ступень model → prompted', () => {
@@ -406,5 +413,42 @@ describe('msSinceSd: сколько прошло от конца SD до кас�
     const r = scoreTrial([presentation('child_break', T0 + 2500)], sc);
     if (!r.ok) throw new Error(r.errors.join('; '));
     expect(r.fields).toMatchObject({ interruptedBy: 'child_break', msSinceSd: 1500, latencyMs: null });
+  });
+});
+
+describe('applyBreakCardRoutine: просьбы в прогонах рутин (раунд 4, Д3)', () => {
+  const run = (n: number, requests = 1, ended = false) => ({ runId: `run-${n}`, day: `2026-10-${String(n).padStart(2, '0')}`, requests, ended });
+
+  it('прогон без просьб карточку не меняет', () => {
+    const card = acquired();
+    expect(applyBreakCardRoutine(card, run(1, 0))).toBe(card);
+  });
+
+  it('просьба пишется в routineRequests, а не в окно сессий recent', () => {
+    const card = acquired({ recent: [{ sessionIndex: 3, day: '2026-10-09', requests: 0, byLimit: false }] });
+    const c = applyBreakCardRoutine(card, run(12, 2, true));
+    expect(c.routineRequests).toEqual([run(12, 2, true)]);
+    expect(c.recent).toEqual(card.recent);
+    expect(c.flags).toEqual(card.flags);
+  });
+
+  it(`хранит последние ${BREAK_CARD_ROUTINE_KEEP} прогонов с просьбой`, () => {
+    let c = acquired();
+    for (let i = 1; i <= BREAK_CARD_ROUTINE_KEEP + 3; i += 1) c = applyBreakCardRoutine(c, run(i));
+    expect(c.routineRequests).toHaveLength(BREAK_CARD_ROUTINE_KEEP);
+    expect(c.routineRequests![0].runId).toBe('run-4');
+    expect(c.routineRequests!.at(-1)!.runId).toBe(`run-${BREAK_CARD_ROUTINE_KEEP + 3}`);
+  });
+
+  it('просьба при не принятой карточке — принятие in_trial, флаг непринятой снят', () => {
+    const card: BreakCardState = { ...initialBreakCard(), flags: ['break_card_not_acquired'] };
+    const c = applyBreakCardRoutine(card, run(12));
+    expect(c).toMatchObject({ acquired: true, acquiredAt: '2026-10-12', acquiredVia: 'in_trial', step: 'independent' });
+    expect(c.flags).not.toContain('break_card_not_acquired');
+  });
+
+  it('у принятой карточки дата и путь принятия не меняются', () => {
+    const c = applyBreakCardRoutine(acquired(), run(12));
+    expect([c.acquiredAt, c.acquiredVia]).toEqual(['2026-10-01', 'training']);
   });
 });

@@ -17,6 +17,7 @@ import { appendConsentEvent } from '../consentLog';
 import { exportForSpecialist } from '../purge';
 import type { SqlDb } from '../sql';
 import { asAbaWriter, memoryDb } from './nodeSql';
+import { resultTail } from './routineResultTail';
 
 const NOW = '2026-10-12T10:00:00Z';
 const POOL = ['puzzle', 'bubbles', 'drum', 'stickers', 'train', 'balloon'];
@@ -80,6 +81,7 @@ function run(
     band: '7',
     reinforcerPool: POOL,
     seed: 7,
+    ...resultTail({ id, day, targetId, setting: 'usual' }),
   };
 }
 

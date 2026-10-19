@@ -13,7 +13,7 @@ import type { BoardRecord } from '../../domain/abaTokens';
 import type { TokenTrainingState } from '../../domain/abaTokenTraining';
 import type { IdentifySet } from '../../domain/abaIdentifySet';
 import type { AbaSessionState } from '../../domain/abaSession';
-import type { RoutineRunState } from '../../domain/abaRoutineRun';
+import type { RoutineRunState, RoutineSettingOpen } from '../../domain/abaRoutineRun';
 import type { BreakCardState } from '../../domain/abaBreakCard';
 import type { SqlDb } from './sql';
 
@@ -49,13 +49,18 @@ export type ChildStateValues = {
   abaRoutineRunInProgress: RoutineRunState | null;
   /** Обучение карточке «перерыв» — на ребёнке (`abaBreakCard.ts`). */
   breakCard: BreakCardState;
+  /**
+   * Прогон рутины записан (Т1, жетон выдан), форма «где и с кем» ещё открыта (раунд 4, Д2):
+   * пересчёт при отметке ≠ «как обычно» (`commitRoutineSetting`) и исправление последнего звена.
+   */
+  abaRoutineSettingOpen: RoutineSettingOpen | null;
 };
 
 export type ChildStateKey = keyof ChildStateValues;
 
 /**
  * Ключи ABA, которые пишутся только при согласии на данные ABA. Запись в обход
- * `commit.ts` отклоняет сама база (`schema.ts`, миграции 3, 5, 6 и 8, — список там продублирован:
+ * `commit.ts` отклоняет сама база (`schema.ts`, миграции 3, 5, 6, 8, 10 и 12, — список там продублирован:
  * миграции не правятся, новый ключ — новая миграция).
  */
 export const ABA_STATE_KEYS = [
@@ -69,6 +74,7 @@ export const ABA_STATE_KEYS = [
   'abaObservers',
   'abaRoutineRunInProgress',
   'breakCard',
+  'abaRoutineSettingOpen',
 ] as const satisfies readonly ChildStateKey[];
 
 /** Что удаляет отзыв согласия на ABA: состояние и пауза — пауза тоже говорит, что режим был. */

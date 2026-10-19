@@ -7,12 +7,20 @@
  * на `UNIQUE(child_id, session_index)`; ABA у ребёнка ломалось навсегда. Здесь — или всё,
  * или ничего.
  */
-import type { AbaIoaRecord, AbaObserver, AbaTargetState, AbaTrial } from '../../types/aba';
+import type { AbaIoaRecord, AbaObserver, AbaTargetState, AbaTrial, RoutineSetting } from '../../types/aba';
 import { resumeAbaSession as resumeSessionState, type AbaSessionResult, type AbaSessionState } from '../../domain/abaSession';
-import { settleRoutineBoard, type RoutineRunResult, type RoutineRunState } from '../../domain/abaRoutineRun';
+import {
+  finishRoutineRun,
+  routineResultWithSetting,
+  settleRoutineBoard,
+  type RoutineRunResult,
+  type RoutineRunState,
+  type RoutineSettingOpen,
+} from '../../domain/abaRoutineRun';
 import { boardRevOf, reinforcerChoices, type BoardRecord } from '../../domain/abaTokens';
 import { workingBoardSize } from '../../domain/abaTokenTraining';
 import {
+  applyBreakCardRoutine,
   applyBreakCardSession,
   applyBreakCardTraining,
   breakCardPlan,
@@ -31,10 +39,12 @@ import {
   AbaSessionMissingError,
   ExchangeNotOpenError,
   RoutineAlreadyRunError,
+  RoutineRunClosedError,
   RoutineStateConflictError,
   RoutineWindowNotAccountedError,
   appendIoa,
   appendReinforcerChoice,
+  appendRoutineAmendment,
   appendRoutineRun,
   appendSession,
   appendTrial,
@@ -296,7 +306,7 @@ export async function commitAbaSession(
 /**
  * Звено прогона рутины — сразу в журнал проб вместе со снимком прогона (`abaRoutineRunInProgress`):
  * свёрнутый посреди прогон продолжится с записанного звена. Только при согласии и не на паузе.
- * Доски звено не трогает.
+ * Доски звено не трогает. Звено нового прогона закрывает форму места прошлого (Д2).
  */
 export async function recordRoutineStep(
   db: SqlDb,
@@ -308,6 +318,8 @@ export async function recordRoutineStep(
   await withAbaWrite(db, childId, async (tx) => {
     await appendTrial(tx, childId, trial, at);
     await saveChildState(tx, childId, 'abaRoutineRunInProgress', inProgress, at);
+    const open = await loadChildState(tx, childId, 'abaRoutineSettingOpen');
+    if (open && open.run.runId !== inProgress.runId) await saveChildState(tx, childId, 'abaRoutineSettingOpen', null, at);
   });
 }
 
@@ -320,9 +332,12 @@ export type RoutineCommitOutcome = {
 };
 
 /**
- * Итог прогона рутины — одной транзакцией: запись прогона, состояние этой рутины в карте целей,
- * доска (общая с сессиями), и свёрнутый прогон снимается. Номер сессии не меняется: прогон
- * его не двигает (методист, Р3).
+ * Итог прогона рутины (Т1, раунд 4, Д2) — сразу после последнего звена, обрыва или довода взрослым,
+ * **до** формы «где и с кем» и PIN: жетон выдаётся за секунды, а не после передачи устройства. Одной
+ * транзакцией: запись прогона (место — каким оно в прогоне, по умолчанию «как обычно»), состояние
+ * этой рутины в карте целей, доска (общая с сессиями), просьбы о перерыве на карточке ребёнка;
+ * свёрнутый прогон снимается, открывается форма места (`abaRoutineSettingOpen`; у внешнего обрыва —
+ * нет). Номер сессии не меняется: прогон его не двигает (методист, Р3).
  *
  * Жетон и обмен решаются здесь, по доске на момент фиксации, текущей ступени и живой истории
  * выборов (`settleRoutineBoard`), а не по снимку со старта: сессия, свёрнутая на время прогона,
@@ -366,10 +381,115 @@ export async function commitRoutineRun(
     if (settled.board.earned !== live.earned || settled.board.nonContingent !== live.nonContingent) {
       await saveChildState(tx, childId, 'abaBoard', { ...settled.board, rev: boardRevOf(live) + 1 }, at);
     }
+    // просьбы о перерыве в звеньях — на карточку ребёнка, не в срывы рутины (Д3)
+    if (result.breakRequests.requests > 0) {
+      const card = (await loadChildState(tx, childId, 'breakCard')) ?? initialBreakCard();
+      await saveChildState(
+        tx,
+        childId,
+        'breakCard',
+        applyBreakCardRoutine(card, { runId: result.record.id, day: result.record.day, ...result.breakRequests }),
+        at,
+      );
+    }
     await saveChildState(tx, childId, 'abaRoutineRunInProgress', null, at);
+    await saveChildState(
+      tx,
+      childId,
+      'abaRoutineSettingOpen',
+      result.record.interrupted === 'external'
+        ? null
+        : { run: result.run, t1State: result.state, sessionIndex: result.sessionIndex, history: result.history },
+      at,
+    );
     outcome = { token: settled.token, board: settled.board, ...(settled.offer ? { offer: settled.offer } : {}) };
   });
   return outcome!;
+}
+
+/** Открытая форма места этого прогона в этот день, иначе `RoutineRunClosedError`. */
+async function openSettingOf(tx: SqlDb, childId: string, runId: string, today: string): Promise<RoutineSettingOpen> {
+  const open = await loadChildState(tx, childId, 'abaRoutineSettingOpen');
+  if (!open || open.run.runId !== runId || open.run.day !== today) throw new RoutineRunClosedError();
+  return open;
+}
+
+/** Итог прогона пересчитан от того же состояния, что Т1: чужая запись цели после Т1 — конфликт. */
+async function writeRecomputed(
+  tx: SqlDb,
+  childId: string,
+  open: RoutineSettingOpen,
+  next: RoutineRunResult,
+  reason: 'setting' | 'correction',
+  at: string,
+): Promise<void> {
+  const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
+  const targetId = open.run.target.id;
+  if (!deepEqual(targets[targetId], open.t1State)) throw new RoutineStateConflictError();
+  await saveChildState(tx, childId, 'abaTargets', { ...targets, [targetId]: next.state }, at);
+  await appendRoutineAmendment(tx, childId, { runId: open.run.runId, reason, setting: next.record.setting, phase: next.record.phase }, at);
+}
+
+/**
+ * Отметка «где и с кем» после записи прогона (Т2, раунд 4, Д2; методист 2026-10-19, переспросить):
+ * не «как обычно» — итог прогона пересчитывается с этим местом (окно, перенос, фаза, детектор) от
+ * состояния до прогона, `runNo` тот же; место и фаза — строкой журнала поправок. Доску и жетон не
+ * трогает: жетон уже выдан. «Как обычно» — просто закрывает форму. Форма закрыта (другой прогон,
+ * другой день) — `RoutineRunClosedError`; цель изменилась после Т1 — `RoutineStateConflictError`;
+ * в обоих случаях место остаётся «как обычно». `today` — локальный день устройства.
+ */
+export async function commitRoutineSetting(
+  db: SqlDb,
+  childId: string,
+  runId: string,
+  setting: RoutineSetting,
+  today: string,
+  at: string,
+): Promise<void> {
+  await withAbaWrite(db, childId, async (tx) => {
+    const open = await openSettingOf(tx, childId, runId, today);
+    if (setting !== open.run.setting) await writeRecomputed(tx, childId, open, routineResultWithSetting(open, setting), 'setting', at);
+    await saveChildState(tx, childId, 'abaRoutineSettingOpen', null, at);
+  });
+}
+
+/** Закрыть форму места без отметки: брошенная форма — «как обычно», итог Т1 окончателен. */
+export async function closeRoutineSettingForm(db: SqlDb, childId: string, at: string): Promise<void> {
+  await withAbaWrite(db, childId, async (tx) => {
+    if (await loadChildState(tx, childId, 'abaRoutineSettingOpen')) await saveChildState(tx, childId, 'abaRoutineSettingOpen', null, at);
+  });
+}
+
+/**
+ * Исправление отметки звена рутины (`undoRoutineStep`, раунд 4, В7) — одной транзакцией: замена
+ * пробы в журнале, строка исправления и снимок. Прогон ещё идёт — снимок `abaRoutineRunInProgress`.
+ * Последнее звено исправлено уже после записи прогона (Т1) — итог пересчитывается с местом формы,
+ * сверка с состоянием Т1, поправка фазы в журнал; жетон и доска не меняются. Иначе —
+ * `RoutineRunClosedError`, не пишется ничего.
+ */
+export async function commitRoutineCorrection(
+  db: SqlDb,
+  childId: string,
+  c: { correction: TrialCorrectionRow; replacement: AbaTrial; run: RoutineRunState },
+  today: string,
+  at: string,
+): Promise<void> {
+  await withAbaWrite(db, childId, async (tx) => {
+    const inProgress = await loadChildState(tx, childId, 'abaRoutineRunInProgress');
+    if (inProgress?.runId === c.run.runId) {
+      await appendTrial(tx, childId, c.replacement, at);
+      await appendTrialCorrection(tx, childId, c.correction, at);
+      await saveChildState(tx, childId, 'abaRoutineRunInProgress', c.run, at);
+      return;
+    }
+    const open = await openSettingOf(tx, childId, c.run.runId, today);
+    const run = { ...c.run, setting: open.run.setting };
+    const next = finishRoutineRun(run, open.sessionIndex, open.history);
+    await writeRecomputed(tx, childId, open, next, 'correction', at);
+    await appendTrial(tx, childId, c.replacement, at);
+    await appendTrialCorrection(tx, childId, c.correction, at);
+    await saveChildState(tx, childId, 'abaRoutineSettingOpen', { ...open, run, t1State: next.state }, at);
+  });
 }
 
 /**

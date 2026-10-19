@@ -1832,3 +1832,41 @@ describe('finishAbaSession: что попадает в итог (слияние 
     expect(flag({}).routineExchangeInWindow).toBeUndefined();
   });
 });
+
+describe('раунд 4: история целей обязательна (В4) и prompt_dependent снимается освоением (В3)', () => {
+  const A = tgt('A');
+  const M = tgt('M');
+  /** Одна сессия до критерия: две сессии на критерии в разные дни, два экземпляра, два переноса. */
+  const nearMastery = (over: Partial<AbaTargetState> = {}) =>
+    acq(A, 0, {
+      sessionsAtCriterion: 2,
+      criterionDays: ['2026-09-27', '2026-09-28'],
+      exemplarsAtCriterion: ['A-1', 'A-2'],
+      generalizationProbes: [
+        { response: 'independent', exemplarId: 'A-g1' },
+        { response: 'independent', exemplarId: 'A-g2' },
+      ],
+      ...over,
+    });
+
+  it('finishAbaSession без pastSessions бросает: забытый список не отключает детектор молча', () => {
+    const { state } = drive(begin([A, M], { A: acq(A, 0), M: mastered(M) }), () => 'ok');
+    expect(() => finishAbaSession(state, 9e6, undefined as never, undefined, undefined, { routineExchangeInWindow: false })).toThrow(/pastSessions/);
+    expect(() => finishSession(state, 9e6, {})).not.toThrow();
+  });
+
+  it('цель с флагом вошла в освоение по критерию — флаг снят, номер флага остаётся, dependenceClearedAt — номер сессии', () => {
+    const flagged = nearMastery({ flags: ['prompt_dependent'], dependenceFlaggedAtSession: 4 });
+    const r = finishSession(drive(begin([A, M], { A: flagged, M: mastered(M) }), () => 'ok').state, 9e6);
+    expect(r.states.A.phase).toBe('mastered');
+    expect(r.states.A.flags).not.toContain('prompt_dependent');
+    expect([r.states.A.dependenceFlaggedAtSession, r.states.A.dependenceClearedAt]).toEqual([4, 10]);
+  });
+
+  it('без освоения флаг остаётся', () => {
+    const flagged = acq(A, 0, { flags: ['prompt_dependent'], dependenceFlaggedAtSession: 4 });
+    const r = finishSession(drive(begin([A, M], { A: flagged, M: mastered(M) }), () => 'ok').state, 9e6);
+    expect(r.states.A.phase).toBe('acquisition');
+    expect([r.states.A.flags.includes('prompt_dependent'), r.states.A.dependenceClearedAt]).toEqual([true, undefined]);
+  });
+});

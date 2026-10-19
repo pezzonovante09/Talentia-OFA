@@ -55,6 +55,7 @@ import {
   applyPromptDependence,
   applyTrialToFading,
   clampToApp,
+  clearDependenceOnMastery,
   correctionLevel,
   answerLevel,
   initialTargetState,
@@ -2135,7 +2136,11 @@ export function reviewAssentConcern(
 export function finishAbaSession(
   state: AbaSessionState,
   endedAt: number,
-  pastSessions: Readonly<Record<string, SessionTrials[]>> | undefined,
+  /**
+   * Прошлые сессии целей (`pastSessionsOfTarget`). **Обязателен** (раунд 4, В4): забытый список молча
+   * отключал детектор зависимости; истории нет — вызывающий явно передаёт `{}`.
+   */
+  pastSessions: Readonly<Record<string, SessionTrials[]>>,
   ioa: AbaIoaRecord | undefined,
   /** История сессий ребёнка (свежие в конце) и сигналы после прошлой — для сигналов сессии. */
   signalHistory: { sessions: readonly SignalSession[]; previous: readonly SessionSignal[] } | undefined,
@@ -2148,8 +2153,9 @@ export function finishAbaSession(
   extra: { routineExchangeInWindow: boolean },
 ): AbaSessionResult {
   if (state.endReason === null) throw new Error('Сессия ещё идёт');
-  const past = pastSessions ?? {};
-  if (ioa &&ioa.sessionId !== state.sessionId) throw new Error('IOA другой сессии');
+  if (!pastSessions) throw new Error('Итог сессии без истории целей: передайте pastSessions (нет истории — {})');
+  const past = pastSessions;
+  if (ioa && ioa.sessionId !== state.sessionId) throw new Error('IOA другой сессии');
   const observer = (id: string | null | undefined) => state.observers.find((o) => o.id === id) ?? null;
   const primary = observer(state.primaryObserverId);
   const secondary = ioa ? observer(ioa.secondaryObserverId) : null;
@@ -2257,6 +2263,7 @@ export function finishAbaSession(
       }
     }
     s = withAssentConcern(s, isConcerning(state.trials.filter((t) => t.targetId === id)));
+    s = clearDependenceOnMastery(from, s, idx);
     if (!unreliable) s = applyChoiceBias(s, biasWindow(state, id, past), target.format);
     // сортировка: в следующей сессии с целью карточки категорий меняются местами
     if (target.matchMode === 'sort' && own.some((t) => t.field)) s = { ...s, sortFlipped: !s.sortFlipped };

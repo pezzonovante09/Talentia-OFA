@@ -4,8 +4,8 @@
  * как боевой: новое соединение на каждую транзакцию, один писатель на файл, `database is locked`
  * при пересечении, `secure_delete` по умолчанию OFF (`fakeExpoSqlite.ts`).
  */
-import { failNextExec, failNextOpen, files, fileOf, hop, injected, resetInjected } from './fakeExpoSqlite';
-import { localDbName, openLocalDb } from '../expoSqlite';
+import { fakeExpoSqlite, failNextExec, failNextOpen, files, fileOf, hop, injected, resetInjected } from './fakeExpoSqlite';
+import { deleteLocalDb, localDbName, openLocalDb } from '../expoSqlite';
 import type { SqlDb } from '../sql';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -290,5 +290,64 @@ describe('PRAGMA на соединениях', () => {
     expect(file.maxConcurrentWriters).toBe(1);
     const again = await openLocalDb(`account-${String(n).padStart(4, '0')}`);
     expect(again).toBe(db);
+  });
+});
+
+describe('deleteLocalDb: закрытие через очередь записи (раунд 4, backend 1)', () => {
+  async function openAccount() {
+    n += 1;
+    const account = `del-${String(n).padStart(4, '0')}-acct`;
+    const db = await openLocalDb(account);
+    return { account, db, name: localDbName(account), file: fileOf(localDbName(account)) };
+  }
+  /** Дождаться, пока транзакция возьмёт замок файла. */
+  async function untilHeld(file: { holder: string | null }) {
+    for (let i = 0; i < 100 && file.holder === null; i += 1) await Promise.resolve();
+    if (file.holder === null) throw new Error('транзакция не началась');
+  }
+
+  it('контроль фейка: закрыть соединение посреди транзакции и удалить открытый файл нельзя', async () => {
+    const { db, name, file } = await openAccount();
+    const tx = recordLike(db, 'ctl');
+    await untilHeld(file);
+    const other = await fakeExpoSqlite.openDatabaseAsync(name);
+    await expect(other.closeAsync()).rejects.toThrow(/busy/);
+    await expect(fakeExpoSqlite.deleteDatabaseAsync(name)).rejects.toThrow(/is open/);
+    await tx;
+  });
+
+  it('транзакция идёт — deleteLocalDb ждёт её конца, закрывает соединение и удаляет файл', async () => {
+    const { account, db, name, file } = await openAccount();
+    const tx = recordLike(db, 'in-flight');
+    await untilHeld(file);
+    const del = deleteLocalDb(account);
+    await expect(Promise.all([tx, del])).resolves.toEqual(['in-flight', undefined]);
+    expect(file.events.filter((e) => e.startsWith('end:')).length).toBeGreaterThan(0);
+    expect([file.openConnections, file.closed, files.has(name)]).toEqual([0, true, false]);
+    expect(injected.closeCalls).toBe(1);
+  });
+
+  it('после удаления openLocalDb открывает новую базу, а не закрытую из кэша', async () => {
+    const { account, db } = await openAccount();
+    await deleteLocalDb(account);
+    const again = await openLocalDb(account);
+    expect(again).not.toBe(db);
+  });
+
+  it('удаление во время неудачного наката: соединение закрыто один раз, файл удалён', async () => {
+    n += 1;
+    const account = `fail-${String(n).padStart(4, '0')}-acct`;
+    failNextExec(2);
+    const opening = openLocalDb(account);
+    const del = deleteLocalDb(account);
+    await expect(opening).rejects.toThrow();
+    await del;
+    expect(injected.closeCalls).toBe(1);
+    expect(files.has(localDbName(account))).toBe(false);
+  });
+
+  it('база не открывалась — удаляется файл без закрытия', async () => {
+    await expect(deleteLocalDb('never-opened-1')).resolves.toBeUndefined();
+    expect(injected.closeCalls).toBe(0);
   });
 });

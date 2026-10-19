@@ -8,6 +8,7 @@
  */
 import type { AbaIoaRecord, AbaObserver, AbaRoutineRun, AbaSession } from '../../types/aba';
 import type { ConsentEvent, GuardianRole } from '../../domain/consent';
+import { withAmendments, type RoutineRunAmendment } from './abaLog';
 import { ABA_DELETED_KEYS, ABA_STATE_KEYS, loadChildState } from './childState';
 import { insertConsentEvent, readConsentLog } from './consentLog';
 import { withDbLock } from './lock';
@@ -22,6 +23,7 @@ const JOURNALS = [
   'aba_routine_runs',
   'aba_reinforcer_choices',
   'aba_trial_corrections',
+  'aba_routine_run_amendments',
   'lesson_runs',
 ] as const;
 
@@ -72,13 +74,56 @@ export function retentionCutoff(now: Date, months = RETENTION_MONTHS): string {
 }
 
 /**
+ * Дети, у которых последняя активность ABA раньше границы срока (решение №105: сводное состояние
+ * ABA живёт 12 месяцев с последней сессии или прогона). Активность — самая свежая запись журналов
+ * ABA (пробы, сессии, прогоны рутин) и самая свежая запись состояния ABA: ребёнок, у которого
+ * сессий ещё не было (сопряжение, наблюдатели), не теряет состояние на следующий день.
+ */
+async function abaIdleChildren(tx: SqlDb, before: string): Promise<string[]> {
+  const latest = new Map<string, number>();
+  const bump = (childId: string, at: string) => {
+    const ms = Date.parse(at);
+    if (Number.isFinite(ms)) latest.set(childId, Math.max(latest.get(childId) ?? -Infinity, ms));
+    else if (!latest.has(childId)) latest.set(childId, -Infinity);
+  };
+  const keys = ABA_STATE_KEYS.map(() => '?').join(', ');
+  for (const r of await tx.all<{ child_id: string; at: string }>(
+    `SELECT child_id, updated_at AS at FROM child_state WHERE key IN (${keys})`,
+    [...ABA_STATE_KEYS],
+  )) {
+    bump(r.child_id, r.at);
+  }
+  for (const t of ['aba_trials', 'aba_sessions', 'aba_routine_runs']) {
+    for (const r of await tx.all<{ child_id: string; at: string }>(
+      `SELECT child_id, MAX(recorded_at) AS at FROM ${t} GROUP BY child_id`,
+    )) {
+      if (latest.has(r.child_id)) bump(r.child_id, r.at);
+    }
+  }
+  const cutoff = Date.parse(before);
+  return [...latest.entries()].filter(([, ms]) => ms < cutoff).map(([id]) => id);
+}
+
+/**
  * Удалить журналы старше срока хранения — при старте приложения. Только их: база
- * пускает удаление по сроку, но не по выбору.
+ * пускает удаление по сроку, но не по выбору. И сводное состояние ABA ребёнка, у которого
+ * за срок не было ни сессии, ни прогона (№105): цели, доска, наборы, наблюдатели — иначе
+ * «данные о ходе занятий» жили бы бессрочно после журналов. Пауза (`abaPaused`) — настройка
+ * родителя, а не данные о ребёнке: остаётся. Согласие не трогается.
  */
 export async function applyRetention(db: SqlDb, now: Date): Promise<number> {
   const before = retentionCutoff(now);
   let removed = 0;
   await db.transaction(async (tx) => {
+    // до удаления журналов: свежие записи журналов — активность
+    for (const childId of await abaIdleChildren(tx, before)) {
+      removed += (
+        await tx.run(
+          `DELETE FROM child_state WHERE child_id = ? AND key IN (${ABA_STATE_KEYS.map(() => '?').join(', ')})`,
+          [childId, ...ABA_STATE_KEYS],
+        )
+      ).changes;
+    }
     await tx.run('INSERT INTO retention_gate (before) VALUES (?)', [before]);
     for (const [t, col] of [
       ['aba_trials', 'recorded_at'],
@@ -87,10 +132,18 @@ export async function applyRetention(db: SqlDb, now: Date): Promise<number> {
       ['aba_routine_runs', 'recorded_at'],
       ['aba_reinforcer_choices', 'chosen_at'],
       ['aba_trial_corrections', 'recorded_at'],
+      ['aba_routine_run_amendments', 'recorded_at'],
       ['lesson_runs', 'started_at'],
     ] as const) {
       removed += (await tx.run(`DELETE FROM ${t} WHERE ${col} < ?`, [before])).changes;
     }
+    // открытая форма места с копиями проб прогона — по началу прогона, как снимки «в работе»
+    removed += (
+      await tx.run(
+        "DELETE FROM child_state WHERE key = 'abaRoutineSettingOpen' AND json_extract(body, '$.run.startedAt') < ?",
+        [Date.parse(before)],
+      )
+    ).changes;
     // брошенный снимок «в работе» старше срока — копии его проб не переживают журнал
     removed += (
       await tx.run(
@@ -158,6 +211,7 @@ export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actor
       await tx.run('DELETE FROM aba_routine_runs WHERE child_id = ?', [childId]);
       await tx.run('DELETE FROM aba_reinforcer_choices WHERE child_id = ?', [childId]);
       await tx.run('DELETE FROM aba_trial_corrections WHERE child_id = ?', [childId]);
+      await tx.run('DELETE FROM aba_routine_run_amendments WHERE child_id = ?', [childId]);
       await tx.run(
         `DELETE FROM child_state WHERE child_id = ? AND key IN (${ABA_DELETED_KEYS.map(() => '?').join(', ')})`,
         [childId, ...ABA_DELETED_KEYS],
@@ -203,8 +257,9 @@ export async function abaDataSummary(
 }
 
 /**
- * Все строки аккаунта прочь, включая журнал согласий: он переживает удаление на
- * сервере, с псевдонимами, — об этом говорит экран удаления. При удалении аккаунта после
+ * Все строки аккаунта прочь, включая журнал согласий (№117): он переживает удаление только на
+ * сервере, с псевдонимами, и только для облачных областей — об этом говорит экран удаления.
+ * Недоставленные отзывы доставляет до вызова `wipeAccountEverywhere`. При удалении аккаунта после
  * этого удаляется и сам файл (`deleteLocalDb`).
  */
 export async function wipeDevice(db: SqlDb): Promise<void> {
@@ -224,7 +279,9 @@ export type ChildExport = {
   abaSessions: unknown[];
   abaIoa: unknown[];
   abaRoutineRuns: unknown[];
-  /** История выборов подкрепителя (по порядку выбора). */
+  /** Поправки прогонов (место «где и с кем», смена фазы после пересчёта) — журнал только дописывается. */
+  abaRoutineRunAmendments: unknown[];
+  /** История выборов подкрепителя (по порядку выбора), с жетонами обмена рутины. */
   abaReinforcerChoices: unknown[];
   /** Исправления отметок взрослого: исходные пробы остаются в `abaTrials`, замены — отдельными строками. */
   abaTrialCorrections: unknown[];
@@ -251,7 +308,7 @@ export async function exportChild(
 
 async function choicesOf(db: SqlDb, childId: string): Promise<unknown[]> {
   return db.all(
-    `SELECT chosen_at AS chosenAt, source, source_id AS sourceId, reinforcer_id AS reinforcerId, chosen_by AS chosenBy
+    `SELECT chosen_at AS chosenAt, source, source_id AS sourceId, reinforcer_id AS reinforcerId, chosen_by AS chosenBy, tokens
        FROM aba_reinforcer_choices WHERE child_id = ? ORDER BY seq`,
     [childId],
   );
@@ -289,6 +346,7 @@ async function collectExport(
     abaSessions: await bodies('aba_sessions'),
     abaIoa: await bodies('aba_ioa'),
     abaRoutineRuns: await bodies('aba_routine_runs'),
+    abaRoutineRunAmendments: await bodies('aba_routine_run_amendments'),
     abaReinforcerChoices: await choicesOf(db, childId),
     abaTrialCorrections: await correctionsOf(db, childId),
     lessonRuns: await bodies('lesson_runs'),
@@ -321,7 +379,7 @@ function withoutBreakCardIds(state: Record<string, unknown>): Record<string, unk
 }
 
 /** Поля записей ABA, в которых лежат идентификаторы журнала (`ids.ts`). */
-const ID_FIELDS = ['id', 'sessionId', 'requeuedFromTrialId', 'trialId', 'replacementId'];
+const ID_FIELDS = ['id', 'sessionId', 'requeuedFromTrialId', 'trialId', 'replacementId', 'sourceId'];
 
 function collectIds(value: unknown, into: Set<string>): void {
   if (Array.isArray(value)) value.forEach((v) => collectIds(v, into));
@@ -382,6 +440,11 @@ export type SpecialistExport = {
    * ведущий наблюдатель — той же меткой.
    */
   abaRoutineRuns: unknown[];
+  /**
+   * Выборы подкрепителя по порядку (раунд 4, В6): `day`, `order`, `source`, `sourceId`, `reinforcerId`,
+   * `chosenBy`, `tokens`, `boardSize`. Без предложенных вариантов и времени суток.
+   */
+  abaReinforcerChoices: unknown[];
   /** Состояние ABA; наблюдатели — метками `O1`, `O2`… с ролью и обучен ли. */
   state: Record<string, unknown>;
 };
@@ -408,7 +471,11 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
     );
     const sessions = await bodies<AbaSession>('aba_sessions');
     const ioa = await bodies<AbaIoaRecord>('aba_ioa');
-    const routineRuns = await bodies<AbaRoutineRun>('aba_routine_runs');
+    // место и фаза — с поправками (Т2, исправление последнего звена): специалисту итоговая запись
+    const routineRuns = withAmendments(
+      await bodies<AbaRoutineRun>('aba_routine_runs'),
+      await bodies<RoutineRunAmendment>('aba_routine_run_amendments'),
+    );
     const observers = (state.abaObservers ?? []) as AbaObserver[];
 
     const labels = new Map<string, string>();
@@ -463,12 +530,45 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
     }
     // нет отсчёта вовсе (проба без парсируемого времени и без записи сессии) — даты вымываются в null, а не в абсолютные мс
     const abaTrials = trials.map((t) => relativeTimes(t, runStart.get(t.sessionId) ?? orphanStart.get(t.sessionId) ?? Number.NaN));
-    const [trialsOut, sessionsOut, ioaOut, correctionsOut, routineRunsOut] = aliasTimeLeakingIds([
+    // выборы подкрепителя (раунд 4, В6): день, порядок, источник, кто выбрал, сколько жетонов ушло и
+    // размер доски — без вариантов, предложенных на выбор, и без времени суток
+    const sessionById = new Map(sessions.map((s) => [s.id, s]));
+    const runById = new Map(routineRuns.map((r) => [r.id, r]));
+    const choiceRows = await tx.all<{
+      chosen_at: string;
+      source: 'session' | 'routine';
+      source_id: string;
+      reinforcer_id: string;
+      chosen_by: 'child' | 'adult';
+      tokens: number | null;
+    }>(
+      'SELECT chosen_at, source, source_id, reinforcer_id, chosen_by, tokens FROM aba_reinforcer_choices WHERE child_id = ? ORDER BY seq',
+      [childId],
+    );
+    const abaReinforcerChoices = choiceRows.map((c, i) => {
+      const session = c.source === 'session' ? sessionById.get(c.source_id) : undefined;
+      const run = c.source === 'routine' ? runById.get(c.source_id) : undefined;
+      // у выбора сессии жетонов своих нет: выбор делается до обменов, а обменов за сессию бывает
+      // несколько — сумма приписала бы каждому выбору чужие жетоны; обмены с жетонами специалист
+      // видит в событиях `exchange` записи сессии
+      return {
+        order: i + 1,
+        day: session ? (session.day ?? session.startedAt.slice(0, 10)) : run ? run.day : c.chosen_at.slice(0, 10),
+        source: c.source,
+        sourceId: c.source_id,
+        reinforcerId: c.reinforcer_id,
+        chosenBy: c.chosen_by,
+        tokens: c.tokens,
+        boardSize: session ? session.boardSize : (run?.exchangeOffer?.boardSize ?? null),
+      };
+    });
+    const [trialsOut, sessionsOut, ioaOut, correctionsOut, routineRunsOut, choicesOut] = aliasTimeLeakingIds([
       abaTrials,
       abaSessions,
       abaIoa,
       await correctionsOf(tx, childId),
       abaRoutineRuns,
+      abaReinforcerChoices,
     ]);
     return {
       exportedAt,
@@ -477,6 +577,7 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
       abaIoa: ioaOut,
       abaTrialCorrections: correctionsOut,
       abaRoutineRuns: routineRunsOut,
+      abaReinforcerChoices: choicesOut,
       state: { ...dayOnly(withoutBreakCardIds(state)), abaObservers: observers.map((o) => ({ id: label(o.id), role: o.role, trained: o.trained })) },
     };
   });

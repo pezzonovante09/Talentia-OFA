@@ -18,6 +18,7 @@ import { appendConsentEvent } from '../consentLog';
 import { exportChild, exportForSpecialist } from '../purge';
 import type { SqlDb } from '../sql';
 import { asAbaWriter, memoryDb } from './nodeSql';
+import { resultTail } from './routineResultTail';
 
 const NOW = '2026-10-11T10:00:00Z';
 const OBSERVER = 'obs-uuid-7';
@@ -128,7 +129,7 @@ const routineRun = (id = 'run-1', over: Partial<AbaRoutineRun> = {}): AbaRoutine
 const rState = { targetId: 'R', phase: 'acquisition', lastRoutineRunDay: '2026-10-11' } as AbaTargetState;
 const routineResult = (id: string, record: Partial<AbaRoutineRun> = {}): RoutineRunResult => {
   const { token: _t, exchangeOffer: _o, ...base } = routineRun(id, record);
-  return { trials: [], state: rState, before: { targetId: 'R', phase: 'acquisition' } as AbaTargetState, claim: { token: 'at_start_level', tokens: 1, nonContingent: false }, record: base, band: '7', reinforcerPool: POOL, seed: 7 };
+  return { trials: [], state: rState, before: { targetId: 'R', phase: 'acquisition' } as AbaTargetState, claim: { token: 'at_start_level', tokens: 1, nonContingent: false }, record: base, band: '7', reinforcerPool: POOL, seed: 7, ...resultTail(base) };
 };
 const stepTrial = (id: string, over: Partial<AbaTrial> = {}): AbaTrial => ({
   ...baseTrial,

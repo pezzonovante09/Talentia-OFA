@@ -61,6 +61,7 @@ import {
 import { MIGRATIONS, migrate } from '../schema';
 import type { SqlDb } from '../sql';
 import { asAbaWriter, memoryDb } from './nodeSql';
+import { resultTail } from './routineResultTail';
 
 const NOW = '2026-10-12T10:00:00Z';
 const PSEUDO = '5f0c2a8e-3b1d-4c6e-9a7f-2d8b1e4c7a90';
@@ -107,6 +108,7 @@ function routineResult(runId: string, claim: RoutineClaim, over: { endedMs?: num
   const stateOf = (n: number) =>
     ({ targetId: 'R', phase: 'acquisition', ...(n > 0 ? { lastRoutineRunDay: dayOf(n) } : {}) }) as AbaTargetState;
   return {
+    ...resultTail({ id: runId, day: dayOf(k), targetId: 'R', setting: 'usual' }),
     trials: [],
     state: stateOf(k),
     before: stateOf(k - 1),
@@ -1078,7 +1080,7 @@ describe('экспорт: прогоны и выборы', () => {
     await commitRoutineExchange(db, 'kid', 'run-1', out.offer!.options[0], 'child', NOW);
     const exp = await exportChild(db, 'kid', NOW, {});
     expect(exp.abaReinforcerChoices).toEqual([
-      { chosenAt: '2026-10-12T10:00:00.000Z', source: 'routine', sourceId: 'run-1', reinforcerId: out.offer!.options[0], chosenBy: 'child' },
+      { chosenAt: '2026-10-12T10:00:00.000Z', source: 'routine', sourceId: 'run-1', reinforcerId: out.offer!.options[0], chosenBy: 'child', tokens: 5 },
     ]);
     expect((exp.abaRoutineRuns as AbaRoutineRun[])[0].exchangeOffer).toEqual(out.offer);
   });

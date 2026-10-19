@@ -36,6 +36,7 @@ import {
 } from '../purge';
 import type { SqlDb, SqlValue } from '../sql';
 import { asAbaWriter, memoryDb } from './nodeSql';
+import { resultTail } from './routineResultTail';
 
 const NOW = '2026-10-11T10:00:00Z';
 const ABA_TEXT = 'ru-draft-1';
@@ -102,6 +103,7 @@ const result = (id = 'run-1', over: Partial<RoutineRunResult> = {}): RoutineRunR
   band: '7',
   reinforcerPool: POOL,
   seed: 7,
+  ...resultTail(recordBase(id)),
   ...over,
 });
 
@@ -481,9 +483,9 @@ describe('экспорт специалисту без снимков «в ра�
     expect(out.abaTrials).toHaveLength(2);
   });
 
-  it('фиксатор: специалисту не уходят ровно два ключа ABA — снимки «в работе»', () => {
+  it('фиксатор: специалисту не уходят ровно три ключа ABA — снимки «в работе» и открытая форма места', () => {
     const excluded = ABA_STATE_KEYS.filter((k) => !(SPECIALIST_STATE_KEYS as readonly string[]).includes(k));
-    expect(excluded).toEqual(['abaSessionInProgress', 'abaRoutineRunInProgress']);
+    expect(excluded).toEqual(['abaSessionInProgress', 'abaRoutineRunInProgress', 'abaRoutineSettingOpen']);
   });
 });
 

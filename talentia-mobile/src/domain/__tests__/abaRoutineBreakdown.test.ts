@@ -130,25 +130,28 @@ function stepOk(run: RoutineRunState): RoutineRunState {
     sdEndedAt: '2026-10-01T08:00:01Z',
     scoredBy: trialStep.scoredBy,
   };
-  const res = recordRoutineStep(run, input);
+  const res = recordRoutineStep(run, input, nowOf(run));
   if (!res.ok) throw new Error(res.errors.join('; '));
   return res.run;
 }
+
+/** Момент записи звена: минута на пробу от старта прогона. */
+const nowOf = (run: RoutineRunState) => run.startedAt + (run.trials.length + 1) * 60_000;
 
 /** Прогон, оборванный срывом после `steps` верных звеньев; остаток доводит взрослый. */
 function broken(state: AbaTargetState | undefined, d: string, steps = 1, setting?: 'usual' | 'other_adult' | 'other_place') {
   let run = start(state, d);
   for (let i = 0; i < steps; i += 1) run = stepOk(run);
-  run = interruptRoutineRun(run, 'breakdown');
+  run = interruptRoutineRun(run, 'breakdown', nowOf(run));
   if (setting) run = setRoutineSetting(run, setting);
-  return finishRoutineRun(finishRoutineByAdult(run), Date.parse(`${d}T08:05:00Z`), 7, NO_HISTORY);
+  return finishRoutineRun(finishRoutineByAdult(run), 7, NO_HISTORY);
 }
 
 /** Спокойный прогон: все звенья верно. */
 function calm(state: AbaTargetState | undefined, d: string) {
   let run = start(state, d);
   while (nextRoutineStep(run).kind === 'trial') run = stepOk(run);
-  return finishRoutineRun(run, Date.parse(`${d}T08:05:00Z`), 7, NO_HISTORY);
+  return finishRoutineRun(run, 7, NO_HISTORY);
 }
 
 describe('срыв в обучении: не промах навыка', () => {
@@ -258,8 +261,9 @@ describe('срыв в проверке «получается дома»: вер
 describe('внешний обрыв: состояние как до прогона', () => {
   it('state равен before, срыв не записан, счётчик срывов не тронут, день не занят', () => {
     const before = acq({ assentSessionsInRow: 1 });
-    const run = interruptRoutineRun(stepOk(start(before, day(3))), 'external');
-    const r = finishRoutineRun(run, Date.parse(`${day(3)}T08:05:00Z`), 7, NO_HISTORY);
+    const one = stepOk(start(before, day(3)));
+    const run = interruptRoutineRun(one, 'external', nowOf(one));
+    const r = finishRoutineRun(run, 7, NO_HISTORY);
     expect(r.state).toEqual(before);
     expect(r.state.routineBreakdowns).toBeUndefined();
     expect(r.state.lastRoutineRunDay).toBeUndefined();

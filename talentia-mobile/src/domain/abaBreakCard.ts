@@ -50,7 +50,16 @@ export type BreakCardState = {
   deviceId: string | null;
   /** Повторов подряд, где ребёнок коснулся только после жеста. */
   repeatsPrompted?: number;
+  /**
+   * Просьбы в прогонах рутин (раунд 4, Д3; методист 2026-10-19): отдельно от `recent` — это окно
+   * сессий для `break_card_frequent`, и прогоны без просьб разбавили бы его. Только прогоны с
+   * просьбой, последние `BREAK_CARD_ROUTINE_KEEP`; `ended` — прогон кончился по второй просьбе.
+   */
+  routineRequests?: { runId: string; day: string; requests: number; ended: boolean }[];
 };
+
+/** Сколько прогонов рутин с просьбой о перерыве хранит карточка. */
+export const BREAK_CARD_ROUTINE_KEEP = 10;
 
 export function initialBreakCard(): BreakCardState {
   return {
@@ -122,7 +131,9 @@ export function applyBreakCardTraining(
   ctx: { day: string; observerId: string | null; deviceId?: string | null },
 ): BreakCardState {
   if (events.length === 0) return card;
-  const independentTouch = events.some((e) => e.step === 'independent' && e.touched && !e.gestureGiven);
+  // касание без жеста и на ступени `prompted` (жест ещё не дан) — тоже самостоятельное (раунд 4,
+  // мелочь методиста); на `model` касается взрослый
+  const independentTouch = events.some((e) => e.step !== 'model' && e.touched && !e.gestureGiven);
   const promptedTouch = events.some((e) => e.touched && e.gestureGiven);
   const base: BreakCardState = {
     ...card,
@@ -169,6 +180,34 @@ export function breakCardRequestsOf(
 ): { requests: number; byLimit: boolean } {
   const child = events.filter((e) => e.kind === 'assent' && e.by === 'child_card');
   return { requests: child.length, byLimit: child.some((e) => e.action === 'end') };
+}
+
+/**
+ * Итог прогона рутины для карточки (раунд 4, Д3): просьбы ребёнка в звеньях — в `routineRequests`,
+ * а не в `recent` и не в срывы рутины. Прогон без просьб карточку не меняет. Просьба при ещё не
+ * принятой карточке — принятие (`in_trial`), как в сессии. Касание подсвеченной карточки после
+ * «Отказа» просьбой не считается (его не передают сюда).
+ */
+export function applyBreakCardRoutine(
+  card: BreakCardState,
+  run: { runId: string; day: string; requests: number; ended: boolean },
+): BreakCardState {
+  if (run.requests <= 0) return card;
+  const routineRequests = [...(card.routineRequests ?? []), run].slice(-BREAK_CARD_ROUTINE_KEEP);
+  const acquiredNow = !card.acquired;
+  return {
+    ...card,
+    ...(acquiredNow
+      ? {
+          acquired: true,
+          acquiredAt: run.day,
+          acquiredVia: 'in_trial' as const,
+          step: 'independent' as const,
+          flags: withoutFlag(card.flags, 'break_card_not_acquired'),
+        }
+      : {}),
+    routineRequests,
+  };
 }
 
 /**

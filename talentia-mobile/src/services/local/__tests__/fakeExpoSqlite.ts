@@ -8,6 +8,7 @@
  *   основном соединении (`runAsync` / `execAsync`) — на время своей операции. Если писатель пришёл,
  *   пока замок у другого, — `database is locked` (в бою `busy_timeout` не помогает при
  *   `SQLITE_BUSY_SNAPSHOT`, поэтому модель строгая). Чтения (`getAllAsync`) замок не ждут (WAL).
+ * - Закрыть соединение посреди записи нельзя, удалить файл при открытом соединении — тоже: бросают.
  * - Время в модели — микрозадачи (`hop`): детерминированно, без таймеров.
  */
 
@@ -35,6 +36,8 @@ export class FakeFile {
   statements: StatementLog[] = [];
   mainConn: Conn;
   closed = false;
+  /** Открытые и не закрытые нативные соединения: удалить файл при открытом нельзя (как в бою). */
+  openConnections = 0;
   private seq = 0;
 
   constructor(name: string) {
@@ -163,10 +166,17 @@ export const fakeExpoSqlite = {
       files.set(name, file);
     }
     const f = file;
+    f.openConnections += 1;
+    f.closed = false;
+    let open = true;
     return {
       ...makeConnection(f, f.mainConn, null),
       closeAsync: async () => {
-        f.closed = true;
+        // нативное закрытие посреди записи бросает: соединение остаётся открытым
+        if (f.holder !== null) throw new Error(`unable to close: busy (${f.holder})`);
+        if (open) f.openConnections -= 1;
+        open = false;
+        f.closed = f.openConnections === 0;
         injected.closeCalls += 1;
       },
       async withExclusiveTransactionAsync(task: (txn: unknown) => Promise<void>) {
@@ -189,6 +199,8 @@ export const fakeExpoSqlite = {
     };
   },
   async deleteDatabaseAsync(name: string) {
+    const f = files.get(name);
+    if (f && f.openConnections > 0) throw new Error(`database ${name} is open`);
     files.delete(name);
   },
 };

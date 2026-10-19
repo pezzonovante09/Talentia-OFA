@@ -15,6 +15,7 @@ import {
   MAX_ESCALATIONS_PER_TRIAL,
   PROMPT_DEPENDENCE,
   RESPONSE_WINDOW_MS,
+  ROUTINE_DEPENDENCE,
   type AbaResponse,
   type AbaFormat,
   type AbaTarget,
@@ -577,6 +578,60 @@ export function applyPromptDependence(
       : {}),
     dependenceFlaggedAtSession: sessionIndex,
   };
+}
+
+/**
+ * Детектор зависимости у рутины — по звену (раунд 4, В8; методист 2026-10-19, переспросить):
+ * окно — последние `ROUTINE_DEPENDENCE.windowRuns` прогонов обучения после флага (`runs` — только
+ * записанные и не прерванные, `routineHistoryOf` плюс этот прогон; `index` — `runNo`). Звено
+ * зависимо, если в окне у него не меньше `minPromptedPerStep` подсказанных проб со старта L0 и
+ * выполнены доли детектора (`dependenceRates`). Меньше прогонов — судить не по чему, `[]`.
+ * Общий детектор по всем звеньям сразу у рутины не годится: одно звено с подсказками тонуло в
+ * самостоятельных остальных.
+ */
+export function routineDependentSteps(s: AbaTargetState, runs: readonly SessionTrials[], stepIds: readonly string[]): string[] {
+  const fresh = runs.filter((x) => s.dependenceFlaggedAtSession === null || x.index > s.dependenceFlaggedAtSession);
+  const window = fresh.slice(-ROUTINE_DEPENDENCE.windowRuns);
+  if (window.length < ROUTINE_DEPENDENCE.windowRuns) return [];
+  const trials = window
+    .flatMap((x) => x.trials)
+    .filter((t) => t.kind === 'teaching' && t.startPromptLevel === 0 && t.response !== 'interrupted' && !t.adultUnplannedPrompt);
+  return stepIds.filter((id) => {
+    const own = trials.filter((t) => t.stepId === id);
+    return own.filter((t) => t.response === 'prompted').length >= ROUTINE_DEPENDENCE.minPromptedPerStep && dependenceRates(own);
+  });
+}
+
+/**
+ * Реакция на зависимость у рутины — **только флаг** (раунд 4, В2; методист 2026-10-19, переспросить):
+ * уровни, задержка и счётчики звеньев не трогаются — сброс в L0 откатывал подъём уровня, которого
+ * рутина достигла затуханием. Звенья — специалисту (`dependentStepIds`); окно детектора начинается
+ * заново после `runNo`.
+ */
+export function applyRoutineDependence(s: AbaTargetState, runNo: number, stepIds: readonly string[]): AbaTargetState {
+  return {
+    ...s,
+    flags: s.flags.includes('prompt_dependent') ? s.flags : [...s.flags, 'prompt_dependent'],
+    dependentStepIds: [...stepIds],
+    dependenceFlaggedAtSession: runNo,
+  };
+}
+
+/**
+ * Снятие `prompt_dependent` освоением (раунд 4, В3; методист 2026-10-19, переспросить): цель вошла в
+ * освоенную фазу любым путём (критерий, базовая линия, пройденная проверка) — зависимости нет. По
+ * «чистому» окну флаг не снимается. `dependenceFlaggedAtSession` остаётся: на нём держится окно
+ * детектора и гард устаревшей записи; когда снят — `dependenceClearedAt` (сессия или `runNo`).
+ */
+export function clearDependenceOnMastery(
+  fromPhase: AbaTargetState['phase'],
+  s: AbaTargetState,
+  at: number,
+): AbaTargetState {
+  const mastered = (p: AbaTargetState['phase']) => p === 'mastered' || p === 'maintenance';
+  if (mastered(fromPhase) || !mastered(s.phase) || !s.flags.includes('prompt_dependent')) return s;
+  const { dependentStepIds: _d, ...rest } = s;
+  return { ...rest, flags: s.flags.filter((f) => f !== 'prompt_dependent'), dependenceClearedAt: at };
 }
 
 /**

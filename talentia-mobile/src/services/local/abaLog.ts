@@ -92,6 +92,17 @@ export class RoutineStateConflictError extends Error {
 }
 
 /**
+ * Форма места или исправление звена рутины уже закрыты: прогон не тот, форма закрыта (другой
+ * прогон, другой день, «как обычно») или прогона нет (раунд 4, Д2, В7). Не записано ничего; экран
+ * молча идёт дальше — место остаётся «как обычно».
+ */
+export class RoutineRunClosedError extends Error {
+  constructor() {
+    super('Прогон рутины уже закрыт: отметка не записана');
+  }
+}
+
+/**
  * Итог сессии посчитан без учёта обмена рутины в её окне: с нулём обменов такая сессия ложно
  * опустила бы ступень доски. Экран считает признак (`routineExchangeInSessionWindow`) и передаёт его
  * в `finishAbaSession`.
@@ -156,6 +167,43 @@ export async function appendRoutineRun(db: SqlDb, childId: string, run: AbaRouti
   await db.run(
     'INSERT INTO aba_routine_runs (child_id, id, target_id, day, body, recorded_at) VALUES (?, ?, ?, ?, ?, ?)',
     [childId, run.id, run.targetId, run.day, JSON.stringify(run), recordedAtIso(recordedAt)],
+  );
+}
+
+/**
+ * Поправка записанного прогона (раунд 4, Д2, В7): место «где и с кем» после пересчёта (`setting`)
+ * или исправление последнего звена (`correction`) — итоговые место и смена фазы. Журнал прогонов
+ * только дописывается, поэтому поправка — отдельной строкой; читатели берут последнюю.
+ */
+export type RoutineRunAmendment = {
+  runId: string;
+  reason: 'setting' | 'correction';
+  setting: AbaRoutineRun['setting'];
+  phase: AbaRoutineRun['phase'];
+};
+
+/** Поправка прогона — кирпич для `commit.ts`. */
+export async function appendRoutineAmendment(db: SqlDb, childId: string, a: RoutineRunAmendment, recordedAt: string): Promise<void> {
+  await db.run('INSERT INTO aba_routine_run_amendments (child_id, run_id, body, recorded_at) VALUES (?, ?, ?, ?)', [
+    childId,
+    a.runId,
+    JSON.stringify(a),
+    recordedAtIso(recordedAt),
+  ]);
+}
+
+/** Прогоны с последними поправками: место и смена фазы — итоговые. */
+export function withAmendments(runs: readonly AbaRoutineRun[], amendments: readonly RoutineRunAmendment[]): AbaRoutineRun[] {
+  const last = new Map(amendments.map((a) => [a.runId, a]));
+  return runs.map((r) => {
+    const a = last.get(r.id);
+    return a ? { ...r, setting: a.setting, phase: a.phase } : r;
+  });
+}
+
+async function amendmentsOf(db: SqlDb, childId: string): Promise<RoutineRunAmendment[]> {
+  return parse(
+    await db.all<{ body: string }>('SELECT body FROM aba_routine_run_amendments WHERE child_id = ? ORDER BY seq', [childId]),
   );
 }
 
@@ -342,11 +390,19 @@ export async function ioaOfSession(db: SqlDb, childId: string, sessionId: string
  * свежие в конце. `index` — сквозной номер прогона из его записи (`runNo`), а не позиция в
  * журнале: срок хранения удаляет старые прогоны, позиции сдвигаются, и флаг (он хранит `runNo`)
  * отсекал бы новые прогоны. Номер следующего прогона — `routineRunSeq` в состоянии цели. Прогон
- * без `runNo` (записан до счётчика) получает позицию. Входят только прогоны обучения, не
- * отменённые извне (состояние откатывается) и не оборванные срывом (срыв — не промах навыка);
+ * без `runNo` (записан до счётчика) получает позицию. Входят только **записанные** прогоны обучения
+ * (пробы свёрнутого, ещё не записанного прогона сюда не попадают), не отменённые извне (состояние
+ * откатывается), не оборванные срывом и не кончившиеся отказом (не промах навыка); `exclude` — прогон,
+ * который пересчитывается (Т2: он уже записан Т1);
  * пробы — только идущие в освоение (как `own` в `finishRoutineRun`); прогон без таких проб не входит.
  */
-export async function routineHistoryOf(db: SqlDb, childId: string, targetId: string, limit = 10): Promise<RoutineHistory> {
+export async function routineHistoryOf(
+  db: SqlDb,
+  childId: string,
+  targetId: string,
+  limit = 10,
+  exclude?: string,
+): Promise<RoutineHistory> {
   const runs = await db.all<{ id: string; body: string }>(
     'SELECT id, body FROM aba_routine_runs WHERE child_id = ? AND target_id = ? ORDER BY seq',
     [childId, targetId],
@@ -366,16 +422,18 @@ export async function routineHistoryOf(db: SqlDb, childId: string, targetId: str
       return { index: run.runNo ?? i + 1, run, trials: byRun.get(r.id) ?? [] };
     })
     .filter((x) => x.run.kind === 'teaching' && x.run.interrupted === null && x.trials.length > 0)
+    .filter((x) => x.run.id !== exclude)
     .map(({ index, trials }) => ({ index, trials }))
     .slice(-limit);
   return { runs: past };
 }
 
-/** Прогоны рутины ребёнка в порядке записи. */
+/** Прогоны рутины ребёнка в порядке записи — с поправками места и фазы (`withAmendments`). */
 export async function routineRunsOf(db: SqlDb, childId: string, targetId?: string): Promise<AbaRoutineRun[]> {
-  return parse(
+  const runs = parse<AbaRoutineRun>(
     targetId
       ? await db.all<{ body: string }>('SELECT body FROM aba_routine_runs WHERE child_id = ? AND target_id = ? ORDER BY seq', [childId, targetId])
       : await db.all<{ body: string }>('SELECT body FROM aba_routine_runs WHERE child_id = ? ORDER BY seq', [childId]),
   );
+  return withAmendments(runs, await amendmentsOf(db, childId));
 }

@@ -82,7 +82,7 @@ function adapt(db: SQLite.SQLiteDatabase, serial: WriteQueue, inTransaction = fa
   return self;
 }
 
-const opened = new Map<string, { raw: Promise<SQLite.SQLiteDatabase>; db: Promise<SqlDb> }>();
+const opened = new Map<string, { raw: Promise<SQLite.SQLiteDatabase>; db: Promise<SqlDb>; serial: WriteQueue }>();
 
 /** Открыть базу аккаунта и накатить схему. Повторные вызовы возвращают ту же базу. */
 export function openLocalDb(accountId: string): Promise<SqlDb> {
@@ -90,13 +90,14 @@ export function openLocalDb(accountId: string): Promise<SqlDb> {
   let entry = opened.get(name);
   if (!entry) {
     const raw = SQLite.openDatabaseAsync(name);
+    const serial = newWriteQueue();
     const db = raw.then(async (r) => {
-      const a = adapt(r, newWriteQueue());
+      const a = adapt(r, serial);
       await a.exec(`PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; ${CONNECTION_PRAGMAS}`);
       await migrate(a);
       return a;
     });
-    entry = { raw, db };
+    entry = { raw, db, serial };
     opened.set(name, entry);
     // Сбой открытия или наката не должен навсегда остаться в кэше: повторный вызов пробует заново.
     const failed = entry;
@@ -108,13 +109,26 @@ export function openLocalDb(accountId: string): Promise<SqlDb> {
   return entry.db;
 }
 
-/** Удаление аккаунта: закрыть базу и удалить файл целиком, а не только строки. */
+/**
+ * Удаление аккаунта: закрыть базу и удалить файл целиком, а не только строки. Закрытие встаёт в
+ * очередь записи — за накатом схемы и транзакциями, начатыми до вызова: нативный `closeAsync`
+ * посреди транзакции, а `deleteDatabaseAsync` при открытом соединении бросают, и файл, ключи и
+ * PIN остались бы на устройстве (раунд 4, backend 1). Новые записи после вызова базы уже не видят.
+ */
 export async function deleteLocalDb(accountId: string): Promise<void> {
   const name = localDbName(accountId);
   const entry = opened.get(name);
   if (entry) {
-    await (await entry.raw).closeAsync();
     opened.delete(name);
+    // сбой открытия или наката соединение уже закрыл (`openLocalDb`): дождаться и не закрывать второй раз
+    const ready = await entry.db.then(
+      () => true,
+      () => false,
+    );
+    if (ready) {
+      const raw = await entry.raw;
+      await entry.serial(() => raw.closeAsync());
+    }
   }
   await SQLite.deleteDatabaseAsync(name);
 }

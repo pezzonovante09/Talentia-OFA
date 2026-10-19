@@ -4,14 +4,20 @@
  * дописывание.
  */
 import type { LessonRun } from '../../domain/parentReport';
+import { recordedAtIso } from './abaLog';
 import type { SqlDb } from './sql';
 
+/**
+ * Колонка `started_at` — в едином формате UTC с миллисекундами (`recordedAtIso`): срок хранения
+ * сравнивает её как строку, и время с поясом или без долей секунды удалилось бы не в срок (раунд 4,
+ * backend 2). Тело записи остаётся как пришло.
+ */
 export async function appendLessonRun(db: SqlDb, run: LessonRun): Promise<void> {
   await db.run('INSERT INTO lesson_runs (child_id, id, lesson_id, started_at, body) VALUES (?, ?, ?, ?, ?)', [
     run.childId,
     run.id,
     run.lessonId,
-    run.startedAt,
+    recordedAtIso(run.startedAt),
     JSON.stringify(run),
   ]);
 }

@@ -658,6 +658,21 @@ export type AbaTargetState = {
    * `dependenceFlaggedAtSession` у рутины — именно этот номер (`AbaRoutineRun.runNo`).
    */
   routineRunSeq?: number;
+  /**
+   * Рутина: целиком самостоятельные прогоны проверки «получается дома» (раунд 4, В1; методист
+   * 2026-10-19). Два — проверка пройдена; первый же не целиком самостоятельный — провал.
+   */
+  routineVerificationRuns?: { runNo: number; day: string }[];
+  /**
+   * Рутина: звенья, по которым сработал детектор зависимости (раунд 4, В8) — специалисту. Уровни
+   * звеньев флаг не меняет (В2).
+   */
+  dependentStepIds?: string[];
+  /**
+   * Когда `prompt_dependent` снят освоением (В3): номер сессии, у рутины — `runNo` прогона.
+   * `dependenceFlaggedAtSession` при этом остаётся — на нём держится окно детектора и гард записи.
+   */
+  dependenceClearedAt?: number;
   /** После проваленной проверки — столько следующих сессий с целью нужна проверка IOA. */
   ioaDueSessions?: number;
   /** Взрослый отметил «цель пересмотрена» и снял `assent_concern` — кто по роли и когда. */
@@ -938,8 +953,12 @@ export type AbaRoutineRun = {
   kind: RoutineRunKind;
   startedAt: string;
   endedAt: string;
-  /** Срыв — остаток довёл взрослый; внешняя причина — в окно и критерий не идёт, день не занят. */
-  interrupted: 'breakdown' | 'external' | null;
+  /**
+   * Срыв — остаток довёл взрослый; внешняя причина — в окно и критерий не идёт, день не занят;
+   * `assent_withdrawn` — вторая просьба о перерыве (или «Отказ») за прогон либо «Сопротивляется»:
+   * прогон кончен, в окно и в срывы не идёт, день занят, жетона нет (раунд 4, Д3).
+   */
+  interrupted: 'breakdown' | 'external' | 'assent_withdrawn' | null;
   /** Сквозной номер прогона рутины (`AbaTargetState.routineRunSeq` после него); у отменённых извне нет. */
   runNo?: number;
   setting: RoutineSetting;
@@ -992,6 +1011,19 @@ export const PROMPT_DEPENDENCE = {
   minSilentEvidence: 5,
   overSessions: 3,
 } as const;
+
+/**
+ * Детектор зависимости у рутины — по звену (раунд 4, В8; методист 2026-10-19, переспросить):
+ * последние `windowRuns` записанных прогонов обучения после флага; звено зависимо при не меньше
+ * `minPromptedPerStep` подсказанных пробах со старта L0 и долях `PROMPT_DEPENDENCE`.
+ */
+export const ROUTINE_DEPENDENCE = {
+  windowRuns: 5,
+  minPromptedPerStep: 5,
+} as const;
+
+/** Проверка «получается дома» у рутины: столько целиком самостоятельных прогонов (раунд 4, В1). */
+export const ROUTINE_VERIFICATION_RUNS = 2;
 
 /** Провалов поддержания подряд, после которых цель возвращается в обучение. */
 export const MAINTENANCE_FAILS_TO_REACQUIRE = 2;

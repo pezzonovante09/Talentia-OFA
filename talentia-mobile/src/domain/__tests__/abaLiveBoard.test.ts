@@ -177,8 +177,8 @@ describe('finishRoutineRun: доски в итоге прогона нет', () 
       startedAt: BASE_MS,
       seed: 31,
     });
-    const interrupted = { ...run, interrupted: 'external' as const, status: 'finished' as const };
-    const r = finishRoutineRun(interrupted, BASE_MS + 1000, 1, NO_HISTORY);
+    const interrupted = { ...run, interrupted: 'external' as const, status: 'finished' as const, endedAt: BASE_MS + 1000 };
+    const r = finishRoutineRun(interrupted, 1, NO_HISTORY);
     expect(r).toMatchObject({ band: '5-6', seed: 31, reinforcerPool: POOL, claim: NONE });
     expect(r).not.toHaveProperty('board');
     expect(r).not.toHaveProperty('token');

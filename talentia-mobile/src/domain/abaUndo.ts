@@ -16,6 +16,7 @@
  * (постфактум-метки в v1 нет, №99). Снимок живёт только в памяти экрана: сворачивание — отмены нет.
  */
 import type { AbaPresentation, AbaTrial, PresentationOutcome } from '../types/aba';
+import { recordRoutineStep, type RoutineRunState } from './abaRoutineRun';
 import { recordTrial, type AbaSessionState, type RecordResult } from './abaSession';
 import type { AbaTrialInput } from './abaTrialStep';
 
@@ -166,6 +167,84 @@ export function undoLastMark(post: AbaSessionState, ctx: UndoContext, outcome: P
       toResponse: replacement.response,
       tokenKept: ctx.tokens,
       tokenAdded,
+    },
+  };
+}
+
+/**
+ * Исправление отметки звена рутины (раунд 4, В7; методист 2026-10-19, переспросить) — те же правила,
+ * что у сессии: только последнее записанное звено, один раз, в течение `UNDO_WINDOW_MS`, пока не
+ * показан SD следующего звена. Не исправляются прерванное звено (карточка, отказ, сопротивление) и
+ * «Звено — самостоятельно» (`adult_completed`). Звено проигрывается заново от снимка до него
+ * (`recordRoutineStep`), замена — `~c1`. Жетонов за звено нет; если исправлено последнее звено уже
+ * после записи прогона (Т1), жетон не отнимается и не доначисляется: отложенный жетон с поведением
+ * уже не связан (`commitRoutineCorrection` пересчитывает итог).
+ */
+export type RoutineUndoContext = {
+  trialId: string;
+  /** Прогон до звена. */
+  snapshot: RoutineRunState;
+  input: AbaTrialInput;
+  markedAt: number;
+  /** Экран ставит `true`, когда показал SD следующего звена. */
+  sdStarted: boolean;
+};
+
+const NOT_ROUTINE_UNDOABLE: ReadonlySet<PresentationOutcome> = new Set<PresentationOutcome>([...NOT_UNDOABLE, 'adult_completed']);
+
+/** Снимок для исправления — сразу после успешного `recordRoutineStep`. */
+export function beginRoutineUndo(before: RoutineRunState, input: AbaTrialInput, trial: AbaTrial, now: number): RoutineUndoContext {
+  return { trialId: trial.id, snapshot: before, input, markedAt: now, sdStarted: false };
+}
+
+export function canUndoRoutineStep(run: RoutineRunState, ctx: RoutineUndoContext | null, now: number): boolean {
+  if (!ctx) return false;
+  const last = run.trials[run.trials.length - 1];
+  const original = ctx.input.presentationLog[ctx.input.presentationLog.length - 1];
+  return (
+    now - ctx.markedAt <= UNDO_WINDOW_MS &&
+    last?.id === ctx.trialId &&
+    last.scoredBy === 'adult' &&
+    last.response !== 'interrupted' &&
+    !last.adultCompleted &&
+    original !== undefined &&
+    !NOT_ROUTINE_UNDOABLE.has(original.outcome) &&
+    run.interrupted === null &&
+    run.pause === null &&
+    !ctx.sdStarted
+  );
+}
+
+export type RoutineUndoResult =
+  | { ok: true; run: RoutineRunState; replacement: AbaTrial; correction: TrialCorrection }
+  | { ok: false; errors: string[] };
+
+/** Исправить отметку звена: проиграть его заново с другим исходом последнего предъявления. */
+export function undoRoutineStep(post: RoutineRunState, ctx: RoutineUndoContext, outcome: PresentationOutcome, now: number): RoutineUndoResult {
+  if (!canUndoRoutineStep(post, ctx, now)) return { ok: false, errors: ['исправление сейчас недоступно'] };
+  if (NOT_ROUTINE_UNDOABLE.has(outcome)) return { ok: false, errors: ['этот исход отметкой не исправляется'] };
+  const original = post.trials[post.trials.length - 1];
+  const log = ctx.input.presentationLog;
+  const last = log[log.length - 1];
+  if (last.outcome === outcome) return { ok: false, errors: ['исход тот же'] };
+  const replacementId = `${ctx.trialId}~c1`;
+  const corrected: AbaTrialInput = { ...ctx.input, id: replacementId, presentationLog: [...log.slice(0, -1), { ...last, outcome }] };
+  // момент записи — исходный: конец прогона (`endedAt`) исправление не сдвигает
+  const replay = recordRoutineStep(ctx.snapshot, corrected, ctx.markedAt);
+  if (!replay.ok) return { ok: false, errors: replay.errors };
+  return {
+    ok: true,
+    run: { ...replay.run, setting: post.setting },
+    replacement: replay.trial,
+    correction: {
+      trialId: ctx.trialId,
+      replacementId,
+      sessionId: post.runId,
+      msSinceOriginal: Math.max(0, now - ctx.markedAt),
+      fromResponse: original.response,
+      toResponse: replay.trial.response,
+      tokenKept: 0,
+      tokenAdded: 0,
     },
   };
 }

@@ -24,6 +24,7 @@ import {
   type PromptLevel,
 } from '../types/aba';
 import { isMasteryMet, markMastered } from './abaCriterion';
+import { clearDependenceOnMastery } from './abaPrompting';
 
 /** Пробы, по которым принимаются решения. Коррекция, разогрев и закрывающая не кодируются. */
 const IOA_KINDS: ReadonlySet<AbaTrialKind> = new Set([
@@ -234,9 +235,10 @@ export function applyLateIoa(
   );
   const flags = bothTrainedButLow && !s.flags.includes('ioa_low') ? [...s.flags, 'ioa_low' as const] : s.flags;
   const next = { ...s, criterionSessions, flags };
-  // критерий уже был выполнен и ждал подтверждения — теперь «освоено»
+  // критерий уже был выполнен и ждал подтверждения — теперь «освоено»; освоение снимает
+  // зависимость от подсказки, как в итоге сессии (раунд 4, В3)
   if (next.flags.includes('needs_verification') && isMasteryMet(next) && streakVerified(next)) {
-    return markMastered(next, sessionIndex, 'criterion');
+    return clearDependenceOnMastery(s.phase, markMastered(next, sessionIndex, 'criterion'), sessionIndex);
   }
   return next;
 }

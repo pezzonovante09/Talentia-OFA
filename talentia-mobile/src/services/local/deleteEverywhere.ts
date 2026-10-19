@@ -19,8 +19,11 @@ import {
   type CleanedPart,
   type DeviceStore,
 } from './device';
+import type { ConsentEvent } from '../../domain/consent';
+import { readConsentLog } from './consentLog';
 import { purgeChild, wipeDevice } from './purge';
 import type { SqlDb } from './sql';
+import { LOCAL_ONLY_SCOPES } from './sync';
 
 export type DeleteChildInput = {
   db: SqlDb;
@@ -66,16 +69,40 @@ export type WipeAccountInput = {
   accountId: string;
   /** Закрыть базу и удалить файл целиком (`deleteLocalDb`). */
   deleteDbFile: () => Promise<void>;
+  /**
+   * Довести до сервера отзывы облачных областей, ещё не доставленные (`undeliveredRevocations`),
+   * и получить подтверждение. Вызывается, только если такие есть. `false` или ошибка — удаление
+   * не начинается.
+   */
+  deliverRevocations: (events: ConsentEvent[]) => Promise<boolean>;
 };
+
+/**
+ * Отзывы согласий, которые должны уйти на сервер, но ещё не ушли: не только на устройстве
+ * (`LOCAL_ONLY_SCOPES`) и не отмечены доставленными. После «Удалить всё» журнал согласий
+ * стирается вместе с базой, и недоставленный отзыв облака или ИИ не дошёл бы до сервера никогда
+ * (раунд 4, приватность В4).
+ */
+export async function undeliveredRevocations(db: SqlDb): Promise<ConsentEvent[]> {
+  const delivered = new Set((await db.all<{ id: string }>('SELECT id FROM consent_delivered')).map((r) => r.id));
+  return (await readConsentLog(db)).filter((e) => e.action === 'revoke' && !LOCAL_ONLY_SCOPES.has(e.scope) && !delivered.has(e.id));
+}
 
 /**
  * Удаление аккаунта: на устройстве не остаётся ничего — строки, файл базы, все ключи
  * приложения, PIN, кеш озвучки детей, экспорт, уведомления, очередь телеметрии. Журнал
- * согласий переживает удаление только на сервере, с псевдонимами.
+ * согласий на устройстве стирается тоже (решение владельца 2026-10-19); на сервере он переживает
+ * удаление с псевдонимами. Поэтому сначала недоставленные отзывы облачных областей доходят до
+ * сервера: без связи удаление не начинается.
  */
 export async function wipeAccountEverywhere(input: WipeAccountInput): Promise<CleanedPart[]> {
   const { db, device, accountId } = input;
   const done: CleanedPart[] = [];
+
+  const pending = await undeliveredRevocations(db);
+  if (pending.length > 0 && !(await input.deliverRevocations(pending))) {
+    throw new Error('Отзывы согласий не дошли до сервера: удаление аккаунта — только со связью');
+  }
 
   await wipeDevice(db);
   await input.deleteDbFile();

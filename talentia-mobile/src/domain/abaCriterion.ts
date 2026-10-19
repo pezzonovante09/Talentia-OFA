@@ -305,10 +305,13 @@ export function routineRunRecord(
   extra: Pick<RoutineRunRecord, 'interrupted' | 'setting'> = {},
 ): RoutineRunRecord {
   const steps = target.steps ?? [];
-  const complete = steps.every((st) => run.some((t) => t.stepId === st.id));
+  // проба, снятая просьбой о перерыве или «Отказом», пробой не считается: звено повторено после
+  // перерыва, и в зачёт идёт повтор (раунд 4, Д3)
+  const scored = run.filter((t) => t.response !== 'interrupted');
+  const complete = steps.every((st) => scored.some((t) => t.stepId === st.id));
   return {
     day,
-    whole: !extra.interrupted && complete && run.every((t) => t.response === 'independent'),
+    whole: !extra.interrupted && complete && scored.every((t) => t.response === 'independent'),
     ...(extra.interrupted ? { interrupted: true as const } : {}),
     startLevelSum: steps.reduce((sum, st) => sum + clampToApp(promptStateOf(before, st.id).startPromptLevel), 0),
     ...(extra.setting ? { setting: extra.setting } : {}),

@@ -2,7 +2,9 @@ import type { AbaTrial } from '../../../types/aba';
 import { appendTrial, trialsOfTarget } from '../abaLog';
 import { appendConsentEvent, readConsentLog } from '../consentLog';
 import type { CleanedPart, DeviceStore } from '../device';
-import { deleteChildEverywhere, wipeAccountEverywhere } from '../deleteEverywhere';
+import { deleteChildEverywhere, undeliveredRevocations, wipeAccountEverywhere } from '../deleteEverywhere';
+import type { ConsentEvent } from '../../../domain/consent';
+import { revokeAbaProcessing } from '../purge';
 import { asAbaWriter, memoryDb } from './nodeSql';
 
 const PSEUDO = '5f0c2a8e-3b1d-4c6e-9a7f-2d8b1e4c7a90';
@@ -117,6 +119,7 @@ describe('удаление аккаунта везде', () => {
       deleteDbFile: async () => {
         fileDeleted = true;
       },
+      deliverRevocations: async () => true,
     });
     expect(new Set(done)).toEqual(
       new Set(['sqlite', 'async_storage', 'telemetry_queue', 'secure_store', 'voice_cache', 'export_file', 'notifications']),
@@ -125,5 +128,73 @@ describe('удаление аккаунта везде', () => {
     expect(await readConsentLog(db)).toEqual([]);
     expect(remaining()).toEqual(['other-app']);
     expect(calls).toEqual(expect.arrayContaining(['secure:talentia.acc-123456.pin,talentia.acc-123456.lockout', 'notify:*']));
+  });
+});
+
+describe('удаление аккаунта: недоставленные отзывы сначала на сервер (раунд 4, приватность В4)', () => {
+  const revoke = (id: string, scope: 'cloud_sync' | 'companion_ai' | 'aba_processing', childId = 'kid-a') =>
+    ({ id, scope, action: 'revoke', childId, textVersion: 'ru-1', confirmedBy: 'pin', actorId: 'parent', at: '2026-09-30T11:00:00Z' }) as const;
+
+  async function withRevokes() {
+    const db = await filled();
+    await appendConsentEvent(db, revoke('r-cloud', 'cloud_sync'), 'owner');
+    await appendConsentEvent(db, revoke('r-ai-done', 'companion_ai'), 'owner');
+    await db.run('INSERT INTO consent_delivered (id, delivered_at) VALUES (?, ?)', ['r-ai-done', NOW]);
+    // отзыв ABA — только на устройстве: на сервер не уходит (ребёнок без данных ABA)
+    await revokeAbaProcessing(db, revoke('r-aba', 'aba_processing', 'kid-c'), 'owner');
+    return db;
+  }
+  const wipe = (db: Awaited<ReturnType<typeof filled>>, deliverRevocations: (e: ConsentEvent[]) => Promise<boolean>) => {
+    const { device, calls } = fakeDevice(KEYS);
+    let fileDeleted = false;
+    const run = wipeAccountEverywhere({
+      db,
+      device,
+      accountId: 'acc-123456',
+      deleteDbFile: async () => {
+        fileDeleted = true;
+      },
+      deliverRevocations,
+    });
+    return { run, calls, fileDeleted: () => fileDeleted };
+  };
+
+  it('undeliveredRevocations: только недоставленные отзывы не-локальных областей', async () => {
+    const db = await withRevokes();
+    expect((await undeliveredRevocations(db)).map((e) => e.id)).toEqual(['r-cloud']);
+  });
+
+  it('недоставленный отзыв облака передаётся deliverRevocations, после подтверждения — удаление', async () => {
+    const db = await withRevokes();
+    const sent: string[][] = [];
+    const w = wipe(db, async (events) => {
+      sent.push(events.map((e) => e.id));
+      return true;
+    });
+    await w.run;
+    expect(sent).toEqual([['r-cloud']]);
+    expect(w.fileDeleted()).toBe(true);
+    expect(await readConsentLog(db)).toEqual([]);
+  });
+
+  it.each([
+    ['false', async () => false],
+    ['ошибка', async () => Promise.reject(new Error('нет сети'))],
+  ])('доставка: %s — не удалено ничего', async (_, deliver) => {
+    const db = await withRevokes();
+    const w = wipe(db, deliver);
+    await expect(w.run).rejects.toThrow();
+    expect([w.fileDeleted(), w.calls]).toEqual([false, []]);
+    expect(await trialsOfTarget(db, 'kid-a', 't')).toHaveLength(1);
+    expect((await readConsentLog(db)).map((e) => e.id)).toContain('r-cloud');
+  });
+
+  it('недоставленных нет — deliverRevocations не вызывается, удаление идёт и без связи', async () => {
+    const db = await filled();
+    const deliver = jest.fn(async () => false);
+    const w = wipe(db, deliver);
+    await w.run;
+    expect(deliver).not.toHaveBeenCalled();
+    expect(w.fileDeleted()).toBe(true);
   });
 });

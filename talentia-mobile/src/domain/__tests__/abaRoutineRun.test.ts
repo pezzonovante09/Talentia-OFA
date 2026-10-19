@@ -15,19 +15,24 @@ import type {
   RoutineSetting,
   StepPromptState,
 } from '../../types/aba';
-import { ROUTINE } from '../../types/aba';
+import { CHILD_BREAK_MS, REFUSAL_CARD_OFFER_MS, REFUSAL_QUIET_MS, ROUTINE, ROUTINE_DEPENDENCE } from '../../types/aba';
 import { applyMaintenanceProbe, applyRoutineBaseline, applyRoutineRun, routineMasteryMet, routineStuck, routineTransferMet } from '../abaCriterion';
-import { applyPromptDependence, initialTargetState, type SessionTrials } from '../abaPrompting';
+import { answerLevel, applyPromptDependence, initialTargetState, routineDependentSteps, type SessionTrials } from '../abaPrompting';
 import {
+  closeHangingRoutineRun,
   finishRoutineByAdult,
   finishRoutineRun,
   interruptRoutineRun,
   nextRoutineStep,
   recordRoutineStep,
+  resumeRoutineRun,
+  routineResultWithSetting,
   routinesDue,
+  routineVerificationVerdict,
   setRoutineSetting,
   settleRoutineBoard,
   startRoutineRun,
+  takeRoutineBreakCard,
   type RoutineRunInput,
   type RoutineRunResult,
   type RoutineRunState,
@@ -127,19 +132,23 @@ function start(state: AbaTargetState | undefined, d: string, over: Partial<Routi
  * Как прошло звено: `ok` — верно на стартовом уровне; `adult` — не сделал, звено доделал
  * взрослый (в обучении — после всей лестницы); `escalate` — верно после одной подсказки.
  */
-type How = 'ok' | 'adult' | 'escalate';
+type How = 'ok' | 'adult' | 'escalate' | 'break' | 'refuse' | 'resist';
+/** `break` — касание детской карточки; `refuse` — «Отказ»; `resist` — «Сопротивляется» на L4 после всей лестницы. */
 
 function logFor(step: TrialStep, how: How): AbaPresentation[] {
   const s = step.startPromptLevel;
+  const full = how === 'adult' || how === 'resist';
   const levels: PromptLevel[] =
-    how === 'ok' || (how === 'adult' && !step.allowEscalation)
+    how === 'ok' || how === 'break' || how === 'refuse' || (full && !step.allowEscalation)
       ? [s]
       : how === 'escalate'
         ? [s, (s + 1) as PromptLevel]
         : 3 - s <= 2
           ? Array.from({ length: 3 - s + 1 }, (_, i) => (s + i) as PromptLevel)
           : [s, (s + 1) as PromptLevel, 3];
-  const last: PresentationOutcome = how === 'adult' ? 'adult_completed' : 'correct';
+  const last: PresentationOutcome = (
+    { adult: 'adult_completed', break: 'child_break', refuse: 'refusal', resist: 'l4_resisted', ok: 'correct', escalate: 'correct' } as const
+  )[how];
   const t0 = Date.UTC(2026, 9, 1, 8);
   return levels.map((level, i) => {
     const startedAt = t0 + i * 120_000;
@@ -152,7 +161,7 @@ function logFor(step: TrialStep, how: How): AbaPresentation[] {
       endedAt: new Date(endedAt).toISOString(),
       windowMs: i === 0 ? (step.promptDelayMs ?? step.responseWindowMs) : step.responseWindowMs,
       outcome,
-      ...(outcome === 'correct' ? { respondedAt: new Date(endedAt + 500).toISOString() } : {}),
+      ...(outcome === 'correct' || outcome === 'child_break' ? { respondedAt: new Date(endedAt + 500).toISOString() } : {}),
     };
   });
 }
@@ -184,8 +193,14 @@ function trialStep(run: RoutineRunState): TrialStep {
   return step;
 }
 
+/** Момент записи звена: минута на пробу от старта прогона (детерминированно, без реальных часов). */
+const nowOf = (run: RoutineRunState) => run.startedAt + (run.trials.length + 1) * 60_000;
+
+/** Обрыв в момент «следующей пробы». */
+const cut = (run: RoutineRunState, reason: 'breakdown' | 'external') => interruptRoutineRun(run, reason, nowOf(run));
+
 function record(run: RoutineRunState, how: How): RoutineRunState {
-  const res = recordRoutineStep(run, inputFor(run, trialStep(run), how));
+  const res = recordRoutineStep(run, inputFor(run, trialStep(run), how), nowOf(run));
   if (!res.ok) throw new Error(res.errors.join('; '));
   return res.run;
 }
@@ -199,13 +214,13 @@ function fullRun(
   hows: How[] = ['ok', 'ok', 'ok'],
   over: Partial<RoutineRunInput> = {},
 ): RoutineRunResult {
-  return finishRoutineRun(play(start(state, d, over), hows), Date.parse(`${d}T08:05:00Z`), 7, NO_HISTORY);
+  return finishRoutineRun(play(start(state, d, over), hows), 7,NO_HISTORY);
 }
 
 /** Прогон целиком с отметкой «где и с кем». */
 function runAt(state: AbaTargetState | undefined, d: string, hows: How[], setting: RoutineSetting, over: Partial<RoutineRunInput> = {}): RoutineRunResult {
   const run = setRoutineSetting(play(start(state, d, over), hows), setting);
-  return finishRoutineRun(run, Date.parse(`${d}T08:05:00Z`), 7, NO_HISTORY);
+  return finishRoutineRun(run, 7,NO_HISTORY);
 }
 
 const due = (states: Record<string, AbaTargetState>, d: string, targets: AbaTarget[] = [R], primaryObserverId = SPEC.id) =>
@@ -380,14 +395,14 @@ describe('Р3: критерий через модуль совпадает с п
     let s = acq();
     for (let i = 1; i <= 5; i += 1) {
       const run = start(s, day(i), { primaryObserverId: PARENT.id });
-      s = finishRoutineRun(setRoutineSetting(play(run, ['ok', 'ok', 'ok']), i === 5 ? 'other_adult' : 'usual'), Date.parse(`${day(i)}T08:05:00Z`), 7, NO_HISTORY).state;
+      s = finishRoutineRun(setRoutineSetting(play(run, ['ok', 'ok', 'ok']), i === 5 ? 'other_adult' : 'usual'), 7, NO_HISTORY).state;
     }
     expect([s.phase, s.masteredBy]).toEqual(['mastered', 'home_unverified']);
   });
 
   it('отметка «где и с кем» попадает в окно и в запись прогона', () => {
     const run = setRoutineSetting(play(start(acq(), day(1)), ['ok', 'ok', 'ok']), 'other_place');
-    const r = finishRoutineRun(run, Date.parse('2026-10-01T08:05:00Z'), 7, NO_HISTORY);
+    const r = finishRoutineRun(run, 7, NO_HISTORY);
     expect([r.record.setting, r.state.routineRuns?.at(-1)?.setting]).toEqual(['other_place', 'other_place']);
   });
 });
@@ -395,14 +410,14 @@ describe('Р3: критерий через модуль совпадает с п
 describe('В1: обрыв прогона', () => {
   it('срыв в обучении: остаток доводит взрослый без проб; в окно критерия срыв не идёт, он копится в routineBreakdowns', () => {
     let run = play(start(acq(), day(3)), ['ok']);
-    run = interruptRoutineRun(run, 'breakdown');
+    run = cut(run, 'breakdown');
     expect(nextRoutineStep(run)).toEqual({ kind: 'adult_finish_chain', targetId: 'R', stepIds: [S2, S3] });
     // звено во время доведения взрослым не пишется
     const probe = { ...inputFor(run, { ...trialStep({ ...run, status: 'running' }) }, 'ok') };
-    expect(recordRoutineStep(run, probe).ok).toBe(false);
-    expect(() => finishRoutineRun(run, 0, 7, NO_HISTORY)).toThrow(/доводит/);
+    expect(recordRoutineStep(run, probe, nowOf(run)).ok).toBe(false);
+    expect(() => finishRoutineRun(run, 7, NO_HISTORY)).toThrow(/доводит/);
 
-    const r = finishRoutineRun(finishRoutineByAdult(run), Date.parse('2026-10-03T08:05:00Z'), 7, NO_HISTORY);
+    const r = finishRoutineRun(finishRoutineByAdult(run), 7, NO_HISTORY);
     expect(r.trials).toHaveLength(1);
     expect(r.state.routineRuns).toBeUndefined();
     expect(r.state.routineBreakdowns).toEqual([{ day: day(3), kind: 'teaching', setting: 'usual', atStep: 1 }]);
@@ -410,16 +425,16 @@ describe('В1: обрыв прогона', () => {
   });
 
   it('срыв: заработанные жетоны не отнимаются, день занят', () => {
-    const run = interruptRoutineRun(play(start(acq(), day(3)), ['ok']), 'breakdown');
-    const r = finishRoutineRun(finishRoutineByAdult(run), 0, 7, NO_HISTORY);
+    const run = cut(play(start(acq(), day(3)), ['ok']), 'breakdown');
+    const r = finishRoutineRun(finishRoutineByAdult(run), 7, NO_HISTORY);
     expect(settle(r, { earned: 2, nonContingent: 1 }).board).toEqual({ earned: 2, nonContingent: 1 });
     expect(r.state.lastRoutineRunDay).toBe(day(3));
     expect(due({ R: r.state }, day(3))).toEqual([{ targetId: 'R', kind: null }]);
   });
 
   it('срыв на базовой линии не засчитывается совсем: день базовой линии не набран, но день прогона занят', () => {
-    const run = interruptRoutineRun(play(start(undefined, day(1)), ['ok']), 'breakdown');
-    const d1 = finishRoutineRun(finishRoutineByAdult(run), 0, 7, NO_HISTORY);
+    const run = cut(play(start(undefined, day(1)), ['ok']), 'breakdown');
+    const d1 = finishRoutineRun(finishRoutineByAdult(run), 7, NO_HISTORY);
     expect(d1.state.routineBaseline).toBeUndefined();
     expect(d1.state.lastRoutineRunDay).toBe(day(1));
     expect(d1.state.routineBreakdowns).toEqual([{ day: day(1), kind: 'baseline', setting: 'usual', atStep: 1 }]);
@@ -427,9 +442,9 @@ describe('В1: обрыв прогона', () => {
 
   it('внешняя причина: в окно не пишется, состояние как до прогона, день не занят', () => {
     const before = acq(0, { routineRuns: [{ day: day(1), whole: true, startLevelSum: 0 }] });
-    const run = interruptRoutineRun(play(start(before, day(3)), ['ok', 'adult']), 'external');
+    const run = cut(play(start(before, day(3)), ['ok', 'adult']), 'external');
     expect(nextRoutineStep(run)).toEqual({ kind: 'end' });
-    const r = finishRoutineRun(run, 0, 7, NO_HISTORY);
+    const r = finishRoutineRun(run, 7, NO_HISTORY);
     expect(r.state).toEqual(before);
     const paid = settle(r, { earned: 3, nonContingent: 0 });
     expect([paid.token, paid.board.earned, r.record.interrupted, r.record.phase]).toEqual([null, 3, 'external', null]);
@@ -439,25 +454,39 @@ describe('В1: обрыв прогона', () => {
 
   it('обрыв — не запись звена, и оборвать можно только идущий прогон', () => {
     const run = start(acq(), day(3));
-    const step = trialStep(run);
-    const input = inputFor(run, step, 'ok');
-    const { respondedAt: _drop, ...rest } = input.presentationLog[0];
-    const res = recordRoutineStep(run, { ...input, presentationLog: [{ ...rest, outcome: 'child_break' }] });
-    expect(res.ok).toBe(false);
-    const stopped = interruptRoutineRun(run, 'external');
-    expect(() => interruptRoutineRun(stopped, 'breakdown')).toThrow(/не идёт/);
+    const stopped = cut(run, 'external');
+    expect(stopped.trials).toEqual([]);
+    expect(() => cut(stopped, 'breakdown')).toThrow(/не идёт/);
     expect(() => finishRoutineByAdult(stopped)).toThrow(/нечего/);
+    // после обрыва звено не пишется
+    expect(recordRoutineStep(stopped, inputFor(run, trialStep(run), 'ok'), nowOf(run)).ok).toBe(false);
+  });
+
+  it('конец прогона — момент обрыва, а не момент итога: довод взрослым в длительность не входит', () => {
+    const run = play(start(acq(), day(3)), ['ok']);
+    const at = nowOf(run);
+    const r = finishRoutineRun(finishRoutineByAdult(interruptRoutineRun(run, 'breakdown', at)), 7, NO_HISTORY);
+    expect(r.record.endedAt).toBe(new Date(at).toISOString());
+  });
+
+  it('конец прогона — момент записи последнего звена', () => {
+    const two = play(start(acq(), day(3)), ['ok', 'ok']);
+    const at = nowOf(two);
+    const done = record(two, 'ok');
+    expect(done.endedAt).toBe(at);
+    expect(two.endedAt).toBeNull();
+    expect(finishRoutineRun(done, 7, NO_HISTORY).record.endedAt).toBe(new Date(at).toISOString());
   });
 
   it.each(['breakdown', 'external'] as const)('%s после последнего звена — ошибка: сделанный прогон не стирается', (reason) => {
     const done = play(start(acq(), day(3)), ['ok', 'ok', 'ok']);
-    expect(() => interruptRoutineRun(done, reason)).toThrow(/Все звенья записаны/);
+    expect(() => cut(done, reason)).toThrow(/Все звенья записаны/);
     // прогон закрывается обычным итогом и попадает в окно
-    expect(finishRoutineRun(done, 0, 7, NO_HISTORY).state.routineRuns?.at(-1)).toMatchObject({ whole: true });
+    expect(finishRoutineRun(done, 7, NO_HISTORY).state.routineRuns?.at(-1)).toMatchObject({ whole: true });
   });
 
   it('незаконченный прогон без обрыва итог не даёт', () => {
-    expect(() => finishRoutineRun(play(start(acq(), day(3)), ['ok']), 0, 7, NO_HISTORY)).toThrow(/ещё идёт/);
+    expect(() => finishRoutineRun(play(start(acq(), day(3)), ['ok']), 7, NO_HISTORY)).toThrow(/ещё идёт/);
   });
 });
 
@@ -473,7 +502,7 @@ describe('В6: поддержание прогоном', () => {
     expect(run.trials[1]).toMatchObject({ stepId: S2, response: 'no_response', adultCompleted: true });
     expect(nextRoutineStep(run)).toMatchObject({ kind: 'trial', stepId: S3 });
     run = record(run, 'ok');
-    const r = finishRoutineRun(run, 0, 7, NO_HISTORY);
+    const r = finishRoutineRun(run, 7, NO_HISTORY);
     expect([r.state.phase, r.state.maintenanceFailsInRow, r.state.lastMaintenanceDay, r.claim.token]).toEqual(['maintenance', 1, day(10), null]);
   });
 
@@ -516,21 +545,21 @@ describe('В6: поддержание прогоном', () => {
 
   it('срыв в поддержании индексы сессий тоже не двигает', () => {
     const before = mastered({ lastSessionIndex: 12, lastMaintenanceSessionIndex: 9 });
-    const run = interruptRoutineRun(play(start(before, day(10)), ['ok']), 'breakdown');
-    const r = finishRoutineRun(finishRoutineByAdult(run), 0, 7, NO_HISTORY);
+    const run = cut(play(start(before, day(10)), ['ok']), 'breakdown');
+    const r = finishRoutineRun(finishRoutineByAdult(run), 7, NO_HISTORY);
     expect([r.state.maintenanceFailsInRow, r.state.lastSessionIndex, r.state.lastMaintenanceSessionIndex]).toEqual([0, 12, 9]);
   });
 
   it('срыв посреди поддержания — не провал навыка: проб нет, fails и день поддержания не двигаются, срыв записан', () => {
-    const run = interruptRoutineRun(play(start(mastered(), day(10)), ['ok']), 'breakdown');
-    const r = finishRoutineRun(finishRoutineByAdult(run), 0, 7, NO_HISTORY);
+    const run = cut(play(start(mastered(), day(10)), ['ok']), 'breakdown');
+    const r = finishRoutineRun(finishRoutineByAdult(run), 7, NO_HISTORY);
     expect([r.state.maintenanceFailsInRow ?? 0, r.state.lastMaintenanceDay]).toEqual([0, '2026-09-01']);
     expect(r.state.routineBreakdowns).toEqual([{ day: day(10), kind: 'maintenance', setting: 'usual', atStep: 1 }]);
   });
 
   it('срыв до первого звена поддержания — тоже не провал; день прогона занят, поддержание ждёт завтра', () => {
-    const run = interruptRoutineRun(start(mastered(), day(10)), 'breakdown');
-    const r = finishRoutineRun(finishRoutineByAdult(run), 0, 7, NO_HISTORY);
+    const run = cut(start(mastered(), day(10)), 'breakdown');
+    const r = finishRoutineRun(finishRoutineByAdult(run), 7, NO_HISTORY);
     expect([r.state.maintenanceFailsInRow ?? 0, r.state.lastRoutineRunDay, r.state.lastMaintenanceDay]).toEqual([0, day(10), '2026-09-01']);
     expect(due({ R: r.state }, day(10))).toEqual([{ targetId: 'R', kind: null }]);
     expect(due({ R: r.state }, day(11))).toEqual([{ targetId: 'R', kind: 'maintenance' }]);
@@ -596,7 +625,7 @@ describe('Жетон после прогона', () => {
     expect(run.trials.map((t) => t.tokens)).toEqual([0, 0, 0]);
     // доски в состоянии прогона нет: она живёт на устройстве и общая с сессиями
     expect(run).not.toHaveProperty('board');
-    expect(finishRoutineRun(run, 0, 7, NO_HISTORY).claim).toEqual({ token: 'at_start_level', tokens: 1, nonContingent: false });
+    expect(finishRoutineRun(run, 7, NO_HISTORY).claim).toEqual({ token: 'at_start_level', tokens: 1, nonContingent: false });
   });
 });
 
@@ -646,25 +675,45 @@ describe('П1: проверка «получается дома» прогона
     expect(trialStep(run)).toMatchObject({ trialKind: 'verification', startPromptLevel: 0, allowEscalation: false });
   });
 
-  it('два успешных прогона в разные дни — «освоено по критерию» и день поддержания', () => {
+  it('два прогона целиком сами в разные дни — «освоено по критерию» и день поддержания', () => {
     const first = fullRun(home(), day(2));
-    expect([first.state.masteredBy, first.state.chainVerificationRuns?.length]).toEqual(['home_unverified', 1]);
+    expect([first.state.masteredBy, first.state.routineVerificationRuns]).toEqual(['home_unverified', [{ runNo: 1, day: day(2) }]]);
     expect(() => start(first.state, day(2))).toThrow(/сегодня/);
     const second = fullRun(first.state, day(3));
     expect([second.state.masteredBy, second.state.lastMaintenanceDay, second.claim.token]).toEqual(['criterion', day(3), 'whole_independent']);
+    expect(second.state.routineVerificationRuns).toEqual([]);
+    expect(second.state.maintenanceGapIndex).toBe(first.state.maintenanceGapIndex + 1);
   });
 
-  it('проваленное в обоих прогонах звено — обратно в обучение', () => {
-    const first = fullRun(home(), day(2), ['ok', 'adult', 'ok']);
-    const second = fullRun(first.state, day(3), ['ok', 'adult', 'ok']);
-    expect(second.state.phase).toBe('acquisition');
-    expect(second.state.masteredBy).toBeUndefined();
+  it('один прогон целиком сам — ещё не освоено по критерию', () => {
+    expect(fullRun(home(), day(2)).state.masteredBy).toBe('home_unverified');
+  });
+
+  it('первый же не целиком самостоятельный прогон — провал сразу: обучение без проверок IOA, проваленное звено с уровня ответа, прочие с L0', () => {
+    const r = fullRun(home(), day(2), ['ok', 'adult', 'ok']);
+    // IOA ведётся по сессиям, рутина в сессии не бывает: счётчик не уменьшился бы никогда (методист, раунд 4)
+    expect([r.state.phase, r.state.masteredBy, r.state.ioaDueSessions]).toEqual(['acquisition', undefined, undefined]);
+    expect([S1, S2, S3].map((id) => r.state.stepPrompts?.[id].startPromptLevel)).toEqual([0, answerLevel(R), 0]);
+    expect(r.record.phase).toEqual({ from: 'mastered', to: 'acquisition' });
+    expect(r.claim.token).toBeNull();
+  });
+
+  it('целиком сам, затем провал — провал: набранный успешный прогон не спасает', () => {
+    const first = fullRun(home(), day(2));
+    const second = fullRun(first.state, day(3), ['ok', 'ok', 'adult']);
+    expect([second.state.phase, second.state.routineVerificationRuns]).toEqual(['acquisition', []]);
   });
 
   it('оборванная срывом проверка ничего не решает', () => {
-    const run = interruptRoutineRun(play(start(home(), day(2)), ['ok']), 'breakdown');
-    const r = finishRoutineRun(finishRoutineByAdult(run), 0, 7, NO_HISTORY);
-    expect([r.state.masteredBy, r.state.chainVerificationRuns ?? []]).toEqual(['home_unverified', []]);
+    const run = cut(play(start(home(), day(2)), ['ok']), 'breakdown');
+    const r = finishRoutineRun(finishRoutineByAdult(run), 7, NO_HISTORY);
+    expect([r.state.masteredBy, r.state.routineVerificationRuns ?? []]).toEqual(['home_unverified', []]);
+  });
+
+  it('routineVerificationVerdict: не все звенья в пробах — ничего не решает', () => {
+    const s = home();
+    const one = fullRun(home(), day(2)).trials.slice(0, 2);
+    expect(routineVerificationVerdict(s, R, one, 1, day(2))).toBe(s);
   });
 });
 
@@ -855,7 +904,7 @@ describe('Г4: перенос — прогоны через finishRoutineRun', (
 
   it('откат из проваленной проверки требует перенос заново', () => {
     const home = mastered({ masteredBy: 'home_unverified', lastMaintenanceDay: day(1) });
-    const failed = fullRun(fullRun(home, day(2), ['ok', 'adult', 'ok']).state, day(3), ['ok', 'adult', 'ok']).state;
+    const failed = fullRun(home, day(2), ['ok', 'adult', 'ok']).state;
     expect(failed.phase).toBe('acquisition');
     // окно не переносится через откат: пять целых прогонов в привычном — снова только «почти»
     const again = Array.from({ length: 5 }, (_, i): RoutineRunRecord => ({ day: day(4 + i), whole: true, startLevelSum: 0, setting: 'usual' })).reduce(
@@ -909,8 +958,8 @@ describe('Г4: перенос — базовая линия', () => {
 
   it('срыв в held-состоянии — базовая линия без изменений; прибавились только занятый день и запись срыва', () => {
     const before = waiting();
-    const run = interruptRoutineRun(play(start(before, day(3)), ['ok']), 'breakdown');
-    const r = finishRoutineRun(finishRoutineByAdult(run), 0, 7, NO_HISTORY);
+    const run = cut(play(start(before, day(3)), ['ok']), 'breakdown');
+    const r = finishRoutineRun(finishRoutineByAdult(run), 7, NO_HISTORY);
     expect(r.state).toEqual({
       ...before,
       lastRoutineRunDay: day(3),
@@ -922,8 +971,8 @@ describe('Г4: перенос — базовая линия', () => {
   });
 
   it('срыв в первый день базовой линии transferSeen не ставит, даже вне контекста; базовая линия не начата', () => {
-    const run = setRoutineSetting(interruptRoutineRun(play(start(undefined, day(1)), ['ok']), 'breakdown'), 'other_place');
-    const r = finishRoutineRun(finishRoutineByAdult(run), 0, 7, NO_HISTORY);
+    const run = setRoutineSetting(cut(play(start(undefined, day(1)), ['ok']), 'breakdown'), 'other_place');
+    const r = finishRoutineRun(finishRoutineByAdult(run), 7, NO_HISTORY);
     expect(r.state.routineBaseline?.transferSeen).not.toBe(true);
     expect(r.state.routineBaseline).toBeUndefined();
     expect(r.state.routineBreakdowns).toEqual([{ day: day(1), kind: 'baseline', setting: 'other_place', atStep: 1 }]);
@@ -950,7 +999,7 @@ describe('Методист В2: зависимость от подсказки �
     hows.forEach((h, i) => {
       const d = day(i + 1);
       const history = withHistory ? { runs: [...runs] } : NO_HISTORY;
-      const res = finishRoutineRun(play(start(state, d), h), Date.parse(`${d}T08:05:00Z`), 7, history);
+      const res = finishRoutineRun(play(start(state, d), h), 7,history);
       runs.push({ index: res.record.runNo ?? runs.length + 1, trials: res.trials });
       results.push(res);
       state = res.state;
@@ -959,52 +1008,85 @@ describe('Методист В2: зависимость от подсказки �
   }
   const ESC: How[] = ['escalate', 'escalate', 'escalate'];
 
-  it('три прогона обучения «дождался подсказки»: флаг prompt_dependent, звенья снова с L0, задержка постоянная', () => {
-    const { state, results } = course([ESC, ESC, ESC]);
-    expect(results[0].state.flags).not.toContain('prompt_dependent');
-    expect(results[1].state.flags).not.toContain('prompt_dependent');
+  const W = ROUTINE_DEPENDENCE.windowRuns;
+  const times = (n: number, h: How[]) => Array.from({ length: n }, () => h);
+  /** Только второе звено ждёт подсказку, остальные — сами. */
+  const MIX: How[] = ['ok', 'escalate', 'ok'];
+
+  it(`В8: ${W} прогонов «дождался подсказки» — флаг prompt_dependent и все звенья специалисту; уровни и задержка не тронуты`, () => {
+    const { state, results } = course(times(W, ESC));
+    for (const r of results.slice(0, W - 1)) expect(r.state.flags).not.toContain('prompt_dependent');
     expect(state.flags).toContain('prompt_dependent');
-    expect(state.dependenceFlaggedAtSession).toBe(3);
-    expect(state.startPromptLevel).toBe(0);
-    expect(Object.values(state.stepPrompts ?? {}).every((p) => p.startPromptLevel === 0)).toBe(true);
-    // delayMode: constant — гард targetErrors; реакция не меняет задержку
-    expect(state.currentDelayMs).toBe(acq(0).currentDelayMs);
+    expect(state.dependenceFlaggedAtSession).toBe(W);
+    expect(state.dependentStepIds).toEqual([S1, S2, S3]);
+    // только флаг (В2): ни старт, ни задержка, ни счётчики звеньев реакцией не меняются
+    const noReaction = finishRoutineRun(play(start(results[W - 2].state, day(W)), ESC), 7, NO_HISTORY).state;
+    expect(state.stepPrompts).toEqual(noReaction.stepPrompts);
+    expect([state.startPromptLevel, state.currentDelayMs]).toEqual([noReaction.startPromptLevel, noReaction.currentDelayMs]);
+  });
+
+  it('В8: детектор по звену — одно подсказанное звено среди самостоятельных не тонет', () => {
+    const { state } = course(times(W, MIX));
+    expect([state.flags.includes('prompt_dependent'), state.dependentStepIds]).toEqual([true, [S2]]);
+  });
+
+  it(`В8: ${W - 1} прогонов — судить не по чему, флага нет`, () => {
+    expect(course(times(W - 1, ESC)).state.flags).not.toContain('prompt_dependent');
+  });
+
+  it('В8: у звена меньше пяти подсказанных проб в окне — не зависимо', () => {
+    // четыре подсказанных и одна самостоятельная у второго звена
+    const { state } = course([...times(W - 1, MIX), ['ok', 'ok', 'ok']]);
+    expect(state.flags).not.toContain('prompt_dependent');
+  });
+
+  it('В8: routineDependentSteps не берёт пробы, снятые перерывом', () => {
+    const s = acq(0);
+    const t = (stepId: string, response: AbaTrial['response']) =>
+      ({ kind: 'teaching', stepId, startPromptLevel: 0, response, emittedBeforePrompt: false }) as AbaTrial;
+    const runs: SessionTrials[] = Array.from({ length: W }, (_, i) => ({
+      index: i + 1,
+      trials: i === 0 ? [t(S2, 'interrupted'), t(S2, 'independent')] : [t(S2, 'prompted')],
+    }));
+    expect(routineDependentSteps(s, runs, [S1, S2, S3])).toEqual([]);
+    const allPrompted = runs.map((r) => ({ ...r, trials: [t(S2, 'interrupted'), t(S2, 'prompted')] }));
+    expect(routineDependentSteps(s, allPrompted, [S1, S2, S3])).toEqual([S2]);
   });
 
   it('без истории прогонов детектор молчит: забытый вход не ставит флаг', () => {
-    expect(course([ESC, ESC, ESC], false).state.flags).not.toContain('prompt_dependent');
+    expect(course(times(W, ESC), false).state.flags).not.toContain('prompt_dependent');
   });
 
   it('после флага окно начинается заново: следующий прогон флаг не продлевает', () => {
-    const { state, results } = course([ESC, ESC, ESC, ESC]);
-    expect(results[2].state.dependenceFlaggedAtSession).toBe(3);
-    expect(state.dependenceFlaggedAtSession).toBe(3);
+    const { state, results } = course(times(W + 1, ESC));
+    expect(results[W - 1].state.dependenceFlaggedAtSession).toBe(W);
+    expect(state.dependenceFlaggedAtSession).toBe(W);
   });
 
   it('самостоятельные прогоны флага не дают', () => {
     const OK: How[] = ['ok', 'ok', 'ok'];
-    expect(course([OK, OK, OK]).state.flags).not.toContain('prompt_dependent');
+    expect(course(times(W, OK)).state.flags).not.toContain('prompt_dependent');
   });
 
   it('базовая линия детектор не запускает: она измеряет, а не учит', () => {
     const ADULT: How[] = ['adult', 'adult', 'adult'];
-    const base = course([ADULT, ADULT, ADULT], true, initialTargetState(R));
+    const base = course(times(W, ADULT), true, initialTargetState(R));
     expect(base.state.flags).not.toContain('prompt_dependent');
   });
 
   it('номер прогона — счётчик в состоянии, а не позиция в журнале: флаг хранит его, окно после флага идёт дальше', () => {
     // счётчик уже на 40: старые прогоны срезаны сроком хранения, в истории остались только новые
-    const { state, results } = course([ESC, ESC, ESC, ESC], true, acq(0, { routineRunSeq: 40 }));
-    expect(results.map((r) => r.record.runNo)).toEqual([41, 42, 43, 44]);
-    expect(results.map((r) => r.state.routineRunSeq)).toEqual([41, 42, 43, 44]);
-    expect(results[2].state.dependenceFlaggedAtSession).toBe(43);
-    expect(state.dependenceFlaggedAtSession).toBe(43);
+    const { state, results } = course(times(W + 1, ESC), true, acq(0, { routineRunSeq: 40 }));
+    expect(results.map((r) => r.record.runNo)).toEqual([41, 42, 43, 44, 45, 46]);
+    expect(results.map((r) => r.state.routineRunSeq)).toEqual([41, 42, 43, 44, 45, 46]);
+    expect(results[W - 1].state.dependenceFlaggedAtSession).toBe(45);
+    expect(state.dependenceFlaggedAtSession).toBe(45);
   });
 
   it('прогон, отменённый извне, счётчик не двигает и номера не получает', () => {
     const before = acq(0, { routineRunSeq: 5 });
-    const run = interruptRoutineRun(play(start(before, day(2)), ['ok', 'adult']), 'external');
-    const r = finishRoutineRun(run, 0, 7, NO_HISTORY);
+    const run = cut(play(start(before, day(2)), ['ok', 'adult']), 'external');
+    const r = finishRoutineRun(run, 7, NO_HISTORY);
     expect(r.state.routineRunSeq).toBe(5);
     expect(r.record.runNo).toBeUndefined();
   });
@@ -1053,5 +1135,221 @@ describe('Методист В2: зависимость от подсказки �
         consecutiveFailures: 0,
       });
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Раунд 4, Д3: карточка «перерыв» и «Отказ» в звене рутины (методист 2026-10-19)
+
+describe('Д3: перерыв по детской карточке в звене', () => {
+  it('прерванное звено — проба interrupted/child_break с msSinceSd; done не растёт; пауза CHILD_BREAK_MS полосы', () => {
+    const run = record(start(acq(), day(3)), 'break');
+    expect(run.trials).toHaveLength(1);
+    expect(run.trials[0]).toMatchObject({ stepId: S1, response: 'interrupted', interruptedBy: 'child_break', tokens: 0 });
+    expect(run.trials[0].msSinceSd).toBe(500);
+    expect([run.done, run.requests, run.refusals, run.status]).toEqual([0, 1, 0, 'running']);
+    expect(run.pause).toEqual({ by: 'child_card', maxMs: CHILD_BREAK_MS['7'] });
+    expect(nextRoutineStep(run)).toEqual({ kind: 'break', by: 'child_card', maxMs: CHILD_BREAK_MS['7'] });
+  });
+
+  it('пауза по полосе: у 5-6 короче, чем у 7', () => {
+    const young = record(start(acq(), day(3), { band: '5-6' }), 'break');
+    expect(young.pause?.maxMs).toBe(CHILD_BREAK_MS['5-6']);
+    expect(CHILD_BREAK_MS['5-6']).toBeLessThan(CHILD_BREAK_MS['7']);
+  });
+
+  it('во время перерыва звено не пишется; после resumeRoutineRun — то же звено, повтор ссылается на снятую пробу', () => {
+    const paused = record(start(acq(), day(3)), 'break');
+    const step = trialStep({ ...paused, pause: null });
+    expect(recordRoutineStep(paused, inputFor(paused, step, 'ok'), nowOf(paused)).ok).toBe(false);
+    const resumed = resumeRoutineRun(paused);
+    expect(trialStep(resumed)).toMatchObject({ stepId: S1 });
+    const after = record(resumed, 'ok');
+    expect(after.trials[1]).toMatchObject({ stepId: S1, response: 'independent', requeuedFromTrialId: paused.trials[0].id });
+    expect([after.done, after.requeueOf]).toEqual([1, null]);
+    // следующее звено — уже без ссылки
+    expect(record(after, 'ok').trials[2].requeuedFromTrialId).toBeUndefined();
+  });
+
+  it('resumeRoutineRun без перерыва — ошибка', () => {
+    expect(() => resumeRoutineRun(start(acq(), day(3)))).toThrow(/Перерыва нет/);
+  });
+
+  it('одна просьба при всех звеньях «сам» — прогон целиком сам: в окне whole, поддержание даёт жетон', () => {
+    const teach = play(resumeRoutineRun(record(start(acq(), day(3)), 'break')), ['ok', 'ok', 'ok']);
+    const r = finishRoutineRun(teach, 7, NO_HISTORY);
+    expect([r.record.interrupted, r.state.routineRuns?.at(-1)?.whole, r.claim.token]).toEqual([null, true, 'at_start_level']);
+    expect(r.breakRequests).toEqual({ requests: 1, ended: false });
+
+    const keep = play(resumeRoutineRun(record(start(mastered(), day(10)), 'break')), ['ok', 'ok', 'ok']);
+    const m = finishRoutineRun(keep, 7, NO_HISTORY);
+    expect([m.claim.token, m.state.maintenanceFailsInRow ?? 0, m.state.lastMaintenanceDay]).toEqual(['whole_independent', 0, day(10)]);
+  });
+
+  it('спокойный прогон с одной просьбой счётчик тревожных прогонов обнуляет', () => {
+    const run = play(resumeRoutineRun(record(start(acq(0, { assentSessionsInRow: 1 }), day(3)), 'break')), ['ok', 'ok', 'ok']);
+    expect(finishRoutineRun(run, 7, NO_HISTORY).state.assentSessionsInRow).toBe(0);
+  });
+});
+
+describe('Д3: второе прерывание и «Сопротивляется» — конец прогона assent_withdrawn', () => {
+  const withdrawnRun = (state: AbaTargetState = acq(), d = day(3)) => {
+    const once = play(resumeRoutineRun(record(start(state, d), 'break')), ['ok']);
+    return record(once, 'break');
+  };
+
+  it('вторая просьба: прогон кончен, остаток не пишется, конец — момент второй просьбы', () => {
+    const once = play(resumeRoutineRun(record(start(acq(), day(3)), 'break')), ['ok']);
+    const at = nowOf(once);
+    const run = record(once, 'break');
+    expect([run.status, run.interrupted, run.pause, run.done, run.requests, run.endedAt]).toEqual(['finished', 'assent_withdrawn', null, 1, 2, at]);
+    expect(nextRoutineStep(run)).toEqual({ kind: 'end' });
+    expect(recordRoutineStep(run, inputFor(run, trialStep({ ...run, status: 'running' }), 'ok'), nowOf(run)).ok).toBe(false);
+  });
+
+  it('итог: день занят, номер прогона есть, жетона нет, в окно и в срывы не идёт, тревожность +1', () => {
+    const before = acq(0, { routineRuns: [{ day: day(1), whole: true, startLevelSum: 0 }], routineRunSeq: 4 });
+    const r = finishRoutineRun(withdrawnRun(before), 7, NO_HISTORY);
+    expect([r.record.interrupted, r.record.runNo, r.state.routineRunSeq, r.state.lastRoutineRunDay]).toEqual(['assent_withdrawn', 5, 5, day(3)]);
+    expect(r.claim).toEqual({ token: null, tokens: 0, nonContingent: false });
+    expect(settle(r, { earned: 2, nonContingent: 0 }).board).toEqual({ earned: 2, nonContingent: 0 });
+    expect(r.state.routineRuns).toEqual(before.routineRuns);
+    expect(r.state.routineBreakdowns).toBeUndefined();
+    expect(r.state.assentSessionsInRow).toBe(1);
+    expect(r.breakRequests).toEqual({ requests: 2, ended: true });
+    expect(due({ R: r.state }, day(3))).toEqual([{ targetId: 'R', kind: null }]);
+  });
+
+  it('просьба и «Отказ» в любом сочетании — тоже два прерывания', () => {
+    const once = play(resumeRoutineRun(record(start(acq(), day(3)), 'refuse')), ['ok']);
+    const run = record(once, 'break');
+    expect([run.interrupted, run.requests, run.refusals]).toEqual(['assent_withdrawn', 1, 1]);
+  });
+
+  it('«Сопротивляется» — сразу конец, без паузы', () => {
+    const run = record(start(acq(0), day(3), { physicalPromptAllowed: true }), 'resist');
+    expect(run.trials[0]).toMatchObject({ response: 'interrupted', interruptedBy: 'l4_resisted' });
+    expect([run.status, run.interrupted, run.pause, run.requests, run.refusals]).toEqual(['finished', 'assent_withdrawn', null, 0, 0]);
+    const r = finishRoutineRun(run, 7, NO_HISTORY);
+    expect([r.claim.token, r.state.routineBreakdowns, r.state.assentSessionsInRow]).toEqual([null, undefined, 1]);
+  });
+
+  it('два тревожных прогона подряд — assent_concern: два отказа от продолжения', () => {
+    const first = finishRoutineRun(withdrawnRun(), 7, NO_HISTORY).state;
+    const second = finishRoutineRun(
+      record(play(resumeRoutineRun(record(start(first, day(4)), 'break')), ['ok']), 'refuse'),
+      7,
+      NO_HISTORY,
+    ).state;
+    expect([second.assentSessionsInRow, second.flags.includes('assent_concern')]).toEqual([2, true]);
+  });
+
+  it('два тревожных прогона подряд — assent_concern: срыв, затем отказ от продолжения', () => {
+    const broke = finishRoutineRun(finishRoutineByAdult(cut(play(start(acq(), day(3)), ['ok']), 'breakdown')), 7, NO_HISTORY).state;
+    const s = finishRoutineRun(withdrawnRun(broke, day(4)), 7, NO_HISTORY).state;
+    expect(s.flags).toContain('assent_concern');
+  });
+
+  it('прерванные пробы в окно не считаются: routineRunRecord видит только повтор звена', () => {
+    const r = finishRoutineRun(play(resumeRoutineRun(record(start(acq(), day(3)), 'refuse')), ['ok', 'ok', 'ok']), 7, NO_HISTORY);
+    expect(r.trials).toHaveLength(4);
+    expect(r.state.routineRuns?.at(-1)).toMatchObject({ whole: true });
+  });
+});
+
+describe('Д3: «Отказ» в звене — тихая пауза с подсвеченной карточкой', () => {
+  it('пауза refusal: тихая REFUSAL_QUIET_MS, карточка подсвечена REFUSAL_CARD_OFFER_MS; это не просьба', () => {
+    const run = record(start(acq(), day(3)), 'refuse');
+    expect(run.trials[0]).toMatchObject({ response: 'interrupted', interruptedBy: 'assent' });
+    expect([run.requests, run.refusals]).toEqual([0, 1]);
+    expect(nextRoutineStep(run)).toEqual({ kind: 'break', by: 'refusal', maxMs: REFUSAL_QUIET_MS, offerCardMs: REFUSAL_CARD_OFFER_MS });
+  });
+
+  it('касание подсвеченной карточки — полный перерыв полосы, но не просьба', () => {
+    const run = takeRoutineBreakCard(record(start(acq(), day(3)), 'refuse'));
+    expect(run.pause).toEqual({ by: 'refusal', maxMs: CHILD_BREAK_MS['7'], offerCardMs: REFUSAL_CARD_OFFER_MS, cardTaken: true });
+    expect(nextRoutineStep(run)).toEqual({ kind: 'break', by: 'refusal', maxMs: CHILD_BREAK_MS['7'] });
+    expect(run.requests).toBe(0);
+    const r = finishRoutineRun(play(resumeRoutineRun(run), ['ok', 'ok', 'ok']), 7, NO_HISTORY);
+    expect(r.breakRequests).toEqual({ requests: 0, ended: false });
+  });
+
+  it('takeRoutineBreakCard без подсвеченной карточки — ошибка: после детской карточки, второй раз, без паузы', () => {
+    expect(() => takeRoutineBreakCard(start(acq(), day(3)))).toThrow(/карточки/);
+    expect(() => takeRoutineBreakCard(record(start(acq(), day(3)), 'break'))).toThrow(/карточки/);
+    expect(() => takeRoutineBreakCard(takeRoutineBreakCard(record(start(acq(), day(3)), 'refuse')))).toThrow(/карточки/);
+  });
+
+  it('обрыв во время паузы снимает паузу', () => {
+    const paused = record(start(acq(), day(3)), 'refuse');
+    const stopped = interruptRoutineRun(paused, 'external', nowOf(paused));
+    expect([stopped.pause, stopped.requeueOf, stopped.status]).toEqual([null, null, 'finished']);
+  });
+});
+
+describe('В5: висящий прогон', () => {
+  it('старт при незаписанном свёрнутом прогоне бросает', () => {
+    const pending = play(start(acq(), day(3)), ['ok']);
+    expect(() => start(acq(), day(3), { runId: 'other', pending })).toThrow(/Не записан прогон run-2026-10-03/);
+    expect(start(acq(), day(3), { pending: null }).kind).toBe('teaching');
+  });
+
+  it('идущий — внешний обрыв: день не занят, номер не выдан, конец — момент закрытия', () => {
+    const before = acq(0, { routineRunSeq: 3 });
+    const run = play(start(before, day(3)), ['ok']);
+    const closed = closeHangingRoutineRun(run, Date.parse('2026-10-04T07:00:00Z'));
+    expect([closed.status, closed.interrupted, closed.endedAt]).toEqual(['finished', 'external', Date.parse('2026-10-04T07:00:00Z')]);
+    const r = finishRoutineRun(closed, 7, NO_HISTORY);
+    expect([r.state, r.record.runNo]).toEqual([before, undefined]);
+  });
+
+  it('идущий во время паузы — тоже внешний обрыв, пауза снята', () => {
+    const closed = closeHangingRoutineRun(record(start(acq(), day(3)), 'break'), 1);
+    expect([closed.interrupted, closed.pause]).toEqual(['external', null]);
+  });
+
+  it('срыв, который доводил взрослый, — срыв: сигнал о согласии не теряется', () => {
+    const run = cut(play(start(acq(), day(3)), ['ok']), 'breakdown');
+    const closed = closeHangingRoutineRun(run, Date.parse('2026-10-04T07:00:00Z'));
+    expect([closed.status, closed.interrupted, closed.endedAt]).toEqual(['finished', 'breakdown', run.endedAt]);
+    expect(finishRoutineRun(closed, 7, NO_HISTORY).state.assentSessionsInRow).toBe(1);
+  });
+
+  it('с записанным последним звеном — как есть', () => {
+    const run = play(start(acq(), day(3)), ['ok', 'ok', 'ok']);
+    expect(closeHangingRoutineRun(run, Date.parse('2026-10-04T07:00:00Z'))).toBe(run);
+  });
+});
+
+describe('Д2: пересчёт итога с местом (routineResultWithSetting)', () => {
+  it('тот же прогон с other_place: тот же runNo, место в записи и в окне, состояние — от before', () => {
+    let s = acq();
+    for (let i = 1; i <= 4; i += 1) s = fullRun(s, day(i)).state;
+    const run = play(start(s, day(5)), ['ok', 'ok', 'ok']);
+    const t1 = finishRoutineRun(run, 7, NO_HISTORY);
+    expect([t1.state.phase, t1.state.flags.includes('needs_transfer')]).toEqual(['acquisition', true]);
+    const t2 = routineResultWithSetting({ run: t1.run, t1State: t1.state, sessionIndex: t1.sessionIndex, history: t1.history }, 'other_place');
+    expect(t2.record.runNo).toBe(t1.record.runNo);
+    expect([t2.record.setting, t2.state.phase, t2.state.flags.includes('needs_transfer')]).toEqual(['other_place', 'mastered', false]);
+    expect(t2.record.endedAt).toBe(t1.record.endedAt);
+    expect(t2.claim).toEqual(t1.claim);
+  });
+});
+
+describe('В3: prompt_dependent снимается освоением рутины', () => {
+  it('прогон, переводящий в освоенную фазу, снимает флаг; номер флага остаётся, dependenceClearedAt — runNo', () => {
+    let s = acq(0, { flags: ['prompt_dependent'], dependenceFlaggedAtSession: 2, dependentStepIds: [S2], routineRunSeq: 2 });
+    for (let i = 1; i <= 4; i += 1) s = fullRun(s, day(i)).state;
+    expect(s.flags).toContain('prompt_dependent');
+    const r = runAt(s, day(5), ['ok', 'ok', 'ok'], 'other_place');
+    expect(r.state.phase).toBe('mastered');
+    expect(r.state.flags).not.toContain('prompt_dependent');
+    expect([r.state.dependenceFlaggedAtSession, r.state.dependenceClearedAt, r.state.dependentStepIds]).toEqual([2, 7, undefined]);
+  });
+
+  it('прогон без освоения флаг не снимает', () => {
+    const s = acq(0, { flags: ['prompt_dependent'], dependenceFlaggedAtSession: 1, dependentStepIds: [S2] });
+    const r = fullRun(s, day(1));
+    expect([r.state.flags.includes('prompt_dependent'), r.state.dependenceClearedAt]).toEqual([true, undefined]);
   });
 });
