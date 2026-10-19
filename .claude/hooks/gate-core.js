@@ -80,6 +80,41 @@ function classifyPath(p, { ancestors = false } = {}) {
   return null;
 }
 
+const REAL_IO = { existsSync: fs.existsSync, realpathSync: fs.realpathSync.native };
+
+/**
+ * Настоящий путь (раунд 4, В3): короткие имена Windows 8.3 (`TALENT~1`), ссылки и регистр
+ * разрешаются через `realpathSync.native` **ближайшего существующего предка**; несуществующий хвост
+ * (новый файл) дописывается как есть. Относительный путь и любая ошибка — исходный путь.
+ * `io` — для тестов.
+ */
+function realPathOf(p, io = REAL_IO) {
+  const original = String(p ?? '');
+  const fwd = original.replace(/\\/g, '/');
+  if (!(fwd.startsWith('/') || /^[A-Za-z]:\//.test(fwd))) return original;
+  let cur = path.posix.normalize(fwd);
+  if (cur.length > 1 && cur.endsWith('/') && !/^[A-Za-z]:\/$/.test(cur)) cur = cur.slice(0, -1);
+  const rest = [];
+  try {
+    while (!io.existsSync(cur)) {
+      let up = path.posix.dirname(cur);
+      if (/^[A-Za-z]:$/.test(up)) up += '/';
+      if (up === cur || up === '.') return original;
+      rest.unshift(path.posix.basename(cur));
+      cur = up;
+    }
+    const real = String(io.realpathSync(cur)).replace(/\\/g, '/').replace(/\/$/, '');
+    return [real, ...rest].join('/');
+  } catch {
+    return original;
+  }
+}
+
+/** `classifyPath` по пути как есть, а если не закрыт — по настоящему пути (`realPathOf`). */
+function classifyRealPath(p, opts = {}, io = REAL_IO) {
+  return classifyPath(p, opts) ?? classifyPath(realPathOf(p, io), opts);
+}
+
 /** Состояние ворот по тексту `audit-gate.json` (пусто или битый JSON — закрыто). */
 function gateStateFromText(text) {
   let rounds = [];
@@ -110,4 +145,15 @@ function gateState(root) {
   return gateStateFromText(text);
 }
 
-module.exports = { AGENTS, GUARDED_DIRS, classifyPath, segMatch, segments, gateState, gateStateFromText, hasGlob };
+module.exports = {
+  AGENTS,
+  GUARDED_DIRS,
+  classifyPath,
+  classifyRealPath,
+  realPathOf,
+  segMatch,
+  segments,
+  gateState,
+  gateStateFromText,
+  hasGlob,
+};

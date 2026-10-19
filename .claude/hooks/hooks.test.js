@@ -13,7 +13,7 @@ const os = require('node:os');
 const path = require('node:path');
 
 const { shellWritesGuarded } = require('./audit-gate');
-const { classifyPath } = require('./gate-core');
+const { classifyPath, classifyRealPath, realPathOf } = require('./gate-core');
 const { violations } = require('./check-pr');
 
 const M = 'talentia-mobile';
@@ -82,6 +82,18 @@ const BLOCKED = [
 ];
 for (const [name, cmd] of BLOCKED) {
   test(`блокируется: ${name}`, () => assert.equal(shellWritesGuarded(cmd, CWD_ROOT), true, cmd));
+}
+
+// Раунд 4, В6: запись через .NET и ссылки на закрытую папку (mklink / Junction).
+const BLOCKED_R4 = [
+  ['.NET StreamWriter', `$w = New-Object System.IO.StreamWriter('${M}\\app\\x.tsx')`],
+  ['.NET IO.Directory', `[System.IO.Directory]::CreateDirectory('${M}\\app\\x')`],
+  ['.NET IO.Directory без System', `[IO.Directory]::CreateDirectory('${M}\\src\\screens\\b')`],
+  ['cmd mklink /J', `cmd /c mklink /J link ${M}\\app`],
+  ['Sysinternals junction', `junction link ${M}\\src\\components`],
+];
+for (const [name, cmd] of BLOCKED_R4) {
+  test(`блокируется (раунд 4, В6): ${name}`, () => assert.equal(shellWritesGuarded(cmd, CWD_ROOT), true, cmd));
 }
 
 test('блокируется двухшаговый обход: cwd в закрытой папке, запись голым именем', () => {
@@ -181,6 +193,84 @@ test('хук: Edit с относительным путём тоже блоки�
   assert.equal(runHook(dir, { cwd: mobile, tool_name: 'Write', tool_input: { file_path: 'src/components/x.tsx' } }), 'deny');
 });
 
+test('хук (раунд 4, В2): новый файл контента блокируется любым инструментом записи, не только Write', () => {
+  const dir = projectWith(CLOSED);
+  const abs = (p) => `${dir.replace(/\\/g, '/')}/${p}`;
+  const fresh = abs(`${M}/src/content/fresh.ts`);
+  assert.equal(
+    runHook(dir, { tool_name: 'Edit', tool_input: { file_path: fresh, old_string: '', new_string: 'export {}' } }),
+    'deny',
+    'Edit с пустым old_string создаёт файл',
+  );
+  assert.equal(runHook(dir, { tool_name: 'NotebookEdit', tool_input: { notebook_path: abs(`${M}/src/content/n.ipynb`) } }), 'deny');
+  assert.equal(runHook(dir, { tool_name: 'MultiEdit', tool_input: { file_path: fresh } }), 'deny');
+});
+
+// ---------------------------------------------------------------------------
+// Раунд 4, В3: короткие имена Windows 8.3 (`TALENT~1`) разрешаются до длинных
+// ---------------------------------------------------------------------------
+
+/** Подменённая файловая система: существующие папки (в коротком виде) → их настоящий путь. */
+function fakeIo(real) {
+  return {
+    existsSync: (p) => Object.prototype.hasOwnProperty.call(real, p),
+    realpathSync: (p) => real[p],
+  };
+}
+
+test('realPathOf (В3): путь через короткое имя разрешается через ближайшего существующего предка', () => {
+  const io = fakeIo({ '/w/TALENT~1/TALENT~2': '/w/Talentia-v1.0/talentia-mobile' });
+  const short = '/w/TALENT~1/TALENT~2/app/new.tsx';
+  assert.equal(classifyPath(short), null, 'без разрешения короткое имя не узнаётся');
+  assert.equal(realPathOf(short, io), '/w/Talentia-v1.0/talentia-mobile/app/new.tsx');
+  assert.equal(classifyPath(realPathOf(short, io)), 'screens');
+});
+
+test('realPathOf (В3): путь с диском и обратными слэшами; настоящий путь в виде Windows', () => {
+  const io = fakeIo({ 'C:/w/TALENT~1/TALENT~2/src/COMPON~1': 'C:\\w\\Talentia-v1.0\\talentia-mobile\\src\\components' });
+  const p = 'C:\\w\\TALENT~1\\TALENT~2\\src\\COMPON~1\\B.tsx';
+  assert.equal(realPathOf(p, io), 'C:/w/Talentia-v1.0/talentia-mobile/src/components/B.tsx');
+  assert.equal(classifyRealPath(p, {}, io), 'screens');
+});
+
+test('realPathOf (В3): относительный путь и путь без существующих предков не меняются', () => {
+  const io = fakeIo({});
+  assert.equal(realPathOf('TALENT~2/app/x.tsx', io), 'TALENT~2/app/x.tsx');
+  assert.equal(realPathOf('/nope/TALENT~2/app/x.tsx', io), '/nope/TALENT~2/app/x.tsx');
+  const throwing = { existsSync: () => true, realpathSync: () => { throw new Error('EACCES'); } };
+  assert.equal(realPathOf('/w/x', throwing), '/w/x', 'ошибка realpath — исходный путь');
+});
+
+/** Короткое 8.3-имя папки через cmd (`%~sI`); `null`, если не Windows или 8.3-имена на томе отключены. */
+function shortName(longPath) {
+  if (process.platform !== 'win32') return null;
+  try {
+    const out = execFileSync('cmd', ['/d', '/s', '/c', `"for %I in ("${longPath}") do @echo %~sI"`], {
+      encoding: 'utf8',
+      windowsVerbatimArguments: true,
+    }).trim();
+    return out && out.toLowerCase() !== longPath.toLowerCase() && out.includes('~') ? out : null;
+  } catch {
+    return null;
+  }
+}
+
+test('хук (В3): запись через настоящее 8.3-имя закрытой папки блокируется', (t) => {
+  const dir = projectWith(CLOSED);
+  fs.mkdirSync(path.join(dir, M, 'app'), { recursive: true });
+  fs.mkdirSync(path.join(dir, M, 'src', 'components'), { recursive: true });
+  const app = shortName(path.join(dir, M, 'app'));
+  const components = shortName(path.join(dir, M, 'src', 'components'));
+  const content = shortName(path.join(dir, M, 'src', 'content'));
+  if (!components || !content || !app) return t.skip('8.3-имена в этой среде недоступны');
+  assert.equal(classifyPath(components), null, 'короткое имя само по себе не узнаётся');
+  assert.equal(runHook(dir, { tool_name: 'Write', tool_input: { file_path: `${components}\\B.tsx` } }), 'deny');
+  assert.equal(runHook(dir, { tool_name: 'Write', tool_input: { file_path: `${content}\\fresh.ts` } }), 'deny');
+  assert.equal(runHook(dir, { tool_name: 'Bash', tool_input: { command: `echo hi > ${components}\\B.tsx` } }), 'deny');
+  assert.equal(runHook(dir, { cwd: app, tool_name: 'Bash', tool_input: { command: 'echo hi > x.tsx' } }), 'deny');
+  assert.equal(runHook(dir, { tool_name: 'Edit', tool_input: { file_path: `${content}\\old.ts` } }), null, 'правка существующего контента через 8.3 проходит');
+});
+
 test('хук: двухшаговый обход через cwd', () => {
   const dir = projectWith(CLOSED);
   const cwd = path.join(dir, M, 'app');
@@ -213,17 +303,20 @@ test('хук: ворота открыты — ничего не блокируе
 // check-pr (CI)
 // ---------------------------------------------------------------------------
 
+/** Вывод `git diff --name-status -z`: `статус\0путь\0` на каждую запись. */
+const zDiff = (rows) => rows.map(([s, f]) => `${s}\0${f}\0`).join('');
+
 test('check-pr: нарушения в diff', () => {
-  const diff = [
-    `A\t${M}/app/index.tsx`,
-    `M\t${M}/src/components/Button.tsx`,
-    `D\t${M}/src/screens/Old.tsx`, // удаление прежнего кода — не нарушение
-    `A\t${M}/src/content/new-world.ts`,
-    `M\t${M}/src/content/numbers-5-6.ts`,
-    `A\t${M}/src/content/__tests__/new.test.ts`,
-    `A\t${M}/app.json`,
-    `M\t${M}/src/domain/abaSession.ts`,
-  ].join('\n');
+  const diff = zDiff([
+    ['A', `${M}/app/index.tsx`],
+    ['M', `${M}/src/components/Button.tsx`],
+    ['D', `${M}/src/screens/Old.tsx`], // удаление прежнего кода — не нарушение
+    ['A', `${M}/src/content/new-world.ts`],
+    ['M', `${M}/src/content/numbers-5-6.ts`],
+    ['A', `${M}/src/content/__tests__/new.test.ts`],
+    ['A', `${M}/app.json`],
+    ['M', `${M}/src/domain/abaSession.ts`],
+  ]);
   const bad = violations(diff).map((v) => v.split('\t').slice(0, 2).join(' '));
   assert.deepEqual(bad, [
     `A ${M}/app/index.tsx`,
@@ -272,6 +365,44 @@ test('check-pr: закрыто, PR добавляет экран — падае�
   const r = runCheck(dir);
   assert.equal(r.code, 1);
   assert.match(r.out, /экранный код/);
+});
+
+test('check-pr (В1): разбор -z — имена с табуляцией, переводом строки и кириллицей не теряются', () => {
+  const bad = violations(
+    zDiff([
+      ['A', `${M}/app/экран.tsx`],
+      ['M', `${M}/app/a\tb.tsx`],
+      ['A', `${M}/src/content/нов\nый.ts`],
+    ]),
+  ).map((v) => v.split('\t')[0]);
+  assert.deepEqual(bad, ['A', 'M', 'A']);
+});
+
+test('check-pr (В1): закрыто, PR добавляет экран с кириллическим именем — падает', () => {
+  const dir = repo(CLOSED);
+  write(dir, `${M}/app/экран.tsx`);
+  git(dir, 'add', '-A');
+  git(dir, 'commit', '-q', '-m', 'cyrillic screen');
+  const r = runCheck(dir);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /экран\.tsx/);
+});
+
+test('check-pr (В1): закрыто, PR добавляет новый контент с кириллицей и пробелом в имени — падает', () => {
+  const dir = repo(CLOSED);
+  write(dir, `${M}/src/content/новый мир.ts`);
+  git(dir, 'add', '-A');
+  git(dir, 'commit', '-q', '-m', 'cyrillic content');
+  assert.equal(runCheck(dir).code, 1);
+});
+
+test('check-pr (В1): результат не зависит от core.quotePath в конфиге репозитория', () => {
+  const dir = repo(CLOSED);
+  git(dir, 'config', 'core.quotePath', 'true');
+  write(dir, `${M}/src/components/Кнопка.tsx`);
+  git(dir, 'add', '-A');
+  git(dir, 'commit', '-q', '-m', 'cyrillic component');
+  assert.equal(runCheck(dir).code, 1);
 });
 
 test('check-pr: закрыто, PR добавляет новый контент — падает; правка старого и тесты — проходят', () => {

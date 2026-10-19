@@ -23,13 +23,18 @@
  * Известное ограничение: команда, где рядом стоят запись (даже в scratchpad) и закрытая папка
  * (`jest src/content > out.txt`), блокируется целиком — разнести на две команды.
  *
+ * Разбор оболочки неполный (раунд 4, В6): переменные (`$d="talentia-mobile/app"; … > $d/x`),
+ * склейка кавычек (`'talentia-mo''bile'`), скрипты из файла, `git apply` готового патча и т. п. он не
+ * видит и видеть не будет. Это защита от случайной записи, а не от обхода. Настоящая защита —
+ * `check-pr.js` в CI: он смотрит на результат (diff PR), каким бы путём файл ни появился.
+ *
  * Ворота открыты, когда в `.claude/audit-gate.json` последний раунд — все девять агентов из
  * `.claude/agents/` (дизайн и UX — последовательно) и **0 блокеров** (`gate-core.js`). То же в CI
  * проверяет `check-pr.js`: хук видит только инструменты Claude, а PR может прийти любым путём.
  */
 const fs = require('fs');
 const path = require('path');
-const { classifyPath, gateState, hasGlob } = require('./gate-core');
+const { classifyRealPath, gateState, hasGlob } = require('./gate-core');
 
 // Пути в команде оболочки — и полные, и относительные (`cd talentia-mobile && … > app/x.tsx`).
 // `app.json` и `__tests__` контента — не закрытые.
@@ -55,6 +60,8 @@ const SHELL_WRITE = new RegExp(
     String.raw`\bgit\s+(checkout|restore|apply|am|mv|rm|reset|stash|cherry-pick|revert|merge|pull|clean)\b`,
     String.raw`\b(Set-Content|Add-Content|Out-File|New-Item|Copy-Item|Move-Item|Remove-Item|Rename-Item|Expand-Archive|Clear-Content|Tee-Object|Export-Csv|Export-Clixml|Set-Item)\b`,
     String.raw`\[(System\.)?IO\.File\]`,
+    // раунд 4, В6: .NET-запись и ссылки на закрытую папку
+    String.raw`\bStreamWriter\b|\bIO\.Directory|\bmklink\b|\bJunction\b`,
   ].join('|'),
   'i',
 );
@@ -90,7 +97,7 @@ function tokenGuarded(token, cwd, destructive) {
   const t = token.replace(/\\/g, '/');
   const absolute = t.startsWith('/') || /^[A-Za-z]:\//.test(t) || t.startsWith('~');
   const full = absolute || !cwd ? t : `${cwd}/${t}`;
-  return classifyPath(full, { ancestors: destructive }) !== null;
+  return classifyRealPath(full, { ancestors: destructive }) !== null;
 }
 
 /**
@@ -133,10 +140,13 @@ function main() {
     const cwd = String(input.cwd || root);
     const file = shell ? String(input?.tool_input?.command ?? '') : toolFile(input, cwd);
     const shellWrite = shell && shellWritesGuarded(file, cwd);
-    const kind = !shell && file ? classifyPath(file) : null;
+    // путь разрешается и через короткие 8.3-имена (`TALENT~1`) — раунд 4, В3
+    const kind = !shell && file ? classifyRealPath(file) : null;
     const screens = kind === 'screens';
-    // новый файл контента — только Write и только если файла ещё нет (Edit существующего не блокируется)
-    const newContent = kind === 'content' && (tool === 'Write' || tool === 'MultiEdit') && !fs.existsSync(file);
+    // новый файл контента — любым инструментом записи (Write, Edit с пустым old_string, MultiEdit,
+    // NotebookEdit), если файла ещё нет: условие — существование файла, а не имя инструмента (раунд 4, В2).
+    // Правка существующего контента не блокируется.
+    const newContent = kind === 'content' && !fs.existsSync(file);
     if (!screens && !newContent && !shellWrite) return;
 
     const gate = gateState(root);

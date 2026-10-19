@@ -39,14 +39,19 @@ function resolveBase(arg) {
   return null;
 }
 
-/** Нарушения: строки `статус<TAB>путь` из `git diff --name-status`. */
+/**
+ * Нарушения по выводу `git diff --name-status -z --no-renames`: записи `статус\0путь\0`. Разбор по
+ * NUL, а не по строкам: с `-z` git не экранирует имена (кириллица, пробел, табуляция, перевод строки),
+ * а прежний построчный разбор пропускал `"talentia-mobile/app/\320\255..."` (раунд 4, В1).
+ */
 function violations(diff) {
   const bad = [];
-  for (const line of diff.split('\n')) {
-    if (!line.trim()) continue;
-    const [status, ...rest] = line.split('\t');
-    const file = rest.join('\t');
-    const kind = classifyPath(`talentia-mobile-root-marker/${file}`.replace('talentia-mobile-root-marker/', ''));
+  const fields = diff.split('\0');
+  for (let i = 0; i + 1 < fields.length; i += 2) {
+    const status = fields[i].trim();
+    const file = fields[i + 1];
+    if (!status) continue;
+    const kind = classifyPath(file);
     // удаление экранного кода (чистка прежнего приложения) ворота не трогают: закрыт новый код
     if (kind === 'screens' && status !== 'D') bad.push(`${status}\t${file}\tэкранный код`);
     else if (kind === 'content' && status === 'A') bad.push(`${status}\t${file}\tновый файл контента`);
@@ -72,7 +77,7 @@ function main() {
     console.log(`Ворота аудита открыты (${gate.last.date}, блокеров 0): проверка пройдена.`);
     return 0;
   }
-  const diff = git('diff', '--name-status', '--no-renames', `${base}...${head}`);
+  const diff = git('-c', 'core.quotePath=false', 'diff', '--name-status', '-z', '--no-renames', `${base}...${head}`);
   const bad = violations(diff);
   if (bad.length === 0) {
     console.log(`Ворота аудита закрыты (${gate.state}), но экранного кода и новых файлов контента в изменениях нет.`);
