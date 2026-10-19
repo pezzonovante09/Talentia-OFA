@@ -37,6 +37,7 @@ import {
 } from '../../domain/lessonLimits';
 import { bandIndex, registryProblems, SKILL_BY_ID, SKILLS } from '../../domain/skills';
 import { countSilhouette } from '../../domain/countLayout';
+import { applyName } from '../../domain/taliName';
 import { FORMAT_MIN_BAND, REVEAL_STIMULUS } from '../../types/task';
 import type { AgeBand, Lesson, Media, ModelExample, Region, Task, TaskFormat, Topic } from '../../types/task';
 
@@ -468,6 +469,28 @@ export function nameOutsideVocative(text: string): boolean {
   return NAME_PLACEHOLDER.test(rest);
 }
 
+/**
+ * Реплика с `{{name}}` при пустом имени (№101) — после `applyName` из `domain/taliName.ts`, той же,
+ * что в рантайме: нет ведущей запятой, строчной буквы в начале («{{name}} смотри!» без запятой
+ * не вырезается как обращение), двойного пробела, пробела перед знаком и остатка подстановки
+ * (раунд 4, Д7). `null` — всё чисто; иначе — что увидит ребёнок.
+ */
+export function emptyNameBroken(text: string): string | null {
+  const out = applyName(text, '');
+  return /^\s*[,!.?…—–-]|^\p{Ll}|\s{2}|\s[,!.?…]|,[,!.?…]|\{\{/u.test(out) ? out : null;
+}
+
+/**
+ * Глагол касания-пересчёта: «трогай», «коснись», «веди пальцем», en touch (раунд 4, Д5). В
+ * плитках `match`, `order`, `choose` касание — выбор или пара: «трогай каждую фигуру» сбивает
+ * ребёнка формулировкой, и ошибка механики идёт в зачёт навыка. Пересчёт касанием — только у
+ * кучки-стимула (`stimulus.count`), где касание ничего не выбирает. «Нажми на кучки» — выбор,
+ * не пересчёт, и не ловится.
+ */
+export const TOUCH_VERB = words(
+  '(?:по)?трога\\p{L}*|тронь|дотрон\\p{L}*|коснись|коснитесь|касай\\p{L}*|(?:про)?вед(?:и|ём|ем)\\s+пальц\\p{L}*|пальцем\\s+по|touch\\p{L}*|(?:slide|run|move)\\s+your\\s+finger',
+);
+
 /** Фигур на пересчёт в плитках одного задания на 5-6 (`screenLoad`, `child-ux-specialist`). */
 export const SCREEN_COUNT_56 = 12;
 
@@ -488,7 +511,12 @@ export const AFFIX_AFTER_SLOT = /\}\}[»"'’\-]?\p{L}/u;
  *
  * «один / одна» не ловятся: в уроках счёта это числительное при предмете.
  */
-export const PAST_ROOTS = ['справил', 'смог', 'нашёл', 'нашел', 'нашл', 'угадал', 'решил', 'сделал', 'посчитал', 'понял', 'запомнил', 'путал'];
+// «ошиб», «сбил», «помог», «перепутал», «запутал» — раунд 3, В8 и раунд 4: «ты ошибся», «ты помог»,
+// «Ой, сбился!» без подлежащего проходили гард
+export const PAST_ROOTS = [
+  'справил', 'смог', 'нашёл', 'нашел', 'нашл', 'угадал', 'решил', 'сделал', 'посчитал', 'понял', 'запомнил', 'путал',
+  'перепутал', 'запутал', 'ошиб', 'сбил', 'помог',
+];
 /**
  * Подлежащие задач и жителей, кроме местоимений и Tali: имена жителей (из реестра, когда
  * появится) и нарицательные персонажи задач («заяц», «мама»). Иначе гард примет «Айбек нашёл»
@@ -1220,7 +1248,31 @@ export const RULES = {
               .filter(([, text]) => nameOutsideVocative(text))
               .map(([lang]) => `${where}: ${lang} ${key} — имя посреди фразы: только обращением в начале или конце, иначе озвучку без имени не собрать`),
           ),
+          ...tali.flatMap((key) =>
+            texts(key).flatMap(([lang, text]) => {
+              const broken = NAME_PLACEHOLDER.test(text) ? emptyNameBroken(text) : null;
+              return broken === null ? [] : [`${where}: ${lang} ${key} — при пустом имени (№101) выйдет «${broken}»`];
+            }),
+          ),
         ];
+      }),
+  },
+
+  touchVerb: {
+    // Раунд 4, Д5 (`curriculum-content-reviewer`): «Трогай всё по разу» в `match` и `order` — на
+    // экране касание плитки выбирает её и создаёт пару. Глагол касания — только у задания с
+    // кучкой-стимулом. Проверяются все локали, где ключ есть.
+    title: 'глагол касания («трогай», «коснись», «веди пальцем», touch) в вопросе и подсказке — только у задания с кучкой-стимулом (stimulus.count)',
+    check: (corpus, locales) =>
+      tasksOf(corpus).flatMap(({ task, at }) => {
+        if (task.stimulus?.count !== undefined) return [];
+        return [task.promptKey, task.hintKey].flatMap((key) =>
+          (Object.entries(locales) as [string, unknown][]).flatMap(([lang, locale]) => {
+            const text = lookup(locale, key);
+            const m = typeof text === 'string' ? TOUCH_VERB.exec(text) : null;
+            return m ? [`${at}: ${lang} ${key} — «${m[0]}»: касание в плитке — выбор, а не пересчёт; пересчёт касанием — только у кучки-стимула`] : [];
+          }),
+        );
       }),
   },
 

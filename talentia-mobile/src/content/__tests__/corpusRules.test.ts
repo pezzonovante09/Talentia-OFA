@@ -8,7 +8,7 @@
  * Фикстуры живут здесь, а не в `src/content`, — иначе гард принял бы их за
  * контент.
  */
-import { CHOOSE_SHARE_MIN_TASKS, RULES, childGenderHits, collectCorpus, keysIn } from './corpusRules';
+import { CHOOSE_SHARE_MIN_TASKS, RULES, childGenderHits, collectCorpus, emptyNameBroken, keysIn } from './corpusRules';
 import { countSilhouette } from '../../domain/countLayout';
 import type { Corpus, Locales, RuleId } from './corpusRules';
 import type { ChooseTask, Lesson, Task, TaskFormat, Topic } from '../../types/task';
@@ -1731,6 +1731,62 @@ describe('гард корпуса: род ребёнка в уроке', () => {
 
   it('одна ошибка — одна строка', () => {
     expect(childGenderHits('Ты сделал!')).toEqual(['Ты сделал']);
+  });
+});
+
+describe('гард корпуса: род ребёнка — дыры раунда 3 (В8) и раунда 4', () => {
+  it.each(['Ты ошибся!', 'Ошиблась? Ничего.', 'Ой, сбился!', 'Ты помог!', 'Помогла!', 'Ты всё перепутал.', 'Запуталась?'])('ловит: «%s»', (text) => {
+    expect(childGenderHits(text)).not.toEqual([]);
+  });
+
+  it.each(['Ой, я сбился! Посчитаем по одному?', 'Тали ошибся.', 'Помоги мне!', 'Это ошибка.', 'Я перепутал!', 'Вместе досчитали до десяти!'])('пропускает: «%s»', (text) => {
+    expect(childGenderHits(text)).toEqual([]);
+  });
+});
+
+describe('гард корпуса: глагол касания (раунд 4, Д5)', () => {
+  it('у кучки-стимула касание можно; в match — красно, в любой локали; «нажми» — не касание', () => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    const en: Record<string, unknown> = {};
+    const withStimulus = lessonAt(c, 0).tasks[0];
+    const match = taskOf(c, 0, 'match');
+    setKey(ru, withStimulus.hintKey, 'Трогай каждый камень и считай.');
+    setKey(en, withStimulus.hintKey, 'Touch each stone and count.');
+    setKey(ru, match.promptKey, 'Нажми на кучку, потом на точки.');
+    expect(run('touchVerb', c, { ru, en })).toEqual([]);
+    setKey(ru, match.hintKey, 'Трогай всё по разу и считай.');
+    expectRed('touchVerb', c, `ru ${match.hintKey} — «Трогай»`, { ru, en });
+    setKey(ru, match.hintKey, 'Сосчитай кучку.');
+    setKey(en, match.promptKey, 'Slide your finger along the piles.');
+    expectRed('touchVerb', c, `en ${match.promptKey} — «Slide your finger»`, { ru, en });
+  });
+
+  it.each(['Трогай по разу.', 'Потрогай каждую.', 'Коснись ягоды.', 'Веди пальцем по камням.', 'Проведи пальцем.', 'Touch each one once.', 'Run your finger over them.'])(
+    'ловит: «%s»',
+    (text) => {
+      const c = goodCorpus();
+      const ru = localeFor(c);
+      const match = taskOf(c, 0, 'match');
+      setKey(ru, match.hintKey, text);
+      expect(run('touchVerb', c, { ru }).length).toBeGreaterThan(0);
+    },
+  );
+});
+
+describe('гард корпуса: пустое имя в реплике Tali (раунд 4, Д7)', () => {
+  it('обращение в начале и конце вырезается без следов; обращение без запятой — красно', () => {
+    expect(emptyNameBroken('{{name}}, смотри!')).toBeNull();
+    expect(emptyNameBroken('Молодец, {{name}}!')).toBeNull();
+    expect(emptyNameBroken('{{name}} смотри!')).toBe('смотри!');
+    expect(emptyNameBroken('{{name}} — смотри!')).toBe('— смотри!');
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    const l = lessonAt(c, 0);
+    setKey(ru, l.hook.lineKey, '{{name}}, смотри!');
+    expect(run('nameOnlyInTali', c, { ru })).toEqual([]);
+    setKey(ru, l.hook.lineKey, '{{name}} смотри!');
+    expectRed('nameOnlyInTali', c, `${l.hook.lineKey} — при пустом имени (№101) выйдет «смотри!»`, { ru });
   });
 });
 

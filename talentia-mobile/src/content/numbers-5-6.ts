@@ -204,7 +204,8 @@ const lessonCountToFive: Lesson = {
       promptKey: 'content.numbers.l2.t3.prompt',
       hintKey: 'content.numbers.l2.t3.hint',
       explainKey: ['content.numbers.l2.t3.explain'],
-      stimulus: { labelKey: 'content.numbers.l2.t3.stimulus', shape: 'berry', count: 2 },
+      // Вразброс: в ряд это повтор l1-t1 (два камня в ряд), а спираль — то же узнавание в новом виде.
+      stimulus: { labelKey: 'content.numbers.l2.t3.stimulus', shape: 'berry', count: 2, layout: 'scatter' },
       options: [dots('a', 1, false), dots('b', 2, true), dots('c', 3, false)],
     },
     {
@@ -238,8 +239,8 @@ const lessonCountToFive: Lesson = {
  * Нагрузка — по ревью 2026-10-02 (`curriculum-content-reviewer`, `aba-pedagogy-specialist`,
  * `child-ux-specialist`) и раунду 2 (Р15): кучка больше пяти — только в стимуле, в плитке
  * варианта она не пересчитывается (гард `tile`). Поэтому `order` (t2) — спираль на способ урока
- * до пяти: кучки 3, 4, 5 вразброс, трогать по разу (решение №93; с `build` вернуть на счёт до
- * десяти). 7–10 — в `choose`, а не в парах `match` (пары по 7–10 — пятьдесят актов счёта,
+ * до пяти: кучки 1, 3, 5 (решение №93; `build` на 5–6 недостижим — с 7 лет, так что на счёт до
+ * десяти t2 вернётся только другим форматом). 7–10 — в `choose`, а не в парах `match` (пары по 7–10 — пятьдесят актов счёта,
  * пятилетке в одиночку не пройти). При числе больше пяти задание идёт «кучка → число» (решение №81): одна
  * кучка в ряд (`stimulus`, `row`) и три карточки-числа (`numeral`), каждая озвучена числом.
  * Точек в вариантах нет: ряд и точки дали бы один силуэт «пять и остаток» (А12). Цифра здесь
@@ -284,7 +285,9 @@ const lessonCountToTen: Lesson = {
     },
     {
       // Спираль на способ урока до пяти: кучки 6–7 в плитку не помещаются (Р15, решение №93).
-      // С форматом `build` («положи шесть камней») — вернуть на `count-to-10`.
+      // Кучки 1, 3, 5, а не 3, 4, 5: иначе это почти дословно l2-t2 (раунд 3, В1; раунд 4).
+      // `build` на 5–6 недостижим (FORMAT_MIN_BAND — с 7 лет): на `count-to-10` это задание
+      // вернётся только с другим форматом, а не с `build`.
       id: 'nv-count-l3-t2',
       skill: 'count-to-5',
       format: 'order',
@@ -293,9 +296,9 @@ const lessonCountToTen: Lesson = {
       hintKey: 'content.numbers.l3.t2.hint',
       explainKey: ['content.numbers.l3.t2.explain'],
       items: [
-        { id: 'i1', labelKey: 'content.numbers.l3.t2.berries', shape: 'berry', count: 4, layout: 'scatter', position: 1 },
-        { id: 'i2', labelKey: 'content.numbers.l3.t2.stones', shape: 'stone', count: 3, layout: 'scatter', position: 0 },
-        { id: 'i3', labelKey: 'content.numbers.l3.t2.leaves', shape: 'leaf', count: 5, layout: 'scatter', position: 2 },
+        { id: 'i1', labelKey: 'content.numbers.l3.t2.berries', shape: 'berry', count: 3, layout: 'row', position: 1 },
+        { id: 'i2', labelKey: 'content.numbers.l3.t2.leaf', shape: 'leaf', count: 1, position: 0 },
+        { id: 'i3', labelKey: 'content.numbers.l3.t2.stones', shape: 'stone', count: 5, layout: 'scatter', position: 2 },
       ],
     },
     {
@@ -317,7 +320,7 @@ const lessonCountToTen: Lesson = {
       promptKey: 'content.numbers.l3.t4.prompt',
       hintKey: 'content.numbers.l3.t4.hint',
       explainKey: ['content.numbers.l3.t4.explain'],
-      // Не те же 3/4/5, что в t2 (`order`): иначе два задания урока считают одно и то же.
+      // Не те же 1/3/5, что в t2 (`order`): иначе два задания урока считают одно и то же.
       pairs: [
         { id: 'p1', left: { labelKey: 'content.numbers.l3.t4.stones', shape: 'stone', count: 5, layout: 'scatter' }, right: dotSide(5) },
         { id: 'p2', left: { labelKey: 'content.numbers.l3.t4.leaves', shape: 'leaf', count: 2, layout: 'row' }, right: dotSide(2) },

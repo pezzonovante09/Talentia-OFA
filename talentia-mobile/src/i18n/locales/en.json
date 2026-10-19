@@ -1,7 +1,7 @@
 {
   "abaPanel": {
     "correct": "Correct",
-    "close": "Close",
+    "close": "Almost",
     "incorrect": "Incorrect",
     "resisted": "Resisting",
     "together": "Done together",
@@ -44,14 +44,14 @@
       "other_adult": "With another adult",
       "other_place": "Not where it usually happens"
     },
-    "transferHint": "Almost mastered: it goes well with the pictures. One more time is needed, in another place or with another adult."
+    "transferHint": "Almost mastered: every step goes well with the picture cards. One more run to go, in a different place or with a different adult."
   },
   "abaReinforcer": {
-    "again": "What shall we play for now?"
+    "again": "What are we playing for now?"
   },
   "abaReinforcement": {
     "token": "The token is yours!",
-    "repeated": "You managed to do it again!"
+    "repeated": "You did it again!"
   },
   "profile": {
     "unnamed": "Profile {{n}}"
@@ -95,20 +95,20 @@
         },
         "t2": {
           "prompt": "Match each pile to its dots.",
-          "hint": "Find the dots that match what you see.",
+          "hint": "See how many, then find that many dots.",
           "explain": "One stone, two berries, three leaves.",
           "stone": "stone",
           "berries": "berries",
           "leaves": "leaves"
         },
         "t3": {
-          "prompt": "How many berries are on the branch?",
-          "stimulus": "berries on the branch",
+          "prompt": "How many berries spilled out?",
+          "stimulus": "berries",
           "hint": "Look at all the berries at once.",
           "explain": "The berries are spread out, but there are still three."
         },
         "t4": {
-          "prompt": "Which pile has one, two, three?",
+          "prompt": "Match the piles with the same number.",
           "hint": "Stones or berries, it's how many that matters.",
           "explain": "One and one, two and two, three and three.",
           "left-berry": "berry",
@@ -132,7 +132,7 @@
         "t1": {
           "prompt": "Count the stones. How many are there?",
           "stimulus": "stones",
-          "hint": "Slide your finger along the stones as you count.",
+          "hint": "Touch each stone and count.",
           "explain": "One, two, three, four, five. Five!"
         },
         "t2": {
@@ -150,8 +150,8 @@
           "explain": "Two berries, you can see it at a glance. Two!"
         },
         "t4": {
-          "prompt": "Count the piles and match them to the dots.",
-          "hint": "Count the pile and the dots.",
+          "prompt": "Match each pile to its dots.",
+          "hint": "Count a pile. Which dots show that many?",
           "explain": "Five berries, three stones, four leaves.",
           "berries": "berries",
           "stones": "stones",
@@ -161,7 +161,7 @@
       "l3": {
         "title": "Counting to ten",
         "hook": "Oops, I lost count! Want to count one by one?",
-        "atlas": "Tali and I counted all the way to ten!",
+        "atlas": "Together we counted all the way to ten!",
         "model": {
           "prompt": "How many leaves?",
           "s1": "One, two, three, four, five, six!",
@@ -175,12 +175,12 @@
           "stimulus": "stones"
         },
         "t2": {
-          "prompt": "Tap the piles: three, four, five.",
-          "hint": "Touch each one once. Don't skip any.",
-          "explain": "Each one once: three, four, five!",
+          "prompt": "Tap the piles: one, three, five.",
+          "hint": "First find the single leaf.",
+          "explain": "One, three, five, in order!",
           "berries": "berries",
           "stones": "stones",
-          "leaves": "leaves"
+          "leaf": "leaf"
         },
         "t3": {
           "prompt": "How many leaves? Count them all.",
@@ -189,8 +189,8 @@
           "stimulus": "leaves"
         },
         "t4": {
-          "prompt": "Count and match them to the dots.",
-          "hint": "Touch each one once as you count.",
+          "prompt": "Match each pile to its dots.",
+          "hint": "How many in the pile? Find that many dots.",
           "explain": "Five here, two here, and four here!",
           "berries": "berries",
           "stones": "stones",

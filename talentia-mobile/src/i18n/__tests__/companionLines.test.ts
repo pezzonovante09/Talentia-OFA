@@ -3,8 +3,8 @@
  * ребёнку»; `localization-qa`, аудит 2026-10-06, А15, А23). Банка ещё нет: проверка обходит
  * то, что есть, и на пустом банке молчит; правила проверяются на примерах ниже.
  */
-import { AFFIX_AFTER_SLOT, childGenderHits, nameOutsideVocative } from '../../content/__tests__/corpusRules';
-import { COMPANION_SLOTS } from '../../domain/companionSituations';
+import { AFFIX_AFTER_SLOT, childGenderHits, emptyNameBroken, nameOutsideVocative } from '../../content/__tests__/corpusRules';
+import { COMPANION_SLOTS, SITUATIONS, VARIANTS_PER_SITUATION } from '../../domain/companionSituations';
 import en from '../locales/en.json';
 import ky from '../locales/ky.json';
 import ru from '../locales/ru.json';
@@ -39,7 +39,8 @@ const COUNT_GLUED = /\{\{\s*count\s*\}\}\s*\p{L}/u;
 const OBJECT_COUNT_AFTER_ACC_RU = /(?<!\p{L})(найди|возьми|положи|дай|собери|покажи|принеси)\s+\{\{\s*object_count/iu;
 /** en is / are и ru глагол настоящего времени мн. ч. перед числом с предметом — только в plural-ключе. */
 const OBJECT_COUNT_AFTER_BE_EN = /\b(is|are|was|were)\s+\{\{\s*object_count/i;
-const OBJECT_COUNT_AFTER_VERB_RU = /\p{L}+(ят|ат|ут|ют)\s+\{\{\s*object_count/iu;
+// настоящее 3 л. мн. ч. (и возвратное «катятся») и прошедшее «было / лежали / осталось» — раунд 3, В8
+const OBJECT_COUNT_AFTER_VERB_RU = /\p{L}+(?:(?:ят|ат|ут|ют)(?:ся)?|л[аои]?(?:сь|ся)?)\s+\{\{\s*object_count/iu;
 
 export function companionProblems(banks: Partial<Record<Lang, Bank>>): string[] {
   const bad: string[] = [];
@@ -74,10 +75,39 @@ export function companionProblems(banks: Partial<Record<Lang, Bank>>): string[] 
         if (!(COMPANION_SLOTS as readonly string[]).includes(s)) bad.push(`${lang} ${key}: подстановки {{${s}}} нет в списке`);
       }
       if (slotsIn(text).includes('name') && nameOutsideVocative(text)) bad.push(`${lang} ${key}: имя — только обращением в начале или в конце`);
+      const emptyName = slotsIn(text).includes('name') ? emptyNameBroken(text) : null;
+      if (emptyName !== null) bad.push(`${lang} ${key}: при пустом имени (№101) выйдет «${emptyName}»`);
       if (lang === 'ru' && !gendered && childGenderHits(text).length) bad.push(`ru ${key}: в безродовой реплике род ребёнка`);
       // набор подстановок — как у ru-основы той же реплики
       const ruBase = Object.entries(ruBank).find(([k]) => base(k) === base(key) && !GENDER.test(k));
       if (ruBase && holders(ruBase[1]) !== holders(text)) bad.push(`${lang} ${key}: подстановки ${holders(text)} вместо ${holders(ruBase[1])}`);
+    }
+  }
+  return bad;
+}
+
+/**
+ * Номера вариантов ситуации — ровно `0…VARIANTS_PER_SITUATION − 1`, как читает `lineKey` /
+ * `pickVariant` (раунд 4, Д7): вариант 4 при счёте с нуля никогда не прозвучит, а пропуск 0
+ * покажет ребёнку ключ. Родовые и plural-суффиксы — надстройки того же номера. Ключи вне
+ * `SITUATIONS` (сюжетные события) не проверяются.
+ */
+export function variantProblems(bank: Bank, lang: Lang): string[] {
+  const bad: string[] = [];
+  const expected = Array.from({ length: VARIANTS_PER_SITUATION }, (_, i) => String(i));
+  const bySituation = new Map<string, Set<string>>();
+  for (const key of Object.keys(bank)) {
+    const m = /^companion\.([^.]+)\.([^._]+)/.exec(base(key));
+    if (!m || !(SITUATIONS as readonly string[]).includes(m[1])) continue;
+    const set = bySituation.get(m[1]) ?? new Set<string>();
+    set.add(m[2]);
+    bySituation.set(m[1], set);
+  }
+  for (const [situation, got] of bySituation) {
+    const missing = expected.filter((n) => !got.has(n));
+    const extra = [...got].filter((n) => !expected.includes(n));
+    if (missing.length || extra.length) {
+      bad.push(`${lang} companion.${situation}: варианты ${[...got].sort().join(', ')}, нужно ровно ${expected.join(', ')}`);
     }
   }
   return bad;
@@ -113,6 +143,7 @@ describe('банк реплик Tali', () => {
       ky: flatten((ky as Record<string, unknown>).companion ?? {}),
     };
     expect(companionProblems(banks)).toEqual([]);
+    expect((Object.entries(banks) as [Lang, Bank][]).flatMap(([lang, bank]) => variantProblems(bank, lang))).toEqual([]);
   });
 
   it('формы «число с предметом» в словаре — с {{count}} и полным plural-набором', () => {
@@ -148,6 +179,9 @@ describe('банк реплик Tali', () => {
       expect(one('en', { 'companion.x.0': 'Here are {{object_count}}!' }).join()).toMatch(/is \/ are/);
       expect(one('ru', plural('Вот лежат {{object_count}}.'))).toEqual([]);
       expect(one('ru', { 'companion.x.0': 'Вот лежат {{object_count}}.' }).join()).toMatch(/глагол согласуется/);
+      expect(one('ru', { 'companion.x.0': 'Тут было {{object_count}}.' }).join()).toMatch(/глагол согласуется/);
+      expect(one('ru', { 'companion.x.0': 'Вот катятся {{object_count}}!' }).join()).toMatch(/глагол согласуется/);
+      expect(one('ru', { 'companion.x.0': 'Осталось {{object_count}}.' }).join()).toMatch(/глагол согласуется/);
       expect(one('en', { 'companion.x.0_one': 'Here is {{object_count}}!', 'companion.x.0_other': 'Here are {{object_count}}!' })).toEqual([]);
     });
 
@@ -174,6 +208,22 @@ describe('банк реплик Tali', () => {
     it('имя не обращением — красно', () => {
       expect(one('ru', { 'companion.x.0': 'Смотри, как {{name}} считает' }).join()).toMatch(/обращением/);
       expect(one('ru', { 'companion.x.0': '{{name}}, у тебя получилось!' })).toEqual([]);
+    });
+
+    it('пустое имя (№101): обращение вырезается без ведущей запятой и двойного пробела', () => {
+      expect(one('ru', { 'companion.x.0': 'У тебя получилось, {{name}}!' })).toEqual([]);
+      expect(one('en', { 'companion.x.0': '{{name}}, look!' })).toEqual([]);
+      expect(one('ru', { 'companion.x.0': '{{name}} смотри!' }).join()).toMatch(/при пустом имени .*«смотри!»/);
+    });
+
+    it('варианты ситуации — ровно 0…3 (раунд 4, Д7)', () => {
+      const four = Object.fromEntries([0, 1, 2, 3].map((n) => [`companion.correct-first.${n}`, 'У тебя получилось!']));
+      expect(variantProblems({ ...four, 'companion.correct-first.0_f': 'Ты справилась!' }, 'ru')).toEqual([]);
+      const oneToFour = Object.fromEntries([1, 2, 3, 4].map((n) => [`companion.correct-first.${n}`, 'У тебя получилось!']));
+      expect(variantProblems(oneToFour, 'ru').join()).toMatch(/варианты 1, 2, 3, 4, нужно ровно 0, 1, 2, 3/);
+      const three = Object.fromEntries(Object.entries(four).filter(([key]) => !key.endsWith('.3')));
+      expect(variantProblems(three, 'en').join()).toMatch(/en companion\.correct-first: варианты 0, 1, 2/);
+      expect(variantProblems({ 'companion.story-arc.0': 'Смотри!' }, 'ru')).toEqual([]);
     });
 
     it('род ребёнка в безродовой — красно; родовая — только в ru и при основе', () => {
