@@ -14,6 +14,7 @@ import {
   abaCalm,
   abaIdentifyGrid,
   abaIdentifyHeight,
+  abaIdentifyPlate,
   abaReinforcerCard,
   abaReinforcerCardSize,
   abaRoutine,
@@ -531,17 +532,74 @@ describe('раскладка экрана пробы (три тира)', () => {
     expect(3 * abaChoiceZone.tight.choice + 2 * abaLayout.plateGap).toBe(264);
   });
 
-  it('identify: четыре плиты — сетка 2×2 (в ряд не помещаются), блок не выше плиты стимула своего тира (I-8)', () => {
-    expect(abaIdentifyGrid.fourLayout).toBe('grid_2x2');
+  it('identify: четыре плиты — сетка 2×2 (в ряд не помещаются), блок не выше плиты стимула своего тира (I-8, Д6)', () => {
+    const g = abaIdentifyGrid;
+    expect(g.fourLayout).toBe('grid_2x2');
+    expect(g.rowGapForFour).toBe(40);
+    expect(g.colGapForFour).toBe(40); // по обеим осям (условие child-ux-specialist)
+    expect(g.plateForFour).toEqual({ roomy: 96, compact: 80, tight: 68 });
     const byTier = { roomy: 'regular', compact: 'compact', tight: 'tight' } as const;
+    const blockFour: Record<AbaTier, number> = { roomy: 232, compact: 200, tight: 176 };
     TIERS.forEach((t) => {
       const plate = abaChoiceZone[byTier[t]].choice;
-      expect(4 * plate + 3 * abaLayout.plateGap).toBeGreaterThan(328); // ряд из четырёх не влезает ни в один тир
+      expect(4 * plate + 3 * abaLayout.plateGap).toBeGreaterThan(g.minContentWidth); // ряд из четырёх не влезает ни в один тир
       expect(abaIdentifyHeight(t, 3)).toBe(plate);
-      expect(abaIdentifyHeight(t, 4)).toBe(2 * plate + abaLayout.plateGap);
+      expect(abaIdentifyPlate(t, 3)).toBe(plate);
+      const p4 = abaIdentifyPlate(t, 4);
+      expect(p4).toBe(g.plateForFour[t]);
+      expect(abaIdentifyHeight(t, 4)).toBe(2 * p4 + g.rowGapForFour);
+      expect(abaIdentifyHeight(t, 4)).toBe(blockFour[t]);
       expect(abaIdentifyHeight(t, 4)).toBeLessThanOrEqual(abaLayoutByTier[t].stimulus);
       expect(plate).toBeGreaterThanOrEqual(touch.min);
+      expect(p4).toBeGreaterThanOrEqual(touch.min);
     });
+  });
+
+  it('identify 2×2: метка подсказки ≤ зазор над каждой плитой; две плиты и зазор помещаются по ширине (Д6)', () => {
+    const g = abaIdentifyGrid;
+    const marks = ([1, 2, 3] as const).map((l) => promptVisual.identify[l].markSize);
+    marks.forEach((m) => expect(m).toBe(32));
+    const need = g.markGapToOwn + Math.max(...marks) + g.markGapToOther;
+    expect(g.markGapToOwn).toBe(2);
+    expect(g.markGapToOther).toBe(6);
+    expect(need).toBe(40);
+    // асимметрия: метка ближе к своей плите, чем к чужой
+    expect(g.markGapToOwn).toBeLessThan(g.markGapToOther);
+    TIERS.forEach((t) => {
+      const l = abaLayoutByTier[t];
+      // верхний ряд: метка в полосе подсказки над блоком (6 до инструкции, 32, 2 до плиты)
+      expect(need).toBeLessThanOrEqual(l.hintBand);
+      // нижний ряд: метка в зазоре между рядами (6 до верхней плиты, 32, 2 до своей)
+      expect(need).toBeLessThanOrEqual(g.rowGapForFour);
+      // ширина: две плиты + горизонтальный зазор в контенте экрана 360
+      expect(2 * g.plateForFour[t] + g.colGapForFour).toBeLessThanOrEqual(g.minContentWidth);
+      // метка не шире своей плиты — её зона нажатия целиком над своей плитой
+      expect(Math.max(...marks)).toBeLessThanOrEqual(g.plateForFour[t]);
+    });
+    expect(g.minContentWidth).toBe(360 - 2 * abaControls.edgeInset);
+  });
+
+  it('identify 2×2: зазор между зонами нажатия ≥ touch.gap при показанной метке; зона метки обрезана сверху (второй цикл UX)', () => {
+    const g = abaIdentifyGrid;
+    // рисунок метки прежний: 2 / 32 / 6
+    expect(g.markGapToOwn + 32 + g.markGapToOther).toBe(g.rowGapForFour);
+    // зона метки — 2 + 22 над своей плитой, дальше мёртвая полоса 16 до чужой
+    expect(g.markHitHeight).toBe(22);
+    expect(g.markDeadBand).toBe(touch.gap);
+    expect(g.markHitHeight).toBeLessThan(32); // обрезана: верх метки не нажимается
+    expect(g.markGapToOwn + g.markHitHeight + g.markDeadBand).toBe(g.rowGapForFour);
+    // по вертикали: от верха зоны нижней плиты (с меткой) до верхней плиты
+    const verticalGap = g.rowGapForFour - (g.markGapToOwn + g.markHitHeight);
+    expect(verticalGap).toBeGreaterThanOrEqual(touch.gap);
+    // по горизонтали: метка не шире плиты, зоны не выходят в зазор колонок
+    expect(g.colGapForFour).toBeGreaterThanOrEqual(touch.gap);
+    TIERS.forEach((t) => expect(32).toBeLessThanOrEqual(g.plateForFour[t]));
+  });
+
+  it('identify 2×2: касание метки = касание её плиты; принято, ждёт подтверждения методиста (вопрос 8)', () => {
+    expect(abaIdentifyGrid.markTap).toBe('own_plate');
+    const src = fs.readFileSync(path.join(__dirname, '..', 'abaTokens.ts'), 'utf8');
+    expect(src).toMatch(/подтвердить у методиста \(вопрос 8\)/);
   });
 
   describe('политика окна — запрет с причиной (№100, Г9)', () => {
@@ -973,10 +1031,12 @@ describe('доска и карточки подкрепителя по шири�
     [390, 375, 361, 360].forEach((w) => {
       [1, 3, 5].forEach((n) => expect(abaStripCell(w, n)).toBe(48));
       const row = 5 * abaStripCell(w) + 4 * abaTokenBoard.gap;
-      // поля + силуэт 40 + зазор 8 + ряд; на 360 это ровно 328 + 32 = 360
+      // поля + силуэт 40 + зазор 8 + ряд; на 360 это 320 + 32 = 352 ≤ 360
       expect(abaControls.edgeInset * 2 + ABA_STRIP_SILHOUETTE + ABA_STRIP_SILHOUETTE_GAP + row).toBeLessThanOrEqual(w);
     });
     expect(ABA_STRIP_SILHOUETTE + ABA_STRIP_SILHOUETTE_GAP + 5 * 48 + 4 * 8).toBe(320); // ≤ 328
+    // с полями 2 × 16 — 352 ≤ 360 (прежняя запись «= 328 ≤ контента» складывала одно поле)
+    expect(abaControls.edgeInset * 2 + ABA_STRIP_SILHOUETTE + ABA_STRIP_SILHOUETTE_GAP + 5 * 48 + 4 * 8).toBe(352);
     // n > 5: сужаем ровно настолько, чтобы ряд с силуэтом поместился, но не ниже minSize
     expect(abaStripCell(360, 6)).toBe(40);
     expect(abaStripCell(390, 6)).toBe(45);

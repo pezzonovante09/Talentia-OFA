@@ -20,6 +20,7 @@ import {
   lessonTiming,
   listeningCue,
   mapBackdrop,
+  mapFocus,
   mapLayout,
   mapSpeaker,
   modeToggleCue,
@@ -371,10 +372,10 @@ describe('рабочие остатки раунда 3 (V1, V4, V5, V6, V2/V3)',
     expect(listeningCue.badge).toBeLessThan(touch.min); // ненажимаемый значок, а не цель
   });
 
-  it('цвет контура «выбрано»: primary в уроке, на карте и в атласе; outline в ABA (V4)', () => {
+  it('цвет контура «выбрано»: primary в уроке и на карте; onRegion в атласе; outline в ABA (V4, раунд 4)', () => {
     expect(selectedStroke.lesson).toBe('primary');
     expect(selectedStroke.map).toBe('primary');
-    expect(selectedStroke.atlas).toBe('primary');
+    expect(selectedStroke.atlas).toBe('onRegion');
     expect(selectedStroke.aba).toBe('outline');
     SCHEMES.forEach((scheme) => {
       const c = palettes[scheme].normal;
@@ -384,30 +385,105 @@ describe('рабочие остатки раунда 3 (V1, V4, V5, V6, V2/V3)',
     });
   });
 
-  it('метка «сосчитано»: отклик ≤ 100 мс от касания вниз; повтор — кольцо 2→4 за 90; мимо — кольцо 24 без звука (V2, V3, I-2)', () => {
+  SCHEMES.forEach((scheme) =>
+    VARIANTS.forEach((variant) => {
+      it(`${scheme}/${variant}: контур «выбрано» на табе атласа ≥ 3 против заливки каждого региона (раунд 4)`, () => {
+        const c = palettes[scheme][variant];
+        REGIONS.forEach((r) => {
+          expect(contrast(c[selectedStroke.atlas], c.regions[r])).toBeGreaterThanOrEqual(3);
+        });
+      });
+    }),
+  );
+
+  it('регрессия: прежний primary на табах атласа падал ниже 3 хотя бы на одной заливке региона', () => {
+    const worst = Math.min(
+      ...SCHEMES.flatMap((s) => VARIANTS.flatMap((v) => {
+        const c = palettes[s][v];
+        return REGIONS.map((r) => contrast(c.primary, c.regions[r]));
+      })),
+    );
+    expect(worst).toBeLessThan(3);
+  });
+
+  it('метка «сосчитано»: отклик ≤ 100 мс от касания вниз; повтор — кольцо 2→6, держится 300 мс после отпускания; мимо — пунктирное кольцо 64 без звука (V2, V3, I-2, раунд 4)', () => {
     expect(countMark.feedbackMs).toBeLessThanOrEqual(100);
     expect(countMark.feedbackTrigger).toBe('touch_down');
     expect(countMark.repeatRing).toEqual({
-      from: 2, to: 4, durationMs: motion.press, shownUntil: 'touch_up', tailMs: motion.press, haptic: 'light',
+      from: 2,
+      to: 6,
+      durationMs: motion.press,
+      shownUntil: 'touch_up',
+      tailMs: 300,
+      shape: 'mark_ring_solid',
+      sound: false,
+      haptic: 'parentSetting',
     });
     expect(countMark.repeatRing.from).toBe(countMark.ring);
     expect(countMark.repeatRing.durationMs).toBe(90);
-    // V-8: отклик не короче касания — до отпускания + 90 мс; палец (≈ 40–50 pt) не закрывает «мимо» целиком
-    expect(countMark.repeatRing.tailMs).toBe(90);
     expect(countMark.missRing.shownUntil).toBe('touch_up');
-    expect(countMark.missRing.tailMs).toBe(90);
+    // второй цикл UX: знак промаха держится столько же, сколько отклик повтора
+    expect(countMark.missRing.tailMs).toBe(300);
+    expect(countMark.missRing.tailMs).toBe(countMark.repeatRing.tailMs);
     expect(countMark.missRing.size).toBeGreaterThanOrEqual(64);
-    expect(countMark.missRing.color).toBe('outline');
     expect(countMark.missRing.sound).toBe(false);
     expect(countMark.missRing.records).toBe(false);
     // один радиус привязки во всех документах: 32 (в DESIGN_PROMPTS.md и SCREENS.md не должно остаться 24)
     expect(countMark.snapRadius).toBe(32);
   });
 
-  it('point: кольцо мимо = missRing (64, а не 24); зоны 5–6 ≥ 60 с зазором ≥ 16', () => {
+  it('повтор по сосчитанной фигуре заметен без вибрации: элемент ≥ 48 вокруг фигуры ИЛИ ≥ 300 мс после отпускания; форма не как у промаха; без звука (раунд 4)', () => {
+    const r = countMark.repeatRing;
+    const outer = countMark.dot + 2 * r.to; // диаметр метки на пике отклика
+    expect(outer >= 48 || r.tailMs >= 300).toBe(true);
+    expect(r.tailMs).toBeGreaterThanOrEqual(300);
+    expect(r.shownUntil).toBe('touch_up');
+    expect(r.shape).not.toBe(countMark.missRing.shape);
+    expect(r.sound).toBe(false);
+    // отклик растёт заметно: метка 16 → 24 pt (было 16 → 20)
+    expect(outer - (countMark.dot + 2 * r.from)).toBeGreaterThanOrEqual(8);
+    // метка на пике остаётся внутри фигуры стимула 40 — соседей не задевает
+    expect(outer).toBeLessThanOrEqual(countSizes.figureStimulus);
+  });
+
+  it('вибрация на повторе — только по настройке родителя (№112): по умолчанию её нет ни в одном режиме', () => {
+    expect(countMark.repeatRing.haptic).toBe('parentSetting');
+    expect(countMark.repeatRing.haptic).not.toBe('light');
+    expect(pressFeedback({}).haptic).toBe('none');
+    expect(pressFeedback({ calmMode: true }).haptic).toBe('none');
+    expect(pressFeedback({ hapticsEnabled: true }).haptic).toBe('light');
+  });
+
+  it('знак промаха — пунктирное кольцо 64, контур 3, штрих 8 / просвет 6, textMuted светлой схемы, зафиксированный (раунд 4, UX)', () => {
+    const m = countMark.missRing;
+    expect(m).toMatchObject({ size: 64, stroke: 3, shape: 'dashed_ring', dash: 8, gap: 6, colorRole: 'textMuted' });
+    expect(m.color).toBe(palettes.light.normal.textMuted);
+    // слой иллюстрации: знак виден на подложке картинки в обеих схемах
+    SCHEMES.forEach((scheme) => {
+      expect(contrast(m.color, palettes[scheme].normal.picturePlate)).toBeGreaterThanOrEqual(3);
+      expect(contrast(m.color, palettes[scheme].calm.picturePlate)).toBeGreaterThanOrEqual(3);
+    });
+    // почему цвет зафиксирован: тёмный textMuted на светлой подложке не проходит
+    expect(contrast(palettes.dark.normal.textMuted, palettes.dark.normal.picturePlate)).toBeLessThan(3);
+    // пунктир читается: на окружности 64 помещается не меньше десяти штрихов
+    expect(Math.floor((Math.PI * m.size) / (m.dash + m.gap))).toBeGreaterThanOrEqual(10);
+  });
+
+  it('знак промаха — с белым ореолом 7 (по 2 pt с каждой стороны штриха): виден на полноцветной сцене point (второй цикл UX)', () => {
+    const m = countMark.missRing;
+    expect(m.halo).toEqual({ color: '#FFFFFF', pad: 2, solid: true });
+    expect(m.stroke + 2 * m.halo.pad).toBe(7);
+    // штрих на ореоле читается как фигура ≥ 3 — на любом участке сцены под знаком
+    expect(contrast(m.color, m.halo.color)).toBeGreaterThanOrEqual(3);
+    // знак с ореолом отличается от пунктира «пусто» (заплатка, тень): у тех ореола нет и цвет — роль темы
+    expect(emptyOutlineColor).toBe('textMuted');
+  });
+
+  it('point: знак мимо = missRing (пунктирное 64, а не сплошное 24); зоны 5–6 ≥ 60 с зазором ≥ 16', () => {
     expect(pointMiss).toBe(countMark.missRing);
     expect(pointMiss.size).toBe(64);
     expect(pointMiss.stroke).toBe(3);
+    expect(pointMiss.shape).toBe('dashed_ring');
     expect(pointZone.hitMin).toBeGreaterThanOrEqual(60);
     expect(pointZone.edgeGapMin).toBeGreaterThanOrEqual(16);
     expect(pointZone.expandHiddenZone).toBe(true);
@@ -419,6 +495,24 @@ describe('рабочие остатки раунда 3 (V1, V4, V5, V6, V2/V3)',
     expect(helpTaliButton.extra).toBeGreaterThanOrEqual(16);
     expect(mapSpeaker.size).toBeGreaterThanOrEqual(touch.min);
     expect(mapSpeaker.keptInFocus).toBe(true);
+    // focus на карте (раунд 4): полоса 64 — атлас 60, ориентир 32, динамик 60; Tali статичен у узла
+    expect(mapFocus.band).toBe(64);
+    expect(mapFocus.atlasButton).toBeGreaterThanOrEqual(touch.min);
+    expect(mapFocus.speaker).toBe(mapSpeaker.size);
+    expect(Math.max(mapFocus.atlasButton, mapFocus.speaker, mapFocus.landmark)).toBeLessThanOrEqual(mapFocus.band);
+    expect(mapFocus.landmark).toBe(mapLayout.landmarkCalmStrip);
+    expect(mapFocus.tali).toBe('static_at_node');
+    // стороны и зазоры полосы (второй цикл UX): атлас слева, динамик справа, зазор ≥ touch.gap
+    expect(mapFocus.atlasSide).toBe('left');
+    expect(mapFocus.speakerSide).toBe('right');
+    expect(mapFocus.minGap).toBeGreaterThanOrEqual(touch.gap);
+    // самый узкий экран 360: поля + атлас + зазор + ориентир + зазор + динамик + поля помещаются,
+    // а зазор между атласом и динамиком (через ориентир) не меньше minGap
+    const W = 360;
+    const fixed = 2 * mapFocus.edgeInset + mapFocus.atlasButton + mapFocus.landmark + mapFocus.speaker;
+    expect(fixed + 2 * mapFocus.minGap).toBeLessThanOrEqual(W);
+    const atlasToSpeaker = W - 2 * mapFocus.edgeInset - mapFocus.atlasButton - mapFocus.speaker;
+    expect(atlasToSpeaker).toBeGreaterThanOrEqual(mapFocus.landmark + 2 * mapFocus.minGap);
     expect(modeToggleCue.voiced).toBe(true);
     expect(taliSatchelRule.distinguishesPose).toBe(false);
     expect(taliSatchelRule.pressable).toBe(false);
