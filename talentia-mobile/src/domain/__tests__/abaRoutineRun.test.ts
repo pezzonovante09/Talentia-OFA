@@ -1353,3 +1353,110 @@ describe('В3: prompt_dependent снимается освоением рутин
     expect([r.state.flags.includes('prompt_dependent'), r.state.dependenceClearedAt]).toEqual([true, undefined]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Раунд 5, QA В5: детектор зависимости по звену (`routineDependentSteps`, ветка в `finishRoutineRun`)
+
+describe('Раунд 5, В5: детектор зависимости по звену — какие пробы и прогоны в счёт', () => {
+  const W = ROUTINE_DEPENDENCE.windowRuns;
+  /** Подсказанная проба обучения со старта L0, молчал до подсказки — то, что детектор считает. */
+  const tr = (stepId: string, over: Partial<AbaTrial> = {}) =>
+    ({ kind: 'teaching', stepId, startPromptLevel: 0, response: 'prompted', emittedBeforePrompt: false, ...over }) as AbaTrial;
+  /** `n` прогонов с номерами `from`, `from + 1`, …; в каждом — `perRun` проб второго звена. */
+  const runsOf = (n: number, perRun: AbaTrial[], from = 1): SessionTrials[] =>
+    Array.from({ length: n }, (_, i) => ({ index: from + i, trials: perRun }));
+  const ids = [S1, S2, S3];
+
+  it('пять прогонов подсказанного со старта L0 звена — звено зависимо (контроль для тестов ниже)', () => {
+    expect(routineDependentSteps(acq(0), runsOf(W, [tr(S2)]), ids)).toEqual([S2]);
+  });
+
+  it('звено, начатое с L1, — не флаг: со старта с подсказкой зависимость не отличить от неумения', () => {
+    expect(routineDependentSteps(acq(1), runsOf(W, [tr(S2, { startPromptLevel: 1 })]), ids)).toEqual([]);
+  });
+
+  it('незапланированная подсказка взрослого — не данные о ребёнке, в счёт не идёт', () => {
+    expect(routineDependentSteps(acq(0), runsOf(W, [tr(S2, { adultUnplannedPrompt: true })]), ids)).toEqual([]);
+  });
+
+  it('окно после флага — со следующего прогона: прогон с номером флага в окно не входит', () => {
+    // флаг на прогоне 5; прогоны 5…9 — после флага только четыре
+    const s = acq(0, { dependenceFlaggedAtSession: 5 });
+    expect(routineDependentSteps(s, runsOf(W, [tr(S2)], 5), ids)).toEqual([]);
+  });
+
+  it('окно после флага набирается заново: пять прогонов после номера флага — снова зависимо', () => {
+    const s = acq(0, { dependenceFlaggedAtSession: 5 });
+    expect(routineDependentSteps(s, runsOf(W, [tr(S2)], 6), ids)).toEqual([S2]);
+  });
+
+  it(`${W - 1} прогона — меньше окна: флага нет, даже когда подсказанных проб у звена хватает`, () => {
+    // по две подсказанных пробы за прогон: 8 ≥ minPromptedPerStep, не хватает только прогонов
+    const runs = runsOf(W - 1, [tr(S2), tr(S2)]);
+    expect(runs.flatMap((r) => r.trials).length).toBeGreaterThanOrEqual(ROUTINE_DEPENDENCE.minPromptedPerStep);
+    expect(routineDependentSteps(acq(0), runs, ids)).toEqual([]);
+  });
+});
+
+describe('Раунд 5, В5: в каких фазах finishRoutineRun запускает детектор (фиксация фактического поведения)', () => {
+  /** История из хранилища: у первого звена по две подсказанных пробы со старта L0 в каждом прогоне. */
+  const prompted = (stepId: string) =>
+    ({ kind: 'teaching', stepId, startPromptLevel: 0, response: 'prompted', emittedBeforePrompt: false, scoredBy: 'adult' }) as AbaTrial;
+  const history = { runs: [1, 2, 3, 4].map((index) => ({ index, trials: [prompted(S1), prompted(S1)] })) };
+  const whole = (n: number, setting?: RoutineSetting): RoutineRunRecord => ({ day: day(n), whole: true, startLevelSum: 0, ...(setting ? { setting } : {}) });
+  /** Пятый прогон обучения — все звенья сами; номер прогона 5. */
+  const fifth = (over: Partial<AbaTargetState>) =>
+    finishRoutineRun(play(start(acq(0, { routineRunSeq: 4, ...over }), day(5)), ['ok', 'ok', 'ok']), 7, history).state;
+
+  it('обучение без «почти»: та же история даёт флаг по первому звену (контроль)', () => {
+    const s = fifth({});
+    expect([s.flags.includes('prompt_dependent'), s.dependentStepIds, s.dependenceFlaggedAtSession]).toEqual([true, [S1], 5]);
+  });
+
+  it('фаза generalization_check — тоже фаза обучения: детектор работает', () => {
+    const s = fifth({ phase: 'generalization_check' });
+    expect([s.phase, s.flags.includes('prompt_dependent'), s.dependentStepIds]).toEqual(['generalization_check', true, [S1]]);
+  });
+
+  it('этот прогон дал needs_transfer — детектор молчит, хотя история зависимая', () => {
+    const s = fifth({ routineRuns: [1, 2, 3, 4].map((n) => whole(n)) });
+    expect([s.flags.includes('needs_transfer'), s.flags.includes('prompt_dependent'), s.dependenceFlaggedAtSession]).toEqual([true, false, null]);
+  });
+
+  it('этот прогон освоил рутину — детектор не запускается: ни флага, ни отметки снятия', () => {
+    const s = fifth({ routineRuns: [whole(1, 'other_place'), whole(2), whole(3), whole(4)] });
+    expect([s.phase, s.flags.includes('prompt_dependent'), s.dependenceFlaggedAtSession, s.dependenceClearedAt]).toEqual([
+      'mastered',
+      false,
+      null,
+      undefined,
+    ]);
+  });
+});
+
+describe('Раунд 5, мелочи: конец прогона assent_withdrawn', () => {
+  it('после assent_withdrawn затухание записанных звеньев остаётся: состояние — из прогона, а не до него', () => {
+    const before = acq(0);
+    const once = play(resumeRoutineRun(record(start(before, day(3)), 'break')), ['ok']);
+    const run = record(once, 'break');
+    expect(run.state.stepPrompts).not.toEqual(before.stepPrompts);
+    expect(finishRoutineRun(run, 7, NO_HISTORY).state.stepPrompts).toEqual(run.state.stepPrompts);
+  });
+
+  it('просьба, затем «Отказ» — конец дал отказ: breakRequests.ended false', () => {
+    const run = record(resumeRoutineRun(record(start(acq(), day(3)), 'break')), 'refuse');
+    expect(run.interrupted).toBe('assent_withdrawn');
+    expect(finishRoutineRun(run, 7, NO_HISTORY).breakRequests).toEqual({ requests: 1, ended: false });
+  });
+
+  it('просьба, затем «Сопротивляется» — конец дало сопротивление: breakRequests.ended false', () => {
+    const run = record(resumeRoutineRun(record(start(acq(0), day(3), { physicalPromptAllowed: true }), 'break')), 'resist');
+    expect(run.interrupted).toBe('assent_withdrawn');
+    expect(finishRoutineRun(run, 7, NO_HISTORY).breakRequests).toEqual({ requests: 1, ended: false });
+  });
+
+  it('«Отказ», затем просьба — конец дала просьба: breakRequests.ended true', () => {
+    const run = record(resumeRoutineRun(record(start(acq(), day(3)), 'refuse')), 'break');
+    expect(finishRoutineRun(run, 7, NO_HISTORY).breakRequests).toEqual({ requests: 1, ended: true });
+  });
+});
