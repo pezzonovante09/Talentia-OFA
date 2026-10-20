@@ -8,7 +8,7 @@
  * Все контрастные коэффициенты в комментариях посчитаны по WCAG 2.1
  * (`contrast.ts`) и проверены тестами; менять цвет без пересчёта нельзя.
  */
-import type { Region } from '../types/task';
+import type { AgeBand, Region } from '../types/task';
 
 export type Scheme = 'light' | 'dark';
 
@@ -269,6 +269,39 @@ export function pressFeedback({ hapticsEnabled = false }: { calmMode?: boolean; 
   };
 }
 
+/**
+ * Повторный тап по уже **выбранной** плитке (раунд 5, В1; SCREENS.md 3.1, 3.3–3.5, 3.8). Выбранная
+ * плитка уже вдавлена — подушки, которую можно «съесть», нет, а сжатие `pressScale.wide` 0.98 на плитке
+ * 104 даёт ход края ≈ 1 pt: ребёнок отклика не видит и тапает снова. Поэтому:
+ * - сжатие **0.94** (ход края ≈ 3.1 pt на 104, 3.4 на 112) — от касания **вниз**, не позже 100 мс, и
+ *   держится **до отпускания** (палец лежит на плитке, отклик должен быть виден вокруг пальца всё
+ *   касание); возврат к 1 за `motion.press` 90 мс после отпускания;
+ * - у **плитки с кучкой** (сторона `match`, предмет `order`, кучка-вариант `choose`) сжимается только
+ *   **рамка** (контур 6 «выбрано» и заливка плитки), поле фигур 80×80 стоит неподвижно — ребёнок
+ *   пересчитывает фигуры касаниями, и прыгающие фигуры сбивали бы счёт; **без звука**;
+ * - у обычной плитки сжимается плитка целиком, звук элемента — как раньше (у немой карточки — нейтральный
+ *   звук выбора, №88);
+ * - состояние не меняется (единое правило Д4), не пишется, не попытка (№35).
+ * Calm и reduce motion — та же амплитуда (ослабленный отклик не замечают); в reduce motion — без
+ * перехода: сразу 0.94 на касании, сразу 1 после отпускания. Вибрация — только по настройке родителя.
+ */
+export const selectedRepeatPress = {
+  scale: 0.94,
+  trigger: 'touch_down',
+  feedbackMs: 100,
+  heldUntil: 'touch_up',
+  releaseMs: motion.press,
+  pileTile: { scales: 'frame', figureFieldStatic: true, sound: false },
+  plainTile: { scales: 'tile', sound: 'element' },
+  records: false,
+  haptic: 'parentSetting',
+} as const;
+
+/** Ход края плитки стороной `size` pt при `selectedRepeatPress`, pt. */
+export function selectedRepeatTravel(size: number): number {
+  return (size * (1 - selectedRepeatPress.scale)) / 2;
+}
+
 /** Время на экране урока, мс (SCREENS.md, раздел 8). */
 export const lessonTiming = {
   /** Ошибка: выбранное остаётся с крестом, цели заблокированы. */
@@ -385,6 +418,12 @@ export const countMark = {
    * Вибрация — **только по настройке родителя** (№112, `pressHaptic`): `haptic: 'parentSetting'` значит
    * `pressFeedback({ hapticsEnabled }).haptic` — по умолчанию `none` в любом режиме, включая calm;
    * отклик обязан быть заметен без неё. Reduce motion: 2 → 6 и назад без анимации, удержание то же.
+   * **Внешний контур на пике** (раунд 5, В2): белое кольцо 6 на белой фигуре даёт 1.0:1, на жёлтой
+   * `#FFC42E` — 1.59:1, и рост кольца не виден. Пока кольцо выросло (от касания до конца `tailMs`),
+   * его обводит снаружи контур `peakOutline` 2 pt `#2A1A12`: метка на пике 12 + 2 × 6 + 2 × 2 = **28**
+   * ≤ фигура стимула 40. Двухцветный край виден на любой фигуре: для любого фона хотя бы одна из
+   * пар «белый / фон» и «#2A1A12 / фон» даёт ≥ √16.73 ≈ 4.09 (на белой — 16.73, на жёлтой — 10.5).
+   * В покое (кольцо 2) контура нет — метка та же, что в решении №83.
    */
   repeatRing: {
     from: 2,
@@ -395,6 +434,7 @@ export const countMark = {
     shape: 'mark_ring_solid',
     sound: false,
     haptic: 'parentSetting',
+    peakOutline: { width: 2, color: '#2A1A12' },
   },
   /**
    * Касание мимо (дальше `snapRadius` от любой фигуры) — **знак промаха, один для счёта и `point`**
@@ -414,6 +454,14 @@ export const countMark = {
    * отличает знак от пунктира заплатки и тени, у которых ореола нет.
    * Держится до отпускания + 300 мс, как `repeatRing`: под пальцем знак не виден, 90 мс после
    * отпускания ребёнок не успевал его заметить.
+   * Поля роли цвета нет (раунд 5, М3): прежнее `colorRole: 'textMuted'` читалось как «берётся из темы»,
+   * а цвет зафиксирован — это значение светлой схемы, а не роль.
+   * **Обрезка** (раунд 5, В5): знак живёт только на слое иллюстрации — в счёте внутри подложки
+   * `picturePlate` карточки стимула, в `point` внутри рамки сцены (`clip`); часть кольца за краем
+   * обрезается. У края тёмной карточки белый ореол без обрезки читался сплошным белым кругом. Касание
+   * **вне** подложки / рамки ничего не рисует и не считается касанием мимо: не попытка, не идёт в
+   * счётчик `lessonTiming.missesBeforeRepeat`. Метит **только первый палец** (`pointers`) — и в
+   * счёте, и в `point`: второй палец при мультитаче не рисует знак и не выбирает зону.
    */
   missRing: {
     size: 64,
@@ -421,58 +469,250 @@ export const countMark = {
     shape: 'dashed_ring',
     dash: 8,
     gap: 6,
-    colorRole: 'textMuted',
     color: '#6E564A',
     halo: { color: '#FFFFFF', pad: 2, solid: true },
     shownUntil: 'touch_up',
     tailMs: 300,
     sound: false,
     records: false,
+    clip: { count: 'stimulus_plate', point: 'scene_frame' } as Readonly<Record<'count' | 'point', MissClip>>,
+    outsideClip: 'nothing',
+    pointers: 'first_only',
   },
 } as const;
+
+/** Где обрезается знак промаха: подложка карточки стимула счёта или рамка сцены `point`. */
+export type MissClip = 'stimulus_plate' | 'scene_frame';
 
 /**
  * Формат `point` (SCREENS.md 3.2). Знак тапа мимо зон — тот же, что `countMark.missRing`: пунктирное
  * кольцо 64, контур 3, штрих 8 / просвет 6, `#6E564A` с белым ореолом 7, до отпускания + 300 мс, без звука.
  * Для 5–6 лет зона нажатия вместе с `hitSlop` не меньше `touch.min` по обеим сторонам, зазор между
  * зонами по краю не меньше `touch.gap`; предмет меньше — расширяется невидимая зона, рисунок не трогаем.
+ * Знак обрезается рамкой сцены (`missRing.clip.point`), вне рамки касание ничего не рисует и в счётчик
+ * трёх промахов не идёт; зону выбирает и знак ставит только первый палец (раунд 5, В5).
+ * **Счёт и `point` в одном задании не совмещаются** (раунд 5): у счёта касание фигуры ставит метку, у
+ * `point` касание предмета выбирает зону — на одной картинке одно касание значило бы два разных действия.
  */
 export const pointMiss = countMark.missRing;
-export const pointZone = { band: '5-6', hitMin: touch.min, edgeGapMin: touch.gap, expandHiddenZone: true } as const;
+export const pointZone = {
+  band: '5-6',
+  hitMin: touch.min,
+  edgeGapMin: touch.gap,
+  expandHiddenZone: true,
+  pointers: 'first_only',
+  withCounting: false,
+} as const;
 
 /**
  * Правила мелочей раунда UX (только данные для тестов и верстки):
  * - текстовые ответы 9–10 лет не обрезаются, допускают перенос (`lessonFontCaps.fixed` их не касается);
  * - «Помочь Tali» отстоит от нижнего края на safe area снизу (жест «домой») + `extra`;
- * - в focus на карте кнопка динамика остаётся 60×60;
+ * - в focus на карте кнопка детского листа («ползунки») остаётся 60×60;
  * - включение calm/focus озвучивается голосом (смысл не только на экране);
  * - сумка Tali не различает позы и не нажимается (в тёмной она 2.99–3.96:1 — аксессуар, не сигнал).
  */
 export const lessonTextAnswer = { band: '9-10', truncate: false, wrap: true } as const;
 export const helpTaliButton = { bottomInset: 'safeAreaBottom', extra: 16 } as const;
-export const mapSpeaker = { size: 60, keptInFocus: true } as const;
+/**
+ * Правая кнопка полосы карты (раунд 5, В3; было `mapSpeaker`). Она открывает детский лист «Звук и
+ * спокойствие», а не повторяет голос, поэтому иконка — «ползунки» `ui-sliders`, не динамик: динамик во
+ * всём приложении значит «повтори» (урок, завязка, атлас), и тап по нему, открывающий лист, ребёнок
+ * читал как сломанный повтор. Повтор голосом на карте — тап по Tali (`mapTaliTap`).
+ */
+export const mapSettingsButton = { size: 60, keptInFocus: true, icon: 'ui-sliders', opens: 'child_sheet' } as const;
+/**
+ * Тап по Tali на карте (раунд 5, В3): Tali называет регион и следующий шаг («Мы в Числовой долине. Дальше —
+ * вот этот урок»; текст — основной поток) и указывает на следующий узел (поза `point`). Одинаково в обычном
+ * виде, calm и focus — в focus Tali статичен, но тап работает так же. Это единственный повтор голосом на
+ * карте; кнопки-динамика на карте нет.
+ */
+export const mapTaliTap = { voices: ['region_name', 'next_step'], pose: 'point', sameInFocus: true } as const;
+/** Таб региона в атласе: тап голосом называет регион (и переключает ленту) — нечитающему ребёнку. */
+export const atlasTabTap = { voices: 'region_name', switchesRegion: true } as const;
+/**
+ * Переключатель «Звук» на детском листе (раунд 5, В3; закрывает AUDIT.md №22). Иконка — «нота» `ui-note`:
+ * он глушит **только музыку и звуковые эффекты**, включая звуки нажатий («тук», звук выбора). **Голос
+ * Tali, вопросы и названия вариантов он не глушит** — их выключает только взрослый в своих настройках:
+ * малыш, выключивший «Звук», иначе оставался без озвучки вопросов. Видимый отклик на касание обязателен
+ * везде и от звука не зависит (сжатие, метки, знаки), поэтому с выключенными эффектами ни одна цель не
+ * становится молчащей.
+ */
+export const childSoundToggle = {
+  icon: 'ui-note',
+  mutes: ['music', 'effects', 'press_sounds'],
+  neverMutes: ['tali_voice', 'prompts', 'option_names'],
+  voiceControlledBy: 'parent_settings',
+  visualFeedbackAlways: true,
+} as const;
 /**
  * Карта в focus (раунд 4, DESIGN_PROMPTS.md 1.2): убираются декор и дальние узлы, но не управление.
- * Прежняя редакция убирала и динамик — нечитающий ребёнок оставался на карте без голоса и без пути
- * наружу. Остаются полоса-заголовок 64 с кнопкой атласа 60, ориентиром 32 (как в calm) и динамиком 60;
- * Tali стоит у текущего узла статично (без перелёта и idle-движения), его тап — как в обычном виде.
+ * Прежняя редакция убирала и правую кнопку — нечитающий ребёнок оставался на карте без пути к листу и
+ * без пути наружу. Остаются полоса-заголовок 64 с кнопкой атласа 60, ориентиром 32 (как в calm) и
+ * кнопкой листа «ползунки» 60; Tali стоит у текущего узла статично (без перелёта и idle-движения), его
+ * тап — как в обычном виде: называет регион и следующий шаг (`mapTaliTap`, раунд 5).
  */
 export const mapFocus = {
   band: 64,
   atlasButton: 60,
   landmark: 32,
-  speaker: mapSpeaker.size,
+  settings: mapSettingsButton.size,
   tali: 'static_at_node',
+  taliTap: mapTaliTap,
   /**
-   * Раскладка полосы (второй цикл UX): атлас — у левого края, динамик — у правого, как выход и
+   * Раскладка полосы (второй цикл UX): атлас — у левого края, кнопка листа — у правого, как выход и
    * повтор на уроке (SCREENS.md 1.2: две цели на противоположных краях, промах по одной не попадает
    * в другую); ориентир 32 с названием — между ними, не нажимается как цель. Поля `edgeInset` 16,
    * зазор между любыми соседними элементами полосы ≥ `minGap` 16 (`touch.gap`).
    */
   atlasSide: 'left',
-  speakerSide: 'right',
+  settingsSide: 'right',
   edgeInset: 16,
   minGap: 16,
+} as const;
+
+/**
+ * Название региона в полосе карты 64 (раунд 5, В4). `title` 28/36 в две строки — 72 > 64, а на
+ * экране 360 между ориентиром и кнопками остаётся 136 pt: 360 − 2 × 16 (поля) − 2 × 60 (кнопки) −
+ * 2 × 16 (зазоры) − 32 (ориентир) − 8 (до названия) = 136. Поэтому:
+ * - `subtitle` Comfortaa 22/30 600, ≤ 2 строк (2 × 30 = 60 ≤ 64), `maxFontSizeMultiplier` 1 (полоса
+ *   фиксирована; название звучит по тапу на Tali, `mapTaliTap`);
+ * - не помещается — кегль ужимается шагом 1 до 18 (межстрочный 24), не ниже; кегль выбирает
+ *   `fitRegionTitle` детерминированно, а не `adjustsFontSizeToFit` (на Android он ведёт себя иначе);
+ * - перенос только по словам; ширина оценивается по `charWidthEm` 0.62 — запас для Comfortaa 600 на
+ *   кириллице (широкие «Ж», «Ш», «Ы»).
+ */
+export const mapTitle = {
+  style: 'subtitle',
+  size: 22,
+  lineHeight: 30,
+  minSize: 18,
+  minLineHeight: 24,
+  maxLines: 2,
+  maxFontSizeMultiplier: 1,
+  width: 136,
+  charWidthEm: 0.62,
+} as const;
+
+/** Сколько строк займёт текст кеглем `size` в ширине `width` при переносе по словам (оценка). */
+function wrapLines(text: string, size: number, width: number): number {
+  const charW = size * mapTitle.charWidthEm;
+  let lines = 1;
+  let line = 0;
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    const w = word.length * charW;
+    if (w > width) return Infinity; // слово не переносится внутри — не помещается
+    const next = line === 0 ? w : line + charW + w;
+    if (next <= width) line = next;
+    else {
+      lines += 1;
+      line = w;
+    }
+  }
+  return lines;
+}
+
+/** Кегль названия региона в полосе карты: 22, ужатый до 18; `null` — не помещается и в 18 (правьте название). */
+export function fitRegionTitle(text: string, width: number = mapTitle.width): number | null {
+  for (let size: number = mapTitle.size; size >= mapTitle.minSize; size -= 1) {
+    if (wrapLines(text, size, width) <= mapTitle.maxLines) return size;
+  }
+  return null;
+}
+
+/* ───────────────────── `order`: метки мест (раунд 5, Е2) ───────────────────── */
+
+/**
+ * Метка места на полосе порядка (SCREENS.md 3.4). Прежние точки •, ••, ••• на 5–6 кодировали
+ * **количество**, а тема учит соединять кучку с таким же числом точек: кучку из 3 ребёнок клал на
+ * «третье» место — ошибка, вызванная самим курсом (блокер Е2). Правило:
+ * - на 5–6 метка **всегда** без количества и без номера — `tick`;
+ * - с 7 лет цифра `caption` в круге 24 — **только если предметы не количества**; если количества
+ *   (кучки, карточки-числа, числа и цифры текстом) — `tick` на любой полосе;
+ * - **засечка, не кружок** (решение `design-lead`, раунд 5): пустой кружок 24 совпадал по виду с гнездом
+ *   `match` 24 («сюда можно поставить пару») и с кольцом-фишкой рамки десятка. Засечка — отрезок 12 pt
+ *   `stroke.base` цветом `outline`, скруглённые концы, **свисает вниз** от линии стрелы (от высоты 12 до
+ *   низа полосы 24) над центром места: «эта точка стрелы — это место». Вниз, а не поперёк линии:
+ *   поперечная засечка с линией даёт «+», а отдельная палочка читается как счётная «один»;
+ * - стрела и наконечник 12×12 остаются; направление несёт наконечник.
+ * Пустое место у количеств — без номера (пунктир, утоплено, внутри пусто). Текстовый вариант (с 7) — то
+ * же правило: у количеств номера в месте нет, вместо него вертикальная стрела в зазоре 24 между
+ * колонками (линия сверху вниз, наконечник внизу, засечки вправо к центрам мест).
+ */
+export type OrderMarkKind = 'tick' | 'digit';
+
+export const orderMark = {
+  strip: 24,
+  lineY: 12,
+  arrowHead: 12,
+  tailPastLast: 16,
+  tick: { length: 12, stroke: 'base', color: 'outline', cap: 'round', direction: 'down_to_place' },
+  digit: { circle: 24, fill: 'surface', stroke: 'base', color: 'outline', type: 'caption', from: '7' },
+  /** Точки на метке больше не используются ни на одной полосе. */
+  dots: false,
+  /** Номер внутри пустого места — только у `digit`. */
+  emptyPlaceNumber: 'digit_only',
+} as const;
+
+/**
+ * Предметы `order` — количества? Выводится из данных: у предмета есть кучка (`count`) или карточка-число
+ * (`numeral`). Числа и цифры, записанные **текстом** (с 7 лет, `labelKey` «12», «пятнадцать»), из схемы
+ * не выводятся — для них флаг задания `numericItems` (поле добавляет основной поток в `OrderTask`, гард
+ * корпуса требует его, если подпись предмета — число).
+ */
+export function isQuantityOrder(
+  items: readonly { count?: number; numeral?: number }[],
+  numericItems = false,
+): boolean {
+  return numericItems || items.some((i) => i.count !== undefined || i.numeral !== undefined);
+}
+
+/** Вид метки места: на 5–6 и у количеств — засечка; цифра — только с 7 лет и не у количеств. */
+export function orderMarkFor(band: AgeBand, quantity: boolean): OrderMarkKind {
+  return band === '5-6' || quantity ? 'tick' : 'digit';
+}
+
+/**
+ * Первое место — голосом и показом (условие UX к Е2). При открытии вопроса `order` на 5–6 левое место
+ * подсвечено `listeningCue` (значок «волны» 24 внутри места + заливка `surfaceAlt`, контур не меняется,
+ * движения нет) **на время слов «начни отсюда»** и при каждом повторе вопроса (кнопка повтора, тап по
+ * Tali). В примере Tali (поза `point`, наклон −4°) кладёт первый предмет на левое место (перелёт
+ * `motion.base`), затем «ведёт по стреле»: линия стрелы утолщается до `stroke.bold` 6 от первой засечки
+ * к наконечнику за `motion.slow`, один раз, и возвращается к `stroke.base`. В calm, focus и reduce
+ * motion — без плавного хода: участки между засечками (и последний — до наконечника) утолщаются по
+ * очереди мгновенными шагами по `calmStepMs` 120 мс; у трёх мест три шага = `motion.slow`.
+ */
+export const orderFirstPlaceCue = {
+  band: '5-6',
+  place: 'leftmost',
+  cue: 'listeningCue',
+  during: 'start_here_words',
+  onReplay: true,
+  exampleTrace: { stroke: 'bold', durationMs: motion.slow, once: true, calm: 'segment_steps', calmStepMs: 120 },
+} as const;
+
+/**
+ * Тап по пустому месту `order`, когда ничего не выбрано (раунд 5, UX). Видимый отклик — **само место**
+ * сжимается до 0.94 по касанию вниз (≤ 100 мс), держится до отпускания, возврат за `motion.press`; ход
+ * края ≈ 3.1 pt на 104. **Во всех режимах, включая calm и reduce motion** (в reduce motion — без
+ * перехода). Прежний импульс метки 1 → 1.15 → 1 убран: на засечке 12 это ≈ 1.8 pt, а в calm его не было
+ * вовсе — оставался только голос, против `childSoundToggle.visualFeedbackAlways`.
+ * Голос: при цифре — порядковое «первое место» …; при засечке — позиция по стреле без числительного
+ * (левое `start` «здесь начало», последнее `end` «здесь конец», средние `middle` «дальше по стрелке»);
+ * затем подсказка механики «Сначала выбери, что поставить» — ничего не выбрано, действия не будет.
+ * Тексты — основной поток. Не попытка, не пишется (№35).
+ */
+export const orderEmptyPlaceTap = {
+  target: 'place',
+  scale: selectedRepeatPress.scale,
+  trigger: 'touch_down',
+  feedbackMs: 100,
+  heldUntil: 'touch_up',
+  releaseMs: motion.press,
+  sameInCalm: true,
+  markPulse: false,
+  voice: { digit: 'ordinal', tick: ['start', 'middle', 'end'], then: 'choose_first_hint' },
+  records: false,
 } as const;
 export const modeToggleCue = { voiced: true } as const;
 export const taliSatchelRule = { distinguishesPose: false, pressable: false } as const;

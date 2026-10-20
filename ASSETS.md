@@ -686,6 +686,8 @@ Transparent background, no text, no letters, no frame, no border.
 | `ui-book.svg` | open book | «Остаться», «к атласу» |
 | `ui-waves.svg` | three sound arcs, outline only | звучит реплика |
 | `ui-sound-on.svg` | speaker with three sound arcs | повтор, пока звучит |
+| `ui-sliders.svg` | three horizontal lines, each with a round knob at a different position | карта: кнопка детского листа «Звук и спокойствие» 60×60 (иконка 32; раунд 5, `mapSettingsButton`). Не динамик: динамик значит «повтори» |
+| `ui-note.svg` | single eighth music note, solid head and flag | детский лист: переключатель «Звук» — музыка и эффекты (`childSoundToggle`); голос Tali он не глушит, поэтому не динамик |
 | `ui-sleep.svg` | crescent moon | узел «спит» |
 | `ui-review.svg` | two arrows chasing each other in a circle | узел «повторение» |
 | `ui-socket.svg`, `ui-circle.svg`, `ui-square.svg`, `ui-triangle-shape.svg`, `ui-rhombus.svg` | empty ring; plain shapes | пары и группы |

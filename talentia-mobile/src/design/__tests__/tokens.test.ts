@@ -5,8 +5,22 @@
  * спокойным режимом — оба дефекта прошли незамеченными до аудита.
  */
 import {
+  atlasTabTap,
   bubblePadY,
   buildTheme,
+  childSoundToggle,
+  fitRegionTitle,
+  isQuantityOrder,
+  mapSettingsButton,
+  mapTaliTap,
+  mapTitle,
+  orderEmptyPlaceTap,
+  orderFirstPlaceCue,
+  orderMark,
+  orderMarkFor,
+  selectedRepeatPress,
+  selectedRepeatTravel,
+  typography,
   countMark,
   countSizes,
   cushionByRole,
@@ -22,7 +36,6 @@ import {
   mapBackdrop,
   mapFocus,
   mapLayout,
-  mapSpeaker,
   modeToggleCue,
   motion,
   numeralOption,
@@ -418,6 +431,7 @@ describe('рабочие остатки раунда 3 (V1, V4, V5, V6, V2/V3)',
       shape: 'mark_ring_solid',
       sound: false,
       haptic: 'parentSetting',
+      peakOutline: { width: 2, color: '#2A1A12' },
     });
     expect(countMark.repeatRing.from).toBe(countMark.ring);
     expect(countMark.repeatRing.durationMs).toBe(90);
@@ -456,7 +470,9 @@ describe('рабочие остатки раунда 3 (V1, V4, V5, V6, V2/V3)',
 
   it('знак промаха — пунктирное кольцо 64, контур 3, штрих 8 / просвет 6, textMuted светлой схемы, зафиксированный (раунд 4, UX)', () => {
     const m = countMark.missRing;
-    expect(m).toMatchObject({ size: 64, stroke: 3, shape: 'dashed_ring', dash: 8, gap: 6, colorRole: 'textMuted' });
+    expect(m).toMatchObject({ size: 64, stroke: 3, shape: 'dashed_ring', dash: 8, gap: 6 });
+    // раунд 5, М3: поля «роли цвета» нет — цвет зафиксирован, тема его не подменяет
+    expect(m).not.toHaveProperty('colorRole');
     expect(m.color).toBe(palettes.light.normal.textMuted);
     // слой иллюстрации: знак виден на подложке картинки в обеих схемах
     SCHEMES.forEach((scheme) => {
@@ -489,30 +505,30 @@ describe('рабочие остатки раунда 3 (V1, V4, V5, V6, V2/V3)',
     expect(pointZone.expandHiddenZone).toBe(true);
   });
 
-  it('мелочи UX: перенос ответов 9–10, отступ «Помочь Tali», динамик карты, сумка Tali', () => {
+  it('мелочи UX: перенос ответов 9–10, отступ «Помочь Tali», кнопка листа на карте, сумка Tali', () => {
     expect(lessonTextAnswer.truncate).toBe(false);
     expect(lessonTextAnswer.wrap).toBe(true);
     expect(helpTaliButton.extra).toBeGreaterThanOrEqual(16);
-    expect(mapSpeaker.size).toBeGreaterThanOrEqual(touch.min);
-    expect(mapSpeaker.keptInFocus).toBe(true);
-    // focus на карте (раунд 4): полоса 64 — атлас 60, ориентир 32, динамик 60; Tali статичен у узла
+    expect(mapSettingsButton.size).toBeGreaterThanOrEqual(touch.min);
+    expect(mapSettingsButton.keptInFocus).toBe(true);
+    // focus на карте (раунд 4): полоса 64 — атлас 60, ориентир 32, кнопка листа 60; Tali статичен у узла
     expect(mapFocus.band).toBe(64);
     expect(mapFocus.atlasButton).toBeGreaterThanOrEqual(touch.min);
-    expect(mapFocus.speaker).toBe(mapSpeaker.size);
-    expect(Math.max(mapFocus.atlasButton, mapFocus.speaker, mapFocus.landmark)).toBeLessThanOrEqual(mapFocus.band);
+    expect(mapFocus.settings).toBe(mapSettingsButton.size);
+    expect(Math.max(mapFocus.atlasButton, mapFocus.settings, mapFocus.landmark)).toBeLessThanOrEqual(mapFocus.band);
     expect(mapFocus.landmark).toBe(mapLayout.landmarkCalmStrip);
     expect(mapFocus.tali).toBe('static_at_node');
-    // стороны и зазоры полосы (второй цикл UX): атлас слева, динамик справа, зазор ≥ touch.gap
+    // стороны и зазоры полосы (второй цикл UX): атлас слева, кнопка листа справа, зазор ≥ touch.gap
     expect(mapFocus.atlasSide).toBe('left');
-    expect(mapFocus.speakerSide).toBe('right');
+    expect(mapFocus.settingsSide).toBe('right');
     expect(mapFocus.minGap).toBeGreaterThanOrEqual(touch.gap);
-    // самый узкий экран 360: поля + атлас + зазор + ориентир + зазор + динамик + поля помещаются,
-    // а зазор между атласом и динамиком (через ориентир) не меньше minGap
+    // самый узкий экран 360: поля + атлас + зазор + ориентир + зазор + кнопка + поля помещаются,
+    // а зазор между атласом и кнопкой листа (через ориентир) не меньше minGap
     const W = 360;
-    const fixed = 2 * mapFocus.edgeInset + mapFocus.atlasButton + mapFocus.landmark + mapFocus.speaker;
+    const fixed = 2 * mapFocus.edgeInset + mapFocus.atlasButton + mapFocus.landmark + mapFocus.settings;
     expect(fixed + 2 * mapFocus.minGap).toBeLessThanOrEqual(W);
-    const atlasToSpeaker = W - 2 * mapFocus.edgeInset - mapFocus.atlasButton - mapFocus.speaker;
-    expect(atlasToSpeaker).toBeGreaterThanOrEqual(mapFocus.landmark + 2 * mapFocus.minGap);
+    const atlasToSettings = W - 2 * mapFocus.edgeInset - mapFocus.atlasButton - mapFocus.settings;
+    expect(atlasToSettings).toBeGreaterThanOrEqual(mapFocus.landmark + 2 * mapFocus.minGap);
     expect(modeToggleCue.voiced).toBe(true);
     expect(taliSatchelRule.distinguishesPose).toBe(false);
     expect(taliSatchelRule.pressable).toBe(false);
@@ -626,5 +642,219 @@ describe('Tali: кроп, отклик на тап, тёмная схема (V12
     (Object.keys(c.regions) as RegionId[]).forEach((r) => {
       expect(contrast(taliArt.outline, c.regions[r])).toBeGreaterThanOrEqual(3);
     });
+  });
+});
+
+describe('order: метки мест не кодируют количество (раунд 5, Е2)', () => {
+  const BANDS = ['5-6', '7', '8', '9-10'] as const;
+
+  it('у предметов-количеств метка — засечка на всех полосах', () => {
+    BANDS.forEach((band) => expect(orderMarkFor(band, true)).toBe('tick'));
+  });
+
+  it('на 5–6 метка — засечка всегда; цифра — только с 7 лет и только не у количеств', () => {
+    expect(orderMarkFor('5-6', false)).toBe('tick');
+    (['7', '8', '9-10'] as const).forEach((band) => expect(orderMarkFor(band, false)).toBe('digit'));
+  });
+
+  it('точек на метке нет ни на одной полосе; номер в пустом месте — только у цифры', () => {
+    expect(orderMark.dots).toBe(false);
+    expect(orderMark.emptyPlaceNumber).toBe('digit_only');
+  });
+
+  it('засечка: 12 pt вниз от линии до низа полосы, контур темы — различима на фоне и поверхностях ≥ 3', () => {
+    expect(orderMark.tick.length).toBe(orderMark.strip - orderMark.lineY);
+    expect(orderMark.tick.direction).toBe('down_to_place');
+    expect(stroke[orderMark.tick.stroke]).toBe(3);
+    SCHEMES.forEach((scheme) =>
+      VARIANTS.forEach((variant) => {
+        const c = palettes[scheme][variant];
+        [c.background, c.surface, c.surfaceAlt].forEach((bg) => {
+          expect(contrast(c[orderMark.tick.color], bg)).toBeGreaterThanOrEqual(3);
+        });
+      }),
+    );
+    // засечка — не кружок: гнездо match 24 и кольцо-фишка рамки десятка остаются единственными кольцами
+    expect(orderMark.tick).not.toHaveProperty('circle');
+  });
+
+  it('предметы-количества выводятся из данных: кучка или карточка-число; числа текстом — флагом задания', () => {
+    expect(isQuantityOrder([{ count: 1 }, { count: 3 }, { count: 5 }])).toBe(true);
+    expect(isQuantityOrder([{ numeral: 3 }, { numeral: 4 }])).toBe(true);
+    expect(isQuantityOrder([{}, {}, {}])).toBe(false);
+    expect(isQuantityOrder([{}, {}, {}], true)).toBe(true);
+    // пилот: кучки на 5–6 — засечка
+    expect(orderMarkFor('5-6', isQuantityOrder([{ count: 3 }, { count: 4 }, { count: 5 }]))).toBe('tick');
+    // с 7 лет картинки «семечко → росток → цветок» — цифра
+    expect(orderMarkFor('7', isQuantityOrder([{}, {}, {}]))).toBe('digit');
+  });
+
+  it('первое место на 5–6 — подсветка listeningCue на «начни отсюда», без движения; проводка по стреле в примере одна', () => {
+    expect(orderFirstPlaceCue.band).toBe('5-6');
+    expect(orderFirstPlaceCue.place).toBe('leftmost');
+    expect(orderFirstPlaceCue.cue).toBe('listeningCue');
+    expect(listeningCue.animated).toBe(false);
+    expect(orderFirstPlaceCue.onReplay).toBe(true);
+    expect(orderFirstPlaceCue.exampleTrace.once).toBe(true);
+    expect(orderFirstPlaceCue.exampleTrace.durationMs).toBe(motion.slow);
+    expect(stroke[orderFirstPlaceCue.exampleTrace.stroke]).toBe(6);
+    // calm / reduce motion: по участкам между засечками, у трёх мест три шага = motion.slow
+    expect(orderFirstPlaceCue.exampleTrace.calm).toBe('segment_steps');
+    expect(3 * orderFirstPlaceCue.exampleTrace.calmStepMs).toBe(motion.slow);
+  });
+
+  it('тап по пустому месту без выбора: место сжимается 0.94 до отпускания во всех режимах, импульса метки нет; голос без числительного + «сначала выбери»', () => {
+    const t = orderEmptyPlaceTap;
+    expect(t.target).toBe('place');
+    expect(t.scale).toBe(0.94);
+    expect(t.trigger).toBe('touch_down');
+    expect(t.feedbackMs).toBeLessThanOrEqual(100);
+    expect(t.heldUntil).toBe('touch_up');
+    expect(t.releaseMs).toBe(motion.press);
+    expect(t.sameInCalm).toBe(true);
+    expect(t.markPulse).toBe(false);
+    // ход края места 104 ≥ 3 pt; прежний импульс засечки 12 × 0.15 = 1.8 — не виден
+    expect((104 * (1 - t.scale)) / 2).toBeGreaterThanOrEqual(3);
+    expect(orderMark.tick.length * 0.15).toBeLessThan(2);
+    expect(t.voice.tick).toEqual(['start', 'middle', 'end']);
+    expect(t.voice.then).toBe('choose_first_hint');
+    expect(t.records).toBe(false);
+  });
+});
+
+describe('повторный тап по выбранной плитке (раунд 5, В1)', () => {
+  const r = selectedRepeatPress;
+
+  it('сжатие 0.94 от касания вниз ≤ 100 мс, держится до отпускания, возврат за motion.press', () => {
+    expect(r.scale).toBe(0.94);
+    expect(r.scale).toBeLessThan(pressScale.wide);
+    expect(r.trigger).toBe('touch_down');
+    expect(r.feedbackMs).toBeLessThanOrEqual(100);
+    expect(r.heldUntil).toBe('touch_up');
+    expect(r.releaseMs).toBe(motion.press);
+    expect(r.records).toBe(false);
+    expect(r.haptic).toBe('parentSetting');
+  });
+
+  it('ход края заметен: ≥ 3 pt на плитке 104 (0.98 давало ≈ 1)', () => {
+    expect(selectedRepeatTravel(104)).toBeGreaterThanOrEqual(3);
+    expect((104 * (1 - pressScale.wide)) / 2).toBeLessThan(1.1);
+  });
+
+  it('у плитки с кучкой сжимается только рамка, поле фигур 80×80 неподвижно; рамка не наезжает на фигуры; без звука', () => {
+    expect(r.pileTile).toEqual({ scales: 'frame', figureFieldStatic: true, sound: false });
+    // плитка 104×112 (SE): между внутренним краем контура «выбрано» 6 и полем 80 — 6 по ширине, 10 по высоте
+    const sideRoom = (104 - countSizes.tileField) / 2 - stroke.bold;
+    const topRoom = (112 - countSizes.tileField) / 2 - stroke.bold;
+    expect(selectedRepeatTravel(104)).toBeLessThanOrEqual(sideRoom);
+    expect(selectedRepeatTravel(112)).toBeLessThanOrEqual(topRoom);
+    expect(r.plainTile.sound).toBe('element');
+  });
+});
+
+describe('повтор метки «сосчитано»: внешний контур на пике (раунд 5, В2)', () => {
+  const r = countMark.repeatRing;
+
+  it('метка на пике 28 ≤ фигура стимула 40', () => {
+    const peak = countMark.dot + 2 * r.to + 2 * r.peakOutline.width;
+    expect(peak).toBe(28);
+    expect(peak).toBeLessThanOrEqual(countSizes.figureStimulus);
+  });
+
+  it('прежний край — белое кольцо — на белой и жёлтой фигуре не виден (1.0 / 1.59)', () => {
+    expect(contrast(countMark.ringColor, '#FFFFFF')).toBeLessThan(1.1);
+    expect(contrast(countMark.ringColor, palettes.light.normal.accent)).toBeLessThan(3);
+  });
+
+  it('двухцветный край виден на любой фигуре: на любом сером 0–255 хотя бы одна пара ≥ 4', () => {
+    for (let v = 0; v <= 255; v += 1) {
+      const hex = `#${v.toString(16).padStart(2, '0').repeat(3)}`;
+      const best = Math.max(contrast(countMark.ringColor, hex), contrast(r.peakOutline.color, hex));
+      expect(best).toBeGreaterThanOrEqual(4);
+    }
+    expect(contrast(r.peakOutline.color, palettes.light.normal.accent)).toBeGreaterThanOrEqual(3);
+    expect(contrast(r.peakOutline.color, '#FFFFFF')).toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe('знак промаха: обрезка и первый палец (раунд 5, В5)', () => {
+  it('знак живёт только внутри подложки стимула / рамки сцены; вне — ничего и не попытка', () => {
+    const m = countMark.missRing;
+    expect(m.clip).toEqual({ count: 'stimulus_plate', point: 'scene_frame' });
+    expect(m.outsideClip).toBe('nothing');
+    expect(m.records).toBe(false);
+    expect(pointMiss.clip.point).toBe('scene_frame');
+  });
+
+  it('метит только первый палец — и в счёте, и в point; счёт и point в одном задании не совмещаются', () => {
+    expect(countMark.missRing.pointers).toBe('first_only');
+    expect(pointZone.pointers).toBe('first_only');
+    expect(pointZone.withCounting).toBe(false);
+  });
+});
+
+describe('карта: кнопка листа, звук, повтор голосом (раунд 5, В3)', () => {
+  it('правая кнопка карты — «ползунки», открывает лист; динамика на карте нет', () => {
+    expect(mapSettingsButton.icon).toBe('ui-sliders');
+    expect(mapSettingsButton.opens).toBe('child_sheet');
+    expect(mapSettingsButton.size).toBeGreaterThanOrEqual(touch.min);
+  });
+
+  it('детский «Звук» — нота, глушит музыку и эффекты (и звуки нажатий), но не голос Tali и не вопросы (№22)', () => {
+    expect(childSoundToggle.icon).toBe('ui-note');
+    expect(childSoundToggle.mutes).toEqual(expect.arrayContaining(['music', 'effects', 'press_sounds']));
+    expect(childSoundToggle.neverMutes).toEqual(expect.arrayContaining(['tali_voice', 'prompts', 'option_names']));
+    childSoundToggle.neverMutes.forEach((s) => expect(childSoundToggle.mutes as readonly string[]).not.toContain(s));
+    expect(childSoundToggle.voiceControlledBy).toBe('parent_settings');
+    expect(childSoundToggle.visualFeedbackAlways).toBe(true);
+  });
+
+  it('повтор голосом на карте — тап по Tali: регион и следующий шаг, в focus так же; таб атласа называет регион', () => {
+    expect(mapTaliTap.voices).toEqual(['region_name', 'next_step']);
+    expect(mapTaliTap.sameInFocus).toBe(true);
+    expect(mapFocus.taliTap).toBe(mapTaliTap);
+    expect(atlasTabTap.voices).toBe('region_name');
+  });
+});
+
+describe('название региона в полосе карты (раунд 5, В4)', () => {
+  /**
+   * Названия регионов — из макетов (DESIGN_PROMPTS.md 1.2); ключей `content.regions.*` в локалях ещё нет
+   * (раунд 5, контент В7). en — рабочие. Когда ключи появятся, фикстуру заменить чтением ru / en / ky.
+   */
+  const NAMES = {
+    ru: ['Числовая долина', 'Побережье слов', 'Живой лес', 'Мастерская', 'Кыргызский язык'],
+    en: ['Number Valley', 'Word Coast', 'Living Forest', 'Workshop', 'Kyrgyz Language'],
+  };
+
+  it('стиль — subtitle 22/30, две строки в полосе 64; title 28/36 в две строки не помещался', () => {
+    expect(mapTitle.size).toBe(typography.subtitle.size);
+    expect(mapTitle.lineHeight).toBe(typography.subtitle.lineHeight);
+    expect(mapTitle.maxLines * mapTitle.lineHeight).toBeLessThanOrEqual(mapFocus.band);
+    expect(2 * typography.title.lineHeight).toBeGreaterThan(mapFocus.band);
+    expect(mapTitle.maxFontSizeMultiplier).toBe(1);
+    expect(mapTitle.minSize).toBe(18);
+  });
+
+  it('ширина 136 — то, что остаётся на экране 360 между ориентиром и кнопками', () => {
+    const W = 360;
+    const rest = W - 2 * mapFocus.edgeInset - mapFocus.atlasButton - mapFocus.settings - 2 * mapFocus.minGap - mapFocus.landmark - 8;
+    expect(rest).toBe(mapTitle.width);
+  });
+
+  (Object.keys(NAMES) as (keyof typeof NAMES)[]).forEach((lang) => {
+    it(`${lang}: самое длинное название помещается в 136 pt в ≤ 2 строки не мельче 18`, () => {
+      const longest = [...NAMES[lang]].sort((a, b) => b.length - a.length)[0];
+      const size = fitRegionTitle(longest);
+      expect(size).not.toBeNull();
+      expect(size ?? 0).toBeGreaterThanOrEqual(mapTitle.minSize);
+      NAMES[lang].forEach((name) => expect(fitRegionTitle(name)).not.toBeNull());
+    });
+  });
+
+  it('ужатие работает: «Кыргызский» в 22 не помещается в строку, в 21 — да; слово длиннее строки при 18 — null', () => {
+    expect(fitRegionTitle('Кыргызский язык')).toBe(21);
+    expect(fitRegionTitle('Числовая долина')).toBe(22);
+    expect(fitRegionTitle('Достопримечательностей')).toBeNull();
   });
 });

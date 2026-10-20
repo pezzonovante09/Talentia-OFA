@@ -26,6 +26,7 @@ import {
   inactiveTapTravel,
   promptVisualSingleLevel,
   ABA_CONTROL_STROKE,
+  ABA_PROMPT_MARK_STROKE,
   ABA_DEAD_ZONE_MIN,
   ABA_DEAD_ZONE_ROOMY,
   ABA_MIN_AVAILABLE_HEIGHT,
@@ -310,7 +311,14 @@ describe('уровни подсказки без цвета', () => {
   });
 
   it('тап по неактивной плите: сжатие 0.94 за 90 мс, без звука и без записи (I-6, V-9)', () => {
-    expect(inactiveChoice.tapPress).toEqual({ scale: 0.94, durationMs: motion.press, sound: false, records: false });
+    expect(inactiveChoice.tapPress).toEqual({
+      scale: 0.94,
+      durationMs: motion.press,
+      heldUntil: 'touch_up',
+      sound: false,
+      records: false,
+    });
+    // раунд 5: сжатие держится до отпускания — под пальцем 90 мс с возвратом не видно
     expect(inactiveChoice.tapPress.durationMs).toBe(90);
     expect(inactiveChoice.tapPress.durationMs).toBeLessThanOrEqual(100);
     // 0.98 давало 1 pt на 96 и 0.7 pt на 72 — незаметно; 0.94 — ≈ 2.9 и ≈ 2.2
@@ -594,6 +602,33 @@ describe('раскладка экрана пробы (три тира)', () => {
     // по горизонтали: метка не шире плиты, зоны не выходят в зазор колонок
     expect(g.colGapForFour).toBeGreaterThanOrEqual(touch.gap);
     TIERS.forEach((t) => expect(32).toBeLessThanOrEqual(g.plateForFour[t]));
+  });
+
+  it('identify 2×2: верх метки в мёртвой полосе не молчит — сжатие метки 0.94 до отпускания, без звука, записи и влияния на окно (раунд 5, UX 2)', () => {
+    const g = abaIdentifyGrid;
+    expect(g.markDeadTop).toBe(32 - g.markHitHeight);
+    expect(g.markDeadBandTap).toEqual({
+      target: 'mark',
+      scale: 0.94,
+      durationMs: motion.press,
+      heldUntil: 'touch_up',
+      sound: false,
+      records: false,
+      affectsResponseWindow: false,
+    });
+    // тот же видимый отклик, что у неактивной плиты
+    expect(g.markDeadBandTap.scale).toBe(inactiveChoice.tapPress.scale);
+    const src = fs.readFileSync(path.join(__dirname, '..', 'abaTokens.ts'), 'utf8');
+    expect(src).toMatch(/Переспросить у методиста \(вопрос 8\)/);
+  });
+
+  it('штрих метки подсказки — 3 во всех режимах, calm его не понижает (раунд 5, М7)', () => {
+    expect(ABA_PROMPT_MARK_STROKE).toBe(3);
+    expect(ABA_PROMPT_MARK_STROKE).toBe(ABA_STIMULUS_STROKE);
+    SCHEMES.forEach((scheme) => {
+      const calm = buildTheme({ scheme, calmMode: true, focusMode: false });
+      expect(calm.stroke.base).toBeLessThan(ABA_PROMPT_MARK_STROKE);
+    });
   });
 
   it('identify 2×2: касание метки = касание её плиты; принято, ждёт подтверждения методиста (вопрос 8)', () => {
