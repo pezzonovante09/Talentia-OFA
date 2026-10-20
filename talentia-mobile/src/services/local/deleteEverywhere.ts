@@ -23,7 +23,7 @@ import type { ConsentEvent } from '../../domain/consent';
 import { readConsentLog } from './consentLog';
 import { purgeChild, wipeDevice } from './purge';
 import type { SqlDb } from './sql';
-import { LOCAL_ONLY_SCOPES } from './sync';
+import { consentPlan, delivered, failedEvents, LOCAL_ONLY_SCOPES } from './sync';
 
 export type DeleteChildInput = {
   db: SqlDb;
@@ -78,14 +78,24 @@ export type WipeAccountInput = {
 };
 
 /**
- * Отзывы согласий, которые должны уйти на сервер, но ещё не ушли: не только на устройстве
- * (`LOCAL_ONLY_SCOPES`) и не отмечены доставленными. После «Удалить всё» журнал согласий
- * стирается вместе с базой, и недоставленный отзыв облака или ИИ не дошёл бы до сервера никогда
- * (раунд 4, приватность В4).
+ * Отзывы согласий, которые должны уйти на сервер, но ещё не ушли. После «Удалить всё» журнал
+ * согласий стирается вместе с базой, и недоставленный отзыв облака или ИИ не дошёл бы до сервера
+ * никогда (раунд 4, приватность В4).
+ *
+ * Берётся тот же план, что у синхронизации (`consentPlan`), а не сырой журнал, и только отзывы
+ * области, grant которой сервер уже получил: иначе на сервере нечего отзывать. Отзыв ИИ без
+ * облака, отзыв из `sync_problems`, устаревший отзыв и отзыв облака, чей grant не дошёл, сервер
+ * не примет никогда — с ними «Удалить всё» блокировалось бы навсегда (раунд 5, приватность В1 =
+ * бэкенд В1).
  */
 export async function undeliveredRevocations(db: SqlDb): Promise<ConsentEvent[]> {
-  const delivered = new Set((await db.all<{ id: string }>('SELECT id FROM consent_delivered')).map((r) => r.id));
-  return (await readConsentLog(db)).filter((e) => e.action === 'revoke' && !LOCAL_ONLY_SCOPES.has(e.scope) && !delivered.has(e.id));
+  const events = await readConsentLog(db);
+  const done = await delivered(db);
+  const known = (e: ConsentEvent) =>
+    events.some((g) => g.action === 'grant' && g.scope === e.scope && g.childId === e.childId && done.has(g.id));
+  return consentPlan(events, done, await failedEvents(db)).filter(
+    (e) => e.action === 'revoke' && !LOCAL_ONLY_SCOPES.has(e.scope) && known(e),
+  );
 }
 
 /**

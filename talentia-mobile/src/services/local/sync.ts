@@ -113,11 +113,11 @@ const isCloud = (e: ConsentEvent) => e.scope === 'cloud_sync';
 /** Согласия, которые живут только на устройстве и в облако не отправляются никогда. */
 export const LOCAL_ONLY_SCOPES: ReadonlySet<ConsentEvent['scope']> = new Set(['aba_processing']);
 
-async function delivered(db: SqlDb): Promise<Set<string>> {
+export async function delivered(db: SqlDb): Promise<Set<string>> {
   return new Set((await db.all<{ id: string }>('SELECT id FROM consent_delivered')).map((r) => r.id));
 }
 
-async function failedEvents(db: SqlDb): Promise<Set<string>> {
+export async function failedEvents(db: SqlDb): Promise<Set<string>> {
   return new Set(
     (await db.all<{ event_id: string }>("SELECT event_id FROM sync_problems WHERE kind = 'consent'")).map((r) => r.event_id),
   );

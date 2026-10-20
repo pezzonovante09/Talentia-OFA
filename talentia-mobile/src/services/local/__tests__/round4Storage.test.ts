@@ -13,7 +13,7 @@ import { ABA_STATE_KEYS, loadChildState, saveChildState } from '../childState';
 import { commitRoutineExchange, commitRoutineRun } from '../commit';
 import { appendConsentEvent } from '../consentLog';
 import { appendLessonRun, lessonRunsOf } from '../lessonRuns';
-import { applyRetention, exportChild, exportForSpecialist, revokeAbaProcessing } from '../purge';
+import { applyRetention, exportChild, exportForSpecialist, revokeAbaProcessing, trustedNow } from '../purge';
 import type { SqlDb } from '../sql';
 import { asAbaWriter, memoryDb } from './nodeSql';
 
@@ -68,6 +68,31 @@ async function abaChild(db: SqlDb, childId: string, at: string) {
     await saveChildState(tx, childId, 'abaPaused', true, at);
   });
 }
+
+describe('срок хранения по доверенному времени (раунд 5, backend В3)', () => {
+  it('доверенного времени нет — не удалено ничего, даже очень старое', async () => {
+    const db = await memoryDb();
+    await abaChild(db, 'old', OLD);
+    await asAbaWriter(db, 'old', (tx) => appendTrial(tx, 'old', trialAt('old', 'tr-old'), OLD));
+    expect(await applyRetention(db, null)).toBe(0);
+    expect(await keysOf(db, 'old')).toEqual(['abaBoard', 'abaPaused', 'abaSessionIndex', 'abaTargets', 'tokenTraining']);
+  });
+
+  it('часы устройства на пять лет вперёд не двигают доверенное время', () => {
+    const server = '2026-10-19T10:00:00Z';
+    const deviceForward = new Date('2031-10-19T10:00:00Z');
+    const t = trustedNow(server, null);
+    expect(t?.toISOString()).toBe('2026-10-19T10:00:00.000Z');
+    expect(t!.getTime()).toBeLessThan(deviceForward.getTime());
+  });
+
+  it('доверенное время только растёт; неразборчивое — не время', () => {
+    expect(trustedNow('2026-10-01T00:00:00Z', '2026-10-19T00:00:00Z')?.toISOString()).toBe('2026-10-19T00:00:00.000Z');
+    expect(trustedNow('Mon, 20 Oct 2026 08:00:00 GMT', '2026-10-19T00:00:00Z')?.toISOString()).toBe('2026-10-20T08:00:00.000Z');
+    expect(trustedNow('мусор', undefined)).toBeNull();
+    expect(trustedNow(null, null)).toBeNull();
+  });
+});
 
 describe('№105: срок хранения сводного состояния ABA', () => {
   it('ребёнок без активности ABA 12 месяцев: ключи ABA удалены, пауза осталась', async () => {

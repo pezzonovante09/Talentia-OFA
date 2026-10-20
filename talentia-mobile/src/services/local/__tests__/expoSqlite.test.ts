@@ -5,7 +5,7 @@
  * при пересечении, `secure_delete` по умолчанию OFF (`fakeExpoSqlite.ts`).
  */
 import { fakeExpoSqlite, failNextExec, failNextOpen, files, fileOf, hop, injected, resetInjected } from './fakeExpoSqlite';
-import { deleteLocalDb, localDbName, openLocalDb } from '../expoSqlite';
+import { deleteLocalDb, LocalDbClosedError, localDbName, openLocalDb } from '../expoSqlite';
 import type { SqlDb } from '../sql';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -344,6 +344,24 @@ describe('deleteLocalDb: закрытие через очередь записи
     await del;
     expect(injected.closeCalls).toBe(1);
     expect(files.has(localDbName(account))).toBe(false);
+  });
+
+  // раунд 5, backend В2: фоновая синхронизация во время удаления не открывает второе соединение
+  // и не пишет старой ручкой — удаление не падает, файл не появляется снова
+  it('во время удаления openLocalDb отказывает, а старая ручка бросает LocalDbClosedError', async () => {
+    const { account, db, name, file } = await openAccount();
+    const tx = recordLike(db, 'in-flight');
+    await untilHeld(file);
+    const del = deleteLocalDb(account);
+    await expect(openLocalDb(account)).rejects.toBeInstanceOf(LocalDbClosedError);
+    await expect(db.run('SELECT 1')).rejects.toBeInstanceOf(LocalDbClosedError);
+    await expect(db.all('SELECT 1')).rejects.toBeInstanceOf(LocalDbClosedError);
+    await expect(db.transaction(async () => 1)).rejects.toBeInstanceOf(LocalDbClosedError);
+    await expect(Promise.all([tx, del])).resolves.toEqual(['in-flight', undefined]);
+    expect(files.has(name)).toBe(false);
+    expect(file.openConnections).toBe(0);
+    await expect(db.run('SELECT 1')).rejects.toBeInstanceOf(LocalDbClosedError);
+    expect(files.has(name)).toBe(false);
   });
 
   it('база не открывалась — удаляется файл без закрытия', async () => {

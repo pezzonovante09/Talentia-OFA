@@ -135,8 +135,14 @@ describe('удаление аккаунта: недоставленные отз
   const revoke = (id: string, scope: 'cloud_sync' | 'companion_ai' | 'aba_processing', childId = 'kid-a') =>
     ({ id, scope, action: 'revoke', childId, textVersion: 'ru-1', confirmedBy: 'pin', actorId: 'parent', at: '2026-09-30T11:00:00Z' }) as const;
 
+  const grant = (id: string, scope: 'cloud_sync' | 'companion_ai', childId = 'kid-a') =>
+    ({ ...revoke(id, scope, childId), action: 'grant', at: '2026-09-30T10:00:00Z' }) as const;
+
   async function withRevokes() {
     const db = await filled();
+    // grant облака доставлен — на сервере есть что отзывать
+    await appendConsentEvent(db, grant('g-cloud', 'cloud_sync'), 'owner');
+    await db.run('INSERT INTO consent_delivered (id, delivered_at) VALUES (?, ?)', ['g-cloud', NOW]);
     await appendConsentEvent(db, revoke('r-cloud', 'cloud_sync'), 'owner');
     await appendConsentEvent(db, revoke('r-ai-done', 'companion_ai'), 'owner');
     await db.run('INSERT INTO consent_delivered (id, delivered_at) VALUES (?, ?)', ['r-ai-done', NOW]);
@@ -187,6 +193,45 @@ describe('удаление аккаунта: недоставленные отз
     expect([w.fileDeleted(), w.calls]).toEqual([false, []]);
     expect(await trialsOfTarget(db, 'kid-a', 't')).toHaveLength(1);
     expect((await readConsentLog(db)).map((e) => e.id)).toContain('r-cloud');
+  });
+
+  // раунд 5, приватность В1 = бэкенд В1: отзывы, которые сервер не примет никогда, удаление не блокируют
+  it.each([
+    [
+      'отзыв ИИ ребёнка без облака',
+      async (db: Awaited<ReturnType<typeof filled>>) => {
+        await appendConsentEvent(db, grant('g-ai', 'companion_ai', 'kid-b'), 'owner');
+        await appendConsentEvent(db, revoke('r-ai', 'companion_ai', 'kid-b'), 'owner');
+      },
+    ],
+    [
+      'отзыв облака, чей grant до сервера не дошёл',
+      async (db: Awaited<ReturnType<typeof filled>>) => {
+        await appendConsentEvent(db, grant('g-off', 'cloud_sync', 'kid-b'), 'owner');
+        await appendConsentEvent(db, revoke('r-off', 'cloud_sync', 'kid-b'), 'owner');
+      },
+    ],
+    [
+      'отзыв, отклонённый сервером по существу (sync_problems)',
+      async (db: Awaited<ReturnType<typeof filled>>) => {
+        await appendConsentEvent(db, grant('g-fail', 'cloud_sync', 'kid-b'), 'owner');
+        await db.run('INSERT INTO consent_delivered (id, delivered_at) VALUES (?, ?)', ['g-fail', NOW]);
+        await appendConsentEvent(db, revoke('r-fail', 'cloud_sync', 'kid-b'), 'owner');
+        await db.run(
+          "INSERT INTO sync_problems (child_id, event_id, reason, noticed_at, kind) VALUES ('kid-b', 'r-fail', 'child_gone', ?, 'consent')",
+          [NOW],
+        );
+      },
+    ],
+  ])('%s — удаление идёт без связи', async (_, setup) => {
+    const db = await filled();
+    await setup(db);
+    expect(await undeliveredRevocations(db)).toEqual([]);
+    const deliver = jest.fn(async () => false);
+    const w = wipe(db, deliver);
+    await w.run;
+    expect(deliver).not.toHaveBeenCalled();
+    expect(w.fileDeleted()).toBe(true);
   });
 
   it('недоставленных нет — deliverRevocations не вызывается, удаление идёт и без связи', async () => {

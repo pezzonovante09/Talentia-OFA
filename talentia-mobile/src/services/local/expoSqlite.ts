@@ -57,18 +57,40 @@ function newWriteQueue(): WriteQueue {
  * expo-sqlite, не эксклюзивен, и чужой запрос на том же соединении попадал внутрь — откат
  * согласия молча стирал пробу из журнала (аудит 2026-09-30). Внутри — только `tx`.
  */
-function adapt(db: SQLite.SQLiteDatabase, serial: WriteQueue, inTransaction = false): SqlDb {
-  const write = <T>(task: () => Promise<T>) => (inTransaction ? task() : serial(task));
+/** База закрыта для удаления аккаунта (`deleteLocalDb`): старая ручка не пишет и не читает. */
+export class LocalDbClosedError extends Error {
+  constructor() {
+    super('Локальная база закрыта: аккаунт удаляется');
+  }
+}
+
+/**
+ * `closed` — проверка в момент вызова: работа, вставшая в очередь до `deleteLocalDb`, доходит до
+ * конца, а новая через старую ручку (цикл ретраев синхронизации) бросает, а не открывает файл
+ * заново своим соединением транзакции (раунд 5, backend В2). Внутри начатой транзакции не проверяется.
+ */
+function adapt(db: SQLite.SQLiteDatabase, serial: WriteQueue, inTransaction = false, closed: () => boolean = () => false): SqlDb {
+  const alive = () => {
+    if (closed()) throw new LocalDbClosedError();
+  };
+  const write = <T>(task: () => Promise<T>) => {
+    alive();
+    return inTransaction ? task() : serial(task);
+  };
   const self: SqlDb = {
-    run: (sql, params = []) =>
+    run: async (sql, params = []) =>
       write(async () => {
         const r = await db.runAsync(sql, params as SqlValue[]);
         return { changes: r.changes };
       }),
-    all: <T>(sql: string, params: readonly SqlValue[] = []) => db.getAllAsync<T>(sql, params as SqlValue[]),
-    exec: (sql) => write(() => db.execAsync(sql)),
+    all: async <T>(sql: string, params: readonly SqlValue[] = []) => {
+      alive();
+      return db.getAllAsync<T>(sql, params as SqlValue[]);
+    },
+    exec: async (sql) => write(() => db.execAsync(sql)),
     async transaction(fn) {
       if (inTransaction) return fn(self);
+      alive();
       return serial(async () => {
         let out!: Awaited<ReturnType<typeof fn>>;
         await db.withExclusiveTransactionAsync(async (txn) => {
@@ -82,22 +104,31 @@ function adapt(db: SQLite.SQLiteDatabase, serial: WriteQueue, inTransaction = fa
   return self;
 }
 
-const opened = new Map<string, { raw: Promise<SQLite.SQLiteDatabase>; db: Promise<SqlDb>; serial: WriteQueue }>();
+type Entry = { raw: Promise<SQLite.SQLiteDatabase>; db: Promise<SqlDb>; serial: WriteQueue; dead: boolean };
+const opened = new Map<string, Entry>();
+/** Имена баз, которые сейчас удаляются: открыть их заново нельзя, пока файл не удалён. */
+const deleting = new Set<string>();
 
 /** Открыть базу аккаунта и накатить схему. Повторные вызовы возвращают ту же базу. */
 export function openLocalDb(accountId: string): Promise<SqlDb> {
   const name = localDbName(accountId);
+  // фоновая синхронизация во время удаления открыла бы второе соединение, и
+  // `deleteDatabaseAsync` бросил бы уже после стирания строк (раунд 5, backend В2)
+  if (deleting.has(name)) return Promise.reject(new LocalDbClosedError());
   let entry = opened.get(name);
   if (!entry) {
     const raw = SQLite.openDatabaseAsync(name);
     const serial = newWriteQueue();
+    const self: Entry = { raw, db: Promise.resolve(null as unknown as SqlDb), serial, dead: false };
     const db = raw.then(async (r) => {
-      const a = adapt(r, serial);
-      await a.exec(`PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; ${CONNECTION_PRAGMAS}`);
-      await migrate(a);
-      return a;
+      // накат — без проверки `dead`: удаление и так ждёт открытия (`entry.db`) до закрытия
+      const boot = adapt(r, serial);
+      await boot.exec(`PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; ${CONNECTION_PRAGMAS}`);
+      await migrate(boot);
+      return adapt(r, serial, false, () => self.dead);
     });
-    entry = { raw, db, serial };
+    self.db = db;
+    entry = self;
     opened.set(name, entry);
     // Сбой открытия или наката не должен навсегда остаться в кэше: повторный вызов пробует заново.
     const failed = entry;
@@ -113,22 +144,30 @@ export function openLocalDb(accountId: string): Promise<SqlDb> {
  * Удаление аккаунта: закрыть базу и удалить файл целиком, а не только строки. Закрытие встаёт в
  * очередь записи — за накатом схемы и транзакциями, начатыми до вызова: нативный `closeAsync`
  * посреди транзакции, а `deleteDatabaseAsync` при открытом соединении бросают, и файл, ключи и
- * PIN остались бы на устройстве (раунд 4, backend 1). Новые записи после вызова базы уже не видят.
+ * PIN остались бы на устройстве (раунд 4, backend 1). Новые вызовы через старую ручку бросают
+ * `LocalDbClosedError`, а `openLocalDb` по этому имени отказывает, пока файл не удалён (раунд 5,
+ * backend В2). Синхронизацию вызывающий останавливает до `wipeAccountEverywhere`.
  */
 export async function deleteLocalDb(accountId: string): Promise<void> {
   const name = localDbName(accountId);
-  const entry = opened.get(name);
-  if (entry) {
-    opened.delete(name);
-    // сбой открытия или наката соединение уже закрыл (`openLocalDb`): дождаться и не закрывать второй раз
-    const ready = await entry.db.then(
-      () => true,
-      () => false,
-    );
-    if (ready) {
-      const raw = await entry.raw;
-      await entry.serial(() => raw.closeAsync());
+  deleting.add(name);
+  try {
+    const entry = opened.get(name);
+    if (entry) {
+      entry.dead = true;
+      opened.delete(name);
+      // сбой открытия или наката соединение уже закрыл (`openLocalDb`): дождаться и не закрывать второй раз
+      const ready = await entry.db.then(
+        () => true,
+        () => false,
+      );
+      if (ready) {
+        const raw = await entry.raw;
+        await entry.serial(() => raw.closeAsync());
+      }
     }
+    await SQLite.deleteDatabaseAsync(name);
+  } finally {
+    deleting.delete(name);
   }
-  await SQLite.deleteDatabaseAsync(name);
 }

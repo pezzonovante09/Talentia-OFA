@@ -66,6 +66,18 @@ export async function compactAfterDelete(db: SqlDb): Promise<void> {
   await db.exec('PRAGMA wal_checkpoint(TRUNCATE)');
 }
 
+/**
+ * Доверенное время для срока хранения (раунд 5, backend В3): заголовок `Date` последнего ответа
+ * сервера (ping, синхронизация) и прежнее доверенное время, сохранённое на устройстве; берётся
+ * большее — время только растёт, перевод часов назад и вперёд на устройстве его не двигает.
+ * Нет ни одного разборчивого — `null`, и `applyRetention` ничего не удаляет. Сохранять
+ * результат вызывающий должен сам (ключ устройства), рядом с вызовом на старте.
+ */
+export function trustedNow(serverDate: string | null | undefined, lastTrusted: string | null | undefined): Date | null {
+  const ms = [serverDate, lastTrusted].map((s) => (s ? Date.parse(s) : NaN)).filter(Number.isFinite);
+  return ms.length ? new Date(Math.max(...ms)) : null;
+}
+
 /** Граница срока хранения: всё раньше неё удаляется (`RETENTION_MONTHS`). */
 export function retentionCutoff(now: Date, months = RETENTION_MONTHS): string {
   const d = new Date(now.getTime());
@@ -110,8 +122,13 @@ async function abaIdleChildren(tx: SqlDb, before: string): Promise<string[]> {
  * за срок не было ни сессии, ни прогона (№105): цели, доска, наборы, наблюдатели — иначе
  * «данные о ходе занятий» жили бы бессрочно после журналов. Пауза (`abaPaused`) — настройка
  * родителя, а не данные о ребёнке: остаётся. Согласие не трогается.
+ *
+ * `now` — доверенное время (`trustedNow`), а не часы устройства: дети переводят дату ради игр, и
+ * часы на пять лет вперёд стёрли бы без возврата журналы и цели ABA у всех детей (раунд 5, backend
+ * В3). Доверенного времени ещё нет (`null`, ни одного ответа сервера) — не удаляется ничего.
  */
-export async function applyRetention(db: SqlDb, now: Date): Promise<number> {
+export async function applyRetention(db: SqlDb, now: Date | null): Promise<number> {
+  if (now === null) return 0;
   const before = retentionCutoff(now);
   let removed = 0;
   await db.transaction(async (tx) => {
