@@ -38,7 +38,7 @@
     "whatNow": "What are we doing now?",
     "start": "Start",
     "handover": "Pass the device to an adult",
-    "whereRan": "Where did the run happen?",
+    "whereRan": "Where and with whom was the run?",
     "setting": {
       "usual": "As usual",
       "other_adult": "With another adult",
@@ -91,7 +91,7 @@
           "prompt": "How many stones are here?",
           "stimulus": "stones",
           "hint": "Show the same number on your fingers.",
-          "explain": "Two stones. You can see right away. Two!"
+          "explain": "Two stones. You can tell right away. Two!"
         },
         "t2": {
           "prompt": "Match each pile to its dots.",
@@ -147,7 +147,7 @@
           "prompt": "How many berries are here?",
           "stimulus": "berries",
           "hint": "Look at all the berries at once.",
-          "explain": "Two berries. You can see right away. Two!"
+          "explain": "Two berries. You can tell right away. Two!"
         },
         "t4": {
           "prompt": "Match each pile to its number.",
@@ -160,7 +160,7 @@
       },
       "l3": {
         "title": "Counting to ten",
-        "hook": "Oops, I lost count! Let's count the leaves one by one.",
+        "hook": "I lost count! Shall we count the leaves one by one?",
         "atlas": "Together we counted all the way to ten!",
         "model": {
           "prompt": "How many leaves?",
@@ -176,7 +176,7 @@
         },
         "t2": {
           "prompt": "Put the piles in order: one, three, five.",
-          "hint": "Count: where is three, and where is five?",
+          "hint": "Count: which pile has three, and which has five?",
           "explain": "One, three, five, in order!",
           "berries": "berries",
           "stones": "stones",

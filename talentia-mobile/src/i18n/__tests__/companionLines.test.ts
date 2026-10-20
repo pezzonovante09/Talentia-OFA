@@ -25,7 +25,8 @@ function flatten(node: unknown, prefix = 'companion'): Bank {
 const PLURAL = /_(zero|one|two|few|many|other)$/;
 /** Родовой вариант — суффиксом, как context в i18next: `…_f`, `…_m`, с числом `…_f_one`. */
 const GENDER = /_(f|m)(?=(_(zero|one|two|few|many|other))?$)/;
-const slotsIn = (s: string) => [...s.matchAll(/\{\{\s*(\w+)\s*\}\}/g)].map((m) => m[1]);
+// и неэкранированная `{{- x}}`, и с форматтером `{{x, fmt}}` — как `NAME` в `taliName.ts` (раунд 5)
+const slotsIn = (s: string) => [...s.matchAll(/\{\{-?\s*(\w+)\s*(?:,[^}]*)?\}\}/g)].map((m) => m[1]);
 const holders = (s: string) => slotsIn(s).sort().join(',');
 /** Основа реплики: без plural-суффикса и родовой надстройки. */
 const base = (key: string) => key.replace(PLURAL, '').replace(GENDER, '');
@@ -38,7 +39,7 @@ const base = (key: string) => key.replace(PLURAL, '').replace(GENDER, '');
 const COUNT_GLUED = /\{\{\s*count\s*\}\}\s*\p{L}/u;
 // любое повелительное на -и / -й / -ь («добавь», «выбери», «сосчитай»), кроме наречий и
 // междометий с тем же концом (раунд 5, `localization-qa`): «добавь одна ягода»
-const NOT_IMPERATIVE = '(?:ой|эй|здесь|теперь|опять|вот|тут)';
+const NOT_IMPERATIVE = '(?:ой|эй|здесь|теперь|опять|вот|тут|есть|почти|внутри|вдали|сзади|впереди|позади|снаружи)';
 const OBJECT_COUNT_AFTER_ACC_RU = new RegExp(String.raw`(?<!\p{L})(?!${NOT_IMPERATIVE}\s)(\p{L}+(?:и|й|ь))\s+\{\{\s*object_count`, 'iu');
 /** en is / are и ru глагол настоящего времени мн. ч. перед числом с предметом — только в plural-ключе. */
 const OBJECT_COUNT_AFTER_BE_EN = /\b(is|are|was|were)\s+\{\{\s*object_count/i;
@@ -197,6 +198,7 @@ describe('банк реплик Tali', () => {
       expect(one('ru', { 'companion.x.0': 'Тут {{object_count}}!' })).toEqual([]);
       expect(one('ru', { 'companion.x.0': 'Ой, тут {{object_count}}!' })).toEqual([]);
       expect(one('ru', { 'companion.x.0': 'Здесь {{object_count}}.' })).toEqual([]);
+      expect(one('ru', { 'companion.x.0': 'Тут есть {{object_count}}.' })).toEqual([]);
       expect(one('en', { 'companion.x.0_one': 'Here is {{object_count}}!', 'companion.x.0_other': 'Here are {{object_count}}!' })).toEqual([]);
     });
 
