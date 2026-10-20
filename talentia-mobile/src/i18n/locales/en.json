@@ -137,7 +137,7 @@
         },
         "t2": {
           "prompt": "Put the piles in order: three, four, five.",
-          "hint": "Count how many are in each pile.",
+          "hint": "Pick a pile, count it, then place it.",
           "explain": "Three, then four, then five!",
           "stones": "stones",
           "berries": "berries",
@@ -189,7 +189,7 @@
           "stimulus": "leaves"
         },
         "t4": {
-          "prompt": "Match each pile to its number.",
+          "prompt": "Find each pile's number.",
           "hint": "How many in the pile? Find that number.",
           "explain": "Five here, two here, and four here!",
           "berries": "berries",

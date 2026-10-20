@@ -502,6 +502,16 @@ export const TOUCH_VERB = words(
  * порядку». «Нажми на кучки: три, четыре, пять» — три перевыбора, ничего не встаёт на место.
  */
 export const ORDER_TAP_PROMPT = words('нажми\\s+на|нажимай|тапни|tap\\s+(?:on\\s+)?the|tap\\s+each|press\\s+the');
+/**
+ * И наоборот: вопрос `order` обязан называть порядок. Список запретных слов не полон («Нажми кучки»,
+ * «Тапай», «Выбери по очереди»), а «по порядку» есть в каждом верном вопросе (раунд 5,
+ * `curriculum-content-reviewer`). Только 5-6: старше верный вопрос звучит и «по возрастанию», «от
+ * меньшего к большему». ky — когда появится, со своим словом.
+ */
+export const ORDER_WORD: Partial<Record<string, { re: RegExp; label: string }>> = {
+  ru: { re: /по\s+порядку|по\s+возрастанию|по\s+убыванию|от\s+меньш|от\s+больш/iu, label: 'по порядку' },
+  en: { re: /\bin\s+order\b|smallest|largest|biggest/i, label: 'in order' },
+};
 
 /** Точек на нижней стороне пары `match` на 5–6: узнаются без пересчёта (раунд 5, `child-ux-specialist`). */
 export const MATCH_DOT_SIDE_MAX_56 = 3;
@@ -1302,12 +1312,17 @@ export const RULES = {
     // три перевыбора в лотке, ничего не встаёт на место. Механика `order` — «лоток → место».
     title: 'вопрос order называет раскладку («разложи / поставь по порядку»), а не нажатие («нажми на», tap the)',
     check: (corpus, locales) =>
-      formatTasksOf(corpus).flatMap(({ task, at }) => {
+      formatTasksOf(corpus).flatMap(({ task, at, lesson }) => {
         if (task.format !== 'order') return [];
         return (Object.entries(locales) as [string, unknown][]).flatMap(([lang, locale]) => {
           const text = lookup(locale, task.promptKey);
-          const m = typeof text === 'string' ? ORDER_TAP_PROMPT.exec(text) : null;
-          return m ? [`${at}: ${lang} ${task.promptKey} — «${m[0]}»: в order предмет кладут на место; «разложи по порядку»`] : [];
+          if (typeof text !== 'string') return [];
+          const m = ORDER_TAP_PROMPT.exec(text);
+          if (m) return [`${at}: ${lang} ${task.promptKey} — «${m[0]}»: в order предмет кладут на место; «разложи по порядку»`];
+          const word = ORDER_WORD[lang];
+          return lesson.band === '5-6' && word && !word.re.test(text)
+            ? [`${at}: ${lang} ${task.promptKey} — нет «${word.label}»: вопрос order называет порядок`]
+            : [];
         });
       }),
   },

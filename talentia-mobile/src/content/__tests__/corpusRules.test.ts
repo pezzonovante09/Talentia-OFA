@@ -263,6 +263,8 @@ const FIXTURE_TEXT: Record<string, string> = {
   [k('b.l1.t1.f2')]: 'т',
   [k('b.l1.m.f1')]: 'до',
   [k('b.l1.m.f2')]: 'м',
+  // вопрос order на 5-6 называет порядок (гард orderPrompt, раунд 5)
+  [k('a.l2.t4.prompt')]: 'Разложи по порядку.',
 };
 
 /** Локаль, в которой каждый ключ корпуса — непустая строка. */
@@ -1826,6 +1828,10 @@ describe('гард корпуса: дыры раунда 5', () => {
     setKey(ru, order.promptKey, 'Разложи по порядку.');
     setKey(en, order.promptKey, 'Tap the piles: three, four, five.');
     expectRed('orderPrompt', c, `en ${order.promptKey} — «Tap the»`, { ru, en });
+    // слов нет в запретном списке, но и порядка нет
+    setKey(en, order.promptKey, 'Put the piles in order.');
+    setKey(ru, order.promptKey, 'Выбери кучки по очереди.');
+    expectRed('orderPrompt', c, `ru ${order.promptKey} — нет «по порядку»`, { ru, en });
   });
 
   it('match на 5-6: нижняя сторона из четырёх точек — красно, карточка-число — зелёно', () => {

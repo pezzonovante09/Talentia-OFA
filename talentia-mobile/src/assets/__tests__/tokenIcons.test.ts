@@ -46,8 +46,10 @@ const REGISTERED = registeredIcons();
  * строку `finger_ring` в `ICONS`, затем убрать её отсюда. ASSETS.md иконку пока не описывает. Иконки
  * карточки «перерыв» в токенах нет вовсе (только `abaControls.breakSize`): когда появится поле
  * `icon`, оно попадёт под эту же проверку.
+ * Раунд 5 (В3, №22): `ui-sliders` (правая кнопка карты, `mapSettingsButton`) и `ui-note` (переключатель
+ * «Звук» на детском листе, `childSoundToggle`) — описаны в ASSETS.md, рисунков нет (графика — №113).
  */
-const KNOWN_MISSING = ['finger_ring'];
+const KNOWN_MISSING = ['finger_ring', 'ui-sliders', 'ui-note'];
 
 const missing = FOUND.filter((f) => !REGISTERED.includes(f.icon));
 
