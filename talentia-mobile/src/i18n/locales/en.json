@@ -9,7 +9,7 @@
     "prompted": "Prompted",
     "refused": "Refused",
     "stepAlone": "Step — independent",
-    "undo": "Undo mark"
+    "undo": "Change mark"
   },
   "abaScreen": {
     "tooSmall": {
@@ -22,7 +22,7 @@
     }
   },
   "abaBreak": {
-    "return": "Come back",
+    "return": "Let's go back",
     "endedToday": "We're done for today",
     "done": "Done",
     "offer": "Want a rest?"
@@ -42,7 +42,7 @@
     "setting": {
       "usual": "As usual",
       "other_adult": "With another adult",
-      "other_place": "Not where it usually happens"
+      "other_place": "In a different place"
     },
     "transferHint": "Almost mastered: every step goes well with the picture cards. One more run to go, in a different place or with a different adult."
   },
@@ -50,7 +50,7 @@
     "again": "What are we playing for now?"
   },
   "abaReinforcement": {
-    "token": "The token is yours!",
+    "token": "Here's your token!",
     "repeated": "You did it again!"
   },
   "profile": {
@@ -75,12 +75,12 @@
     },
     "numbers": {
       "count": {
-        "title": "How many are there?"
+        "title": "How many?"
       },
       "l1": {
         "title": "One, two, three",
-        "hook": "I'm drawing the valley. How many leaves are here?",
-        "atlas": "The valley is on the map! One, two, three: you can see it at a glance.",
+        "hook": "I'm drawing the valley. Look, leaves!",
+        "atlas": "The valley is on the map! One, two, three: you can see them right away.",
         "model": {
           "prompt": "How many leaves are here?",
           "stimulus": "leaves",
@@ -91,7 +91,7 @@
           "prompt": "How many stones are here?",
           "stimulus": "stones",
           "hint": "Show the same number on your fingers.",
-          "explain": "Two stones, you can see it at a glance. Two!"
+          "explain": "Two stones. You can see right away. Two!"
         },
         "t2": {
           "prompt": "Match each pile to its dots.",
@@ -109,7 +109,7 @@
         },
         "t4": {
           "prompt": "Match the piles with the same number.",
-          "hint": "Stones or berries, it's how many that matters.",
+          "hint": "Stones or berries? Just count how many.",
           "explain": "One and one, two and two, three and three.",
           "left-berry": "berry",
           "left-stones": "stones",
@@ -121,7 +121,7 @@
       },
       "l2": {
         "title": "Counting to five",
-        "hook": "Help me count the leaves for the map!",
+        "hook": "I'm counting everything for the map. Will you help?",
         "atlas": "The map is bigger now: we counted up to five!",
         "model": {
           "prompt": "How many leaves are here?",
@@ -136,8 +136,8 @@
           "explain": "One, two, three, four, five. Five!"
         },
         "t2": {
-          "prompt": "Tap the piles: three, four, five.",
-          "hint": "Count each pile one by one.",
+          "prompt": "Put the piles in order: three, four, five.",
+          "hint": "Count how many are in each pile.",
           "explain": "Three, then four, then five!",
           "stones": "stones",
           "berries": "berries",
@@ -147,11 +147,11 @@
           "prompt": "How many berries are here?",
           "stimulus": "berries",
           "hint": "Look at all the berries at once.",
-          "explain": "Two berries, you can see it at a glance. Two!"
+          "explain": "Two berries. You can see right away. Two!"
         },
         "t4": {
-          "prompt": "Match each pile to its dots.",
-          "hint": "Count a pile. Which dots show that many?",
+          "prompt": "Match each pile to its number.",
+          "hint": "Count a pile. Which number is it?",
           "explain": "Five berries, three stones, four leaves.",
           "berries": "berries",
           "stones": "stones",
@@ -160,7 +160,7 @@
       },
       "l3": {
         "title": "Counting to ten",
-        "hook": "Oops, I lost count! Want to count one by one?",
+        "hook": "Oops, I lost count! Let's count the leaves one by one.",
         "atlas": "Together we counted all the way to ten!",
         "model": {
           "prompt": "How many leaves?",
@@ -175,8 +175,8 @@
           "stimulus": "stones"
         },
         "t2": {
-          "prompt": "Tap the piles: one, three, five.",
-          "hint": "First find the single leaf.",
+          "prompt": "Put the piles in order: one, three, five.",
+          "hint": "Count: where is three, and where is five?",
           "explain": "One, three, five, in order!",
           "berries": "berries",
           "stones": "stones",
@@ -184,13 +184,13 @@
         },
         "t3": {
           "prompt": "How many leaves? Count them all.",
-          "hint": "Count the top first, then the bottom.",
+          "hint": "Count the top row first, then the bottom row.",
           "explain": "The last number is ten. There are ten!",
           "stimulus": "leaves"
         },
         "t4": {
-          "prompt": "Match each pile to its dots.",
-          "hint": "How many in the pile? Find that many dots.",
+          "prompt": "Match each pile to its number.",
+          "hint": "How many in the pile? Find that number.",
           "explain": "Five here, two here, and four here!",
           "berries": "berries",
           "stones": "stones",

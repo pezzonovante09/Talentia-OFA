@@ -12,17 +12,19 @@
  */
 
 const NAME = String.raw`\{\{-?\s*name\s*(?:,[^}]*)?\}\}`;
-const LEADING = new RegExp(String.raw`^\s*${NAME}\s*[,!]\s*`, 'i');
-const TRAILING = new RegExp(String.raw`\s*,\s*${NAME}(?=\s*[!.?…]*\s*$)`, 'i');
+// Ведущая кавычка остаётся: «{{name}}, смотри!» → «Смотри!» (раунд 5, `qa-engineer`)
+const LEADING = new RegExp(String.raw`^(\s*[«"„]?)\s*${NAME}\s*[,!]\s*`, 'i');
+const TRAILING = new RegExp(String.raw`\s*,\s*${NAME}(?=\s*[!.?…»"]*\s*$)`, 'i');
 const ANY = new RegExp(NAME, 'gi');
 
 export function applyName(text: string, name: string | undefined): string {
   const trimmed = (name ?? '').trim();
-  if (trimmed !== '') return text.replace(ANY, trimmed);
+  // функцией, а не строкой: «$&» и «$1» в имени — буквы, а не шаблоны String.replace (раунд 5)
+  if (trimmed !== '') return text.replace(ANY, () => trimmed);
   let out = text.replace(TRAILING, '');
   const cutHead = LEADING.test(out);
-  out = out.replace(LEADING, '');
+  out = out.replace(LEADING, '$1');
   out = out.replace(ANY, '').replace(/\s{2,}/g, ' ').replace(/\s+([,!.?…])/g, '$1').replace(/,(?=[,!.?…])/g, '').trim();
   // «{{name}}, смотри!» → «Смотри!»: реплика снова начинается с заглавной
-  return cutHead ? out.replace(/^\p{Ll}/u, (c) => c.toLocaleUpperCase()) : out;
+  return cutHead ? out.replace(/^([«"„]?)(\p{Ll})/u, (_, q: string, c: string) => q + c.toLocaleUpperCase()) : out;
 }

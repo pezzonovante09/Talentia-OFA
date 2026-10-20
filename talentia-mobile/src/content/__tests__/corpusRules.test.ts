@@ -1774,6 +1774,71 @@ describe('гард корпуса: глагол касания (раунд 4, Д
   );
 });
 
+describe('гард корпуса: дыры раунда 5', () => {
+  it.each(['Сосчитал!', 'Досчитала!', 'Отгадал!', 'Выбрал верно!', 'Соединил!', 'Старался!', 'Устал?', 'Заметил?', 'Ты сегодня очень старался.', 'Ты всё правильно сосчитал.'])(
+    'род: ловит «%s»',
+    (text) => {
+      expect(childGenderHits(text)).not.toEqual([]);
+    },
+  );
+
+  it.each(['Я сбился! Считаем листья по одному?', 'Посчитали? Теперь сравним.', 'Вместе досчитали до десяти!', 'Tali устал.', 'Ты видишь, как я считаю?'])(
+    'род: пропускает «%s»',
+    (text) => {
+      expect(childGenderHits(text)).toEqual([]);
+    },
+  );
+
+  it.each(['Прикоснись к каждой точке.', 'Покажи пальцем каждую.', 'Тыкни в ягоду.', 'Нажимай на каждую и считай.', 'Tap each dot as you count.', 'Point to each one.'])(
+    'касание: ловит «%s»',
+    (text) => {
+      const c = goodCorpus();
+      const ru = localeFor(c);
+      setKey(ru, taskOf(c, 0, 'match').hintKey, text);
+      expect(run('touchVerb', c, { ru }).length).toBeGreaterThan(0);
+    },
+  );
+
+  it('касание: объяснение тоже проверяется', () => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    const match = taskOf(c, 0, 'match');
+    setKey(ru, match.explainKey![0], 'Трогай каждую и считай.');
+    expect(run('touchVerb', c, { ru }).length).toBeGreaterThan(0);
+  });
+
+  it('пустое имя: пустой результат и ведущая кавычка — красно', () => {
+    expect(emptyNameBroken('{{name}}!')).toBe('');
+    expect(emptyNameBroken('«{{name}}, смотри!»')).toBeNull();
+    expect(emptyNameBroken('«{{name}} смотри!»')).not.toBeNull();
+  });
+
+  it('order: вопрос «нажми на» — красно, «разложи по порядку» — зелёно', () => {
+    const c = goodCorpus();
+    const ru = localeFor(c);
+    const en: Record<string, unknown> = {};
+    const order = taskOf(c, 0, 'order');
+    setKey(ru, order.promptKey, 'Разложи по порядку: три, четыре, пять.');
+    setKey(en, order.promptKey, 'Put the piles in order: three, four, five.');
+    expect(run('orderPrompt', c, { ru, en })).toEqual([]);
+    setKey(ru, order.promptKey, 'Нажми на кучки: три, четыре, пять.');
+    expectRed('orderPrompt', c, `ru ${order.promptKey} — «Нажми на»`, { ru, en });
+    setKey(ru, order.promptKey, 'Разложи по порядку.');
+    setKey(en, order.promptKey, 'Tap the piles: three, four, five.');
+    expectRed('orderPrompt', c, `en ${order.promptKey} — «Tap the»`, { ru, en });
+  });
+
+  it('match на 5-6: нижняя сторона из четырёх точек — красно, карточка-число — зелёно', () => {
+    const c = goodCorpus();
+    const match = taskOf(c, 0, 'match');
+    expect(run('matchDotSide56', c)).toEqual([]);
+    match.pairs[0].right = { labelKey: match.pairs[0].right.labelKey, shape: 'dot', count: 4, layout: 'dice' };
+    expectRed('matchDotSide56', c, 'нижняя сторона — 4 фигур');
+    match.pairs[0].right = { labelKey: match.pairs[0].right.labelKey, numeral: 4 };
+    expect(run('matchDotSide56', c)).toEqual([]);
+  });
+});
+
 describe('гард корпуса: пустое имя в реплике Tali (раунд 4, Д7)', () => {
   it('обращение в начале и конце вырезается без следов; обращение без запятой — красно', () => {
     expect(emptyNameBroken('{{name}}, смотри!')).toBeNull();

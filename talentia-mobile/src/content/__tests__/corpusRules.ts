@@ -477,19 +477,34 @@ export function nameOutsideVocative(text: string): boolean {
  */
 export function emptyNameBroken(text: string): string | null {
   const out = applyName(text, '');
-  return /^\s*[,!.?…—–-]|^\p{Ll}|\s{2}|\s[,!.?…]|,[,!.?…]|\{\{/u.test(out) ? out : null;
+  // пустой результат — немой пузырь; ведущая кавычка не прячет запятую и строчную (раунд 5)
+  return /^\s*$|^\s*[«"„]?\s*[,!.?…—–-]|^[«"„]?\s*\p{Ll}|\s{2}|\s[,!.?…]|,[,!.?…]|\{\{/u.test(out) ? out : null;
 }
 
 /**
  * Глагол касания-пересчёта: «трогай», «коснись», «веди пальцем», en touch (раунд 4, Д5). В
  * плитках `match`, `order`, `choose` касание — выбор или пара: «трогай каждую фигуру» сбивает
  * ребёнка формулировкой, и ошибка механики идёт в зачёт навыка. Пересчёт касанием — только у
- * кучки-стимула (`stimulus.count`), где касание ничего не выбирает. «Нажми на кучки» — выбор,
- * не пересчёт, и не ловится.
+ * кучки-стимула (`stimulus.count`), где касание ничего не выбирает. Разовое «нажми» — выбор, не
+ * пересчёт, и не ловится; «нажимай на каждую» — пересчёт (раунд 5, `localization-qa`, `qa-engineer`).
  */
 export const TOUCH_VERB = words(
-  '(?:по)?трога\\p{L}*|тронь|дотрон\\p{L}*|коснись|коснитесь|касай\\p{L}*|(?:про)?вед(?:и|ём|ем)\\s+пальц\\p{L}*|пальцем\\s+по|touch\\p{L}*|(?:slide|run|move)\\s+your\\s+finger',
+  [
+    '(?:по)?трога\\p{L}*|тронь|дотрон\\p{L}*|(?:при)?коснись|(?:при)?коснитесь|(?:при)?касай\\p{L}*',
+    '(?:про)?вед(?:и|ём|ем)\\s+пальц\\p{L}*|пальцем\\s+по|покажи\\s+пальц\\p{L}*|пальчик\\p{L}*',
+    'ткни|тыкн\\p{L}*|тыкай|(?:нажимай|показывай)\\s+на\\s+кажд\\p{L}*',
+    'touch\\p{L}*|(?:slide|run|move)\\s+your\\s+finger|tap\\s+(?:on\\s+)?each|point\\s+(?:to|at)\\s+each',
+  ].join('|'),
 );
+
+/**
+ * Вопрос `order` называет механику «лоток → место» (FORMATS.md; раунд 5, Е1): «разложи / поставь по
+ * порядку». «Нажми на кучки: три, четыре, пять» — три перевыбора, ничего не встаёт на место.
+ */
+export const ORDER_TAP_PROMPT = words('нажми\\s+на|нажимай|тапни|tap\\s+(?:on\\s+)?the|tap\\s+each|press\\s+the');
+
+/** Точек на нижней стороне пары `match` на 5–6: узнаются без пересчёта (раунд 5, `child-ux-specialist`). */
+export const MATCH_DOT_SIDE_MAX_56 = 3;
 
 /** Фигур на пересчёт в плитках одного задания на 5-6 (`screenLoad`, `child-ux-specialist`). */
 export const SCREEN_COUNT_56 = 12;
@@ -516,7 +531,11 @@ export const AFFIX_AFTER_SLOT = /\}\}[»"'’\-]?\p{L}/u;
 export const PAST_ROOTS = [
   'справил', 'смог', 'нашёл', 'нашел', 'нашл', 'угадал', 'решил', 'сделал', 'посчитал', 'понял', 'запомнил', 'путал',
   'перепутал', 'запутал', 'ошиб', 'сбил', 'помог',
+  // раунд 5 (`localization-qa`): глаголы счёта и похвалы; приставки — `PAST_PREFIX`
+  'считал', 'гадал', 'брал', 'соединил', 'нажал', 'старал', 'устал', 'заметил', 'увидел', 'сумел',
 ];
+/** Приставки перед корнями: «Сосчитал!», «Досчитала!», «Отгадал!», «Выбрал верно!». */
+const PAST_PREFIX = '(?:по|со|до|на|пере|от|вы|у|при|за|раз|рас)?';
 /**
  * Подлежащие задач и жителей, кроме местоимений и Tali: имена жителей (из реестра, когда
  * появится) и нарицательные персонажи задач («заяц», «мама»). Иначе гард примет «Айбек нашёл»
@@ -526,8 +545,9 @@ export const KNOWN_SUBJECTS: string[] = [];
 const THIRD_PERSON = ['я', 'мы', 'он', 'она', 'оно', 'они', 'кто', 'тали', 'tali'];
 /** Слова, которые выглядят родовыми после «ты», но не о ребёнке: «ты сначала…», «ты мой друг». */
 const NOT_GENDERED = ['сначала', 'мой', 'твой', 'свой'];
-// Среднее слово после «ты» — не глагол 2-го лица: «Ты видишь угол?» — не род ребёнка.
-const YOU_MIDDLE = String.raw`(?:(?!\p{L}*шь(?:ся)?\s)\p{L}+\s+)?`;
+// Средние слова после «ты» (до трёх: «Ты сегодня очень старался», раунд 5) — не глагол 2-го лица:
+// «Ты видишь угол?» — не род ребёнка.
+const YOU_MIDDLE = String.raw`(?:(?!\p{L}*шь(?:ся)?\s)\p{L}+\s+){0,3}`;
 const YOU_GENDERED = [
   new RegExp(String.raw`(?<!\p{L})ты\s+${YOU_MIDDLE}(\p{L}+(?:л|ла|лся|лась))(?!\p{L})`, 'giu'),
   new RegExp(String.raw`(?<!\p{L})ты\s+${YOU_MIDDLE}(\p{L}+(?:ый|ий|ой|ая|яя))(?!\p{L})`, 'giu'),
@@ -536,7 +556,7 @@ const YOU_GENDERED = [
 const SELF = /(?<!\p{L})(сам|сама)(?!\p{L})/giu;
 const GENDERED_WITHOUT_SUBJECT = [
   // окончание — только родовое: «посчитали» (мы) и «нашлось» — не род ребёнка
-  new RegExp(String.raw`(?<!\p{L})((?:${PAST_ROOTS.join('|')})(?:а|ла|ся|ась|лся|лась)?)(?!\p{L})`, 'giu'),
+  new RegExp(String.raw`(?<!\p{L})(${PAST_PREFIX}(?:${PAST_ROOTS.join('|')})(?:а|ла|ся|ась|лся|лась)?)(?!\p{L})`, 'giu'),
   /(?<!\p{L})(готов|готова|рад|рада|прав|права|уверен|уверена|должен|должна|согласен|согласна)(?!\p{L})/giu,
 ];
 
@@ -1262,17 +1282,47 @@ export const RULES = {
     // Раунд 4, Д5 (`curriculum-content-reviewer`): «Трогай всё по разу» в `match` и `order` — на
     // экране касание плитки выбирает её и создаёт пару. Глагол касания — только у задания с
     // кучкой-стимулом. Проверяются все локали, где ключ есть.
-    title: 'глагол касания («трогай», «коснись», «веди пальцем», touch) в вопросе и подсказке — только у задания с кучкой-стимулом (stimulus.count)',
+    title: 'глагол касания («трогай», «коснись», «веди пальцем», touch) в вопросе, подсказке и объяснении — только у задания с кучкой-стимулом (stimulus.count)',
     check: (corpus, locales) =>
       tasksOf(corpus).flatMap(({ task, at }) => {
         if (task.stimulus?.count !== undefined) return [];
-        return [task.promptKey, task.hintKey].flatMap((key) =>
+        // объяснение тоже: «Трогай каждую и считай» после ответа учит тому же (раунд 5)
+        return [task.promptKey, task.hintKey, ...(task.explainKey ?? [])].flatMap((key) =>
           (Object.entries(locales) as [string, unknown][]).flatMap(([lang, locale]) => {
             const text = lookup(locale, key);
             const m = typeof text === 'string' ? TOUCH_VERB.exec(text) : null;
             return m ? [`${at}: ${lang} ${key} — «${m[0]}»: касание в плитке — выбор, а не пересчёт; пересчёт касанием — только у кучки-стимула`] : [];
           }),
         );
+      }),
+  },
+
+  orderPrompt: {
+    // Раунд 5, Е1 (`curriculum-content-reviewer`): «Нажми на кучки: три, четыре, пять» — на экране
+    // три перевыбора в лотке, ничего не встаёт на место. Механика `order` — «лоток → место».
+    title: 'вопрос order называет раскладку («разложи / поставь по порядку»), а не нажатие («нажми на», tap the)',
+    check: (corpus, locales) =>
+      formatTasksOf(corpus).flatMap(({ task, at }) => {
+        if (task.format !== 'order') return [];
+        return (Object.entries(locales) as [string, unknown][]).flatMap(([lang, locale]) => {
+          const text = lookup(locale, task.promptKey);
+          const m = typeof text === 'string' ? ORDER_TAP_PROMPT.exec(text) : null;
+          return m ? [`${at}: ${lang} ${task.promptKey} — «${m[0]}»: в order предмет кладут на место; «разложи по порядку»`] : [];
+        });
+      }),
+  },
+
+  matchDotSide56: {
+    // Раунд 5 (`child-ux-specialist`, `design-lead`): при выбранной кучке первое касание другой
+    // стороны ставит пару. Если и там надо пересчитывать (точки 4–5), пересчёт касаниями ставит
+    // случайные пары. На 5–6 считается только верхняя сторона; нижняя — точки ≤ 3 или карточка-число.
+    title: `match на 5-6: нижняя сторона пары — точки не больше ${MATCH_DOT_SIDE_MAX_56} или карточка-число`,
+    check: (corpus) =>
+      formatTasksOf(corpus).flatMap(({ task, at, lesson }) => {
+        if (task.format !== 'match' || lesson.band !== '5-6') return [];
+        return task.pairs
+          .filter((p) => p.right.shape !== undefined && (p.right.count ?? 1) > MATCH_DOT_SIDE_MAX_56)
+          .map((p) => `${at}/${p.id}: нижняя сторона — ${p.right.count} фигур; на 5-6 не больше ${MATCH_DOT_SIDE_MAX_56} или карточка-число`);
       }),
   },
 

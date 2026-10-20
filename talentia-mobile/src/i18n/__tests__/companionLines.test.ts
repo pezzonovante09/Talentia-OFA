@@ -36,12 +36,16 @@ const base = (key: string) => key.replace(PLURAL, '').replace(GENDER, '');
  * {{count}} рядом с {{object_count}}, «найди {{object_count}}» и en is / are перед ним — красно.
  */
 const COUNT_GLUED = /\{\{\s*count\s*\}\}\s*\p{L}/u;
-const OBJECT_COUNT_AFTER_ACC_RU = /(?<!\p{L})(найди|возьми|положи|дай|собери|покажи|принеси)\s+\{\{\s*object_count/iu;
+// любое повелительное на -и / -й / -ь («добавь», «выбери», «сосчитай»), кроме наречий и
+// междометий с тем же концом (раунд 5, `localization-qa`): «добавь одна ягода»
+const NOT_IMPERATIVE = '(?:ой|эй|здесь|теперь|опять|вот|тут)';
+const OBJECT_COUNT_AFTER_ACC_RU = new RegExp(String.raw`(?<!\p{L})(?!${NOT_IMPERATIVE}\s)(\p{L}+(?:и|й|ь))\s+\{\{\s*object_count`, 'iu');
 /** en is / are и ru глагол настоящего времени мн. ч. перед числом с предметом — только в plural-ключе. */
 const OBJECT_COUNT_AFTER_BE_EN = /\b(is|are|was|were)\s+\{\{\s*object_count/i;
 // настоящее 3 л. мн. и ед. ч. («лежат / лежит», возвратное «катятся / катится») и прошедшее
 // «было / лежали / осталось» — раунд 3, В8; ед. ч. — раунд 4
-const OBJECT_COUNT_AFTER_VERB_RU = /\p{L}+(?:(?:ят|ат|ут|ют|ит|ет|ёт)(?:ся)?|л[аои]?(?:сь|ся)?)\s+\{\{\s*object_count/iu;
+// «Тут {{object_count}}!» и «Привет …» — не глагол (раунд 5)
+const OBJECT_COUNT_AFTER_VERB_RU = /(?<!\p{L})(?!(?:тут|нет|привет)\s)\p{L}+(?:(?:ят|ат|ут|ют|ит|ет|ёт)(?:ся)?|л[аои]?(?:сь|ся)?)\s+\{\{\s*object_count/iu;
 
 export function companionProblems(banks: Partial<Record<Lang, Bank>>): string[] {
   const bad: string[] = [];
@@ -186,6 +190,13 @@ describe('банк реплик Tali', () => {
       expect(one('ru', { 'companion.x.0': 'Вот лежит {{object_count}}.' }).join()).toMatch(/глагол согласуется/);
       expect(one('ru', { 'companion.x.0': 'Тут растёт {{object_count}}.' }).join()).toMatch(/глагол согласуется/);
       expect(one('ru', { 'companion.x.0': 'Вот катится {{object_count}}!' }).join()).toMatch(/глагол согласуется/);
+      // раунд 5: любое повелительное; «Тут» и «Ой» — не глагол
+      for (const verb of ['Добавь', 'Выбери', 'Сосчитай', 'Убери', 'Отдай']) {
+        expect(one('ru', { 'companion.x.0': `${verb} {{object_count}}.` }).join()).toMatch(/после «найди/);
+      }
+      expect(one('ru', { 'companion.x.0': 'Тут {{object_count}}!' })).toEqual([]);
+      expect(one('ru', { 'companion.x.0': 'Ой, тут {{object_count}}!' })).toEqual([]);
+      expect(one('ru', { 'companion.x.0': 'Здесь {{object_count}}.' })).toEqual([]);
       expect(one('en', { 'companion.x.0_one': 'Here is {{object_count}}!', 'companion.x.0_other': 'Here are {{object_count}}!' })).toEqual([]);
     });
 

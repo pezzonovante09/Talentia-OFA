@@ -35,8 +35,15 @@ const dots = (id: string, count: Count, correct: boolean) => ({
  */
 const numeral = (id: string, n: Count, correct: boolean) => ({ id, labelKey: COMMON[n], numeral: n, correct });
 
-/** Сторона пары «точки» в `match`. */
-const dotSide = (count: Count): Media => ({ labelKey: COMMON[count], shape: 'dot', count, layout: 'dice' });
+/** Сторона пары «точки» в `match`. На 5–6 — не больше трёх: столько узнаётся без пересчёта. */
+const dotSide = (count: 1 | 2 | 3): Media => ({ labelKey: COMMON[count], shape: 'dot', count, layout: 'dice' });
+
+/**
+ * Сторона пары «карточка-число» в `match`, озвучена числом (№81). На 5–6 в паре считается только
+ * верхняя сторона — кучка: точки 4–5 ребёнок тоже пересчитывал бы касаниями, а при выбранной кучке
+ * первое касание другой стороны ставит пару (раунд 5, `child-ux-specialist`, SCREENS.md 3.3).
+ */
+const numeralSide = (n: Count): Media => ({ labelKey: COMMON[n], numeral: n });
 
 /**
  * Урок 1. Начинается с узнавания количества, а не со счёта: до трёх ребёнок видит
@@ -152,7 +159,9 @@ const lessonCountToFive: Lesson = {
   id: 'nv-count-l2',
   titleKey: 'content.numbers.l2.title',
   band: '5-6',
-  hook: { taliPose: 'found', lineKey: 'content.numbers.l2.hook' },
+  // Tali просит помощи (роль урока 2): «Считаю всё для карты. Поможешь?» — пример становится
+  // «вот как я считаю», а задания — той самой помощью (раунд 5, В2).
+  hook: { taliPose: 'point', lineKey: 'content.numbers.l2.hook' },
   atlasEntryKey: 'content.numbers.l2.atlas',
   model: {
     skill: 'count-to-5',
@@ -216,12 +225,12 @@ const lessonCountToFive: Lesson = {
       promptKey: 'content.numbers.l2.t4.prompt',
       hintKey: 'content.numbers.l2.t4.hint',
       explainKey: ['content.numbers.l2.t4.explain'],
-      // Четыре и пять — вразброс: в плитке не больше трёх в ряд (Р15). Не «кубик»: кубик против
-      // точек-кубика соединялся бы по узору (А12).
+      // Четыре и пять — вразброс: в плитке не больше трёх в ряд (Р15). Нижняя сторона —
+      // карточки-числа, а не точки: считается только кучка (раунд 5, `numeralSide`).
       pairs: [
-        { id: 'p1', left: { labelKey: 'content.numbers.l2.t4.berries', shape: 'berry', count: 5, layout: 'scatter' }, right: dotSide(5) },
-        { id: 'p2', left: { labelKey: 'content.numbers.l2.t4.stones', shape: 'stone', count: 3, layout: 'row' }, right: dotSide(3) },
-        { id: 'p3', left: { labelKey: 'content.numbers.l2.t4.leaves', shape: 'leaf', count: 4, layout: 'scatter' }, right: dotSide(4) },
+        { id: 'p1', left: { labelKey: 'content.numbers.l2.t4.berries', shape: 'berry', count: 5, layout: 'scatter' }, right: numeralSide(5) },
+        { id: 'p2', left: { labelKey: 'content.numbers.l2.t4.stones', shape: 'stone', count: 3, layout: 'row' }, right: numeralSide(3) },
+        { id: 'p3', left: { labelKey: 'content.numbers.l2.t4.leaves', shape: 'leaf', count: 4, layout: 'scatter' }, right: numeralSide(4) },
       ],
     },
   ],
@@ -321,10 +330,11 @@ const lessonCountToTen: Lesson = {
       hintKey: 'content.numbers.l3.t4.hint',
       explainKey: ['content.numbers.l3.t4.explain'],
       // Не те же 1/3/5, что в t2 (`order`): иначе два задания урока считают одно и то же.
+      // Нижняя сторона — карточки-числа, как в l2-t4 (`numeralSide`).
       pairs: [
-        { id: 'p1', left: { labelKey: 'content.numbers.l3.t4.stones', shape: 'stone', count: 5, layout: 'scatter' }, right: dotSide(5) },
-        { id: 'p2', left: { labelKey: 'content.numbers.l3.t4.leaves', shape: 'leaf', count: 2, layout: 'row' }, right: dotSide(2) },
-        { id: 'p3', left: { labelKey: 'content.numbers.l3.t4.berries', shape: 'berry', count: 4, layout: 'scatter' }, right: dotSide(4) },
+        { id: 'p1', left: { labelKey: 'content.numbers.l3.t4.stones', shape: 'stone', count: 5, layout: 'scatter' }, right: numeralSide(5) },
+        { id: 'p2', left: { labelKey: 'content.numbers.l3.t4.leaves', shape: 'leaf', count: 2, layout: 'row' }, right: numeralSide(2) },
+        { id: 'p3', left: { labelKey: 'content.numbers.l3.t4.berries', shape: 'berry', count: 4, layout: 'scatter' }, right: numeralSide(4) },
       ],
     },
   ],
