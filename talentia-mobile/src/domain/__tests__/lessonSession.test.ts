@@ -13,6 +13,7 @@ import {
   startLessonSession,
   type LessonAnswer,
   type LessonSessionState,
+  type LessonStep,
   type StartLessonInput,
 } from '../lessonSession';
 
@@ -499,7 +500,7 @@ describe('нижний ряд match', () => {
     const s = toTasks(start(l, { seed: 3 }));
     const step = lessonStepOf(s);
     expect(step.kind).toBe('task');
-    const right = (step as { rightOrder: string[] }).rightOrder;
+    const right = (step as Extract<LessonStep, { kind: 'task' }>).rightOrder as string[];
     expect([...right].sort()).toEqual(['p1', 'p2', 'p3']);
     expect(right).not.toEqual(['p1', 'p2', 'p3']);
     expect(lessonStepOf(toTasks(start(l, { seed: 3 })))).toEqual(step);
