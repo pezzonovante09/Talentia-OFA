@@ -72,12 +72,30 @@ export type LessonCommit = {
 };
 
 /**
+ * Итог собран от устаревшего счётчика уроков: пока этот урок шёл (снимок, второй экран), другой
+ * уже записан. Записать — значит откатить счётчик и дать двум урокам один `lastSeenLesson`.
+ */
+export class LessonStaleError extends Error {
+  constructor(
+    readonly expected: number,
+    readonly actual: number,
+  ) {
+    super(`Счётчик уроков ${actual}, итог ждёт ${expected}`);
+    this.name = 'LessonStaleError';
+  }
+}
+
+/**
  * Итог урока: прохождение, навыки, атлас и счётчик уроков — вместе. Только при согласии
  * `account_local`; иначе `LessonConsentRequiredError` и не пишется ничего — прогон теряется (№124).
+ * Счётчик сверяется в той же транзакции: `nextLessonNumber` обязан быть больше записанного,
+ * иначе `LessonStaleError` и ничего не пишется (ревью К1, 2026-10-24).
  */
 export async function commitLesson(db: SqlDb, childId: string, c: LessonCommit, at: string): Promise<void> {
   if (c.run.childId !== childId) throw new Error('Прохождение другого ребёнка');
   await withLessonWrite(db, childId, async (tx) => {
+    const counter = (await loadChildState(tx, childId, 'lessonCounter')) ?? 0;
+    if (c.nextLessonNumber <= counter) throw new LessonStaleError(counter + 1, c.nextLessonNumber);
     await appendLessonRun(tx, c.run);
     await saveChildState(tx, childId, 'skills', c.skills, at);
     await saveChildState(tx, childId, 'atlas', c.atlas, at);
