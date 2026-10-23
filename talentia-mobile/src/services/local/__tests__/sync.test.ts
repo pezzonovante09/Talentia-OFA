@@ -2,9 +2,7 @@ import type { ConsentEvent } from '../../../domain/consent';
 import { emptySkill, type SkillState } from '../../../domain/mastery';
 import type { LessonRun } from '../../../domain/parentReport';
 import { useSyncStatusStore } from '../../syncStatus';
-import { saveChildState } from '../childState';
 import { appendConsentEvent } from '../consentLog';
-import { appendLessonRun } from '../lessonRuns';
 import {
   consentPlan,
   runBackgroundSync,
@@ -15,7 +13,7 @@ import {
   type RemotePort,
   type SyncProblemCode,
 } from '../sync';
-import { memoryDb } from './nodeSql';
+import { memoryDb, writeLessonRun, writeLessonState } from './nodeSql';
 
 let clock = 0;
 const at = () =>
@@ -63,8 +61,8 @@ function remote(reject: (e: ConsentEvent) => SyncProblemCode | null = () => null
 
 async function withData() {
   const db = await memoryDb();
-  await appendLessonRun(db, run('r-1'));
-  await saveChildState(db, 'kid-a', 'skills', [emptySkill('count')], at());
+  await writeLessonRun(db, run('r-1'));
+  await writeLessonState(db, 'kid-a', 'skills', [emptySkill('count')], at());
   return db;
 }
 
@@ -118,7 +116,7 @@ describe('синхронизация только при согласии на �
     const { port, sent } = remote();
     await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS);
     await appendConsentEvent(db, ev({ id: 'rv-1', action: 'revoke' }), 'owner');
-    await appendLessonRun(db, run('r-2'));
+    await writeLessonRun(db, run('r-2'));
     expect((await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS)).blocked).toBe(true);
     expect(sent.consent).toEqual(['g-1', 'rv-1']);
     expect(sent.runs).toHaveLength(1);
@@ -185,13 +183,13 @@ describe('синхронизация только при согласии на �
     // данные не ушли
     expect(sent.consent).toEqual(['g-1', 'rv-1']);
     expect(sent.runs).toHaveLength(0);
-    await appendLessonRun(db, run('r-2'));
+    await writeLessonRun(db, run('r-2'));
     expect((await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS)).blocked).toBe(true);
     expect(sent.runs).toHaveLength(0);
   });
 
   it('события аккаунта уходят всегда', async () => {
-    const db = await memoryDb();
+    const db = await memoryDb(undefined, { account: false });
     await appendConsentEvent(db, ev({ id: 'acc', scope: 'account_local', childId: null, confirmedBy: 'signup' }), 'owner');
     const { port, sent } = remote();
     expect(await syncAccount(db, port, NOW)).toBe(1);

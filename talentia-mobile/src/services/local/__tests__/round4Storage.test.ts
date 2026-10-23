@@ -12,10 +12,10 @@ import { appendRoutineAmendment, appendTrial } from '../abaLog';
 import { ABA_STATE_KEYS, loadChildState, saveChildState } from '../childState';
 import { commitRoutineExchange, commitRoutineRun } from '../commit';
 import { appendConsentEvent } from '../consentLog';
-import { appendLessonRun, lessonRunsOf } from '../lessonRuns';
+import { lessonRunsOf } from '../lessonRuns';
 import { applyRetention, exportChild, exportForSpecialist, revokeAbaProcessing, trustedNow } from '../purge';
 import type { SqlDb } from '../sql';
-import { asAbaWriter, memoryDb } from './nodeSql';
+import { asAbaWriter, memoryDb, writeLessonRun } from './nodeSql';
 
 const OLD = '2025-09-01T10:00:00.000Z';
 const FRESH = '2026-10-01T10:00:00.000Z';
@@ -158,7 +158,7 @@ describe('lesson_runs.started_at — единый формат UTC с милли
 
   it('время с поясом и без миллисекунд нормализуется в колонке, тело — как пришло', async () => {
     const db = await memoryDb();
-    await appendLessonRun(db, run('a', '2026-10-01T14:30:00+05:00'));
+    await writeLessonRun(db, run('a', '2026-10-01T14:30:00+05:00'));
     const [row] = await db.all<{ started_at: string }>('SELECT started_at FROM lesson_runs');
     expect(row.started_at).toBe('2026-10-01T09:30:00.000Z');
     expect((await lessonRunsOf(db, 'kid'))[0].startedAt).toBe('2026-10-01T14:30:00+05:00');
@@ -167,9 +167,9 @@ describe('lesson_runs.started_at — единый формат UTC с милли
   it('срок хранения сравнивает моменты, а не строки: пояс и отсутствие миллисекунд не сдвигают удаление', async () => {
     const db = await memoryDb();
     // граница — 2025-10-19T10:00:00.500Z
-    await appendLessonRun(db, run('tz-old', '2025-10-19T14:30:00+05:00')); // 09:30Z — старше
-    await appendLessonRun(db, run('noms-old', '2025-10-19T10:00:00Z')); // на 500 мс раньше границы
-    await appendLessonRun(db, run('tz-new', '2025-10-19T15:30:00+05:00')); // 10:30Z — моложе
+    await writeLessonRun(db, run('tz-old', '2025-10-19T14:30:00+05:00')); // 09:30Z — старше
+    await writeLessonRun(db, run('noms-old', '2025-10-19T10:00:00Z')); // на 500 мс раньше границы
+    await writeLessonRun(db, run('tz-new', '2025-10-19T15:30:00+05:00')); // 10:30Z — моложе
     await applyRetention(db, NOW);
     expect((await lessonRunsOf(db, 'kid')).map((r) => r.id)).toEqual(['tz-new']);
   });

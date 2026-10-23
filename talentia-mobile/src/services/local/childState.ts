@@ -77,6 +77,12 @@ export const ABA_STATE_KEYS = [
   'abaRoutineSettingOpen',
 ] as const satisfies readonly ChildStateKey[];
 
+/**
+ * Ключи итогов урока, которые пишутся только при согласии `account_local` (№124). Запись в обход
+ * `commit.ts` отклоняет сама база (`schema.ts`, миграция 13 — список там продублирован).
+ */
+export const LESSON_STATE_KEYS = ['skills', 'atlas', 'lessonCounter'] as const satisfies readonly ChildStateKey[];
+
 /** Что удаляет отзыв согласия на ABA: состояние и пауза — пауза тоже говорит, что режим был. */
 export const ABA_DELETED_KEYS = [...ABA_STATE_KEYS, 'abaPaused'] as const satisfies readonly ChildStateKey[];
 

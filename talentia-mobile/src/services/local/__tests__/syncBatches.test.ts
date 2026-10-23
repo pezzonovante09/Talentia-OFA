@@ -6,9 +6,7 @@
 import type { ConsentEvent } from '../../../domain/consent';
 import { emptySkill } from '../../../domain/mastery';
 import type { LessonRun } from '../../../domain/parentReport';
-import { saveChildState } from '../childState';
-import { appendConsentEvent } from '../consentLog';
-import { appendLessonRun } from '../lessonRuns';
+import { appendConsentEvent, insertConsentEvent } from '../consentLog';
 import { revokeAbaProcessing } from '../purge';
 import type { SqlDb } from '../sql';
 import {
@@ -29,7 +27,7 @@ import {
   type SyncOptions,
   type SyncProblemCode,
 } from '../sync';
-import { memoryDb } from './nodeSql';
+import { memoryDb, writeLessonRun, writeLessonState } from './nodeSql';
 
 let clock = 0;
 const at = () =>
@@ -59,7 +57,7 @@ const run = (id: string): LessonRun => ({
 });
 
 async function addRuns(db: SqlDb, n: number, from = 1): Promise<void> {
-  for (let i = from; i < from + n; i += 1) await appendLessonRun(db, run(`r-${i}`));
+  for (let i = from; i < from + n; i += 1) await writeLessonRun(db, run(`r-${i}`));
 }
 
 /** Порт, который записывает всё, что ушло; поведение каждого вызова можно подменить. */
@@ -183,7 +181,7 @@ describe('нет профиля ребёнка', () => {
   ] as [string, SyncOptions][])('%s — согласие на облако ждёт, не бросает, данные не уходят', async (_, opts) => {
     const db = await memoryDb();
     await addRuns(db, 3);
-    await saveChildState(db, 'kid-a', 'skills', [emptySkill('count')], at());
+    await writeLessonState(db, 'kid-a', 'skills', [emptySkill('count')], at());
     await appendConsentEvent(db, ev({ id: 'ai', scope: 'companion_ai' }), 'owner');
     await appendConsentEvent(db, ev({ id: 'g-1' }), 'owner');
     const { port, sent } = recorder();
@@ -514,7 +512,7 @@ describe('отказ по существу', () => {
 
   it('проблема потока прохождений не останавливает навыки', async () => {
     const db = await granted(3);
-    await saveChildState(db, 'kid-a', 'skills', [emptySkill('count')], at());
+    await writeLessonState(db, 'kid-a', 'skills', [emptySkill('count')], at());
     const { port, sent } = recorder({ pushLessonRuns: rejecting('no_access') });
 
     const report = await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS);
@@ -646,7 +644,7 @@ describe('отказ по существу', () => {
 
   it('отказ навыкам — проблема skill_state, проход не бросает', async () => {
     const db = await granted(0);
-    await saveChildState(db, 'kid-a', 'skills', [emptySkill('count')], at());
+    await writeLessonState(db, 'kid-a', 'skills', [emptySkill('count')], at());
     const { port } = recorder({ pushSkillStates: rejecting('no_access') });
 
     const report = await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS);
@@ -657,7 +655,7 @@ describe('отказ по существу', () => {
 
   it('пока проблема навыков открыта, изменённые навыки не отправляются', async () => {
     const db = await granted(0);
-    await saveChildState(db, 'kid-a', 'skills', [emptySkill('count')], at());
+    await writeLessonState(db, 'kid-a', 'skills', [emptySkill('count')], at());
     let calls = 0;
     const { port } = recorder({
       pushSkillStates: async () => {
@@ -666,7 +664,7 @@ describe('отказ по существу', () => {
       },
     });
     await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS);
-    await saveChildState(db, 'kid-a', 'skills', [emptySkill('count'), emptySkill('compare')], at());
+    await writeLessonState(db, 'kid-a', 'skills', [emptySkill('count'), emptySkill('compare')], at());
 
     await syncChild(db, port, 'kid-a', 'ru-1', NOW, OPTS);
 
@@ -681,7 +679,7 @@ describe('отзыв и новое согласие одним проходом 
   async function revokedAndRegranted() {
     const db = await memoryDb();
     await addRuns(db, 3);
-    await saveChildState(db, 'kid-a', 'skills', [emptySkill('count')], at());
+    await writeLessonState(db, 'kid-a', 'skills', [emptySkill('count')], at());
     await appendConsentEvent(db, ev({ id: 'g-1' }), 'owner');
     const { port: first, sent: before } = recorder();
     await syncChild(db, first, 'kid-a', 'ru-1', NOW, OPTS);
@@ -881,7 +879,9 @@ describe('устаревшие события согласия (B2)', () => {
     await appendConsentEvent(db, ev({ id: 'acc-g', ...acc, confirmedBy: 'signup' }), 'owner');
     const refusing = refusingEvent('acc-g');
     await syncAccount(db, refusing, NOW);
-    await appendConsentEvent(db, ev({ id: 'acc-rv', ...acc, action: 'revoke' }), 'owner');
+    // отзыв аккаунта приложение пишет только вместе с удалением аккаунта (№124), а синхронизация
+    // должна быть готова к нему: событие — напрямую, в обход appendConsentEvent
+    await db.transaction((tx) => insertConsentEvent(tx, ev({ id: 'acc-rv', ...acc, action: 'revoke' }), 'owner'));
     // предусловие: отзыв аккаунта доставлен
     expect(await syncAccount(db, refusing, NOW)).toBe(1);
     await retrySyncProblem(db, '', 'acc-g');

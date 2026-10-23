@@ -89,7 +89,7 @@ describe('удаление ребёнка везде', () => {
     expect(order).toEqual(['server']);
     expect(await trialsOfTarget(db, 'kid-a', 't')).toEqual([]);
     expect(await trialsOfTarget(db, 'kid-b', 't')).toHaveLength(1);
-    expect((await readConsentLog(db))[0].childId).toBe(PSEUDO);
+    expect((await readConsentLog(db)).find((e) => e.scope !== 'account_local')?.childId).toBe(PSEUDO);
     expect(remaining()).toEqual(['talentia:child:kid-b:settings', 'talentia:telemetry:q', 'other-app']);
     expect(calls).toEqual(
       expect.arrayContaining(['dir:voice/child/kid-a', 'dir:export', 'notify:kid-a']),

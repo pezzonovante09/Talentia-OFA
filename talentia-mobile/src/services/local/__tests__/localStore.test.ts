@@ -8,7 +8,7 @@ import { appendConsentEvent, readConsentLog } from '../consentLog';
 import { appendLessonRun, lessonRunsOf } from '../lessonRuns';
 import { applyRetention, clearChildProgress, exportChild, purgeChild, retentionCutoff, wipeDevice } from '../purge';
 import { MIGRATIONS, migrate } from '../schema';
-import { asAbaWriter, memoryDb } from './nodeSql';
+import { asAbaWriter, asLessonWriter, memoryDb } from './nodeSql';
 
 let n = 0;
 function trial(over: Partial<AbaTrial> = {}): AbaTrial {
@@ -148,7 +148,7 @@ describe('журнал согласий', () => {
     const b = consent({ action: 'revoke' });
     await appendConsentEvent(db, a, 'owner');
     await appendConsentEvent(db, b, 'owner');
-    expect(await readConsentLog(db)).toEqual([a, b]);
+    expect((await readConsentLog(db)).filter((e) => e.scope !== 'account_local')).toEqual([a, b]);
   });
 
   it('событие раньше последнего и противоречивое событие не пишутся', async () => {
@@ -171,8 +171,8 @@ describe('журнал согласий', () => {
 describe('состояние по ребёнку', () => {
   it('у каждого ребёнка свои коробки', async () => {
     const db = await memoryDb();
-    await saveChildState(db, 'kid-a', 'skills', [{ ...emptySkill('count'), box: 3 }], NOW);
-    await saveChildState(db, 'kid-b', 'skills', [emptySkill('count')], NOW);
+    await asLessonWriter(db, 'kid-a', (tx) => saveChildState(tx, 'kid-a', 'skills', [{ ...emptySkill('count'), box: 3 }], NOW));
+    await asLessonWriter(db, 'kid-b', (tx) => saveChildState(tx, 'kid-b', 'skills', [emptySkill('count')], NOW));
     expect((await loadChildState(db, 'kid-a', 'skills'))?.[0].box).toBe(3);
     expect((await loadChildState(db, 'kid-b', 'skills'))?.[0].box).toBe(1);
     expect(await loadChildState(db, 'kid-c', 'skills')).toBeUndefined();
@@ -180,8 +180,8 @@ describe('состояние по ребёнку', () => {
 
   it('перезапись ключа — последнее значение', async () => {
     const db = await memoryDb();
-    await saveChildState(db, 'kid-a', 'lessonCounter', 3, NOW);
-    await saveChildState(db, 'kid-a', 'lessonCounter', 4, NOW);
+    await asLessonWriter(db, 'kid-a', (tx) => saveChildState(tx, 'kid-a', 'lessonCounter', 3, NOW));
+    await asLessonWriter(db, 'kid-a', (tx) => saveChildState(tx, 'kid-a', 'lessonCounter', 4, NOW));
     expect(await loadChildState(db, 'kid-a', 'lessonCounter')).toBe(4);
   });
 });
@@ -192,8 +192,10 @@ describe('удаление и экспорт', () => {
     for (const kid of ['kid-a', 'kid-b']) {
       await asAbaWriter(db, kid, (tx) => appendTrial(tx, kid, trial(), NOW));
       await asAbaWriter(db, kid, (tx) => appendSession(tx, kid, session(`${kid}-s`, 1), NOW));
-      await appendLessonRun(db, run(kid, `${kid}-run`));
-      await saveChildState(db, kid, 'lessonCounter', 7, NOW);
+      await asLessonWriter(db, kid, async (tx) => {
+        await appendLessonRun(tx, run(kid, `${kid}-run`));
+        await saveChildState(tx, kid, 'lessonCounter', 7, NOW);
+      });
       await appendConsentEvent(db, consent({ childId: kid }), 'owner');
     }
     return db;
@@ -206,7 +208,7 @@ describe('удаление и экспорт', () => {
     expect(await lessonRunsOf(db, 'kid-a')).toEqual([]);
     expect(await loadChildState(db, 'kid-a', 'lessonCounter')).toBeUndefined();
     const log = await readConsentLog(db);
-    expect(log.map((e) => e.childId)).toEqual([PSEUDO, 'kid-b']);
+    expect(log.map((e) => e.childId)).toEqual([null, PSEUDO, 'kid-b']);
     expect(await trialsOfTarget(db, 'kid-b', 't-1')).toHaveLength(1);
   });
 
@@ -237,7 +239,8 @@ describe('удаление и экспорт', () => {
     expect(out.profile).toEqual({ name: 'Аля', band: '5-6' });
     expect([out.abaTrials.length, out.abaSessions.length, out.lessonRuns.length]).toEqual([1, 1, 1]);
     expect(out.state).toEqual({ lessonCounter: 7 });
-    expect(out.consentEvents.every((e) => e.childId === 'kid-a')).toBe(true);
+    // согласие на аккаунт — основание для данных ребёнка, оно в экспорте; чужого ребёнка — нет
+    expect(out.consentEvents.map((e) => e.childId)).toEqual([null, 'kid-a']);
   });
 });
 
@@ -251,8 +254,10 @@ describe('псевдоним и срок хранения', () => {
     const db = await memoryDb();
     await asAbaWriter(db, 'kid-a', (tx) => appendTrial(tx, 'kid-a', trial(), '2025-08-01T10:00:00Z'));
     await asAbaWriter(db, 'kid-a', (tx) => appendTrial(tx, 'kid-a', trial(), '2026-09-01T10:00:00Z'));
-    await appendLessonRun(db, { ...run('kid-a', 'old'), startedAt: '2025-07-01T09:00:00Z' });
-    await saveChildState(db, 'kid-a', 'lessonCounter', 9, NOW);
+    await asLessonWriter(db, 'kid-a', async (tx) => {
+      await appendLessonRun(tx, { ...run('kid-a', 'old'), startedAt: '2025-07-01T09:00:00Z' });
+      await saveChildState(tx, 'kid-a', 'lessonCounter', 9, NOW);
+    });
     expect(await applyRetention(db, new Date(NOW))).toBe(2);
     expect(await trialsOfTarget(db, 'kid-a', 't-1')).toHaveLength(1);
     expect(await lessonRunsOf(db, 'kid-a')).toEqual([]);

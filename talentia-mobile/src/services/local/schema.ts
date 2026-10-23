@@ -477,16 +477,41 @@ WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
 )
 BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
 `,
+  // 13 — итоги урока пишутся только при согласии account_local (№124, PARENT.md, «Запись уроков
+  //     под account_local»)
+  //
+  // Как ABA в миграции 3: commit.ts проверяет согласие внутри транзакции записи и на это время
+  // открывает lesson_write_gate для ребёнка. Вставка прохождений и запись навыков, атласа и
+  // счётчика уроков без открытых ворот отклоняются базой. Удаление не гейтится — его держат
+  // purge_gate и retention_gate. Триггера «отзыв только при пустых данных» нет: account_local
+  // отзывается только удалением аккаунта (consentLog.ts).
+  `
+CREATE TABLE lesson_write_gate (child_id TEXT PRIMARY KEY);
+CREATE TRIGGER lesson_runs_need_consent BEFORE INSERT ON lesson_runs
+WHEN NOT EXISTS (SELECT 1 FROM lesson_write_gate WHERE child_id = NEW.child_id)
+BEGIN SELECT RAISE(ABORT, 'lesson_runs: запись только через commit.ts при согласии account_local'); END;
+${['INSERT', 'UPDATE']
+  .map(
+    (op) => `
+CREATE TRIGGER child_state_lesson_need_consent_${op.toLowerCase()} BEFORE ${op} ON child_state
+WHEN NEW.key IN ('skills', 'atlas', 'lessonCounter')
+  AND NOT EXISTS (SELECT 1 FROM lesson_write_gate WHERE child_id = NEW.child_id)
+BEGIN SELECT RAISE(ABORT, 'child_state: итоги урока только через commit.ts при согласии account_local'); END;`,
+  )
+  .join('\n')}
+`,
 ];
 
 /**
- * Ворота удаления, срока хранения и записи ABA открываются и закрываются внутри одной
- * транзакции. Если строка всё же осталась (сбой посреди записи вне транзакции), она бы
+ * Ворота удаления, срока хранения, записи ABA и записи урока открываются и закрываются внутри
+ * одной транзакции. Если строка всё же осталась (сбой посреди записи вне транзакции), она бы
  * пропускала записи без проверки — и после перезапуска. Поэтому при каждом открытии базы
  * ворота закрываются.
  */
 async function closeGates(db: SqlDb): Promise<void> {
-  await db.exec('DELETE FROM aba_write_gate; DELETE FROM purge_gate; DELETE FROM retention_gate;');
+  await db.exec(
+    'DELETE FROM aba_write_gate; DELETE FROM lesson_write_gate; DELETE FROM purge_gate; DELETE FROM retention_gate;',
+  );
 }
 
 /**

@@ -58,9 +58,9 @@ import {
 } from './abaLog';
 import { loadChildState, saveChildState } from './childState';
 import { readConsentLog } from './consentLog';
-import { consentStatus, type GuardianRole } from '../../domain/consent';
+import { consentStatus, isGranted, type GuardianRole } from '../../domain/consent';
 import { CURRENT_CONSENT_TEXTS } from '../../domain/consentTexts';
-import { appendLessonRun } from './lessonRuns';
+import { appendLessonRun, withLessonWrite } from './lessonRuns';
 import type { SqlDb } from './sql';
 
 export type LessonCommit = {
@@ -71,10 +71,13 @@ export type LessonCommit = {
   nextLessonNumber: number;
 };
 
-/** Итог урока: прохождение, навыки, атлас и счётчик уроков — вместе. */
+/**
+ * Итог урока: прохождение, навыки, атлас и счётчик уроков — вместе. Только при согласии
+ * `account_local`; иначе `LessonConsentRequiredError` и не пишется ничего — прогон теряется (№124).
+ */
 export async function commitLesson(db: SqlDb, childId: string, c: LessonCommit, at: string): Promise<void> {
   if (c.run.childId !== childId) throw new Error('Прохождение другого ребёнка');
-  await db.transaction(async (tx) => {
+  await withLessonWrite(db, childId, async (tx) => {
     await appendLessonRun(tx, c.run);
     await saveChildState(tx, childId, 'skills', c.skills, at);
     await saveChildState(tx, childId, 'atlas', c.atlas, at);
@@ -545,11 +548,14 @@ export type AbaPauseResult = 'saved' | 'no_consent' | 'consent_required';
  *
  * Без действующего согласия — ни разу не давали или отозвано — строка `abaPaused` не пишется:
  * она сама метка «режим был», а отзыв её удаляет (аудит 2026-10-06, А1). Проверка и запись —
- * в одной эксклюзивной транзакции: отзыв не встанет между ними.
+ * в одной эксклюзивной транзакции: отзыв не встанет между ними. Без `account_local` — тоже
+ * `no_consent`: без аккаунта на устройство не пишется ничего о ребёнке (№124).
  */
 export async function setAbaPaused(db: SqlDb, childId: string, paused: boolean, at: string): Promise<AbaPauseResult> {
   return db.transaction(async (tx) => {
-    const status = consentStatus(await readConsentLog(tx), 'aba_processing', childId, CURRENT_CONSENT_TEXTS.aba_processing);
+    const log = await readConsentLog(tx);
+    if (!isGranted(log, 'account_local', null, CURRENT_CONSENT_TEXTS.account_local)) return 'no_consent';
+    const status = consentStatus(log, 'aba_processing', childId, CURRENT_CONSENT_TEXTS.aba_processing);
     switch (status) {
       case 'not_asked':
       case 'revoked':

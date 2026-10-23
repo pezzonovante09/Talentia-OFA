@@ -122,7 +122,7 @@ describe('эксклюзивные транзакции', () => {
     await expect(early).rejects.toThrow(/раньше последнего/);
     await write;
     expect(await trialsOfTarget(db, 'kid', 't')).toHaveLength(1);
-    expect((await readConsentLog(db)).map((e) => e.id)).toEqual(['c-late']);
+    expect((await readConsentLog(db)).map((e) => e.id)).toEqual(['test-account-local', 'c-late']);
   });
 });
 
@@ -216,8 +216,10 @@ describe('согласие на данные ABA', () => {
     const db = await dbWithAbaConsent();
     await expect(appendTrial(db, 'kid', trial('tr-1'), NOW)).rejects.toThrow(/при согласии/);
     await expect(saveChildState(db, 'kid', 'abaSessionIndex', 7, NOW)).rejects.toThrow(/при согласии/);
-    // не-ABA состояние пишется как раньше
-    await saveChildState(db, 'kid', 'lessonCounter', 3, NOW);
+    // итоги урока в обход commit.ts база тоже не пускает — у них свои ворота (№124)
+    await expect(saveChildState(db, 'kid', 'lessonCounter', 3, NOW)).rejects.toThrow(/account_local/);
+    // пауза — не данные ABA, пишется без ворот
+    await saveChildState(db, 'kid', 'abaPaused', true, NOW);
   });
 
   it('пауза: не пишется ничего, данные и согласие остаются, после снятия — снова пишется', async () => {

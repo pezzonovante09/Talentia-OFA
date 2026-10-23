@@ -113,9 +113,17 @@ export class RoutineWindowNotAccountedError extends Error {
   }
 }
 
-/** Согласие на текущий текст (любой язык) и не на паузе. Вызывать внутри транзакции записи. */
+/**
+ * Согласие на текущий текст (любой язык) и не на паузе. Вызывать внутри транзакции записи.
+ * Нужно и `account_local` (№124): без согласия на аккаунт на устройство не пишется ничего о
+ * ребёнке, и ABA тоже — экран закрывает режим так же, как без `aba_processing`.
+ */
 export async function requireAbaConsent(tx: SqlDb, childId: string): Promise<void> {
-  if (!isGranted(await readConsentLog(tx), 'aba_processing', childId, CURRENT_CONSENT_TEXTS.aba_processing)) {
+  const log = await readConsentLog(tx);
+  if (
+    !isGranted(log, 'account_local', null, CURRENT_CONSENT_TEXTS.account_local) ||
+    !isGranted(log, 'aba_processing', childId, CURRENT_CONSENT_TEXTS.aba_processing)
+  ) {
     throw new AbaConsentRequiredError(childId);
   }
   if (await loadChildState(tx, childId, 'abaPaused')) throw new AbaPausedError(childId);

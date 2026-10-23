@@ -9,10 +9,12 @@
 import {
   consentActorError,
   consentEventErrors,
+  isGranted,
   placeConsentEvent,
   type ConsentEvent,
   type GuardianRole,
 } from '../../domain/consent';
+import { CURRENT_CONSENT_TEXTS } from '../../domain/consentTexts';
 import { withDbLock } from './lock';
 import type { SqlDb } from './sql';
 
@@ -46,10 +48,15 @@ const toEvent = (r: Row): ConsentEvent => ({
  *
  * Отзыв согласия на ABA сюда не принимается: он идёт только через `revokeAbaProcessing`,
  * вместе с удалением данных. Отзыв без удаления оставил бы данные о здоровье без основания.
+ * Отзыв `account_local` — тоже: только удалением аккаунта (`wipeDevice`), иначе итоги уроков и
+ * навыки остались бы на устройстве без согласия (№124).
  */
 export async function appendConsentEvent(db: SqlDb, e: ConsentEvent, actorRole: GuardianRole | null): Promise<void> {
   if (e.scope === 'aba_processing' && e.action === 'revoke') {
     throw new Error('Согласие не записано: отзыв согласия на ABA — только через revokeAbaProcessing');
+  }
+  if (e.scope === 'account_local' && e.action === 'revoke') {
+    throw new Error('Согласие не записано: отзыв account_local — только удалением аккаунта (wipeDevice)');
   }
   await withDbLock(db, () => db.transaction((tx) => insertConsentEvent(tx, e, actorRole)));
 }
@@ -59,12 +66,21 @@ export async function appendConsentEvent(db: SqlDb, e: ConsentEvent, actorRole: 
  * с событием (отзыв согласия на ABA и удаление данных ABA, `purge.ts`). Вызывающий держит
  * замок `withDbLock`. Отзыв раньше последнего события не отклоняется, а встаёт за ним
  * (`placeConsentEvent`).
+ *
+ * Согласие на ребёнка без действующего `account_local` не выдаётся (№124): без аккаунта на
+ * устройство не пишется ничего о ребёнке, а событие согласия на ABA само говорит о режиме.
+ * Отзыв принимается всегда.
  */
 export async function insertConsentEvent(tx: SqlDb, e: ConsentEvent, actorRole: GuardianRole | null): Promise<void> {
   const errors = consentEventErrors(e);
   const actorError = consentActorError(e, actorRole);
   if (actorError) errors.push(actorError);
   if (errors.length) throw new Error(`Согласие не записано: ${errors.join('; ')}`);
+  if (e.action === 'grant' && e.childId !== null) {
+    if (!isGranted(await readConsentLog(tx), 'account_local', null, CURRENT_CONSENT_TEXTS.account_local)) {
+      throw new Error('Согласие не записано: сначала согласие account_local');
+    }
+  }
   const [last] = await tx.all<{ at: string }>('SELECT at FROM consent_events ORDER BY seq DESC LIMIT 1');
   const placed = placeConsentEvent(last?.at, e);
   await tx.run(

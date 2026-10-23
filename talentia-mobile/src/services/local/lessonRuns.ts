@@ -2,10 +2,31 @@
  * Прохождения уроков на устройстве — источник отчёта родителю (`domain/parentReport.ts`):
  * отчёт строится из локальных данных, облако — резервная копия (PARENT.md). Только
  * дописывание.
+ *
+ * **Без согласия `account_local` итоги урока не пишутся** (№124). Экраны пишут только через
+ * `commit.ts`: он вызывает `withLessonWrite`, который проверяет согласие внутри той же
+ * транзакции, что и запись. На время записи открываются ворота `lesson_write_gate`; без них
+ * вставку прохождений и запись навыков, атласа и счётчика уроков отклоняет сама база
+ * (`schema.ts`, миграция 13). `appendLessonRun` — кирпич для `commit.ts`, а не вход для экранов.
  */
 import type { LessonRun } from '../../domain/parentReport';
 import { recordedAtIso } from './abaLog';
+import { requireAccountConsent } from './accountConsent';
 import type { SqlDb } from './sql';
+
+/**
+ * Запись итогов урока ребёнка: проверка `account_local`, ворота открыты только на время `fn` и
+ * закрываются в той же транзакции. Транзакцию открывает сама — сбой внутри откатывает и ворота.
+ * Нет согласия — `LessonConsentRequiredError`, не записано ничего.
+ */
+export async function withLessonWrite(db: SqlDb, childId: string, fn: (tx: SqlDb) => Promise<void>): Promise<void> {
+  await db.transaction(async (tx) => {
+    await requireAccountConsent(tx);
+    await tx.run('INSERT INTO lesson_write_gate (child_id) VALUES (?)', [childId]);
+    await fn(tx);
+    await tx.run('DELETE FROM lesson_write_gate WHERE child_id = ?', [childId]);
+  });
+}
 
 /**
  * Колонка `started_at` — в едином формате UTC с миллисекундами (`recordedAtIso`): срок хранения
