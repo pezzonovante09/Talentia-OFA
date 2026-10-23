@@ -4,6 +4,7 @@
       "Edit(/.claude/audit-gate.json)",
       "Edit(/.claude/settings.json)",
       "Edit(/.claude/hooks/**)",
+      "Edit(/talentia-mobile/eslint.config.js)",
       "mcp__plugin_desktop-commander_desktop-commander__write_file",
       "mcp__plugin_desktop-commander_desktop-commander__edit_block",
       "mcp__plugin_desktop-commander_desktop-commander__move_file",
@@ -30,11 +31,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/audit-gate.js\"",
-            "timeout": 10
-          },
-          {
-            "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/screens-reminder.js\"",
             "timeout": 10
           },
@@ -46,16 +42,6 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/aba-reminder.js\"",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "matcher": "Bash|PowerShell|NotebookEdit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/audit-gate.js\"",
             "timeout": 10
           }
         ]

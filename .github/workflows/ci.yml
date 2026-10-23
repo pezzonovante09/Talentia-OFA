@@ -15,44 +15,8 @@ permissions:
   contents: read
 
 jobs:
-  gate:
-    name: audit gate (hooks tests, экраны и контент до чистого раунда)
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          # три точки в `git diff base...HEAD` и `git show base:…` нужна полная история
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-
-      - name: Hook and gate tests
-        run: npm run test:hooks
-
-      # Ворота аудита (решение №76) хук Claude Code держит только в сессии; здесь — всё, что вошло в
-      # PR или пуш любым путём. Состояние ворот берётся из базовой ветки, а не из PR. Сами скрипты
-      # проверки — тоже из базы: PR, правящий `check-pr.js` или `gate-core.js`, иначе выключал бы
-      # проверку сам себе (раунд 5, `qa-engineer` В1). Правку этого файла закрывает только защита
-      # ветки `master` с обязательной проверкой `gate` — настройка GitHub, за владельцем.
-      - name: Screens and new content only after a clean audit round
-        env:
-          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: |
-          GATE="$RUNNER_TEMP/gate"
-          mkdir -p "$GATE"
-          if [ -n "$BASE" ] && ! echo "$BASE" | grep -qE '^0+$' \
-             && git show "$BASE:.claude/hooks/check-pr.js" > "$GATE/check-pr.js" 2>/dev/null \
-             && git show "$BASE:.claude/hooks/gate-core.js" > "$GATE/gate-core.js" 2>/dev/null; then
-            echo "Скрипты ворот — из базы $BASE"
-          else
-            echo "Базы нет (первый пуш ветки) — скрипты ворот из HEAD"
-            cp .claude/hooks/check-pr.js .claude/hooks/gate-core.js "$GATE/"
-          fi
-          node "$GATE/check-pr.js" "$BASE" HEAD
-
+  # Ворота по риску (№121): сеть из приложения закрывает ESLint (`offlineRules` в
+  # talentia-mobile/eslint.config.js) — это шаг Lint джоба mobile; отдельного джоба ворот нет.
   mobile:
     name: talentia-mobile (lint, typecheck, test)
     runs-on: ubuntu-latest
