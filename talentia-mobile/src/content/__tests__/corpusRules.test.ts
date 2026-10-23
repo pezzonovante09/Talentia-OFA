@@ -8,7 +8,7 @@
  * Фикстуры живут здесь, а не в `src/content`, — иначе гард принял бы их за
  * контент.
  */
-import { CHOOSE_SHARE_MIN_TASKS, RULES, childGenderHits, collectCorpus, emptyNameBroken, keysIn } from './corpusRules';
+import { CHOOSE_SHARE_MIN_TASKS, RULES, childGenderCoreHits, childGenderHits, collectCorpus, emptyNameBroken, keysIn } from './corpusRules';
 import { countSilhouette } from '../../domain/countLayout';
 import type { Corpus, Locales, RuleId } from './corpusRules';
 import type { ChooseTask, Lesson, Task, TaskFormat, Topic } from '../../types/task';
@@ -1680,13 +1680,31 @@ describe('гард корпуса: род ребёнка в уроке', () => {
     setKey(ru, l.hook.lineKey, 'Тали нашёл 3 гриба. Сколько грибов у Тали?');
     setKey(ru, l.tasks[0].hintKey, 'Ты сначала посчитай, потом сравни. У тебя получится!');
     expect(run('childGenderNeutral', c, { ru })).toEqual([]);
+    expect(run('childGenderNeutralWide', c, { ru })).toEqual([]);
     setKey(ru, l.model!.steps[0].lineKey, 'Нашёл? Теперь посчитай, сколько их.');
     setKey(ru, l.tasks[0].promptKey, 'Ты готов? Начинаем!');
     setKey(ru, l.atlasEntryKey, 'Ты большой молодец!');
-    const out = run('childGenderNeutral', c, { ru }).join('\n');
-    expect(out).toContain(`ru ${l.model!.steps[0].lineKey} — «Нашёл»: род ребёнка`);
-    expect(out).toContain(`ru ${l.tasks[0].promptKey} — «готов»: род ребёнка`);
-    expect(out).toContain(`ru ${l.atlasEntryKey} — «Ты большой»: род ребёнка`);
+    // №122: ядро вплотную к «ты» — жёсткое правило, остальное — предупреждение, без повторов
+    const core = run('childGenderNeutral', c, { ru }).join('\n');
+    const wide = run('childGenderNeutralWide', c, { ru }).join('\n');
+    expect(core).toContain(`ru ${l.tasks[0].promptKey} — «Ты готов»: род ребёнка`);
+    expect(core).not.toContain('Нашёл');
+    expect(core).not.toContain('Ты большой');
+    expect(wide).toContain(`ru ${l.model!.steps[0].lineKey} — «Нашёл»: род ребёнка`);
+    expect(wide).toContain(`ru ${l.atlasEntryKey} — «Ты большой»: род ребёнка`);
+    expect(wide).not.toContain('готов');
+  });
+
+  it.each([
+    ['Ты справилась!', ['Ты справилась']],
+    ['Какая ты умница!', ['Какая ты']],
+    ['Ты, сама смогла?', ['Ты сама']],
+    ['Ты сначала посчитай.', []],
+    ['Ты всё посчитал.', []],
+    ['Ты большой молодец!', []],
+    ['Сделала!', []],
+  ])('ядро рода: «%s» → %j', (text, hits) => {
+    expect(childGenderCoreHits(text)).toEqual(hits);
   });
 
   it.each([

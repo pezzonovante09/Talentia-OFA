@@ -572,6 +572,25 @@ const GENDERED_WITHOUT_SUBJECT = [
   /(?<!\p{L})(готов|готова|рад|рада|прав|права|уверен|уверена|должен|должна|согласен|согласна)(?!\p{L})/giu,
 ];
 
+/**
+ * Точное ядро (решение №122, `curriculum-content-reviewer` 2026-10-21): родовое слово **вплотную**
+ * после «ты» или «какой / такая ты». Ложных срабатываний почти нет — правило жёсткое; остальное
+ * (через средние слова, -ый / -ая, без подлежащего) — предупреждение `childGenderNeutralWide`.
+ */
+const YOU_CORE = [
+  /(?<!\p{L})ты\s+(\p{L}+(?:л|ла|лся|лась))(?!\p{L})/giu,
+  /(?<!\p{L})ты\s+(сам|сама|готов|готова|рад|рада|прав|права|уверен|уверена|должен|должна|согласен|согласна)(?!\p{L})/giu,
+  /(?<!\p{L})(какой|какая|такой|такая)\s+ты(?!\p{L})/giu,
+];
+
+/** Ядро: только обороты вплотную к «ты»; одинаково для уроков и подписей. */
+export function childGenderCoreHits(text: string): string[] {
+  const flat = text.replace(/,/g, ' ');
+  return YOU_CORE.flatMap((re) =>
+    [...flat.matchAll(re)].filter((m) => !NOT_GENDERED.includes((m[1] ?? '').toLowerCase())).map((m) => m[0].replace(/\s+/g, ' ')),
+  );
+}
+
 /** Ближайшее перед позицией слово из подлежащих или «ты»; `null` — подлежащего нет. */
 function nearestSubject(words: string[]): string | null {
   for (let i = words.length - 1; i >= 0; i--) {
@@ -1670,34 +1689,70 @@ export const RULES = {
   childGenderNeutral: {
     // Решение №71, раунд 2, Р17 (`localization-qa`): безродовость проверялась только в банке
     // реплик, а Tali говорит с ребёнком и в уроке. Охват — весь текст урока, обходом, как у
-    // nameOnlyInTali (новое поле задания не выпадет). Подписи и тексты для чтения (`labelKey`,
-    // `textKey`) — только на обороты с «ты»: «Заяц нашёл 5 морковок» в условии — норма,
-    // «Ты нашёл 3 гриба» — нет.
-    title: 'ru-текст урока не выдаёт род ребёнка: без «ты …л(а)», «сам / сама», «готов / рад» и прошедшего времени без подлежащего (TALI.md, «Форма обращения к ребёнку»)',
+    // nameOnlyInTali (новое поле задания не выпадет). Жёсткое — только точное ядро вплотную к
+    // «ты» (№122); широкая эвристика — `childGenderNeutralWide`, предупреждением.
+    title: 'ru-текст урока не выдаёт род ребёнка: нет «ты …л(а)», «ты сам / сама», «ты готов / рад», «какой / такая ты» (TALI.md, «Форма обращения к ребёнку»)',
     check: (corpus, locales) =>
-      lessonsOf(corpus).flatMap(({ lesson, where }) => {
-        const speech = (v: unknown) => keysIn(v, ['labelKey', 'textKey']);
-        const keys = [
-          lesson.hook.lineKey,
-          ...(lesson.model?.steps.map((s) => s.lineKey) ?? []),
-          ...speech(lesson.tasks),
-          ...speech(lesson.model?.example ?? {}),
-          lesson.atlasEntryKey,
-        ];
-        const full = new Set(keys);
-        const reading = [...keysIn(lesson.tasks), ...keysIn(lesson.model?.example ?? {})].filter((k) => !full.has(k));
-        return [...[...full].map((key) => [key, false] as const), ...[...new Set(reading)].map((key) => [key, true] as const)].flatMap(([key, youOnly]) => {
-          const text = lookup(locales.ru, key);
-          return typeof text === 'string'
-            ? childGenderHits(text, { youOnly }).map(
-                (hit) =>
-                  `${where}: ru ${key} — «${hit}»: род ребёнка. О ребёнке — настоящее или будущее время, «у тебя получилось»; о Tali, жителях и персонажах — с подлежащим в той же фразе (новое имя или персонаж — в KNOWN_SUBJECTS)`,
-              )
-            : [];
-        });
+      genderTexts(corpus, locales).flatMap(({ where, key, text }) =>
+        childGenderCoreHits(text).map((hit) => `${where}: ru ${key} — «${hit}»: ${GENDER_ADVICE}`),
+      ),
+  },
+
+  childGenderNeutralWide: {
+    // Широкая эвристика (№122): прошедшее время без подлежащего, «ты» через средние слова, -ый / -ая.
+    // Ловит и безродовое («Ты большой молодец») — читает `curriculum-content-reviewer`. Подписи и
+    // тексты для чтения (`labelKey`, `textKey`) — только на обороты с «ты»: «Заяц нашёл 5 морковок»
+    // в условии — норма, «Ты нашёл 3 гриба» — нет.
+    title: 'ru-текст урока, вероятно, выдаёт род ребёнка: «ты» через слова, -ый / -ая, прошедшее время без подлежащего',
+    check: (corpus, locales) =>
+      genderTexts(corpus, locales).flatMap(({ where, key, text, youOnly }) => {
+        // уже найденное ядром («Ты готов») не повторяем частью («готов»)
+        const core = childGenderCoreHits(text).map((h) => h.toLowerCase());
+        return childGenderHits(text, { youOnly })
+          .filter((hit) => !core.some((c) => c.includes(hit.toLowerCase())))
+          .map((hit) => `${where}: ru ${key} — «${hit}»: ${GENDER_ADVICE}`);
       }),
   },
 } satisfies Record<string, Rule>;
+
+const GENDER_ADVICE =
+  'род ребёнка? О ребёнке — настоящее или будущее время, «у тебя получилось»; о Tali, жителях и персонажах — с подлежащим в той же фразе (новое имя или персонаж — в KNOWN_SUBJECTS)';
+
+/** ru-тексты урока для проверки рода: речь Tali и задания целиком, подписи и тексты для чтения — `youOnly`. */
+function genderTexts(corpus: Corpus, locales: Locales): { where: string; key: string; text: string; youOnly: boolean }[] {
+  return lessonsOf(corpus).flatMap(({ lesson, where }) => {
+    const speech = (v: unknown) => keysIn(v, ['labelKey', 'textKey']);
+    const full = new Set([
+      lesson.hook.lineKey,
+      ...(lesson.model?.steps.map((s) => s.lineKey) ?? []),
+      ...speech(lesson.tasks),
+      ...speech(lesson.model?.example ?? {}),
+      lesson.atlasEntryKey,
+    ]);
+    const reading = [...keysIn(lesson.tasks), ...keysIn(lesson.model?.example ?? {})].filter((k) => !full.has(k));
+    return [...[...full].map((key) => [key, false] as const), ...[...new Set(reading)].map((key) => [key, true] as const)].flatMap(
+      ([key, youOnly]) => {
+        const text = lookup(locales.ru, key);
+        return typeof text === 'string' ? [{ where, key, text, youOnly }] : [];
+      },
+    );
+  });
+}
+
+/**
+ * Предупреждения, а не падающие тесты (решение владельца №122, 2026-10-21, классификация —
+ * `curriculum-content-reviewer`): языковые и педагогические эвристики, которые лучше проверит
+ * плейтест или человек. Их отчёт печатает `corpus.test.ts`, читает `curriculum-content-reviewer` при
+ * проверке уроков. Мораторий: новых стилистических правил нет, пока в корпусе нет ~30 уроков; новое
+ * — только если ошибка встретилась в реальном контенте хотя бы дважды.
+ */
+export const STYLE_RULES: ReadonlySet<RuleId> = new Set<RuleId>([
+  'touchVerb',
+  'orderPrompt',
+  'chooseShare',
+  'answerRank',
+  'childGenderNeutralWide',
+]);
 
 export type RuleId = keyof typeof RULES;
 

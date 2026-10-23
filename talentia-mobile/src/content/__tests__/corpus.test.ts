@@ -21,7 +21,7 @@ import * as path from 'path';
 import ru from '../../i18n/locales/ru.json';
 import en from '../../i18n/locales/en.json';
 import ky from '../../i18n/locales/ky.json';
-import { RULES, collectCorpus } from './corpusRules';
+import { RULES, STYLE_RULES, collectCorpus } from './corpusRules';
 import type { ContentModule, RuleId } from './corpusRules';
 
 const CONTENT_DIR = path.join(__dirname, '..');
@@ -80,9 +80,22 @@ describe('корпус src/content: обнаружение', () => {
   });
 });
 
+const ids = Object.keys(RULES) as RuleId[];
+
 describe('корпус src/content: инварианты', () => {
-  it.each((Object.keys(RULES) as RuleId[]).map((id) => [id, RULES[id].title] as const))('%s: %s', (id) => {
+  it.each(ids.filter((id) => !STYLE_RULES.has(id)).map((id) => [id, RULES[id].title] as const))('%s: %s', (id) => {
     const rule = RULES[id];
     expect({ [rule.title]: rule.check(corpus, locales) }).toEqual({ [rule.title]: [] });
+  });
+});
+
+// Решение №122: стилистические правила не валят тест — печатают отчёт для `curriculum-content-reviewer`.
+describe('корпус src/content: предупреждения стиля', () => {
+  it('отчёт стилистических правил (не падает)', () => {
+    const report = ids
+      .filter((id) => STYLE_RULES.has(id))
+      .flatMap((id) => RULES[id].check(corpus, locales).map((line) => `[${id}] ${line}`));
+    if (report.length > 0) console.warn(`Предупреждения стиля корпуса (${report.length}):\n${report.join('\n')}`);
+    expect(Array.isArray(report)).toBe(true);
   });
 });
