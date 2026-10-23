@@ -31,10 +31,9 @@ ESLint до раунда «данные», полный раунд девяти 
 | Гарды: стилистические — предупреждения, ядро рода жёстким (классификация — `curriculum-content-reviewer`) | `corpusRules.ts` (`STYLE_RULES`, `childGenderCoreHits`, `childGenderNeutralWide`), `corpus.test.ts` |
 | Заморозка спецификаций | баннеры SCREENS.md, ABA.md |
 | №121 доделан: хук `audit-gate.js` и его тесты удалены, джоб `gate` убран из CI, `about` журнала ворот переписан, `@supabase/supabase-js` удалён, раздел ворот в CLAUDE.md | `.claude/settings.json`, `package.json`, `ci.yml`, `.claude/audit-gate.json`, `talentia-mobile/package.json`, CLAUDE.md |
-
 | №124: запись уроков под `account_local` — спецификация, код, тесты, проверка по диффу | PARENT.md, `services/local/accountConsent.ts`, `lessonRuns.ts`, `schema.ts` (миграция 13), `lessonConsent.test.ts` |
 
-**Как продолжить** — `docs/audit/session-2026-10-23.md`, «Потом»: прототип (№124 сделан). Прежние «Как продолжить»
+**Как продолжить** — `docs/audit/session-2026-10-23.md`, «Первое действие в новом чате — прототип». Прежние «Как продолжить»
 ниже (2026-10-20 и раньше) про раунды ворот устарели решением №121.
 
 ### Что сделано 2026-10-20
