@@ -38,7 +38,8 @@ export async function GET(req: NextRequest) {
         upstash: configured("UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"),
       },
       features: {
-        ai: { enabled: aiEnabled(), configured: configured(AI_PROVIDER.apiKeyEnv) },
+        // провайдера нет (`AI_PROVIDER === null`) — оба флага ложны при любом окружении
+        ai: { enabled: aiEnabled(), configured: AI_PROVIDER ? configured(AI_PROVIDER.apiKeyEnv) : false },
         tts: configured("ELEVENLABS_API_KEY", "ELEVENLABS_VOICE_ID"),
       },
     },

@@ -55,7 +55,7 @@ describe(".env.example", () => {
   it("анализ видит переменные (страж не пустой)", () => {
     const read = readByCode();
     expect(read.size).toBeGreaterThan(10);
-    for (const must of ["SUPABASE_URL", "ELEVENLABS_VOICE_ID_KY", "TALI_DAILY_REQUESTS_PER_USER", "DEEPSEEK_API_KEY", "SENTRY_ORG"]) {
+    for (const must of ["SUPABASE_URL", "ELEVENLABS_VOICE_ID_KY", "TALI_DAILY_REQUESTS_PER_USER", "TALI_AI_ENABLED", "SENTRY_ORG"]) {
       expect(read.has(must), must).toBe(true);
     }
   });

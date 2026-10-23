@@ -50,7 +50,9 @@ export async function POST(req: NextRequest) {
 
     const asUser = supabaseAsUser(jwt);
     if (!asUser || !supabaseAdmin) {
-      return corsJson({ error: "Server is not configured" }, 500, req);
+      // 503, как в `/api/v2/tali` и `verifyAuth`: конфигурация — не сбой кода (К11)
+      console.error("[account/delete] SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY are not configured");
+      return corsJson({ error: "Service unavailable" }, 503, req);
     }
 
     const parsed = AccountDeletionBodySchema.safeParse(await req.json().catch(() => null));

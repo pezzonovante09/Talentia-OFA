@@ -176,17 +176,22 @@ describe("/api/account/delete", () => {
     expect(state.steps.indexOf("transfer")).toBeLessThan(state.steps.indexOf("deleteUser"));
   });
 
-  it("supabaseAdmin не настроен — 500 «Server is not configured», удаления нет", async () => {
+  it("supabaseAdmin не настроен — 503 «Service unavailable» без имён переменных, удаления нет", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => undefined);
     state.admin = null;
     const res = await POST(req(OK_BODY));
-    expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: "Server is not configured" });
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: "Service unavailable" });
+    expect(deleteUser).not.toHaveBeenCalled();
+    spy.mockRestore();
   });
 
-  it("клиент от имени пользователя не создан — 500", async () => {
+  it("клиент от имени пользователя не создан — 503", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => undefined);
     vi.mocked(supabaseAsUser).mockReturnValue(null);
-    expect((await POST(req(OK_BODY))).status).toBe(500);
+    expect((await POST(req(OK_BODY))).status).toBe(503);
     expect(deleteUser).not.toHaveBeenCalled();
+    spy.mockRestore();
   });
 
   it("нет решения по ребёнку — 409, аккаунт не удалён", async () => {

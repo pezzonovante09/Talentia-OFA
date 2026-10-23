@@ -12,11 +12,9 @@ export type VerifyAuthResult = VerifyAuthOk | VerifyAuthFail;
  */
 export async function verifyAuth(req: NextRequest): Promise<VerifyAuthResult> {
   if (!supabaseAdmin) {
-    return {
-      ok: false,
-      error: "Server auth is not configured (missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY)",
-      status: 500,
-    };
+    // имена переменных — только в лог, клиенту 503 без устройства деплоя (К11)
+    console.error("[verifyAuth] SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are not configured");
+    return { ok: false, error: "Service unavailable", status: 503 };
   }
 
   const raw = req.headers.get("authorization") ?? req.headers.get("Authorization");

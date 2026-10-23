@@ -9,8 +9,7 @@ Copy `.env.example` to `.env.local` and set at least:
 
 | Variable | Purpose |
 |----------|---------|
-| `TALI_AI_ENABLED` | **Off by default.** `true` enables the AI conversation (`/api/v2/tali`); otherwise the route answers `503 ai_disabled` before any other check (owner decisions #66, #102: AI is the last stage) and the app replies from the on-device phrase bank. |
-| `DEEPSEEK_API_KEY` | Tali chat (`/api/v2/tali`), required when `TALI_AI_ENABLED=true`. Provider name/endpoint/model live in `src/lib/aiConfig.ts`; the provider is to be replaced (owner decision 2026-10-01, with the lawyer) |
+| `TALI_AI_ENABLED` | **Off by default.** `true` enables the AI conversation (`/api/v2/tali`) — but only once a model provider exists in `src/lib/aiConfig.ts` (`AI_PROVIDER`); today it is `null`, DeepSeek was removed (owner decision #4; mentor review 2026-10-23, П3), so the flag alone enables nothing and the route answers `503 ai_disabled` before any other check. A provider returns with a contract (DPA, no training on inputs, EU/US region) and the consent text naming it; its API key variable is added then. |
 | `TALI_DAILY_REQUESTS_PER_USER` / `TALI_DAILY_REPLIES_PER_CHILD` / `TTS_DAILY_CHARS_PER_USER` | Optional daily caps (defaults 200 / 30 / 30000). |
 | `SUPABASE_URL` | Supabase project URL — required to verify user JWTs on every route except `/api/ping`. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key — used server-side only with `auth.getUser(jwt)` and `auth.admin.deleteUser`; never expose to clients. |

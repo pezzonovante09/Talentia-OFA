@@ -15,7 +15,6 @@ const VALUES = {
   SUPABASE_SERVICE_ROLE_KEY: "service-VALUE-456",
   UPSTASH_REDIS_REST_URL: "https://upstash-VALUE-789.example",
   UPSTASH_REDIS_REST_TOKEN: "upstash-token-VALUE-000",
-  DEEPSEEK_API_KEY: "deepseek-VALUE-111",
   ELEVENLABS_API_KEY: "eleven-VALUE-222",
   ELEVENLABS_VOICE_ID: "voice-VALUE-333",
   TALENTIA_API_SECRET: "ping-secret-VALUE",
@@ -60,7 +59,8 @@ describe("/api/ping", () => {
   it("всё настроено — ready.supabase и ready.upstash true, features заполнены", async () => {
     const body = await (await GET(ping(VALUES.TALENTIA_API_SECRET))).json();
     expect(body.ready).toEqual({ supabase: true, upstash: true });
-    expect(body.features).toEqual({ ai: { enabled: true, configured: true }, tts: true });
+    // провайдера модели в коде нет (П3): ИИ не включается даже при TALI_AI_ENABLED=true
+    expect(body.features).toEqual({ ai: { enabled: false, configured: false }, tts: true });
   });
 
   it.each(["SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY"])(
@@ -89,13 +89,13 @@ describe("/api/ping", () => {
   it("ИИ выключен — enabled: false (не поломка), ключ отдельным флагом", async () => {
     setEnv({ ...VALUES, TALI_AI_ENABLED: undefined });
     const body = await (await GET(ping(VALUES.TALENTIA_API_SECRET))).json();
-    expect(body.features.ai).toEqual({ enabled: false, configured: true });
+    expect(body.features.ai).toEqual({ enabled: false, configured: false });
   });
 
-  it("ИИ включён без ключа — enabled: true, configured: false", async () => {
-    setEnv({ ...VALUES, DEEPSEEK_API_KEY: undefined });
+  it("TALI_AI_ENABLED=true без провайдера в коде — enabled: false, configured: false", async () => {
+    setEnv({ ...VALUES, TALI_AI_ENABLED: "true" });
     const body = await (await GET(ping(VALUES.TALENTIA_API_SECRET))).json();
-    expect(body.features.ai).toEqual({ enabled: true, configured: false });
+    expect(body.features.ai).toEqual({ enabled: false, configured: false });
   });
 
   it("озвучка: нужен и ключ, и голос", async () => {

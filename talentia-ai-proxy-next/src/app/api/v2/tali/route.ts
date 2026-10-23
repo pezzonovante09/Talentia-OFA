@@ -184,9 +184,12 @@ export async function POST(req: NextRequest) {
       reply = PRIVACY_NUDGE[language];
       filtered = true;
     } else {
-      const apiKey = process.env[AI_PROVIDER.apiKeyEnv];
+      // `aiEnabled()` уже ложно без провайдера; проверка здесь — для типа и на случай рассинхрона
+      const provider = AI_PROVIDER;
+      if (!provider) return corsJson({ error: "ai_disabled" }, 503, req);
+      const apiKey = process.env[provider.apiKeyEnv];
       if (!apiKey) {
-        console.error(`[v2/tali] ${AI_PROVIDER.apiKeyEnv} is not configured`);
+        console.error(`[v2/tali] ${provider.apiKeyEnv} is not configured`);
         return corsJson({ error: "Service unavailable" }, 503, req);
       }
       const childKey = createHash("sha256").update(body.childId).digest("hex");
@@ -195,11 +198,11 @@ export async function POST(req: NextRequest) {
         (await enforceRateLimit(req, taliDailyUser, auth.userId)) ??
         (await enforceRateLimit(req, taliDailyChild, childKey));
       if (budgetLimited) return budgetLimited;
-      const r = await fetch(AI_PROVIDER.endpoint, {
+      const r = await fetch(provider.endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
         body: JSON.stringify({
-          model: AI_PROVIDER.model,
+          model: provider.model,
           messages: [
             { role: "system", content: systemPrompt(language, body.mode) },
             { role: "user", content: userMessage(body) },
@@ -244,7 +247,8 @@ export async function POST(req: NextRequest) {
       req,
     );
   } catch (e: unknown) {
-    console.error("[v2/tali] Server error", e);
+    // только класс ошибки: сырой объект мог бы унести в логи Vercel текст запроса (К11)
+    console.error("[v2/tali] Server error", e instanceof Error ? e.name : "unknown");
     reportError("v2/tali", e);
     return corsJson({ error: "Server error" }, 500, req);
   }
