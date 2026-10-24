@@ -3,13 +3,16 @@
  * «+ Добавить», одна `primary`, тап ребёнка открывает сеанс без записи и ведёт на карту; путь
  * взрослого ведёт в заглушку гейта с закрытием одним тапом; focus убирает Tali.
  */
-const mockReplace = jest.fn();
-jest.mock('expo-router', () => ({ useRouter: () => ({ replace: mockReplace, push: jest.fn(), back: jest.fn() }), Redirect: () => null }));
-
 import FirstRunScreen from '../index';
 import { voice } from '../../src/services/voice';
 import { useChildSession } from '../../src/state/childSession';
 import { fireEvent, renderWithProviders, screen } from '../../src/test/render';
+
+jest.mock('expo-router', () => {
+  const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn() };
+  return { useRouter: () => router, Redirect: () => null, __router: router };
+});
+const mockReplace = (jest.requireMock('expo-router') as { __router: { replace: jest.Mock } }).__router.replace;
 
 beforeEach(() => {
   mockReplace.mockClear();

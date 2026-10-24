@@ -61,7 +61,13 @@
     "breakCard": "Break",
     "tali": "Tali",
     "addProfile": "Add a profile",
-    "close": "Close"
+    "close": "Close",
+    "map": {
+      "atlas": "To the atlas",
+      "settings": "For adults",
+      "review": "Review",
+      "lesson": "Lesson {{n}}"
+    }
   },
   "content": {
     "common": {
@@ -347,5 +353,14 @@
       "title": "For adults",
       "body": "The parent area will live here: PIN, child profile and consents. It is not in this build yet — tap the cross to go back."
     }
+  },
+  "map": {
+    "lockedInOrder": "This lesson opens in order",
+    "sleeping": "This lesson opens tomorrow",
+    "reviewLater": "Finish a lesson first",
+    "reviewNothing": "Everything is reviewed",
+    "noTranslation": "Nothing here yet",
+    "atlasLater": "The atlas opens after the first lesson",
+    "taliTap": "We are {{region}}. Next is this lesson"
   }
 }
