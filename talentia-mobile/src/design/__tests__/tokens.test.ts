@@ -795,13 +795,13 @@ describe('знак промаха: обрезка и первый палец (р
 
 describe('карта: кнопка листа, звук, повтор голосом (раунд 5, В3)', () => {
   it('правая кнопка карты — «ползунки», открывает лист; динамика на карте нет', () => {
-    expect(mapSettingsButton.icon).toBe('ui-sliders');
+    expect(mapSettingsButton.icon).toBe('sliders');
     expect(mapSettingsButton.opens).toBe('child_sheet');
     expect(mapSettingsButton.size).toBeGreaterThanOrEqual(touch.min);
   });
 
   it('детский «Звук» — нота, глушит музыку и эффекты (и звуки нажатий), но не голос Tali и не вопросы (№22)', () => {
-    expect(childSoundToggle.icon).toBe('ui-note');
+    expect(childSoundToggle.icon).toBe('note');
     expect(childSoundToggle.mutes).toEqual(expect.arrayContaining(['music', 'effects', 'press_sounds']));
     expect(childSoundToggle.neverMutes).toEqual(expect.arrayContaining(['tali_voice', 'prompts', 'option_names']));
     childSoundToggle.neverMutes.forEach((s) => expect(childSoundToggle.mutes as readonly string[]).not.toContain(s));

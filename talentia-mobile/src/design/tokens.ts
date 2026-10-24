@@ -520,7 +520,7 @@ export const helpTaliButton = { bottomInset: 'safeAreaBottom', extra: 16 } as co
  * всём приложении значит «повтори» (урок, завязка, атлас), и тап по нему, открывающий лист, ребёнок
  * читал как сломанный повтор. Повтор голосом на карте — тап по Tali (`mapTaliTap`).
  */
-export const mapSettingsButton = { size: 60, keptInFocus: true, icon: 'ui-sliders', opens: 'child_sheet' } as const;
+export const mapSettingsButton = { size: 60, keptInFocus: true, icon: 'sliders', opens: 'child_sheet' } as const;
 /**
  * Тап по Tali на карте (раунд 5, В3): Tali называет регион и следующий шаг («Мы в Числовой долине. Дальше —
  * вот этот урок»; текст — основной поток) и указывает на следующий узел (поза `point`). Одинаково в обычном
@@ -539,7 +539,7 @@ export const atlasTabTap = { voices: 'region_name', switchesRegion: true } as co
  * становится молчащей.
  */
 export const childSoundToggle = {
-  icon: 'ui-note',
+  icon: 'note',
   mutes: ['music', 'effects', 'press_sounds'],
   neverMutes: ['tali_voice', 'prompts', 'option_names'],
   voiceControlledBy: 'parent_settings',
@@ -1102,6 +1102,162 @@ export const palettes: Record<Scheme, { normal: ColorTokens; calm: ColorTokens }
   light: { normal: lightColors, calm: lightCalmColors },
   dark: { normal: darkColors, calm: darkCalmColors },
 };
+
+/* ───────────── раскладка экранов среза (SCREENS.md 8; docs/design/slice-screens-2026-10-24.md) ───────────── */
+
+/**
+ * Каркас экрана урока сверху вниз (SCREENS.md 1.1): высоты слотов и зазоры между ними, pt. Экран не
+ * прокручивается, поэтому каждое число — часть бюджета высоты, а не пожелание. Имена — из SCREENS.md 8
+ * (`hintBand` там переименован в `bubble`).
+ */
+export const lessonLayout = {
+  topBar: 64,
+  prompt: 72,
+  bubble: 80,
+  actionBar: 88,
+  tali: 88,
+  gapTopPrompt: 8,
+  gapPromptTask: 12,
+  gapTaskHint: 16,
+  gapHintBar: 16,
+  /** `match`: желоб между рядами под линии пар. */
+  matchGutter: 48,
+  /** `order`: полоса-стрела над рядом мест. */
+  orderArrow: 24,
+  /** `order`: зазор между рядом мест и лотком. */
+  trayGap: 24,
+  basketTwo: 84,
+  basketThree: 112,
+  buildStrip: 88,
+  keypadKey: 60,
+  keypadField: 48,
+  exitGap: 24,
+} as const;
+
+/** Фиксированная высота каркаса урока без зоны задания и safe area: 64 + 8 + 72 + 12 + 16 + 80 + 16 + 88. */
+export function lessonFixedHeight(): number {
+  const l = lessonLayout;
+  return l.topBar + l.gapTopPrompt + l.prompt + l.gapPromptTask + l.gapTaskHint + l.bubble + l.gapHintBar + l.actionBar;
+}
+
+/** Вопрос в слоте 72: основной вид 22/30 × 2, запасной — 18/24 × 3 при множителе 1 (`lessonFontCaps`). */
+export const PROMPT_MIN_SIZE = 18;
+export const PROMPT_MIN_LINE_HEIGHT = 24;
+export const PROMPT_MAX_LINES = 3;
+/** Реплика в пузыре 80 (внутри 68): основной 18/26 × 2, запасной 16/20 × 3. */
+export const HINT_MIN_SIZE = 16;
+export const HINT_MIN_LINE_HEIGHT = 20;
+export const HINT_MAX_LINES = 3;
+
+/** Значки на плитках и рядом с ними (SCREENS.md 2.2), pt. */
+export const badge = {
+  /** Галочка / крест / треугольник «показан» над плиткой. */
+  status: 32,
+  /** Форма пары в углу обеих плиток `match`. */
+  pairShape: 24,
+  groupSymbol: 32,
+  mini: 24,
+  pointPin: 32,
+  /** Булавка «закреплён» в левом верхнем углу. */
+  pin: 24,
+  /** Гнездо линии пары на краю плитки. */
+  socket: 24,
+  /** Вынос значка за край плитки. */
+  outset: 8,
+  groupSymbolInset: 4,
+} as const;
+
+/** Иконки интерфейса: один размер на кнопках и один для значков. */
+export const icon = { size: 32, badge: 24 } as const;
+
+/** Три размера Tali на экранах среза: кроп «по пояс» 88, полный рост на карте 96 и на первом запуске 120. */
+export const taliSize = { crop: 88, map: 96, hero: 120 } as const;
+
+/** Карточка профиля на первом запуске: 160, аватар 88, место под имя 24 (и у безымянных), зазор 16. */
+export const profileCard = { size: 160, avatar: 88, nameSlot: 24, gap: 16 } as const;
+
+/**
+ * Первый запуск на чистой установке: «Попробовать без сохранения» — единственная `primary` (ребёнок нажмёт
+ * сам, цена — потеря прогресса, о ней говорит подпись); вход для взрослых — зона 48 с замком 24.
+ */
+export const firstRun = { noSavePrimary: true, adultEntryHit: 48, adultIcon: 24 } as const;
+
+/**
+ * Бюджет высоты первого запуска без прокрутки (docs/design/slice-screens-2026-10-24.md §1):
+ * отступ 16 · Tali 120 · 16 · заголовок 72 · 24 · карточка 160 · свободное ≥ 24 · кнопка 88 · 8 ·
+ * подпись 20 · 24 · вход 48 · низ max(safeBottom, 16).
+ */
+export function firstRunHeight(safeTop: number, safeBottom = 0): number {
+  const caption = typography.caption.lineHeight;
+  const title = typography.title.lineHeight * TITLE_MAX_LINES;
+  return (
+    safeTop + spacing.lg + taliSize.hero + spacing.lg + title + spacing.xl + profileCard.size + spacing.xl +
+    touch.primary + spacing.sm + caption + spacing.xl + firstRun.adultEntryHit + Math.max(safeBottom, spacing.lg)
+  );
+}
+
+/**
+ * Корзинка для нуля (`Media.container: 'basket'`, №136) — слой иллюстрации, как `taliArt`: заливка и контур
+ * фиксированы в обеих схемах (на `surfaceAlt` тёмной схемы контур фигур `#2A1A12` давал бы ≈ 1.4:1),
+ * в тёмной лежит на `picturePlate`. В стимуле корзинка шире кучки на `padInStimulus` с каждой стороны.
+ */
+export const basketArt = { fill: '#FFE6C7', outline: '#2A1A12', stroke: 'base', padInStimulus: 16 } as const;
+
+/**
+ * Страница атласа 5–6 (§4): рамка находки 120, вывод с резервом 3 строк `body`, плашка отметок 56 с печатью
+ * 40, лента будущих страниц — слоты 60 (≥ `touch.min`), 6 штук (calm 3); печать появляется со звуком «штамп».
+ */
+export const atlasPage = {
+  plate: 56,
+  stamp: 40,
+  findingFrame: 120,
+  findingLines: 3,
+  futureSlot: 60,
+  futureSlots: 6,
+  futureSlotsCalm: 3,
+  stampSound: true,
+} as const;
+
+/**
+ * Бюджет высоты страницы атласа без прокрутки (§4): 16 · ряд Tali 88 · 16 · карточка · 16 · слоты 60 · 16 ·
+ * «К карте» 88 · низ. Карточка: 16 + рамка 120 + 12 + вывод 3 × 26 + 12 + плашка 56 + 16 = 310.
+ */
+export function atlasPageHeight(safeTop: number, safeBottom = 0): number {
+  const card =
+    spacing.lg + atlasPage.findingFrame + spacing.md + typography.body.lineHeight * atlasPage.findingLines +
+    spacing.md + atlasPage.plate + spacing.lg;
+  return (
+    safeTop + spacing.lg + taliSize.crop + spacing.lg + card + spacing.lg + atlasPage.futureSlot + spacing.lg +
+    touch.primary + Math.max(safeBottom, spacing.lg)
+  );
+}
+
+/**
+ * Узлы карты на 5–6 в любом режиме (UX, п. 7): рисуются «повторение», пройденные, доступный и `visibleAhead`
+ * замков; дальше тропа продолжается пунктиром и заканчивается знаком «?» без плиты. Десять одинаковых
+ * замков подряд — десять одинаковых откликающихся целей, ребёнок «собирает» их по очереди.
+ */
+export const mapNodeState = { explored: 60, iconSize: 32, visibleAhead: 2 } as const;
+
+/**
+ * Лента карты: автоцентровка на доступном узле при каждом появлении экрана (без подталкивания); порог начала
+ * панорамирования 12 pt — до него касание считается тапом (палец 5–6 едет на 5–10 pt); узел открывает урок по
+ * отпусканию, повторы в течение `openGuardMs` игнорируются, касание во время прокрутки урок не открывает;
+ * между габаритом Tali и узлом — не меньше `touch.gap`.
+ */
+export const mapLane = {
+  centerOn: 'available',
+  panThreshold: 12,
+  openGuardMs: lessonTiming.nextGuard,
+  taliNodeGap: touch.gap,
+} as const;
+
+/**
+ * Слой подтверждения выхода (SCREENS.md 1.6): Tali `idle` 88 на отступе 48, заголовок через 16, «Выйти» и
+ * «Остаться» с зазором 24. Подпись «Прогресс сохранится» показывается только при записи на устройство
+ * (`account_local`): без аккаунта это неправда.
+ */
+export const exitLayer = { topInset: 48, taliGap: 16, buttonGap: 24, progressNote: 'hide_when_no_account' } as const;
 
 /* ───────────────────────── сборка темы ───────────────────────── */
 
