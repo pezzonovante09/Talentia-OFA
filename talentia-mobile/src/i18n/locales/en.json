@@ -67,7 +67,12 @@
       "settings": "For adults",
       "review": "Review",
       "lesson": "Lesson {{n}}"
-    }
+    },
+    "pile": "Pile {{n}}",
+    "pairedWith": "paired with {{name}}",
+    "placeStart": "Place at the start of the arrow",
+    "placeMiddle": "Place further along the arrow",
+    "placeEnd": "Place at the end of the arrow"
   },
   "content": {
     "common": {
@@ -362,5 +367,30 @@
     "noTranslation": "Nothing here yet",
     "atlasLater": "The atlas opens after the first lesson",
     "taliTap": "We are {{region}}. Next is this lesson"
+  },
+  "lesson": {
+    "exit": "To the map",
+    "replay": "Repeat the question",
+    "check": "Check",
+    "next": "Next",
+    "busy": "Busy",
+    "helpTali": "Help Tali",
+    "chooseFirst": "Choose first",
+    "connectFirst": "Connect everything first",
+    "arrangeFirst": "Arrange everything first",
+    "thatsHow": "Like this",
+    "pinnedHere": "This one is already in place",
+    "placeStart": "The start is here",
+    "placeMiddle": "Further along the arrow",
+    "placeEnd": "The end is here",
+    "chooseWhatToPlace": "First choose what to place",
+    "nowYou": "Now you",
+    "exitConfirm": "The task will wait. Leave?",
+    "exitPersists": "Progress will be saved",
+    "leave": "Leave",
+    "stay": "Stay",
+    "progress": "Task {{n}} of {{total}}",
+    "unsupported": "This format is not ready yet",
+    "tapCorrectedFirst": "First tap what was fixed"
   }
 }

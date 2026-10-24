@@ -67,7 +67,12 @@
       "settings": "Для взрослых",
       "review": "Повторение",
       "lesson": "Урок {{n}}"
-    }
+    },
+    "pile": "Кучка {{n}}",
+    "pairedWith": "в паре с {{name}}",
+    "placeStart": "Место у начала стрелки",
+    "placeMiddle": "Место дальше по стрелке",
+    "placeEnd": "Место у конца стрелки"
   },
   "content": {
     "common": {
@@ -362,5 +367,30 @@
     "noTranslation": "Тут пока пусто",
     "atlasLater": "Атлас откроется после первого урока",
     "taliTap": "Мы {{region}}. Дальше — вот этот урок"
+  },
+  "lesson": {
+    "exit": "К карте",
+    "replay": "Повторить вопрос",
+    "check": "Проверить",
+    "next": "Дальше",
+    "busy": "Занято",
+    "helpTali": "Помочь Tali",
+    "chooseFirst": "Сначала выбери",
+    "connectFirst": "Сначала соедини всё",
+    "arrangeFirst": "Сначала разложи всё",
+    "thatsHow": "Вот так",
+    "pinnedHere": "Это уже на месте",
+    "placeStart": "Здесь начало",
+    "placeMiddle": "Дальше по стрелке",
+    "placeEnd": "Здесь конец",
+    "chooseWhatToPlace": "Сначала выбери, что поставить",
+    "nowYou": "Теперь ты",
+    "exitConfirm": "Задание подождёт. Выйти?",
+    "exitPersists": "Прогресс сохранится",
+    "leave": "Выйти",
+    "stay": "Остаться",
+    "progress": "Задание {{n}} из {{total}}",
+    "unsupported": "Этот формат ещё не готов",
+    "tapCorrectedFirst": "Сначала покажи, что исправили"
   }
 }
