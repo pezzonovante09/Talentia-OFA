@@ -21,20 +21,18 @@ const locksOf = (step: TaskStep): Set<string> => new Set([...step.kept, ...(step
 
 function itemState(id: string, props: FormatProps<OrderDraft>): TileState {
   const { step, draft, phase, wrong } = props;
-  const placed = slotOf(draft, id) >= 0;
-  if (step.pinned === id) return 'pinned';
-  if (step.kept.includes(id)) return 'kept';
+  // Фаза экрана важнее остатка сужения: «верно» и крест видны и у оставшихся / закреплённых.
   switch (phase) {
+    case 'done':
+      return 'correct';
     case 'locked':
       return wrong.includes(id) ? 'error' : 'locked';
     case 'shownWait':
       return 'shown';
-    case 'done':
-      return 'correct';
-    default:
-      if (draft.selected === id) return 'selected';
-      return placed || !draft.selected ? 'idle' : 'idle';
   }
+  if (step.pinned === id) return 'pinned';
+  if (step.kept.includes(id)) return 'kept';
+  return draft.selected === id ? 'selected' : 'idle';
 }
 
 function FlyingTile({ to, duration, instant, children }: { to: { x: number; y: number }; duration: number; instant: boolean; children: React.ReactNode }) {

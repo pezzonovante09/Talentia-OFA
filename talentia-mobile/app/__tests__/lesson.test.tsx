@@ -16,7 +16,7 @@ import type { ChooseTask, MatchTask } from '../../src/types/task';
 jest.mock('expo-router', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
-  const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn() };
+  const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn(), navigate: jest.fn() };
   return {
     __router: router,
     useRouter: () => router,
@@ -24,7 +24,7 @@ jest.mock('expo-router', () => {
     Redirect: ({ href }: { href: string }) => React.createElement(Text, { testID: 'redirect' }, href),
   };
 });
-const router = (jest.requireMock('expo-router') as { __router: { replace: jest.Mock; push: jest.Mock } }).__router;
+const router = (jest.requireMock('expo-router') as { __router: { replace: jest.Mock; push: jest.Mock; navigate: jest.Mock } }).__router;
 
 // Таймлайн экрана идёт в реальном времени (блокировка 1040, «Дальше» 900, демо 2000): под нагрузкой
 // полного прогона 5 с не хватает.
@@ -59,6 +59,7 @@ async function throughIntro() {
 
 beforeEach(() => {
   router.replace.mockClear();
+  router.navigate.mockClear();
   voice.stop();
   useChildSession.getState().reset();
   start();
@@ -168,7 +169,7 @@ describe('экран урока', () => {
     expect(screen.queryByTestId('exit-layer')).toBeNull();
     await press('lesson-exit');
     await press('exit-leave');
-    expect(router.replace).toHaveBeenCalledWith('/map');
+    expect(router.navigate).toHaveBeenCalledWith('/map');
     expect(useChildSession.getState().activeLesson?.lessonId).toBe(lesson.id);
   });
 });

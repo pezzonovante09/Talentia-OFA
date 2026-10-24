@@ -21,20 +21,19 @@ const locksOf = (step: TaskStep): Set<string> => new Set([...step.kept, ...(step
 function plateState(side: MatchSide, id: string, props: FormatProps<MatchDraft>): TileState {
   const { step, draft, phase, wrong } = props;
   const pairedLeft = side === 'left' ? id : Object.entries(draft.pairs).find(([, r]) => r === id)?.[0];
-  if (step.pinned && pairedLeft === step.pinned) return 'pinned';
-  if (pairedLeft && step.kept.includes(pairedLeft)) return 'kept';
   switch (phase) {
+    case 'done':
+      return 'correct';
     case 'locked':
       return pairedLeft && wrong.includes(pairedLeft) ? 'error' : 'locked';
     case 'shownWait':
       return 'shown';
-    case 'done':
-      return 'correct';
-    default:
-      if (draft.selected?.side === side && draft.selected.id === id) return 'selected';
-      if (draft.selected && draft.selected.side !== side) return 'waiting';
-      return 'idle';
   }
+  if (step.pinned && pairedLeft === step.pinned) return 'pinned';
+  if (pairedLeft && step.kept.includes(pairedLeft)) return 'kept';
+  if (draft.selected?.side === side && draft.selected.id === id) return 'selected';
+  if (draft.selected && draft.selected.side !== side) return 'waiting';
+  return 'idle';
 }
 
 export function MatchTaskView(rawProps: FormatProps<MatchDraft>) {

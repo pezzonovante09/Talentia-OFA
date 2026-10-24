@@ -392,5 +392,10 @@
     "progress": "Task {{n}} of {{total}}",
     "unsupported": "This format is not ready yet",
     "tapCorrectedFirst": "First tap what was fixed"
+  },
+  "atlas": {
+    "toMap": "To the map",
+    "pageAhead": "This page is still ahead",
+    "replay": "Repeat"
   }
 }

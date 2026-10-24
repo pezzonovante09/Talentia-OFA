@@ -41,7 +41,8 @@ function LessonBody({ lessonId }: { lessonId: string }) {
   }, [lessonId]);
 
   const onFinished = useCallback(() => router.replace({ pathname: '/atlas/[lessonId]', params: { lessonId } }), [router, lessonId]);
-  const onLeave = useCallback(() => router.replace('/map'), [router]);
+  // Карта уже в стеке под уроком: `navigate` возвращается к ней, не плодя второй экран карты.
+  const onLeave = useCallback(() => router.navigate('/map'), [router]);
   const c = useLessonController(lessonId, onFinished, onLeave);
   const { t, ui, step, taskStep, task, spec } = c;
 
