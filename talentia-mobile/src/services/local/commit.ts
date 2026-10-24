@@ -61,6 +61,7 @@ import { readConsentLog } from './consentLog';
 import { consentStatus, isGranted, type GuardianRole } from '../../domain/consent';
 import { CURRENT_CONSENT_TEXTS } from '../../domain/consentTexts';
 import { appendLessonRun, withLessonWrite } from './lessonRuns';
+import type { TaskFormat } from '../../types/task';
 import type { SqlDb } from './sql';
 
 export type LessonCommit = {
@@ -69,6 +70,8 @@ export type LessonCommit = {
   atlas: AtlasEntry[];
   /** Номер следующего урока: `lastSeenLesson` у двух уроков совпасть не должен. */
   nextLessonNumber: number;
+  /** Составные форматы, которые ребёнок уже видел (история + этот урок). */
+  formatsSeen?: TaskFormat[];
 };
 
 /**
@@ -100,6 +103,7 @@ export async function commitLesson(db: SqlDb, childId: string, c: LessonCommit, 
     await saveChildState(tx, childId, 'skills', c.skills, at);
     await saveChildState(tx, childId, 'atlas', c.atlas, at);
     await saveChildState(tx, childId, 'lessonCounter', c.nextLessonNumber, at);
+    if (c.formatsSeen) await saveChildState(tx, childId, 'formatsSeen', c.formatsSeen, at);
   });
 }
 

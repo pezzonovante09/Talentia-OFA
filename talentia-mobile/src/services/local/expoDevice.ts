@@ -22,6 +22,10 @@ export function expoDevice(): DeviceStore {
     async removeSecure(keys) {
       for (const k of keys) await SecureStore.deleteItemAsync(k);
     },
+    getItem: (key) => AsyncStorage.getItem(key),
+    setItem: (key, value) => AsyncStorage.setItem(key, value),
+    getSecure: (key) => SecureStore.getItemAsync(key),
+    setSecure: (key, value) => SecureStore.setItemAsync(key, value),
     async deleteCacheDir(path) {
       const dir = new Directory(Paths.cache, ...path);
       if (dir.exists) dir.delete();

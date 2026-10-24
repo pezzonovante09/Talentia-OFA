@@ -32,6 +32,12 @@ export interface DeviceStore {
   keys(): Promise<readonly string[]>;
   removeKeys(keys: readonly string[]): Promise<void>;
   removeSecure(keys: readonly string[]): Promise<void>;
+  /** AsyncStorage: профили, список детей, текущий аккаунт — только под префиксами выше. */
+  getItem(key: string): Promise<string | null>;
+  setItem(key: string, value: string): Promise<void>;
+  /** SecureStore: хеш PIN и таймаут гейта (`secureKeys`). */
+  getSecure(key: string): Promise<string | null>;
+  setSecure(key: string, value: string): Promise<void>;
   /** Удалить каталог в кеше рекурсивно; нет каталога — не ошибка. */
   deleteCacheDir(path: readonly string[]): Promise<void>;
   cancelChildNotifications(childId: string): Promise<void>;

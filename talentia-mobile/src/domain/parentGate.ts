@@ -189,7 +189,9 @@ export type SensitiveAction =
  * удаление аккаунта подтверждает взрослого, а не устройство, и проверяет это сервер
  * (`/api/account/delete`), не приложение.
  */
-export const CONFIRMATION: Record<SensitiveAction, 'gate_fresh' | 'email_otp'> = {
+export type Confirmation = 'gate_fresh' | 'gate_now' | 'email_otp';
+
+export const CONFIRMATION: Record<SensitiveAction, Confirmation> = {
   clear_progress: 'gate_fresh',
   delete_child: 'gate_fresh',
   revoke_consent: 'gate_fresh',
@@ -197,12 +199,22 @@ export const CONFIRMATION: Record<SensitiveAction, 'gate_fresh' | 'email_otp'> =
   change_band: 'gate_fresh',
   grant_access: 'gate_fresh',
   transfer_ownership: 'gate_fresh',
-  delete_account: 'email_otp',
+  /**
+   * Временно, до облака (решение владельца 2026-10-25, проверка приватности): почты в локальной
+   * версии нет, поэтому `gate_now` — PIN вводится на самом экране удаления, окно свежести не
+   * считается. С появлением `cloud_sync` у аккаунта возвращается `email_otp` — `deleteAccountConfirmation`.
+   */
+  delete_account: 'gate_now',
 };
 
-/** Можно ли выполнить действие без нового подтверждения прямо сейчас. */
+/** Чем подтверждается удаление аккаунта: пока нет облачного согласия — PIN на месте, с ним — код из письма. */
+export function deleteAccountConfirmation(hasCloudGrant: boolean): Confirmation {
+  return hasCloudGrant ? 'email_otp' : CONFIRMATION.delete_account;
+}
+
+/** Можно ли выполнить действие без нового подтверждения прямо сейчас. `gate_now` и `email_otp` — никогда. */
 export function canPerform(action: SensitiveAction, s: GateSession | null, now: number): boolean {
-  if (CONFIRMATION[action] === 'email_otp') return false;
+  if (CONFIRMATION[action] !== 'gate_fresh') return false;
   return isOpen(s, now) && now - (s as GateSession).confirmedAt <= FRESH_CONFIRM_MS;
 }
 

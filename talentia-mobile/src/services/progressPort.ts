@@ -42,14 +42,13 @@ export const noRecordPort: ProgressPort = {
 export function sqlitePort(db: SqlDb): ProgressPort {
   return {
     async load(childId) {
-      const [skills, atlas, lessonCounter] = await Promise.all([
+      const [skills, atlas, lessonCounter, formatsSeen] = await Promise.all([
         loadChildState(db, childId, 'skills'),
         loadChildState(db, childId, 'atlas'),
         loadChildState(db, childId, 'lessonCounter'),
+        loadChildState(db, childId, 'formatsSeen'),
       ]);
-      // `formatsSeen` в `child_state` пока не хранится: до записи этого ключа демо составного формата
-      // повторяется раз в запуск — приемлемо для прототипа, отмечено в REBUILD.md «Отложено».
-      return { skills: skills ?? [], atlas: atlas ?? [], lessonCounter: lessonCounter ?? 0, formatsSeen: [] };
+      return { skills: skills ?? [], atlas: atlas ?? [], lessonCounter: lessonCounter ?? 0, formatsSeen: formatsSeen ?? [] };
     },
     commit: (childId, c, at) => commitLesson(db, childId, c, at),
   };

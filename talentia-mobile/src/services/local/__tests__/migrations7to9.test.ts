@@ -82,11 +82,11 @@ describe('накат миграций 7 → 9 на базе с данными', 
     expect(await dump(db)).toEqual(before);
   });
 
-  it('user_version после наката — последняя версия (13)', async () => {
+  it('user_version после наката — последняя версия (14)', async () => {
     const db = await v7WithData();
     await migrate(db);
     const [{ user_version }] = await db.all<{ user_version: number }>('PRAGMA user_version');
-    expect([user_version, MIGRATIONS.length]).toEqual([13, 13]);
+    expect([user_version, MIGRATIONS.length]).toEqual([14, 14]);
   });
 
   it('журнал выборов перенесён из сессий: по порядку номеров сессий, без пустых, chosen_by по умолчанию child', async () => {

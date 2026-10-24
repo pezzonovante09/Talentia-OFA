@@ -43,6 +43,10 @@ function fakeDevice(keys: string[]) {
       store = store.filter((k) => !ks.includes(k));
     },
     removeSecure: async (ks) => void calls.push(`secure:${ks.join(',')}`),
+    getItem: async () => null,
+    setItem: async () => undefined,
+    getSecure: async () => null,
+    setSecure: async () => undefined,
     deleteCacheDir: async (p) => void calls.push(`dir:${p.join('/')}`),
     cancelChildNotifications: async (id) => void calls.push(`notify:${id}`),
     cancelAllNotifications: async () => void calls.push('notify:*'),

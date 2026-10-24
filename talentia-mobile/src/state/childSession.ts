@@ -155,7 +155,7 @@ export const useChildSession = create<ChildSessionState>((set, get) => ({
     const result = lessonCommitOf(state, { lesson, skills: s.progress.skills, atlas: s.progress.atlas, runId });
     let outcome: FinishOutcome = 'persisted';
     try {
-      await port.commit(s.childId, { run: result.run, skills: result.skills, atlas: result.atlas, nextLessonNumber: result.nextLessonNumber }, at);
+      await port.commit(s.childId, { run: result.run, skills: result.skills, atlas: result.atlas, nextLessonNumber: result.nextLessonNumber, formatsSeen: state.formatsSeen }, at);
     } catch (e) {
       if (!(e instanceof LessonConsentRequiredError)) throw e;
       outcome = 'session_only';

@@ -500,6 +500,19 @@ BEGIN SELECT RAISE(ABORT, 'child_state: итоги урока только че�
   )
   .join('\n')}
 `,
+  // 14. formatsSeen — составные форматы, которые ребёнок уже встречал (демо первой встречи один раз,
+  // №35) — итог урока под теми же воротами, что skills/atlas/lessonCounter (этап 10, 2026-10-25).
+  `
+${['INSERT', 'UPDATE']
+  .map(
+    (op) => `
+CREATE TRIGGER child_state_formats_need_consent_${op.toLowerCase()} BEFORE ${op} ON child_state
+WHEN NEW.key = 'formatsSeen'
+  AND NOT EXISTS (SELECT 1 FROM lesson_write_gate WHERE child_id = NEW.child_id)
+BEGIN SELECT RAISE(ABORT, 'child_state: formatsSeen только через commit.ts при согласии account_local'); END;`,
+  )
+  .join('\n')}
+`,
 ];
 
 /**

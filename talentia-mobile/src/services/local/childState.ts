@@ -15,6 +15,7 @@ import type { IdentifySet } from '../../domain/abaIdentifySet';
 import type { AbaSessionState } from '../../domain/abaSession';
 import type { RoutineRunState, RoutineSettingOpen } from '../../domain/abaRoutineRun';
 import type { BreakCardState } from '../../domain/abaBreakCard';
+import type { TaskFormat } from '../../types/task';
 import type { SqlDb } from './sql';
 
 export type ChildStateValues = {
@@ -22,6 +23,8 @@ export type ChildStateValues = {
   atlas: AtlasEntry[];
   /** Сквозной номер урока ребёнка — счётчик для `lastSeenLesson`. */
   lessonCounter: number;
+  /** Составные форматы, которые ребёнок уже встречал (демо первой встречи — один раз, №35). */
+  formatsSeen: TaskFormat[];
   abaTargets: Record<string, AbaTargetState>;
   tokenTraining: TokenTrainingState;
   identifySets: IdentifySet[];
@@ -81,7 +84,7 @@ export const ABA_STATE_KEYS = [
  * Ключи итогов урока, которые пишутся только при согласии `account_local` (№124). Запись в обход
  * `commit.ts` отклоняет сама база (`schema.ts`, миграция 13 — список там продублирован).
  */
-export const LESSON_STATE_KEYS = ['skills', 'atlas', 'lessonCounter'] as const satisfies readonly ChildStateKey[];
+export const LESSON_STATE_KEYS = ['skills', 'atlas', 'lessonCounter', 'formatsSeen'] as const satisfies readonly ChildStateKey[];
 
 /** Что удаляет отзыв согласия на ABA: состояние и пауза — пауза тоже говорит, что режим был. */
 export const ABA_DELETED_KEYS = [...ABA_STATE_KEYS, 'abaPaused'] as const satisfies readonly ChildStateKey[];

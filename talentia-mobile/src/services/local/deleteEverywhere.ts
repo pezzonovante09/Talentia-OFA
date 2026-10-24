@@ -21,6 +21,7 @@ import {
 } from './device';
 import type { ConsentEvent } from '../../domain/consent';
 import { readConsentLog } from './consentLog';
+import { removeChildFromList } from './profiles';
 import { purgeChild, wipeDevice } from './purge';
 import type { SqlDb } from './sql';
 import { consentPlan, delivered, failedEvents, LOCAL_ONLY_SCOPES } from './sync';
@@ -36,6 +37,8 @@ export type DeleteChildInput = {
    * не было — сразу `true`. `false` или ошибка — удаление не начинается.
    */
   deliverRevocation: () => Promise<boolean>;
+  /** Аккаунт, из списка детей которого ребёнок убирается (`profiles.ts`); без него список не трогается. */
+  accountId?: string;
 };
 
 export async function deleteChildEverywhere(input: DeleteChildInput): Promise<CleanedPart[]> {
@@ -50,6 +53,7 @@ export async function deleteChildEverywhere(input: DeleteChildInput): Promise<Cl
 
   const prefix = childKeyPrefix(childId);
   await device.removeKeys((await device.keys()).filter((k) => k.startsWith(prefix)));
+  if (input.accountId) await removeChildFromList(device, input.accountId, childId);
   done.push('async_storage');
 
   await device.deleteCacheDir(childVoiceDir(childId));
