@@ -41,6 +41,10 @@ function scan(dir: string, rel = ''): { modules: string[]; strays: string[] } {
       const sub = scan(path.join(dir, entry.name), relPath);
       out.modules.push(...sub.modules);
       out.strays.push(...sub.strays);
+    } else if (relPath === 'index.ts') {
+      // Реестр регионов (`src/content/index.ts`) только переэкспортирует темы модулей контента:
+      // читать его как модуль — считать каждый урок дважды. Его проверяет `__tests__/registry.test.ts`.
+      continue;
     } else if (/\.tsx?$/.test(entry.name) && !entry.name.endsWith('.d.ts')) {
       out.modules.push(relPath);
     } else if (!entry.name.endsWith('.md')) {

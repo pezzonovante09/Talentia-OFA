@@ -322,6 +322,13 @@
       "numeral-1-5": "Knows the numerals up to five",
       "zero": "Knows zero",
       "numeral-6-10": "Knows the numerals up to ten"
+    },
+    "regions": {
+      "numbers": {
+        "title": "Number Valley",
+        "in": "in Number Valley",
+        "to": "to Number Valley"
+      }
     }
   }
 }
