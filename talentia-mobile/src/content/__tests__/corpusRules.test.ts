@@ -649,6 +649,50 @@ describe('гард корпуса: shape и count', () => {
     taskOf(c, 0, 'order').items[0].count = count;
     expectRed('shapeCount', c, `count=${count}`);
   });
+
+  it('ноль в корзинке допустим, если все кучки задания в корзинках (№136)', () => {
+    const c = goodCorpus();
+    const t = taskOf(c, 0, 'order');
+    for (const i of t.items) i.container = 'basket';
+    t.items[0].count = 0;
+    expect(run('shapeCount', c)).toEqual([]);
+    expect(run('basketAll', c)).toEqual([]);
+  });
+
+  it('ловит отрицательное число и в корзинке', () => {
+    const c = goodCorpus();
+    const t = taskOf(c, 0, 'order');
+    for (const i of t.items) i.container = 'basket';
+    t.items[0].count = -1;
+    expectRed('shapeCount', c, 'count=-1, нужно целое ≥ 0');
+  });
+
+  it('ловит container без shape', () => {
+    const c = goodCorpus();
+    taskOf(c, 0, 'match').pairs[1].right.container = 'basket';
+    expectRed('shapeCount', c, 'pairs[p2].right — container без shape');
+  });
+});
+
+describe('гард корпуса: корзинки (basketAll)', () => {
+  it('ловит кучку без корзинки, когда в задании корзинки есть', () => {
+    const c = goodCorpus();
+    const t = taskOf(c, 0, 'order');
+    t.items[0].container = 'basket';
+    t.items[0].count = 0;
+    expectRed('basketAll', c, 'items[i2] — кучка без корзинки');
+  });
+
+  it('стимул без корзинки при корзинках в вариантах — красно', () => {
+    const c = goodCorpus();
+    const t = taskOf(c, 0, 'choose');
+    for (const o of t.options) if (o.shape) o.container = 'basket';
+    expectRed('basketAll', c, 'stimulus — кучка без корзинки');
+  });
+
+  it('без корзинок правило молчит', () => {
+    expect(run('basketAll', goodCorpus())).toEqual([]);
+  });
 });
 
 describe('гард корпуса: ключи локали', () => {

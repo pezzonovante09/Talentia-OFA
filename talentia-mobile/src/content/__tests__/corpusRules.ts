@@ -920,9 +920,10 @@ export const RULES = {
   shapeCount: {
     // `shape` рисуется `count` раз. Фигура без числа — рендерер не знает,
     // сколько рисовать; число без фигуры — нечего рисовать; ноль фигур —
-    // пустая карточка в задании на счёт. Группы не проверяются: у них `shape`
+    // пустая карточка в задании на счёт, если нет корзинки (`container`, №136):
+    // в корзинке ноль — это пустая корзинка. Группы не проверяются: у них `shape`
     // — значок корзины, и `count` схема группе не даёт.
-    title: 'shape только вместе с count и наоборот, count — целое ≥ 1, layout — только у фигур',
+    title: 'shape только вместе с count и наоборот, count — целое ≥ 1 (0 — только в корзинке), layout и container — только у фигур',
     check: (corpus) =>
       formatTasksOf(corpus).flatMap(({ task, at }) =>
         mediaOf(task, true).flatMap(({ m, at: el }) => {
@@ -931,16 +932,33 @@ export const RULES = {
             bad.push(`${at}: ${el} — shape и count задаются только вместе`);
           }
           if (m.layout !== undefined && m.shape === undefined) bad.push(`${at}: ${el} — layout без shape: раскладывать нечего`);
+          if (m.container !== undefined && m.shape === undefined) bad.push(`${at}: ${el} — container без shape: класть в корзинку нечего`);
           if (m.numeral !== undefined) {
             if (m.shape !== undefined || m.count !== undefined || m.image !== undefined) bad.push(`${at}: ${el} — карточка-число без фигур и картинки`);
             if (!(Number.isInteger(m.numeral) && m.numeral >= 0 && m.numeral <= 10)) bad.push(`${at}: ${el} numeral=${m.numeral}, нужно целое 0–10`);
           }
-          if (m.count !== undefined && !(Number.isInteger(m.count) && m.count >= 1)) {
-            bad.push(`${at}: ${el} count=${m.count}, нужно целое ≥ 1`);
+          const min = m.container !== undefined ? 0 : 1;
+          if (m.count !== undefined && !(Number.isInteger(m.count) && m.count >= min)) {
+            bad.push(`${at}: ${el} count=${m.count}, нужно целое ≥ ${min}${min === 1 ? ' (0 — только в корзинке, container)' : ''}`);
           }
           return bad;
         }),
       ),
+  },
+
+  basketAll: {
+    // Решение №136, SCREENS.md 3.8: в задании с нулём все кучки лежат в одинаковых корзинках, и
+    // ноль — та же корзинка без фигур. Корзинка только у нуля выдаёт ответ: он находится по
+    // единственной корзинке, а не по пустоте.
+    title: 'если в задании есть корзинка (container), все кучки задания — в корзинках',
+    check: (corpus) =>
+      formatTasksOf(corpus).flatMap(({ task, at }) => {
+        const piles = mediaOf(task, true).filter(({ m }) => m.shape !== undefined);
+        if (!piles.some(({ m }) => m.container !== undefined)) return [];
+        return piles
+          .filter(({ m }) => m.container === undefined)
+          .map(({ at: el }) => `${at}: ${el} — кучка без корзинки, а в задании корзинки есть: ноль найдётся по единственной корзинке`);
+      }),
   },
 
   keysExist: {
