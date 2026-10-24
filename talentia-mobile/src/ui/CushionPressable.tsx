@@ -10,11 +10,14 @@
  * Анимация — RN `Animated` без worklets: одинаково на устройстве и в Expo Web.
  */
 import { useRef } from 'react';
-import { Animated, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Animated, Platform, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useDesign } from '../design';
 import { cushionByRole, pressScale, selectedStroke, type CushionRole } from '../design/tokens';
 import type { ColorName } from './colors';
+
+/** На web нативного драйвера анимаций нет — RN предупреждает на каждом касании. */
+const NATIVE_DRIVER = Platform.OS !== 'web';
 
 export type CushionPressableProps = {
   role: CushionRole;
@@ -72,7 +75,7 @@ export function CushionPressable({
   const lastPress = useRef(0);
 
   const animate = (value: Animated.Value, toValue: number, duration: number) =>
-    Animated.timing(value, { toValue, duration, useNativeDriver: true }).start();
+    Animated.timing(value, { toValue, duration, useNativeDriver: NATIVE_DRIVER }).start();
 
   const translateY = sink.interpolate({ inputRange: [0, 1], outputRange: [0, offsetY] });
 

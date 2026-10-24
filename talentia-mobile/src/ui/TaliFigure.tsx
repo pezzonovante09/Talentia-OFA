@@ -8,11 +8,14 @@
  * Сумка и поза не различаются касанием (`taliSatchelRule`): вся фигура — одна цель.
  */
 import { useRef } from 'react';
-import { Animated, Pressable, View } from 'react-native';
+import { Animated, Platform, Pressable, View } from 'react-native';
 
 import { TALI_POSES, type TaliPose } from '../assets/registry';
 import { useDesign } from '../design';
 import { pressScale, taliCrop } from '../design/tokens';
+
+/** На web нативного драйвера анимаций нет — RN предупреждает на каждом касании. */
+const NATIVE_DRIVER = Platform.OS !== 'web';
 
 export type TaliFigureProps = {
   pose: TaliPose;
@@ -40,7 +43,7 @@ export function TaliFigure({ pose, size, crop = false, onPress, accessibilityLab
   );
 
   if (!onPress) return figure;
-  const to = (v: number) => Animated.timing(squeeze, { toValue: v, duration: theme.motion.press, useNativeDriver: true }).start();
+  const to = (v: number) => Animated.timing(squeeze, { toValue: v, duration: theme.motion.press, useNativeDriver: NATIVE_DRIVER }).start();
   return (
     <Pressable
       accessibilityRole="button"
