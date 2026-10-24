@@ -3,8 +3,15 @@
   "configurations": [
     {
       "name": "talentia-web",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["expo", "start", "--web", "--port", "8081"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--max-old-space-size=4096",
+        "node_modules/expo/bin/cli",
+        "start",
+        "--web",
+        "--port",
+        "8081"
+      ],
       "cwd": "talentia-mobile",
       "port": 8081
     }

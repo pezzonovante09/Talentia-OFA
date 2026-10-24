@@ -15,4 +15,15 @@ config.transformer.babelTransformerPath = require.resolve('react-native-svg-tran
 config.resolver.assetExts = config.resolver.assetExts.filter((ext) => ext !== 'svg');
 config.resolver.sourceExts = [...config.resolver.sourceExts, 'svg'];
 
+// expo-sqlite на web: wasm как ассет и заголовки изоляции для OPFS (только dev-сервер Expo Web).
+config.resolver.assetExts = [...config.resolver.assetExts, 'wasm'];
+config.server = {
+  ...config.server,
+  enhanceMiddleware: (middleware) => (req, res, next) => {
+    res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    return middleware(req, res, next);
+  },
+};
+
 module.exports = config;

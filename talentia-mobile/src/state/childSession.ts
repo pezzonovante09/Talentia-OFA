@@ -25,6 +25,7 @@ import {
 import { accruePortion, afterCompletion, gameDay, NEW_PORTION, type NodeState, type Portion } from '../domain/mapProgress';
 import type { InterfaceLang } from '../domain/regionVisibility';
 import { LessonConsentRequiredError } from '../services/local/accountConsent';
+import type { ChildProfile } from '../services/local/profiles';
 import { EMPTY_PROGRESS, type ProgressPort, type ProgressSnapshot } from '../services/progressPort';
 import type { AgeBand } from '../types/task';
 
@@ -37,7 +38,7 @@ export type ChildSettings = {
   kyrgyzRegion: false;
 };
 
-export type SessionMode = 'none' | 'no_record';
+export type SessionMode = 'none' | 'no_record' | 'account';
 
 export type FinishOutcome = 'persisted' | 'session_only';
 
@@ -57,6 +58,8 @@ export type ChildSessionState = {
   pendingResult: LessonCommitResult | null;
 
   startNoRecordSession(input: { childId: string; now: Date; interfaceLang: InterfaceLang }): void;
+  /** Сеанс ребёнка с аккаунтом: настройки из профиля, прогресс — снимок с устройства (`ProgressPort.load`). */
+  startAccountSession(input: { profile: ChildProfile; snapshot: ProgressSnapshot; now: Date }): void;
   setSettings(patch: Partial<Pick<ChildSettings, 'calmMode' | 'focusMode' | 'soundEffects'>>): void;
   /** Начать или продолжить урок. Возвращает состояние оркестратора для экрана. */
   openLesson(input: { lessonId: string; now: Date; seed: number; nodeState: NodeState }): LessonSessionState;
@@ -91,6 +94,25 @@ const EMPTY = {
 
 export const useChildSession = create<ChildSessionState>((set, get) => ({
   ...EMPTY,
+
+  startAccountSession({ profile, snapshot, now }) {
+    const settings: ChildSettings = {
+      band: profile.band,
+      calmMode: profile.calmMode,
+      focusMode: profile.focusMode,
+      soundEffects: profile.soundEffects,
+      interfaceLang: profile.interfaceLang,
+      kyrgyzRegion: false,
+    };
+    set({
+      ...EMPTY,
+      mode: 'account',
+      childId: profile.childId,
+      settings,
+      progress: snapshot,
+      portion: accruePortion(NEW_PORTION, gameDay(now), settings.band),
+    });
+  },
 
   startNoRecordSession({ childId, now, interfaceLang }) {
     const settings = { ...DEFAULT_SETTINGS, interfaceLang };

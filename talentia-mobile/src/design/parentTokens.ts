@@ -116,13 +116,38 @@ export type ParentTypeStyle = {
 };
 
 /** Только Nunito: Comfortaa — голос детского экрана. */
-export const parentTypography: Record<'heading' | 'body' | 'caption' | 'number', ParentTypeStyle> = {
+export const parentTypography: Record<'heading' | 'body' | 'caption' | 'number' | 'label', ParentTypeStyle> = {
   heading: { size: 24, lineHeight: 30, weight: '800', family: 'Nunito' },
   body: { size: 16, lineHeight: 22, weight: '400', family: 'Nunito' },
   caption: { size: 14, lineHeight: 20, weight: '600', family: 'Nunito' },
   /** Числа недели: табличные цифры, чтобы «12» и «7» стояли в колонке. */
   number: { size: 32, lineHeight: 36, weight: '800', family: 'Nunito', tabularNums: true },
+  /** Кнопки и названия строк (`docs/design/parent-screens-2026-10-25.md`). */
+  label: { size: 16, lineHeight: 22, weight: '600', family: 'Nunito' },
 };
+
+/* ───────────── раскладка раздела (docs/design/parent-screens-2026-10-25.md, этап 10) ───────────── */
+
+/** Заливка под пальцем: сдвиг на ~12 % к `text` (светлая темнеет, тёмная светлеет); контрасты посчитаны в дизайн-доке. */
+export const parentPressed: Record<Scheme, { card: string; primary: string; error: string }> = {
+  light: { card: '#E9E4DC', primary: '#4A2AA6', error: '#9E1717' },
+  dark: { card: '#302D2A', primary: '#AE95FF', error: '#FF8A8A' },
+};
+export const parentScrim = 'rgba(0,0,0,0.4)';
+export const parentSpacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
+/** Точки PIN Ø14 с зазором 16, клавиша 72×60 с зазором 12 (блок 240×276), вспышка ошибки 140 мс. */
+export const parentPin = { dot: 14, dotGap: 16, ring: 2, keyW: 72, keyH: 60, keyGap: 12, errorFlashMs: 140, length: 6 } as const;
+/** Сегменты: выбранный — заливка `text`, подпись `card` (не `primary`: иначе экран настроек — четыре кнопки). */
+export const parentSegmented = { height: 40, minSegment: 48, selectedFill: 'text', selectedLabel: 'card' } as const;
+export const parentSwitch = { trackOn: 'primary', trackOff: 'hairline', thumb: 'card' } as const;
+export const parentRow = { minHeight: 56, padX: 16, dividerInset: 16, chevron: 24 } as const;
+export const parentCard = { padX: 16, padY: 12, gap: 16 } as const;
+export const parentButton = { height: 48, guardMs: 300 } as const;
+/** Полоса недели: 7 клеток 36 с зазором 8; день с занятием — заливка `text`, без — пунктир `hairline`. */
+export const weekStrip = { cell: 36, gap: 8, filled: 'text', emptyDash: 'hairline' } as const;
+/** Автозакрытие 2 мин, свежесть подтверждения 5 мин, блокировка 1 → 5 → 15 мин (`domain/parentGate.ts`). */
+export const parentIdle = { lockAfterMs: 120_000, confirmFreshMs: 300_000, lockoutMin: [1, 5, 15] } as const;
+export const parentHeader = 48;
 
 export const parentShape = {
   /** Контура и подушки нет: ничто не выглядит нажимаемым на ощупь. */

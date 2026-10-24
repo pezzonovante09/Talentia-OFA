@@ -353,12 +353,6 @@
     "forAdults": "For adults",
     "callAdult": "Call a grown-up"
   },
-  "parentGate": {
-    "stub": {
-      "title": "For adults",
-      "body": "The parent area will live here: PIN, child profile and consents. It is not in this build yet — tap the cross to go back."
-    }
-  },
   "map": {
     "lockedInOrder": "This lesson opens in order",
     "sleeping": "This lesson opens tomorrow",
@@ -397,5 +391,151 @@
     "toMap": "To the map",
     "pageAhead": "This page is still ahead",
     "replay": "Repeat"
+  },
+  "parent": {
+    "failed": "That did not work. Try again",
+    "title": "For adults",
+    "done": "Done",
+    "back": "Back",
+    "close": "Close",
+    "next": "Next",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "pin": {
+      "title": "For adults",
+      "hint": "The layout changes every time",
+      "wrong": "Wrong PIN",
+      "attemptsLeft": "Attempts left: {{n}}",
+      "locked": "Too many attempts. Try again in",
+      "backspace": "Delete"
+    },
+    "setup": {
+      "step": "Step {{n}} of {{total}}",
+      "intentTitle": "Checking that you are an adult",
+      "intentHint": "This is a threshold, not an age check",
+      "intentWrong": "Not right. Here is another one",
+      "answerPlaceholder": "Answer",
+      "pinTitle": "Make up a six-digit PIN",
+      "pinHint": "Not the same digits and not in a row, like 123456",
+      "pinWeak": "This PIN is too simple",
+      "repeatTitle": "Repeat the PIN",
+      "repeatMismatch": "They do not match, try again"
+    },
+    "consent": {
+      "title": "Everything stays on this device",
+      "body": "Nothing goes online until you turn it on. Lessons played, skills and the in-game name live here. To pick the next lessons and show you what is working, the app remembers which lessons were played, when and how long they took. Lesson records are kept for 12 months. You can delete everything in Data. To refuse, close the setup: nothing will remain on the device.",
+      "policy": "Privacy policy",
+      "version": "Text {{version}} · {{date}}",
+      "accept": "Continue",
+      "updatedTitle": "The consent text has changed",
+      "whatChanged": "What changed",
+      "confirm": "Confirm",
+      "deleteInstead": "Delete the profile",
+      "status": {
+        "granted": "Active",
+        "outdated": "The text changed — confirm again",
+        "not_asked": "Not asked",
+        "revoked": "Revoked"
+      },
+      "accepted": "Accepted {{date}} · text {{version}}",
+      "localScope": "Storage on this device",
+      "revokeLocal": "Revoke and delete the account",
+      "readAndConfirm": "Read and confirm"
+    },
+    "policy": {
+      "title": "Privacy policy",
+      "body": "Draft. The app keeps the child's data only on this device: lessons played, skills, in-game name, settings and the consent log. Nothing is sent online. Lesson records are deleted after 12 months. A parent can delete data in Data; export arrives with the cloud copy. Final text follows legal review."
+    },
+    "profile": {
+      "newTitle": "New profile",
+      "nameLabel": "Name in the game",
+      "nameHint": "You can leave it empty. A real name is not needed",
+      "band": "Age band",
+      "lang": "Language",
+      "kyrgyzRegion": "Kyrgyz region",
+      "kyrgyzRegionHint": "Tasks about Kyrgyzstan on the map",
+      "create": "Create profile",
+      "unnamed": "Profile {{n}}",
+      "settings": "Settings",
+      "sessionMinutes": "Session length",
+      "minutes": "{{n}} min",
+      "haptics": "Vibration on touch",
+      "hapticsHint": "A light vibration when the child touches the screen",
+      "confirmChange": "Confirm to change",
+      "calm": "Calm mode",
+      "focus": "Focus",
+      "sound": "Sounds and music"
+    },
+    "home": {
+      "lastRun": "Last time — {{when}}",
+      "never": "No lessons yet",
+      "today": "today",
+      "yesterday": "yesterday",
+      "daysAgo": "{{n}} days ago",
+      "week": "This week",
+      "daysOf7": "days of 7",
+      "minutes": "minutes",
+      "lessons": "lessons",
+      "reviews": "reviews",
+      "mastered": "Mastered",
+      "showAll": "Show all ({{n}})",
+      "nothingYet": "Nothing yet — topics appear after the first lesson",
+      "hard": "Hard going",
+      "hardStats": "{{attempts}} attempts, {{correct}} correct",
+      "hardAdvice": "At home: count something real together — spoons, steps, buttons.",
+      "nothingStuck": "Nothing is stuck right now",
+      "inProgress": "In progress",
+      "inProgressHint": "Skills between mastered and hard",
+      "settings": "Child settings",
+      "data": "Data",
+      "consents": "Consents",
+      "export": "Export",
+      "deletion": "Clearing and deletion",
+      "bandRow": "Age band"
+    },
+    "data": {
+      "title": "Data",
+      "exportJson": "Download JSON",
+      "exportCsv": "Download CSV",
+      "exportHint": "Built on the device: profile, lessons, skills, consent log",
+      "exportSoon": "Saving the file arrives with the cloud copy",
+      "deletion": "Deletion",
+      "clearProgress": "Clear progress",
+      "deleteChild": "Delete the child's profile",
+      "deleteAccount": "Delete the account",
+      "confirmClearTitle": "Clear progress: {{name}}?",
+      "confirmClearBody": "Lessons and skills are deleted at once, no recycle bin. Profile and settings stay.",
+      "confirmChildTitle": "Delete profile: {{name}}?",
+      "confirmChildBody": "Profile, lessons and skills are deleted at once, no recycle bin.",
+      "confirmAccountTitle": "Delete the account?",
+      "confirmAccountBody": "Everything on this device is deleted: child profiles, lessons, skills, PIN and the consent log.",
+      "remains": "What remains: nothing",
+      "pinRequired": "Enter the PIN to confirm",
+      "working": "Deleting…",
+      "deletedTitle": "Deleted",
+      "deletedBody": "Data on this device has been cleared",
+      "toProfiles": "To profiles",
+      "exportFirst": "Download first",
+      "deleteWithoutExport": "Delete without export"
+    },
+    "mastered": {
+      "title": "Mastered"
+    }
+  },
+  "region": {
+    "numbers": "Numbers",
+    "words": "Words",
+    "nature": "Nature",
+    "workshop": "Workshop",
+    "kyrgyz": "Kyrgyz"
+  },
+  "weekdays": {
+    "d1": "Mon",
+    "d2": "Tue",
+    "d3": "Wed",
+    "d4": "Thu",
+    "d5": "Fri",
+    "d6": "Sat",
+    "d7": "Sun"
   }
 }

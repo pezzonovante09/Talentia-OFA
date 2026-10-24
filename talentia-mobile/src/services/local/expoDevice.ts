@@ -11,7 +11,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { Directory, Paths } from 'expo-file-system';
+import { Platform } from 'react-native';
 import type { DeviceStore } from './device';
+
+/**
+ * SecureStore на web недоступен. В Expo Web-прототипе (только `__DEV__`) хеш PIN лежит в AsyncStorage
+ * под префиксом — это ворота прототипа; в выпуске раздел на web не показывается (PARENT.md «Web»).
+ */
+const WEB_SECURE_PREFIX = 'talentia:web-secure:';
+const webSecure = Platform.OS === 'web' && __DEV__;
 
 export function expoDevice(): DeviceStore {
   return {
@@ -20,13 +28,19 @@ export function expoDevice(): DeviceStore {
       if (keys.length) await AsyncStorage.multiRemove([...keys]);
     },
     async removeSecure(keys) {
+      if (webSecure) {
+        await AsyncStorage.multiRemove(keys.map((k) => WEB_SECURE_PREFIX + k));
+        return;
+      }
       for (const k of keys) await SecureStore.deleteItemAsync(k);
     },
     getItem: (key) => AsyncStorage.getItem(key),
     setItem: (key, value) => AsyncStorage.setItem(key, value),
-    getSecure: (key) => SecureStore.getItemAsync(key),
-    setSecure: (key, value) => SecureStore.setItemAsync(key, value),
+    getSecure: (key) => (webSecure ? AsyncStorage.getItem(WEB_SECURE_PREFIX + key) : SecureStore.getItemAsync(key)),
+    setSecure: (key, value) => (webSecure ? AsyncStorage.setItem(WEB_SECURE_PREFIX + key, value) : SecureStore.setItemAsync(key, value)),
     async deleteCacheDir(path) {
+      // web: файловой системы нет (`Paths.cache` недоступен), кэша голоса/экспорта там тоже нет
+      if (Platform.OS === 'web') return;
       const dir = new Directory(Paths.cache, ...path);
       if (dir.exists) dir.delete();
     },

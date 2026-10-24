@@ -15,6 +15,10 @@ jest.mock('expo-splash-screen', () => ({ preventAutoHideAsync: () => Promise.res
 jest.mock('expo-crypto', () => ({
   // Детерминированные байты: id и семена в тестах воспроизводимы.
   getRandomBytes: (n) => Uint8Array.from({ length: n }, (_, i) => (i * 37 + 11) & 0xff),
+  CryptoDigestAlgorithm: { SHA256: 'SHA-256' },
+  digestStringAsync: async (_alg, s) => require('node:crypto').createHash('sha256').update(s).digest('hex'),
 }));
+// Экспо-SQLite в Node нет: экраны аккаунта в тестах получают базу через `setDevice` + `memoryDb`.
+jest.mock('expo-sqlite', () => ({}));
 jest.mock('@expo-google-fonts/nunito', () => ({ Nunito_400Regular: 1, Nunito_700Bold: 2, Nunito_800ExtraBold: 3 }));
 jest.mock('@expo-google-fonts/comfortaa', () => ({ Comfortaa_600SemiBold: 4, Comfortaa_700Bold: 5 }));

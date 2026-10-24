@@ -62,6 +62,7 @@
     "@testing-library/react-native": "^14.1.0",
     "@types/jest": "^29.5.14",
     "@types/react": "~19.1.0",
+    "@types/sql.js": "^1.4.11",
     "dotenv": "^16.4.7",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
@@ -69,6 +70,7 @@
     "jest-expo": "~54.0.18",
     "react-native-svg-transformer": "^1.5.3",
     "sharp": "^0.34.5",
+    "sql.js": "^1.15.1",
     "svgo": "^4.1.0",
     "typescript": "~5.9.2"
   },

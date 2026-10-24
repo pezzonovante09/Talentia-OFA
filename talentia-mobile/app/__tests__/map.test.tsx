@@ -1,7 +1,7 @@
 /**
  * Карта региона на чистой установке (§2 дизайн-дока): полоса с названием, узлы «повторение» + открытый +
  * два замка + хвост, Tali у открытого узла; открытый узел ведёт в урок, замок отвечает голосом, «ползунки» —
- * гейт родителя (№141); без сеанса — редирект на первый запуск.
+ * родительский раздел (№141); без сеанса — редирект на первый запуск.
  */
 import MapScreen from '../map';
 import { regionLessons } from '../../src/content';
@@ -66,7 +66,7 @@ describe('карта региона', () => {
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/lesson/[lessonId]', params: { lessonId: lessons[0].id } });
   });
 
-  it('Tali называет регион и следующий шаг; «ползунки» открывают гейт родителя; атлас — голос', async () => {
+  it('Tali называет регион и следующий шаг; «ползунки» ведут в родительский раздел; атлас — голос', async () => {
     start();
     await renderWithProviders(<MapScreen />);
     await fireEvent.press(screen.getByTestId('map-tali-press'));
@@ -74,7 +74,7 @@ describe('карта региона', () => {
     await fireEvent.press(screen.getByTestId('map-atlas'));
     expect(voice.last?.key).toBe('map.atlasLater');
     await fireEvent.press(screen.getByTestId('map-settings'));
-    expect(screen.getByTestId('adult-gate')).toBeTruthy();
+    expect(mockPush).toHaveBeenCalledWith('/parent');
   });
 
   it('focus: виден текущий узел с соседом и полоса целиком', async () => {
