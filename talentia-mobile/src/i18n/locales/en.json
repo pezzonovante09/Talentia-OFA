@@ -71,7 +71,8 @@
       "seven": "seven",
       "eight": "eight",
       "nine": "nine",
-      "ten": "ten"
+      "ten": "ten",
+      "zero": "zero"
     },
     "numbers": {
       "count": {
@@ -196,12 +197,131 @@
           "stones": "stones",
           "leaves": "leaves"
         }
+      },
+      "num": {
+        "title": "Numerals"
+      },
+      "num-l1": {
+        "title": "Numerals up to five",
+        "hook": "I label the piles with numerals. Look!",
+        "atlas": "Every pile up to five has its own numeral.",
+        "model": {
+          "prompt": "Which numeral fits?",
+          "stimulus": "leaves",
+          "s1": "Three leaves: one, two, three.",
+          "s2": "Three leaves, and this is numeral three."
+        },
+        "t1": {
+          "prompt": "Count the stones. Which numeral?",
+          "stimulus": "stones",
+          "hint": "Count the pile, then find that numeral.",
+          "explain": "Four stones. This is numeral four!"
+        },
+        "t2": {
+          "prompt": "Match each pile to its numeral.",
+          "hint": "Count the pile, then look for the numeral.",
+          "explain": "One stone, five berries, three leaves.",
+          "stones": "stone",
+          "berries": "berries",
+          "leaves": "leaves"
+        },
+        "t3": {
+          "prompt": "How many berries? Pick the numeral.",
+          "stimulus": "berries",
+          "hint": "Look at the berries all at once.",
+          "explain": "Two berries. This is numeral two!"
+        },
+        "t4": {
+          "prompt": "Put the numerals in order.",
+          "hint": "Count on from two. Which comes first?",
+          "explain": "Three, four, five, in order!"
+        }
+      },
+      "num-l2": {
+        "title": "Zero",
+        "hook": "Help me: which basket is empty?",
+        "atlas": "An empty basket means zero.",
+        "model": {
+          "prompt": "How many are in the basket?",
+          "stimulus": "basket",
+          "s1": "The basket is empty. Nothing inside.",
+          "s2": "Empty means zero. Here is zero!"
+        },
+        "t1": {
+          "prompt": "Which basket has zero?",
+          "hint": "Zero means empty.",
+          "explain": "Here it is: nothing inside. That is zero!",
+          "berries": "basket with berries",
+          "empty": "empty basket",
+          "leaves": "basket with leaves"
+        },
+        "t2": {
+          "prompt": "Match each basket to its numeral.",
+          "hint": "How many are in the basket? Find that number.",
+          "explain": "Empty is zero, one berry, two leaves.",
+          "empty": "empty basket",
+          "berry": "basket with a berry",
+          "leaves": "basket with leaves"
+        },
+        "t3": {
+          "prompt": "How many leaves? Pick the numeral.",
+          "stimulus": "leaves",
+          "hint": "Touch each leaf as you count.",
+          "explain": "Five leaves. This is numeral five!"
+        },
+        "t4": {
+          "prompt": "Put the baskets in order: zero, one, two.",
+          "hint": "Count what is in the basket, then place it.",
+          "explain": "Zero, one, two, in order!",
+          "berries": "basket with berries",
+          "empty": "empty basket",
+          "stone": "basket with a stone"
+        }
+      },
+      "num-l3": {
+        "title": "Numerals up to ten",
+        "hook": "I mixed up two numerals that look alike!",
+        "atlas": "All the numerals up to ten are in place.",
+        "model": {
+          "prompt": "Which numeral fits?",
+          "stimulus": "stones",
+          "s1": "Counting one by one: seven stones.",
+          "s2": "Seven looks like this."
+        },
+        "t1": {
+          "prompt": "Count the leaves. Which numeral?",
+          "stimulus": "leaves",
+          "hint": "Count one by one to the end.",
+          "explain": "Nine: a circle on top, a tail going down."
+        },
+        "t2": {
+          "prompt": "Put the numerals in order.",
+          "hint": "Count on from five. Which comes first?",
+          "explain": "Six, seven, eight, in order!"
+        },
+        "t3": {
+          "prompt": "Find each basket’s number.",
+          "hint": "Count what is in the basket. Where is that number?",
+          "explain": "Empty is zero, two berries, three stones.",
+          "empty": "empty basket",
+          "berries": "basket with berries",
+          "stones": "basket with stones"
+        },
+        "t4": {
+          "prompt": "Count the stones. Which numeral?",
+          "stimulus": "stones",
+          "hint": "Touch each stone once, to the end.",
+          "explain": "Ten is a one and a zero side by side!"
+        }
       }
     },
     "skills": {
       "subitize-1-3": "Sees one, two, three at a glance",
       "count-to-5": "Counts to five",
-      "count-to-10": "Counts to ten"
+      "count-to-10": "Counts to ten",
+      "numeral-1-5": "Knows the numerals up to five",
+      "zero": "Knows zero",
+      "numeral-6-10": "Knows the numerals up to ten"
     }
   }
 }
