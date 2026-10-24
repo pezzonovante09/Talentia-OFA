@@ -84,6 +84,13 @@
     ],
     "setupFiles": [
       "./jest.setup.js"
+    ],
+    "moduleNameMapper": {
+      "\\.svg$": "<rootDir>/src/test/svgMock.tsx"
+    },
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/.expo/"
     ]
   }
 }

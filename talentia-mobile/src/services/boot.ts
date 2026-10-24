@@ -6,9 +6,9 @@
  * - С аккаунтом (`account_local`, этап 10): открыть базу, применить срок хранения по доверенному
  *   времени (`applyRetention(db, trustedNow(...))`, решение №131) и отдать `sqlitePort(db)`.
  */
-import { openLocalDb } from '../services/local/expoSqlite';
-import { applyRetention, trustedNow } from '../services/local/purge';
-import { noRecordPort, sqlitePort, type ProgressPort } from '../services/progressPort';
+import { openLocalDb } from './local/expoSqlite';
+import { applyRetention, trustedNow } from './local/purge';
+import { noRecordPort, sqlitePort, type ProgressPort } from './progressPort';
 
 export type Boot = { kind: 'no_record'; port: ProgressPort } | { kind: 'account'; accountId: string; port: ProgressPort };
 

@@ -3,3 +3,18 @@
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
+
+// Жесты ленты карты: официальная заглушка библиотеки.
+require('react-native-gesture-handler/jestSetup');
+
+// Нативные модули Expo, которых в Node нет. Поведение — «всё готово, язык ru»;
+// тест, которому нужно иное, перекрывает мок у себя.
+jest.mock('expo-localization', () => ({ getLocales: () => [{ languageCode: 'ru' }] }));
+jest.mock('expo-font', () => ({ useFonts: () => [true, null], loadAsync: () => Promise.resolve(), isLoaded: () => true }));
+jest.mock('expo-splash-screen', () => ({ preventAutoHideAsync: () => Promise.resolve(), hideAsync: () => Promise.resolve() }));
+jest.mock('expo-crypto', () => ({
+  // Детерминированные байты: id и семена в тестах воспроизводимы.
+  getRandomBytes: (n) => Uint8Array.from({ length: n }, (_, i) => (i * 37 + 11) & 0xff),
+}));
+jest.mock('@expo-google-fonts/nunito', () => ({ Nunito_400Regular: 1, Nunito_700Bold: 2, Nunito_800ExtraBold: 3 }));
+jest.mock('@expo-google-fonts/comfortaa', () => ({ Comfortaa_600SemiBold: 4, Comfortaa_700Bold: 5 }));
