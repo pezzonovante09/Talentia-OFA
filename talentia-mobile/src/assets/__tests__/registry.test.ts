@@ -155,20 +155,15 @@ describe('реестр векторных ассетов', () => {
     ]);
   });
 
-  it('новые иконки по правилу: сетка 32, currentColor, контур #2A1A12 или штрих currentColor', () => {
-    // Пять первых файлов (check, x, lock, map, sound) и bulb — трассировки Recraft 1024 с
-    // зашитым цветом; ASSETS.md шаг 4 велит их перерисовать. До этого — исключение.
-    const LEGACY = ['ui-bulb', 'ui-check', 'ui-lock', 'ui-map', 'ui-sound', 'ui-x'];
-    onDisk('assets/icons')
-      .filter((f) => !LEGACY.includes(f))
-      .forEach((f) => {
-        const svg = readSvg(`assets/icons/${f}.svg`);
-        expect({ f, viewBox: viewBoxOf(svg) }).toEqual({ f, viewBox: '0 0 32 32' });
-        expect({ f, ok: /currentColor/.test(svg) }).toEqual({ f, ok: true });
-        const colours = new Set((svg.match(/#[0-9a-fA-F]{3,8}\b/g) ?? []).map((c) => c.toUpperCase()));
-        expect({ f, colours: [...colours] }).toEqual({ f, colours: colours.size ? ['#2A1A12'] : [] });
-        const shapes = svg.match(/<(path|circle|rect|ellipse|polygon|line)\b/g) ?? [];
-        expect(shapes.length).toBeLessThanOrEqual(12);
-      });
+  it('все иконки по правилу: сетка 32, currentColor, контур #2A1A12 или штрих currentColor', () => {
+    onDisk('assets/icons').forEach((f) => {
+      const svg = readSvg(`assets/icons/${f}.svg`);
+      expect({ f, viewBox: viewBoxOf(svg) }).toEqual({ f, viewBox: '0 0 32 32' });
+      expect({ f, ok: /currentColor/.test(svg) }).toEqual({ f, ok: true });
+      const colours = new Set((svg.match(/#[0-9a-fA-F]{3,8}\b/g) ?? []).map((c) => c.toUpperCase()));
+      expect({ f, colours: [...colours] }).toEqual({ f, colours: colours.size ? ['#2A1A12'] : [] });
+      const shapes = svg.match(/<(path|circle|rect|ellipse|polygon|line)\b/g) ?? [];
+      expect(shapes.length).toBeLessThanOrEqual(12);
+    });
   });
 });

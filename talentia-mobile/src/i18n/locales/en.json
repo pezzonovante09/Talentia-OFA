@@ -58,7 +58,10 @@
   },
   "a11y": {
     "option": "Card {{n}}",
-    "breakCard": "Break"
+    "breakCard": "Break",
+    "tali": "Tali",
+    "addProfile": "Add a profile",
+    "close": "Close"
   },
   "content": {
     "common": {
@@ -329,6 +332,20 @@
         "in": "in Number Valley",
         "to": "to Number Valley"
       }
+    }
+  },
+  "firstRun": {
+    "title": "Who is exploring today?",
+    "addProfile": "Add",
+    "tryWithoutSaving": "Try without saving",
+    "noSaveNote": "Progress will be lost when the app closes",
+    "forAdults": "For adults",
+    "callAdult": "Call a grown-up"
+  },
+  "parentGate": {
+    "stub": {
+      "title": "For adults",
+      "body": "The parent area will live here: PIN, child profile and consents. It is not in this build yet — tap the cross to go back."
     }
   }
 }

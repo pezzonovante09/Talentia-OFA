@@ -1,6 +1,7 @@
 /**
  * Рендер экранов в тестах: i18n на нужном языке, тема (calm / focus / схема) и безопасные зоны SE.
  * Роутер мокается в самом тесте (`jest.mock('expo-router', ...)`), чтобы проверять переходы.
+ * В RNTL 14 `render`, `fireEvent` и `act` асинхронны — всё через `await`.
  */
 import { render, type RenderOptions } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
@@ -23,9 +24,9 @@ export type RenderWithProvidersOptions = RenderOptions & {
   metrics?: Metrics;
 };
 
-export function renderWithProviders(ui: ReactElement, { lng = 'ru', calmMode = false, focusMode = false, metrics = SE_METRICS, ...options }: RenderWithProvidersOptions = {}) {
+export async function renderWithProviders(ui: ReactElement, { lng = 'ru', calmMode = false, focusMode = false, metrics = SE_METRICS, ...options }: RenderWithProvidersOptions = {}) {
   initI18n({ lng });
-  return render(ui, {
+  return await render(ui, {
     wrapper: ({ children }) => (
       <SafeAreaProvider initialMetrics={metrics}>
         <DesignProvider calmMode={calmMode} focusMode={focusMode}>{children}</DesignProvider>
