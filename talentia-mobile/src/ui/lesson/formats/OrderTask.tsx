@@ -1,12 +1,12 @@
 /**
- * `order` — по порядку (SCREENS.md 3.4): полоса-стрела 24 с засечками над центрами мест (на 5–6 —
- * без цифр), ряд мест, зазор 24, лоток того же размера. Механика «лоток → место» двумя тапами —
+ * `order` — по порядку (SCREENS.md 3.4): полоса 24 — линия с засечками над центрами мест, без наконечника
+ * (№143; на 5–6 — без цифр), ряд мест, зазор 24, лоток того же размера. Механика «лоток → место» двумя тапами —
  * `domain/taskDraft.ts`. Предметы — абсолютно позиционированные плитки, перелёт между лотком и
  * местом — `Animated` за `motion.base` (в calm линейно, reduce motion — мгновенно).
  */
 import { useEffect, useRef } from 'react';
 import { Animated, Platform, View } from 'react-native';
-import Svg, { Line, Path } from 'react-native-svg';
+import Svg, { Line } from 'react-native-svg';
 
 import { useDesign } from '../../../design';
 import { lessonLayout, orderMark } from '../../../design/tokens';
@@ -63,17 +63,10 @@ export function OrderTaskView(rawProps: FormatProps<OrderDraft>) {
     <View style={{ width: props.width, height: props.height, justifyContent: 'center' }} testID="task-order">
       <View style={{ height: trayY + tileH + lift }}>
         <Svg width={props.width} height={orderMark.strip} testID="order-strip" pointerEvents="none">
-          <Line x1={colX(0) + tileW / 2} y1={orderMark.lineY} x2={colX(n - 1) + tileW / 2 + orderMark.tailPastLast} y2={orderMark.lineY} stroke={theme.colors.outline} strokeWidth={theme.stroke.base} strokeLinecap="round" />
-          <Path
-            d={`M${colX(n - 1) + tileW / 2 + orderMark.tailPastLast - orderMark.arrowHead} ${orderMark.lineY - orderMark.arrowHead / 2} l${orderMark.arrowHead} ${orderMark.arrowHead / 2} l-${orderMark.arrowHead} ${orderMark.arrowHead / 2}`}
-            fill="none"
-            stroke={theme.colors.outline}
-            strokeWidth={theme.stroke.base}
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
+          {/* Наконечника нет (решение владельца №143, 2026-10-24): линия с засечками от первого места до последнего. */}
+          <Line testID="order-line" x1={colX(0) + tileW / 2} y1={orderMark.lineY} x2={colX(n - 1) + tileW / 2} y2={orderMark.lineY} stroke={theme.colors.outline} strokeWidth={theme.stroke.base} strokeLinecap="round" />
           {task.items.map((_, i) => (
-            <Line key={i} x1={colX(i) + tileW / 2} y1={orderMark.lineY} x2={colX(i) + tileW / 2} y2={orderMark.lineY + orderMark.tick.length} stroke={theme.colors.outline} strokeWidth={theme.stroke.base} strokeLinecap="round" />
+            <Line key={i} testID="order-tick" x1={colX(i) + tileW / 2} y1={orderMark.lineY} x2={colX(i) + tileW / 2} y2={orderMark.lineY + orderMark.tick.length} stroke={theme.colors.outline} strokeWidth={theme.stroke.base} strokeLinecap="round" />
           ))}
         </Svg>
 
