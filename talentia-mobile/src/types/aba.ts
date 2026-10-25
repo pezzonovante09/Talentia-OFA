@@ -864,6 +864,8 @@ export type AbaSessionEvent =
       action: 'break' | 'end' | 'l4_stopped' | 'not_started';
       targetId?: string;
       trialId?: string;
+      /** Просьба карточкой во время последствия прошлой пробы — перерыв вместо следующего SD (№160). */
+      between?: true;
     }
   | { kind: 'exchange'; at: string; tokens: number }
   /** Доступ к подкрепителю после обмена при обучении доске — фактическое время. */

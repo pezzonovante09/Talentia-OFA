@@ -221,6 +221,8 @@ type QueueItem =
       cardTaken?: true;
       /** Обучающий перерыв по карточке: в `childBreaks` не идёт. */
       training?: true;
+      /** Просьба во время последствия прошлой пробы — перерыв вместо следующего SD (№160). */
+      between?: true;
     }
   /** Доступ к подкрепителю после обмена при обучении доске. */
   | { kind: 'access'; durationMs: number }
@@ -1426,6 +1428,30 @@ export function takeBreakCard(state: AbaSessionState, now: number): AbaSessionSt
   return {
     ...state,
     queue: [{ ...head, cardTaken: true, maxMs: CHILD_BREAK_MS[state.band] }, ...state.queue.slice(1)],
+  };
+}
+
+/**
+ * Просьба карточкой «перерыв» во время последствия прошлой пробы (№160, пересматривает №106): запоминается,
+ * и вместо следующего SD — перерыв ребёнка. Проба уже записана, повтора нет; в счёт просьб (`childBreaks`)
+ * идёт как просьба в пробе: третья или просьба в защитном окне — конец по отказу. Не между пробами
+ * (доступ, выбор, перерыв, конец) — ошибка программы: там карточка не предлагается.
+ */
+export function requestBreakBetweenTrials(state: AbaSessionState, now: number): AbaSessionState {
+  const head = state.queue[0];
+  if (head?.kind === 'break' && head.between) return state;
+  if (state.endReason !== null || head?.kind !== 'trial') throw new Error('Сейчас не последствие пробы');
+  const last = lastTrial(state);
+  const where = last ? { targetId: last.targetId, trialId: last.id } : {};
+  const childBreaks = state.childBreaks + 1;
+  if (inGuardWindow(state) || childBreaks >= CHILD_BREAKS_TO_END) {
+    return withdrawAssent({ ...state, childBreaks }, now, 'child_card', where);
+  }
+  return {
+    ...state,
+    childBreaks,
+    queue: [{ kind: 'break', initiatedBy: 'child_card', maxMs: CHILD_BREAK_MS[state.band], between: true }, ...state.queue],
+    events: [...state.events, { kind: 'assent', at: iso(now), by: 'child_card', action: 'break', between: true, ...where }],
   };
 }
 
