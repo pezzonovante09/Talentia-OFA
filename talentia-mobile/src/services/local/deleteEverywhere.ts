@@ -17,8 +17,12 @@ import {
   secureKeys,
   TELEMETRY_KEY_PREFIX,
   type CleanedPart,
+  DB_FILE,
   type DeviceStore,
+  KNOWN_ACCOUNTS_PREFIX,
+  WIPE_PENDING_KEY,
 } from './device';
+import { CURRENT_ACCOUNT_KEY } from './account';
 import type { ConsentEvent } from '../../domain/consent';
 import { readConsentLog } from './consentLog';
 import { removeChildFromList } from './profiles';
@@ -111,33 +115,71 @@ export async function undeliveredRevocations(db: SqlDb): Promise<ConsentEvent[]>
  */
 export async function wipeAccountEverywhere(input: WipeAccountInput): Promise<CleanedPart[]> {
   const { db, device, accountId } = input;
-  const done: CleanedPart[] = [];
+  const resuming = (await device.getItem(WIPE_PENDING_KEY)) !== null;
 
-  const pending = await undeliveredRevocations(db);
-  if (pending.length > 0 && !(await input.deliverRevocations(pending))) {
-    throw new Error('Отзывы согласий не дошли до сервера: удаление аккаунта — только со связью');
+  // отзывы доставлены до метки: на повторе их уже проверили, а база может быть закрыта
+  if (!resuming) {
+    const pending = await undeliveredRevocations(db);
+    if (pending.length > 0 && !(await input.deliverRevocations(pending))) {
+      throw new Error('Отзывы согласий не дошли до сервера: удаление аккаунта — только со связью');
+    }
+  }
+  await device.setItem(WIPE_PENDING_KEY, accountId);
+
+  // на повторе ручка закрыта или файла уже нет — не беда: файлы снимает и проверяет finishDeviceWipe
+  try {
+    await wipeDevice(db);
+  } catch (e) {
+    if (!resuming) throw e;
+  }
+  try {
+    await input.deleteDbFile();
+  } catch (e) {
+    if (!resuming) throw e;
+  }
+  return ['sqlite', ...(await finishDeviceWipe(device, accountId))];
+}
+
+/**
+ * Всё, что после строк базы: файлы баз всех аккаунтов устройства, PIN, кеш, уведомления, ключи.
+ * Метка `WIPE_PENDING_KEY` и id (`current`, реестр) снимаются последними: сбой на любом шаге —
+ * и повтор или следующий старт (`useAccount.boot`) находят всё снова (№148).
+ */
+export async function finishDeviceWipe(device: DeviceStore, accountId: string | null): Promise<CleanedPart[]> {
+  const done: CleanedPart[] = [];
+  // все id аккаунтов — до любого удаления: после сбоя старта на устройстве бывает брошенный
+  const keys = await device.keys();
+  const ids = new Set<string>(accountId ? [accountId] : []);
+  for (const k of [CURRENT_ACCOUNT_KEY, WIPE_PENDING_KEY]) {
+    const v = await device.getItem(k);
+    if (v) ids.add(v);
+  }
+  for (const k of keys) if (k.startsWith(KNOWN_ACCOUNTS_PREFIX)) ids.add(k.slice(KNOWN_ACCOUNTS_PREFIX.length));
+  for (const f of await device.listDbFiles()) {
+    const m = DB_FILE.exec(f);
+    if (m) ids.add(m[1]);
   }
 
-  await wipeDevice(db);
-  await input.deleteDbFile();
-  done.push('sqlite');
-
-  const keys = await device.keys();
-  await device.removeKeys(keys.filter((k) => k.startsWith(ALL_KEYS_PREFIX) && !k.startsWith(TELEMETRY_KEY_PREFIX)));
-  done.push('async_storage');
-  await device.removeKeys(keys.filter((k) => k.startsWith(TELEMETRY_KEY_PREFIX)));
-  done.push('telemetry_queue');
-
-  await device.removeSecure(secureKeys(accountId));
-  done.push('secure_store');
+  // брошенные базы не открываются (могут быть испорчены, облака нет): файлы и спутники всех id
+  await device.deleteDbFiles((await device.listDbFiles()).filter((f) => DB_FILE.test(f)));
+  for (const id of ids) await device.removeSecure(secureKeys(id));
+  done.push('secure_store', 'orphan_accounts');
 
   await device.deleteCacheDir(CHILD_VOICE_ROOT);
   done.push('voice_cache');
-
   await device.deleteCacheDir(EXPORT_DIR);
   done.push('export_file');
-
   await device.cancelAllNotifications();
   done.push('notifications');
+  await device.removeKeys(keys.filter((k) => k.startsWith(TELEMETRY_KEY_PREFIX)));
+  done.push('telemetry_queue');
+
+  const left = (await device.listDbFiles()).filter((f) => DB_FILE.test(f));
+  if (left.length) throw new Error(`Файлы баз остались на устройстве: ${left.length}`);
+
+  // id и метка — последними: пока они есть, PIN и файлы ещё можно найти
+  await device.removeKeys(keys.filter((k) => k.startsWith(ALL_KEYS_PREFIX) && !k.startsWith(TELEMETRY_KEY_PREFIX) && k !== WIPE_PENDING_KEY));
+  done.push('async_storage');
+  await device.removeKeys([WIPE_PENDING_KEY]);
   return done;
 }

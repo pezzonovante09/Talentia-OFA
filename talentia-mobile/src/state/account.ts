@@ -9,7 +9,8 @@ import type { ConsentStatus } from '../domain/consent';
 import type { Digest } from '../domain/parentGate';
 import type { InterfaceLang } from '../domain/regionVisibility';
 import { accountConsentStatus, createLocalAccount, currentAccountId, grantAccountLocal } from '../services/local/account';
-import { wipeAccountEverywhere } from '../services/local/deleteEverywhere';
+import { finishDeviceWipe, wipeAccountEverywhere } from '../services/local/deleteEverywhere';
+import { WIPE_PENDING_KEY } from '../services/local/device';
 import { deleteLocalDb, openLocalDb } from '../services/local/expoSqlite';
 import { listProfiles, saveProfile, type ChildProfile } from '../services/local/profiles';
 import { buildTime } from '../services/local/buildInfo';
@@ -58,6 +59,13 @@ export const useAccount = create<AccountState>((set, get) => ({
 
   async boot({ openDb = openLocalDb, now = new Date(), builtAt = buildTime() } = {}) {
     const d = device();
+    // удаление аккаунта прервано (сбой, закрытое приложение) — довести до конца, аккаунта больше нет (№148)
+    if ((await d.getItem(WIPE_PENDING_KEY)) !== null) {
+      await finishDeviceWipe(d, null);
+      setProgressPort(noRecordPort);
+      set({ status: 'none', accountId: null, db: null, profiles: [], consent: 'not_asked', retentionHold: null });
+      return;
+    }
     const id = await currentAccountId(d);
     if (!id) {
       setProgressPort(noRecordPort);

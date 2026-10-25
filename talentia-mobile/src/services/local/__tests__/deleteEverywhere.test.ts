@@ -47,6 +47,8 @@ function fakeDevice(keys: string[]) {
     setItem: async () => undefined,
     getSecure: async () => null,
     setSecure: async () => undefined,
+    listDbFiles: async () => [],
+    deleteDbFiles: async (ns) => void calls.push(`files:${ns.join(',')}`),
     deleteCacheDir: async (p) => void calls.push(`dir:${p.join('/')}`),
     cancelChildNotifications: async (id) => void calls.push(`notify:${id}`),
     cancelAllNotifications: async () => void calls.push('notify:*'),
@@ -126,7 +128,7 @@ describe('удаление аккаунта везде', () => {
       deliverRevocations: async () => true,
     });
     expect(new Set(done)).toEqual(
-      new Set(['sqlite', 'async_storage', 'telemetry_queue', 'secure_store', 'voice_cache', 'export_file', 'notifications']),
+      new Set(['sqlite', 'async_storage', 'telemetry_queue', 'secure_store', 'orphan_accounts', 'voice_cache', 'export_file', 'notifications']),
     );
     expect(fileDeleted).toBe(true);
     expect(await readConsentLog(db)).toEqual([]);

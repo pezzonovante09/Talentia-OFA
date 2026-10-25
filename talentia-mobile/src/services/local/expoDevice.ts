@@ -10,7 +10,8 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
-import { Directory, Paths } from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system';
+import { defaultDatabaseDirectory } from 'expo-sqlite';
 import { Platform } from 'react-native';
 import type { DeviceStore } from './device';
 
@@ -20,6 +21,9 @@ import type { DeviceStore } from './device';
  */
 const WEB_SECURE_PREFIX = 'talentia:web-secure:';
 const webSecure = Platform.OS === 'web' && __DEV__;
+
+/** Каталог баз `expo-sqlite`: константа — путь без схемы (Android `files/SQLite`, iOS `Documents/SQLite`). */
+const dbDir = () => new Directory(String(defaultDatabaseDirectory).startsWith('file://') ? String(defaultDatabaseDirectory) : `file://${defaultDatabaseDirectory}`);
 
 export function expoDevice(): DeviceStore {
   return {
@@ -38,6 +42,19 @@ export function expoDevice(): DeviceStore {
     setItem: (key, value) => AsyncStorage.setItem(key, value),
     getSecure: (key) => (webSecure ? AsyncStorage.getItem(WEB_SECURE_PREFIX + key) : SecureStore.getItemAsync(key)),
     setSecure: (key, value) => (webSecure ? AsyncStorage.setItem(WEB_SECURE_PREFIX + key, value) : SecureStore.setItemAsync(key, value)),
+    async listDbFiles() {
+      // web: база — снимок в AsyncStorage (`expoSqlite.web.ts`), её снимают ключи `talentia:`
+      if (Platform.OS === 'web') return [];
+      const dir = dbDir();
+      return dir.exists ? dir.list().filter((e) => e instanceof File).map((f) => f.name) : [];
+    },
+    async deleteDbFiles(names) {
+      if (Platform.OS === 'web') return;
+      for (const name of names) {
+        const f = new File(dbDir(), name);
+        if (f.exists) f.delete();
+      }
+    },
     async deleteCacheDir(path) {
       // web: файловой системы нет (`Paths.cache` недоступен), кэша голоса/экспорта там тоже нет
       if (Platform.OS === 'web') return;

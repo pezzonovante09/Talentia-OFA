@@ -248,3 +248,66 @@ describe('профили и очистка', () => {
     expect(mockDeleteLocalDb).not.toHaveBeenCalled();
   });
 });
+
+describe('boot и скачок часов (№147)', () => {
+  const FIVE_YEARS = new Date('2031-10-25T10:00:00.000Z');
+  async function bootedOnce() {
+    await device.setItem(CURRENT_ACCOUNT_KEY, 'acc-clock');
+    const db = await openWithConsent();
+    await writeLessonRun(db, { id: 'old', childId: KID, lessonId: 'l', startedAt: '2025-01-01T00:00:00.000Z', taskSeconds: [10], reviewTasks: 0 });
+    await writeLessonRun(db, { id: 'fresh', childId: KID, lessonId: 'l', startedAt: '2026-10-01T00:00:00.000Z', taskSeconds: [10], reviewTasks: 0 });
+    // обычный старт сегодня: last_seen = NOW, старое удалено
+    await useAccount.getState().boot({ openDb: async () => db, now: NOW, builtAt: null });
+    reset();
+    return db;
+  }
+  const ids = async (db: SqlDb) => (await db.all<{ id: string }>('SELECT id FROM lesson_runs ORDER BY seq')).map((r) => r.id);
+
+  beforeEach(() => useAccount.setState({ retentionHold: null }));
+
+  it('часы +5 лет: status ready — вход ребёнка не блокируется', async () => {
+    const db = await bootedOnce();
+    await useAccount.getState().boot({ openDb: async () => db, now: FIVE_YEARS, builtAt: null });
+    expect(useAccount.getState().status).toBe('ready');
+  });
+
+  it('часы +5 лет: журналы целы', async () => {
+    const db = await bootedOnce();
+    await useAccount.getState().boot({ openDb: async () => db, now: FIVE_YEARS, builtAt: null });
+    expect(await ids(db)).toEqual(['fresh']);
+  });
+
+  it('часы +5 лет: retentionHold с датой устройства, прошлой датой и числом к удалению', async () => {
+    const db = await bootedOnce();
+    await useAccount.getState().boot({ openDb: async () => db, now: FIVE_YEARS, builtAt: null });
+    expect(useAccount.getState().retentionHold).toEqual({
+      kind: 'held',
+      reason: 'clock_jump',
+      deviceNow: FIVE_YEARS.toISOString(),
+      lastSeen: NOW.toISOString(),
+      wouldRemove: 1,
+    });
+  });
+
+  it('обычный старт после удержания снимает retentionHold', async () => {
+    const db = await bootedOnce();
+    await useAccount.getState().boot({ openDb: async () => db, now: FIVE_YEARS, builtAt: null });
+    reset();
+    await useAccount.getState().boot({ openDb: async () => db, now: new Date(NOW.getTime() + 86_400_000), builtAt: null });
+    expect(useAccount.getState().retentionHold).toBeNull();
+  });
+
+  it('clearRetentionHold снимает удержание, остальное состояние не трогает', async () => {
+    const db = await bootedOnce();
+    await useAccount.getState().boot({ openDb: async () => db, now: FIVE_YEARS, builtAt: null });
+    useAccount.getState().clearRetentionHold();
+    expect(useAccount.getState()).toMatchObject({ retentionHold: null, status: 'ready', accountId: 'acc-clock', db });
+  });
+
+  it('clear() сбрасывает и retentionHold', async () => {
+    const db = await bootedOnce();
+    await useAccount.getState().boot({ openDb: async () => db, now: FIVE_YEARS, builtAt: null });
+    useAccount.getState().clear();
+    expect(useAccount.getState().retentionHold).toBeNull();
+  });
+});

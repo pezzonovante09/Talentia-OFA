@@ -236,6 +236,9 @@ export async function runRetention(
   const device = deviceNow.toISOString();
   const lastSeen = await lastSeenOf(db);
   if (lastSeen && deviceNow.getTime() - msOf(lastSeen) > CLOCK_JUMP_HOLD_DAYS * DAY_MS) {
+    // опорную дату — в строку, если её не было: иначе урок при сбитых часах сдвинул бы опору журналов
+    // в будущее, и следующий старт удалил бы всё без подтверждения
+    await db.run('INSERT INTO retention_clock (id, last_seen) VALUES (1, ?) ON CONFLICT (id) DO NOTHING', [lastSeen]);
     return { kind: 'held', reason: 'clock_jump', deviceNow: device, lastSeen, wouldRemove: await countExpired(db, device) };
   }
   const now = maxIso(device, builtAt, lastSeen)!;

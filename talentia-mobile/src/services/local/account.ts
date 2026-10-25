@@ -25,7 +25,7 @@ import {
 } from '../../domain/parentGate';
 import type { InterfaceLang } from '../../domain/regionVisibility';
 import { readConsentLog, appendConsentEvent } from './consentLog';
-import { secureKeys, type DeviceStore } from './device';
+import { knownAccountKey, secureKeys, type DeviceStore } from './device';
 import type { SqlDb } from './sql';
 
 /** Ключ AsyncStorage с id текущего локального аккаунта (один аккаунт на устройство в v1). */
@@ -54,6 +54,8 @@ export async function createLocalAccount(
   const accountId = uuidV4(randomBytes);
   const record = await hashPin(pin, pinSalt(randomBytes), digest);
   const [pinKey, lockoutKey] = secureKeys(accountId);
+  // реестр — раньше PIN: упадёт посередине — останется id без PIN, а не PIN, который не найти (№148)
+  await device.setItem(knownAccountKey(accountId), '1');
   await device.setSecure(pinKey, JSON.stringify(record));
   await device.setSecure(lockoutKey, JSON.stringify(NO_LOCKOUT));
   await device.setItem(CURRENT_ACCOUNT_KEY, accountId);
