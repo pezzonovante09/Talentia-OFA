@@ -8,7 +8,7 @@
  * или ничего.
  */
 import type { AbaIoaRecord, AbaObserver, AbaTargetState, AbaTrial, RoutineSetting } from '../../types/aba';
-import { resumeAbaSession as resumeSessionState, type AbaSessionResult, type AbaSessionState } from '../../domain/abaSession';
+import { awayOutcome, resumeAbaSession as resumeSessionState, type AbaSessionResult, type AbaSessionState } from '../../domain/abaSession';
 import {
   finishRoutineRun,
   routineResultWithSetting,
@@ -244,9 +244,11 @@ export async function saveAbaSessionStep(
  * обменяла жетоны, выбор подкрепителя предлагается заново из вариантов по живой истории.
  * `null` — сессии в работе нет. Ничего не пишет: снимок сохранится следующим шагом.
  *
- * `reinforcerPool` — пул подкрепителей ребёнка (он в состоянии сессии не хранится).
+ * `reinforcerPool` — пул подкрепителей ребёнка (он в состоянии сессии не хранится). `awayMs` — сколько
+ * приложение было свёрнуто (при возврате фокуса; после конфликта доски — 0): вычитается из рабочего времени,
+ * от 2 мин — новый выбор подкрепителя сразу (`awayOutcome`). Передавать один раз на возврат.
  */
-export async function resumeAbaSession(db: SqlDb, childId: string, reinforcerPool: string[]): Promise<AbaSessionState | null> {
+export async function resumeAbaSession(db: SqlDb, childId: string, reinforcerPool: string[], awayMs = 0): Promise<AbaSessionState | null> {
   return db.transaction(async (tx) => {
     const state = await loadChildState(tx, childId, 'abaSessionInProgress');
     if (!state) return null;
@@ -257,14 +259,15 @@ export async function resumeAbaSession(db: SqlDb, childId: string, reinforcerPoo
     const exchangedByRoutine = await routineExchangedSince(tx, childId, since);
     const openOffer = await openRoutineOfferOf(tx, childId, state.day);
     const routineExchanged = exchangedByRoutine || openOffer !== null;
-    const options = routineExchanged
+    const rechoose = awayOutcome(awayMs) === 'rechoose' && state.reinforcerId !== null;
+    const options = routineExchanged || rechoose
       ? (openOffer?.options ??
         reinforcerChoices(reinforcerPool, await reinforcerHistoryOf(tx, childId), seeded(state.seed + boardRevOf(live)).rng))
       : undefined;
     return resumeSessionState(
       state,
       { earned: live.earned, nonContingent: live.nonContingent, rev: boardRevOf(live) },
-      { routineExchanged, ...(options ? { options } : {}) },
+      { routineExchanged, awayMs, ...(options ? { options } : {}) },
     );
   });
 }

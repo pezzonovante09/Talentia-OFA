@@ -329,6 +329,11 @@ export type AbaSessionState = {
    * фактом утреннего выбора (методист, 2026-10-12).
    */
   reinforcerStale?: boolean;
+  /**
+   * Возврат после долгого сворачивания (2–30 мин, `awayOutcome`): выбор из трёх — сразу, в ближайшем шаге,
+   * а не в точке обмена, как при `reinforcerStale` от рутины (`aba-pedagogy-specialist` 2026-10-25, п. 6).
+   */
+  rechooseNow?: boolean;
   queue: QueueItem[];
   trials: AbaTrial[];
   board: TokenBoard;
@@ -1045,6 +1050,9 @@ export function nextStep(
   // подкрепитель устарел после обмена рутины, а доска полна: выбор из трёх — в ближайшей точке,
   // где обмен возможен (сразу при обучении доске, перед перерывом, перед концом); иначе токен
   // остался бы без обмена (методист, 2026-10-12)
+  if (st.rechooseNow && st.reinforcerStale && head?.kind !== 'access' && head?.kind !== 'reinforcer' && st.endReason === null) {
+    return done(st, { kind: 'choose_reinforcer', options: st.reinforcerOptions, adultChoosesAfterMs: REINFORCER_CHOICE_TIMEOUT_MS });
+  }
   if (
     st.reinforcerStale &&
     isBoardFull(st.board) &&
@@ -1119,6 +1127,7 @@ export function chooseReinforcer(
     if (!state.reinforcerOptions.includes(id)) throw new Error(`Подкрепитель ${id} не предлагался`);
     const chosen: AbaSessionState = { ...state, reinforcerId: id, reinforcerChosenBy: by, reinforcerChosenAt: now };
     delete chosen.reinforcerStale;
+    delete chosen.rechooseNow;
     // полная доска, ждавшая выбора, обменивается сейчас (обучение доске)
     return settleBoard(chosen, now).state;
   }
@@ -1143,16 +1152,40 @@ export type LiveBoard = Pick<TokenBoard, 'earned' | 'nonContingent'> & { rev: nu
 export function resumeAbaSession(
   state: AbaSessionState,
   live: LiveBoard,
-  ctx: { routineExchanged: boolean; options?: string[] },
+  ctx: { routineExchanged: boolean; options?: string[]; awayMs?: number },
 ): AbaSessionState {
+  const away = Math.max(0, ctx.awayMs ?? 0);
+  // свёрнутое время — не рабочее; в перерыве и доступе его и так не считают (`workedMs`)
+  const pausedMs = state.breakStartedAt === null && state.accessStartedAt === null ? state.pausedMs + away : state.pausedMs;
   const next: AbaSessionState = {
     ...state,
     board: { size: state.board.size, earned: live.earned, nonContingent: live.nonContingent },
     boardRev: live.rev,
+    pausedMs,
   };
-  if (!ctx.routineExchanged) return next;
-  if (!ctx.options?.length) throw new Error('Обмен рутины: нужны варианты подкрепителя для нового выбора');
-  return { ...next, reinforcerOptions: ctx.options, ...(state.reinforcerId !== null ? { reinforcerStale: true } : {}) };
+  const rechoose = awayOutcome(away) === 'rechoose' && state.reinforcerId !== null;
+  if (!ctx.routineExchanged && !rechoose) return next;
+  if (!ctx.options?.length) throw new Error('Нужны варианты подкрепителя для нового выбора');
+  return {
+    ...next,
+    reinforcerOptions: ctx.options,
+    ...(state.reinforcerId !== null ? { reinforcerStale: true } : {}),
+    ...(rechoose ? { rechooseNow: true } : {}),
+  };
+}
+
+/** Свёрнуто дольше — новый выбор подкрепителя при возврате; ещё дольше — сессия брошена. */
+export const AWAY_RECHOOSE_MS = 2 * 60_000;
+export const AWAY_ABANDON_MS = 30 * 60_000;
+
+/**
+ * Что делать при возврате после сворачивания (`aba-pedagogy-specialist` 2026-10-25, п. 6): до 2 мин — та же
+ * проба с SD (№155); 2–30 мин — новый выбор из трёх, затем та же проба; дольше или другой локальный день —
+ * экран зовёт `stopSession(…, 'abandoned')` без экрана конца.
+ */
+export function awayOutcome(awayMs: number, sameDay = true): 'same_trial' | 'rechoose' | 'abandon' {
+  if (!sameDay || awayMs > AWAY_ABANDON_MS) return 'abandon';
+  return awayMs >= AWAY_RECHOOSE_MS ? 'rechoose' : 'same_trial';
 }
 
 /**
@@ -1217,9 +1250,15 @@ export function finishAccess(state: AbaSessionState, now: number): AbaSessionSta
  * Взрослый остановил или ребёнок ушёл. Ни закрывающей пробы, ни жетона за участие:
  * решение принял человек, и подкреплять уход нельзя.
  */
-export function stopSession(state: AbaSessionState, reason: 'adult_stopped' | 'abandoned'): AbaSessionState {
+export function stopSession(state: AbaSessionState, reason: 'adult_stopped' | 'abandoned', now?: number): AbaSessionState {
+  // доступ, прерванный остановкой, остаётся в журнале
+  const events =
+    state.accessStartedAt !== null && now !== undefined
+      ? [...state.events, { kind: 'access' as const, startedAt: iso(state.accessStartedAt), endedAt: iso(now) }]
+      : state.events;
   return {
     ...state,
+    events,
     endReason: state.endReason ?? reason,
     queue: [],
     participationOwed: null,
@@ -1458,7 +1497,8 @@ function needsPairingCycle(state: AbaSessionState): boolean {
   // в «сам» высоковероятные пробы бывают без жетона («Tali послушал») — их не считаем
   const paying = state.highPTargetIds.some((id) => counts(state.targets[id], state.config));
   // конец по отказу — без требования, только сопряжение без жетона в доску
-  if (reason === 'assent_withdrawn') return true;
+  // …но до начала работы (выбора не было) подкрепителя нет — доступ «за не выбрал» не выдаётся
+  if (reason === 'assent_withdrawn') return state.workStartedAt !== null;
   return (
     state.teachingTargetIds.length === 0 && !paying && (reason === 'completed' || reason === 'time_limit')
   );
