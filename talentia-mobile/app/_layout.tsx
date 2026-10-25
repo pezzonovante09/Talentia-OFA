@@ -14,10 +14,13 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { DesignProvider } from '../src/design';
 import { deviceLang, initI18n } from '../src/i18n';
+import { installNetworkFuse, networkFuseEnabled } from '../src/services/networkFuse';
 import { useAccount } from '../src/state/account';
 import { useChildSession } from '../src/state/childSession';
 import { FONT_FILES } from '../src/ui/fonts';
 
+// сеть закрыта до ворот «данные» (ментор П2): вне dev-сборки — с первого модуля корня
+if (networkFuseEnabled(__DEV__)) installNetworkFuse();
 initI18n({ lng: deviceLang() });
 void SplashScreen.preventAutoHideAsync();
 

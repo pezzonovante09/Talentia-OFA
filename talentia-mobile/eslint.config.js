@@ -23,6 +23,8 @@ const offlineRules = {
         { name: 'expo-notifications', message: OFFLINE },
         { name: 'react-native-webview', message: OFFLINE },
         { name: 'react-native', importNames: ['Linking'], message: OFFLINE },
+        // картинка по адресу (ментор П2): ассеты — из бандла
+        { name: 'react-native-svg', importNames: ['SvgUri', 'SvgCssUri', 'SvgFromUri'], message: OFFLINE },
       ],
       patterns: [{ group: ['@supabase/*'], message: OFFLINE }],
     },
@@ -38,6 +40,7 @@ const offlineRules = {
     { object: 'window', property: 'open', message: OFFLINE },
     { object: 'window', property: 'location', message: OFFLINE },
     { object: 'Linking', property: 'openURL', message: OFFLINE },
+    ...['prefetch', 'getSize', 'getSizeWithHeaders', 'queryCache'].map((property) => ({ object: 'Image', property, message: OFFLINE })),
     ...['downloadAsync', 'uploadAsync', 'createUploadTask', 'createDownloadResumable', 'downloadFileAsync'].map(
       (property) => ({ property, message: OFFLINE }),
     ),
