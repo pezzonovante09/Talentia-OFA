@@ -56,7 +56,7 @@ export default function SetupScreen() {
   };
 
   return (
-    <ParentScreen left={header.left} scroll={step === 'consent'} testID={`setup-${step}`}>
+    <ParentScreen left={header.left} scroll={step === 'consent'} testID={`setup-step-${step}`}>
       <View style={{ gap: parentSpacing.lg, paddingTop: parentSpacing.xl }}>
         {step === 'intent' && (
           <View style={{ alignItems: 'center', gap: parentSpacing.lg }}>

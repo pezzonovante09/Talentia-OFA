@@ -17,6 +17,7 @@ export default function ReconsentScreen() {
   const router = useRouter();
   const grantConsent = useAccount((s) => s.grantConsent);
   const [busy, setBusy] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
   return (
     <ParentScreen scroll testID="parent-reconsent">
       <View style={{ gap: parentSpacing.lg, flex: 1, paddingTop: parentSpacing.xl }}>
@@ -33,15 +34,24 @@ export default function ReconsentScreen() {
           disabled={busy}
           onPress={async () => {
             setBusy(true);
+            setFailure(null);
             try {
               await grantConsent(i18n.language as InterfaceLang);
               router.replace('/parent');
+            } catch (e) {
+              if (__DEV__) console.warn('reconsent', e);
+              setFailure(t('parent.failed'));
             } finally {
               setBusy(false);
             }
           }}
           testID="reconsent-confirm"
         />
+        {failure && (
+          <ParentText role="caption" color="error" align="center" testID="reconsent-error">
+            {failure}
+          </ParentText>
+        )}
         <ParentButton variant="quiet" label={t('parent.data.deleteAccount')} onPress={() => router.push({ pathname: '/parent/confirm/[action]', params: { action: 'delete_account' } })} testID="reconsent-delete" />
       </View>
     </ParentScreen>

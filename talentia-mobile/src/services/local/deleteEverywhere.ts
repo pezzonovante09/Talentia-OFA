@@ -179,7 +179,7 @@ export async function finishDeviceWipe(device: DeviceStore, accountId: string | 
 
   // id и метка — последними: пока они есть, PIN и файлы ещё можно найти; ключи — заново, с поздними записями
   const rest = await device.keys();
-  await device.removeKeys(rest.filter((k) => k.startsWith(ALL_KEYS_PREFIX) && !k.startsWith(TELEMETRY_KEY_PREFIX) && k !== WIPE_PENDING_KEY));
+  await device.removeKeys(rest.filter((k) => k.startsWith(ALL_KEYS_PREFIX) && k !== WIPE_PENDING_KEY));
   done.push('async_storage');
   await device.removeKeys([WIPE_PENDING_KEY]);
   return done;

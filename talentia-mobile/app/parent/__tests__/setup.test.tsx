@@ -43,8 +43,8 @@ async function typePin(keypad: string, pin: string) {
 /** PinPad после ошибки держит «вспышку» и игнорирует ввод — ждём её конца на реальных таймерах. */
 const afterFlash = () => act(() => new Promise<void>((r) => setTimeout(r, parentPin.errorFlashMs + 60)));
 
-/** На шаге PIN `testID` экрана и PinPad совпадают (`setup-pin`) — проверяем наличие, не единственность. */
-const onStep = (step: 'intent' | 'pin' | 'repeat' | 'consent') => expect(screen.getAllByTestId(`setup-${step}`).length).toBeGreaterThan(0);
+/** Экран шага — `setup-step-<шаг>`; PinPad шагов PIN — `setup-pin` / `setup-repeat` (свои ID клавиш). */
+const onStep = (step: 'intent' | 'pin' | 'repeat' | 'consent') => expect(screen.getByTestId(`setup-step-${step}`)).toBeTruthy();
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -82,6 +82,16 @@ describe('первая настройка', () => {
     expect(screen.getByRole('header', { name: 'Придумайте PIN из шести цифр' })).toBeTruthy();
     await fireEvent.press(screen.getByTestId('setup-back'));
     onStep('intent');
+  });
+
+  it('testID экрана шага и PinPad не совпадают: на шагах PIN и повтора у каждого ровно один узел', async () => {
+    await render();
+    await passIntent();
+    expect([screen.getAllByTestId('setup-step-pin'), screen.getAllByTestId('setup-pin')].map((xs) => xs.length)).toEqual([1, 1]);
+    expect(screen.getByTestId('setup-step-pin')).not.toBe(screen.getByTestId('setup-pin'));
+    await typePin('setup-pin', PIN);
+    await waitFor(() => onStep('repeat'));
+    expect([screen.getAllByTestId('setup-step-repeat'), screen.getAllByTestId('setup-repeat')].map((xs) => xs.length)).toEqual([1, 1]);
   });
 
   it('слабый PIN отклонён с сообщением, аккаунт не создаётся, шаг тот же', async () => {

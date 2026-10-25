@@ -63,13 +63,18 @@ export default function ConfirmScreen() {
   const recheck = async () => {
     const { db } = account;
     if (!db) return;
-    const again = await runRetention(db, { deviceNow: new Date(), builtAt: buildTime() });
-    if (again.kind === 'applied') {
-      account.clearRetentionHold();
-      router.back();
-    } else {
-      useAccount.setState({ retentionHold: again });
-      setFailure(t('parent.clock.stillAhead'));
+    try {
+      const again = await runRetention(db, { deviceNow: new Date(), builtAt: buildTime() });
+      if (again.kind === 'applied') {
+        account.clearRetentionHold();
+        router.back();
+      } else {
+        useAccount.setState({ retentionHold: again });
+        setFailure(t('parent.clock.stillAhead'));
+      }
+    } catch (e) {
+      if (__DEV__) console.warn('recheck', e);
+      setFailure(t('parent.failed'));
     }
   };
 
@@ -112,7 +117,7 @@ export default function ConfirmScreen() {
       if (__DEV__) console.warn('confirm', e);
       // удаление аккаунта уже началось (метка стоит): довести, сколько выйдет, и закрыть вход — данные,
       // приговорённые к удалению, не пишутся; остаток доведёт следующий старт (№148, child-privacy-compliance)
-      if (kind === 'delete_account' && (await device().getItem(WIPE_PENDING_KEY)) !== null) {
+      if (kind === 'delete_account' && (await device().getItem(WIPE_PENDING_KEY).catch(() => null)) !== null) {
         await finishDeviceWipe(device(), account.accountId).catch(() => undefined);
         router.replace('/parent/done');
         useChildSession.getState().reset();

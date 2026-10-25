@@ -248,8 +248,10 @@ export async function runRetention(
     // опорную дату — в строку, если её не было: иначе урок при сбитых часах сдвинул бы опору журналов
     // в будущее, и следующий старт удалил бы всё без подтверждения
     await db.run('INSERT INTO retention_clock (id, last_seen) VALUES (1, ?) ON CONFLICT (id) DO NOTHING', [lastSeen]);
-    const abaGoalsChildren = (await abaIdleChildren(db, retentionCutoff(deviceNow))).length;
-    return { kind: 'held', reason: 'clock_jump', deviceNow: device, lastSeen, wouldRemove: await countExpired(db, device), abaGoalsChildren };
+    // считать от той же даты, от которой удалит подтверждение (`confirmClockJump`): дата сборки может быть позже часов
+    const effective = maxIso(device, builtAt, lastSeen)!;
+    const abaGoalsChildren = (await abaIdleChildren(db, retentionCutoff(new Date(effective)))).length;
+    return { kind: 'held', reason: 'clock_jump', deviceNow: device, lastSeen, wouldRemove: await countExpired(db, effective), abaGoalsChildren };
   }
   const now = maxIso(device, builtAt, lastSeen)!;
   const removed = await applyRetention(db, new Date(now));
