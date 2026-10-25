@@ -18,7 +18,8 @@ import {
   type RoutineSettingOpen,
 } from '../../domain/abaRoutineRun';
 import { boardRevOf, reinforcerChoices, type BoardRecord } from '../../domain/abaTokens';
-import { workingBoardSize } from '../../domain/abaTokenTraining';
+import { applyPairingSession, initialTokenTraining, workingBoardSize } from '../../domain/abaTokenTraining';
+import type { PairingResult } from '../../domain/abaPairing';
 import {
   applyBreakCardRoutine,
   applyBreakCardSession,
@@ -279,6 +280,26 @@ export async function routineExchangeInSessionWindow(db: SqlDb, childId: string,
  * данные ABA и не на паузе. Доска пишется при совпадении версии (`AbaBoardConflictError`: экран
  * возобновляет сессию и завершает её заново — `finishAbaSession` чистая).
  */
+/**
+ * Итог сессии сопряжения (этап 11, Д1): `applyPairingSession` по ребёнку и выборы подкрепителя —
+ * в историю (`source: 'session'`, `source_id` — id сессии сопряжения: насыщение считается по любому
+ * выбору). Одной транзакцией под согласием `aba_processing`. Повтор того же итога не пишет второй раз.
+ */
+export async function commitPairingSession(db: SqlDb, childId: string, result: PairingResult, at: string): Promise<void> {
+  await withAbaWrite(db, childId, async (tx) => {
+    const [seen] = await tx.all<{ n: number }>(
+      "SELECT COUNT(*) AS n FROM aba_reinforcer_choices WHERE child_id = ? AND source = 'session' AND source_id = ?",
+      [childId, result.sessionId],
+    );
+    if ((seen?.n ?? 0) > 0) return;
+    for (const c of result.choices) {
+      await appendReinforcerChoice(tx, childId, { source: 'session', sourceId: result.sessionId, reinforcerId: c.reinforcerId, chosenBy: c.by }, new Date(c.at).toISOString());
+    }
+    const training = (await loadChildState(tx, childId, 'tokenTraining')) ?? initialTokenTraining();
+    await saveChildState(tx, childId, 'tokenTraining', applyPairingSession(training, result), at);
+  });
+}
+
 export async function commitAbaSession(
   db: SqlDb,
   childId: string,
