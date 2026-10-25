@@ -81,7 +81,8 @@ export function canUndo(state: AbaSessionState, ctx: UndoContext | null, now: nu
     !NOT_UNDOABLE.has(original.outcome) &&
     ctx.exchangedAtMark === 0 &&
     head?.kind !== 'access' &&
-    head?.kind !== 'break' &&
+    // просьба «перерыв» между пробами (№160) окна отмены не закрывает
+    (head?.kind !== 'break' || head.between === true) &&
     state.breakStartedAt === null &&
     state.endReason === null &&
     !ctx.sdStarted &&

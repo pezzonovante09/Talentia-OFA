@@ -827,6 +827,8 @@ export type AbaSessionEvent =
       startedAt: string;
       endedAt: string;
       initiatedBy?: 'child_card' | 'schedule' | 'adult' | 'device_offer';
+      /** Перерыв по просьбе во время последствия прошлой пробы (№160). */
+      between?: true;
       /** После отказа ребёнок коснулся подсвеченной карточки: полный перерыв, а не тихая пауза. */
       cardTaken?: true;
       /** Обучающий перерыв по карточке (`break_card_training`): в `childBreaks` не идёт. */

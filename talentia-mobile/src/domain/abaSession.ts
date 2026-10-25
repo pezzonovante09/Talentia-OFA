@@ -1207,6 +1207,7 @@ export function finishBreak(state: AbaSessionState, now: number): { state: AbaSe
       startedAt: iso(startedAt),
       endedAt: iso(now),
       initiatedBy: head.initiatedBy ?? 'schedule',
+      ...(head.between ? { between: true as const } : {}),
       ...(head.cardTaken ? { cardTaken: true as const } : {}),
       ...(head.training ? { training: true as const } : {}),
     },
@@ -1432,27 +1433,64 @@ export function takeBreakCard(state: AbaSessionState, now: number): AbaSessionSt
 }
 
 /**
- * Просьба карточкой «перерыв» во время последствия прошлой пробы (№160, пересматривает №106): запоминается,
- * и вместо следующего SD — перерыв ребёнка. Проба уже записана, повтора нет; в счёт просьб (`childBreaks`)
- * идёт как просьба в пробе: третья или просьба в защитном окне — конец по отказу. Не между пробами
- * (доступ, выбор, перерыв, конец) — ошибка программы: там карточка не предлагается.
+ * Просьба карточкой «перерыв» во время последствия прошлой пробы (№160, пересматривает №106): не теряется
+ * ни при какой голове очереди — экран условий не проверяет (`aba-pedagogy-specialist` 2026-10-25, Б1).
+ * Проба уже записана и не повторяется; просьба идёт в счёт `childBreaks`, третья или в защитном окне —
+ * конец по отказу. Что дальше:
+ * - следом проба — перерыв ребёнка вместо её SD;
+ * - следом коррекция ошибки — как перерыв внутри пробы (В2): перерыв, высоковероятная, коррекция с открытым
+ *   защитным окном; иначе пара «ошибка → карточка» уводила бы от коррекции бесплатно;
+ * - следом перерыв по расписанию — просьба им и удовлетворена, он помечается просьбой;
+ * - следом доступ к подкрепителю — перерыв сразу после доступа;
+ * - следом выбор подкрепителя — перерыв до выбора;
+ * - сессия кончается (очередь пуста, `endReason` выставлен) — требований больше нет: закрывающая проба
+ *   снимается, просьба записывается.
+ * Перерыв после ошибки обмена не даёт (`finishBreak` — В5, вопрос владельцу) — как и перерыв внутри пробы.
  */
 export function requestBreakBetweenTrials(state: AbaSessionState, now: number): AbaSessionState {
-  const head = state.queue[0];
-  if (head?.kind === 'break' && head.between) return state;
-  if (state.endReason !== null || head?.kind !== 'trial') throw new Error('Сейчас не последствие пробы');
+  if (state.queue.some((q) => q.kind === 'break' && q.between)) return state;
   const last = lastTrial(state);
   const where = last ? { targetId: last.targetId, trialId: last.id } : {};
+  const event: AbaSessionEvent = { kind: 'assent', at: iso(now), by: 'child_card', action: 'break', between: true, ...where };
   const childBreaks = state.childBreaks + 1;
+  const pause: QueueItem = { kind: 'break', initiatedBy: 'child_card', maxMs: CHILD_BREAK_MS[state.band], between: true };
+  const head = state.queue[0];
+
+  if (state.endReason !== null || !head) {
+    // конец: требование больше не предъявляется, доступ (если есть) остаётся
+    return { ...state, childBreaks, queue: state.queue.filter((q) => q.kind === 'access'), events: [...state.events, event] };
+  }
   if (inGuardWindow(state) || childBreaks >= CHILD_BREAKS_TO_END) {
     return withdrawAssent({ ...state, childBreaks }, now, 'child_card', where);
   }
-  return {
-    ...state,
-    childBreaks,
-    queue: [{ kind: 'break', initiatedBy: 'child_card', maxMs: CHILD_BREAK_MS[state.band], between: true }, ...state.queue],
-    events: [...state.events, { kind: 'assent', at: iso(now), by: 'child_card', action: 'break', between: true, ...where }],
-  };
+  const rest = state.queue.slice(1);
+  let queue: QueueItem[];
+  let seed = state.seed;
+  switch (head.kind) {
+    case 'break':
+      queue = [{ ...head, initiatedBy: 'child_card', between: true, maxMs: Math.max(head.maxMs ?? 0, CHILD_BREAK_MS[state.band]) }, ...rest];
+      break;
+    case 'access':
+      queue = [head, pause, ...rest];
+      break;
+    case 'trial':
+      if (head.trial.kind === 'correction' && last) {
+        const r = seeded(state.seed);
+        const others = state.highPTargetIds.filter((id) => id !== last.targetId);
+        const again: QueueItem = {
+          kind: 'trial',
+          trial: { ...head.trial, requeuedFromTrialId: last.id, ...(others.length ? {} : { pauseBeforeMs: NEUTRAL_PAUSE_MS }) },
+        };
+        queue = [pause, ...(others.length ? [{ kind: 'trial' as const, trial: highPTrial(state.targets[pick(others, r.rng)], r.rng) }] : []), again, ...rest];
+        seed = r.seed();
+      } else {
+        queue = [pause, head, ...rest];
+      }
+      break;
+    default:
+      queue = [pause, head, ...rest];
+  }
+  return { ...state, childBreaks, queue, seed, events: [...state.events, event] };
 }
 
 /**
@@ -1554,8 +1592,8 @@ function closeOut(
     brokenTargetId: brokenTargetId ?? state.brokenTargetId,
     participationOwed: state.openBlockTargetId,
     openBlockTargetId: null,
-    // доступ к подкрепителю после обмена у ребёнка не отнимается
-    queue: state.queue.filter((q) => q.kind === 'access'),
+    // доступ к подкрепителю после обмена у ребёнка не отнимается, как и перерыв, о котором он уже попросил (№160)
+    queue: state.queue.filter((q) => q.kind === 'access' || (q.kind === 'break' && q.between === true)),
     breakStartedAt: null,
   };
   return ensureSuccessfulEnd(closed, now);
