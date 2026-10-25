@@ -30,7 +30,7 @@ settings, reports and data are available only to an adult behind a PIN.
 | Data | Why | Where and for how long |
 |---|---|---|
 | Child profile: age band (5-6, 7, 8, 9-10), language, mode; a name only if the parent chooses to enter one (**optional**) | choose tasks and language | on the device until the profile is deleted |
-| Learning progress: lesson runs (day, duration, task results), skill mastery | show progress, repeat difficult skills, parent report | on the device; the run log for 12 months, then deleted; the summary skill state while the profile exists |
+| Learning progress: lesson runs (day, duration, task results), skill mastery | show progress, repeat difficult skills, parent report | on the device; the run log for 12 months by the device date, then deleted (if the app has not been opened for more than 45 days or the date jumped forward, deletion waits for an adult to confirm in the parent section and records may be kept longer until then; manual deletion is always available); the summary skill state while the profile exists |
 | Parent consent log: what was confirmed, when, which text version | prove consent was given and withdrawn | on the device |
 | Parent PIN (stored only as a salted hash in the system's secure storage), failed-attempt counter | keep the parent area away from the child | on the device |
 | ABA mode data, **only if you turn the mode on and give a separate consent**: targets, trials, sessions, prompt levels, ratings, observer details | support ABA-style practice; trials are recorded only with consent | on the device; logs for 12 months |
@@ -90,7 +90,7 @@ is a barrier against accidental entry by a child, **not** verified proof of age 
 You may obtain a copy of the data (export), clear progress, delete the child's profile and withdraw
 any consent. All of this is done in the app's parent area (PIN required) without contacting us,
 because the data is only with you. Deletion is irreversible, there is no trash, and data is physically
-erased from the device. Uninstalling the app also removes its data.
+erased from the device. Full deletion is the Delete account button in Data. Uninstalling the app erases its data; [[iOS: before release, the PIN hash in Keychain is cleared on reinstall, #157]].
 
 After a child's profile is deleted, the consent log stays on the device without any link to the child
 (the identifier is replaced with a random one) as evidence that consent was given and withdrawn.

@@ -445,7 +445,7 @@
     },
     "policy": {
       "title": "Privacy policy",
-      "body": "Draft. The app keeps the child's data only on this device: lessons played, skills, in-game name, settings and the consent log. Nothing is sent online. Lesson records are deleted after 12 months. A parent can delete data in Data; export arrives with the cloud copy. Final text follows legal review."
+      "body": "Draft. The app keeps the child's data only on this device: lessons played, skills, in-game name, settings and the consent log. Nothing is sent online. Lesson records are deleted after 12 months by the device date. If the app has not been opened for more than 45 days or the device date jumped forward, deletion waits until an adult checks the date in the parent section, so records may be kept longer until then. You can delete them at any time in Data. A parent can delete data in Data; export arrives with the cloud copy. Final text follows legal review."
     },
     "profile": {
       "newTitle": "New profile",
