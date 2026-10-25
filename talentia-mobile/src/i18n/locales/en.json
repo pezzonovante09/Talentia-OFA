@@ -523,11 +523,15 @@
       "title": "Mastered"
     },
     "clock": {
-      "title": "The date on this phone changed",
-      "homeBody": "Records older than a year are kept until you check the date.",
+      "title": "Check the date on this phone",
+      "homeBody": "The app has not been opened for a long time or the phone date changed. Old records are kept until you check the date.",
       "check": "Check the date",
-      "body": "The phone now shows {{device}}; at the last launch it was {{last}}. If the date is right, records older than a year are deleted ({{n}}). If it is wrong, fix the date in the phone settings and nothing is deleted.",
+      "body": "The phone now shows {{device}}; at the last launch it was {{last}}. If the date is right, records older than a year are deleted: {{n}}. They cannot be restored. If the date is wrong, fix it in the phone settings and nothing is deleted.",
+      "abaGoals": "ABA goals of children with no sessions for a year are deleted too: {{aba}}.",
       "confirm": "The date is right, delete old records",
+      "confirmNothing": "The date is right, continue",
+      "recheck": "Date fixed — check again",
+      "stillAhead": "The date is still far ahead. Check it in the phone settings.",
       "stale": "The date changed again. Check it and confirm once more."
     }
   },

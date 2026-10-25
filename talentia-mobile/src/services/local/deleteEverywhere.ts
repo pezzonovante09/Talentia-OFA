@@ -177,8 +177,9 @@ export async function finishDeviceWipe(device: DeviceStore, accountId: string | 
   const left = (await device.listDbFiles()).filter((f) => DB_FILE.test(f));
   if (left.length) throw new Error(`Файлы баз остались на устройстве: ${left.length}`);
 
-  // id и метка — последними: пока они есть, PIN и файлы ещё можно найти
-  await device.removeKeys(keys.filter((k) => k.startsWith(ALL_KEYS_PREFIX) && !k.startsWith(TELEMETRY_KEY_PREFIX) && k !== WIPE_PENDING_KEY));
+  // id и метка — последними: пока они есть, PIN и файлы ещё можно найти; ключи — заново, с поздними записями
+  const rest = await device.keys();
+  await device.removeKeys(rest.filter((k) => k.startsWith(ALL_KEYS_PREFIX) && !k.startsWith(TELEMETRY_KEY_PREFIX) && k !== WIPE_PENDING_KEY));
   done.push('async_storage');
   await device.removeKeys([WIPE_PENDING_KEY]);
   return done;

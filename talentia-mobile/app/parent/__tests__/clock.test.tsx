@@ -1,5 +1,5 @@
 /**
- * №147 на экранах: карточка «Дата на телефоне изменилась» на главной родителя видна только при
+ * №147 на экранах: карточка «Проверьте дату на телефоне» на главной родителя видна только при
  * удержании срока хранения; `confirm/clock_jump` без удержания уводит на главную; подтверждение за
  * PIN удаляет старое настоящим `confirmClockJump` по дате с листа и снимает удержание. База —
  * in-memory SQLite, PIN — настоящий `checkPin` на `fakeDevice()`.
@@ -60,6 +60,7 @@ const holdAt = (deviceNow: Date): Extract<RetentionOutcome, { kind: 'held' }> =>
   deviceNow: deviceNow.toISOString(),
   lastSeen: new Date(deviceNow.getTime() - 400 * DAY).toISOString(),
   wouldRemove: 1,
+  abaGoalsChildren: 0,
 });
 
 const renderHome = () => renderWithProviders(<ParentThemeProvider><ParentHome /></ParentThemeProvider>);
@@ -101,8 +102,8 @@ describe('карточка на главной родителя', () => {
     useAccount.setState({ retentionHold: holdAt(new Date()) });
     await renderHome();
     expect(screen.getByTestId('card-clock')).toBeTruthy();
-    expect(screen.getByText('Дата на телефоне изменилась')).toBeTruthy();
-    expect(screen.getByText('Записи старше года не удаляются, пока вы не проверите дату.')).toBeTruthy();
+    expect(screen.getByText('Проверьте дату на телефоне')).toBeTruthy();
+    expect(screen.getByText('Приложение давно не открывали или дата на телефоне изменилась. Пока вы не проверите дату, старые записи не удаляются.')).toBeTruthy();
   });
 
   it('«Проверить дату» ведёт в confirm с action clock_jump', async () => {
@@ -131,7 +132,7 @@ describe('confirm/clock_jump', () => {
     useAccount.setState({ retentionHold: { ...holdAt(new Date()), wouldRemove: 7 } });
     await renderConfirm();
     expect(screen.getByTestId('parent-confirm-clock_jump')).toBeTruthy();
-    expect(screen.getByText(/удалим записи старше года — их 7/)).toBeTruthy();
+    expect(screen.getByText(/удалим записи старше года: 7/)).toBeTruthy();
   });
 
   it('верный PIN: старое удалено, свежее на месте', async () => {

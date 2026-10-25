@@ -286,6 +286,7 @@ describe('boot и скачок часов (№147)', () => {
       deviceNow: FIVE_YEARS.toISOString(),
       lastSeen: NOW.toISOString(),
       wouldRemove: 1,
+      abaGoalsChildren: 0,
     });
   });
 

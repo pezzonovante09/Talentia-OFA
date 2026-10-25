@@ -168,7 +168,16 @@ export async function applyRetention(db: SqlDb, now: Date | null): Promise<numbe
 /** Срок хранения на старте (№147): удалено — или удержано до подтверждения взрослого. */
 export type RetentionOutcome =
   | { kind: 'applied'; removed: number; now: string }
-  | { kind: 'held'; reason: 'clock_jump'; deviceNow: string; lastSeen: string; wouldRemove: number };
+  | {
+      kind: 'held';
+      reason: 'clock_jump';
+      deviceNow: string;
+      lastSeen: string;
+      /** Журнальных записей под удаление. */
+      wouldRemove: number;
+      /** Детей, у которых вместе с журналами уйдут цели и настройки ABA (нет занятий 12 месяцев). */
+      abaGoalsChildren: number;
+    };
 
 /** Подтверждение устарело: часы ушли от показанных на листе больше чем на сутки — показать заново. */
 export class StaleClockConfirmationError extends Error {
@@ -239,7 +248,8 @@ export async function runRetention(
     // опорную дату — в строку, если её не было: иначе урок при сбитых часах сдвинул бы опору журналов
     // в будущее, и следующий старт удалил бы всё без подтверждения
     await db.run('INSERT INTO retention_clock (id, last_seen) VALUES (1, ?) ON CONFLICT (id) DO NOTHING', [lastSeen]);
-    return { kind: 'held', reason: 'clock_jump', deviceNow: device, lastSeen, wouldRemove: await countExpired(db, device) };
+    const abaGoalsChildren = (await abaIdleChildren(db, retentionCutoff(deviceNow))).length;
+    return { kind: 'held', reason: 'clock_jump', deviceNow: device, lastSeen, wouldRemove: await countExpired(db, device), abaGoalsChildren };
   }
   const now = maxIso(device, builtAt, lastSeen)!;
   const removed = await applyRetention(db, new Date(now));

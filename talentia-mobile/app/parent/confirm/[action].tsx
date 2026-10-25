@@ -11,7 +11,8 @@ import { View } from 'react-native';
 
 import { parentSpacing } from '../../../src/design/parentTokens';
 import { uuidV4 } from '../../../src/domain/ids';
-import { deleteChildEverywhere, wipeAccountEverywhere } from '../../../src/services/local/deleteEverywhere';
+import { deleteChildEverywhere, finishDeviceWipe, wipeAccountEverywhere } from '../../../src/services/local/deleteEverywhere';
+import { WIPE_PENDING_KEY } from '../../../src/services/local/device';
 import { deleteLocalDb } from '../../../src/services/local/expoSqlite';
 import { buildTime } from '../../../src/services/local/buildInfo';
 import { clearChildProgress, confirmClockJump, runRetention, StaleClockConfirmationError } from '../../../src/services/local/purge';
@@ -55,7 +56,22 @@ export default function ConfirmScreen() {
   const idx = profile ? profiles.findIndex((p) => p.childId === profile.childId) : -1;
   const name = profile ? profile.name || t('parent.profile.unnamed', { n: idx + 1 }) : '';
   const day = (iso: string) => new Date(iso).toLocaleDateString(i18n.language === 'en' ? 'en-GB' : 'ru-RU');
-  const vars = hold ? { name, device: day(hold.deviceNow), last: day(hold.lastSeen), n: hold.wouldRemove } : { name };
+  const vars = hold ? { name, device: day(hold.deviceNow), last: day(hold.lastSeen), n: hold.wouldRemove, aba: hold.abaGoalsChildren } : { name };
+  // нечего удалять — подтверждение не разрушительное (child-privacy-compliance 2026-10-25)
+  const nothingToRemove = kind === 'clock_jump' && hold !== null && hold.wouldRemove === 0 && hold.abaGoalsChildren === 0;
+
+  const recheck = async () => {
+    const { db } = account;
+    if (!db) return;
+    const again = await runRetention(db, { deviceNow: new Date(), builtAt: buildTime() });
+    if (again.kind === 'applied') {
+      account.clearRetentionHold();
+      router.back();
+    } else {
+      useAccount.setState({ retentionHold: again });
+      setFailure(t('parent.clock.stillAhead'));
+    }
+  };
 
   const perform = async () => {
     const { db, accountId } = account;
@@ -94,6 +110,16 @@ export default function ConfirmScreen() {
       }
     } catch (e) {
       if (__DEV__) console.warn('confirm', e);
+      // удаление аккаунта уже началось (метка стоит): довести, сколько выйдет, и закрыть вход — данные,
+      // приговорённые к удалению, не пишутся; остаток доведёт следующий старт (№148, child-privacy-compliance)
+      if (kind === 'delete_account' && (await device().getItem(WIPE_PENDING_KEY)) !== null) {
+        await finishDeviceWipe(device(), account.accountId).catch(() => undefined);
+        router.replace('/parent/done');
+        useChildSession.getState().reset();
+        account.clear();
+        lock();
+        return;
+      }
       setFailure(t('parent.failed'));
     } finally {
       setBusy(false);
@@ -108,6 +134,7 @@ export default function ConfirmScreen() {
         </ParentText>
         <Card>
           <ParentText role="body">{t(keys.body, vars)}</ParentText>
+          {kind === 'clock_jump' && hold !== null && hold.abaGoalsChildren > 0 && <ParentText role="body">{t('parent.clock.abaGoals', vars)}</ParentText>}
           {kind !== 'clear_progress' && kind !== 'clock_jump' && (
             <ParentText role="caption" color="textMuted">
               {t('parent.data.remains')}
@@ -115,7 +142,14 @@ export default function ConfirmScreen() {
           )}
         </Card>
         <View style={{ flex: 1 }} />
-        <ParentButton variant="destructive" label={busy ? t('parent.data.working') : t(keys.button)} disabled={busy} onPress={() => setSheet(true)} testID="confirm-action" />
+        <ParentButton
+          variant={nothingToRemove ? 'primary' : 'destructive'}
+          label={busy ? t('parent.data.working') : t(nothingToRemove ? 'parent.clock.confirmNothing' : keys.button)}
+          disabled={busy}
+          onPress={() => setSheet(true)}
+          testID="confirm-action"
+        />
+        {kind === 'clock_jump' && <ParentButton variant="secondary" label={t('parent.clock.recheck')} disabled={busy} onPress={() => void recheck()} testID="clock-recheck" />}
         {failure && (
           <ParentText role="caption" color="error" align="center" testID="confirm-error">
             {failure}

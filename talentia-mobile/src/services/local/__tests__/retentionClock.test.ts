@@ -99,7 +99,7 @@ describe(`скачок вперёд больше ${CLOCK_JUMP_HOLD_DAYS} дне�
     const db = await seeded();
     const out = await runRetention(db, { deviceNow: JUMP, builtAt: null });
     // от SEEN + 46 дней старше 12 месяцев — OLD и MID
-    expect(out).toEqual({ kind: 'held', reason: 'clock_jump', deviceNow: iso(JUMP), lastSeen: SEEN, wouldRemove: 2 });
+    expect(out).toEqual({ kind: 'held', reason: 'clock_jump', deviceNow: iso(JUMP), lastSeen: SEEN, wouldRemove: 2, abaGoalsChildren: 0 });
   });
 
   it('wouldRemove считает все журналы, а не только уроки', async () => {
