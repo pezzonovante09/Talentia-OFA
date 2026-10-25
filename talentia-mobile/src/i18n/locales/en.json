@@ -386,7 +386,7 @@
     "progress": "Task {{n}} of {{total}}",
     "unsupported": "This format is not ready yet",
     "tapCorrectedFirst": "First tap what was fixed",
-    "orderMirrored": "Almost! We start from here"
+    "orderMirrored": "From the other end! We start right here"
   },
   "atlas": {
     "toMap": "To the map",
