@@ -20,6 +20,7 @@ import {
   DB_FILE,
   type DeviceStore,
   KNOWN_ACCOUNTS_PREFIX,
+  SECURE_ACCOUNTS_KEY,
   WIPE_PENDING_KEY,
 } from './device';
 import { CURRENT_ACCOUNT_KEY } from './account';
@@ -163,6 +164,7 @@ export async function finishDeviceWipe(device: DeviceStore, accountId: string | 
   // брошенные базы не открываются (могут быть испорчены, облака нет): файлы и спутники всех id
   await device.deleteDbFiles((await device.listDbFiles()).filter((f) => DB_FILE.test(f)));
   for (const id of ids) await device.removeSecure(secureKeys(id));
+  await device.removeSecure([SECURE_ACCOUNTS_KEY]);
   done.push('secure_store', 'orphan_accounts');
 
   await device.deleteCacheDir(CHILD_VOICE_ROOT);

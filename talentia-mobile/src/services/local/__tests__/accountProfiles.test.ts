@@ -10,7 +10,7 @@ import { fakeDevice } from '../../../test/fakeDevice';
 import { CONFIRMATION, canPerform, deleteAccountConfirmation, openSession, type Digest } from '../../../domain/parentGate';
 import { accountConsentStatus, checkPin, createLocalAccount, currentAccountId, grantAccountLocal, hasPin, readLockout } from '../account';
 import { deleteChildEverywhere, wipeAccountEverywhere } from '../deleteEverywhere';
-import { childKeyPrefix, knownAccountKey, secureKeys } from '../device';
+import { childKeyPrefix, knownAccountKey, SECURE_ACCOUNTS_KEY, secureKeys } from '../device';
 import { childrenKey, exportProfile, listChildIds, listProfiles, newProfile, ProfileConsentRequiredError, saveProfile } from '../profiles';
 import { memoryDb } from './nodeSql';
 
@@ -21,14 +21,15 @@ const NOW = Date.parse('2026-10-25T10:00:00.000Z');
 const AT = '2026-10-25T10:00:00.000Z';
 
 describe('локальный аккаунт', () => {
-  it('создание: id в AsyncStorage и в реестре аккаунтов (№148), хеш PIN и пустой таймаут в SecureStore, больше ничего', async () => {
+  it('создание: id в AsyncStorage и в реестрах аккаунтов (№148, №157), хеш PIN и пустой таймаут в SecureStore, больше ничего', async () => {
     const device = fakeDevice();
     const id = await createLocalAccount(device, '295173', { randomBytes, digest });
     expect(await currentAccountId(device)).toBe(id);
     // реестр — тот же id аккаунта, ничего о ребёнке: до согласия на устройстве по-прежнему только id, PIN и таймаут
     expect([...device.storage.keys()].sort()).toEqual([knownAccountKey(id), 'talentia:account:current'].sort());
     expect(device.storage.get(knownAccountKey(id))).toBe('1');
-    expect([...device.secure.keys()].sort()).toEqual([...secureKeys(id)].sort());
+    expect([...device.secure.keys()].sort()).toEqual([...secureKeys(id), SECURE_ACCOUNTS_KEY].sort());
+    expect(JSON.parse(device.secure.get(SECURE_ACCOUNTS_KEY)!)).toEqual([id]);
     expect(device.secure.get(secureKeys(id)[0])).not.toContain('295173');
     expect(await hasPin(device, id)).toBe(true);
   });

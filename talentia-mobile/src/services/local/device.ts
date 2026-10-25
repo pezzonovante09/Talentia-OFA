@@ -34,6 +34,14 @@ export const knownAccountKey = (accountId: string) => `${KNOWN_ACCOUNTS_PREFIX}$
  */
 export const WIPE_PENDING_KEY = 'talentia:wipe:pending';
 
+/**
+ * Реестр id в SecureStore (№157): на iOS Keychain переживает удаление приложения, AsyncStorage — нет.
+ * После переустановки по нему стираются старые хеши PIN (`clearAfterReinstall`). Метка установки —
+ * в AsyncStorage: её нет только на свежей установке.
+ */
+export const SECURE_ACCOUNTS_KEY = 'talentia.accounts';
+export const INSTALL_MARK_KEY = 'talentia:install';
+
 /** Файл базы аккаунта и его спутники; группа 1 — id. Чужие файлы под это имя не подходят. */
 export const DB_FILE = /^talentia-([A-Za-z0-9-]{8,64})\.db(?:-wal|-shm|-journal)?$/;
 

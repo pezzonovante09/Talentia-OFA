@@ -8,7 +8,7 @@ import { uuidV4 } from '../domain/ids';
 import type { ConsentStatus } from '../domain/consent';
 import type { Digest } from '../domain/parentGate';
 import type { InterfaceLang } from '../domain/regionVisibility';
-import { accountConsentStatus, createLocalAccount, currentAccountId, grantAccountLocal } from '../services/local/account';
+import { accountConsentStatus, clearAfterReinstall, createLocalAccount, currentAccountId, grantAccountLocal } from '../services/local/account';
 import { finishDeviceWipe, wipeAccountEverywhere } from '../services/local/deleteEverywhere';
 import { WIPE_PENDING_KEY } from '../services/local/device';
 import { deleteLocalDb, openLocalDb } from '../services/local/expoSqlite';
@@ -59,6 +59,7 @@ export const useAccount = create<AccountState>((set, get) => ({
 
   async boot({ openDb = openLocalDb, now = new Date(), builtAt = buildTime() } = {}) {
     const d = device();
+    await clearAfterReinstall(d);
     // удаление аккаунта прервано (сбой, закрытое приложение) — довести до конца, аккаунта больше нет (№148)
     if ((await d.getItem(WIPE_PENDING_KEY)) !== null) {
       await finishDeviceWipe(d, null);

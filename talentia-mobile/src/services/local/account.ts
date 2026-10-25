@@ -25,7 +25,7 @@ import {
 } from '../../domain/parentGate';
 import type { InterfaceLang } from '../../domain/regionVisibility';
 import { readConsentLog, appendConsentEvent } from './consentLog';
-import { knownAccountKey, secureKeys, type DeviceStore } from './device';
+import { ALL_KEYS_PREFIX, INSTALL_MARK_KEY, knownAccountKey, SECURE_ACCOUNTS_KEY, secureKeys, type DeviceStore } from './device';
 import type { SqlDb } from './sql';
 
 /** Ключ AsyncStorage с id текущего локального аккаунта (один аккаунт на устройство в v1). */
@@ -56,10 +56,41 @@ export async function createLocalAccount(
   const [pinKey, lockoutKey] = secureKeys(accountId);
   // реестр — раньше PIN: упадёт посередине — останется id без PIN, а не PIN, который не найти (№148)
   await device.setItem(knownAccountKey(accountId), '1');
+  await rememberSecureAccount(device, accountId);
   await device.setSecure(pinKey, JSON.stringify(record));
   await device.setSecure(lockoutKey, JSON.stringify(NO_LOCKOUT));
   await device.setItem(CURRENT_ACCOUNT_KEY, accountId);
   return accountId;
+}
+
+/** id аккаунтов из реестра SecureStore; битый — пусто. */
+async function secureAccounts(device: DeviceStore): Promise<string[]> {
+  try {
+    const v: unknown = JSON.parse((await device.getSecure(SECURE_ACCOUNTS_KEY)) ?? '[]');
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+async function rememberSecureAccount(device: DeviceStore, accountId: string): Promise<void> {
+  const ids = await secureAccounts(device);
+  if (!ids.includes(accountId)) await device.setSecure(SECURE_ACCOUNTS_KEY, JSON.stringify([...ids, accountId]));
+}
+
+/**
+ * Первый запуск после переустановки (№157): в AsyncStorage нет ни одного ключа приложения — значит,
+ * приложение удаляли, а на iOS Keychain пережил удаление. Хеши PIN прежних аккаунтов стираются по
+ * реестру SecureStore. Обновление без переустановки (ключи есть, метки ещё нет) только ставит метку.
+ */
+export async function clearAfterReinstall(device: DeviceStore): Promise<void> {
+  if ((await device.getItem(INSTALL_MARK_KEY)) !== null) return;
+  const fresh = !(await device.keys()).some((k) => k.startsWith(ALL_KEYS_PREFIX));
+  if (fresh) {
+    for (const id of await secureAccounts(device)) await device.removeSecure(secureKeys(id));
+    await device.removeSecure([SECURE_ACCOUNTS_KEY]);
+  }
+  await device.setItem(INSTALL_MARK_KEY, '1');
 }
 
 export async function hasPin(device: DeviceStore, accountId: string): Promise<boolean> {
