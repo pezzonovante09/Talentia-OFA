@@ -13,7 +13,7 @@ import { ABA_DELETED_KEYS, ABA_STATE_KEYS, loadChildState } from './childState';
 import { insertConsentEvent, readConsentLog } from './consentLog';
 import { withDbLock } from './lock';
 import { leaksTime } from '../../domain/ids';
-import { RETENTION_MONTHS } from './schema';
+import { CLOCK_JUMP_HOLD_DAYS, RETENTION_MONTHS } from './schema';
 import type { SqlDb } from './sql';
 
 const JOURNALS = [
@@ -66,17 +66,17 @@ export async function compactAfterDelete(db: SqlDb): Promise<void> {
   await db.exec('PRAGMA wal_checkpoint(TRUNCATE)');
 }
 
-/**
- * Доверенное время для срока хранения (раунд 5, backend В3): заголовок `Date` последнего ответа
- * сервера (ping, синхронизация) и прежнее доверенное время, сохранённое на устройстве; берётся
- * большее — время только растёт, перевод часов назад и вперёд на устройстве его не двигает.
- * Нет ни одного разборчивого — `null`, и `applyRetention` ничего не удаляет. Сохранять
- * результат вызывающий должен сам (ключ устройства), рядом с вызовом на старте.
- */
-export function trustedNow(serverDate: string | null | undefined, lastTrusted: string | null | undefined): Date | null {
-  const ms = [serverDate, lastTrusted].map((s) => (s ? Date.parse(s) : NaN)).filter(Number.isFinite);
-  return ms.length ? new Date(Math.max(...ms)) : null;
-}
+/** Журналы и их колонка времени — по ним срок хранения и опорная дата часов. */
+const RETENTION_COLUMNS = [
+  ['aba_trials', 'recorded_at'],
+  ['aba_sessions', 'recorded_at'],
+  ['aba_ioa', 'recorded_at'],
+  ['aba_routine_runs', 'recorded_at'],
+  ['aba_reinforcer_choices', 'chosen_at'],
+  ['aba_trial_corrections', 'recorded_at'],
+  ['aba_routine_run_amendments', 'recorded_at'],
+  ['lesson_runs', 'started_at'],
+] as const;
 
 /** Граница срока хранения: всё раньше неё удаляется (`RETENTION_MONTHS`). */
 export function retentionCutoff(now: Date, months = RETENTION_MONTHS): string {
@@ -123,9 +123,8 @@ async function abaIdleChildren(tx: SqlDb, before: string): Promise<string[]> {
  * «данные о ходе занятий» жили бы бессрочно после журналов. Пауза (`abaPaused`) — настройка
  * родителя, а не данные о ребёнке: остаётся. Согласие не трогается.
  *
- * `now` — доверенное время (`trustedNow`), а не часы устройства: дети переводят дату ради игр, и
- * часы на пять лет вперёд стёрли бы без возврата журналы и цели ABA у всех детей (раунд 5, backend
- * В3). Доверенного времени ещё нет (`null`, ни одного ответа сервера) — не удаляется ничего.
+ * Низкий уровень: удаляет всё раньше `now − 12 месяцев`, `now` не проверяет. На старте зовётся
+ * только через `runRetention` — она решает, можно ли верить часам (№147). `null` — ничего.
  */
 export async function applyRetention(db: SqlDb, now: Date | null): Promise<number> {
   if (now === null) return 0;
@@ -142,16 +141,7 @@ export async function applyRetention(db: SqlDb, now: Date | null): Promise<numbe
       ).changes;
     }
     await tx.run('INSERT INTO retention_gate (before) VALUES (?)', [before]);
-    for (const [t, col] of [
-      ['aba_trials', 'recorded_at'],
-      ['aba_sessions', 'recorded_at'],
-      ['aba_ioa', 'recorded_at'],
-      ['aba_routine_runs', 'recorded_at'],
-      ['aba_reinforcer_choices', 'chosen_at'],
-      ['aba_trial_corrections', 'recorded_at'],
-      ['aba_routine_run_amendments', 'recorded_at'],
-      ['lesson_runs', 'started_at'],
-    ] as const) {
+    for (const [t, col] of RETENTION_COLUMNS) {
       removed += (await tx.run(`DELETE FROM ${t} WHERE ${col} < ?`, [before])).changes;
     }
     // открытая форма места с копиями проб прогона — по началу прогона, как снимки «в работе»
@@ -172,6 +162,102 @@ export async function applyRetention(db: SqlDb, now: Date | null): Promise<numbe
     await tx.run('DELETE FROM retention_gate');
   });
   if (removed) await compactAfterDelete(db);
+  return removed;
+}
+
+/** Срок хранения на старте (№147): удалено — или удержано до подтверждения взрослого. */
+export type RetentionOutcome =
+  | { kind: 'applied'; removed: number; now: string }
+  | { kind: 'held'; reason: 'clock_jump'; deviceNow: string; lastSeen: string; wouldRemove: number };
+
+/** Подтверждение устарело: часы ушли от показанных на листе больше чем на сутки — показать заново. */
+export class StaleClockConfirmationError extends Error {
+  constructor() {
+    super('Часы изменились после показа листа');
+    this.name = 'StaleClockConfirmationError';
+  }
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const msOf = (iso: string | null | undefined) => (iso ? Date.parse(iso) : NaN);
+const maxIso = (...xs: (string | null | undefined)[]): string | null => {
+  const ok = xs.map(msOf).filter(Number.isFinite);
+  return ok.length ? new Date(Math.max(...ok)).toISOString() : null;
+};
+
+/**
+ * Последняя виденная дата: строка `retention_clock`, а у базы, где её ещё нет, — самая поздняя
+ * запись журналов и согласий (у живого аккаунта есть хотя бы согласие `account_local`).
+ */
+async function lastSeenOf(db: SqlDb): Promise<string | null> {
+  const [row] = await db.all<{ last_seen: string }>('SELECT last_seen FROM retention_clock WHERE id = 1');
+  if (row) return row.last_seen;
+  const marks: (string | null)[] = [];
+  for (const [t, col] of RETENTION_COLUMNS) {
+    const [r] = await db.all<{ at: string | null }>(`SELECT MAX(${col}) AS at FROM ${t}`);
+    marks.push(r?.at ?? null);
+  }
+  const [c] = await db.all<{ at: string | null }>('SELECT MAX(at) AS at FROM consent_events');
+  return maxIso(...marks, c?.at ?? null);
+}
+
+/** Время только растёт: `MAX` с прежним; триггер миграции 15 держит то же в самой базе. */
+async function advanceLastSeen(db: SqlDb, at: string): Promise<void> {
+  await db.run(
+    `INSERT INTO retention_clock (id, last_seen) VALUES (1, ?)
+     ON CONFLICT (id) DO UPDATE SET last_seen = MAX(last_seen, excluded.last_seen)`,
+    [at],
+  );
+}
+
+/** Сколько журнальных записей удалил бы срок от `now` — число на листе подтверждения. */
+async function countExpired(db: SqlDb, now: string): Promise<number> {
+  const before = retentionCutoff(new Date(now));
+  let n = 0;
+  for (const [t, col] of RETENTION_COLUMNS) {
+    const [r] = await db.all<{ n: number }>(`SELECT COUNT(*) AS n FROM ${t} WHERE ${col} < ?`, [before]);
+    n += r?.n ?? 0;
+  }
+  return n;
+}
+
+/**
+ * Срок хранения на старте по часам устройства (№131, №147). Время — `max(часы, дата сборки,
+ * последняя виденная)`: часы назад не продлевают хранение, дата «2000 год» не обходит срок. Если
+ * часы ушли вперёд от последней виденной даты больше чем на `CLOCK_JUMP_HOLD_DAYS`, ничего не
+ * удаляется и дата не двигается: удаление ждёт взрослого (`confirmClockJump`), иначе ребёнок,
+ * переведя дату «ради игр», стёр бы журналы всех детей без возврата. Удержание не хранится —
+ * его заново находит каждый старт.
+ */
+export async function runRetention(
+  db: SqlDb,
+  { deviceNow, builtAt }: { deviceNow: Date; builtAt: string | null },
+): Promise<RetentionOutcome> {
+  const device = deviceNow.toISOString();
+  const lastSeen = await lastSeenOf(db);
+  if (lastSeen && deviceNow.getTime() - msOf(lastSeen) > CLOCK_JUMP_HOLD_DAYS * DAY_MS) {
+    return { kind: 'held', reason: 'clock_jump', deviceNow: device, lastSeen, wouldRemove: await countExpired(db, device) };
+  }
+  const now = maxIso(device, builtAt, lastSeen)!;
+  const removed = await applyRetention(db, new Date(now));
+  await advanceLastSeen(db, now);
+  return { kind: 'applied', removed, now };
+}
+
+/**
+ * Взрослый за PIN подтвердил дату, которую видел на листе (`observedNow`). Если часы с тех пор
+ * ушли больше чем на сутки — `StaleClockConfirmationError`, и лист пересчитывается.
+ */
+export async function confirmClockJump(
+  db: SqlDb,
+  { observedNow, deviceNow, builtAt }: { observedNow: string; deviceNow: Date; builtAt: string | null },
+): Promise<number> {
+  if (!Number.isFinite(msOf(observedNow)) || Math.abs(deviceNow.getTime() - msOf(observedNow)) > DAY_MS) {
+    throw new StaleClockConfirmationError();
+  }
+  const now = maxIso(observedNow, builtAt, await lastSeenOf(db))!;
+  const removed = await applyRetention(db, new Date(now));
+  await advanceLastSeen(db, now);
   return removed;
 }
 

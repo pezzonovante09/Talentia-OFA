@@ -27,6 +27,7 @@ export default function ParentHome() {
   const theme = useParentTheme();
   const profiles = useAccount((s) => s.profiles);
   const consent = useAccount((s) => s.consent);
+  const clockHold = useAccount((s) => s.retentionHold);
   const profile = useSelectedProfile();
   const select = useParentView((s) => s.select);
   const report = useParentReport(profile?.childId ?? null);
@@ -54,6 +55,13 @@ export default function ParentHome() {
       <ParentText role="caption" color="textMuted" style={{ marginBottom: parentSpacing.lg }} testID="home-last">
         {whenLabel(t, report?.lastRunAt ?? null)}
       </ParentText>
+
+      {clockHold && (
+        <Card title={t('parent.clock.title')} testID="card-clock">
+          <ParentText role="body">{t('parent.clock.homeBody')}</ParentText>
+          <Row first kind="link" label={t('parent.clock.check')} onPress={() => router.push({ pathname: '/parent/confirm/[action]', params: { action: 'clock_jump' } })} testID="row-clock" />
+        </Card>
+      )}
 
       <Card title={t('parent.home.week')} testID="card-week">
         <View style={{ flexDirection: 'row', marginBottom: parentSpacing.lg }}>

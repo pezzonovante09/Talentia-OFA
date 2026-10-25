@@ -2,7 +2,7 @@
  * Подтверждение разрушительного действия (дизайн-док §7): один шаблон на три действия, кнопка с
  * текстом действия, затем свежий PIN на листе (окно 5 минут здесь не действует — решение владельца
  * 2026-10-25). Очистка — `clearChildProgress`; профиль — `deleteChildEverywhere`; аккаунт —
- * `wipeAccountEverywhere` + файл базы.
+ * `wipeAccountEverywhere` + файл базы; скачок часов (№147) — `confirmClockJump` по дате с листа.
  */
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -13,7 +13,8 @@ import { parentSpacing } from '../../../src/design/parentTokens';
 import { uuidV4 } from '../../../src/domain/ids';
 import { deleteChildEverywhere, wipeAccountEverywhere } from '../../../src/services/local/deleteEverywhere';
 import { deleteLocalDb } from '../../../src/services/local/expoSqlite';
-import { clearChildProgress } from '../../../src/services/local/purge';
+import { buildTime } from '../../../src/services/local/buildInfo';
+import { clearChildProgress, confirmClockJump, runRetention, StaleClockConfirmationError } from '../../../src/services/local/purge';
 import { randomBytes } from '../../../src/services/random';
 import { useAccount } from '../../../src/state/account';
 import { useChildSession } from '../../../src/state/childSession';
@@ -23,15 +24,16 @@ import { useParentView, useSelectedProfile } from '../../../src/state/parentView
 import { ConfirmPinSheet } from '../../../src/ui/parent/ConfirmPinSheet';
 import { Card, ParentButton, ParentScreen, ParentText } from '../../../src/ui/parent/primitives';
 
-type Action = 'clear_progress' | 'delete_child' | 'delete_account';
+type Action = 'clear_progress' | 'delete_child' | 'delete_account' | 'clock_jump';
 const KEYS: Record<Action, { title: string; body: string; button: string }> = {
   clear_progress: { title: 'parent.data.confirmClearTitle', body: 'parent.data.confirmClearBody', button: 'parent.data.clearProgress' },
   delete_child: { title: 'parent.data.confirmChildTitle', body: 'parent.data.confirmChildBody', button: 'parent.data.deleteChild' },
   delete_account: { title: 'parent.data.confirmAccountTitle', body: 'parent.data.confirmAccountBody', button: 'parent.data.deleteAccount' },
+  clock_jump: { title: 'parent.clock.title', body: 'parent.clock.body', button: 'parent.clock.confirm' },
 };
 
 export default function ConfirmScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { action } = useLocalSearchParams<{ action: string }>();
   const account = useAccount();
@@ -47,9 +49,13 @@ export default function ConfirmScreen() {
   // Без аккаунта сюда можно попасть только по ссылке (не во время удаления — тогда `busy`).
   if (account.status === 'none' && !busy) return <Redirect href="/parent/setup" />;
   const kind = action as Action;
+  const hold = account.retentionHold;
+  if (kind === 'clock_jump' && !hold) return <Redirect href="/parent" />;
   const keys = KEYS[kind];
   const idx = profile ? profiles.findIndex((p) => p.childId === profile.childId) : -1;
   const name = profile ? profile.name || t('parent.profile.unnamed', { n: idx + 1 }) : '';
+  const day = (iso: string) => new Date(iso).toLocaleDateString(i18n.language === 'en' ? 'en-GB' : 'ru-RU');
+  const vars = hold ? { name, device: day(hold.deviceNow), last: day(hold.lastSeen), n: hold.wouldRemove } : { name };
 
   const perform = async () => {
     const { db, accountId } = account;
@@ -66,6 +72,18 @@ export default function ConfirmScreen() {
         await account.refreshProfiles();
         select(useAccount.getState().profiles[0]?.childId ?? '');
         router.replace('/parent');
+      } else if (kind === 'clock_jump' && hold) {
+        try {
+          await confirmClockJump(db, { observedNow: hold.deviceNow, deviceNow: new Date(), builtAt: buildTime() });
+          account.clearRetentionHold();
+          router.back();
+        } catch (e) {
+          if (!(e instanceof StaleClockConfirmationError)) throw e;
+          // часы снова изменились, пока лист был открыт — пересчитать и показать заново
+          const again = await runRetention(db, { deviceNow: new Date(), builtAt: buildTime() });
+          useAccount.setState({ retentionHold: again.kind === 'held' ? again : null });
+          setFailure(t('parent.clock.stale'));
+        }
       } else if (kind === 'delete_account') {
         await wipeAccountEverywhere({ db, device: device(), accountId, deleteDbFile: () => deleteLocalDb(accountId), deliverRevocations: async () => true });
         // Сначала переход: гейт при `status: 'none'` держит открытыми только setup/policy/done.
@@ -86,11 +104,11 @@ export default function ConfirmScreen() {
     <ParentScreen left={<ParentButton variant="quiet" label={t('parent.back')} onPress={() => router.back()} block={false} testID="confirm-back" />} testID={`parent-confirm-${kind}`}>
       <View style={{ gap: parentSpacing.lg, flex: 1, paddingTop: parentSpacing.xl }}>
         <ParentText role="heading" accessibilityRole="header">
-          {t(keys.title, { name })}
+          {t(keys.title, vars)}
         </ParentText>
         <Card>
-          <ParentText role="body">{t(keys.body, { name })}</ParentText>
-          {kind !== 'clear_progress' && (
+          <ParentText role="body">{t(keys.body, vars)}</ParentText>
+          {kind !== 'clear_progress' && kind !== 'clock_jump' && (
             <ParentText role="caption" color="textMuted">
               {t('parent.data.remains')}
             </ParentText>

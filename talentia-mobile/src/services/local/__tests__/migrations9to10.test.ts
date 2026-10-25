@@ -87,11 +87,11 @@ const insertCorrection = (tx: SqlDb, c = correction()) =>
   );
 
 describe('накат миграции 10 на базе с данными', () => {
-  it('миграций четырнадцать, база после наката — версия 14', async () => {
+  it('база после наката — последняя версия', async () => {
     const db = await v9WithData();
     await migrate(db);
     const [{ user_version }] = await db.all<{ user_version: number }>('PRAGMA user_version');
-    expect([MIGRATIONS.length, user_version]).toEqual([14, 14]);
+    expect([MIGRATIONS.length, user_version]).toEqual([MIGRATIONS.length, MIGRATIONS.length]);
   });
 
   it('миграция 11: история выборов по ребёнку и seq идёт по индексу, а не сортировкой', async () => {

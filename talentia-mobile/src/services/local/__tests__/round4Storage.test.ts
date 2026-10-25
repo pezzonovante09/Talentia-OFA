@@ -13,7 +13,7 @@ import { ABA_STATE_KEYS, loadChildState, saveChildState } from '../childState';
 import { commitRoutineExchange, commitRoutineRun } from '../commit';
 import { appendConsentEvent } from '../consentLog';
 import { lessonRunsOf } from '../lessonRuns';
-import { applyRetention, exportChild, exportForSpecialist, revokeAbaProcessing, trustedNow } from '../purge';
+import { applyRetention, exportChild, exportForSpecialist, revokeAbaProcessing, runRetention } from '../purge';
 import type { SqlDb } from '../sql';
 import { asAbaWriter, memoryDb, writeLessonRun } from './nodeSql';
 
@@ -78,19 +78,22 @@ describe('срок хранения по доверенному времени (
     expect(await keysOf(db, 'old')).toEqual(['abaBoard', 'abaPaused', 'abaSessionIndex', 'abaTargets', 'tokenTraining']);
   });
 
-  it('часы устройства на пять лет вперёд не двигают доверенное время', () => {
-    const server = '2026-10-19T10:00:00Z';
-    const deviceForward = new Date('2031-10-19T10:00:00Z');
-    const t = trustedNow(server, null);
-    expect(t?.toISOString()).toBe('2026-10-19T10:00:00.000Z');
-    expect(t!.getTime()).toBeLessThan(deviceForward.getTime());
+  it('часы устройства на пять лет вперёд: удержано до взрослого, журналы целы (№147)', async () => {
+    const db = await memoryDb();
+    await abaChild(db, 'old', OLD);
+    await asAbaWriter(db, 'old', (tx) => appendTrial(tx, 'old', trialAt('old', 'tr-fresh'), FRESH));
+    const out = await runRetention(db, { deviceNow: new Date('2031-10-19T10:00:00Z'), builtAt: null });
+    expect(out).toMatchObject({ kind: 'held', reason: 'clock_jump', lastSeen: FRESH });
+    expect(await keysOf(db, 'old')).toEqual(['abaBoard', 'abaPaused', 'abaSessionIndex', 'abaTargets', 'tokenTraining']);
   });
 
-  it('доверенное время только растёт; неразборчивое — не время', () => {
-    expect(trustedNow('2026-10-01T00:00:00Z', '2026-10-19T00:00:00Z')?.toISOString()).toBe('2026-10-19T00:00:00.000Z');
-    expect(trustedNow('Mon, 20 Oct 2026 08:00:00 GMT', '2026-10-19T00:00:00Z')?.toISOString()).toBe('2026-10-20T08:00:00.000Z');
-    expect(trustedNow('мусор', undefined)).toBeNull();
-    expect(trustedNow(null, null)).toBeNull();
+  it('обычный ход времени удаляет как раньше', async () => {
+    const db = await memoryDb();
+    await asAbaWriter(db, 'old', (tx) => appendTrial(tx, 'old', trialAt('old', 'tr-old'), OLD));
+    await asAbaWriter(db, 'old', (tx) => appendTrial(tx, 'old', trialAt('old', 'tr-fresh'), FRESH));
+    const out = await runRetention(db, { deviceNow: NOW, builtAt: null });
+    expect(out).toMatchObject({ kind: 'applied', now: NOW.toISOString() });
+    expect(out.kind === 'applied' && out.removed).toBeGreaterThan(0);
   });
 });
 

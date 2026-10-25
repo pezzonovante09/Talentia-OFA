@@ -20,6 +20,8 @@ import type { SqlDb } from './sql';
  * устройстве»). Навыки и цели лежат в сводном состоянии `child_state` и не теряются.
  */
 export const RETENTION_MONTHS = 12;
+/** Скачок часов вперёд, после которого срок хранения ждёт взрослого (№147). */
+export const CLOCK_JUMP_HOLD_DAYS = 45;
 
 /** Удаление строк ребёнка разрешено, пока в `purge_gate` есть его id (или `*` — всё). */
 const gated = (table: string) => `
@@ -512,6 +514,14 @@ WHEN NEW.key = 'formatsSeen'
 BEGIN SELECT RAISE(ABORT, 'child_state: formatsSeen только через commit.ts при согласии account_local'); END;`,
   )
   .join('\n')}
+`,
+  // 15. Последняя виденная дата для срока хранения (№147, `backend-auditor` 2026-10-25): одна строка,
+  // время в ней только растёт — перевод часов назад не сбрасывает защиту от скачка вперёд.
+  `
+CREATE TABLE retention_clock (id INTEGER PRIMARY KEY CHECK (id = 1), last_seen TEXT NOT NULL);
+CREATE TRIGGER retention_clock_monotonic BEFORE UPDATE ON retention_clock
+WHEN NEW.last_seen < OLD.last_seen
+BEGIN SELECT RAISE(ABORT, 'retention_clock: время не идёт назад'); END;
 `,
 ];
 

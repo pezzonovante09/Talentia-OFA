@@ -521,6 +521,14 @@
     },
     "mastered": {
       "title": "Mastered"
+    },
+    "clock": {
+      "title": "The date on this phone changed",
+      "homeBody": "Records older than a year are kept until you check the date.",
+      "check": "Check the date",
+      "body": "The phone now shows {{device}}; at the last launch it was {{last}}. If the date is right, records older than a year are deleted ({{n}}). If it is wrong, fix the date in the phone settings and nothing is deleted.",
+      "confirm": "The date is right, delete old records",
+      "stale": "The date changed again. Check it and confirm once more."
     }
   },
   "region": {

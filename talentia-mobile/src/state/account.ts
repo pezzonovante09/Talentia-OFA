@@ -12,7 +12,8 @@ import { accountConsentStatus, createLocalAccount, currentAccountId, grantAccoun
 import { wipeAccountEverywhere } from '../services/local/deleteEverywhere';
 import { deleteLocalDb, openLocalDb } from '../services/local/expoSqlite';
 import { listProfiles, saveProfile, type ChildProfile } from '../services/local/profiles';
-import { applyRetention, trustedNow } from '../services/local/purge';
+import { buildTime } from '../services/local/buildInfo';
+import { runRetention, type RetentionOutcome } from '../services/local/purge';
 import type { SqlDb } from '../services/local/sql';
 import { noRecordPort, sqlitePort } from '../services/progressPort';
 import { randomBytes } from '../services/random';
@@ -27,8 +28,15 @@ export type AccountState = {
   db: SqlDb | null;
   profiles: ChildProfile[];
   consent: ConsentStatus;
+  /**
+   * Срок хранения удержан скачком часов (№147): вход не блокируется, раздел родителя показывает
+   * лист подтверждения. `null` — удержания нет.
+   */
+  retentionHold: Extract<RetentionOutcome, { kind: 'held' }> | null;
   /** Прочитать аккаунт с устройства, открыть базу, применить срок хранения, подключить порт прогресса. */
-  boot(opts?: { openDb?: (id: string) => Promise<SqlDb>; now?: Date }): Promise<void>;
+  boot(opts?: { openDb?: (id: string) => Promise<SqlDb>; now?: Date; builtAt?: string | null }): Promise<void>;
+  /** Удержание снято подтверждением взрослого. */
+  clearRetentionHold(): void;
   /** Шаги первой настройки: PIN принят → аккаунт и база; согласие → событие; отказ → всё стёрто. */
   createWithPin(pin: string, digest: Digest, openDb?: (id: string) => Promise<SqlDb>): Promise<string>;
   grantConsent(lang: InterfaceLang, now?: Date): Promise<void>;
@@ -46,8 +54,9 @@ export const useAccount = create<AccountState>((set, get) => ({
   db: null,
   profiles: [],
   consent: 'not_asked',
+  retentionHold: null,
 
-  async boot({ openDb = openLocalDb, now = new Date() } = {}) {
+  async boot({ openDb = openLocalDb, now = new Date(), builtAt = buildTime() } = {}) {
     const d = device();
     const id = await currentAccountId(d);
     if (!id) {
@@ -64,10 +73,21 @@ export const useAccount = create<AccountState>((set, get) => ({
       set({ status: 'none', accountId: null, db: null, profiles: [], consent: 'not_asked' });
       return;
     }
-    // Срок хранения — по часам устройства с нижней границей сборки (№131); обещан текстом согласия.
-    await applyRetention(db, trustedNow(null, now.toISOString()));
+    // Срок хранения — по часам устройства с нижней границей сборки (№131), скачок вперёд ждёт взрослого (№147).
+    const retention = await runRetention(db, { deviceNow: now, builtAt });
     setProgressPort(sqlitePort(db));
-    set({ status: 'ready', accountId: id, db, profiles: await listProfiles(d, id), consent: await accountConsentStatus(db) });
+    set({
+      status: 'ready',
+      accountId: id,
+      db,
+      profiles: await listProfiles(d, id),
+      consent: await accountConsentStatus(db),
+      retentionHold: retention.kind === 'held' ? retention : null,
+    });
+  },
+
+  clearRetentionHold() {
+    set({ retentionHold: null });
   },
 
   async createWithPin(pin, digest, openDb = openLocalDb) {
@@ -119,6 +139,6 @@ export const useAccount = create<AccountState>((set, get) => ({
 
   clear() {
     setProgressPort(noRecordPort);
-    set({ status: 'none', accountId: null, db: null, profiles: [], consent: 'not_asked' });
+    set({ status: 'none', accountId: null, db: null, profiles: [], consent: 'not_asked', retentionHold: null });
   },
 }));
