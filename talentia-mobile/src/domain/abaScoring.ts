@@ -287,11 +287,7 @@ export function adultPanelButtons(config: AbaConfig, step: PanelStep, failedAtMo
       'refusal',
     ];
   }
-  return [
-    'correct',
-    ...(step.scoredBy === 'adult' ? (['approximation'] as const) : []),
-    'incorrect',
-    'adult_prompted',
-    'refusal',
-  ];
+  // оценивает касание (№159): «Верно / Неверно» взрослого были бы вторым источником правды той же пробы
+  if (step.scoredBy !== 'adult') return ['adult_prompted', 'refusal'];
+  return ['correct', 'approximation', 'incorrect', 'adult_prompted', 'refusal'];
 }

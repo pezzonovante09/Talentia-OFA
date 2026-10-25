@@ -191,14 +191,9 @@ describe('панель взрослого', () => {
     expect(adultPanelButtons('alone', step(), false)).toEqual([]);
   });
 
-  it('окно ответа: «Почти» — только когда оценивает взрослый', () => {
+  it('окно ответа: оценивает взрослый — все отметки; оценивает касание (№159) — только «Была подсказка» и «Отказ»', () => {
     expect(adultPanelButtons('with_adult', step(), false)).toEqual(['correct', 'approximation', 'incorrect', 'adult_prompted', 'refusal']);
-    expect(adultPanelButtons('with_adult', step({ scoredBy: 'device_tap' }), false)).toEqual([
-      'correct',
-      'incorrect',
-      'adult_prompted',
-      'refusal',
-    ]);
+    expect(adultPanelButtons('with_adult', step({ scoredBy: 'device_tap' }), false)).toEqual(['adult_prompted', 'refusal']);
   });
 
   it('после провала на полной модели — карточка L4, если L4 разрешена', () => {

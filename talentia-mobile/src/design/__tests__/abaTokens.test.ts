@@ -848,13 +848,13 @@ describe('панель взрослого (Р6)', () => {
     (['l4_done', 'l4_resisted', 'l4_skipped'] as const).forEach((id) => expect(abaAdultPanelSlot[id].row).toBe(0));
   });
 
-  it('«Почти» скрыта — слот остаётся пустым: «Верно» и «Неверно» не сдвигаются', () => {
+  it('оценка касанием (№159): слоты отметок пусты, «Была подсказка» и «Отказ» не сдвигаются', () => {
     const step = (scoredBy: PanelStep['scoredBy']): PanelStep => ({ scoredBy, startPromptLevel: 0, askAdultForL4: false });
     const adult = adultPanelButtons('with_adult', step('adult'), false);
     const device = adultPanelButtons('with_adult', step('device_tap'), false);
     expect(adult).toContain('approximation');
     expect(device).not.toContain('approximation');
-    ['correct', 'incorrect', 'adult_prompted', 'refusal'].forEach((id) => expect(device).toContain(id));
+    expect(device).toEqual(['adult_prompted', 'refusal']);
     // слоты берутся из таблицы по id, а не по индексу в списке — сдвига нет
     expect(abaAdultPanelSlot.incorrect).toEqual({ row: 0, col: 2 });
   });
