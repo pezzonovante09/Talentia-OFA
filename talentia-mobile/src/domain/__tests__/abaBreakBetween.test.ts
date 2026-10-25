@@ -94,3 +94,31 @@ describe('просьба «перерыв» между пробами (№160)',
     expect(breakCardRequestsOf(done.events).requests).toBe(1);
   });
 });
+
+describe('обмен на перерыве по просьбе ребёнка (№161)', () => {
+  const full = (st: AbaSessionState): AbaSessionState => ({ ...st, board: { ...st.board, earned: st.board.size } });
+
+  it('просьба между пробами при полной доске: обмена нет, жетоны на месте', () => {
+    const r = requestBreakBetweenTrials(full(afterTrial()), T);
+    const step = nextStep(r, T + 100);
+    expect(step.step).toMatchObject({ kind: 'break', canExchange: false });
+    const done = finishBreak(step.state, T + 30_000);
+    expect(done.exchanged).toBe(0);
+    expect(done.state.board.earned).toBe(done.state.board.size);
+  });
+
+  it('перерыв по расписанию при полной доске — обмен как раньше', () => {
+    const st = full(afterTrial());
+    const scheduled: AbaSessionState = { ...st, queue: [{ kind: 'break', maxMs: 30_000 }, ...st.queue] };
+    const step = nextStep(scheduled, T);
+    expect(step.step).toMatchObject({ kind: 'break', canExchange: true });
+    expect(finishBreak(step.state, T + 30_000).exchanged).toBeGreaterThan(0);
+  });
+
+  it('карточка после отказа (cardTaken) — тоже без обмена', () => {
+    const st = full(afterTrial());
+    const taken: AbaSessionState = { ...st, queue: [{ kind: 'break', initiatedBy: 'adult', cardTaken: true, maxMs: 60_000 }, ...st.queue] };
+    const step = nextStep(taken, T);
+    expect(finishBreak(step.state, T + 30_000).exchanged).toBe(0);
+  });
+});

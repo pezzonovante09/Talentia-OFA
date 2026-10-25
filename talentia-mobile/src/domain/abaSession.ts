@@ -1092,7 +1092,7 @@ export function nextStep(
         { ...st, pendingPauseMs: 0 },
         {
           kind: 'break',
-          canExchange: isBoardFull(st.board) && !st.reinforcerStale,
+          canExchange: isBoardFull(st.board) && !st.reinforcerStale && head.initiatedBy !== 'child_card' && head.cardTaken !== true,
           pauseBeforeMs: pause,
           ...(head.initiatedBy ? { initiatedBy: head.initiatedBy } : {}),
           ...(head.maxMs ? { maxMs: head.maxMs } : {}),
@@ -1191,15 +1191,18 @@ export function awayOutcome(awayMs: number, sameDay = true): 'same_trial' | 'rec
 }
 
 /**
- * Перерыв кончился. Обмен — если доска полна; неполная переходит на следующий блок как
- * есть, жетоны не сгорают. Перерыв в рабочее время не идёт.
+ * Перерыв кончился. Обмен — если доска полна и перерыв не по просьбе ребёнка (№161); неполная доска
+ * переходит на следующий блок как есть, жетоны не сгорают. Перерыв в рабочее время не идёт.
  */
 export function finishBreak(state: AbaSessionState, now: number): { state: AbaSessionState; exchanged: number } {
   if (state.queue[0]?.kind !== 'break') throw new Error('Сейчас не перерыв');
   const startedAt = state.breakStartedAt ?? now;
-  // пока подкрепитель устарел (обмен рутины), обмена нет: жетоны не сгорают, ждут нового выбора
-  const { board, exchanged } = state.reinforcerStale ? { board: state.board, exchanged: 0 } : tryExchange(state.board);
   const head = state.queue[0];
+  // пока подкрепитель устарел (обмен рутины), обмена нет: жетоны не сгорают, ждут нового выбора; на перерыве
+  // по просьбе ребёнка (карточка — в пробе, между пробами, после отказа) обмена нет тоже: иначе просьба после
+  // ошибки приносила бы и предмет обмена — доска ждёт перерыва по расписанию или конца (№161)
+  const childAsked = head.initiatedBy === 'child_card' || head.cardTaken === true;
+  const { board, exchanged } = state.reinforcerStale || childAsked ? { board: state.board, exchanged: 0 } : tryExchange(state.board);
   const events: AbaSessionEvent[] = [
     ...state.events,
     {
