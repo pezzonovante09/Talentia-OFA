@@ -14,7 +14,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { DesignProvider } from '../src/design';
 import { deviceLang, initI18n } from '../src/i18n';
+import { expoSoundPlayer } from '../src/services/audioPlayer';
 import { installNetworkFuse, networkFuseEnabled } from '../src/services/networkFuse';
+import { createAudioVoice, setVoiceBackend } from '../src/services/voice';
 import { useAccount } from '../src/state/account';
 import { useChildSession } from '../src/state/childSession';
 import { FONT_FILES } from '../src/ui/fonts';
@@ -22,6 +24,8 @@ import { FONT_FILES } from '../src/ui/fonts';
 // сеть закрыта до ворот «данные» (ментор П2): вне dev-сборки — с первого модуля корня
 if (networkFuseEnabled(__DEV__)) installNetworkFuse();
 initI18n({ lng: deviceLang() });
+// голос и звуки — файлы из сборки (№158); ключ без файла молчит
+setVoiceBackend(createAudioVoice(expoSoundPlayer()));
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {

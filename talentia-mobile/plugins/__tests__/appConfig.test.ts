@@ -24,8 +24,16 @@ describe('app.json: разрешения и платформы', () => {
         'android.permission.WRITE_EXTERNAL_STORAGE',
         'android.permission.SYSTEM_ALERT_WINDOW',
         'com.google.android.gms.permission.AD_ID',
+        // expo-audio (№158) — только воспроизведение: фоновая служба и микрофон из его манифеста сняты
+        'android.permission.FOREGROUND_SERVICE',
+        'android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK',
+        'android.permission.FOREGROUND_SERVICE_MICROPHONE',
       ]),
     );
+  });
+
+  it('expo-audio — без микрофона и без фоновой записи (№158)', () => {
+    expect(plugin('expo-audio')).toEqual(['expo-audio', { microphonePermission: false, recordAudioAndroid: false, enableBackgroundRecording: false }]);
   });
 
   it('резервная копия запрещена, ориентация портретная', () => {
@@ -69,11 +77,10 @@ describe('eas.json и package.json', () => {
     expect(eas.build.production.ios.autoIncrement).toBe(true);
   });
 
-  it('в приложении нет SDK микрофона, речи, уведомлений, камеры, геолокации, рекламы, аналитики, Sentry', () => {
+  it('в приложении нет SDK записи звука, речи, уведомлений, камеры, геолокации, рекламы, аналитики, Sentry', () => {
     const deps = Object.keys({ ...pkg.dependencies, ...pkg.devDependencies });
     const forbidden = [
       /speech/,
-      /expo-audio/,
       /expo-av/,
       /expo-notifications/,
       /expo-camera/,
