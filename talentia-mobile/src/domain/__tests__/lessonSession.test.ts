@@ -617,3 +617,39 @@ describe('остались и закреплён после первой оши�
     expect(lessonStepOf(s)).toMatchObject({ kept: [], pinned: null, answerCue: true, demo: true });
   });
 });
+
+describe('зеркальный ряд order (№151)', () => {
+  const tasks = () => [order('o'), choose('t2'), choose('t3'), choose('t4')];
+  const mirror: LessonAnswer = { format: 'order', slots: ['i3', 'i2', 'i1'] };
+
+  it('evaluateAnswer: зеркало от трёх мест; перестановка не зеркало; на двух местах — нет', () => {
+    expect(evaluateAnswer(order('o'), mirror)).toMatchObject({ correct: false, mirrored: true });
+    expect(evaluateAnswer(order('o'), { format: 'order', slots: ['i2', 'i1', 'i3'] }).mirrored).toBeUndefined();
+    const two: OrderTask = { ...order('o'), items: order('o').items.slice(0, 2) };
+    expect(evaluateAnswer(two, { format: 'order', slots: ['i2', 'i1'] }).mirrored).toBeUndefined();
+  });
+
+  it('на 5-6 — механика: попытка та же, ждём ответ, поправка одна; второе зеркало — обычная ошибка', () => {
+    let s = toTasks(start(lesson(tasks())));
+    s = applyLessonEvent(s, { type: 'answer', answer: mirror, at: at(1) });
+    expect(lessonStepOf(s)).toMatchObject({ attempt: 'first', stage: 'answer', narrowing: null, mirrored: true, demo: false });
+    s = applyLessonEvent(s, { type: 'answer', answer: mirror, at: at(2) });
+    expect(lessonStepOf(s)).toMatchObject({ mirrored: false });
+    expect((lessonStepOf(s) as Extract<LessonStep, { kind: 'task' }>).attempt).not.toBe('first');
+  });
+
+  it('на 5-6 после поправки верный ряд — с первой попытки', () => {
+    let s = toTasks(start(lesson(tasks())));
+    s = applyLessonEvent(s, { type: 'answer', answer: mirror, at: at(1) });
+    s = applyLessonEvent(s, { type: 'answer', answer: correctAnswer(order('o')), at: at(2) });
+    expect(lessonStepOf(s)).toMatchObject({ attempt: 'first', stage: 'next', mirrored: false });
+  });
+
+  it('с 7 — ошибка навыка, как любая', () => {
+    let s = toTasks(start(lesson(tasks(), { band: '7' })));
+    s = applyLessonEvent(s, { type: 'answer', answer: mirror, at: at(1) });
+    const step = lessonStepOf(s) as Extract<LessonStep, { kind: 'task' }>;
+    expect(step.mirrored).toBe(false);
+    expect(step.attempt).not.toBe('first');
+  });
+});

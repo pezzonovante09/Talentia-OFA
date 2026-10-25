@@ -68,7 +68,11 @@ export type LessonAnswer =
   | { format: 'group'; placements: Record<string, string> }
   | { format: 'build'; parts: string[] };
 
-export type Evaluation = { correct: boolean; firstError: FirstErrorState };
+/**
+ * `mirrored` — ряд `order` верен справа налево (от трёх мест; на двух зеркало от ошибки не отличить).
+ * На 5-6 — ошибка механики, а не навыка (№151): оркестратор поправляет мягко, попытка не сгорает.
+ */
+export type Evaluation = { correct: boolean; firstError: FirstErrorState; mirrored?: boolean };
 
 const norm = (s: string) => s.trim().toLocaleLowerCase('ru');
 
@@ -115,7 +119,9 @@ export function evaluateAnswer(task: Task, answer: LessonAnswer, removed: readon
       const a = answer as Extract<LessonAnswer, { format: 'order' }>;
       complete(a.slots, task.items.map((i) => i.id), 'order: не все места заполнены');
       const wrong = task.items.filter((i) => a.slots[i.position] !== i.id).length;
-      return { correct: wrong === 0, firstError: { format: 'order', wrong } };
+      const n = task.items.length;
+      const mirrored = wrong > 0 && n >= 3 && task.items.every((i) => a.slots[n - 1 - i.position] === i.id);
+      return { correct: wrong === 0, firstError: { format: 'order', wrong }, ...(mirrored ? { mirrored } : {}) };
     }
     case 'group': {
       const a = answer as Extract<LessonAnswer, { format: 'group' }>;
@@ -185,6 +191,14 @@ export type TaskProgress = {
   lastAnswer: LessonAnswer | null;
   /** Первая встреча ребёнка с составным форматом: Tali делает первую половину действия (№35). Только до первого «Проверить». */
   demo: boolean;
+  /**
+   * Зеркальный ряд `order` на 5-6 (№151): `true` — последний «Проверить» был поправлен мягко, экран
+   * говорит «начинаем отсюда» и собирает заново; до следующего «Проверить». Поправка — одна на
+   * задание (`mirrorUsed`): второй зеркальный ряд — обычная ошибка, иначе круг без конца.
+   * Необязательны: снимки до №151 их не знают.
+   */
+  mirrored?: boolean;
+  mirrorUsed?: boolean;
 };
 
 export type LessonSessionState = {
@@ -373,13 +387,18 @@ function onAnswer(state: LessonSessionState, answer: LessonAnswer): LessonSessio
   assert(state.phase === 'task' && state.task?.stage === 'answer', '«Проверить» не в ожидании ответа');
   const progress = state.task!;
   const queued = state.queue[state.index];
-  const { correct, firstError } = evaluateAnswer(queued.task, answer, progress.removed);
+  const { correct, firstError, mirrored } = evaluateAnswer(queued.task, answer, progress.removed);
   const formatsSeen = state.formatsSeen.includes(queued.task.format)
     ? state.formatsSeen
     : [...state.formatsSeen, queued.task.format];
 
-  const checked: TaskProgress = { ...progress, lastAnswer: answer, demo: false };
+  const checked: TaskProgress = { ...progress, lastAnswer: answer, demo: false, mirrored: false };
   if (correct) return { ...state, formatsSeen, task: { ...checked, stage: 'next' } };
+
+  // зеркальный ряд на 5-6 — механика, не навык (№151): ответ не засчитан, попытка та же
+  if (mirrored && state.band === '5-6' && !progress.mirrorUsed) {
+    return { ...state, formatsSeen, task: { ...progress, demo: false, mirrored: true, mirrorUsed: true } };
+  }
 
   // проба переноса — без сужения: первая ошибка сразу ведёт к показу (SCREENS.md 2.7)
   if (progress.attempt === 'first' && !queued.transferProbe) {
@@ -448,6 +467,8 @@ export type LessonStep =
       activeResponse: 'tap_shown' | 'tap_corrected' | null;
       /** Отклик — когда задание решено и ждём «Дальше». */
       feedback: Feedback | null;
+      /** Последний «Проверить» — зеркальный ряд `order` на 5-6, поправлен мягко (№151). */
+      mirrored: boolean;
       /** Идёт ли задание в зачёт — для отклика, не для экрана прогресса. */
       counts: boolean;
     }
@@ -535,6 +556,7 @@ export function lessonStepOf(state: LessonSessionState): LessonStep {
         answerCue: state.band === '5-6',
         activeResponse: p.stage === 'active_response' ? activeResponseAfterShow(queued.task.format) : null,
         feedback: p.stage === 'next' ? feedbackFor(p.attempt, probe) : null,
+        mirrored: p.mirrored === true,
         counts: countsTowardMastery(queued.task),
       };
     }

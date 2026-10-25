@@ -209,6 +209,13 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
     if (nudge.current) clearTimeout(nudge.current);
     const next = dispatch({ type: 'answer', answer, at: new Date().toISOString() });
     if (next.kind !== 'task') return;
+    if (next.stage === 'answer' && next.mirrored) {
+      // зеркальный ряд на 5-6 (№151): без крестов, собрать заново с первого места
+      patch((x) => ({ draft: spec.emptyDraft(task, next as TaskStep), wrong: [], pose: 'point', bubble: t('lesson.orderMirrored'), marksKey: x.marksKey + 1 }));
+      voice.say('lesson.orderMirrored');
+      playListening(spec.listeningSequence(task, next as TaskStep));
+      return;
+    }
     if (next.stage === 'next') {
       patch({ phase: 'done', pose: next.feedback === 'neutral' ? 'idle' : 'cheer', bubble: null, nextReady: false });
       later(lessonTiming.nextUnlock, () => patch({ nextReady: true }));
@@ -227,7 +234,7 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
       patch((x) => ({ draft: spec.afterNarrowing(x.draft, task, next as TaskStep), phase: 'answer', wrong: [], pose: 'point', bubble: t(task.hintKey), marksKey: x.marksKey + 1 }));
       voice.say(task.hintKey);
     });
-  }, [spec, task, taskStep, patch, dispatch, t, later]);
+  }, [spec, task, taskStep, patch, dispatch, t, later, playListening]);
 
   const action: ActionState = useMemo(() => {
     if (!spec || !task || ui.draft === null) return 'checkDisabled';

@@ -32,6 +32,7 @@ const step: TaskStep = {
   activeResponse: null,
   feedback: null,
   counts: true,
+  mirrored: false,
 };
 
 describe('полоса порядка', () => {

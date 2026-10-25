@@ -385,7 +385,8 @@
     "stay": "Остаться",
     "progress": "Задание {{n}} из {{total}}",
     "unsupported": "Этот формат ещё не готов",
-    "tapCorrectedFirst": "Сначала покажи, что исправили"
+    "tapCorrectedFirst": "Сначала покажи, что исправили",
+    "orderMirrored": "Почти! Начинаем вот отсюда"
   },
   "atlas": {
     "toMap": "К карте",

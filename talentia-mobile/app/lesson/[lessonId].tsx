@@ -86,7 +86,7 @@ function LessonBody({ lessonId }: { lessonId: string }) {
   const shownSpec = isModel && modelTask ? FORMATS[modelTask.format] ?? null : spec;
   const pseudoStep: TaskStep | null =
     isModel && modelTask
-      ? { kind: 'task', task: modelTask, transferProbe: false, review: false, progress: { segment: 0, total: c.state.segments }, attempt: 'first', stage: 'answer', narrowing: null, removed: [], rightOrder: null, kept: [], pinned: null, demo: false, answerCue: true, activeResponse: null, feedback: null, counts: false }
+      ? { kind: 'task', task: modelTask, transferProbe: false, review: false, progress: { segment: 0, total: c.state.segments }, attempt: 'first', stage: 'answer', narrowing: null, removed: [], rightOrder: null, kept: [], pinned: null, demo: false, answerCue: true, activeResponse: null, feedback: null, mirrored: false, counts: false }
       : taskStep;
   const promptText = shownTask ? t(shownTask.promptKey) : '';
   const bubbleText = isModel && step.kind === 'model' ? (step.nowYou ? t('lesson.nowYou') : t(model!.steps[Math.min(step.step, model!.steps.length - 1)].lineKey)) : ui.bubble;
