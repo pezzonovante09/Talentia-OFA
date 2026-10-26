@@ -15,7 +15,8 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "test:watch": "jest --watchAll"
+    "test:watch": "jest --watchAll",
+    "assets:check": "node scripts/check-svg.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/comfortaa": "^0.4.2",

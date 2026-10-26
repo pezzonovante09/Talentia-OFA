@@ -138,6 +138,7 @@ npm run dev:api         # прокси локально
 | `rebuild-log` | записать решение, закрыть или добавить шаг, обновить вход в `REBUILD.md` и таблицу `AUDIT.md` |
 | `db-migration` | новая миграция, таблица, колонка, функция, триггер, RLS-политика — и тесты в PGlite |
 | `tali-lines` | реплики Tali по ситуациям, правила подстановок, сюжетные события, `companionSituations.ts` |
+| `asset-pipeline` | новые картинки, иконки, предметы и стимулы ABA: промпты Recraft / Nano Banana по ASSETS.md, приёмка `npm run assets:check`, запись в `registry.ts` |
 | `format-screen` | экран одного формата задания (`choose` / `point` / `match` / `order` / `group` / `build`): черновик ответа, компонент, состояния плиток, тесты механики |
 
 Облачные сессии ставят зависимости хуком `.claude/hooks/session-start.sh`, поэтому
@@ -154,7 +155,6 @@ npm run dev:api         # прокси локально
 
 | Работа | Скилл |
 |---|---|
-| новые картинки, иконки, предметы, жители; Recraft, Nano Banana, `registry.ts` | `asset-pipeline` |
 | новый роут `/api/*` в прокси | `proxy-route` |
 | озвучка корпуса, TTS, ElevenLabs | `voice-build` |
 | EAS-сборка, обновление Expo SDK, нативные модули, `app.json` | внешний: Expo Skills |
