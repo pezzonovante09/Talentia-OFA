@@ -22,6 +22,17 @@
    проверки и правила процедуры — `docs/design/aba-screens-review-2026-10-25.md`.
 5. **Не сделано**: экраны ABA в коде; смоук на Android (К2); новая dev-сборка (нужна из-за `expo-audio`).
 
+## Сделано 2026-10-26 (подготовка к экранам)
+
+Скилл `asset-pipeline` и `npm run assets:check`; `newAbaId()` (`services/abaIds.ts`) и гард записи id со временем
+(`abaLog.ts`); каталог `src/content/aba/reinforcers.ts` + `reinforcerPoolFor` (пул ≥ 6 по всем фильтрам, «Песенка» и
+«Поём вместе» не в одной тройке); токены цикла 2 в `abaTokens.ts` (`design-lead`); `sdRepeats` в пробе; подпись
+«Без звука ребёнок не услышит инструкцию»; цели `src/content/aba/match-level1.ts` (4), стимулы `stimuli.ts`
+(24 предмета, 10 форм, 8 цветов), `ABA_OBJECT_ART` в реестре (пока `null`), `abaTargetReady` / `readyAbaTargets`
+(без картинок цели закрыты), `targetForBand` (выбор из двух с полосы 7 — блок 10). Промпты Recraft —
+`docs/assets/aba-match-stimuli.md`. Коммиты `9f11f3b` … `331bed7`. Поэтому в «Первом действии» ниже пункты про
+правки цикла 2, каталог, UUID и цели **уже сделаны** — начинать прямо с экранов.
+
 ## Первое действие в новом чате
 
 **Экраны ABA этапа 11 в коде** по трём документам выше, охват — вход и согласие `aba_processing`, пауза с
