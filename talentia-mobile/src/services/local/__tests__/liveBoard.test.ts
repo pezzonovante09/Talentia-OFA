@@ -915,7 +915,7 @@ describe('миграция 9: журнал выборов подкрепител
         [1, 'puzzle', 'child', '2026-09-01T10:00:00Z'],
         [2, '', undefined, '2026-09-02T10:00:00Z'],
         [3, 'drum', 'adult', '2026-09-03T10:00:00Z'],
-        [4, 'train', undefined, '2026-09-04T10:00:00Z'],
+        [4, 'kaleidoscope', undefined, '2026-09-04T10:00:00Z'],
         [5, undefined, undefined, '2026-09-05T10:00:00Z'],
       ];
       for (const [i, r, by, at] of rows) {
@@ -936,9 +936,9 @@ describe('миграция 9: журнал выборов подкрепител
     expect(rows).toEqual([
       { child_id: 'kid', chosen_at: '2026-09-01T10:00:00Z', source: 'session', source_id: 's-1', reinforcer_id: 'puzzle', chosen_by: 'child' },
       { child_id: 'kid', chosen_at: '2026-09-03T10:00:00Z', source: 'session', source_id: 's-3', reinforcer_id: 'drum', chosen_by: 'adult' },
-      { child_id: 'kid', chosen_at: '2026-09-04T10:00:00Z', source: 'session', source_id: 's-4', reinforcer_id: 'train', chosen_by: 'child' },
+      { child_id: 'kid', chosen_at: '2026-09-04T10:00:00Z', source: 'session', source_id: 's-4', reinforcer_id: 'kaleidoscope', chosen_by: 'child' },
     ]);
-    expect(await reinforcerHistoryOf(db, 'kid')).toEqual(['puzzle', 'drum', 'train']);
+    expect(await reinforcerHistoryOf(db, 'kid')).toEqual(['puzzle', 'drum', 'kaleidoscope']);
   });
 
   it('на пустой базе версии 8 миграция проходит, журнал пуст', async () => {
@@ -1033,7 +1033,7 @@ describe('журнал выборов: согласие, неизменяемо�
 
   it('purgeChild удаляет выборы ребёнка, чужие остаются', async () => {
     const db = await setup({ kids: ['kid', 'sib'] });
-    await put(db, 'kid', 'train');
+    await put(db, 'kid', 'kaleidoscope');
     await put(db, 'sib', 'drum');
     await purgeChild(db, 'kid', PSEUDO);
     expect(await reinforcerHistoryOf(db, 'kid')).toEqual([]);
@@ -1052,7 +1052,7 @@ describe('журнал выборов: согласие, неизменяемо�
     const db = await setup({ kids: ['kid', 'sib'] });
     await put(db, 'kid', 'puzzle');
     await put(db, 'kid', 'drum', '2026-10-12T10:05:00Z', 's-drum');
-    await put(db, 'sib', 'train');
+    await put(db, 'sib', 'kaleidoscope');
     expect((await abaDataSummary(db, 'kid')).reinforcerChoices).toBe(2);
     expect((await abaDataSummary(db, 'sib')).reinforcerChoices).toBe(1);
   });

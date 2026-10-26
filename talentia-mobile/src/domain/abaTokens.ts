@@ -207,9 +207,10 @@ export const MIN_REINFORCER_POOL = 6;
  * Три подкрепителя на выбор.
  *
  * Выбранное дважды подряд в третий раз не предлагается: против насыщения.
- * `history` — выборы прошлых сессий, свежие в конце.
+ * `history` — выборы прошлых сессий, свежие в конце. `apart` — пары, которые не ставятся в одну
+ * тройку (`song` и `sing_together`: один и тот же подкрепитель двумя способами).
  */
-export function reinforcerChoices(pool: string[], history: string[], rng: Rng): string[] {
+export function reinforcerChoices(pool: string[], history: string[], rng: Rng, apart: readonly [string, string][] = []): string[] {
   if (pool.length < MIN_REINFORCER_POOL) {
     throw new Error(`Пул подкрепителей меньше ${MIN_REINFORCER_POOL}`);
   }
@@ -223,5 +224,11 @@ export function reinforcerChoices(pool: string[], history: string[], rng: Rng): 
     const j = Math.floor(rng() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-  return shuffled.slice(0, REINFORCER_CHOICES);
+  const picked: string[] = [];
+  for (const id of shuffled) {
+    if (picked.length === REINFORCER_CHOICES) break;
+    if (apart.some(([a, b]) => (a === id && picked.includes(b)) || (b === id && picked.includes(a)))) continue;
+    picked.push(id);
+  }
+  return picked;
 }

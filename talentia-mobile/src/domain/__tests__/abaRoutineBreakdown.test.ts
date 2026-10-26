@@ -29,7 +29,7 @@ import { initialTokenTraining } from '../abaTokenTraining';
 import type { AbaTrialInput, TrialStep } from '../abaTrialStep';
 import { NO_HISTORY } from './abaFixtures';
 
-const POOL = ['puzzle', 'bubbles', 'drum', 'stickers', 'train', 'balloon'];
+const POOL = ['puzzle', 'bubbles', 'drum', 'paint_drop', 'kaleidoscope', 'pinwheel'];
 const SPEC = { id: 'obs-spec', role: 'specialist' as const, trained: true };
 const day = (n: number) => `2026-10-${String(n).padStart(2, '0')}`;
 

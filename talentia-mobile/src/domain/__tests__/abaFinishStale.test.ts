@@ -10,7 +10,7 @@ import type { AbaSessionEndReason } from '../../types/aba';
 import { beginSession } from './abaSessionDriver';
 
 const END_BASE = Date.UTC(2026, 9, 12, 8, 30);
-const OPTIONS = ['stickers', 'train', 'balloon'];
+const OPTIONS = ['paint_drop', 'kaleidoscope', 'pinwheel'];
 /** Все причины, при которых без stale в конце сессии обмен бывает (`EXCHANGE_AT_END`). */
 const EXCHANGE_REASONS: AbaSessionEndReason[] = ['completed', 'time_limit', 'breakdown', 'assent_withdrawn'];
 

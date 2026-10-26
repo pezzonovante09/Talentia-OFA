@@ -128,9 +128,9 @@ describe('settleRoutineBoard: выплата прогона по живой до
 
   it('Т9: выбранное дважды подряд в вариантах предложения не предлагается — по живой истории', () => {
     for (let seed = 1; seed <= 40; seed += 1) {
-      const s = settle({ earned: 4, nonContingent: 0 }, 5, WORK, ['drum', 'train', 'train'], seed);
+      const s = settle({ earned: 4, nonContingent: 0 }, 5, WORK, ['drum', 'kaleidoscope', 'kaleidoscope'], seed);
       expect(s.offer?.options).toHaveLength(REINFORCER_CHOICES);
-      expect(s.offer?.options).not.toContain('train');
+      expect(s.offer?.options).not.toContain('kaleidoscope');
     }
   });
 
@@ -279,7 +279,7 @@ describe('(а) ступень доски: сессия с нулём обмен�
 // ---------------------------------------------------------------------------
 
 describe('(в) resumeAbaSession: обмен рутины, пока сессия свёрнута', () => {
-  const OPTIONS = ['stickers', 'train', 'balloon'];
+  const OPTIONS = ['paint_drop', 'kaleidoscope', 'pinwheel'];
 
   /** Идём по сессии до перерыва: на нём обмен, если доска полна. */
   function toBreak(state: AbaSessionState) {
@@ -357,8 +357,8 @@ describe('(в) resumeAbaSession: обмен рутины, пока сессия 
     const full = beginSession({ board: { earned: 5, nonContingent: 0 } });
     const stale = resumeAbaSession(full, { earned: 5, nonContingent: 0, rev: 1 }, { routineExchanged: true, options: OPTIONS });
     const ch = toChoice(stale);
-    const chosen = chooseReinforcer(ch.state, 'train', ch.now + 500, 'adult');
-    expect([chosen.reinforcerStale, chosen.reinforcerId]).toEqual([undefined, 'train']);
+    const chosen = chooseReinforcer(ch.state, 'kaleidoscope', ch.now + 500, 'adult');
+    expect([chosen.reinforcerStale, chosen.reinforcerId]).toEqual([undefined, 'kaleidoscope']);
     const br = toBreak(chosen);
     expect(br.step).toMatchObject({ kind: 'break', canExchange: true });
     expect(finishBreak(br.state, br.now).exchanged).toBeGreaterThanOrEqual(5);
@@ -387,10 +387,10 @@ describe('(в) resumeAbaSession: обмен рутины, пока сессия 
   it('после нового выбора из трёх обмен снова выдаётся', () => {
     const full = beginSession({ board: { earned: 5, nonContingent: 0 } });
     const stale = resumeAbaSession(full, { earned: 5, nonContingent: 0, rev: 1 }, { routineExchanged: true, options: OPTIONS });
-    const chosen = chooseReinforcer(stale, 'train', BASE_MS + 500, 'adult');
+    const chosen = chooseReinforcer(stale, 'kaleidoscope', BASE_MS + 500, 'adult');
     expect([chosen.reinforcerStale, chosen.reinforcerId, chosen.reinforcerChosenBy, chosen.reinforcerChosenAt]).toEqual([
       undefined,
-      'train',
+      'kaleidoscope',
       'adult',
       BASE_MS + 500,
     ]);
@@ -402,7 +402,7 @@ describe('(в) resumeAbaSession: обмен рутины, пока сессия 
   it('новый выбор не сбрасывает время работы и не трогает очередь', () => {
     const st = beginSession();
     const stale = resumeAbaSession(st, { earned: 0, nonContingent: 0, rev: 1 }, { routineExchanged: true, options: OPTIONS });
-    const chosen = chooseReinforcer(stale, 'stickers', BASE_MS + 9000);
+    const chosen = chooseReinforcer(stale, 'paint_drop', BASE_MS + 9000);
     expect([chosen.workStartedAt, chosen.queue]).toEqual([st.workStartedAt, st.queue]);
   });
 
@@ -439,7 +439,7 @@ describe('(в) resumeAbaSession: обмен рутины, пока сессия 
     expect(next.step).toMatchObject({ kind: 'choose_reinforcer', options: OPTIONS });
     expect([next.state.exchangesMade, next.state.board.earned]).toEqual([0, 3]);
     // выбор из трёх — полная доска обменивается сразу, доступ первым в очереди
-    const chosen = chooseReinforcer(next.state, 'balloon', BASE_MS + 2000);
+    const chosen = chooseReinforcer(next.state, 'pinwheel', BASE_MS + 2000);
     expect(chosen.exchangesMade).toBe(1);
     expect(chosen.board.earned).toBe(0);
     expect(chosen.queue[0]).toMatchObject({ kind: 'access' });

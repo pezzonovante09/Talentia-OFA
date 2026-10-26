@@ -22,7 +22,7 @@ import { resultTail } from './routineResultTail';
 
 const NOW = '2026-10-11T10:00:00Z';
 const OBSERVER = 'obs-uuid-7';
-const POOL = ['puzzle', 'bubbles', 'drum', 'stickers', 'train', 'balloon'];
+const POOL = ['puzzle', 'bubbles', 'drum', 'paint_drop', 'kaleidoscope', 'pinwheel'];
 const TRAINED: TokenTrainingState = { ...initialTokenTraining(), pairingDone: true, stage: 5 };
 const TOKEN_TRAINING = { pairingDone: true, pairingSessions: 2, pairingStreak: 2, stage: 5, atStage: [], flags: [] };
 

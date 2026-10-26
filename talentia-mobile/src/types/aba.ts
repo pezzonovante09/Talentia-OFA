@@ -1114,3 +1114,23 @@ export const TOKEN_BOARD_SIZE: Record<AgeBand, 3 | 5> = {
   '8': 5,
   '9-10': 5,
 };
+
+/**
+ * Позиция каталога подкрепителей (№149: только каталог с картинками, без своих названий). Каталог —
+ * `src/content/aba/reinforcers.ts`, пул под сессию — `reinforcerPoolFor` (`domain/abaReinforcerCatalog.ts`).
+ */
+export type ReinforcerItem = {
+  id: string;
+  /** Название на карточке выбора и у родителя — ключ локали. */
+  labelKey: string;
+  /** Работает только со звуком: при выключенном звуке не предлагается (подкрепитель, который нельзя получить). */
+  sound: boolean;
+  /** Не короче этого доступа (сцене нужно время: `puzzle4` — от 40 с). */
+  minAccessMs?: number;
+  /** В каких конфигурациях сессии; нет — во всех. */
+  configs?: readonly AbaConfig[];
+  /** Классы стимулов, с которыми позиция не идёт в одну программу: ребёнок тянулся бы к стимулу ради награды. */
+  classes: readonly string[];
+  /** Не ставится в одну тройку с этими позициями. */
+  apartFrom?: readonly string[];
+};

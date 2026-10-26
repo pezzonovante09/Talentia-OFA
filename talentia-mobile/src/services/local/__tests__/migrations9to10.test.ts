@@ -142,7 +142,7 @@ describe('накат миграции 10 на базе с данными', () =>
     await migrate(db);
     await asAbaWriter(db, 'kid', (tx) =>
       tx
-        .run("INSERT INTO aba_reinforcer_choices (child_id, chosen_at, source, source_id, reinforcer_id, chosen_by, tokens) VALUES ('kid', '2026-10-12T08:00:00.000Z', 'routine', 'run-9', 'train', 'child', 6)")
+        .run("INSERT INTO aba_reinforcer_choices (child_id, chosen_at, source, source_id, reinforcer_id, chosen_by, tokens) VALUES ('kid', '2026-10-12T08:00:00.000Z', 'routine', 'run-9', 'kaleidoscope', 'child', 6)")
         .then(() => undefined),
     );
     expect(await db.all("SELECT tokens FROM aba_reinforcer_choices WHERE source_id = 'run-9'")).toEqual([{ tokens: 6 }]);

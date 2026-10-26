@@ -10,7 +10,7 @@ import { initialTokenTraining, type TokenTrainingState } from '../abaTokenTraini
 import type { AbaTrialInput, TrialStep } from '../abaTrialStep';
 
 export const ROUTINE_TRAINED: TokenTrainingState = { ...initialTokenTraining(), pairingDone: true, stage: 5 };
-export const ROUTINE_POOL = ['puzzle', 'bubbles', 'drum', 'stickers', 'train', 'balloon'];
+export const ROUTINE_POOL = ['puzzle', 'bubbles', 'drum', 'paint_drop', 'kaleidoscope', 'pinwheel'];
 export const ROUTINE_SPEC: AbaObserver = { id: 'obs-spec', role: 'specialist', trained: true };
 
 export const RT: AbaTarget = {

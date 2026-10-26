@@ -57,7 +57,7 @@ const abaConsent = (action: 'grant' | 'revoke', over: Partial<ConsentEvent> = {}
 
 /** Сопряжение закончено, ступень 5: итог прогона без обучения доске `commitRoutineRun` не пишет. */
 const TRAINED: TokenTrainingState = { ...initialTokenTraining(), pairingDone: true, stage: 5 };
-const POOL = ['puzzle', 'bubbles', 'drum', 'stickers', 'train', 'balloon'];
+const POOL = ['puzzle', 'bubbles', 'drum', 'paint_drop', 'kaleidoscope', 'pinwheel'];
 
 async function dbWithAbaConsent(...children: string[]) {
   const db = await memoryDb();

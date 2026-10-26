@@ -20,7 +20,7 @@ import { asAbaWriter, memoryDb } from './nodeSql';
 import { resultTail } from './routineResultTail';
 
 const NOW = '2026-10-12T10:00:00Z';
-const POOL = ['puzzle', 'bubbles', 'drum', 'stickers', 'train', 'balloon'];
+const POOL = ['puzzle', 'bubbles', 'drum', 'paint_drop', 'kaleidoscope', 'pinwheel'];
 const TRAINED: TokenTrainingState = { ...initialTokenTraining(), pairingDone: true, stage: 5 };
 
 async function dbWithAba(): Promise<SqlDb> {

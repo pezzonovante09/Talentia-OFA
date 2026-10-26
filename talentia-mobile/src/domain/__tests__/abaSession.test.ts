@@ -43,7 +43,7 @@ import { GRID_FOR, finishSession } from './abaFixtures';
 /** Ребёнок, прошедший сопряжение и обучение доске: финальная ступень. */
 const TRAINED: TokenTrainingState = { ...initialTokenTraining(), pairingDone: true, stage: 5 };
 
-const POOL = ['puzzle', 'bubbles', 'drum', 'stickers', 'train', 'balloon'];
+const POOL = ['puzzle', 'bubbles', 'drum', 'paint_drop', 'kaleidoscope', 'pinwheel'];
 
 const ex = (id: string, role: AbaExemplar['role'] = 'teaching'): AbaExemplar => ({
   id,

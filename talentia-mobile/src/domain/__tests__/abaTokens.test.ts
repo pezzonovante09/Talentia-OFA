@@ -18,7 +18,7 @@ const cycle = (...xs: number[]): Rng => {
   return () => xs[i++ % xs.length];
 };
 
-const pool = ['puzzle', 'bubbles', 'drum', 'stickers', 'train', 'balloon'];
+const pool = ['puzzle', 'bubbles', 'drum', 'paint_drop', 'kaleidoscope', 'pinwheel'];
 
 type Case = {
   response?: AbaResponse;

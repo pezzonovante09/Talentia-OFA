@@ -47,7 +47,20 @@
     "transferHint": "Almost mastered: every step goes well with the picture cards. One more run to go, in a different place or with a different adult."
   },
   "abaReinforcer": {
-    "again": "What are we playing for now?"
+    "again": "What are we playing for now?",
+    "items": {
+      "bubbles": "Bubbles",
+      "kaleidoscope": "Kaleidoscope",
+      "pinwheel": "Pinwheel",
+      "marble_run": "Marble run",
+      "puzzle4": "Puzzle",
+      "tali_dance": "Tali dance",
+      "paint_drop": "Paint drop",
+      "drum": "Drum",
+      "xylophone": "Xylophone",
+      "song": "Song",
+      "sing_together": "Sing together"
+    }
   },
   "abaReinforcement": {
     "token": "Here's your token!",

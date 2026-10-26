@@ -43,7 +43,7 @@ import type { AbaTrialInput, TrialStep } from '../abaTrialStep';
 import { NO_HISTORY } from './abaFixtures';
 
 const TRAINED: TokenTrainingState = { ...initialTokenTraining(), pairingDone: true, stage: 5 };
-const POOL = ['puzzle', 'bubbles', 'drum', 'stickers', 'train', 'balloon'];
+const POOL = ['puzzle', 'bubbles', 'drum', 'paint_drop', 'kaleidoscope', 'pinwheel'];
 const SPEC: AbaObserver = { id: 'obs-spec', role: 'specialist', trained: true };
 const PARENT: AbaObserver = { id: 'obs-par', role: 'parent', trained: false };
 /** Доска полосы `7` — 5 жетонов. */

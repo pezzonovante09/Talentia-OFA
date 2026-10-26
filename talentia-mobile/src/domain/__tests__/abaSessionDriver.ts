@@ -26,7 +26,7 @@ import { initialTargetState } from '../abaPrompting';
 import { initialTokenTraining, type BoardStage, type TokenTrainingState } from '../abaTokenTraining';
 import { GRID_FOR } from './abaFixtures';
 
-export const POOL = ['puzzle', 'bubbles', 'drum', 'stickers', 'train', 'balloon'];
+export const POOL = ['puzzle', 'bubbles', 'drum', 'paint_drop', 'kaleidoscope', 'pinwheel'];
 
 /** Начало сессии в тестах: 2026-10-12 08:00 UTC. Все метки времени отсчитываются от него. */
 export const BASE_MS = Date.UTC(2026, 9, 12, 8);

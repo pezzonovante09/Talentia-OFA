@@ -38,6 +38,8 @@ function scan(dir: string, rel = ''): { modules: string[]; strays: string[] } {
     const relPath = rel ? `${rel}/${entry.name}` : entry.name;
     if (entry.isDirectory()) {
       if (entry.name === '__tests__') continue;
+      // контент ABA — не уроки: свой гард (`abaTargets.test.ts`, `abaReinforcers.test.ts`)
+      if (!rel && entry.name === 'aba') continue;
       const sub = scan(path.join(dir, entry.name), relPath);
       out.modules.push(...sub.modules);
       out.strays.push(...sub.strays);
