@@ -177,6 +177,9 @@ export function trialMismatch(input: AbaTrialInput, expected: TrialStep, procedu
   }
   if (touch && input.chosenCardId !== undefined && !expected.field!.includes(input.chosenCardId)) errors.push('выбрана карточка не из поля');
   if (input.tapCount !== undefined && !(Number.isInteger(input.tapCount) && input.tapCount >= 0)) errors.push('число касаний — целое ≥ 0');
+  if (input.sdRepeats !== undefined && ![input.sdRepeats.child, input.sdRepeats.adult].every((n) => Number.isInteger(n) && n >= 0)) {
+    errors.push('повторы инструкции — целые ≥ 0');
+  }
   if ((input.observingPrompted || input.observingLatencyMs !== undefined) && format !== 'match') {
     errors.push('реакция наблюдения — только у match');
   }

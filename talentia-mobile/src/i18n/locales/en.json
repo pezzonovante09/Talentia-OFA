@@ -478,7 +478,8 @@
       "confirmChange": "Confirm to change",
       "calm": "Calm mode",
       "focus": "Focus",
-      "sound": "Sounds and music"
+      "sound": "Sounds and music",
+      "soundHint": "Without sound the child will not hear the instructions"
     },
     "home": {
       "lastRun": "Last time — {{when}}",

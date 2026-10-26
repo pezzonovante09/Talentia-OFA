@@ -52,7 +52,7 @@ export function ProfileForm({ draft, onChange, extended = false, onBandChange }:
             <Row kind="toggle" first label={t('parent.profile.haptics')} caption={t('parent.profile.hapticsHint')} toggle={draft.hapticsEnabled} onToggle={(hapticsEnabled) => patch({ hapticsEnabled })} testID="profile-haptics" />
             <Row kind="toggle" label={t('parent.profile.calm')} toggle={draft.calmMode} onToggle={(calmMode) => patch({ calmMode })} testID="profile-calm" />
             <Row kind="toggle" label={t('parent.profile.focus')} toggle={draft.focusMode} onToggle={(focusMode) => patch({ focusMode })} testID="profile-focus" />
-            <Row kind="toggle" label={t('parent.profile.sound')} toggle={draft.soundEffects} onToggle={(soundEffects) => patch({ soundEffects })} testID="profile-sound" />
+            <Row kind="toggle" label={t('parent.profile.sound')} caption={t('parent.profile.soundHint')} toggle={draft.soundEffects} onToggle={(soundEffects) => patch({ soundEffects })} testID="profile-sound" />
           </Card>
         </>
       )}

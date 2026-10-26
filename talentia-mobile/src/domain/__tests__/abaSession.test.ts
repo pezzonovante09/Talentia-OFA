@@ -1645,6 +1645,21 @@ describe('ABA v1: поле match и сортировка в сессии', () =>
     expect(recordTrial(next.state, { ...input, chosenCardId: next.step.sampleCardId, tapCount: 2 }, 2).ok).toBe(true);
   });
 
+  it('повторы инструкции пишутся числом и кем, не предъявлением; дробные или отрицательные — ошибка программы', () => {
+    const next = nextStep(begin([M], { M: acq(M) }), 1);
+    if (next.step.kind !== 'trial') throw new Error('ждали пробу');
+    const input = trialFor(next.state, next.step, 'ok');
+    expect(recordTrial(next.state, { ...input, sdRepeats: { child: 1, adult: -1 } }, 2)).toMatchObject({ ok: false, errors: ['повторы инструкции — целые ≥ 0'] });
+    expect(recordTrial(next.state, { ...input, sdRepeats: { child: 0.5, adult: 0 } }, 2).ok).toBe(false);
+    const ok = recordTrial(next.state, { ...input, sdRepeats: { child: 2, adult: 1 } }, 2);
+    expect(ok.ok).toBe(true);
+    if (ok.ok) {
+      const t = ok.state.trials.at(-1)!;
+      expect(t.sdRepeats).toEqual({ child: 2, adult: 1 });
+      expect(t.presentations).toBe(input.presentationLog.length);
+    }
+  });
+
   it('сортировка: категории поровну, одна не больше двух раз подряд, порядок карточек категорий в сессии неизменен', () => {
     const item = (id: string, category: string, role: 'teaching' | 'generalization' = 'teaching') => ({
       id,
