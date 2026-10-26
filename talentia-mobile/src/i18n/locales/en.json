@@ -564,5 +564,11 @@
     "d5": "Fri",
     "d6": "Sat",
     "d7": "Sun"
+  },
+  "aba": {
+    "sd": {
+      "matchSame": "Find the same one",
+      "matchWhere": "Where is the same one?"
+    }
   }
 }

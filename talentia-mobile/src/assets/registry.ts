@@ -163,3 +163,29 @@ export const PAIR_SHAPES = [
   ICONS.shapeTriangle,
   ICONS.shapeDiamond,
 ] as const;
+
+/**
+ * Картинки предметов-стимулов ABA (`src/content/aba/stimuli.ts`, партия `docs/assets/aba-match-stimuli.md`, скилл
+ * `asset-pipeline`). Только SVG: растр на экране пробы запрещён. `null` — файла ещё нет, экран рисует заглушку-силуэт;
+ * гард `abaTargets.test.ts` сверяет ключи со стимулами.
+ */
+export const ABA_OBJECT_ART: Record<string, Svg | null> = {
+  'aba-obj-apple': null,
+  'aba-obj-pear': null,
+  'aba-obj-carrot': null,
+  'aba-obj-mushroom': null,
+  'aba-obj-leaf': null,
+  'aba-obj-car': null,
+  'aba-obj-plane': null,
+  'aba-obj-boat': null,
+  'aba-obj-house': null,
+  'aba-obj-umbrella': null,
+  'aba-obj-key': null,
+  'aba-obj-spoon': null,
+  'aba-obj-teapot': null,
+  'aba-obj-book': null,
+  'aba-obj-hat': null,
+  'aba-obj-mitten': null,
+  'aba-obj-pyramid': null,
+  'aba-obj-sock': null,
+};
