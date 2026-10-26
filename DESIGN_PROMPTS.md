@@ -1230,12 +1230,12 @@ aba-budget android-360x640-gesture compact 568 28
 aba-budget iphone-390x844 roomy 640 123
 ```
 
-Штриховка неактивной плиты (`inactiveChoice.hatchColor = 'plateOutline'`) — одна и та же в обеих
+Штриховка неактивной плиты (`inactiveChoice.hatchColor = 'inactiveHatch'`, Ц2.5) — одна и та же в обеих
 схемах; строки `aba-hatch <схема> <hex> <контраст к плите>` сверяет тот же тест с `abaColors`:
 
 ```
-aba-hatch light #2A1A12 16.73
-aba-hatch dark #2A1A12 13.60
+aba-hatch light #B5A08C 2.51
+aba-hatch dark #B5A08C 2.04
 ```
 
 ### 2.2 Экран подкрепления

@@ -7,8 +7,25 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { adultPanelButtons, type PanelButton, type PanelStep } from '../../domain/abaScoring';
 import { ladderUp, promptLadder, promptVisualFor } from '../../domain/abaPrompting';
+import { UNDO_WINDOW_MS } from '../../domain/abaUndo';
 import type { AbaTarget, RoutineRunKind } from '../../types/aba';
 import {
+  ABA_OVERLAY_CONTENT_HEIGHT,
+  abaAccessScene,
+  abaChannelVolume,
+  abaChildTouch,
+  abaConsequence,
+  abaInterTrial,
+  abaNextSdAt,
+  abaReinforcementOverlay,
+  abaReinforcementOverlayHeight,
+  abaReinforcerChoice,
+  abaSound,
+  abaTokenLandingMs,
+  abaTouchCommits,
+  abaWhoLeadsAccepts,
+  abaWhoLeadsSheet,
+  type AbaSoundChannel,
   abaBoardCell,
   abaBreak,
   abaCalm,
@@ -68,12 +85,36 @@ import {
 } from '../abaTokens';
 import { contrast, SHAPE_CONTRAST, TEXT_CONTRAST } from '../contrast';
 import { touchAdult } from '../parentTokens';
-import { buildTheme, cushionByRole, elevation, motion, palettes, pressScale, touch, type Scheme } from '../tokens';
+import {
+  buildTheme,
+  cushionByRole,
+  elevation,
+  motion,
+  palettes,
+  pressScale,
+  radii,
+  selectedRepeatPress,
+  stroke,
+  touch,
+  type Scheme,
+} from '../tokens';
 
 const SCHEMES: Scheme[] = ['light', 'dark'];
 
 /** Цвета, которые ребёнок видит на экране пробы рядом со стимулом. */
 const trialColors = (c: AbaColors) => [c.background, c.plate, c.plateOutline, c.ink];
+/** Те же плюс штриховка неактивной плиты (Ц2.5) — единственный четвёртый цвет интерфейса пробы. */
+const trialColorsWithInactive = (c: AbaColors) => [...trialColors(c), c.inactiveHatch];
+
+/** Насыщенность по HSL, 0–1: штриховка — нейтраль, а не цвет-сигнал. */
+function hslSaturation(hex: string): number {
+  const h = hex.replace('#', '');
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  return max === min ? 0 : (max - min) / (1 - Math.abs(2 * l - 1));
+}
 
 describe('цвет в ABA не бывает стимулом', () => {
   it('на экране пробы в светлой схеме ровно три цвета: песок, плита, почти-чёрный', () => {
@@ -90,13 +131,22 @@ describe('цвет в ABA не бывает стимулом', () => {
             p.success, p.successInk].forEach((x) => forbidden.add(x.toUpperCase()));
         }),
       );
-      trialColors(abaColors[scheme]).forEach((x) => expect(forbidden.has(x.toUpperCase())).toBe(false));
+      trialColorsWithInactive(abaColors[scheme]).forEach((x) => expect(forbidden.has(x.toUpperCase())).toBe(false));
     });
 
     it(`${scheme}: жёлтый — только у жетона, фиолетовый — только на экране подкрепления`, () => {
       const c = abaColors[scheme];
-      expect(trialColors(c)).not.toContain(c.tokenEarned);
-      expect(trialColors(c)).not.toContain(c.reinforcement);
+      expect(trialColorsWithInactive(c)).not.toContain(c.tokenEarned);
+      expect(trialColorsWithInactive(c)).not.toContain(c.reinforcement);
+    });
+  });
+
+  it('штриховка (Ц2.5) — новый hex под старую роль «неактивно»: не совпадает ни с одним другим цветом ABA', () => {
+    SCHEMES.forEach((scheme) => {
+      const c = abaColors[scheme];
+      const others = (Object.keys(c) as (keyof AbaColors)[]).filter((k) => k !== 'inactiveHatch').map((k) => c[k].toUpperCase());
+      expect(others).not.toContain(c.inactiveHatch.toUpperCase());
+      expect(trialColorsWithInactive(c)).toHaveLength(trialColors(c).length + 1);
     });
   });
 });
@@ -329,18 +379,47 @@ describe('уровни подсказки без цвета', () => {
     expect((72 * (1 - pressScale.wide)) / 2).toBeLessThan(1); // прежний ход края на 72: 0.72 pt
   });
 
-  describe('штриховка неактивной плиты — plateOutline в обеих схемах (Г6)', () => {
-    it('цвет штриховки — контур плиты, а не ink: в тёмной схеме ink на плите не читается', () => {
-      expect(inactiveChoice.hatchColor).toBe('plateOutline');
-      SCHEMES.forEach((scheme) => expect(inactiveHatchColor(scheme)).toBe(abaColors[scheme].plateOutline));
-      // регрессия: прежний ink в тёмной схеме давал ≈ 1.2:1 к плите
+  describe('штриховка неактивной плиты — inactiveHatch #B5A08C в обеих схемах (Ц2.5, UX «важно» 7)', () => {
+    it('цвет штриховки — inactiveHatch, один hex в обеих схемах; не plateOutline (цикл 1) и не ink', () => {
+      expect(inactiveChoice.hatchColor).toBe('inactiveHatch');
+      SCHEMES.forEach((scheme) => {
+        expect(inactiveHatchColor(scheme)).toBe(abaColors[scheme].inactiveHatch);
+        expect(inactiveHatchColor(scheme)).toBe('#B5A08C');
+        expect(inactiveHatchColor(scheme)).not.toBe(abaColors[scheme].plateOutline);
+        expect(inactiveHatchColor(scheme)).not.toBe(abaColors[scheme].ink);
+      });
+      // регрессия Г6: ink в тёмной схеме давал ≈ 1.2:1 к плите — штриховка не видна вовсе
       expect(contrast(abaColors.dark.ink, abaColors.dark.plate)).toBeLessThan(SHAPE_CONTRAST);
     });
 
     SCHEMES.forEach((scheme) => {
-      it(`${scheme}: штриховка читается на плите ≥ 13:1`, () => {
-        expect(contrast(inactiveHatchColor(scheme), abaColors[scheme].plate)).toBeGreaterThanOrEqual(13);
+      const c = abaColors[scheme];
+      it(`${scheme}: штриховка к плите от 2 до 3:1 — видна, но не «звенит» (условие UX ≤ 3)`, () => {
+        const k = contrast(inactiveHatchColor(scheme), c.plate);
+        expect(k).toBeGreaterThanOrEqual(2);
+        expect(k).toBeLessThanOrEqual(SHAPE_CONTRAST);
+        // прежняя решётка plateOutline — ≥ 13:1, риск pattern glare
+        expect(contrast(c.plateOutline, c.plate)).toBeGreaterThan(13);
       });
+
+      it(`${scheme}: контур плиты и предмета #2A1A12 различим на штриховке ≥ 3 (6.67)`, () => {
+        expect(contrast(c.plateOutline, inactiveHatchColor(scheme))).toBeGreaterThanOrEqual(SHAPE_CONTRAST);
+        expect(contrast(c.plateOutline, inactiveHatchColor(scheme))).toBeCloseTo(6.67, 1);
+      });
+    });
+
+    it('посчитанные в Ц2.5 числа: 2.51 светлая, 2.04 тёмная', () => {
+      expect(contrast(inactiveHatchColor('light'), abaColors.light.plate)).toBeCloseTo(2.51, 2);
+      expect(contrast(inactiveHatchColor('dark'), abaColors.dark.plate)).toBeCloseTo(2.04, 2);
+    });
+
+    it('штриховка — тёплая нейтраль (насыщенность ≤ 0.3), а не новый цвет-сигнал', () => {
+      expect(hslSaturation(inactiveHatchColor('light'))).toBeLessThanOrEqual(0.3);
+      expect(hslSaturation(abaColors.light.tokenEarned)).toBeGreaterThan(0.9); // для сравнения: жёлтый жетона
+    });
+
+    it('слои: штриховка под картинкой — предмет не перечёркивается (Ц2.5)', () => {
+      expect(inactiveChoice.layer).toBe('under_picture');
     });
 
     it('токен ↔ промпт: строки aba-hatch в DESIGN_PROMPTS.md (цвет и контраст) совпадают с abaColors', () => {
@@ -763,13 +842,14 @@ describe('панель взрослого (Р6)', () => {
       lock.neverBlocked.forEach((id) => expect(abaAdultPanelSlot).toHaveProperty(id));
     });
 
-    it('ошибочную страхует «Исправить отметку» 5 с', () => {
+    it('ошибочную страхует «Исправить отметку» 5 с — то же окно, что у домена (UNDO_WINDOW_MS)', () => {
       expect(abaAdultPanel.undo.windowMs).toBe(5000);
+      expect(abaAdultPanel.undo.windowMs).toBe(UNDO_WINDOW_MS);
     });
   });
 
   it('«исправить отметку»: 5 с, один уровень, левый слот ряда 2, не растянута; «Отказ» не занимает', () => {
-    expect(abaAdultPanel.undo).toEqual({
+    expect(abaAdultPanel.undo).toMatchObject({
       windowMs: 5000, row: 1, col: 0, span: 'slot', levels: 1, endsWith: 'reinforcement_phase',
     });
     expect(abaAdultPanelSlot.undo).toEqual({ row: abaAdultPanel.undo.row, col: abaAdultPanel.undo.col });
@@ -916,10 +996,14 @@ describe('детские кнопки управления и карточка �
     expect(abaControls.exitAccessibilityAction).toBe(true);
   });
 
-  it('штриховка неактивной плиты в calm реже (12), толщина штриха та же', () => {
-    expect(inactiveChoice.hatchStepCalm).toBe(12);
+  it('штриховка неактивной плиты: шаг 16, в calm 24 (Ц2.5; цикл 1 — 8 / 12), толщина штриха 2', () => {
+    expect(inactiveChoice.hatchStep).toBe(16);
+    expect(inactiveChoice.hatchStepCalm).toBe(24);
     expect(inactiveChoice.hatchStepCalm).toBeGreaterThan(inactiveChoice.hatchStep);
     expect(inactiveChoice.hatchStroke).toBe(2);
+    // на самой мелкой плите выбора (72) остаётся несколько штрихов — состояние читается и в calm
+    expect(abaChoiceZone.tight.choice / inactiveChoice.hatchStepCalm).toBeGreaterThanOrEqual(3);
+    expect(Math.min(...Object.values(abaIdentifyGrid.plateForFour)) / inactiveChoice.hatchStepCalm).toBeGreaterThanOrEqual(2.5);
   });
 
   it('контур детских кнопок в ABA не понижается в calm', () => {
@@ -1192,5 +1276,347 @@ describe('рутины самообслуживания (Г8)', () => {
 
   it('новый выбор подкрепителя после обмена рутины — экран выбора без вступления', () => {
     expect(abaRoutine.reinforcerRepick).toEqual({ screen: 'reinforcer_choice', intro: false });
+  });
+});
+
+/* ───────────────── цикл 2 (Ц2.x и проверка UX цикла 2) ───────────────── */
+
+describe('последствие пробы — время от markedAt (Ц2.6.1, №160)', () => {
+  const o = abaReinforcementOverlay;
+
+  it('всё считается от markedAt; до записи ничего не рисуется; цель markedAt − respondedAt ≤ 1 с', () => {
+    expect(abaConsequence.timedFrom).toBe('markedAt');
+    expect(abaConsequence.drawnBeforeRecord).toBe(false);
+    expect(abaConsequence.markedAfterRespondedTargetMs).toBeLessThanOrEqual(1000);
+    expect(o).toHaveProperty('holdFromMarkedMs');
+    expect(o).not.toHaveProperty('holdFromRespondedMs'); // цикл 1: respondedAt + 4000
+  });
+
+  it('плашка уходит в 4000, пауза 1000 — следующий SD в markedAt + 5000 = UNDO_WINDOW_MS', () => {
+    expect(o.holdFromMarkedMs).toBe(4000);
+    expect(o.holdFromMarkedMs + abaInterTrial.ms).toBe(abaInterTrial.nextSdAtMs);
+    expect(abaInterTrial.nextSdAtMs).toBeGreaterThanOrEqual(UNDO_WINDOW_MS);
+    expect(abaInterTrial.nextSdAtMs).toBe(UNDO_WINDOW_MS); // окно отмены используется целиком, не дольше
+    expect(abaNextSdAt(10_000)).toBe(15_000);
+    expect(abaInterTrial.plates).toBe('empty_frames');
+  });
+
+  it('жетон падает 120 → 340 (motion.base), звук в момент приземления; похвала 700 (calm 500) кончается до ухода плашки', () => {
+    expect(o.tokenDropAtMs).toBe(120);
+    expect(o.tokenDropMs).toBe(motion.base);
+    expect(abaTokenLandingMs()).toBe(340);
+    expect(o.tokenSound).toBe('on_landing');
+    expect(o.praiseAtMs).toBe(700);
+    expect(o.praiseAtMs).toBeGreaterThan(abaTokenLandingMs()); // похвала не накрывает «тук» жетона
+    expect(o.praiseAtMs + o.praiseMaxMs).toBeLessThanOrEqual(o.holdFromMarkedMs);
+    // calm: жетон появляется на месте в момент начала падения, похвала раньше, но после жетона
+    expect(o.tokenAppearsAtMsCalm).toBe(o.tokenDropAtMs);
+    expect(abaCalm.tokenArrival).toBe('in_place');
+    expect(o.praiseAtMsCalm).toBe(500);
+    expect(o.praiseAtMsCalm).toBeGreaterThan(o.tokenAppearsAtMsCalm);
+    expect(o.praiseAtMsCalm).toBeLessThan(o.praiseAtMs);
+    // praise без жетона: только голос, раньше, чем похвала плашки
+    expect(abaConsequence.praiseOnlyAtMs).toBeLessThan(o.praiseAtMs);
+  });
+
+  it('плашка — не кнопка: без подушки, тап — ничего, без «Дальше»; радиус radii.lg, контур 3 = контур calm-плашки', () => {
+    expect(o.cushion).toBe(false);
+    expect(o.reactsToTap).toBe(false);
+    expect(o.tapPress).toBe(false);
+    expect(o.nextButton).toBe(false);
+    expect(o.appears).toBe('cut');
+    expect(o.radius).toBe(radii.lg);
+    expect(o.stroke).toBe(ABA_CONTROL_STROKE);
+    expect(o.stroke).toBe(abaCalm.panelStroke);
+    expect(o.panelStays).toBe(true);
+    expect(o.topBarStays).toBe(true);
+  });
+
+  it('содержимое 288 помещается в плашку во всех тирах (432 / 376 / 344); доска плашки ≤ 64', () => {
+    expect(ABA_OVERLAY_CONTENT_HEIGHT).toBe(288);
+    const expected: Record<AbaTier, number> = { roomy: 432, compact: 376, tight: 344 };
+    TIERS.forEach((t) => {
+      expect(abaReinforcementOverlayHeight(abaLayoutByTier[t])).toBe(expected[t]);
+      expect(ABA_OVERLAY_CONTENT_HEIGHT).toBeLessThanOrEqual(abaReinforcementOverlayHeight(abaLayoutByTier[t]));
+    });
+    // SE: ширина плашки 343, контент 311 — 64 при трёх ячейках, 52 при пяти
+    expect(abaBoardCell(311, 3)).toBe(64);
+    expect(abaBoardCell(311, 5)).toBe(52);
+  });
+
+  it('«Исправить отметку» видна до ухода плашки (4000), в паузе её нет; окно домена шире на 1 с (Ц2.6.3)', () => {
+    const u = abaAdultPanel.undo;
+    expect(u.visibleUntilMs).toBe(o.holdFromMarkedMs);
+    expect(u.visibleUntilMs).toBeLessThan(u.windowMs);
+    expect(u.windowMs - u.visibleUntilMs).toBe(abaInterTrial.ms);
+    expect(u.hideOnPress).toBe(true);
+    expect(u.slotAfterPress).toBe('empty_until_next_sd');
+    expect(u.redrawFrame).toBe(false);
+    expect(u.shownFor).toBe('adult_scored');
+  });
+
+  it('tokenAdded: падение в полосе (motion.quick, calm — появление) со звуком; SD = max(markedAt + 5000, приземление + 1000)', () => {
+    const d = abaAdultPanel.undo.tokenAddedDrop;
+    expect(d.target).toBe('strip_cell');
+    expect(d.overlay).toBe(false); // плашка задним числом не рисуется
+    expect(d.durationMs).toBe(motion.quick);
+    expect(d.calm).toBe('appear_in_place');
+    expect(d.sound).toBe('token_on_landing');
+    expect(d.gapToNextSdMs).toBe(1000);
+    expect(abaNextSdAt(0, 3000)).toBe(5000);
+    expect(abaNextSdAt(0, 4000)).toBe(5000);
+    expect(abaNextSdAt(0, 4500)).toBe(5500);
+    // кнопка видна до 4000, падение длится motion.quick: худший случай — SD сдвигается не больше чем на 140 мс
+    expect(abaNextSdAt(0, abaAdultPanel.undo.visibleUntilMs + d.durationMs) - abaNextSdAt(0)).toBe(motion.quick);
+  });
+
+  it('№160: карточка «перерыв» в последствии активна и без штриховки; просьба — перерыв вместо следующего SD', () => {
+    expect(abaConsequence.breakCard).toEqual({
+      active: true,
+      hatched: false,
+      onTap: 'defer_break_to_next_sd',
+      interruptsOverlay: false,
+    });
+    // вне пробы и последствия (доступ, обмен, перерыв) — по-прежнему не просьба (№106)
+    expect(abaBreak.outsideTrialCardAccepted).toBe(false);
+    const src = fs.readFileSync(path.join(__dirname, '..', 'abaTokens.ts'), 'utf8');
+    expect(src).not.toMatch(/breakCard:\s*'inactiveChoice'/);
+  });
+
+  it('№159: device_tap — «Была подсказка» и «Отказ» на местах ряда 2, ряд 1 пуст, «Сопротивляется» и отмены нет', () => {
+    const p = abaAdultPanel.deviceTap;
+    const device = adultPanelButtons('with_adult', { scoredBy: 'device_tap', startPromptLevel: 0, askAdultForL4: false }, false);
+    expect([...p.answerWindow]).toEqual(device);
+    p.answerWindow.forEach((id) => expect(abaAdultPanelSlot[id].row).toBe(1));
+    expect(p.firstRow).toBe('empty');
+    expect(p.resistedInAnswerWindow).toBe(false);
+    expect(p.answerWindow).not.toContain('l4_resisted');
+    expect(p.undo).toBe(false);
+    expect(abaAdultPanelSlot.l4_resisted.row).toBe(0); // «Сопротивляется» живёт на карточке L4
+  });
+});
+
+describe('№161: обмена на перерыве по просьбе ребёнка нет', () => {
+  it('child_card — без обмена, расписание и предложение приложения — с обменом; ключи — все инициаторы', () => {
+    expect(abaBreak.exchangeAfter).toEqual({ child_card: false, schedule: true, device_offer: true });
+    expect(Object.keys(abaBreak.exchangeAfter).sort()).toEqual([...abaBreak.initiators].sort());
+  });
+
+  it('полная доска ждёт статично: без движения, знака и звука; на экране перерыва ребёнка доски нет', () => {
+    expect(abaBreak.fullBoardWaiting).toEqual({ animated: false, cue: false, sound: false });
+    expect(abaBreak.childCardShows.tokens).toBe(false);
+  });
+});
+
+describe('звук (Ц2.1, №158; пункт 2 проверки цикла 2)', () => {
+  const channels = Object.keys(abaSound.channels) as AbaSoundChannel[];
+
+  it('файлы из сборки звучат и при беззвучном переключателе; четыре канала с долями 1 / 0.7 / 0.6 / 0.5', () => {
+    expect(abaSound.playsInSilentMode).toBe(true);
+    expect(abaSound.channels).toEqual({ voice: 1, token: 0.7, scene: 0.6, cue: 0.5 });
+    channels.forEach((ch) => {
+      expect(abaChannelVolume(ch, false)).toBeGreaterThan(0);
+      expect(abaChannelVolume(ch, false)).toBeLessThanOrEqual(1);
+    });
+    expect(abaSound.channels.token).toBeLessThan(abaSound.channels.voice);
+  });
+
+  it('calm — каждый канал × 0.5: 0.5 / 0.35 / 0.3 / 0.25; song в calm 0.25', () => {
+    expect(abaSound.calmFactor).toBe(0.5);
+    const calm: Record<AbaSoundChannel, number> = { voice: 0.5, token: 0.35, scene: 0.3, cue: 0.25 };
+    channels.forEach((ch) => expect(abaChannelVolume(ch, true)).toBeCloseTo(calm[ch], 9));
+    expect(abaSound.songCalm).toBeLessThanOrEqual(abaChannelVolume('scene', true));
+  });
+
+  it('барабан: потолок 0.5 ниже канала сцены, звук не чаще раза в 250 мс', () => {
+    expect(abaSound.drumMax).toBeLessThanOrEqual(abaSound.channels.scene);
+    expect(abaSound.drumMinIntervalMs).toBe(250);
+  });
+
+  it('сцена приглушается под голосом и под сигналом конца доступа: до 0.3, в calm до 0.15', () => {
+    const d = abaSound.sceneDuck;
+    expect(d.level).toBe(0.3);
+    expect(d.levelCalm).toBe(0.15);
+    expect(d.levelCalm).toBeCloseTo(d.level * abaSound.calmFactor, 9);
+    expect([...d.under].sort()).toEqual(['access_end_cue', 'voice']);
+    // приглушение действительно тише сцены в обоих режимах, и тише calm-музыки song
+    expect(d.level).toBeLessThan(abaChannelVolume('scene', false));
+    expect(d.level).toBeLessThan(abaSound.drumMax);
+    expect(d.levelCalm).toBeLessThan(abaSound.songCalm);
+    // длительность приглушения под сигналом — длина самого сигнала
+    expect(abaAccessScene.endCue.duckScene).toBe(true);
+    expect(abaAccessScene.endCue.ms).toBe(600);
+  });
+
+  it('token — только при приземлении жетона; звуки одного канала не накладываются; без звука визуальных дублей нет', () => {
+    expect(abaSound.tokenOnlyOnLanding).toBe(true);
+    expect(abaSound.sameChannelOverlap).toBe(false);
+    expect(abaSound.tokenCalmVariant).toBe('short');
+    expect(abaSound.offHidesSoundReinforcers).toBe(true);
+    expect(abaSound.offDuplicatesVisually).toBe(false);
+  });
+});
+
+describe('касание выбора на детских экранах ABA (пункт 4 проверки цикла 2)', () => {
+  const ok = { startedAt: 1000, frameShownAt: 1000, pointerIndex: 0, endedInside: true, slopPt: 0 };
+
+  it('правило: при отпускании внутри цели, сдвиг < 10 pt, первый палец, касание до кадра не считается', () => {
+    expect(abaChildTouch).toEqual({
+      scope: 'choice',
+      commitOn: 'touch_up_inside',
+      maxSlopPt: 10,
+      firstPointerOnly: true,
+      ignoreStartedBeforeFrame: true,
+      pressShownFrom: 'touch_down',
+    });
+    // 10 pt меньше зазора между целями: сдвиг, засчитанный как выбор, не дотягивается до соседней плиты
+    expect(abaChildTouch.maxSlopPt).toBeLessThan(touch.gap);
+    expect(abaChildTouch.maxSlopPt).toBeLessThan(abaLayout.plateGap);
+  });
+
+  it('abaTouchCommits: граница сдвига, второй палец, касание до кадра, отпускание снаружи', () => {
+    expect(abaTouchCommits(ok)).toBe(true);
+    expect(abaTouchCommits({ ...ok, slopPt: 9.9 })).toBe(true);
+    expect(abaTouchCommits({ ...ok, slopPt: 10 })).toBe(false);
+    expect(abaTouchCommits({ ...ok, pointerIndex: 1 })).toBe(false);
+    expect(abaTouchCommits({ ...ok, startedAt: 999 })).toBe(false);
+    expect(abaTouchCommits({ ...ok, startedAt: 1001 })).toBe(true);
+    expect(abaTouchCommits({ ...ok, endedInside: false })).toBe(false);
+  });
+});
+
+describe('выбор подкрепителя тапом (Ц2.4)', () => {
+  const r = abaReinforcerChoice;
+
+  it('тап = выбор, «Начать» нет, удержание 800 мс беззвучно; одно правило на 2.3, reinforcerStale и сопряжение', () => {
+    expect(r.choiceOnTap).toBe(true);
+    expect(r.startButton).toBe(false);
+    expect(r.holdMs).toBe(800);
+    expect(r.holdSound).toBe(false);
+    expect([...r.sameRuleOn].sort()).toEqual(['pairing_choose', 'reinforcer_choice', 'reinforcer_stale']);
+    expect(r.otherTapDuringHold).toBe('moves_choice_restarts_hold');
+    expect(r.silhouetteSwap).toBe('immediate');
+  });
+
+  it('выбранная — вдавлена (подушка 0), контур 6 внутрь controlInk, различим на карточке в обеих схемах', () => {
+    expect(r.selected).toEqual({ cushion: 0, stroke: stroke.bold, strokeColor: 'controlInk', inset: true });
+    expect(r.selected.stroke).toBe(6);
+    SCHEMES.forEach((scheme) => {
+      const c = abaColors[scheme];
+      expect(contrast(c[r.selected.strokeColor], c.controlFill)).toBeGreaterThanOrEqual(SHAPE_CONTRAST);
+    });
+  });
+
+  it('тап по выбранной — selectedRepeatPress, удержание не перезапускается; смена кадра motion.quick, в calm без перехода', () => {
+    expect(r.repeatTap).toEqual({ scale: selectedRepeatPress.scale, restartsHold: false });
+    expect(r.transitionMs).toBe(motion.quick);
+    expect(r.transitionCalm).toBe('cut');
+  });
+
+  it('«Сам», без выбора: 30 с — голос и один общий пульс (в calm без пульса), 60 с — спокойный конец; полосы взрослого нет', () => {
+    expect([...r.aloneNoChoiceMs]).toEqual([30_000, 60_000]);
+    expect(r.aloneRepeat.voice).toBe(1);
+    expect(r.aloneRepeat.pulse).toEqual({ scale: 1.04, durationMs: motion.base, count: 1, together: true });
+    expect(r.aloneRepeat.pulse.scale).toBeLessThanOrEqual(PROMPT_PULSE.scale); // не крупнее пульса подсказки
+    expect(r.aloneRepeat.pulseCalm).toBe(false);
+    expect(r.aloneAdultStrip).toBe(false);
+  });
+
+  it('«Со взрослым»: полоса 88 на месте «Начать», первые 500 мс без нажатий, вид не меняется', () => {
+    expect(r.adultStripHeight).toBe(touch.primary);
+    expect(r.adultStripLockMs).toBe(500);
+    expect(r.adultStripLockLooksDisabled).toBe(false);
+  });
+});
+
+describe('лист «Кто ведёт» (Ц2.3; пункт 1 проверки цикла 2)', () => {
+  const s = abaWhoLeadsSheet;
+
+  it('высота 402 складывается из блоков; «Начать» в шапке ≥ 112×48; скрим лист не закрывает', () => {
+    expect(Object.values(s.blocks).reduce((a, b) => a + b, 0)).toBe(s.height);
+    expect(s.height).toBe(402);
+    expect(s.startPlacement).toBe('header');
+    expect(s.blocks.header).toBeGreaterThanOrEqual(touchAdult);
+    expect(s.startMinWidth).toBeGreaterThanOrEqual(112);
+    expect(s.scrimDismiss).toBe(false);
+    expect(s.captionSlotReserved).toBe(true);
+  });
+
+  it('«Начать» листа далеко от «Начать» 2.6: обе от низа, разрыв ≥ высоты главной кнопки', () => {
+    const sheetStartBottom = s.height - s.blocks.pad - s.blocks.header; // низ «Начать» листа от низа экрана
+    const screenStartTop = 16 + touch.primary; // верх «Начать» 2.6 от низа экрана
+    expect(sheetStartBottom - screenStartTop).toBeGreaterThanOrEqual(touch.primary);
+  });
+
+  it('блокировка 500 мс — от последнего отпускания пальца, не от открытия; вид в блокировке обычный', () => {
+    expect(s.lockMs).toBe(500);
+    expect(s.lockFrom).toBe('last_touch_up');
+    expect(s.lockScope).toBe('sheet_and_scrim');
+    expect(s.lockNotBefore).toBe('sheet_settled');
+    expect(s.lockLooksDisabled).toBe(false);
+  });
+
+  it('abaWhoLeadsAccepts: первые 500 мс после того, как лист встал, — нет; отпускание «Начать» 2.6 до этого срок не сокращает', () => {
+    const settled = 1000;
+    expect(abaWhoLeadsAccepts(1499, settled, null)).toBe(false);
+    expect(abaWhoLeadsAccepts(1500, settled, null)).toBe(true);
+    expect(abaWhoLeadsAccepts(1499, settled, 800)).toBe(false); // палец отпустил «Начать» 2.6 до открытия
+  });
+
+  it('abaWhoLeadsAccepts: серия быстрых тапов (каждые 300 мс) не проходит никогда; после паузы 500 мс — проходит', () => {
+    const settled = 1000;
+    let prevUp: number | null = null;
+    // тапы: вниз в t, отпускание через 80 мс; интервал 300 мс, 10 тапов — серия длиннее прежних 720 мс
+    for (let i = 0; i < 10; i += 1) {
+      const down = settled + 100 + i * 300;
+      expect(abaWhoLeadsAccepts(down, settled, prevUp)).toBe(false);
+      prevUp = down + 80;
+    }
+    expect(abaWhoLeadsAccepts((prevUp as number) + 499, settled, prevUp)).toBe(false);
+    expect(abaWhoLeadsAccepts((prevUp as number) + 500, settled, prevUp)).toBe(true);
+  });
+});
+
+describe('доступ: сцена и конец (Ц2.8; пункты 2 и 5 проверки цикла 2)', () => {
+  const a = abaAccessScene;
+
+  it('любой тап по сцене — отклик ≤ 300 мс, первый кадр ≤ 100; объекты ≥ 60; жест только дополняет тап', () => {
+    expect(a.tapResponseMs).toBeLessThanOrEqual(300);
+    expect(a.firstFrameMs).toBeLessThanOrEqual(100);
+    expect(a.firstFrameMs).toBeLessThan(a.tapResponseMs);
+    expect(a.minTarget).toBe(touch.min);
+    expect(a.gesture).toBe('adds_to_tap');
+  });
+
+  it('сигнал конца за 5 с, 600 мс, канал cue, кончается до T и приглушает сцену (abaSound.sceneDuck)', () => {
+    expect(a.endCue).toEqual({ beforeEndMs: 5000, ms: 600, channel: 'cue', duckScene: true });
+    expect(a.endCue.ms).toBeLessThan(a.endCue.beforeEndMs);
+    expect(abaSound.sceneDuck.under).toContain('access_end_cue');
+  });
+
+  it('доигрывание ≤ 3 с: song — такт и затухание в последние 500 мс, остальные — затухание 500 мс; деталь puzzle4 уходит на место', () => {
+    expect(a.newOnTapAfterEnd).toBe(false);
+    expect(a.settleMaxMs).toBe(3000);
+    expect(a.settle.song).toEqual({ finishBar: true, fadeLastMs: 500 });
+    expect(a.settle.others).toEqual({ fadeMs: 500 });
+    expect(a.settle.song.fadeLastMs).toBeLessThanOrEqual(a.settleMaxMs);
+    expect(a.settle.others.fadeMs).toBeLessThanOrEqual(a.settleMaxMs);
+    expect(a.settle.puzzle4HeldPiece).toBe('goes_home');
+  });
+
+  it('после доигрывания кольцо исчезает мгновенно, через 1000 мс — следующий шаг; время ребёнка не урезается', () => {
+    expect(a.ringHiddenAfterSettle).toBe(true);
+    expect(a.endSettleMs).toBe(1000);
+    expect(a.durationTrimmed).toBe(false);
+  });
+});
+
+describe('кнопка повтора инструкции (Ц2.1)', () => {
+  it('60×60 (≥ touch.min), глиф ui-replay 32; рисуется только при файле голоса', () => {
+    expect(abaControls.replaySize).toBeGreaterThanOrEqual(touch.min);
+    expect(abaControls.replayGlyph).toBe('ui-replay');
+    expect(abaControls.replayIconSize).toBe(32);
+    expect(abaControls.replayIconSize).toBeLessThan(abaControls.replaySize);
+    expect(abaControls.replayOnlyWithVoiceFile).toBe(true);
   });
 });

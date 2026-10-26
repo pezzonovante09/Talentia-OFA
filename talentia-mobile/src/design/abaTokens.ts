@@ -14,7 +14,7 @@
 import type { PanelButton } from '../domain/abaScoring';
 import type { RoutineRunKind } from '../types/aba';
 import { parentColors } from './parentTokens';
-import { motion, type Scheme } from './tokens';
+import { motion, radii, selectedRepeatPress, stroke, touch, type Scheme } from './tokens';
 
 export type AbaColors = {
   /** Фон экрана пробы. */
@@ -53,6 +53,14 @@ export type AbaColors = {
    */
   controlFill: string;
   controlInk: string;
+  /**
+   * Штриховка неактивной плиты (Ц2.5, UX «важно» 7) — новый hex под уже существующую роль «неактивно»,
+   * а не новая роль: тёплый серо-коричневый из семейства песка и `ink`, один в обеих схемах. К плите
+   * 2.51 / 2.04 — **намеренно ≤ 3:1** (условие UX): прежний `plateOutline` (16.73 / 13.60) с шагом 8 давал
+   * частую высококонтрастную решётку — риск pattern glare у детей с РАС, и картинка под ней терялась.
+   * Контур плиты и предмета `#2A1A12` к штриховке — 6.67. Больше нигде не встречается.
+   */
+  inactiveHatch: string;
 };
 
 export const abaColors: Record<Scheme, AbaColors> = {
@@ -69,6 +77,7 @@ export const abaColors: Record<Scheme, AbaColors> = {
     onReinforcement: '#FFFFFF', // 7.71:1
     controlFill: '#FFFFFF',
     controlInk: '#2A1A12', // 16.73:1
+    inactiveHatch: '#B5A08C', // к плите 2.51:1 (≤ 3 по условию UX), контур #2A1A12 к ней 6.67:1
   },
   dark: {
     background: '#1B1410',
@@ -83,6 +92,7 @@ export const abaColors: Record<Scheme, AbaColors> = {
     onReinforcement: '#1B1410', // 5.82:1; белое дало бы ≈3:1 (правило перевода, tokens.ts)
     controlFill: '#2A211B',
     controlInk: '#FFF3E3', // 14.40:1
+    inactiveHatch: '#B5A08C', // тот же hex: к плите #EDE7DC 2.04:1 (Ц2.16 п. 5 — проверить на устройстве вечером)
   },
 };
 
@@ -419,6 +429,15 @@ export const abaControls = {
   exitHoldMs: 1500,
   exitHoldIdleMs: 300,
   replaySize: 60,
+  /**
+   * Кнопка повтора инструкции (Ц2.1, Ц2.14 п. 9): в зарезервированном месте строки инструкции справа,
+   * белая, контур `ABA_CONTROL_STROKE` `controlInk`, подушка как у детской кнопки; глиф `ui-replay` 32 `ink`.
+   * Рисуется, **только если у шага есть файл голоса** и звук включён; иначе место пустое, раскладка та же.
+   * Что делает тап во время фразы и как повтор пишется — пункт 3 проверки цикла 2, к экрану и домену.
+   */
+  replayGlyph: 'ui-replay',
+  replayIconSize: 32,
+  replayOnlyWithVoiceFile: true,
   adultButton: 48,
   /** Детская карточка «перерыв» (assent, ABA.md, «Согласие ребёнка»): правый край верхней полосы. */
   breakSize: 64,
@@ -561,8 +580,51 @@ export const abaAdultPanel = {
    * кнопка исчезает, повтор ничего не стирает. Процедура отмены — ABA.md «Отмена отметки и
    * карточка «перерыв»» (№99): журнал только дописывается, жетон не отнимается, окно закрывается
    * с началом следующего SD.
+   *
+   * Цикл 2 (Ц2.6.3, Ц2.14 п. 4; правило 1 методиста): окно домена `windowMs` = `UNDO_WINDOW_MS` 5000, но
+   * **кнопка видна только t 0–4000 от `markedAt`** (`visibleUntilMs` = уход плашки) — в межпробной паузе её
+   * нет, и отмена, добавляющая жетон, в паузу не попадает. Нажали — кнопка исчезает сразу, слот пуст до
+   * следующего SD, соседи не сдвигаются; кадр не перерисовывается (`redrawFrame: false`): плашка доигрывает,
+   * снятый отменой жетон (`tokenKept`) остаётся на доске. Жетон, добавленный отменой (`tokenAdded`), — короткое
+   * падение в ячейку **полосы** (`motion.quick`, в calm появление на месте) со звуком `token` при
+   * приземлении, плашка задним числом не рисуется; следующий SD — `abaNextSdAt`.
+   * Где оценивает касание (`scoredBy: 'device_tap'`, `match` — №159) отмены нет вовсе (`canUndo` → false):
+   * кнопка не рисуется (`shownFor: 'adult_scored'`).
    */
-  undo: { windowMs: 5000, row: 1, col: 0, span: 'slot', levels: 1, endsWith: 'reinforcement_phase' },
+  undo: {
+    windowMs: 5000,
+    row: 1,
+    col: 0,
+    span: 'slot',
+    levels: 1,
+    endsWith: 'reinforcement_phase',
+    visibleUntilMs: 4000,
+    hideOnPress: true,
+    slotAfterPress: 'empty_until_next_sd',
+    redrawFrame: false,
+    shownFor: 'adult_scored',
+    tokenAddedDrop: {
+      target: 'strip_cell',
+      durationMs: motion.quick,
+      calm: 'appear_in_place',
+      sound: 'token_on_landing',
+      gapToNextSdMs: 1000,
+      overlay: false,
+    },
+  },
+  /**
+   * Панель цели, которую оценивает касание ребёнка (`scoredBy: 'device_tap'`, `match`; №159, методист по
+   * Ц2.16 п. 4). В окне ответа — только «Была подсказка» и «Отказ» **на своих местах ряда 2**; ряд 1 пуст
+   * (фон полосы, кнопки не перекладываются наверх — позиции постоянны для всех целей). «Сопротивляется» —
+   * только на карточке L4 (`l4_resisted`), в окне ответа её слот пуст; «Исправить отметку» нет. Таблица Ц2.2
+   * цикла 2 в этой части устарела.
+   */
+  deviceTap: {
+    answerWindow: ['adult_prompted', 'refusal'] as readonly PanelButton[],
+    firstRow: 'empty',
+    resistedInAnswerWindow: false,
+    undo: false,
+  },
 } as const;
 
 /** Слот кнопки: ряд 0 или 1, колонка в ряду. `undo` — не кнопка окна ответа, но делит слот ряда 2. */
@@ -789,21 +851,28 @@ export function promptVisualSingleLevel(level: 0 | 1 | 2 | 3 | 4): 0 | 1 | 3 {
 /**
  * Неактивная плита выбора: **приглушена, не скрыта** — позиции не меняются (перестройка сетки
  * сама была бы подсказкой местом). Тот же отклик у плит расписания рутины (2.8, V-10): они не
- * нажимаются, но ребёнок будет их трогать. Штриховка 45° цветом **`plateOutline`** (Г6; не `ink`: в
- * тёмной схеме `ink` светлый `#FFF3E3`, а плита `#EDE7DC` — ≈ 1.2:1, и L3 не читался;
- * `plateOutline` `#2A1A12` даёт 16.73:1 / 13.60:1), подушки нет, контур сплошной 3 (пунктир
- * значит «пусто»), прозрачности нет. Нажатие по ней ничего не делает (`reactsToTap`) и не
- * пишется; экранному чтецу она не доступна. Но касание не остаётся молчаливым (I-6): плита
- * сжимается `tapPress` и возвращается — без звука и без записи.
+ * нажимаются, но ребёнок будет их трогать. Штриховка 45° цветом **`inactiveHatch`** `#B5A08C` (Ц2.5,
+ * UX «важно» 7): к плите **2.51 / 2.04** — видна, но не «звенит»; контур плиты и предмета `#2A1A12` к ней
+ * 6.67. Цикл 1 брал `plateOutline` (Г6: 16.73 / 13.60) с шагом 8 — частая высококонтрастная решётка, риск
+ * pattern glare у детей с РАС, картинка под ней терялась. `ink` не годится по-прежнему: в тёмной схеме он
+ * светлый `#FFF3E3`, к плите `#EDE7DC` ≈ 1.2:1. Слои (`layer`): плита → штриховка → **картинка поверх
+ * целиком, без прозрачности** → контур 3; предмет штриховкой не перечёркивается, ответ не раскрыт (заштрихованы
+ * все неактивные одинаково). Подушки нет, контур сплошной 3 (пунктир значит «пусто»), прозрачности нет.
+ * Нажатие по ней ничего не делает (`reactsToTap`) и не пишется; экранному чтецу она не доступна. Но касание
+ * не остаётся молчаливым (I-6): плита сжимается `tapPress` и возвращается — без звука и без записи.
+ * Карточка «перерыв» в фазе последствия **не** штрихуется (№160, `abaConsequence.breakCard`).
  */
 export const inactiveChoice = {
   pattern: 'hatched_45',
   hatchStroke: 2,
-  hatchStep: 8,
-  /** Calm: реже штрихи — меньше мелькающей текстуры; толщина штриха 2 остаётся. */
-  hatchStepCalm: 12,
+  /** Шаг 16 (Ц2.5; в цикле 1 — 8): реже решётка — меньше мелькания, картинка под ней читается. */
+  hatchStep: 16,
+  /** Calm: ещё реже — 24 (цикл 1 — 12); толщина штриха 2 остаётся. */
+  hatchStepCalm: 24,
   /** Цвет штриховки — поле `AbaColors`, одно и то же в обеих схемах (`inactiveHatchColor`). */
-  hatchColor: 'plateOutline',
+  hatchColor: 'inactiveHatch',
+  /** Штриховка лежит под картинкой (Ц2.5): плита → штриховка → картинка → контур. */
+  layer: 'under_picture',
   cushion: false,
   /** Действия нет: ответ не принимается и не пишется. */
   reactsToTap: false,
@@ -823,7 +892,7 @@ export function inactiveTapTravel(size: number): number {
   return (size * (1 - inactiveChoice.tapPress.scale)) / 2;
 }
 
-/** Цвет штриховки неактивной плиты в данной схеме — всегда контур плиты. */
+/** Цвет штриховки неактивной плиты в данной схеме — `inactiveHatch` (Ц2.5), один hex в обеих. */
 export function inactiveHatchColor(scheme: Scheme): string {
   return abaColors[scheme][inactiveChoice.hatchColor];
 }
@@ -851,8 +920,9 @@ export const PLATE_STROKE_INSET = true;
  * Приглашение вернуться — по окончании таймера и через 30 с: один тихий сигнал и статичный
  * контур 6, без пульса и эскалации; при выключенном звуке сигнал не слышен, поэтому к концу
  * таймера **убирается кольцо** (V-4а) — экран упрощается до иконки и кнопки; после второго приглашения и ещё 30 с без касания — конец
- * сессии нейтральным экраном (без Tali-прощания и «молодец»). Вне пробы карточка как просьба не
- * принимается (№106).
+ * сессии нейтральным экраном (без Tali-прощания и «молодец»). Вне пробы и её последствия (доступ, обмен,
+ * сам перерыв) карточка как просьба не принимается (№106); в фазе последствия — принимается и даёт перерыв
+ * вместо следующего SD (№160, `abaConsequence.breakCard`).
  */
 export const abaBreak = {
   initiators: ['child_card', 'schedule', 'device_offer'],
@@ -920,8 +990,21 @@ export const abaBreak = {
     idleEndMs: 60_000,
     idleEnd: 'neutral_end',
   },
-  /** Решение №106: вне пробы (подкрепление, переход, обмен, перерыв) карточка просьбой не принимается. */
+  /**
+   * Решение №106: вне пробы (переход, доступ, обмен, перерыв) карточка просьбой не принимается. Фаза
+   * последствия пробы (плашка и остальные исходы) — исключение по №160: там просьба запоминается
+   * (`abaConsequence.breakCard`).
+   */
   outsideTrialCardAccepted: false,
+  /**
+   * Обмен после перерыва по инициатору (№161). По просьбе ребёнка (карточка в пробе, между пробами, после
+   * отказа) обмена нет: полная доска **ждёт** ближайшего перерыва по расписанию или конца сессии — на экране
+   * перерыва доски нет (`childCardShows.tokens`), а по возвращении полоса показывает полную доску как есть,
+   * статично, без намёка на обмен (ни пульса, ни контура, ни звука). Перерыв, предложенный приложением, —
+   * как по расписанию. Домен — `canExchange` шага перерыва.
+   */
+  exchangeAfter: { child_card: false, schedule: true, device_offer: true },
+  fullBoardWaiting: { animated: false, cue: false, sound: false },
 } as const;
 
 /* ───────────────── calm в ABA (V10, I-4) ───────────────── */
@@ -937,6 +1020,273 @@ export const abaCalm = {
   reinforcementPanel: 'outline_only',
   panelStroke: 3,
   maxFilledShare: 0.25,
+} as const;
+
+/* ───────────────── последствие пробы, плашка, пауза (Ц2.6, №160) ───────────────── */
+
+/**
+ * Фаза последствия пробы (Ц2.6.1, UX «важно» 8). **Всё время — от `markedAt`** (запись пробы, после
+ * `recordAbaTrial`), а не от `respondedAt`: ничего не рисуется до записи — показанный и не записанный жетон
+ * — отъём. Цель `markedAt − respondedAt` ≤ 1 с. Одна фаза на все исходы (`token_praise`, `participation`,
+ * `praise`, `neutral`, `listened`) — от `markedAt` до следующего SD.
+ *
+ * Карточка «перерыв» в фазе последствия **активна, без штриховки** (№160, пересматривает №106; штриховка
+ * Ц2.6.2 и правило 4 методиста в этой части отменены): касание — просьба запоминается, перерыв даётся
+ * вместо следующего SD (домен `requestBreakBetweenTrials`); плашка при этом доигрывает, ничего не обрывается.
+ * `praise` без жетона: плашки нет, экран не меняется, похвала только голосом в `praiseOnlyAtMs`.
+ */
+export const abaConsequence = {
+  timedFrom: 'markedAt',
+  markedAfterRespondedTargetMs: 1000,
+  drawnBeforeRecord: false,
+  breakCard: { active: true, hatched: false, onTap: 'defer_break_to_next_sd', interruptsOverlay: false },
+  praiseOnlyAtMs: 300,
+} as const;
+
+/**
+ * Плашка подкрепления (раздел 6, Ц2.6; Ц2.14 п. 2) — состояние экрана пробы, не отдельный экран. Ложится от
+ * верха доски до низа зоны стимула (`abaReinforcementOverlayHeight`): фиолетовый и стимул в одном кадре не
+ * встречаются. Полоса 68 и панель взрослого остаются. Внутри: поле 16 · Tali 88 (`cheer`, статично) · 16 ·
+ * крупная доска без силуэта (`abaBoardCell`, ≤ 64) · 16 · подпись `title` на 2 строки 72 · 16 = 288.
+ *
+ * Время от `markedAt` (Ц2.6.1; в цикле 1 было `respondedAt + 4000`): t 0 — плашка **сменой кадра**, новая
+ * ячейка пустая · 120 → 340 — жетон падает (`motion.base`), звук `token` в момент приземления · 700 — похвала
+ * `voice` (≤ 2 с) · 4000 — плашка уходит сменой кадра. Calm и reduce motion: жетон **появляется** в ячейке в
+ * t 120 без падения (короткий `token` в тот же кадр), похвала в t 500.
+ * Без подушки и **без отклика на тап** — ни сжатия, ни звука: сжатие обещало бы, что она нажимается.
+ * Кнопки «Дальше» нет: фаза кончается сама, ребёнку не нужен лишний тап на каждый жетон.
+ */
+export const abaReinforcementOverlay = {
+  from: 'tokenBoard',
+  to: 'stimulusBottom',
+  radius: radii.lg,
+  stroke: ABA_CONTROL_STROKE,
+  pad: 16,
+  tali: 88,
+  gap: 16,
+  caption: 72,
+  appears: 'cut',
+  holdFromMarkedMs: 4000,
+  tokenDropAtMs: 120,
+  tokenDropMs: motion.base,
+  tokenSound: 'on_landing',
+  tokenAppearsAtMsCalm: 120,
+  praiseAtMs: 700,
+  praiseAtMsCalm: 500,
+  praiseMaxMs: 2000,
+  nextButton: false,
+  panelStays: true,
+  topBarStays: true,
+  cushion: false,
+  reactsToTap: false,
+  tapPress: false,
+} as const;
+
+/** Высота содержимого плашки: поля, Tali, крупная доска (ячейка ≤ `largeMax`), подпись. */
+export const ABA_OVERLAY_CONTENT_HEIGHT =
+  abaReinforcementOverlay.pad * 2 +
+  abaReinforcementOverlay.tali +
+  abaReinforcementOverlay.gap * 2 +
+  abaTokenBoard.largeMax +
+  abaReinforcementOverlay.caption;
+
+/** Высота плашки в тире: от верха доски до низа зоны стимула. */
+export function abaReinforcementOverlayHeight(l: AbaLayoutSpec): number {
+  return l.tokenBoard + l.gapAfterBoard + l.instruction + l.hintBand + l.stimulus;
+}
+
+/** Момент приземления жетона на плашке от `markedAt` (звук `token`), мс: 120 + 220 = 340. */
+export function abaTokenLandingMs(): number {
+  return abaReinforcementOverlay.tokenDropAtMs + abaReinforcementOverlay.tokenDropMs;
+}
+
+/**
+ * Межпробная пауза (Ц2.14 п. 3): плашка ушла в 4000 → пустые белые плиты (рисунки возвращаются все сразу со
+ * следующим SD) → **следующий SD в `markedAt + 5000`** = `UNDO_WINDOW_MS` домена: окно отмены используется
+ * целиком, отмена не попадает в чужую пробу. У `neutral` и `praise` то же время.
+ */
+export const abaInterTrial = { ms: 1000, plates: 'empty_frames', nextSdAtMs: 5000 } as const;
+
+/**
+ * Момент следующего SD. Жетон, добавленный отменой (`tokenAdded`), отодвигает SD: не раньше чем через
+ * `gapToNextSdMs` после приземления в полосе (Ц2.6.3) — `max(markedAt + 5000, приземление + 1000)`. Просьба
+ * «перерыв» в фазе последствия ставит перерыв на место этого SD (№160).
+ */
+export function abaNextSdAt(markedAt: number, tokenAddedLandedAt?: number): number {
+  const base = markedAt + abaInterTrial.nextSdAtMs;
+  if (tokenAddedLandedAt === undefined) return base;
+  return Math.max(base, tokenAddedLandedAt + abaAdultPanel.undo.tokenAddedDrop.gapToNextSdMs);
+}
+
+/* ───────────────── звук (Ц2.1, №158) ───────────────── */
+
+/**
+ * Звук — второй канал того же события, а не украшение (Ц2.1, Ц2.14 п. 5). Только файлы из сборки
+ * (`expo-audio`), `playsInSilentMode`: беззвучный переключатель iPhone занятие не глушит, иначе подкрепление
+ * различалось бы не по процедуре. Громкость — доля системной, задаётся каналом, а не файлом; calm — × 0.5
+ * (`song` в calm — тихая музыка 0.25, `token` — короткий вариант файла).
+ *
+ * Приглушение сцены (`sceneDuck`): под фразой `voice` **и** под сигналом конца доступа (пункт 2 проверки
+ * цикла 2; 600 мс, `abaAccessScene.endCue`) сцена опускается до 0.3, в calm до 0.15 — сигнал «закругляемся»
+ * не тонет в барабане. Новый звук `token` / `cue` не стартует поверх незаконченного того же канала.
+ * `token` — **только** в момент приземления жетона в ячейку. «Звук выкл.» у родителя: звуковые позиции
+ * каталога не предлагаются, визуально ничего не дублируется (правило 7).
+ */
+export const abaSound = {
+  playsInSilentMode: true,
+  channels: { voice: 1, token: 0.7, scene: 0.6, cue: 0.5 },
+  calmFactor: 0.5,
+  songCalm: 0.25,
+  drumMax: 0.5,
+  drumMinIntervalMs: 250,
+  sceneDuck: { level: 0.3, levelCalm: 0.15, under: ['voice', 'access_end_cue'] },
+  sameChannelOverlap: false,
+  tokenOnlyOnLanding: true,
+  tokenCalmVariant: 'short',
+  offHidesSoundReinforcers: true,
+  offDuplicatesVisually: false,
+} as const;
+
+export type AbaSoundChannel = keyof typeof abaSound.channels;
+
+/** Громкость канала (доля системной) в режиме. */
+export function abaChannelVolume(channel: AbaSoundChannel, calm: boolean): number {
+  const v = abaSound.channels[channel];
+  return calm ? v * abaSound.calmFactor : v;
+}
+
+/* ───────────────── касание детских экранов ABA (пункт 4 проверки цикла 2) ───────────────── */
+
+/**
+ * Общее правило касания **выбора** на детских экранах ABA (плиты пробы, карточки подкрепителя, карточка
+ * «перерыв», «Вернуться»): выбор фиксируется **при отпускании внутри цели** со сдвигом пальца < 10 pt от
+ * точки касания; учитывается **только первый палец** (второй и следующие, пока первый лежит, — ничего, в
+ * том числе отклика); касание, **начатое до показа кадра** (палец лёг на прошлый кадр), не учитывается вовсе
+ * — ни выбора, ни отклика. Вид нажатия (сжатие, подушка) показывается с касания вниз и держится до
+ * отпускания, как раньше. Сцены доступа — не выбор: у них свой отклик (`abaAccessScene`), но правило
+ * первого пальца то же.
+ */
+export const abaChildTouch = {
+  scope: 'choice',
+  commitOn: 'touch_up_inside',
+  /** Сдвиг строго меньше: 10 pt и больше — не выбор. */
+  maxSlopPt: 10,
+  firstPointerOnly: true,
+  ignoreStartedBeforeFrame: true,
+  pressShownFrom: 'touch_down',
+} as const;
+
+/** Засчитывается ли касание как выбор (пункт 4 проверки цикла 2). */
+export function abaTouchCommits(t: {
+  startedAt: number;
+  frameShownAt: number;
+  pointerIndex: number;
+  endedInside: boolean;
+  slopPt: number;
+}): boolean {
+  if (t.startedAt < t.frameShownAt) return false;
+  if (abaChildTouch.firstPointerOnly && t.pointerIndex !== 0) return false;
+  return t.endedInside && t.slopPt < abaChildTouch.maxSlopPt;
+}
+
+/* ───────────────── выбор подкрепителя 2.3 и лист «Кто ведёт» (Ц2.3, Ц2.4) ───────────────── */
+
+/**
+ * Выбор подкрепителя — одно правило на 2.3, `reinforcerStale` и `choose` сопряжения (Ц2.4, Ц2.14 п. 6): **тап
+ * по карточке = выбор**, «Начать» и «Дальше» убраны. Тап — карточка вдавлена (подушка 0), контур 6 внутрь
+ * `controlInk` (16.73 / 14.40 к `controlFill`), силуэт у доски сменяется сразу; удержание 800 мс беззвучно;
+ * тап по другой за 800 мс — выбор переходит, удержание с начала; тап по выбранной — `selectedRepeatPress`,
+ * удержание **не** перезапускается; в конце — смена кадра на пробу (`motion.quick`, calm — без перехода).
+ *
+ * «Сам», 30 с без выбора: один повтор инструкции голосом и **один** одинаковый пульс трёх карточек сразу
+ * (1.04, `motion.base`; calm и reduce motion — без пульса; звук выкл. — только пульс); ещё 30 с — спокойный
+ * конец. Полосы взрослого в «Сам» нет. «Со взрослым», 30 с без выбора: полоса взрослого 88 на месте
+ * «Начать», первые 500 мс после появления без нажатий (вид обычный); пульса и голоса нет.
+ */
+export const abaReinforcerChoice = {
+  choiceOnTap: true,
+  startButton: false,
+  holdMs: 800,
+  holdSound: false,
+  selected: { cushion: 0, stroke: stroke.bold, strokeColor: 'controlInk', inset: true },
+  silhouetteSwap: 'immediate',
+  otherTapDuringHold: 'moves_choice_restarts_hold',
+  repeatTap: { scale: selectedRepeatPress.scale, restartsHold: false },
+  transitionMs: motion.quick,
+  transitionCalm: 'cut',
+  sameRuleOn: ['reinforcer_choice', 'reinforcer_stale', 'pairing_choose'],
+  aloneNoChoiceMs: [30_000, 60_000],
+  aloneRepeat: { voice: 1, pulse: { scale: 1.04, durationMs: motion.base, count: 1, together: true }, pulseCalm: false },
+  aloneAdultStrip: false,
+  adultStripHeight: 88,
+  adultStripLockMs: 500,
+  adultStripLockLooksDisabled: false,
+} as const;
+
+/**
+ * Лист «Кто ведёт» (Ц2.3, блокер UX 2; Ц2.14 п. 7): «Начать» — в шапке листа, ≥ 112×48, далеко от «Начать»
+ * 2.6 (обе привязаны к низу, разрыв не зависит от устройства). Высота 402 из блоков `blocks`; слот подписи
+ * «Как в прошлый раз» зарезервирован и без предвыбора — шапка не прыгает от сессии к сессии.
+ *
+ * **500 мс без нажатий — от последнего отпускания пальца** в любом месте листа и скрима (пункт 1 проверки
+ * цикла 2), а не от открытия: от открытия быстрые тапы после ~720 мс переставляли роль и «обучен». Каждое
+ * отпускание, засчитанное или нет, перезапускает отсчёт; первый отсчёт — не раньше, чем лист встал на место
+ * (открытие `motion.base` 220 не входит) — отпускание «Начать» 2.6 случилось до этого. Вид в блокировке
+ * обычный — мигание «недоступна → доступна» взрослому ничего не говорит. Скрим лист не закрывает.
+ */
+export const abaWhoLeadsSheet = {
+  startPlacement: 'header',
+  blocks: { pad: 16, header: 48, gapAfterHeader: 16, heading: 30, gapCaption: 8, caption: 20, gapRows: 16, rows: 3 * 56, toggle: 56, bottom: 24 },
+  height: 402,
+  startMinWidth: 112,
+  captionSlotReserved: true,
+  lockMs: 500,
+  lockFrom: 'last_touch_up',
+  lockScope: 'sheet_and_scrim',
+  lockNotBefore: 'sheet_settled',
+  lockLooksDisabled: false,
+  scrimDismiss: false,
+} as const;
+
+/**
+ * Принимает ли лист касание, начатое в `touchDownAt` (пункт 1 проверки цикла 2): с момента, как лист встал, и
+ * с последнего отпускания пальца до него прошло не меньше `lockMs`.
+ */
+export function abaWhoLeadsAccepts(touchDownAt: number, settledAt: number, prevTouchUpAt: number | null): boolean {
+  const from = Math.max(settledAt, prevTouchUpAt ?? settledAt);
+  return touchDownAt - from >= abaWhoLeadsSheet.lockMs;
+}
+
+/* ───────────────── доступ к подкрепителю: сцена и конец (Ц2.8) ───────────────── */
+
+/**
+ * Сцена доступа (Ц2.8, блокер UX 1; Ц2.14 п. 8). Вся сцена — зона касания: любой одиночный тап даёт
+ * видимый отклик ≤ 300 мс (первый кадр движения ≤ 100 мс); объекты — зона ≥ 60 даже при меньшем рисунке;
+ * жест только дополняет тап; мультитач — первый палец (`abaChildTouch`).
+ *
+ * Конец: за 5 с — `cue` «закругляемся» 600 мс, сцена под ним приглушена (`abaSound.sceneDuck`, пункт 2
+ * проверки цикла 2); при выключенном звуке — ничего, конец несёт кольцо. В T сцена больше не начинает
+ * новое на тап. **Доигрывание ≤ 3 с** (пункт 5 проверки цикла 2): `song` дозвучивает такт, затухая в
+ * последние 500 мс; остальные звуки затухают за 500 мс от T; деталь `puzzle4` под пальцем в момент T уходит
+ * на место. Затем кольцо исчезает мгновенно, через 1000 мс — следующий шаг без перехода. Время ребёнка
+ * (`durationMs`) не урезается.
+ */
+export const abaAccessScene = {
+  tapResponseMs: 300,
+  firstFrameMs: 100,
+  minTarget: touch.min,
+  gesture: 'adds_to_tap',
+  endCue: { beforeEndMs: 5000, ms: 600, channel: 'cue', duckScene: true },
+  newOnTapAfterEnd: false,
+  settleMaxMs: 3000,
+  settle: {
+    song: { finishBar: true, fadeLastMs: 500 },
+    others: { fadeMs: 500 },
+    puzzle4HeldPiece: 'goes_home',
+  },
+  ringHiddenAfterSettle: true,
+  endSettleMs: 1000,
+  durationTrimmed: false,
 } as const;
 
 /* ───────────────── рутины самообслуживания (Г8) ───────────────── */
