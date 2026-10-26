@@ -61,12 +61,16 @@ export const MATCH_SAME_3: AbaTarget = {
     ex('e1', [o('pear'), o('plane'), o('umbrella')]),
     ex('e2', [o('carrot'), o('mitten'), o('pyramid')]),
     ex('e3', [o('boat'), o('sock'), o('apple')]),
-    ex('g1', [o('teapot'), o('hat'), o('car')], 'generalization', 'adult_f'),
-    ex('g2', [o('key'), o('book'), o('spoon')], 'generalization', 'adult_m'),
+    // перенос — на предметах, которых не было ни в одном обучении лестницы
+    ex('g1', [o('chair'), o('flower'), o('cup')], 'generalization', 'adult_f'),
+    ex('g2', [o('tree'), o('bus'), o('bell')], 'generalization', 'adult_m'),
   ],
 };
 
-/** Форма: все одного цвета (`ABA_SHAPE_FILL`) и размера — отличает только форма. */
+/**
+ * Форма: одна заливка на поле и один размер — отличает только форма. В одно поле не ставятся квадрат с ромбом и
+ * круг с кольцом (`ABA_SHAPE_NOT_TOGETHER`); перенос — другой заливкой (`-alt`).
+ */
 export const MATCH_SHAPE: AbaTarget = {
   ...base,
   id: 'match-shape',
@@ -74,14 +78,14 @@ export const MATCH_SHAPE: AbaTarget = {
   prerequisiteTargetIds: ['match-same-3'],
   exemplars: [
     ex('e1', [s('circle'), s('square'), s('triangle')]),
-    ex('e2', [s('square'), s('ring'), s('rhombus')]),
-    ex('e3', [s('circle'), s('triangle'), s('ring')]),
-    ex('g1', [s('rhombus'), s('circle'), s('square')], 'generalization', 'adult_f'),
-    ex('g2', [s('triangle'), s('ring'), s('rhombus')], 'generalization', 'adult_m'),
+    ex('e2', [s('triangle'), s('ring'), s('square')]),
+    ex('e3', [s('circle'), s('triangle'), s('rhombus')]),
+    ex('g1', [s('square-alt'), s('ring-alt'), s('triangle-alt')], 'generalization', 'adult_f'),
+    ex('g2', [s('circle-alt'), s('rhombus-alt'), s('triangle-alt')], 'generalization', 'adult_m'),
   ],
 };
 
-/** Цвет: одна форма одного размера; первое поле — синий и киноварь; зелёный с пурпурным — не вместе. */
+/** Цвет: одна форма одного размера; первое поле — синий и киноварь; зелёный с пурпурным — не вместе; перенос — на квадрате. */
 export const MATCH_COLOR: AbaTarget = {
   ...base,
   id: 'match-color',
@@ -91,8 +95,8 @@ export const MATCH_COLOR: AbaTarget = {
     ex('e1', [c('blue'), c('vermilion')]),
     ex('e2', [c('blue'), c('green')]),
     ex('e3', [c('vermilion'), c('purple')]),
-    ex('g1', [c('blue'), c('purple')], 'generalization', 'adult_f'),
-    ex('g2', [c('vermilion'), c('green')], 'generalization', 'adult_m'),
+    ex('g1', [c('blue-sq'), c('purple-sq')], 'generalization', 'adult_f'),
+    ex('g2', [c('vermilion-sq'), c('green-sq')], 'generalization', 'adult_m'),
   ],
 };
 

@@ -9,6 +9,7 @@
  */
 import { promptLadder } from './abaPrompting';
 import { MAX_DELAY_MS, type AbaArea, type AbaExemplar, type AbaFormat, type AbaSdKind, type AbaTarget } from '../types/aba';
+import type { AgeBand } from '../types/task';
 
 /** Экземпляров на цель: меньше трёх — учит одной картинке, больше пяти — не нужно. */
 export const EXEMPLARS = { min: 3, max: 5 } as const;
@@ -80,11 +81,10 @@ function matchErrors(t: AbaTarget): string[] {
     }
     if (t.exemplars.some((e) => !cats?.includes(e.category ?? ''))) errors.push('у предмета сортировки нет категории из двух');
     if (t.exemplars.some((e) => !e.image)) errors.push('у предмета сортировки нет картинки');
-    // выбор из двух: при блоке 5 «4 из 5» угадывается в 18,75%, при блоке 10 «8 из 10» — в 5,5%
-    if (t.band !== '5-6' && t.blockSize !== 10) errors.push('сортировка с полосы 7 — блоком 10');
     return errors;
   }
   if (t.fieldSize === undefined) errors.push('у match нет размера поля (fieldSize)');
+  // выбор из двух — и сортировка, и поле 2 (`aba-pedagogy-specialist` 2026-10-26, п. 7) — проверен ниже, в targetErrors
   else if (t.band === '5-6' && t.fieldSize > 3) errors.push(`поле ${t.fieldSize} на полосе 5–6, не больше 3`);
   for (const e of t.exemplars) {
     if (!e.cards || e.cards.length !== t.fieldSize) errors.push(`у экземпляра ${e.id} карточек ${e.cards?.length ?? 0}, нужно ${t.fieldSize}`);
@@ -176,8 +176,26 @@ function includesErrors(t: AbaTarget, byId: ReadonlyMap<string, AbaTarget>): str
 }
 
 /** Что не так с целью. Пустой список — цель годится для сессии. */
+/**
+ * Выбор из двух (`match` с полем 2, сортировка): при блоке 5 «4 из 5» угадывается в 18,75%, при блоке 10 «8 из 10» —
+ * в 5,5%. На полосе 5–6 — блок 5 (сессия малыша — 12–14 проб), с полосы 7 — блок 10.
+ */
+function twoChoiceBlock(t: Pick<AbaTarget, 'format' | 'sdKind' | 'fieldSize' | 'matchMode'>, band: AgeBand): 5 | 10 | null {
+  if (promptLadder(t) !== 'two_choice') return null;
+  return band === '5-6' ? 5 : 10;
+}
+
+/**
+ * Цель под полосу ребёнка: полоса из профиля (`band`), а блок выбора из двух — по полосе (`twoChoiceBlock`).
+ * Контент пишется под самую строгую полосу 5–6; подставляет загрузчик и `withParamsBand`.
+ */
+export function targetForBand(t: AbaTarget, band: AgeBand): AbaTarget {
+  return { ...t, band, blockSize: twoChoiceBlock(t, band) ?? t.blockSize };
+}
+
 export function targetErrors(t: AbaTarget): string[] {
   const errors: string[] = [];
+  if (t.band !== '5-6' && twoChoiceBlock(t, t.band) === 10 && t.blockSize !== 10) errors.push('выбор из двух с полосы 7 — блоком 10');
   const teaching = t.exemplars.filter((e) => e.role === 'teaching');
   const general = t.exemplars.filter((e) => e.role === 'generalization');
 

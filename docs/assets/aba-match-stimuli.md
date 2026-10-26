@@ -1,4 +1,4 @@
-# Партия: стимулы ABA `match`, ступень 1 (18 предметов)
+# Партия: стимулы ABA `match`, ступень 1 (24 предмета)
 
 Скилл `asset-pipeline`. Цели — `talentia-mobile/src/content/aba/match-level1.ts`, стимулы — `src/content/aba/stimuli.ts`,
 реестр — `ABA_OBJECT_ART` в `src/assets/registry.ts` (сейчас все `null`, экран рисует заглушку-силуэт).
@@ -38,6 +38,12 @@ no text, children's picture-book applique look, palette: #3FC08A #2FA24E #0E8FBF
 | `aba-obj-mitten.svg` | рукавица | a single knitted mitten, blue with white pattern band | ждём |
 | `aba-obj-pyramid.svg` | пирамидка | a toy stacking ring pyramid, rings in green, blue, pink, red | ждём |
 | `aba-obj-sock.svg` | носок | a single striped sock, blue and white stripes | ждём |
+| `aba-obj-chair.svg` | стул (перенос) | a simple wooden chair, brown with cream seat, three-quarter view | ждём |
+| `aba-obj-flower.svg` | цветок (перенос) | a single daisy-like flower with green stem and two leaves | ждём |
+| `aba-obj-cup.svg` | чашка (перенос) | a cup with a handle, pink with white dots | ждём |
+| `aba-obj-tree.svg` | дерево (перенос) | a small round green tree with brown trunk | ждём |
+| `aba-obj-bus.svg` | автобус (перенос) | a small city bus, blue with white windows, side view | ждём |
+| `aba-obj-bell.svg` | колокольчик (перенос) | a small hand bell, blue-grey with cream handle | ждём |
 
 **Приёмка** — по скиллу: `npm run assets:check -- scripts/input`, затем глазами (плотность узором, прозрачный
 фон на цветной подложке, контур как у соседних, силуэт на 24 px). Принятое — в

@@ -188,4 +188,10 @@ export const ABA_OBJECT_ART: Record<string, Svg | null> = {
   'aba-obj-mitten': null,
   'aba-obj-pyramid': null,
   'aba-obj-sock': null,
+  'aba-obj-chair': null,
+  'aba-obj-flower': null,
+  'aba-obj-cup': null,
+  'aba-obj-tree': null,
+  'aba-obj-bus': null,
+  'aba-obj-bell': null,
 };

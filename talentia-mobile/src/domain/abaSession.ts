@@ -107,7 +107,7 @@ import {
   type TokenBoard,
   type TokenSchedule,
 } from './abaTokens';
-import { programErrors, targetErrors } from './abaTargetRules';
+import { programErrors, targetErrors, targetForBand } from './abaTargetRules';
 import { pick, seeded, shuffle } from './abaRandom';
 import {
   buildTrialStep,
@@ -580,7 +580,7 @@ function overdue(s: AbaTargetState, sessionIndex: number): number {
 function withParamsBand(input: StartInput): StartInput {
   const band = input.params?.paramsBand;
   if (!band || band === input.band) return input;
-  return { ...input, band, targets: input.targets.map((t) => ({ ...t, band })) };
+  return { ...input, band, targets: input.targets.map((t) => targetForBand(t, band)) };
 }
 
 /** Форма ответа: касанием, голосом или телом. */
@@ -1738,6 +1738,8 @@ export function recordTrial(
   const target = state.targets[input.targetId] ?? state.targets[expected.targetId];
   const targetState = state.states[target.id];
   const countsHere = COUNTS_TOWARD_MASTERY[input.scoredBy];
+  // «Сам»: взрослого нет — его повторов инструкции быть не может (`aba-pedagogy-specialist` 2026-10-26, п. 10в)
+  if (state.config === 'alone' && (input.sdRepeats?.adult ?? 0) > 0) return { ok: false, errors: ['в «Сам» повторов взрослого нет'] };
   const checked = scoreAgainst(input, expected, state.sessionId, state.targets[expected.targetId].format);
   if (!checked.ok) return { ok: false, errors: checked.errors };
   const full = checked.full;

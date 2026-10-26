@@ -5,14 +5,15 @@
 import { ABA_OBJECT_ART } from '../../assets/registry';
 import { abaColors } from '../../design/abaTokens';
 import { reinforcerPoolFor } from '../../domain/abaReinforcerCatalog';
-import { programErrors, targetErrors } from '../../domain/abaTargetRules';
+import { programErrors, targetErrors , targetForBand } from '../../domain/abaTargetRules';
 import { EXCHANGE_ACCESS_MS } from '../../domain/abaTokenTraining';
 import { MIN_REINFORCER_POOL } from '../../domain/abaTokens';
 import ru from '../../i18n/locales/ru.json';
 import en from '../../i18n/locales/en.json';
-import { MATCH_COLOR, MATCH_LEVEL1 } from '../aba/match-level1';
+import { MATCH_COLOR, MATCH_LEVEL1 , MATCH_SHAPE } from '../aba/match-level1';
 import { REINFORCERS } from '../aba/reinforcers';
-import { ABA_COLOR_NOT_TOGETHER, ABA_STIMULI } from '../aba/stimuli';
+import { ABA_COLOR_NOT_TOGETHER, ABA_SHAPE_FILL, ABA_SHAPE_NOT_TOGETHER, ABA_STIMULI } from '../aba/stimuli';
+import { abaTargetReady, ABA_TARGETS, readyAbaTargets } from '../aba';
 
 const byId = new Map(ABA_STIMULI.map((s) => [s.id, s]));
 const cardsOf = (t: (typeof MATCH_LEVEL1)[number]) => t.exemplars.flatMap((e) => e.cards ?? []);
@@ -75,8 +76,32 @@ describe('стимулы', () => {
   });
 });
 
+describe('перенос и различимость (aba-pedagogy-specialist 2026-10-26)', () => {
+  it('в переносе — только стимулы, которых не было ни в одном обучении лестницы', () => {
+    const taught = new Set(MATCH_LEVEL1.flatMap((t) => t.exemplars.filter((e) => e.role === 'teaching').flatMap((e) => e.cards ?? [])));
+    for (const t of MATCH_LEVEL1) {
+      for (const e of t.exemplars.filter((x) => x.role === 'generalization')) expect(e.cards!.filter((id) => taught.has(id))).toEqual([]);
+    }
+  });
+
+  it('формы: квадрат с ромбом и круг с кольцом — не в одном поле; заливка одна на поле', () => {
+    for (const e of MATCH_SHAPE.exemplars) {
+      const items = e.cards!.map((id) => byId.get(id)!);
+      const shapes = items.map((x) => (x.kind === 'shape' ? x.shape : ''));
+      for (const [a, b] of ABA_SHAPE_NOT_TOGETHER) expect(shapes.includes(a) && shapes.includes(b)).toBe(false);
+      expect(new Set(items.map((x) => (x.kind === 'shape' ? x.fill : ''))).size).toBe(1);
+    }
+  });
+
+  it('заливка форм — не из цветов-целей', () => {
+    const targetHex = new Set(ABA_STIMULI.flatMap((x) => (x.kind === 'color' ? [x.hex.toUpperCase()] : [])));
+    for (const f of Object.values(ABA_SHAPE_FILL)) expect(targetHex.has(f.toUpperCase())).toBe(false);
+  });
+});
+
 describe('пул подкрепителей для программы', () => {
-  const classes = [...new Set(MATCH_LEVEL1.flatMap(cardsOf).map((id) => byId.get(id)!.class))];
+  // худший случай — классы стимулов всех целей ABA-контента (у ребёнка программа — смесь целей)
+  const classes = [...new Set(ABA_TARGETS.flatMap(cardsOf).map((id) => byId.get(id)!.class))];
   const ACCESS = [...new Set(Object.values(EXCHANGE_ACCESS_MS))];
 
   it('классы стимулов не пересекаются с классами каталога', () => {
@@ -90,4 +115,27 @@ describe('пул подкрепителей для программы', () => {
       expect(reinforcerPoolFor(REINFORCERS, { ...f, stimulusClasses: classes }).length).toBeGreaterThanOrEqual(MIN_REINFORCER_POOL);
     },
   );
+});
+
+describe('допуск цели к сессии и полоса', () => {
+  it('предметы без картинки — цель не допускается; формы и цвета рисует код', () => {
+    expect(abaTargetReady(MATCH_SHAPE)).toBe(true);
+    expect(abaTargetReady(MATCH_LEVEL1[0])).toBe(false);
+    const allArt = Object.fromEntries(ABA_STIMULI.map((x) => [x.id, x.kind === 'object' ? {} : null]));
+    expect(MATCH_LEVEL1.every((t) => abaTargetReady(t, allArt))).toBe(true);
+  });
+
+  it('лестница: пока не готовы «одинаковые», форма и цвет тоже закрыты (предпосылка)', () => {
+    expect(readyAbaTargets().map((t) => t.id)).toEqual([]);
+    const allArt = Object.fromEntries(ABA_STIMULI.map((x) => [x.id, {}]));
+    expect(readyAbaTargets(ABA_TARGETS, allArt).map((t) => t.id)).toEqual(ABA_TARGETS.map((t) => t.id));
+  });
+
+  it.each(['7', '8', '9-10'] as const)('полоса %s: выбор из двух — блоком 10, поле 3 — как было; правила цели соблюдены', (band) => {
+    for (const t of ABA_TARGETS) {
+      const b = targetForBand(t, band);
+      expect(b.blockSize).toBe(t.fieldSize === 2 ? 10 : t.blockSize);
+      expect(targetErrors(b)).toEqual([]);
+    }
+  });
 });
