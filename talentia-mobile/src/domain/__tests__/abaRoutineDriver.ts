@@ -52,7 +52,7 @@ export const racq = (over: Partial<AbaTargetState> = {}): AbaTargetState => ({
 
 export function rstart(state: AbaTargetState | undefined, d: string, over: Partial<RoutineRunInput> = {}): RoutineRunState {
   return startRoutineRun({
-    runId: `run-${d}`,
+    runId: `run-${d.replace(/-/g, "x")}`,
     day: d,
     target: RT,
     state,

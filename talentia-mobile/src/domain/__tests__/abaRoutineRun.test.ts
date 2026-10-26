@@ -113,7 +113,7 @@ const settle = (
 
 function start(state: AbaTargetState | undefined, d: string, over: Partial<RoutineRunInput> = {}): RoutineRunState {
   return startRoutineRun({
-    runId: `run-${d}`,
+    runId: `run-${d.replace(/-/g, "x")}`,
     day: d,
     target: R,
     state,
@@ -1290,7 +1290,7 @@ describe('Д3: «Отказ» в звене — тихая пауза с под�
 describe('В5: висящий прогон', () => {
   it('старт при незаписанном свёрнутом прогоне бросает', () => {
     const pending = play(start(acq(), day(3)), ['ok']);
-    expect(() => start(acq(), day(3), { runId: 'other', pending })).toThrow(/Не записан прогон run-2026-10-03/);
+    expect(() => start(acq(), day(3), { runId: 'other', pending })).toThrow(/Не записан прогон run-2026x10x03/);
     expect(start(acq(), day(3), { pending: null }).kind).toBe('teaching');
   });
 

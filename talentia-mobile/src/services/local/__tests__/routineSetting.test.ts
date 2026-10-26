@@ -116,7 +116,7 @@ describe('Т1: итог сразу после последнего звена', 
     const { result } = await runT1(db, racq(), rday(1), ['break', 'ok', 'ok', 'ok']);
     expect(result.breakRequests).toEqual({ requests: 1, ended: false });
     const card = await loadChildState(db, 'kid', 'breakCard');
-    expect(card?.routineRequests).toEqual([{ runId: 'run-2026-10-01', day: rday(1), requests: 1, ended: false }]);
+    expect(card?.routineRequests).toEqual([{ runId: 'run-2026x10x01', day: rday(1), requests: 1, ended: false }]);
     expect([card?.acquired, card?.acquiredVia]).toEqual([true, 'in_trial']);
     expect((await targetR(db))?.routineBreakdowns).toBeUndefined();
   });

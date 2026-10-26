@@ -11,7 +11,7 @@ import type { RoutineRunResult, RoutineRunState } from '../../../domain/abaRouti
 import type { AbaSessionResult, AbaSessionState } from '../../../domain/abaSession';
 import { initialTokenTraining, type TokenTrainingState } from '../../../domain/abaTokenTraining';
 import type { ConsentEvent } from '../../../domain/consent';
-import { appendReinforcerChoice, appendRoutineRun, appendTrialCorrection, routineExchangedSince } from '../abaLog';
+import { abaIdGuard, appendReinforcerChoice, appendRoutineRun, appendTrialCorrection, routineExchangedSince } from '../abaLog';
 import { saveChildState } from '../childState';
 import { commitAbaSession, commitIoa, commitRoutineRun, recordAbaTrial, recordRoutineStep, setAbaObservers } from '../commit';
 import { appendConsentEvent } from '../consentLog';
@@ -350,6 +350,13 @@ describe('время записи прогона рутины (appendRoutineRun)
 // --- идентификаторы, из которых читается время (раунд 3, В11) ----------------------------------
 
 describe('экспорт специалисту: идентификаторы со временем заменены метками', () => {
+  // подстраховка для данных, записанных до гарда записи: здесь id со временем пишутся нарочно
+  beforeAll(() => {
+    abaIdGuard.enabled = false;
+  });
+  afterAll(() => {
+    abaIdGuard.enabled = true;
+  });
   const V7_SESSION = '018f3b5e-7c2a-7d3e-9a1b-2c4d5e6f7a8b';
   const V7_TRIAL = '018f3b5e-7c2b-7d3e-9a1b-2c4d5e6f7a8c';
   const ULID_RUN = '01ARZ3NDEKTSV4RRFFQ69G5FAV';

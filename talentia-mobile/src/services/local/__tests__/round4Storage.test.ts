@@ -208,9 +208,10 @@ describe('выборы подкрепителя: экспорт (В6)', () => {
     const { db, picks } = await twoRoutineExchanges();
     const spec = await exportForSpecialist(db, 'kid', '2026-10-19T00:00:00Z');
     const choices = spec.abaReinforcerChoices as Record<string, unknown>[];
-    // id прогона несёт дату — он алиасится, и той же меткой, что у прогона в экспорте
+    // sourceId выбора — тот же id, что у прогона в экспорте (id со временем запись не пропускает — `abaIdGuard`,
+    // а замену меткой для старых данных проверяет specialistExport.test.ts)
     const runIds = (spec.abaRoutineRuns as { id: string }[]).map((r) => r.id);
-    expect(runIds.join()).not.toMatch(/2026/);
+    expect(runIds.join()).not.toMatch(/\d{4}-\d{2}-\d{2}/);
     expect(choices).toEqual([
       { order: 1, day: rday(1), source: 'routine', sourceId: runIds[0], reinforcerId: picks[0], chosenBy: 'child', tokens: 5, boardSize: 5 },
       { order: 2, day: rday(2), source: 'routine', sourceId: runIds[1], reinforcerId: picks[1], chosenBy: 'adult', tokens: 5, boardSize: 5 },
@@ -226,8 +227,8 @@ describe('выборы подкрепителя: экспорт (В6)', () => {
     const { db } = await twoRoutineExchanges();
     const exp = (await exportChild(db, 'kid', '2026-10-19T00:00:00Z', {})).abaReinforcerChoices as { chosenAt: string; tokens: number; sourceId: string }[];
     expect(exp.map((c) => [c.sourceId, c.chosenAt, c.tokens])).toEqual([
-      ['run-2026-10-01', '2026-10-12T10:00:00.000Z', 5],
-      ['run-2026-10-02', '2026-10-12T09:00:00.000Z', 5],
+      ['run-2026x10x01', '2026-10-12T10:00:00.000Z', 5],
+      ['run-2026x10x02', '2026-10-12T09:00:00.000Z', 5],
     ]);
   });
 });

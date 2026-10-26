@@ -80,7 +80,7 @@ const mastered = (over: Partial<AbaTargetState> = {}): AbaTargetState => ({
   ...over,
 });
 
-function start(state: AbaTargetState | undefined, d: string, runId = `run-${d}`): RoutineRunState {
+function start(state: AbaTargetState | undefined, d: string, runId = `run-${d.replace(/-/g, "x")}`): RoutineRunState {
   return startRoutineRun({
     runId,
     day: d,

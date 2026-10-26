@@ -16,6 +16,7 @@
  * Обе ошибки — штатный ход, а не сбой: в отчёты об ошибках их не отправлять, само сообщение
  * связывает устройство с ABA-режимом (ABA.md, «Согласие `aba_processing`»).
  */
+import { leaksTime } from '../../domain/ids';
 import { COUNTS_TOWARD_MASTERY, type AbaIoaRecord, type AbaRoutineRun, type AbaSession, type AbaTrial } from '../../types/aba';
 import { trialInvariantErrors, type SessionTrials } from '../../domain/abaPrompting';
 import { isGranted } from '../../domain/consent';
@@ -154,7 +155,26 @@ export function recordedAtIso(at: string): string {
   return d.toISOString();
 }
 
+/**
+ * Идентификатор записи ABA, из которого читается время (UUID v1/v6/v7, ULID, метка, дата), не пишется: в
+ * экспорт специалисту ушёл бы режим дня ребёнка (В11, №95, №96). Экраны берут id из `newAbaId()`
+ * (`services/abaIds.ts`, UUIDv4); короткие id кода и тестов (`s`, `tr-1`) времени не несут и проходят.
+ */
+export const abaIdGuard = {
+  /**
+   * Выключается только в тестах подстраховки экспорта (`specialistExport.test.ts`): там нарочно пишутся id
+   * со временем — как данные, записанные до гарда, — чтобы проверить, что экспорт их заменит метками.
+   */
+  enabled: true,
+};
+
+function assertNoTimeInIds(what: string, ...ids: (string | undefined)[]): void {
+  if (!abaIdGuard.enabled) return;
+  for (const id of ids) if (id !== undefined && leaksTime(id)) throw new Error(`${what}: из id «${id}» читается время — нужен newAbaId()`);
+}
+
 export async function appendTrial(db: SqlDb, childId: string, trial: AbaTrial, recordedAt: string): Promise<void> {
+  assertNoTimeInIds('Проба', trial.id, trial.sessionId);
   const errors = trialInvariantErrors(trial);
   if (errors.length) throw new Error(`Проба ${trial.id} не записана: ${errors.join('; ')}`);
   await db.run(
@@ -164,6 +184,7 @@ export async function appendTrial(db: SqlDb, childId: string, trial: AbaTrial, r
 }
 
 export async function appendSession(db: SqlDb, childId: string, session: AbaSession, recordedAt: string): Promise<void> {
+  assertNoTimeInIds('Сессия', session.id);
   await db.run(
     'INSERT INTO aba_sessions (child_id, id, session_index, body, recorded_at) VALUES (?, ?, ?, ?, ?)',
     [childId, session.id, session.index, JSON.stringify(session), recordedAtIso(recordedAt)],
@@ -172,6 +193,7 @@ export async function appendSession(db: SqlDb, childId: string, session: AbaSess
 
 /** Прогон рутины — кирпич для `commit.ts` (раунд 2, Р3). */
 export async function appendRoutineRun(db: SqlDb, childId: string, run: AbaRoutineRun, recordedAt: string): Promise<void> {
+  assertNoTimeInIds('Прогон', run.id);
   await db.run(
     'INSERT INTO aba_routine_runs (child_id, id, target_id, day, body, recorded_at) VALUES (?, ?, ?, ?, ?, ?)',
     [childId, run.id, run.targetId, run.day, JSON.stringify(run), recordedAtIso(recordedAt)],
@@ -228,6 +250,7 @@ export type TrialCorrectionRow = {
 
 /** Исправление отметки — кирпич для `commit.ts`: только дописывание, причина одна, без свободного текста. */
 export async function appendTrialCorrection(db: SqlDb, childId: string, c: TrialCorrectionRow, recordedAt: string): Promise<void> {
+  assertNoTimeInIds('Исправление', c.trialId, c.replacementId, c.sessionId);
   await db.run(
     `INSERT INTO aba_trial_corrections
        (child_id, trial_id, replacement_id, session_id, recorded_at, ms_since_original, from_response, to_response, token_kept, token_added, reason)
@@ -374,6 +397,7 @@ export async function pastSessionsOfTarget(
 
 /** Запись IOA — отдельный журнал (вносится после сессии). Кирпич для `commit.ts`. */
 export async function appendIoa(db: SqlDb, childId: string, record: AbaIoaRecord, recordedAt: string): Promise<void> {
+  assertNoTimeInIds('IOA', record.id, record.sessionId);
   await db.run('INSERT INTO aba_ioa (child_id, id, session_id, body, recorded_at) VALUES (?, ?, ?, ?, ?)', [
     childId,
     record.id,
