@@ -130,3 +130,40 @@
 - Текст №150: срок идёт от последней активности, не от начала паузы — «12 месяцев без занятий — данные о ходе
   удалятся» → `localization-qa`, `child-privacy-compliance`.
 - Картинки — скилл `asset-pipeline`; тесты `observingPrompted` и склейки 150 мс → `qa-engineer`.
+
+## Журнал пробы `match` (`aba-pedagogy-specialist` 2026-10-27)
+
+**`endedAt` у предъявления `match` = max(конец аудио или визуала предъявления, касание образца).** Не коснулись
+образца — конец аудио SD (у L1 — конец его сигнала). `promptDelayMs` тикает от касания образца: варианты становятся
+SD для выбора только после него, иначе при задержке 1000 мс L1 приходила бы раньше, чем выбрать вообще можно.
+Касание образца во время аудио SD — `observingLatencyMs = 0`, варианты активны с конца аудио. Таймер наблюдения
+(5000) — от конца SD, в домене это не окно. `latencyMs` — от касания образца до выбора; от конца SD до выбора =
+`observingLatencyMs + latencyMs`.
+
+Сценарии (t 0 — начало SD, аудио SD до 1,5, d = 2000, окно 5000; `уровень [startedAt→endedAt] windowMs outcome @respondedAt`):
+
+| | presentationLog | поля пробы | итог |
+|---|---|---|---|
+| а | L0 [0→2,5] 2000 correct @4,0, activity | obsLat 1000, chosen = образец, tap 2 | independent |
+| б | L0 [0→2,5] 2000 none; L1 [4,5→5,3] 5000 correct @6,0 | obsLat 1000 | prompted L1; L1 не раньше 2,5 + d |
+| в | L0 [0→1,5] 2000 none; L1 [6,5→8,0] 5000 correct @9,2 (8,0 — касание образца) | `observingPrompted`, obsLat 6500 | prompted L1 |
+| г | L0 [0→1,5] 2000 none; L1 [6,5→7,3] 5000 none; закрыта 12,3 | `observingPrompted`, obsLat null | no_response L1 |
+| д | L0 [0→2,5] 2000 incorrect @3,4 | chosen = дистрактор | incorrect; обучение — закрыта, дальше коррекция очередью домена |
+| е | (L1+) L0 none; L1 [4,5→5,3] none; adult L1 [6,0→6,0] 5000 correct @6,6 | — | prompted, `adultUnplannedPrompt`; **на L0 не пишется** (см. ниже) |
+| ж | текущее: refusal **без** `respondedAt` | — | interrupted / assent |
+| з | текущее: child_break, `respondedAt` = касание карточки, ≤ endedAt + window | — | interrupted / child_break |
+| и | поле 2: L0 → L1 → L3 (L2 нет) | — | — |
+
+Измерительные пробы: L1 наблюдения нет (`allowEscalation = false`), не коснулись за 5000 — no_response. Старт L1+:
+отдельный L1 наблюдения не записывается, не коснулись за 5000 — none, дальше `nextEscalation`. Время — один
+монотонный источник.
+
+**Где мешает домен (заморожен №134):**
+1. «Была подсказка» на L0 отклоняет `trialInvariantErrors` (`abaPrompting.ts`) — не применять проверку задержки при
+   `adultUnplannedPrompt`. До правки такую пробу не писать и предъявить заново.
+2. Карточка «перерыв» в пробеле наблюдения (после конца SD + d, до 5000, образца не коснулись) — «ответ после окна»;
+   до правки — без `respondedAt`. Правка: `observedAt?` у `AbaPresentation` для `match`.
+3. **Блокер:** `correctionLevel` не учитывает лестницу — при поле 2 коррекция стартует с L2, `promptVisualFor` бросает.
+   Правка: округлять вверх до уровня лестницы.
+4. Пробы с `observingPrompted` идут как «ждал подсказку» — растёт задержка и ложный `prompt_dependent`; исключить их
+   из этих расчётов.
