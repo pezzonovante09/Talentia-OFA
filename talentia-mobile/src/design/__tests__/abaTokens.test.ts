@@ -344,12 +344,12 @@ describe('уровни подсказки без цвета', () => {
     expect(promptVisual.match[2].activeChoices).toBe('correct_and_one');
   });
 
-  it('пульс — один раз, коротко, только на L1 match', () => {
+  it('пульс — один раз, коротко, только над образцом match (L1–L3 до касания образца, №163)', () => {
     expect(PROMPT_PULSE.count).toBe(1);
     expect(PROMPT_PULSE.durationMs).toBe(motion.slow);
     expect(PROMPT_PULSE.scale).toBeLessThanOrEqual(1.06);
     const pulsing = formats.flatMap((f) => levels.filter((l) => promptVisual[f][l].pulse).map((l) => `${f}${l}`));
-    expect(pulsing).toEqual(['match1']);
+    expect(pulsing).toEqual(['match1', 'match2', 'match3']);
   });
 
   it('неактивная плита приглушена штриховкой, а не прозрачностью, и не реагирует', () => {

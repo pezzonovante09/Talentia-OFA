@@ -125,6 +125,10 @@ export default function ParentHome() {
         <Row first kind="value" label={t('parent.home.bandRow')} value={profile.band.replace('-', '–')} onPress={() => router.push({ pathname: '/parent/profile/[childId]', params: { childId: profile.childId } })} testID="row-settings" />
       </Card>
 
+      <Card title={t('parent.aba.title')} testID="card-aba">
+        <Row first kind="link" label={t('parent.aba.homeRow')} onPress={() => router.push('/parent/aba')} testID="row-aba" />
+      </Card>
+
       <Card title={t('parent.home.data')} testID="card-data">
         <Row first kind="link" label={t('parent.home.consents')} onPress={() => router.push('/parent/consents')} testID="row-consents" />
         <Row kind="link" label={t('parent.home.deletion')} onPress={() => router.push('/parent/data')} testID="row-data" />

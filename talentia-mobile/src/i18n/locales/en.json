@@ -547,6 +547,52 @@
       "recheck": "Date fixed — check again",
       "stillAhead": "The date is still far ahead. Check it in the phone settings.",
       "stale": "The date changed again. Check it and confirm once more."
+    },
+    "aba": {
+      "title": "ABA sessions",
+      "homeRow": "Step-by-step practice with an adult",
+      "session": "Session",
+      "status": {
+        "ready": "Ready to start",
+        "no_consent": "Consent to practice data is needed",
+        "outdated": "The consent text changed — please read it",
+        "paused": "Paused",
+        "in_progress": "A session is not finished",
+        "pairing_needed": "First, getting to know tokens — a short session without tasks",
+        "no_ready_targets": "Targets are waiting for pictures",
+        "pool_small": "Not enough rewards to choose from — turn sound on"
+      },
+      "readConsent": "Read the consent",
+      "start": "Start session",
+      "startPairing": "Start getting to know tokens",
+      "continue": "Continue session",
+      "finishWithout": "Finish without continuing",
+      "unpauseToStart": "Turn off the pause to start",
+      "consentCard": "Consent",
+      "consentRow": "Practice data processing",
+      "consentStatus": {
+        "granted": "Active",
+        "not_asked": "Not asked",
+        "outdated": "Text changed",
+        "revoked": "Revoked"
+      },
+      "pause": "Pause",
+      "pauseRow": "Pause the practice",
+      "pauseRetention": "If there are no sessions for 12 months, practice progress data is deleted.",
+      "specialist": "For a specialist",
+      "exportRow": "File for a specialist",
+      "exportCaption": "The file has tasks, prompts and session results, without the name. Copies given to a specialist are not deleted by the app.",
+      "exportLater": "The file will come later, with the cloud copy.",
+      "revoke": "Revoke and delete practice data",
+      "revokeTitle": "Revoke consent?",
+      "revokeBody": "All of this child's practice records on the device are deleted: tasks, prompts, tokens and targets. They cannot be restored. Copies given to a specialist are not deleted by the app.",
+      "revokeButton": "Revoke and delete",
+      "consentTitle": "Consent to practice data",
+      "consentBody": "Draft. To run the step-by-step practice, the app records on this device how sessions go: which tasks, how many prompts were needed, tokens and breaks. These records can show features of the child's development. Nothing goes online. You can revoke consent at any time — the practice records are then deleted. Final text follows legal review.",
+      "localOnly": "Only on this device",
+      "agree": "I agree",
+      "notNow": "Not now",
+      "version": "Text {{version}}"
     }
   },
   "region": {
@@ -570,5 +616,27 @@
       "matchSame": "Find the same one",
       "matchWhere": "Where is the same one?"
     }
+  },
+  "abaSession": {
+    "config": {
+      "with_adult": "With an adult",
+      "alone": "On my own"
+    },
+    "aloneCaption": "Some tasks are only with an adult",
+    "start": "Start",
+    "back": "Back",
+    "tooSmallTitle": "The screen is too small for the session",
+    "tooSmallBody": "Close the second window or reduce the display size in the phone settings.",
+    "regularLessons": "Regular lessons",
+    "exit": "Leave the session",
+    "exitHint": "Hold to leave",
+    "whoLeads": "Who leads the session?",
+    "asLastTime": "Same as last time",
+    "role": {
+      "specialist": "Centre specialist",
+      "parent": "Parent",
+      "other_adult": "Another adult"
+    },
+    "trained": "Trained by a specialist"
   }
 }

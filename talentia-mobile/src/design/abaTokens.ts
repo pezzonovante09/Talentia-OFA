@@ -826,8 +826,9 @@ export const promptVisual: {
   match: {
     0: NO_PROMPT,
     1: { ...NO_PROMPT, mark: 'chevron_open', markOn: 'source', markSize: 32, pulse: true },
-    2: { ...NO_PROMPT, activeChoices: 'correct_and_one' },
-    3: { ...NO_PROMPT, activeChoices: 'correct_only' },
+    // №163: метка и пульс над образцом держатся и на L2–L3, пока образца не коснулись (подсказки накапливаются)
+    2: { ...NO_PROMPT, mark: 'chevron_open', markOn: 'source', markSize: 32, pulse: true, activeChoices: 'correct_and_one' },
+    3: { ...NO_PROMPT, mark: 'chevron_open', markOn: 'source', markSize: 32, pulse: true, activeChoices: 'correct_only' },
   },
   single: {
     0: NO_PROMPT,

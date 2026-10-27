@@ -15,7 +15,8 @@ import { deleteChildEverywhere, finishDeviceWipe, wipeAccountEverywhere } from '
 import { WIPE_PENDING_KEY } from '../../../src/services/local/device';
 import { deleteLocalDb } from '../../../src/services/local/expoSqlite';
 import { buildTime } from '../../../src/services/local/buildInfo';
-import { clearChildProgress, confirmClockJump, runRetention, StaleClockConfirmationError } from '../../../src/services/local/purge';
+import { abaConsentTextVersion } from '../../../src/services/local/abaConsent';
+import { clearChildProgress, confirmClockJump, revokeAbaProcessing, runRetention, StaleClockConfirmationError } from '../../../src/services/local/purge';
 import { randomBytes } from '../../../src/services/random';
 import { useAccount } from '../../../src/state/account';
 import { useChildSession } from '../../../src/state/childSession';
@@ -25,12 +26,13 @@ import { useParentView, useSelectedProfile } from '../../../src/state/parentView
 import { ConfirmPinSheet } from '../../../src/ui/parent/ConfirmPinSheet';
 import { Card, ParentButton, ParentScreen, ParentText } from '../../../src/ui/parent/primitives';
 
-type Action = 'clear_progress' | 'delete_child' | 'delete_account' | 'clock_jump';
+type Action = 'clear_progress' | 'delete_child' | 'delete_account' | 'clock_jump' | 'aba_revoke';
 const KEYS: Record<Action, { title: string; body: string; button: string }> = {
   clear_progress: { title: 'parent.data.confirmClearTitle', body: 'parent.data.confirmClearBody', button: 'parent.data.clearProgress' },
   delete_child: { title: 'parent.data.confirmChildTitle', body: 'parent.data.confirmChildBody', button: 'parent.data.deleteChild' },
   delete_account: { title: 'parent.data.confirmAccountTitle', body: 'parent.data.confirmAccountBody', button: 'parent.data.deleteAccount' },
   clock_jump: { title: 'parent.clock.title', body: 'parent.clock.body', button: 'parent.clock.confirm' },
+  aba_revoke: { title: 'parent.aba.revokeTitle', body: 'parent.aba.revokeBody', button: 'parent.aba.revokeButton' },
 };
 
 export default function ConfirmScreen() {
@@ -105,6 +107,15 @@ export default function ConfirmScreen() {
           useAccount.setState({ retentionHold: again.kind === 'held' ? again : null });
           setFailure(t('parent.clock.stale'));
         }
+      } else if (kind === 'aba_revoke' && profile) {
+        // отзыв — только вместе с удалением данных практики (ABA.md «Согласие aba_processing»)
+        const lang = i18n.language === 'en' ? 'en' : 'ru';
+        await revokeAbaProcessing(
+          db,
+          { id: uuidV4(randomBytes), scope: 'aba_processing', action: 'revoke', childId: profile.childId, textVersion: abaConsentTextVersion(lang), confirmedBy: 'pin', actorId: accountId, at: new Date().toISOString() },
+          'owner',
+        );
+        router.back();
       } else if (kind === 'delete_account') {
         await wipeAccountEverywhere({ db, device: device(), accountId, deleteDbFile: () => deleteLocalDb(accountId), deliverRevocations: async () => true });
         // Сначала переход: гейт при `status: 'none'` держит открытыми только setup/policy/done.
@@ -140,7 +151,7 @@ export default function ConfirmScreen() {
         <Card>
           <ParentText role="body">{t(keys.body, vars)}</ParentText>
           {kind === 'clock_jump' && hold !== null && hold.abaGoalsChildren > 0 && <ParentText role="body">{t('parent.clock.abaGoals', vars)}</ParentText>}
-          {kind !== 'clear_progress' && kind !== 'clock_jump' && (
+          {kind !== 'clear_progress' && kind !== 'clock_jump' && kind !== 'aba_revoke' && (
             <ParentText role="caption" color="textMuted">
               {t('parent.data.remains')}
             </ParentText>

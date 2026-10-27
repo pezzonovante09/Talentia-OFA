@@ -16,7 +16,7 @@ import { reinforcerPoolFor } from '../../domain/abaReinforcerCatalog';
 import { sessionSignals, type SessionSignal, type SignalSession } from '../../domain/abaBarriers';
 import { initialTokenTraining, workingBoardSize, EXCHANGE_ACCESS_MS } from '../../domain/abaTokenTraining';
 import { boardRevOf, MIN_REINFORCER_POOL } from '../../domain/abaTokens';
-import type { AbaSessionState, StartInput } from '../../domain/abaSession';
+import { finishAbaSession, stopSession, type AbaSessionState, type StartInput } from '../../domain/abaSession';
 import type { RandomBytes } from '../../domain/ids';
 import { targetForBand } from '../../domain/abaTargetRules';
 import type { AbaConfig, AbaObserver, AbaTarget } from '../../types/aba';
@@ -25,7 +25,7 @@ import { newAbaId } from '../abaIds';
 import { randomSeed } from '../random';
 import { pastSessionsOfTarget, reinforcerHistoryOf, sessionsOf, trialsOfSession } from './abaLog';
 import { loadChildState } from './childState';
-import { routineExchangeInSessionWindow } from './commit';
+import { commitAbaSession, routineExchangeInSessionWindow } from './commit';
 import { readConsentLog } from './consentLog';
 import type { SqlDb } from './sql';
 
@@ -162,4 +162,17 @@ export async function loadFinishInputs(db: SqlDb, childId: string, state: AbaSes
     signalHistory: { sessions, previous },
     extra: { routineExchangeInWindow: await routineExchangeInSessionWindow(db, childId, state) },
   };
+}
+
+/**
+ * «Закончить без продолжения» у родителя: незаконченное занятие закрывается остановкой взрослого — без закрывающей
+ * пробы и без жетона за участие (`stopSession`), итог пишется как обычно.
+ */
+export async function finishInProgressSession(db: SqlDb, childId: string, now: number): Promise<boolean> {
+  const inProgress = await loadChildState(db, childId, 'abaSessionInProgress');
+  if (!inProgress) return false;
+  const stopped = stopSession(inProgress, 'adult_stopped', now);
+  const f = await loadFinishInputs(db, childId, stopped);
+  await commitAbaSession(db, childId, finishAbaSession(stopped, now, f.pastSessions, undefined, f.signalHistory, f.extra), new Date(now).toISOString());
+  return true;
 }
