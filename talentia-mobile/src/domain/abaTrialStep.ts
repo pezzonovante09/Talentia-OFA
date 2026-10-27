@@ -4,6 +4,7 @@
  * подсказывать, просить ли взрослого о L4, доделывает ли звено взрослый. Одна функция на обоих,
  * иначе звено цепочки в сессии и в рутине разойдётся (методист, раунд 2, Р3).
  */
+import { MATCH_OBSERVING_MS } from '../types/aba';
 import {
   APP_MAX_PROMPT,
   VOICE_VOLUME_HOLD_MS,
@@ -214,8 +215,22 @@ export function scoreAgainst(
     chainStep: Boolean(expected.stepId),
     promptDelayMs: expected.promptDelayMs,
     responseWindowMs: expected.responseWindowMs,
+    ...(format === 'match' ? { observingWindowMs: MATCH_OBSERVING_MS } : {}),
+    sdEndedAt: input.sdEndedAt,
   });
   if (!scored.ok) return { ok: false, errors: scored.errors };
+  // флаг наблюдения согласован с журналом: старт L0, второе предъявление — L1 приложения не раньше конца SD + 5000
+  // (флаг выкидывает пробу из детектора зависимости и роста задержки — ложный стоил бы данных, №163)
+  if (input.observingPrompted) {
+    const l1 = input.presentationLog[1];
+    const ok =
+      input.startPromptLevel === 0 &&
+      l1 !== undefined &&
+      l1.by === 'app' &&
+      l1.level === 1 &&
+      Date.parse(l1.startedAt) >= Date.parse(input.sdEndedAt) + MATCH_OBSERVING_MS;
+    if (!ok) return { ok: false, errors: ['подсказка к образцу не согласована с журналом'] };
+  }
   // образца не коснулись вовремя — дана L1, самостоятельной проба быть не может
   if (input.observingPrompted && scored.fields.response === 'independent') {
     return { ok: false, errors: ['после подсказки к образцу проба не бывает самостоятельной'] };

@@ -785,13 +785,16 @@ export function promptVisualFor(
     if (!id) throw new Error(sort ? 'у пробы сортировки нет предмета' : 'у пробы match нет образца');
     return plan({ focus: { on: sort ? 'item' : 'sample', id, pulse: true } });
   }
+  // подсказки накапливаются (№163, проверка 2026-10-27): метка и пульс над образцом держатся на L2–L3 тоже, пока
+  // образца не коснулись (снимает экран) — иначе ребёнку, которому нужна именно реакция наблюдения, её убирали бы
+  const sampleFocus = target.matchMode === 'sort' || !trial.sampleId ? null : { on: 'sample' as const, id: trial.sampleId, pulse: true };
   if (shown === 2) {
     if (promptLadder(target) === 'two_choice') throw new Error('у выбора из двух уровня L2 нет: «оставить два» ничего не убирает');
     const distractor = pick(
       all.filter((id) => id !== trial.correctId),
       seeded(seed).rng,
     );
-    return plan({ activeChoiceIds: all.filter((id) => id === trial.correctId || id === distractor) });
+    return plan({ focus: sampleFocus, activeChoiceIds: all.filter((id) => id === trial.correctId || id === distractor) });
   }
-  return plan({ activeChoiceIds: [trial.correctId] });
+  return plan({ focus: sampleFocus, activeChoiceIds: [trial.correctId] });
 }

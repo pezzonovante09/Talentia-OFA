@@ -45,7 +45,8 @@ describe('Р5: подсказка на экране выбора', () => {
       expect(p.activeChoiceIds).toHaveLength(2);
       expect(p.activeChoiceIds).toContain('b');
       expect(p.highlightCorrect).toBe(false);
-      expect(p.focus).toBeNull();
+      // метка над образцом держится до касания (№163): подсказки накапливаются
+      expect(p.focus).toEqual({ on: 'sample', id: 's', pulse: true });
       // позиции не меняются — порядок как на экране
       expect(p.activeChoiceIds).toEqual(three.choiceIds.filter((id) => p.activeChoiceIds.includes(id)));
       // тот же seed (восстановление сессии) — тот же дистрактор
@@ -56,7 +57,7 @@ describe('Р5: подсказка на экране выбора', () => {
   });
 
   it('match: L3 — активен только верный, не выделен', () => {
-    expect(promptVisualFor(match3, 3, three, 1)).toMatchObject({ focus: null, activeChoiceIds: ['b'], highlightCorrect: false });
+    expect(promptVisualFor(match3, 3, three, 1)).toMatchObject({ focus: { on: 'sample', id: 's', pulse: true }, activeChoiceIds: ['b'], highlightCorrect: false });
     expect(promptVisualFor(match2, 3, two, 1)).toMatchObject({ activeChoiceIds: ['b'] });
   });
 

@@ -48,6 +48,13 @@ export type ScoreContext = {
   /** Окно первого предъявления при старте L0 в обучении и переносе — это задержка до подсказки. */
   promptDelayMs: number | null;
   responseWindowMs: number;
+  /**
+   * `match`: окно наблюдения (`MATCH_OBSERVING_MS`) — до касания образца проба ещё идёт, даже когда окно выбора
+   * первого предъявления уже кончилось бы. Граница карточки «перерыв» (№163).
+   */
+  observingWindowMs?: number;
+  /** Конец SD пробы (`sdEndedAt`): от него `msSinceSd` (у `match` конец первого предъявления — касание образца). */
+  sdEndedAt?: string;
 };
 
 const RESPONSES: ReadonlySet<PresentationOutcome> = new Set(['correct', 'approximation', 'incorrect']);
@@ -123,9 +130,10 @@ function logErrors(log: readonly AbaPresentation[], ctx: ScoreContext): string[]
       const at = ms(p.respondedAt);
       // нажатие во время аудио относится к этому предъявлению: латентность 0
       if (Number.isNaN(at) || at < ms(p.startedAt)) errors.push(`предъявление ${i + 1}: ответ раньше предъявления`);
-      // карточка «перерыв» — не ответ и не привязана к окну: «в любой момент пробы», в том числе в пробеле
-      // наблюдения `match` до касания образца (№163)
-      if (p.outcome !== 'child_break' && at > ms(p.endedAt) + p.windowMs) errors.push(`предъявление ${i + 1}: ответ после окна`);
+      // карточка «перерыв» — не ответ: в любой момент пробы, пока проба идёт, в том числе в пробеле наблюдения
+      // `match` до касания образца; после конца пробы — нет: молчание не превращается в прерывание (№163)
+      const window = p.outcome === 'child_break' ? Math.max(p.windowMs, ctx.observingWindowMs ?? 0) : p.windowMs;
+      if (at > ms(p.endedAt) + window) errors.push(`предъявление ${i + 1}: ответ после окна`);
       if (!last && ms(log[i + 1].startedAt) < at) errors.push(`предъявление ${i + 1}: следующее началось раньше ответа`);
     }
     if (!last) {
@@ -240,7 +248,7 @@ export function scoreTrial(
       latencySource: latencyMs === null ? null : LATENCY_SOURCE[ctx.scoredBy],
       ...(unplanned ? { adultUnplannedPrompt: true as const } : {}),
       ...(interruptedBy ? { interruptedBy } : {}),
-      ...(interruptedBy === 'child_break' && last.respondedAt !== undefined ? { msSinceSd: Math.max(0, ms(last.respondedAt!) - ms(log[0].endedAt)) } : {}),
+      ...(interruptedBy === 'child_break' && last.respondedAt !== undefined ? { msSinceSd: Math.max(0, ms(last.respondedAt!) - ms(ctx.sdEndedAt ?? log[0].endedAt)) } : {}),
       ...(last.outcome === 'adult_completed' ? { adultCompleted: true as const } : {}),
     },
   };
