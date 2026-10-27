@@ -638,6 +638,12 @@
       "parent": "Parent",
       "other_adult": "Another adult"
     },
-    "trained": "Trained by a specialist"
+    "trained": "Trained by a specialist",
+    "chooseTitle": "What are we playing for today?",
+    "adultChooses": "The child isn’t choosing — choose for them",
+    "endedToday": "All done for today",
+    "done": "Done",
+    "tali": "Tali, your helper",
+    "accessScene": "Play"
   }
 }

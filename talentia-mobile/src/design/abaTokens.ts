@@ -1258,6 +1258,21 @@ export function abaWhoLeadsAccepts(touchDownAt: number, settledAt: number, prevT
   return touchDownAt - from >= abaWhoLeadsSheet.lockMs;
 }
 
+/**
+ * Сопряжение (раздел 3, предложение 8): карточка выбранного 160 · 24 · ряд «Tali 88 · 16 · ячейка 64». Выбор тапом
+ * (`abaReinforcerChoice`), обмен без кнопки «Получить!»: жетон лежит в ячейке 600 мс и уходит в карточку.
+ */
+export const abaPairingLayout = {
+  cardSize: 160,
+  tali: 88,
+  cell: abaTokenBoard.largeMax,
+  gapCardRow: 24,
+  gapTaliCell: 16,
+  choiceOnTap: true,
+  exchangeButton: false,
+  exchangeDelayMs: 600,
+} as const;
+
 /* ───────────────── доступ к подкрепителю: сцена и конец (Ц2.8) ───────────────── */
 
 /**
