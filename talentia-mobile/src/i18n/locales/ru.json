@@ -592,7 +592,8 @@
       "localOnly": "Только на этом устройстве",
       "agree": "Согласен",
       "notNow": "Не сейчас",
-      "version": "Текст {{version}}"
+      "version": "Текст {{version}}",
+      "revokeCount": "Занятий: {{sessions}}, проб: {{trials}}."
     }
   },
   "region": {

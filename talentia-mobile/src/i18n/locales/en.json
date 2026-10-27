@@ -592,7 +592,8 @@
       "localOnly": "Only on this device",
       "agree": "I agree",
       "notNow": "Not now",
-      "version": "Text {{version}}"
+      "version": "Text {{version}}",
+      "revokeCount": "Sessions: {{sessions}}, trials: {{trials}}."
     }
   },
   "region": {

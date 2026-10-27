@@ -1,7 +1,7 @@
 /**
  * Главный экран родителя (`app/parent/index.tsx`): редиректы без профилей и при устаревшем согласии;
  * с профилем — имя, «За неделю», «Освоено», «Даётся тяжело» из локальной базы; сегменты при двух
- * детях; строки настроек и данных ведут в свои роуты.
+ * детях; строки настроек, данных и «Занятий ABA» ведут в свои роуты.
  */
 import ParentHome from '../index';
 import { emptySkill } from '../../../src/domain/mastery';
@@ -143,6 +143,14 @@ describe('с профилем', () => {
     expect(router.push).toHaveBeenCalledWith('/parent/profile/new');
     await fireEvent.press(screen.getByTestId('parent-done'));
     expect(router.dismissAll).toHaveBeenCalled();
+  });
+
+  it('карточка «Занятия ABA»: строка «Пошаговая практика со взрослым» ведёт в /parent/aba', async () => {
+    await render();
+    expect(within(screen.getByTestId('card-aba')).getByText('Занятия ABA')).toBeTruthy();
+    expect(screen.getByTestId('row-aba').props.accessibilityLabel).toBe('Пошаговая практика со взрослым');
+    await fireEvent.press(screen.getByTestId('row-aba'));
+    expect(router.push).toHaveBeenCalledWith('/parent/aba');
   });
 
   it('строка настроек показывает полосу ребёнка с длинным тире', async () => {

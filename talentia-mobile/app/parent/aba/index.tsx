@@ -3,8 +3,8 @@
  * решение владельца 2026-10-27, флага режима в профиле нет). Иерархия: «Занятие» с единственной залитой кнопкой →
  * согласие → пауза со строкой №150 → файл для специалиста → отзыв. Всё про выбранного ребёнка.
  */
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -34,9 +34,12 @@ export default function AbaParentScreen() {
     if (!db || !childId) return;
     setOv(await abaOverview(db, childId));
   }, [db, childId]);
-  useEffect(() => {
-    void reload();
-  }, [reload]);
+  // согласие и отзыв уходят назад через `router.back()` — этот экран остаётся смонтированным, читать на фокус
+  useFocusEffect(
+    useCallback(() => {
+      void reload();
+    }, [reload]),
+  );
 
   /** Действие за свежим PIN: окно свежести ещё открыто — сразу, иначе лист. */
   const guarded = (action: SensitiveAction, run: () => void) => (can(action) ? run() : setPending({ action, run }));
@@ -51,7 +54,8 @@ export default function AbaParentScreen() {
 
   if (!profile || !db) return null;
   const block = ov ? abaBlockOf(ov) : null;
-  const granted = ov?.consent === 'granted';
+  // текст согласия обновился — данные практики на устройстве остаются, пауза и отзыв доступны (ABA.md: другого пути отзыва нет)
+  const hasData = ov?.consent === 'granted' || ov?.consent === 'outdated';
   const status = !ov ? '' : t(`parent.aba.status.${block ?? 'ready'}`);
 
   const setPaused = (paused: boolean) =>
@@ -101,21 +105,21 @@ export default function AbaParentScreen() {
           <Row first kind="value" label={t('parent.aba.consentRow')} value={ov ? t(`parent.aba.consentStatus.${ov.consent}`) : ''} onPress={() => router.push('/parent/aba/consent')} testID="aba-consent-row" />
         </Card>
 
-        {granted && (
+        {hasData && (
           <Card title={t('parent.aba.pause')} testID="aba-pause">
             <Row
               first
               kind="toggle"
               label={t('parent.aba.pauseRow')}
               caption={t('parent.aba.pauseRetention')}
-              toggle={ov.paused}
+              toggle={ov!.paused}
               onToggle={(v) => (v ? setPaused(true) : guarded('aba_consent', () => setPaused(false)))}
               testID="aba-pause-toggle"
             />
           </Card>
         )}
 
-        {granted && (
+        {hasData && (
           <Card title={t('parent.aba.specialist')} testID="aba-specialist">
             <Row first kind="link" label={t('parent.aba.exportRow')} onPress={() => guarded('aba_export', () => setExportNote(true))} testID="aba-export" />
             <ParentText role="caption" color="textMuted" testID="aba-export-note">
@@ -124,7 +128,7 @@ export default function AbaParentScreen() {
           </Card>
         )}
 
-        {granted && (
+        {hasData && (
           <Card testID="aba-revoke-card">
             <Row first kind="destructive" label={t('parent.aba.revoke')} onPress={() => router.push({ pathname: '/parent/confirm/[action]', params: { action: 'aba_revoke' } })} testID="aba-revoke" />
           </Card>

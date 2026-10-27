@@ -5,7 +5,7 @@
  * `wipeAccountEverywhere` + файл базы; скачок часов (№147) — `confirmClockJump` по дате с листа.
  */
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -16,7 +16,7 @@ import { WIPE_PENDING_KEY } from '../../../src/services/local/device';
 import { deleteLocalDb } from '../../../src/services/local/expoSqlite';
 import { buildTime } from '../../../src/services/local/buildInfo';
 import { abaConsentTextVersion } from '../../../src/services/local/abaConsent';
-import { clearChildProgress, confirmClockJump, revokeAbaProcessing, runRetention, StaleClockConfirmationError } from '../../../src/services/local/purge';
+import { abaDataSummary, clearChildProgress, confirmClockJump, revokeAbaProcessing, runRetention, StaleClockConfirmationError } from '../../../src/services/local/purge';
 import { randomBytes } from '../../../src/services/random';
 import { useAccount } from '../../../src/state/account';
 import { useChildSession } from '../../../src/state/childSession';
@@ -47,6 +47,13 @@ export default function ConfirmScreen() {
   const [sheet, setSheet] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
+  // отзыв называет, что удалится, числом занятий и проб (ABA.md «Согласие aba_processing», направление §1)
+  const [abaCount, setAbaCount] = useState<{ sessions: number; trials: number } | null>(null);
+  const revokeChild = action === 'aba_revoke' ? (profile?.childId ?? null) : null;
+  useEffect(() => {
+    if (!revokeChild || !account.db) return;
+    void abaDataSummary(account.db, revokeChild).then((s) => setAbaCount({ sessions: s.sessions, trials: s.trials }), () => setAbaCount(null));
+  }, [revokeChild, account.db]);
 
   if (!action || !(action in KEYS)) return <Redirect href="/parent/data" />;
   // Без аккаунта сюда можно попасть только по ссылке (не во время удаления — тогда `busy`).
@@ -150,6 +157,11 @@ export default function ConfirmScreen() {
         </ParentText>
         <Card>
           <ParentText role="body">{t(keys.body, vars)}</ParentText>
+          {kind === 'aba_revoke' && abaCount && (
+            <ParentText role="body" testID="aba-revoke-count">
+              {t('parent.aba.revokeCount', abaCount)}
+            </ParentText>
+          )}
           {kind === 'clock_jump' && hold !== null && hold.abaGoalsChildren > 0 && <ParentText role="body">{t('parent.clock.abaGoals', vars)}</ParentText>}
           {kind !== 'clear_progress' && kind !== 'clock_jump' && kind !== 'aba_revoke' && (
             <ParentText role="caption" color="textMuted">
