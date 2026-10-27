@@ -180,7 +180,11 @@ export type SensitiveAction =
   | 'change_band'
   | 'grant_access'
   | 'transfer_ownership'
-  | 'delete_account';
+  | 'delete_account'
+  /** Занятия ABA (этап 11): согласие на данные, снятие паузы, продолжение и экспорт специалисту. */
+  | 'aba_consent'
+  | 'aba_resume'
+  | 'aba_export';
 
 /**
  * Чем подтверждается действие.
@@ -199,6 +203,9 @@ export const CONFIRMATION: Record<SensitiveAction, Confirmation> = {
   change_band: 'gate_fresh',
   grant_access: 'gate_fresh',
   transfer_ownership: 'gate_fresh',
+  aba_consent: 'gate_fresh',
+  aba_resume: 'gate_fresh',
+  aba_export: 'gate_fresh',
   /**
    * Временно, до облака (решение владельца 2026-10-25, проверка приватности): почты в локальной
    * версии нет, поэтому `gate_now` — PIN вводится на самом экране удаления, окно свежести не
