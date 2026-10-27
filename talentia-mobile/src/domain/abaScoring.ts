@@ -123,7 +123,9 @@ function logErrors(log: readonly AbaPresentation[], ctx: ScoreContext): string[]
       const at = ms(p.respondedAt);
       // нажатие во время аудио относится к этому предъявлению: латентность 0
       if (Number.isNaN(at) || at < ms(p.startedAt)) errors.push(`предъявление ${i + 1}: ответ раньше предъявления`);
-      if (at > ms(p.endedAt) + p.windowMs) errors.push(`предъявление ${i + 1}: ответ после окна`);
+      // карточка «перерыв» — не ответ и не привязана к окну: «в любой момент пробы», в том числе в пробеле
+      // наблюдения `match` до касания образца (№163)
+      if (p.outcome !== 'child_break' && at > ms(p.endedAt) + p.windowMs) errors.push(`предъявление ${i + 1}: ответ после окна`);
       if (!last && ms(log[i + 1].startedAt) < at) errors.push(`предъявление ${i + 1}: следующее началось раньше ответа`);
     }
     if (!last) {

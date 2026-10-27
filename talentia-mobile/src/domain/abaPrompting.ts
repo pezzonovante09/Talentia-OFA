@@ -205,7 +205,9 @@ export function correctionLevel(
   const ps = promptStateOf(s, failed.stepId);
   const floor = failed.response === 'incorrect' ? FIRST_ANSWER_LEVEL[target.format] : 1;
   const level = Math.max(floor, ps.lastSuccessfulPromptLevel, failed.promptLevelUsed + 1);
-  return clampToApp(Math.min(level, APP_MAX_PROMPT) as PromptLevel);
+  // уровень — из лестницы цели (№163): у выбора из двух L2 нет, коррекция с L2 уронила бы `promptVisualFor`
+  const onLadder = LADDER_LEVELS[promptLadder(target)].find((l) => l >= level) ?? APP_MAX_PROMPT;
+  return clampToApp(Math.min(onLadder, APP_MAX_PROMPT) as PromptLevel);
 }
 
 /**
@@ -337,7 +339,8 @@ export type FadeClass = 'at_start' | 'waited' | 'above' | 'approximation';
 export function fadeClass(t: AbaTrial): FadeClass {
   if (t.response === 'approximation') return 'approximation';
   if (FAILURE.has(t.response)) return 'above';
-  if (t.startPromptLevel === 0 && t.response === 'prompted' && t.promptLevelUsed === 1 && !t.emittedBeforePrompt) {
+  // L1 наблюдения `match` (образца не коснулись) — не «дождался подсказки» выбора (№163)
+  if (t.startPromptLevel === 0 && t.response === 'prompted' && t.promptLevelUsed === 1 && !t.emittedBeforePrompt && !t.observingPrompted) {
     return 'waited';
   }
   return t.promptLevelUsed > t.startPromptLevel ? 'above' : 'at_start';
@@ -418,7 +421,7 @@ function erredBeforePrompt(t: AbaTrial): boolean {
 export function applyBlockToDelay(s: AbaTargetState, target: AbaTarget, block: AbaTrial[]): AbaTargetState {
   if (target.delayMode !== 'progressive') return s;
   const trials = block.filter(
-    (t) => t.kind === 'teaching' && t.startPromptLevel === 0 && t.response !== 'interrupted' && !t.adultUnplannedPrompt,
+    (t) => t.kind === 'teaching' && t.startPromptLevel === 0 && t.response !== 'interrupted' && !t.adultUnplannedPrompt && !t.observingPrompted,
   );
   const byStep = new Map<string, AbaTrial[]>();
   for (const t of trials) byStep.set(t.stepId ?? '', [...(byStep.get(t.stepId ?? '') ?? []), t]);
@@ -512,7 +515,7 @@ function dependenceTrials(s: AbaTargetState, sessions: SessionTrials[]): AbaTria
       // перенос не в счёт: выборка условная (только после ошибки) — решение методиста 2026-10-01;
       // подсказка взрослого вне процедуры — не данные о ребёнке
       .filter(
-        (t) => t.kind === 'teaching' && t.startPromptLevel === 0 && t.response !== 'interrupted' && !t.adultUnplannedPrompt,
+        (t) => t.kind === 'teaching' && t.startPromptLevel === 0 && t.response !== 'interrupted' && !t.adultUnplannedPrompt && !t.observingPrompted,
       )
   );
 }
@@ -684,8 +687,10 @@ export function trialInvariantErrors(t: AbaTrial): string[] {
   if (t.response === 'independent' && t.latencyMs !== null && t.latencyMs > (t.promptDelayMs ?? t.responseWindowMs)) {
     errors.push('самостоятельный ответ позже первой подсказки');
   }
+  // подсказка взрослого вне процедуры приходит, когда пришла, а не по задержке (№163)
   if (
     t.response === 'prompted' &&
+    !t.adultUnplannedPrompt &&
     t.promptLevelUsed > t.startPromptLevel &&
     t.latencyMs !== null &&
     t.latencyFromFirstSdMs !== null &&
