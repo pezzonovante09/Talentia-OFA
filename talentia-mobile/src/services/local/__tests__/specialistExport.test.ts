@@ -9,11 +9,12 @@
 import type { AbaRoutineRun, AbaSession, AbaTargetState, AbaTrial } from '../../../types/aba';
 import type { RoutineRunResult, RoutineRunState } from '../../../domain/abaRoutineRun';
 import type { AbaSessionResult, AbaSessionState } from '../../../domain/abaSession';
+import type { PairingResult } from '../../../domain/abaPairing';
 import { initialTokenTraining, type TokenTrainingState } from '../../../domain/abaTokenTraining';
 import type { ConsentEvent } from '../../../domain/consent';
 import { abaIdGuard, appendReinforcerChoice, appendRoutineRun, appendTrialCorrection, routineExchangedSince } from '../abaLog';
 import { saveChildState } from '../childState';
-import { commitAbaSession, commitIoa, commitRoutineRun, recordAbaTrial, recordRoutineStep, setAbaObservers } from '../commit';
+import { commitAbaSession, commitIoa, commitPairingSession, commitRoutineRun, recordAbaTrial, recordRoutineStep, setAbaObservers } from '../commit';
 import { appendConsentEvent } from '../consentLog';
 import { exportChild, exportForSpecialist } from '../purge';
 import type { SqlDb } from '../sql';
@@ -145,6 +146,21 @@ const stepTrial = (id: string, over: Partial<AbaTrial> = {}): AbaTrial => ({
 });
 const inProgress = { runId: 'run-1', observers: [], primaryObserverId: null, done: 1 } as unknown as RoutineRunState;
 
+// --- сессия сопряжения (№164) ------------------------------------------------------------------
+
+const PAIRING_START = Date.parse('2026-10-11T06:10:00.000Z');
+const PAIRING_ID = '5a4b3c2d-1e0f-4a9b-8c7d-6e5f4a3b2c1d';
+const pairingResult: PairingResult = {
+  sessionId: PAIRING_ID,
+  config: 'with_adult',
+  endReason: 'completed',
+  cycles: 4,
+  startedAt: PAIRING_START,
+  endedAt: PAIRING_START + 245_000,
+  chosenBy: 'child',
+  choices: ['puzzle', 'bubbles', 'drum', 'puzzle'].map((reinforcerId, i) => ({ reinforcerId, by: 'child' as const, at: PAIRING_START + i * 61_000 + 7_000 })),
+};
+
 /** Все числа внутри значения. */
 function numbers(value: unknown): number[] {
   if (typeof value === 'number') return [value];
@@ -171,6 +187,8 @@ describe('экспорт специалисту: нет времени суто�
     // рутина последней: её жетон двигает доску, и записи сессии после неё потребовали бы возобновления
     await recordRoutineStep(db, 'kid', stepTrial('tr-r'), inProgress, NOW);
     await commitRoutineRun(db, 'kid', routineResult('run-1'), NOW);
+    // сопряжение (№164): запись и выборы с точным временем — под те же сквозные проверки
+    await commitPairingSession(db, 'kid', pairingResult, NOW, { primaryObserverId: OBSERVER });
     await asAbaWriter(db, 'kid', async (tx) => {
       await saveChildState(
         tx,
@@ -196,14 +214,17 @@ describe('экспорт специалисту: нет времени суто�
 
   it('фиксатор: выгрузка непустая — проверяемые разделы на месте и exportedAt остаётся как передан', async () => {
     const out = await exportForSpecialist(await richDb(), 'kid', '2026-10-12T13:37:00.000Z');
-    expect([out.abaTrials.length, out.abaSessions.length, out.abaIoa.length, out.abaRoutineRuns.length]).toEqual([3, 1, 1, 1]);
+    expect([out.abaTrials.length, out.abaSessions.length, out.abaIoa.length, out.abaRoutineRuns.length, out.abaPairingSessions.length]).toEqual([3, 1, 1, 1, 1]);
+    expect((out.abaReinforcerChoices as { source: string }[]).filter((c) => c.source === 'pairing')).toHaveLength(4);
     expect(out.exportedAt).toBe('2026-10-12T13:37:00.000Z');
     expect(Object.keys(out.state)).toEqual(expect.arrayContaining(['abaTargets', 'physicalPromptAllowed']));
   });
 
   it('в пробах и сессиях нет абсолютных миллисекунд эпохи', async () => {
     const out = await exportForSpecialist(await richDb(), 'kid', NOW);
-    expect(numbers([out.abaTrials, out.abaSessions, out.abaRoutineRuns]).filter((n) => Math.abs(n) > 1e11)).toEqual([]);
+    expect(
+      numbers([out.abaTrials, out.abaSessions, out.abaRoutineRuns, out.abaPairingSessions, out.abaReinforcerChoices]).filter((n) => Math.abs(n) > 1e11),
+    ).toEqual([]);
   });
 
   it('в выгрузке нет uuid наблюдателя', async () => {
