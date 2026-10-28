@@ -58,4 +58,30 @@ describe('каталог подкрепителей', () => {
       expect(three.includes('song') && three.includes('sing_together')).toBe(false);
     }
   });
+
+  it('№164: у позиции не больше одной пары — тройка из пяти кандидатов всегда набирается', () => {
+    const per = new Map<string, number>();
+    for (const [a, b] of apartPairs(REINFORCERS)) for (const id of [a, b]) per.set(id, (per.get(id) ?? 0) + 1);
+    expect([...per.values()].every((n) => n <= 1)).toBe(true);
+  });
+
+  it('№164: три варианта при любом пуле после фильтров и выборе, заблокированном «дважды подряд»', () => {
+    const apart = apartPairs(REINFORCERS);
+    for (const config of ['alone', 'with_adult'] as const) {
+      for (const soundOn of [false, true]) {
+        for (const accessMs of [20_000, 40_000, 60_000]) {
+          const pool = reinforcerPoolFor(REINFORCERS, { config, soundOn, accessMs, stimulusClasses: [] });
+          if (pool.length < 6) continue;
+          for (const blocked of pool) {
+            for (let seed = 1; seed <= 40; seed += 1) {
+              const three = reinforcerChoices(pool, [blocked, blocked], seeded(seed).rng, apart);
+              expect(three).toHaveLength(3);
+              expect(three).not.toContain(blocked);
+            }
+          }
+        }
+      }
+    }
+  });
 });
+

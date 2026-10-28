@@ -6,7 +6,7 @@
  * транзакции и закрывают его в той же транзакции. Без корзины и «7 дней на
  * восстановление»: данные ребёнка не держат в корзине.
  */
-import type { AbaIoaRecord, AbaObserver, AbaRoutineRun, AbaSession } from '../../types/aba';
+import type { AbaIoaRecord, AbaObserver, AbaPairingSession, AbaRoutineRun, AbaSession } from '../../types/aba';
 import type { ConsentEvent, GuardianRole } from '../../domain/consent';
 import { withAmendments, type RoutineRunAmendment } from './abaLog';
 import { ABA_DELETED_KEYS, ABA_STATE_KEYS, loadChildState } from './childState';
@@ -24,6 +24,7 @@ const JOURNALS = [
   'aba_reinforcer_choices',
   'aba_trial_corrections',
   'aba_routine_run_amendments',
+  'aba_pairing_sessions',
   'lesson_runs',
 ] as const;
 
@@ -75,6 +76,7 @@ const RETENTION_COLUMNS = [
   ['aba_reinforcer_choices', 'chosen_at'],
   ['aba_trial_corrections', 'recorded_at'],
   ['aba_routine_run_amendments', 'recorded_at'],
+  ['aba_pairing_sessions', 'recorded_at'],
   ['lesson_runs', 'started_at'],
 ] as const;
 
@@ -105,7 +107,8 @@ async function abaIdleChildren(tx: SqlDb, before: string): Promise<string[]> {
   )) {
     bump(r.child_id, r.at);
   }
-  for (const t of ['aba_trials', 'aba_sessions', 'aba_routine_runs']) {
+  // сопряжение — тоже занятие: ребёнок, у которого были только сессии сопряжения, не теряет состояние
+  for (const t of ['aba_trials', 'aba_sessions', 'aba_routine_runs', 'aba_pairing_sessions']) {
     for (const r of await tx.all<{ child_id: string; at: string }>(
       `SELECT child_id, MAX(recorded_at) AS at FROM ${t} GROUP BY child_id`,
     )) {
@@ -330,6 +333,7 @@ export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actor
       await tx.run('DELETE FROM aba_reinforcer_choices WHERE child_id = ?', [childId]);
       await tx.run('DELETE FROM aba_trial_corrections WHERE child_id = ?', [childId]);
       await tx.run('DELETE FROM aba_routine_run_amendments WHERE child_id = ?', [childId]);
+      await tx.run('DELETE FROM aba_pairing_sessions WHERE child_id = ?', [childId]);
       await tx.run(
         `DELETE FROM child_state WHERE child_id = ? AND key IN (${ABA_DELETED_KEYS.map(() => '?').join(', ')})`,
         [childId, ...ABA_DELETED_KEYS],
@@ -352,6 +356,7 @@ export async function abaDataSummary(
   ioaRecords: number;
   routineRuns: number;
   reinforcerChoices: number;
+  pairingSessions: number;
   observers: number;
   settings: boolean;
 }> {
@@ -369,6 +374,7 @@ export async function abaDataSummary(
     ioaRecords: await count('aba_ioa'),
     routineRuns: await count('aba_routine_runs'),
     reinforcerChoices: await count('aba_reinforcer_choices'),
+    pairingSessions: await count('aba_pairing_sessions'),
     observers: observers?.length ?? 0,
     settings: settings.n > 0,
   };
@@ -401,6 +407,8 @@ export type ChildExport = {
   abaRoutineRunAmendments: unknown[];
   /** История выборов подкрепителя (по порядку выбора), с жетонами обмена рутины. */
   abaReinforcerChoices: unknown[];
+  /** Сессии сопряжения (№164): конфигурация, исход, циклы, кто выбирал. */
+  abaPairingSessions: unknown[];
   /** Исправления отметок взрослого: исходные пробы остаются в `abaTrials`, замены — отдельными строками. */
   abaTrialCorrections: unknown[];
   lessonRuns: unknown[];
@@ -466,6 +474,7 @@ async function collectExport(
     abaRoutineRuns: await bodies('aba_routine_runs'),
     abaRoutineRunAmendments: await bodies('aba_routine_run_amendments'),
     abaReinforcerChoices: await choicesOf(db, childId),
+    abaPairingSessions: await bodies('aba_pairing_sessions'),
     abaTrialCorrections: await correctionsOf(db, childId),
     lessonRuns: await bodies('lesson_runs'),
     state,
@@ -559,10 +568,15 @@ export type SpecialistExport = {
    */
   abaRoutineRuns: unknown[];
   /**
-   * Выборы подкрепителя по порядку (раунд 4, В6): `day`, `order`, `source`, `sourceId`, `reinforcerId`,
-   * `chosenBy`, `tokens`, `boardSize`. Без предложенных вариантов и времени суток.
+   * Выборы подкрепителя по порядку (раунд 4, В6): `day`, `order`, `source` (`session` · `routine` · `pairing`),
+   * `sourceId`, `reinforcerId`, `chosenBy`, `tokens`, `boardSize`. Без предложенных вариантов и времени суток.
    */
   abaReinforcerChoices: unknown[];
+  /**
+   * Сессии сопряжения (№164): `day`, `durationSec`, конфигурация, исход, циклы, кто выбирал; ведущий наблюдатель —
+   * меткой. Без `startedAt` / `endedAt`: время суток — режим дня дома (№96).
+   */
+  abaPairingSessions: unknown[];
   /** Состояние ABA; наблюдатели — метками `O1`, `O2`… с ролью и обучен ли. */
   state: Record<string, unknown>;
 };
@@ -652,6 +666,8 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
     // размер доски — без вариантов, предложенных на выбор, и без времени суток
     const sessionById = new Map(sessions.map((s) => [s.id, s]));
     const runById = new Map(routineRuns.map((r) => [r.id, r]));
+    const pairings = await bodies<AbaPairingSession>('aba_pairing_sessions');
+    const pairingById = new Map(pairings.map((p) => [p.id, p]));
     const choiceRows = await tx.all<{
       chosen_at: string;
       source: 'session' | 'routine';
@@ -666,6 +682,12 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
     const abaReinforcerChoices = choiceRows.map((c, i) => {
       const session = c.source === 'session' ? sessionById.get(c.source_id) : undefined;
       const run = c.source === 'routine' ? runById.get(c.source_id) : undefined;
+      // выбор сопряжения пишется с `source: 'session'`, но записи рабочей сессии у него нет: день — локальный день
+      // записи сопряжения, доска — из одной ячейки, источник назван явно (№164)
+      const pairing = c.source === 'session' && !session ? pairingById.get(c.source_id) : undefined;
+      if (pairing) {
+        return { order: i + 1, day: pairing.day, source: 'pairing' as const, sourceId: c.source_id, reinforcerId: c.reinforcer_id, chosenBy: c.chosen_by, tokens: c.tokens, boardSize: 1 };
+      }
       // у выбора сессии жетонов своих нет: выбор делается до обменов, а обменов за сессию бывает
       // несколько — сумма приписала бы каждому выбору чужие жетоны; обмены с жетонами специалист
       // видит в событиях `exchange` записи сессии
@@ -680,13 +702,18 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
         boardSize: session ? session.boardSize : (run?.exchangeOffer?.boardSize ?? null),
       };
     });
-    const [trialsOut, sessionsOut, ioaOut, correctionsOut, routineRunsOut, choicesOut] = aliasTimeLeakingIds([
+    const abaPairingSessions = pairings.map(({ startedAt, endedAt, ...p }) => {
+      const seconds = Math.round((Date.parse(endedAt) - Date.parse(startedAt)) / 1000);
+      return { ...p, durationSec: Number.isFinite(seconds) ? Math.max(0, seconds) : null, primaryObserverId: label(p.primaryObserverId) };
+    });
+    const [trialsOut, sessionsOut, ioaOut, correctionsOut, routineRunsOut, choicesOut, pairingOut] = aliasTimeLeakingIds([
       abaTrials,
       abaSessions,
       abaIoa,
       await correctionsOf(tx, childId),
       abaRoutineRuns,
       abaReinforcerChoices,
+      abaPairingSessions,
     ]);
     return {
       exportedAt,
@@ -696,6 +723,7 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
       abaTrialCorrections: correctionsOut,
       abaRoutineRuns: routineRunsOut,
       abaReinforcerChoices: choicesOut,
+      abaPairingSessions: pairingOut,
       state: { ...dayOnly(withoutBreakCardIds(state)), abaObservers: observers.map((o) => ({ id: label(o.id), role: o.role, trained: o.trained })) },
     };
   });

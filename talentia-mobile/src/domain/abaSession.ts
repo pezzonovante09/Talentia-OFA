@@ -379,6 +379,8 @@ export type StartInput = {
   /** Состояния целей. Нет состояния — цель новая. */
   states: Readonly<Record<string, AbaTargetState>>;
   reinforcerPool: string[];
+  /** Пары каталога, которые не ставятся в одну тройку (`apartPairs`, №164). Обязательно: новый вызов без пар молча потерял бы правило. */
+  reinforcerApart: readonly [string, string][];
   /** Выборы прошлых сессий, свежие в конце. */
   reinforcerHistory: string[];
   /** Доска с прошлой сессии: жетоны не сгорают. Размер — по ступени обучения доске. */
@@ -787,7 +789,7 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
   }
   for (const trial of probes.flat()) queue.push({ kind: 'trial', trial });
 
-  const reinforcerOptions = reinforcerChoices(input.reinforcerPool, input.reinforcerHistory, rng);
+  const reinforcerOptions = reinforcerChoices(input.reinforcerPool, input.reinforcerHistory, rng, input.reinforcerApart);
   const schedule = newSchedule(rng);
 
   return {

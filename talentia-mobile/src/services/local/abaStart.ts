@@ -23,7 +23,8 @@ import type { AbaConfig, AbaObserver, AbaTarget } from '../../types/aba';
 import type { AgeBand } from '../../types/task';
 import { newAbaId } from '../abaIds';
 import { randomSeed } from '../random';
-import { pastSessionsOfTarget, reinforcerHistoryOf, sessionsOf, trialsOfSession } from './abaLog';
+import { abaLocalDay, pastSessionsOfTarget, reinforcerHistoryOf, sessionsOf, trialsOfSession } from './abaLog';
+import { REINFORCER_APART } from './abaCatalog';
 import { loadChildState } from './childState';
 import { commitAbaSession, routineExchangeInSessionWindow } from './commit';
 import { readConsentLog } from './consentLog';
@@ -44,13 +45,9 @@ export type AbaOverview = {
   readyTargets: number;
 };
 
-const localDay = (ms: number) => {
-  const d = new Date(ms);
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-};
+const localDay = abaLocalDay;
 
-export const abaLocalDay = localDay;
+export { abaLocalDay };
 
 function artFor(art?: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> | undefined {
   if (art) return art;
@@ -120,6 +117,7 @@ export async function loadAbaStart(db: SqlDb, childId: string, o: StartOptions):
       targets,
       states: (await loadChildState(db, childId, 'abaTargets')) ?? {},
       reinforcerPool: pool,
+      reinforcerApart: REINFORCER_APART,
       reinforcerHistory: await reinforcerHistoryOf(db, childId),
       tokenTraining,
       startedAt: o.now,
@@ -138,14 +136,14 @@ export async function loadPairingStart(
   db: SqlDb,
   childId: string,
   o: Pick<StartOptions, 'config' | 'soundOn' | 'art'>,
-): Promise<{ pool: string[]; history: string[] } | { blocked: AbaBlock }> {
+): Promise<{ pool: string[]; history: string[]; apart: readonly [string, string][] } | { blocked: AbaBlock }> {
   const art = artFor(o.art);
   const ov = await abaOverview(db, childId, art);
   const block = abaBlockOf(ov);
   if (block && block !== 'pairing_needed') return { blocked: block };
   const pool = poolFor(readyAbaTargets(ABA_TARGETS, art), o, EXCHANGE_ACCESS_MS[1]);
   if (pool.length < MIN_REINFORCER_POOL) return { blocked: 'pool_small' };
-  return { pool, history: await reinforcerHistoryOf(db, childId) };
+  return { pool, history: await reinforcerHistoryOf(db, childId), apart: REINFORCER_APART };
 }
 
 /** Данные для `finishAbaSession`: прошлые сессии затронутых целей, сигналы, обмен рутины в окне. */

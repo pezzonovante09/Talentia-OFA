@@ -523,6 +523,45 @@ CREATE TRIGGER retention_clock_monotonic BEFORE UPDATE ON retention_clock
 WHEN NEW.last_seen < OLD.last_seen
 BEGIN SELECT RAISE(ABORT, 'retention_clock: время не идёт назад'); END;
 `,
+  // 16 — журнал сессий сопряжения (№164, `aba-pedagogy-specialist` 2026-10-28)
+  //
+  // Итог сопряжения раньше жил только счётчиками в tokenTraining и строками выборов: специалист видел флаг
+  // pairing_not_established, но не почему (не выбирал, выбирал взрослый, уходил после N циклов) и с кем шла
+  // сессия. Запись — конфигурация, исход, циклы, кто выбирал, ведущий наблюдатель (uuid без имени). Как
+  // прогоны рутин: только дописывание, удаление — по ребёнку или сроку, запись — через ворота согласия. В
+  // облако не уходит. Отзыв согласия при оставшихся записях база не принимает.
+  `
+CREATE TABLE aba_pairing_sessions (
+  seq         INTEGER PRIMARY KEY AUTOINCREMENT,
+  child_id    TEXT NOT NULL,
+  id          TEXT NOT NULL UNIQUE,
+  day         TEXT NOT NULL,
+  body        TEXT NOT NULL,
+  recorded_at TEXT NOT NULL
+);
+CREATE INDEX aba_pairing_sessions_child ON aba_pairing_sessions (child_id, seq);
+${gated('aba_pairing_sessions')}
+${retained('aba_pairing_sessions', 'recorded_at')}
+CREATE TRIGGER aba_pairing_sessions_need_consent BEFORE INSERT ON aba_pairing_sessions
+WHEN NOT EXISTS (SELECT 1 FROM aba_write_gate WHERE child_id = NEW.child_id)
+BEGIN SELECT RAISE(ABORT, 'aba_pairing_sessions: запись только через commit.ts при согласии на данные ABA'); END;
+DROP TRIGGER consent_events_aba_revoke_needs_purge;
+CREATE TRIGGER consent_events_aba_revoke_needs_purge BEFORE INSERT ON consent_events
+WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
+  EXISTS (SELECT 1 FROM aba_trials WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_sessions WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_ioa WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_routine_runs WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_reinforcer_choices WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_trial_corrections WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_routine_run_amendments WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_pairing_sessions WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM child_state WHERE child_id = NEW.child_id AND key IN
+    ('abaTargets', 'tokenTraining', 'identifySets', 'abaBoard', 'abaSessionIndex', 'abaSessionInProgress', 'abaPaused',
+     'physicalPromptAllowed', 'abaObservers', 'abaRoutineRunInProgress', 'breakCard', 'abaRoutineSettingOpen'))
+)
+BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
+`,
 ];
 
 /**

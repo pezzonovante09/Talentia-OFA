@@ -34,7 +34,7 @@ export type PairingRunEvent =
   | { type: 'tap'; reinforcerId: string; now: number }
   | { type: 'adult_tap'; reinforcerId: string; now: number }
   | { type: 'due'; at: number }
-  | { type: 'stop'; reason: 'adult_stopped' | 'abandoned'; now: number };
+  | { type: 'stop'; reason: 'adult_stopped' | 'abandoned' | 'app_backgrounded'; now: number };
 
 export function pairingTokenTiming(calm: boolean) {
   return { landMs: calm ? 0 : motion.base, holdMs: abaPairingLayout.exchangeDelayMs, exchangeMs: calm ? 0 : motion.slow };

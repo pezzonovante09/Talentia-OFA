@@ -10,13 +10,21 @@
  *
  * Итог (`pairingResultOf`) идёт в `commitPairingSession`: `applyPairingSession` по ребёнку и
  * выборы — в историю подкрепителей (насыщение считается по любому выбору, методист 2026-10-12).
- * Жетоны сопряжения в рабочую доску не идут.
+ * Жетоны сопряжения в рабочую доску не идут. Запись о самой сессии (конфигурация, исход, циклы) —
+ * журнал `aba_pairing_sessions` (№164).
  */
-import type { AbaSessionEndReason } from '../types/aba';
+import type { AbaConfig, AbaPairingEndReason } from '../types/aba';
 import { PAIRING } from './abaTokenTraining';
 import { reinforcerChoices, type Rng } from './abaTokens';
 
 export type PairingPhase = 'choose' | 'wait_token' | 'access' | 'done';
+
+/**
+ * Исход сопряжения — закрытый словарь (№164): `completed`, `adult_stopped`, `abandoned` и `app_backgrounded` —
+ * приложение свернули или погас экран посреди сопряжения. Свёрнутое, как остановка взрослым, не засчитывается и
+ * серию не рвёт, но в данных различимо.
+ */
+export type PairingEndReason = AbaPairingEndReason;
 
 export type PairingChoice = { reinforcerId: string; by: 'child' | 'adult'; at: number };
 
@@ -25,6 +33,8 @@ export type PairingState = {
   /** Случайный UUIDv4 — `source_id` выборов в истории. */
   sessionId: string;
   startedAt: number;
+  /** С кем шло сопряжение — в записи сессии (№164): «Сам» и «Со взрослым» специалист различает. */
+  config: AbaConfig;
   phase: PairingPhase;
   /** Три варианта на всю сессию: «можно выбрать заново из тех же трёх». */
   options: string[];
@@ -34,7 +44,7 @@ export type PairingState = {
   phaseSince: number;
   reinforcerId: string | null;
   choices: PairingChoice[];
-  endReason: AbaSessionEndReason | null;
+  endReason: PairingEndReason | null;
 };
 
 export class PairingError extends Error {
@@ -48,13 +58,23 @@ function assert(ok: boolean, what: string): void {
   if (!ok) throw new PairingError(what);
 }
 
-export function startPairing(input: { sessionId: string; pool: string[]; history: string[]; rng: Rng; now: number }): PairingState {
+export function startPairing(input: {
+  sessionId: string;
+  config: AbaConfig;
+  pool: string[];
+  history: string[];
+  /** Пары каталога, которые не ставятся в одну тройку (`apartPairs`, №164). */
+  apart: readonly [string, string][];
+  rng: Rng;
+  now: number;
+}): PairingState {
   return {
     v: 1,
     sessionId: input.sessionId,
     startedAt: input.now,
+    config: input.config,
     phase: 'choose',
-    options: reinforcerChoices(input.pool, input.history, input.rng),
+    options: reinforcerChoices(input.pool, input.history, input.rng, input.apart),
     cycles: 0,
     phaseSince: input.now,
     reinforcerId: null,
@@ -70,8 +90,8 @@ export type PairingEvent =
   | { type: 'token'; now: number }
   /** Доступ кончился (приложение по таймеру). */
   | { type: 'access_done'; now: number }
-  /** Взрослый остановил или ребёнок ушёл. */
-  | { type: 'stop'; reason: 'adult_stopped' | 'abandoned'; now: number };
+  /** Взрослый остановил, ребёнок ушёл или приложение свернули. */
+  | { type: 'stop'; reason: 'adult_stopped' | 'abandoned' | 'app_backgrounded'; now: number };
 
 /** Шаг по событию. Событие не по фазе или раньше срока — ошибка программы экрана. */
 export function applyPairingEvent(s: PairingState, e: PairingEvent): PairingState {
@@ -121,7 +141,12 @@ export function pairingDueAt(s: PairingState): { event: 'adult_may_choose' | 'to
 
 export type PairingResult = {
   sessionId: string;
-  endReason: AbaSessionEndReason;
+  config: AbaConfig;
+  endReason: PairingEndReason;
+  /** Законченных циклов «жетон → обмен → доступ»: «ушёл после трёх» и «не выбрал ни разу» различимы. */
+  cycles: number;
+  startedAt: number;
+  endedAt: number;
   /**
    * Критерий сопряжения: выбор сделал ребёнок — каждый выбор сессии; хотя бы один выбор взрослого
    * по таймауту — `adult`. Без выборов (остановили до первого) — `adult`: предпочтение не показано.
@@ -133,5 +158,14 @@ export type PairingResult = {
 export function pairingResultOf(s: PairingState): PairingResult {
   assert(s.phase === 'done' && s.endReason !== null, 'итог незавершённого сопряжения');
   const chosenBy = s.choices.length > 0 && s.choices.every((c) => c.by === 'child') ? 'child' : 'adult';
-  return { sessionId: s.sessionId, endReason: s.endReason!, chosenBy, choices: s.choices };
+  return {
+    sessionId: s.sessionId,
+    config: s.config,
+    endReason: s.endReason!,
+    cycles: s.cycles,
+    startedAt: s.startedAt,
+    endedAt: s.phaseSince,
+    chosenBy,
+    choices: s.choices,
+  };
 }

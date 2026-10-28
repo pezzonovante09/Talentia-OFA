@@ -955,6 +955,30 @@ export type RoutineRunKind = 'baseline' | 'teaching' | 'maintenance' | 'verifica
  * Прогон рутины в журнале (`aba_routine_runs`): рутина проходит в свой естественный момент, вне
  * сессии (№74, раунд 2, Р3). Пробы звеньев — в журнале проб с `sessionId` = `id` прогона.
  */
+/** Исходы сопряжения — закрытый словарь (№164): других у процедуры без проб не бывает. */
+export type AbaPairingEndReason = 'completed' | 'adult_stopped' | 'abandoned' | 'app_backgrounded';
+
+/**
+ * Запись сессии сопряжения (№164) — журнал `aba_pairing_sessions`, только дописывание. Выборы — в журнале
+ * выборов (`source_id` = `id`); здесь — с кем шла сессия, чем кончилась и сколько циклов прошло.
+ */
+export type AbaPairingSession = {
+  id: string;
+  /** Локальный день начала. */
+  day: string;
+  startedAt: string;
+  endedAt: string;
+  config: AbaConfig;
+  /** Исход; `app_backgrounded` — свернули посреди сопряжения. */
+  endReason: AbaPairingEndReason;
+  cycles: number;
+  chosenBy: 'child' | 'adult';
+  choicesByChild: number;
+  choicesByAdult: number;
+  /** Ведущий наблюдатель — uuid без имени; `null` в «Сам». */
+  primaryObserverId: string | null;
+};
+
 export type AbaRoutineRun = {
   id: string;
   targetId: string;

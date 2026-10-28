@@ -149,6 +149,9 @@ it('свернули посреди сопряжения — сессия не �
     await tick(60_000);
     expect(screen.queryByTestId('aba-access-scene')).toBeNull();
     expect((await loadChildState(db, KID, 'tokenTraining')) ?? { pairingSessions: 0 }).toMatchObject({ pairingSessions: 0 });
+    // №164: в записи сессии — «свернули», а не остановка взрослым
+    const [rec] = await db.all<{ body: string }>('SELECT body FROM aba_pairing_sessions WHERE child_id = ?', [KID]);
+    expect(JSON.parse(rec.body)).toMatchObject({ endReason: 'app_backgrounded', config: 'with_adult', cycles: 0 });
   } finally {
     AppState.addEventListener = original;
   }

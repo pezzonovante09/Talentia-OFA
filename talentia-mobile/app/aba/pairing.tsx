@@ -1,8 +1,9 @@
 /**
  * Сессия сопряжения (раздел 3 направления, Ц2.4; домен `abaPairing.ts`, модель `src/ui/aba/model/pairingRun.ts`):
  * выбор из трёх тапом → 10 с ожидания → жетон в ячейку из одной → сразу обмен → доступ 20 с; четыре цикла, затем
- * `commitPairingSession` и конец. Панели взрослого нет; выход — удержанием в строке 72. Середина сопряжения не
- * сохраняется: убитое приложение теряет его выборы (риск плана, подтвердить у `aba-pedagogy-specialist`).
+ * `commitPairingSession` и конец. Панели взрослого нет; выход — удержанием в строке 72. Свернули — итог пишется
+ * сразу как `app_backgrounded` (№164); середина не сохраняется, и убитое без сворачивания приложение теряет выборы
+ * (методист 2026-10-28: для плейтеста при взрослом допустимо).
  */
 import { useKeepAwake } from 'expo-keep-awake';
 import { Redirect, useRouter } from 'expo-router';
@@ -42,6 +43,7 @@ export default function AbaPairingScreen() {
   const soundOn = useChildSession((s) => s.settings.soundEffects);
   const calm = useChildSession((s) => s.settings.calmMode);
   const config = useAbaRun((s) => s.config);
+  const primaryObserverId = useAbaRun((s) => s.primaryObserverId);
   const [run, setRun] = useState<PairingRun | null>(null);
   const [ended, setEnded] = useState<Ended | null>(null);
   const [pulse, setPulse] = useState(false);
@@ -66,7 +68,7 @@ export default function AbaPairingScreen() {
           return;
         }
         const now = clock.now();
-        const state = startPairing({ sessionId: newAbaId(), pool: start.pool, history: start.history, rng: seeded(now >>> 0).rng, now });
+        const state = startPairing({ sessionId: newAbaId(), config, pool: start.pool, history: start.history, apart: start.apart, rng: seeded(now >>> 0).rng, now });
         runRef.current = startPairingRun(state, config, startOpts.current.calm);
         setRun(runRef.current);
       },
@@ -82,21 +84,22 @@ export default function AbaPairingScreen() {
 
   const finish = useCallback(
     async (r: PairingRun) => {
-      // итог пишется один раз: защита от повтора в `commitPairingSession` держится на строках выборов, а у
-      // брошенной в первом цикле их нет
+      // итог пишется один раз на экран; повтор того же итога отсекает и `commitPairingSession` — по записи сессии
       if (finished.current) return;
       finished.current = true;
       const toMap = exiting.current;
       try {
-        if (db && childId) await commitPairingSession(db, childId, pairingResultOf(r.state), new Date(clock.now()).toISOString());
+        if (db && childId) await commitPairingSession(db, childId, pairingResultOf(r.state), new Date(clock.now()).toISOString(), { primaryObserverId });
       } catch (e) {
         // согласие отозвано или пауза — итог не пишется, конец нейтральный
         if (__DEV__) console.warn('aba-pairing-commit', e);
       }
+      // конфигурация и наблюдатель — на одно занятие: следующий вход идёт через 2.6
       if (toMap) router.replace('/map');
       else setEnded({ variant: r.state.endReason === 'completed' ? 'normal' : 'neutral', toMap: false });
+      useAbaRun.getState().reset();
     },
-    [db, childId, clock, router],
+    [db, childId, clock, router, primaryObserverId],
   );
 
   const dispatch = useCallback(
@@ -130,17 +133,18 @@ export default function AbaPairingScreen() {
     if (inAccess) setTick(clock.now());
   }, [inAccess, clock]);
 
-  // свернули или заблокировали экран посреди сопряжения — сессия кончается незасчитанной (не считается и серию не
-  // рвёт), конец нейтральный: просроченные стадии иначе прошли бы разом с плановыми метками (Б1)
+  // свернули или заблокировали экран посреди сопряжения — сессия кончается незасчитанной (`app_backgrounded`, №164:
+  // не считается и серию не рвёт, в данных отличима от остановки взрослым), конец нейтральный: просроченные стадии иначе прошли бы разом с плановыми метками (Б1)
   useEffect(() => {
     const sub = AppState.addEventListener('change', (st) => {
       const cur = runRef.current;
-      if (st === 'background' && cur && cur.state.phase !== 'done') dispatch({ type: 'stop', reason: 'adult_stopped', now: clock.now() });
+      if (st === 'background' && cur && cur.state.phase !== 'done') dispatch({ type: 'stop', reason: 'app_backgrounded', now: clock.now() });
     });
     return () => sub.remove();
   }, [dispatch, clock]);
 
-  if (!config) return <Redirect href="/aba?mode=pairing" />;
+  // без конфигурации — только до старта: после конца она сброшена, а экран конца ещё на месте
+  if (!config && !runRef.current && !ended) return <Redirect href="/aba?mode=pairing" />;
 
   const exit = () => {
     if (!runRef.current || runRef.current.state.phase === 'done') {

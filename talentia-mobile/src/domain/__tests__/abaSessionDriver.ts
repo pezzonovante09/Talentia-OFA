@@ -88,6 +88,7 @@ export function standardPlan(): { targets: AbaTarget[]; states: Record<string, A
 export function beginSession(over: Partial<StartInput> = {}, pick = 0, by: 'child' | 'adult' = 'child'): AbaSessionState {
   const plan = standardPlan();
   const st = startAbaSession({
+    reinforcerApart: [],
     sessionId: 's',
     sessionIndex: 10,
     day: DAY,
@@ -114,6 +115,7 @@ export function beginSession(over: Partial<StartInput> = {}, pick = 0, by: 'chil
 export function startedSession(over: Partial<StartInput> = {}): AbaSessionState {
   const plan = standardPlan();
   return startAbaSession({
+    reinforcerApart: [],
     sessionId: 's',
     sessionIndex: 10,
     day: DAY,

@@ -10,6 +10,7 @@
  *
  * Хранится на **ребёнке**, не на цели: доска одна на все цели.
  */
+import type { PairingEndReason } from './abaPairing';
 import { TOKEN_BOARD_SIZE, type AbaSessionEndReason } from '../types/aba';
 import type { AgeBand } from '../types/task';
 
@@ -96,13 +97,13 @@ const withFlag = (flags: TokenTrainingFlag[], f: TokenTrainingFlag) => (flags.in
 /**
  * Итог сессии сопряжения. Критерий — выбор сделал ребёнок, а не взрослый по таймауту, и
  * сессия не брошена; две такие подряд — сопряжение закончено, дальше обучение доске с
- * одной ячейки. Остановка взрослым не засчитывается и серию не рвёт.
+ * одной ячейки. Остановка взрослым и свёрнутое приложение (№164) не засчитываются и серию не рвут.
  */
 export function applyPairingSession(
   t: TokenTrainingState,
-  session: { chosenBy: 'child' | 'adult'; endReason: AbaSessionEndReason },
+  session: { chosenBy: 'child' | 'adult'; endReason: PairingEndReason },
 ): TokenTrainingState {
-  if (t.pairingDone || session.endReason === 'adult_stopped') return t;
+  if (t.pairingDone || session.endReason === 'adult_stopped' || session.endReason === 'app_backgrounded') return t;
   const pairingSessions = t.pairingSessions + 1;
   const ok = session.chosenBy === 'child' && session.endReason !== 'abandoned';
   const pairingStreak = ok ? t.pairingStreak + 1 : 0;

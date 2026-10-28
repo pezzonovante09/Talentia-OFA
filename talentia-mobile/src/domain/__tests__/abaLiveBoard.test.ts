@@ -31,7 +31,7 @@ const settle = (
   claim: RoutineClaim,
   history: string[] = [],
   seed = 7,
-) => settleRoutineBoard(live, size, claim, { pool: POOL, history, seed });
+) => settleRoutineBoard(live, size, claim, { pool: POOL, history, seed, apart: [] });
 
 describe('settleRoutineBoard: выплата прогона по живой доске', () => {
   it('Т1: без обмена жетон прогона ложится на доску, как она лежит сейчас', () => {

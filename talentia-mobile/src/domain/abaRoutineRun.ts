@@ -500,7 +500,7 @@ export function settleRoutineBoard(
   live: Pick<TokenBoard, 'earned' | 'nonContingent'>,
   size: BoardStage,
   claim: RoutineClaim,
-  ctx: { pool: string[]; history: string[]; seed: number },
+  ctx: { pool: string[]; history: string[]; seed: number; apart: readonly [string, string][] },
 ): RoutineSettlement {
   const current: TokenBoard = { size, earned: live.earned, nonContingent: live.nonContingent };
   const paid = claim.nonContingent ? participationAward(current).tokens : claim.tokens;
@@ -509,7 +509,7 @@ export function settleRoutineBoard(
   // предложение — только если прогон выплатил жетон: доска, полная с прошлой сессии, ждёт своего
   // момента, а не предлагается сразу после срыва (методист, 2026-10-12)
   if (paid > 0 && isBoardFull(board)) {
-    offer = { tokens: board.earned, boardSize: size, options: reinforcerChoices(ctx.pool, ctx.history, seeded(ctx.seed).rng) };
+    offer = { tokens: board.earned, boardSize: size, options: reinforcerChoices(ctx.pool, ctx.history, seeded(ctx.seed).rng, ctx.apart) };
   }
   return {
     board: { earned: board.earned, nonContingent: board.nonContingent },

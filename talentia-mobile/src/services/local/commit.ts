@@ -43,7 +43,9 @@ import {
   RoutineRunClosedError,
   RoutineStateConflictError,
   RoutineWindowNotAccountedError,
+  abaLocalDay,
   appendIoa,
+  appendPairingSession,
   appendReinforcerChoice,
   appendRoutineAmendment,
   appendRoutineRun,
@@ -57,6 +59,7 @@ import {
   type ReinforcerChoice,
   type TrialCorrectionRow,
 } from './abaLog';
+import { REINFORCER_APART } from './abaCatalog';
 import { loadChildState, saveChildState } from './childState';
 import { readConsentLog } from './consentLog';
 import { consentStatus, isGranted, type GuardianRole } from '../../domain/consent';
@@ -262,7 +265,7 @@ export async function resumeAbaSession(db: SqlDb, childId: string, reinforcerPoo
     const rechoose = awayOutcome(awayMs) === 'rechoose' && state.reinforcerId !== null;
     const options = routineExchanged || rechoose
       ? (openOffer?.options ??
-        reinforcerChoices(reinforcerPool, await reinforcerHistoryOf(tx, childId), seeded(state.seed + boardRevOf(live)).rng))
+        reinforcerChoices(reinforcerPool, await reinforcerHistoryOf(tx, childId), seeded(state.seed + boardRevOf(live)).rng, REINFORCER_APART))
       : undefined;
     return resumeSessionState(
       state,
@@ -284,17 +287,45 @@ export async function routineExchangeInSessionWindow(db: SqlDb, childId: string,
  * возобновляет сессию и завершает её заново — `finishAbaSession` чистая).
  */
 /**
- * Итог сессии сопряжения (этап 11, Д1): `applyPairingSession` по ребёнку и выборы подкрепителя —
- * в историю (`source: 'session'`, `source_id` — id сессии сопряжения: насыщение считается по любому
- * выбору). Одной транзакцией под согласием `aba_processing`. Повтор того же итога не пишет второй раз.
+ * Итог сессии сопряжения (этап 11, Д1): запись сессии (`aba_pairing_sessions`, №164), `applyPairingSession` по
+ * ребёнку и выборы подкрепителя — в историю (`source: 'session'`, `source_id` — id сессии сопряжения: насыщение
+ * считается по любому выбору). Одной транзакцией под согласием `aba_processing`. Повтор того же итога не пишет
+ * второй раз — и у итога без выборов (ушёл в первом цикле): проверка по записи сессии, а не по выборам.
  */
-export async function commitPairingSession(db: SqlDb, childId: string, result: PairingResult, at: string): Promise<void> {
+export async function commitPairingSession(
+  db: SqlDb,
+  childId: string,
+  result: PairingResult,
+  at: string,
+  meta: { primaryObserverId?: string | null } = {},
+): Promise<void> {
   await withAbaWrite(db, childId, async (tx) => {
-    const [seen] = await tx.all<{ n: number }>(
-      "SELECT COUNT(*) AS n FROM aba_reinforcer_choices WHERE child_id = ? AND source = 'session' AND source_id = ?",
-      [childId, result.sessionId],
-    );
+    const [seen] = await tx.all<{ n: number }>('SELECT COUNT(*) AS n FROM aba_pairing_sessions WHERE child_id = ? AND id = ?', [
+      childId,
+      result.sessionId,
+    ]);
     if ((seen?.n ?? 0) > 0) return;
+    // наблюдатель — только из наблюдателей этого ребёнка: устаревший id прошлого запуска или другого ребёнка не пишется
+    const observers = (await loadChildState(tx, childId, 'abaObservers')) ?? [];
+    const observerId = observers.some((o) => o.id === meta.primaryObserverId) ? meta.primaryObserverId! : null;
+    await appendPairingSession(
+      tx,
+      childId,
+      {
+        id: result.sessionId,
+        day: abaLocalDay(result.startedAt),
+        startedAt: new Date(result.startedAt).toISOString(),
+        endedAt: new Date(result.endedAt).toISOString(),
+        config: result.config,
+        endReason: result.endReason,
+        cycles: result.cycles,
+        chosenBy: result.chosenBy,
+        choicesByChild: result.choices.filter((c) => c.by === 'child').length,
+        choicesByAdult: result.choices.filter((c) => c.by === 'adult').length,
+        primaryObserverId: result.config === 'alone' ? null : observerId,
+      },
+      at,
+    );
     for (const c of result.choices) {
       await appendReinforcerChoice(tx, childId, { source: 'session', sourceId: result.sessionId, reinforcerId: c.reinforcerId, chosenBy: c.by }, new Date(c.at).toISOString());
     }
@@ -407,6 +438,7 @@ export async function commitRoutineRun(
       pool: result.reinforcerPool,
       history: await reinforcerHistoryOf(tx, childId),
       seed: result.seed,
+      apart: REINFORCER_APART,
     });
     const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
     const current = targets[result.record.targetId];

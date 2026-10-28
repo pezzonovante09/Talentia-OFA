@@ -66,7 +66,7 @@ describe('выбор тапом', () => {
 
 describe('сопряжение', () => {
   const start = (config: 'alone' | 'with_adult' = 'with_adult', calm = false) =>
-    startPairingRun(startPairing({ sessionId: 'p1', pool: POOL, history: [], rng: seeded(7).rng, now: T0 }), config, calm);
+    startPairingRun(startPairing({ sessionId: 'p1', config, pool: POOL, history: [], apart: [], rng: seeded(7).rng, now: T0 }), config, calm);
 
   function go(r: PairingRun, e: PairingRunEvent, fx: PairingEffect[] = []): PairingRun {
     const s = stepPairingRun(r, e);

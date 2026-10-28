@@ -109,7 +109,7 @@ const settle = (
   live: { earned: number; nonContingent: number } = { earned: 0, nonContingent: 0 },
   size: BoardStage = BOARD,
   history: string[] = [],
-) => settleRoutineBoard(live, size, r.claim, { pool: POOL, history, seed: r.seed });
+) => settleRoutineBoard(live, size, r.claim, { pool: POOL, history, seed: r.seed, apart: [] });
 
 function start(state: AbaTargetState | undefined, d: string, over: Partial<RoutineRunInput> = {}): RoutineRunState {
   return startRoutineRun({

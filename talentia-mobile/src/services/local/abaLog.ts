@@ -17,7 +17,7 @@
  * связывает устройство с ABA-режимом (ABA.md, «Согласие `aba_processing`»).
  */
 import { leaksTime } from '../../domain/ids';
-import { COUNTS_TOWARD_MASTERY, type AbaIoaRecord, type AbaRoutineRun, type AbaSession, type AbaTrial } from '../../types/aba';
+import { COUNTS_TOWARD_MASTERY, type AbaIoaRecord, type AbaPairingSession, type AbaRoutineRun, type AbaSession, type AbaTrial } from '../../types/aba';
 import { trialInvariantErrors, type SessionTrials } from '../../domain/abaPrompting';
 import { isGranted } from '../../domain/consent';
 import { openRoutineOffer, type RoutineOffer } from '../../domain/abaTokens';
@@ -188,6 +188,22 @@ export async function appendSession(db: SqlDb, childId: string, session: AbaSess
   await db.run(
     'INSERT INTO aba_sessions (child_id, id, session_index, body, recorded_at) VALUES (?, ?, ?, ?, ?)',
     [childId, session.id, session.index, JSON.stringify(session), recordedAtIso(recordedAt)],
+  );
+}
+
+/** Локальный день `YYYY-MM-DD` — день сессии и сопряжения в журналах. */
+export function abaLocalDay(ms: number): string {
+  const d = new Date(ms);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/** Запись сессии сопряжения (№164) — кирпич для `commit.ts`. */
+export async function appendPairingSession(db: SqlDb, childId: string, rec: AbaPairingSession, recordedAt: string): Promise<void> {
+  assertNoTimeInIds('Сопряжение', rec.id);
+  await db.run(
+    'INSERT INTO aba_pairing_sessions (child_id, id, day, body, recorded_at) VALUES (?, ?, ?, ?, ?)',
+    [childId, rec.id, rec.day, JSON.stringify(rec), recordedAtIso(recordedAt)],
   );
 }
 

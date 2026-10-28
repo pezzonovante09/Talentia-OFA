@@ -105,6 +105,7 @@ function begin(
   by: 'child' | 'adult' = 'child',
 ) {
   const st = startAbaSession({
+    reinforcerApart: [],
     sessionId: 's',
     sessionIndex: 10,
     // локальный день сессии (В5); тесты с несколькими днями задают его в `over`
@@ -1175,6 +1176,7 @@ describe('согласие ребёнка — assent (блок 4)', () => {
 
   it('отказ до начала работы — событие not_started', () => {
     const st = startAbaSession({
+    reinforcerApart: [],
       sessionId: 's', sessionIndex: 1, day: '2026-10-01', config: 'with_adult', band: '7', targets: [A], states: { A: acq(A) },
       reinforcerPool: POOL, reinforcerHistory: [], startedAt: 0, seed: 1, tokenTraining: TRAINED,
     });

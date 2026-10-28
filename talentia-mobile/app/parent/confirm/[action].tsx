@@ -52,7 +52,7 @@ export default function ConfirmScreen() {
   const revokeChild = action === 'aba_revoke' ? (profile?.childId ?? null) : null;
   useEffect(() => {
     if (!revokeChild || !account.db) return;
-    void abaDataSummary(account.db, revokeChild).then((s) => setAbaCount({ sessions: s.sessions, trials: s.trials }), () => setAbaCount(null));
+    void abaDataSummary(account.db, revokeChild).then((s) => setAbaCount({ sessions: s.sessions + s.pairingSessions, trials: s.trials }), () => setAbaCount(null));
   }, [revokeChild, account.db]);
 
   if (!action || !(action in KEYS)) return <Redirect href="/parent/data" />;
