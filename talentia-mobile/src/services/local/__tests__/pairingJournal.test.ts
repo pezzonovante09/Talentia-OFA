@@ -66,12 +66,13 @@ const revoke = (childId: string, at = '2026-10-27T09:00:00.000Z'): ConsentEvent 
 const result = (sessionId: string, t0 = Date.parse('2026-10-25T10:00:00.000Z'), over: Partial<PairingResult> = {}): PairingResult => ({
   sessionId,
   config: 'with_adult',
+  options: ['puzzle', 'bubbles', 'drum'],
   endReason: 'completed',
   cycles: 4,
   startedAt: t0,
   endedAt: t0 + 4 * 60_000,
   chosenBy: 'child',
-  choices: ['puzzle', 'bubbles', 'drum', 'puzzle'].map((reinforcerId, i) => ({ reinforcerId, by: 'child' as const, at: t0 + i * 60_000 + 5_000 })),
+  choices: ['puzzle', 'bubbles', 'drum', 'puzzle'].map((reinforcerId, i) => ({ reinforcerId, by: 'child' as const, at: t0 + i * 60_000 + 5_000, latencyMs: 4_200 })),
   ...over,
 });
 
@@ -87,6 +88,8 @@ const rec = (id: string, over: Partial<AbaPairingSession> = {}): AbaPairingSessi
   chosenBy: 'child',
   choicesByChild: 4,
   choicesByAdult: 0,
+  options: ['puzzle', 'bubbles', 'drum'],
+  choices: ['puzzle', 'bubbles', 'drum', 'puzzle'].map((reinforcerId) => ({ reinforcerId, by: 'child' as const, latencyMs: 4_200, prompted: false })),
   primaryObserverId: null,
   ...over,
 });

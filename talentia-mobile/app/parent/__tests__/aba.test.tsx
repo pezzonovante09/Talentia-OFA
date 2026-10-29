@@ -421,7 +421,7 @@ describe('«Занятия ABA»: согласие, пауза, файл, отз
     await grant();
     await renderAba();
     await waitFor(() => expect(screen.getByTestId('aba-export')).toBeTruthy());
-    expect(screen.getByTestId('aba-export-note').props.children).toBe('Что в файле: задания, подсказки и итоги занятий, без имени. Копии, отданные специалисту, приложение не удаляет.');
+    expect(screen.getByTestId('aba-export-note').props.children).toBe('Что в файле: задания, подсказки, итоги занятий и выбор наград, без имени. Копии, отданные специалисту, приложение не удаляет.');
     await fireEvent.press(screen.getByTestId('aba-export'));
     expect(screen.getByTestId('confirm-pin-sheet')).toBeTruthy();
     expect(screen.getByTestId('aba-export-note').props.children).not.toBe('Файл появится позже, вместе с облачной копией.');

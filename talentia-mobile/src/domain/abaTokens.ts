@@ -208,15 +208,18 @@ export const MIN_REINFORCER_POOL = 6;
  *
  * Выбранное дважды подряд в третий раз не предлагается: против насыщения.
  * `history` — выборы прошлых сессий, свежие в конце. `apart` — пары, которые не ставятся в одну
- * тройку (`song` и `sing_together`: один и тот же подкрепитель двумя способами).
+ * тройку (`song` и `sing_together`: один и тот же подкрепитель двумя способами). Пара и для
+ * «дважды подряд» — один подкрепитель (№165): после `[song, sing_together]` в третий раз не
+ * предлагается ни то, ни другое.
  */
 export function reinforcerChoices(pool: string[], history: string[], rng: Rng, apart: readonly [string, string][] = []): string[] {
   if (pool.length < MIN_REINFORCER_POOL) {
     throw new Error(`Пул подкрепителей меньше ${MIN_REINFORCER_POOL}`);
   }
+  const sameAs = (id: string) => [id, ...apart.flatMap(([a, b]) => (a === id ? [b] : b === id ? [a] : []))];
   const [prev, last] = history.slice(-2);
-  const blocked = history.length >= 2 && prev === last ? last : undefined;
-  const candidates = pool.filter((id) => id !== blocked);
+  const blocked = history.length >= 2 && sameAs(last).includes(prev) ? sameAs(last) : [];
+  const candidates = pool.filter((id) => !blocked.includes(id));
 
   // Фишер — Йейтс по копии: пул не мутируется
   const shuffled = [...candidates];

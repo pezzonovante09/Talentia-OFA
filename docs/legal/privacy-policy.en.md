@@ -33,7 +33,7 @@ settings, reports and data are available only to an adult behind a PIN.
 | Learning progress: lesson runs (day, duration, task results), skill mastery | show progress, repeat difficult skills, parent report | on the device; the run log for 12 months by the device date, then deleted (if the app has not been opened for more than 45 days or the date jumped forward, deletion waits for an adult to confirm in the parent section and records may be kept longer until then; manual deletion is always available); the summary skill state while the profile exists |
 | Parent consent log: what was confirmed, when, which text version | prove consent was given and withdrawn | on the device |
 | Parent PIN (stored only as a salted hash in the system's secure storage), failed-attempt counter | keep the parent area away from the child | on the device |
-| ABA mode data, **only if you turn the mode on and give a separate consent**: targets, trials, sessions, prompt levels, ratings, observer details | support ABA-style practice; trials are recorded only with consent | on the device; logs for 12 months |
+| ABA mode data, **only if you turn the mode on and give a separate consent**: targets, trials, sessions, prompt levels, ratings, observer details, reward choices and time to choose, who the session was with | support ABA-style practice; trials are recorded only with consent | on the device; logs for 12 months |
 
 ABA mode implies that a child may have developmental differences, so we treat these records as
 **especially sensitive**, record them only after a separate explicit consent from an adult, and they

@@ -18,7 +18,7 @@ import {
   type RoutineSettingOpen,
 } from '../../domain/abaRoutineRun';
 import { boardRevOf, reinforcerChoices, type BoardRecord } from '../../domain/abaTokens';
-import { applyPairingSession, initialTokenTraining, workingBoardSize } from '../../domain/abaTokenTraining';
+import { applyPairingSession, initialTokenTraining, PAIRING, workingBoardSize } from '../../domain/abaTokenTraining';
 import type { PairingResult } from '../../domain/abaPairing';
 import {
   applyBreakCardRoutine,
@@ -322,6 +322,13 @@ export async function commitPairingSession(
         chosenBy: result.chosenBy,
         choicesByChild: result.choices.filter((c) => c.by === 'child').length,
         choicesByAdult: result.choices.filter((c) => c.by === 'adult').length,
+        options: result.options,
+        choices: result.choices.map((c) => ({
+          reinforcerId: c.reinforcerId,
+          by: c.by,
+          latencyMs: c.by === 'child' ? c.latencyMs : null,
+          prompted: c.by === 'adult' || c.latencyMs >= PAIRING.choiceTimeoutMs,
+        })),
         primaryObserverId: result.config === 'alone' ? null : observerId,
       },
       at,

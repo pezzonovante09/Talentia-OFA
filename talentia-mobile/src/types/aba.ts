@@ -559,6 +559,12 @@ export type AbaTargetState = {
    * сработает остановка.
    */
   consecutiveFailures: number;
+  /**
+   * Из `consecutiveFailures` — подряд провалы наблюдения `match`: образца так и не коснулись, с любого старта
+   * (№165). Когда вся серия провалов такая, старт поднимается только до L1 — метка над образцом
+   * сразу: ребёнку нужно внимание к образцу, а не ответ. Нет поля — 0.
+   */
+  consecutiveObservingFailures?: number;
   currentDelayMs: number;
   /** Доли самостоятельных по последним сессиям, свежие в конце. */
   recentIndependentRates: number[];
@@ -697,6 +703,7 @@ export type StepPromptState = Pick<
   | 'consecutiveIndependentAtStart'
   | 'consecutiveAboveStart'
   | 'consecutiveFailures'
+  | 'consecutiveObservingFailures'
   | 'lastSuccessfulPromptLevel'
 >;
 
@@ -955,8 +962,11 @@ export type RoutineRunKind = 'baseline' | 'teaching' | 'maintenance' | 'verifica
  * Прогон рутины в журнале (`aba_routine_runs`): рутина проходит в свой естественный момент, вне
  * сессии (№74, раунд 2, Р3). Пробы звеньев — в журнале проб с `sessionId` = `id` прогона.
  */
-/** Исходы сопряжения — закрытый словарь (№164): других у процедуры без проб не бывает. */
-export type AbaPairingEndReason = 'completed' | 'adult_stopped' | 'abandoned' | 'app_backgrounded';
+/**
+ * Исходы сопряжения — закрытый словарь (№164): других у процедуры без проб не бывает. `no_choice` (№165) — «Сам»,
+ * 60 с без выбора: предпочтение не показано; `abandoned` — ребёнок удержал выход. Засчитываются оба одинаково.
+ */
+export type AbaPairingEndReason = 'completed' | 'adult_stopped' | 'abandoned' | 'no_choice' | 'app_backgrounded';
 
 /**
  * Запись сессии сопряжения (№164) — журнал `aba_pairing_sessions`, только дописывание. Выборы — в журнале
@@ -975,6 +985,14 @@ export type AbaPairingSession = {
   chosenBy: 'child' | 'adult';
   choicesByChild: number;
   choicesByAdult: number;
+  /** Предложенная тройка — одна на сессию (№165): «выбрал X» читается как «X из этих трёх». */
+  options: string[];
+  /**
+   * Выборы сессии по порядку (№165). `latencyMs` — от показа экрана выбора до первого касания карточки: сила тяги
+   * ребёнка к подкрепителю; у выбора взрослого — `null`. `prompted` — выбор после пульса «Сам» или появления полосы
+   * взрослого (30 с): уже подсказан.
+   */
+  choices: { reinforcerId: string; by: 'child' | 'adult'; latencyMs: number | null; prompted: boolean }[];
   /** Ведущий наблюдатель — uuid без имени; `null` в «Сам». */
   primaryObserverId: string | null;
 };

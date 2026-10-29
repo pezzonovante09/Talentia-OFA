@@ -20,9 +20,15 @@ describe('выбор тапом', () => {
     let r = stepChoice(startChoice('alone', T0), { type: 'tap', reinforcerId: 'a', now: T0 + 1000 }).run;
     expect(choiceDueAt(r)).toBe(T0 + 1800);
     const s = due(r);
-    expect(s.effects).toEqual([{ type: 'chosen', reinforcerId: 'a', by: 'child', at: T0 + 1800 }]);
+    expect(s.effects).toEqual([{ type: 'chosen', reinforcerId: 'a', by: 'child', at: T0 + 1800, tappedAt: T0 + 1000 }]);
     r = s.run;
     expect(choiceDueAt(r)).toBeNull();
+  });
+
+  it('латентность — от показа до первого касания, перенос выбора её не сдвигает (№165)', () => {
+    let r = stepChoice(startChoice('alone', T0), { type: 'tap', reinforcerId: 'a', now: T0 + 4000 }).run;
+    r = stepChoice(r, { type: 'tap', reinforcerId: 'b', now: T0 + 4500 }).run;
+    expect(due(r).effects[0]).toMatchObject({ reinforcerId: 'b', at: T0 + 5300, tappedAt: T0 + 4000 });
   });
 
   it('тап по другой за 800 мс переносит выбор и начинает удержание заново; по выбранной — ничего', () => {
@@ -125,6 +131,9 @@ describe('сопряжение', () => {
     expect(fx.filter((f) => f.type === 'done')).toHaveLength(1);
     expect(pairingResultOf(r.state)).toMatchObject({ endReason: 'completed', chosenBy: 'child' });
     expect(pairingResultOf(r.state).choices).toHaveLength(4);
+    // латентность каждого цикла — от начала его фазы выбора, тройка — в итоге (№165)
+    expect(pairingResultOf(r.state).choices.map((c) => c.latencyMs)).toEqual([1000, 1000, 1000, 1000]);
+    expect(pairingResultOf(r.state).options).toEqual(r.state.options);
   });
 
   it('выбор взрослого полосой — критерий `adult`', () => {
@@ -133,17 +142,17 @@ describe('сопряжение', () => {
     expect(r.choice?.stripShownAt).toBe(T0 + 30_000);
     r = go(r, { type: 'adult_tap', reinforcerId: r.state.options[2], now: T0 + 31_000 });
     r = dueStep(r);
-    expect(r.state.choices[0]).toEqual({ reinforcerId: r.state.options[2], by: 'adult', at: T0 + 31_800 });
+    expect(r.state.choices[0]).toEqual({ reinforcerId: r.state.options[2], by: 'adult', at: T0 + 31_800, latencyMs: 31_000 });
     r = go(r, { type: 'stop', reason: 'adult_stopped', now: T0 + 35_000 });
     expect(pairingResultOf(r.state)).toMatchObject({ endReason: 'adult_stopped', chosenBy: 'adult' });
   });
 
-  it('«Сам» без выбора 60 с — конец как брошенное', () => {
+  it('«Сам» без выбора 60 с — исход `no_choice` (№165), не «ушёл»', () => {
     let r = start('alone');
     const fx: PairingEffect[] = [];
     r = dueStep(r, fx);
     r = dueStep(r, fx);
     expect(fx.map((f) => f.type)).toEqual(['nudge', 'done']);
-    expect(pairingResultOf(r.state)).toMatchObject({ endReason: 'abandoned', choices: [] });
+    expect(pairingResultOf(r.state)).toMatchObject({ endReason: 'no_choice', choices: [] });
   });
 });

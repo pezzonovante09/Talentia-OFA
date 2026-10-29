@@ -573,8 +573,8 @@ export type SpecialistExport = {
    */
   abaReinforcerChoices: unknown[];
   /**
-   * Сессии сопряжения (№164): `day`, `durationSec`, конфигурация, исход, циклы, кто выбирал; ведущий наблюдатель —
-   * меткой. Без `startedAt` / `endedAt`: время суток — режим дня дома (№96).
+   * Сессии сопряжения (№164): `day`, `durationSec`, конфигурация, исход, циклы, кто выбирал; предложенная тройка (id каталога) и
+   * выборы с латентностью ребёнка, мс, и признаком «после подсказки» (№165); ведущий наблюдатель — меткой. Без `startedAt` / `endedAt`: время суток — режим дня дома (№96).
    */
   abaPairingSessions: unknown[];
   /** Состояние ABA; наблюдатели — метками `O1`, `O2`… с ролью и обучен ли. */
@@ -702,6 +702,8 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
         boardSize: session ? session.boardSize : (run?.exchangeOffer?.boardSize ?? null),
       };
     });
+    // предложенная тройка и латентности выборов сопряжения — специалисту (№165): у сопряжения это главные данные
+    // о силе подкрепителя; варианты обмена рутины — по-прежнему нет
     const abaPairingSessions = pairings.map(({ startedAt, endedAt, ...p }) => {
       const seconds = Math.round((Date.parse(endedAt) - Date.parse(startedAt)) / 1000);
       return { ...p, durationSec: Number.isFinite(seconds) ? Math.max(0, seconds) : null, primaryObserverId: label(p.primaryObserverId) };

@@ -100,6 +100,7 @@ export function promptStateOf(s: AbaTargetState, stepId?: string): StepPromptSta
     consecutiveIndependentAtStart: s.consecutiveIndependentAtStart,
     consecutiveAboveStart: s.consecutiveAboveStart,
     consecutiveFailures: s.consecutiveFailures,
+    consecutiveObservingFailures: s.consecutiveObservingFailures,
     lastSuccessfulPromptLevel: s.lastSuccessfulPromptLevel,
   };
   if (!stepId) return own;
@@ -109,6 +110,7 @@ export function promptStateOf(s: AbaTargetState, stepId?: string): StepPromptSta
       consecutiveIndependentAtStart: 0,
       consecutiveAboveStart: 0,
       consecutiveFailures: 0,
+      consecutiveObservingFailures: undefined,
     }
   );
 }
@@ -346,19 +348,30 @@ export function fadeClass(t: AbaTrial): FadeClass {
   return t.promptLevelUsed > t.startPromptLevel ? 'above' : 'at_start';
 }
 
+/**
+ * Провал наблюдения `match`: образца так и не коснулись — с любого старта (методист 2026-10-29): на старте L1 пульс
+ * над образцом идёт вместе с SD, и непройденное наблюдение то же. Строго `null`: у других форматов поля нет.
+ */
+const observingMiss = (t: AbaTrial) => t.observingLatencyMs === null && FAILURE.has(t.response);
+
 function fadeStep(ps: StepPromptState, t: AbaTrial, answerFloor: PromptLevel, ladder: PromptLadder): StepPromptState {
   const succeeded = SUCCESS.has(t.response);
   const lastSuccessfulPromptLevel = succeeded ? clampToApp(t.promptLevelUsed) : ps.lastSuccessfulPromptLevel;
   const failures = FAILURE.has(t.response) ? ps.consecutiveFailures + 1 : 0;
-  const base = { ...ps, lastSuccessfulPromptLevel, consecutiveFailures: failures };
+  const observing = observingMiss(t) ? (ps.consecutiveObservingFailures ?? 0) + 1 : 0;
+  const base = { ...ps, lastSuccessfulPromptLevel, consecutiveFailures: failures, consecutiveObservingFailures: observing || undefined };
 
   if (failures >= FAILURES_TO_RAISE) {
+    // вся серия — провалы наблюдения (№165): ребёнок не смотрел на образец, а не ошибался в выборе — старт
+    // не выше L1 (метка над образцом сразу; L1 и выше остаются), уровень, несущий ответ, растил бы зависимость
+    const level = observing >= failures ? Math.max(ps.startPromptLevel, 1) : Math.max(ladderUp(ps.startPromptLevel, ladder), answerFloor);
     return {
       ...base,
-      startPromptLevel: Math.max(ladderUp(ps.startPromptLevel, ladder), answerFloor) as PromptLevel,
+      startPromptLevel: level as PromptLevel,
       consecutiveIndependentAtStart: 0,
       consecutiveAboveStart: 0,
       consecutiveFailures: 0,
+      consecutiveObservingFailures: undefined,
     };
   }
   const cls = fadeClass(t);
@@ -560,6 +573,7 @@ export function applyPromptDependence(
     consecutiveIndependentAtStart: 0,
     consecutiveAboveStart: 0,
     consecutiveFailures: 0,
+    consecutiveObservingFailures: undefined,
     ...(s.stepPrompts
       ? {
           stepPrompts: Object.fromEntries(

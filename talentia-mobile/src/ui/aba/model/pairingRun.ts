@@ -7,7 +7,8 @@
  *   на месте), лежит 600 мс, уходит в карточку (`motion.slow`, calm — исчезает на месте). Событие домена `token`
  *   пишется, **когда открывается доступ**: 20 с доступа ребёнка не съедаются анимацией обмена.
  * - `access` — 20 с, затем `access_done`; после четвёртого — конец.
- * - «Сам» без выбора 60 с — сопряжение кончается как брошенное (`abandoned`): предпочтение не показано.
+ * - «Сам» без выбора 60 с — сопряжение кончается исходом `no_choice` (№165): предпочтение не показано; удержанный
+ *   выход — `abandoned`.
  */
 import { PAIRING } from '../../../domain/abaTokenTraining';
 import { applyPairingEvent, pairingDueAt, type PairingState } from '../../../domain/abaPairing';
@@ -93,9 +94,9 @@ export function stepPairingRun(r: PairingRun, e: PairingRunEvent): { run: Pairin
       let run: PairingRun = { ...r, choice: step.run };
       for (const fx of step.effects) {
         if (fx.type === 'chosen') {
-          run = { ...run, choice: null, state: applyPairingEvent(run.state, { type: 'choose', reinforcerId: fx.reinforcerId, by: fx.by, now: fx.at }) };
+          run = { ...run, choice: null, state: applyPairingEvent(run.state, { type: 'choose', reinforcerId: fx.reinforcerId, by: fx.by, now: fx.at, tappedAt: fx.tappedAt }) };
         } else if (fx.type === 'no_choice') {
-          run = { ...run, choice: null, state: applyPairingEvent(run.state, { type: 'stop', reason: 'abandoned', now: fx.at }) };
+          run = { ...run, choice: null, state: applyPairingEvent(run.state, { type: 'stop', reason: 'no_choice', now: fx.at }) };
           effects.push({ type: 'done' });
         } else {
           effects.push(fx);

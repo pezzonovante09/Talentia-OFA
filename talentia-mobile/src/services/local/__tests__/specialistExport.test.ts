@@ -153,12 +153,13 @@ const PAIRING_ID = '5a4b3c2d-1e0f-4a9b-8c7d-6e5f4a3b2c1d';
 const pairingResult: PairingResult = {
   sessionId: PAIRING_ID,
   config: 'with_adult',
+  options: ['puzzle', 'bubbles', 'drum'],
   endReason: 'completed',
   cycles: 4,
   startedAt: PAIRING_START,
   endedAt: PAIRING_START + 245_000,
   chosenBy: 'child',
-  choices: ['puzzle', 'bubbles', 'drum', 'puzzle'].map((reinforcerId, i) => ({ reinforcerId, by: 'child' as const, at: PAIRING_START + i * 61_000 + 7_000 })),
+  choices: ['puzzle', 'bubbles', 'drum', 'puzzle'].map((reinforcerId, i) => ({ reinforcerId, by: 'child' as const, at: PAIRING_START + i * 61_000 + 7_000, latencyMs: 6_200 })),
 };
 
 /** Все числа внутри значения. */

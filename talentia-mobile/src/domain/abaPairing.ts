@@ -20,13 +20,14 @@ import { reinforcerChoices, type Rng } from './abaTokens';
 export type PairingPhase = 'choose' | 'wait_token' | 'access' | 'done';
 
 /**
- * Исход сопряжения — закрытый словарь (№164): `completed`, `adult_stopped`, `abandoned` и `app_backgrounded` —
- * приложение свернули или погас экран посреди сопряжения. Свёрнутое, как остановка взрослым, не засчитывается и
- * серию не рвёт, но в данных различимо.
+ * Исход сопряжения — закрытый словарь (№164): `completed`, `adult_stopped`, `abandoned` (ребёнок удержал выход),
+ * `no_choice` («Сам», 60 с без выбора, №165) и `app_backgrounded` — приложение свернули или погас экран посреди
+ * сопряжения. Свёрнутое, как остановка взрослым, не засчитывается и серию не рвёт, но в данных различимо.
  */
 export type PairingEndReason = AbaPairingEndReason;
 
-export type PairingChoice = { reinforcerId: string; by: 'child' | 'adult'; at: number };
+/** `latencyMs` (№165) — от начала фазы выбора до первого касания карточки (у взрослого — полосы). */
+export type PairingChoice = { reinforcerId: string; by: 'child' | 'adult'; at: number; latencyMs: number };
 
 export type PairingState = {
   v: 1;
@@ -84,19 +85,23 @@ export function startPairing(input: {
 }
 
 export type PairingEvent =
-  /** Ребёнок выбрал; `adult` — только после `PAIRING.choiceTimeoutMs` без выбора. */
-  | { type: 'choose'; reinforcerId: string; by: 'child' | 'adult'; now: number }
+  /**
+   * Ребёнок выбрал; `adult` — только после `PAIRING.choiceTimeoutMs` без выбора. `now` — выбор засчитан (конец
+   * удержания), `tappedAt` — первое касание; нет — латентность до `now`.
+   */
+  | { type: 'choose'; reinforcerId: string; by: 'child' | 'adult'; now: number; tappedAt?: number }
   /** Таймер жетона истёк: жетон на доску и сразу обмен — начинается доступ. */
   | { type: 'token'; now: number }
   /** Доступ кончился (приложение по таймеру). */
   | { type: 'access_done'; now: number }
-  /** Взрослый остановил, ребёнок ушёл или приложение свернули. */
-  | { type: 'stop'; reason: 'adult_stopped' | 'abandoned' | 'app_backgrounded'; now: number };
+  /** Взрослый остановил, ребёнок ушёл, в «Сам» не выбрал или приложение свернули. */
+  | { type: 'stop'; reason: 'adult_stopped' | 'abandoned' | 'no_choice' | 'app_backgrounded'; now: number };
 
 /** Шаг по событию. Событие не по фазе или раньше срока — ошибка программы экрана. */
 export function applyPairingEvent(s: PairingState, e: PairingEvent): PairingState {
   if (e.type === 'stop') {
     assert(s.phase !== 'done', 'stop после конца');
+    assert(e.reason !== 'no_choice' || (s.phase === 'choose' && s.config === 'alone'), 'без выбора кончается только выбор в «Сам»');
     return { ...s, phase: 'done', endReason: e.reason, phaseSince: e.now };
   }
   switch (e.type) {
@@ -104,12 +109,14 @@ export function applyPairingEvent(s: PairingState, e: PairingEvent): PairingStat
       assert(s.phase === 'choose', `choose в фазе ${s.phase}`);
       assert(s.options.includes(e.reinforcerId), `Подкрепитель ${e.reinforcerId} не предлагался`);
       assert(e.by === 'child' || e.now - s.phaseSince >= PAIRING.choiceTimeoutMs, 'взрослый выбирает только после таймаута');
+      const tappedAt = e.tappedAt ?? e.now;
+      assert(tappedAt >= s.phaseSince && tappedAt <= e.now, 'касание вне фазы выбора');
       return {
         ...s,
         phase: 'wait_token',
         phaseSince: e.now,
         reinforcerId: e.reinforcerId,
-        choices: [...s.choices, { reinforcerId: e.reinforcerId, by: e.by, at: e.now }],
+        choices: [...s.choices, { reinforcerId: e.reinforcerId, by: e.by, at: e.now, latencyMs: tappedAt - s.phaseSince }],
       };
     case 'token':
       assert(s.phase === 'wait_token', `token в фазе ${s.phase}`);
@@ -142,6 +149,8 @@ export function pairingDueAt(s: PairingState): { event: 'adult_may_choose' | 'to
 export type PairingResult = {
   sessionId: string;
   config: AbaConfig;
+  /** Предложенная тройка (№165). */
+  options: string[];
   endReason: PairingEndReason;
   /** Законченных циклов «жетон → обмен → доступ»: «ушёл после трёх» и «не выбрал ни разу» различимы. */
   cycles: number;
@@ -161,6 +170,7 @@ export function pairingResultOf(s: PairingState): PairingResult {
   return {
     sessionId: s.sessionId,
     config: s.config,
+    options: s.options,
     endReason: s.endReason!,
     cycles: s.cycles,
     startedAt: s.startedAt,
