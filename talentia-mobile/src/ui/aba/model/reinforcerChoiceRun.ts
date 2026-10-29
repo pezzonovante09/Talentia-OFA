@@ -20,6 +20,8 @@ export type ChoiceRun = {
   by: 'child' | 'adult' | null;
   /** Первое принятое касание карточки или полосы — от него латентность выбора (№165). */
   firstTapAt: number | null;
+  /** Чего коснулись первым (№166): при переносе выбора латентность относится к ней, а не к выбранной. */
+  firstTapId: string | null;
   holdUntil: number | null;
   stripShownAt: number | null;
   pulsed: boolean;
@@ -32,8 +34,8 @@ export type ChoiceEvent =
   | { type: 'due'; at: number };
 
 export type ChoiceEffect =
-  /** `at` — выбор засчитан (конец удержания), `tappedAt` — первое касание. */
-  | { type: 'chosen'; reinforcerId: string; by: 'child' | 'adult'; at: number; tappedAt: number }
+  /** `at` — выбор засчитан (конец удержания), `tappedAt` и `firstTappedId` — первое касание. */
+  | { type: 'chosen'; reinforcerId: string; by: 'child' | 'adult'; at: number; tappedAt: number; firstTappedId: string }
   | { type: 'show_strip' }
   /** «Сам», 30 с: один пульс трёх карточек и повтор инструкции голосом. */
   | { type: 'nudge' }
@@ -44,7 +46,7 @@ const [NUDGE_MS, END_MS] = abaReinforcerChoice.aloneNoChoiceMs;
 export const ADULT_STRIP_AFTER_MS = NUDGE_MS;
 
 export function startChoice(config: AbaConfig, shownAt: number): ChoiceRun {
-  return { config, shownAt, selected: null, by: null, firstTapAt: null, holdUntil: null, stripShownAt: null, pulsed: false, ended: null };
+  return { config, shownAt, selected: null, by: null, firstTapAt: null, firstTapId: null, holdUntil: null, stripShownAt: null, pulsed: false, ended: null };
 }
 
 /** Принимает ли полоса взрослого нажатие (500 мс после появления — нет). */
@@ -65,14 +67,14 @@ export function stepChoice(r: ChoiceRun, e: ChoiceEvent): { run: ChoiceRun; effe
   switch (e.type) {
     case 'tap':
       if (r.selected === e.reinforcerId) return { run: r, effects: [] };
-      return { run: { ...r, selected: e.reinforcerId, by: 'child', firstTapAt: r.firstTapAt ?? e.now, holdUntil: e.now + abaReinforcerChoice.holdMs, stripShownAt: null }, effects: [] };
+      return { run: { ...r, selected: e.reinforcerId, by: 'child', firstTapAt: r.firstTapAt ?? e.now, firstTapId: r.firstTapId ?? e.reinforcerId, holdUntil: e.now + abaReinforcerChoice.holdMs, stripShownAt: null }, effects: [] };
     case 'adult_tap':
       if (!stripAccepts(r, e.now)) return { run: r, effects: [] };
-      return { run: { ...r, selected: e.reinforcerId, by: 'adult', firstTapAt: r.firstTapAt ?? e.now, holdUntil: e.now + abaReinforcerChoice.holdMs, stripShownAt: null }, effects: [] };
+      return { run: { ...r, selected: e.reinforcerId, by: 'adult', firstTapAt: r.firstTapAt ?? e.now, firstTapId: r.firstTapId ?? e.reinforcerId, holdUntil: e.now + abaReinforcerChoice.holdMs, stripShownAt: null }, effects: [] };
     case 'due': {
       if (r.holdUntil !== null) {
         if (e.at < r.holdUntil) return { run: r, effects: [] };
-        return { run: { ...r, holdUntil: null, ended: 'chosen' }, effects: [{ type: 'chosen', reinforcerId: r.selected!, by: r.by!, at: r.holdUntil, tappedAt: r.firstTapAt ?? r.holdUntil }] };
+        return { run: { ...r, holdUntil: null, ended: 'chosen' }, effects: [{ type: 'chosen', reinforcerId: r.selected!, by: r.by!, at: r.holdUntil, tappedAt: r.firstTapAt ?? r.holdUntil, firstTappedId: r.firstTapId ?? r.selected! }] };
       }
       if (r.selected !== null) return { run: r, effects: [] };
       if (r.config === 'with_adult') {

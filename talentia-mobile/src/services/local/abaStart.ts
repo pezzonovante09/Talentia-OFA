@@ -19,7 +19,7 @@ import { boardRevOf, MIN_REINFORCER_POOL } from '../../domain/abaTokens';
 import { finishAbaSession, stopSession, type AbaSessionState, type StartInput } from '../../domain/abaSession';
 import type { RandomBytes } from '../../domain/ids';
 import { targetForBand } from '../../domain/abaTargetRules';
-import type { AbaConfig, AbaObserver, AbaTarget } from '../../types/aba';
+import type { AbaConfig, AbaObserver, AbaPairingSession, AbaTarget } from '../../types/aba';
 import type { AgeBand } from '../../types/task';
 import { newAbaId } from '../abaIds';
 import { randomSeed } from '../random';
@@ -48,6 +48,26 @@ export type AbaOverview = {
 const localDay = abaLocalDay;
 
 export { abaLocalDay };
+
+/** Сессий сопряжения подряд в «Сам» без выбора или с уходом, после которых 2.6 подсказывает «вместе» (№166). */
+export const PAIRING_ALONE_MISSES_TO_HINT = 2;
+
+/**
+ * Подсказать взрослому на 2.6 перед сопряжением «лучше вместе» и отметить «Со взрослым» (№166): последние
+ * `PAIRING_ALONE_MISSES_TO_HINT` сессий сопряжения прошли в «Сам» и кончились без выбора (`no_choice`), уходом
+ * (`abandoned`) или свёрнутым приложением — в «Сам» это тоже уход, как в `applyPairingSession`. Сопряжение — связь «взрослый рядом — хорошо»; одному ребёнку она не даётся. Выбор остаётся за взрослым.
+ */
+export async function pairingSuggestsAdult(db: SqlDb, childId: string): Promise<boolean> {
+  const rows = await db.all<{ body: string }>('SELECT body FROM aba_pairing_sessions WHERE child_id = ? ORDER BY seq DESC LIMIT ?', [
+    childId,
+    PAIRING_ALONE_MISSES_TO_HINT,
+  ]);
+  if (rows.length < PAIRING_ALONE_MISSES_TO_HINT) return false;
+  return rows.every((r) => {
+    const p = JSON.parse(r.body) as Pick<AbaPairingSession, 'config' | 'endReason'>;
+    return p.config === 'alone' && (p.endReason === 'no_choice' || p.endReason === 'abandoned' || p.endReason === 'app_backgrounded');
+  });
+}
 
 function artFor(art?: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> | undefined {
   if (art) return art;

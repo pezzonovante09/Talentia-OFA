@@ -319,7 +319,8 @@ export async function commitPairingSession(
         config: result.config,
         endReason: result.endReason,
         cycles: result.cycles,
-        chosenBy: result.chosenBy,
+        // критерий без выборов считает «выбрал взрослый»; в записи — как было: никто (№166)
+        chosenBy: result.choices.length === 0 ? 'none' : result.chosenBy,
         choicesByChild: result.choices.filter((c) => c.by === 'child').length,
         choicesByAdult: result.choices.filter((c) => c.by === 'adult').length,
         options: result.options,
@@ -328,6 +329,7 @@ export async function commitPairingSession(
           by: c.by,
           latencyMs: c.by === 'child' ? c.latencyMs : null,
           prompted: c.by === 'adult' || c.latencyMs >= PAIRING.choiceTimeoutMs,
+          ...(c.firstTappedId ? { firstTappedId: c.firstTappedId } : {}),
         })),
         primaryObserverId: result.config === 'alone' ? null : observerId,
       },

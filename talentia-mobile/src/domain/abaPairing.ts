@@ -26,8 +26,11 @@ export type PairingPhase = 'choose' | 'wait_token' | 'access' | 'done';
  */
 export type PairingEndReason = AbaPairingEndReason;
 
-/** `latencyMs` (№165) — от начала фазы выбора до первого касания карточки (у взрослого — полосы). */
-export type PairingChoice = { reinforcerId: string; by: 'child' | 'adult'; at: number; latencyMs: number };
+/**
+ * `latencyMs` (№165) — от начала фазы выбора до первого касания карточки (у взрослого — полосы). `firstTappedId`
+ * (№166) — только если первым коснулись другой карточки: латентность тогда относится к ней.
+ */
+export type PairingChoice = { reinforcerId: string; by: 'child' | 'adult'; at: number; latencyMs: number; firstTappedId?: string };
 
 export type PairingState = {
   v: 1;
@@ -89,7 +92,7 @@ export type PairingEvent =
    * Ребёнок выбрал; `adult` — только после `PAIRING.choiceTimeoutMs` без выбора. `now` — выбор засчитан (конец
    * удержания), `tappedAt` — первое касание; нет — латентность до `now`.
    */
-  | { type: 'choose'; reinforcerId: string; by: 'child' | 'adult'; now: number; tappedAt?: number }
+  | { type: 'choose'; reinforcerId: string; by: 'child' | 'adult'; now: number; tappedAt?: number; firstTappedId?: string }
   /** Таймер жетона истёк: жетон на доску и сразу обмен — начинается доступ. */
   | { type: 'token'; now: number }
   /** Доступ кончился (приложение по таймеру). */
@@ -111,12 +114,14 @@ export function applyPairingEvent(s: PairingState, e: PairingEvent): PairingStat
       assert(e.by === 'child' || e.now - s.phaseSince >= PAIRING.choiceTimeoutMs, 'взрослый выбирает только после таймаута');
       const tappedAt = e.tappedAt ?? e.now;
       assert(tappedAt >= s.phaseSince && tappedAt <= e.now, 'касание вне фазы выбора');
+      assert(e.firstTappedId === undefined || s.options.includes(e.firstTappedId), `Подкрепитель ${e.firstTappedId} не предлагался`);
+      const switched = e.firstTappedId !== undefined && e.firstTappedId !== e.reinforcerId;
       return {
         ...s,
         phase: 'wait_token',
         phaseSince: e.now,
         reinforcerId: e.reinforcerId,
-        choices: [...s.choices, { reinforcerId: e.reinforcerId, by: e.by, at: e.now, latencyMs: tappedAt - s.phaseSince }],
+        choices: [...s.choices, { reinforcerId: e.reinforcerId, by: e.by, at: e.now, latencyMs: tappedAt - s.phaseSince, ...(switched ? { firstTappedId: e.firstTappedId } : {}) }],
       };
     case 'token':
       assert(s.phase === 'wait_token', `token в фазе ${s.phase}`);

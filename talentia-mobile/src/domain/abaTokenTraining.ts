@@ -11,7 +11,7 @@
  * Хранится на **ребёнке**, не на цели: доска одна на все цели.
  */
 import type { PairingEndReason } from './abaPairing';
-import { TOKEN_BOARD_SIZE, type AbaSessionEndReason } from '../types/aba';
+import { TOKEN_BOARD_SIZE, type AbaConfig, type AbaSessionEndReason } from '../types/aba';
 import type { AgeBand } from '../types/task';
 
 export type BoardStage = 1 | 2 | 3 | 5;
@@ -33,10 +33,12 @@ export const PAIRING = {
   /** Столько сессий без критерия — флаг специалисту; сопряжение продолжается. */
   sessionsBeforeFlag: 5,
   /**
-   * Столько подряд незасчитанных сессий (остановил взрослый, свернули) — флаг `pairing_keeps_breaking` (№165):
-   * в счёт `sessionsBeforeFlag` они не идут, и без своего порога сопряжение крутилось бы молча.
+   * Столько незасчитанных сессий (остановил взрослый, свернули) среди последних `uncountedWindow` — флаг
+   * `pairing_keeps_breaking` (№165, по окну — №166): в счёт `sessionsBeforeFlag` они не идут, и без своего порога
+   * сопряжение крутилось бы молча; «подряд» не ловило чередование «оборвали, оборвали, прошло».
    */
   uncountedBeforeFlag: 3,
+  uncountedWindow: 5,
 } as const;
 
 /** Доступ к подкрепителю за обмен по ступени. В рабочее время сессии не идёт. */
@@ -68,8 +70,8 @@ export type TokenTrainingState = {
   pairingSessions: number;
   /** Подряд сессий сопряжения, выполнивших критерий. */
   pairingStreak: number;
-  /** Подряд незасчитанных сессий сопряжения (№165); засчитанная обнуляет. Нет поля — 0. */
-  pairingUncounted?: number;
+  /** Последние `PAIRING.uncountedWindow` сессий сопряжения, свежие в конце: `true` — не засчитана (№166). Нет поля — пусто. */
+  pairingRecent?: boolean[];
   stage: BoardStage;
   /** Сессии на текущей ступени, свежие в конце; при смене ступени начинаются заново. */
   atStage: StageSession[];
@@ -104,30 +106,37 @@ const withFlag = (flags: TokenTrainingFlag[], f: TokenTrainingFlag) => (flags.in
 /**
  * Итог сессии сопряжения. Критерий — выбор сделал ребёнок, а не взрослый по таймауту, и
  * сессия не брошена; две такие подряд — сопряжение закончено, дальше обучение доске с
- * одной ячейки. Остановка взрослым и свёрнутое приложение (№164) не засчитываются и серию не рвут, но
- * считаются подряд: `PAIRING.uncountedBeforeFlag` таких — флаг `pairing_keeps_breaking` (№165). Брошенное и
- * «Сам» без выбора (`no_choice`, №165) засчитываются и серию рвут.
+ * одной ячейки.
+ *
+ * - Брошенное и «Сам» без выбора (`no_choice`, №165) засчитываются и серию рвут.
+ * - Остановка взрослым и свёрнутое приложение (№164) не засчитываются. Серию они не рвут — кроме свёрнутого в «Сам»
+ *   (№166): взрослого рядом нет, «свернул» там чаще всего «ушёл кнопкой домой».
+ * - `PAIRING.uncountedBeforeFlag` незасчитанных среди последних `PAIRING.uncountedWindow` — флаг
+ *   `pairing_keeps_breaking` (№165–166): процедура не доходит до конца; со взрослым — сигнал о ходе процедуры, в «Сам»
+ *   часть обрывов — уход ребёнка (причину специалист видит в журнале: `config` и `endReason`).
  */
 export function applyPairingSession(
   t: TokenTrainingState,
-  session: { chosenBy: 'child' | 'adult'; endReason: PairingEndReason },
+  session: { chosenBy: 'child' | 'adult'; endReason: PairingEndReason; config: AbaConfig },
 ): TokenTrainingState {
   if (t.pairingDone) return t;
-  if (session.endReason === 'adult_stopped' || session.endReason === 'app_backgrounded') {
-    const pairingUncounted = (t.pairingUncounted ?? 0) + 1;
-    const flags = pairingUncounted >= PAIRING.uncountedBeforeFlag ? withFlag(t.flags, 'pairing_keeps_breaking') : t.flags;
-    return { ...t, pairingUncounted, flags };
+  const uncounted = session.endReason === 'adult_stopped' || session.endReason === 'app_backgrounded';
+  const pairingRecent = [...(t.pairingRecent ?? []), uncounted].slice(-PAIRING.uncountedWindow);
+  const breaking = pairingRecent.filter(Boolean).length >= PAIRING.uncountedBeforeFlag;
+  const flagged = breaking ? withFlag(t.flags, 'pairing_keeps_breaking') : t.flags;
+  if (uncounted) {
+    const breaksStreak = session.endReason === 'app_backgrounded' && session.config === 'alone';
+    return { ...t, pairingRecent, flags: flagged, ...(breaksStreak ? { pairingStreak: 0 } : {}) };
   }
   const pairingSessions = t.pairingSessions + 1;
-  const reset = t.pairingUncounted ? { pairingUncounted: 0 } : {};
   // засчитанных исходов три: `completed`, `abandoned`, `no_choice` — критерий выполняет только первый
   const ok = session.chosenBy === 'child' && session.endReason === 'completed';
   const pairingStreak = ok ? t.pairingStreak + 1 : 0;
   if (pairingStreak >= PAIRING.sessionsToPass) {
-    return { ...t, pairingDone: true, pairingSessions, pairingStreak, ...reset, stage: 1, atStage: [] };
+    return { ...t, pairingDone: true, pairingSessions, pairingStreak, pairingRecent, flags: flagged, stage: 1, atStage: [] };
   }
-  const flags = pairingSessions >= PAIRING.sessionsBeforeFlag ? withFlag(t.flags, 'pairing_not_established') : t.flags;
-  return { ...t, pairingSessions, pairingStreak, ...reset, flags };
+  const flags = pairingSessions >= PAIRING.sessionsBeforeFlag ? withFlag(flagged, 'pairing_not_established') : flagged;
+  return { ...t, pairingSessions, pairingStreak, pairingRecent, flags };
 }
 
 /**

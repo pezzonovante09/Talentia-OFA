@@ -982,7 +982,8 @@ export type AbaPairingSession = {
   /** Исход; `app_backgrounded` — свернули посреди сопряжения. */
   endReason: AbaPairingEndReason;
   cycles: number;
-  chosenBy: 'child' | 'adult';
+  /** `none` (№166) — выборов не было (остановили до первого, «Сам» без выбора): взрослый тоже не выбирал. */
+  chosenBy: 'child' | 'adult' | 'none';
   choicesByChild: number;
   choicesByAdult: number;
   /** Предложенная тройка — одна на сессию (№165): «выбрал X» читается как «X из этих трёх». */
@@ -990,9 +991,9 @@ export type AbaPairingSession = {
   /**
    * Выборы сессии по порядку (№165). `latencyMs` — от показа экрана выбора до первого касания карточки: сила тяги
    * ребёнка к подкрепителю; у выбора взрослого — `null`. `prompted` — выбор после пульса «Сам» или появления полосы
-   * взрослого (30 с): уже подсказан.
+   * взрослого (30 с): уже подсказан. `firstTappedId` (№166) — только если первым коснулись другой карточки.
    */
-  choices: { reinforcerId: string; by: 'child' | 'adult'; latencyMs: number | null; prompted: boolean }[];
+  choices: { reinforcerId: string; by: 'child' | 'adult'; latencyMs: number | null; prompted: boolean; firstTappedId?: string }[];
   /** Ведущий наблюдатель — uuid без имени; `null` в «Сам». */
   primaryObserverId: string | null;
 };

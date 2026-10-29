@@ -107,34 +107,49 @@ describe('46: исход `no_choice`', () => {
   });
 
   it('засчитывается и рвёт серию, как брошенное', () => {
-    let t = applyPairingSession(initialTokenTraining(), { chosenBy: 'child', endReason: 'completed' });
-    t = applyPairingSession(t, { chosenBy: 'adult', endReason: 'no_choice' });
+    let t = applyPairingSession(initialTokenTraining(), { chosenBy: 'child', endReason: 'completed', config: 'with_adult' });
+    t = applyPairingSession(t, { chosenBy: 'adult', endReason: 'no_choice', config: 'with_adult' });
     expect([t.pairingSessions, t.pairingStreak, t.pairingDone]).toEqual([2, 0, false]);
   });
 });
 
-describe('47: подряд незасчитанные сопряжения', () => {
+describe('47 / №166: незасчитанные сопряжения — окно и «Сам»', () => {
+  const step = (t: ReturnType<typeof initialTokenTraining>, endReason: Parameters<typeof applyPairingSession>[1]['endReason'], config: 'alone' | 'with_adult' = 'with_adult') =>
+    applyPairingSession(t, { chosenBy: 'child', endReason, config });
+
   it(`${PAIRING.uncountedBeforeFlag} подряд — флаг \`pairing_keeps_breaking\`, в счёт сессий не идут`, () => {
-    let t = initialTokenTraining();
-    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'adult_stopped' });
-    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'app_backgrounded' });
+    let t = step(initialTokenTraining(), 'adult_stopped');
+    t = step(t, 'app_backgrounded');
     expect(t.flags).toEqual([]);
-    t = applyPairingSession(t, { chosenBy: 'adult', endReason: 'adult_stopped' });
-    expect([t.pairingSessions, t.pairingUncounted, t.flags]).toEqual([0, 3, ['pairing_keeps_breaking']]);
+    t = step(t, 'adult_stopped');
+    expect([t.pairingSessions, t.flags]).toEqual([0, ['pairing_keeps_breaking']]);
   });
 
-  it('засчитанная сессия обнуляет счёт; флаг остаётся', () => {
+  it(`чередование «оборвали, оборвали, засчитали» — флаг по окну ${PAIRING.uncountedWindow} (№166)`, () => {
     let t = initialTokenTraining();
-    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'adult_stopped' });
-    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'app_backgrounded' });
-    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'completed' });
-    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'adult_stopped' });
-    expect([t.pairingUncounted, t.flags]).toEqual([1, []]);
+    for (const r of ['adult_stopped', 'adult_stopped', 'abandoned', 'app_backgrounded'] as const) t = step(t, r);
+    expect(t.flags).toContain('pairing_keeps_breaking');
+  });
+
+  it('старые обрывы уходят из окна', () => {
+    let t = initialTokenTraining();
+    for (const r of ['adult_stopped', 'adult_stopped', 'abandoned', 'abandoned', 'abandoned', 'abandoned', 'adult_stopped'] as const) t = step(t, r);
+    expect(t.pairingRecent).toEqual([false, false, false, false, true]);
+    expect(t.flags).not.toContain('pairing_keeps_breaking');
+  });
+
+  it('«Сам»: свёрнутое рвёт серию, но в счёт сессий не идёт; со взрослым — не рвёт (№166)', () => {
+    const one = step(initialTokenTraining(), 'completed', 'alone');
+    const alone = step(one, 'app_backgrounded', 'alone');
+    expect([alone.pairingSessions, alone.pairingStreak]).toEqual([1, 0]);
+    expect(step(alone, 'completed', 'alone').pairingDone).toBe(false);
+    const adult = step(one, 'app_backgrounded', 'with_adult');
+    expect(step(adult, 'completed', 'with_adult').pairingDone).toBe(true);
   });
 
   it('после `pairingDone` не считается', () => {
     const done = { ...initialTokenTraining(), pairingDone: true };
-    expect(applyPairingSession(done, { chosenBy: 'child', endReason: 'adult_stopped' })).toBe(done);
+    expect(applyPairingSession(done, { chosenBy: 'child', endReason: 'adult_stopped', config: 'with_adult' })).toBe(done);
   });
 });
 
@@ -193,5 +208,47 @@ describe('48: латентность выбора и тройка', () => {
       { reinforcerId: s.options[0], by: 'adult', latencyMs: null, prompted: true },
       { reinforcerId: s.options[1], by: 'child', latencyMs: 33_900, prompted: true },
     ]);
+  });
+});
+
+describe('№166 (53): запись сопряжения — «никто не выбирал» и первая карточка', () => {
+  const consent: ConsentEvent = {
+    id: 'aba-grant-kid',
+    scope: 'aba_processing',
+    action: 'grant',
+    childId: 'kid',
+    textVersion: 'ru-draft-1',
+    confirmedBy: 'biometric',
+    actorId: 'parent',
+    at: '2026-10-25T09:00:00Z',
+  };
+  const body = async (db: Awaited<ReturnType<typeof memoryDb>>) => JSON.parse((await db.all<{ body: string }>('SELECT body FROM aba_pairing_sessions'))[0].body);
+
+  it('«Сам» без выбора — в записи `none`, критерий по-прежнему не выполнен', async () => {
+    const db = await memoryDb();
+    await appendConsentEvent(db, consent, 'owner');
+    const s = applyPairingEvent(start('alone'), { type: 'stop', reason: 'no_choice', now: T0 + 60_000 });
+    expect(pairingResultOf(s).chosenBy).toBe('adult');
+    await commitPairingSession(db, 'kid', pairingResultOf(s), '2026-10-25T10:01:00Z');
+    expect(await body(db)).toMatchObject({ chosenBy: 'none', endReason: 'no_choice', choices: [] });
+  });
+
+  it('перенос выбора — первая карточка пишется; без переноса — нет', async () => {
+    const db = await memoryDb();
+    await appendConsentEvent(db, consent, 'owner');
+    let s = start('with_adult');
+    const [a, b] = s.options;
+    s = applyPairingEvent(s, { type: 'choose', reinforcerId: b, by: 'child', now: T0 + 3000, tappedAt: T0 + 1500, firstTappedId: a });
+    expect(s.choices[0]).toMatchObject({ reinforcerId: b, latencyMs: 1500, firstTappedId: a });
+    s = applyPairingEvent(s, { type: 'token', now: T0 + 13_000 });
+    s = applyPairingEvent(s, { type: 'access_done', now: T0 + 33_000 });
+    s = applyPairingEvent(s, { type: 'choose', reinforcerId: a, by: 'child', now: T0 + 35_000, tappedAt: T0 + 34_200, firstTappedId: a });
+    expect(s.choices[1]).not.toHaveProperty('firstTappedId');
+    expect(() => applyPairingEvent(start('with_adult'), { type: 'choose', reinforcerId: a, by: 'child', now: T0 + 2000, firstTappedId: 'not_offered' })).toThrow(PairingError);
+    s = applyPairingEvent(s, { type: 'stop', reason: 'adult_stopped', now: T0 + 36_000 });
+    await commitPairingSession(db, 'kid', pairingResultOf(s), '2026-10-25T10:01:00Z');
+    const rec = await body(db);
+    expect(rec.choices[0]).toMatchObject({ reinforcerId: b, firstTappedId: a });
+    expect(rec.choices[1]).not.toHaveProperty('firstTappedId');
   });
 });

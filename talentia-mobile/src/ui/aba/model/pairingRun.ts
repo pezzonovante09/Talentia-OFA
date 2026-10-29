@@ -94,7 +94,7 @@ export function stepPairingRun(r: PairingRun, e: PairingRunEvent): { run: Pairin
       let run: PairingRun = { ...r, choice: step.run };
       for (const fx of step.effects) {
         if (fx.type === 'chosen') {
-          run = { ...run, choice: null, state: applyPairingEvent(run.state, { type: 'choose', reinforcerId: fx.reinforcerId, by: fx.by, now: fx.at, tappedAt: fx.tappedAt }) };
+          run = { ...run, choice: null, state: applyPairingEvent(run.state, { type: 'choose', reinforcerId: fx.reinforcerId, by: fx.by, now: fx.at, tappedAt: fx.tappedAt, firstTappedId: fx.firstTappedId }) };
         } else if (fx.type === 'no_choice') {
           run = { ...run, choice: null, state: applyPairingEvent(run.state, { type: 'stop', reason: 'no_choice', now: fx.at }) };
           effects.push({ type: 'done' });

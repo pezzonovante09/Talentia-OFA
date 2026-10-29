@@ -624,6 +624,7 @@
       "alone": "On my own"
     },
     "aloneCaption": "Some tasks are only with an adult",
+    "togetherHint": "This one goes better together for now — stay close",
     "start": "Start",
     "back": "Back",
     "tooSmallTitle": "The screen is too small for the session",

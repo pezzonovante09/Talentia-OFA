@@ -15,6 +15,7 @@ import { abaTierFor, abaWhoLeadsAccepts, abaWhoLeadsSheet, ABA_CONTROL_STROKE } 
 import { parentSpacing } from '../../src/design/parentTokens';
 import { radii, touch } from '../../src/design/tokens';
 import { newAbaId } from '../../src/services/abaIds';
+import { pairingSuggestsAdult } from '../../src/services/local/abaStart';
 import { loadChildState } from '../../src/services/local/childState';
 import { setAbaObservers } from '../../src/services/local/commit';
 import { useAbaRun } from '../../src/state/abaRun';
@@ -103,11 +104,35 @@ export default function AbaConfigScreen() {
   const [choice, setChoice] = useState<AbaConfig | null>(null);
   const [sheet, setSheet] = useState(false);
   const [prev, setPrev] = useState<AbaObserver[]>([]);
-  const [shownAt] = useState(() => clock.now());
+  // перед сопряжением — подсказка «вместе» (№166); решение готово до первого кадра карточек: предвыбор, появившийся
+  // после загрузки, сменил бы рамку и «Начать» под пальцем ребёнка (`child-ux-specialist` 2026-10-29)
+  const [together, setTogether] = useState<boolean | null>(mode === 'pairing' ? null : false);
+  const [shownAt, setShownAt] = useState(() => clock.now());
 
   useEffect(() => {
     if (db && childId) void loadChildState(db, childId, 'abaObservers').then((o) => setPrev(o ?? []));
   }, [db, childId]);
+
+  useEffect(() => {
+    if (mode !== 'pairing') return;
+    if (!db || !childId) {
+      setTogether(false);
+      return;
+    }
+    let live = true;
+    void pairingSuggestsAdult(db, childId).then(
+      (yes) => {
+        if (!live) return;
+        if (yes) setChoice('with_adult');
+        setTogether(yes);
+        setShownAt(clock.now());
+      },
+      () => live && setTogether(false),
+    );
+    return () => {
+      live = false;
+    };
+  }, [mode, db, childId, clock]);
 
   const next = mode === 'pairing' ? '/aba/pairing' : '/aba/session';
   const go = async (config: AbaConfig, role?: AbaObserver['role'], trained = false) => {
@@ -139,7 +164,7 @@ export default function AbaConfigScreen() {
               <ParentButton variant="secondary" label={t('abaSession.back')} onPress={() => router.replace('/map')} testID="aba-too-small-back" />
             </ParentThemeProvider>
           </View>
-        ) : (
+        ) : together === null ? null : (
           <>
             <View style={{ height: 68, justifyContent: 'center' }}>
               <ExitHold onExit={() => router.replace('/map')} label={t('abaSession.exit')} hintLabel={t('abaSession.exitHint')} />
@@ -165,7 +190,15 @@ export default function AbaConfigScreen() {
                 <Figures n={cfg === 'with_adult' ? 2 : 1} color={c.ink} />
               </ChildPressable>
             ))}
-            <Text style={{ color: c.ink, opacity: 0.7, textAlign: 'center', marginTop: 8, fontSize: 14 }}>{t('abaSession.aloneCaption')}</Text>
+            {/* подсказка взрослому — на месте подписи и тем же видом: раскладка и высота карточек не меняются, не озвучивается */}
+            <Text
+              style={{ color: c.ink, opacity: 0.7, textAlign: 'center', marginTop: 8, fontSize: 14, lineHeight: 20 }}
+              numberOfLines={2}
+              maxFontSizeMultiplier={1.1}
+              testID={together ? 'aba-together-hint' : 'aba-alone-caption'}
+            >
+              {t(together ? 'abaSession.togetherHint' : 'abaSession.aloneCaption')}
+            </Text>
             <View style={{ flex: 1 }} />
             <Pressable
               disabled={choice === null}

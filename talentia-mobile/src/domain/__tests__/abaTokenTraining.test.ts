@@ -23,29 +23,29 @@ const ses = (exchanges: number, endReason: StageSession['endReason'] = 'complete
 describe('сопряжение', () => {
   it('две подряд сессии, где выбрал ребёнок, — сопряжение закончено, доска из одной ячейки', () => {
     let t = initialTokenTraining();
-    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'completed' });
+    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'completed', config: 'with_adult' });
     expect(t.pairingDone).toBe(false);
-    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'completed' });
+    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'completed', config: 'with_adult' });
     expect([t.pairingDone, t.stage]).toEqual([true, 1]);
   });
 
   it('выбор взрослого или брошенная сессия рвут серию', () => {
-    let t = applyPairingSession(initialTokenTraining(), { chosenBy: 'child', endReason: 'completed' });
-    t = applyPairingSession(t, { chosenBy: 'adult', endReason: 'completed' });
-    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'completed' });
+    let t = applyPairingSession(initialTokenTraining(), { chosenBy: 'child', endReason: 'completed', config: 'with_adult' });
+    t = applyPairingSession(t, { chosenBy: 'adult', endReason: 'completed', config: 'with_adult' });
+    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'completed', config: 'with_adult' });
     expect(t.pairingDone).toBe(false);
   });
 
   it('остановка взрослым не засчитывается и серию не рвёт', () => {
-    let t = applyPairingSession(initialTokenTraining(), { chosenBy: 'child', endReason: 'completed' });
-    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'adult_stopped' });
-    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'completed' });
+    let t = applyPairingSession(initialTokenTraining(), { chosenBy: 'child', endReason: 'completed', config: 'with_adult' });
+    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'adult_stopped', config: 'with_adult' });
+    t = applyPairingSession(t, { chosenBy: 'child', endReason: 'completed', config: 'with_adult' });
     expect([t.pairingDone, t.pairingSessions]).toEqual([true, 2]);
   });
 
   it('пять сессий без критерия — флаг специалисту, сопряжение продолжается', () => {
     let t = initialTokenTraining();
-    for (let i = 0; i < 5; i += 1) t = applyPairingSession(t, { chosenBy: 'adult', endReason: 'completed' });
+    for (let i = 0; i < 5; i += 1) t = applyPairingSession(t, { chosenBy: 'adult', endReason: 'completed', config: 'with_adult' });
     expect([t.pairingDone, t.flags]).toEqual([false, ['pairing_not_established']]);
   });
 });

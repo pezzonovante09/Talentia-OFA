@@ -20,7 +20,7 @@ describe('выбор тапом', () => {
     let r = stepChoice(startChoice('alone', T0), { type: 'tap', reinforcerId: 'a', now: T0 + 1000 }).run;
     expect(choiceDueAt(r)).toBe(T0 + 1800);
     const s = due(r);
-    expect(s.effects).toEqual([{ type: 'chosen', reinforcerId: 'a', by: 'child', at: T0 + 1800, tappedAt: T0 + 1000 }]);
+    expect(s.effects).toEqual([{ type: 'chosen', reinforcerId: 'a', by: 'child', at: T0 + 1800, tappedAt: T0 + 1000, firstTappedId: 'a' }]);
     r = s.run;
     expect(choiceDueAt(r)).toBeNull();
   });
@@ -28,7 +28,7 @@ describe('выбор тапом', () => {
   it('латентность — от показа до первого касания, перенос выбора её не сдвигает (№165)', () => {
     let r = stepChoice(startChoice('alone', T0), { type: 'tap', reinforcerId: 'a', now: T0 + 4000 }).run;
     r = stepChoice(r, { type: 'tap', reinforcerId: 'b', now: T0 + 4500 }).run;
-    expect(due(r).effects[0]).toMatchObject({ reinforcerId: 'b', at: T0 + 5300, tappedAt: T0 + 4000 });
+    expect(due(r).effects[0]).toMatchObject({ reinforcerId: 'b', at: T0 + 5300, tappedAt: T0 + 4000, firstTappedId: 'a' });
   });
 
   it('тап по другой за 800 мс переносит выбор и начинает удержание заново; по выбранной — ничего', () => {
