@@ -84,7 +84,16 @@ export function ChildPressable({
     if (abaTouchCommits({ startedAt: d.at, frameShownAt, pointerIndex: d.id, endedInside: true, slopPt: slop })) onCommit(clock.now());
   };
   return (
-    <Pressable onPressIn={onPressIn} onPress={onPress} disabled={disabled} style={style} testID={testID} accessibilityRole="button" accessibilityLabel={accessibilityLabel}>
+    // отклик на касание — сжатие 0.94 до отпускания у любой детской цели, и у неактивной (`inactiveChoice.tapPress`)
+    <Pressable
+      onPressIn={onPressIn}
+      onPress={onPress}
+      disabled={disabled}
+      style={({ pressed }) => [style, pressed ? { transform: [{ scale: 0.94 }] } : null]}
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+    >
       {children}
     </Pressable>
   );

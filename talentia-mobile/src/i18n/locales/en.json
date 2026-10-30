@@ -645,6 +645,17 @@
     "endedToday": "All done for today",
     "done": "Done",
     "tali": "Tali, your helper",
-    "accessScene": "Play"
+    "accessScene": "Play",
+    "breakCard": "Break",
+    "sample": "Sample",
+    "option": "Option {{n}}",
+    "offerCardHint": "Point to the card with a gesture, don’t coax",
+    "l4Hint": "Gently guide the hand, stop if they resist",
+    "breakTraining": {
+      "model": "Touch the break card yourself",
+      "prompted": "Point to it with a gesture",
+      "independent": "Wait 10 seconds, then gesture",
+      "gesture": "Now point to it with a gesture"
+    }
   }
 }
