@@ -295,10 +295,10 @@ describe('(в) resumeAbaSession: обмен рутины, пока сессия 
     throw new Error('перерыва нет');
   }
 
-  it('без обмена рутины: доска и версия — с устройства, размер и счётчики сессии свои, stale не ставится', () => {
+  it('без обмена рутины: доска и версия — с устройства, размер (3) и счётчики сессии свои, stale не ставится', () => {
     const st = { ...beginSession(), tokensEarned: 4, exchangesMade: 1 };
     const r = resumeAbaSession(st, { earned: 3, nonContingent: 1, rev: 6 }, { routineExchanged: false });
-    expect(r.board).toEqual({ size: 5, earned: 3, nonContingent: 1 });
+    expect(r.board).toEqual({ size: 3, earned: 3, nonContingent: 1 });
     expect([r.boardRev, r.tokensEarned, r.exchangesMade, r.reinforcerStale]).toEqual([6, 4, 1, undefined]);
     expect(r.reinforcerId).toBe(st.reinforcerId);
   });
@@ -431,13 +431,13 @@ describe('(в) resumeAbaSession: обмен рутины, пока сессия 
     expect([r.exchanged, r.board.earned]).toEqual([5, 0]);
   });
 
-  it('обучение доске (обмен сразу): при устаревшем подкрепителе полная доска ждёт выбора, после выбора обменивается', () => {
-    const full = beginSession({ tokenTraining: trained(3), board: { earned: 3, nonContingent: 0 } });
-    const stale = resumeAbaSession(full, { earned: 3, nonContingent: 0, rev: 1 }, { routineExchanged: true, options: OPTIONS });
+  it('обучение доске (ступень 2 ниже финальной 3 — обмен сразу): при устаревшем подкрепителе полная доска ждёт выбора, после выбора обменивается', () => {
+    const full = beginSession({ tokenTraining: trained(2), board: { earned: 2, nonContingent: 0 } });
+    const stale = resumeAbaSession(full, { earned: 2, nonContingent: 0, rev: 1 }, { routineExchanged: true, options: OPTIONS });
     // вместо пробы — выбор из трёх; обмена до выбора нет
     const next = nextStep(stale, BASE_MS + 1000);
     expect(next.step).toMatchObject({ kind: 'choose_reinforcer', options: OPTIONS });
-    expect([next.state.exchangesMade, next.state.board.earned]).toEqual([0, 3]);
+    expect([next.state.exchangesMade, next.state.board.earned]).toEqual([0, 2]);
     // выбор из трёх — полная доска обменивается сразу, доступ первым в очереди
     const chosen = chooseReinforcer(next.state, 'pinwheel', BASE_MS + 2000);
     expect(chosen.exchangesMade).toBe(1);
@@ -446,20 +446,20 @@ describe('(в) resumeAbaSession: обмен рутины, пока сессия 
     expect(finishAccess(chosen, BASE_MS + 3000).queue[0]?.kind).not.toBe('access');
   });
 
-  describe('Б1: выбор вместо пробы, когда проба наполнила доску', () => {
+  describe('Б1: выбор вместо пробы, когда проба наполнила доску (ступень 2 — обучение доске, обмен сразу)', () => {
     const staleHalf = () => {
-      const half = beginSession({ tokenTraining: trained(3), board: { earned: 0, nonContingent: 0 } });
+      const half = beginSession({ tokenTraining: trained(2), board: { earned: 0, nonContingent: 0 } });
       return resumeAbaSession(half, { earned: 0, nonContingent: 0, rev: 1 }, { routineExchanged: true, options: OPTIONS });
     };
 
     it('устарел + проба наполнила доску на ступени с немедленным обменом — следующий шаг выбор, обмена ещё нет', () => {
       let st = staleHalf();
       let now = BASE_MS;
-      for (let guard = 0; guard < 30 && st.board.earned < 3; guard += 1) {
+      for (let guard = 0; guard < 30 && st.board.earned < 2; guard += 1) {
         now += 1000;
         st = answerNext(st, now).state;
       }
-      expect(st.board.earned).toBeGreaterThanOrEqual(3);
+      expect(st.board.earned).toBeGreaterThanOrEqual(2);
       expect(st.exchangesMade).toBe(0);
       expect(nextStep(st, now + 1000).step).toMatchObject({ kind: 'choose_reinforcer', options: OPTIONS });
     });
@@ -468,7 +468,7 @@ describe('(в) resumeAbaSession: обмен рутины, пока сессия 
       let st = staleHalf();
       let now = BASE_MS;
       let trialSteps = 0;
-      for (let guard = 0; guard < 30 && st.board.earned < 3; guard += 1) {
+      for (let guard = 0; guard < 30 && st.board.earned < 2; guard += 1) {
         now += 1000;
         expect(nextStep(st, now).step.kind).toBe('trial');
         trialSteps += 1;
@@ -478,7 +478,7 @@ describe('(в) resumeAbaSession: обмен рутины, пока сессия 
     });
 
     it('не устарел + проба наполнила доску — выбора нет, обмен сразу', () => {
-      let st = beginSession({ tokenTraining: trained(3), board: { earned: 0, nonContingent: 0 } });
+      let st = beginSession({ tokenTraining: trained(2), board: { earned: 0, nonContingent: 0 } });
       let now = BASE_MS;
       for (let guard = 0; guard < 30 && st.exchangesMade === 0; guard += 1) {
         now += 1000;

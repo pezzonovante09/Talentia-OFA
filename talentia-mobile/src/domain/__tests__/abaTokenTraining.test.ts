@@ -1,6 +1,8 @@
 import {
   applyPairingSession,
   applyStageSession,
+  confirmPairing,
+  finalStage,
   immediateExchange,
   initialTokenTraining,
   workingBoardSize,
@@ -50,15 +52,70 @@ describe('сопряжение', () => {
   });
 });
 
+describe('подтверждение сопряжения обученным наблюдателем (confirmPairing)', () => {
+  const by = { observerId: 'obs-1', byRole: 'owner' as const, at: '2026-10-31T10:00:00.000Z' };
+
+  it('ставит pairingDone, записывает кем и когда, доска со ступени 1 и atStage заново', () => {
+    const t = { ...initialTokenTraining(), stage: 2 as const, atStage: [ses(1)] };
+    expect(confirmPairing(t, by)).toMatchObject({ pairingDone: true, pairingConfirmed: by, stage: 1, atStage: [] });
+  });
+
+  it('снимает pairing_not_established, но pairing_keeps_breaking оставляет', () => {
+    const t = { ...initialTokenTraining(), flags: ['pairing_not_established', 'pairing_keeps_breaking'] as TokenTrainingState['flags'] };
+    expect(confirmPairing(t, by).flags).toEqual(['pairing_keeps_breaking']);
+  });
+
+  it('счётчики сопряжения не трогает: pairingSessions, pairingStreak, pairingRecent остаются историей измерения', () => {
+    const t = { ...initialTokenTraining(), pairingSessions: 5, pairingStreak: 1, pairingRecent: [true, false, true] };
+    expect(confirmPairing(t, by)).toMatchObject({ pairingSessions: 5, pairingStreak: 1, pairingRecent: [true, false, true] });
+  });
+
+  it('при pairingDone — ничего не меняет: pairingConfirmed не появляется, ступень не сбрасывается', () => {
+    const t = { ...initialTokenTraining(), pairingDone: true, stage: 3 as const, atStage: [ses(2)] };
+    expect(confirmPairing(t, by)).toBe(t);
+    expect(confirmPairing(t, by).pairingConfirmed).toBeUndefined();
+  });
+
+  it('после подтверждения applyPairingSession ничего не меняет — сопряжение закрыто', () => {
+    const t = confirmPairing(initialTokenTraining(), by);
+    expect(applyPairingSession(t, { chosenBy: 'adult', endReason: 'completed', config: 'with_adult' })).toBe(t);
+  });
+
+  it('после подтверждения доска обучается с одной ячейки по обычному критерию', () => {
+    let t = confirmPairing(initialTokenTraining(), by);
+    t = applyStageSession(t, '7', ses(2));
+    t = applyStageSession(t, '7', ses(2));
+    expect(t.stage).toBe(2);
+  });
+
+  it('исходное состояние не мутирует', () => {
+    const t = { ...initialTokenTraining(), flags: ['pairing_not_established'] as TokenTrainingState['flags'] };
+    confirmPairing(t, by);
+    expect(t).toEqual({ ...initialTokenTraining(), flags: ['pairing_not_established'] });
+  });
+});
+
 describe('ступени доски', () => {
-  it('рабочий размер — не больше размера по полосе', () => {
+  it('рабочий размер — не больше 3 на любой полосе; сохранённая ступень 5 работает как 3', () => {
     expect(workingBoardSize(at(5), '5-6')).toBe(3);
+    expect(workingBoardSize(at(5), '7')).toBe(3);
+    expect(workingBoardSize(at(5), '9-10')).toBe(3);
     expect(workingBoardSize(at(2), '9-10')).toBe(2);
   });
 
-  it('обмен сразу — пока ступень ниже финальной по полосе', () => {
+  it('финальная ступень — 3 на всех полосах', () => {
+    expect(finalStage('5-6')).toBe(3);
+    expect(finalStage('7')).toBe(3);
+    expect(finalStage('8')).toBe(3);
+    expect(finalStage('9-10')).toBe(3);
+  });
+
+  it('обмен сразу — пока ступень ниже 3; на ступени 3 (и сохранённой 5) обмен только на перерыве, на любой полосе', () => {
+    expect(immediateExchange(at(2), '7')).toBe(true);
     expect(immediateExchange(at(3), '5-6')).toBe(false);
-    expect(immediateExchange(at(3), '7')).toBe(true);
+    expect(immediateExchange(at(3), '7')).toBe(false);
+    expect(immediateExchange(at(3), '9-10')).toBe(false);
+    expect(immediateExchange(at(5), '7')).toBe(false);
   });
 
   it('две сессии подряд с двумя обменами — ступень вверх', () => {
@@ -66,12 +123,15 @@ describe('ступени доски', () => {
     expect(applyStageSession(at(2, [ses(1)]), '7', ses(3)).stage).toBe(2);
   });
 
-  it('выше финальной по полосе не растёт: на 5–6 ступень 3 остаётся', () => {
+  it('выше 3 не растёт ни на одной полосе: ступень 3 остаётся и на 5–6, и на 7, и на 9–10', () => {
     expect(applyStageSession(at(3, [ses(4)]), '5-6', ses(4)).stage).toBe(3);
+    expect(applyStageSession(at(3, [ses(2)]), '7', ses(2)).stage).toBe(3);
+    expect(applyStageSession(at(3, [ses(4)]), '9-10', ses(4)).stage).toBe(3);
   });
 
-  it('после перехода 5–6 → 7 ступень 3 растёт до 5 по тому же критерию', () => {
-    expect(applyStageSession(at(3, [ses(2)]), '7', ses(2)).stage).toBe(5);
+  it('сохранённая ступень 5: вверх не растёт, две сессии без обменов опускают на 3', () => {
+    expect(applyStageSession(at(5, [ses(4)]), '7', ses(4)).stage).toBe(5);
+    expect(applyStageSession(at(5, [ses(0)]), '7', ses(0, 'abandoned'))).toMatchObject({ stage: 3, atStage: [] });
   });
 
   it('две сессии с нулём обменов или брошенные — ступень вниз', () => {

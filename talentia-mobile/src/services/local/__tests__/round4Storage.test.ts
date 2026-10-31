@@ -184,7 +184,8 @@ describe('выборы подкрепителя: экспорт (В6)', () => {
     await appendConsentEvent(db, consent('grant', 'kid', '2026-10-01T07:00:00Z'), 'owner');
     await asAbaWriter(db, 'kid', async (tx) => {
       await saveChildState(tx, 'kid', 'tokenTraining', ROUTINE_TRAINED, FRESH);
-      await saveChildState(tx, 'kid', 'abaBoard', { earned: 4, nonContingent: 0 }, FRESH);
+      // доска из трёх (ступень 5 у записи — старая, работает как 3): два жетона, жетон прогона наполняет
+      await saveChildState(tx, 'kid', 'abaBoard', { earned: 2, nonContingent: 0 }, FRESH);
     });
     let state: AbaTargetState = racq();
     const picks: string[] = [];
@@ -199,7 +200,7 @@ describe('выборы подкрепителя: экспорт (В6)', () => {
       picks.push(out.offer!.options[0]);
       await commitRoutineExchange(db, 'kid', run.runId, out.offer!.options[0], d === 1 ? 'child' : 'adult', chosenAt);
       state = r.state;
-      await asAbaWriter(db, 'kid', (tx) => saveChildState(tx, 'kid', 'abaBoard', { earned: 4, nonContingent: 0, rev: 10 + d }, FRESH));
+      await asAbaWriter(db, 'kid', (tx) => saveChildState(tx, 'kid', 'abaBoard', { earned: 2, nonContingent: 0, rev: 10 + d }, FRESH));
     }
     return { db, picks };
   }
@@ -213,8 +214,8 @@ describe('выборы подкрепителя: экспорт (В6)', () => {
     const runIds = (spec.abaRoutineRuns as { id: string }[]).map((r) => r.id);
     expect(runIds.join()).not.toMatch(/\d{4}-\d{2}-\d{2}/);
     expect(choices).toEqual([
-      { order: 1, day: rday(1), source: 'routine', sourceId: runIds[0], reinforcerId: picks[0], chosenBy: 'child', tokens: 5, boardSize: 5 },
-      { order: 2, day: rday(2), source: 'routine', sourceId: runIds[1], reinforcerId: picks[1], chosenBy: 'adult', tokens: 5, boardSize: 5 },
+      { order: 1, day: rday(1), source: 'routine', sourceId: runIds[0], reinforcerId: picks[0], chosenBy: 'child', tokens: 3, boardSize: 3 },
+      { order: 2, day: rday(2), source: 'routine', sourceId: runIds[1], reinforcerId: picks[1], chosenBy: 'adult', tokens: 3, boardSize: 3 },
     ]);
     for (const c of choices) {
       expect(c).not.toHaveProperty('chosenAt');
@@ -227,8 +228,8 @@ describe('выборы подкрепителя: экспорт (В6)', () => {
     const { db } = await twoRoutineExchanges();
     const exp = (await exportChild(db, 'kid', '2026-10-19T00:00:00Z', {})).abaReinforcerChoices as { chosenAt: string; tokens: number; sourceId: string }[];
     expect(exp.map((c) => [c.sourceId, c.chosenAt, c.tokens])).toEqual([
-      ['run-2026x10x01', '2026-10-12T10:00:00.000Z', 5],
-      ['run-2026x10x02', '2026-10-12T09:00:00.000Z', 5],
+      ['run-2026x10x01', '2026-10-12T10:00:00.000Z', 3],
+      ['run-2026x10x02', '2026-10-12T09:00:00.000Z', 3],
     ]);
   });
 });

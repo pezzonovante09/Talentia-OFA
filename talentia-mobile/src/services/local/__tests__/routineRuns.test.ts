@@ -139,7 +139,8 @@ async function seeded(db: SqlDb, childId = 'kid') {
   await asAbaWriter(db, childId, async (tx) => {
     await saveChildState(tx, childId, 'abaSessionIndex', 5, NOW);
     await saveChildState(tx, childId, 'abaTargets', { A: aState }, NOW);
-    await saveChildState(tx, childId, 'abaBoard', { earned: 2, nonContingent: 1 }, NOW);
+    // доска из трёх: один жетон, чтобы жетон прогона её не наполнил (иначе итог несёт предложение обмена)
+    await saveChildState(tx, childId, 'abaBoard', { earned: 1, nonContingent: 1 }, NOW);
   });
 }
 
@@ -153,7 +154,7 @@ describe('итог прогона рутины (commitRoutineRun)', () => {
     expect(await routineRunsOf(db, 'kid', 'R')).toHaveLength(1);
     expect(await routineRunsOf(db, 'kid', 'A')).toEqual([]);
     expect(await loadChildState(db, 'kid', 'abaTargets')).toEqual({ A: aState, R: rState });
-    expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 3, nonContingent: 1, rev: 1 });
+    expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 2, nonContingent: 1, rev: 1 });
     expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toBeNull();
   });
 
@@ -192,7 +193,7 @@ describe('итог прогона рутины (commitRoutineRun)', () => {
     expect(err).not.toBeInstanceOf(RoutineStateConflictError);
     expect(await routineRunsOf(db, 'kid')).toHaveLength(1);
     expect(await loadChildState(db, 'kid', 'abaTargets')).toEqual({ A: aState, R: rState });
-    expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 3, nonContingent: 1, rev: 1 });
+    expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 2, nonContingent: 1, rev: 1 });
     expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toEqual(inProgress);
   });
 
@@ -217,7 +218,7 @@ describe('итог прогона рутины (commitRoutineRun)', () => {
     await expect(commitRoutineRun(failingLastWrite(db), 'kid', result(), NOW)).rejects.toThrow(/диск полон/);
     expect(await routineRunsOf(db, 'kid')).toEqual([]);
     expect(await loadChildState(db, 'kid', 'abaTargets')).toEqual({ A: aState });
-    expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 2, nonContingent: 1 });
+    expect(await loadChildState(db, 'kid', 'abaBoard')).toEqual({ earned: 1, nonContingent: 1 });
     expect(await loadChildState(db, 'kid', 'abaRoutineRunInProgress')).toEqual(inProgress);
   });
 });
@@ -428,7 +429,7 @@ describe('сессия, свёрнутая на время прогона рут
   };
   const aAfter = { targetId: 'A', phase: 'maintenance' } as AbaTargetState;
   const sessionSnapshot = () =>
-    ({ sessionId: 's-5', startedAt: Date.parse(NOW), seed: 1, reinforcerChosenAt: null, board: { size: 5, earned: 2, nonContingent: 1 }, boardRev: 0 }) as unknown as AbaSessionState;
+    ({ sessionId: 's-5', startedAt: Date.parse(NOW), seed: 1, reinforcerChosenAt: null, board: { size: 3, earned: 1, nonContingent: 1 }, boardRev: 0 }) as unknown as AbaSessionState;
   // итог сессии рутин не содержит (`finishAbaSession`): только её цели
   const sessionResult = {
     session,
@@ -452,7 +453,7 @@ describe('сессия, свёрнутая на время прогона рут
     expect((await loadChildState(db, 'kid', 'abaTargets'))?.R).toEqual(rState);
     // сессию возобновили по живой доске (рутина добавила жетон) и закончили
     const resumed = await resumeAbaSession(db, 'kid', POOL);
-    expect([resumed?.board.earned, resumed?.boardRev]).toEqual([3, 1]);
+    expect([resumed?.board.earned, resumed?.boardRev]).toEqual([2, 1]);
     await commitAbaSession(db, 'kid', sessionResult, NOW);
     expect(await loadChildState(db, 'kid', 'abaTargets')).toEqual({ A: aAfter, R: rState });
   });

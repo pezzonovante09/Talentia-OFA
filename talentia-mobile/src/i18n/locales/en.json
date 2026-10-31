@@ -568,6 +568,8 @@
       "readConsent": "Read the consent",
       "start": "Start session",
       "startPairing": "Start getting to know tokens",
+      "pairingConfirmed": "Already familiar with tokens",
+      "pairingConfirmedCaption": "For a trained observer: the child already knows tokens — skip the introduction and start with a one-cell board.",
       "continue": "Continue session",
       "finishWithout": "Finish without continuing",
       "unpauseToStart": "Turn off the pause to start",

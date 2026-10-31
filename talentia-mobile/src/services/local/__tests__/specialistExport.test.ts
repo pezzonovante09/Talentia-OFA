@@ -14,7 +14,7 @@ import { initialTokenTraining, type TokenTrainingState } from '../../../domain/a
 import type { ConsentEvent } from '../../../domain/consent';
 import { abaIdGuard, appendReinforcerChoice, appendRoutineRun, appendTrialCorrection, routineExchangedSince } from '../abaLog';
 import { saveChildState } from '../childState';
-import { commitAbaSession, commitIoa, commitPairingSession, commitRoutineRun, recordAbaTrial, recordRoutineStep, setAbaObservers } from '../commit';
+import { commitAbaSession, commitIoa, commitPairingSession, commitRoutineRun, confirmAbaPairing, recordAbaTrial, recordRoutineStep, setAbaObservers } from '../commit';
 import { appendConsentEvent } from '../consentLog';
 import { exportChild, exportForSpecialist } from '../purge';
 import type { SqlDb } from '../sql';
@@ -231,6 +231,48 @@ describe('экспорт специалисту: нет времени суто�
   it('в выгрузке нет uuid наблюдателя', async () => {
     const out = await exportForSpecialist(await richDb(), 'kid', NOW);
     expect(JSON.stringify(out)).not.toContain(OBSERVER);
+  });
+});
+
+describe('экспорт специалисту: «сопряжение подтверждено» (вопрос 62)', () => {
+  const CONFIRMED_AT = '2026-10-11T09:30:45.000Z';
+  async function confirmedDb() {
+    const db = await memoryDb();
+    await appendConsentEvent(db, grant('kid', '2026-10-11T09:00:00Z'), 'owner');
+    await setAbaObservers(db, 'kid', [{ id: OBSERVER, role: 'specialist', trained: true }], NOW);
+    await confirmAbaPairing(db, 'kid', { observerId: OBSERVER, byRole: 'owner', at: CONFIRMED_AT });
+    return db;
+  }
+  const tokenTrainingOf = async (db: SqlDb) =>
+    (await exportForSpecialist(db, 'kid', NOW)).state.tokenTraining as { pairingDone: boolean; pairingConfirmed: { observerId: string; byRole: string; at: string } };
+
+  it('observerId — метка вида O1, та же, что у наблюдателя в abaObservers; uuid в файле нет', async () => {
+    const db = await confirmedDb();
+    const out = await exportForSpecialist(db, 'kid', NOW);
+    const tt = out.state.tokenTraining as { pairingConfirmed: { observerId: string } };
+    const observers = out.state.abaObservers as { id: string }[];
+    expect(tt.pairingConfirmed.observerId).toMatch(/^O\d+$/);
+    expect(observers.map((o) => o.id)).toContain(tt.pairingConfirmed.observerId);
+    expect(JSON.stringify(out)).not.toContain(OBSERVER);
+  });
+
+  it('at — только день, без времени; роль и pairingDone сохранены', async () => {
+    const tt = await tokenTrainingOf(await confirmedDb());
+    expect(tt.pairingConfirmed).toEqual({ observerId: 'O1', byRole: 'owner', at: '2026-10-11' });
+    expect(tt.pairingDone).toBe(true);
+  });
+
+  it('родителю (exportChild) — как записано: исходный id наблюдателя и точное время', async () => {
+    const exp = await exportChild(await confirmedDb(), 'kid', NOW, {});
+    const tt = (exp.state as { tokenTraining: { pairingConfirmed: unknown } }).tokenTraining;
+    expect(tt.pairingConfirmed).toEqual({ observerId: OBSERVER, byRole: 'owner', at: CONFIRMED_AT });
+  });
+
+  it('сопряжение по критерию, без ручного подтверждения — поля pairingConfirmed в выгрузке нет', async () => {
+    const db = await dbWithConsent();
+    const tt = (await exportForSpecialist(db, 'kid', NOW)).state.tokenTraining as { pairingConfirmed?: unknown };
+    expect(tt).toBeDefined();
+    expect(tt.pairingConfirmed).toBeUndefined();
   });
 });
 

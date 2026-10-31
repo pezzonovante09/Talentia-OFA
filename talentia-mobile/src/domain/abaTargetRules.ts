@@ -175,6 +175,19 @@ function includesErrors(t: AbaTarget, byId: ReadonlyMap<string, AbaTarget>): str
   return errors;
 }
 
+/**
+ * Объём первой версии (вопрос 65, 2026-10-31): формат `voice_volume` закрыт — микрофон в `app.json` закрыт, голосовые
+ * форматы — после живого методиста. Это не правило процедуры, поэтому не в `targetErrors`: там `voice_volume` остаётся
+ * примером не-тапового формата для домена и тестов. Проверяется гардом корпуса и допуском к сессии (`readyAbaTargets`).
+ */
+export const FORMATS_NOT_IN_V1: readonly AbaFormat[] = ['voice_volume'];
+
+export function versionErrors(t: Pick<AbaTarget, 'id' | 'format'>): string[] {
+  return FORMATS_NOT_IN_V1.includes(t.format)
+    ? [`${t.id}: формат ${t.format} не входит в первую версию: микрофон закрыт, голосовые форматы — после живого методиста`]
+    : [];
+}
+
 /** Что не так с целью. Пустой список — цель годится для сессии. */
 /**
  * Выбор из двух (`match` с полем 2, сортировка): при блоке 5 «4 из 5» угадывается в 18,75%, при блоке 10 «8 из 10» —

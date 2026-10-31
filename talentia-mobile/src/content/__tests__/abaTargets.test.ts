@@ -5,12 +5,12 @@
 import { ABA_OBJECT_ART } from '../../assets/registry';
 import { abaColors } from '../../design/abaTokens';
 import { reinforcerPoolFor } from '../../domain/abaReinforcerCatalog';
-import { programErrors, targetErrors , targetForBand } from '../../domain/abaTargetRules';
+import { FORMATS_NOT_IN_V1, programErrors, targetErrors, targetForBand, versionErrors } from '../../domain/abaTargetRules';
 import { EXCHANGE_ACCESS_MS } from '../../domain/abaTokenTraining';
 import { MIN_REINFORCER_POOL } from '../../domain/abaTokens';
 import ru from '../../i18n/locales/ru.json';
 import en from '../../i18n/locales/en.json';
-import { MATCH_COLOR, MATCH_LEVEL1 , MATCH_SHAPE } from '../aba/match-level1';
+import { MATCH_COLOR, MATCH_LEVEL1, MATCH_SAME_2, MATCH_SAME_3, MATCH_SHAPE } from '../aba/match-level1';
 import { REINFORCERS } from '../aba/reinforcers';
 import { ABA_COLOR_NOT_TOGETHER, ABA_SHAPE_FILL, ABA_SHAPE_NOT_TOGETHER, ABA_STIMULI } from '../aba/stimuli';
 import { abaTargetReady, ABA_TARGETS, readyAbaTargets } from '../aba';
@@ -117,6 +117,50 @@ describe('пул подкрепителей для программы', () => {
   );
 });
 
+describe('объём первой версии (versionErrors, вопрос 65) и допуск к сессии', () => {
+  const allArt = Object.fromEntries(ABA_STIMULI.map((x) => [x.id, {}]));
+  /** Цель голосового формата с теми же стимулами, что у «одинаковых из 2»: картинки есть — закрыта только версией. */
+  const voiceTarget = { ...MATCH_SAME_2, id: 'voice-x', format: 'voice_volume' as const };
+
+  it.each(MATCH_LEVEL1.map((t) => [t.id, t] as const))('%s: входит в первую версию', (_, t) => {
+    expect(versionErrors(t)).toEqual([]);
+  });
+
+  it('voice_volume — единственный закрытый формат, ошибка называет цель и причину', () => {
+    expect(FORMATS_NOT_IN_V1).toEqual(['voice_volume']);
+    expect(versionErrors(voiceTarget)).toEqual(['voice-x: формат voice_volume не входит в первую версию: микрофон закрыт, голосовые форматы — после живого методиста']);
+  });
+
+  it('цель voice_volume не попадает в readyAbaTargets даже с полным набором картинок', () => {
+    expect(abaTargetReady(voiceTarget, allArt)).toBe(true);
+    expect(readyAbaTargets([MATCH_SAME_2, voiceTarget], allArt).map((t) => t.id)).toEqual(['match-same-2']);
+  });
+
+  it('цель, чья предпосылка закрыта версией, тоже закрыта (лестница)', () => {
+    const dependent = { ...MATCH_SAME_3, id: 'after-voice', prerequisiteTargetIds: ['voice-x'], includesTargetIds: [] };
+    expect(readyAbaTargets([voiceTarget, dependent], allArt)).toEqual([]);
+  });
+});
+
+describe('связи лестницы match (решение владельца 2026-10-31: цвет — от «из 2», форма включает обе «одинаковые»)', () => {
+  /** Картинки только у предметов «одинаковых из 2»: «из 3» не готовы, формы и цвета рисует код. */
+  const artSame2Only = Object.fromEntries(MATCH_SAME_2.exemplars.flatMap((e) => e.cards ?? []).map((id) => [id, {}]));
+
+  it('цвет открывается после «одинаковых из 2», форма — нет (ждёт «из 3»)', () => {
+    expect(readyAbaTargets(MATCH_LEVEL1, artSame2Only).map((t) => t.id)).toEqual(['match-same-2', 'match-color']);
+  });
+
+  it('предпосылки: цвет — от «из 2», форма — от «из 3»; проверка сверху вниз на форме выводит обе «одинаковые»', () => {
+    expect(MATCH_COLOR.prerequisiteTargetIds).toEqual(['match-same-2']);
+    expect(MATCH_SHAPE.prerequisiteTargetIds).toEqual(['match-same-3']);
+    expect(MATCH_SHAPE.includesTargetIds).toEqual(['match-same-3', 'match-same-2']);
+  });
+
+  it('правила программы после изменения связей по-прежнему выполнены', () => {
+    expect(programErrors(MATCH_LEVEL1)).toEqual([]);
+  });
+});
+
 describe('допуск цели к сессии и полоса', () => {
   it('предметы без картинки — цель не допускается; формы и цвета рисует код', () => {
     expect(abaTargetReady(MATCH_SHAPE)).toBe(true);
@@ -125,7 +169,7 @@ describe('допуск цели к сессии и полоса', () => {
     expect(MATCH_LEVEL1.every((t) => abaTargetReady(t, allArt))).toBe(true);
   });
 
-  it('лестница: пока не готовы «одинаковые», форма и цвет тоже закрыты (предпосылка)', () => {
+  it('лестница: пока не готовы «одинаковые из 2», форма и цвет тоже закрыты (предпосылка)', () => {
     expect(readyAbaTargets().map((t) => t.id)).toEqual([]);
     const allArt = Object.fromEntries(ABA_STIMULI.map((x) => [x.id, {}]));
     expect(readyAbaTargets(ABA_TARGETS, allArt).map((t) => t.id)).toEqual(ABA_TARGETS.map((t) => t.id));
