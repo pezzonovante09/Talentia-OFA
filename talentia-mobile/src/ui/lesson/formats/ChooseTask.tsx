@@ -46,7 +46,7 @@ export function ChooseTaskView(rawProps: FormatProps<ChooseDraft>) {
 
   const renderOption = (o: ChooseTaskType['options'][number], i: number) => {
     const state = optionState(o.id, props, correct);
-    const badge = state === 'correct' ? 'check' : state === 'error' ? 'x' : null;
+    const badge = props.question === o.id ? 'question' : state === 'correct' ? 'check' : state === 'error' ? 'x' : null;
     const silentPile = o.count !== undefined;
     return (
       <Tile

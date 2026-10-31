@@ -5,7 +5,7 @@
 import { regionLessons, regionMapLessons } from '../content';
 import { lessonAvailable } from '../domain/lessonKeys';
 import { gameDay, mapNodes, pointer, reviewNode, type NodeState, type ReviewNode } from '../domain/mapProgress';
-import { skillsToReview } from '../domain/mastery';
+import { skillsForReviewSession } from '../domain/mastery';
 import { keyExists } from '../i18n';
 import type { Lesson, Region } from '../types/task';
 import { completedLessons, startedLessons, useChildSession, type ChildSessionState } from './childSession';
@@ -19,6 +19,8 @@ export type MapModel = {
   pointer: number | 'review' | null;
   /** Уроки без полного перевода на язык интерфейса — пунктирный узел, в указатель не попадают. */
   unavailable: ReadonlySet<string>;
+  /** Голос тихого узла «повторение»: ни одного урока не пройдено — «сначала пройди урок», иначе — «всё повторено». */
+  reviewVoice: 'map.reviewLater' | 'map.reviewNothing';
 };
 
 export function buildMapModel(
@@ -33,7 +35,8 @@ export function buildMapModel(
     { band: s.settings.band },
     s.portion.left,
   );
-  const due = skillsToReview(s.progress.skills, s.progress.lessonCounter, 2, gameDay(now)).length;
+  // узел активен, когда есть хоть один навык в срок, не встречавшийся сегодня (вопрос 56)
+  const due = skillsForReviewSession(s.progress.skills, s.progress.lessonCounter, gameDay(now)).length;
   const review = reviewNode(due);
   const unavailable = new Set(lessons.filter((l) => !lessonAvailable(l, exists)).map((l) => l.id));
   const p = pointer([states.map((st, i) => (unavailable.has(lessons[i].id) ? 'ahead' : st))], review);
@@ -44,6 +47,7 @@ export function buildMapModel(
     review,
     pointer: p === null ? null : p === 'review' ? 'review' : p.lesson,
     unavailable,
+    reviewVoice: completedLessons(s).size === 0 ? 'map.reviewLater' : 'map.reviewNothing',
   };
 }
 

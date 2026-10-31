@@ -165,7 +165,7 @@ describe('банк реплик Tali', () => {
 
     it('годная реплика молчит; Tali о себе в мужском роде — можно', () => {
       expect(one('ru', { 'companion.correct-first.0': 'У тебя получилось!', 'companion.correct-first.0_f': 'Ты справилась!' })).toEqual([]);
-      expect(one('ru', { 'companion.error-first.0': 'Ой, я перепутал!' })).toEqual([]);
+      expect(one('ru', { 'companion.probe-intro.0': 'Ой, я перепутал! Ещё разок?' })).toEqual([]);
     });
 
     it('{{count}} вне plural-ключа — красно; неполный plural-набор — красно', () => {

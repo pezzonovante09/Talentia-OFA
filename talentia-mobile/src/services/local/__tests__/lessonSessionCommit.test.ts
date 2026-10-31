@@ -116,8 +116,8 @@ describe('пилотный урок от старта до записи', () => 
     expect((await lessonRunsOf(db, KID)).map((r) => r.lessonId)).toEqual([l1.id, l2.id, l3.id]);
     expect(((await loadChildState(db, KID, 'atlas')) ?? []).map((e) => e.lessonId)).toEqual([l1.id, l2.id, l3.id]);
     const skills = (await loadChildState(db, KID, 'skills')) ?? [];
-    // без календарного перерыва коробка выше второй не поднимается (mastery, «освоено за вечер»)
-    for (const s of skills) expect(s.box).toBeLessThanOrEqual(2);
+    // спираль темы не отодвигает часы (№168): третий урок доводит до коробки 3, но до «освоено» (4) — зазор 5 уроков и 7 дней
+    for (const s of skills) expect(s.box).toBeLessThanOrEqual(3);
     expect(skills.every((s) => s.lastSeenDay === DAY)).toBe(true);
   });
 
@@ -257,7 +257,8 @@ describe('ошибка, показ и проба переноса доходят
     await runLesson(db, l2, [l1], 2);
     await runLesson(db, l3, [l1, l2], 3);
     const byName = Object.fromEntries(((await loadChildState(db, KID, 'skills')) ?? []).map((x) => [x.skill, x.box]));
-    expect(byName).toEqual({ 'subitize-1-3': 2, 'count-to-5': 2, 'count-to-10': 2 });
+    // subitize-1-3 введён в уроке 1, спираль в уроке 2 часы не сдвинула, урок 3 — в срок → коробка 3 (№168)
+    expect(byName).toEqual({ 'subitize-1-3': 3, 'count-to-5': 2, 'count-to-10': 2 });
   });
 
   it('повтор пройденного урока — короткая форма примера', async () => {

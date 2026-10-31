@@ -233,7 +233,17 @@ export type ModelExample = DistributiveOmit<Task, 'id' | 'skill' | 'hintKey' | '
  * Шаг примера: реплика Tali и одно действие — элемент `example` (его id), который он
  * ставит или подсвечивает, или `'stimulus'` — сам стимул («гляжу на все листья разом»).
  */
-export type ModelStep = { lineKey: string; reveal?: string };
+export type ModelStep = {
+  lineKey: string;
+  reveal?: string;
+  /**
+   * Tali ошибается (роль третьего урока темы, TALI.md; разбор 2026-10-31, вопрос 70): `reveal` —
+   * **неверный** элемент, реплика с вопросом («Это пять?»), поза `puzzled`, над плиткой знак вопроса,
+   * не крест. Следующий шаг раскрывает верный; ребёнок поправляет в «теперь ты». Не больше одного на
+   * пример, только в третьем уроке темы (гард `model`).
+   */
+  mistake?: true;
+};
 
 /** Значение `ModelStep.reveal` для стимула: у стимула нет id. */
 export const REVEAL_STIMULUS = 'stimulus';

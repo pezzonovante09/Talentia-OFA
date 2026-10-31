@@ -1123,7 +1123,7 @@ export const RULES = {
     // после примера — 15–20 с без зачёта: «теперь ты» уже знакомит (решение №28).
     title: 'разобранный пример: шагов Tali по полосе, реплика ≤ 36 (в других локалях ≤ пузыря), reveal на элемент примера, без отрывка, формат как у первого задания навыка, не совпадает с заданиями урока; в уроке нет знакомства; на 5-6 завязка ≤ 36 и первое задание — того же навыка и формата, без отрывка',
     check: (corpus, locales) =>
-      lessonsOf(corpus).flatMap(({ lesson, where }) => {
+      lessonsOf(corpus).flatMap(({ topic, lesson, where }) => {
         const m = lesson.model;
         if (!m) return [];
         const at = `${where}/model`;
@@ -1131,12 +1131,22 @@ export const RULES = {
         const steps = outOfRange(m.steps.length, MODEL_STEPS[lesson.band], false, 'шагов Tali');
         if (steps) bad.push(`${at}: ${steps} (без «теперь ты»)`);
         const ids = new Set(elementIds(m.example));
+        const correctId = m.example.format === 'choose' ? m.example.options.find((o) => o.correct)?.id : undefined;
+        const mistakes = m.steps.filter((s) => s.mistake);
+        // «Tali ошибается» — роль третьего урока темы (TALI.md; №70): один шаг, не последний, с неверным элементом
+        if (mistakes.length > 1) bad.push(`${at}: шагов «Tali ошибся» ${mistakes.length}, не больше одного`);
+        if (mistakes.length === 1 && topic.lessons.indexOf(lesson) !== 2) bad.push(`${at}: шаг «Tali ошибся» — только в третьем уроке темы`);
         m.steps.forEach((step, i) => {
           bad.push(...tooLong(locales, step.lineKey, TEXT_LIMITS.hintChars, BUBBLE_CHARS, `${at}: шаг ${i + 1}`));
           if (step.reveal === REVEAL_STIMULUS) {
             if (!m.example.stimulus) bad.push(`${at}: шаг ${i + 1} подсвечивает стимул, а у примера его нет`);
           } else if (step.reveal !== undefined && !ids.has(step.reveal)) {
             bad.push(`${at}: шаг ${i + 1} — в примере нет элемента ${step.reveal}`);
+          }
+          if (step.mistake) {
+            if (m.example.format !== 'choose') bad.push(`${at}: шаг ${i + 1} «Tali ошибся» — пока только в примере choose`);
+            else if (step.reveal === undefined || step.reveal === REVEAL_STIMULUS || step.reveal === correctId) bad.push(`${at}: шаг ${i + 1} «Tali ошибся» должен раскрывать неверный вариант`);
+            if (i === m.steps.length - 1) bad.push(`${at}: шаг ${i + 1} «Tali ошибся» не может быть последним — следующий шаг раскрывает верный`);
           }
         });
         if ('passage' in m.example) bad.push(`${at}: в примере отрывок — план задачи показывается на условии в одну фразу`);

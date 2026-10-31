@@ -36,6 +36,8 @@ export type FormatProps<D> = {
   t: TFunction;
   /** Ключ сброса меток «сосчитано» (растёт при ошибке). */
   marksKey: number;
+  /** Разобранный пример, шаг `mistake`: элемент, над которым Tali сомневается (знак вопроса, не крест). */
+  question?: string | null;
 };
 
 export type FormatSpec<D> = {

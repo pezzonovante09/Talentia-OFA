@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import type { TaliPose } from '../../assets/registry';
 import { lessonTiming } from '../../design/tokens';
 import { lessonById } from '../../content';
-import { lessonStepOf, type LessonEvent, type LessonSessionState, type LessonStep } from '../../domain/lessonSession';
+import { isReviewSession, lessonStepOf, type LessonEvent, type LessonSessionState, type LessonStep } from '../../domain/lessonSession';
 import { placeVoice } from '../../domain/taskDraft';
 import { voice } from '../../services/voice';
 import { useChildSession } from '../../state/childSession';
@@ -40,6 +40,8 @@ export type LessonUi = {
   nextReady: boolean;
   replaying: boolean;
   exitOpen: boolean;
+  /** Шаг примера: реплика прозвучала, «Дальше» доступна (`lessonTiming.modelStepMin`). */
+  modelReady: boolean;
 };
 
 const initialUi = (): LessonUi => ({
@@ -55,6 +57,7 @@ const initialUi = (): LessonUi => ({
   nextReady: false,
   replaying: false,
   exitOpen: false,
+  modelReady: false,
 });
 
 export function useLessonController(lessonId: string, onFinished: () => void, onLeave: () => void) {
@@ -128,7 +131,14 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
       if (taskStep.stage === 'active_response') later(LISTEN_STEP_MS * 2, () => patch({ listening: [] }));
       return;
     }
-    voice.say(task.promptKey);
+    // повторение из чужого урока и проба переноса — сначала связка Tali (ситуации `review-intro`,
+    // `probe-intro`; вопрос 71), вопрос — следом; в сессии повторения связка уже прозвучала на входе
+    const intro = taskStep.transferProbe ? 'lesson.probeIntro' : taskStep.review && !isReviewSession(state!) ? 'lesson.reviewIntro' : null;
+    if (intro) {
+      voice.say(intro);
+      patch({ bubble: t(intro), pose: 'point' });
+      later(LISTEN_STEP_MS * 2, () => voice.say(task.promptKey));
+    } else voice.say(task.promptKey);
     const seq = spec.listeningSequence(task, taskStep);
     if (seq.length) playListening(seq);
     if (taskStep.demo) {
@@ -147,7 +157,7 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
         later(DEMO_HOLD_MS, () => patch({ pose: 'idle' }));
       });
     }
-  }, [taskKey, clearTimers, later, patch, playListening, spec, task, taskStep, t]);
+  }, [taskKey, clearTimers, later, patch, playListening, spec, task, taskStep, state, t]);
 
   // Завязка и шаги разобранного примера звучат сами (SCREENS.md 1.1, 1.3); кнопка повтора — та же реплика.
   const stepKey = step?.kind === 'hook' ? 'hook' : step?.kind === 'model' ? `model:${step.step}:${step.nowYou}` : null;
@@ -164,11 +174,39 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
     else if (step.kind === 'model') voice.say(modelLineKey(step));
   }, [lesson, step, modelLineKey]);
   // Звучит на смену шага, не на каждый рендер: эффект читает актуальный `replayHook` через ref.
+  // Шаг примера: «Дальше» занята, пока реплика не прозвучала (вопрос 61) — иначе пример пролистывается
+  // двумя тапами и ничему не учит.
   const replayHookRef = useRef(replayHook);
   replayHookRef.current = replayHook;
   useEffect(() => {
-    if (stepKey) replayHookRef.current();
-  }, [stepKey]);
+    if (!stepKey) return;
+    replayHookRef.current();
+    if (!stepKey.startsWith('model:')) return;
+    patch({ modelReady: false, bubble: null });
+    // «теперь ты» без тапа — через `nudgeAfter` Tali указывает заметнее (напоминание, не ведомый тап №35)
+    const nudgeId = stepKey.endsWith(':true') ? setTimeout(() => patch((x) => ({ pulse: x.pulse + 1, pose: 'point' })), lessonTiming.nudgeAfter) : null;
+    const id = setTimeout(() => patch({ modelReady: true }), lessonTiming.modelStepMin);
+    return () => {
+      clearTimeout(id);
+      if (nudgeId) clearTimeout(nudgeId);
+    };
+  }, [stepKey, patch]);
+
+  /** Тап в примере: на «теперь ты» верный вариант завершает пример, любой другой — реплика-подсказка. */
+  const onModelTap = useCallback(
+    (tap: FormatTap) => {
+      if (step?.kind !== 'model' || !step.nowYou || !lesson?.model) return;
+      const example = lesson.model.example;
+      const correct = example.format === 'choose' ? example.options.find((o) => o.correct)?.id : null;
+      if (tap.kind === 'element' && correct && tap.id === correct) {
+        dispatch({ type: 'model_done', at: new Date().toISOString() });
+        return;
+      }
+      voice.say('lesson.nowYouTap');
+      patch({ bubble: t('lesson.nowYouTap'), pose: 'point' });
+    },
+    [step, lesson, dispatch, patch, t],
+  );
 
   useEffect(() => () => {
     clearTimers();
@@ -280,6 +318,8 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
   }, [spec, task, taskStep, patch, dispatch, t, later, playListening, cueCorrected]);
 
   const action: ActionState = useMemo(() => {
+    // пример: «Дальше» по шагам после реплики; на «теперь ты» кнопка пример не завершает (вопрос 61)
+    if (step?.kind === 'model') return step.nowYou ? 'checkDisabled' : ui.modelReady ? 'next' : 'busy';
     if (!spec || !task || ui.draft === null) return 'checkDisabled';
     switch (ui.phase) {
       case 'answer':
@@ -291,7 +331,7 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
       case 'done':
         return ui.nextReady ? 'next' : 'busy';
     }
-  }, [spec, task, ui.phase, ui.draft, ui.nextReady]);
+  }, [step, spec, task, ui.phase, ui.draft, ui.nextReady, ui.modelReady]);
 
   const onAction = useCallback(() => {
     if (step?.kind === 'hook') {
@@ -299,7 +339,17 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
       return;
     }
     if (step?.kind === 'model') {
-      dispatch({ type: step.nowYou ? 'model_done' : 'model_step', at: new Date().toISOString() });
+      if (step.nowYou) {
+        // кнопка пример не завершает — только тап по верному варианту (`onModelTap`)
+        voice.say('lesson.nowYouTap');
+        patch({ bubble: t('lesson.nowYouTap'), pose: 'point' });
+        return;
+      }
+      if (!ui.modelReady) {
+        voice.say('lesson.busy');
+        return;
+      }
+      dispatch({ type: 'model_step', at: new Date().toISOString() });
       return;
     }
     switch (action) {
@@ -322,7 +372,7 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
         if (next.kind === 'done') onFinished();
       }
     }
-  }, [step, action, ui.phase, task, taskStep, dispatch, patch, runCheck, t, onFinished, cueCorrected]);
+  }, [step, action, ui.phase, ui.modelReady, task, taskStep, dispatch, patch, runCheck, t, onFinished, cueCorrected]);
 
   const replayPrompt = useCallback(() => {
     if (!task || !spec || !taskStep) return;
@@ -356,7 +406,7 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
     onLeave();
   }, [clearTimers, patch, onLeave]);
 
-  return { lesson, state, step, taskStep, task, spec, ui, action, onTap, onTouch, onAction, onTali, replayPrompt, replayHook, openExit, stay, leave, t };
+  return { lesson, state, step, taskStep, task, spec, ui, action, onTap, onModelTap, onTouch, onAction, onTali, replayPrompt, replayHook, openExit, stay, leave, t };
 }
 
 /** Экран задания по его стадии в домене — при открытии и при возврате в урок (SCREENS.md 1.6). */

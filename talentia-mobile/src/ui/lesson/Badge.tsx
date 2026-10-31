@@ -7,12 +7,34 @@ import { View } from 'react-native';
 import { PAIR_SHAPES } from '../../assets/registry';
 import { useDesign } from '../../design';
 import { badge } from '../../design/tokens';
+import { AppText } from '../AppText';
 import { Icon } from '../Icon';
 
-export type BadgeKind = 'check' | 'x' | 'triangle' | 'pin' | 'pair0' | 'pair1' | 'pair2' | 'pair3';
+/** `question` — «Tali сомневается» в шаге примера `mistake` (вопрос 70): не крест, чтобы знак ошибки остался за ребёнком. */
+export type BadgeKind = 'check' | 'x' | 'question' | 'triangle' | 'pin' | 'pair0' | 'pair1' | 'pair2' | 'pair3';
 
 export function Badge({ kind }: { kind: BadgeKind }) {
   const theme = useDesign();
+  if (kind === 'question') {
+    return (
+      <View
+        style={{
+          width: badge.status,
+          height: badge.status,
+          borderRadius: badge.status / 2,
+          backgroundColor: theme.colors.surface,
+          borderWidth: theme.stroke.base,
+          borderColor: theme.colors.outline,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <AppText role="label" color="text">
+          ?
+        </AppText>
+      </View>
+    );
+  }
   if (kind === 'check' || kind === 'x') {
     const fill = kind === 'check' ? theme.colors.success : theme.colors.error;
     const ink: 'onSuccess' | 'onError' = kind === 'check' ? 'onSuccess' : 'onError';

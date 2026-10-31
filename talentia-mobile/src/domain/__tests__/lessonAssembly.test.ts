@@ -1,8 +1,10 @@
 import type { AgeBand, ChooseTask, Lesson, PointTask, Task, TaskFormat } from '../../types/task';
 import {
   assembleLesson,
+  assembleReview,
   buildReviewPool,
   finishLesson,
+  finishReview,
   fitsBand,
   recordInAtlas,
   type AtlasEntry,
@@ -208,6 +210,99 @@ describe('сборка урока', () => {
       rng,
     });
     expect(q.some((x) => x.review)).toBe(false);
+  });
+});
+
+describe('сборка повторения', () => {
+  it('по одному заданию на навык в срок, все помечены review, завязки и примера нет', () => {
+    const q = assembleReview({ band: '7', skills: [dueSkill('old-a'), dueSkill('old-b')], lessonNumber: 2, day: DAY, pool, rng });
+    expect(q.map((x) => x.task.skill)).toEqual(['old-a', 'old-b']);
+    expect(q.every((x) => x.review === true)).toBe(true);
+    expect(q.some((x) => x.transferProbe)).toBe(false);
+  });
+
+  it('навыки не в срок не берутся; без навыков — пустая очередь', () => {
+    expect(assembleReview({ band: '7', skills: [], lessonNumber: 2, day: DAY, pool, rng })).toEqual([]);
+    // коробка 2 видена на уроке 1: срок — урок 3
+    expect(assembleReview({ band: '7', skills: [dueSkill('old-a', 2, 1)], lessonNumber: 2, day: DAY, pool, rng })).toEqual([]);
+  });
+
+  it('навык, встреченный сегодня, в сессию не попадает — одна встреча в игровой день', () => {
+    const today = { ...dueSkill('old-a'), lastSeenDay: DAY };
+    const yesterday = { ...dueSkill('old-b'), lastSeenDay: '2026-09-29' };
+    const q = assembleReview({ band: '7', skills: [today, yesterday], lessonNumber: 2, day: DAY, pool, rng });
+    expect(q.map((x) => x.task.skill)).toEqual(['old-b']);
+  });
+
+  it('младшие коробки первыми', () => {
+    const skills = [dueSkill('old-c', 3, 0), dueSkill('old-a', 1), dueSkill('old-b', 2, 0)];
+    const q = assembleReview({ band: '7', skills, lessonNumber: 5, day: DAY, pool, rng });
+    expect(q.map((x) => x.task.skill)).toEqual(['old-a', 'old-b', 'old-c']);
+  });
+
+  it('потолок полосы: 5–6 при семи навыках в срок получает пять заданий', () => {
+    const skills = Array.from({ length: 7 }, (_, i) => dueSkill(`s${i}`));
+    const wide: Record<string, Task[]> = Object.fromEntries(skills.map((s, i) => [s.skill, [i % 2 ? point(`p${i}`, s.skill) : choose(`c${i}`, s.skill)]]));
+    const q = assembleReview({ band: '5-6', skills, lessonNumber: 2, day: DAY, pool: wide, rng });
+    expect(q).toHaveLength(5);
+    expect(q.map((x) => x.task.skill)).toEqual(['s0', 's1', 's2', 's3', 's4']);
+    expect(assembleReview({ band: '7', skills, lessonNumber: 2, day: DAY, pool: wide, rng })).toHaveLength(7);
+  });
+
+  it('серия одного формата не длиннее двух: три навыка с одними choose дают два задания', () => {
+    const onlyChoose: Record<string, Task[]> = { a: [choose('a1', 'a')], b: [choose('b1', 'b')], c: [choose('c1', 'c')] };
+    const q = assembleReview({ band: '7', skills: [dueSkill('a'), dueSkill('b'), dueSkill('c')], lessonNumber: 2, day: DAY, pool: onlyChoose, rng });
+    expect(q.map((x) => x.task.skill)).toEqual(['a', 'b']);
+    expect(maxFormatRun(q)).toBe(2);
+  });
+
+  it('задание навыка не встаёт по серии — берётся другое задание того же навыка', () => {
+    const mixed: Record<string, Task[]> = { a: [choose('a1', 'a')], b: [choose('b1', 'b')], c: [choose('c1', 'c'), point('c2', 'c')] };
+    const q = assembleReview({ band: '7', skills: [dueSkill('a'), dueSkill('b'), dueSkill('c')], lessonNumber: 2, day: DAY, pool: mixed, rng });
+    expect(q.map((x) => x.task.id)).toEqual(['a1', 'b1', 'c2']);
+    expect(maxFormatRun(q)).toBe(2);
+  });
+
+  it('навык без подходящего задания пропускается: нет в пуле или не по полосе', () => {
+    const q = assembleReview({
+      band: '5-6',
+      skills: [dueSkill('old-a'), dueSkill('nowhere'), dueSkill('txt'), dueSkill('old-b')],
+      lessonNumber: 2,
+      day: DAY,
+      pool: { ...pool, txt: [choose('t', 'txt', { presentation: 'text' })] },
+      rng,
+    });
+    expect(q.map((x) => x.task.skill)).toEqual(['old-a', 'old-b']);
+  });
+
+  it('знакомство с форматом повторением не бывает', () => {
+    const q = assembleReview({ band: '7', skills: [dueSkill('old-a')], lessonNumber: 2, day: DAY, pool: { 'old-a': [choose('i', 'old-a', { intro: true })] }, rng });
+    expect(q).toEqual([]);
+  });
+
+  it('позиции в задании перемешаны', () => {
+    const q = assembleReview({ band: '7', skills: [dueSkill('old-a')], lessonNumber: 2, day: DAY, pool, rng });
+    expect((q[0].task as ChooseTask).options.map((o) => o.id)).not.toEqual(['a', 'b', 'c']);
+  });
+
+  it('finishReview двигает коробки по худшему исходу и не возвращает ни звёзд, ни атласа', () => {
+    const q: QueuedTask[] = [
+      { task: choose('ra', 'old-a'), review: true },
+      { task: point('rb', 'old-b'), review: true },
+      { task: choose('rc', 'old-c'), review: true },
+    ];
+    const r = finishReview(played(q, ['first', 'second', 'shown']), [dueSkill('old-a'), dueSkill('old-b', 2, 0), dueSkill('old-c', 3, 0)], 5, DAY);
+    expect(Object.keys(r)).toEqual(['skills']);
+    expect(r.skills.find((s) => s.skill === 'old-a')).toMatchObject({ box: 2, lastSeenLesson: 5, lastSeenDay: DAY });
+    expect(r.skills.find((s) => s.skill === 'old-b')).toMatchObject({ box: 2, lastSeenLesson: 5 });
+    expect(r.skills.find((s) => s.skill === 'old-c')).toMatchObject({ box: 1, lastSeenLesson: 5 });
+  });
+
+  it('finishReview: навыки, которых повторение не касалось, остаются как были', () => {
+    const untouched = dueSkill('other', 3);
+    const r = finishReview(played([{ task: choose('ra', 'old-a'), review: true }], ['first']), [untouched], 5, DAY);
+    expect(r.skills).toContainEqual(untouched);
+    expect(r.skills).toHaveLength(2);
   });
 });
 

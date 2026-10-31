@@ -40,6 +40,7 @@ const start = () => useChildSession.getState().startNoRecordSession({ childId: K
 const press = (id: string) => fireEvent.press(screen.getByTestId(id));
 /** Кнопки каркаса защищены от двойного тапа (`guardMs` = `motion.slow`): между нажатиями — пауза. */
 const pressAction = async (id: string) => {
+  if (id === 'lesson-action-next' && screen.queryByTestId('lesson-action-busy') !== null) await new Promise((r) => setTimeout(r, lessonTiming.modelStepMin + 50));
   await press(id);
   await new Promise((r) => setTimeout(r, 380));
 };
@@ -100,8 +101,8 @@ describe('возврат в урок на той же стадии', () => {
     await renderWithProviders(<LessonScreen />);
     expect(screen.getByTestId(`option-${correctId(t)}-badge-triangle`)).toBeTruthy();
     expect(actionId()).toBe('lesson-action-checkDisabled');
-    // вопрос после показа не повторяется — звучит объяснение, не промпт
-    expect(voice.last).toBeNull();
+    // вопрос после показа не повторяется — при возврате звучит только «Продолжим?» (ситуация lesson-resume)
+    expect(voice.last?.key).toBe('lesson.resume');
     await pressAction('lesson-action-checkDisabled');
     expect(voice.last?.key).toBe('lesson.chooseFirst');
     expect(activeTask().stage).toBe('active_response');

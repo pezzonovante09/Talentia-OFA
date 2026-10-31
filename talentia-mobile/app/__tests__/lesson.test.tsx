@@ -28,7 +28,7 @@ const router = (jest.requireMock('expo-router') as { __router: { replace: jest.M
 
 // Таймлайн экрана идёт в реальном времени (блокировка 1040, «Дальше» 900, демо 2000): под нагрузкой
 // полного прогона 5 с не хватает.
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 const NOW = new Date('2026-10-24T10:00:00.000Z');
 const KID = '00000000-0000-4000-8000-000000000003';
@@ -38,6 +38,8 @@ const start = () => useChildSession.getState().startNoRecordSession({ childId: K
 const press = (id: string) => fireEvent.press(screen.getByTestId(id));
 /** Кнопки каркаса защищены от двойного тапа (`guardMs` = `motion.slow`): между нажатиями — пауза. */
 const pressAction = async (id: string) => {
+  // шаг примера: «Дальше» занята первые modelStepMin мс (вопрос 61) — на примере ждём реплику
+  if (id === 'lesson-action-next' && screen.queryByTestId('lesson-action-busy') !== null) await new Promise((r) => setTimeout(r, lessonTiming.modelStepMin + 50));
   await press(id);
   await new Promise((r) => setTimeout(r, 380));
 };

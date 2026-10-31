@@ -7,14 +7,18 @@ import { emptySkill, type SkillState } from '../mastery';
 import {
   applyLessonEvent,
   evaluateAnswer,
+  isReviewSession,
   lessonCommitOf,
   lessonStepOf,
   LessonSessionError,
+  reviewCommitOf,
   startLessonSession,
+  startReviewSession,
   type LessonAnswer,
   type LessonSessionState,
   type LessonStep,
   type StartLessonInput,
+  type StartReviewInput,
 } from '../lessonSession';
 
 // ---------------------------------------------------------------------------
@@ -668,5 +672,114 @@ describe('зеркальный ряд order (№151)', () => {
     const step = lessonStepOf(s) as Extract<LessonStep, { kind: 'task' }>;
     expect(step.mirrored).toBe(false);
     expect(step.attempt).not.toBe('first');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Сессия повторения с узла карты (вопрос 56)
+// ---------------------------------------------------------------------------
+
+describe('сессия повторения', () => {
+  /** Навык в первой коробке, виденный на уроке 0 вчера: на уроке 1 — в срок. */
+  const due = (skill: string): SkillState => ({ ...emptySkill(skill), lastSeenLesson: 0, lastSeenDay: '2026-10-23', attempts: 1, correct: 1 });
+  const skills = [due('count-to-3'), due('pairs'), due('seq')];
+  const pool = { 'count-to-3': [choose('r1')], pairs: [match('r2')], seq: [choose('r3', 'seq')] };
+
+  function startReview(over: Partial<StartReviewInput> = {}): LessonSessionState {
+    return startReviewSession({ childId: 'kid', band: '5-6', skills, lessonNumber: 1, day: '2026-10-24', startedAt: T0, pool, seed: 7, formatsSeen: ['match'], ...over });
+  }
+
+  function playAll(s: LessonSessionState): LessonSessionState {
+    let st = s;
+    let sec = 1;
+    while (lessonStepOf(st).kind === 'task') st = solve(st, sec++);
+    return st;
+  }
+
+  it('начинается сразу с задания-повторения: без завязки и примера, lessonId — review', () => {
+    const s = startReview();
+    expect(isReviewSession(s)).toBe(true);
+    expect(s.lessonId).toBe('review');
+    expect(s.model).toBeNull();
+    expect(s.phase).toBe('task');
+    expect(lessonStepOf(s)).toMatchObject({ kind: 'task', review: true, transferProbe: false, progress: { segment: 0, total: 3 } });
+    expect(s.queue.every((q) => q.review === true)).toBe(true);
+    expect(s.segments).toBe(3);
+  });
+
+  it('одно семя — одна очередь', () => {
+    expect(startReview({ seed: 42 })).toEqual(startReview({ seed: 42 }));
+  });
+
+  it('пустая очередь (нечего повторять) — сразу phase done', () => {
+    const s = startReview({ skills: [] });
+    expect(s.phase).toBe('done');
+    expect(lessonStepOf(s)).toEqual({ kind: 'done' });
+    expect(s.segments).toBe(0);
+  });
+
+  it('после двух ошибок и «Дальше» пробы переноса нет: очередь и сегменты не растут', () => {
+    let s = startReview();
+    const t = currentTask(s) as ChooseTask;
+    const w1 = wrongChoose(t);
+    s = applyLessonEvent(s, { type: 'answer', answer: w1, at: at(2) });
+    s = applyLessonEvent(s, { type: 'answer', answer: wrongChoose(t, [(w1 as { optionId: string }).optionId]), at: at(3) });
+    expect(lessonStepOf(s)).toMatchObject({ stage: 'active_response', attempt: 'shown' });
+    s = applyLessonEvent(s, { type: 'active_response', at: at(4) });
+    s = applyLessonEvent(s, { type: 'next', at: at(5) });
+    expect(s.queue).toHaveLength(3);
+    expect(s.queue.some((q) => q.transferProbe)).toBe(false);
+    expect(s.segments).toBe(3);
+    expect(lessonStepOf(s)).toMatchObject({ kind: 'task', progress: { segment: 1, total: 3 } });
+    expect(s.played).toEqual([{ queued: startReview().queue[0], attempt: 'shown' }]);
+  });
+
+  it('reviewCommitOf: run с lessonId review и reviewTasks по числу заданий, атлас прежний, счётчик +1, навыки сдвинуты', () => {
+    const done = playAll(startReview());
+    const atlas = [{ lessonId: 'l-1', atlasEntryKey: 'k', stars: 2 as const, firstLesson: 0 }];
+    const c = reviewCommitOf(done, { skills, atlas, runId: 'run-r' });
+    expect(c.run).toEqual({ id: 'run-r', childId: 'kid', lessonId: 'review', startedAt: T0, taskSeconds: [1, 1, 1], reviewTasks: 3 });
+    expect(c.atlas).toEqual(atlas);
+    expect(c.nextLessonNumber).toBe(2);
+    expect(c.skills.map((s) => [s.skill, s.box, s.lastSeenLesson, s.lastSeenDay])).toEqual([
+      ['count-to-3', 2, 1, '2026-10-24'],
+      ['pairs', 2, 1, '2026-10-24'],
+      ['seq', 2, 1, '2026-10-24'],
+    ]);
+  });
+
+  it('reviewCommitOf: показанный ответ возвращает навык в первую коробку, атлас не трогается и при ошибках', () => {
+    // коробка 3, видена на уроке 0 три недели назад: на уроке 10 — в срок
+    const prior = [{ ...due('count-to-3'), box: 3 as const, lastSeenDay: '2026-10-03' }];
+    let s = startReview({ skills: prior, lessonNumber: 10 });
+    const t = currentTask(s) as ChooseTask;
+    const w1 = wrongChoose(t);
+    s = applyLessonEvent(s, { type: 'answer', answer: w1, at: at(2) });
+    s = applyLessonEvent(s, { type: 'answer', answer: wrongChoose(t, [(w1 as { optionId: string }).optionId]), at: at(3) });
+    s = applyLessonEvent(s, { type: 'active_response', at: at(4) });
+    s = applyLessonEvent(s, { type: 'next', at: at(5) });
+    expect(s.phase).toBe('done');
+    const c = reviewCommitOf(s, { skills: prior, atlas: [], runId: 'r' });
+    expect(c.skills[0].box).toBe(1);
+    expect(c.atlas).toEqual([]);
+    expect(c.run.reviewTasks).toBe(1);
+  });
+
+  it('итог незавершённого повторения и итог повторения для обычного урока — ошибка программы', () => {
+    expect(() => reviewCommitOf(startReview(), { skills, atlas: [], runId: 'r' })).toThrow(LessonSessionError);
+    const l = lesson([choose('t1')]);
+    let s = toTasks(start(l));
+    s = solve(s, 1);
+    expect(s.phase).toBe('done');
+    expect(() => reviewCommitOf(s, { skills: [], atlas: [], runId: 'r' })).toThrow(LessonSessionError);
+    expect(() => lessonCommitOf(playAll(startReview()), { lesson: l, skills: [], atlas: [], runId: 'r' })).toThrow(LessonSessionError);
+  });
+
+  it('снимок — plain JSON: повторение продолжается из него так же', () => {
+    let s = startReview();
+    s = solve(s, 1);
+    const restored = JSON.parse(JSON.stringify(s)) as LessonSessionState;
+    expect(restored).toEqual(s);
+    expect(playAll(restored)).toEqual(playAll(s));
   });
 });

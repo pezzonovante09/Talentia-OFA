@@ -25,6 +25,8 @@ export type MapLaneProps = {
   focusKey: number;
   reduceMotion: boolean;
   onOpenLesson: (lessonId: string) => void;
+  /** Активный узел «повторение» — сессия повторения (вопрос 56). */
+  onOpenReview: () => void;
   onVoice: (key: string) => void;
   onTali: () => void;
   taliLabel: string;
@@ -38,7 +40,7 @@ export const LANE_GEOMETRY: LaneGeometry = {
   tail: 96,
 };
 
-export function MapLane({ model, height, focusKey, reduceMotion, onOpenLesson, onVoice, onTali, taliLabel }: MapLaneProps) {
+export function MapLane({ model, height, focusKey, reduceMotion, onOpenLesson, onOpenReview, onVoice, onTali, taliLabel }: MapLaneProps) {
   const theme = useDesign();
   const [viewport, setViewport] = useState(0);
   const offset = useRef(new Animated.Value(0)).current;
@@ -134,14 +136,14 @@ export function MapLane({ model, height, focusKey, reduceMotion, onOpenLesson, o
             const c = nodeCenter(item.index, baseY, g);
             const node =
               item.kind === 'review'
-                ? ({ kind: 'review', review: model.review } as const)
+                ? ({ kind: 'review', review: model.review, voice: model.reviewVoice } as const)
                 : ({ kind: 'lesson', state: item.state, unavailable: model.unavailable.has(model.lessons[item.lesson].id), number: item.lesson + 1 } as const);
             const lessonId = item.kind === 'lesson' ? model.lessons[item.lesson].id : null;
             return (
               <View key={item.index} style={{ position: 'absolute', left: c.x - g.node / 2, top: c.y - g.node / 2 }}>
                 <MapNode
                   node={node}
-                  onOpen={lessonId && (item.kind === 'lesson' && (item.state === 'open' || item.state === 'done' || item.state === 'explored')) ? () => onOpenLesson(lessonId) : item.kind === 'review' ? () => onVoice('map.reviewLater') : undefined}
+                  onOpen={lessonId && (item.kind === 'lesson' && (item.state === 'open' || item.state === 'done' || item.state === 'explored')) ? () => onOpenLesson(lessonId) : item.kind === 'review' && model.review === 'active' ? onOpenReview : undefined}
                   onVoice={onVoice}
                   panning={() => panning.current}
                   testID={item.kind === 'review' ? 'map-node-review' : `map-node-${item.lesson + 1}`}

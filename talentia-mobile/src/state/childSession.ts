@@ -12,12 +12,15 @@
  */
 import { create } from 'zustand';
 
-import { lessonById, lessonsBefore } from '../content';
+import { allLessons, lessonById, lessonsBefore } from '../content';
 import { buildReviewPool } from '../domain/lessonAssembly';
 import {
   applyLessonEvent,
+  isReviewSession,
   lessonCommitOf,
+  reviewCommitOf,
   startLessonSession,
+  startReviewSession,
   type LessonCommitResult,
   type LessonEvent,
   type LessonSessionState,
@@ -63,6 +66,11 @@ export type ChildSessionState = {
   setSettings(patch: Partial<Pick<ChildSettings, 'calmMode' | 'focusMode' | 'soundEffects'>>): void;
   /** Начать или продолжить урок. Возвращает состояние оркестратора для экрана. */
   openLesson(input: { lessonId: string; now: Date; seed: number; nodeState: NodeState }): LessonSessionState;
+  /**
+   * Начать или продолжить сессию повторения с узла карты (вопрос 56): пул — все пройденные уроки,
+   * порция дня не тратится. `null` — повторять нечего, память не меняется.
+   */
+  openReview(input: { now: Date; seed: number }): LessonSessionState | null;
   dispatch(event: LessonEvent): LessonSessionState;
   /** Ребёнок вышел из урока: урок остаётся ждать, память не меняется. */
   leaveLesson(): void;
@@ -155,6 +163,28 @@ export const useChildSession = create<ChildSessionState>((set, get) => ({
     return state;
   },
 
+  openReview({ now, seed }) {
+    const s = get();
+    if (!s.childId) throw new Error('Повторение без сеанса ребёнка');
+    if (s.activeLesson && isReviewSession(s.activeLesson)) return s.activeLesson;
+    const completed = completedLessons(s);
+    const state = startReviewSession({
+      childId: s.childId,
+      band: s.settings.band,
+      skills: s.progress.skills,
+      lessonNumber: s.progress.lessonCounter,
+      day: gameDay(now),
+      startedAt: now.toISOString(),
+      pool: buildReviewPool(allLessons().filter((l) => completed.has(l.id))),
+      seed,
+      formatsSeen: s.progress.formatsSeen,
+    });
+    if (state.phase === 'done') return null;
+    const abandoned = s.activeLesson ? [...s.abandoned, s.activeLesson.lessonId] : s.abandoned;
+    set({ activeLesson: state, openedAs: null, abandoned, pendingResult: null });
+    return state;
+  },
+
   dispatch(event) {
     const s = get();
     if (!s.activeLesson) throw new Error('Событие урока без открытого урока');
@@ -171,10 +201,15 @@ export const useChildSession = create<ChildSessionState>((set, get) => ({
     const s = get();
     const state = s.activeLesson;
     if (!s.childId || !state) throw new Error('Итог без открытого урока');
-    const lesson = lessonById(state.lessonId);
-    if (!lesson) throw new Error(`Урок ${state.lessonId} не найден в реестре`);
-
-    const result = lessonCommitOf(state, { lesson, skills: s.progress.skills, atlas: s.progress.atlas, runId });
+    const review = isReviewSession(state);
+    let result: LessonCommitResult;
+    if (review) {
+      result = reviewCommitOf(state, { skills: s.progress.skills, atlas: s.progress.atlas, runId });
+    } else {
+      const lesson = lessonById(state.lessonId);
+      if (!lesson) throw new Error(`Урок ${state.lessonId} не найден в реестре`);
+      result = lessonCommitOf(state, { lesson, skills: s.progress.skills, atlas: s.progress.atlas, runId });
+    }
     let outcome: FinishOutcome = 'persisted';
     try {
       await port.commit(s.childId, { run: result.run, skills: result.skills, atlas: result.atlas, nextLessonNumber: result.nextLessonNumber, formatsSeen: state.formatsSeen }, at);
@@ -190,7 +225,8 @@ export const useChildSession = create<ChildSessionState>((set, get) => ({
         lessonCounter: result.nextLessonNumber,
         formatsSeen: state.formatsSeen,
       },
-      portion: afterCompletion(s.portion, s.openedAs ?? 'open'),
+      // повторение порцию дня не тратит: порция — про новые уроки
+      portion: review ? s.portion : afterCompletion(s.portion, s.openedAs ?? 'open'),
       activeLesson: null,
       openedAs: null,
       abandoned: s.abandoned.filter((id) => id !== state.lessonId),
@@ -210,4 +246,4 @@ export const completedLessons = (s: Pick<ChildSessionState, 'progress'>): Readon
 
 /** Начатые и не завершённые — открытый урок, если он есть. */
 export const startedLessons = (s: Pick<ChildSessionState, 'activeLesson'>): ReadonlySet<string> =>
-  new Set(s.activeLesson ? [s.activeLesson.lessonId] : []);
+  new Set(s.activeLesson && !isReviewSession(s.activeLesson) ? [s.activeLesson.lessonId] : []);

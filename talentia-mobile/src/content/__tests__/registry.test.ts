@@ -1,5 +1,6 @@
 import { countingTopic, numeralsTopic } from '../numbers-5-6';
-import { lessonById, lessonsBefore, REGIONS, regionLessons, regionMapLessons, regionOfLesson } from '../index';
+import { allLessons, lessonById, lessonsBefore, REGIONS, regionLessons, regionMapLessons, regionOfLesson } from '../index';
+import { REVIEW_LESSON_ID } from '../../domain/parentReport';
 
 describe('реестр контента (срез: Числовая долина, 5–6)', () => {
   it('один регион, две темы, шесть уроков в порядке тем', () => {
@@ -28,5 +29,24 @@ describe('реестр контента (срез: Числовая долина
     expect(lessonsBefore(l1.id)).toEqual([]);
     expect(lessonsBefore(l4.id).map((l) => l.id)).toEqual([l1.id, l2.id, l3.id]);
     expect(lessonsBefore('nope')).toEqual([]);
+  });
+
+  it('id «review» занят сессией повторения: lessonById его не знает, allLessons — все уроки регионов', () => {
+    expect(lessonById(REVIEW_LESSON_ID)).toBeUndefined();
+    expect(allLessons().map((l) => l.id)).toEqual(REGIONS.flatMap((r) => regionLessons(r.id)).map((l) => l.id));
+    expect(allLessons().every((l) => l.id !== REVIEW_LESSON_ID)).toBe(true);
+  });
+
+  it('урок с id «review» в контенте роняет реестр при загрузке', () => {
+    jest.isolateModules(() => {
+      const actual = jest.requireActual<typeof import('../numbers-5-6')>('../numbers-5-6');
+      const [first, ...rest] = actual.countingTopic.lessons;
+      jest.doMock('../numbers-5-6', () => ({
+        ...actual,
+        countingTopic: { ...actual.countingTopic, lessons: [{ ...first, id: 'review' }, ...rest] },
+      }));
+      expect(() => jest.requireActual<typeof import('../index')>('../index')).toThrow(/review/);
+      jest.dontMock('../numbers-5-6');
+    });
   });
 });

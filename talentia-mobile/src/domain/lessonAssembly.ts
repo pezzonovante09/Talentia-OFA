@@ -10,6 +10,7 @@
 import {
   applyLessonOutcomes,
   emptySkill,
+  skillsForReviewSession,
   skillsToReview,
   starsForLesson,
   type Outcome,
@@ -135,6 +136,52 @@ export function assembleLesson({ lesson, skills, lessonNumber, day, pool, region
   return queue;
 }
 
+export type AssembleReviewInput = {
+  band: AgeBand;
+  skills: readonly SkillState[];
+  lessonNumber: number;
+  day: string;
+  pool: ReviewPool;
+  rng: Rng;
+};
+
+/**
+ * Очередь сессии повторения — с узла «повторение» карты (разбор 2026-10-31, вопрос 56).
+ *
+ * - Только повторения: по одному заданию на навык в срок (`skillsForReviewSession` — не чаще раза в
+ *   игровой день), младшие коробки первыми; завязки и примера нет.
+ * - Потолок — `SESSION_TASKS_MAX[band]`: длину сессии держит внимание, остальные навыки ждут
+ *   следующего раза (они и будут первыми: сортировка по коробке и давности).
+ * - Серия одного формата — не длиннее двух; задание, которое не встаёт никуда, заменяется другим
+ *   заданием того же навыка, иначе навык пропускается.
+ * - Ограничения «не первым и не последним» нет: темы, которую надо беречь, здесь нет.
+ */
+export function assembleReview({ band, skills, lessonNumber, day, pool, rng }: AssembleReviewInput): QueuedTask[] {
+  let queue: QueuedTask[] = [];
+  const limit = SESSION_TASKS_MAX[band];
+  for (const s of skillsForReviewSession(skills, lessonNumber, day)) {
+    if (queue.length >= limit) break;
+    const candidates = shuffle((pool[s.skill] ?? []).filter((t) => countsTowardMastery(t) && fitsBand(t, band)), rng);
+    for (const task of candidates) {
+      const item: QueuedTask = { task: reshuffle(task, rng), review: true };
+      const next = [...queue, item];
+      if (maxFormatRun(next) <= MAX_FORMAT_RUN) {
+        queue = next;
+        break;
+      }
+      // не встаёт в конец — попробовать перед последним
+      if (queue.length > 0) {
+        const before = [...queue.slice(0, -1), item, queue[queue.length - 1]];
+        if (maxFormatRun(before) <= MAX_FORMAT_RUN) {
+          queue = before;
+          break;
+        }
+      }
+    }
+  }
+  return queue;
+}
+
 /**
  * Вставить повторение номер `index` из `total`. Места — между первым заданием урока,
  * которое идёт в зачёт, и последним; начиная с ближайшего к равномерной раскладке.
@@ -210,6 +257,22 @@ export function finishLesson(
   /** Сегодня — локальная дата устройства `YYYY-MM-DD`. */
   day: string,
 ): LessonResult {
+  const { skills: next, forStars } = applyPlayed(played, skills, lessonNumber, day);
+  const stars = starsForLesson(forStars);
+  return {
+    stars,
+    skills: next,
+    entry: { lessonId: lesson.id, atlasEntryKey: lesson.atlasEntryKey, stars, firstLesson: lessonNumber },
+  };
+}
+
+/** Итог сессии повторения: только коробки навыков — ни звёзд, ни записи в атлас. */
+export function finishReview(played: readonly Played[], skills: readonly SkillState[], lessonNumber: number, day: string): { skills: SkillState[] } {
+  return { skills: applyPlayed(played, skills, lessonNumber, day).skills };
+}
+
+/** Общее для урока и повторения: исходы по навыкам → коробки; исходы для звёзд — без повторений и проб. */
+function applyPlayed(played: readonly Played[], skills: readonly SkillState[], lessonNumber: number, day: string): { skills: SkillState[]; forStars: Outcome[] } {
   const bySkill = new Map<string, Outcome[]>();
   const forStars: Outcome[] = [];
   for (const { queued, attempt } of played) {
@@ -224,13 +287,7 @@ export function finishLesson(
   for (const [skill, outcomes] of bySkill) {
     known.set(skill, applyLessonOutcomes(known.get(skill) ?? emptySkill(skill), outcomes, lessonNumber, day));
   }
-
-  const stars = starsForLesson(forStars);
-  return {
-    stars,
-    skills: [...known.values()],
-    entry: { lessonId: lesson.id, atlasEntryKey: lesson.atlasEntryKey, stars, firstLesson: lessonNumber },
-  };
+  return { skills: [...known.values()], forStars };
 }
 
 /**

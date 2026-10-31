@@ -27,7 +27,9 @@
 import { seeded } from './abaRandom';
 import {
   assembleLesson,
+  assembleReview,
   finishLesson,
+  finishReview,
   recordInAtlas,
   type AtlasEntry,
   type Played,
@@ -46,8 +48,8 @@ import {
   type Narrowing,
   type QueuedTask,
 } from './lessonFlow';
-import type { SkillState } from './mastery';
-import type { LessonRun } from './parentReport';
+import { starsForLesson, type SkillState } from './mastery';
+import { REVIEW_LESSON_ID, type LessonRun } from './parentReport';
 import type { AgeBand, BuildTask, Lesson, Task, TaskFormat } from '../types/task';
 
 // ---------------------------------------------------------------------------
@@ -304,6 +306,52 @@ export function startLessonSession(input: StartLessonInput): LessonSessionState 
   };
 }
 
+/** Сессия повторения с узла карты, не урок (`REVIEW_LESSON_ID`). */
+export const isReviewSession = (s: Pick<LessonSessionState, 'lessonId'>): boolean => s.lessonId === REVIEW_LESSON_ID;
+
+export type StartReviewInput = {
+  childId: string;
+  band: AgeBand;
+  skills: readonly SkillState[];
+  lessonNumber: number;
+  day: string;
+  startedAt: string;
+  /** Пул — все пройденные уроки всех регионов (`buildReviewPool`). */
+  pool: ReviewPool;
+  seed: number;
+  formatsSeen?: readonly TaskFormat[];
+};
+
+/**
+ * Начало сессии повторения (вопрос 56): очередь — только повторения (`assembleReview`), завязки и
+ * примера нет, первое задание открыто сразу. Редьюсер и `lessonStepOf` те же, что у урока. Пустая
+ * очередь даёт `phase: 'done'` — стор такую сессию не открывает.
+ */
+export function startReviewSession(input: StartReviewInput): LessonSessionState {
+  const { rng, seed } = seeded(input.seed);
+  const queue = assembleReview({ band: input.band, skills: input.skills, lessonNumber: input.lessonNumber, day: input.day, pool: input.pool, rng });
+  const base: LessonSessionState = {
+    v: 1,
+    childId: input.childId,
+    lessonId: REVIEW_LESSON_ID,
+    band: input.band,
+    lessonNumber: input.lessonNumber,
+    day: input.day,
+    startedAt: input.startedAt,
+    rngSeed: seed(),
+    phase: 'task',
+    model: null,
+    queue,
+    segments: queue.length,
+    index: 0,
+    task: null,
+    played: [],
+    taskSeconds: [],
+    formatsSeen: [...(input.formatsSeen ?? [])],
+  };
+  return openTask(base, input.startedAt);
+}
+
 // ---------------------------------------------------------------------------
 // События
 // ---------------------------------------------------------------------------
@@ -429,7 +477,9 @@ function onNext(state: LessonSessionState, at: string): LessonSessionState {
 
   let queue = state.queue;
   let rngSeed = state.rngSeed;
-  if (progress.attempt === 'shown') {
+  // в сессии повторения пробы переноса нет: её длину держит потолок внимания, а показанный навык и так
+  // уходит в первую коробку и вернётся следующим повторением
+  if (progress.attempt === 'shown' && !isReviewSession(state)) {
     const { rng, seed } = seeded(state.rngSeed);
     queue = scheduleTransferProbe(state.queue, state.index, rng);
     rngSeed = seed();
@@ -612,4 +662,26 @@ export function lessonCommitOf(state: LessonSessionState, input: LessonCommitInp
     nextLessonNumber: state.lessonNumber + 1,
     stars: result.stars,
   };
+}
+
+export type ReviewCommitInput = { skills: readonly SkillState[]; atlas: readonly AtlasEntry[]; runId: string };
+
+/**
+ * Итог сессии повторения: коробки навыков — да, атлас — прежний, звёзды экран не показывает (тип
+ * требует). Счётчик уроков растёт: запись `commitLesson` иначе отвергается (`LessonStaleError`), и
+ * `lastSeenLesson` у навыков должен отличать это прохождение от следующего урока.
+ */
+export function reviewCommitOf(state: LessonSessionState, input: ReviewCommitInput): LessonCommitResult {
+  assert(state.phase === 'done', 'итог незавершённого повторения');
+  assert(isReviewSession(state), 'итог повторения с уроком');
+  const result = finishReview(state.played, input.skills, state.lessonNumber, state.day);
+  const run: LessonRun = {
+    id: input.runId,
+    childId: state.childId,
+    lessonId: REVIEW_LESSON_ID,
+    startedAt: state.startedAt,
+    taskSeconds: state.taskSeconds,
+    reviewTasks: state.played.length,
+  };
+  return { run, skills: result.skills, atlas: [...input.atlas], nextLessonNumber: state.lessonNumber + 1, stars: starsForLesson([]) };
 }

@@ -6,6 +6,7 @@
  * полосы — этапы 12 и 17). Порядок уроков в регионе — порядок тем и уроков здесь.
  */
 import type { MapLesson } from '../domain/mapProgress';
+import { REVIEW_LESSON_ID } from '../domain/parentReport';
 import type { Lesson, Region } from '../types/task';
 import { countingTopic, numeralsTopic } from './numbers-5-6';
 
@@ -29,12 +30,16 @@ for (const r of REGIONS) {
   for (const t of r.topics) {
     for (const l of t.lessons) {
       if (BY_ID.has(l.id)) throw new Error(`Урок ${l.id} встречается в реестре дважды`);
+      if (l.id === REVIEW_LESSON_ID) throw new Error(`Id «${REVIEW_LESSON_ID}» занят сессией повторения`);
       BY_ID.set(l.id, { lesson: l, region: r.id });
     }
   }
 }
 
 export const lessonById = (id: string): Lesson | undefined => BY_ID.get(id)?.lesson;
+
+/** Все уроки всех регионов — источник пула сессии повторения. */
+export const allLessons = (): Lesson[] => [...BY_ID.values()].map((x) => x.lesson);
 export const regionOfLesson = (id: string): Region['id'] | undefined => BY_ID.get(id)?.region;
 
 /** Уроки того же региона до данного — источник пула повторения (`buildReviewPool`). */

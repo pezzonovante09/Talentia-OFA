@@ -276,8 +276,9 @@ const lessonCountToTen: Lesson = {
       stimulus: { labelKey: 'content.numbers.l3.model.stimulus', shape: 'leaf', count: 6, layout: 'row' },
       options: [numeral('a', 5, false), numeral('b', 6, true), numeral('c', 7, false)],
     },
+    // Урок 3 темы — Tali ошибается (TALI.md, №70): сомневается в пяти, пересчитывает, находит шесть.
     steps: [
-      { lineKey: 'content.numbers.l3.model.s1', reveal: 'stimulus' },
+      { lineKey: 'content.numbers.l3.model.s1', reveal: 'a', mistake: true },
       { lineKey: 'content.numbers.l3.model.s2', reveal: 'b' },
     ],
   },
@@ -565,8 +566,9 @@ const lessonNumeralsToTen: Lesson = {
       stimulus: { labelKey: 'content.numbers.num-l3.model.stimulus', shape: 'stone', count: 7, layout: 'row' },
       options: [card('a', 6, false), card('b', 7, true), card('c', 8, false)],
     },
+    // Урок 3 темы — Tali ошибается (TALI.md, №70): путает похожие 7 и 8, пересчитывает, находит семь.
     steps: [
-      { lineKey: 'content.numbers.num-l3.model.s1', reveal: 'stimulus' },
+      { lineKey: 'content.numbers.num-l3.model.s1', reveal: 'c', mistake: true },
       { lineKey: 'content.numbers.num-l3.model.s2', reveal: 'b' },
     ],
   },

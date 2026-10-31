@@ -14,7 +14,10 @@ import { CushionPressable } from '../CushionPressable';
 import { Icon } from '../Icon';
 import type { ColorName } from '../colors';
 
-export type MapNodeKind = { kind: 'lesson'; state: NodeState; unavailable: boolean; number: number } | { kind: 'review'; review: ReviewNode };
+export type MapNodeKind =
+  | { kind: 'lesson'; state: NodeState; unavailable: boolean; number: number }
+  /** `voice` — что говорит тихий узел: «сначала пройди урок» или «всё повторено» (модель карты). */
+  | { kind: 'review'; review: ReviewNode; voice: 'map.reviewLater' | 'map.reviewNothing' };
 
 export type MapNodeProps = {
   node: MapNodeKind;
@@ -32,7 +35,7 @@ function lookOf(node: MapNodeKind): Look {
   if (node.kind === 'review') {
     return node.review === 'active'
       ? { fill: 'surface', icon: 'review', iconColor: 'text', raised: true }
-      : { fill: 'surface', icon: 'review', iconColor: 'textMuted', raised: false, voice: 'map.reviewLater' };
+      : { fill: 'surface', icon: 'review', iconColor: 'textMuted', raised: false, voice: node.voice };
   }
   if (node.unavailable) return { fill: 'surfaceSunken', icon: 'lock', iconColor: 'textMuted', raised: false, dashed: true, voice: 'map.noTranslation' };
   switch (node.state) {

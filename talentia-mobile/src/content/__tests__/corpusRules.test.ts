@@ -29,6 +29,7 @@ jest.mock('../../domain/skills', () => {
     prerequisites: [],
     source: 'norm',
     titleKey: `content.skills.${id}`,
+    homeTipKey: `content.skillTips.${id}`,
     maxCount: 10,
   }));
   return { ...actual, SKILLS, SKILL_BY_ID: new Map(SKILLS.map((x) => [x.id, x])) };
@@ -1460,14 +1461,14 @@ describe('гард корпуса: реестр навыков', () => {
   });
 
   it('ловит навык раньше его полосы', () => {
-    add({ id: 'later-skill', region: 'numbers', band: '7', prerequisites: [], source: 'kr', titleKey: 'content.skills.later-skill' });
+    add({ id: 'later-skill', region: 'numbers', band: '7', prerequisites: [], source: 'kr', titleKey: 'content.skills.later-skill', homeTipKey: 'content.skillTips.later-skill' });
     const c = goodCorpus();
     lessonAt(c, 0).tasks[1].skill = 'later-skill';
     expectRed('skillRegistry', c, 'навык later-skill вводится на 7, а урок — 5-6');
   });
 
   it('ловит навык раньше пререквизита той же полосы', () => {
-    add({ id: 'needs-sort', region: 'numbers', band: '5-6', prerequisites: ['sort-by-kind'], source: 'norm', titleKey: 'content.skills.needs-sort' });
+    add({ id: 'needs-sort', region: 'numbers', band: '5-6', prerequisites: ['sort-by-kind'], source: 'norm', titleKey: 'content.skills.needs-sort', homeTipKey: 'content.skillTips.needs-sort' });
     const c = goodCorpus();
     lessonAt(c, 0).tasks[1].skill = 'needs-sort';
     expectRed('skillRegistry', c, 'навык needs-sort раньше своего пререквизита sort-by-kind');

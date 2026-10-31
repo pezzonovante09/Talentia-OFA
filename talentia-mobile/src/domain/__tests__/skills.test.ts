@@ -8,6 +8,7 @@ const e = (id: string, band: SkillEntry['band'], prerequisites: string[] = []): 
   prerequisites,
   source: 'kr',
   titleKey: `content.skills.${id}`,
+  homeTipKey: `content.skillTips.${id}`,
 });
 
 describe('реестр навыков', () => {
@@ -32,6 +33,11 @@ describe('реестр навыков', () => {
     expect(out).toContain('d: пререквизитов 4, не больше 3');
   });
 
+  it('ловит кривой ключ строки «что делать дома»', () => {
+    const out = registryProblems([{ ...e('a', '7'), homeTipKey: 'content.skills.a' }]).join('\n');
+    expect(out).toContain('a: homeTipKey должен быть content.skillTips.a');
+  });
+
   it('ловит цикл пререквизитов', () => {
     const out = registryProblems([e('x', '7', ['z']), e('y', '7', ['x']), e('z', '7', ['y'])]).join('\n');
     expect(out).toContain('цикл пререквизитов');
@@ -43,5 +49,11 @@ describe('названия навыков', () => {
     const ru = require('../../i18n/locales/ru.json') as Record<string, unknown>;
     const at = (key: string) => key.split('.').reduce<unknown>((n, k) => (n as Record<string, unknown> | undefined)?.[k], ru);
     expect(SKILLS.filter((s) => typeof at(s.titleKey) !== 'string').map((s) => s.id)).toEqual([]);
+  });
+
+  it('у каждого навыка есть строка «что делать дома» в ru.json — блок «даётся тяжело» (вопрос 57)', () => {
+    const ru = require('../../i18n/locales/ru.json') as Record<string, unknown>;
+    const at = (key: string) => key.split('.').reduce<unknown>((n, k) => (n as Record<string, unknown> | undefined)?.[k], ru);
+    expect(SKILLS.filter((s) => typeof at(s.homeTipKey) !== 'string').map((s) => s.id)).toEqual([]);
   });
 });

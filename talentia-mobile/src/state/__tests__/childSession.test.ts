@@ -6,6 +6,7 @@
 import { regionLessons, regionMapLessons } from '../../content';
 import { applyLessonEvent, lessonStepOf, type LessonAnswer, type LessonSessionState } from '../../domain/lessonSession';
 import { mapNodes } from '../../domain/mapProgress';
+import { emptySkill, type SkillState } from '../../domain/mastery';
 import { LessonStaleError } from '../../services/local/commit';
 import { noRecordPort, type ProgressPort } from '../../services/progressPort';
 import type { Task } from '../../types/task';
@@ -177,5 +178,121 @@ describe('finishLesson', () => {
       state = applyLessonEvent(state, { type: 'answer', answer: correctAnswer(step.task), at: at(3) });
       state = applyLessonEvent(state, { type: 'next', at: at(4) });
     }
+  });
+});
+
+describe('сессия повторения с узла карты (вопрос 56)', () => {
+  /** Навык урока 1 в первой коробке, виденный на уроке 0 вчера: на счётчике 1 — в срок и сегодня ещё не встречался. */
+  const dueYesterday = (skill: string): SkillState => ({ ...emptySkill(skill), lastSeenLesson: 0, lastSeenDay: '2026-10-23', attempts: 1, correct: 1 });
+  const entry = (i: number) => ({ lessonId: lessons[i].id, atlasEntryKey: lessons[i].atlasEntryKey, stars: 3 as const, firstLesson: i });
+  const skillOf = (i: number) => lessons[i].tasks[0].skill;
+
+  /** Урок пройден вчера, его навык ждёт повторения. */
+  const afterLesson = (i = 0) => {
+    const s = useChildSession.getState();
+    useChildSession.setState({ progress: { ...s.progress, skills: [dueYesterday(skillOf(i))], atlas: [entry(i)], lessonCounter: 1 } });
+  };
+
+  /** Пройти открытое повторение до конца: все задания верно. */
+  function playReview(): LessonSessionState {
+    const { dispatch } = useChildSession.getState();
+    let s = useChildSession.getState().activeLesson!;
+    let sec = 2;
+    while (lessonStepOf(s).kind === 'task') {
+      const step = lessonStepOf(s);
+      if (step.kind !== 'task') break;
+      s = dispatch({ type: 'answer', answer: correctAnswer(step.task), at: at(sec + 3) });
+      s = dispatch({ type: 'next', at: at(sec + 5) });
+      sec += 6;
+    }
+    return s;
+  }
+
+  it('openReview: нечего повторять — null, стор не меняется', () => {
+    const before = useChildSession.getState();
+    expect(useChildSession.getState().openReview({ now: NOW, seed: 7 })).toBeNull();
+    expect(useChildSession.getState()).toBe(before);
+    expect(useChildSession.getState().activeLesson).toBeNull();
+  });
+
+  it('openReview: навык в срок, но урок с ним не пройден (пул пуст) — null', () => {
+    const s = useChildSession.getState();
+    useChildSession.setState({ progress: { ...s.progress, skills: [dueYesterday(skillOf(0))], lessonCounter: 1 } });
+    expect(useChildSession.getState().openReview({ now: NOW, seed: 7 })).toBeNull();
+    expect(useChildSession.getState().activeLesson).toBeNull();
+  });
+
+  it('openReview после пройденного урока с навыком в срок: activeLesson — review, задания из этого урока, порция не тронута, урок на карте не «начат»', () => {
+    afterLesson(0);
+    const state = useChildSession.getState().openReview({ now: NOW, seed: 7 });
+    expect(state?.lessonId).toBe('review');
+    expect(state?.phase).toBe('task');
+    expect(state?.queue.map((q) => q.task.skill)).toEqual([skillOf(0)]);
+    expect(state?.queue.every((q) => lessons[0].tasks.some((t) => t.id === q.task.id))).toBe(true);
+    const s = useChildSession.getState();
+    expect(s.activeLesson).toBe(state);
+    expect(s.openedAs).toBeNull();
+    expect(s.portion).toEqual({ left: 3, grantedDay: '2026-10-24' });
+    expect(startedLessons(s)).toEqual(new Set());
+    expect(nodes()).toEqual(['done', 'open', 'ahead', 'ahead', 'ahead', 'ahead']);
+  });
+
+  it('openReview повторно продолжает то же повторение; открытие урока бросает его', () => {
+    afterLesson(0);
+    const first = useChildSession.getState().openReview({ now: NOW, seed: 7 });
+    expect(useChildSession.getState().openReview({ now: NOW, seed: 99 })).toBe(first);
+    useChildSession.getState().openLesson({ lessonId: lessons[1].id, now: NOW, seed: 7, nodeState: 'open' });
+    expect(useChildSession.getState().abandoned).toEqual(['review']);
+  });
+
+  it('openReview поверх начатого урока: урок уходит в abandoned, возврат к нему — полная форма примера', () => {
+    afterLesson(0);
+    useChildSession.getState().openLesson({ lessonId: lessons[1].id, now: NOW, seed: 7, nodeState: 'open' });
+    playThrough(1);
+    expect(useChildSession.getState().openReview({ now: NOW, seed: 7 })?.lessonId).toBe('review');
+    expect(useChildSession.getState().abandoned).toEqual([lessons[1].id]);
+    const again = useChildSession.getState().openLesson({ lessonId: lessons[1].id, now: NOW, seed: 7, nodeState: 'open' });
+    expect(again.model?.form).toBe('full');
+  });
+
+  it('finishLesson после повторения: порция цела, атлас прежний, lessonCounter +1, pendingResult.run — review, навык сдвинут', async () => {
+    afterLesson(0);
+    const before = useChildSession.getState().progress;
+    useChildSession.getState().openReview({ now: NOW, seed: 7 });
+    const done = playReview();
+    expect(done.phase).toBe('done');
+
+    const outcome = await useChildSession.getState().finishLesson({ port: noRecordPort, runId: KID, at: at(100) });
+    const s = useChildSession.getState();
+    expect(outcome).toBe('session_only');
+    expect(s.activeLesson).toBeNull();
+    expect(s.portion).toEqual({ left: 3, grantedDay: '2026-10-24' });
+    expect(s.progress.atlas).toEqual(before.atlas);
+    expect(s.progress.lessonCounter).toBe(2);
+    expect(s.pendingResult?.run.lessonId).toBe('review');
+    expect(s.pendingResult?.run.reviewTasks).toBe(1);
+    expect(s.progress.skills.find((x) => x.skill === skillOf(0))).toMatchObject({ box: 2, lastSeenLesson: 1, lastSeenDay: '2026-10-24' });
+    expect(nodes()).toEqual(['done', 'open', 'ahead', 'ahead', 'ahead', 'ahead']);
+  });
+
+  it('finishLesson после повторения с портом: commit получает run review и счётчик +1, порция не тратится и при persisted', async () => {
+    afterLesson(0);
+    const commit = jest.fn<Promise<void>, Parameters<ProgressPort['commit']>>(() => Promise.resolve());
+    const port: ProgressPort = { load: noRecordPort.load, commit };
+    useChildSession.getState().openReview({ now: NOW, seed: 7 });
+    playReview();
+    await expect(useChildSession.getState().finishLesson({ port, runId: KID, at: at(100) })).resolves.toBe('persisted');
+    expect(commit).toHaveBeenCalledTimes(1);
+    expect(commit.mock.calls[0][1]).toMatchObject({ run: { lessonId: 'review', reviewTasks: 1 }, nextLessonNumber: 2 });
+    expect(commit.mock.calls[0][1].atlas).toEqual([entry(0)]);
+    expect(useChildSession.getState().portion.left).toBe(3);
+  });
+
+  it('после повторения тот же навык в тот же день второй раз не повторяется — openReview даёт null', async () => {
+    afterLesson(0);
+    useChildSession.getState().openReview({ now: NOW, seed: 7 });
+    playReview();
+    await useChildSession.getState().finishLesson({ port: noRecordPort, runId: KID, at: at(100) });
+    expect(useChildSession.getState().openReview({ now: NOW, seed: 8 })).toBeNull();
   });
 });

@@ -8,6 +8,7 @@ import { regionLessons } from '../../src/content';
 import { mapLane, taliSize } from '../../src/design/tokens';
 import { nodeCenter, taliAnchor } from '../../src/domain/mapLane';
 import { gameDay } from '../../src/domain/mapProgress';
+import { emptySkill } from '../../src/domain/mastery';
 import { voice } from '../../src/services/voice';
 import { useChildSession } from '../../src/state/childSession';
 import { buildMapModel } from '../../src/state/mapModel';
@@ -134,5 +135,38 @@ describe('карта региона', () => {
     expect(screen.queryByTestId('map-node-3-cushion')).toBeNull();
     expect(screen.queryByTestId('map-atlas')).toBeNull();
     expect(screen.getByTestId('map-atlas-slot')).toBeTruthy();
+  });
+
+  describe('узел «повторение» (вопрос 56)', () => {
+    const entry = (i: number) => ({ lessonId: lessons[i].id, atlasEntryKey: lessons[i].atlasEntryKey, stars: 3 as const, firstLesson: i });
+    /** Урок 1 пройден; его навык виден вчера на уроке 0 — на счётчике 1 в срок. */
+    const afterLesson = (lastSeenDay: string) => {
+      const s = useChildSession.getState();
+      useChildSession.setState({
+        progress: { ...s.progress, skills: [{ ...emptySkill(lessons[0].tasks[0].skill), lastSeenLesson: 0, lastSeenDay, attempts: 1, correct: 1 }], atlas: [entry(0)], lessonCounter: 1 },
+      });
+    };
+
+    it('узел повторения активен → push(/review), голос не звучит', async () => {
+      start();
+      afterLesson('2026-10-23');
+      expect(buildMapModel(useChildSession.getState(), new Date()).review).toBe('active');
+      await renderWithProviders(<MapScreen />);
+      await fireEvent.press(screen.getByTestId('map-node-review'));
+      expect(mockPush).toHaveBeenCalledWith('/review');
+      expect(voice.last).toBeNull();
+    });
+
+    it('урок пройден, срок повторения не подошёл — узел тихий, голос map.reviewNothing, перехода нет', async () => {
+      start();
+      // экран карты живёт по настоящим часам: «встречен сегодня» — по реальному игровому дню
+      const today = new Date();
+      afterLesson(gameDay(today));
+      expect(buildMapModel(useChildSession.getState(), today).review).toBe('quiet');
+      await renderWithProviders(<MapScreen />);
+      await fireEvent.press(screen.getByTestId('map-node-review'));
+      expect(voice.last?.key).toBe('map.reviewNothing');
+      expect(mockPush).not.toHaveBeenCalled();
+    });
   });
 });

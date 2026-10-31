@@ -110,7 +110,10 @@ export default function ParentHome() {
                 <ParentText role="caption" color="textMuted">
                   {t('parent.home.hardStats', { attempts: s.attempts, correct: s.correct })}
                 </ParentText>
-                <ParentText role="body">{t('parent.home.hardAdvice')}</ParentText>
+                {/* строка «что делать дома» — на навык (PARENT.md п. 4, вопрос 57); общая — запасная для навыка вне реестра */}
+                <ParentText role="body" testID={`hard-${s.skill}-tip`}>
+                  {t(entry?.homeTipKey ?? 'parent.home.hardAdvice')}
+                </ParentText>
               </View>
             );
           })

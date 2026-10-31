@@ -192,8 +192,8 @@
         "atlas": "Together we counted all the way to ten!",
         "model": {
           "prompt": "How many leaves?",
-          "s1": "One, two, three, four, five, six!",
-          "s2": "The last number is six. So there are six!",
+          "s1": "Five, maybe? Let me count again.",
+          "s2": "One, two… six! Here is six.",
           "stimulus": "leaves"
         },
         "t1": {
@@ -312,8 +312,8 @@
         "model": {
           "prompt": "Which numeral fits?",
           "stimulus": "stones",
-          "s1": "Counting one by one: seven stones.",
-          "s2": "Seven looks like this."
+          "s1": "Is it eight? Something is off.",
+          "s2": "I count: seven. It looks like this."
         },
         "t1": {
           "prompt": "Count the leaves. Which numeral?",
@@ -349,6 +349,14 @@
       "numeral-1-5": "Knows the numerals up to five",
       "zero": "Knows zero",
       "numeral-6-10": "Knows the numerals up to ten"
+    },
+    "skillTips": {
+      "subitize-1-3": "At home: show 2–3 things — how many, without counting?",
+      "count-to-5": "At home: count aloud to 5 — steps, spoons, fingers.",
+      "count-to-10": "At home: count to 10 while setting the table or tidying toys.",
+      "numeral-1-5": "At home: spot the numerals 1–5 in the lift, on clocks, on doors.",
+      "zero": "At home: the plate is empty — ask “how many?”. That is zero.",
+      "numeral-6-10": "At home: spot the numerals 6–10 on price tags, the remote, floors."
     },
     "regions": {
       "numbers": {
@@ -402,7 +410,15 @@
     "tapCorrectedFirst": "First tap what was fixed",
     "orderMirrored": "From the other end! We start right here",
     "demoMatch": "I take the first one. Find its pair",
-    "demoOrder": "I place the first one. Now you"
+    "demoOrder": "I place the first one. Now you",
+    "nowYouTap": "Show me where it is right",
+    "reviewIntro": "Remember this one?",
+    "probeIntro": "Once more — on your own now",
+    "resume": "Shall we go on?"
+  },
+  "review": {
+    "intro": "Shall we recall what we already know?",
+    "done": "Done reviewing!"
   },
   "atlas": {
     "toMap": "To the map",

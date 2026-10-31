@@ -4,7 +4,7 @@
  * доступного урока. «К атласу» в срезе — только отклик (атлас целиком — позже), «ползунки» — гейт родителя
  * (№141) — `router.push('/parent')`. Тап по Tali называет регион и следующий шаг (`mapTaliTap`).
  */
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AccessibilityInfo, View, useWindowDimensions } from 'react-native';
@@ -58,6 +58,8 @@ function MapScreenBody() {
         focusKey={focusKey}
         reduceMotion={reduceMotion}
         onOpenLesson={(lessonId) => router.push({ pathname: '/lesson/[lessonId]', params: { lessonId } })}
+        // typed routes узнают `/review` при следующей генерации (`expo start`); до неё — явный Href
+        onOpenReview={() => router.push('/review' as Href)}
         onVoice={(key) => voice.say(key)}
         onTali={() => voice.say(model.pointer === null ? 'map.taliRest' : 'map.taliTap', { region: t(`content.regions.${model.region}.in`) })}
         taliLabel={t('a11y.tali')}

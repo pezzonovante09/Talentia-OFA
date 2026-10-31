@@ -1,7 +1,8 @@
 /**
  * Экран урока (SCREENS.md; docs/design/slice-screens-2026-10-24.md §3). Каркас не прокручивается:
  * safe area регион · панель 64 · 8 · вопрос 72 · 12 · зона X · 16 · пузырь 80 · 16 · нижняя панель 88 ·
- * низ. Экран рисует `LessonStep` оркестратора; механика форматов — `ui/lesson/formats`.
+ * низ. Экран рисует `LessonStep` оркестратора; каркас фазы задания — `ui/lesson/TaskScreen` (общий с
+ * сессией повторения `app/review`), механика форматов — `ui/lesson/formats`.
  */
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef } from 'react';
@@ -11,16 +12,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDesign } from '../../src/design';
 import { lessonLayout } from '../../src/design/tokens';
 import { randomSeed } from '../../src/services/random';
+import { voice } from '../../src/services/voice';
 import { completedLessons, useChildSession } from '../../src/state/childSession';
-import { AppText } from '../../src/ui/AppText';
-import { ExitLayer } from '../../src/ui/lesson/ExitLayer';
 import { HookScreen } from '../../src/ui/lesson/HookScreen';
-import { BottomBar, Prompt, TaliBubble, TopBar } from '../../src/ui/lesson/LessonChrome';
+import { TaskScreen, type TaskScreenFormat } from '../../src/ui/lesson/TaskScreen';
 import { FORMATS } from '../../src/ui/lesson/formats';
 import { useLessonController } from '../../src/ui/lesson/useLessonController';
 import { RequireSession } from '../../src/ui/RequireSession';
 import type { Lesson, Task } from '../../src/types/task';
-import type { TaskStep } from '../../src/ui/lesson/formats/types';
+import type { FormatProps, TaskStep } from '../../src/ui/lesson/formats/types';
 
 const REGION = 'numbers' as const;
 
@@ -36,7 +36,11 @@ function LessonBody({ lessonId }: { lessonId: string }) {
     if (opened.current) return;
     opened.current = true;
     const s = useChildSession.getState();
-    if (s.activeLesson?.lessonId === lessonId) return;
+    if (s.activeLesson?.lessonId === lessonId) {
+      // вернулись в брошенный урок (ситуация `lesson-resume`, вопрос 71)
+      voice.say('lesson.resume');
+      return;
+    }
     s.openLesson({ lessonId, now: new Date(), seed: randomSeed(), nodeState: completedLessons(s).has(lessonId) ? 'done' : 'open' });
   }, [lessonId]);
 
@@ -55,8 +59,6 @@ function LessonBody({ lessonId }: { lessonId: string }) {
   const X =
     height - insets.top - lessonLayout.topBar - lessonLayout.gapTopPrompt - lessonLayout.prompt - lessonLayout.gapPromptTask - lessonLayout.gapTaskHint - lessonLayout.bubble - lessonLayout.gapHintBar - lessonLayout.actionBar - bottomInset;
 
-  const labels = { exit: t('lesson.exit'), replay: t('lesson.replay'), tali: t('a11y.tali'), check: t('lesson.check'), next: t('lesson.next') };
-
   if (step.kind === 'hook') {
     return (
       <View style={{ flex: 1, backgroundColor: theme.colors.background }} testID="lesson-screen">
@@ -70,7 +72,7 @@ function LessonBody({ lessonId }: { lessonId: string }) {
             height={height - insets.top - bottomInset}
             onReplay={c.replayHook}
             onHelp={c.onAction}
-            labels={{ replay: labels.replay, help: t('lesson.helpTali'), tali: labels.tali }}
+            labels={{ replay: t('lesson.replay'), help: t('lesson.helpTali'), tali: t('a11y.tali') }}
           />
         </View>
       </View>
@@ -89,58 +91,58 @@ function LessonBody({ lessonId }: { lessonId: string }) {
       ? { kind: 'task', task: modelTask, transferProbe: false, review: false, progress: { segment: 0, total: c.state.segments }, attempt: 'first', stage: 'answer', narrowing: null, removed: [], rightOrder: null, kept: [], pinned: null, demo: false, answerCue: true, activeResponse: null, feedback: null, mirrored: false, counts: false }
       : taskStep;
   const promptText = shownTask ? t(shownTask.promptKey) : '';
-  const bubbleText = isModel && step.kind === 'model' ? (step.nowYou ? t('lesson.nowYou') : t(model!.steps[Math.min(step.step, model!.steps.length - 1)].lineKey)) : ui.bubble;
+  // пузырь примера: реплика шага или «теперь ты»; подсказка контроллера («Покажи, где верно») — поверх
+  const bubbleText = isModel && step.kind === 'model' ? (ui.bubble ?? (step.nowYou ? t('lesson.nowYou') : t(model!.steps[Math.min(step.step, model!.steps.length - 1)].lineKey))) : ui.bubble;
   const progress = taskStep?.progress ?? { segment: 0, total: c.state.segments };
-  const FormatComponent = (isModel ? (modelTask ? FORMATS[modelTask.format]?.Component : null) : spec?.Component) ?? null;
-  const modelReveal = isModel && step.kind === 'model' && model ? model.steps[Math.min(step.step, model.steps.length - 1)]?.reveal ?? null : null;
-  const modelDraft = modelTask?.format === 'choose' ? { selected: modelReveal && modelReveal !== 'stimulus' ? modelReveal : null } : null;
+  const FormatComponent = ((isModel ? (modelTask ? FORMATS[modelTask.format]?.Component : null) : spec?.Component) ?? null) as ((props: FormatProps<unknown>) => React.JSX.Element) | null;
+  const modelStep = isModel && step.kind === 'model' && model ? model.steps[Math.min(step.step, model.steps.length - 1)] : null;
+  const modelReveal = modelStep?.reveal ?? null;
+  // шаг «Tali ошибся» (№70): над плиткой знак вопроса, не крест; на следующих шагах она гаснет как «снятая»
+  const mistakeNow = modelStep?.mistake === true && !(step.kind === 'model' && step.nowYou);
+  const mistakenBefore = isModel && step.kind === 'model' && model ? model.steps.slice(0, step.nowYou ? model.steps.length : step.step).filter((s) => s.mistake && s.reveal).map((s) => s.reveal as string) : [];
+  const modelDraft = modelTask?.format === 'choose' ? { selected: modelReveal && modelReveal !== 'stimulus' && !mistakeNow ? modelReveal : null } : null;
+  const modelPseudoStep: TaskStep | null = pseudoStep && isModel ? { ...pseudoStep, removed: mistakenBefore } : pseudoStep;
+  const format: TaskScreenFormat | null =
+    FormatComponent && shownTask && modelPseudoStep
+      ? {
+          Component: FormatComponent,
+          step: modelPseudoStep,
+          draft: isModel ? modelDraft ?? shownSpec?.emptyDraft(shownTask, modelPseudoStep) : ui.draft,
+          phase: isModel ? 'answer' : ui.phase,
+          question: mistakeNow ? modelReveal : null,
+        }
+      : null;
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background }} testID="lesson-screen">
-      <View style={{ height: insets.top, backgroundColor: regionColor }} />
-      <View style={{ flex: 1, paddingHorizontal: theme.spacing.lg, paddingBottom: bottomInset }}>
-        <TopBar segment={progress.segment} total={progress.total} onExit={c.openExit} onReplay={c.replayPrompt} replaying={ui.replaying} labels={{ exit: labels.exit, replay: labels.replay, progress: t('lesson.progress', { n: progress.segment + 1, total: progress.total }) }} />
-        <View style={{ height: lessonLayout.gapTopPrompt }} />
-        <Prompt text={promptText} />
-        <View style={{ height: lessonLayout.gapPromptTask }} />
-        <View style={{ height: X, alignItems: 'center' }} testID="lesson-task-zone">
-          {FormatComponent && shownTask && pseudoStep ? (
-            <FormatComponent
-              step={pseudoStep}
-              draft={isModel ? modelDraft ?? shownSpec?.emptyDraft(shownTask, pseudoStep) : ui.draft}
-              phase={isModel ? 'answer' : ui.phase}
-              wrong={ui.wrong}
-              listening={ui.listening}
-              width={W}
-              height={X}
-              onTap={(tap) => {
-                if (!isModel) return c.onTap(tap);
-                if (step.kind === 'model' && step.nowYou && tap.kind === 'element' && modelTask?.format === 'choose' && tap.id === modelTask.options.find((o) => o.correct)?.id) c.onAction();
-              }}
-              onTouch={c.onTouch}
-              t={t}
-              marksKey={ui.marksKey}
-            />
-          ) : (
-            <AppText role="body" color="textMuted" align="center">
-              {t('lesson.unsupported')}
-            </AppText>
-          )}
-        </View>
-        <View style={{ height: lessonLayout.gapTaskHint }} />
-        <TaliBubble text={bubbleText} speaking={ui.speaking} onPress={c.onTali} label={bubbleText ?? ''} />
-        <View style={{ height: lessonLayout.gapHintBar }} />
-        <BottomBar
-          pose={isModel ? (step.kind === 'model' && step.nowYou ? 'point' : 'point') : ui.pose}
-          onTali={c.onTali}
-          action={isModel ? (step.kind === 'model' && step.nowYou ? 'checkDisabled' : 'next') : c.action}
-          onAction={isModel && step.kind === 'model' && step.nowYou ? () => c.onAction() : c.onAction}
-          labels={{ tali: labels.tali, check: labels.check, next: labels.next }}
-          pulse={ui.pulse}
-        />
-      </View>
-      <ExitLayer visible={ui.exitOpen} regionColor={regionColor} persists={false} onLeave={c.leave} onStay={c.stay} />
-    </View>
+    <TaskScreen
+      regionColor={regionColor}
+      insetTop={insets.top}
+      bottomInset={bottomInset}
+      W={W}
+      X={X}
+      progress={progress}
+      promptText={promptText}
+      bubbleText={bubbleText}
+      speaking={ui.speaking}
+      pose={isModel ? (mistakeNow ? 'puzzled' : 'point') : ui.pose}
+      pulse={ui.pulse}
+      action={c.action}
+      replaying={ui.replaying}
+      wrong={ui.wrong}
+      listening={ui.listening}
+      marksKey={ui.marksKey}
+      format={format}
+      exitOpen={ui.exitOpen}
+      onTap={isModel ? c.onModelTap : c.onTap}
+      onTouch={c.onTouch}
+      onAction={c.onAction}
+      onTali={c.onTali}
+      onExit={c.openExit}
+      onReplay={c.replayPrompt}
+      onLeave={c.leave}
+      onStay={c.stay}
+      t={t}
+    />
   );
 }
 
