@@ -13,10 +13,11 @@
 import type { PairingEndReason } from './abaPairing';
 import { TOKEN_BOARD_SIZE, type AbaConfig, type AbaSessionEndReason } from '../types/aba';
 import type { AgeBand } from '../types/task';
+import type { GuardianRole } from './consent';
 
 export type BoardStage = 1 | 2 | 3 | 5;
 
-/** Ступени доски. Финальная — размер доски по полосе: 3 на 5–6, 5 дальше. */
+/** Ступени доски. Финальная — размер доски по полосе (`TOKEN_BOARD_SIZE`): 3 на всех полосах; ступень 5 — только у старых записей. */
 export const BOARD_STAGES: readonly BoardStage[] = [1, 2, 3, 5];
 
 /** Сессия сопряжения: без проб и без требований, около 2.5 минут. */
@@ -65,8 +66,16 @@ export type StageSession = {
   routineExchangeInWindow?: boolean;
 };
 
+/**
+ * Сопряжение подтверждено вручную обученным наблюдателем (вопрос 62, 2026-10-31) — в обход критерия
+ * `applyPairingSession`. `observerId` — наблюдатель, по которому кнопка была доступна (в экспорте — метка `O…`),
+ * `byRole` — роль держателя PIN. Нет поля — сопряжение прошло по критерию.
+ */
+export type PairingConfirmed = { observerId: string; byRole: GuardianRole; at: string };
+
 export type TokenTrainingState = {
   pairingDone: boolean;
+  pairingConfirmed?: PairingConfirmed;
   pairingSessions: number;
   /** Подряд сессий сопряжения, выполнивших критерий. */
   pairingStreak: number;
@@ -140,11 +149,23 @@ export function applyPairingSession(
 }
 
 /**
+ * Ручное подтверждение сопряжения обученным наблюдателем (вопрос 62). Как при проходе критерия: доска со ступени 1,
+ * `atStage` заново — сопряжение и обучение доске разные навыки. Счётчики `pairingSessions`, `pairingStreak`,
+ * `pairingRecent` не трогаются: это история измерения — специалист видит, сколько сессий критерий не выполнялся до
+ * отметки. Флаг `pairing_not_established` снимается (обученный наблюдатель на него ответил); `pairing_keeps_breaking`
+ * остаётся — он про обрывы процедуры, подтверждение его не опровергает. При `pairingDone` — без изменений.
+ */
+export function confirmPairing(t: TokenTrainingState, by: PairingConfirmed): TokenTrainingState {
+  if (t.pairingDone) return t;
+  return { ...t, pairingDone: true, pairingConfirmed: by, stage: 1, atStage: [], flags: t.flags.filter((f) => f !== 'pairing_not_established') };
+}
+
+/**
  * Итог рабочей сессии для ступени доски.
  *
  * - Вверх — `STAGE_WINDOW` подряд сессий на ступени, в каждой не меньше
- *   `EXCHANGES_TO_GROW` обменов и сессия не брошена. Выше финальной по полосе не растёт;
- *   при переходе 5–6 → 7 ступень 3 растёт до 5 по тому же критерию, скачка нет.
+ *   `EXCHANGES_TO_GROW` обменов и сессия не брошена. Выше финальной по полосе не растёт
+ *   (лестница 1 → 2 → 3; ступень 5 остаётся у старых записей и работает как 3).
  * - Вниз на ступень — `STAGE_WINDOW` подряд сессий с нулём обменов или брошенных. На
  *   ступени 1 отката нет: ноль обменов на доске из одной ячейки — это ноль верных ответов
  *   на стартовом уровне, проблема не в доске; ставится флаг специалисту.

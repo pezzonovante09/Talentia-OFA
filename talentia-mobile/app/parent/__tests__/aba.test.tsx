@@ -225,6 +225,126 @@ describe('«Занятия ABA»: кнопка занятия по состоя�
   });
 });
 
+describe('«Занятия ABA»: «Знакомство с жетонами уже пройдено» (сопряжение подтверждено, вопрос 62)', () => {
+  const PAIRING_STATUS = 'Сначала знакомство с жетонами — короткое занятие без заданий';
+  const observers = (list: { id: string; role: 'parent' | 'specialist'; trained: boolean }[], childId = KID) =>
+    asAbaWriter(db, childId, (tx) => saveChildState(tx, childId, 'abaObservers', list, iso()));
+  const trainingOf = (childId = KID) => loadChildState(db, childId, 'tokenTraining');
+
+  it('без наблюдателей кнопки нет — только «Начать знакомство»', async () => {
+    await grant();
+    await renderAba();
+    await waitStatus(PAIRING_STATUS);
+    expect(screen.queryByTestId('aba-pairing-confirm')).toBeNull();
+    expect(screen.queryByTestId('aba-pairing-confirm-caption')).toBeNull();
+    expect(screen.getByTestId('aba-start')).toBeTruthy();
+  });
+
+  it('наблюдатель не обучен — кнопки нет', async () => {
+    await grant();
+    await observers(OBS);
+    await renderAba();
+    await waitStatus(PAIRING_STATUS);
+    expect(screen.queryByTestId('aba-pairing-confirm')).toBeNull();
+  });
+
+  it('обученный наблюдатель и знакомство не пройдено — кнопка с подписью, «Начать знакомство» остаётся', async () => {
+    await grant();
+    await observers([{ id: 'obs-1', role: 'specialist', trained: true }]);
+    await renderAba();
+    await waitStatus(PAIRING_STATUS);
+    expect(screen.getByTestId('aba-pairing-confirm').props.accessibilityLabel).toBe('Знакомство с жетонами уже пройдено');
+    expect(screen.getByTestId('aba-pairing-confirm-caption')).toBeTruthy();
+    expect(screen.getByTestId('aba-start').props.accessibilityLabel).toBe('Начать знакомство');
+  });
+
+  it('знакомство пройдено — кнопки нет и при обученном наблюдателе', async () => {
+    await grant();
+    await pair();
+    await observers([{ id: 'obs-1', role: 'specialist', trained: true }]);
+    await renderAba();
+    await waitStatus('Можно начинать');
+    expect(screen.queryByTestId('aba-pairing-confirm')).toBeNull();
+  });
+
+  it('нажатие без свежего PIN — лист PIN, в базе знакомство не отмечено', async () => {
+    await grant();
+    await observers([{ id: 'obs-1', role: 'specialist', trained: true }]);
+    await renderAba();
+    await waitStatus(PAIRING_STATUS);
+    await fireEvent.press(screen.getByTestId('aba-pairing-confirm'));
+    expect(screen.getByTestId('confirm-pin-sheet')).toBeTruthy();
+    expect((await trainingOf())?.pairingDone ?? false).toBe(false);
+    expect(statusText()).toBe(PAIRING_STATUS);
+  });
+
+  it('верный PIN — статус «Можно начинать», в базе pairingConfirmed с наблюдателем obs-1 и ролью владельца', async () => {
+    await grant();
+    await observers([{ id: 'obs-1', role: 'specialist', trained: true }]);
+    await renderAba();
+    await waitStatus(PAIRING_STATUS);
+    await fireEvent.press(screen.getByTestId('aba-pairing-confirm'));
+    await typePin(PIN);
+    await waitStatus('Можно начинать');
+    const t = await trainingOf();
+    expect(t).toMatchObject({ pairingDone: true, stage: 1, pairingConfirmed: { observerId: 'obs-1', byRole: 'owner' } });
+    expect(Date.parse(t!.pairingConfirmed!.at)).not.toBeNaN();
+    expect(screen.queryByTestId('aba-pairing-confirm')).toBeNull();
+    expect(screen.getByTestId('aba-start').props.accessibilityLabel).toBe('Начать занятие');
+    expect(router.push).not.toHaveBeenCalled();
+  });
+
+  it('неверный PIN — лист остаётся, знакомство не отмечено', async () => {
+    await grant();
+    await observers([{ id: 'obs-1', role: 'specialist', trained: true }]);
+    await renderAba();
+    await waitStatus(PAIRING_STATUS);
+    await fireEvent.press(screen.getByTestId('aba-pairing-confirm'));
+    await typePin('000000');
+    await waitFor(() => expect(screen.getByTestId('confirm-pin-error').props.children).toBe('Неверный PIN'));
+    expect((await trainingOf())?.pairingDone ?? false).toBe(false);
+    expect(screen.getByTestId('confirm-pin-sheet')).toBeTruthy();
+  });
+
+  it('«Отмена» на листе — знакомство не отмечено, кнопка на месте', async () => {
+    await grant();
+    await observers([{ id: 'obs-1', role: 'specialist', trained: true }]);
+    await renderAba();
+    await waitStatus(PAIRING_STATUS);
+    await fireEvent.press(screen.getByTestId('aba-pairing-confirm'));
+    await fireEvent.press(screen.getByTestId('confirm-pin-cancel'));
+    expect(screen.queryByTestId('confirm-pin-sheet')).toBeNull();
+    expect((await trainingOf())?.pairingDone ?? false).toBe(false);
+    expect(screen.getByTestId('aba-pairing-confirm')).toBeTruthy();
+  });
+
+  it('в окне свежести PIN — сразу, без листа', async () => {
+    await grant();
+    await observers([{ id: 'obs-1', role: 'specialist', trained: true }]);
+    useGate.getState().open();
+    await renderAba();
+    await waitStatus(PAIRING_STATUS);
+    await fireEvent.press(screen.getByTestId('aba-pairing-confirm'));
+    expect(screen.queryByTestId('confirm-pin-sheet')).toBeNull();
+    await waitStatus('Можно начинать');
+    expect((await trainingOf())?.pairingConfirmed?.observerId).toBe('obs-1');
+  });
+
+  it('подтверждение у выбранного ребёнка: у второго знакомство не отмечается', async () => {
+    useAccount.setState({ profiles: [p1, p2] });
+    await grant();
+    await grant(KID2);
+    await observers([{ id: 'obs-1', role: 'specialist', trained: true }]);
+    await observers([{ id: 'obs-1', role: 'specialist', trained: true }], KID2);
+    useGate.getState().open();
+    await renderAba();
+    await waitStatus(PAIRING_STATUS);
+    await fireEvent.press(screen.getByTestId('aba-pairing-confirm'));
+    await waitStatus('Можно начинать');
+    expect((await trainingOf(KID2))?.pairingDone ?? false).toBe(false);
+  });
+});
+
 describe('«Занятия ABA»: незаконченное занятие', () => {
   beforeEach(async () => {
     await grant();

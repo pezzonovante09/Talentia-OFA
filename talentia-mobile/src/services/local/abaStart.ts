@@ -42,6 +42,8 @@ export type AbaOverview = {
   paused: boolean;
   inProgress: AbaSessionState | null;
   pairingDone: boolean;
+  /** Обученный наблюдатель, записанный у ребёнка (первый по списку), — ему доступно «сопряжение подтверждено». */
+  trainedObserverId: string | null;
   readyTargets: number;
 };
 
@@ -82,6 +84,7 @@ export async function abaOverview(db: SqlDb, childId: string, art?: Readonly<Rec
     paused: (await loadChildState(db, childId, 'abaPaused')) === true,
     inProgress: (await loadChildState(db, childId, 'abaSessionInProgress')) ?? null,
     pairingDone: ((await loadChildState(db, childId, 'tokenTraining')) ?? initialTokenTraining()).pairingDone,
+    trainedObserverId: ((await loadChildState(db, childId, 'abaObservers')) ?? []).find((o) => o.trained)?.id ?? null,
     readyTargets: readyAbaTargets(ABA_TARGETS, artFor(art)).length,
   };
 }
@@ -145,6 +148,8 @@ export async function loadAbaStart(db: SqlDb, childId: string, o: StartOptions):
       ...(board ? { board: { earned: board.earned, nonContingent: board.nonContingent }, boardRev: boardRevOf(board) } : {}),
       identifySets: (await loadChildState(db, childId, 'identifySets')) ?? [],
       physicalPromptAllowed: (await loadChildState(db, childId, 'physicalPromptAllowed'))?.value ?? false,
+      // проверка сверху вниз включена (вопрос 63, 2026-10-31): домен сам ограничивает её «со взрослым»
+      autoPlacement: true,
       observers: o.observers,
       primaryObserverId: o.primaryObserverId,
     },

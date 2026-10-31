@@ -564,9 +564,9 @@ describe('время и доска', () => {
     expect(begin([A], { A: acq(A) }, { timeLimitMs: 60 * 60_000 }).timeLimitMs).toBe(15 * 60_000);
   });
 
-  it('доска берёт размер по текущей полосе, жетоны сохраняются', () => {
+  it('доска — 3 ячейки на любой полосе (здесь 7, сохранённая ступень 5 работает как 3), жетоны сохраняются', () => {
     const st = begin([A], { A: acq(A) }, { board: { earned: 2, nonContingent: 1 } });
-    expect(st.board).toEqual({ size: 5, earned: 2, nonContingent: 1 });
+    expect(st.board).toEqual({ size: 3, earned: 2, nonContingent: 1 });
   });
 });
 

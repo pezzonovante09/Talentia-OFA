@@ -11,7 +11,7 @@ import { View } from 'react-native';
 import { parentSpacing } from '../../../src/design/parentTokens';
 import type { SensitiveAction } from '../../../src/domain/parentGate';
 import { abaBlockOf, abaOverview, finishInProgressSession, type AbaOverview } from '../../../src/services/local/abaStart';
-import { setAbaPaused } from '../../../src/services/local/commit';
+import { confirmAbaPairing, setAbaPaused } from '../../../src/services/local/commit';
 import { useAccount } from '../../../src/state/account';
 import { useGate } from '../../../src/state/gate';
 import { useSelectedProfile } from '../../../src/state/parentView';
@@ -75,6 +75,13 @@ export default function AbaParentScreen() {
     router.push(block === 'pairing_needed' ? '/aba?mode=pairing' : '/aba');
   };
 
+  // «Сопряжение подтверждено» (вопрос 62): только обученному наблюдателю, за PIN; роль держателя PIN — владелец аккаунта
+  const confirmPairing = safely(async () => {
+    if (!ov?.trainedObserverId) return;
+    await confirmAbaPairing(db, profile.childId, { observerId: ov.trainedObserverId, byRole: 'owner', at: new Date().toISOString() });
+    await reload();
+  });
+
   return (
     <ParentScreen
       title={t('parent.aba.title')}
@@ -98,6 +105,14 @@ export default function AbaParentScreen() {
             </>
           ) : block === 'no_ready_targets' || block === 'pool_small' ? null : (
             <ParentButton label={t(block === 'pairing_needed' ? 'parent.aba.startPairing' : 'parent.aba.start')} onPress={start} testID="aba-start" />
+          )}
+          {block === 'pairing_needed' && ov?.trainedObserverId && (
+            <>
+              <ParentButton variant="quiet" label={t('parent.aba.pairingConfirmed')} onPress={() => guarded('aba_pairing_confirm', confirmPairing)} testID="aba-pairing-confirm" />
+              <ParentText role="caption" color="textMuted" testID="aba-pairing-confirm-caption">
+                {t('parent.aba.pairingConfirmedCaption')}
+              </ParentText>
+            </>
           )}
         </Card>
 

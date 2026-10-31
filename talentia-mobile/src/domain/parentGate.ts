@@ -181,10 +181,11 @@ export type SensitiveAction =
   | 'grant_access'
   | 'transfer_ownership'
   | 'delete_account'
-  /** Занятия ABA (этап 11): согласие на данные, снятие паузы, продолжение и экспорт специалисту. */
+  /** Занятия ABA (этап 11): согласие на данные, снятие паузы, продолжение, экспорт специалисту, «сопряжение подтверждено» (вопрос 62). */
   | 'aba_consent'
   | 'aba_resume'
-  | 'aba_export';
+  | 'aba_export'
+  | 'aba_pairing_confirm';
 
 /**
  * Чем подтверждается действие.
@@ -206,6 +207,7 @@ export const CONFIRMATION: Record<SensitiveAction, Confirmation> = {
   aba_consent: 'gate_fresh',
   aba_resume: 'gate_fresh',
   aba_export: 'gate_fresh',
+  aba_pairing_confirm: 'gate_fresh',
   /**
    * Временно, до облака (решение владельца 2026-10-25, проверка приватности): почты в локальной
    * версии нет, поэтому `gate_now` — PIN вводится на самом экране удаления, окно свежести не

@@ -32,6 +32,7 @@ export const POOL = ['puzzle', 'bubbles', 'drum', 'paint_drop', 'kaleidoscope', 
 export const BASE_MS = Date.UTC(2026, 9, 12, 8);
 export const DAY = '2026-10-12';
 
+/** Обученный доске ребёнок. Ступень 5 по умолчанию — сохранённая запись старого формата: доска 3 на всех полосах, 5 работает как 3. */
 export const trained = (stage: BoardStage = 5): TokenTrainingState => ({ ...initialTokenTraining(), pairingDone: true, stage });
 
 const ex = (id: string, role: AbaExemplar['role'] = 'teaching'): AbaExemplar => ({

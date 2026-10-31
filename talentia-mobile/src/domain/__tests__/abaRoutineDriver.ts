@@ -9,6 +9,7 @@ import { nextRoutineStep, recordRoutineStep, startRoutineRun, type RoutineRunInp
 import { initialTokenTraining, type TokenTrainingState } from '../abaTokenTraining';
 import type { AbaTrialInput, TrialStep } from '../abaTrialStep';
 
+/** Ступень 5 — сохранённая запись старого формата: доска 3 на всех полосах, 5 работает как 3. */
 export const ROUTINE_TRAINED: TokenTrainingState = { ...initialTokenTraining(), pairingDone: true, stage: 5 };
 export const ROUTINE_POOL = ['puzzle', 'bubbles', 'drum', 'paint_drop', 'kaleidoscope', 'pinwheel'];
 export const ROUTINE_SPEC: AbaObserver = { id: 'obs-spec', role: 'specialist', trained: true };

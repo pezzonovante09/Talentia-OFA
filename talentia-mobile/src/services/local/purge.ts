@@ -8,6 +8,7 @@
  */
 import type { AbaIoaRecord, AbaObserver, AbaPairingSession, AbaRoutineRun, AbaSession } from '../../types/aba';
 import type { ConsentEvent, GuardianRole } from '../../domain/consent';
+import type { TokenTrainingState } from '../../domain/abaTokenTraining';
 import { withAmendments, type RoutineRunAmendment } from './abaLog';
 import { ABA_DELETED_KEYS, ABA_STATE_KEYS, loadChildState } from './childState';
 import { insertConsentEvent, readConsentLog } from './consentLog';
@@ -610,6 +611,7 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
       await bodies<RoutineRunAmendment>('aba_routine_run_amendments'),
     );
     const observers = (state.abaObservers ?? []) as AbaObserver[];
+    const tokenTraining = state.tokenTraining as TokenTrainingState | undefined;
 
     const labels = new Map<string, string>();
     const label = (id: string | null) => {
@@ -727,7 +729,14 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
       abaRoutineRuns: routineRunsOut,
       abaReinforcerChoices: choicesOut,
       abaPairingSessions: pairingOut,
-      state: { ...dayOnly(withoutBreakCardIds(state)), abaObservers: observers.map((o) => ({ id: label(o.id), role: o.role, trained: o.trained })) },
+      state: {
+        ...dayOnly(withoutBreakCardIds(state)),
+        abaObservers: observers.map((o) => ({ id: label(o.id), role: o.role, trained: o.trained })),
+        // ручное подтверждение сопряжения — с той же меткой наблюдателя, что в сессиях
+        ...(tokenTraining?.pairingConfirmed
+          ? { tokenTraining: dayOnly({ ...tokenTraining, pairingConfirmed: { ...tokenTraining.pairingConfirmed, observerId: label(tokenTraining.pairingConfirmed.observerId) } }) }
+          : {}),
+      },
     };
   });
 }

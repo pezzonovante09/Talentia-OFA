@@ -18,7 +18,7 @@ import {
   type RoutineSettingOpen,
 } from '../../domain/abaRoutineRun';
 import { boardRevOf, reinforcerChoices, type BoardRecord } from '../../domain/abaTokens';
-import { applyPairingSession, initialTokenTraining, PAIRING, workingBoardSize } from '../../domain/abaTokenTraining';
+import { applyPairingSession, confirmPairing, initialTokenTraining, PAIRING, workingBoardSize, type PairingConfirmed } from '../../domain/abaTokenTraining';
 import type { PairingResult } from '../../domain/abaPairing';
 import {
   applyBreakCardRoutine,
@@ -676,6 +676,27 @@ export async function setPhysicalPromptAllowed(
   setByRole: GuardianRole,
 ): Promise<void> {
   await withAbaWrite(db, childId, (tx) => saveChildState(tx, childId, 'physicalPromptAllowed', { value, setAt: at, setByRole }, at));
+}
+
+/**
+ * «Сопряжение подтверждено» (вопрос 62): обученный наблюдатель за PIN ставит `pairingDone` в обход критерия —
+ * `confirmPairing`, при согласии и не на паузе (`withAbaWrite`). Наблюдатель должен быть обучен и записан у ребёнка:
+ * иначе `AbaObserverNotTrainedError`, ничего не пишется. В журнал сопряжений не пишется — это не сессия.
+ */
+export class AbaObserverNotTrainedError extends Error {
+  constructor() {
+    super('Сопряжение подтверждает только обученный наблюдатель');
+    this.name = 'AbaObserverNotTrainedError';
+  }
+}
+
+export async function confirmAbaPairing(db: SqlDb, childId: string, by: PairingConfirmed): Promise<void> {
+  await withAbaWrite(db, childId, async (tx) => {
+    const observers = (await loadChildState(tx, childId, 'abaObservers')) ?? [];
+    if (!observers.some((o) => o.id === by.observerId && o.trained)) throw new AbaObserverNotTrainedError();
+    const t = (await loadChildState(tx, childId, 'tokenTraining')) ?? initialTokenTraining();
+    await saveChildState(tx, childId, 'tokenTraining', confirmPairing(t, by), by.at);
+  });
 }
 
 /**

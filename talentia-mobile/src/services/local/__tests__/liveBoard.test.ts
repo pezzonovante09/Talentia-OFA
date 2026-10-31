@@ -18,7 +18,7 @@ import {
 } from '../../../domain/abaSession';
 import { boardRevOf } from '../../../domain/abaTokens';
 import { seeded } from '../../../domain/abaRandom';
-import { initialTokenTraining, type BoardStage, type StageSession, type TokenTrainingState } from '../../../domain/abaTokenTraining';
+import { initialTokenTraining, workingBoardSize, type BoardStage, type StageSession, type TokenTrainingState } from '../../../domain/abaTokenTraining';
 import type { ConsentEvent } from '../../../domain/consent';
 import { correctInput, answerNext, BASE_MS, beginSession, POOL } from '../../../domain/__tests__/abaSessionDriver';
 import { finishSession } from '../../../domain/__tests__/abaFixtures';
@@ -85,7 +85,10 @@ const abaConsent = (action: 'grant' | 'revoke', over: Partial<ConsentEvent> = {}
 
 type Setup = { stage?: BoardStage; board?: { earned: number; nonContingent: number; rev?: number }; kids?: string[] };
 
-/** База с согласием на ABA, обучением доске и живой доской. */
+/**
+ * База с согласием на ABA, обучением доске и живой доской. Ступень по умолчанию 5 — сохранённая запись старого
+ * формата: доска 3 на всех полосах (`TOKEN_BOARD_SIZE`), ступень 5 работает как 3.
+ */
 async function setup({ stage = 5, board, kids = ['kid'] }: Setup = {}): Promise<SqlDb> {
   const db = await memoryDb();
   for (const [i, kid] of kids.entries()) {
@@ -169,8 +172,8 @@ async function workTrial(db: SqlDb, st: AbaSessionState, now: number): Promise<A
 // ---------------------------------------------------------------------------
 
 describe('Т1: сессия и рутина без обменов — жетоны складываются', () => {
-  it('жетон пробы, затем жетон рутины: на доске оба, версия растёт на каждую запись', async () => {
-    const db = await setup({ board: { earned: 1, nonContingent: 0 } });
+  it('жетон пробы, затем жетон рутины: на доске оба (доска из трёх не полна), версия растёт на каждую запись', async () => {
+    const db = await setup({ board: { earned: 0, nonContingent: 0 } });
     let st = await startSession(db);
     st = await workTrial(db, st, BASE_MS + 1000);
     const afterTrial = await boardOf(db);
@@ -297,25 +300,25 @@ describe('Т3: обратный порядок — сессия обменяла
 });
 
 describe('Т5: лимит жетонов не за результат — по живой доске', () => {
-  it('на доске size − 1 не за результат жетон за участие не выплачен, версия не растёт', async () => {
-    const db = await setup({ board: { earned: 4, nonContingent: 4, rev: 3 } });
+  it('на доске size − 1 (два из трёх) не за результат жетон за участие не выплачен, версия не растёт', async () => {
+    const db = await setup({ board: { earned: 2, nonContingent: 2, rev: 3 } });
     const out = await commitRoutineRun(db, 'kid', routineResult('run-1', PARTICIPATION), NOW);
     expect(out.token).toBeNull();
-    expect(await boardOf(db)).toEqual({ earned: 4, nonContingent: 4, rev: 3 });
+    expect(await boardOf(db)).toEqual({ earned: 2, nonContingent: 2, rev: 3 });
     expect((await routineRunsOf(db, 'kid'))[0]).toMatchObject({ token: null });
   });
 
-  it('на размер меньше — выплачен и записан в счёт не за результат', async () => {
-    const db = await setup({ board: { earned: 3, nonContingent: 3 } });
+  it('на размер меньше (один из трёх) — выплачен и записан в счёт не за результат', async () => {
+    const db = await setup({ board: { earned: 1, nonContingent: 1 } });
     const out = await commitRoutineRun(db, 'kid', routineResult('run-1', PARTICIPATION), NOW);
     expect(out.token).toBe('participation');
-    expect(await boardOf(db)).toEqual({ earned: 4, nonContingent: 4, rev: 1 });
+    expect(await boardOf(db)).toEqual({ earned: 2, nonContingent: 2, rev: 1 });
   });
 
   it('жетоны, добавленные сессией после старта прогона, учитываются: лимит по доске на момент фиксации', async () => {
-    const db = await setup({ board: { earned: 2, nonContingent: 2 } });
+    const db = await setup({ board: { earned: 0, nonContingent: 0 } });
     // прогон «начался», когда место ещё было; пока он шёл, сессия добавила не за результат
-    await asAbaWriter(db, 'kid', (tx) => saveChildState(tx, 'kid', 'abaBoard', { earned: 4, nonContingent: 4, rev: 1 }, NOW));
+    await asAbaWriter(db, 'kid', (tx) => saveChildState(tx, 'kid', 'abaBoard', { earned: 2, nonContingent: 2, rev: 1 }, NOW));
     const out = await commitRoutineRun(db, 'kid', routineResult('run-1', PARTICIPATION), NOW);
     expect(out.token).toBeNull();
   });
@@ -430,15 +433,17 @@ describe('Т8: смена ступени между стартом прогон�
     expect((await commitRoutineRun(db, 'kid', routineResult('run-1', WORK), NOW)).offer?.tokens).toBe(5);
   });
 
-  it('3 → 5 (и полоса 7): трёх жетонов с жетоном прогона для обмена мало', async () => {
-    const db = await setup({ stage: 3, board: { earned: 3, nonContingent: 0 } });
+  it('3 → 5 (сохранённая ступень 5, полоса 7) доску не растит: двух жетонов с жетоном прогона хватает, размер 3', async () => {
+    const db = await setup({ stage: 3, board: { earned: 2, nonContingent: 0 } });
     await setStage(db, 5);
-    expect((await commitRoutineRun(db, 'kid', routineResult('run-1', WORK), NOW)).offer).toBeUndefined();
+    expect((await commitRoutineRun(db, 'kid', routineResult('run-1', WORK, { band: '7' }), NOW)).offer).toMatchObject({ tokens: 3, boardSize: 3 });
   });
 
-  it('ступень выше финальной по полосе не поднимает доску: полоса 5–6, ступень 5 — размер 3', async () => {
-    const db = await setup({ stage: 5, board: { earned: 2, nonContingent: 0 } });
-    expect((await commitRoutineRun(db, 'kid', routineResult('run-1', WORK, { band: '5-6' }), NOW)).offer?.tokens).toBe(3);
+  it('ступень 5 выше финальной (3) на любой полосе: размер 3 и на 5–6, и на 7', async () => {
+    for (const band of ['5-6', '7'] as const) {
+      const db = await setup({ stage: 5, board: { earned: 2, nonContingent: 0 } });
+      expect((await commitRoutineRun(db, 'kid', routineResult('run-1', WORK, { band }), NOW)).offer).toMatchObject({ tokens: 3, boardSize: 3 });
+    }
   });
 });
 
@@ -534,11 +539,11 @@ describe('Т9: история выборов — по порядку запис�
   });
 
   it('выбор рутины через commitRoutineExchange тоже пишется в едином формате, с числом ушедших жетонов', async () => {
-    const db = await setup({ board: { earned: 4, nonContingent: 0 } });
+    const db = await setup({ board: { earned: 2, nonContingent: 0 } });
     const out = await commitRoutineRun(db, 'kid', routineResult('run-1', WORK), NOW);
     await commitRoutineExchange(db, 'kid', 'run-1', out.offer!.options[0], 'child', '2026-10-12T13:00:00+03:00');
     const [row] = await db.all<{ chosen_at: string; tokens: number }>('SELECT chosen_at, tokens FROM aba_reinforcer_choices');
-    expect(row).toEqual({ chosen_at: '2026-10-12T10:00:00.000Z', tokens: 5 });
+    expect(row).toEqual({ chosen_at: '2026-10-12T10:00:00.000Z', tokens: 3 });
   });
 
   it('пустой подкрепитель в историю не пишется', async () => {
@@ -555,7 +560,8 @@ describe('Т9: история выборов — по порядку запис�
 });
 
 describe('Т10: приложение убили до выбора подкрепителя после предложения рутины', () => {
-  async function offered(board = { earned: 4, nonContingent: 0 }) {
+  /** Доска из трёх: два жетона, жетон прогона её наполняет — предложение на три. */
+  async function offered(board = { earned: 2, nonContingent: 0 }) {
     const db = await setup({ board });
     const out = await commitRoutineRun(db, 'kid', routineResult('run-1', WORK), NOW);
     return { db, out, offer: out.offer! };
@@ -563,7 +569,7 @@ describe('Т10: приложение убили до выбора подкреп
 
   it('openRoutineOfferOf даёт то же предложение и те же варианты при каждом открытии в тот же день', async () => {
     const { db, offer } = await offered();
-    const expected = { runId: 'run-1', day: RUN_DAY, tokens: 5, boardSize: 5, options: offer.options };
+    const expected = { runId: 'run-1', day: RUN_DAY, tokens: 3, boardSize: 3, options: offer.options };
     expect(await openRoutineOfferOf(db, 'kid', RUN_DAY)).toEqual(expected);
     expect(await openRoutineOfferOf(db, 'kid', RUN_DAY)).toEqual(expected);
   });
@@ -571,26 +577,26 @@ describe('Т10: приложение убили до выбора подкреп
   it('commitRoutineExchange: жетоны уходят вместе с выбором — доска обнулена одной записью, версия +1, ушло столько, сколько лежало', async () => {
     const { db, offer } = await offered();
     const spent = await commitRoutineExchange(db, 'kid', 'run-1', offer.options[1], 'child', NOW);
-    expect(spent).toEqual({ tokens: 5, boardSize: 5 });
+    expect(spent).toEqual({ tokens: 3, boardSize: 3 });
     expect(await boardOf(db)).toEqual({ earned: 0, nonContingent: 0, rev: 2 });
     expect(await reinforcerHistoryOf(db, 'kid')).toEqual([offer.options[1]]);
     expect(await openRoutineOfferOf(db, 'kid', RUN_DAY)).toBeNull();
   });
 
-  it('commitRoutineExchange пишет в выбор число жетонов, включая сверх доски (шесть на доске из пяти)', async () => {
-    const { db, offer } = await offered({ earned: 5, nonContingent: 0 });
-    expect(offer.tokens).toBe(6);
+  it('commitRoutineExchange пишет в выбор число жетонов, включая сверх доски (четыре на доске из трёх)', async () => {
+    const { db, offer } = await offered({ earned: 3, nonContingent: 0 });
+    expect(offer.tokens).toBe(4);
     await commitRoutineExchange(db, 'kid', 'run-1', offer.options[0], 'adult', NOW);
     const [row] = await db.all<{ tokens: number; chosen_by: string; source: string; source_id: string }>(
       'SELECT tokens, chosen_by, source, source_id FROM aba_reinforcer_choices',
     );
-    expect(row).toEqual({ tokens: 6, chosen_by: 'adult', source: 'routine', source_id: 'run-1' });
+    expect(row).toEqual({ tokens: 4, chosen_by: 'adult', source: 'routine', source_id: 'run-1' });
   });
 
   it('предложение без выбора жетоны не уносит: доска и версия как после прогона, сколько ни открывай', async () => {
     const { db } = await offered();
     await openRoutineOfferOf(db, 'kid', RUN_DAY);
-    expect(await boardOf(db)).toEqual({ earned: 5, nonContingent: 0, rev: 1 });
+    expect(await boardOf(db)).toEqual({ earned: 3, nonContingent: 0, rev: 1 });
     expect(await reinforcerHistoryOf(db, 'kid')).toEqual([]);
   });
 
@@ -617,7 +623,7 @@ describe('Т10: приложение убили до выбора подкреп
     const other = POOL.find((p) => !offer.options.includes(p))!;
     await expect(commitRoutineExchange(db, 'kid', 'run-1', other, 'child', NOW)).rejects.toBeInstanceOf(ExchangeNotOpenError);
     expect(await openRoutineOfferOf(db, 'kid', RUN_DAY)).not.toBeNull();
-    expect((await boardOf(db))!.earned).toBe(5);
+    expect((await boardOf(db))!.earned).toBe(3);
   });
 
   it('прогон без предложения и несуществующий прогон: ExchangeNotOpenError', async () => {
@@ -640,25 +646,25 @@ describe('Т10: приложение убили до выбора подкреп
   it('на следующий день предложение закрыто без записи, жетоны остаются на доске', async () => {
     const { db } = await offered();
     expect(await openRoutineOfferOf(db, 'kid', '2026-10-13')).toBeNull();
-    expect(await boardOf(db)).toEqual({ earned: 5, nonContingent: 0, rev: 1 });
+    expect(await boardOf(db)).toEqual({ earned: 3, nonContingent: 0, rev: 1 });
     expect(await reinforcerHistoryOf(db, 'kid')).toEqual([]);
   });
 
   it('вторая рутина при открытом предложении: побеждает последнее, старое не обменять', async () => {
     const { db, offer: first } = await offered();
     const out2 = await commitRoutineRun(db, 'kid', routineResult('run-2', WORK), NOW);
-    expect(out2.offer?.tokens).toBe(6);
+    expect(out2.offer?.tokens).toBe(4);
     const open = await openRoutineOfferOf(db, 'kid', '2026-10-13');
-    expect(open).toMatchObject({ runId: 'run-2', tokens: 6 });
+    expect(open).toMatchObject({ runId: 'run-2', tokens: 4 });
     await expect(commitRoutineExchange(db, 'kid', 'run-1', first.options[0], 'child', NOW)).rejects.toBeInstanceOf(ExchangeNotOpenError);
-    expect(await commitRoutineExchange(db, 'kid', 'run-2', out2.offer!.options[0], 'child', NOW)).toEqual({ tokens: 6, boardSize: 5 });
+    expect(await commitRoutineExchange(db, 'kid', 'run-2', out2.offer!.options[0], 'child', NOW)).toEqual({ tokens: 4, boardSize: 3 });
     expect((await boardOf(db))!.earned).toBe(0);
   });
 
   it('прогон без жетона после предложения последнее предложение не затирает: обмен по первому ещё возможен', async () => {
     const { db, offer } = await offered();
     await commitRoutineRun(db, 'kid', routineResult('run-2', NONE), NOW);
-    expect(await commitRoutineExchange(db, 'kid', 'run-1', offer.options[0], 'child', NOW)).toEqual({ tokens: 5, boardSize: 5 });
+    expect(await commitRoutineExchange(db, 'kid', 'run-1', offer.options[0], 'child', NOW)).toEqual({ tokens: 3, boardSize: 3 });
   });
 
   it('выбор взрослого принимается и пишется как взрослого', async () => {
@@ -668,11 +674,11 @@ describe('Т10: приложение убили до выбора подкреп
   });
 
   it('чужой ребёнок: предложения нет, выбор по чужому прогону — ExchangeNotOpenError', async () => {
-    const db = await setup({ board: { earned: 4, nonContingent: 0 }, kids: ['kid', 'sib'] });
+    const db = await setup({ board: { earned: 2, nonContingent: 0 }, kids: ['kid', 'sib'] });
     const out = await commitRoutineRun(db, 'kid', routineResult('run-1', WORK), NOW);
     expect(await openRoutineOfferOf(db, 'sib', RUN_DAY)).toBeNull();
     await expect(commitRoutineExchange(db, 'sib', 'run-1', out.offer!.options[0], 'child', NOW)).rejects.toBeInstanceOf(ExchangeNotOpenError);
-    expect((await boardOf(db))!.earned).toBe(5);
+    expect((await boardOf(db))!.earned).toBe(3);
   });
 
   it('routineExchangedSince считает только выбор: предложение без выбора обменом не является', async () => {
@@ -1075,24 +1081,24 @@ describe('журнал выборов: согласие, неизменяемо�
 
 describe('экспорт: прогоны и выборы', () => {
   it('родителю — история выборов как записана, прогон с предложением обмена и вариантами', async () => {
-    const db = await setup({ board: { earned: 4, nonContingent: 0 } });
+    const db = await setup({ board: { earned: 2, nonContingent: 0 } });
     const out = await commitRoutineRun(db, 'kid', routineResult('run-1', WORK), NOW);
     await commitRoutineExchange(db, 'kid', 'run-1', out.offer!.options[0], 'child', NOW);
     const exp = await exportChild(db, 'kid', NOW, {});
     expect(exp.abaReinforcerChoices).toEqual([
-      { chosenAt: '2026-10-12T10:00:00.000Z', source: 'routine', sourceId: 'run-1', reinforcerId: out.offer!.options[0], chosenBy: 'child', tokens: 5 },
+      { chosenAt: '2026-10-12T10:00:00.000Z', source: 'routine', sourceId: 'run-1', reinforcerId: out.offer!.options[0], chosenBy: 'child', tokens: 3 },
     ]);
     expect((exp.abaRoutineRuns as AbaRoutineRun[])[0].exchangeOffer).toEqual(out.offer);
   });
 
   it('специалисту — день и длительность вместо точного времени; предложение без вариантов подкрепителей', async () => {
-    const db = await setup({ board: { earned: 4, nonContingent: 0 } });
+    const db = await setup({ board: { earned: 2, nonContingent: 0 } });
     await commitRoutineRun(db, 'kid', routineResult('run-1', WORK), NOW);
     const [run] = (await exportForSpecialist(db, 'kid', NOW)).abaRoutineRuns as Record<string, unknown>[];
     expect(run).not.toHaveProperty('startedAt');
     expect(run).not.toHaveProperty('endedAt');
     expect(run).not.toHaveProperty('exchanged');
-    expect(run).toMatchObject({ day: '2026-10-12', durationSec: 60, exchangeOffer: { tokens: 5, boardSize: 5 } });
+    expect(run).toMatchObject({ day: '2026-10-12', durationSec: 60, exchangeOffer: { tokens: 3, boardSize: 3 } });
     expect(Object.keys(run.exchangeOffer as object).sort()).toEqual(['boardSize', 'tokens']);
   });
 
@@ -1117,15 +1123,17 @@ describe('Т11: свойство — случайные чередования �
     const seed = 9000 + n;
     const rng = seeded(seed).rng;
     const pick = (k: number) => Math.floor(rng() * k);
+    // ступень 5 — сохранённая запись старого формата (работает как 3); ступень 2 — обучение доске с обменом сразу
     const cfg = [
       { band: '7' as const, stage: 5 as BoardStage },
       { band: '5-6' as const, stage: 3 as BoardStage },
       { band: '7' as const, stage: 3 as BoardStage },
-    ][pick(3)];
-    const size = cfg.band === '5-6' ? 3 : cfg.stage;
+      { band: '7' as const, stage: 2 as BoardStage },
+    ][pick(4)];
+    const training: TokenTrainingState = { ...initialTokenTraining(), pairingDone: true, stage: cfg.stage };
+    const size = workingBoardSize(training, cfg.band);
     const startEarned = pick(size);
     const db = await setup({ stage: cfg.stage, board: { earned: startEarned, nonContingent: Math.min(startEarned, pick(size)) } });
-    const training: TokenTrainingState = { ...initialTokenTraining(), pairingDone: true, stage: cfg.stage };
     let now = BASE_MS;
     let routinePaid = 0;
     let routineExchanged = 0; // сумма tokens выбранных обменов рутин

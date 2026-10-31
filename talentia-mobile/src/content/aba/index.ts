@@ -2,6 +2,7 @@
  * Контент ABA: цели, стимулы, каталог подкрепителей. Здесь же — допуск цели к сессии.
  */
 import { ABA_OBJECT_ART } from '../../assets/registry';
+import { versionErrors } from '../../domain/abaTargetRules';
 import type { AbaTarget } from '../../types/aba';
 import { MATCH_LEVEL1 } from './match-level1';
 import { ABA_STIMULI } from './stimuli';
@@ -26,9 +27,12 @@ export function abaTargetReady(t: AbaTarget, art: Readonly<Record<string, unknow
   );
 }
 
-/** Цели, допущенные к сессии; их предпосылки, не допущенные сами, закрывают и их (лестница). */
+/**
+ * Цели, допущенные к сессии; их предпосылки, не допущенные сами, закрывают и их (лестница). Форматы вне первой версии
+ * (`versionErrors`) не допускаются независимо от картинок.
+ */
 export function readyAbaTargets(targets: readonly AbaTarget[] = ABA_TARGETS, art: Readonly<Record<string, unknown>> = ABA_OBJECT_ART): AbaTarget[] {
-  const ready = new Set(targets.filter((t) => abaTargetReady(t, art)).map((t) => t.id));
+  const ready = new Set(targets.filter((t) => abaTargetReady(t, art) && versionErrors(t).length === 0).map((t) => t.id));
   const open = (t: AbaTarget, seen = new Set<string>()): boolean =>
     ready.has(t.id) &&
     !seen.has(t.id) &&
