@@ -119,9 +119,14 @@ describe('проба переноса', () => {
     expect(PROBE_AFTER).toBe(2);
   });
 
-  it('в конце урока — после оставшихся, сколько есть', () => {
+  it('показанное последним — пробы нет: сразу после показа она ничего не измеряет', () => {
     const q = scheduleTransferProbe(queue(), 4, cycle(0.3));
-    expect(q.map((x) => x.task.id + (x.transferProbe ? '*' : ''))).toEqual(['t0', 't1', 't2', 't3', 't4', 't4*']);
+    expect(q.map((x) => x.task.id + (x.transferProbe ? '*' : ''))).toEqual(['t0', 't1', 't2', 't3', 't4']);
+  });
+
+  it('за одно до конца — проба после оставшегося, последней', () => {
+    const q = scheduleTransferProbe(queue(), 3, cycle(0.3));
+    expect(q.map((x) => x.task.id + (x.transferProbe ? '*' : ''))).toEqual(['t0', 't1', 't2', 't3', 't4', 't3*']);
   });
 
   it('не больше одной пробы на урок', () => {

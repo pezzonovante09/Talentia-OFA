@@ -9,7 +9,7 @@ import {
   type Played,
 } from '../lessonAssembly';
 import { maxFormatRun, scheduleTransferProbe, type QueuedTask, type Rng } from '../lessonFlow';
-import { applyLessonOutcomes, daysBetween, emptySkill, isDue, skillsToReview, type SkillState } from '../mastery';
+import { applyLessonOutcomes, daysBetween, emptySkill, isDue, isMastered, skillsToReview, type SkillState } from '../mastery';
 
 const rng: Rng = () => 0.3;
 const DAY = '2026-09-30';
@@ -270,9 +270,11 @@ describe('коробка за урок', () => {
   });
 
   it('три урока темы за вечер не дают «освоено»', () => {
+    // урок 2 — спираль не в срок: часы стоят; урок 3 — в срок, коробка 3; до четвёртой — зазор 5 и 7 дней
     let s = emptySkill('s');
-    for (const n of [1, 2, 3]) s = applyLessonOutcomes(s, ['correct', 'correct'], n);
-    expect(s.box).toBe(2);
+    for (const n of [1, 2, 3]) s = applyLessonOutcomes(s, ['correct', 'correct'], n, `2026-10-0${n}`);
+    expect({ box: s.box, освоен: isMastered(s) }).toEqual({ box: 3, освоен: false });
+    expect(isDue(s, 8, '2026-10-05')).toBe(false);
   });
 
   it('показанный ответ сбрасывает и до срока', () => {

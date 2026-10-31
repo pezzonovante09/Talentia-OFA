@@ -616,6 +616,23 @@ describe('остались и закреплён после первой оши�
     const s = toTasks(start(lesson([order('o'), choose('t2'), choose('t3'), choose('t4')])));
     expect(lessonStepOf(s)).toMatchObject({ kept: [], pinned: null, answerCue: true, demo: true });
   });
+
+  it('после показа «остались» и «закреплён» — те, что были после первой ошибки, а не по второму ответу (вопрос 73)', () => {
+    const four: OrderTask = {
+      ...order('o'),
+      items: [
+        { id: 'i1', labelKey: 'one', position: 0 },
+        { id: 'i2', labelKey: 'two', position: 1 },
+        { id: 'i3', labelKey: 'three', position: 2 },
+        { id: 'i4', labelKey: 'four', position: 3 },
+      ],
+    };
+    let s = toTasks(start(lesson([four, choose('t2'), choose('t3'), choose('t4')], { band: '7' })));
+    s = applyLessonEvent(s, { type: 'answer', answer: { format: 'order', slots: ['i1', 'i3', 'i4', 'i2'] }, at: at(1) });
+    // второй ответ: закреплённое i2 верно, i3 и i4 местами — показ; булавка не переезжает на i3
+    s = applyLessonEvent(s, { type: 'answer', answer: { format: 'order', slots: ['i1', 'i2', 'i4', 'i3'] }, at: at(2) });
+    expect(lessonStepOf(s)).toMatchObject({ attempt: 'shown', stage: 'active_response', kept: ['i1'], pinned: 'i2' });
+  });
 });
 
 describe('зеркальный ряд order (№151)', () => {

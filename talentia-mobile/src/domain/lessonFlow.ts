@@ -190,13 +190,18 @@ export function scheduleTransferProbe(
   if (!shown || shown.transferProbe || !countsTowardMastery(shown.task)) return [...queue];
   if (queue.some((q) => q.transferProbe)) return [...queue];
   const others = queue.length - shownIndex - 1;
+  // Показ на последнем задании — пробы нет: сразу за показанным она ничего не измеряет
+  // (FORMATS.md «на том же экране сразу — никогда»); навык и так уходит в первую коробку
+  // и вернётся повторением.
+  if (others === 0) return [...queue];
   const probe: QueuedTask = { task: reshuffle(shown.task, rng), transferProbe: true };
   const insertAt = (after: number) => {
     const at = shownIndex + 1 + after;
     return [...queue.slice(0, at), probe, ...queue.slice(at)];
   };
   // Проба повторения не встаёт последней: урок кончается своей темой, её и вписывают
-  // в атлас. Тогда — перед последним заданием урока.
+  // в атлас. Тогда — перед последним заданием урока (при одном оставшемся — после него,
+  // последней: иного места нет).
   if (shown.review && others > 0 && others <= PROBE_AFTER) return insertAt(others - 1);
   const preferred = insertAt(Math.min(PROBE_AFTER, others));
   const allowed = Math.max(MAX_FORMAT_RUN, maxFormatRun(queue));

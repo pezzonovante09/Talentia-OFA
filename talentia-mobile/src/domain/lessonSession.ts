@@ -187,8 +187,13 @@ export type TaskProgress = {
    * с верхним. У других форматов — `null`.
    */
   rightOrder: string[] | null;
-  /** Последний ответ, который проверяли, — из него экран строит «остались» и «закреплён». */
-  lastAnswer: LessonAnswer | null;
+  /**
+   * «Остались» и «закреплён» (SCREENS.md 2.5) — посчитаны **один раз** по первому неверному ответу и
+   * дальше не меняются: после показа экран подсвечивает и принимает все исправленные элементы, а
+   * булавка стоит там, где встала после первой ошибки (разбор 2026-10-31, вопрос 73). До ошибки пусто.
+   */
+  kept: string[];
+  pinned: string | null;
   /** Первая встреча ребёнка с составным форматом: Tali делает первую половину действия (№35). Только до первого «Проверить». */
   demo: boolean;
   /**
@@ -332,7 +337,7 @@ function openTask(state: LessonSessionState, at: string): LessonSessionState {
     ...state,
     rngSeed,
     phase: 'task',
-    task: { startedAt: at, attempt: 'first', stage: 'answer', narrowing: null, removed: [], rightOrder, lastAnswer: null, demo },
+    task: { startedAt: at, attempt: 'first', stage: 'answer', narrowing: null, removed: [], rightOrder, kept: [], pinned: null, demo },
   };
 }
 
@@ -392,7 +397,7 @@ function onAnswer(state: LessonSessionState, answer: LessonAnswer): LessonSessio
     ? state.formatsSeen
     : [...state.formatsSeen, queued.task.format];
 
-  const checked: TaskProgress = { ...progress, lastAnswer: answer, demo: false, mirrored: false };
+  const checked: TaskProgress = { ...progress, demo: false, mirrored: false };
   if (correct) return { ...state, formatsSeen, task: { ...checked, stage: 'next' } };
 
   // зеркальный ряд на 5-6 — механика, не навык (№151): ответ не засчитан, попытка та же
@@ -408,7 +413,7 @@ function onAnswer(state: LessonSessionState, answer: LessonAnswer): LessonSessio
         answer.format === 'choose' ? [...progress.removed, answer.optionId]
         : answer.format === 'point' ? [...progress.removed, answer.targetId]
         : progress.removed;
-      return { ...state, formatsSeen, task: { ...checked, attempt: 'second', narrowing, removed } };
+      return { ...state, formatsSeen, task: { ...checked, attempt: 'second', narrowing, removed, ...keptAndPinned(queued.task, answer, narrowing.pin) } };
     }
     return { ...state, formatsSeen, task: { ...checked, attempt: 'shown', narrowing, stage: 'active_response' } };
   }
@@ -479,11 +484,9 @@ export type LessonStep =
  * чтения, то есть в порядке элементов задания; у `build` с фишками — следующая по тексту ответа
  * фишка, у клавиатуры — верная первая цифра.
  */
-function keptAndPinned(task: Task, p: TaskProgress): { kept: string[]; pinned: string | null } {
+function keptAndPinned(task: Task, a: LessonAnswer, pin: boolean): { kept: string[]; pinned: string | null } {
   const none = { kept: [] as string[], pinned: null };
-  const a = p.lastAnswer;
-  if (!a || p.narrowing?.kind !== 'narrow' || a.format !== task.format) return none;
-  const pin = p.narrowing.pin;
+  if (a.format !== task.format) return none;
   switch (task.format) {
     case 'choose':
     case 'point':
@@ -551,7 +554,8 @@ export function lessonStepOf(state: LessonSessionState): LessonStep {
         narrowing: p.narrowing,
         removed: p.removed,
         rightOrder: p.rightOrder,
-        ...keptAndPinned(queued.task, p),
+        kept: p.kept,
+        pinned: p.pinned,
         demo: p.demo,
         answerCue: state.band === '5-6',
         activeResponse: p.stage === 'active_response' ? activeResponseAfterShow(queued.task.format) : null,

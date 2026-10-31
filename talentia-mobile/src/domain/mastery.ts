@@ -125,11 +125,18 @@ export function applyLessonOutcomes(
   const counted = outcomes.reduce((acc, o) => applyOutcome(acc, o, lesson, day), s);
   const forBox = outcomes.filter((o) => o !== 'transfer_correct');
   const due = s.lastSeenLesson < 0 || isDue(s, lesson, day);
+  // Коробка — интервал между *плановыми* проверками. Спиральное задание темы (встреча не в срок,
+  // всё сам) — практика, не проверка: счётчики растут, а часы повторения не сбрасываются, иначе
+  // урок n+1 отодвигает срок навыка урока n, и до коробки 3 он не доходит никогда (разбор
+  // 2026-10-31). С подсказкой или показом не в срок — часы заново: ребёнку понадобилась помощь.
+  // Часы — момент последней *проверки*, не последней встречи. Проба переноса (`transfer_correct`) — тоже не проверка.
+  const practiceOnly = forBox.every((o) => o === 'correct');
+  const clock = !due && practiceOnly ? { lastSeenLesson: s.lastSeenLesson, lastSeenDay: s.lastSeenDay } : {};
   let box = s.box;
   if (forBox.includes('helped')) box = 1;
   else if (forBox.includes('hinted')) box = s.box === 4 ? 3 : s.box;
   else if (due && forBox.length > 0) box = Math.min(4, s.box + 1) as Box;
-  return { ...counted, box };
+  return { ...counted, ...clock, box };
 }
 
 /** Освоен ли навык: дошёл до последней коробки. */
@@ -155,11 +162,20 @@ export function isDue(s: SkillState, lesson: number, day?: string): boolean {
  * Не больше двух: урок из пяти заданий, где три — повторение, перестаёт быть
  * новым уроком. Первыми идут навыки из младших коробок — те, что хуже держатся.
  */
-export function skillsToReview(all: SkillState[], lesson: number, limit = 2, day?: string): SkillState[] {
+export function skillsToReview(all: readonly SkillState[], lesson: number, limit = 2, day?: string): SkillState[] {
   return all
     .filter((s) => isDue(s, lesson, day))
     .sort((a, b) => a.box - b.box || a.lastSeenLesson - b.lastSeenLesson)
     .slice(0, limit);
+}
+
+/**
+ * Навыки для сессии повторения с узла карты: все в срок, младшие коробки первыми, и **не
+ * встречавшиеся сегодня** — одна встреча навыка в игровой день. Иначе навык из первой коробки
+ * после показанного ответа снова «в срок» тем же днём, и узел повторения не гаснет.
+ */
+export function skillsForReviewSession(all: readonly SkillState[], lesson: number, day: string): SkillState[] {
+  return skillsToReview(all, lesson, Infinity, day).filter((s) => s.lastSeenDay !== day);
 }
 
 /**
