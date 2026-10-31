@@ -370,7 +370,8 @@
     "tryWithoutSaving": "Try without saving",
     "noSaveNote": "Progress will be lost when the app closes",
     "forAdults": "For adults",
-    "callAdult": "Call a grown-up"
+    "callAdult": "Call a grown-up",
+    "adultOnly": "For adults"
   },
   "map": {
     "lockedInOrder": "This lesson opens in order",
@@ -419,6 +420,9 @@
     "done": "Done reviewing!"
   },
   "atlas": {
+    "title": "Atlas",
+    "empty": "The atlas is empty for now — let’s begin!",
+    "toAtlas": "To the atlas",
     "toMap": "To the map",
     "pageAhead": "This page is still ahead",
     "replay": "Repeat"
@@ -587,6 +591,30 @@
       "continue": "Continue session",
       "finishWithout": "Finish without continuing",
       "unpauseToStart": "Turn off the pause to start",
+      "mode": "Mode",
+      "whoLeads": "Who leads",
+      "whoLeadsNone": "Not chosen",
+      "whoLeadsNotNeeded": "not needed",
+      "whoLeadsValue": "{{role}} · trained",
+      "whoLeadsReason": "Mark who is next to the child",
+      "aloneLocked": "“Alone” opens once a task is mastered with an adult",
+      "done": "Done",
+      "goals": "Goals",
+      "goal": {
+        "match-same-2": "Same one of two",
+        "match-same-3": "Same one of three",
+        "match-shape": "By shape",
+        "match-color": "By colour"
+      },
+      "goalStatus": {
+        "ahead": "ahead",
+        "learning": "learning",
+        "almost": "almost",
+        "mastered": "mastered"
+      },
+      "lastSession": "Session {{day}}: {{trials}} trials, {{independent}} on their own",
+      "lastSessionNoTrials": "Session {{day}}: no trials",
+      "goalsEmpty": "The first session will show what the child already can do",
       "consentCard": "Consent",
       "consentRow": "Practice data processing",
       "consentStatus": {

@@ -1,18 +1,23 @@
 /**
- * «Занятия ABA» в разделе родителя: `app/parent/aba/index.tsx` (кнопка занятия по `abaBlockOf`, согласие,
- * пауза со строкой №150, файл для специалиста, отзыв), `app/parent/aba/consent.tsx` (согласие за PIN) и
+ * «Занятия ABA» в разделе родителя: `app/parent/aba/index.tsx` (кнопка занятия по `abaBlockOf`, режим и «Кто ведёт»
+ * у взрослого — этап G1, карточка «Цели» — этап G2, согласие, пауза со строкой №150, файл для специалиста, отзыв),
+ * `app/parent/aba/consent.tsx` (согласие за PIN) и
  * действие `aba_revoke` на `app/parent/confirm/[action].tsx`. База — in-memory SQLite (`memoryDb`), сервисы
  * настоящие, PIN — настоящий `checkPin` на `fakeDevice()`. Роутер замокан; поддельных таймеров нет.
  */
 import AbaParentScreen from '../aba/index';
 import AbaConsentScreen from '../aba/consent';
 import ConfirmScreen from '../confirm/[action]';
+import { ABA_TARGETS } from '../../../src/content/aba';
+import { markMastered } from '../../../src/domain/abaCriterion';
+import { isUuidV4 } from '../../../src/domain/ids';
+import { initialTargetState } from '../../../src/domain/abaPrompting';
 import { nextStep, startAbaSession } from '../../../src/domain/abaSession';
 import { CURRENT_CONSENT_TEXTS } from '../../../src/domain/consentTexts';
 import { initialTokenTraining } from '../../../src/domain/abaTokenTraining';
 import { createLocalAccount } from '../../../src/services/local/account';
 import { abaConsentTextVersion, grantAbaProcessing } from '../../../src/services/local/abaConsent';
-import { sessionsOf } from '../../../src/services/local/abaLog';
+import { appendPairingSession, sessionsOf } from '../../../src/services/local/abaLog';
 import { abaOverview, DEV_PLACEHOLDER_ART, finishInProgressSession, loadAbaStart } from '../../../src/services/local/abaStart';
 import { ABA_DELETED_KEYS, loadChildState, saveChildState } from '../../../src/services/local/childState';
 import { saveAbaSessionStep, setAbaPaused } from '../../../src/services/local/commit';
@@ -23,6 +28,7 @@ import { revokeAbaProcessing } from '../../../src/services/local/purge';
 import type { SqlDb } from '../../../src/services/local/sql';
 import { sha256 } from '../../../src/services/digest';
 import { randomBytes } from '../../../src/services/random';
+import { useAbaRun } from '../../../src/state/abaRun';
 import { useAccount } from '../../../src/state/account';
 import { setDevice } from '../../../src/state/device';
 import { useGate } from '../../../src/state/gate';
@@ -109,13 +115,25 @@ async function sessionInProgress(childId = KID) {
   await saveAbaSessionStep(db, childId, nextStep(startAbaSession(r.input), now).state, iso(now));
 }
 
+/** Наблюдатели прошлой сессии — предвыбор строки «Кто ведёт». */
+const observers = (list: { id: string; role: 'parent' | 'specialist' | 'other_adult'; trained: boolean }[], childId = KID) =>
+  asAbaWriter(db, childId, (tx) => saveChildState(tx, childId, 'abaObservers', list, iso()));
+
 const statusText = () => screen.getByTestId('aba-status').props.children as string;
 const waitStatus = (text: string) => waitFor(() => expect(statusText()).toBe(text));
 const pausedInDb = async (childId = KID) => (await loadChildState(db, childId, 'abaPaused')) === true;
+const whoValue = () => screen.getByTestId('aba-who-row-value').props.children as string;
+/** `replace` к ребёнку после `dismissAll`, без `push`: карта не мелькает. */
+const expectWentTo = (href: string) => {
+  expect(router.replace).toHaveBeenCalledWith(href);
+  expect(router.push).not.toHaveBeenCalled();
+  expect(router.dismissAll.mock.invocationCallOrder[0]).toBeLessThan(router.replace.mock.invocationCallOrder[0]);
+};
 
 beforeEach(async () => {
   jest.clearAllMocks();
   focus.current = null;
+  useAbaRun.getState().reset();
   const device = fakeDevice();
   setDevice(device);
   useParentView.setState({ childId: null });
@@ -159,33 +177,35 @@ describe('«Занятия ABA»: кнопка занятия по состоя�
     expect(router.push).toHaveBeenCalledWith('/parent/aba/consent');
   });
 
-  it('согласие есть, знакомства с жетонами не было — «Начать знакомство»: раздел закрыт, затем /aba?mode=pairing', async () => {
+  it('согласие есть, знакомства с жетонами не было — «Начать знакомство»: раздел закрыт, затем сразу /aba/pairing', async () => {
     await grant();
+    await observers(OBS);
     await renderAba();
     await waitStatus('Сначала знакомство с жетонами — короткое занятие без заданий');
     expect(screen.getByTestId('aba-start').props.accessibilityLabel).toBe('Начать знакомство');
     await fireEvent.press(screen.getByTestId('aba-start'));
-    expect(router.push).toHaveBeenCalledWith('/aba?mode=pairing');
-    expect(router.dismissAll.mock.invocationCallOrder[0]).toBeLessThan(router.push.mock.invocationCallOrder[0]);
+    await waitFor(() => expectWentTo('/aba/pairing'));
   });
 
-  it('согласие есть, знакомство пройдено — «Можно начинать», «Начать занятие»: раздел закрыт, затем /aba', async () => {
+  it('согласие есть, знакомство пройдено — «Можно начинать», «Начать занятие»: раздел закрыт, затем сразу /aba/session', async () => {
     await grant();
     await pair();
+    await observers(OBS);
     await renderAba();
     await waitStatus('Можно начинать');
     expect(screen.getByTestId('aba-start').props.accessibilityLabel).toBe('Начать занятие');
     await fireEvent.press(screen.getByTestId('aba-start'));
-    expect(router.push).toHaveBeenCalledWith('/aba');
-    expect(router.dismissAll.mock.invocationCallOrder[0]).toBeLessThan(router.push.mock.invocationCallOrder[0]);
+    await waitFor(() => expectWentTo('/aba/session'));
   });
 
-  it('«Начать занятие» не просит PIN: лист не открывается', async () => {
+  it('«Начать занятие» не просит PIN: лист PIN не открывается', async () => {
     await grant();
     await pair();
+    await observers(OBS);
     await renderAba();
     await waitStatus('Можно начинать');
     await fireEvent.press(screen.getByTestId('aba-start'));
+    await waitFor(() => expect(router.replace).toHaveBeenCalled());
     expect(screen.queryByTestId('confirm-pin-sheet')).toBeNull();
   });
 
@@ -206,7 +226,7 @@ describe('«Занятия ABA»: кнопка занятия по состоя�
     await renderAba();
     await waitStatus('На паузе');
     await fireEvent.press(screen.getByTestId('aba-start'));
-    expect([router.push.mock.calls.length, router.dismissAll.mock.calls.length]).toEqual([0, 0]);
+    expect([router.replace.mock.calls.length, router.dismissAll.mock.calls.length]).toEqual([0, 0]);
   });
 
   it('в DEV-сборке нет — цели ждут картинок: статус об этом, кнопки занятия нет', async () => {
@@ -225,10 +245,269 @@ describe('«Занятия ABA»: кнопка занятия по состоя�
   });
 });
 
+describe('«Занятия ABA»: режим и «Кто ведёт» у взрослого (этап G1, вопрос 59)', () => {
+  const PAIRING_STATUS = 'Сначала знакомство с жетонами — короткое занятие без заданий';
+  const ALONE_LOCKED = '«Сам» откроется, когда задание будет освоено со взрослым';
+  const TOGETHER = 'Пока это занятие лучше вместе — побудьте рядом';
+  const segment = (cfg: 'with_adult' | 'alone') => screen.getByTestId(`aba-mode-${cfg}`);
+  const setTargets = (states: Record<string, ReturnType<typeof markMastered>>) => asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'abaTargets', states, iso()));
+  let n = 0;
+  const pairingAloneMiss = () =>
+    asAbaWriter(db, KID, (tx) =>
+      appendPairingSession(
+        tx,
+        KID,
+        {
+          id: `00000000-0000-4000-8000-00000000020${(n += 1)}`,
+          day: '2026-10-28',
+          startedAt: '2026-10-28T10:00:00.000Z',
+          endedAt: '2026-10-28T10:01:00.000Z',
+          config: 'alone',
+          endReason: 'abandoned',
+          cycles: 0,
+          chosenBy: 'none',
+          choicesByChild: 0,
+          choicesByAdult: 0,
+          options: ['bubbles', 'drum', 'pinwheel'],
+          choices: [],
+          primaryObserverId: null,
+        },
+        '2026-10-28T10:01:00.000Z',
+      ),
+    );
+
+  it('без согласия и на паузе сегментов и «Кто ведёт» нет — выбирать нечего', async () => {
+    await renderAba();
+    await waitStatus('Нужно согласие на данные практики');
+    expect([screen.queryByTestId('aba-mode'), screen.queryByTestId('aba-who-row')]).toEqual([null, null]);
+    screen.unmount();
+    await grant();
+    await pair();
+    await setAbaPaused(db, KID, true, iso());
+    await renderAba();
+    await waitStatus('На паузе');
+    expect([screen.queryByTestId('aba-mode'), screen.queryByTestId('aba-who-row')]).toEqual([null, null]);
+  });
+
+  it('готово к занятию: «Со взрослым» выбран, «Кто ведёт» — «Не выбрано», «Сам» заблокирован с причиной, пока формат не освоен со взрослым', async () => {
+    await grant();
+    await pair();
+    await renderAba();
+    await waitStatus('Можно начинать');
+    expect(segment('with_adult').props.accessibilityState).toMatchObject({ selected: true });
+    expect(segment('alone').props.accessibilityState).toMatchObject({ selected: false, disabled: true });
+    expect(segment('alone').props.accessibilityHint).toBe(ALONE_LOCKED);
+    expect(screen.getByTestId('aba-hint').props.children).toBe(ALONE_LOCKED);
+    expect(whoValue()).toBe('Не выбрано');
+    // тап по заблокированному сегменту ничего не меняет: строка «Кто ведёт» остаётся
+    await fireEvent.press(segment('alone'));
+    expect(segment('with_adult').props.accessibilityState.selected).toBe(true);
+    expect(whoValue()).toBe('Не выбрано');
+  });
+
+  it('цель освоена со взрослым по критерию — «Сам» доступен, причины нет; выбор «Сам» → «Кто ведёт» «не нужно», высота строки сохраняется', async () => {
+    await grant();
+    await pair();
+    await setTargets({ [ABA_TARGETS[0].id]: markMastered(initialTargetState(ABA_TARGETS[0]), 1, 'criterion', 'with_adult') });
+    await renderAba();
+    await waitStatus('Можно начинать');
+    expect(segment('alone').props.accessibilityState.disabled).toBeFalsy();
+    expect(screen.queryByTestId('aba-hint')).toBeNull();
+    expect(screen.getByTestId('aba-hint-slot')).toBeTruthy();
+    await fireEvent.press(segment('alone'));
+    expect(segment('alone').props.accessibilityState.selected).toBe(true);
+    expect(whoValue()).toBe('не нужно');
+    expect(screen.getByTestId('aba-who-row')).toBeTruthy();
+  });
+
+  it('«Сам» → «Начать»: наблюдателей нет, стор с «Сам», сразу /aba/session', async () => {
+    await grant();
+    await pair();
+    await setTargets({ [ABA_TARGETS[0].id]: markMastered(initialTargetState(ABA_TARGETS[0]), 1, 'criterion', 'with_adult') });
+    await renderAba();
+    await waitStatus('Можно начинать');
+    await fireEvent.press(segment('alone'));
+    await fireEvent.press(screen.getByTestId('aba-start'));
+    await waitFor(() => expectWentTo('/aba/session'));
+    expect(useAbaRun.getState()).toMatchObject({ config: 'alone', observers: [], primaryObserverId: null });
+    expect(await loadChildState(db, KID, 'abaObservers')).toBeUndefined();
+  });
+
+  it('до знакомства «Сам» доступен (сопряжение в «Сам» допустимо): «Начать знакомство» в «Сам» → /aba/pairing', async () => {
+    await grant();
+    await renderAba();
+    await waitStatus(PAIRING_STATUS);
+    expect(segment('alone').props.accessibilityState.disabled).toBeFalsy();
+    expect(screen.queryByTestId('aba-hint')).toBeNull();
+    await fireEvent.press(segment('alone'));
+    await fireEvent.press(screen.getByTestId('aba-start'));
+    await waitFor(() => expectWentTo('/aba/pairing'));
+    expect(useAbaRun.getState().config).toBe('alone');
+  });
+
+  it('подсказка №166: две неудачи сопряжения в «Сам» — «лучше вместе» в слоте, «Со взрослым» предвыбран, «Сам» по-прежнему доступен', async () => {
+    await grant();
+    await pairingAloneMiss();
+    await pairingAloneMiss();
+    await renderAba();
+    await waitStatus(PAIRING_STATUS);
+    expect(screen.getByTestId('aba-hint').props.children).toBe(TOGETHER);
+    expect(segment('with_adult').props.accessibilityState.selected).toBe(true);
+    expect(segment('alone').props.accessibilityState.disabled).toBeFalsy();
+  });
+
+  it('«Со взрослым» и «Не выбрано»: «Начать» открывает лист с причиной, не идёт к ребёнку; «Готово» заполняет строку; второй тап запускает', async () => {
+    await grant();
+    await renderAba();
+    await waitStatus(PAIRING_STATUS);
+    await fireEvent.press(screen.getByTestId('aba-start'));
+    expect(screen.getByTestId('aba-who-leads')).toBeTruthy();
+    expect(screen.getByTestId('aba-who-caption').props.children).toBe('Отметьте, кто рядом с ребёнком');
+    expect(router.replace).not.toHaveBeenCalled();
+    expect(screen.getByTestId('aba-who-done').props.accessibilityState.disabled).toBe(true);
+    await fireEvent.press(screen.getByTestId('aba-role-parent'));
+    await fireEvent.press(screen.getByTestId('aba-role-specialist'));
+    expect(screen.getByTestId('aba-role-specialist').props.accessibilityState.selected).toBe(true);
+    expect(screen.getByTestId('aba-role-parent').props.accessibilityState.selected).toBe(false);
+    await fireEvent(screen.getByTestId('aba-trained-switch'), 'valueChange', true);
+    await fireEvent.press(screen.getByTestId('aba-who-done'));
+    expect(screen.queryByTestId('aba-who-leads')).toBeNull();
+    expect(whoValue()).toBe('Специалист центра · обучен');
+    expect(router.replace).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByTestId('aba-start'));
+    await waitFor(() => expectWentTo('/aba/pairing'));
+    const run = useAbaRun.getState();
+    expect(run.config).toBe('with_adult');
+    expect(run.observers[0]).toMatchObject({ role: 'specialist', trained: true });
+    expect(isUuidV4(run.observers[0].id)).toBe(true);
+    expect(run.primaryObserverId).toBe(run.observers[0].id);
+    expect(await loadChildState(db, KID, 'abaObservers')).toEqual(run.observers);
+  });
+
+  it('лист «Кто ведёт»: первый тап после открытия засчитывается (блокировки 500 мс нет), «Назад» закрывает без изменений', async () => {
+    await grant();
+    await renderAba();
+    await waitStatus(PAIRING_STATUS);
+    await fireEvent.press(screen.getByTestId('aba-who-row'));
+    await fireEvent.press(screen.getByTestId('aba-role-parent'));
+    expect(screen.getByTestId('aba-role-parent').props.accessibilityState.selected).toBe(true);
+    await fireEvent.press(screen.getByTestId('aba-who-back'));
+    expect(screen.queryByTestId('aba-who-leads')).toBeNull();
+    expect(whoValue()).toBe('Не выбрано');
+  });
+
+  it('предвыбор прошлой сессии: строка заполнена, лист говорит «Как в прошлый раз», «Начать» — один тап, тот же id наблюдателя', async () => {
+    await grant();
+    await pair();
+    await observers([{ id: 'obs-spec', role: 'specialist', trained: true }, { id: 'obs-1', role: 'parent', trained: false }]);
+    await renderAba();
+    await waitStatus('Можно начинать');
+    await waitFor(() => expect(whoValue()).toBe('Специалист центра · обучен'));
+    await fireEvent.press(screen.getByTestId('aba-who-row'));
+    expect(screen.getByTestId('aba-who-caption').props.children).toBe('Как в прошлый раз');
+    expect(screen.getByTestId('aba-role-specialist').props.accessibilityState.selected).toBe(true);
+    await fireEvent.press(screen.getByTestId('aba-who-back'));
+    await fireEvent.press(screen.getByTestId('aba-start'));
+    await waitFor(() => expectWentTo('/aba/session'));
+    expect(useAbaRun.getState().observers.map((o) => o.id)).toEqual(['obs-spec', 'obs-1']);
+    expect(useAbaRun.getState().primaryObserverId).toBe('obs-spec');
+  });
+
+  it('смена роли на уже известную: наблюдатель поднимается первым с прежним id, второго такого не появляется', async () => {
+    await grant();
+    await pair();
+    await observers([{ id: 'obs-spec', role: 'specialist', trained: true }, { id: 'obs-1', role: 'parent', trained: false }]);
+    await renderAba();
+    await waitStatus('Можно начинать');
+    await fireEvent.press(screen.getByTestId('aba-who-row'));
+    await fireEvent.press(screen.getByTestId('aba-role-parent'));
+    // «обучен» — отдельный переключатель, со сменой роли сам не сбрасывается
+    expect(screen.getByTestId('aba-trained-switch').props.value).toBe(true);
+    await fireEvent(screen.getByTestId('aba-trained-switch'), 'valueChange', false);
+    await fireEvent.press(screen.getByTestId('aba-who-done'));
+    expect(whoValue()).toBe('Родитель');
+    await fireEvent.press(screen.getByTestId('aba-start'));
+    await waitFor(() => expect(router.replace).toHaveBeenCalled());
+    expect((await loadChildState(db, KID, 'abaObservers'))!.map((o) => o.id)).toEqual(['obs-1', 'obs-spec']);
+  });
+});
+
+describe('«Занятия ABA»: карточка «Цели» (этап G2, вопрос 66)', () => {
+  const goal = (id: string) => screen.getByTestId(`aba-goal-${id}`);
+  const goalStatus = (id: string) => screen.getByTestId(`aba-goal-${id}-value`).props.children as string;
+  const setTargets = (states: Record<string, ReturnType<typeof initialTargetState>>) => asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'abaTargets', states, iso()));
+
+  it('без согласия карточки нет', async () => {
+    await renderAba();
+    await waitStatus('Нужно согласие на данные практики');
+    expect(screen.queryByTestId('aba-goals')).toBeNull();
+  });
+
+  it('согласие дано, занятий не было: одна первая цель «впереди» без глифа и подпись о первом занятии', async () => {
+    await grant();
+    await renderAba();
+    await waitFor(() => expect(screen.getByTestId('aba-goals')).toBeTruthy());
+    expect(goal('match-same-2')).toBeTruthy();
+    expect(goalStatus('match-same-2')).toBe('впереди');
+    expect(screen.getByTestId('aba-goal-match-same-2-glyph-ahead')).toBeTruthy();
+    expect([screen.queryByTestId('aba-goal-match-same-3'), screen.queryByTestId('aba-goal-match-shape'), screen.queryByTestId('aba-goal-match-color')]).toEqual([null, null, null]);
+    expect(screen.getByTestId('aba-goals-summary').props.children).toBe('Первое занятие покажет, что ребёнок уже умеет');
+    expect(screen.queryByText(/%/)).toBeNull();
+  });
+
+  it('начатые цели в порядке лестницы со словом и глифом, следующая — «впереди», дальше ничего', async () => {
+    await grant();
+    await pair();
+    const [same2, same3] = ABA_TARGETS;
+    await setTargets({
+      [same2.id]: markMastered(initialTargetState(same2), 1, 'criterion', 'with_adult'),
+      [same3.id]: { ...initialTargetState(same3), phase: 'acquisition', lastSessionIndex: 1 },
+    });
+    await renderAba();
+    await waitFor(() => expect(screen.getByTestId('aba-goals')).toBeTruthy());
+    const rows = screen.getByTestId('aba-goals');
+    expect([goalStatus('match-same-2'), goalStatus('match-same-3'), goalStatus('match-shape')]).toEqual(['освоено', 'учим', 'впереди']);
+    expect(screen.getByTestId('aba-goal-match-same-2-glyph-mastered')).toBeTruthy();
+    expect(screen.getByTestId('aba-goal-match-same-3-glyph-learning')).toBeTruthy();
+    expect(screen.queryByTestId('aba-goal-match-color')).toBeNull();
+    expect(screen.getByText('Одинаковые из двух')).toBeTruthy();
+    expect(rows).toBeTruthy();
+  });
+
+  it('«почти» — половинный глиф: обучение с сессиями на критерии', async () => {
+    await grant();
+    await pair();
+    const [same2] = ABA_TARGETS;
+    await setTargets({ [same2.id]: { ...initialTargetState(same2), phase: 'acquisition', sessionsAtCriterion: 1, lastSessionIndex: 2 } });
+    await renderAba();
+    await waitFor(() => expect(screen.getByTestId('aba-goals')).toBeTruthy());
+    expect(goalStatus('match-same-2')).toBe('почти');
+    expect(screen.getByTestId('aba-goal-match-same-2-glyph-almost-half')).toBeTruthy();
+  });
+
+  it('после занятия — итог под строками: день словами отчёта, без проб — «без проб»', async () => {
+    await grant();
+    await pair();
+    await sessionInProgress();
+    await finishInProgressSession(db, KID, Date.now());
+    await renderAba();
+    await waitStatus('Можно начинать');
+    await waitFor(() => expect(screen.getByTestId('aba-goals-summary').props.children).toBe('За занятие сегодня: без проб'));
+  });
+
+  it('цели — выбранного ребёнка: у второго без согласия карточки нет', async () => {
+    await grant();
+    await pair();
+    useAccount.setState({ profiles: [p1, p2] });
+    useParentView.setState({ childId: KID2 });
+    await renderAba();
+    await waitStatus('Нужно согласие на данные практики');
+    expect(screen.queryByTestId('aba-goals')).toBeNull();
+  });
+});
+
 describe('«Занятия ABA»: «Знакомство с жетонами уже пройдено» (сопряжение подтверждено, вопрос 62)', () => {
   const PAIRING_STATUS = 'Сначала знакомство с жетонами — короткое занятие без заданий';
-  const observers = (list: { id: string; role: 'parent' | 'specialist'; trained: boolean }[], childId = KID) =>
-    asAbaWriter(db, childId, (tx) => saveChildState(tx, childId, 'abaObservers', list, iso()));
   const trainingOf = (childId = KID) => loadChildState(db, childId, 'tokenTraining');
 
   it('без наблюдателей кнопки нет — только «Начать знакомство»', async () => {
@@ -291,7 +570,7 @@ describe('«Занятия ABA»: «Знакомство с жетонами у�
     expect(Date.parse(t!.pairingConfirmed!.at)).not.toBeNaN();
     expect(screen.queryByTestId('aba-pairing-confirm')).toBeNull();
     expect(screen.getByTestId('aba-start').props.accessibilityLabel).toBe('Начать занятие');
-    expect(router.push).not.toHaveBeenCalled();
+    expect([router.push.mock.calls.length, router.replace.mock.calls.length]).toEqual([0, 0]);
   });
 
   it('неверный PIN — лист остаётся, знакомство не отмечено', async () => {
@@ -352,12 +631,14 @@ describe('«Занятия ABA»: незаконченное занятие', ()
     await sessionInProgress();
   });
 
-  it('статус «Занятие не закончено», кнопки «Продолжить занятие» и «Закончить без продолжения»', async () => {
+  it('статус «Занятие не закончено», кнопки «Продолжить занятие» и «Закончить без продолжения»; вместо сегментов — строка «Режим»', async () => {
     await renderAba();
     await waitStatus('Занятие не закончено');
     expect(screen.getByTestId('aba-continue').props.accessibilityLabel).toBe('Продолжить занятие');
     expect(screen.getByTestId('aba-finish').props.accessibilityLabel).toBe('Закончить без продолжения');
     expect(screen.queryByTestId('aba-start')).toBeNull();
+    expect([screen.queryByTestId('aba-mode'), screen.queryByTestId('aba-who-row')]).toEqual([null, null]);
+    expect(screen.getByTestId('aba-mode-row-value').props.children).toBe('Со взрослым · Родитель');
   });
 
   it('«Продолжить» без свежего PIN — лист PIN, перехода до PIN нет', async () => {
@@ -365,16 +646,16 @@ describe('«Занятия ABA»: незаконченное занятие', ()
     await waitStatus('Занятие не закончено');
     await fireEvent.press(screen.getByTestId('aba-continue'));
     expect(screen.getByTestId('confirm-pin-sheet')).toBeTruthy();
-    expect([router.push.mock.calls.length, router.dismissAll.mock.calls.length]).toEqual([0, 0]);
+    expect([router.replace.mock.calls.length, router.dismissAll.mock.calls.length]).toEqual([0, 0]);
   });
 
-  it('«Продолжить» → верный PIN → раздел закрыт, затем /aba (не знакомство)', async () => {
+  it('«Продолжить» → верный PIN → конфигурация из снимка в сторе, раздел закрыт, затем сразу /aba/session', async () => {
     await renderAba();
     await waitStatus('Занятие не закончено');
     await fireEvent.press(screen.getByTestId('aba-continue'));
     await typePin(PIN);
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/aba'));
-    expect(router.dismissAll.mock.invocationCallOrder[0]).toBeLessThan(router.push.mock.invocationCallOrder[0]);
+    await waitFor(() => expectWentTo('/aba/session'));
+    expect(useAbaRun.getState()).toMatchObject({ config: 'with_adult', observers: OBS, primaryObserverId: 'obs-1' });
   });
 
   it('«Продолжить» → неверный PIN → перехода нет, лист остаётся', async () => {
@@ -383,7 +664,7 @@ describe('«Занятия ABA»: незаконченное занятие', ()
     await fireEvent.press(screen.getByTestId('aba-continue'));
     await typePin('000000');
     await waitFor(() => expect(screen.getByTestId('confirm-pin-error').props.children).toBe('Неверный PIN'));
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
     expect(screen.getByTestId('confirm-pin-sheet')).toBeTruthy();
   });
 
@@ -393,16 +674,16 @@ describe('«Занятия ABA»: незаконченное занятие', ()
     await fireEvent.press(screen.getByTestId('aba-continue'));
     await fireEvent.press(screen.getByTestId('confirm-pin-cancel'));
     expect(screen.queryByTestId('confirm-pin-sheet')).toBeNull();
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
   });
 
-  it('«Продолжить» в окне свежести PIN — сразу /aba, без листа', async () => {
+  it('«Продолжить» в окне свежести PIN — сразу /aba/session, без листа', async () => {
     useGate.getState().open();
     await renderAba();
     await waitStatus('Занятие не закончено');
     await fireEvent.press(screen.getByTestId('aba-continue'));
     expect(screen.queryByTestId('confirm-pin-sheet')).toBeNull();
-    expect(router.push).toHaveBeenCalledWith('/aba');
+    expect(router.replace).toHaveBeenCalledWith('/aba/session');
   });
 
   it('«Закончить без продолжения» — снимок снят, сессия записана остановкой взрослого, статус «Можно начинать»', async () => {
@@ -420,7 +701,7 @@ describe('«Занятия ABA»: незаконченное занятие', ()
     await fireEvent.press(screen.getByTestId('aba-finish'));
     await waitStatus('Можно начинать');
     expect(screen.queryByTestId('confirm-pin-sheet')).toBeNull();
-    expect([router.push.mock.calls.length, router.dismissAll.mock.calls.length]).toEqual([0, 0]);
+    expect([router.replace.mock.calls.length, router.dismissAll.mock.calls.length]).toEqual([0, 0]);
   });
 
   it('запись итога не прошла (пауза поставлена в обход экрана) — «Не получилось…», снимок на месте', async () => {

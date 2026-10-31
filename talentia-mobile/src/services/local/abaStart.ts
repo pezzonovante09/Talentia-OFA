@@ -16,6 +16,8 @@ import { reinforcerPoolFor } from '../../domain/abaReinforcerCatalog';
 import { sessionSignals, type SessionSignal, type SignalSession } from '../../domain/abaBarriers';
 import { initialTokenTraining, workingBoardSize, EXCHANGE_ACCESS_MS } from '../../domain/abaTokenTraining';
 import { boardRevOf, MIN_REINFORCER_POOL } from '../../domain/abaTokens';
+import { lastSessionSummary, parentTargetStatus, sortForParent, type LastSessionSummary, type ParentTargetStatus } from '../../domain/abaParentProgress';
+import { aloneFormatKey, formatUnlockedAlone } from '../../domain/abaPlacement';
 import { finishAbaSession, stopSession, type AbaSessionState, type StartInput } from '../../domain/abaSession';
 import type { RandomBytes } from '../../domain/ids';
 import { targetForBand } from '../../domain/abaTargetRules';
@@ -45,6 +47,14 @@ export type AbaOverview = {
   /** Обученный наблюдатель, записанный у ребёнка (первый по списку), — ему доступно «сопряжение подтверждено». */
   trainedObserverId: string | null;
   readyTargets: number;
+  /**
+   * Можно ли выбрать «Сам» (этап G1, вопрос 59): до знакомства с жетонами — всегда (сопряжение в «Сам» допустимо);
+   * после — только когда формат хотя бы одной готовой цели открыт освоением со взрослым (`formatUnlockedAlone`, №60).
+   * Иначе домен в «Сам» не нашёл бы обучаемых целей, и родитель видел бы «Можно начинать» и пустую сессию.
+   */
+  aloneAvailable: boolean;
+  /** Подсказка «лучше вместе» перед сопряжением (№166) — решение готово до первого кадра карточки, предвыбор «Со взрослым». */
+  suggestAdult: boolean;
 };
 
 const localDay = abaLocalDay;
@@ -79,14 +89,39 @@ function artFor(art?: Readonly<Record<string, unknown>>): Readonly<Record<string
 /** Что видит раздел родителя: согласие, пауза, незаконченное занятие, сопряжение, сколько целей готово. */
 export async function abaOverview(db: SqlDb, childId: string, art?: Readonly<Record<string, unknown>>): Promise<AbaOverview> {
   const log = await readConsentLog(db);
+  const pairingDone = ((await loadChildState(db, childId, 'tokenTraining')) ?? initialTokenTraining()).pairingDone;
+  const ready = readyAbaTargets(ABA_TARGETS, artFor(art));
+  const states = (await loadChildState(db, childId, 'abaTargets')) ?? {};
   return {
     consent: consentStatus(log, 'aba_processing', childId, CURRENT_CONSENT_TEXTS.aba_processing),
     paused: (await loadChildState(db, childId, 'abaPaused')) === true,
     inProgress: (await loadChildState(db, childId, 'abaSessionInProgress')) ?? null,
-    pairingDone: ((await loadChildState(db, childId, 'tokenTraining')) ?? initialTokenTraining()).pairingDone,
+    pairingDone,
     trainedObserverId: ((await loadChildState(db, childId, 'abaObservers')) ?? []).find((o) => o.trained)?.id ?? null,
-    readyTargets: readyAbaTargets(ABA_TARGETS, artFor(art)).length,
+    readyTargets: ready.length,
+    aloneAvailable: !pairingDone || ready.some((t) => formatUnlockedAlone(aloneFormatKey(t), ABA_TARGETS, states)),
+    suggestAdult: !pairingDone && (await pairingSuggestsAdult(db, childId)),
   };
+}
+
+export type AbaParentProgress = {
+  /** Цели программы в порядке «учим → почти → освоено»; цель без состояния — «учим» (ещё впереди). */
+  targets: { id: string; status: ParentTargetStatus; started: boolean }[];
+  /** Последнее занятие: пробы и самостоятельные; `null` — занятий не было. */
+  last: LastSessionSummary | null;
+};
+
+/** Прогресс ABA для экрана родителя (вопрос 66): три слова на цель, две цифры за занятие — ничего больше. */
+export async function loadAbaParentProgress(db: SqlDb, childId: string, targets: readonly AbaTarget[] = ABA_TARGETS): Promise<AbaParentProgress> {
+  const states = (await loadChildState(db, childId, 'abaTargets')) ?? {};
+  const rows = targets.map((tg) => {
+    const s = states[tg.id];
+    return { id: tg.id, status: s ? parentTargetStatus(s) : ('learning' as const), started: s !== undefined };
+  });
+  const sessions = await sessionsOf(db, childId);
+  const lastSession = sessions.at(-1) ?? null;
+  const trials = lastSession ? await trialsOfSession(db, childId, lastSession.id) : [];
+  return { targets: sortForParent(rows), last: lastSessionSummary(lastSession, trials) };
 }
 
 /** Первая причина, по которой занятие не начать; `null` — можно. */

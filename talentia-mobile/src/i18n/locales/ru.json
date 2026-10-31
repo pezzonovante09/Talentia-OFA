@@ -370,7 +370,8 @@
     "tryWithoutSaving": "Попробовать без сохранения",
     "noSaveNote": "Прогресс не сохранится после закрытия",
     "forAdults": "Для взрослых",
-    "callAdult": "Позови взрослого"
+    "callAdult": "Позови взрослого",
+    "adultOnly": "Для взрослых"
   },
   "map": {
     "lockedInOrder": "Этот урок откроется по порядку",
@@ -419,6 +420,9 @@
     "done": "Повторили!"
   },
   "atlas": {
+    "title": "Атлас",
+    "empty": "Атлас пока пустой — давай начнём!",
+    "toAtlas": "К атласу",
     "toMap": "К карте",
     "pageAhead": "Эта страница ещё впереди",
     "replay": "Повторить"
@@ -587,6 +591,30 @@
       "continue": "Продолжить занятие",
       "finishWithout": "Закончить без продолжения",
       "unpauseToStart": "Снимите паузу, чтобы начать",
+      "mode": "Режим",
+      "whoLeads": "Кто ведёт",
+      "whoLeadsNone": "Не выбрано",
+      "whoLeadsNotNeeded": "не нужно",
+      "whoLeadsValue": "{{role}} · обучен",
+      "whoLeadsReason": "Отметьте, кто рядом с ребёнком",
+      "aloneLocked": "«Сам» откроется, когда задание будет освоено со взрослым",
+      "done": "Готово",
+      "goals": "Цели",
+      "goal": {
+        "match-same-2": "Одинаковые из двух",
+        "match-same-3": "Одинаковые из трёх",
+        "match-shape": "По форме",
+        "match-color": "По цвету"
+      },
+      "goalStatus": {
+        "ahead": "впереди",
+        "learning": "учим",
+        "almost": "почти",
+        "mastered": "освоено"
+      },
+      "lastSession": "За занятие {{day}}: {{trials}} проб, из них {{independent}} сам",
+      "lastSessionNoTrials": "За занятие {{day}}: без проб",
+      "goalsEmpty": "Первое занятие покажет, что ребёнок уже умеет",
       "consentCard": "Согласие",
       "consentRow": "Обработка данных практики",
       "consentStatus": {

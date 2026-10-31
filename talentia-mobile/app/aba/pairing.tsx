@@ -144,7 +144,7 @@ export default function AbaPairingScreen() {
   }, [dispatch, clock]);
 
   // без конфигурации — только до старта: после конца она сброшена, а экран конца ещё на месте
-  if (!config && !runRef.current && !ended) return <Redirect href="/aba?mode=pairing" />;
+  if (!config && !runRef.current && !ended) return <Redirect href="/parent/aba" />;
 
   const exit = () => {
     if (!runRef.current || runRef.current.state.phase === 'done') {

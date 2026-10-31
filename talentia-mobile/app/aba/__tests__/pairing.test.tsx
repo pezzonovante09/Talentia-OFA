@@ -157,14 +157,14 @@ it('свернули посреди сопряжения — сессия не �
   }
 });
 
-it('без выбранной конфигурации — обратно на 2.6 в режиме сопряжения', async () => {
+it('без выбранной конфигурации — к взрослому на parent/aba (этап G1)', async () => {
   useAbaRun.getState().reset();
   await renderWithProviders(
     <AbaClockProvider clock={clock}>
       <AbaPairingScreen />
     </AbaClockProvider>,
   );
-  expect(screen.getByTestId('redirect').props.children).toBe('/aba?mode=pairing');
+  expect(screen.getByTestId('redirect').props.children).toBe('/parent/aba');
 });
 
 it('ожидание жетона: карточка нажимается, но ничего не делает — жетон не раньше срока, сцена доступа не раньше, ошибок нет', async () => {

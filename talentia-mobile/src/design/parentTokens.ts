@@ -141,6 +141,12 @@ export const parentPin = { dot: 14, dotGap: 16, ring: 2, keyW: 72, keyH: 60, key
 export const parentSegmented = { height: 40, minSegment: 48, selectedFill: 'text', selectedLabel: 'card' } as const;
 export const parentSwitch = { trackOn: 'primary', trackOff: 'hairline', thumb: 'card' } as const;
 export const parentRow = { minHeight: 56, padX: 16, dividerInset: 16, chevron: 24 } as const;
+/**
+ * Глиф цели ABA у родителя (этап G2, вопрос 66): степень заполнения круга Ø 16, обводка 2 — «насколько дошли»,
+ * не «насколько хорошо». Пусто = впереди, кольцо `textMuted` = учим, левая половина = почти, круг `text` = освоено.
+ * Цвета только `text` / `textMuted`: hairline как обводка не держит 3:1.
+ */
+export const parentGoalGlyph = { size: 16, stroke: 2, gap: 12 } as const;
 export const parentCard = { padX: 16, padY: 12, gap: 16 } as const;
 export const parentButton = { height: 48, guardMs: 300 } as const;
 /** Полоса недели: 7 клеток 36 с зазором 8; день с занятием — заливка `text`, без — пунктир `hairline`. */

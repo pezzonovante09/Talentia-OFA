@@ -9,7 +9,7 @@ import { Pressable, ScrollView, Switch, Text, TextInput, View, type StyleProp, t
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ICONS, type IconName } from '../../assets/registry';
-import { parentButton, parentCard, parentHeader, parentPin, parentRow, parentSegmented, parentSpacing, parentSwitch, weekStrip, type ParentColors } from '../../design/parentTokens';
+import { parentButton, parentCard, parentGoalGlyph, parentHeader, parentPin, parentRow, parentSegmented, parentSpacing, parentSwitch, touchAdult, weekStrip, type ParentColors } from '../../design/parentTokens';
 import { fontFamilyFor } from '../fonts';
 import { useParentTheme } from './theme';
 
@@ -43,7 +43,7 @@ export function ParentIcon({ name, color = 'text', size = 24 }: { name: IconName
 
 export type ParentButtonVariant = 'primary' | 'secondary' | 'destructive' | 'quiet';
 
-export function ParentButton({ variant = 'primary', label, onPress, disabled = false, reason, testID, underline = false, block = true }: { variant?: ParentButtonVariant; label: string; onPress: () => void; disabled?: boolean; /** Причина недоступности — подпись под кнопкой. */ reason?: string; testID?: string; underline?: boolean; block?: boolean }) {
+export function ParentButton({ variant = 'primary', label, onPress, disabled = false, reason, testID, underline = false, block = true, height = parentButton.height, minWidth }: { variant?: ParentButtonVariant; label: string; onPress: () => void; disabled?: boolean; /** Причина недоступности — подпись под кнопкой. */ reason?: string; testID?: string; underline?: boolean; block?: boolean; /** Высота зоны — по умолчанию 48; экран «слишком мал» ABA берёт `abaWindowPolicy.belowMinButtonHeight`. */ height?: number; minWidth?: number }) {
   const t = useParentTheme();
   const [pressed, setPressed] = useState(false);
   const last = { at: 0 };
@@ -76,7 +76,7 @@ export function ParentButton({ variant = 'primary', label, onPress, disabled = f
           onPress();
         }}
         testID={testID}
-        style={{ height: parentButton.height, borderRadius: t.shape.radius, backgroundColor: look.bg, borderWidth: t.shape.hairline, borderColor: look.border, alignItems: 'center', justifyContent: 'center', paddingHorizontal: parentSpacing.lg }}
+        style={{ height, minWidth, borderRadius: t.shape.radius, backgroundColor: look.bg, borderWidth: t.shape.hairline, borderColor: look.border, alignItems: 'center', justifyContent: 'center', paddingHorizontal: parentSpacing.lg }}
       >
         <ParentText role="label" hex={look.ink} style={{ textDecorationLine: underline ? 'underline' : 'none' }}>
           {label}
@@ -130,14 +130,21 @@ export function Card({ title, children, testID, style }: PropsWithChildren<{ tit
   );
 }
 
-export function Row({ label, caption, value, kind = 'value', onPress, toggle, onToggle, first = false, testID, hex }: { label: string; caption?: string; value?: string; kind?: 'link' | 'value' | 'toggle' | 'destructive'; onPress?: () => void; toggle?: boolean; onToggle?: (v: boolean) => void; first?: boolean; testID?: string; /** Чернила предмета — только на карточке. */ hex?: string }) {
+export function Row({ label, caption, value, valueColor = 'textMuted', valueTestID, kind = 'value', onPress, toggle, onToggle, first = false, testID, hex, selected, leading, accessibilityLabel }: { label: string; caption?: string; value?: string; /** Цвет значения справа: по умолчанию `textMuted`; слово статуса цели — `text`. */ valueColor?: ParentColorName; /** testID текста значения — только по запросу: общий суффикс ломал бы запросы тестов по маске. */ valueTestID?: string; kind?: 'link' | 'value' | 'toggle' | 'destructive'; onPress?: () => void; toggle?: boolean; onToggle?: (v: boolean) => void; first?: boolean; testID?: string; /** Чернила предмета — только на карточке. */ hex?: string; /** Строка-выбор: `true` — галочка `check` вместо шеврона, `false` — пустое место той же ширины (подпись не сдвигается). */ selected?: boolean; /** Ведущий слот слева от подписи (глиф цели): ширина `parentGoalGlyph.size` + зазор. */ leading?: ReactNode; accessibilityLabel?: string }) {
   const t = useParentTheme();
   const [pressed, setPressed] = useState(false);
   const interactive = kind === 'link' || kind === 'destructive' || (kind === 'value' && !!onPress);
+  const trailing = (() => {
+    if (selected === true) return <ParentIcon name="check" />;
+    if (selected === false) return <View style={{ width: parentRow.chevron, height: parentRow.chevron }} />;
+    if (kind === 'link' || (kind === 'value' && onPress)) return <ParentIcon name="arrow" color="textMuted" />;
+    return null;
+  })();
   const content = (
     <View style={{ minHeight: parentRow.minHeight, flexDirection: 'row', alignItems: 'center', gap: parentSpacing.md, borderTopWidth: first ? 0 : t.shape.hairline, borderTopColor: t.colors.hairline, marginHorizontal: -parentCard.padX, paddingHorizontal: parentRow.padX, backgroundColor: pressed && interactive ? t.pressed.card : 'transparent' }}>
+      {leading !== undefined ? <View style={{ width: parentGoalGlyph.size, alignItems: 'center', justifyContent: 'center' }}>{leading}</View> : null}
       <View style={{ flex: 1, paddingVertical: parentSpacing.sm }}>
-        <ParentText role="body" hex={hex ?? (kind === 'destructive' ? t.colors.error : t.colors.text)}>
+        <ParentText role="body" lines={leading !== undefined ? 1 : undefined} hex={hex ?? (kind === 'destructive' ? t.colors.error : t.colors.text)}>
           {label}
         </ParentText>
         {caption ? (
@@ -147,38 +154,81 @@ export function Row({ label, caption, value, kind = 'value', onPress, toggle, on
         ) : null}
       </View>
       {value ? (
-        <ParentText role="body" color="textMuted">
+        <ParentText role="body" color={valueColor} testID={valueTestID}>
           {value}
         </ParentText>
       ) : null}
       {kind === 'toggle' ? (
         <Switch value={!!toggle} onValueChange={onToggle} trackColor={{ true: t.colors[parentSwitch.trackOn], false: t.colors[parentSwitch.trackOff] }} thumbColor={t.colors[parentSwitch.thumb]} accessibilityLabel={label} testID={testID ? `${testID}-switch` : undefined} />
       ) : null}
-      {kind === 'link' || (kind === 'value' && onPress) ? <ParentIcon name="arrow" color="textMuted" /> : null}
+      {trailing}
     </View>
   );
-  if (!interactive) return <View testID={testID}>{content}</View>;
+  if (!interactive) return <View testID={testID} accessible={!!accessibilityLabel} accessibilityLabel={accessibilityLabel}>{content}</View>;
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} onPressIn={() => setPressed(true)} onPressOut={() => setPressed(false)} testID={testID}>
+    <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} accessibilityState={selected !== undefined ? { selected } : undefined} onPress={onPress} onPressIn={() => setPressed(true)} onPressOut={() => setPressed(false)} testID={testID}>
       {content}
     </Pressable>
   );
 }
 
-export function Segmented<T extends string>({ options, value, onChange, testID }: { options: { value: T; label: string }[]; value: T; onChange: (v: T) => void; testID?: string }) {
+/**
+ * Сегменты: внутренний контейнер 40 (`parentSegmented.height`, hairline, радиус, `overflow: 'hidden'`), внешняя
+ * прозрачная зона `touchAdult` 48 (`paddingVertical` 4) — палец взрослого попадает по зоне, а не по рамке
+ * (`child-ux-specialist`, этап G). Заблокированный сегмент (`disabled`): подпись `textMuted` + `lock` 16, тап
+ * ничего не меняет, для скринридера — `disabled` и подсказка-причина.
+ */
+export function Segmented<T extends string>({ options, value, onChange, testID, disabled = [], disabledHint }: { options: { value: T; label: string }[]; value: T; onChange: (v: T) => void; testID?: string; disabled?: readonly T[]; /** Причина блокировки — `accessibilityHint` заблокированного сегмента. */ disabledHint?: string }) {
   const t = useParentTheme();
+  const pad = (touchAdult - parentSegmented.height) / 2;
   return (
-    <View style={{ flexDirection: 'row', height: parentSegmented.height, borderWidth: t.shape.hairline, borderColor: t.colors.hairline, borderRadius: t.shape.radius, overflow: 'hidden' }} accessibilityRole="radiogroup" testID={testID}>
-      {options.map((o) => {
-        const selected = o.value === value;
-        return (
-          <Pressable key={o.value} accessibilityRole="radio" accessibilityState={{ selected }} accessibilityLabel={o.label} onPress={() => onChange(o.value)} testID={testID ? `${testID}-${o.value}` : undefined} style={{ flex: 1, minWidth: parentSegmented.minSegment, alignItems: 'center', justifyContent: 'center', backgroundColor: selected ? t.colors[parentSegmented.selectedFill] : 'transparent' }}>
-            <ParentText role="caption" hex={selected ? t.colors[parentSegmented.selectedLabel] : t.colors.text}>
-              {o.label}
-            </ParentText>
-          </Pressable>
-        );
-      })}
+    <View style={{ paddingVertical: pad }} accessibilityRole="radiogroup" testID={testID}>
+      <View style={{ flexDirection: 'row', height: parentSegmented.height, borderWidth: t.shape.hairline, borderColor: t.colors.hairline, borderRadius: t.shape.radius, overflow: 'hidden' }}>
+        {options.map((o) => {
+          const selected = o.value === value;
+          const off = disabled.includes(o.value);
+          return (
+            <Pressable
+              key={o.value}
+              accessibilityRole="radio"
+              accessibilityState={off ? { selected, disabled: true } : { selected }}
+              accessibilityLabel={o.label}
+              accessibilityHint={off ? disabledHint : undefined}
+              onPress={() => {
+                if (!off) onChange(o.value);
+              }}
+              hitSlop={{ top: pad, bottom: pad }}
+              testID={testID ? `${testID}-${o.value}` : undefined}
+              style={{ flex: 1, minWidth: parentSegmented.minSegment, flexDirection: 'row', gap: parentSpacing.xs, alignItems: 'center', justifyContent: 'center', backgroundColor: selected ? t.colors[parentSegmented.selectedFill] : 'transparent' }}
+            >
+              {off ? <ParentIcon name="lock" color="textMuted" size={16} /> : null}
+              <ParentText role="caption" hex={selected ? t.colors[parentSegmented.selectedLabel] : off ? t.colors.textMuted : t.colors.text}>
+                {o.label}
+              </ParentText>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+export type GoalGlyphStatus = 'ahead' | 'learning' | 'almost' | 'mastered';
+
+/**
+ * Глиф цели ABA (`parentGoalGlyph`): «впереди» — пустое место той же ширины; «учим» — кольцо `textMuted`;
+ * «почти» — круг с заполненной левой половиной (`text` внутри обводки `textMuted`); «освоено» — круг `text`.
+ * Слово статуса стоит рядом в строке — форма ничего не кодирует одна.
+ */
+export function GoalGlyph({ status, testID }: { status: GoalGlyphStatus; testID?: string }) {
+  const t = useParentTheme();
+  const { size, stroke } = parentGoalGlyph;
+  const box = { width: size, height: size, borderRadius: size / 2 } as const;
+  if (status === 'ahead') return <View style={box} testID={testID} />;
+  if (status === 'mastered') return <View style={[box, { backgroundColor: t.colors.text }]} testID={testID} />;
+  return (
+    <View style={[box, { borderWidth: stroke, borderColor: t.colors.textMuted, overflow: 'hidden' }]} testID={testID}>
+      {status === 'almost' ? <View style={{ width: (size - 2 * stroke) / 2, height: size - 2 * stroke, backgroundColor: t.colors.text }} testID={testID ? `${testID}-half` : undefined} /> : null}
     </View>
   );
 }

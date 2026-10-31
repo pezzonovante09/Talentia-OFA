@@ -527,7 +527,8 @@ export default function AbaSessionScreen() {
     run(finish(stopSession(s, s.config === 'alone' ? 'abandoned' : 'adult_stopped', clock.now()), 'neutral'));
   };
 
-  if (!config && !st.current && phase.kind === 'loading') return <Redirect href="/aba" />;
+  // без конфигурации — к взрослому: режим и «кто ведёт» выбираются на `parent/aba` (этап G1), детского экрана выбора нет
+  if (!config && !st.current && phase.kind === 'loading') return <Redirect href="/parent/aba" />;
 
   const s = st.current;
   // панель взрослого сама добавляет нижний inset: корень его тогда не добавляет (иначе «Отказ» прыгает на 34 pt)

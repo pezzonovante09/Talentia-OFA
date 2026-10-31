@@ -1,22 +1,62 @@
 /**
- * «Занятия ABA» в разделе родителя (направление `docs/design/aba-screens-2026-10-25.md` §1; вход — строка на главной,
- * решение владельца 2026-10-27, флага режима в профиле нет). Иерархия: «Занятие» с единственной залитой кнопкой →
- * согласие → пауза со строкой №150 → файл для специалиста → отзыв. Всё про выбранного ребёнка.
+ * «Занятия ABA» в разделе родителя (направление `docs/design/aba-screens-2026-10-25.md` §1, этап G —
+ * `docs/design/parent-aba-2026-11-01.md`; вход — строка на главной, решение владельца 2026-10-27, флага режима в
+ * профиле нет). Иерархия: «Занятие» с единственной залитой кнопкой → «Цели» → согласие → пауза со строкой №150 →
+ * файл для специалиста → отзыв. Всё про выбранного ребёнка.
+ *
+ * Этап G1 (вопрос 59): режим «Со взрослым · Сам» и «Кто ведёт» выбирает взрослый здесь, а не ребёнок на 2.6;
+ * «Начать» пишет наблюдателей и `useAbaRun` до навигации и ведёт сразу в сопряжение или сессию через гейт окна
+ * `app/aba/index.tsx`. Этап G2 (вопрос 66): карточка «Цели» — три слова на цель и две цифры за занятие.
  */
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { ABA_TARGETS } from '../../../src/content/aba';
 import { parentSpacing } from '../../../src/design/parentTokens';
 import type { SensitiveAction } from '../../../src/domain/parentGate';
-import { abaBlockOf, abaOverview, finishInProgressSession, type AbaOverview } from '../../../src/services/local/abaStart';
-import { confirmAbaPairing, setAbaPaused } from '../../../src/services/local/commit';
+import { newAbaId } from '../../../src/services/abaIds';
+import { abaBlockOf, abaLocalDay, abaOverview, finishInProgressSession, loadAbaParentProgress, type AbaOverview, type AbaParentProgress } from '../../../src/services/local/abaStart';
+import { loadChildState } from '../../../src/services/local/childState';
+import { confirmAbaPairing, setAbaObservers, setAbaPaused } from '../../../src/services/local/commit';
+import { useAbaRun } from '../../../src/state/abaRun';
 import { useAccount } from '../../../src/state/account';
 import { useGate } from '../../../src/state/gate';
 import { useSelectedProfile } from '../../../src/state/parentView';
+import type { AbaConfig, AbaObserver } from '../../../src/types/aba';
 import { ConfirmPinSheet } from '../../../src/ui/parent/ConfirmPinSheet';
-import { Card, ParentButton, ParentScreen, ParentText, Row } from '../../../src/ui/parent/primitives';
+import { Card, GoalGlyph, ParentButton, ParentScreen, ParentText, Row, Segmented, type GoalGlyphStatus } from '../../../src/ui/parent/primitives';
+import { WhoLeadsSheet, type WhoLeadsChoice } from '../../../src/ui/parent/WhoLeadsSheet';
+
+const CONFIGS: readonly AbaConfig[] = ['with_adult', 'alone'];
+
+/** Слот подсказки под сегментами — резерв всегда (две строки caption), карточка не прыгает. */
+const HINT_SLOT = 40;
+
+/** День занятия словами отчёта родителя (`app/parent/index.tsx`): сегодня / вчера / N дн. назад. */
+function dayLabel(t: (k: string, o?: Record<string, unknown>) => string, day: string | null): string {
+  if (!day) return t('parent.home.today');
+  const toUtc = (d: string) => Date.UTC(Number(d.slice(0, 4)), Number(d.slice(5, 7)) - 1, Number(d.slice(8, 10)));
+  const days = Math.round((toUtc(abaLocalDay(Date.now())) - toUtc(day)) / 86_400_000);
+  return days <= 0 ? t('parent.home.today') : days === 1 ? t('parent.home.yesterday') : t('parent.home.daysAgo', { n: days });
+}
+
+/** Строки «Целей»: начатые цели в порядке лестницы `ABA_TARGETS` плюс одна следующая как «впереди». */
+function goalRows(progress: AbaParentProgress, ready: boolean): { id: string; status: GoalGlyphStatus }[] {
+  const byId = new Map(progress.targets.map((r) => [r.id, r]));
+  const rows: { id: string; status: GoalGlyphStatus }[] = [];
+  let aheadShown = false;
+  for (const tg of ABA_TARGETS) {
+    const r = byId.get(tg.id);
+    if (r?.started) rows.push({ id: tg.id, status: r.status });
+    else if (!aheadShown && ready) {
+      rows.push({ id: tg.id, status: 'ahead' });
+      aheadShown = true;
+    }
+  }
+  return rows;
+}
 
 export default function AbaParentScreen() {
   const { t } = useTranslation();
@@ -25,6 +65,14 @@ export default function AbaParentScreen() {
   const profile = useSelectedProfile();
   const can = useGate((s) => s.can);
   const [ov, setOv] = useState<AbaOverview | null>(null);
+  const [progress, setProgress] = useState<AbaParentProgress | null>(null);
+  const [prevObservers, setPrevObservers] = useState<AbaObserver[]>([]);
+  const [config, setConfig] = useState<AbaConfig | null>(null);
+  const [who, setWho] = useState<WhoLeadsChoice | null>(null);
+  const [whoFromLast, setWhoFromLast] = useState(false);
+  /** Предвыбор «Кто ведёт» из прошлой сессии делается один раз: взрослый мог уже переставить роль в этот раз. */
+  const whoSettled = useRef(false);
+  const [sheet, setSheet] = useState<'row' | 'start' | null>(null);
   const [pending, setPending] = useState<{ action: SensitiveAction; run: () => void } | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [exportNote, setExportNote] = useState(false);
@@ -32,7 +80,20 @@ export default function AbaParentScreen() {
   const childId = profile?.childId ?? null;
   const reload = useCallback(async () => {
     if (!db || !childId) return;
-    setOv(await abaOverview(db, childId));
+    const o = await abaOverview(db, childId);
+    const obs = (await loadChildState(db, childId, 'abaObservers')) ?? [];
+    setOv(o);
+    setPrevObservers(obs);
+    if (!whoSettled.current && obs[0]) {
+      whoSettled.current = true;
+      setWho({ role: obs[0].role, trained: obs[0].trained });
+      setWhoFromLast(true);
+    }
+    // предвыбор режима до первого кадра карточки — из обзора, не отдельным запросом: «Со взрослым» по умолчанию и по
+    // подсказке №166; выбранный «Сам» держится, пока доступен
+    setConfig((cur) => (cur === 'alone' && o.aloneAvailable ? cur : 'with_adult'));
+    const hasData = o.consent === 'granted' || o.consent === 'outdated';
+    setProgress(hasData ? await loadAbaParentProgress(db, childId) : null);
   }, [db, childId]);
   // согласие и отзыв уходят назад через `router.back()` — этот экран остаётся смонтированным, читать на фокус
   useFocusEffect(
@@ -57,6 +118,10 @@ export default function AbaParentScreen() {
   // текст согласия обновился — данные практики на устройстве остаются, пауза и отзыв доступны (ABA.md: другого пути отзыва нет)
   const hasData = ov?.consent === 'granted' || ov?.consent === 'outdated';
   const status = !ov ? '' : t(`parent.aba.status.${block ?? 'ready'}`);
+  const mode: AbaConfig = config ?? 'with_adult';
+  const aloneAvailable = ov?.aloneAvailable ?? true;
+  const hint = !ov ? '' : block === 'pairing_needed' && ov.suggestAdult ? t('abaSession.togetherHint') : block !== 'pairing_needed' && !aloneAvailable ? t('parent.aba.aloneLocked') : '';
+  const whoValue = who ? (who.trained ? t('parent.aba.whoLeadsValue', { role: t(`abaSession.role.${who.role}`) }) : t(`abaSession.role.${who.role}`)) : t('parent.aba.whoLeadsNone');
 
   const setPaused = (paused: boolean) =>
     safely(async () => {
@@ -70,9 +135,36 @@ export default function AbaParentScreen() {
     await reload();
   });
 
-  const start = () => {
+  /** К ребёнку — не `push`: карта между родительским экраном и гейтом не мелькает. */
+  const goChild = (href: '/aba/pairing' | '/aba/session') => {
     router.dismissAll();
-    router.push(block === 'pairing_needed' ? '/aba?mode=pairing' : '/aba');
+    router.replace(href);
+  };
+
+  /** «Начать»: наблюдатели в базу и в стор до навигации (как делал `go()` на 2.6), затем сразу сопряжение или сессия. */
+  const begin = safely(async () => {
+    let observers: AbaObserver[] = [];
+    let primary: string | null = null;
+    if (mode === 'with_adult' && who) {
+      const same = prevObservers.find((o) => o.role === who.role);
+      const me: AbaObserver = { id: same?.id ?? newAbaId(), role: who.role, trained: who.trained };
+      observers = [me, ...prevObservers.filter((o) => o.id !== me.id)];
+      primary = me.id;
+      await setAbaObservers(db, profile.childId, observers, new Date().toISOString());
+    }
+    useAbaRun.getState().set({ config: mode, observers, primaryObserverId: primary });
+    goChild(block === 'pairing_needed' ? '/aba/pairing' : '/aba/session');
+  });
+
+  /** «Начать» при «Со взрослым» и «Не выбрано» — не серая кнопка, а лист с причиной; «Готово» листа возвращает сюда. */
+  const start = () => (mode === 'with_adult' && !who ? setSheet('start') : begin());
+
+  /** «Продолжить»: конфигурация и наблюдатели — из снимка занятия, выбирать заново нечего. */
+  const resume = () => {
+    const s = ov?.inProgress;
+    if (!s) return;
+    useAbaRun.getState().set({ config: s.config, observers: s.observers, primaryObserverId: s.primaryObserverId });
+    goChild('/aba/session');
   };
 
   // «Сопряжение подтверждено» (вопрос 62): только обученному наблюдателю, за PIN; роль держателя PIN — владелец аккаунта
@@ -81,6 +173,17 @@ export default function AbaParentScreen() {
     await confirmAbaPairing(db, profile.childId, { observerId: ov.trainedObserverId, byRole: 'owner', at: new Date().toISOString() });
     await reload();
   });
+
+  const inProgressMode = (() => {
+    const s = ov?.inProgress;
+    if (!s) return '';
+    const label = t(`abaSession.config.${s.config}`);
+    const lead = s.observers.find((o) => o.id === s.primaryObserverId);
+    return s.config === 'with_adult' && lead ? `${label} · ${t(`abaSession.role.${lead.role}`)}` : label;
+  })();
+
+  const canChoose = block === null || block === 'pairing_needed';
+  const goals = progress ? goalRows(progress, (ov?.readyTargets ?? 0) > 0) : [];
 
   return (
     <ParentScreen
@@ -94,18 +197,51 @@ export default function AbaParentScreen() {
           <ParentText role="body" testID="aba-status">
             {status}
           </ParentText>
-          {block === 'no_consent' || block === 'outdated' ? (
-            <ParentButton label={t('parent.aba.readConsent')} onPress={() => router.push('/parent/aba/consent')} testID="aba-read-consent" />
-          ) : block === 'paused' ? (
-            <ParentButton variant="secondary" label={t('parent.aba.start')} disabled reason={t('parent.aba.unpauseToStart')} onPress={() => undefined} testID="aba-start" />
-          ) : block === 'in_progress' ? (
-            <>
-              <ParentButton label={t('parent.aba.continue')} onPress={() => guarded('aba_resume', start)} testID="aba-continue" />
-              <ParentButton variant="quiet" label={t('parent.aba.finishWithout')} onPress={finish} testID="aba-finish" />
-            </>
-          ) : block === 'no_ready_targets' || block === 'pool_small' ? null : (
-            <ParentButton label={t(block === 'pairing_needed' ? 'parent.aba.startPairing' : 'parent.aba.start')} onPress={start} testID="aba-start" />
+          {canChoose && (
+            <View style={{ marginTop: parentSpacing.md }}>
+              <Segmented
+                options={CONFIGS.map((c) => ({ value: c, label: t(`abaSession.config.${c}`) }))}
+                value={mode}
+                onChange={setConfig}
+                disabled={aloneAvailable ? [] : ['alone']}
+                disabledHint={t('parent.aba.aloneLocked')}
+                testID="aba-mode"
+              />
+              <View style={{ minHeight: HINT_SLOT, marginTop: parentSpacing.sm, justifyContent: 'center' }} testID="aba-hint-slot">
+                {hint ? (
+                  <ParentText role="caption" color="textMuted" lines={2} testID="aba-hint">
+                    {hint}
+                  </ParentText>
+                ) : null}
+              </View>
+              <View style={{ marginTop: parentSpacing.sm }}>
+                {mode === 'with_adult' ? (
+                  <Row first kind="value" label={t('parent.aba.whoLeads')} value={whoValue} onPress={() => setSheet('row')} testID="aba-who-row" valueTestID="aba-who-row-value" />
+                ) : (
+                  <Row first kind="value" label={t('parent.aba.whoLeads')} value={t('parent.aba.whoLeadsNotNeeded')} testID="aba-who-row" valueTestID="aba-who-row-value" />
+                )}
+              </View>
+            </View>
           )}
+          {block === 'in_progress' && ov?.inProgress && (
+            <View style={{ marginTop: parentSpacing.md }}>
+              <Row first kind="value" label={t('parent.aba.mode')} value={inProgressMode} testID="aba-mode-row" valueTestID="aba-mode-row-value" />
+            </View>
+          )}
+          <View style={{ marginTop: canChoose || block === 'in_progress' ? parentSpacing.md : parentSpacing.sm }}>
+            {block === 'no_consent' || block === 'outdated' ? (
+              <ParentButton label={t('parent.aba.readConsent')} onPress={() => router.push('/parent/aba/consent')} testID="aba-read-consent" />
+            ) : block === 'paused' ? (
+              <ParentButton variant="secondary" label={t('parent.aba.start')} disabled reason={t('parent.aba.unpauseToStart')} onPress={() => undefined} testID="aba-start" />
+            ) : block === 'in_progress' ? (
+              <>
+                <ParentButton label={t('parent.aba.continue')} onPress={() => guarded('aba_resume', resume)} testID="aba-continue" />
+                <ParentButton variant="quiet" label={t('parent.aba.finishWithout')} onPress={finish} testID="aba-finish" />
+              </>
+            ) : block === 'no_ready_targets' || block === 'pool_small' ? null : (
+              <ParentButton label={t(block === 'pairing_needed' ? 'parent.aba.startPairing' : 'parent.aba.start')} onPress={start} testID="aba-start" />
+            )}
+          </View>
           {block === 'pairing_needed' && ov?.trainedObserverId && (
             <>
               <ParentButton variant="quiet" label={t('parent.aba.pairingConfirmed')} onPress={() => guarded('aba_pairing_confirm', confirmPairing)} testID="aba-pairing-confirm" />
@@ -115,6 +251,31 @@ export default function AbaParentScreen() {
             </>
           )}
         </Card>
+
+        {hasData && progress && (
+          <Card title={t('parent.aba.goals')} testID="aba-goals">
+            {goals.map((g, i) => (
+              <Row
+                key={g.id}
+                first={i === 0}
+                leading={<GoalGlyph status={g.status} testID={`aba-goal-${g.id}-glyph-${g.status}`} />}
+                label={t(`parent.aba.goal.${g.id}`)}
+                value={t(`parent.aba.goalStatus.${g.status}`)}
+                valueColor={g.status === 'ahead' ? 'textMuted' : 'text'}
+                accessibilityLabel={`${t(`parent.aba.goal.${g.id}`)}: ${t(`parent.aba.goalStatus.${g.status}`)}`}
+                testID={`aba-goal-${g.id}`}
+                valueTestID={`aba-goal-${g.id}-value`}
+              />
+            ))}
+            <ParentText role="caption" color="textMuted" style={{ marginTop: parentSpacing.md }} testID="aba-goals-summary">
+              {progress.last
+                ? progress.last.trials === 0
+                  ? t('parent.aba.lastSessionNoTrials', { day: dayLabel(t, progress.last.day) })
+                  : t('parent.aba.lastSession', { day: dayLabel(t, progress.last.day), trials: progress.last.trials, independent: progress.last.independent })
+                : t('parent.aba.goalsEmpty')}
+            </ParentText>
+          </Card>
+        )}
 
         <Card title={t('parent.aba.consentCard')} testID="aba-consent">
           <Row first kind="value" label={t('parent.aba.consentRow')} value={ov ? t(`parent.aba.consentStatus.${ov.consent}`) : ''} onPress={() => router.push('/parent/aba/consent')} testID="aba-consent-row" />
@@ -155,6 +316,20 @@ export default function AbaParentScreen() {
           </ParentText>
         )}
       </View>
+      <WhoLeadsSheet
+        key={sheet ?? 'closed'}
+        visible={sheet !== null}
+        initial={who}
+        fromLastTime={whoFromLast}
+        reasonRequired={sheet === 'start'}
+        onBack={() => setSheet(null)}
+        onDone={(choice) => {
+          whoSettled.current = true;
+          setWho(choice);
+          setWhoFromLast(false);
+          setSheet(null);
+        }}
+      />
       <ConfirmPinSheet
         visible={pending !== null}
         onCancel={() => setPending(null)}

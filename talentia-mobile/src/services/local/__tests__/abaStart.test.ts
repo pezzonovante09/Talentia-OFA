@@ -1,10 +1,13 @@
 /** Вход сессии ABA (этап 11): что мешает начать, согласие, вход startAbaSession и сопряжения, данные итога. */
+import { ABA_TARGETS } from '../../../content/aba';
+import { markMastered } from '../../../domain/abaCriterion';
 import { isUuidV4 } from '../../../domain/ids';
+import { initialTargetState } from '../../../domain/abaPrompting';
 import { nextStep, startAbaSession } from '../../../domain/abaSession';
 import { initialTokenTraining } from '../../../domain/abaTokenTraining';
 import { MIN_REINFORCER_POOL } from '../../../domain/abaTokens';
 import { abaConsentTextVersion, grantAbaProcessing } from '../abaConsent';
-import { AbaConsentRequiredError, AbaPausedError } from '../abaLog';
+import { AbaConsentRequiredError, AbaPausedError, appendPairingSession } from '../abaLog';
 import { abaBlockOf, abaOverview, DEV_PLACEHOLDER_ART, loadAbaStart, loadFinishInputs, loadPairingStart } from '../abaStart';
 import { loadChildState, saveChildState } from '../childState';
 import { AbaObserverNotTrainedError, confirmAbaPairing, saveAbaSessionStep, setAbaPaused } from '../commit';
@@ -201,5 +204,67 @@ describe('вход сессии', () => {
     if (r.kind !== 'ready') throw new Error(r.reason);
     const f = await loadFinishInputs(db, KID, startAbaSession(r.input));
     expect(f).toEqual({ pastSessions: {}, signalHistory: { sessions: [], previous: [] }, extra: { routineExchangeInWindow: false } });
+  });
+});
+
+describe('обзор родителя: «Сам» доступен и подсказка «вместе» (этап G1, вопрос 59)', () => {
+  const AT = new Date(NOW).toISOString();
+  const target = ABA_TARGETS[0];
+  const mastered = (by: 'criterion' | 'inferred', config?: 'with_adult' | 'alone') => markMastered(initialTargetState(target), 1, by, config);
+  const setTargets = (db: SqlDb, states: Record<string, ReturnType<typeof mastered>>) => asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'abaTargets', states, AT));
+  let n = 0;
+  const pairingAloneMiss = (db: SqlDb) =>
+    asAbaWriter(db, KID, (tx) =>
+      appendPairingSession(
+        tx,
+        KID,
+        {
+          id: `00000000-0000-4000-8000-00000000010${(n += 1)}`,
+          day: '2026-10-27',
+          startedAt: AT,
+          endedAt: AT,
+          config: 'alone',
+          endReason: 'abandoned',
+          cycles: 0,
+          chosenBy: 'none',
+          choicesByChild: 0,
+          choicesByAdult: 0,
+          options: ['bubbles', 'drum', 'pinwheel'],
+          choices: [],
+          primaryObserverId: null,
+        },
+        AT,
+      ),
+    );
+
+  it('до знакомства с жетонами «Сам» доступен: сопряжение в «Сам» допустимо', async () => {
+    const db = await granted();
+    expect((await abaOverview(db, KID, DEV_PLACEHOLDER_ART)).aloneAvailable).toBe(true);
+  });
+
+  it('после знакомства без освоенного со взрослым формата «Сам» закрыт', async () => {
+    const db = await paired();
+    expect((await abaOverview(db, KID, DEV_PLACEHOLDER_ART)).aloneAvailable).toBe(false);
+  });
+
+  it('цель формата освоена со взрослым по критерию — «Сам» открыт; выведенная или освоенная в «Сам» — нет', async () => {
+    const db = await paired();
+    await setTargets(db, { [target.id]: mastered('criterion', 'with_adult') });
+    expect((await abaOverview(db, KID, DEV_PLACEHOLDER_ART)).aloneAvailable).toBe(true);
+    await setTargets(db, { [target.id]: mastered('inferred', 'with_adult') });
+    expect((await abaOverview(db, KID, DEV_PLACEHOLDER_ART)).aloneAvailable).toBe(false);
+    await setTargets(db, { [target.id]: mastered('criterion', 'alone') });
+    expect((await abaOverview(db, KID, DEV_PLACEHOLDER_ART)).aloneAvailable).toBe(false);
+  });
+
+  it('подсказка «вместе» (№166): две неудачи сопряжения в «Сам» до знакомства — да; после знакомства — нет', async () => {
+    const db = await granted();
+    expect((await abaOverview(db, KID, DEV_PLACEHOLDER_ART)).suggestAdult).toBe(false);
+    await pairingAloneMiss(db);
+    expect((await abaOverview(db, KID, DEV_PLACEHOLDER_ART)).suggestAdult).toBe(false);
+    await pairingAloneMiss(db);
+    expect((await abaOverview(db, KID, DEV_PLACEHOLDER_ART)).suggestAdult).toBe(true);
+    await asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'tokenTraining', { ...initialTokenTraining(), pairingDone: true }, AT));
+    expect((await abaOverview(db, KID, DEV_PLACEHOLDER_ART)).suggestAdult).toBe(false);
   });
 });

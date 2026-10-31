@@ -229,10 +229,10 @@ it('«Сам»: без обучения карточке и без панели 
   expect(screen.queryByTestId('aba-adult-panel')).toBeNull();
 });
 
-it('без конфигурации — обратно на 2.6', async () => {
+it('без конфигурации — к взрослому на parent/aba (этап G1: детского экрана выбора нет)', async () => {
   useAbaRun.getState().reset();
   await mount();
-  expect(screen.getByTestId('redirect').props.children).toBe('/aba');
+  expect(screen.getByTestId('redirect').props.children).toBe('/parent/aba');
 });
 
 describe('звук последствия (№158)', () => {
