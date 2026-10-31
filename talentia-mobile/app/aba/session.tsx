@@ -44,6 +44,7 @@ import {
 import { newAbaId } from '../../src/services/abaIds';
 import { loadAbaStart, loadFinishInputs } from '../../src/services/local/abaStart';
 import { commitAbaSession, loadBreakCardPlan, recordAbaTrial, saveAbaSessionStep } from '../../src/services/local/commit';
+import { voice } from '../../src/services/voice';
 import { useAbaRun } from '../../src/state/abaRun';
 import { useAccount } from '../../src/state/account';
 import { useChildSession } from '../../src/state/childSession';
@@ -325,8 +326,14 @@ export default function AbaSessionScreen() {
         let np: Phase = { ...p, run: next };
         for (const fx of effects) {
           if (fx.kind === 'overlay_show') np = { ...np, overlay: true } as Phase;
-          else if (fx.kind === 'token_land') np = { ...np, landed: true } as Phase;
-          else if (fx.kind === 'overlay_hide') np = { ...np, overlay: false } as Phase;
+          else if (fx.kind === 'token_land') {
+            // звук жетона при посадке (№158, `token_on_landing`); файл подключит озвучка, ключ — уже здесь
+            voice.say('abaSession.sound.token');
+            np = { ...np, landed: true } as Phase;
+          } else if (fx.kind === 'say') {
+            // похвала — только голосом (№158): без плашки подсказанный ответ не получает условного подкрепителя
+            voice.say(fx.key === 'praise' ? 'abaSession.sound.praise' : 'abaSession.sound.listened');
+          } else if (fx.kind === 'overlay_hide') np = { ...np, overlay: false } as Phase;
           else if (fx.kind === 'plates_empty') np = { ...np, empty: true } as Phase;
           else if (fx.kind === 'next_sd') {
             if (p.participation) {

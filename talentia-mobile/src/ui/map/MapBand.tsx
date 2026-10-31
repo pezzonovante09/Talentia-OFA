@@ -18,7 +18,8 @@ export type MapBandProps = {
   title: string;
   /** Цвет текста и глифов на полосе: `onRegion` на заливке региона, `text` на песке. */
   ink: ColorName;
-  onAtlas: () => void;
+  /** Кнопка «к атласу»; без неё — пустое место той же ширины, чтобы название осталось по центру (атлас-коллекции пока нет, вопрос 60). */
+  onAtlas?: () => void;
   onSettings: () => void;
 };
 
@@ -39,9 +40,13 @@ export function MapBand({ title, ink, onAtlas, onSettings }: MapBandProps) {
         gap: mapFocus.minGap,
       }}
     >
-      <CushionPressable role="control" width={mapFocus.atlasButton} height={mapFocus.atlasButton} radius="pill" fill="surface" onPress={onAtlas} accessibilityLabel={t('a11y.map.atlas')} testID="map-atlas">
-        <Icon name="book" color="text" />
-      </CushionPressable>
+      {onAtlas ? (
+        <CushionPressable role="control" width={mapFocus.atlasButton} height={mapFocus.atlasButton} radius="pill" fill="surface" onPress={onAtlas} accessibilityLabel={t('a11y.map.atlas')} testID="map-atlas">
+          <Icon name="book" color="text" />
+        </CushionPressable>
+      ) : (
+        <View style={{ width: mapFocus.atlasButton, height: mapFocus.atlasButton }} testID="map-atlas-slot" />
+      )}
       <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: theme.spacing.sm }} accessibilityRole="header" accessibilityLabel={title}>
         <Icon name="regionNumbers" size={mapFocus.landmark} color={ink} />
         <AppText

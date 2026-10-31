@@ -67,7 +67,7 @@ export function MatchTaskView(rawProps: FormatProps<MatchDraft>) {
         height={tileH}
         badge={badgeKind}
         socket={socket}
-        listening={props.listening === `${side}:${id}`}
+        listening={props.listening.includes(`${side}:${id}`)}
         onPress={() => props.onTap({ kind: 'element', id, side })}
         onPressIn={props.onTouch}
         accessibilityLabel={speaksOnTap(media) ? props.t(media.labelKey) : props.t('a11y.pile', { n: i + 1 })}
@@ -124,6 +124,8 @@ export const matchSpec: FormatSpec<MatchDraft> = {
   shown: (task) => matchShown(task as MatchTaskType),
   wrongOf: (draft) => matchWrongOf(draft),
   correctedOf: (task, step) => (task as MatchTaskType).pairs.map((p) => p.id).filter((id) => !step.kept.includes(id) && id !== step.pinned),
+  // после показа пара стоит соединённой — светятся обе её карточки
+  correctedCues: (task, step) => matchSpec.correctedOf(task, step).flatMap((id) => [`left:${id}`, `right:${id}`]),
   listeningSequence: (task, step) => {
     const t = task as MatchTaskType;
     const order = step.rightOrder ?? t.pairs.map((p) => p.id);

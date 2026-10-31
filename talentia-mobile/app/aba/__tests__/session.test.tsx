@@ -11,6 +11,7 @@ import { grantAbaProcessing } from '../../../src/services/local/abaConsent';
 import { loadChildState, saveChildState } from '../../../src/services/local/childState';
 import { asAbaWriter, memoryDb } from '../../../src/services/local/__tests__/nodeSql';
 import type { SqlDb } from '../../../src/services/local/sql';
+import { voice } from '../../../src/services/voice';
 import { useAbaRun } from '../../../src/state/abaRun';
 import { useAccount } from '../../../src/state/account';
 import { useChildSession } from '../../../src/state/childSession';
@@ -18,6 +19,12 @@ import { act, fireEvent, renderWithProviders, screen, waitFor, within } from '..
 import { AbaClockProvider, manualClock, type ManualClock } from '../../../src/ui/aba/clock';
 
 jest.mock('expo-keep-awake', () => ({ useKeepAwake: () => undefined }));
+// `expo-crypto` в Jest детерминирован (jest.setup.js): без счётчика вторая проба сессии получает тот же id и
+// падает на UNIQUE `aba_trials.id` — тесты с двумя пробами подряд были бы невозможны.
+jest.mock('../../../src/services/abaIds', () => {
+  let n = 0;
+  return { newAbaId: () => `00000000-0000-4000-8000-${String((n += 1)).padStart(12, '0')}` };
+});
 jest.mock('expo-router', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -226,4 +233,91 @@ it('без конфигурации — обратно на 2.6', async () => {
   useAbaRun.getState().reset();
   await mount();
   expect(screen.getByTestId('redirect').props.children).toBe('/aba');
+});
+
+describe('звук последствия (№158)', () => {
+  const wrongOption = () => {
+    const right = correctOption();
+    for (let i = 0; i < 3; i += 1) if (screen.queryByTestId(`aba-option-${i}`) && `aba-option-${i}` !== right) return `aba-option-${i}`;
+    throw new Error('неверный вариант не найден');
+  };
+  const acquisitionAtL0 = async () => {
+    const two = ABA_TARGETS.find((t) => t.id === 'match-same-2')!;
+    const states = { [two.id]: { ...initialTargetState(two), phase: 'acquisition' as const, startPromptLevel: 0 as const, lastSuccessfulPromptLevel: 0 as const } };
+    await asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'abaTargets', states, new Date(clock.now()).toISOString()));
+  };
+
+  it('token_praise: жетон звучит при посадке (340), похвала — в 700', async () => {
+    await acquisitionAtL0();
+    await mount();
+    await skipCardTraining();
+    await chooseFirst();
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    voice.stop();
+    await fireEvent.press(screen.getByTestId('aba-sample'));
+    await fireEvent.press(screen.getByTestId(correctOption()));
+    await waitFor(() => expect(screen.getByTestId('aba-reinforcement')).toBeTruthy());
+    // плашка показана, жетон ещё в полёте — тишина
+    expect(voice.last).toBeNull();
+    await tick(0);
+    await tick(340);
+    expect(screen.queryAllByTestId('aba-overlay-token-filled', HIDDEN)).toHaveLength(1);
+    expect(voice.last?.key).toBe('abaSession.sound.token');
+    await tick(360);
+    expect(voice.last?.key).toBe('abaSession.sound.praise');
+  });
+
+  it('praise без жетона (проба коррекции): только похвала в 300, звука жетона и плашки нет', async () => {
+    await acquisitionAtL0();
+    await mount();
+    await skipCardTraining();
+    await chooseFirst();
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    // неверно на L0 — нейтрально, за ним проба коррекции того же SD
+    await fireEvent.press(screen.getByTestId('aba-sample'));
+    await fireEvent.press(screen.getByTestId(wrongOption()));
+    await waitFor(async () => expect(await count('aba_trials')).toBe(1));
+    expect(screen.queryByTestId('aba-reinforcement')).toBeNull();
+    // следующий SD — проба коррекции; до неё домен может поставить нейтральную паузу: ждём фазу пробы по панели
+    await tick(5000);
+    for (let i = 0; i < 12 && !screen.queryByTestId('aba-panel-adult_prompted'); i += 1) await tick(1000);
+    await waitFor(() => expect(screen.getByTestId('aba-panel-adult_prompted')).toBeTruthy());
+    expect(await count('aba_trials')).toBe(1);
+    voice.stop();
+    await fireEvent.press(screen.getByTestId('aba-sample'));
+    await fireEvent.press(screen.getByTestId(correctOption()));
+    await waitFor(async () => expect(await count('aba_trials')).toBe(2));
+    const rows = await db.all<{ body: string }>('SELECT body FROM aba_trials WHERE child_id = ? ORDER BY rowid', [KID]);
+    // верный под подсказкой выше стартовой — `prompted`: коррекция успешна по построению, жетон за неё не платится
+    expect(JSON.parse(rows[1].body)).toMatchObject({ kind: 'correction', response: 'prompted', tokens: 0 });
+    expect(screen.queryByTestId('aba-reinforcement')).toBeNull();
+    expect(voice.last).toBeNull();
+    await tick(0);
+    await tick(300);
+    expect(voice.last?.key).toBe('abaSession.sound.praise');
+    // до следующего SD никакого звука жетона
+    await tick(400);
+    await tick(3300);
+    expect(voice.last?.key).toBe('abaSession.sound.praise');
+    expect(screen.queryAllByTestId('aba-overlay-token-filled', HIDDEN)).toHaveLength(0);
+  });
+
+  it('neutral (базовая линия): голос не звучит до следующего SD', async () => {
+    await mount();
+    await skipCardTraining();
+    await chooseFirst();
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    voice.stop();
+    await fireEvent.press(screen.getByTestId('aba-sample'));
+    await fireEvent.press(screen.getByTestId(correctOption()));
+    await waitFor(async () => expect(await count('aba_trials')).toBe(1));
+    await tick(0);
+    await tick(300);
+    await tick(400);
+    await tick(3300);
+    expect(voice.last).toBeNull();
+    await tick(1000);
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    expect(voice.last).toBeNull();
+  });
 });

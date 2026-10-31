@@ -55,7 +55,7 @@ export function ChooseTaskView(rawProps: FormatProps<ChooseDraft>) {
         width={tileW}
         height={tileH}
         badge={badge}
-        listening={props.listening === o.id}
+        listening={props.listening.includes(o.id)}
         onPress={() => props.onTap({ kind: 'element', id: o.id })}
         onPressIn={props.onTouch}
         accessibilityLabel={silentPile || o.voice === 'select' ? props.t('a11y.option', { n: i + 1 }) : props.t(o.labelKey)}
@@ -113,6 +113,7 @@ export const chooseSpec: FormatSpec<ChooseDraft> = {
   shown: () => emptyChooseDraft(),
   wrongOf: (draft, task) => (draft.selected && draft.selected !== chooseCorrectId(task as ChooseTaskType) ? [draft.selected] : []),
   correctedOf: (task) => [chooseCorrectId(task as ChooseTaskType)],
+  correctedCues: (task) => [chooseCorrectId(task as ChooseTaskType)],
   listeningSequence: (task) => {
     const t = task as ChooseTaskType;
     // Карточки-числа навыка счёта перечисляются; немые карточки (`voice: 'select'`) — нет (3.8.1).

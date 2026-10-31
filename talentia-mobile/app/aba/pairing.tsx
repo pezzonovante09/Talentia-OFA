@@ -9,7 +9,7 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { Redirect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AppState, Text, View } from 'react-native';
+import { AppState, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { abaPairingLayout, abaReinforcerCardSize, abaReinforcerChoice } from '../../src/design/abaTokens';
@@ -198,9 +198,16 @@ export default function AbaPairingScreen() {
         <View style={{ flex: 1, paddingHorizontal: 16 }}>
           {header()}
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} testID="aba-pairing-wait">
-            <View style={{ width: abaPairingLayout.cardSize, height: abaPairingLayout.cardSize, borderRadius: 28, borderWidth: 3, borderColor: c.controlInk, backgroundColor: c.plate, alignItems: 'center', justifyContent: 'center' }}>
+            {/* ожидание жетона — 10 с без движения; касание карточки отвечает сжатием `tapPress`, без действия и
+                без записи (I-6: ни одна цель не молчит), сама процедура ждёт свой срок */}
+            <Pressable
+              accessibilityRole="image"
+              accessibilityLabel={t('abaSession.tali')}
+              style={({ pressed }) => ({ width: abaPairingLayout.cardSize, height: abaPairingLayout.cardSize, borderRadius: 28, borderWidth: 3, borderColor: c.controlInk, backgroundColor: c.plate, alignItems: 'center', justifyContent: 'center', transform: [{ scale: pressed ? 0.94 : 1 }] })}
+              testID="aba-pairing-wait-card"
+            >
               <ReinforcerArt id={s.reinforcerId} size={abaPairingLayout.cardSize - 32} />
-            </View>
+            </Pressable>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: abaPairingLayout.gapCardRow, gap: abaPairingLayout.gapTaliCell }}>
               <TaliFigure pose={run.token ? 'point' : 'idle'} size={abaPairingLayout.tali} crop accessibilityLabel={t('abaSession.tali')} testID="aba-pairing-tali" />
               <TokenCell size={abaPairingLayout.cell} filled={filled} testID={filled ? 'aba-pairing-token-filled' : 'aba-pairing-token-empty'} />

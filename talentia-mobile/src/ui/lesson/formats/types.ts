@@ -22,8 +22,11 @@ export type FormatProps<D> = {
   phase: FormatPhase;
   /** Что помечено крестом на время блокировки. */
   wrong: readonly string[];
-  /** Что «звучит сейчас» (`listeningCue`): id элемента или `place:0`. */
-  listening: string | null;
+  /**
+   * Что «звучит сейчас» (`listeningCue`): ключи элементов — id варианта, `left:id` / `right:id`, `place:i`.
+   * Один ключ при перечислении; несколько сразу — исправленные после показа (№140).
+   */
+  listening: readonly string[];
   /** Размер зоны задания `X`. */
   width: number;
   height: number;
@@ -46,6 +49,8 @@ export type FormatSpec<D> = {
   wrongOf: (draft: D, task: Task) => string[];
   /** Элементы, тап по которым после показа — активный ответ. */
   correctedOf: (task: Task, step: TaskStep) => string[];
+  /** Ключи `listening` исправленных элементов — подсветка на время реплики «Покажи, что исправили» (№140). */
+  correctedCues: (task: Task, step: TaskStep) => string[];
   /** Элементы, которые перечисляются с подсветкой при открытии (карточки-числа, первое место). */
   listeningSequence: (task: Task, step: TaskStep) => string[];
   /** Ключ реплики «Сначала …» для недоступной «Проверить». */

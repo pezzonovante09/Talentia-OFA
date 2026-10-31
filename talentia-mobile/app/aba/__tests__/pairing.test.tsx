@@ -166,3 +166,25 @@ it('без выбранной конфигурации — обратно на 2
   );
   expect(screen.getByTestId('redirect').props.children).toBe('/aba?mode=pairing');
 });
+
+it('ожидание жетона: карточка нажимается, но ничего не делает — жетон не раньше срока, сцена доступа не раньше, ошибок нет', async () => {
+  await mount();
+  await fireEvent.press(screen.getByTestId(`aba-reinforcer-${cards()[0]}`));
+  await tick(800);
+  expect(screen.getByTestId('aba-pairing-wait')).toBeTruthy();
+  const card = screen.getByTestId('aba-pairing-wait-card');
+  expect(card.props.accessibilityRole).toBe('image');
+  await fireEvent.press(card);
+  await fireEvent.press(card);
+  await tick(100);
+  expect(screen.getByTestId('aba-pairing-token-empty', HIDDEN)).toBeTruthy();
+  expect(screen.queryByTestId('aba-pairing-token-filled', HIDDEN)).toBeNull();
+  expect(screen.queryByTestId('aba-access-scene')).toBeNull();
+  // срок жетона считается от выбора, а не от касания: приходит ровно тогда же, что и без касаний
+  await tick(PAIRING.tokenAfterMs - 100);
+  await tick(220);
+  expect(screen.getByTestId('aba-pairing-token-filled', HIDDEN)).toBeTruthy();
+  await tick(600);
+  await tick(360);
+  expect(screen.getByTestId('aba-access-scene')).toBeTruthy();
+});

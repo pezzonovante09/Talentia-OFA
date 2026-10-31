@@ -373,7 +373,8 @@
     "reviewNothing": "Everything is reviewed",
     "noTranslation": "Nothing here yet",
     "atlasLater": "The atlas opens after the first lesson",
-    "taliTap": "We are {{region}}. Next is this lesson"
+    "taliTap": "We are {{region}}. Next is this lesson",
+    "taliRest": "We are {{region}}. That is all for today, we go on tomorrow"
   },
   "lesson": {
     "exit": "To the map",
@@ -399,7 +400,9 @@
     "progress": "Task {{n}} of {{total}}",
     "unsupported": "This format is not ready yet",
     "tapCorrectedFirst": "First tap what was fixed",
-    "orderMirrored": "From the other end! We start right here"
+    "orderMirrored": "From the other end! We start right here",
+    "demoMatch": "I take the first one. Find its pair",
+    "demoOrder": "I place the first one. Now you"
   },
   "atlas": {
     "toMap": "To the map",

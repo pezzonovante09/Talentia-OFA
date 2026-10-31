@@ -39,7 +39,7 @@ describe('полоса порядка', () => {
   it('линия и засечки по числу мест, наконечника нет', async () => {
     initI18n({ lng: 'ru' });
     await renderWithProviders(
-      <OrderTaskView step={step} draft={emptyOrderDraft(task)} phase="answer" wrong={[]} listening={null} width={343} height={275} onTap={() => undefined} onTouch={() => undefined} t={i18n.t} marksKey={0} />,
+      <OrderTaskView step={step} draft={emptyOrderDraft(task)} phase="answer" wrong={[]} listening={[]} width={343} height={275} onTap={() => undefined} onTouch={() => undefined} t={i18n.t} marksKey={0} />,
     );
     expect(screen.getByTestId('order-strip')).toBeTruthy();
     expect(screen.getByTestId('order-line')).toBeTruthy();

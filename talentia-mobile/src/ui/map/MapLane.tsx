@@ -59,6 +59,13 @@ export function MapLane({ model, height, focusKey, reduceMotion, onOpenLesson, o
   const g = LANE_GEOMETRY;
   const baseY = Math.round(height * 0.55);
   const contentWidth = laneWidth(items, g);
+  // Порция потрачена и повторять нечего (`pointer === null`): Tali не исчезает с карты, а стоит у
+  // последнего пройденного узла и ни на что не указывает — «на сегодня всё» (разбор 2026-10-31, вопрос 72).
+  const restIndex = useMemo(() => {
+    const done = items.filter((i): i is Extract<LaneItem, { kind: 'lesson' }> => i.kind === 'lesson' && (i.state === 'done' || i.state === 'explored'));
+    return done.length ? done[done.length - 1].index : 0;
+  }, [items]);
+  const taliIndex = pointerIndex ?? restIndex;
 
   useEffect(() => {
     offset.addListener(({ value }) => {
@@ -70,11 +77,11 @@ export function MapLane({ model, height, focusKey, reduceMotion, onOpenLesson, o
   // Автоцентровка при каждом появлении экрана и при смене указателя.
   useEffect(() => {
     if (!viewport) return;
-    const target = nodeCenter(pointerIndex ?? 1, baseY, g).x;
+    const target = nodeCenter(taliIndex, baseY, g).x;
     const to = centerOffset(contentWidth, viewport, target);
     if (reduceMotion || theme.calmMode) offset.setValue(to);
     else Animated.timing(offset, { toValue: to, duration: theme.motion.slow, useNativeDriver: NATIVE_DRIVER }).start();
-  }, [focusKey, viewport, pointerIndex, contentWidth, baseY, g, offset, reduceMotion, theme.calmMode, theme.motion.slow]);
+  }, [focusKey, viewport, taliIndex, contentWidth, baseY, g, offset, reduceMotion, theme.calmMode, theme.motion.slow]);
 
   const pan = useMemo(
     () =>
@@ -102,7 +109,7 @@ export function MapLane({ model, height, focusKey, reduceMotion, onOpenLesson, o
   const tail = items.find((i) => i.kind === 'tail');
   const tailFrom = trail[trail.length - 1];
   const tailTo = tail && tailFrom ? { x: tailFrom.x + g.node / 2 + g.tail, y: tailFrom.y } : null;
-  const taliAt = pointerIndex === null ? null : taliAnchor(nodeCenter(pointerIndex, baseY, g), { nodeSize: g.node, tali: taliSize.map, gap: mapLane.taliNodeGap });
+  const taliAt = taliAnchor(nodeCenter(taliIndex, baseY, g), { nodeSize: g.node, tali: taliSize.map, gap: mapLane.taliNodeGap });
 
   return (
     <GestureDetector gesture={pan}>
@@ -143,11 +150,9 @@ export function MapLane({ model, height, focusKey, reduceMotion, onOpenLesson, o
             );
           })}
 
-          {taliAt && (
-            <View style={{ position: 'absolute', left: Math.max(0, taliAt.x), top: taliAt.y }} testID="map-tali-slot">
-              <TaliFigure pose="point" size={taliSize.map} onPress={onTali} accessibilityLabel={taliLabel} testID="map-tali" />
-            </View>
-          )}
+          <View style={{ position: 'absolute', left: Math.max(0, taliAt.x), top: taliAt.y }} testID="map-tali-slot">
+            <TaliFigure pose={pointerIndex === null ? 'idle' : 'point'} size={taliSize.map} onPress={onTali} accessibilityLabel={taliLabel} testID="map-tali" />
+          </View>
         </Animated.View>
       </View>
     </GestureDetector>

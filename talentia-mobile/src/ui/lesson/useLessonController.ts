@@ -30,7 +30,8 @@ export type LessonUi = {
   draft: unknown;
   phase: FormatPhase;
   wrong: string[];
-  listening: string | null;
+  /** Ключи `listeningCue`: один при перечислении, все исправленные после показа (№140). */
+  listening: string[];
   bubble: string | null;
   speaking: boolean;
   pose: TaliPose;
@@ -45,7 +46,7 @@ const initialUi = (): LessonUi => ({
   draft: null,
   phase: 'answer',
   wrong: [],
-  listening: null,
+  listening: [],
   bubble: null,
   speaking: false,
   pose: 'idle',
@@ -91,8 +92,8 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
   /** Перечисление с подсветкой (карточки-числа, первое место) — прерывается касанием. */
   const playListening = useCallback(
     (ids: string[]) => {
-      ids.forEach((id, i) => later(i * LISTEN_STEP_MS, () => patch({ listening: id })));
-      later(ids.length * LISTEN_STEP_MS, () => patch({ listening: null }));
+      ids.forEach((id, i) => later(i * LISTEN_STEP_MS, () => patch({ listening: [id] })));
+      later(ids.length * LISTEN_STEP_MS, () => patch({ listening: [] }));
     },
     [later, patch],
   );
@@ -108,12 +109,13 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
   // Новое задание: сброс черновика, перечисление, демо первой встречи.
   const taskKey = task ? `${task.id}:${taskStep?.transferProbe ? 'probe' : ''}:${state?.index}` : step?.kind ?? 'none';
   // Смена задания сбрасывает черновик синхронно, в рендере: касание, пришедшее до эффекта, не
-  // должно застать черновик прошлого задания или `null`.
+  // должно застать черновик прошлого задания или `null`. Урок, в который вернулись с карты
+  // (SCREENS.md 1.6), открывается на той же стадии задания: после показа ждём активный ответ,
+  // после верного ответа — «Дальше»; иначе «Проверить» ушло бы в домен не в ожидании ответа.
   const [uiKey, setUiKey] = useState<string | null>(null);
   if (uiKey !== taskKey || (ui.draft === null && task && spec && taskStep)) {
     setUiKey(taskKey);
-    const fresh = initialUi();
-    setUi(task && spec && taskStep ? { ...fresh, draft: spec.emptyDraft(task, taskStep) } : fresh);
+    setUi(task && spec && taskStep ? resumedUi(spec, task, taskStep, t) : initialUi());
   }
   const lastTaskKey = useRef<string | null>(null);
   useEffect(() => {
@@ -121,6 +123,11 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
     lastTaskKey.current = taskKey;
     clearTimers();
     if (!task || !spec || !taskStep) return;
+    if (taskStep.stage !== 'answer') {
+      // возврат в задание после показа или итога: вопрос не повторяем, подсветка исправленных гаснет сама
+      if (taskStep.stage === 'active_response') later(LISTEN_STEP_MS * 2, () => patch({ listening: [] }));
+      return;
+    }
     voice.say(task.promptKey);
     const seq = spec.listeningSequence(task, taskStep);
     if (seq.length) playListening(seq);
@@ -132,11 +139,36 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
           task.format === 'match' ? { kind: 'element', id: (task as Extract<Task, { format: 'match' }>).pairs[0].id, side: 'left' } : task.format === 'order' ? { kind: 'tray', id: (task as Extract<Task, { format: 'order' }>).items[0].id } : null;
         if (!first) return;
         const r = spec.tap(u.draft, first, taskStep);
-        if (r) patch({ draft: r.draft, pose: 'point' });
+        if (!r) return;
+        // Tali называет, что делает (№35): молчаливо выбранная плитка ребёнку непонятна
+        const key = task.format === 'match' ? 'lesson.demoMatch' : 'lesson.demoOrder';
+        voice.say(key);
+        patch({ draft: r.draft, pose: 'point', bubble: t(key) });
         later(DEMO_HOLD_MS, () => patch({ pose: 'idle' }));
       });
     }
-  }, [taskKey, clearTimers, later, patch, playListening, spec, task, taskStep]);
+  }, [taskKey, clearTimers, later, patch, playListening, spec, task, taskStep, t]);
+
+  // Завязка и шаги разобранного примера звучат сами (SCREENS.md 1.1, 1.3); кнопка повтора — та же реплика.
+  const stepKey = step?.kind === 'hook' ? 'hook' : step?.kind === 'model' ? `model:${step.step}:${step.nowYou}` : null;
+  const modelLineKey = useCallback(
+    (s: Extract<LessonStep, { kind: 'model' }>) => {
+      const m = lesson?.model;
+      return s.nowYou || !m ? 'lesson.nowYou' : m.steps[Math.min(s.step, m.steps.length - 1)].lineKey;
+    },
+    [lesson],
+  );
+  const replayHook = useCallback(() => {
+    if (!lesson || !step) return;
+    if (step.kind === 'hook') voice.say(lesson.hook.lineKey);
+    else if (step.kind === 'model') voice.say(modelLineKey(step));
+  }, [lesson, step, modelLineKey]);
+  // Звучит на смену шага, не на каждый рендер: эффект читает актуальный `replayHook` через ref.
+  const replayHookRef = useRef(replayHook);
+  replayHookRef.current = replayHook;
+  useEffect(() => {
+    if (stepKey) replayHookRef.current();
+  }, [stepKey]);
 
   useEffect(() => () => {
     clearTimers();
@@ -144,16 +176,26 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
   }, [clearTimers]);
 
   const onTouch = useCallback(() => {
-    patch({ listening: null });
+    patch({ listening: [] });
     resetNudge();
   }, [patch, resetNudge]);
+
+  /** Подсветка исправленных на время реплики «Покажи, что исправили» (№140). */
+  const cueCorrected = useCallback(
+    (s: TaskStep) => {
+      if (!spec || !task) return;
+      patch({ listening: spec.correctedCues(task, s) });
+      later(LISTEN_STEP_MS * 2, () => patch({ listening: [] }));
+    },
+    [spec, task, patch, later],
+  );
 
   const onTap = useCallback(
     (tap: FormatTap) => {
       if (!spec || !task || !taskStep) return;
       const u = uiRef.current;
       if (u.draft === null) return;
-      patch({ listening: null });
+      patch({ listening: [] });
       if (u.phase === 'locked') {
         voice.say('lesson.busy');
         return;
@@ -227,6 +269,7 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
       later(SHOW_AFTER_MS, () => {
         patch({ draft: spec.shown(task), phase: 'shownWait', wrong: [], pose: 'point', bubble: task.explainKey?.[0] ? t(task.explainKey[0]) : null, marksKey: uiRef.current.marksKey + 1 });
         voice.say(task.explainKey?.[0] ?? task.promptKey);
+        cueCorrected(next as TaskStep);
       });
       return;
     }
@@ -234,7 +277,7 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
       patch((x) => ({ draft: spec.afterNarrowing(x.draft, task, next as TaskStep), phase: 'answer', wrong: [], pose: 'point', bubble: t(task.hintKey), marksKey: x.marksKey + 1 }));
       voice.say(task.hintKey);
     });
-  }, [spec, task, taskStep, patch, dispatch, t, later, playListening]);
+  }, [spec, task, taskStep, patch, dispatch, t, later, playListening, cueCorrected]);
 
   const action: ActionState = useMemo(() => {
     if (!spec || !task || ui.draft === null) return 'checkDisabled';
@@ -265,6 +308,7 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
           const key = task?.format === 'choose' ? 'lesson.chooseFirst' : 'lesson.tapCorrectedFirst';
           voice.say(key);
           patch({ bubble: t(key), pose: 'point' });
+          if (taskStep) cueCorrected(taskStep);
         } else runCheck();
         return;
       case 'check':
@@ -278,24 +322,30 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
         if (next.kind === 'done') onFinished();
       }
     }
-  }, [step, action, ui.phase, task, dispatch, patch, runCheck, t, onFinished]);
+  }, [step, action, ui.phase, task, taskStep, dispatch, patch, runCheck, t, onFinished, cueCorrected]);
 
   const replayPrompt = useCallback(() => {
     if (!task || !spec || !taskStep) return;
     voice.say(task.promptKey);
     patch({ replaying: true });
     later(LISTEN_STEP_MS * 2, () => patch({ replaying: false }));
+    // после показа повтор повторяет и подсветку исправленных (№140)
+    if (uiRef.current.phase === 'shownWait') {
+      cueCorrected(taskStep);
+      return;
+    }
     const seq = spec.listeningSequence(task, taskStep);
     if (seq.length) playListening(seq);
-  }, [task, spec, taskStep, patch, later, playListening]);
+  }, [task, spec, taskStep, patch, later, playListening, cueCorrected]);
 
   const onTali = useCallback(() => {
     if (ui.bubble) {
       voice.say(ui.bubble);
       patch({ speaking: true });
       later(LISTEN_STEP_MS, () => patch({ speaking: false }));
+      if (ui.phase === 'shownWait' && taskStep) cueCorrected(taskStep);
     } else replayPrompt();
-  }, [ui.bubble, patch, later, replayPrompt]);
+  }, [ui.bubble, ui.phase, taskStep, patch, later, replayPrompt, cueCorrected]);
 
   const openExit = useCallback(() => patch({ exitOpen: true }), [patch]);
   const stay = useCallback(() => patch({ exitOpen: false }), [patch]);
@@ -306,7 +356,20 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
     onLeave();
   }, [clearTimers, patch, onLeave]);
 
-  return { lesson, state, step, taskStep, task, spec, ui, action, onTap, onTouch, onAction, onTali, replayPrompt, openExit, stay, leave, t };
+  return { lesson, state, step, taskStep, task, spec, ui, action, onTap, onTouch, onAction, onTali, replayPrompt, replayHook, openExit, stay, leave, t };
+}
+
+/** Экран задания по его стадии в домене — при открытии и при возврате в урок (SCREENS.md 1.6). */
+function resumedUi(spec: FormatSpec<unknown>, task: Task, step: TaskStep, t: (key: string) => string): LessonUi {
+  const fresh = initialUi();
+  switch (step.stage) {
+    case 'active_response':
+      return { ...fresh, draft: spec.shown(task), phase: 'shownWait', pose: 'point', bubble: task.explainKey?.[0] ? t(task.explainKey[0]) : null, listening: spec.correctedCues(task, step) };
+    case 'next':
+      return { ...fresh, draft: spec.shown(task), phase: 'done', nextReady: true };
+    case 'answer':
+      return { ...fresh, draft: step.attempt === 'second' ? spec.afterNarrowing(spec.emptyDraft(task, step), task, step) : spec.emptyDraft(task, step) };
+  }
 }
 
 function mediaOf(task: Task, id: string) {

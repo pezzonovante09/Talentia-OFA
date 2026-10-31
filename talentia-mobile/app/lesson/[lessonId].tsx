@@ -68,7 +68,7 @@ function LessonBody({ lessonId }: { lessonId: string }) {
             text={t(c.lesson.hook.lineKey)}
             width={W}
             height={height - insets.top - bottomInset}
-            onReplay={() => undefined}
+            onReplay={c.replayHook}
             onHelp={c.onAction}
             labels={{ replay: labels.replay, help: t('lesson.helpTali'), tali: labels.tali }}
           />

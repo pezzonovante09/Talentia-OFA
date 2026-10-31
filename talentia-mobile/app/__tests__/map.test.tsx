@@ -5,9 +5,14 @@
  */
 import MapScreen from '../map';
 import { regionLessons } from '../../src/content';
+import { mapLane, taliSize } from '../../src/design/tokens';
+import { nodeCenter, taliAnchor } from '../../src/domain/mapLane';
+import { gameDay } from '../../src/domain/mapProgress';
 import { voice } from '../../src/services/voice';
 import { useChildSession } from '../../src/state/childSession';
+import { buildMapModel } from '../../src/state/mapModel';
 import { fireEvent, renderWithProviders, screen } from '../../src/test/render';
+import { LANE_GEOMETRY } from '../../src/ui/map/MapLane';
 
 jest.mock('expo-router', () => {
   const React = jest.requireActual<typeof import('react')>('react');
@@ -21,6 +26,16 @@ jest.mock('expo-router', () => {
   };
 });
 const mockPush = (jest.requireMock('expo-router') as { __router: { push: jest.Mock } }).__router.push;
+// Все svg в Jest — один и тот же мок, поза Tali по дереву не различима: позы реестра помечаются именем.
+jest.mock('../../src/assets/registry', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const actual = jest.requireActual<typeof import('../../src/assets/registry')>('../../src/assets/registry');
+  const poses = Object.fromEntries(
+    Object.keys(actual.TALI_POSES).map((pose) => [pose, (props: Record<string, unknown>) => React.createElement(View, { ...props, accessibilityHint: `pose:${pose}` })]),
+  );
+  return { ...actual, TALI_POSES: poses };
+});
 
 const NOW = new Date('2026-10-24T10:00:00.000Z');
 const KID = '00000000-0000-4000-8000-000000000002';
@@ -66,13 +81,14 @@ describe('карта региона', () => {
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/lesson/[lessonId]', params: { lessonId: lessons[0].id } });
   });
 
-  it('Tali называет регион и следующий шаг; «ползунки» ведут в родительский раздел; атлас — голос', async () => {
+  it('Tali называет регион и следующий шаг; «ползунки» ведут в родительский раздел; «к атласу» скрыта до атласа-коллекции', async () => {
     start();
     await renderWithProviders(<MapScreen />);
     await fireEvent.press(screen.getByTestId('map-tali-press'));
     expect(voice.last).toEqual({ key: 'map.taliTap', params: { region: 'в Числовой долине' } });
-    await fireEvent.press(screen.getByTestId('map-atlas'));
-    expect(voice.last?.key).toBe('map.atlasLater');
+    // вопрос 60: кнопка с вечной голосовой заглушкой — мёртвая цель; место под неё остаётся, название по центру
+    expect(screen.queryByTestId('map-atlas')).toBeNull();
+    expect(screen.getByTestId('map-atlas-slot')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('map-settings'));
     expect(mockPush).toHaveBeenCalledWith('/parent');
   });
@@ -83,7 +99,40 @@ describe('карта региона', () => {
     expect(screen.getByTestId('map-node-1')).toBeTruthy();
     expect(screen.getByTestId('map-node-2')).toBeTruthy();
     expect(screen.queryByTestId('map-node-3')).toBeNull();
-    expect(screen.getByTestId('map-atlas')).toBeTruthy();
+    expect(screen.getByTestId('map-atlas-slot')).toBeTruthy();
     expect(screen.getByTestId('map-settings')).toBeTruthy();
+  });
+
+  it('есть открытый урок: Tali указывает (point) на него', async () => {
+    start();
+    await renderWithProviders(<MapScreen />);
+    expect(screen.getByTestId('map-tali-svg').props.accessibilityHint).toBe('pose:point');
+  });
+
+  it('порция потрачена и повторять нечего (pointer === null): Tali остаётся на карте в позе idle у последнего пройденного, тап — «на сегодня всё»', async () => {
+    start();
+    // два урока пройдены сегодня, порция на день кончилась, навыкам срок повторения не подошёл
+    const entry = (i: number) => ({ lessonId: lessons[i].id, atlasEntryKey: lessons[i].atlasEntryKey, stars: 3 as const, firstLesson: i + 1 });
+    const s = useChildSession.getState();
+    useChildSession.setState({ portion: { left: 0, grantedDay: gameDay(NOW) }, progress: { ...s.progress, atlas: [entry(0), entry(1)], lessonCounter: 2 } });
+    const model = buildMapModel(useChildSession.getState(), NOW);
+    expect(model.pointer).toBeNull();
+    expect(model.states.slice(0, 3)).toEqual(['done', 'done', 'sleeping']);
+
+    await renderWithProviders(<MapScreen />);
+    expect(screen.getByTestId('map-tali')).toBeTruthy();
+    expect(screen.getByTestId('map-tali-svg').props.accessibilityHint).toBe('pose:idle');
+    // у последнего пройденного узла (урок 2 — позиция 2 на ленте), а не у первого и не у «спящего»
+    const g = LANE_GEOMETRY;
+    const anchorX = (index: number) => Math.max(0, taliAnchor(nodeCenter(index, 0, g), { nodeSize: g.node, tali: taliSize.map, gap: mapLane.taliNodeGap }).x);
+    expect(screen.getByTestId('map-tali-slot')).toHaveStyle({ left: anchorX(2) });
+    expect(anchorX(2)).not.toBe(anchorX(1));
+    await fireEvent.press(screen.getByTestId('map-tali-press'));
+    expect(voice.last).toEqual({ key: 'map.taliRest', params: { region: 'в Числовой долине' } });
+    // «спящий» урок без подушки, «к атласу» по-прежнему только место
+    expect(screen.getByTestId('map-node-3')).toBeTruthy();
+    expect(screen.queryByTestId('map-node-3-cushion')).toBeNull();
+    expect(screen.queryByTestId('map-atlas')).toBeNull();
+    expect(screen.getByTestId('map-atlas-slot')).toBeTruthy();
   });
 });

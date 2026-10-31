@@ -49,7 +49,8 @@ function MapScreenBody() {
       <MapBackdrop region={model.region} width={width} height={height} />
       <View style={{ height: insets.top, backgroundColor: bandColor }} />
       <View style={{ backgroundColor: bandColor }}>
-        <MapBand title={title} ink={onRegion} onAtlas={() => voice.say('map.atlasLater')} onSettings={() => router.push('/parent')} />
+        {/* «К атласу» вернётся вместе с атласом-коллекцией (вопрос 60): кнопка с вечной голосовой заглушкой — мёртвая цель */}
+        <MapBand title={title} ink={onRegion} onSettings={() => router.push('/parent')} />
       </View>
       <MapLane
         model={model}
@@ -58,7 +59,7 @@ function MapScreenBody() {
         reduceMotion={reduceMotion}
         onOpenLesson={(lessonId) => router.push({ pathname: '/lesson/[lessonId]', params: { lessonId } })}
         onVoice={(key) => voice.say(key)}
-        onTali={() => voice.say('map.taliTap', { region: t(`content.regions.${model.region}.in`) })}
+        onTali={() => voice.say(model.pointer === null ? 'map.taliRest' : 'map.taliTap', { region: t(`content.regions.${model.region}.in`) })}
         taliLabel={t('a11y.tali')}
       />
     </View>

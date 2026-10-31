@@ -80,7 +80,7 @@ export function OrderTaskView(rawProps: FormatProps<OrderDraft>) {
                 state={state}
                 width={tileW}
                 height={tileH}
-                listening={props.listening === `place:${i}`}
+                listening={props.listening.includes(`place:${i}`)}
                 onPress={() => props.onTap({ kind: 'slot', index: i })}
                 onPressIn={props.onTouch}
                 accessibilityLabel={props.t(i === 0 ? 'a11y.placeStart' : i === n - 1 ? 'a11y.placeEnd' : 'a11y.placeMiddle')}
@@ -142,6 +142,8 @@ export const orderSpec: FormatSpec<OrderDraft> = {
   shown: (task) => orderShown(task as OrderTaskType),
   wrongOf: (draft, task) => orderWrongOf(draft, task as OrderTaskType),
   correctedOf: (task, step) => (task as OrderTaskType).items.map((i) => i.id).filter((id) => !step.kept.includes(id) && id !== step.pinned),
+  // после показа предметы стоят на своих местах — светятся места исправленных
+  correctedCues: (task, step) => (task as OrderTaskType).items.filter((i) => !step.kept.includes(i.id) && i.id !== step.pinned).map((i) => `place:${i.position}`),
   listeningSequence: () => ['place:0'],
   chooseFirstKey: 'lesson.arrangeFirst',
 };
