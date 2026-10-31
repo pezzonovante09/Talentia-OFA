@@ -215,7 +215,15 @@ export function scoreAgainst(
     chainStep: Boolean(expected.stepId),
     promptDelayMs: expected.promptDelayMs,
     responseWindowMs: expected.responseWindowMs,
-    ...(format === 'match' ? { observingWindowMs: MATCH_OBSERVING_MS } : {}),
+    ...(format === 'match'
+      ? {
+          observingWindowMs: MATCH_OBSERVING_MS,
+          sampleTouchedAt:
+            input.observingLatencyMs === null || input.observingLatencyMs === undefined
+              ? null
+              : new Date(Date.parse(input.sdEndedAt) + input.observingLatencyMs).toISOString(),
+        }
+      : {}),
     sdEndedAt: input.sdEndedAt,
   });
   if (!scored.ok) return { ok: false, errors: scored.errors };

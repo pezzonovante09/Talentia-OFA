@@ -220,11 +220,33 @@ describe('панель взрослого', () => {
     expect(record(s, r)).toMatchObject({ response: 'independent' });
   });
 
-  it('«Была подсказка» в пробеле наблюдения — проба снята (не пишется, предъявляется заново), а не «самостоятельно»', () => {
+  it('№167: «Была подсказка» в пробеле наблюдения принимается — потом коснулись и верно: подсказано, не «самостоятельно»', () => {
     const s = session(MATCH_SAME_3);
-    const r = go(run(s), { type: 'adult', button: 'adult_prompted', at: at(4) });
-    expect([r.done, r.voided, r.log]).toEqual([true, true, [expect.objectContaining({ by: 'app' })]]);
-    expect(() => matchTrialInput(r)).toThrow();
+    let r = go(run(s), { type: 'adult', button: 'adult_prompted', at: at(4) });
+    expect(r.log.map((p) => [p.by, p.startedAt])).toEqual([
+      ['app', at(0)],
+      ['adult', at(4)],
+    ]);
+    r = go(r, { type: 'tap_sample', at: at(5) }, { type: 'tap_option', id: s.step.sampleCardId!, at: at(5.5) });
+    expect(record(s, r)).toMatchObject({ response: 'prompted', adultUnplannedPrompt: true, promptLevelUsed: 1 });
+  });
+
+  it('№167: подсказка взрослого, образца так и не коснулись — после L1 приложения проба закрыта, без «наблюдения»', () => {
+    const s = session(MATCH_SAME_3);
+    const r = runOut(go(run(s), { type: 'adult', button: 'adult_prompted', at: at(4) }));
+    expect(r.log.map((p) => [p.by, p.level])).toEqual([
+      ['app', 0],
+      ['adult', 0],
+      ['app', 1],
+    ]);
+    expect(r.observingPrompted).toBe(false);
+    expect(record(s, r)).toMatchObject({ response: 'no_response', adultUnplannedPrompt: true });
+  });
+
+  it('№167: и после окна наблюдения — не принимается', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'adult', button: 'adult_prompted', at: at(5.5) });
+    expect(r.log).toHaveLength(1);
   });
 });
 

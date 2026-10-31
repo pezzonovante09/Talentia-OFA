@@ -68,3 +68,34 @@ describe('L1 наблюдения — не «ждал подсказку»', () 
     expect(fadeClass(trial({ ...base, observingPrompted: true }))).not.toBe('waited');
   });
 });
+
+describe('№167: «Была подсказка» в пробеле наблюдения match', () => {
+  // SD кончился в 1,5; задержка 2000 прошла (3,5), образца не коснулись; взрослый подсказал в 4,5 — внутри окна наблюдения
+  const log: AbaPresentation[] = [
+    { level: 0, by: 'app', startedAt: iso(0), endedAt: iso(1.5), windowMs: 2000, outcome: 'none' },
+    { level: 0, by: 'adult', startedAt: iso(4.5), endedAt: iso(4.5), windowMs: 5000, outcome: 'correct', respondedAt: iso(6) },
+  ];
+
+  it('у match принимается: подсказано, `adultUnplannedPrompt`, уровень не ниже 1', () => {
+    const r = scoreTrial(log, { ...CTX, observingWindowMs: 5000, sdEndedAt: iso(1.5), sampleTouchedAt: iso(5.5) });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.fields).toMatchObject({ response: 'prompted', adultUnplannedPrompt: true, promptLevelUsed: 1 });
+  });
+
+  it('без окна наблюдения (не match) — по-прежнему вне окна', () => {
+    const r = scoreTrial(log, CTX);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.join(' ')).toContain('подсказка взрослого вне окна');
+  });
+
+  it('и после окна наблюдения — вне окна', () => {
+    const late = [log[0], { ...log[1], startedAt: iso(7), endedAt: iso(7), respondedAt: iso(8) }];
+    expect(scoreTrial(late, { ...CTX, observingWindowMs: 5000, sdEndedAt: iso(1.5), sampleTouchedAt: null }).ok).toBe(false);
+  });
+
+  it('после касания образца расширения нет: окно выбора прошло — подсказка взрослого вне окна', () => {
+    // коснулись в 2,0 (предъявление кончилось касанием), окно 2000 — до 4,0; подсказка в 4,5
+    const touched: AbaPresentation[] = [{ ...log[0], endedAt: iso(2) }, log[1]];
+    expect(scoreTrial(touched, { ...CTX, observingWindowMs: 5000, sdEndedAt: iso(1.5), sampleTouchedAt: iso(2) }).ok).toBe(false);
+  });
+});

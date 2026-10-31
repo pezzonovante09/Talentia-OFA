@@ -405,12 +405,6 @@ export default function AbaSessionScreen() {
       setPhase({ ...p, run: next, pressed });
       return;
     }
-    if (next.voided) {
-      // «Была подсказка» в пробеле наблюдения: домен такую пробу не примет, а без неё пишется ложный самостоятельный
-      // ответ — проба не пишется и предъявляется заново с SD, как свёрнутая (№155; методист 2026-10-31)
-      beginTrial(p.run.step, clock.now());
-      return;
-    }
     // до записи экран стоит как есть: выбранная плита — с контуром 6 (раздел 5, «Ошибки»)
     setPhase({ ...p, run: next, pressed: null });
     run(record(next, p.run.step));

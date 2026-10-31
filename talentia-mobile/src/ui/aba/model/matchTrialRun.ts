@@ -58,12 +58,6 @@ export type MatchTrialRun = {
   chosenCardId: string | null;
   fieldSizeAtResponse: number | null;
   done: boolean;
-  /**
-   * «Была подсказка» в пробеле наблюдения (образца не коснулись, окно задержки прошло): домен такое предъявление
-   * не принимает, а без него пишется ложный самостоятельный ответ. Проба не пишется и предъявляется заново с SD,
-   * как свёрнутая (№155; методист 2026-10-31) — до точечной правки домена.
-   */
-  voided: boolean;
 };
 
 export type MatchEvent =
@@ -115,7 +109,6 @@ export function startMatchTrial(input: {
     chosenCardId: null,
     fieldSizeAtResponse: null,
     done: false,
-    voided: false,
   };
 }
 
@@ -162,8 +155,9 @@ function close(r: MatchTrialRun, p: Partial<Pres>): MatchTrialRun {
 function escalate(r: MatchTrialRun, at: number, outcome: PresentationOutcome): MatchTrialRun {
   const ended = withCurrent(r, { outcome });
   if (!r.step.allowEscalation) return close(r, { outcome });
-  // L1 наблюдения уже была и образца так и не коснулись — `no_response` (ABA.md, «Реакция наблюдения»)
-  if (r.observingPrompted && r.sampleTouchedAt === null) return close(r, { outcome });
+  // старт L0: после первой L1 приложения образца так и не коснулись — `no_response` (ABA.md, «Реакция наблюдения»),
+  // и когда перед L1 была «Была подсказка» (методист 2026-10-31): подсказки к выбору, на который ответить нельзя, — нагрузка
+  if (r.sampleTouchedAt === null && r.step.startPromptLevel === 0 && appCount(r) >= 2) return close(r, { outcome });
   const app = lastApp(r);
   const next = nextEscalation({ kind: r.step.trialKind }, app.level, appCount(r), promptLadder(r.target));
   if (next.kind === 'close') {
@@ -185,8 +179,9 @@ function escalate(r: MatchTrialRun, at: number, outcome: PresentationOutcome): M
 /** «Была подсказка»: внутри окна текущего предъявления приложения, на его уровне; вне окна — не принимается. */
 function adultPrompt(r: MatchTrialRun, at: number): MatchTrialRun {
   const app = lastApp(r);
-  if (at < current(r).startedAt) return { ...r, pending: null };
-  if (at > app.endedAt + app.windowMs) return r.sampleTouchedAt === null ? { ...r, pending: null, done: true, voided: true } : { ...r, pending: null };
+  // без касания образца предъявление идёт всё окно наблюдения — «Была подсказка» в пробеле принимается (№167)
+  const until = app.endedAt + (r.sampleTouchedAt === null ? Math.max(app.windowMs, MATCH_OBSERVING_MS) : app.windowMs);
+  if (at < current(r).startedAt || at > until) return { ...r, pending: null };
   const ended = withCurrent(r, { outcome: 'none' });
   return {
     ...ended,
@@ -241,7 +236,7 @@ const iso = (ms: number) => new Date(ms).toISOString();
 
 /** Запись пробы для `recordTrial`; только у законченной пробы. */
 export function matchTrialInput(r: MatchTrialRun): AbaTrialInput {
-  if (!r.done || r.voided) throw new Error('проба не закончена или снята');
+  if (!r.done) throw new Error('проба не закончена');
   const { step } = r;
   const log: AbaPresentation[] = r.log.map((p) => ({
     level: p.level,

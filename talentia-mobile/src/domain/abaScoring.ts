@@ -55,6 +55,11 @@ export type ScoreContext = {
   observingWindowMs?: number;
   /** Конец SD пробы (`sdEndedAt`): от него `msSinceSd` (у `match` конец первого предъявления — касание образца). */
   sdEndedAt?: string;
+  /**
+   * `match`: когда коснулись образца (`sdEndedAt` + `observingLatencyMs`); `null` — так и не коснулись; нет поля — не
+   * `match`. До касания «Была подсказка» принимается всё окно наблюдения (№167), после — обычное окно предъявления.
+   */
+  sampleTouchedAt?: string | null;
 };
 
 const RESPONSES: ReadonlySet<PresentationOutcome> = new Set(['correct', 'approximation', 'incorrect']);
@@ -114,7 +119,11 @@ function logErrors(log: readonly AbaPresentation[], ctx: ScoreContext): string[]
       if (!lastApp) errors.push(`предъявление ${i + 1}: подсказка взрослого до SD`);
       else {
         if (p.level !== lastApp.level) errors.push(`предъявление ${i + 1}: подсказка взрослого не на уровне текущего предъявления`);
-        if (ms(p.startedAt) < ms(prev.startedAt) || ms(p.startedAt) > ms(lastApp.endedAt) + lastApp.windowMs) {
+        // `match`: пока образца не коснулись, предъявление ещё идёт всё окно наблюдения — «Была подсказка» в этом
+        // пробеле принимается (№167); после касания и у остальных форматов граница прежняя
+        const untouched = ctx.sampleTouchedAt === null || (ctx.sampleTouchedAt !== undefined && ms(p.startedAt) < ms(ctx.sampleTouchedAt));
+        const until = ms(lastApp.endedAt) + (untouched ? Math.max(lastApp.windowMs, ctx.observingWindowMs ?? 0) : lastApp.windowMs);
+        if (ms(p.startedAt) < ms(prev.startedAt) || ms(p.startedAt) > until) {
           errors.push(`предъявление ${i + 1}: подсказка взрослого вне окна текущего предъявления`);
         }
       }
