@@ -1175,26 +1175,48 @@ export const icon = { size: 32, badge: 24 } as const;
 /** Три размера Tali на экранах среза: кроп «по пояс» 88, полный рост на карте 96 и на первом запуске 120. */
 export const taliSize = { crop: 88, map: 96, hero: 120 } as const;
 
-/** Карточка профиля на первом запуске: 160, аватар 88, место под имя 24 (и у безымянных), зазор 16. */
-export const profileCard = { size: 160, avatar: 88, nameSlot: 24, gap: 16 } as const;
+/**
+ * Карточка профиля на первом запуске: детская 160, аватар 88, место под имя 24 (и у безымянных), зазор 16.
+ * «+ Добавить» — взрослая карточка (этап D, docs/design/atlas-firstrun-2026-10-31.md D3): 120, без подушки,
+ * плюс и подпись `textMuted`, замок 24 в правом верхнем углу с отступом 8; в ряду с детскими — по нижнему краю.
+ */
+export const profileCard = {
+  size: 160,
+  avatar: 88,
+  nameSlot: 24,
+  gap: 16,
+  addSize: 120,
+  addBadge: 24,
+  addBadgeInset: 8,
+  addRowAlign: 'bottom',
+} as const;
 
 /**
  * Первый запуск на чистой установке: «Попробовать без сохранения» — единственная `primary` (ребёнок нажмёт
- * сам, цена — потеря прогресса, о ней говорит подпись); вход для взрослых — зона 48 с замком 24.
+ * сам, цена — потеря прогресса, о ней говорит подпись) и стоит сразу под заголовком, выше карточки «+»
+ * (`childActionFirst`); вход для взрослых — зона 48 с замком 24. Карточка «+» открывает PIN только вторым
+ * тапом в течение `adultSecondTapMs`: первый — голос «Позови взрослого» и покачивание замка (UX этапа D).
  */
-export const firstRun = { noSavePrimary: true, adultEntryHit: 48, adultIcon: 24 } as const;
+export const firstRun = {
+  noSavePrimary: true,
+  adultEntryHit: 48,
+  adultIcon: 24,
+  childActionFirst: true,
+  adultCardLabelKey: 'firstRun.adultOnly',
+  adultSecondTapMs: 3000,
+} as const;
 
 /**
- * Бюджет высоты первого запуска без прокрутки (docs/design/slice-screens-2026-10-24.md §1):
- * отступ 16 · Tali 120 · 16 · заголовок 72 · 24 · карточка 160 · свободное ≥ 24 · кнопка 88 · 8 ·
- * подпись 20 · 24 · вход 48 · низ max(safeBottom, 16).
+ * Бюджет высоты первого запуска без прокрутки (docs/design/atlas-firstrun-2026-10-31.md D3):
+ * отступ 16 · Tali 120 · 16 · заголовок 72 · 24 · кнопка 88 · 8 · подпись 20 · 24 · карточка «+» 120 ·
+ * свободное ≥ 24 · вход 48 · низ max(safeBottom, 16) = 616 на SE (было 656 с карточкой 160).
  */
 export function firstRunHeight(safeTop: number, safeBottom = 0): number {
   const caption = typography.caption.lineHeight;
   const title = typography.title.lineHeight * TITLE_MAX_LINES;
   return (
-    safeTop + spacing.lg + taliSize.hero + spacing.lg + title + spacing.xl + profileCard.size + spacing.xl +
-    touch.primary + spacing.sm + caption + spacing.xl + firstRun.adultEntryHit + Math.max(safeBottom, spacing.lg)
+    safeTop + spacing.lg + taliSize.hero + spacing.lg + title + spacing.xl + touch.primary + spacing.sm + caption +
+    spacing.xl + profileCard.addSize + spacing.xl + firstRun.adultEntryHit + Math.max(safeBottom, spacing.lg)
   );
 }
 
@@ -1206,23 +1228,34 @@ export function firstRunHeight(safeTop: number, safeBottom = 0): number {
 export const basketArt = { fill: '#FFE6C7', outline: '#2A1A12', stroke: 'base', padInStimulus: 16 } as const;
 
 /**
- * Страница атласа 5–6 (§4): рамка находки 120, вывод с резервом 3 строк `body`, плашка отметок 56 с печатью
- * 40, лента будущих страниц — слоты 60 (≥ `touch.min`), 6 штук (calm 3); печать появляется со звуком «штамп».
+ * Страница атласа 5–6 (§4; этап D, docs/design/atlas-firstrun-2026-10-31.md D1): рамка находки 120 со стимулом
+ * первого задания навыка урока (кучка с метками «сосчитано» или карточка-цифра; при `count ≥ 6` — цифра),
+ * вывод с резервом 3 строк `body`, плашка 64 с печатью 48 цветом `regionsInk` региона; лента будущих
+ * страниц — 3 слота 60 (≥ `touch.min`) в любом режиме и пунктирный хвост тропы до края. Печать ложится
+ * после голосовой фразы: длительность неизвестна (№158, озвучка — этап 13), поэтому через `stampAfterMs`,
+ * не позже `stampMaxWaitMs`; появление — сжатие 1.4 → 1 за `motion.base`, в calm / reduce motion — сразу.
  */
 export const atlasPage = {
-  plate: 56,
-  stamp: 40,
+  plate: 64,
+  stamp: 48,
   findingFrame: 120,
   findingLines: 3,
   futureSlot: 60,
-  futureSlots: 6,
-  futureSlotsCalm: 3,
+  futureSlots: 3,
+  /** Хвост тропы за слотами: линия 2 pt пунктиром `textMuted` (UX: не 3 — не цель); остаток ряда — плоская зона с голосом `atlas.pageAhead`. */
+  futureTrail: { stroke: 2, color: 'textMuted', dash: 8, gap: 6, pressable: true },
   stampSound: true,
+  stampAfterMs: 1400,
+  stampMaxWaitMs: 3000,
+  stampEnter: { from: 1.4, to: 1, calm: 'instant' },
+  taliAfterStamp: 'cheer',
+  /** Чем заполнить рамку: стимул первого задания навыка; стимульный размер, если входит, иначе плиточный. */
+  finding: { source: 'first_task_of_skill', fit: ['stimulus', 'tile'], fallback: 'regionIcon', fallbackSize: 64, numeralFrom: 6 },
 } as const;
 
 /**
- * Бюджет высоты страницы атласа без прокрутки (§4): 16 · ряд Tali 88 · 16 · карточка · 16 · слоты 60 · 16 ·
- * «К карте» 88 · низ. Карточка: 16 + рамка 120 + 12 + вывод 3 × 26 + 12 + плашка 56 + 16 = 310.
+ * Бюджет высоты страницы атласа без прокрутки (D1): 16 · ряд Tali 88 · 16 · карточка · 16 · слоты 60 · 16 ·
+ * «К карте» 88 · низ. Карточка: 16 + рамка 120 + 12 + вывод 3 × 26 + 12 + плашка 64 + 16 = 318. На SE — 654.
  */
 export function atlasPageHeight(safeTop: number, safeBottom = 0): number {
   const card =
@@ -1233,6 +1266,25 @@ export function atlasPageHeight(safeTop: number, safeBottom = 0): number {
     touch.primary + Math.max(safeBottom, spacing.lg)
   );
 }
+
+/**
+ * Коллекция атласа (этап D, вопрос 60; D2): полоса 64 с «К карте» 60 слева, сетка в два столбца (focus — один),
+ * карточка 164×216: рамка 96 с плиточным примитивом (кучка ≤ 5 — `Pile tile`, иначе карточка-цифра), название
+ * урока `label` ≤ 2 строк, плашка 32 с печатью 24 — статичной. Одна пунктирная карточка «?» после последней.
+ */
+export const atlasGrid = {
+  columns: 2,
+  columnsFocus: 1,
+  card: { w: 164, h: 216 },
+  frame: 96,
+  titleLines: 2,
+  plate: 32,
+  stamp: 24,
+  gap: 16,
+  futureCards: 1,
+  emptyTali: 'idle',
+  backButton: { side: 'left', icon: 'map', size: 60 },
+} as const;
 
 /**
  * Узлы карты на 5–6 в любом режиме (UX, п. 7): рисуются «повторение», пройденные, доступный и `visibleAhead`

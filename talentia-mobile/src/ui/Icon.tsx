@@ -12,11 +12,13 @@ export type IconProps = {
   name: IconName;
   size?: number;
   color: ColorName;
+  /** Цвет глифа строкой — для палитр регионов (`regionsInk`), которых нет среди `ColorName`; перекрывает `color`. */
+  tint?: string;
   testID?: string;
 };
 
-export function Icon({ name, size = iconSize.size, color, testID }: IconProps) {
+export function Icon({ name, size = iconSize.size, color, tint, testID }: IconProps) {
   const theme = useDesign();
   const Svg = ICONS[name];
-  return <Svg width={size} height={size} color={theme.colors[color]} stroke={theme.colors.outline} testID={testID} />;
+  return <Svg width={size} height={size} color={tint ?? theme.colors[color]} stroke={theme.colors.outline} testID={testID} />;
 }

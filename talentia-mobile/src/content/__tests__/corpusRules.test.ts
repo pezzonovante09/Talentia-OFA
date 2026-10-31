@@ -2170,3 +2170,70 @@ describe('карточка-число (решение №81)', () => {
     expectRed('countConsistency', c, 'у стимула 3, у верного 2');
   });
 });
+
+/* ------------------------------------------------------------------------ */
+/* Шаг «Tali ошибся» в примере (TALI.md; разбор 2026-10-31, вопрос 70)      */
+/* ------------------------------------------------------------------------ */
+
+describe('гард корпуса: шаг «Tali ошибся» (mistake)', () => {
+  /**
+   * Тема 5-6 получает третий урок с примером: шаг 1 — Tali ошибается (раскрывает неверный `a`),
+   * шаг 2 раскрывает верный `c`. Остальное как в первом уроке — правило `model` смотрит только на пример.
+   */
+  function withThirdLesson(): { c: Corpus; third: Lesson } {
+    const c = goodCorpus();
+    const third: Lesson = { ...lessonPicture(), id: 'fx-a-l3' };
+    third.model = { ...third.model!, steps: [{ lineKey: k('a.l1.m.s1'), reveal: 'a', mistake: true }, { lineKey: k('a.l1.m.s2'), reveal: 'c' }] };
+    c[0].topic.lessons.push(third);
+    return { c, third };
+  }
+
+  it('корректный mistake в третьем уроке темы — молчит', () => {
+    const { c } = withThirdLesson();
+    expect(run('model', c)).toEqual([]);
+  });
+
+  it('два шага mistake — красно', () => {
+    const { c, third } = withThirdLesson();
+    third.model!.steps = [{ lineKey: k('a.l1.m.s1'), reveal: 'a', mistake: true }, { lineKey: k('a.l1.m.s2'), reveal: 'b', mistake: true }];
+    expectRed('model', c, 'fx-a-l3/model: шагов «Tali ошибся» 2, не больше одного');
+  });
+
+  it('mistake не в третьем уроке темы — красно', () => {
+    const c = goodCorpus();
+    modelAt(c, 0).steps[0] = { lineKey: k('a.l1.m.s1'), reveal: 'a', mistake: true };
+    expectRed('model', c, 'fx-a-l1/model: шаг «Tali ошибся» — только в третьем уроке темы');
+  });
+
+  it('mistake с reveal верного варианта — красно', () => {
+    const { c, third } = withThirdLesson();
+    third.model!.steps[0].reveal = 'c';
+    expectRed('model', c, 'fx-a-l3/model: шаг 1 «Tali ошибся» должен раскрывать неверный вариант');
+  });
+
+  it("mistake с reveal 'stimulus' — красно", () => {
+    const { c, third } = withThirdLesson();
+    third.model!.steps[0].reveal = 'stimulus';
+    expectRed('model', c, 'fx-a-l3/model: шаг 1 «Tali ошибся» должен раскрывать неверный вариант');
+  });
+
+  it('mistake без reveal — красно', () => {
+    const { c, third } = withThirdLesson();
+    delete third.model!.steps[0].reveal;
+    expectRed('model', c, 'fx-a-l3/model: шаг 1 «Tali ошибся» должен раскрывать неверный вариант');
+  });
+
+  it('mistake последним шагом — красно: следующий шаг должен раскрыть верный', () => {
+    const { c, third } = withThirdLesson();
+    third.model!.steps = [{ lineKey: k('a.l1.m.s1'), reveal: 'stimulus' }, { lineKey: k('a.l1.m.s2'), reveal: 'a', mistake: true }];
+    expectRed('model', c, 'fx-a-l3/model: шаг 2 «Tali ошибся» не может быть последним');
+  });
+
+  it('mistake не в примере choose — красно', () => {
+    const { c, third } = withThirdLesson();
+    const order = c[0].topic.lessons[1].tasks.find((t) => t.format === 'order')!;
+    const { id: _id, skill: _skill, hintKey: _hint, ...example } = order;
+    third.model = { skill: 'count-to-3', example: example as unknown as NonNullable<Lesson['model']>['example'], steps: [{ lineKey: k('a.l1.m.s1'), mistake: true }, { lineKey: k('a.l1.m.s2') }] };
+    expectRed('model', c, 'fx-a-l3/model: шаг 1 «Tali ошибся» — пока только в примере choose');
+  });
+});

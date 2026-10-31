@@ -5,6 +5,7 @@
  */
 import { contrast, SHAPE_CONTRAST, TEXT_CONTRAST } from '../contrast';
 import {
+  atlasGrid,
   atlasPage,
   atlasPageHeight,
   badge,
@@ -68,8 +69,8 @@ describe('каркас урока (lessonLayout)', () => {
 });
 
 describe('первый запуск', () => {
-  it('входит в SE без прокрутки: 656 ≤ 667 (было 712 до второго цикла UX)', () => {
-    expect(firstRunHeight(SE.safeTop)).toBe(656);
+  it('входит в SE без прокрутки: 616 ≤ 667 (было 656; карточка «+» 120 ниже кнопки ребёнка)', () => {
+    expect(firstRunHeight(SE.safeTop)).toBe(616);
     expect(firstRunHeight(SE.safeTop)).toBeLessThanOrEqual(SE.height);
   });
 
@@ -79,6 +80,16 @@ describe('первый запуск', () => {
     expect(firstRun.adultEntryHit).toBeGreaterThanOrEqual(44);
     expect(firstRun.adultEntryHit).toBeLessThan(touch.min);
     expect(firstRun.adultIcon).toBe(icon.badge);
+    expect(firstRun.childActionFirst).toBe(true);
+    expect(firstRun.adultSecondTapMs).toBeGreaterThanOrEqual(2000);
+  });
+
+  it('карточка «+» 120 — меньше детской 160, с замком 24 в углу; оба размера ≥ touch.min', () => {
+    expect(profileCard.addSize).toBeLessThan(profileCard.size);
+    expect(profileCard.addSize).toBeGreaterThanOrEqual(touch.min);
+    expect(profileCard.addBadge).toBe(icon.badge);
+    expect(profileCard.addBadgeInset + profileCard.addBadge).toBeLessThan(profileCard.addSize / 2);
+    expect(profileCard.addRowAlign).toBe('bottom');
   });
 
   it('карточка профиля 160 с аватаром 88 и местом под имя входит в W с зазором; Tali hero 120 — не крупнее карточки', () => {
@@ -106,18 +117,33 @@ describe('карта', () => {
 });
 
 describe('страница атласа', () => {
-  it('входит в SE без прокрутки: 646 ≤ 667 (было 706)', () => {
-    expect(atlasPageHeight(SE.safeTop)).toBe(646);
+  it('входит в SE без прокрутки: 654 ≤ 667 (было 646; плашка 64 и печать 48)', () => {
+    expect(atlasPageHeight(SE.safeTop)).toBe(654);
     expect(atlasPageHeight(SE.safeTop)).toBeLessThanOrEqual(SE.height);
   });
 
-  it('слоты ленты ≥ touch.min и не равны узлу карты; шесть слотов с зазорами шире W (лента обрезается краем)', () => {
+  it('слоты ленты ≥ touch.min и не равны узлу карты; 3 слота 212 < W, хвост ≥ touch.min — живая зона до края', () => {
     expect(atlasPage.futureSlot).toBeGreaterThanOrEqual(touch.min);
     expect(atlasPage.futureSlot).not.toBe(mapLayout.node);
-    expect(atlasPage.futureSlots * atlasPage.futureSlot + (atlasPage.futureSlots - 1) * touch.gap).toBeGreaterThan(W);
-    expect(atlasPage.futureSlotsCalm).toBeLessThan(atlasPage.futureSlots);
+    expect(atlasPage.futureSlots).toBe(3);
+    const slotsWidth = atlasPage.futureSlots * atlasPage.futureSlot + (atlasPage.futureSlots - 1) * touch.gap;
+    expect(slotsWidth).toBe(212);
+    expect(slotsWidth).toBeLessThan(W);
+    expect(W - slotsWidth - touch.gap).toBeGreaterThanOrEqual(touch.min);
     expect(atlasPage.stamp).toBeLessThan(atlasPage.plate);
     expect(atlasPage.stampSound).toBe(true);
+    expect(atlasPage.stampAfterMs).toBe(lessonTiming.modelStepMin);
+    expect(atlasPage.stampMaxWaitMs).toBeGreaterThan(atlasPage.stampAfterMs);
+  });
+
+  it('коллекция: два столбца 164 с зазором 16 входят в экран SE; карточка ≥ touch.min; состав карточки = 216', () => {
+    expect(atlasGrid.columns * atlasGrid.card.w + (atlasGrid.columns - 1) * atlasGrid.gap).toBeLessThanOrEqual(SE.width - 2 * 16 + 2);
+    expect(atlasGrid.card.w).toBeGreaterThanOrEqual(touch.min);
+    expect(12 + atlasGrid.frame + 8 + typography.label.lineHeight * atlasGrid.titleLines + 8 + atlasGrid.plate + 12).toBe(atlasGrid.card.h);
+    expect(atlasGrid.stamp).toBe(icon.badge);
+    expect(atlasGrid.gap).toBe(touch.gap);
+    expect(atlasGrid.futureCards).toBe(1);
+    expect(atlasGrid.columnsFocus).toBe(1);
   });
 
   it('вывод находки: резерв 3 строк body = 78', () => {

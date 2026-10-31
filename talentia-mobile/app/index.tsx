@@ -6,11 +6,15 @@
  * ребёнка, №130). С аккаунтом на устройстве (этап 10) — карточки детей и «+ Добавить»; кнопки без записи
  * нет вовсе (PARENT.md п. 5): состав меняется, стиль — нет. Тап по карточке читает прогресс ребёнка через
  * порт и открывает сеанс с записью; при устаревшем тексте согласия сначала — повторное согласие.
- * Полоса в режиме без записи — `5-6`, меняет только взрослый (№142). Бюджет высоты на SE — 656
+ * Полоса в режиме без записи — `5-6`, меняет только взрослый (№142). Бюджет высоты на SE — 616
  * (`firstRunHeight`), экран не прокручивается. В focus Tali убран, состав остальной тот же.
+ *
+ * Порядок (docs/design/atlas-firstrun-2026-10-31.md D3): Tali → заголовок → «Попробовать без сохранения» →
+ * подпись → карточки (дети 160, «+» 120 последним, по нижнему краю) → «Для взрослых». «+» открывает PIN только
+ * вторым тапом в `firstRun.adultSecondTapMs`: первый — голос «Позови взрослого» и покачивание замка.
  */
 import { useRouter } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
@@ -52,6 +56,21 @@ export default function FirstRunScreen() {
     router.push(href);
   };
 
+  // «+»: первый тап — голос «Позови взрослого» и покачивание замка; PIN — вторым тапом в `adultSecondTapMs` (UX этапа D).
+  const adultTapAt = useRef(0);
+  const [nudgeKey, setNudgeKey] = useState(0);
+  const tapAdd = () => {
+    const now = Date.now();
+    if (now - adultTapAt.current < firstRun.adultSecondTapMs) {
+      adultTapAt.current = 0;
+      router.push(hasAccount ? '/parent/profile/new' : '/parent');
+      return;
+    }
+    adultTapAt.current = now;
+    voice.say('firstRun.callAdult');
+    setNudgeKey((k) => k + 1);
+  };
+
   const tryWithoutSaving = () => {
     startNoRecordSession({ childId: uuidV4(randomBytes), now: new Date(), interfaceLang: i18n.language as InterfaceLang });
     router.replace('/map');
@@ -80,7 +99,7 @@ export default function FirstRunScreen() {
         const name = p.name || t('profile.unnamed', { n: i + 1 });
         return <ProfileCard key={p.childId} kind="profile" name={name} mark={p.name ? undefined : String(i + 1)} onPress={() => void openProfile(p)} accessibilityLabel={name} testID={`profile-${i + 1}`} />;
       })}
-      <ProfileCard kind="add" onPress={() => openAdult('firstRun.callAdult', hasAccount ? '/parent/profile/new' : '/parent')} accessibilityLabel={t('a11y.addProfile')} />
+      <ProfileCard kind="add" nudgeKey={nudgeKey} onPress={tapAdd} accessibilityLabel={`${t('a11y.addProfile')}. ${t('firstRun.adultOnly')}`} />
     </>
   );
 
@@ -99,16 +118,7 @@ export default function FirstRunScreen() {
         </AppText>
       </View>
       <View style={{ height: theme.spacing.xl }} />
-      {profiles.length > 1 ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: cardGap, paddingHorizontal: theme.spacing.lg }} style={{ marginHorizontal: -theme.spacing.lg, flexGrow: 0 }} testID="profile-row">
-          {cards}
-        </ScrollView>
-      ) : (
-        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: cardGap }} testID="profile-row">
-          {cards}
-        </View>
-      )}
-      <View style={{ flex: 1, minHeight: theme.spacing.xl }} />
+      {/* Детская кнопка — сразу под заголовком, выше взрослой карточки «+» (`firstRun.childActionFirst`) */}
       {!hasAccount && (
         <>
           <CushionPressable
@@ -136,6 +146,16 @@ export default function FirstRunScreen() {
           <View style={{ height: theme.spacing.xl }} />
         </>
       )}
+      {profiles.length > 1 ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: cardGap, paddingHorizontal: theme.spacing.lg, alignItems: 'flex-end' }} style={{ marginHorizontal: -theme.spacing.lg, flexGrow: 0 }} testID="profile-row">
+          {cards}
+        </ScrollView>
+      ) : (
+        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-end', gap: cardGap }} testID="profile-row">
+          {cards}
+        </View>
+      )}
+      <View style={{ flex: 1, minHeight: theme.spacing.xl }} />
       <CushionPressable
         role="tali"
         width="100%"

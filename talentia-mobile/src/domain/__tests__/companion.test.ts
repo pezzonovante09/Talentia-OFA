@@ -70,3 +70,17 @@ describe('реплики компаньона', () => {
     expect(total).toBeGreaterThanOrEqual(60);
   });
 });
+
+describe('состав ситуаций после разбора 2026-10-31 (вопрос 71, №168)', () => {
+  it('ровно 18 ситуаций', () => {
+    expect(SITUATIONS).toHaveLength(18);
+  });
+
+  it.each(['review-intro', 'probe-intro', 'demo-composite', 'lesson-resume', 'lesson-done-clean', 'lesson-done-hinted', 'lesson-done-helped'])('есть «%s»', (s) => {
+    expect(SITUATIONS).toContain(s);
+  });
+
+  it.each(['lesson-start-first', 'error-first', 'error-second', 'correct-streak-2', 'cannot-answer-offline', 'lesson-done-3', 'lesson-done-2', 'lesson-done-1'])('убрана «%s»', (s) => {
+    expect(SITUATIONS).not.toContain(s);
+  });
+});

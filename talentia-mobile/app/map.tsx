@@ -1,8 +1,9 @@
 /**
  * Карта региона «Числовая долина» (DESIGN_PROMPTS.md 1.2; docs/design/slice-screens-2026-10-24.md §2).
  * Safe area и полоса — цвет региона (focus — `background`), фон по `mapBackdrop`, лента узлов с Tali у
- * доступного урока. «К атласу» в срезе — только отклик (атлас целиком — позже), «ползунки» — гейт родителя
- * (№141) — `router.push('/parent')`. Тап по Tali называет регион и следующий шаг (`mapTaliTap`).
+ * доступного урока. «К атласу» (книга) появляется с первой страницей атласа и ведёт в коллекцию `/atlas` (D2),
+ * «ползунки» — гейт родителя (№141) — `router.push('/parent')`. Тап по Tali называет регион и следующий шаг
+ * (`mapTaliTap`).
  */
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -13,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDesign } from '../src/design';
 import { lessonLayout } from '../src/design/tokens';
 import { voice } from '../src/services/voice';
+import { useChildSession } from '../src/state/childSession';
 import { useMapModel } from '../src/state/mapModel';
 import { MapBackdrop } from '../src/ui/map/MapBackdrop';
 import { MapBand } from '../src/ui/map/MapBand';
@@ -26,6 +28,7 @@ function MapScreenBody() {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const model = useMapModel(new Date());
+  const atlasPages = useChildSession((s) => s.progress.atlas.length);
   const [focusKey, setFocusKey] = useState(0);
   const [reduceMotion, setReduceMotion] = useState(false);
 
@@ -49,8 +52,8 @@ function MapScreenBody() {
       <MapBackdrop region={model.region} width={width} height={height} />
       <View style={{ height: insets.top, backgroundColor: bandColor }} />
       <View style={{ backgroundColor: bandColor }}>
-        {/* «К атласу» вернётся вместе с атласом-коллекцией (вопрос 60): кнопка с вечной голосовой заглушкой — мёртвая цель */}
-        <MapBand title={title} ink={onRegion} onSettings={() => router.push('/parent')} />
+        {/* «К атласу» — когда есть хотя бы одна страница (D2); до первого урока — пустое место той же ширины, не мёртвая цель */}
+        <MapBand title={title} ink={onRegion} onAtlas={atlasPages >= 1 ? () => router.push('/atlas' as Href) : undefined} onSettings={() => router.push('/parent')} />
       </View>
       <MapLane
         model={model}

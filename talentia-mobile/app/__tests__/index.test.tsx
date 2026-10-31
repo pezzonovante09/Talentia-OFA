@@ -12,6 +12,7 @@ import { useAccount } from '../../src/state/account';
 import { useChildSession } from '../../src/state/childSession';
 import { setProgressPort } from '../../src/state/port';
 import { fireEvent, renderWithProviders, screen } from '../../src/test/render';
+import { firstRun } from '../../src/design/tokens';
 
 jest.mock('expo-router', () => {
   const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn() };
@@ -58,13 +59,35 @@ describe('первый запуск', () => {
     expect(mockReplace).toHaveBeenCalledWith('/map');
   });
 
-  it('«+ Добавить» без аккаунта: голос «позови взрослого» и родительский раздел (первая настройка за его слоем)', async () => {
+  it('«+ Добавить» без аккаунта: первый тап — голос «позови взрослого», замок и подпись «Для взрослых»; второй в 3 с — родительский раздел', async () => {
     await renderWithProviders(<FirstRunScreen />);
+    expect(screen.getByTestId('profile-add-lock')).toBeTruthy();
+    expect(screen.getAllByText('Для взрослых')).toHaveLength(2);
     await fireEvent.press(screen.getByTestId('profile-add'));
     expect(voice.last?.key).toBe('firstRun.callAdult');
+    expect(mockPush).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByTestId('profile-add'));
     expect(mockPush).toHaveBeenCalledWith('/parent');
     expect(useChildSession.getState().mode).toBe('none');
     expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('«+ Добавить»: второй тап позже adultSecondTapMs — снова только голос, без перехода', async () => {
+    const now = jest.spyOn(Date, 'now');
+    now.mockReturnValue(1_000_000);
+    await renderWithProviders(<FirstRunScreen />);
+    await fireEvent.press(screen.getByTestId('profile-add'));
+    now.mockReturnValue(1_000_000 + firstRun.adultSecondTapMs + 1);
+    await fireEvent.press(screen.getByTestId('profile-add'));
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(voice.last?.key).toBe('firstRun.callAdult');
+    now.mockRestore();
+  });
+
+  it('порядок: детская кнопка стоит выше ряда карточек (childActionFirst)', async () => {
+    await renderWithProviders(<FirstRunScreen />);
+    const order = screen.getAllByTestId(/^(try-without-saving|profile-row)$/).map((el) => el.props.testID);
+    expect(order).toEqual(['try-without-saving', 'profile-row']);
   });
 
   it('«Для взрослых» тоже ведёт в родительский раздел', async () => {
@@ -82,6 +105,11 @@ describe('первый запуск', () => {
       expect(screen.getByTestId('profile-add')).toBeTruthy();
       expect(screen.queryByTestId('try-without-saving')).toBeNull();
       expect(screen.queryByText('Прогресс не сохранится после закрытия')).toBeNull();
+      // «+» — последним в ряду, после детей
+      const row = screen.getAllByTestId(/^(profile-\d|profile-add)$/).map((el) => el.props.testID);
+      expect(row).toEqual(['profile-1', 'profile-2', 'profile-add']);
+      await fireEvent.press(screen.getByTestId('profile-add'));
+      expect(mockPush).not.toHaveBeenCalled();
       await fireEvent.press(screen.getByTestId('profile-add'));
       expect(mockPush).toHaveBeenCalledWith('/parent/profile/new');
     });

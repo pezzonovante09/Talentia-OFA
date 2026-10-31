@@ -158,3 +158,40 @@ describe('с профилем', () => {
     expect(screen.getByText('5–6')).toBeTruthy();
   });
 });
+
+describe('«Даётся тяжело»: совет по навыку (разбор 2026-10-31, вопрос 57)', () => {
+  it('у трудного навыка строка hard-<skill>-tip — совет из content.skillTips.<skill>, а не общий hardAdvice', async () => {
+    await writeLessonState(db, KID1, 'skills', [{ ...emptySkill('subitize-1-3'), box: 1, attempts: 4, correct: 1 }], hourAgo());
+    await render();
+    await waitFor(() => expect(screen.getByTestId('hard-subitize-1-3')).toBeTruthy());
+    expect(screen.getByTestId('hard-subitize-1-3-tip').props.children).toBe('Дома: покажите 2–3 предмета — сколько, не считая?');
+    expect(screen.queryByText('Дома: посчитайте вместе что-нибудь настоящее — ложки, ступеньки, пуговицы.')).toBeNull();
+  });
+
+  it('у каждого трудного навыка — свой совет', async () => {
+    await writeLessonState(db, KID1, 'skills', [
+      { ...emptySkill('subitize-1-3'), box: 1, attempts: 4, correct: 1 },
+      { ...emptySkill('zero'), box: 1, attempts: 3, correct: 0 },
+    ], hourAgo());
+    await render();
+    await waitFor(() => expect(screen.getByTestId('hard-zero-tip')).toBeTruthy());
+    expect(screen.getByTestId('hard-zero-tip').props.children).toBe('Дома: тарелка пуста — спросите «сколько?». Это ноль.');
+    expect(screen.getByTestId('hard-subitize-1-3-tip').props.children).toBe('Дома: покажите 2–3 предмета — сколько, не считая?');
+  });
+
+  it('безошибочный первый урок (4 из 4 верных, коробка 2) трудностью не считается — блок пуст', async () => {
+    await writeLessonState(db, KID1, 'skills', [{ ...emptySkill('count-to-5'), box: 2, attempts: 4, correct: 4 }], hourAgo());
+    await render();
+    await waitFor(() => expect(screen.getByTestId('hard-empty').props.children).toBe('Сейчас ничего не застряло'));
+    expect(screen.queryByTestId('hard-count-to-5')).toBeNull();
+    // и он же — «в работе»
+    expect(within(screen.getByTestId('card-progress')).getByText('1')).toBeTruthy();
+  });
+
+  it('коробка 2 с пятью попытками и верных меньше половины — в блоке, с советом навыка', async () => {
+    await writeLessonState(db, KID1, 'skills', [{ ...emptySkill('count-to-5'), box: 2, attempts: 5, correct: 2 }], hourAgo());
+    await render();
+    await waitFor(() => expect(screen.getByTestId('hard-count-to-5')).toBeTruthy());
+    expect(screen.getByTestId('hard-count-to-5-tip').props.children).toBe('Дома: считайте вслух до 5 — ступеньки, ложки, пальцы.');
+  });
+});

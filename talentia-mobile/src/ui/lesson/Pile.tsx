@@ -25,12 +25,14 @@ export type PileProps = {
   onTouch?: () => void;
   /** Сброс меток (ошибка) — меняется извне. */
   marksKey?: number;
+  /** Страница атласа: метки «сосчитано» стоят на всех фигурах статично (состояние конца задания), касание их не меняет. */
+  markedAll?: boolean;
   testID?: string;
 };
 
 type Mark = { index: number; at: number };
 
-export function Pile({ media, variant, onTouch, marksKey = 0, testID = 'pile' }: PileProps) {
+export function Pile({ media, variant, onTouch, marksKey = 0, markedAll = false, testID = 'pile' }: PileProps) {
   const theme = useDesign();
   const count = media.count ?? 0;
   const figure = variant === 'stimulus' ? countSizes.figureStimulus : countSizes.tileFigure;
@@ -54,7 +56,7 @@ export function Pile({ media, variant, onTouch, marksKey = 0, testID = 'pile' }:
 
   const touch = (e: GestureResponderEvent) => {
     onTouch?.();
-    if (variant !== 'stimulus' || media.container === 'basket') return;
+    if (variant !== 'stimulus' || media.container === 'basket' || markedAll) return;
     const { locationX, locationY } = e.nativeEvent;
     let best = -1;
     let bestD = Infinity;
@@ -99,7 +101,7 @@ export function Pile({ media, variant, onTouch, marksKey = 0, testID = 'pile' }:
             <CountableShape kind={media.shape!} size={figure} />
           </View>
         ))}
-      {marks.map((m) => {
+      {(markedAll ? placed.points.map((_, index) => ({ index, at: 0 })) : marks).map((m) => {
         const p = placed.points[m.index];
         const fresh = Date.now() - m.at < 300;
         const ring = fresh && marks.length > 0 ? countMark.ring : countMark.ring;

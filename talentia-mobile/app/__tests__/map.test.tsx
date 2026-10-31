@@ -130,9 +130,17 @@ describe('карта региона', () => {
     expect(anchorX(2)).not.toBe(anchorX(1));
     await fireEvent.press(screen.getByTestId('map-tali-press'));
     expect(voice.last).toEqual({ key: 'map.taliRest', params: { region: 'в Числовой долине' } });
-    // «спящий» урок без подушки, «к атласу» по-прежнему только место
+    // «спящий» урок без подушки; страницы в атласе есть — «к атласу» (книга) ведёт в коллекцию (D2)
     expect(screen.getByTestId('map-node-3')).toBeTruthy();
     expect(screen.queryByTestId('map-node-3-cushion')).toBeNull();
+    expect(screen.queryByTestId('map-atlas-slot')).toBeNull();
+    await fireEvent.press(screen.getByTestId('map-atlas'));
+    expect(mockPush).toHaveBeenCalledWith('/atlas');
+  });
+
+  it('до первой страницы атласа «к атласу» — только пустое место той же ширины (не мёртвая цель)', async () => {
+    start();
+    await renderWithProviders(<MapScreen />);
     expect(screen.queryByTestId('map-atlas')).toBeNull();
     expect(screen.getByTestId('map-atlas-slot')).toBeTruthy();
   });

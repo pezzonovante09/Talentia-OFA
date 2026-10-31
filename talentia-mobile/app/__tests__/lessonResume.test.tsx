@@ -10,11 +10,13 @@
 import LessonScreen from '../lesson/[lessonId]';
 import { lessonById, regionLessons } from '../../src/content';
 import { lessonTiming } from '../../src/design/tokens';
+import type { LessonAnswer } from '../../src/domain/lessonSession';
+import { emptySkill } from '../../src/domain/mastery';
 import { voice } from '../../src/services/voice';
 import { useChildSession } from '../../src/state/childSession';
 import { DEMO_DELAY_MS, DEMO_HOLD_MS, LISTEN_STEP_MS, SHOW_AFTER_MS, UNLOCK_AFTER_MS } from '../../src/ui/lesson/useLessonController';
 import { act, fireEvent, renderWithProviders, screen } from '../../src/test/render';
-import type { ChooseTask, MatchTask, OrderTask } from '../../src/types/task';
+import type { ChooseTask, MatchTask, OrderTask, Task } from '../../src/types/task';
 
 let mockLessonId = 'nv-count-l1';
 jest.mock('expo-router', () => {
@@ -316,5 +318,161 @@ describe('подсветка исправленных после показа (�
     await pressAction('lesson-action-checkDisabled');
     expect(voice.last?.key).toBe('lesson.tapCorrectedFirst');
     expect(lit(`left-${p2}-listening`)).toBe(true);
+  });
+});
+
+/* ------------------------------------------------------------------------ */
+/* Связки Tali перед заданием (разбор 2026-10-31, вопрос 71; этап E)          */
+/* ------------------------------------------------------------------------ */
+
+/** Верный ответ на задание в формате домена — чтобы провести урок в сторе до нужного места. */
+function correctAnswer(task: Task): LessonAnswer {
+  switch (task.format) {
+    case 'choose':
+      return { format: 'choose', optionId: correctId(task) };
+    case 'order':
+      return { format: 'order', slots: [...task.items].sort((a, b) => a.position - b.position).map((i) => i.id) };
+    case 'match':
+      return { format: 'match', pairs: task.pairs.map((p) => ({ left: p.id, right: p.id })) };
+    case 'point':
+      return { format: 'point', targetId: task.targets.find((x) => x.correct)!.id };
+    default:
+      throw new Error(`correctAnswer: формат ${task.format} в этих уроках не ждём`);
+  }
+}
+
+/** Задания до индекса `upTo` отвечены верно и закрыты «Дальше»; задание `upTo - 1` остановлено на стадии `next`. */
+function playUntil(upTo: number) {
+  const s = useChildSession.getState();
+  const at = NOW.toISOString();
+  for (let i = 0; i < upTo; i++) {
+    expect(useChildSession.getState().activeLesson!.index).toBe(i);
+    s.dispatch({ type: 'answer', answer: correctAnswer(currentTask()), at });
+    if (i < upTo - 1) s.dispatch({ type: 'next', at });
+  }
+  expect(activeTask().stage).toBe('next');
+}
+
+describe('связки Tali перед заданием (вопрос 71)', () => {
+  let say: jest.SpyInstance;
+  beforeEach(() => {
+    say = jest.spyOn(voice, 'say');
+  });
+  afterEach(() => {
+    say.mockRestore();
+  });
+  const keys = () => say.mock.calls.map((c) => c[0] as string);
+
+  it('повторение из прошлого урока внутри урока: lesson.reviewIntro голосом и в пузыре, вопрос — через LISTEN_STEP_MS * 2', async () => {
+    // урок 1 пройден, его навык виден на уроке 0; к уроку 3 (счётчик 2) зазор 2 ≥ REVIEW_GAP коробки 1 — в срок.
+    // Составные форматы уже встречены: иначе демо `match` перебило бы вопрос повторения.
+    mockLessonId = 'nv-count-l3';
+    const first = lessonById('nv-count-l1')!;
+    const skill = first.tasks[0].skill;
+    const s = useChildSession.getState();
+    useChildSession.setState({
+      progress: {
+        skills: [{ ...emptySkill(skill), lastSeenLesson: 0, lastSeenDay: '2026-10-23', attempts: 4, correct: 4 }],
+        atlas: [{ lessonId: first.id, atlasEntryKey: first.atlasEntryKey, stars: 3, firstLesson: 0 }],
+        lessonCounter: 2,
+        formatsSeen: ['match', 'order', 'group'],
+      },
+    });
+    s.openLesson({ lessonId: 'nv-count-l3', now: NOW, seed: 7, nodeState: 'open' });
+    const queue = useChildSession.getState().activeLesson!.queue;
+    const ri = queue.findIndex((q) => q.review);
+    expect(ri).toBeGreaterThan(0);
+    expect(ri).toBeLessThan(queue.length - 1);
+    const reviewTask = queue[ri].task;
+    expect(reviewTask.skill).toBe(skill);
+    expect(first.tasks.some((t) => t.id === reviewTask.id)).toBe(true);
+
+    const at = NOW.toISOString();
+    s.dispatch({ type: 'hook_done', at });
+    s.dispatch({ type: 'model_done', at });
+    playUntil(ri);
+
+    await renderWithProviders(<LessonScreen />);
+    expect(actionId()).toBe('lesson-action-next');
+    say.mockClear();
+    await pressAction('lesson-action-next');
+    expect(useChildSession.getState().activeLesson!.index).toBe(ri);
+    expect(keys()).toEqual(['lesson.reviewIntro']);
+    expect(screen.getByText('А это помнишь?')).toBeTruthy();
+    expect(screen.getByTestId('lesson-bubble-body')).toBeTruthy();
+    await advance(LISTEN_STEP_MS * 2 - 380);
+    expect(keys()).toEqual(['lesson.reviewIntro', reviewTask.promptKey]);
+  });
+
+  it('обычное задание урока связки не получает: сразу вопрос', async () => {
+    const s = useChildSession.getState();
+    s.openLesson({ lessonId: 'nv-count-l1', now: NOW, seed: 7, nodeState: 'open' });
+    const at = NOW.toISOString();
+    s.dispatch({ type: 'hook_done', at });
+    s.dispatch({ type: 'model_done', at });
+    playUntil(1);
+    expect(useChildSession.getState().activeLesson!.queue[1].review).toBeUndefined();
+
+    await renderWithProviders(<LessonScreen />);
+    say.mockClear();
+    await pressAction('lesson-action-next');
+    expect(keys()[0]).toBe(currentTask().promptKey);
+    expect(keys()).not.toContain('lesson.reviewIntro');
+    expect(keys()).not.toContain('lesson.probeIntro');
+  });
+
+  it('проба переноса: lesson.probeIntro голосом и в пузыре, вопрос — через LISTEN_STEP_MS * 2', async () => {
+    const s = useChildSession.getState();
+    s.openLesson({ lessonId: 'nv-count-l1', now: NOW, seed: 7, nodeState: 'open' });
+    const at = NOW.toISOString();
+    s.dispatch({ type: 'hook_done', at });
+    s.dispatch({ type: 'model_done', at });
+    // две ошибки на первом задании → показ → отклик → «Дальше» ставит пробу через два задания
+    const t1 = currentTask() as ChooseTask;
+    const [w1, w2] = wrongIds(t1);
+    s.dispatch({ type: 'answer', answer: { format: 'choose', optionId: w1 }, at });
+    s.dispatch({ type: 'answer', answer: { format: 'choose', optionId: w2 }, at });
+    expect(activeTask().stage).toBe('active_response');
+    s.dispatch({ type: 'active_response', at });
+    s.dispatch({ type: 'next', at });
+    const queue = useChildSession.getState().activeLesson!.queue;
+    const pi = queue.findIndex((q) => q.transferProbe);
+    expect(pi).toBe(3);
+    expect(queue[pi].task.promptKey).toBe(t1.promptKey);
+    // задания между показом и пробой — верно
+    for (let i = 1; i < pi; i++) {
+      s.dispatch({ type: 'answer', answer: correctAnswer(currentTask()), at });
+      if (i < pi - 1) s.dispatch({ type: 'next', at });
+    }
+    expect(activeTask().stage).toBe('next');
+
+    await renderWithProviders(<LessonScreen />);
+    say.mockClear();
+    await pressAction('lesson-action-next');
+    expect(useChildSession.getState().activeLesson!.index).toBe(pi);
+    expect(keys()).toEqual(['lesson.probeIntro']);
+    expect(screen.getByText('Ещё раз — теперь сам')).toBeTruthy();
+    await advance(LISTEN_STEP_MS * 2 - 380);
+    expect(keys()).toEqual(['lesson.probeIntro', t1.promptKey]);
+  });
+
+  it('возврат в урок на стадии answer: сначала «Продолжим?» (lesson.resume), затем вопрос задания', async () => {
+    const first = await renderWithProviders(<LessonScreen />);
+    await throughIntro();
+    const t = firstTask();
+    expect(activeTask().stage).toBe('answer');
+    await act(async () => first.unmount());
+
+    say.mockClear();
+    await renderWithProviders(<LessonScreen />);
+    expect(keys()).toEqual(['lesson.resume', t.promptKey]);
+    expect(actionId()).toBe('lesson-action-checkDisabled');
+    expect(activeTask().stage).toBe('answer');
+  });
+
+  it('первое открытие урока — без «Продолжим?»', async () => {
+    await renderWithProviders(<LessonScreen />);
+    expect(keys()).not.toContain('lesson.resume');
+    expect(keys()[0]).toBe(lesson.hook.lineKey);
   });
 });
