@@ -217,12 +217,10 @@
           "stimulus": "leaves"
         },
         "t4": {
-          "prompt": "Find each pile's number.",
-          "hint": "How many in the pile? Find that number.",
-          "explain": "Five here, two here, and four here!",
-          "berries": "berries",
-          "stones": "stones",
-          "leaves": "leaves"
+          "prompt": "How many berries? Count each one.",
+          "hint": "Bottom row is shorter. Count it too.",
+          "explain": "The last number is nine. Nine!",
+          "stimulus": "berries"
         }
       },
       "num": {

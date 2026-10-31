@@ -256,10 +256,11 @@ const lessonCountToFive: Lesson = {
  * Точек в вариантах нет: ряд и точки дали бы один силуэт «пять и остаток» (А12). Цифра здесь
  * только подпись, опора — звучащее число: цифры — следующая тема. Варианты соседние, верный по
  * величине: пример — средний (6 из 5/6/7), t1 — меньший (7 из 7/8/9), t3 — больший (10 из
- * 8/9/10). Так правило «бери самое большое» не проходит, разброс держит `answerRank`. Урок
- * заканчивается спиралью на счёт до пяти парами `match` — лёгким
- * успехом перед атласом; `choose` в уроке два (`choosePerLesson`). Больше пяти фигур — только
- * рядом (`row`): разброс до десяти пятилетка не пересчитает (гард `scatter56`).
+ * 8/9/10), t4 — средний (9 из 8/9/10). Так правило «бери самое большое» не проходит, разброс
+ * держит `answerRank`. Спираль на счёт до пяти — t2 (`order`); урок заканчивается своим навыком
+ * на шаг ниже пика (лёгкий успех перед атласом). `choose` в уроке три — исключение №168 для
+ * навыка с кучками больше пяти (`choosePerLesson`). Больше пяти фигур — только рядом (`row`):
+ * разброс до десяти пятилетка не пересчитает (гард `scatter56`).
  */
 const lessonCountToTen: Lesson = {
   id: 'nv-count-l3',
@@ -324,20 +325,18 @@ const lessonCountToTen: Lesson = {
       options: [numeral('a', 8, false), numeral('b', 9, false), numeral('c', 10, true)],
     },
     {
+      // Третий `choose` — по исключению №168 (навык урока с maxCount > 5; вопрос 69). Девять, а не
+      // восемь: нижний ряд на одну короче полного — дистрактор «десять» ловит узнавание по силуэту t3.
+      // Урок кончается своим навыком: строка атласа «досчитали до десяти» — после задания на десятки.
       id: 'nv-count-l3-t4',
-      skill: 'count-to-5',
-      format: 'match',
+      skill: 'count-to-10',
+      format: 'choose',
       presentation: 'picture',
       promptKey: 'content.numbers.l3.t4.prompt',
       hintKey: 'content.numbers.l3.t4.hint',
       explainKey: ['content.numbers.l3.t4.explain'],
-      // Не те же 1/3/5, что в t2 (`order`): иначе два задания урока считают одно и то же.
-      // Нижняя сторона — карточки-числа, как в l2-t4 (`numeralSide`).
-      pairs: [
-        { id: 'p1', left: { labelKey: 'content.numbers.l3.t4.stones', shape: 'stone', count: 5, layout: 'scatter' }, right: numeralSide(5) },
-        { id: 'p2', left: { labelKey: 'content.numbers.l3.t4.leaves', shape: 'leaf', count: 2, layout: 'row' }, right: numeralSide(2) },
-        { id: 'p3', left: { labelKey: 'content.numbers.l3.t4.berries', shape: 'berry', count: 4, layout: 'scatter' }, right: numeralSide(4) },
-      ],
+      stimulus: { labelKey: 'content.numbers.l3.t4.stimulus', shape: 'berry', count: 9, layout: 'row' },
+      options: [numeral('a', 8, false), numeral('b', 9, true), numeral('c', 10, false)],
     },
   ],
 };

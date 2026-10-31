@@ -1466,11 +1466,15 @@ export const RULES = {
     // Аудит 2026-10-06, А13: в пилоте choose было 7 из 12, а корпусной `chooseShare`
     // включается только с 50 заданий — первые уроки по образцу прошли бы, а потом упал бы
     // весь корпус. На урок — не больше половины заданий; пример не оценивается и не в счёт.
-    title: 'choose в уроке — не больше половины заданий (пример не в счёт)',
+    // Исключение (№168, вопрос 69): навык урока с кучками больше пяти (`maxCount > 5`) на 5–6
+    // выражается только `choose` — кучка > 5 помещается лишь в стимул; иначе урок «до десяти»
+    // наполовину про пять. Тогда — на одно задание больше половины.
+    title: 'choose в уроке — не больше половины заданий (пример не в счёт); навык урока с кучками > 5 — на одно больше',
     check: (corpus) =>
       lessonsOf(corpus).flatMap(({ lesson, where }) => {
         const choose = lesson.tasks.filter((t) => t.format === 'choose').length;
-        const max = Math.floor(lesson.tasks.length / 2);
+        const bigPiles = (SKILL_BY_ID.get(lesson.model?.skill ?? '')?.maxCount ?? 0) > 5;
+        const max = Math.floor(lesson.tasks.length / 2) + (bigPiles ? 1 : 0);
         return choose > max ? [`${where}: choose ${choose} из ${lesson.tasks.length}, не больше ${max}`] : [];
       }),
   },

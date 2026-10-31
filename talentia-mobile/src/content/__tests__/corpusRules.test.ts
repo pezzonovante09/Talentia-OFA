@@ -1951,11 +1951,28 @@ describe('гард корпуса: разброс на 5-6', () => {
 });
 
 describe('правила пилота (аудит 2026-10-06, А11–А13)', () => {
-  it('choosePerLesson: третий choose из четырёх — красно', () => {
+  it('choosePerLesson: третий choose из четырёх — красно, когда кучки навыка урока до пяти', () => {
+    const entry = SKILL_BY_ID.get('count-to-3') as SkillEntry & { maxCount?: number };
+    const saved = entry.maxCount;
+    entry.maxCount = 3;
+    try {
+      const c = goodCorpus();
+      const l = lessonAt(c, 0);
+      l.tasks[1] = { ...(l.tasks[0] as ChooseTask), id: 'fx-a-l1-t2' };
+      expectRed('choosePerLesson', c, 'choose 3 из 4, не больше 2');
+    } finally {
+      entry.maxCount = saved;
+    }
+  });
+
+  it('choosePerLesson: навык урока с кучками больше пяти (№168, вопрос 69) — третий choose можно, четвёртый — красно', () => {
+    // в моке реестра у count-to-3 maxCount 10 — кучки больше пяти только в стимуле, значит только choose
     const c = goodCorpus();
     const l = lessonAt(c, 0);
     l.tasks[1] = { ...(l.tasks[0] as ChooseTask), id: 'fx-a-l1-t2' };
-    expectRed('choosePerLesson', c, 'choose 3 из 4, не больше 2');
+    expect(run('choosePerLesson', c)).toEqual([]);
+    l.tasks[2] = { ...(l.tasks[0] as ChooseTask), id: 'fx-a-l1-t3' };
+    expectRed('choosePerLesson', c, 'choose 4 из 4, не больше 3');
   });
 
   it('skillCountCap: фигур больше потолка навыка — красно; у навыка нет потолка — красно', () => {
