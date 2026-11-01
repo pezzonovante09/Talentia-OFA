@@ -1,4 +1,5 @@
 import type { AbaIoaRecord, AbaObserver, AbaSession, AbaTargetState, AbaTrial } from '../../../types/aba';
+import { CURRENT_CONSENT_TEXTS } from '../../../domain/consentTexts';
 import type { AbaSessionResult, AbaSessionState } from '../../../domain/abaSession';
 import { emptySkill } from '../../../domain/mastery';
 import type { LessonRun } from '../../../domain/parentReport';
@@ -15,7 +16,7 @@ import type { SqlDb, SqlValue } from '../sql';
 
 const NOW = '2026-09-30T10:00:00Z';
 /** Текущая версия текста согласия на ABA — из `consentTexts.ts`. */
-const ABA_TEXT = 'ru-draft-1';
+const ABA_TEXT = CURRENT_CONSENT_TEXTS.aba_processing[0];
 
 const abaConsent = (action: 'grant' | 'revoke', over: Partial<ConsentEvent> = {}): ConsentEvent => ({
   id: `aba-${action}-${over.at ?? NOW}`,
@@ -200,7 +201,7 @@ describe('согласие на данные ABA', () => {
 
   it('согласие на другом языке действует: смена языка режим не блокирует', async () => {
     const db = await memoryDb();
-    await appendConsentEvent(db, abaConsent('grant', { textVersion: 'ky-draft-1', at: '2026-09-30T09:00:00Z' }), 'owner');
+    await appendConsentEvent(db, abaConsent('grant', { textVersion: CURRENT_CONSENT_TEXTS.aba_processing.find((v) => v.startsWith('ky-'))!, at: '2026-09-30T09:00:00Z' }), 'owner');
     await recordAbaTrial(db, 'kid', trial('tr-1'), inProgress, NOW);
     expect(await trialsOfTarget(db, 'kid', 't')).toHaveLength(1);
   });

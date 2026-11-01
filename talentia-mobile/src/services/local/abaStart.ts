@@ -116,12 +116,19 @@ export async function loadAbaParentProgress(db: SqlDb, childId: string, targets:
   const states = (await loadChildState(db, childId, 'abaTargets')) ?? {};
   const rows = targets.map((tg) => {
     const s = states[tg.id];
-    return { id: tg.id, status: s ? parentTargetStatus(s) : ('learning' as const), started: s !== undefined };
+    // состояние цели заводится при планировании сессии — «начата» только та, до которой дошли (методист 2026-11-01)
+    return { id: tg.id, status: s ? parentTargetStatus(s) : ('learning' as const), started: s !== undefined && (s.lastSessionIndex >= 0 || s.phase !== 'baseline') };
   });
   const sessions = await sessionsOf(db, childId);
   const lastSession = sessions.at(-1) ?? null;
   const trials = lastSession ? await trialsOfSession(db, childId, lastSession.id) : [];
-  return { targets: sortForParent(rows), last: lastSessionSummary(lastSession, trials) };
+  let last = lastSessionSummary(lastSession, trials);
+  if (!last) {
+    // рабочих сессий не было, но сопряжение шло — родитель должен видеть, что занятие было, без цифр
+    const pairing = await db.all<{ day: string }>('SELECT day FROM aba_pairing_sessions WHERE child_id = ? ORDER BY seq DESC LIMIT 1', [childId]);
+    if (pairing[0]) last = { kind: 'pairing_only', day: pairing[0].day };
+  }
+  return { targets: sortForParent(rows), last };
 }
 
 /** Первая причина, по которой занятие не начать; `null` — можно. */

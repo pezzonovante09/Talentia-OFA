@@ -4,6 +4,7 @@
  * `saveAbaTargets` и `commitAbaSession`. Всё в одной транзакции: отказ — ничего не записано.
  * Окно обмена рутины при итоге сессии — в `liveBoard.test.ts` (там же настоящая сессия).
  */
+import { CURRENT_CONSENT_TEXTS } from '../../../domain/consentTexts';
 import type { AbaIoaRecord, AbaSession, AbaTargetState, AbaTrial } from '../../../types/aba';
 import type { RoutineRunResult, RoutineRunState } from '../../../domain/abaRoutineRun';
 import type { AbaSessionResult } from '../../../domain/abaSession';
@@ -30,7 +31,7 @@ async function dbWithAba(): Promise<SqlDb> {
     scope: 'aba_processing',
     action: 'grant',
     childId: 'kid',
-    textVersion: 'ru-draft-1',
+    textVersion: CURRENT_CONSENT_TEXTS.aba_processing[0],
     confirmedBy: 'biometric',
     actorId: 'parent',
     at: '2026-10-12T09:00:00Z',

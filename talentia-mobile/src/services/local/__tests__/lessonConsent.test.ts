@@ -3,6 +3,7 @@
  * `account_local`», п. 8). Режим без записи — устройство без этого согласия: на диск не пишется
  * ничего.
  */
+import { CURRENT_CONSENT_TEXTS } from '../../../domain/consentTexts';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { AbaTrial } from '../../../types/aba';
@@ -184,7 +185,8 @@ describe('ABA тоже требует account_local', () => {
     scoredBy: 'adult',
     tokens: 1,
   };
-  const aba: ConsentEvent = { ...account(), id: 'aba-g', scope: 'aba_processing', childId: 'kid', confirmedBy: 'biometric' };
+  // версия текста — текущая для ABA (черновик 2, вопрос 67), не версия account_local
+  const aba: ConsentEvent = { ...account(), id: 'aba-g', scope: 'aba_processing', childId: 'kid', confirmedBy: 'biometric', textVersion: CURRENT_CONSENT_TEXTS.aba_processing[0] };
 
   it('согласие на ребёнка без account_local не выдаётся, отзыв — принимается', async () => {
     const db = await memoryDb(undefined, { account: false });

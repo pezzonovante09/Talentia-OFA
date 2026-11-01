@@ -4,6 +4,7 @@
  * по сроку и при стирании, экспорт, и гард «читатели `aba_trials` — только через `EFFECTIVE`».
  * Домен отмены — `domain/__tests__/abaUndo.test.ts`.
  */
+import { CURRENT_CONSENT_TEXTS } from '../../../domain/consentTexts';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { AbaSession } from '../../../types/aba';
@@ -39,7 +40,7 @@ const consent = (action: 'grant' | 'revoke', childId = 'kid', at = '2026-10-12T0
   scope: 'aba_processing',
   action,
   childId,
-  textVersion: 'ru-draft-1',
+  textVersion: CURRENT_CONSENT_TEXTS.aba_processing[0],
   confirmedBy: 'biometric',
   actorId: 'parent',
   at,

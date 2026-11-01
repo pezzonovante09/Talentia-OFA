@@ -6,6 +6,7 @@
  * «как обычно»; `commitRoutineCorrection` — в ходе прогона и после Т1. Настоящие прогоны домена,
  * а не их пересказ руками.
  */
+import { CURRENT_CONSENT_TEXTS } from '../../../domain/consentTexts';
 import type { AbaTargetState } from '../../../types/aba';
 import { finishRoutineRun, interruptRoutineRun, resumeRoutineRun, type RoutineRunResult, type RoutineRunState } from '../../../domain/abaRoutineRun';
 import { beginRoutineUndo, undoRoutineStep } from '../../../domain/abaUndo';
@@ -33,7 +34,7 @@ const grant: ConsentEvent = {
   scope: 'aba_processing',
   action: 'grant',
   childId: 'kid',
-  textVersion: 'ru-draft-1',
+  textVersion: CURRENT_CONSENT_TEXTS.aba_processing[0],
   confirmedBy: 'biometric',
   actorId: 'parent',
   at: NOW,

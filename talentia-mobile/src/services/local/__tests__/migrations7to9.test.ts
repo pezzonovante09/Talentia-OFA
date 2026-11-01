@@ -2,6 +2,7 @@
  * Накат локальных миграций 8 и 9 на базу версии 7 С ДАННЫМИ (раунд 3) и триггер отзыва по журналу
  * выборов подкрепителя (миграция 9) отдельно от остальных причин блокировки.
  */
+import { CURRENT_CONSENT_TEXTS } from '../../../domain/consentTexts';
 import { appendReinforcerChoice, reinforcerHistoryOf } from '../abaLog';
 import type { ConsentEvent } from '../../../domain/consent';
 import { appendConsentEvent, insertConsentEvent } from '../consentLog';
@@ -10,7 +11,7 @@ import type { SqlDb } from '../sql';
 import { asAbaWriter, memoryDb } from './nodeSql';
 
 const NOW = '2026-10-11T10:00:00Z';
-const ABA_TEXT = 'ru-draft-1';
+const ABA_TEXT = CURRENT_CONSENT_TEXTS.aba_processing[0];
 
 const abaConsent = (action: 'grant' | 'revoke', childId = 'kid', at = NOW): ConsentEvent => ({
   id: `aba-${action}-${childId}-${at}`,

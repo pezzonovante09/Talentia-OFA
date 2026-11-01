@@ -218,7 +218,7 @@
         },
         "t4": {
           "prompt": "How many berries? Count each one.",
-          "hint": "Bottom row is shorter. Count it too.",
+          "hint": "Bottom row is shorter. Count it to the end.",
           "explain": "The last number is nine. Nine!",
           "stimulus": "berries"
         }
@@ -381,7 +381,7 @@
     "noTranslation": "Nothing here yet",
     "atlasLater": "The atlas opens after the first lesson",
     "taliTap": "We are {{region}}. Next is this lesson",
-    "taliRest": "We are {{region}}. That is all for today, we go on tomorrow"
+    "taliRest": "We are {{region}}. That’s all for today — more tomorrow!"
   },
   "lesson": {
     "exit": "To the map",
@@ -410,14 +410,14 @@
     "orderMirrored": "From the other end! We start right here",
     "demoMatch": "I take the first one. Find its pair",
     "demoOrder": "I place the first one. Now you",
-    "nowYouTap": "Show me where it is right",
+    "nowYouTap": "Show me the right one",
     "reviewIntro": "Remember this one?",
     "probeIntro": "Once more — on your own now",
     "resume": "Shall we go on?"
   },
   "review": {
     "intro": "Shall we recall what we already know?",
-    "done": "Done reviewing!"
+    "done": "We remembered it all!"
   },
   "atlas": {
     "title": "Atlas",
@@ -612,8 +612,9 @@
         "almost": "almost",
         "mastered": "mastered"
       },
-      "lastSession": "Session {{day}}: {{trials}} trials, {{independent}} on their own",
+      "lastSession": "Session {{day}}: {{trials}} trials, {{independent}} independent",
       "lastSessionNoTrials": "Session {{day}}: no trials",
+      "lastSessionPairing": "Session {{day}}: getting to know the rewards, no trials yet",
       "goalsEmpty": "The first session will show what the child already can do",
       "consentCard": "Consent",
       "consentRow": "Practice data processing",
@@ -627,15 +628,20 @@
       "pauseRow": "Pause the practice",
       "pauseRetention": "If there are no sessions for 12 months, practice progress data is deleted.",
       "specialist": "For a specialist",
-      "exportRow": "File for a specialist",
-      "exportCaption": "The file has tasks, prompts, session results and reward choices, without the name. Copies given to a specialist are not deleted by the app.",
+      "exportRow": "Export for a specialist",
+      "exportCaption": "The file has tasks, prompts, session results and reward choices — without the child's name. You decide who receives the file; what happens to it afterwards is outside the app's control.",
       "exportLater": "The file will come later, with the cloud copy.",
+      "exportLaterValue": "Later",
+      "exportPreparing": "Preparing…",
+      "exportShared": "The file was handed to the app you chose",
+      "exportFailed": "Could not build the file",
+      "exportUpdateConsent": "Update the consent first",
       "revoke": "Revoke and delete practice data",
       "revokeTitle": "Revoke consent?",
       "revokeBody": "All of this child's practice records on the device are deleted: tasks, prompts, tokens and targets. They cannot be restored. Copies given to a specialist are not deleted by the app.",
       "revokeButton": "Revoke and delete",
       "consentTitle": "Consent to practice data",
-      "consentBody": "Draft. To run the step-by-step practice, the app records on this device how sessions go: which tasks, how many prompts were needed, tokens and breaks, which reward the child chose and how quickly, who the session was with and who chose — the child or the adult. These records can show features of the child's development. Nothing goes online. You can revoke consent at any time — the practice records are then deleted. Final text follows legal review.",
+      "consentBody": "Draft. To run the step-by-step practice, the app records on this device how sessions go: which tasks, how many prompts were needed, tokens and breaks, which reward the child chose and how quickly, who the session was with and who chose — the child or the adult. These records can show features of the child's development. Nothing goes online. You can export the records as a file and pass them to a specialist yourself — copies given to a specialist are not deleted by the app. You can revoke consent at any time — the practice records are then deleted. Final text follows legal review.",
       "localOnly": "Only on this device",
       "agree": "I agree",
       "notNow": "Not now",

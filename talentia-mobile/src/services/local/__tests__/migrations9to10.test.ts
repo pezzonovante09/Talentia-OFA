@@ -3,6 +3,7 @@
  * `aba_reinforcer_choices.tokens`, таблица `aba_trial_corrections`, ключ `breakCard` в триггерах
  * согласия и отзыва. Данные версии 9 не теряются, новые охранные триггеры работают.
  */
+import { CURRENT_CONSENT_TEXTS } from '../../../domain/consentTexts';
 import { openRoutineOfferOf, routineRunsOf } from '../abaLog';
 import type { ConsentEvent } from '../../../domain/consent';
 import { insertConsentEvent } from '../consentLog';
@@ -10,7 +11,7 @@ import { MIGRATIONS, migrate } from '../schema';
 import type { SqlDb } from '../sql';
 import { asAbaWriter, memoryDb } from './nodeSql';
 
-const ABA_TEXT = 'ru-draft-1';
+const ABA_TEXT = CURRENT_CONSENT_TEXTS.aba_processing[0];
 
 const revoke = (childId = 'kid'): ConsentEvent => ({
   id: `aba-revoke-${childId}`,

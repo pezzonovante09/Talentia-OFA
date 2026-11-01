@@ -4,6 +4,7 @@
  * `seq`, поля без времени и вариантов), миграция 12 (журнал поправок прогонов и ключ
  * `abaRoutineSettingOpen` за воротами согласия; отзыв при оставшихся данных база не принимает).
  */
+import { CURRENT_CONSENT_TEXTS } from '../../../domain/consentTexts';
 import type { AbaTargetState, AbaTrial } from '../../../types/aba';
 import { finishRoutineRun } from '../../../domain/abaRoutineRun';
 import type { ConsentEvent } from '../../../domain/consent';
@@ -26,7 +27,7 @@ const consent = (action: 'grant' | 'revoke', childId: string, at: string): Conse
   scope: 'aba_processing',
   action,
   childId,
-  textVersion: 'ru-draft-1',
+  textVersion: CURRENT_CONSENT_TEXTS.aba_processing[0],
   confirmedBy: 'biometric',
   actorId: 'parent',
   at,

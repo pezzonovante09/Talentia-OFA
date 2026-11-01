@@ -1,4 +1,5 @@
 /** Идентификаторы ABA (В11): экраны берут UUIDv4, запись отклоняет id со временем. */
+import { CURRENT_CONSENT_TEXTS } from '../../domain/consentTexts';
 import { isUuidV4 } from '../../domain/ids';
 import { newAbaId } from '../abaIds';
 import { appendSession, appendTrial, appendTrialCorrection } from '../local/abaLog';
@@ -13,7 +14,7 @@ async function db() {
   const d = await memoryDb();
   await appendConsentEvent(
     d,
-    { id: 'g', scope: 'aba_processing', action: 'grant', childId: 'kid', textVersion: 'ru-draft-1', confirmedBy: 'biometric', actorId: 'p', at: '2026-10-11T09:00:00Z' },
+    { id: 'g', scope: 'aba_processing', action: 'grant', childId: 'kid', textVersion: CURRENT_CONSENT_TEXTS.aba_processing[0], confirmedBy: 'biometric', actorId: 'p', at: '2026-10-11T09:00:00Z' },
     'owner',
   );
   return d;

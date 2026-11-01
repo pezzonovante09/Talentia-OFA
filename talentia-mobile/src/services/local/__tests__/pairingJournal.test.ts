@@ -9,6 +9,7 @@
  * - день выборов сопряжения у специалиста — локальный день записи при поясе UTC+6 около 02:00;
  * - накат v15 → v16 на базе с данными: триггер отзыва пересоздан со всеми прежними таблицами и ключами.
  */
+import { CURRENT_CONSENT_TEXTS } from '../../../domain/consentTexts';
 import * as fs from 'fs';
 import * as path from 'path';
 import type { AbaPairingSession } from '../../../types/aba';
@@ -36,7 +37,7 @@ import { CLOCK_JUMP_HOLD_DAYS, MIGRATIONS, migrate } from '../schema';
 import type { SqlDb } from '../sql';
 import { asAbaWriter, memoryDb } from './nodeSql';
 
-const ABA_TEXT = 'ru-draft-1';
+const ABA_TEXT = CURRENT_CONSENT_TEXTS.aba_processing[0];
 const DAY = 24 * 60 * 60 * 1000;
 const KID_A = 'kid-a';
 const KID_B = 'kid-b';

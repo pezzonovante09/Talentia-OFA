@@ -3,6 +3,7 @@
  * прогона по доске на момент фиксации, журнал выборов подкрепителя (миграция 9), экспорт.
  * Домен — `domain/__tests__/abaLiveBoard.test.ts`.
  */
+import { CURRENT_CONSENT_TEXTS } from '../../../domain/consentTexts';
 import type { AbaRoutineRun, AbaSession, AbaTargetState } from '../../../types/aba';
 import type { RoutineClaim, RoutineRunResult } from '../../../domain/abaRoutineRun';
 import {
@@ -76,7 +77,7 @@ const abaConsent = (action: 'grant' | 'revoke', over: Partial<ConsentEvent> = {}
   scope: 'aba_processing',
   action,
   childId: 'kid',
-  textVersion: 'ru-draft-1',
+  textVersion: CURRENT_CONSENT_TEXTS.aba_processing[0],
   confirmedBy: 'biometric',
   actorId: 'parent',
   at: NOW,

@@ -1,11 +1,13 @@
 /**
  * Экспорт специалисту (№95, №96) сквозным тестом и граничные случаи раунда 3:
- * - в данных ребёнка нет ни времени суток (`чч:мм`), ни ISO-даты со временем — кроме `exportedAt`;
+ * - в данных ребёнка нет ни времени суток (`чч:мм`), ни ISO-даты со временем; `exportedAt` — только день (вопрос 67);
+ * - в файле нет `childId`, id аккаунта, слова `name` и ни одного uuid, кроме id записей самого файла;
  * - проба без отсчёта (нет записи сессии и нет разбираемого `sdEndedAt`) отдаёт `null` на месте дат,
  *   а не абсолютные миллисекунды эпохи;
  * - `endedAt` раньше `startedAt` — длительность 0, не отрицательная;
  * - `recorded_at` прогона нормализован до `toISOString()`, `routineExchangedSince` сравнивает верно.
  */
+import { CURRENT_CONSENT_TEXTS } from '../../../domain/consentTexts';
 import type { AbaRoutineRun, AbaSession, AbaTargetState, AbaTrial } from '../../../types/aba';
 import type { RoutineRunResult, RoutineRunState } from '../../../domain/abaRoutineRun';
 import type { AbaSessionResult, AbaSessionState } from '../../../domain/abaSession';
@@ -32,7 +34,7 @@ const grant = (childId: string, at: string): ConsentEvent => ({
   scope: 'aba_processing',
   action: 'grant',
   childId,
-  textVersion: 'ru-draft-1',
+  textVersion: CURRENT_CONSENT_TEXTS.aba_processing[0],
   confirmedBy: 'biometric',
   actorId: 'parent',
   at,
@@ -213,11 +215,11 @@ describe('экспорт специалисту: нет времени суто�
     expect(JSON.stringify(child)).not.toMatch(/\d{4}-\d{2}-\d{2}T\d{2}/);
   });
 
-  it('фиксатор: выгрузка непустая — проверяемые разделы на месте и exportedAt остаётся как передан', async () => {
+  it('фиксатор: выгрузка непустая — проверяемые разделы на месте, exportedAt — день без времени (вопрос 67)', async () => {
     const out = await exportForSpecialist(await richDb(), 'kid', '2026-10-12T13:37:00.000Z');
     expect([out.abaTrials.length, out.abaSessions.length, out.abaIoa.length, out.abaRoutineRuns.length, out.abaPairingSessions.length]).toEqual([3, 1, 1, 1, 1]);
     expect((out.abaReinforcerChoices as { source: string }[]).filter((c) => c.source === 'pairing')).toHaveLength(4);
-    expect(out.exportedAt).toBe('2026-10-12T13:37:00.000Z');
+    expect(out.exportedAt).toBe('2026-10-12');
     expect(Object.keys(out.state)).toEqual(expect.arrayContaining(['abaTargets', 'physicalPromptAllowed']));
   });
 
@@ -231,6 +233,56 @@ describe('экспорт специалисту: нет времени суто�
   it('в выгрузке нет uuid наблюдателя', async () => {
     const out = await exportForSpecialist(await richDb(), 'kid', NOW);
     expect(JSON.stringify(out)).not.toContain(OBSERVER);
+  });
+
+  it('во всём JSON, включая exportedAt, нет ISO-даты со временем и шаблона чч:мм', async () => {
+    const out = await exportForSpecialist(await richDb(), 'kid', '2026-10-12T13:37:00.000Z');
+    expect(JSON.stringify(out)).not.toMatch(/\d{4}-\d{2}-\d{2}T\d{2}|\d{2}:\d{2}/);
+  });
+});
+
+describe('экспорт специалисту: без идентификаторов ребёнка и взрослых (вопрос 67, child-privacy-compliance)', () => {
+  const CHILD = '7c1d2e3f-4a5b-4c6d-8e9f-0a1b2c3d4e5f';
+  const ACCOUNT = '9e8d7c6b-5a4f-4e3d-9c2b-1a0f9e8d7c6b';
+  const UUID_ANY = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
+
+  async function childDb() {
+    const db = await memoryDb();
+    await appendConsentEvent(db, { ...grant(CHILD, '2026-10-11T09:00:00Z'), actorId: ACCOUNT }, 'owner');
+    await asAbaWriter(db, CHILD, (tx) => saveChildState(tx, CHILD, 'tokenTraining', TRAINED, NOW));
+    await setAbaObservers(db, CHILD, [{ id: OBSERVER, role: 'parent', trained: false }], NOW);
+    await recordAbaTrial(db, CHILD, { ...baseTrial, sessionId: PAIRING_ID }, snapOf(PAIRING_ID), NOW);
+    await commitAbaSession(db, CHILD, sessionResult({ ...SESSION, id: PAIRING_ID }), NOW);
+    await commitPairingSession(db, CHILD, { ...pairingResult, sessionId: '1b2c3d4e-5f60-4718-8293-a4b5c6d7e8f9' }, NOW, { primaryObserverId: OBSERVER });
+    return db;
+  }
+
+  it('в JSON нет childId и id аккаунта', async () => {
+    const json = JSON.stringify(await exportForSpecialist(await childDb(), CHILD, NOW));
+    expect(json).not.toContain(CHILD);
+    expect(json).not.toContain(ACCOUNT);
+  });
+
+  it('в JSON нет слова name ни в ключах, ни в значениях', async () => {
+    const json = JSON.stringify(await exportForSpecialist(await childDb(), CHILD, NOW));
+    expect(json).not.toMatch(/name/i);
+  });
+
+  it('все uuid в JSON — id записей самого файла (сессий, сопряжений, проб), не ребёнка и не взрослых', async () => {
+    const out = await exportForSpecialist(await childDb(), CHILD, NOW);
+    const own = new Set<string>();
+    for (const rows of [out.abaSessions, out.abaPairingSessions, out.abaTrials, out.abaRoutineRuns, out.abaTrialCorrections]) {
+      for (const r of rows as { id?: string }[]) if (r.id && UUID_ANY.test(r.id)) own.add(r.id.toLowerCase());
+      UUID_ANY.lastIndex = 0;
+    }
+    const found = [...new Set((JSON.stringify(out).match(UUID_ANY) ?? []).map((u) => u.toLowerCase()))];
+    expect(found.length).toBeGreaterThan(0);
+    expect(found.filter((u) => !own.has(u))).toEqual([]);
+  });
+
+  it('exportedAt — день YYYY-MM-DD', async () => {
+    const out = await exportForSpecialist(await childDb(), CHILD, '2026-10-12T13:37:00.000Z');
+    expect(out.exportedAt).toBe('2026-10-12');
   });
 });
 

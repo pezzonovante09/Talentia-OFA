@@ -3,6 +3,7 @@
  * согласии на данные ABA и одной транзакцией; журнал только дописывается; удаление, срок
  * хранения, отзыв и экспорт видят прогоны.
  */
+import { CURRENT_CONSENT_TEXTS } from '../../../domain/consentTexts';
 import type { AbaRoutineRun, AbaSession, AbaTargetState, AbaTrial } from '../../../types/aba';
 import type { RoutineRunResult, RoutineRunState } from '../../../domain/abaRoutineRun';
 import type { AbaSessionResult, AbaSessionState } from '../../../domain/abaSession';
@@ -39,7 +40,7 @@ import { asAbaWriter, memoryDb } from './nodeSql';
 import { resultTail } from './routineResultTail';
 
 const NOW = '2026-10-11T10:00:00Z';
-const ABA_TEXT = 'ru-draft-1';
+const ABA_TEXT = CURRENT_CONSENT_TEXTS.aba_processing[0];
 const PSEUDO = '5f0c2a8e-3b1d-4c6e-9a7f-2d8b1e4c7a90';
 const OBSERVER = 'obs-uuid-7';
 
@@ -626,7 +627,7 @@ describe('экспорт специалисту: сессии, пробы сес
     expect(JSON.stringify(out.abaIoa)).not.toMatch(ISO_DATETIME);
   });
 
-  it('сквозное: во всей выгрузке специалисту нет времени суток вида ЧЧ:ММ (кроме момента самой выгрузки)', async () => {
+  it('сквозное: во всей выгрузке специалисту нет времени суток вида ЧЧ:ММ; exportedAt — день (вопрос 67)', async () => {
     const db = await withSession();
     await commitIoa(db, 'kid', ioaRecord, {}, NOW);
     await recordRoutineStep(db, 'kid', { ...stepTrial('tr-r'), sdEndedAt: '2026-10-11T08:03:40.000Z' }, inProgress, NOW);
@@ -636,7 +637,7 @@ describe('экспорт специалисту: сессии, пробы сес
       await saveChildState(tx, 'kid', 'physicalPromptAllowed', { value: true, setAt: '2026-10-10T06:05:00.000Z', setByRole: 'owner' }, NOW);
     });
     const { exportedAt, ...rest } = await exportForSpecialist(db, 'kid', NOW);
-    expect(exportedAt).toBe(NOW);
+    expect(exportedAt).toBe(NOW.slice(0, 10));
     const json = JSON.stringify(rest);
     expect(json).not.toMatch(/dd:dd/);
     // проверка не пустая: пробы, сессия, IOA, прогон рутины и состояние — на месте

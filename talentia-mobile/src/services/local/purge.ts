@@ -12,6 +12,7 @@ import type { TokenTrainingState } from '../../domain/abaTokenTraining';
 import { withAmendments, type RoutineRunAmendment } from './abaLog';
 import { ABA_DELETED_KEYS, ABA_STATE_KEYS, loadChildState } from './childState';
 import { insertConsentEvent, readConsentLog } from './consentLog';
+import { EXPORT_DIR, type DeviceStore } from './device';
 import { withDbLock } from './lock';
 import { leaksTime } from '../../domain/ids';
 import { CLOCK_JUMP_HOLD_DAYS, RETENTION_MONTHS } from './schema';
@@ -301,14 +302,16 @@ export async function purgeChild(db: SqlDb, childId: string, childPseudonym: str
 
 /**
  * Очистить прогресс — профиль остаётся. Родители просят это чаще удаления. Согласия не
- * трогаются; курсоры синхронизации начинаются заново.
+ * трогаются; курсоры синхронизации начинаются заново. С `device` снимается и каталог файла
+ * экспорта (вопрос 54, m5): файл из него — копия удалённых записей.
  */
-export async function clearChildProgress(db: SqlDb, childId: string): Promise<void> {
+export async function clearChildProgress(db: SqlDb, childId: string, device?: DeviceStore): Promise<void> {
   await withGate(db, childId, async (tx) => {
     for (const t of JOURNALS) await tx.run(`DELETE FROM ${t} WHERE child_id = ?`, [childId]);
     await tx.run('DELETE FROM child_state WHERE child_id = ?', [childId]);
     await tx.run('DELETE FROM sync_cursor WHERE child_id = ?', [childId]);
   });
+  await device?.deleteCacheDir(EXPORT_DIR);
 }
 
 /**
@@ -317,9 +320,11 @@ export async function clearChildProgress(db: SqlDb, childId: string): Promise<vo
  * отзыв без удаления оставил бы данные о здоровье без основания, удаление без отзыва —
  * режим, который снова пишет. Остальное о ребёнке (уроки, навыки, согласия) не трогается.
  * Экспорт — до вызова: после него экспортировать нечего. Отзыв не отклоняется и при сбитых
- * часах (`placeConsentEvent`); отклоняется только чужая роль — отзывает владелец.
+ * часах (`placeConsentEvent`); отклоняется только чужая роль — отзывает владелец. С `device`
+ * после отзыва снимается каталог файла экспорта (вопрос 54, m5): оставшийся там файл — те же
+ * данные о здоровье без основания.
  */
-export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actorRole: GuardianRole): Promise<void> {
+export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actorRole: GuardianRole, device?: DeviceStore): Promise<void> {
   if (revoke.scope !== 'aba_processing' || revoke.action !== 'revoke' || !revoke.childId) {
     throw new Error('Ожидается отзыв согласия на данные ABA для ребёнка');
   }
@@ -345,6 +350,7 @@ export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actor
     }),
   );
   await compactAfterDelete(db);
+  await device?.deleteCacheDir(EXPORT_DIR);
 }
 
 /** Сколько удалит отзыв — для экрана перед отзывом: «будет удалено N сессий». */
@@ -554,6 +560,7 @@ function dayOnly<T>(value: T): T {
 
 /** Экспорт для специалиста центра: только данные ABA, без данных взрослых. */
 export type SpecialistExport = {
+  /** День выгрузки `YYYY-MM-DD`, без времени суток. */
   exportedAt: string;
   /** Пробы рутин и сессий: время — смещения в мс от начала прогона или сессии (№95, №96). */
   abaTrials: unknown[];
@@ -721,7 +728,9 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
       abaPairingSessions,
     ]);
     return {
-      exportedAt,
+      // единственная метка с временем в файле — тоже только день (вопрос 67, `child-privacy-compliance` 2026-11-01):
+      // время выгрузки выдавало бы, когда родитель был у телефона
+      exportedAt: exportedAt.slice(0, 10),
       abaTrials: trialsOut,
       abaSessions: sessionsOut,
       abaIoa: ioaOut,

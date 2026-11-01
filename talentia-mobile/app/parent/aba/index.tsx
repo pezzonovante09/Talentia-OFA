@@ -6,22 +6,26 @@
  *
  * Этап G1 (вопрос 59): режим «Со взрослым · Сам» и «Кто ведёт» выбирает взрослый здесь, а не ребёнок на 2.6;
  * «Начать» пишет наблюдателей и `useAbaRun` до навигации и ведёт сразу в сопряжение или сессию через гейт окна
- * `app/aba/index.tsx`. Этап G2 (вопрос 66): карточка «Цели» — три слова на цель и две цифры за занятие.
+ * `app/aba/index.tsx`. Этап G2 (вопрос 66): карточка «Цели» — три слова на цель и две цифры за занятие. Этап G3
+ * (вопрос 67): «Выгрузить для специалиста» — файл через системный лист (`shareSpecialistExport`), строка в трёх
+ * состояниях; за флагом `ABA_EXPORT_FILE_ENABLED` — «Позже», как раньше.
  */
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { ABA_TARGETS } from '../../../src/content/aba';
-import { parentSpacing } from '../../../src/design/parentTokens';
+import { parentButton, parentSpacing } from '../../../src/design/parentTokens';
 import type { SensitiveAction } from '../../../src/domain/parentGate';
 import { newAbaId } from '../../../src/services/abaIds';
 import { abaBlockOf, abaLocalDay, abaOverview, finishInProgressSession, loadAbaParentProgress, type AbaOverview, type AbaParentProgress } from '../../../src/services/local/abaStart';
 import { loadChildState } from '../../../src/services/local/childState';
 import { confirmAbaPairing, setAbaObservers, setAbaPaused } from '../../../src/services/local/commit';
+import { ABA_EXPORT_FILE_ENABLED, shareSpecialistExport } from '../../../src/services/local/shareSpecialistExport';
 import { useAbaRun } from '../../../src/state/abaRun';
 import { useAccount } from '../../../src/state/account';
+import { device } from '../../../src/state/device';
 import { useGate } from '../../../src/state/gate';
 import { useSelectedProfile } from '../../../src/state/parentView';
 import type { AbaConfig, AbaObserver } from '../../../src/types/aba';
@@ -33,6 +37,11 @@ const CONFIGS: readonly AbaConfig[] = ['with_adult', 'alone'];
 
 /** Слот подсказки под сегментами — резерв всегда (две строки caption), карточка не прыгает. */
 const HINT_SLOT = 40;
+
+/** Подпись «Файл передан…» держится столько и уходит сама: подтверждение, не состояние. */
+const SHARED_CAPTION_MS = 3000;
+
+type ExportState = 'idle' | 'preparing' | 'shared' | 'error' | 'unavailable';
 
 /** День занятия словами отчёта родителя (`app/parent/index.tsx`): сегодня / вчера / N дн. назад. */
 function dayLabel(t: (k: string, o?: Record<string, unknown>) => string, day: string | null): string {
@@ -75,7 +84,9 @@ export default function AbaParentScreen() {
   const [sheet, setSheet] = useState<'row' | 'start' | null>(null);
   const [pending, setPending] = useState<{ action: SensitiveAction; run: () => void } | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
-  const [exportNote, setExportNote] = useState(false);
+  const [exportState, setExportState] = useState<ExportState>('idle');
+  const sharedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => void (sharedTimer.current && clearTimeout(sharedTimer.current)), []);
 
   const childId = profile?.childId ?? null;
   const reload = useCallback(async () => {
@@ -174,6 +185,34 @@ export default function AbaParentScreen() {
     await reload();
   });
 
+  /**
+   * Файл для специалиста (G3): «Готовится…» не короче `guardMs`, чтобы слово не мигнуло; результат листа система не
+   * сообщает — на `'shared'` нейтральная подпись на 3 с, на отмену ничего, лист недоступен — «появится позже».
+   */
+  const exportFile = async () => {
+    if (exportState === 'preparing') return;
+    setExportState('preparing');
+    const started = Date.now();
+    try {
+      const result = await shareSpecialistExport(db, profile.childId, device(), new Date().toISOString());
+      await new Promise((r) => setTimeout(r, Math.max(0, parentButton.guardMs - (Date.now() - started))));
+      if (result === 'shared') {
+        setExportState('shared');
+        if (sharedTimer.current) clearTimeout(sharedTimer.current);
+        sharedTimer.current = setTimeout(() => setExportState((cur) => (cur === 'shared' ? 'idle' : cur)), SHARED_CAPTION_MS);
+      } else if (result === 'no_consent') {
+        // согласие устарело или отозвано между загрузкой экрана и нажатием — к тексту согласия
+        setExportState('idle');
+        router.push('/parent/aba/consent');
+      } else {
+        setExportState(result === 'unavailable' ? 'unavailable' : 'idle');
+      }
+    } catch (e) {
+      if (__DEV__) console.warn('aba-export', e);
+      setExportState('error');
+    }
+  };
+
   const inProgressMode = (() => {
     const s = ov?.inProgress;
     if (!s) return '';
@@ -268,11 +307,13 @@ export default function AbaParentScreen() {
               />
             ))}
             <ParentText role="caption" color="textMuted" style={{ marginTop: parentSpacing.md }} testID="aba-goals-summary">
-              {progress.last
-                ? progress.last.trials === 0
-                  ? t('parent.aba.lastSessionNoTrials', { day: dayLabel(t, progress.last.day) })
-                  : t('parent.aba.lastSession', { day: dayLabel(t, progress.last.day), trials: progress.last.trials, independent: progress.last.independent })
-                : t('parent.aba.goalsEmpty')}
+              {!progress.last
+                ? t('parent.aba.goalsEmpty')
+                : progress.last.kind === 'pairing_only'
+                  ? t('parent.aba.lastSessionPairing', { day: dayLabel(t, progress.last.day) })
+                  : progress.last.trials === 0
+                    ? t('parent.aba.lastSessionNoTrials', { day: dayLabel(t, progress.last.day) })
+                    : t('parent.aba.lastSession', { day: dayLabel(t, progress.last.day), trials: progress.last.trials, independent: progress.last.independent })}
             </ParentText>
           </Card>
         )}
@@ -297,9 +338,28 @@ export default function AbaParentScreen() {
 
         {hasData && (
           <Card title={t('parent.aba.specialist')} testID="aba-specialist">
-            <Row first kind="link" label={t('parent.aba.exportRow')} onPress={() => guarded('aba_export', () => setExportNote(true))} testID="aba-export" />
+            {ov?.consent === 'outdated' ? (
+              // текст согласия обновился (в нём — про выгрузку файлом): сначала прочитать и согласиться, потом выгружать
+              <Row first kind="link" label={t('parent.aba.exportUpdateConsent')} onPress={() => router.push('/parent/aba/consent')} testID="aba-export-update-consent" />
+            ) : !ABA_EXPORT_FILE_ENABLED || exportState === 'unavailable' ? (
+              <Row first kind="value" label={t('parent.aba.exportRow')} value={t('parent.aba.exportLaterValue')} testID="aba-export" valueTestID="aba-export-value" />
+            ) : exportState === 'preparing' ? (
+              <Row first kind="value" label={t('parent.aba.exportRow')} value={t('parent.aba.exportPreparing')} testID="aba-export" valueTestID="aba-export-value" />
+            ) : (
+              <Row first kind="link" label={t('parent.aba.exportRow')} onPress={() => guarded('aba_export', () => void exportFile())} testID="aba-export" />
+            )}
+            {exportState === 'error' && (
+              <ParentText role="caption" color="error" testID="aba-export-error">
+                {t('parent.aba.exportFailed')}
+              </ParentText>
+            )}
+            {exportState === 'shared' && (
+              <ParentText role="caption" color="textMuted" testID="aba-export-shared">
+                {t('parent.aba.exportShared')}
+              </ParentText>
+            )}
             <ParentText role="caption" color="textMuted" testID="aba-export-note">
-              {exportNote ? t('parent.aba.exportLater') : t('parent.aba.exportCaption')}
+              {!ABA_EXPORT_FILE_ENABLED || exportState === 'unavailable' ? t('parent.aba.exportLater') : t('parent.aba.exportCaption')}
             </ParentText>
           </Card>
         )}

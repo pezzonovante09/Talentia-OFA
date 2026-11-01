@@ -451,7 +451,7 @@ describe('связки Tali перед заданием (вопрос 71)', () =
     await pressAction('lesson-action-next');
     expect(useChildSession.getState().activeLesson!.index).toBe(pi);
     expect(keys()).toEqual(['lesson.probeIntro']);
-    expect(screen.getByText('Ещё раз — теперь сам')).toBeTruthy();
+    expect(screen.getByText('Ещё раз — теперь без меня')).toBeTruthy();
     await advance(LISTEN_STEP_MS * 2 - 380);
     expect(keys()).toEqual(['lesson.probeIntro', t1.promptKey]);
   });

@@ -15,7 +15,13 @@ describe('прогресс ABA для родителя (вопрос 66)', () =>
     expect(parentTargetStatus({ phase: 'mastered', sessionsAtCriterion: 0, masteredBy: 'home_unverified' })).toBe('almost');
   });
 
-  it('за занятие: пробы без разогрева, закрывающей и прерванных; самостоятельные отдельно', () => {
+  it('флаги «почти» (методист 2026-11-01): рутина без переноса и критерий без обученного наблюдателя', () => {
+    expect(parentTargetStatus({ phase: 'acquisition', sessionsAtCriterion: 0, flags: ['needs_transfer'] })).toBe('almost');
+    expect(parentTargetStatus({ phase: 'acquisition', sessionsAtCriterion: 0, flags: ['needs_verification'] })).toBe('almost');
+    expect(parentTargetStatus({ phase: 'acquisition', sessionsAtCriterion: 0, flags: ['prompt_dependent'] })).toBe('learning');
+  });
+
+  it('за занятие: пробы без разогрева, закрывающей, коррекционной и прерванных; перенос считается; самостоятельные отдельно', () => {
     const trials = [
       trial('high_p', 'independent'),
       trial('teaching', 'independent'),
@@ -25,9 +31,14 @@ describe('прогресс ABA для родителя (вопрос 66)', () =>
       trial('teaching', 'interrupted'),
       trial('closing', 'independent'),
     ];
-    expect(lastSessionSummary({ day: '2026-11-01', startedAt: '2026-11-01T05:00:00.000Z' }, trials)).toEqual({ trials: 4, independent: 2, day: '2026-11-01' });
-    expect(lastSessionSummary({ startedAt: '2026-10-30T05:00:00.000Z' }, [])).toEqual({ trials: 0, independent: 0, day: '2026-10-30' });
+    expect(lastSessionSummary({ day: '2026-11-01', startedAt: '2026-11-01T05:00:00.000Z' }, trials)).toEqual({ kind: 'session', trials: 3, independent: 2, day: '2026-11-01' });
+    expect(lastSessionSummary({ startedAt: '2026-10-30T05:00:00.000Z' }, [])).toEqual({ kind: 'session', trials: 0, independent: 0, day: '2026-10-30' });
     expect(lastSessionSummary(null, trials)).toBeNull();
+  });
+
+  it('было только сопряжение — отдельное состояние без цифр (форма результата загрузчика)', () => {
+    const last: ReturnType<typeof lastSessionSummary> = { kind: 'pairing_only', day: '2026-11-01' };
+    expect(last.kind === 'pairing_only' && last.day).toBe('2026-11-01');
   });
 
   it('порядок строк: учим, почти, освоено', () => {

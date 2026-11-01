@@ -157,7 +157,7 @@ describe('подтверждение', () => {
     useChildSession.getState().startNoRecordSession({ childId: KID1, now: new Date(), interfaceLang: 'ru' });
     await renderConfirm('clear_progress');
     await confirmWithPin();
-    await waitFor(() => expect(clearChildProgress).toHaveBeenCalledWith(db, KID1));
+    await waitFor(() => expect(clearChildProgress).toHaveBeenCalledWith(db, KID1, expect.anything()));
     await waitFor(() => expect(router.back).toHaveBeenCalled());
     expect(useChildSession.getState().mode).toBe('none');
     expect(deleteChildEverywhere).not.toHaveBeenCalled();
@@ -168,7 +168,7 @@ describe('подтверждение', () => {
     useChildSession.getState().startNoRecordSession({ childId: KID2, now: new Date(), interfaceLang: 'ru' });
     await renderConfirm('clear_progress');
     await confirmWithPin();
-    await waitFor(() => expect(clearChildProgress).toHaveBeenCalledWith(db, KID1));
+    await waitFor(() => expect(clearChildProgress).toHaveBeenCalledWith(db, KID1, expect.anything()));
     expect(useChildSession.getState().childId).toBe(KID2);
   });
 

@@ -1,4 +1,5 @@
 /** Сессия сопряжения (этап 11, Д1): фазы, таймеры, критерий, запись итога. */
+import { CURRENT_CONSENT_TEXTS } from '../consentTexts';
 import type { ConsentEvent } from '../consent';
 import { applyPairingEvent, pairingDueAt, pairingResultOf, PairingError, startPairing, type PairingState } from '../abaPairing';
 import { initialTokenTraining, PAIRING } from '../abaTokenTraining';
@@ -92,7 +93,7 @@ describe('сопряжение: запись', () => {
     scope: 'aba_processing',
     action: 'grant',
     childId: 'kid',
-    textVersion: 'ru-draft-1',
+    textVersion: CURRENT_CONSENT_TEXTS.aba_processing[0],
     confirmedBy: 'biometric',
     actorId: 'parent',
     at: '2026-10-25T09:00:00Z',
@@ -188,7 +189,7 @@ describe('сопряжение: запись', () => {
     expect(choices.every((c) => c.source === 'pairing' && c.boardSize === 1 && c.day === spec[0].day)).toBe(true);
     await revokeAbaProcessing(
       db,
-      { id: 'aba-revoke-kid', scope: 'aba_processing', action: 'revoke', childId: 'kid', textVersion: 'ru-draft-1', confirmedBy: 'pin', actorId: 'parent', at: '2026-10-27T00:00:00Z' },
+      { id: 'aba-revoke-kid', scope: 'aba_processing', action: 'revoke', childId: 'kid', textVersion: CURRENT_CONSENT_TEXTS.aba_processing[0], confirmedBy: 'pin', actorId: 'parent', at: '2026-10-27T00:00:00Z' },
       'owner',
     );
     expect(await db.all('SELECT 1 FROM aba_pairing_sessions WHERE child_id = ?', ['kid'])).toHaveLength(0);

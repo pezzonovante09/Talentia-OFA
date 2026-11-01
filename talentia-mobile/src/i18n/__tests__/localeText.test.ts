@@ -44,8 +44,18 @@ const AUDIENCE: Record<string, Audience> = {
   abaScreen: 'adult',
   abaRoutine: 'adult',
   profile: 'adult',
+  // строки «что делать дома» (вопрос 57) живут под `content` рядом с названиями навыков, но адресованы родителю
+  'content.skillTips': 'adult',
 };
-export const audienceOf = (key: string): Audience | undefined => AUDIENCE[key.split('.')[0]];
+/** Аудитория по самому длинному известному префиксу: `content.skillTips` раньше `content`. */
+export const audienceOf = (key: string): Audience | undefined => {
+  const parts = key.split('.');
+  for (let n = Math.min(2, parts.length); n >= 1; n -= 1) {
+    const a = AUDIENCE[parts.slice(0, n).join('.')];
+    if (a) return a;
+  }
+  return undefined;
+};
 
 const L = String.raw`\p{L}`;
 const word = (alt: string) => new RegExp(`(?<!${L})(?:${alt})(?!${L})`, 'iu');

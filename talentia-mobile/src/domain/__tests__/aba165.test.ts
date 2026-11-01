@@ -3,6 +3,7 @@
  * старт только до L1; «дважды подряд» по классу пары; исход сопряжения `no_choice`; флаг подряд незасчитанных
  * сопряжений; латентность выбора и предложенная тройка в записи сопряжения и у специалиста.
  */
+import { CURRENT_CONSENT_TEXTS } from '../consentTexts';
 import { MATCH_SAME_3 } from '../../content/aba/match-level1';
 import type { ConsentEvent } from '../consent';
 import { applyPairingEvent, pairingResultOf, PairingError, startPairing } from '../abaPairing';
@@ -169,7 +170,7 @@ describe('48: латентность выбора и тройка', () => {
       scope: 'aba_processing',
       action: 'grant',
       childId: 'kid',
-      textVersion: 'ru-draft-1',
+      textVersion: CURRENT_CONSENT_TEXTS.aba_processing[0],
       confirmedBy: 'biometric',
       actorId: 'parent',
       at: '2026-10-25T09:00:00Z',
@@ -195,7 +196,7 @@ describe('48: латентность выбора и тройка', () => {
 
   it('у взрослого латентности нет; выбор ребёнка после 30 с — «после подсказки»', async () => {
     const db = await memoryDb();
-    await appendConsentEvent(db, { id: 'g', scope: 'aba_processing', action: 'grant', childId: 'kid', textVersion: 'ru-draft-1', confirmedBy: 'biometric', actorId: 'parent', at: '2026-10-25T09:00:00Z' }, 'owner');
+    await appendConsentEvent(db, { id: 'g', scope: 'aba_processing', action: 'grant', childId: 'kid', textVersion: CURRENT_CONSENT_TEXTS.aba_processing[0], confirmedBy: 'biometric', actorId: 'parent', at: '2026-10-25T09:00:00Z' }, 'owner');
     let s = start('with_adult');
     s = applyPairingEvent(s, { type: 'choose', reinforcerId: s.options[0], by: 'adult', now: T0 + 31_300, tappedAt: T0 + 30_500 });
     s = applyPairingEvent(s, { type: 'token', now: T0 + 41_300 });
@@ -217,7 +218,7 @@ describe('№166 (53): запись сопряжения — «никто не �
     scope: 'aba_processing',
     action: 'grant',
     childId: 'kid',
-    textVersion: 'ru-draft-1',
+    textVersion: CURRENT_CONSENT_TEXTS.aba_processing[0],
     confirmedBy: 'biometric',
     actorId: 'parent',
     at: '2026-10-25T09:00:00Z',

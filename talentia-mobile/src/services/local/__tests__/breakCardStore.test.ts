@@ -3,6 +3,7 @@
  * из событий сессии, `loadBreakCardPlan` читает, экспорт специалисту без uuid наблюдателя и устройства,
  * согласие, отзыв и стирание. Домен — `domain/__tests__/abaBreakCard.test.ts`.
  */
+import { CURRENT_CONSENT_TEXTS } from '../../../domain/consentTexts';
 import { initialBreakCard } from '../../../domain/abaBreakCard';
 import {
   finishAbaSession,
@@ -33,7 +34,7 @@ const consent = (action: 'grant' | 'revoke', childId = 'kid', at = '2026-10-12T0
   scope: 'aba_processing',
   action,
   childId,
-  textVersion: 'ru-draft-1',
+  textVersion: CURRENT_CONSENT_TEXTS.aba_processing[0],
   confirmedBy: 'biometric',
   actorId: 'parent',
   at,

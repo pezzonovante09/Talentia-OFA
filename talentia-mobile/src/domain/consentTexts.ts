@@ -15,12 +15,18 @@
 import type { ConsentScope } from './consent';
 
 const DRAFT = ['ru-draft-1', 'en-draft-1', 'ky-draft-1'] as const;
+/**
+ * `aba_processing`, черновик 2 (№168, вопрос 67, 2026-11-01): добавлена выгрузка записей файлом по решению
+ * родителя. Согласия на черновик 1 — `outdated`: родителя спрашивают заново перед занятием. Кыргызский текст
+ * — долг носителя (№108), версия поднята вместе с ru/en, чтобы смена языка не возвращала старый черновик.
+ */
+const ABA_DRAFT_2 = ['ru-draft-2', 'en-draft-2', 'ky-draft-2'] as const;
 
 export const CURRENT_CONSENT_TEXTS: Record<ConsentScope, readonly string[]> = {
   account_local: DRAFT,
   cloud_sync: DRAFT,
   companion_ai: DRAFT,
   voice_asr: DRAFT,
-  aba_processing: DRAFT,
+  aba_processing: ABA_DRAFT_2,
   telemetry: DRAFT,
 };

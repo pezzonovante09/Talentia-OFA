@@ -9,26 +9,28 @@ const expoConfig = require('eslint-config-expo/flat');
  * `.claude/audit-gate.json` со `scope: "data"`. Список — по проверке `child-privacy-compliance`.
  */
 const OFFLINE = 'Ворота «данные» (№121): прототип не выходит в сеть — только после раунда «данные».';
+/** Запрещённые импорты ворот; `except` — имена пакетов, снятые для одного файла ниже. */
+const restrictedImports = (except = []) => [
+  'error',
+  {
+    paths: [
+      { name: '@supabase/supabase-js', message: OFFLINE },
+      { name: 'expo/fetch', message: OFFLINE },
+      { name: 'expo-linking', message: OFFLINE },
+      { name: 'expo-sharing', message: `${OFFLINE} «Поделиться» выносит данные ребёнка из приложения.` },
+      { name: 'expo-updates', message: OFFLINE },
+      { name: 'expo-web-browser', message: OFFLINE },
+      { name: 'expo-notifications', message: OFFLINE },
+      { name: 'react-native-webview', message: OFFLINE },
+      { name: 'react-native', importNames: ['Linking'], message: OFFLINE },
+      // картинка по адресу (ментор П2): ассеты — из бандла
+      { name: 'react-native-svg', importNames: ['SvgUri', 'SvgCssUri', 'SvgFromUri'], message: OFFLINE },
+    ].filter((p) => !except.includes(p.name)),
+    patterns: [{ group: ['@supabase/*'], message: OFFLINE }],
+  },
+];
 const offlineRules = {
-  'no-restricted-imports': [
-    'error',
-    {
-      paths: [
-        { name: '@supabase/supabase-js', message: OFFLINE },
-        { name: 'expo/fetch', message: OFFLINE },
-        { name: 'expo-linking', message: OFFLINE },
-        { name: 'expo-sharing', message: `${OFFLINE} «Поделиться» выносит данные ребёнка из приложения.` },
-        { name: 'expo-updates', message: OFFLINE },
-        { name: 'expo-web-browser', message: OFFLINE },
-        { name: 'expo-notifications', message: OFFLINE },
-        { name: 'react-native-webview', message: OFFLINE },
-        { name: 'react-native', importNames: ['Linking'], message: OFFLINE },
-        // картинка по адресу (ментор П2): ассеты — из бандла
-        { name: 'react-native-svg', importNames: ['SvgUri', 'SvgCssUri', 'SvgFromUri'], message: OFFLINE },
-      ],
-      patterns: [{ group: ['@supabase/*'], message: OFFLINE }],
-    },
-  ],
+  'no-restricted-imports': restrictedImports(),
   'no-restricted-globals': [
     'error',
     ...['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource'].map((name) => ({ name, message: OFFLINE })),
@@ -65,6 +67,13 @@ module.exports = defineConfig([
     // `eslint-disable` в коде не снимает ворота
     linterOptions: { noInlineConfig: true, reportUnusedDisableDirectives: 'error' },
     rules: offlineRules,
+  },
+  {
+    // №168, вопрос 67, проверка child-privacy-compliance 2026-11-01: share-sheet — не сеть, файл уходит по выбору
+    // родителя. Снят только `expo-sharing` и только здесь; остальные `offlineRules` действуют.
+    files: ['src/services/local/shareSpecialistExport.ts'],
+    linterOptions: { noInlineConfig: true, reportUnusedDisableDirectives: 'error' },
+    rules: { 'no-restricted-imports': restrictedImports(['expo-sharing']) },
   },
   {
     files: ['jest.setup.js'],

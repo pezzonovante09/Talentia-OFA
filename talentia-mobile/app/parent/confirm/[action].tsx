@@ -93,7 +93,8 @@ export default function ConfirmScreen() {
     setBusy(true);
     try {
       if (kind === 'clear_progress' && profile) {
-        await clearChildProgress(db, profile.childId);
+        // с портом устройства: снимается и каталог файла экспорта (вопрос 54, m5)
+        await clearChildProgress(db, profile.childId, device());
         if (useChildSession.getState().childId === profile.childId) useChildSession.getState().reset();
         router.back();
       } else if (kind === 'delete_child' && profile) {
@@ -121,6 +122,7 @@ export default function ConfirmScreen() {
           db,
           { id: uuidV4(randomBytes), scope: 'aba_processing', action: 'revoke', childId: profile.childId, textVersion: abaConsentTextVersion(lang), confirmedBy: 'pin', actorId: accountId, at: new Date().toISOString() },
           'owner',
+          device(),
         );
         router.back();
       } else if (kind === 'delete_account') {

@@ -58,8 +58,20 @@ jest.mock('expo-router', () => {
   };
 });
 jest.mock('../../../src/services/local/expoSqlite', () => ({ openLocalDb: jest.fn(), deleteLocalDb: jest.fn(async () => undefined) }));
+// файл для специалиста (G3): лист системы в Node нет — сервис замокан, флаг переключается тестом через геттер
+jest.mock('../../../src/services/local/shareSpecialistExport', () => {
+  const flags = { enabled: true };
+  return {
+    __flags: flags,
+    get ABA_EXPORT_FILE_ENABLED() {
+      return flags.enabled;
+    },
+    shareSpecialistExport: jest.fn(async () => 'shared'),
+  };
+});
 jest.mock('../../../src/services/local/buildInfo', () => ({ buildTime: () => null }));
 
+const { __flags: exportFlags, shareSpecialistExport } = jest.requireMock('../../../src/services/local/shareSpecialistExport') as { __flags: { enabled: boolean }; shareSpecialistExport: jest.Mock };
 const { __router: router, __params: params, __focus: focus } = jest.requireMock('expo-router') as {
   __router: { push: jest.Mock; back: jest.Mock; replace: jest.Mock; dismissAll: jest.Mock };
   __params: { action: string | undefined };
@@ -132,6 +144,8 @@ const expectWentTo = (href: string) => {
 
 beforeEach(async () => {
   jest.clearAllMocks();
+  exportFlags.enabled = true;
+  shareSpecialistExport.mockImplementation(async () => 'shared');
   focus.current = null;
   useAbaRun.getState().reset();
   const device = fakeDevice();
@@ -162,7 +176,7 @@ describe('«Занятия ABA»: кнопка занятия по состоя�
 
   it('согласие отозвано — снова «Нужно согласие» и «Прочитать согласие»', async () => {
     await grant();
-    await revokeAbaProcessing(db, { id: 'rv', scope: 'aba_processing', action: 'revoke', childId: KID, textVersion: 'ru-draft-1', confirmedBy: 'pin', actorId: accountId, at: iso() }, 'owner');
+    await revokeAbaProcessing(db, { id: 'rv', scope: 'aba_processing', action: 'revoke', childId: KID, textVersion: CURRENT_CONSENT_TEXTS.aba_processing[0], confirmedBy: 'pin', actorId: accountId, at: iso() }, 'owner');
     await renderAba();
     await waitStatus('Нужно согласие на данные практики');
     expect(screen.getByTestId('aba-read-consent')).toBeTruthy();
@@ -492,7 +506,7 @@ describe('«Занятия ABA»: карточка «Цели» (этап G2, в
     await finishInProgressSession(db, KID, Date.now());
     await renderAba();
     await waitStatus('Можно начинать');
-    await waitFor(() => expect(screen.getByTestId('aba-goals-summary').props.children).toBe('За занятие сегодня: без проб'));
+    await waitFor(() => expect(screen.getByTestId('aba-goals-summary').props.children).toBe('Занятие сегодня: без проб'));
   });
 
   it('цели — выбранного ребёнка: у второго без согласия карточки нет', async () => {
@@ -818,26 +832,94 @@ describe('«Занятия ABA»: согласие, пауза, файл, отз
     expect([await pausedInDb(KID), await pausedInDb(KID2)]).toEqual([true, false]);
   });
 
-  it('файл для специалиста — до PIN подпись о содержимом, лист PIN; после PIN — «Файл появится позже…»', async () => {
+  // --- файл для специалиста (G3, вопрос 67) ---
+  const CAPTION = 'Что в файле: задания, подсказки, итоги занятий и выбор наград — без имени ребёнка. Вы сами решаете, кому передать файл; что с ним будет дальше, приложение не контролирует.';
+  const LATER = 'Файл появится позже, вместе с облачной копией.';
+  const note = () => screen.getByTestId('aba-export-note').props.children as string;
+  const exportValue = () => screen.queryByTestId('aba-export-value')?.props.children as string | undefined;
+
+  it('файл для специалиста — до PIN подпись о содержимом без имени ребёнка, тап → лист PIN, сервис не вызван', async () => {
     await grant();
     await renderAba();
     await waitFor(() => expect(screen.getByTestId('aba-export')).toBeTruthy());
-    expect(screen.getByTestId('aba-export-note').props.children).toBe('Что в файле: задания, подсказки, итоги занятий и выбор наград, без имени. Копии, отданные специалисту, приложение не удаляет.');
+    expect(note()).toBe(CAPTION);
+    expect(exportValue()).toBeUndefined();
     await fireEvent.press(screen.getByTestId('aba-export'));
     expect(screen.getByTestId('confirm-pin-sheet')).toBeTruthy();
-    expect(screen.getByTestId('aba-export-note').props.children).not.toBe('Файл появится позже, вместе с облачной копией.');
-    await typePin(PIN);
-    await waitFor(() => expect(screen.getByTestId('aba-export-note').props.children).toBe('Файл появится позже, вместе с облачной копией.'));
+    expect(shareSpecialistExport).not.toHaveBeenCalled();
   });
 
-  it('файл для специалиста в окне свежести PIN — сразу «появится позже», без листа', async () => {
+  it('после PIN — «Готовится…», сервис вызван с базой, ребёнком и устройством; затем подпись «передан» и она уходит через 3 с', async () => {
+    let release: (v: 'shared') => void = () => undefined;
+    shareSpecialistExport.mockImplementation(() => new Promise<'shared'>((r) => (release = r)));
+    await grant();
+    await renderAba();
+    await waitFor(() => expect(screen.getByTestId('aba-export')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('aba-export'));
+    await typePin(PIN);
+    await waitFor(() => expect(exportValue()).toBe('Готовится…'));
+    expect(shareSpecialistExport).toHaveBeenCalledTimes(1);
+    const [calledDb, calledChild, calledDevice, calledNow] = shareSpecialistExport.mock.calls[0] as [unknown, string, unknown, string];
+    expect([calledDb === db, calledChild, typeof (calledDevice as { deleteCacheDir: unknown }).deleteCacheDir, /^\d{4}-\d{2}-\d{2}T/.test(calledNow)]).toEqual([true, KID, 'function', true]);
+    expect(note()).toBe(CAPTION);
+    await act(async () => release('shared'));
+    await waitFor(() => expect(screen.getByTestId('aba-export-shared').props.children).toBe('Файл передан в выбранное приложение'));
+    expect(exportValue()).toBeUndefined();
+    expect(note()).toBe(CAPTION);
+    await waitFor(() => expect(screen.queryByTestId('aba-export-shared')).toBeNull(), { timeout: 4500 });
+  });
+
+  it('в окне свежести PIN — сразу сервис, без листа; отмена листа системы — без подписи', async () => {
+    shareSpecialistExport.mockImplementation(async () => 'cancelled');
     await grant();
     useGate.getState().open();
     await renderAba();
     await waitFor(() => expect(screen.getByTestId('aba-export')).toBeTruthy());
     await fireEvent.press(screen.getByTestId('aba-export'));
     expect(screen.queryByTestId('confirm-pin-sheet')).toBeNull();
-    expect(screen.getByTestId('aba-export-note').props.children).toBe('Файл появится позже, вместе с облачной копией.');
+    await waitFor(() => expect(shareSpecialistExport).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(exportValue()).toBeUndefined());
+    expect([screen.queryByTestId('aba-export-shared'), screen.queryByTestId('aba-export-error')]).toEqual([null, null]);
+    expect(note()).toBe(CAPTION);
+  });
+
+  it('ошибка сборки файла — «Не удалось собрать файл» над подписью, строка снова ссылка', async () => {
+    shareSpecialistExport.mockImplementation(async () => {
+      throw new Error('диск');
+    });
+    await grant();
+    useGate.getState().open();
+    await renderAba();
+    await waitFor(() => expect(screen.getByTestId('aba-export')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('aba-export'));
+    await waitFor(() => expect(screen.getByTestId('aba-export-error').props.children).toBe('Не удалось собрать файл'));
+    expect(exportValue()).toBeUndefined();
+    expect(note()).toBe(CAPTION);
+    expect(screen.getByTestId('aba-export').props.accessibilityRole).toBe('button');
+  });
+
+  it('лист системы недоступен — «Позже» и «появится позже», строка не нажимается', async () => {
+    shareSpecialistExport.mockImplementation(async () => 'unavailable');
+    await grant();
+    useGate.getState().open();
+    await renderAba();
+    await waitFor(() => expect(screen.getByTestId('aba-export')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('aba-export'));
+    await waitFor(() => expect(exportValue()).toBe('Позже'));
+    expect(note()).toBe(LATER);
+    expect(screen.getByTestId('aba-export').props.accessibilityRole).toBeUndefined();
+  });
+
+  it('флаг ABA_EXPORT_FILE_ENABLED выключен — «Позже», подпись «появится позже», сервис не вызывается', async () => {
+    exportFlags.enabled = false;
+    await grant();
+    useGate.getState().open();
+    await renderAba();
+    await waitFor(() => expect(screen.getByTestId('aba-export')).toBeTruthy());
+    expect(exportValue()).toBe('Позже');
+    expect(note()).toBe(LATER);
+    await fireEvent.press(screen.getByTestId('aba-export'));
+    expect(shareSpecialistExport).not.toHaveBeenCalled();
   });
 
   it('«Отозвать и удалить данные практики» ведёт в confirm с action aba_revoke', async () => {

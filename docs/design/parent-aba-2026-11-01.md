@@ -145,7 +145,9 @@
 | записи нет, либо `lastSessionIndex < 0` (цель ни разу не встречалась) | **впереди** |
 | `phase: 'baseline'` с сессиями, `phase: 'acquisition'` | **учим** |
 | `acquisition` с флагом `needs_verification`; `generalization_check`; `mastered` с `masteredBy: 'home_unverified'` | **почти** (ABA.md 730: «родитель видит почти»; ABA.md 208: `home_unverified` — «получается дома», не «освоено» — глиф половинный, слово *«почти»*; если методист настаивает на «получается дома» — это четвёртое слово и спор с №95, решает `aba-pedagogy-specialist`) |
-| `mastered` (`criterion`, `baseline`, `inferred`), `maintenance` | **освоено** (ABA.md 1316: откуда освоено — родителю не показывается) |
+| `mastered` (`criterion`, `baseline`), `maintenance` | **освоено** (ABA.md 1316: откуда освоено — родителю не показывается) |
+| `mastered` / `maintenance` с `masteredBy: 'inferred'` или `'home_unverified'` | **почти** — выведено или не подтверждено обученным наблюдателем: качество измерения, не навыка (`aba-pedagogy-specialist` 2026-11-01; код `abaParentProgress.ts`) |
+| `acquisition` с флагом `needs_transfer` или `needs_verification` | **почти** (методист 2026-11-01) |
 | вернулась из поддержания в `acquisition` | **учим** — без пометки «было освоено»: это оценка, а не состояние |
 
 Никаких флагов (`prompt_dependent`, `no_progress`, `assent_concern`) и уровней подсказки на экране нет — они в экспорт (разбор, зона Г).
