@@ -1,15 +1,19 @@
 /**
- * Экран сопряжения (раздел 3) на ручных часах и `memoryDb`: четыре цикла тапом до конца с Tali и записью итога;
- * выбор взрослого полосой; выход удержанием пишет остановку взрослого и ведёт на карту; без конфигурации — на 2.6.
+ * Экран сопряжения (раздел 3, цикл 3) на ручных часах и `memoryDb`: четыре цикла тапом до конца с Tali и записью итога;
+ * обмен одной ячейки — тот же экран, что в сессии (Ц3.4: въезд 220, удержание 600, полёт, «получено», раскрытие);
+ * доступ с кадром конца (Ц3.5); выбор взрослого полосой; выход удержанием пишет остановку взрослого и ведёт на карту;
+ * без конфигурации — на 2.6.
  */
-import { AppState, type AppStateStatus } from 'react-native';
+import { AppState, StyleSheet, type AppStateStatus } from 'react-native';
 
 import AbaPairingScreen from '../pairing';
+import { abaEndDone } from '../../../src/design/abaTokens';
 import { PAIRING } from '../../../src/domain/abaTokenTraining';
 import { grantAbaProcessing } from '../../../src/services/local/abaConsent';
 import { loadChildState } from '../../../src/services/local/childState';
 import { memoryDb } from '../../../src/services/local/__tests__/nodeSql';
 import type { SqlDb } from '../../../src/services/local/sql';
+import { voice } from '../../../src/services/voice';
 import { useAbaRun } from '../../../src/state/abaRun';
 import { useAccount } from '../../../src/state/account';
 import { useChildSession } from '../../../src/state/childSession';
@@ -36,6 +40,16 @@ let clock: ManualClock;
 /** Доска и кольцо скрыты от скринридера (`accessibilityElementsHidden`) — ищутся с этим флагом. */
 const HIDDEN = { includeHiddenElements: true };
 const tick = async (ms: number) => act(async () => clock.advance(ms));
+/** До момента `to` шагами не длиннее `step`: ручные часы будят один срок экрана за шаг — каждый кадр в свой срок. */
+async function stepTo(to: number, step = 20) {
+  while (clock.now() < to) await tick(Math.min(step, to - clock.now()));
+}
+const filledCells = () => screen.queryAllByTestId('aba-exchange-token-filled', HIDDEN).length;
+const cardStroke = () => StyleSheet.flatten(screen.getByTestId('aba-exchange-card').props.style).borderWidth as number;
+/** Обмен одной ячейки от начала въезда: 220 + 600 + 360 + 300 + 360. */
+const EXCHANGE_MS = 1840;
+/** Кадр конца доступа: сворачивание 360 + карточка 1000. */
+const END_FRAME_MS = 1360;
 
 async function mount() {
   await renderWithProviders(
@@ -52,16 +66,23 @@ const cards = () => screen.getAllByTestId(/^aba-reinforcer-(?!stub)/).map((n) =>
 async function oneCycle(pick: string) {
   await fireEvent.press(screen.getByTestId(`aba-reinforcer-${pick}`));
   await tick(800);
+  const t0 = clock.now();
   expect(screen.getByTestId('aba-pairing-wait')).toBeTruthy();
   expect(screen.getByTestId('aba-pairing-token-empty', HIDDEN)).toBeTruthy();
-  await tick(PAIRING.tokenAfterMs);
-  await tick(220);
-  expect(screen.getByTestId('aba-pairing-token-filled', HIDDEN)).toBeTruthy();
-  await tick(600);
-  await tick(360);
+  // шаги крупные: точные границы кадров проверяют тесты блока «цикл 3»; здесь — только порядок за четыре цикла
+  // (мелкий шаг на четырёх циклах — сотни `act` и таймаут 5 с под нагрузкой полного прогона)
+  await stepTo(t0 + PAIRING.tokenAfterMs, 1000);
+  expect(screen.getByTestId('aba-pairing-exchange')).toBeTruthy();
+  await stepTo(t0 + PAIRING.tokenAfterMs + 220, 220);
+  expect(filledCells()).toBe(1);
+  await stepTo(t0 + PAIRING.tokenAfterMs + EXCHANGE_MS, 200);
+  const A = clock.now();
+  expect(screen.getByTestId('aba-access-play')).toBeTruthy();
   expect(screen.getByTestId('aba-access-scene')).toBeTruthy();
   expect(screen.getByTestId('aba-access-ring', HIDDEN)).toBeTruthy();
-  await tick(PAIRING.accessMs);
+  await stepTo(A + PAIRING.accessMs + END_FRAME_MS, 1000);
+  // хвост: просроченные сроки (их несколько на один крупный шаг) догоняются шагами по 0
+  for (let i = 0; i < 4; i += 1) await tick(0);
 }
 
 beforeEach(async () => {
@@ -88,6 +109,10 @@ it('четыре цикла тапом: конец с Tali, итог запис�
   expect(training).toMatchObject({ pairingSessions: 1, pairingStreak: 1, pairingDone: false });
   const rows = await db.all<{ chosen_by: string }>('SELECT chosen_by FROM aba_reinforcer_choices WHERE child_id = ?', [KID]);
   expect(rows.map((r) => r.chosen_by)).toEqual(['child', 'child', 'child', 'child']);
+  // «Готово» (Ц3.8): касание в первые 1000 мс от показа кадра не засчитывается
+  await fireEvent.press(screen.getByTestId('aba-end-done'));
+  expect(router.replace).not.toHaveBeenCalled();
+  await tick(abaEndDone.lockMs);
   await fireEvent.press(screen.getByTestId('aba-end-done'));
   expect(router.replace).toHaveBeenCalledWith('/map');
 });
@@ -178,13 +203,121 @@ it('ожидание жетона: карточка нажимается, но �
   await fireEvent.press(card);
   await tick(100);
   expect(screen.getByTestId('aba-pairing-token-empty', HIDDEN)).toBeTruthy();
-  expect(screen.queryByTestId('aba-pairing-token-filled', HIDDEN)).toBeNull();
+  expect(screen.queryByTestId('aba-pairing-exchange')).toBeNull();
+  expect(filledCells()).toBe(0);
   expect(screen.queryByTestId('aba-access-scene')).toBeNull();
   // срок жетона считается от выбора, а не от касания: приходит ровно тогда же, что и без касаний
-  await tick(PAIRING.tokenAfterMs - 100);
-  await tick(220);
-  expect(screen.getByTestId('aba-pairing-token-filled', HIDDEN)).toBeTruthy();
-  await tick(600);
-  await tick(360);
+  const chosenAt = clock.now() - 100;
+  await stepTo(chosenAt + PAIRING.tokenAfterMs - 1, 500);
+  expect(screen.queryByTestId('aba-pairing-exchange')).toBeNull();
+  await stepTo(chosenAt + PAIRING.tokenAfterMs);
+  expect(screen.getByTestId('aba-pairing-exchange')).toBeTruthy();
+  await stepTo(chosenAt + PAIRING.tokenAfterMs + 220);
+  expect(filledCells()).toBe(1);
+  await stepTo(chosenAt + PAIRING.tokenAfterMs + EXCHANGE_MS);
   expect(screen.getByTestId('aba-access-scene')).toBeTruthy();
+});
+
+describe('цикл 3 (№171): обмен и кадр конца в сопряжении', () => {
+  /** Выбор первой карточки; вернуть момент засчитанного выбора (начало 10 с ожидания). */
+  async function choose(): Promise<number> {
+    await mount();
+    await fireEvent.press(screen.getByTestId(`aba-reinforcer-${cards()[0]}`));
+    await tick(800);
+    return clock.now();
+  }
+
+  it('ожидание: карточка выбранного, Tali, пустая ячейка; карточки обмена нет', async () => {
+    await choose();
+    expect(screen.getByTestId('aba-pairing-wait-card')).toBeTruthy();
+    expect(screen.getByTestId('aba-pairing-tali')).toBeTruthy();
+    expect(screen.getByTestId('aba-pairing-token-empty', HIDDEN)).toBeTruthy();
+    expect(screen.queryByTestId('aba-exchange-card')).toBeNull();
+  });
+
+  it('жетон въезжает 220 мс, при посадке — звук жетона; удержание 600 — вылет в 820 от начала обмена', async () => {
+    const t0 = (await choose()) + PAIRING.tokenAfterMs;
+    voice.stop();
+    await stepTo(t0, 500);
+    expect(screen.getByTestId('aba-exchange-token-landing', HIDDEN)).toBeTruthy();
+    expect(filledCells()).toBe(0);
+    await stepTo(t0 + 219);
+    expect(voice.last).toBeNull();
+    await stepTo(t0 + 220);
+    expect(filledCells()).toBe(1);
+    expect(voice.last?.key).toBe('abaSession.sound.token');
+    await stepTo(t0 + 819);
+    expect(filledCells()).toBe(1);
+    await stepTo(t0 + 820);
+    expect(filledCells()).toBe(0);
+    expect(screen.getAllByTestId('aba-exchange-token-empty', HIDDEN)).toHaveLength(1);
+  });
+
+  it('«получено» — контур карточки 6 в 1180; доступ ровно в 1840 от начала обмена', async () => {
+    const t0 = (await choose()) + PAIRING.tokenAfterMs;
+    await stepTo(t0 + 1179, 500);
+    expect(cardStroke()).toBe(3);
+    await stepTo(t0 + 1180);
+    expect(cardStroke()).toBe(6);
+    await stepTo(t0 + EXCHANGE_MS - 1);
+    expect(screen.queryByTestId('aba-access-play')).toBeNull();
+    await stepTo(t0 + EXCHANGE_MS);
+    expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+  });
+
+  it('доступ 20 с: кольцо с силуэтом до T, в T исчезает; карточка на кадре конца; следующий выбор через 360 + 1000', async () => {
+    const A = (await choose()) + PAIRING.tokenAfterMs + EXCHANGE_MS;
+    await stepTo(A, 500);
+    await stepTo(A + PAIRING.accessMs - 1, 250);
+    expect(screen.getByTestId('aba-access-ring', HIDDEN)).toBeTruthy();
+    expect(screen.getByTestId('aba-access-ring-silhouette', HIDDEN)).toBeTruthy();
+    await stepTo(A + PAIRING.accessMs);
+    expect(screen.queryByTestId('aba-access-ring', HIDDEN)).toBeNull();
+    expect(screen.queryByTestId('aba-access-ring-silhouette', HIDDEN)).toBeNull();
+    expect(screen.getByTestId('aba-access-card')).toBeTruthy();
+    await stepTo(A + PAIRING.accessMs + END_FRAME_MS - 1);
+    expect(screen.getByTestId('aba-access-hold')).toBeTruthy();
+    expect(screen.queryByTestId('aba-choice')).toBeNull();
+    await stepTo(A + PAIRING.accessMs + END_FRAME_MS);
+    await waitFor(() => expect(screen.getByTestId('aba-choice')).toBeTruthy());
+    expect(screen.getByText('За что играем теперь?')).toBeTruthy();
+  });
+
+  it('calm: жетон сразу в ячейке, «получено» в 600, доступ в 1100', async () => {
+    const before = useChildSession.getState().settings;
+    useChildSession.setState({ settings: { ...before, calmMode: true } });
+    try {
+      const t0 = (await choose()) + PAIRING.tokenAfterMs;
+      await stepTo(t0, 500);
+      expect(screen.queryByTestId('aba-exchange-token-landing', HIDDEN)).toBeNull();
+      expect(filledCells()).toBe(1);
+      await stepTo(t0 + 599);
+      expect(filledCells()).toBe(1);
+      await stepTo(t0 + 600);
+      expect([filledCells(), cardStroke()]).toEqual([0, 6]);
+      await stepTo(t0 + 1099);
+      expect(screen.queryByTestId('aba-access-play')).toBeNull();
+      await stepTo(t0 + 1100);
+      expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+    } finally {
+      useChildSession.setState({ settings: before });
+    }
+  });
+
+  it('стоп на кадре конца четвёртого цикла — сопряжение засчитано (completed), а не остановка', async () => {
+    await mount();
+    const options = cards();
+    for (let i = 0; i < PAIRING.cycles - 1; i += 1) await oneCycle(options[i % 3]);
+    await fireEvent.press(screen.getByTestId(`aba-reinforcer-${options[0]}`));
+    await tick(800);
+    const A = clock.now() + PAIRING.tokenAfterMs + EXCHANGE_MS;
+    await stepTo(A + PAIRING.accessMs + 400, 250);
+    expect(screen.getByTestId('aba-access-hold')).toBeTruthy();
+    await fireEvent(screen.getByTestId('aba-exit'), 'pressIn');
+    await tick(1500);
+    await waitFor(async () => {
+      const [rec] = await db.all<{ body: string }>('SELECT body FROM aba_pairing_sessions WHERE child_id = ?', [KID]);
+      expect(JSON.parse(rec.body)).toMatchObject({ endReason: 'completed', cycles: 4 });
+    });
+  });
 });

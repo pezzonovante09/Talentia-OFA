@@ -1,6 +1,7 @@
 /**
  * Выбор тапом (Ц2.4) и сопряжение на экране (раздел 3): удержание 800 мс, полоса взрослого через 30 с с блоком
- * 500 мс, «Сам» — пульс в 30 с и конец в 60 с; жетон по таймеру 10 с, событие `token` — при открытии доступа;
+ * 500 мс, «Сам» — пульс в 30 с и конец в 60 с; жетон по таймеру 10 с, обмен одной ячейки (`exchangeRun`), событие
+ * `token` — при открытии доступа, `access_done` — после кадра конца (№171);
  * четыре цикла, итог через настоящий домен.
  */
 import { pairingResultOf, startPairing } from '../../../../domain/abaPairing';
@@ -9,6 +10,7 @@ import { seeded } from '../../../../domain/abaRandom';
 import { motion } from '../../../../design/tokens';
 import { pairingRunDueAt, startPairingRun, stepPairingRun, type PairingEffect, type PairingRun, type PairingRunEvent } from '../pairingRun';
 import { choiceDueAt, startChoice, stepChoice, type ChoiceRun } from '../reinforcerChoiceRun';
+import { exchangeView } from '../exchangeRun';
 
 const T0 = 1_000_000;
 const POOL = ['bubbles', 'kaleidoscope', 'pinwheel', 'marble_run', 'tali_dance', 'paint_drop'];
@@ -81,41 +83,117 @@ describe('сопряжение', () => {
   }
   const dueStep = (r: PairingRun, fx?: PairingEffect[]) => go(r, { type: 'due', at: pairingRunDueAt(r)! }, fx);
 
-  it('цикл: выбор → 10 с → жетон 220 → 600 → обмен 360 → доступ 20 с с момента открытия', () => {
+  it('цикл: выбор → 10 с → въезд 220 → удержание 600 → полёт 360 → «получено» 300 → раскрытие 360 → доступ 20 с с момента открытия', () => {
     let r = start();
     const pick = r.state.options[1];
     r = go(r, { type: 'tap', reinforcerId: pick, now: T0 + 2000 });
     r = dueStep(r);
     expect(r.state.phase).toBe('wait_token');
     expect(r.state.phaseSince).toBe(T0 + 2800);
+    expect(r.exchange).toBeNull();
     expect(pairingRunDueAt(r)).toBe(T0 + 12_800);
     const fx: PairingEffect[] = [];
+    // 10 с — обмен одной ячейки начинается с въезда жетона
     r = dueStep(r, fx);
-    expect(r.token).toEqual({ stage: 'landing', until: T0 + 12_800 + motion.base });
+    expect(r.exchange).toEqual({ startedAt: T0 + 12_800, cells: 1, calm: false, landFirst: true });
+    expect(exchangeView(r.exchange!, r.at)).toMatchObject({ stage: 'land', tokenInCell: false });
+    expect(fx).toEqual([]);
+    expect(pairingRunDueAt(r)).toBe(T0 + 12_800 + motion.base);
+    // жетон лёг — удержание 600 (одна ячейка)
     r = dueStep(r, fx);
     expect(fx).toEqual([{ type: 'token_landed' }]);
-    expect(r.token?.stage).toBe('landed');
-    r = dueStep(r);
-    expect(r.token?.stage).toBe('exchange');
-    r = dueStep(r);
-    const open = T0 + 12_800 + motion.base + 600 + motion.slow;
+    expect(exchangeView(r.exchange!, r.at)).toMatchObject({ stage: 'hold', tokenInCell: true });
+    expect(pairingRunDueAt(r)).toBe(T0 + 12_800 + motion.base + 600);
+    r = dueStep(r, fx);
+    expect(exchangeView(r.exchange!, r.at).stage).toBe('fly');
+    r = dueStep(r, fx);
+    expect(exchangeView(r.exchange!, r.at)).toMatchObject({ stage: 'received', cardStroke: 6 });
+    r = dueStep(r, fx);
+    expect(exchangeView(r.exchange!, r.at)).toMatchObject({ stage: 'open', rowVisible: false });
+    expect(r.state.phase).toBe('wait_token');
+    r = dueStep(r, fx);
+    expect(fx).toEqual([{ type: 'token_landed' }]);
+    // событие `token` — в момент открытия доступа: 20 с ребёнка не съедаются обменом
+    const open = T0 + 12_800 + motion.base + 600 + motion.slow + 300 + motion.slow;
     expect(r.state).toMatchObject({ phase: 'access', phaseSince: open, reinforcerId: pick });
-    expect(pairingRunDueAt(r)).toBe(open + PAIRING.accessMs);
+    expect(r.exchange).toBeNull();
+    expect(r.access).toMatchObject({ startedAt: open, durationMs: PAIRING.accessMs, stage: 'play' });
+    expect(pairingRunDueAt(r)).toBe(open + PAIRING.accessMs - 5000);
+    // «закругляемся», затем T: кольцо уходит, сцена сворачивается — домен ещё в доступе
     r = dueStep(r);
-    expect(r.state).toMatchObject({ phase: 'choose', cycles: 1, phaseSince: open + PAIRING.accessMs });
-    expect(r.choice?.shownAt).toBe(open + PAIRING.accessMs);
+    r = dueStep(r);
+    expect(r.at).toBe(open + PAIRING.accessMs);
+    expect(r.access?.stage).toBe('fold');
+    expect(r.state.phase).toBe('access');
+    r = dueStep(r);
+    expect(r.access?.stage).toBe('hold');
+    expect(r.state.phase).toBe('access');
+    // кадр конца прошёл (fold 360 + 1000) — следующий выбор показывается отсюда
+    const next = open + PAIRING.accessMs + motion.slow + 1000;
+    expect(pairingRunDueAt(r)).toBe(next);
+    r = dueStep(r);
+    expect(r.state).toMatchObject({ phase: 'choose', cycles: 1, phaseSince: next });
+    expect(r.access).toBeNull();
+    expect(r.choice?.shownAt).toBe(next);
   });
 
-  it('calm: жетон на месте — стадии нулевой длины проходятся одним сроком', () => {
+  it('до 10 с ожидания обмен не начинается: шаг раньше срока ничего не меняет', () => {
+    let r = start();
+    r = go(r, { type: 'tap', reinforcerId: r.state.options[0], now: T0 + 1000 });
+    r = dueStep(r);
+    const since = r.state.phaseSince;
+    const fx: PairingEffect[] = [];
+    r = go(r, { type: 'due', at: since + PAIRING.tokenAfterMs - 1 }, fx);
+    expect(r.exchange).toBeNull();
+    expect(fx).toEqual([]);
+    expect(pairingRunDueAt(r)).toBe(since + PAIRING.tokenAfterMs);
+  });
+
+  it('просрочка (экран был свёрнут): один шаг далеко за концом обмена — жетон лёг один раз, доступ с расписанного момента', () => {
+    let r = start();
+    r = go(r, { type: 'tap', reinforcerId: r.state.options[0], now: T0 + 1000 });
+    r = dueStep(r);
+    const tokenAt = r.state.phaseSince + PAIRING.tokenAfterMs;
+    const fx: PairingEffect[] = [];
+    r = go(r, { type: 'due', at: tokenAt + 60_000 }, fx);
+    expect(fx).toEqual([{ type: 'token_landed' }]);
+    expect(r.state).toMatchObject({ phase: 'access', phaseSince: tokenAt + 1840 });
+  });
+
+  it('calm: жетон на месте сразу, «получено» 500, доступ без раскрытия', () => {
     let r = start('with_adult', true);
     r = go(r, { type: 'tap', reinforcerId: r.state.options[0], now: T0 });
     r = dueStep(r);
     const fx: PairingEffect[] = [];
     r = dueStep(r, fx);
     expect(fx).toEqual([{ type: 'token_landed' }]);
-    expect(r.token).toEqual({ stage: 'landed', until: T0 + 800 + 10_000 + 600 });
+    expect(exchangeView(r.exchange!, r.at)).toMatchObject({ stage: 'hold', tokenInCell: true });
+    expect(pairingRunDueAt(r)).toBe(T0 + 800 + 10_000 + 600);
     r = dueStep(r);
-    expect(r.state).toMatchObject({ phase: 'access', phaseSince: T0 + 800 + 10_600 });
+    expect(exchangeView(r.exchange!, r.at)).toMatchObject({ stage: 'received', flown: 1, cardStroke: 6 });
+    r = dueStep(r);
+    expect(r.state).toMatchObject({ phase: 'access', phaseSince: T0 + 800 + 10_600 + 500 });
+    expect(r.access?.calm).toBe(true);
+  });
+
+  it('calm: кадр конца без сворачивания — следующий выбор через T + 1000', () => {
+    let r = start('with_adult', true);
+    r = go(r, { type: 'tap', reinforcerId: r.state.options[0], now: T0 });
+    while (r.state.phase !== 'access') r = dueStep(r);
+    const open = r.state.phaseSince;
+    while (r.state.phase === 'access') r = dueStep(r);
+    expect(r.state).toMatchObject({ phase: 'choose', phaseSince: open + PAIRING.accessMs + 1000 });
+  });
+
+  it('остановка во время обмена и доступа снимает обмен и сцену', () => {
+    let r = start();
+    r = go(r, { type: 'tap', reinforcerId: r.state.options[0], now: T0 });
+    r = dueStep(r);
+    r = dueStep(r);
+    expect(r.exchange).not.toBeNull();
+    const s = stepPairingRun(r, { type: 'stop', reason: 'adult_stopped', now: r.at + 1 });
+    expect(s.effects).toEqual([{ type: 'done' }]);
+    expect([s.run.exchange, s.run.access, s.run.state.phase]).toEqual([null, null, 'done']);
   });
 
   it('четыре цикла — конец `completed`, все выборы ребёнка → критерий `child`', () => {
@@ -154,5 +232,67 @@ describe('сопряжение', () => {
     r = dueStep(r, fx);
     expect(fx.map((f) => f.type)).toEqual(['nudge', 'done']);
     expect(pairingResultOf(r.state)).toMatchObject({ endReason: 'no_choice', choices: [] });
+  });
+});
+
+describe('остановка на кадре конца доступа (методист, цикл 3)', () => {
+  const start = () =>
+    startPairingRun(startPairing({ sessionId: 'p2', config: 'with_adult', pool: POOL, history: [], apart: [], rng: seeded(11).rng, now: T0 }), 'with_adult', false);
+  const dueStep = (r: PairingRun) => stepPairingRun(r, { type: 'due', at: pairingRunDueAt(r)! }).run;
+
+  /** Пройти `done` полных циклов и в следующем дойти до доступа в стадии `stage`. */
+  function inAccess(done: number, stage: 'play' | 'fold' | 'hold'): PairingRun {
+    let r = start();
+    for (let i = 0; i <= done; i += 1) {
+      r = stepPairingRun(r, { type: 'tap', reinforcerId: r.state.options[i % 3], now: r.state.phaseSince + 1000 }).run;
+      while (r.state.phase !== 'access') r = dueStep(r);
+      if (i < done) while (r.state.phase === 'access') r = dueStep(r);
+    }
+    while (r.access!.stage !== stage) r = dueStep(r);
+    expect(r.state.phase).toBe('access');
+    return r;
+  }
+  const stop = (r: PairingRun, reason: 'adult_stopped' | 'abandoned' | 'app_backgrounded') => stepPairingRun(r, { type: 'stop', reason, now: r.at + 100 });
+
+  it.each(['fold', 'hold'] as const)('четвёртый цикл, стоп на %s — исход completed, cycles 4', (stage) => {
+    const s = stop(inAccess(3, stage), 'adult_stopped');
+    expect(s.effects).toEqual([{ type: 'done' }]);
+    expect(pairingResultOf(s.run.state)).toMatchObject({ endReason: 'completed', cycles: 4 });
+  });
+
+  it('четвёртый цикл, свернули (app_backgrounded) на hold — тоже completed', () => {
+    expect(pairingResultOf(stop(inAccess(3, 'hold'), 'app_backgrounded').run.state)).toMatchObject({ endReason: 'completed', cycles: 4 });
+  });
+
+  it('четвёртый цикл, стоп на settle (сцена доигрывает) — completed', () => {
+    // у заглушки доигрывание 0 и settle проходится в T разом — стадия задаётся явно, как у позиции каталога
+    const r = inAccess(3, 'play');
+    const settle = { ...r, access: { ...r.access!, stage: 'settle' as const, cued: true }, at: r.access!.startedAt + PAIRING.accessMs + 50 };
+    expect(pairingResultOf(stop(settle, 'abandoned').run.state)).toMatchObject({ endReason: 'completed', cycles: 4 });
+  });
+
+  it('access_done при стопе на кадре конца пишется моментом T, а не моментом стопа', () => {
+    const r = inAccess(3, 'hold');
+    const T = r.access!.startedAt + PAIRING.accessMs;
+    expect(stop(r, 'adult_stopped').run.state.phaseSince).toBe(T);
+  });
+
+  it('второй цикл, стоп на fold — цикл засчитан (cycles 2), исход — стопа', () => {
+    const s = stop(inAccess(1, 'fold'), 'adult_stopped');
+    expect(pairingResultOf(s.run.state)).toMatchObject({ endReason: 'adult_stopped', cycles: 2 });
+  });
+
+  it('второй цикл, свернули на hold — cycles 2, app_backgrounded', () => {
+    expect(pairingResultOf(stop(inAccess(1, 'hold'), 'app_backgrounded').run.state)).toMatchObject({ endReason: 'app_backgrounded', cycles: 2 });
+  });
+
+  it('стоп, пока сцена играет, — как раньше: цикл не засчитан, исход стопа', () => {
+    expect(pairingResultOf(stop(inAccess(3, 'play'), 'abandoned').run.state)).toMatchObject({ endReason: 'abandoned', cycles: 3 });
+    expect(pairingResultOf(stop(inAccess(1, 'play'), 'adult_stopped').run.state)).toMatchObject({ endReason: 'adult_stopped', cycles: 1 });
+  });
+
+  it('после стопа обмена и сцены нет, сроков нет', () => {
+    const s = stop(inAccess(3, 'fold'), 'adult_stopped');
+    expect([s.run.access, s.run.exchange, pairingRunDueAt(s.run)]).toEqual([null, null, null]);
   });
 });

@@ -1,13 +1,16 @@
 /**
- * Модель доступа к подкрепителю (раздел 8, №169): play → settle → gap → done; «закругляемся» за 5 с до конца только
- * у доступа длиннее 5 с; просроченные стадии проходят разом, каждый эффект — один раз; доигрывание ≤ 3 с.
+ * Модель доступа к подкрепителю (раздел 8, кадр конца Ц3.5, №171): play → settle → fold → hold → done; кольцо
+ * уходит в T; «закругляемся» за 5 с до конца только у доступа длиннее 5 с; просроченные стадии проходят разом,
+ * каждый эффект — один раз; доигрывание ≤ 2 с; сворачивание `endFrame.foldMs` (calm — смена кадра), карточка
+ * стоит `endSettleMs`.
  */
 import { abaAccessScene } from '../../../../design/abaTokens';
-import { accessDueAt, accessEndsAt, accessLeft, startAccess, stepAccess, type AccessEffect } from '../accessRun';
+import { accessDueAt, accessEndsAt, accessLeft, accessRingVisible, startAccess, stepAccess, type AccessEffect } from '../accessRun';
 
 const types = (fx: AccessEffect[]) => fx.map((f) => f.type);
 const CUE = abaAccessScene.endCue.beforeEndMs;
-const GAP = abaAccessScene.endSettleMs;
+const FOLD = abaAccessScene.endFrame.foldMs;
+const HOLD = abaAccessScene.endSettleMs;
 
 describe('сигнал «закругляемся»', () => {
   it('доступ 20 с: первый срок — за 5 с до конца', () => {
@@ -43,33 +46,61 @@ describe('сигнал «закругляемся»', () => {
   });
 });
 
-describe('стадии', () => {
-  it('в T сцена кончается; без доигрывания кольцо исчезает в тот же момент', () => {
-    const cued = stepAccess(startAccess(0, 20_000), 15_000).run;
-    const { run, effects } = stepAccess(cued, 20_000);
-    expect(types(effects)).toEqual(['scene_ended', 'ring_hidden']);
-    expect(run.stage).toBe('gap');
+describe('кадр конца (Ц3.5)', () => {
+  it('токены кадра конца: доигрывание не дольше 2000, сворачивание 360, карточка стоит 1000', () => {
+    expect([abaAccessScene.settleMaxMs, FOLD, HOLD]).toEqual([2000, 360, 1000]);
   });
 
-  it('с доигрыванием: settle до T + settleMs, кольцо исчезает потом', () => {
-    const cued = stepAccess(startAccess(0, 20_000, 2000), 15_000).run;
+  it('за 1 мс до T сцена ещё играет', () => {
+    const cued = stepAccess(startAccess(0, 20_000), 15_000).run;
+    const { run, effects } = stepAccess(cued, 19_999);
+    expect(effects).toEqual([]);
+    expect(run.stage).toBe('play');
+  });
+
+  it('без доигрывания: в T сцена кончается с моментом T и сразу начинает сворачиваться', () => {
+    const cued = stepAccess(startAccess(0, 20_000), 15_000).run;
+    const { run, effects } = stepAccess(cued, 20_000);
+    expect(effects).toEqual([{ type: 'scene_ended', at: 20_000 }, { type: 'fold' }]);
+    expect(run.stage).toBe('fold');
+  });
+
+  it('с доигрыванием: в T — только scene_ended, settle до T + settleMs, затем fold', () => {
+    const cued = stepAccess(startAccess(0, 20_000, 1500), 15_000).run;
     const atT = stepAccess(cued, 20_000);
     expect(types(atT.effects)).toEqual(['scene_ended']);
     expect(atT.run.stage).toBe('settle');
-    expect(accessDueAt(atT.run)).toBe(22_000);
-    const after = stepAccess(atT.run, 22_000);
-    expect(types(after.effects)).toEqual(['ring_hidden']);
-    expect(after.run.stage).toBe('gap');
+    expect(accessDueAt(atT.run)).toBe(21_500);
+    expect(stepAccess(atT.run, 21_499).effects).toEqual([]);
+    const after = stepAccess(atT.run, 21_500);
+    expect(types(after.effects)).toEqual(['fold']);
+    expect(after.run.stage).toBe('fold');
   });
 
-  it('пауза после кольца — endSettleMs; затем done с моментом по сроку', () => {
-    const gap = stepAccess(startAccess(0, 20_000, 2000), 22_000).run;
-    expect(gap.stage).toBe('gap');
-    expect(accessDueAt(gap)).toBe(22_000 + GAP);
-    expect(stepAccess(gap, 22_000 + GAP - 1).effects).toEqual([]);
-    const { run, effects } = stepAccess(gap, 22_000 + GAP);
-    expect(effects).toEqual([{ type: 'done', at: 22_000 + GAP }]);
+  it('сворачивание длится foldMs, затем hold без эффекта', () => {
+    const fold = stepAccess(startAccess(0, 20_000), 20_000).run;
+    expect(accessDueAt(fold)).toBe(20_000 + FOLD);
+    const { run, effects } = stepAccess(fold, 20_000 + FOLD);
+    expect(effects).toEqual([]);
+    expect(run.stage).toBe('hold');
+  });
+
+  it('карточка стоит endSettleMs; done несёт момент по сроку', () => {
+    const hold = stepAccess(startAccess(0, 20_000), 20_000 + FOLD).run;
+    expect(accessDueAt(hold)).toBe(20_000 + FOLD + HOLD);
+    expect(stepAccess(hold, 20_000 + FOLD + HOLD - 1).effects).toEqual([]);
+    const { run, effects } = stepAccess(hold, 20_000 + FOLD + HOLD);
+    expect(effects).toEqual([{ type: 'done', at: 20_000 + FOLD + HOLD }]);
     expect(run.stage).toBe('done');
+  });
+
+  it('calm: сворачивание — смена кадра; в T сразу hold, done через endSettleMs', () => {
+    const cued = stepAccess(startAccess(0, 20_000, 0, true), 15_000).run;
+    const atT = stepAccess(cued, 20_000);
+    expect(types(atT.effects)).toEqual(['scene_ended', 'fold']);
+    expect(atT.run.stage).toBe('hold');
+    expect(accessDueAt(atT.run)).toBe(20_000 + HOLD);
+    expect(stepAccess(atT.run, 20_000 + HOLD).effects).toEqual([{ type: 'done', at: 20_000 + HOLD }]);
   });
 
   it('done — сроков больше нет, эффектов тоже', () => {
@@ -78,26 +109,28 @@ describe('стадии', () => {
     expect(stepAccess(done, 2e9).effects).toEqual([]);
   });
 
-  it('accessEndsAt — начало плюс длительность: время ребёнка не урезается', () => {
+  it('accessEndsAt — начало плюс длительность: время ребёнка не урезается доигрыванием и calm', () => {
     expect(accessEndsAt(startAccess(500, 40_000))).toBe(40_500);
+    expect(accessEndsAt(startAccess(500, 40_000, 2000, true))).toBe(40_500);
   });
 });
 
 describe('просроченные стадии', () => {
   it('один шаг далеко за концом — эффекты по порядку, каждый один раз; «закругляемся» после конца не звучит', () => {
     const { run, effects } = stepAccess(startAccess(0, 20_000, 1000), 10 * 60_000);
-    expect(types(effects)).toEqual(['scene_ended', 'ring_hidden', 'done']);
+    expect(types(effects)).toEqual(['scene_ended', 'fold', 'done']);
     expect(run.stage).toBe('done');
   });
 
-  it('done просроченного доступа несёт срок по расписанию, а не момент шага', () => {
+  it('scene_ended и done просроченного доступа несут сроки по расписанию, а не момент шага', () => {
     const { effects } = stepAccess(startAccess(0, 20_000, 1000), 10 * 60_000);
-    expect(effects.at(-1)).toEqual({ type: 'done', at: 20_000 + 1000 + GAP });
+    expect(effects[0]).toEqual({ type: 'scene_ended', at: 20_000 });
+    expect(effects.at(-1)).toEqual({ type: 'done', at: 20_000 + 1000 + FOLD + HOLD });
   });
 
   it('просрочка после cue — без второго cue', () => {
     const cued = stepAccess(startAccess(0, 20_000), 15_000).run;
-    expect(types(stepAccess(cued, 10 * 60_000).effects)).toEqual(['scene_ended', 'ring_hidden', 'done']);
+    expect(types(stepAccess(cued, 10 * 60_000).effects)).toEqual(['scene_ended', 'fold', 'done']);
   });
 });
 
@@ -111,13 +144,9 @@ describe('доигрывание обрезается', () => {
     expect(startAccess(0, 20_000, asked).settleMs).toBe(got);
   });
 
-  it('потолок доигрывания — 3000 мс', () => {
-    expect(abaAccessScene.settleMaxMs).toBe(3000);
-  });
-
-  it('обрезанное доигрывание двигает срок settle на 3000, а не на запрошенное', () => {
+  it('обрезанное доигрывание двигает срок settle на 2000, а не на запрошенное', () => {
     const settle = stepAccess(startAccess(0, 20_000, 10_000), 20_000).run;
-    expect(accessDueAt(settle)).toBe(23_000);
+    expect(accessDueAt(settle)).toBe(22_000);
   });
 });
 
@@ -134,5 +163,22 @@ describe('кольцо', () => {
   it('в settle кольцо пусто', () => {
     const settle = stepAccess(startAccess(0, 20_000, 2000), 20_000).run;
     expect(accessLeft(settle, 20_500)).toBe(0);
+  });
+
+  it('кольцо видно, пока сцена играет, и после «закругляемся»', () => {
+    const r = startAccess(0, 20_000);
+    expect(accessRingVisible(r)).toBe(true);
+    expect(accessRingVisible(stepAccess(r, 15_000).run)).toBe(true);
+  });
+
+  it('кольцо уходит в T — и при доигрывании, и без него', () => {
+    expect(accessRingVisible(stepAccess(startAccess(0, 20_000, 2000), 20_000).run)).toBe(false);
+    expect(accessRingVisible(stepAccess(startAccess(0, 20_000), 20_000).run)).toBe(false);
+  });
+
+  it('на кадре конца и после него кольца нет', () => {
+    const r = startAccess(0, 20_000);
+    expect(accessRingVisible(stepAccess(r, 20_000 + FOLD).run)).toBe(false);
+    expect(accessRingVisible(stepAccess(r, 1e9).run)).toBe(false);
   });
 });

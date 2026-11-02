@@ -8,9 +8,10 @@ import { StyleSheet } from 'react-native';
 
 import AbaSessionScreen from '../session';
 import { ABA_TARGETS } from '../../../src/content/aba';
-import { ABA_CONTROL_STROKE } from '../../../src/design/abaTokens';
+import { abaEndDone, ABA_CONTROL_STROKE } from '../../../src/design/abaTokens';
 import { motion } from '../../../src/design/tokens';
 import { initialTargetState } from '../../../src/domain/abaPrompting';
+import ru from '../../../src/i18n/locales/ru.json';
 import { initialTokenTraining, PAIRING } from '../../../src/domain/abaTokenTraining';
 import { grantAbaProcessing } from '../../../src/services/local/abaConsent';
 import { loadChildState, saveChildState } from '../../../src/services/local/childState';
@@ -50,6 +51,13 @@ const HIDDEN = { includeHiddenElements: true };
 let db: SqlDb;
 let clock: ManualClock;
 const tick = async (ms: number) => act(async () => clock.advance(ms));
+/**
+ * Дойти до момента `to` шагами не длиннее `step`: ручные часы будят один срок экрана за шаг (следующий ставится после
+ * рендера), поэтому шаг короче расстояния между сроками — и каждый кадр приходит ровно в свой срок.
+ */
+async function stepTo(to: number, step = 20) {
+  while (clock.now() < to) await tick(Math.min(step, to - clock.now()));
+}
 const count = async (table: string) => (await db.all<{ n: number }>(`SELECT count(*) AS n FROM ${table} WHERE child_id = ?`, [KID]))[0].n;
 
 async function mount() {
@@ -170,14 +178,19 @@ it('обучение, верно на стартовом уровне — пла
   // обмен сразу обнулил доску, но до экрана обмена ребёнок видит её полной
   expect(screen.queryAllByTestId('aba-strip-token-filled', HIDDEN)).toHaveLength(1);
   // доска из одной ячейки (обучение доске) полна — обмен сразу: со следующим SD — экран обмена без кнопки, жетон
-  // лежит 600 мс и уходит в карточку, затем доступ к подкрепителю (фаза 7)
+  // лежит 600 мс (одна ячейка, №171) и улетает в карточку; ячейка пустеет в момент вылета (Ц3.4), затем «получено»,
+  // раскрытие и доступ к подкрепителю
   await tick(1000);
   await waitFor(() => expect(screen.getByTestId('aba-exchange')).toBeTruthy());
   expect(screen.queryAllByTestId('aba-exchange-token-filled', HIDDEN)).toHaveLength(1);
-  await tick(600);
-  // жетон лежит до кадра доступа, пустой ячейки перед доступом нет (`child-ux-specialist`, фаза 7)
-  expect(screen.queryAllByTestId('aba-exchange-token-empty', HIDDEN)).toHaveLength(0);
-  await tick(360);
+  await tick(599);
+  expect(screen.queryAllByTestId('aba-exchange-token-filled', HIDDEN)).toHaveLength(1);
+  await tick(1);
+  expect(screen.queryAllByTestId('aba-exchange-token-filled', HIDDEN)).toHaveLength(0);
+  expect(screen.queryAllByTestId('aba-exchange-token-empty', HIDDEN)).toHaveLength(1);
+  await stepTo(clock.now() + 360 + 300 + 360 - 1);
+  expect(screen.queryByTestId('aba-access-scene')).toBeNull();
+  await stepTo(clock.now() + 1);
   await waitFor(() => expect(screen.getByTestId('aba-access-scene')).toBeTruthy());
 });
 
@@ -190,9 +203,16 @@ it('«Отказ» в фазе последствия — отказ вне пр
   await fireEvent.press(screen.getByTestId(correctOption()));
   await waitFor(async () => expect(await count('aba_trials')).toBe(1));
   await fireEvent.press(screen.getByTestId('aba-panel-refusal'));
-  await waitFor(() => expect(screen.getByTestId('aba-end-neutral')).toBeTruthy());
+  // конец по отказу без полной доски — хвост с циклом сопряжения (Ц3.2): сначала ожидание, «Закончили» — после цикла
+  await waitFor(() => expect(screen.getByTestId('aba-end-wait')).toBeTruthy());
+  expect(screen.queryByTestId('aba-sample')).toBeNull();
+  expect(screen.queryByTestId('aba-adult-panel')).toBeNull();
   const [row] = await db.all<{ body: string }>('SELECT body FROM aba_sessions WHERE child_id = ?', [KID]);
   expect(JSON.parse(row.body)).toMatchObject({ endReason: 'assent_withdrawn' });
+  await stepTo(clock.now() + 60_000, 250);
+  expect(screen.getByTestId('aba-end-neutral')).toBeTruthy();
+  // следующего SD так и не было: проба одна
+  expect(await count('aba_trials')).toBe(1);
 });
 
 it('обучение карточке: подпись кнопки — «Пропустить», а не «Отказ»', async () => {
@@ -337,6 +357,14 @@ describe('звук последствия (№158)', () => {
 
 describe('фаза 7 (№169): перерыв, обмен, конец', () => {
   const border = () => StyleSheet.flatten(screen.getByTestId('aba-break-return').props.style).borderWidth as number;
+  /** Планки 120 в центре контурные: у прямоугольников есть штрих (у сплошных — только заливка). */
+  const iconOutline = () => {
+    type El = { type: string; props: Record<string, unknown>; children: (El | string)[] };
+    const collect = (n: El | string): El[] => (typeof n === 'string' ? [] : [...(n.type === 'RNSVGRect' ? [n] : []), ...n.children.flatMap(collect)]);
+    const rects = collect(screen.getByTestId('aba-break-icon') as unknown as El) as { props: { strokeWidth?: unknown } }[];
+    expect(rects).toHaveLength(2);
+    return rects.every((r) => typeof r.props.strokeWidth === 'number' && r.props.strokeWidth > 0);
+  };
   /** Ручные часы будят один срок за шаг: шагать, пока условие не выполнится (не дольше `max` шагов). */
   async function tickUntil(pred: () => boolean, step = 1000, max = 300) {
     for (let i = 0; i < max && !pred(); i += 1) await tick(step);
@@ -351,7 +379,13 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
   const hasType = (n: Host | string, type: string): boolean => typeof n !== 'string' && (n.type === type || n.children.some((c) => hasType(c, type)));
   /** Ячейки доски на «Закончили»: у полной ячейки есть звезда (`Path`), у пустой — только круг. */
   const endCells = () => (screen.getByTestId('aba-end-board').children as unknown as Host[]).map((cell) => hasType(cell, 'RNSVGPath'));
-  const doneDisabled = () => (screen.getByTestId('aba-end-done').props.accessibilityState as { disabled?: boolean } | undefined)?.disabled;
+  /** «Готово» (Ц3.8): касание раньше 1000 мс от показа кадра не засчитывается; затем — на карту. */
+  async function doneLeadsToMap() {
+    expect(screen.getByTestId('aba-end-done').props.accessibilityState?.disabled).toBeFalsy();
+    await tick(abaEndDone.lockMs);
+    await fireEvent.press(screen.getByTestId('aba-end-done'));
+    expect(router.replace).toHaveBeenCalledWith('/map');
+  }
 
   /** Сессия со взрослым до перерыва по карточке в первой пробе. */
   async function breakInTrial() {
@@ -392,12 +426,32 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
     expect(voice.last?.key).toBe('abaSession.sound.invite');
   });
 
-  it('второе приглашение отличимо без звука: контур снят на мигание, затем снова 6', async () => {
+  it('второе приглашение отличимо без звука (Ц3.1): планки 120 становятся контурными, контур 6 у «Вернуться» не снимается ни на миг', async () => {
     await breakInTrial();
-    await toSecondInvite();
-    expect(border()).toBe(ABA_CONTROL_STROKE);
-    await tick(motion.base);
+    await tickUntil(() => border() === 6);
+    expect(iconOutline()).toBe(false);
+    await tick(RETURN_INVITE_AFTER_MS - 1);
+    expect(iconOutline()).toBe(false);
     expect(border()).toBe(6);
+    await tick(1);
+    expect(iconOutline()).toBe(true);
+    expect(border()).toBe(6);
+    // мигания нет: и через 220 мс (прежний `REINVITE_BLINK_MS`), и позже — то же устойчивое состояние
+    for (const ms of [1, motion.base, 1000]) {
+      await tick(ms);
+      expect([border(), iconOutline()]).toEqual([6, true]);
+    }
+  });
+
+  it('значок 120 в центре — роль image, касание не возвращает и не пишет (Ц3.1)', async () => {
+    await breakInTrial();
+    const icon = screen.getByTestId('aba-break-icon');
+    expect(icon.props.accessibilityRole).toBe('image');
+    const trials = await count('aba_trials');
+    await fireEvent.press(icon);
+    await tick(10);
+    expect(screen.getByTestId('aba-break')).toBeTruthy();
+    expect(await count('aba_trials')).toBe(trials);
   });
 
   it('без возврата после двух приглашений — нейтральный конец по бездействию; в итоге перерыв и отказ device_inactivity', async () => {
@@ -416,8 +470,10 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
     expect(body.events).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'break', initiatedBy: 'child_card' })]));
     // ни обмена, ни сопряжения в пустой комнате
     expect(body.events.some((e) => e.kind === 'pairing' || e.kind === 'exchange')).toBe(false);
-    expect(doneDisabled()).toBe(false);
     expect(await loadChildState(db, KID, 'abaSessionInProgress')).toBeFalsy();
+    // хвоста нет — сразу «Закончили», «Готово» рабочая (после блокировки кадра)
+    expect(screen.queryByTestId('aba-end-wait')).toBeNull();
+    await doneLeadsToMap();
   });
 
   it('конец по бездействию при полной доске — обмена нет, доска на «Закончили» полная (ждёт следующей сессии)', async () => {
@@ -478,10 +534,14 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
     // кнопки «Получить!» нет: требования к ребёнку в конце нет — на экране обмена только выход удержанием
     expect(within(screen.getByTestId('aba-exchange')).queryAllByRole('button').map((b) => b.props.testID)).toEqual(['aba-exit']);
     expect(screen.queryAllByTestId('aba-exchange-token-filled', HIDDEN)).toHaveLength(3);
-    await tick(600);
+    const t0 = clock.now();
+    // три ячейки: полная доска стоит 1000 мс, полёт со сдвигом 60, «получено» 300, раскрытие 360 — доступ в 2140
+    await stepTo(t0 + 999);
     expect(screen.queryAllByTestId('aba-exchange-token-filled', HIDDEN)).toHaveLength(3);
-    await tick(motion.slow);
-    await waitFor(() => expect(screen.getByTestId('aba-access-play')).toBeTruthy());
+    await stepTo(t0 + 2140 - 1);
+    expect(screen.queryByTestId('aba-access-play')).toBeNull();
+    await stepTo(t0 + 2140);
+    expect(screen.getByTestId('aba-access-play')).toBeTruthy();
     const accessFrom = clock.now();
     // доступ на доске 3 — 40 с: «закругляемся» за 5 с до конца, сцена ещё играет
     voice.stop();
@@ -490,7 +550,7 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
     expect(screen.getByTestId('aba-access-play')).toBeTruthy();
     await tickUntil(() => screen.queryByTestId('aba-end-neutral') !== null);
     expect(endCells()).toEqual([false, false, false]);
-    expect(doneDisabled()).toBe(false);
+    await doneLeadsToMap();
   });
 
   /** «Отказ» в первой пробе при полной доске 3 — тихая пауза с подсвеченной карточкой; карточки не касаются. */
@@ -542,20 +602,310 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
     expect(await count('aba_sessions')).toBe(0);
   });
 
-  it('конец по отказу без полной доски — цикл сопряжения: «Готово» неактивна, жетон, доступ, «Готово» активна', async () => {
+  it('конец по отказу без полной доски — цикл сопряжения (Ц3.2): ожидание без карточки и без «Готово», жетон, доступ, один раз «Закончили»', async () => {
     await refuseAfterFirstTrial();
-    await waitFor(() => expect(screen.getByTestId('aba-end-neutral')).toBeTruthy());
+    await waitFor(() => expect(screen.getByTestId('aba-end-wait')).toBeTruthy());
     expect((await sessionBody()).events.some((e) => e.kind === 'pairing')).toBe(true);
-    // «Закончили» стоит, «Готово» неактивна до цикла: тап ничего не делает
-    expect(doneDisabled()).toBe(true);
-    await fireEvent.press(screen.getByTestId('aba-end-done'));
+    // ожидание — раскладка сопряжения с пустым слотом карточки: Tali и пустая ячейка; ни карточки, ни «Готово», ни «Закончили»
+    expect(screen.getByTestId('aba-end-wait-tali')).toBeTruthy();
+    expect(screen.getAllByTestId('aba-exchange-token-empty', HIDDEN)).toHaveLength(1);
+    expect(screen.queryByTestId('aba-exchange-card')).toBeNull();
+    expect(screen.queryByTestId('aba-end-done')).toBeNull();
+    expect(screen.queryByTestId('aba-end-neutral')).toBeNull();
+    const from = clock.now();
+    await stepTo(from + PAIRING.tokenAfterMs - 1, 500);
+    expect(screen.getByTestId('aba-end-wait')).toBeTruthy();
+    await stepTo(from + PAIRING.tokenAfterMs, 500);
+    // карточка появляется вместе с жетоном
+    expect(screen.getByTestId('aba-end-pairing')).toBeTruthy();
+    expect(screen.getByTestId('aba-exchange-card')).toBeTruthy();
+    // «Закончили» показан один раз — после цикла: до конца доступа его нет ни на одном шаге
+    let endSeenEarly = false;
+    let sawAccess = false;
+    for (let i = 0; i < 400 && !screen.queryByTestId('aba-end-neutral'); i += 1) {
+      if (screen.queryByTestId('aba-access-play')) sawAccess = true;
+      await tick(100);
+      if (!sawAccess && screen.queryByTestId('aba-end-neutral')) endSeenEarly = true;
+    }
+    expect(sawAccess).toBe(true);
+    expect(endSeenEarly).toBe(false);
+    expect(screen.getAllByTestId('aba-end-neutral')).toHaveLength(1);
+    expect(screen.queryByTestId('aba-end-wait')).toBeNull();
+    await doneLeadsToMap();
+  });
+
+  /* ───────── вид фазы 7 по циклу 3 (№171) ───────── */
+
+  const cardStroke = (id: string) => StyleSheet.flatten(screen.getByTestId(id).props.style).borderWidth as number;
+  const filled = () => screen.queryAllByTestId('aba-exchange-token-filled', HIDDEN).length;
+  const empty = () => screen.queryAllByTestId('aba-exchange-token-empty', HIDDEN).length;
+  /** Полная доска 3 до сессии, «Отказ» вне пробы — обмен в конце; `t0` — показ кадра обмена. */
+  async function endExchangeOfThree(): Promise<number> {
+    const at = new Date(clock.now()).toISOString();
+    await asAbaWriter(db, KID, async (tx) => {
+      await saveChildState(tx, KID, 'tokenTraining', { ...initialTokenTraining(), pairingDone: true, stage: 3 }, at);
+      await saveChildState(tx, KID, 'abaBoard', { earned: 3, nonContingent: 0 }, at);
+    });
+    await refuseAfterFirstTrial();
+    await waitFor(() => expect(screen.getByTestId('aba-exchange')).toBeTruthy());
+    return clock.now();
+  }
+  /** Обучение доске (одна ячейка), верно на L0 — обмен сразу; `t0` — показ кадра обмена. */
+  async function trainingExchange(): Promise<number> {
+    const two = ABA_TARGETS.find((x) => x.id === 'match-same-2')!;
+    const states = { [two.id]: { ...initialTargetState(two), phase: 'acquisition' as const, startPromptLevel: 0 as const, lastSuccessfulPromptLevel: 0 as const } };
+    await asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'abaTargets', states, new Date(clock.now()).toISOString()));
+    await mount();
+    await skipCardTraining();
+    await chooseFirst();
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('aba-sample'));
+    await fireEvent.press(screen.getByTestId(correctOption()));
+    await waitFor(() => expect(screen.getByTestId('aba-reinforcement')).toBeTruthy());
+    await tick(0);
+    await tick(340);
+    await tick(360);
+    await tick(3300);
+    await tick(1000);
+    await waitFor(() => expect(screen.getByTestId('aba-exchange')).toBeTruthy());
+    return clock.now();
+  }
+  async function holdExit() {
+    await fireEvent(screen.getByTestId('aba-exit'), 'pressIn');
+    await tick(1500);
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/map'));
+  }
+  type AccessEvent = { kind: 'access'; startedAt: string; endedAt: string };
+  const accessEvents = async () => (await sessionBody()).events.filter((e) => e.kind === 'access') as unknown as AccessEvent[];
+
+  it('обмен в конце, доска 3 (Ц3.4): полная доска до 1000, ячейки пустеют 1000/1060/1120, «получено» в 1480, ряд скрыт с 1780, доступ с 2140', async () => {
+    const t0 = await endExchangeOfThree();
+    expect([filled(), cardStroke('aba-exchange-card')]).toEqual([3, ABA_CONTROL_STROKE]);
+    await stepTo(t0 + 999);
+    expect([filled(), empty()]).toEqual([3, 0]);
+    await stepTo(t0 + 1000);
+    expect([filled(), empty()]).toEqual([2, 1]);
+    await stepTo(t0 + 1060);
+    expect([filled(), empty()]).toEqual([1, 2]);
+    await stepTo(t0 + 1120);
+    expect([filled(), empty()]).toEqual([0, 3]);
+    await stepTo(t0 + 1479);
+    expect(cardStroke('aba-exchange-card')).toBe(ABA_CONTROL_STROKE);
+    await stepTo(t0 + 1480);
+    expect([cardStroke('aba-exchange-card'), empty()]).toEqual([6, 3]);
+    await stepTo(t0 + 1779);
+    expect(empty()).toBe(3);
+    await stepTo(t0 + 1780);
+    expect([filled(), empty()]).toEqual([0, 0]);
+    expect(cardStroke('aba-exchange-card')).toBe(ABA_CONTROL_STROKE);
+    await stepTo(t0 + 2139);
+    expect(screen.getByTestId('aba-exchange')).toBeTruthy();
+    expect(screen.queryByTestId('aba-access-play')).toBeNull();
+    await stepTo(t0 + 2140);
+    expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+    expect(screen.getByTestId('aba-access-ring', HIDDEN)).toBeTruthy();
+  });
+
+  it('обмен в конце, calm: в 1000 одна смена кадра — все ячейки пусты и контур 6; доступ в 1500', async () => {
+    const before = useChildSession.getState().settings;
+    useChildSession.setState({ settings: { ...before, calmMode: true } });
+    try {
+      const t0 = await endExchangeOfThree();
+      await stepTo(t0 + 999);
+      expect([filled(), cardStroke('aba-exchange-card')]).toEqual([3, ABA_CONTROL_STROKE]);
+      await stepTo(t0 + 1000);
+      expect([filled(), empty(), cardStroke('aba-exchange-card')]).toEqual([0, 3, 6]);
+      await stepTo(t0 + 1499);
+      expect(screen.queryByTestId('aba-access-play')).toBeNull();
+      await stepTo(t0 + 1500);
+      expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+    } finally {
+      useChildSession.setState({ settings: before });
+    }
+  });
+
+  it('жетон цикла сопряжения в конце: въезд 220, звук жетона при посадке, удержание 600, вылет в 820, доступ в 1840', async () => {
+    await refuseAfterFirstTrial();
+    await waitFor(() => expect(screen.getByTestId('aba-end-wait')).toBeTruthy());
+    await stepTo(clock.now() + PAIRING.tokenAfterMs, 500);
+    expect(screen.getByTestId('aba-end-pairing')).toBeTruthy();
+    const t1 = clock.now();
+    voice.stop();
+    expect(screen.getByTestId('aba-exchange-token-landing', HIDDEN)).toBeTruthy();
+    expect(filled()).toBe(0);
+    await stepTo(t1 + 219);
+    expect(voice.last).toBeNull();
+    await stepTo(t1 + 220);
+    expect(filled()).toBe(1);
+    expect(voice.last?.key).toBe('abaSession.sound.token');
+    await stepTo(t1 + 220 + 599);
+    expect(filled()).toBe(1);
+    await stepTo(t1 + 220 + 600);
+    expect([filled(), empty()]).toEqual([0, 1]);
+    await stepTo(t1 + 1839);
+    expect(screen.queryByTestId('aba-access-play')).toBeNull();
+    await stepTo(t1 + 1840);
+    expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+    // в цикле похвалы голосом нет (Ц3.3)
+    expect(voice.last?.key).toBe('abaSession.sound.token');
+  });
+
+  it('доступ в сессии (Ц3.5): кольцо с силуэтом до T, в T исчезает; карточка на кадре конца; следующий шаг через 360 + 1000', async () => {
+    const t0 = await trainingExchange();
+    // одна ячейка: 600 + 360 + 300 + 360
+    const A = t0 + 1620;
+    await stepTo(A);
+    expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+    await stepTo(A + 19_999, 250);
+    expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+    expect(screen.getByTestId('aba-access-ring', HIDDEN)).toBeTruthy();
+    expect(screen.getByTestId('aba-access-ring-silhouette', HIDDEN)).toBeTruthy();
+    expect(screen.queryByTestId('aba-access-card')).toBeNull();
+    await stepTo(A + 20_000);
+    expect(screen.queryByTestId('aba-access-ring', HIDDEN)).toBeNull();
+    expect(screen.queryByTestId('aba-access-ring-silhouette', HIDDEN)).toBeNull();
+    expect(screen.getByTestId('aba-access-fold')).toBeTruthy();
+    expect(screen.getByTestId('aba-access-card')).toBeTruthy();
+    await stepTo(A + 20_360);
+    expect(screen.getByTestId('aba-access-hold')).toBeTruthy();
+    expect(screen.getByTestId('aba-access-card')).toBeTruthy();
+    await stepTo(A + 21_359);
+    expect(screen.getByTestId('aba-access-hold')).toBeTruthy();
+    await stepTo(A + 21_360);
+    await waitFor(() => expect(screen.queryByTestId(/^aba-access-/, HIDDEN)).toBeNull());
+    expect(screen.queryByTestId('aba-exchange')).toBeNull();
+  });
+
+  it('событие access в итоге сессии — время сцены, ровно durationMs (№171): без обмена и кадра конца', async () => {
+    const t0 = await trainingExchange();
+    const A = t0 + 1620;
+    await stepTo(A + 21_360, 250);
+    await waitFor(() => expect(screen.queryByTestId(/^aba-access-/, HIDDEN)).toBeNull());
+    await waitFor(() => expect(screen.getByTestId('aba-exit')).toBeTruthy());
+    await holdExit();
+    const events = await accessEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0].startedAt).toBe(new Date(A).toISOString());
+    expect(Date.parse(events[0].endedAt) - Date.parse(events[0].startedAt)).toBe(20_000);
+  });
+
+  it('выход удержанием на экране обмена — в итоге нет события access (сцена не началась), обмен есть', async () => {
+    await trainingExchange();
+    await holdExit();
+    const body = await sessionBody();
+    expect(body.endReason).toBe('adult_stopped');
+    expect(body.events.some((e) => e.kind === 'exchange')).toBe(true);
+    expect(body.events.some((e) => e.kind === 'access')).toBe(false);
+  });
+
+  it('выход удержанием во время сцены — access от начала сцены до выхода', async () => {
+    const t0 = await trainingExchange();
+    const A = t0 + 1620;
+    await stepTo(A + 5000, 250);
+    expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+    await holdExit();
+    const [e] = await accessEvents();
+    expect(e.startedAt).toBe(new Date(A).toISOString());
+    expect(e.endedAt).toBe(new Date(A + 6500).toISOString());
+  });
+
+  it('выход удержанием, начатый в сцене и законченный на кадре конца, — доступ пишется до T, а не до выхода (№171)', async () => {
+    const t0 = await trainingExchange();
+    const A = t0 + 1620;
+    await stepTo(A + 19_500, 250);
+    expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+    await fireEvent(screen.getByTestId('aba-exit'), 'pressIn');
+    await stepTo(A + 20_400);
+    expect(screen.getByTestId('aba-access-hold')).toBeTruthy();
+    await stepTo(A + 21_000);
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/map'));
+    expect(await accessEvents()).toEqual([{ kind: 'access', startedAt: new Date(A).toISOString(), endedAt: new Date(A + 20_000).toISOString() }]);
+  });
+
+  it('подпись взрослому — только у обучающего перерыва и только со второго приглашения (Ц3.9)', async () => {
+    await mount();
+    await waitFor(() => expect(screen.getByTestId('aba-card-training')).toBeTruthy());
+    await tick(1000);
+    await fireEvent.press(screen.getByTestId('aba-break-card'));
+    await waitFor(() => expect(screen.getByTestId('aba-break')).toBeTruthy());
+    expect(screen.queryByTestId('aba-adult-caption')).toBeNull();
+    await tickUntil(() => border() === 6);
+    // первое приглашение — подписи ещё нет
+    expect(screen.queryByTestId('aba-adult-caption')).toBeNull();
+    await tick(RETURN_INVITE_AFTER_MS - 1);
+    expect(screen.queryByTestId('aba-adult-caption')).toBeNull();
+    await tick(1);
+    expect(screen.getByTestId('aba-adult-caption').props.children).toBe(ru.abaBreak.trainingWaitHint);
+    // статично до «Вернуться»
+    await tick(5 * RETURN_INVITE_AFTER_MS);
+    expect(screen.getByTestId('aba-adult-caption').props.children).toBe(ru.abaBreak.trainingWaitHint);
+  });
+
+  it('обычный перерыв по карточке — подписи взрослому нет ни на первом, ни на втором приглашении', async () => {
+    await breakInTrial();
+    expect(screen.queryByTestId('aba-adult-caption')).toBeNull();
+    await toSecondInvite();
+    expect(iconOutline()).toBe(true);
+    expect(screen.queryByTestId('aba-adult-caption')).toBeNull();
+  });
+
+  it('тихая пауза после «Отказ» (Ц3.7): контур 6 у карточки всю паузу (15-я и 29-я секунды), подпись в панели — только первые 10 с', async () => {
+    await refusalPauseWithFullBoard();
+    const from = clock.now();
+    expect(cardStroke('aba-break-card')).toBe(6);
+    expect(screen.getByTestId('aba-panel-caption').props.children).toBe('Покажите на карточку жестом, не уговаривайте');
+    await stepTo(from + 9999, 500);
+    expect(screen.getByTestId('aba-panel-caption')).toBeTruthy();
+    await stepTo(from + 10_000, 500);
+    expect(screen.queryByTestId('aba-panel-caption')).toBeNull();
+    expect(cardStroke('aba-break-card')).toBe(6);
+    await stepTo(from + 15_000, 500);
+    expect([cardStroke('aba-break-card'), screen.queryByTestId('aba-panel-caption')]).toEqual([6, null]);
+    await stepTo(from + 29_000, 500);
+    expect([cardStroke('aba-break-card'), screen.queryByTestId('aba-panel-caption')]).toEqual([6, null]);
+    expect(screen.getByTestId('aba-refusal-pause')).toBeTruthy();
+  });
+});
+
+describe('«Готово» на экране конца (Ц3.8)', () => {
+  const touch = { nativeEvent: { pageX: 0, pageY: 0, identifier: 0 } };
+  /** «Сам» без освоенного формата — проб нет, сразу нейтральный «Закончили» (кадр показан сейчас). */
+  async function endScreen() {
+    useAbaRun.getState().set({ config: 'alone', observers: [], primaryObserverId: null });
+    await mount();
+    await waitFor(() => expect(screen.getByTestId('aba-end-neutral')).toBeTruthy());
+  }
+
+  it('«Готово» — детская кнопка с видом обычной кнопки, без disabled', async () => {
+    await endScreen();
+    const done = screen.getByTestId('aba-end-done');
+    expect(done.props.accessibilityRole).toBe('button');
+    expect(done.props.accessibilityState?.disabled).toBeFalsy();
+  });
+
+  it('тап в первые 1000 мс не уводит на карту', async () => {
+    await endScreen();
+    await fireEvent.press(screen.getByTestId('aba-end-done'), touch);
+    await tick(abaEndDone.lockMs - 1);
+    await fireEvent(screen.getByTestId('aba-end-done'), 'pressIn', touch);
+    await fireEvent.press(screen.getByTestId('aba-end-done'), touch);
     expect(router.replace).not.toHaveBeenCalled();
-    await tick(PAIRING.tokenAfterMs);
-    await waitFor(() => expect(screen.getByTestId('aba-end-pairing')).toBeTruthy());
-    await tickUntil(() => screen.queryByTestId('aba-access-play') !== null, 100);
-    await tickUntil(() => screen.queryByTestId('aba-end-neutral') !== null);
-    expect(doneDisabled()).toBe(false);
-    await fireEvent.press(screen.getByTestId('aba-end-done'));
+  });
+
+  it('касание, начатое до 1000 мс и отпущенное после, не засчитывается', async () => {
+    await endScreen();
+    await tick(500);
+    await fireEvent(screen.getByTestId('aba-end-done'), 'pressIn', touch);
+    await tick(600);
+    await fireEvent.press(screen.getByTestId('aba-end-done'), touch);
+    expect(router.replace).not.toHaveBeenCalled();
+  });
+
+  it('тап с 1000 мс — на карту', async () => {
+    await endScreen();
+    await tick(abaEndDone.lockMs);
+    await fireEvent(screen.getByTestId('aba-end-done'), 'pressIn', touch);
+    await fireEvent.press(screen.getByTestId('aba-end-done'), touch);
     expect(router.replace).toHaveBeenCalledWith('/map');
   });
 });

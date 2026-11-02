@@ -12,6 +12,16 @@ import type { AbaTarget, RoutineRunKind } from '../../types/aba';
 import {
   ABA_OVERLAY_CONTENT_HEIGHT,
   abaAccessScene,
+  abaAccessPlaceholderMark,
+  abaAccessRing,
+  abaEndDone,
+  abaEndTail,
+  abaExchange,
+  abaExchangeHoldMs,
+  abaNonTrialRow,
+  abaPairingLayout,
+  abaPictureSurface,
+  abaRefusalPause,
   abaChannelVolume,
   abaChildTouch,
   abaConsequence,
@@ -1594,9 +1604,9 @@ describe('доступ: сцена и конец (Ц2.8; пункты 2 и 5 п�
     expect(abaSound.sceneDuck.under).toContain('access_end_cue');
   });
 
-  it('доигрывание ≤ 3 с: song — такт и затухание в последние 500 мс, остальные — затухание 500 мс; деталь puzzle4 уходит на место', () => {
+  it('доигрывание ≤ 2 с (ограничение 5 цикла 3): song — такт и затухание в последние 500 мс, остальные — затухание 500 мс; деталь puzzle4 уходит на место', () => {
     expect(a.newOnTapAfterEnd).toBe(false);
-    expect(a.settleMaxMs).toBe(3000);
+    expect(a.settleMaxMs).toBe(2000);
     expect(a.settle.song).toEqual({ finishBar: true, fadeLastMs: 500 });
     expect(a.settle.others).toEqual({ fadeMs: 500 });
     expect(a.settle.song.fadeLastMs).toBeLessThanOrEqual(a.settleMaxMs);
@@ -1604,10 +1614,63 @@ describe('доступ: сцена и конец (Ц2.8; пункты 2 и 5 п�
     expect(a.settle.puzzle4HeldPiece).toBe('goes_home');
   });
 
-  it('после доигрывания кольцо исчезает мгновенно, через 1000 мс — следующий шаг; время ребёнка не урезается', () => {
-    expect(a.ringHiddenAfterSettle).toBe(true);
+  it('кадр конца (Ц3.5): кольцо исчезает в T, сцена сворачивается в карточку, через 1000 мс — следующий шаг; время ребёнка не урезается', () => {
+    expect(a.endFrame.ringHiddenAt).toBe('T');
+    expect(a.endFrame.placeholderRest).toBe('marks_clear');
+    expect(a.endFrame.foldIntoCard).toBe(true);
+    expect(a.endFrame.foldMs).toBe(motion.slow);
+    expect(a.endFrame.foldCalm).toBe('cut');
     expect(a.endSettleMs).toBe(1000);
     expect(a.durationTrimmed).toBe(false);
+  });
+});
+
+describe('фаза 7, цикл 3 (№171)', () => {
+  it('обмен: удержание 600 при одной ячейке, 1000 при двух и больше; без кнопки; полёт и раскрытие — motion.slow', () => {
+    expect(abaExchangeHoldMs(1)).toBe(600);
+    expect(abaExchangeHoldMs(2)).toBe(1000);
+    expect(abaExchangeHoldMs(5)).toBe(1000);
+    expect(abaExchange.button).toBe(false);
+    expect(abaExchange.cardSize).toBe(abaPairingLayout.cardSize);
+    expect(abaExchange.fly.ms).toBe(motion.slow);
+    expect(abaExchange.openMs).toBe(motion.slow);
+    expect(abaExchange.receivedStroke).toBe(stroke.bold);
+    // потолок «полная доска → доступ» ≈ 2.3 с у пяти ячеек (ограничение 4)
+    const five = abaExchangeHoldMs(5) + 4 * abaExchange.fly.staggerMs + abaExchange.fly.ms + abaExchange.receivedHoldMs + abaExchange.openMs;
+    expect(five).toBeLessThanOrEqual(2300);
+  });
+
+  it('второе приглашение — контурная иконка 120, контур «Вернуться» не мигает', () => {
+    expect(abaBreak.invite.second.blink).toBe(false);
+    expect(abaBreak.invite.second.contourStays).toBe(true);
+    expect(abaBreak.invite.second.iconStroke).toBe(stroke.bold);
+    expect(abaBreak.centerIconTap.from).toBe('break_start');
+    expect(abaBreak.trainingWait.from).toBe('second_invite');
+    // подпись взрослому — две строки при ×1.2: длина самой строки в каждой локали, где она есть (`localization-qa`)
+    for (const lang of ['ru', 'en'] as const) {
+      const text = (JSON.parse(fs.readFileSync(path.join(__dirname, `../../i18n/locales/${lang}.json`), 'utf8')) as { abaBreak: { trainingWaitHint: string } }).abaBreak.trainingWaitHint;
+      expect([...text].length).toBeLessThanOrEqual(abaBreak.trainingWait.maxChars[lang]);
+    }
+  });
+
+  it('строка 72, кольцо 56 с силуэтом 24 в центре, поверхность картинки — тёмный контур плиты', () => {
+    expect(abaNonTrialRow.height).toBe(72);
+    expect(abaNonTrialRow.exitTopInset + abaControls.exitSize).toBeLessThanOrEqual(abaNonTrialRow.height);
+    expect(abaAccessRing.size).toBe(56);
+    expect(abaAccessRing.silhouette).toBeLessThan(abaAccessRing.size - 2 * abaAccessRing.stroke);
+    expect(abaPictureSurface).toEqual({ fill: 'plate', outline: 'plateOutline' });
+    for (const scheme of ['light', 'dark'] as const) expect(abaColors[scheme].plateOutline).toBe('#2A1A12');
+  });
+
+  it('тихая пауза — контур 6 все 30 с; «Готово» — детская кнопка с блокировкой 1000 мс; метка заглушки не жёлтая', () => {
+    expect(abaRefusalPause.cardContour).toBe(stroke.bold);
+    expect(abaRefusalPause.fade).toBe(false);
+    expect(abaEndDone.lockMs).toBe(1000);
+    expect(abaEndDone.glyphMono).toBe(true);
+    expect(abaEndTail.endScreenOnce).toBe(true);
+    expect(abaEndTail.emptyCardSlot).toBe(true);
+    expect(abaAccessPlaceholderMark.fill).not.toBe(abaColors.light.tokenEarned);
+    expect(abaAccessPlaceholderMark.r).toBe(16);
   });
 });
 

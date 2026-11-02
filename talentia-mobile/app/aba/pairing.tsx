@@ -1,6 +1,7 @@
 /**
- * Сессия сопряжения (раздел 3 направления, Ц2.4; домен `abaPairing.ts`, модель `src/ui/aba/model/pairingRun.ts`):
- * выбор из трёх тапом → 10 с ожидания → жетон в ячейку из одной → сразу обмен → доступ 20 с; четыре цикла, затем
+ * Сессия сопряжения (раздел 3 направления, Ц2.4, цикл 3; домен `abaPairing.ts`, модель `src/ui/aba/model/pairingRun.ts`):
+ * выбор из трёх тапом → 10 с ожидания → жетон в ячейку из одной → сразу обмен (тот же экран, что в сессии, Ц3.4) →
+ * доступ 20 с, кадр конца — сцена сворачивается в карточку (Ц3.5); строка 72 общая с сессией; четыре цикла, затем
  * `commitPairingSession` и конец. Панели взрослого нет; выход — удержанием в строке 72. Свернули — итог пишется
  * сразу как `app_backgrounded` (№164); середина не сохраняется, и убитое без сворачивания приложение теряет выборы
  * (методист 2026-10-28: для плейтеста при взрослом допустимо).
@@ -9,25 +10,26 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { Redirect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AppState, Pressable, Text, View } from 'react-native';
+import { AppState, BackHandler, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { abaPairingLayout, abaReinforcerCardSize, abaReinforcerChoice } from '../../src/design/abaTokens';
 import { pairingResultOf, startPairing } from '../../src/domain/abaPairing';
-import { PAIRING } from '../../src/domain/abaTokenTraining';
 import { seeded } from '../../src/domain/abaRandom';
 import { newAbaId } from '../../src/services/abaIds';
 import { loadPairingStart } from '../../src/services/local/abaStart';
 import { commitPairingSession } from '../../src/services/local/commit';
+import { voice } from '../../src/services/voice';
 import { useAbaRun } from '../../src/state/abaRun';
 import { useAccount } from '../../src/state/account';
 import { useChildSession } from '../../src/state/childSession';
 import { AbaEnd } from '../../src/ui/aba/AbaEnd';
-import { PlaceholderScene } from '../../src/ui/aba/access/PlaceholderScene';
 import { useAbaClock, useDue } from '../../src/ui/aba/clock';
 import { pairingRunDueAt, startPairingRun, stepPairingRun, type PairingRun, type PairingRunEvent } from '../../src/ui/aba/model/pairingRun';
-import { ExitHold, useAbaColors } from '../../src/ui/aba/parts';
-import { AccessRing, ReinforcerArt, ReinforcerChoiceView, TokenCell } from '../../src/ui/aba/reinforcer';
+import { NonTrialRow, PressOnly, useAbaColors, useReduceMotion } from '../../src/ui/aba/parts';
+import { PictureCard, ReinforcerChoiceView, TokenCell } from '../../src/ui/aba/reinforcer';
+import { AccessView } from '../../src/ui/aba/session/AccessView';
+import { ExchangeView } from '../../src/ui/aba/session/ExchangeView';
 import { TaliFigure } from '../../src/ui/TaliFigure';
 
 type Ended = { variant: 'normal' | 'neutral'; toMap: boolean };
@@ -42,6 +44,9 @@ export default function AbaPairingScreen() {
   const childId = useChildSession((s) => s.childId);
   const soundOn = useChildSession((s) => s.settings.soundEffects);
   const calm = useChildSession((s) => s.settings.calmMode);
+  const reduceMotion = useReduceMotion();
+  const reduceRef = useRef(reduceMotion);
+  reduceRef.current = reduceMotion;
   const config = useAbaRun((s) => s.config);
   const primaryObserverId = useAbaRun((s) => s.primaryObserverId);
   const [run, setRun] = useState<PairingRun | null>(null);
@@ -69,7 +74,8 @@ export default function AbaPairingScreen() {
         }
         const now = clock.now();
         const state = startPairing({ sessionId: newAbaId(), config, pool: start.pool, history: start.history, apart: start.apart, rng: seeded(now >>> 0).rng, now });
-        runRef.current = startPairingRun(state, config, startOpts.current.calm);
+        // calm и «уменьшить движение» — смены кадра и сроки calm у обмена и кадра конца
+        runRef.current = startPairingRun(state, config, startOpts.current.calm || reduceRef.current);
         setRun(runRef.current);
       },
       (e: unknown) => {
@@ -111,23 +117,26 @@ export default function AbaPairingScreen() {
       setRun(next);
       for (const fx of effects) {
         if (fx.type === 'nudge') {
-          // повтор инструкции голосом — когда будет голос; пульс — кроме calm
-          if (!calm) {
+          // повтор инструкции голосом — когда будет голос; пульс — кроме calm и «уменьшить движение»
+          if (!next.calm) {
             setPulse(true);
             clock.at(clock.now() + abaReinforcerChoice.aloneRepeat.pulse.durationMs, () => setPulse(false));
           }
         } else if (fx.type === 'done') {
           void finish(next);
+        } else if (fx.type === 'token_landed') {
+          // звук жетона при посадке — как в сессии и цикле в конце: связь «звук — жетон» ставится здесь; файл подключит озвучка
+          voice.say('abaSession.sound.token');
         }
-        // `token_landed` — звук `token`, когда появится звук; `show_strip` рисуется из состояния
+        // `show_strip` рисуется из состояния
       }
     },
-    [calm, clock, finish],
+    [clock, finish],
   );
 
   useDue(run ? pairingRunDueAt(run) : null, (at) => dispatch({ type: 'due', at }));
-  // кольцо доступа — шагами по 1 с
-  const inAccess = run?.state.phase === 'access';
+  // кольцо доступа — шагами по 1 с, пока сцена играет
+  const inAccess = run?.access?.stage === 'play';
   useDue(inAccess ? tick + 1000 : null, (at) => setTick(at));
   useEffect(() => {
     if (inAccess) setTick(clock.now());
@@ -143,6 +152,12 @@ export default function AbaPairingScreen() {
     return () => sub.remove();
   }, [dispatch, clock]);
 
+  // системный «назад» (жест от края, ладонь у кромки) не уводит мимо выхода удержанием — как в сессии
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => true);
+    return () => sub.remove();
+  }, []);
+
   // без конфигурации — только до старта: после конца она сброшена, а экран конца ещё на месте
   if (!config && !runRef.current && !ended) return <Redirect href="/parent/aba" />;
 
@@ -157,12 +172,11 @@ export default function AbaPairingScreen() {
   };
 
   const header = (center?: ReactNode) => (
-    <View style={{ height: 72, flexDirection: 'row', alignItems: 'flex-start', paddingTop: 6 }}>
-      <ExitHold onExit={exit} label={t('abaSession.exit')} hintLabel={t('abaSession.exitHint')} />
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', height: 60 }}>{center}</View>
-      <View style={{ width: 60 }} />
-    </View>
+    <NonTrialRow onExit={exit} exitLabel={t('abaSession.exit')} exitHint={t('abaSession.exitHint')}>
+      {center}
+    </NonTrialRow>
   );
+  const moving = !(run?.calm ?? true);
 
   let body: ReactNode = null;
   if (ended) {
@@ -190,42 +204,27 @@ export default function AbaPairingScreen() {
           />
         </View>
       );
+    } else if (s.phase === 'wait_token' && s.reinforcerId && run.exchange) {
+      body = <ExchangeView run={run.exchange} at={run.at} reinforcerId={s.reinforcerId} pairing moving={moving} onExit={exit} testID="aba-pairing-exchange" />;
     } else if (s.phase === 'wait_token' && s.reinforcerId) {
-      // полёта в карточку ещё нет — жетон лежит в ячейке до кадра доступа, как в calm («исчезает и раскрывается в
-      // одном кадре»): пустая ячейка перед доступом читалась бы как «звезда исчезла»
-      const filled = run.token !== null;
+      // ожидание жетона — 10 с без движения: карточка выбранного, Tali `idle`, пустая ячейка (та же раскладка, что у
+      // обмена); касание карточки — сжатие без действия и записи (I-6: ни одна цель не молчит)
       body = (
         <View style={{ flex: 1, paddingHorizontal: 16 }}>
           {header()}
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} testID="aba-pairing-wait">
-            {/* ожидание жетона — 10 с без движения; касание карточки отвечает сжатием `tapPress`, без действия и
-                без записи (I-6: ни одна цель не молчит), сама процедура ждёт свой срок */}
-            <Pressable
-              accessibilityRole="image"
-              accessibilityLabel={t('abaSession.tali')}
-              style={({ pressed }) => ({ width: abaPairingLayout.cardSize, height: abaPairingLayout.cardSize, borderRadius: 28, borderWidth: 3, borderColor: c.controlInk, backgroundColor: c.plate, alignItems: 'center', justifyContent: 'center', transform: [{ scale: pressed ? 0.94 : 1 }] })}
-              testID="aba-pairing-wait-card"
-            >
-              <ReinforcerArt id={s.reinforcerId} size={abaPairingLayout.cardSize - 32} />
-            </Pressable>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: abaPairingLayout.gapCardRow, gap: abaPairingLayout.gapTaliCell }}>
-              <TaliFigure pose={run.token ? 'point' : 'idle'} size={abaPairingLayout.tali} crop accessibilityLabel={t('abaSession.tali')} testID="aba-pairing-tali" />
-              <TokenCell size={abaPairingLayout.cell} filled={filled} testID={filled ? 'aba-pairing-token-filled' : 'aba-pairing-token-empty'} />
+          <View style={{ flex: 1, paddingVertical: 16, alignItems: 'center', justifyContent: 'center' }} testID="aba-pairing-wait">
+            <PictureCard id={s.reinforcerId} testID="aba-pairing-wait-card" />
+            <View style={{ flexDirection: 'row', alignItems: 'center', height: 88, marginTop: abaPairingLayout.gapCardRow, gap: abaPairingLayout.gapTaliCell }}>
+              <PressOnly accessibilityLabel={t('abaSession.tali')}>
+                <TaliFigure pose="idle" size={abaPairingLayout.tali} crop accessibilityLabel={t('abaSession.tali')} testID="aba-pairing-tali" />
+              </PressOnly>
+              <TokenCell size={abaPairingLayout.cell} filled={false} testID="aba-pairing-token-empty" />
             </View>
           </View>
         </View>
       );
-    } else if (s.phase === 'access' && s.reinforcerId) {
-      const left = (s.phaseSince + PAIRING.accessMs - tick) / PAIRING.accessMs;
-      body = (
-        <View style={{ flex: 1, paddingHorizontal: 16 }}>
-          {header(<AccessRing left={left} />)}
-          <View style={{ height: 16 }} />
-          <View style={{ flex: 1, marginBottom: 16 }}>
-            <PlaceholderScene reinforcerId={s.reinforcerId} ended={false} />
-          </View>
-        </View>
-      );
+    } else if (s.phase === 'access' && s.reinforcerId && run.access) {
+      body = <AccessView run={run.access} tick={tick} reinforcerId={s.reinforcerId} moving={moving} onExit={exit} />;
     }
   }
 

@@ -4,14 +4,17 @@
  */
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, useColorScheme, View } from "react-native";
-import Svg, { Circle, Path, Rect } from "react-native-svg";
+import Svg, { Circle, Path } from "react-native-svg";
 
 import { REINFORCERS } from "../../content/aba/reinforcers";
 import {
+  abaAccessRing,
   abaAdultPanelColors,
+  abaExchange,
   abaReinforcerCard,
   abaReinforcerChoice,
   abaTokenBoard,
+  inactiveChoice,
   ABA_CONTROL_STROKE,
   ABA_STRIP_SILHOUETTE,
   ABA_STRIP_SILHOUETTE_GAP,
@@ -322,16 +325,21 @@ export function ReinforcerChoiceView({
   );
 }
 
-/** Кольцо доступа без чисел (раздел 8): диаметр 56, штрих 6, дуга `reinforcement` убывает по часовой от 12 часов. */
+/**
+ * Кольцо доступа без чисел (раздел 8, Ц3.6): диаметр 56, штрих 6, дуга `reinforcement` убывает по часовой от 12
+ * часов; внутри — силуэт позиции 24 `ink` (`reinforcerId`): «время этой игрушки». Таймер перерыва — без силуэта.
+ */
 export function AccessRing({
   left,
-  size = 56,
+  size = abaAccessRing.size,
+  reinforcerId,
 }: {
   left: number;
   size?: number;
+  reinforcerId?: string | null;
 }) {
   const c = useAbaColors();
-  const w = 6;
+  const w = abaAccessRing.stroke;
   const r = (size - w) / 2;
   const frac = Math.max(0, Math.min(1, left));
   const a = 2 * Math.PI * frac;
@@ -375,15 +383,56 @@ export function AccessRing({
             />
           )
         )}
-        <Rect
-          x={size / 2 - 6}
-          y={size / 2 - 6}
-          width={12}
-          height={12}
-          rx={6}
-          fill={c.ink}
-        />
       </Svg>
+      {reinforcerId && (
+        <View
+          style={{ position: "absolute", left: (size - abaAccessRing.silhouette) / 2, top: (size - abaAccessRing.silhouette) / 2 }}
+          testID="aba-access-ring-silhouette"
+        >
+          <ReinforcerArt id={reinforcerId} size={abaAccessRing.silhouette} silhouette />
+        </View>
+      )}
     </View>
+  );
+}
+
+/**
+ * Карточка картинки подкрепителя 160 (Ц3.4; обмен, ожидание сопряжения, кадр конца доступа): поверхность картинки
+ * (`abaPictureSurface`: `plate` и всегда тёмный `plateOutline` — в тёмной схеме утолщение 3 → 6 видно), контур 3 или 6
+ * «получено». Не нажимается: касание отвечает сжатием 0.94 без действия и записи (ни одна цель не молчит). Для
+ * экранного чтеца — название позиции, а не Tali.
+ */
+export function PictureCard({
+  id,
+  stroke = ABA_CONTROL_STROKE,
+  size = abaExchange.cardSize,
+  testID,
+}: {
+  id: string;
+  stroke?: number;
+  size?: number;
+  testID?: string;
+}) {
+  const { t } = useTranslation();
+  const c = useAbaColors();
+  return (
+    <Pressable
+      accessibilityRole="image"
+      accessibilityLabel={t(labelKeyOf(id))}
+      testID={testID}
+      style={({ pressed }) => ({
+        transform: [{ scale: pressed ? inactiveChoice.tapPress.scale : 1 }],
+        width: size,
+        height: size,
+        borderRadius: radii.lg,
+        borderWidth: stroke,
+        borderColor: c.plateOutline,
+        backgroundColor: c.plate,
+        alignItems: "center",
+        justifyContent: "center",
+      })}
+    >
+      <ReinforcerArt id={id} size={size - 32} />
+    </Pressable>
   );
 }

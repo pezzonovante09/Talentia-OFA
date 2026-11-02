@@ -1262,24 +1262,25 @@ export function finishBreak(state: AbaSessionState, now: number): { state: AbaSe
   };
 }
 
-/**
- * Доступ к подкрепителю после обмена кончился. Пишется фактическое время: экран может
- * прервать или продлить доступ, и рабочее время не должно на этом теряться.
- */
 /** Взрослый довёл прогон цепочки до конца — данных нет, сессия идёт дальше. */
 export function finishChainByAdult(state: AbaSessionState): AbaSessionState {
   if (state.queue[0]?.kind !== 'adult_finish_chain') throw new Error('Сейчас не доведение прогона взрослым');
   return { ...state, queue: state.queue.slice(1) };
 }
 
-export function finishAccess(state: AbaSessionState, now: number): AbaSessionState {
+/**
+ * Доступ кончился. `scene` — время самой сцены (№171): от кадра, когда она отвечает, до T — без экрана обмена,
+ * доигрывания и сворачивания; без него событие пишет весь шаг доступа. Рабочее время (`pausedMs`) теряет весь шаг:
+ * обмен и кадр конца — тоже не работа.
+ */
+export function finishAccess(state: AbaSessionState, now: number, scene?: { startedAt: number; endedAt: number }): AbaSessionState {
   if (state.queue[0]?.kind !== 'access') throw new Error('Сейчас не доступ к подкрепителю');
   const startedAt = state.accessStartedAt ?? now;
   return {
     ...state,
     pausedMs: state.pausedMs + (now - startedAt),
     accessStartedAt: null,
-    events: [...state.events, { kind: 'access', startedAt: iso(startedAt), endedAt: iso(now) }],
+    events: [...state.events, { kind: 'access', startedAt: iso(scene?.startedAt ?? startedAt), endedAt: iso(scene?.endedAt ?? now) }],
     queue: state.queue.slice(1),
   };
 }
@@ -1288,16 +1289,22 @@ export function finishAccess(state: AbaSessionState, now: number): AbaSessionSta
  * Взрослый остановил или ребёнок ушёл. Ни закрывающей пробы, ни жетона за участие:
  * решение принял человек, и подкреплять уход нельзя.
  */
-export function stopSession(state: AbaSessionState, reason: 'adult_stopped' | 'abandoned', now?: number): AbaSessionState {
+export function stopSession(
+  state: AbaSessionState,
+  reason: 'adult_stopped' | 'abandoned',
+  now?: number,
+  /**
+   * Сцена доступа (№171): `null` — остановили на экране обмена, сцена не началась, доступа в журнале нет; число —
+   * доступ от начала сцены до остановки (или до T, если остановили на кадре конца); без аргумента — весь шаг доступа.
+   */
+  accessScene?: { startedAt: number; endedAt?: number } | null,
+): AbaSessionState {
   // доступ и перерыв, прерванные остановкой, остаются в журнале
-  const events =
-    now === undefined
-      ? state.events
-      : [
-          ...state.events,
-          ...interruptedBreak(state, now),
-          ...(state.accessStartedAt !== null ? [{ kind: 'access' as const, startedAt: iso(state.accessStartedAt), endedAt: iso(now) }] : []),
-        ];
+  const access =
+    now === undefined || state.accessStartedAt === null || accessScene === null
+      ? []
+      : [{ kind: 'access' as const, startedAt: iso(accessScene?.startedAt ?? state.accessStartedAt), endedAt: iso(accessScene?.endedAt ?? now) }];
+  const events = now === undefined ? state.events : [...state.events, ...interruptedBreak(state, now), ...access];
   return {
     ...state,
     events,

@@ -7,30 +7,52 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, Text, useColorScheme, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { abaAdultPanel, abaAdultPanelColors, abaBoardCell, abaLayout, abaReinforcementOverlay, abaTokenBoard, ABA_CONTROL_STROKE, ABA_STRIP_SILHOUETTE, ABA_STRIP_SILHOUETTE_GAP } from '../../../design/abaTokens';
+import { abaAdultPanel, abaAdultPanelColors, abaBoardCell, abaBreak, abaLayout, abaRefusalPause, abaReinforcementOverlay, abaTokenBoard, ABA_CONTROL_STROKE, ABA_STRIP_SILHOUETTE, ABA_STRIP_SILHOUETTE_GAP } from '../../../design/abaTokens';
+import { parentColors, parentTypography } from '../../../design/parentTokens';
 import { radii } from '../../../design/tokens';
 import type { PromptVisualPlan } from '../../../domain/abaPrompting';
 import type { PanelButton } from '../../../domain/abaScoring';
+import { fontFamilyFor } from '../../fonts';
 import { TaliFigure } from '../../TaliFigure';
 import { useAbaClock } from '../clock';
 import { ChildPressable, ExitHold, PlaceholderGlyph, useAbaColors } from '../parts';
 import { ReinforcerArt, TokenCell } from '../reinforcer';
 import { StimulusPlate } from '../StimulusPlate';
 
-/** Полоса 68: выход удержанием слева, карточка «перерыв» справа (не прячется, без подтверждения). */
+/**
+ * Полоса 68: выход удержанием слева, карточка «перерыв» справа (не прячется, без подтверждения). `caption` — строка
+ * взрослого справа от выхода (обучающий перерыв со второго приглашения, Ц3.9): родительский `caption` `textMuted`.
+ */
 export function TopBar({
   onExit,
   breakCard,
+  caption,
 }: {
   onExit: () => void;
   /** `null` — карточки на этом экране нет (перерыв, конец). `highlight` — статичный контур 6 (пауза после «Отказ»). */
   breakCard: { frameShownAt: number; onTap: (at: number) => void; highlight?: boolean } | null;
+  caption?: string;
 }) {
   const { t } = useTranslation();
   const c = useAbaColors();
+  const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
+  const w = abaBreak.trainingWait;
+  const cap = parentTypography.caption;
   return (
     <View style={{ height: abaLayout.topBar, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
       <ExitHold onExit={onExit} label={t('abaSession.exit')} hintLabel={t('abaSession.exitHint')} />
+      {caption !== undefined && (
+        <Text
+          testID="aba-adult-caption"
+          style={{ flex: 1, marginLeft: 16, color: parentColors[scheme][w.color], fontFamily: fontFamilyFor(cap), fontWeight: cap.weight, fontSize: cap.size, lineHeight: cap.lineHeight, textAlign: 'left' }}
+          numberOfLines={w.lines}
+          adjustsFontSizeToFit
+          minimumFontScale={abaAdultPanel.minimumFontScale}
+          maxFontSizeMultiplier={w.maxFontSizeMultiplier}
+        >
+          {caption}
+        </Text>
+      )}
       {breakCard && (
         <ChildPressable
           frameShownAt={breakCard.frameShownAt}
@@ -41,7 +63,7 @@ export function TopBar({
             width: abaLayout.breakCard,
             height: abaLayout.breakCard,
             borderRadius: radii.md,
-            borderWidth: breakCard.highlight ? 6 : ABA_CONTROL_STROKE,
+            borderWidth: breakCard.highlight ? abaRefusalPause.cardContour : ABA_CONTROL_STROKE,
             borderColor: c.controlInk,
             backgroundColor: c.controlFill,
             alignItems: 'center',

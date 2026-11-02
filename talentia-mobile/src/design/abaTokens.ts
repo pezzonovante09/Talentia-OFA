@@ -972,7 +972,25 @@ export const abaBreak = {
     escalation: false,
     invitesBeforeEnd: 2,
     endAfterLastInviteMs: 30_000,
+    /**
+     * Второе приглашение (Ц3.1): новое устойчивое состояние экрана без мигания — «две планки» 120 в центре из
+     * сплошных становятся контурными (тот же значок, что на «Вернуться»), штрих 6 внутрь, габарит не меняется.
+     * Контур 6 у «Вернуться» не снимается ни на миг: смена кадра, а не движение (calm и reduce motion — так же).
+     */
+    second: { change: 'icon_outline', iconGlyph: 'pause_bars_outline', iconStroke: stroke.bold, contourStays: true, blink: false },
   },
+  /**
+   * Касание значка 120 в центре (Ц3.1; ограничение 1 итога проверок): сжатие `tapPress` без звука и записи — с
+   * начала перерыва, не только в контурном виде; зона — слот 160, роль `image`, рамки вокруг слота нет.
+   */
+  centerIconTap: { from: 'break_start', role: 'image', frame: false },
+  /**
+   * Обучающий перерыв ждёт взрослого бесконечно (№169) — подпись взрослому со второго приглашения (Ц3.9): в
+   * полосе 68 справа от выхода, родительский `caption` `textMuted`, 2 строки, ×1.2; статично до «Вернуться». Смысл
+   * — «подождите → покажите жестом без слов → нажмите сами» (физическая подсказка — только при `physicalPromptAllowed`).
+   * Предел знаков — под две строки 267 pt при ×1.2 (замер Nunito 600, `localization-qa`): кириллица шире.
+   */
+  trainingWait: { adultCaption: true, from: 'second_invite', place: 'top_bar_right_of_exit', color: 'textMuted', lines: 2, maxFontSizeMultiplier: 1.2, maxChars: { ru: 57, en: 70 } },
   endScreen: { tali: false, farewell: false, praise: false },
   /** «Tali предлагает перерыв» между пробами (две пробы без активности в «Сам»). */
   offer: {
@@ -1261,7 +1279,7 @@ export function abaWhoLeadsAccepts(touchDownAt: number, settledAt: number, prevT
 
 /**
  * Сопряжение (раздел 3, предложение 8): карточка выбранного 160 · 24 · ряд «Tali 88 · 16 · ячейка 64». Выбор тапом
- * (`abaReinforcerChoice`), обмен без кнопки «Получить!»: жетон лежит в ячейке 600 мс и уходит в карточку.
+ * (`abaReinforcerChoice`), обмен без кнопки «Получить!» — по `abaExchange` (одна ячейка — удержание 600 мс).
  */
 export const abaPairingLayout = {
   cardSize: 160,
@@ -1271,7 +1289,6 @@ export const abaPairingLayout = {
   gapTaliCell: 16,
   choiceOnTap: true,
   exchangeButton: false,
-  exchangeDelayMs: 600,
 } as const;
 
 /* ───────────────── доступ к подкрепителю: сцена и конец (Ц2.8) ───────────────── */
@@ -1285,8 +1302,12 @@ export const abaPairingLayout = {
  * проверки цикла 2); при выключенном звуке — ничего, конец несёт кольцо. В T сцена больше не начинает
  * новое на тап. **Доигрывание ≤ 3 с** (пункт 5 проверки цикла 2): `song` дозвучивает такт, затухая в
  * последние 500 мс; остальные звуки затухают за 500 мс от T; деталь `puzzle4` под пальцем в момент T уходит
- * на место. Затем кольцо исчезает мгновенно, через 1000 мс — следующий шаг без перехода. Время ребёнка
- * (`durationMs`) не урезается.
+ * на место. Время ребёнка (`durationMs`) не урезается.
+ *
+ * Кадр конца (Ц3.5, ограничение 5 итога проверок): кольцо и силуэт 24 исчезают **в T** сменой кадра, метки
+ * заглушки снимаются (кадр покоя); доигрывание для кадра конца — не дольше `settleMaxMs` 2000; затем сцена
+ * сворачивается в карточку 160 по центру за `motion.slow` (calm и reduce motion — смена кадра), карточка стоит
+ * `endSettleMs` с контуром 3 — и следующий шаг сменой кадра.
  */
 export const abaAccessScene = {
   tapResponseMs: 300,
@@ -1295,16 +1316,90 @@ export const abaAccessScene = {
   gesture: 'adds_to_tap',
   endCue: { beforeEndMs: 5000, ms: 600, channel: 'cue', duckScene: true },
   newOnTapAfterEnd: false,
-  settleMaxMs: 3000,
+  settleMaxMs: 2000,
   settle: {
     song: { finishBar: true, fadeLastMs: 500 },
     others: { fadeMs: 500 },
     puzzle4HeldPiece: 'goes_home',
   },
-  ringHiddenAfterSettle: true,
   endSettleMs: 1000,
+  endFrame: { ringHiddenAt: 'T', placeholderRest: 'marks_clear', foldIntoCard: true, foldMs: motion.slow, foldCalm: 'cut', cardStroke: ABA_CONTROL_STROKE },
   durationTrimmed: false,
 } as const;
+
+/* ───────────────── фаза 7: обмен, кольцо, конец (цикл 3, №171) ───────────────── */
+
+/**
+ * Строка 72 вне пробы (Ц3.0 п. 3, Ц3.6): одна для выбора, сопряжения, обмена, доступа, ожидания цикла и конца —
+ * выход 60 на y 6–66, центр (кольцо доступа, заголовок), справа пустой слот 60. Выход между экранами не прыгает.
+ */
+export const abaNonTrialRow = { height: 72, exitTopInset: 6, rightSlot: 60 } as const;
+
+/**
+ * Кольцо доступа (Ц3.6): в центре строки 72 и в сессии, и в сопряжении; внутри — силуэт позиции 24 `ink`
+ * (`ReinforcerArt silhouette`). Не нажимается. Исчезает в T вместе с силуэтом (`abaAccessScene.endFrame`).
+ */
+export const abaAccessRing = { place: 'non_trial_row_center', size: 56, stroke: stroke.bold, track: 'tokenSlot', fill: 'reinforcement', silhouette: 24, interactive: false } as const;
+
+/**
+ * Поверхность картинки подкрепителя (Ц3.4, Ц3.0 п. 2): карточка обмена, ожидания и сопряжения и рамка сцены —
+ * заливка `plate`, контур `plateOutline` (всегда тёмный). В тёмной `controlInk` на `plate` дал бы 1.12:1 —
+ * утолщение 3 → 6 не было бы видно.
+ */
+export const abaPictureSurface = { fill: 'plate', outline: 'plateOutline' } as const;
+
+/**
+ * Обмен без кнопки «Получить!» на всех путях (Ц3.4, №171): сразу, на перерыве по расписанию, в конце, жетон цикла
+ * сопряжения. От кадра обмена: полная доска стоит `holdMs` (одна ячейка — 600, две и больше — 1000) · жетоны летят
+ * в центр карточки по `fly` (сдвиг старта `staggerMs` слева направо; ячейка пустеет в момент вылета своего жетона)
+ * · последний долетел — контур карточки 3 → 6 «получено», `receivedHoldMs` · ряд исчезает, контур 6 → 3, рамка
+ * карточки растёт в рамку сцены за `openMs` · доступ (время доступа считается отсюда). Calm и reduce motion: в конце
+ * удержания одна смена кадра (все ячейки пусты, контур 6), `calm.receivedHoldMs`, смена кадра на доступ. Перед
+ * жетоном сопряжения — въезд в ячейку `landMs` (calm — появляется). Звука у обмена нет.
+ */
+export const abaExchange = {
+  cardSize: 160,
+  rowHeight: 88,
+  holdMs: { one: 600, many: 1000 },
+  landMs: motion.base,
+  fly: { ms: motion.slow, staggerMs: 60, scaleTo: 0.4, easing: 'in' },
+  receivedStroke: stroke.bold,
+  receivedHoldMs: 300,
+  openMs: motion.slow,
+  button: false,
+  calm: { receivedHoldMs: 500, open: 'cut' },
+} as const;
+
+/** Удержание полной доски перед полётом (№171): 600 мс при одной ячейке, 1000 — при двух и больше. */
+export const abaExchangeHoldMs = (cells: number) => (cells > 1 ? abaExchange.holdMs.many : abaExchange.holdMs.one);
+
+/**
+ * Хвост конца (Ц3.2, №171): шаг ожидания перед циклом сопряжения — раскладка ожидания сопряжения с **пустым слотом
+ * карточки** (Tali `idle`, пустая ячейка 64; карточка подкрепителя появляется сменой кадра вместе с жетоном);
+ * «Закончили» — один раз, после цикла; неактивной «Готово» нет.
+ */
+export const abaEndTail = { waitLayout: 'pairing_wait', emptyCardSlot: true, endScreenOnce: true, doneDisabledState: false } as const;
+
+/**
+ * Тихая пауза после «Отказ» (Ц3.7, №171): карточка «перерыв» с контуром 6 все 30 с — без снижения посреди паузы
+ * (смена — повторная подсказка); жест и подпись взрослому — `offerCardMs`.
+ */
+export const abaRefusalPause = { cardContour: stroke.bold, cardContourUntil: 'pause_end', adultCaptionMs: 'offerCardMs', fade: false } as const;
+
+/**
+ * «Готово» на экране конца (Ц3.8): `W`×88, заливка `reinforcement`, контур 3 `controlInk`; глиф карты 32 слева от
+ * подписи, зазор 12, глиф и подпись одним цветом `onReinforcement` (контур набора иконок на фиолетовом — 2.17).
+ * Детская кнопка: касание, начатое раньше `lockMs` от показа кадра, не засчитывается; вид обычный. Выхода
+ * удержанием на этом кадре нет.
+ */
+export const abaEndDone = { height: touch.primary, glyph: 'ui-map', glyphSize: 32, gap: 12, glyphMono: true, press: 'child', lockMs: 1000, lockLooksDisabled: false } as const;
+
+/**
+ * Метка касания на заглушке сцены (Ц3.5, ограничение 5): сплошная точка r 16 фиолетовым палитры иллюстраций — не
+ * жёлтым (жёлтый — только заработанный жетон) и не кольцом (путается с кольцом доступа). Плита сцены не
+ * перекрашивается, поэтому цвет один в обеих схемах: к плите 7.71 / 6.27.
+ */
+export const abaAccessPlaceholderMark = { r: 16, fill: abaColors.light.reinforcement, max: 6 } as const;
 
 /* ───────────────── рутины самообслуживания (Г8) ───────────────── */
 

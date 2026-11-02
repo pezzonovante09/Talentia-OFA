@@ -8,12 +8,16 @@
  * - проба `match` (`model/matchTrialRun.ts`) с панелью взрослого; запись **до** последствия (`recordTrial` →
  *   `recordAbaTrial`), плашка — только при `token_praise` или жетоне за участие (`model/consequenceRun.ts`);
  *   карточка «перерыв» в фазе последствия — сразу в домен (`requestBreakBetweenTrials`, №160);
- * - перерыв (фаза 7, №169): кольцо → приглашение → через `RETURN_INVITE_AFTER_MS` второе → ещё столько же без возврата —
- *   `withdrawAssent(…, 'device_inactivity')`; обучающий перерыв по карточке сессию не кончает — возврат делает взрослый;
- * - обмен (сразу, на перерыве, в конце) — один экран без кнопки: доска полная → жетоны уходят в карточку → доступ
- *   (`model/accessRun.ts`: «закругляемся», доигрывание, кольцо исчезает, через 1 с дальше);
- * - конец: итог пишется сразу, затем хвост (`model/endTail.ts`) — обмен и доступ или цикл сопряжения, потом
- *   «Закончили» с доской; выход удержанием — `stopSession`.
+ * - перерыв (фаза 7, №169; вид — Ц3.1, Ц3.9): кольцо → приглашение (контур 6 у «Вернуться») → через
+ *   `RETURN_INVITE_AFTER_MS` второе (планки 120 становятся контурными) → ещё столько же без возврата —
+ *   `withdrawAssent(…, 'device_inactivity')`; обучающий перерыв по карточке сессию не кончает — со второго
+ *   приглашения подпись взрослому, возврат делает взрослый;
+ * - обмен (сразу, на перерыве, в конце, жетон цикла сопряжения) — один экран без кнопки (`model/exchangeRun.ts`,
+ *   Ц3.4): доска полная → жетоны летят в карточку → «получено» → карточка раскрывается в сцену; доступ
+ *   (`model/accessRun.ts`, Ц3.5): кольцо исчезает в T, сцена сворачивается в карточку, через 1 с дальше; в журнал —
+ *   время самой сцены (№171);
+ * - конец: итог пишется сразу, затем хвост (`model/endTail.ts`) — обмен и доступ или цикл сопряжения (ожидание в
+ *   раскладке сопряжения без карточки, Ц3.2), потом один раз «Закончили» с доской; выход удержанием — `stopSession`.
  *
  * Сворачивание и возобновление — фаза 8: пока свёрнутая проба просто теряется вместе с экраном. Ошибки записи
  * (согласие, пауза, конфликт доски) — спокойный конец; ни ошибки, ни имена ABA-экранов наружу не уходят.
@@ -29,11 +33,10 @@ import {
   abaBreak,
   abaChoiceZone,
   abaLayoutByTier,
-  abaPairingLayout,
   abaReinforcerCardSize,
   abaReinforcementOverlay,
   abaTierFor,
-  abaTokenBoard,
+  inactiveChoice,
   ABA_CONTROL_STROKE,
   type AbaTier,
 } from '../../src/design/abaTokens';
@@ -66,18 +69,18 @@ import { useAccount } from '../../src/state/account';
 import { useChildSession } from '../../src/state/childSession';
 import { CHILD_BREAK_MS, RETURN_INVITE_AFTER_MS, type AbaTarget } from '../../src/types/aba';
 import { AbaEnd } from '../../src/ui/aba/AbaEnd';
-import { PlaceholderScene } from '../../src/ui/aba/access/PlaceholderScene';
 import { useAbaClock, useDue } from '../../src/ui/aba/clock';
-import { accessDueAt, accessLeft, startAccess, stepAccess, type AccessRun } from '../../src/ui/aba/model/accessRun';
+import { accessDueAt, startAccess, stepAccess, type AccessRun } from '../../src/ui/aba/model/accessRun';
 import { advanceConsequence, consequenceDueAt, startConsequence, type ConsequenceRun } from '../../src/ui/aba/model/consequenceRun';
 import { matchDueAt, matchTrialInput, matchVisual, optionActive, startMatchTrial, stepMatchTrial, type MatchEvent, type MatchTrialRun } from '../../src/ui/aba/model/matchTrialRun';
 import { endTail, type TailStep } from '../../src/ui/aba/model/endTail';
-import { pairingTokenTiming } from '../../src/ui/aba/model/pairingRun';
+import { exchangeDueAt, exchangeEndsAt, exchangeView, startExchange, type ExchangeRun } from '../../src/ui/aba/model/exchangeRun';
 import { choiceDueAt, startChoice, stepChoice, type ChoiceRun } from '../../src/ui/aba/model/reinforcerChoiceRun';
-import { ChildPressable, ExitHold, PlaceholderGlyph, useAbaColors } from '../../src/ui/aba/parts';
-import { AccessRing, ReinforcerArt, ReinforcerChoiceView, TokenCell } from '../../src/ui/aba/reinforcer';
+import { ChildPressable, NonTrialRow, PlaceholderGlyph, useAbaColors, useReduceMotion } from '../../src/ui/aba/parts';
+import { AccessRing, ReinforcerChoiceView } from '../../src/ui/aba/reinforcer';
+import { AccessView } from '../../src/ui/aba/session/AccessView';
+import { ExchangeView, PairingWaitView } from '../../src/ui/aba/session/ExchangeView';
 import { AdultPanel, MatchField, ReinforcementOverlay, TokenStrip, TopBar } from '../../src/ui/aba/session/parts';
-import { TaliFigure } from '../../src/ui/TaliFigure';
 
 const ZONE: Record<AbaTier, (typeof abaChoiceZone)[keyof typeof abaChoiceZone]> = {
   roomy: abaChoiceZone.regular,
@@ -87,11 +90,6 @@ const ZONE: Record<AbaTier, (typeof abaChoiceZone)[keyof typeof abaChoiceZone]> 
 const CARD_STEPS: BreakCardStep[] = ['model', 'prompted', 'independent'];
 /** Жетон за участие: после приземления в полосе — секунда до следующего шага (как добавленный отменой, Ц2.6.3). */
 const PARTICIPATION_HOLD_MS = 1000;
-/**
- * Второе приглашение вернуться отличимо от первого без звука (методист, фаза 7: повтор без смены стимула — не
- * предъявление): контур 6 снимается на этот срок и возвращается. Вид — на проверку `design-lead`.
- */
-const REINVITE_BLINK_MS = motion.base;
 
 type EndBoard = { cells: number; filled: number } | null;
 
@@ -134,17 +132,20 @@ type Phase =
       tick?: number;
       invite: 0 | 1 | 2;
       inviteAt: number | null;
-      blinkUntil: number | null;
       training: boolean;
     }
-  /** Обмен без кнопки: доска полная до `flyAt`, затем жетоны уходят в карточку; дальше — доступ шага или хвост конца. */
-  | { kind: 'exchange'; cells: number; flyAt: number; until: number; flown: boolean; next: Extract<AbaStep, { kind: 'access' }> | 'tail' }
-  | { kind: 'access'; run: AccessRun; tick: number; tail: boolean }
-  /** Цикл сопряжения в конце: одна ячейка и Tali `point`, жетон, обмен (как в сессии сопряжения). */
-  | { kind: 'pairing_token'; landAt: number; flyAt: number; until: number; flown: boolean }
+  /**
+   * Обмен без кнопки (`exchangeRun`): `pairing` — жетон цикла сопряжения в конце (Tali и одна ячейка); дальше — доступ
+   * шага домена или хвост конца. `tick` — время последнего кадра.
+   */
+  | { kind: 'exchange'; run: ExchangeRun; tick: number; pairing: boolean; next: Extract<AbaStep, { kind: 'access' }> | 'tail' }
+  /** `sceneEndedAt` — T: время сцены для журнала (№171) — от `run.startedAt` до T. */
+  | { kind: 'access'; run: AccessRun; tick: number; tail: boolean; sceneEndedAt: number | null }
+  /** Ожидание цикла сопряжения в конце (Ц3.2): раскладка сопряжения без карточки. */
+  | { kind: 'end_wait'; until: number }
   | { kind: 'busy' }
-  /** `until` — «Готово» неактивна до цикла сопряжения; `null` — конец. */
-  | { kind: 'ended'; variant: 'normal' | 'neutral'; board: EndBoard; until: number | null };
+  /** «Закончили» — один раз, в самом конце. */
+  | { kind: 'ended'; variant: 'normal' | 'neutral'; board: EndBoard };
 
 export default function AbaSessionScreen() {
   const { t } = useTranslation();
@@ -178,13 +179,16 @@ export default function AbaSessionScreen() {
   // старт один раз: настройки и наблюдатели берутся на момент старта
   const startOpts = useRef({ settings, observers, primaryObserverId });
   const calm = startOpts.current.settings.calmMode;
+  // calm и системное «уменьшить движение» — смены кадра вместо движения, и сроки обмена и конца доступа те же, что в calm
+  const reduceMotion = useReduceMotion();
+  const still = calm || reduceMotion;
 
   const iso = useCallback(() => new Date(clock.now()).toISOString(), [clock]);
   const boardOf = (s: AbaSessionState | null): EndBoard => (s ? { cells: s.board.size, filled: s.board.earned } : null);
   const fail = useCallback((e: unknown) => {
     if (__DEV__) console.warn('aba-session', e);
     // доска и при ошибке видна как есть (Ц2.10): жетоны не пропадают
-    setPhase({ kind: 'ended', variant: 'neutral', board: boardOf(st.current), until: null });
+    setPhase({ kind: 'ended', variant: 'neutral', board: boardOf(st.current) });
   }, []);
 
   /** Следующий шаг хвоста конца: обмен, доступ, ожидание цикла, жетон сопряжения, «Закончили». */
@@ -192,25 +196,25 @@ export default function AbaSessionScreen() {
     (now: number) => {
       const step = tail.current.shift() ?? { kind: 'end' as const };
       const { variant, board } = endView.current;
-      const tm = pairingTokenTiming(calm);
       switch (step.kind) {
         case 'exchange':
-          setPhase({ kind: 'exchange', cells: step.boardSize, flyAt: now + tm.holdMs, until: now + tm.holdMs + tm.exchangeMs, flown: false, next: 'tail' });
+          setPhase({ kind: 'exchange', run: startExchange({ at: now, cells: step.boardSize, calm: still }), tick: now, pairing: false, next: 'tail' });
           return;
         case 'access':
-          setPhase({ kind: 'access', run: startAccess(now, step.durationMs), tick: now, tail: true });
+          setPhase({ kind: 'access', run: startAccess(now, step.durationMs, 0, still), tick: now, tail: true, sceneEndedAt: null });
           return;
         case 'wait':
-          setPhase({ kind: 'ended', variant, board, until: now + step.ms });
+          setPhase({ kind: 'end_wait', until: now + step.ms });
           return;
         case 'pairing_token':
-          setPhase({ kind: 'pairing_token', landAt: now + tm.landMs, flyAt: now + tm.landMs + tm.holdMs, until: now + tm.landMs + tm.holdMs + tm.exchangeMs, flown: false });
+          // карточка появляется вместе с жетоном (№171); кадр «до жетона» — на миг раньше, чтобы звук `token` шёл при посадке
+          setPhase({ kind: 'exchange', run: startExchange({ at: now, cells: 1, calm: still, landFirst: true }), tick: now - 1, pairing: true, next: 'tail' });
           return;
         case 'end':
-          setPhase({ kind: 'ended', variant, board, until: null });
+          setPhase({ kind: 'ended', variant, board });
       }
     },
-    [calm],
+    [still],
   );
 
   /**
@@ -303,15 +307,14 @@ export default function AbaSessionScreen() {
         const training = head?.kind === 'break' && head.training === true;
         // пауза после «Отказ»: карточка подсвечена `offerCardMs`, а сама тихая пауза — `maxMs` (`REFUSAL_QUIET_MS`, 30 с
         // от снятия требования, ABA.md блок 4 п. 1)
-        setPhase({ kind: 'break', step, shownAt: now, until: now + (step.maxMs ?? CHILD_BREAK_MS[cur.band]), invite: 0, inviteAt: null, blinkUntil: null, training });
+        setPhase({ kind: 'break', step, shownAt: now, until: now + (step.maxMs ?? CHILD_BREAK_MS[cur.band]), invite: 0, inviteAt: null, training });
         return;
       }
       case 'access':
         if (exchangePending.current) {
           exchangePending.current = false;
-          const tm = pairingTokenTiming(calm);
-          setPhase({ kind: 'exchange', cells: cur.board.size, flyAt: now + tm.holdMs, until: now + tm.holdMs + tm.exchangeMs, flown: false, next: step });
-        } else setPhase({ kind: 'access', run: startAccess(now, step.durationMs), tick: now, tail: false });
+          setPhase({ kind: 'exchange', run: startExchange({ at: now, cells: cur.board.size, calm: still }), tick: now, pairing: false, next: step });
+        } else setPhase({ kind: 'access', run: startAccess(now, step.durationMs, 0, still), tick: now, tail: false, sceneEndedAt: null });
         return;
       case 'end':
         await finish(cur, step.endedOnSuccess ? 'normal' : 'neutral');
@@ -347,14 +350,14 @@ export default function AbaSessionScreen() {
       const start = await loadAbaStart(db, childId, { config, band: o.settings.band, soundOn: o.settings.soundEffects, observers: o.observers, primaryObserverId: o.primaryObserverId, now });
       if (!live) return;
       if (start.kind === 'blocked') {
-        setPhase({ kind: 'ended', variant: 'neutral', board: null, until: null });
+        setPhase({ kind: 'ended', variant: 'neutral', board: null });
         return;
       }
       st.current = startAbaSession(start.input);
       // в плане нет ни одной пробы («Сам» без разблокированного формата): сессию не начинаем и не пишем —
       // «нормальный» конец ни за что и пустая сессия в данных (`aba-pedagogy-specialist` 2026-10-31)
       if (!st.current.queue.some((q) => q.kind === 'trial')) {
-        setPhase({ kind: 'ended', variant: 'neutral', board: null, until: null });
+        setPhase({ kind: 'ended', variant: 'neutral', board: null });
         return;
       }
       if (config === 'with_adult') {
@@ -400,18 +403,16 @@ export default function AbaSessionScreen() {
           return (phase.tick ?? phase.shownAt) < cardEnd ? cardEnd : phase.until;
         }
         if (phase.invite === 0) return Math.min((phase.tick ?? phase.shownAt) + abaBreak.timerCalmStepMs, phase.until);
-        if (phase.blinkUntil !== null) return phase.blinkUntil;
         // после второго приглашения обучающий перерыв ждёт взрослого: конца по бездействию нет
         if (phase.invite === 2 && phase.training) return null;
         return phase.inviteAt! + RETURN_INVITE_AFTER_MS;
       case 'exchange':
-      case 'pairing_token':
-        return phase.flown ? phase.until : phase.flyAt;
+        return exchangeDueAt(phase.run, phase.tick);
       case 'access': {
         const due = accessDueAt(phase.run);
         return phase.run.stage === 'play' && due !== null ? Math.min(phase.tick + abaBreak.timerCalmStepMs, due) : due;
       }
-      case 'ended':
+      case 'end_wait':
         return phase.until;
       default:
         return null;
@@ -479,37 +480,43 @@ export default function AbaSessionScreen() {
           // кольцо кончилось — первое приглашение: статичный контур 6 у «Вернуться» и один тихий сигнал
           voice.say('abaSession.sound.invite');
           setPhase({ ...p, invite: 1, inviteAt: at });
-        } else if (p.blinkUntil !== null) setPhase({ ...p, blinkUntil: null });
-        else if (p.invite === 1) {
+        } else if (p.invite === 1) {
+          // второе приглашение — новое устойчивое состояние (Ц3.1): планки 120 контурные, контур 6 у кнопки стоит
           voice.say('abaSession.sound.invite');
-          setPhase({ ...p, invite: 2, inviteAt: at, blinkUntil: at + REINVITE_BLINK_MS });
+          setPhase({ ...p, invite: 2, inviteAt: at });
         } else run(noReturn(at));
         return;
       }
-      case 'exchange':
-        if (!p.flown) setPhase({ ...p, flown: true });
-        else if (p.next === 'tail') nextTail(at);
-        else setPhase({ kind: 'access', run: startAccess(at, p.next.durationMs), tick: at, tail: false });
+      case 'exchange': {
+        // жетон цикла сопряжения сел в ячейку — звук `token` (Ц3.3: похвалы голосом в цикле нет)
+        if (p.pairing && !exchangeView(p.run, p.tick).tokenInCell && exchangeView(p.run, at).tokenInCell) voice.say('abaSession.sound.token');
+        if (exchangeView(p.run, at).stage !== 'done') {
+          setPhase({ ...p, tick: at });
+          return;
+        }
+        // доступ открывается в конце раскрытия — его время считается отсюда
+        const opened = exchangeEndsAt(p.run);
+        if (p.next === 'tail') nextTail(opened);
+        else setPhase({ kind: 'access', run: startAccess(opened, p.next.durationMs, 0, still), tick: opened, tail: false, sceneEndedAt: null });
         return;
-      case 'pairing_token':
-        if (!p.flown) setPhase({ ...p, flown: true });
-        else nextTail(at);
-        return;
+      }
       case 'access': {
         const { run: next, effects } = stepAccess(p.run, at);
+        let sceneEndedAt = p.sceneEndedAt;
         for (const fx of effects) {
-          // «закругляемся» (`abaAccessScene.endCue`): файл подключит озвучка, без звука конец несёт кольцо
+          // «закругляемся» (`abaAccessScene.endCue`): файл подключит озвучка; без звука конец несёт кадр конца (Ц3.5)
           if (fx.type === 'cue') voice.say('abaSession.sound.wrapUp');
+          else if (fx.type === 'scene_ended') sceneEndedAt = fx.at;
           else if (fx.type === 'done') {
             if (p.tail) nextTail(fx.at);
-            else run(endAccess(fx.at));
+            else run(endAccess(fx.at, { startedAt: p.run.startedAt, endedAt: sceneEndedAt ?? fx.at }));
             return;
           }
         }
-        setPhase({ ...p, run: next, tick: at });
+        setPhase({ ...p, run: next, tick: at, sceneEndedAt });
         return;
       }
-      case 'ended':
+      case 'end_wait':
         nextTail(at);
         return;
     }
@@ -544,6 +551,8 @@ export default function AbaSessionScreen() {
           (async () => {
             setPhase({ kind: 'busy' });
             const s = chooseReinforcer(st.current!, fx.reinforcerId, fx.at, fx.by);
+            // повторный выбор при полной доске сам меняет жетоны (`settleBoard`): доступ — тоже через экран обмена (Ц3.4)
+            if (s.exchangesMade > st.current!.exchangesMade) exchangePending.current = true;
             st.current = await save(s, { source: 'session', sourceId: s.sessionId, reinforcerId: fx.reinforcerId, chosenBy: fx.by });
             await advance();
           })(),
@@ -664,9 +673,10 @@ export default function AbaSessionScreen() {
     st.current = await save(withdrawAssent(s, at, 'device_inactivity', last ? { targetId: last.targetId, trialId: last.id } : {}));
     await advance();
   }
-  async function endAccess(at: number) {
+  /** Конец доступа: в журнал — время сцены (№171), рабочее время теряет весь шаг с обменом и кадром конца. */
+  async function endAccess(at: number, scene: { startedAt: number; endedAt: number }) {
     setPhase({ kind: 'busy' });
-    st.current = await save(finishAccess(st.current!, at));
+    st.current = await save(finishAccess(st.current!, at, scene));
     await advance();
   }
   const takeCard = () =>
@@ -678,7 +688,7 @@ export default function AbaSessionScreen() {
         st.current = await save(takeBreakCard(st.current!, now));
         const step = nextStep(st.current, now).step;
         if (step.kind === 'break')
-          setPhase({ kind: 'break', step, shownAt: now, until: now + (step.maxMs ?? CHILD_BREAK_MS[st.current.band]), invite: 0, inviteAt: null, blinkUntil: null, training: false });
+          setPhase({ kind: 'break', step, shownAt: now, until: now + (step.maxMs ?? CHILD_BREAK_MS[st.current.band]), invite: 0, inviteAt: null, training: false });
       })(),
     );
 
@@ -690,7 +700,11 @@ export default function AbaSessionScreen() {
       return;
     }
     exiting.current = true;
-    run(finish(stopSession(s, s.config === 'alone' ? 'abandoned' : 'adult_stopped', clock.now()), 'neutral'));
+    const p = phase;
+    // доступ в журнале — время сцены (№171): на экране обмена сцена ещё не началась — доступа нет
+    const scene =
+      p.kind === 'exchange' && p.next !== 'tail' ? null : p.kind === 'access' && !p.tail ? { startedAt: p.run.startedAt, endedAt: p.sceneEndedAt ?? undefined } : undefined;
+    run(finish(stopSession(s, s.config === 'alone' ? 'abandoned' : 'adult_stopped', clock.now(), scene), 'neutral'));
   };
 
   // без конфигурации — к взрослому: режим и «кто ведёт» выбираются на `parent/aba` (этап G1), детского экрана выбора нет
@@ -740,7 +754,7 @@ export default function AbaSessionScreen() {
       );
       break;
     case 'ended':
-      body = <AbaEnd variant={phase.variant} board={phase.board ?? undefined} doneEnabled={phase.until === null} onExit={exit} onDone={() => router.replace('/map')} />;
+      body = <AbaEnd variant={phase.variant} board={phase.board ?? undefined} onDone={() => router.replace('/map')} />;
       break;
     case 'card': {
       // сменился ведущий наблюдатель — подсказка взрослому «жестом, не словами» (`BreakCardPlan.adultCoaching`)
@@ -762,16 +776,12 @@ export default function AbaSessionScreen() {
       const cardSize = height ? abaReinforcerCardSize(width - 32, height) : 160;
       body = (
         <View style={{ flex: 1, paddingHorizontal: 16 }}>
-          {/* строка инструкции 72: выход слева, заголовок по центру, справа место под повтор (раздел 4) */}
-          <View style={{ height: 72, flexDirection: 'row', alignItems: 'flex-start', paddingTop: 6 }}>
-            <ExitHold onExit={exit} label={t('abaSession.exit')} hintLabel={t('abaSession.exitHint')} />
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', height: 60 }}>
-              <Text style={{ color: c.ink, fontSize: 22, lineHeight: 30, fontWeight: '700', textAlign: 'center' }} numberOfLines={2} maxFontSizeMultiplier={1.2}>
-                {t('abaSession.chooseTitle')}
-              </Text>
-            </View>
-            <View style={{ width: 60 }} />
-          </View>
+          {/* строка 72: выход слева, заголовок по центру, справа место под повтор (раздел 4, Ц3.0 п. 3) */}
+          <NonTrialRow onExit={exit} exitLabel={t('abaSession.exit')} exitHint={t('abaSession.exitHint')}>
+            <Text style={{ color: c.ink, fontSize: 22, lineHeight: 30, fontWeight: '700', textAlign: 'center' }} numberOfLines={2} maxFontSizeMultiplier={1.2}>
+              {t('abaSession.chooseTitle')}
+            </Text>
+          </NonTrialRow>
           <View style={{ height: 16 }} />
           <ReinforcerChoiceView
             run={phase.choice}
@@ -856,32 +866,50 @@ export default function AbaSessionScreen() {
     case 'break': {
       const offer = phase.step.offerCardMs !== undefined;
       if (offer) {
-        // пауза после «Отказ»: экран пробы без плит, карточка подсвечена статичным контуром 6 на `offerCardMs`
-        const highlight = (phase.tick ?? phase.shownAt) < phase.shownAt + phase.step.offerCardMs!;
+        // пауза после «Отказ»: экран пробы без плит, карточка с контуром 6 всю паузу (Ц3.7, №171) — смена посреди
+        // паузы была бы повторной подсказкой; жест и подпись взрослому — только `offerCardMs`
+        const hint = (phase.tick ?? phase.shownAt) < phase.shownAt + phase.step.offerCardMs!;
         body = (
           <>
-            <TopBar onExit={exit} breakCard={{ frameShownAt: phase.shownAt, onTap: takeCard, highlight }} />
+            <TopBar onExit={exit} breakCard={{ frameShownAt: phase.shownAt, onTap: takeCard, highlight: true }} />
             {strip}
             <View style={{ flex: 1 }} testID="aba-refusal-pause" />
-            {/* подсказка взрослому «жестом» — только пока карточка подсвечена (`offerCardMs`) */}
-            {panel(['refusal'], null, refuseOutsideTrial, highlight ? t('abaSession.offerCardHint') : undefined)}
+            {panel(['refusal'], null, refuseOutsideTrial, hint ? t('abaSession.offerCardHint') : undefined)}
           </>
         );
       } else {
         const left = (phase.until - (phase.tick ?? phase.shownAt)) / (phase.until - phase.shownAt);
         body = (
           <View style={{ flex: 1 }} testID="aba-break">
-            <TopBar onExit={exit} breakCard={null} />
+            {/* обучающий перерыв ждёт взрослого (№169): со второго приглашения — подпись взрослому (Ц3.9) */}
+            <TopBar onExit={exit} breakCard={null} caption={phase.training && phase.invite === 2 ? t('abaBreak.trainingWaitHint') : undefined} />
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 24 }}>
-              <View style={{ width: abaBreak.timerRing, height: abaBreak.timerRing, alignItems: 'center', justifyContent: 'center' }}>
+              {/* значок не нажимается, но похож на кнопку: касание — сжатие без звука и записи (Ц3.1) */}
+              <Pressable
+                accessibilityRole="image"
+                accessibilityLabel={t('abaSession.breakCard')}
+                testID="aba-break-icon"
+                style={({ pressed }) => ({
+                  width: abaBreak.timerRing,
+                  height: abaBreak.timerRing,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transform: [{ scale: pressed ? inactiveChoice.tapPress.scale : 1 }],
+                })}
+              >
                 {phase.invite === 0 && (
                   <View style={{ position: 'absolute' }}>
                     <AccessRing left={left} size={abaBreak.timerRing} />
                   </View>
                 )}
-                {/* «две планки» 120 — внутри кольца и после него: место не пустеет (`abaBreak.atTimerEnd`) */}
-                <PlaceholderGlyph name="pause_bars" size={abaBreak.icon} color={c.ink} />
-              </View>
+                {/* «две планки» 120 — внутри кольца и после него: место не пустеет (`abaBreak.atTimerEnd`); на втором
+                    приглашении — контурные, тот же значок, что на «Вернуться» */}
+                {phase.invite === 2 ? (
+                  <PlaceholderGlyph name="pause_bars_outline" size={abaBreak.icon} stroke={abaBreak.invite.second.iconStroke} color={c.ink} />
+                ) : (
+                  <PlaceholderGlyph name="pause_bars" size={abaBreak.icon} color={c.ink} />
+                )}
+              </Pressable>
             </View>
             {/* детская цель (`abaChildTouch`): сжатие 0.94 на касание, засчитывается по правилу кадра */}
             <ChildPressable
@@ -894,7 +922,7 @@ export default function AbaSessionScreen() {
                 marginHorizontal: 24,
                 marginBottom: 16,
                 borderRadius: radii.lg,
-                borderWidth: phase.invite > 0 && phase.blinkUntil === null ? 6 : ABA_CONTROL_STROKE,
+                borderWidth: phase.invite > 0 ? abaBreak.invite.contour : ABA_CONTROL_STROKE,
                 borderColor: c.controlInk,
                 backgroundColor: c.controlFill,
                 flexDirection: 'row',
@@ -913,71 +941,26 @@ export default function AbaSessionScreen() {
       }
       break;
     }
-    case 'access': {
-      const ring = phase.run.stage === 'play' || phase.run.stage === 'settle';
-      body = (
-        <View style={{ flex: 1, paddingHorizontal: 16 }} testID={`aba-access-${phase.run.stage}`}>
-          <View style={{ height: 72, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <TopBar onExit={exit} breakCard={null} />
-          </View>
-          {/* место кольца остаётся и после него: сцена не прыгает */}
-          <View style={{ alignItems: 'center', height: 56 }}>{ring && <AccessRing left={accessLeft(phase.run, phase.tick)} />}</View>
-          <View style={{ flex: 1, marginVertical: 16 }}>{s?.reinforcerId && <PlaceholderScene reinforcerId={s.reinforcerId} ended={phase.run.stage !== 'play'} />}</View>
-        </View>
-      );
+    case 'access':
+      body = s?.reinforcerId ? <AccessView run={phase.run} tick={phase.tick} reinforcerId={s.reinforcerId} moving={!still} onExit={exit} /> : null;
       break;
-    }
     case 'exchange':
-    case 'pairing_token': {
-      // обмен без кнопки «Получить!» (как в сопряжении): требования к ребёнку нет, жетоны уходят в карточку сами
-      const pairing = phase.kind === 'pairing_token';
-      // полёта в карточку пока нет: жетоны лежат до кадра доступа, как в сопряжении (`pairing.tsx`) — пустая доска
-      // перед доступом читалась бы как «жетоны пропали» (`child-ux-specialist`, фаза 7)
-      const filled = !pairing || calm || clock.now() >= phase.landAt;
-      body = (
-        <View style={{ flex: 1, paddingHorizontal: 16 }} testID={pairing ? 'aba-end-pairing' : 'aba-exchange'}>
-          <View style={{ height: 72, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <TopBar onExit={exit} breakCard={null} />
-          </View>
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            {s?.reinforcerId && (
-              // касание карточки отвечает сжатием, без действия и записи: ни одна цель не молчит (как в сопряжении)
-              <Pressable
-                accessibilityRole="image"
-                accessibilityLabel={t('abaSession.tali')}
-                testID="aba-exchange-card"
-                style={({ pressed }) => ({
-                  transform: [{ scale: pressed ? 0.94 : 1 }],
-                  width: abaPairingLayout.cardSize,
-                  height: abaPairingLayout.cardSize,
-                  borderRadius: radii.lg,
-                  borderWidth: ABA_CONTROL_STROKE,
-                  borderColor: c.controlInk,
-                  backgroundColor: c.plate,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                })}
-              >
-                <ReinforcerArt id={s.reinforcerId} size={abaPairingLayout.cardSize - 32} />
-              </Pressable>
-            )}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: abaPairingLayout.gapCardRow, gap: pairing ? abaPairingLayout.gapTaliCell : abaTokenBoard.gap }}>
-              {pairing ? (
-                <>
-                  <TaliFigure pose="point" size={abaPairingLayout.tali} crop accessibilityLabel={t('abaSession.tali')} />
-                  <TokenCell size={abaPairingLayout.cell} filled={filled} testID={filled ? 'aba-exchange-token-filled' : 'aba-exchange-token-empty'} />
-                </>
-              ) : (
-                Array.from({ length: phase.cells }, (_, i) => (
-                  <TokenCell key={i} size={abaTokenBoard.size} filled={filled} testID={filled ? 'aba-exchange-token-filled' : 'aba-exchange-token-empty'} />
-                ))
-              )}
-            </View>
-          </View>
-        </View>
-      );
+      // обмен без кнопки «Получить!» на всех путях (Ц3.4): требования к ребёнку нет, жетоны уходят в карточку сами
+      body = s?.reinforcerId ? (
+        <ExchangeView
+          run={phase.run}
+          at={phase.tick}
+          reinforcerId={s.reinforcerId}
+          pairing={phase.pairing}
+          moving={!still}
+          onExit={exit}
+          testID={phase.pairing ? 'aba-end-pairing' : 'aba-exchange'}
+        />
+      ) : null;
       break;
-    }
+    case 'end_wait':
+      body = <PairingWaitView onExit={exit} />;
+      break;
     default:
       body = null;
   }
@@ -992,7 +975,7 @@ export default function AbaSessionScreen() {
       }}
       testID="aba-session"
     >
-      <View style={{ flex: 1, paddingHorizontal: phase.kind === 'choose' || phase.kind === 'access' || phase.kind === 'exchange' || phase.kind === 'pairing_token' || phase.kind === 'ended' ? 0 : 16 }}>{body}</View>
+      <View style={{ flex: 1, paddingHorizontal: phase.kind === 'choose' || phase.kind === 'access' || phase.kind === 'exchange' || phase.kind === 'end_wait' || phase.kind === 'ended' ? 0 : 16 }}>{body}</View>
     </View>
   );
 }
