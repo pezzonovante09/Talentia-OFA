@@ -1024,7 +1024,7 @@ describe('детские кнопки управления и карточка �
 
 describe('экран перерыва: один для трёх инициаторов (Г3, №99, №106)', () => {
   it('три инициатора на одном экране; Tali и награды — только не у карточки ребёнка', () => {
-    expect([...abaBreak.initiators]).toEqual(['child_card', 'schedule', 'device_offer']);
+    expect([...abaBreak.initiators]).toEqual(['child_card', 'adult', 'schedule', 'device_offer']);
     expect(abaBreak.taliSlot).toEqual({ child_card: false, schedule: true, device_offer: true });
     expect(abaBreak.childCardShows).toEqual({ tali: false, tokens: false, praise: false, choice: false });
     expect(abaBreak.endScreen).toEqual({ tali: false, farewell: false, praise: false });
@@ -1397,8 +1397,8 @@ describe('последствие пробы — время от markedAt (Ц2.6.
 });
 
 describe('№161: обмена на перерыве по просьбе ребёнка нет', () => {
-  it('child_card — без обмена, расписание и предложение приложения — с обменом; ключи — все инициаторы', () => {
-    expect(abaBreak.exchangeAfter).toEqual({ child_card: false, schedule: true, device_offer: true });
+  it('обмен — только по расписанию: карточка, тихая пауза после «Отказ» и предложение приложения — без обмена (№170); ключи — все инициаторы', () => {
+    expect(abaBreak.exchangeAfter).toEqual({ child_card: false, adult: false, schedule: true, device_offer: false });
     expect(Object.keys(abaBreak.exchangeAfter).sort()).toEqual([...abaBreak.initiators].sort());
   });
 

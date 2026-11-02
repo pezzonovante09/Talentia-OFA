@@ -36,7 +36,7 @@ import {
 import { correctionLevel, initialTargetState, promptStateOf } from '../abaPrompting';
 import { applyBaseline, summarizeSession } from '../abaCriterion';
 import { targetErrors } from '../abaTargetRules';
-import { initialTokenTraining, type TokenTrainingState } from '../abaTokenTraining';
+import { EXCHANGE_ACCESS_MS, initialTokenTraining, type TokenTrainingState } from '../abaTokenTraining';
 import type { IdentifySet } from '../abaIdentifySet';
 import { GRID_FOR, finishSession } from './abaFixtures';
 
@@ -266,7 +266,8 @@ describe('порядок сессии', () => {
       'high_p', 'high_p',
       'baseline', 'high_p', 'baseline', 'high_p', 'baseline',
       'teaching', 'teaching', 'teaching', 'teaching', 'teaching',
-      'break',
+      // полная доска на перерыве по расписанию — обмен, затем доступ (№169)
+      'break', 'access',
       'teaching', 'teaching', 'teaching', 'teaching', 'teaching',
       'generalization', 'maintenance',
       'end',
@@ -555,9 +556,13 @@ describe('время и доска', () => {
     const brk = nextStep(st, 5000);
     expect(brk.step.kind).toBe('break');
     st = finishBreak(brk.state, 60_000).state;
-    const next = nextStep(st, 61_000).step as TrialStep;
+    // обмен на перерыве даёт доступ (№169); доступ в рабочее время не идёт, как и перерыв
+    const access = nextStep(st, 60_000);
+    expect(access.step).toEqual({ kind: 'access', durationMs: EXCHANGE_ACCESS_MS[st.board.size] });
+    st = finishAccess(access.state, 100_000);
+    const next = nextStep(st, 101_000).step as TrialStep;
     expect([next.kind, next.targetId]).toEqual(['trial', 'B']);
-    expect(st.events.map((e) => e.kind)).toEqual(['participation', 'break', 'exchange']);
+    expect(st.events.map((e) => e.kind)).toEqual(['participation', 'break', 'exchange', 'access']);
   });
 
   it('лимит взрослый может уменьшить, но не увеличить', () => {
@@ -1146,14 +1151,14 @@ describe('согласие ребёнка — assent (блок 4)', () => {
     expect(again.state.events.filter((e) => e.kind === 'assent').map((e) => (e.kind === 'assent' ? e.action : ''))).toEqual(['break']);
   });
 
-  it('перерыв в первой же пробе после возврата — конец сессии по отказу, без закрывающей и с сопряжением', () => {
+  it('перерыв в первой же пробе после возврата — конец сессии по отказу, без закрывающей; в учебной сессии без сопряжения (№170)', () => {
     const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0) }));
     const broke = interrupt(st, 100, 'child_break');
     const after = finishBreak(nextStep(broke.state, 101).state, 102).state;
     const ended = interrupt(after, 103, 'child_break');
     expect(ended.state.endReason).toBe('assent_withdrawn');
     const end = nextStep(ended.state, 104).step;
-    expect(end).toMatchObject({ kind: 'end', reason: 'assent_withdrawn', endedOnSuccess: false, pairingCycle: true });
+    expect(end).toMatchObject({ kind: 'end', reason: 'assent_withdrawn', endedOnSuccess: false, pairingCycle: false });
   });
 
   it('второй «Отказ» от взрослого кончает сессию; первый — перерыв', () => {
@@ -1219,7 +1224,7 @@ describe('согласие ребёнка — assent (блок 4)', () => {
     expect([reviewed.flags, reviewed.assentSessionsInRow, reviewed.assentConcernReviewed?.role]).toEqual([[], 0, 'specialist']);
   });
 
-  it('отказ: карточка подсвечена 10 с — коснулся, полный перерыв без счёта карточек; нет — тихая пауза 30 с', () => {
+  it('отказ: карточка подсвечена 10 с, просьба принимается всю тихую паузу 30 с — полный перерыв без счёта карточек (№170)', () => {
     const st = toTeaching(begin([M, A], { M: mastered(M), A: acq(A, 0) }));
     const refused = interrupt(st, 100, 'refusal').state;
     const pause = nextStep(refused, 101);
@@ -1228,7 +1233,8 @@ describe('согласие ребёнка — assent (блок 4)', () => {
     expect(nextStep(taken, 106).step).toMatchObject({ kind: 'break', maxMs: 90_000 });
     expect(nextStep(taken, 106).step).not.toHaveProperty('offerCardMs');
     expect(taken.childBreaks).toBe(0);
-    expect(() => takeBreakCard(pause.state, 101 + 20_000)).toThrow(/вышло/);
+    // после подсветки просьба карточкой не теряется: тот же полный перерыв
+    expect(nextStep(takeBreakCard(pause.state, 101 + 20_000), 101 + 20_001).step).toMatchObject({ kind: 'break', maxMs: 90_000 });
     const done = finishBreak(taken, 200).state;
     expect(done.events.find((e) => e.kind === 'break')).toMatchObject({ initiatedBy: 'adult', cardTaken: true });
   });
@@ -1344,7 +1350,8 @@ describe('assent: правки по проверке методиста', () => 
     let st = begin([V, U], { V: acq(V, 0), [U.id]: u }, { config: 'alone' });
     for (let i = 0; i < 3; i += 1) st = answer(st, i + 1, 'silent_at_model').state;
     expect(st.queue.some((q) => q.kind === 'trial')).toBe(false);
-    expect(nextStep(st, 10).step).toMatchObject({ kind: 'end', reason: 'assent_withdrawn', pairingCycle: true });
+    // конец по бездействию устройства — ребёнка, скорее всего, нет рядом: без цикла сопряжения (№169)
+    expect(nextStep(st, 10).step).toMatchObject({ kind: 'end', reason: 'assent_withdrawn', pairingCycle: false });
   });
 });
 

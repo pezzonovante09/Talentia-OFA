@@ -4,7 +4,7 @@
  * Хранилище (замена пробы, строка исправления, `EFFECTIVE`) — `services/local/__tests__/trialCorrections.test.ts`.
  */
 import type { AbaPresentation, PresentationOutcome } from '../../types/aba';
-import { finishBreak, nextStep, recordTrial, type AbaSessionState, type AbaTrialInput } from '../abaSession';
+import { finishAccess, finishBreak, nextStep, recordTrial, type AbaSessionState, type AbaTrialInput } from '../abaSession';
 import { beginUndo, canUndo, undoLastMark, UNDO_WINDOW_MS, type UndoContext } from '../abaUndo';
 import { BASE_MS, beginSession, correctInput } from './abaSessionDriver';
 
@@ -226,6 +226,10 @@ describe('слой жетонов запечатан', () => {
       const next = nextStep(st, now);
       if (next.step.kind === 'break') {
         st = finishBreak(next.state, now + 1000).state;
+        continue;
+      }
+      if (next.step.kind === 'access') {
+        st = finishAccess(next.state, now + 1000);
         continue;
       }
       if (next.step.kind !== 'trial') break;

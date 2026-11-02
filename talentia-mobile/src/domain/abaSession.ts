@@ -1094,7 +1094,7 @@ export function nextStep(
         { ...st, pendingPauseMs: 0 },
         {
           kind: 'break',
-          canExchange: isBoardFull(st.board) && !st.reinforcerStale && head.initiatedBy !== 'child_card' && head.cardTaken !== true,
+          canExchange: isBoardFull(st.board) && breakExchanges(st, head),
           pauseBeforeMs: pause,
           ...(head.initiatedBy ? { initiatedBy: head.initiatedBy } : {}),
           ...(head.maxMs ? { maxMs: head.maxMs } : {}),
@@ -1193,6 +1193,37 @@ export function awayOutcome(awayMs: number, sameDay = true): 'same_trial' | 'rec
 }
 
 /**
+ * Обмен после перерыва (№161, №169, №170): только по расписанию. По просьбе ребёнка (карточка — в пробе, между
+ * пробами, после отказа), в тихой паузе после «Отказ» (`adult`: «без жетонов, подкрепителей и внимания») и на
+ * перерыве, предложенном приложением после тихих проб (`device_offer`: иначе «молчание → перерыв → подкрепитель»),
+ * обмена нет — полная доска ждёт перерыва по расписанию или конца. Пока подкрепитель устарел (обмен рутины) — тоже.
+ */
+function breakExchanges(state: AbaSessionState, head: Extract<QueueItem, { kind: 'break' }>): boolean {
+  if (state.reinforcerStale || head.cardTaken === true) return false;
+  return head.initiatedBy === undefined;
+}
+
+/**
+ * Перерыв, оборванный концом сессии (`withdrawAssent`, `stopSession`), тоже пишется (№169): без него в журнале
+ * пропадали `initiatedBy`, `between`, `cardTaken`, `training` и длительность. Обмена нет — он уходит в конец.
+ */
+function interruptedBreak(state: AbaSessionState, now: number): AbaSessionEvent[] {
+  const head = state.queue[0];
+  if (state.breakStartedAt === null || head?.kind !== 'break') return [];
+  return [
+    {
+      kind: 'break',
+      startedAt: iso(state.breakStartedAt),
+      endedAt: iso(now),
+      initiatedBy: head.initiatedBy ?? 'schedule',
+      ...(head.between ? { between: true as const } : {}),
+      ...(head.cardTaken ? { cardTaken: true as const } : {}),
+      ...(head.training ? { training: true as const } : {}),
+    },
+  ];
+}
+
+/**
  * Перерыв кончился. Обмен — если доска полна и перерыв не по просьбе ребёнка (№161); неполная доска
  * переходит на следующий блок как есть, жетоны не сгорают. Перерыв в рабочее время не идёт.
  */
@@ -1200,11 +1231,8 @@ export function finishBreak(state: AbaSessionState, now: number): { state: AbaSe
   if (state.queue[0]?.kind !== 'break') throw new Error('Сейчас не перерыв');
   const startedAt = state.breakStartedAt ?? now;
   const head = state.queue[0];
-  // пока подкрепитель устарел (обмен рутины), обмена нет: жетоны не сгорают, ждут нового выбора; на перерыве
-  // по просьбе ребёнка (карточка — в пробе, между пробами, после отказа) обмена нет тоже: иначе просьба после
-  // ошибки приносила бы и предмет обмена — доска ждёт перерыва по расписанию или конца (№161)
-  const childAsked = head.initiatedBy === 'child_card' || head.cardTaken === true;
-  const { board, exchanged } = state.reinforcerStale || childAsked ? { board: state.board, exchanged: 0 } : tryExchange(state.board);
+  // обмен — только на перерыве по расписанию (`breakExchanges`, одно правило с `canExchange` шага); жетоны не сгорают
+  const { board, exchanged } = breakExchanges(state, head) ? tryExchange(state.board) : { board: state.board, exchanged: 0 };
   const events: AbaSessionEvent[] = [
     ...state.events,
     {
@@ -1218,6 +1246,8 @@ export function finishBreak(state: AbaSessionState, now: number): { state: AbaSe
     },
   ];
   if (exchanged > 0) events.push({ kind: 'exchange', at: iso(now), tokens: exchanged });
+  // обмен без доступа — жетон, который ничего не покупает (№169): доступ по ступени, как при обмене сразу
+  const access: QueueItem[] = exchanged > 0 ? [{ kind: 'access', durationMs: EXCHANGE_ACCESS_MS[state.board.size] }] : [];
   return {
     state: {
       ...state,
@@ -1226,7 +1256,7 @@ export function finishBreak(state: AbaSessionState, now: number): { state: AbaSe
       pausedMs: state.pausedMs + (now - startedAt),
       breakStartedAt: null,
       events,
-      queue: state.queue.slice(1),
+      queue: [...access, ...state.queue.slice(1)],
     },
     exchanged,
   };
@@ -1259,11 +1289,15 @@ export function finishAccess(state: AbaSessionState, now: number): AbaSessionSta
  * решение принял человек, и подкреплять уход нельзя.
  */
 export function stopSession(state: AbaSessionState, reason: 'adult_stopped' | 'abandoned', now?: number): AbaSessionState {
-  // доступ, прерванный остановкой, остаётся в журнале
+  // доступ и перерыв, прерванные остановкой, остаются в журнале
   const events =
-    state.accessStartedAt !== null && now !== undefined
-      ? [...state.events, { kind: 'access' as const, startedAt: iso(state.accessStartedAt), endedAt: iso(now) }]
-      : state.events;
+    now === undefined
+      ? state.events
+      : [
+          ...state.events,
+          ...interruptedBreak(state, now),
+          ...(state.accessStartedAt !== null ? [{ kind: 'access' as const, startedAt: iso(state.accessStartedAt), endedAt: iso(now) }] : []),
+        ];
   return {
     ...state,
     events,
@@ -1300,6 +1334,7 @@ export function withdrawAssent(
     pausedMs,
     events: [
       ...state.events,
+      ...interruptedBreak(state, now),
       { kind: 'assent', at: iso(now), by, action: state.workStartedAt === null ? 'not_started' : 'end', ...where },
     ],
   };
@@ -1429,8 +1464,8 @@ function handleInterruption(state: AbaSessionState, trial: AbaTrial, planned: Pl
 export function takeBreakCard(state: AbaSessionState, now: number): AbaSessionState {
   const head = state.queue[0];
   if (head?.kind !== 'break' || !head.offerCardMs || head.cardTaken) throw new Error('Сейчас карточку не предлагали');
-  const startedAt = state.breakStartedAt ?? now;
-  if (now - startedAt > head.offerCardMs) throw new Error('Время предложения карточки вышло');
+  // просьба карточкой принимается всю тихую паузу (`maxMs`): `offerCardMs` — только время подсветки и жеста
+  // взрослого; иначе поздняя просьба — заменяющее поведение — оставалась бы без ответа (№170)
   return {
     ...state,
     queue: [{ ...head, cardTaken: true, maxMs: CHILD_BREAK_MS[state.band] }, ...state.queue.slice(1)],
@@ -1560,17 +1595,36 @@ function settleBoard(state: AbaSessionState, now: number): { state: AbaSessionSt
   };
 }
 
-/** Сессия без учебной и освоенной цели — одна базовая линия: в конце цикл сопряжения. */
+/**
+ * Конец по бездействию устройства (`device_inactivity`): ребёнка, скорее всего, нет рядом — обмена и сопряжения в
+ * пустой комнате нет, доска ждёт следующей сессии, ступень доски не засчитывает обмен, которого не было (№169).
+ */
+function endedByInactivity(state: AbaSessionState): boolean {
+  if (state.endReason !== 'assent_withdrawn') return false;
+  const last = [...state.events].reverse().find((e) => e.kind === 'assent' && (e.action === 'end' || e.action === 'not_started'));
+  return last?.kind === 'assent' && last.by === 'device_inactivity';
+}
+
+/** Обмен в конце сессии: полная доска, причина из `EXCHANGE_AT_END`, подкрепитель не устарел, ребёнок рядом. */
+function exchangesAtEnd(state: AbaSessionState): boolean {
+  return state.endReason !== null && EXCHANGE_AT_END.has(state.endReason) && !state.reinforcerStale && !endedByInactivity(state) && isBoardFull(state.board);
+}
+
+/**
+ * Сессия без учебной и освоенной цели — одна базовая линия: в конце цикл сопряжения. Только если в конце нет
+ * обмена (№169): после обмена ребёнок уже получил доступ, и конец по отказу не подкрепляется сильнее обычного.
+ */
 function needsPairingCycle(state: AbaSessionState): boolean {
+  if (endedByInactivity(state) || exchangesAtEnd(state)) return false;
   const reason = state.endReason;
   // в «сам» высоковероятные пробы бывают без жетона («Tali послушал») — их не считаем
   const paying = state.highPTargetIds.some((id) => counts(state.targets[id], state.config));
-  // конец по отказу — без требования, только сопряжение без жетона в доску
-  // …но до начала работы (выбора не было) подкрепителя нет — доступ «за не выбрал» не выдаётся
-  if (reason === 'assent_withdrawn') return state.workStartedAt !== null;
-  return (
-    state.teachingTargetIds.length === 0 && !paying && (reason === 'completed' || reason === 'time_limit')
-  );
+  const baselineOnly = state.teachingTargetIds.length === 0 && !paying;
+  // конец по отказу — без требования, сопряжение без жетона в доску; но по тому же условию, что обычный конец
+  // (№170): иначе уход из учебной сессии приносил бы доступ, а законченная по плану — нет. До начала работы
+  // (выбора не было) подкрепителя нет — доступ «за не выбрал» не выдаётся
+  if (reason === 'assent_withdrawn') return baselineOnly && state.workStartedAt !== null;
+  return baselineOnly && (reason === 'completed' || reason === 'time_limit');
 }
 
 /** Снять конец блока; обучающий блок получает жетон за участие. */
@@ -2384,10 +2438,10 @@ export function finishAbaSession(
     states[id] = s;
   }
 
-  const canExchange = EXCHANGE_AT_END.has(state.endReason) && !state.reinforcerStale;
-  const { board, exchanged } = canExchange ? tryExchange(state.board) : { board: state.board, exchanged: 0 };
+  const { board, exchanged } = exchangesAtEnd(state) ? tryExchange(state.board) : { board: state.board, exchanged: 0 };
   const exchangesMade = state.exchangesMade + (exchanged > 0 ? 1 : 0);
-  const tokenTraining = applyStageSession(state.tokenTraining, state.band, {
+  // конец по бездействию — отсутствие ребёнка, а не результат на ступени: ступень доски не решает (№170)
+  const tokenTraining = endedByInactivity(state) ? state.tokenTraining : applyStageSession(state.tokenTraining, state.band, {
     sessionIndex: idx,
     exchanges: exchangesMade,
     endReason: state.endReason,

@@ -926,7 +926,7 @@ export const PLATE_STROKE_INSET = true;
  * вместо следующего SD (№160, `abaConsequence.breakCard`).
  */
 export const abaBreak = {
-  initiators: ['child_card', 'schedule', 'device_offer'],
+  initiators: ['child_card', 'adult', 'schedule', 'device_offer'],
   /** Обучающий перерыв по карточке (№99). */
   trainingSeconds: { min: 15, max: 20 },
   /** Касание карточки → экран перерыва. */
@@ -1001,10 +1001,11 @@ export const abaBreak = {
    * Обмен после перерыва по инициатору (№161). По просьбе ребёнка (карточка в пробе, между пробами, после
    * отказа) обмена нет: полная доска **ждёт** ближайшего перерыва по расписанию или конца сессии — на экране
    * перерыва доски нет (`childCardShows.tokens`), а по возвращении полоса показывает полную доску как есть,
-   * статично, без намёка на обмен (ни пульса, ни контура, ни звука). Перерыв, предложенный приложением, —
-   * как по расписанию. Домен — `canExchange` шага перерыва.
+   * статично, без намёка на обмен (ни пульса, ни контура, ни звука). Тихая пауза после «Отказ» (`adult`) и
+   * перерыв, предложенный приложением после тихих проб (`device_offer`), — тоже без обмена (№170). Домен —
+   * `canExchange` шага перерыва (`breakExchanges`).
    */
-  exchangeAfter: { child_card: false, schedule: true, device_offer: true },
+  exchangeAfter: { child_card: false, adult: false, schedule: true, device_offer: false },
   fullBoardWaiting: { animated: false, cue: false, sound: false },
 } as const;
 

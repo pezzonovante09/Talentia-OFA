@@ -63,9 +63,9 @@ describe('конец до работы и остановка во время д�
     expect(step).toMatchObject({ kind: 'end', reason: 'assent_withdrawn', pairingCycle: false });
   });
 
-  it('отказ после начала работы — цикл сопряжения остаётся', () => {
+  it('отказ после начала работы в учебной сессии — без цикла сопряжения, как обычный конец (№170)', () => {
     const st = withdrawAssent(beginSession(), BASE_MS + 60_000, 'child_card');
-    expect(nextStep(st, BASE_MS + 61_000).step).toMatchObject({ kind: 'end', pairingCycle: true });
+    expect(nextStep(st, BASE_MS + 61_000).step).toMatchObject({ kind: 'end', pairingCycle: false });
   });
 
   it('остановка во время доступа пишет событие доступа', () => {
