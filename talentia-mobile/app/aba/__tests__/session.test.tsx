@@ -4,7 +4,7 @@
  * выход удержанием — итог сессии; «Сам» — без обучения карточке и без панели. Фаза 7 (№169): приглашения после
  * перерыва и конец по бездействию, обучающий перерыв без конца, экран обмена, доступ и хвост конца с циклом сопряжения.
  */
-import { StyleSheet } from 'react-native';
+import { AccessibilityInfo, StyleSheet } from 'react-native';
 
 import AbaSessionScreen from '../session';
 import { ABA_TARGETS } from '../../../src/content/aba';
@@ -16,7 +16,8 @@ import { initialTokenTraining, PAIRING } from '../../../src/domain/abaTokenTrain
 import { grantAbaProcessing } from '../../../src/services/local/abaConsent';
 import { loadChildState, saveChildState } from '../../../src/services/local/childState';
 import { asAbaWriter, memoryDb } from '../../../src/services/local/__tests__/nodeSql';
-import type { SqlDb } from '../../../src/services/local/sql';
+import type { SqlDb, SqlValue } from '../../../src/services/local/sql';
+import type { AbaSessionState } from '../../../src/domain/abaSession';
 import { voice } from '../../../src/services/voice';
 import { useAbaRun } from '../../../src/state/abaRun';
 import { useAccount } from '../../../src/state/account';
@@ -156,7 +157,10 @@ it('плашка — только с жетоном: базовая линия �
   expect(screen.queryAllByTestId('aba-strip-token-filled', HIDDEN)).toHaveLength(0);
 });
 
-it('обучение, верно на стартовом уровне — плашка с жетоном: жетон ложится в 340, плашка уходит в 4000, полная доска — доступ', async () => {
+it('обучение, верно на стартовом уровне, доска не заполнилась — плашка с жетоном: жетон ложится в 340, плашка уходит в 4000, следующий SD в 5000', async () => {
+  // ступень 2: первый жетон доску из двух не заполняет — последствие по Ц2.6; доску, заполненную жетоном пробы, — блок
+  // «цикл 4» ниже (смена кадра на обмен в посадка + 700, №172)
+  await asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'tokenTraining', { ...initialTokenTraining(), pairingDone: true, stage: 2 }, new Date(clock.now()).toISOString()));
   const two = ABA_TARGETS.find((t) => t.id === 'match-same-2')!;
   const states = { [two.id]: { ...initialTargetState(two), phase: 'acquisition' as const, startPromptLevel: 0 as const, lastSuccessfulPromptLevel: 0 as const } };
   await asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'abaTargets', states, new Date(clock.now()).toISOString()));
@@ -167,31 +171,27 @@ it('обучение, верно на стартовом уровне — пла
   await fireEvent.press(screen.getByTestId('aba-sample'));
   await fireEvent.press(screen.getByTestId(correctOption()));
   await waitFor(() => expect(screen.getByTestId('aba-reinforcement')).toBeTruthy());
+  const M = clock.now();
   expect(screen.queryAllByTestId('aba-overlay-token-filled', HIDDEN)).toHaveLength(0);
   // срок «плашка» — в момент записи: ручные часы проходят его отдельным шагом
   await tick(0);
-  await tick(340);
+  await stepTo(M + 339);
+  expect(screen.queryAllByTestId('aba-overlay-token-filled', HIDDEN)).toHaveLength(0);
+  await stepTo(M + 340);
   expect(screen.queryAllByTestId('aba-overlay-token-filled', HIDDEN)).toHaveLength(1);
-  await tick(360);
-  await tick(3300);
+  expect(screen.queryAllByTestId('aba-overlay-token-empty', HIDDEN)).toHaveLength(1);
+  await stepTo(M + 3999, 100);
+  expect(screen.getByTestId('aba-reinforcement')).toBeTruthy();
+  await stepTo(M + 4000);
   expect(screen.queryByTestId('aba-reinforcement')).toBeNull();
-  // обмен сразу обнулил доску, но до экрана обмена ребёнок видит её полной
+  // полоса: жетон на месте, вторая ячейка пустая; обмена нет — доска не полна
   expect(screen.queryAllByTestId('aba-strip-token-filled', HIDDEN)).toHaveLength(1);
-  // доска из одной ячейки (обучение доске) полна — обмен сразу: со следующим SD — экран обмена без кнопки, жетон
-  // лежит 600 мс (одна ячейка, №171) и улетает в карточку; ячейка пустеет в момент вылета (Ц3.4), затем «получено»,
-  // раскрытие и доступ к подкрепителю
-  await tick(1000);
-  await waitFor(() => expect(screen.getByTestId('aba-exchange')).toBeTruthy());
-  expect(screen.queryAllByTestId('aba-exchange-token-filled', HIDDEN)).toHaveLength(1);
-  await tick(599);
-  expect(screen.queryAllByTestId('aba-exchange-token-filled', HIDDEN)).toHaveLength(1);
-  await tick(1);
-  expect(screen.queryAllByTestId('aba-exchange-token-filled', HIDDEN)).toHaveLength(0);
-  expect(screen.queryAllByTestId('aba-exchange-token-empty', HIDDEN)).toHaveLength(1);
-  await stepTo(clock.now() + 360 + 300 + 360 - 1);
-  expect(screen.queryByTestId('aba-access-scene')).toBeNull();
-  await stepTo(clock.now() + 1);
-  await waitFor(() => expect(screen.getByTestId('aba-access-scene')).toBeTruthy());
+  expect(screen.queryAllByTestId('aba-strip-token-empty', HIDDEN)).toHaveLength(1);
+  await stepTo(M + 4999, 100);
+  expect(screen.queryByTestId('aba-instruction')).toBeNull();
+  await stepTo(M + 5000);
+  await waitFor(() => expect(screen.getByTestId('aba-instruction')).toBeTruthy());
+  expect(screen.queryByTestId('aba-exchange')).toBeNull();
 });
 
 it('«Отказ» в фазе последствия — отказ вне пробы: сессия кончается спокойно, следующего SD нет', async () => {
@@ -531,8 +531,10 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
     expect(body.exchangesMade).toBe(1);
     expect(body.events.some((e) => e.kind === 'exchange')).toBe(true);
     expect(body.events.some((e) => e.kind === 'pairing')).toBe(false);
-    // кнопки «Получить!» нет: требования к ребёнку в конце нет — на экране обмена только выход удержанием
-    expect(within(screen.getByTestId('aba-exchange')).queryAllByRole('button').map((b) => b.props.testID)).toEqual(['aba-exit']);
+    // кнопки «Получить!» нет: требования к ребёнку в конце нет — на экране обмена ни одной кнопки; выход удержанием —
+    // один на экран сессии, вне кадра обмена (Ц4, огр. 9)
+    expect(within(screen.getByTestId('aba-exchange')).queryAllByRole('button')).toEqual([]);
+    expect(screen.getAllByTestId('aba-exit')).toHaveLength(1);
     expect(screen.queryAllByTestId('aba-exchange-token-filled', HIDDEN)).toHaveLength(3);
     const t0 = clock.now();
     // три ячейки: полная доска стоит 1000 мс, полёт со сдвигом 60, «получено» 300, раскрытие 360 — доступ в 2140
@@ -650,7 +652,10 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
     await waitFor(() => expect(screen.getByTestId('aba-exchange')).toBeTruthy());
     return clock.now();
   }
-  /** Обучение доске (одна ячейка), верно на L0 — обмен сразу; `t0` — показ кадра обмена. */
+  /**
+   * Обучение доске (одна ячейка), верно на L0 — жетон пробы заполнил доску: смена кадра на обмен в посадка + 700
+   * (№172); `t0` — показ кадра обмена.
+   */
   async function trainingExchange(): Promise<number> {
     const two = ABA_TARGETS.find((x) => x.id === 'match-same-2')!;
     const states = { [two.id]: { ...initialTargetState(two), phase: 'acquisition' as const, startPromptLevel: 0 as const, lastSuccessfulPromptLevel: 0 as const } };
@@ -662,14 +667,15 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
     await fireEvent.press(screen.getByTestId('aba-sample'));
     await fireEvent.press(screen.getByTestId(correctOption()));
     await waitFor(() => expect(screen.getByTestId('aba-reinforcement')).toBeTruthy());
+    const markedAt = clock.now();
     await tick(0);
-    await tick(340);
-    await tick(360);
-    await tick(3300);
-    await tick(1000);
+    await stepTo(markedAt + 340 + 700);
     await waitFor(() => expect(screen.getByTestId('aba-exchange')).toBeTruthy());
+    expect(clock.now()).toBe(markedAt + 1040);
     return clock.now();
   }
+  /** Доступ после обмена с полной доски, одна ячейка: удержание 1000 (№173) + полёт 360 + «получено» 300 + раскрытие 360. */
+  const FULL_BOARD_ONE_CELL_TO_ACCESS = 1000 + 360 + 300 + 360;
   async function holdExit() {
     await fireEvent(screen.getByTestId('aba-exit'), 'pressIn');
     await tick(1500);
@@ -720,7 +726,7 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
       await stepTo(t0 + 1500);
       expect(screen.getByTestId('aba-access-play')).toBeTruthy();
     } finally {
-      useChildSession.setState({ settings: before });
+      await act(async () => useChildSession.setState({ settings: before }));
     }
   });
 
@@ -752,8 +758,8 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
 
   it('доступ в сессии (Ц3.5): кольцо с силуэтом до T, в T исчезает; карточка на кадре конца; следующий шаг через 360 + 1000', async () => {
     const t0 = await trainingExchange();
-    // одна ячейка: 600 + 360 + 300 + 360
-    const A = t0 + 1620;
+    // одна ячейка, обмен с полной доски: 1000 (№173) + 360 + 300 + 360
+    const A = t0 + FULL_BOARD_ONE_CELL_TO_ACCESS;
     await stepTo(A);
     expect(screen.getByTestId('aba-access-play')).toBeTruthy();
     await stepTo(A + 19_999, 250);
@@ -778,7 +784,7 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
 
   it('событие access в итоге сессии — время сцены, ровно durationMs (№171): без обмена и кадра конца', async () => {
     const t0 = await trainingExchange();
-    const A = t0 + 1620;
+    const A = t0 + FULL_BOARD_ONE_CELL_TO_ACCESS;
     await stepTo(A + 21_360, 250);
     await waitFor(() => expect(screen.queryByTestId(/^aba-access-/, HIDDEN)).toBeNull());
     await waitFor(() => expect(screen.getByTestId('aba-exit')).toBeTruthy());
@@ -800,7 +806,7 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
 
   it('выход удержанием во время сцены — access от начала сцены до выхода', async () => {
     const t0 = await trainingExchange();
-    const A = t0 + 1620;
+    const A = t0 + FULL_BOARD_ONE_CELL_TO_ACCESS;
     await stepTo(A + 5000, 250);
     expect(screen.getByTestId('aba-access-play')).toBeTruthy();
     await holdExit();
@@ -811,7 +817,7 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
 
   it('выход удержанием, начатый в сцене и законченный на кадре конца, — доступ пишется до T, а не до выхода (№171)', async () => {
     const t0 = await trainingExchange();
-    const A = t0 + 1620;
+    const A = t0 + FULL_BOARD_ONE_CELL_TO_ACCESS;
     await stepTo(A + 19_500, 250);
     expect(screen.getByTestId('aba-access-play')).toBeTruthy();
     await fireEvent(screen.getByTestId('aba-exit'), 'pressIn');
@@ -864,6 +870,596 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
     await stepTo(from + 29_000, 500);
     expect([cardStroke('aba-break-card'), screen.queryByTestId('aba-panel-caption')]).toEqual([6, null]);
     expect(screen.getByTestId('aba-refusal-pause')).toBeTruthy();
+  });
+});
+
+/**
+ * Цикл 4 (№172–173, итог проверок — огр. 1–3 и 9): доску на ступенях 1–2 заполнил жетон пробы — смена кадра на обмен в
+ * посадка + 700 (calm 820), полная доска 1000; заполнил жетон за участие — обычное последствие, падение 140 со звуком,
+ * обмен через 700 после посадки. Палец на карточке «перерыв» или «Отказ» откладывает смену до отпускания + 300, не
+ * дальше посадка + 920; лежит в потолке — засчитан. Выход удержанием один на экран.
+ */
+describe('цикл 4 (№172–173): плашка → обмен', () => {
+  /** От кадра обмена с полной доски до доступа, одна ячейка: 1000 (№173) + полёт 360 + «получено» 300 + раскрытие 360. */
+  const FULL_ONE_CELL = 1000 + 360 + 300 + 360;
+  /** Касание одним пальцем: у детской цели событие есть всегда (`ChildPressable` читает `pageX/pageY/identifier`). */
+  const TOUCH = { nativeEvent: { pageX: 0, pageY: 0, identifier: 0 } };
+  const exFilled =() => screen.queryAllByTestId('aba-exchange-token-filled', HIDDEN).length;
+  const exEmpty = () => screen.queryAllByTestId('aba-exchange-token-empty', HIDDEN).length;
+  const stripFilled = () => screen.queryAllByTestId('aba-strip-token-filled', HIDDEN).length;
+  const stripDropping = () => screen.queryAllByTestId('aba-strip-token-dropping', HIDDEN).length;
+  const cardStroke = (id: string) => StyleSheet.flatten(screen.getByTestId(id).props.style).borderWidth as number;
+  /** Проба идёт: у панели взрослого есть «Была подсказка» (на последствии и участии — только «Отказ»). */
+  const inTrial = () => screen.queryByTestId('aba-panel-adult_prompted') !== null;
+  const overlay = () => screen.queryByTestId('aba-reinforcement') !== null;
+  const exchange = () => screen.queryByTestId('aba-exchange') !== null;
+  const trace = () => screen.queryByTestId('aba-break-trace') !== null;
+  type Host = { type: string; children: (Host | string)[] };
+  const hasType = (n: Host | string, type: string): boolean => typeof n !== 'string' && (n.type === type || n.children.some((c) => hasType(c, type)));
+  /** Кольцо удержания выхода (`ExitHold`: круг поверх стрелки, с 300 мс удержания). */
+  const exitRing = () => hasType(screen.getByTestId('aba-exit') as unknown as Host, 'RNSVGCircle');
+  const snapshot = async () => (await loadChildState(db, KID, 'abaSessionInProgress')) as unknown as AbaSessionState;
+  const childCardEvents = (s: AbaSessionState) => s.events.filter((e) => e.kind === 'assent' && e.by === 'child_card');
+  async function tickUntil(pred: () => boolean, step = 250, max = 400) {
+    for (let i = 0; i < max && !pred(); i += 1) await tick(step);
+    expect(pred()).toBe(true);
+  }
+
+  async function prepare(stage: 1 | 2 | 3) {
+    const two = ABA_TARGETS.find((x) => x.id === 'match-same-2')!;
+    const states = { [two.id]: { ...initialTargetState(two), phase: 'acquisition' as const, startPromptLevel: 0 as const, lastSuccessfulPromptLevel: 0 as const } };
+    const at = new Date(clock.now()).toISOString();
+    await asAbaWriter(db, KID, async (tx) => {
+      await saveChildState(tx, KID, 'tokenTraining', { ...initialTokenTraining(), pairingDone: true, stage }, at);
+      await saveChildState(tx, KID, 'abaTargets', states, at);
+    });
+  }
+  async function toFirstTrial() {
+    await mount();
+    await skipCardTraining();
+    await chooseFirst();
+    await waitFor(() => expect(inTrial()).toBe(true));
+  }
+  /** Верно на старте; возвращает `markedAt` — часы стоят, пока проба пишется. */
+  async function answerRight(): Promise<number> {
+    await fireEvent.press(screen.getByTestId('aba-sample'));
+    await fireEvent.press(screen.getByTestId(correctOption()));
+    await waitFor(() => expect(inTrial()).toBe(false));
+    return clock.now();
+  }
+  /** «Была подсказка», затем верно — `prompted`: похвала голосом, без жетона и без плашки. */
+  async function answerPrompted() {
+    await fireEvent.press(screen.getByTestId('aba-panel-adult_prompted'));
+    await fireEvent.press(screen.getByTestId('aba-sample'));
+    await fireEvent.press(screen.getByTestId(correctOption()));
+    await waitFor(() => expect(inTrial()).toBe(false));
+  }
+  /** Четыре пробы блока с подсказкой (без жетона); на экране — пятая, последняя проба блока. */
+  async function toLastTrialOfBlock() {
+    for (let i = 0; i < 4; i += 1) {
+      await answerPrompted();
+      await tickUntil(inTrial);
+    }
+    const rows = await db.all<{ body: string }>('SELECT body FROM aba_trials WHERE child_id = ? ORDER BY rowid', [KID]);
+    expect(rows.map((r) => JSON.parse(r.body) as { response: string; tokens: number }).map((b) => [b.response, b.tokens])).toEqual(Array(4).fill(['prompted', 0]));
+  }
+  /** База с задержкой записи: пока `close()` не снят `open()`, запросы экрана ждут (тест держит запись «в полёте»). */
+  function gatedDb() {
+    let gate: Promise<void> | null = null;
+    let release = () => undefined as void;
+    const inner = db;
+    const wait = async () => {
+      if (gate) await gate;
+    };
+    const gated: SqlDb = {
+      async run(sql: string, params?: readonly SqlValue[]) {
+        await wait();
+        return inner.run(sql, params);
+      },
+      async all<T>(sql: string, params?: readonly SqlValue[]) {
+        await wait();
+        return inner.all<T>(sql, params);
+      },
+      async exec(sql: string) {
+        await wait();
+        return inner.exec(sql);
+      },
+      async transaction<T>(fn: (tx: SqlDb) => Promise<T>) {
+        await wait();
+        return inner.transaction(fn);
+      },
+    };
+    useAccount.setState({ db: gated });
+    return {
+      close() {
+        gate = new Promise<void>((r) => {
+          release = r;
+        });
+      },
+      async open() {
+        gate = null;
+        await act(async () => release());
+      },
+    };
+  }
+
+  describe('путь пробы: доску заполнил жетон этой пробы (ступень 1)', () => {
+    it('плашка с падением жетона до посадка + 700, одна смена кадра на обмен в 1040, полная доска 1000, доступ в 3060', async () => {
+      await prepare(1);
+      await toFirstTrial();
+      const M = await answerRight();
+      expect(overlay()).toBe(true);
+      await tick(0);
+      // жетон падает 120 → 340 (Ц4.0 п. 1), звук — при посадке, похвала — в 700
+      await stepTo(M + 200);
+      expect(screen.queryAllByTestId('aba-overlay-token-dropping', HIDDEN)).toHaveLength(1);
+      await stepTo(M + 340);
+      expect(screen.queryAllByTestId('aba-overlay-token-filled', HIDDEN)).toHaveLength(1);
+      expect(voice.last?.key).toBe('abaSession.sound.token');
+      await stepTo(M + 700);
+      expect(voice.last?.key).toBe('abaSession.sound.praise');
+      // до смены кадра в каждом кадре плашка: ни пустых плит, ни полосы, ни следующего SD
+      for (let at = M + 720; at < M + 1040; at += 20) {
+        await stepTo(at);
+        expect([overlay(), exchange()]).toEqual([true, false]);
+      }
+      await stepTo(M + 1039);
+      expect([overlay(), exchange()]).toEqual([true, false]);
+      await stepTo(M + 1040);
+      // одна смена кадра: плашка ушла, обмен пришёл в том же кадре, доска полная
+      expect([overlay(), exchange()]).toEqual([false, true]);
+      expect(screen.queryByTestId('aba-sample')).toBeNull();
+      expect([exFilled(), exEmpty()]).toEqual([1, 0]);
+      // удержание 1000 при одной ячейке (№173), а не 600 (№171)
+      await stepTo(M + 1040 + 999);
+      expect([exFilled(), exEmpty()]).toEqual([1, 0]);
+      await stepTo(M + 1040 + 1000);
+      expect([exFilled(), exEmpty()]).toEqual([0, 1]);
+      await stepTo(M + 3059);
+      expect(screen.queryByTestId('aba-access-play')).toBeNull();
+      await stepTo(M + 3060);
+      expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+      // в журнале — обмен сразу, перерыва и просьбы нет
+      expect(childCardEvents(await snapshot())).toEqual([]);
+    });
+
+    it.each(['calm', 'reduce_motion'] as const)('%s: жетон появляется в 120 без падения, обмен в 820, полная доска 1000, в 1820 одна смена кадра, доступ в 2320', async (mode) => {
+      const before = useChildSession.getState().settings;
+      // в jest-окружении RN это уже мок (`Promise<false>`): spyOn вернул бы его же, а mockRestore стёр бы реализацию
+      const reduce = AccessibilityInfo.isReduceMotionEnabled as jest.Mock;
+      reduce.mockImplementation(() => Promise.resolve(mode === 'reduce_motion'));
+      if (mode === 'calm') useChildSession.setState({ settings: { ...before, calmMode: true } });
+      try {
+        await prepare(1);
+        await toFirstTrial();
+        const M = await answerRight();
+        await tick(0);
+        expect(screen.queryAllByTestId('aba-overlay-token-dropping', HIDDEN)).toHaveLength(0);
+        await stepTo(M + 119);
+        expect(screen.queryAllByTestId('aba-overlay-token-filled', HIDDEN)).toHaveLength(0);
+        await stepTo(M + 120);
+        expect(screen.queryAllByTestId('aba-overlay-token-filled', HIDDEN)).toHaveLength(1);
+        expect(screen.queryAllByTestId('aba-overlay-token-dropping', HIDDEN)).toHaveLength(0);
+        await stepTo(M + 500);
+        expect(voice.last?.key).toBe('abaSession.sound.praise');
+        await stepTo(M + 819);
+        expect([overlay(), exchange()]).toEqual([true, false]);
+        await stepTo(M + 820);
+        expect([overlay(), exchange()]).toEqual([false, true]);
+        await stepTo(M + 1819);
+        expect([exFilled(), cardStroke('aba-exchange-card')]).toEqual([1, ABA_CONTROL_STROKE]);
+        await stepTo(M + 1820);
+        expect([exFilled(), exEmpty(), cardStroke('aba-exchange-card')]).toEqual([0, 1, 6]);
+        await stepTo(M + 2319);
+        expect(screen.queryByTestId('aba-access-play')).toBeNull();
+        await stepTo(M + 2320);
+        expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+      } finally {
+        reduce.mockImplementation(() => Promise.resolve(false));
+        await act(async () => useChildSession.setState({ settings: before }));
+      }
+    });
+  });
+
+  describe('путь участия (ступень 2: первый жетон — за ответ, второй — за участие)', () => {
+    it('доску заполнил жетон за участие: последствие 5 с, падение 140 со звуком token один раз, обмен через 700 после посадки, удержание 1000', async () => {
+      await prepare(2);
+      await toFirstTrial();
+      await toLastTrialOfBlock();
+      const say = jest.spyOn(voice, 'say');
+      const tokenSounds = () => say.mock.calls.filter(([k]) => k === 'abaSession.sound.token').length;
+      try {
+        const M = await answerRight();
+        await tick(0);
+        await stepTo(M + 340);
+        expect(tokenSounds()).toBe(1);
+        // жетон пробы доску не заполнил: путь пробы не включается — в 1040 смены кадра нет (огр. 2)
+        await stepTo(M + 1040);
+        expect([overlay(), exchange()]).toEqual([true, false]);
+        await stepTo(M + 3999, 100);
+        expect(overlay()).toBe(true);
+        await stepTo(M + 4000);
+        expect(overlay()).toBe(false);
+        expect(stripFilled()).toBe(1);
+        await stepTo(M + 4999, 100);
+        expect([stripDropping(), exchange()]).toEqual([0, false]);
+        // 5000: жетон за участие падает в последнюю ячейку полосы 140 мс
+        await stepTo(M + 5000);
+        expect([stripFilled(), stripDropping()]).toEqual([1, 1]);
+        await stepTo(M + 5139);
+        expect(tokenSounds()).toBe(1);
+        await stepTo(M + 5140);
+        expect(tokenSounds()).toBe(2);
+        expect([stripFilled(), stripDropping()]).toEqual([2, 0]);
+        // полная полоса 700, затем одна смена кадра на обмен
+        await stepTo(M + 5839);
+        expect([stripFilled(), exchange()]).toEqual([2, false]);
+        await stepTo(M + 5840);
+        expect(exchange()).toBe(true);
+        expect([exFilled(), exEmpty()]).toEqual([2, 0]);
+        await stepTo(M + 5840 + 999);
+        expect([exFilled(), exEmpty()]).toEqual([2, 0]);
+        await stepTo(M + 5840 + 1000);
+        expect([exFilled(), exEmpty()]).toEqual([1, 1]);
+        // две ячейки: 1000 + 60 + 360 + 300 + 360
+        await stepTo(M + 5840 + 2079);
+        expect(screen.queryByTestId('aba-access-play')).toBeNull();
+        await stepTo(M + 5840 + 2080);
+        expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+        // звук жетона за участие — ровно один, похвалы за участие нет
+        expect(tokenSounds()).toBe(2);
+        expect(say.mock.calls.filter(([k]) => k === 'abaSession.sound.praise')).toHaveLength(1);
+      } finally {
+        say.mockRestore();
+      }
+    });
+
+    it('таймер проснулся позже посадки: звук token жетона за участие не пропущен и звучит один раз', async () => {
+      await prepare(2);
+      await toFirstTrial();
+      await toLastTrialOfBlock();
+      const say = jest.spyOn(voice, 'say');
+      const tokenSounds = () => say.mock.calls.filter(([k]) => k === 'abaSession.sound.token').length;
+      try {
+        const M = await answerRight();
+        await tick(0);
+        await stepTo(M + 4999, 100);
+        expect(tokenSounds()).toBe(1);
+        // один шаг часов через начало участия (5000) и мимо посадки (5140): кадр участия рисуется уже после неё
+        await tick(600);
+        await tick(1);
+        expect(tokenSounds()).toBe(2);
+        expect(stripFilled()).toBe(2);
+        await tickUntil(exchange, 100);
+        expect(tokenSounds()).toBe(2);
+      } finally {
+        say.mockRestore();
+      }
+    });
+
+    it('жетон за участие, не заполнивший доску (ступень 3): полоса стоит 1000 после посадки, обмена нет', async () => {
+      await prepare(3);
+      await toFirstTrial();
+      await toLastTrialOfBlock();
+      const M = await answerRight();
+      await tick(0);
+      await stepTo(M + 5000);
+      expect(stripDropping()).toBe(1);
+      await stepTo(M + 5140);
+      expect([stripFilled(), stripDropping()]).toEqual([2, 0]);
+      const frame = JSON.stringify(screen.toJSON());
+      // 700 — срок только для заполнившего доску: здесь кадр стоит до посадки + 1000
+      await stepTo(M + 5840);
+      await stepTo(M + 6139);
+      expect(JSON.stringify(screen.toJSON())).toBe(frame);
+      await stepTo(M + 6140);
+      await waitFor(() => expect(JSON.stringify(screen.toJSON())).not.toBe(frame));
+      expect(exchange()).toBe(false);
+    });
+  });
+
+  describe('палец на карточке «перерыв» или «Отказ» в момент смены кадра (огр. 1)', () => {
+    it('палец лежит в плановый момент — кадр ждёт; засчитанное отпускание после него — смена в потолке посадка + 920, а не через 300', async () => {
+      await prepare(1);
+      await toFirstTrial();
+      const M = await answerRight();
+      await tick(0);
+      await stepTo(M + 500);
+      await fireEvent(screen.getByTestId('aba-break-card'), 'pressIn', TOUCH);
+      await stepTo(M + 1040);
+      expect([overlay(), exchange()]).toEqual([true, false]);
+      await stepTo(M + 1100);
+      // отпустили внутри карточки: на устройстве pressOut, затем press — касание засчитано, контур 6 «принято»
+      await fireEvent(screen.getByTestId('aba-break-card'), 'pressOut', TOUCH);
+      await fireEvent.press(screen.getByTestId('aba-break-card'), TOUCH);
+      expect(cardStroke('aba-break-card')).toBe(6);
+      // max(1040, отпускание + 300 = 1400) — дальше потолка 340 + 920 = 1260
+      await stepTo(M + 1259);
+      expect([overlay(), exchange()]).toEqual([true, false]);
+      await stepTo(M + 1260);
+      await waitFor(() => expect(exchange()).toBe(true));
+      expect(overlay()).toBe(false);
+      expect(trace()).toBe(true);
+      expect(childCardEvents(await snapshot())).toHaveLength(1);
+    });
+
+    it('засчитанное касание, отпущенное меньше чем за 300 мс до плановой смены, её отодвигает: смена в отпускание + 300, контур 6 «принято»', async () => {
+      await prepare(1);
+      await toFirstTrial();
+      const M = await answerRight();
+      await tick(0);
+      await stepTo(M + 800);
+      await fireEvent(screen.getByTestId('aba-break-card'), 'pressIn', TOUCH);
+      await stepTo(M + 900);
+      await fireEvent(screen.getByTestId('aba-break-card'), 'pressOut', TOUCH);
+      await fireEvent.press(screen.getByTestId('aba-break-card'), TOUCH);
+      expect(cardStroke('aba-break-card')).toBe(6);
+      await stepTo(M + 1040);
+      expect([overlay(), exchange()]).toEqual([true, false]);
+      expect(cardStroke('aba-break-card')).toBe(6);
+      await stepTo(M + 1199);
+      expect([overlay(), exchange()]).toEqual([true, false]);
+      await stepTo(M + 1200);
+      await waitFor(() => expect(exchange()).toBe(true));
+      // просьба принята: след на обмене, перерыв — после доступа
+      expect(trace()).toBe(true);
+      expect((await snapshot()).queue.slice(0, 2).map((q) => q.kind)).toEqual(['access', 'break']);
+    });
+
+    it('новое касание, пока кадр уже ждёт отклика прежнего, переносит ожидание на потолок; просьба не дублируется', async () => {
+      await prepare(1);
+      await toFirstTrial();
+      const M = await answerRight();
+      await tick(0);
+      await stepTo(M + 800);
+      await fireEvent(screen.getByTestId('aba-break-card'), 'pressIn', TOUCH);
+      await stepTo(M + 900);
+      await fireEvent(screen.getByTestId('aba-break-card'), 'pressOut', TOUCH);
+      await fireEvent.press(screen.getByTestId('aba-break-card'), TOUCH);
+      // в 1040 кадр ждёт до 1200 (отклик засчитанного касания); в 1100 палец ложится снова и лежит
+      await stepTo(M + 1100);
+      await fireEvent(screen.getByTestId('aba-break-card'), 'pressIn', TOUCH);
+      // срок прежнего отклика прошёл, а смены кадра под лежащим пальцем нет
+      await stepTo(M + 1200);
+      expect([overlay(), exchange()]).toEqual([true, false]);
+      await stepTo(M + 1259);
+      expect([overlay(), exchange()]).toEqual([true, false]);
+      expect(childCardEvents(await snapshot())).toHaveLength(1);
+      await stepTo(M + 1260);
+      await waitFor(() => expect(exchange()).toBe(true));
+      // засчёт в потолке второй просьбы не добавляет: перерыв в очереди один
+      const s = await snapshot();
+      expect(childCardEvents(s)).toHaveLength(1);
+      expect(s.queue.filter((q) => q.kind === 'break')).toHaveLength(1);
+      expect(trace()).toBe(true);
+    });
+
+    it('палец лежит и в потолке — просьба засчитана: событие child_card, очередь [access, break], след на обмене и доступе, на перерыве — нет', async () => {
+      await prepare(1);
+      await toFirstTrial();
+      const M = await answerRight();
+      await tick(0);
+      await stepTo(M + 500);
+      await fireEvent(screen.getByTestId('aba-break-card'), 'pressIn', TOUCH);
+      await stepTo(M + 1259);
+      expect([overlay(), exchange()]).toEqual([true, false]);
+      expect(childCardEvents(await snapshot())).toEqual([]);
+      await stepTo(M + 1260);
+      await waitFor(() => expect(exchange()).toBe(true));
+      const s = await snapshot();
+      expect(childCardEvents(s)).toEqual([expect.objectContaining({ kind: 'assent', by: 'child_card', action: 'break' })]);
+      expect(s.queue.slice(0, 2).map((q) => q.kind)).toEqual(['access', 'break']);
+      // след — принятая карточка поверх строки 72: на обмене, с ролью image и состоянием «выбрано»
+      expect(trace()).toBe(true);
+      const card = within(screen.getByTestId('aba-break-trace')).getByRole('image');
+      expect(card.props.accessibilityState).toEqual({ selected: true });
+      // удержание полной доски 1000 и здесь
+      const t0 = clock.now();
+      await stepTo(t0 + 999);
+      expect(exFilled()).toBe(1);
+      await stepTo(t0 + FULL_ONE_CELL);
+      expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+      expect(trace()).toBe(true);
+      // доступ кончился — экран перерыва: просьба исполнена, следа нет
+      await tickUntil(() => screen.queryByTestId('aba-break') !== null);
+      expect(trace()).toBe(false);
+    });
+
+    it('касание, начатое до показа плашки, смену кадра не держит и в потолке не засчитывается', async () => {
+      await prepare(1);
+      await toFirstTrial();
+      // палец лёг на карточку ещё в пробе и не снят
+      await fireEvent(screen.getByTestId('aba-break-card'), 'pressIn', TOUCH);
+      await tick(100);
+      const M = await answerRight();
+      await tick(0);
+      await stepTo(M + 1040);
+      expect([overlay(), exchange()]).toEqual([false, true]);
+      await stepTo(M + 1400);
+      expect(trace()).toBe(false);
+      expect(childCardEvents(await snapshot())).toEqual([]);
+    });
+
+    it.each(['снят на следующей пробе', 'не снят'] as const)(
+      'палец, лёгший на последствии обычной пробы (%s), не залипает: на следующей полной доске смена кадра в срок и ничего не записано',
+      async (how) => {
+        await prepare(2);
+        await toFirstTrial();
+        // первая проба: жетон доску из двух не заполнил — обычное последствие; палец ложится на карточку
+        const M1 = await answerRight();
+        await tick(0);
+        await stepTo(M1 + 1000);
+        await fireEvent(screen.getByTestId('aba-break-card'), 'pressIn', TOUCH);
+        await tickUntil(inTrial, 100);
+        if (how === 'снят на следующей пробе') await fireEvent(screen.getByTestId('aba-break-card'), 'pressOut', TOUCH);
+        // вторая проба заполняет доску — путь Ц4
+        await tick(500);
+        const M2 = await answerRight();
+        await tick(0);
+        await stepTo(M2 + 1039);
+        expect([overlay(), exchange()]).toEqual([true, false]);
+        await stepTo(M2 + 1040);
+        expect([overlay(), exchange()]).toEqual([false, true]);
+        await stepTo(M2 + 1400);
+        expect(trace()).toBe(false);
+        const s = await snapshot();
+        expect(childCardEvents(s)).toEqual([]);
+        expect(s.queue.some((q) => q.kind === 'break')).toBe(false);
+      },
+    );
+
+    it('«Отказ» на плашке пути Ц4 засчитан: дальше обмен (удержание 1000), доступ и нейтральный конец', async () => {
+      await prepare(1);
+      await toFirstTrial();
+      const M = await answerRight();
+      await tick(0);
+      await stepTo(M + 500);
+      await fireEvent.press(screen.getByTestId('aba-panel-refusal'));
+      await waitFor(() => expect(exchange()).toBe(true));
+      const t0 = clock.now();
+      expect(exFilled()).toBe(1);
+      await stepTo(t0 + 999);
+      expect(exFilled()).toBe(1);
+      await stepTo(t0 + 1000);
+      expect([exFilled(), exEmpty()]).toEqual([0, 1]);
+      await stepTo(t0 + FULL_ONE_CELL);
+      expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+      await tickUntil(() => screen.queryByTestId('aba-end-neutral') !== null);
+      const [row] = await db.all<{ body: string }>('SELECT body FROM aba_sessions WHERE child_id = ?', [KID]);
+      expect(JSON.parse(row.body)).toMatchObject({ endReason: 'assent_withdrawn' });
+    });
+
+    it('палец на «Отказ» лежит и в потолке — отказ засчитан в потолке: обмен с удержанием 1000, затем доступ', async () => {
+      await prepare(1);
+      await toFirstTrial();
+      const M = await answerRight();
+      await tick(0);
+      await stepTo(M + 500);
+      await fireEvent(screen.getByTestId('aba-panel-refusal'), 'pressIn');
+      await stepTo(M + 1259);
+      expect([overlay(), exchange()]).toEqual([true, false]);
+      await stepTo(M + 1260);
+      await waitFor(() => expect(exchange()).toBe(true));
+      const t0 = clock.now();
+      await stepTo(t0 + 999);
+      expect(exFilled()).toBe(1);
+      await stepTo(t0 + 1000);
+      expect(exFilled()).toBe(0);
+      await stepTo(t0 + FULL_ONE_CELL);
+      expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+      expect((await snapshot()).endReason).toBe('assent_withdrawn');
+    });
+  });
+
+  it('гонка: просьба о перерыве на плашке, запись которой ещё идёт в момент смены кадра, не теряется и не затирает состояние', async () => {
+    await prepare(1);
+    const g = gatedDb();
+    await toFirstTrial();
+    const M = await answerRight();
+    await tick(0);
+    await stepTo(M + 1000);
+    // запись просьбы задерживается — смена кадра в 1040 наступает, пока она идёт
+    g.close();
+    await fireEvent.press(screen.getByTestId('aba-break-card'), TOUCH);
+    await stepTo(M + 1040);
+    // кадр замер (busy): плашка стоит, обмена без записи нет
+    expect([overlay(), exchange()]).toEqual([true, false]);
+    await stepTo(M + 1100);
+    expect(exchange()).toBe(false);
+    await g.open();
+    await waitFor(() => expect(exchange()).toBe(true));
+    expect(trace()).toBe(true);
+    const s = await snapshot();
+    expect(childCardEvents(s)).toHaveLength(1);
+    expect(s.queue.slice(0, 2).map((q) => q.kind)).toEqual(['access', 'break']);
+    // доступ прошёл — дальше перерыв по просьбе; время доступа ушло в паузу, а не в рабочее время
+    await tickUntil(() => screen.queryByTestId('aba-break') !== null);
+    const after = await snapshot();
+    expect(after.events.filter((e) => e.kind === 'access')).toHaveLength(1);
+    expect(after.accessStartedAt).toBeNull();
+    expect(after.pausedMs).toBeGreaterThanOrEqual(20_000);
+  });
+
+  it('след просьбы виден и в busy после конца доступа, пока пишется шаг; на экране перерыва его нет', async () => {
+    await prepare(1);
+    const g = gatedDb();
+    await toFirstTrial();
+    const M = await answerRight();
+    await tick(0);
+    await stepTo(M + 500);
+    await fireEvent.press(screen.getByTestId('aba-break-card'), TOUCH);
+    await stepTo(M + 1040);
+    await waitFor(() => expect(exchange()).toBe(true));
+    expect(trace()).toBe(true);
+    const A = clock.now() + FULL_ONE_CELL;
+    await stepTo(A, 250);
+    expect(screen.getByTestId('aba-access-play')).toBeTruthy();
+    // сцена 20 с, сворачивание 360 и кадр конца 1000 — запись конца доступа задерживается
+    await stepTo(A + 21_000, 250);
+    g.close();
+    await stepTo(A + 21_360 + 100);
+    expect(screen.queryByTestId('aba-break')).toBeNull();
+    expect(trace()).toBe(true);
+    await g.open();
+    await waitFor(() => expect(screen.getByTestId('aba-break')).toBeTruthy());
+    expect(trace()).toBe(false);
+  });
+
+  describe('один выход на экран (огр. 9)', () => {
+    it('удержание, начатое на плашке, срабатывает через 1500 от касания после смены кадра на обмен; кольцо не начинается заново', async () => {
+      await prepare(1);
+      await toFirstTrial();
+      const M = await answerRight();
+      await tick(0);
+      await stepTo(M + 500);
+      await fireEvent(screen.getByTestId('aba-exit'), 'pressIn');
+      await stepTo(M + 800);
+      expect(exitRing()).toBe(true);
+      await stepTo(M + 1040);
+      expect(exchange()).toBe(true);
+      expect(screen.getAllByTestId('aba-exit')).toHaveLength(1);
+      expect(exitRing()).toBe(true);
+      await stepTo(M + 1999);
+      expect(router.replace).not.toHaveBeenCalled();
+      await stepTo(M + 2000);
+      await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/map'));
+      expect(await count('aba_sessions')).toBe(1);
+    });
+
+    it('в busy (идёт запись) выход живой: удержание доводит до выхода', async () => {
+      await prepare(1);
+      const g = gatedDb();
+      await toFirstTrial();
+      const M = await answerRight();
+      await tick(0);
+      await stepTo(M + 1000);
+      g.close();
+      await fireEvent.press(screen.getByTestId('aba-break-card'), TOUCH);
+      await stepTo(M + 1040);
+      expect(exchange()).toBe(false);
+      await fireEvent(screen.getByTestId('aba-exit'), 'pressIn');
+      await stepTo(M + 1040 + 1500);
+      await g.open();
+      await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/map'));
+    });
+
+    it('на загрузке выход есть: старт завис — удержание уводит на карту', async () => {
+      const g = gatedDb();
+      g.close();
+      await mount();
+      expect(screen.getAllByTestId('aba-exit')).toHaveLength(1);
+      await fireEvent(screen.getByTestId('aba-exit'), 'pressIn');
+      await tick(1500);
+      expect(router.replace).toHaveBeenCalledWith('/map');
+      await g.open();
+    });
+
+    it('на экране «Закончили» выхода нет', async () => {
+      useAbaRun.getState().set({ config: 'alone', observers: [], primaryObserverId: null });
+      await mount();
+      await waitFor(() => expect(screen.getByTestId('aba-end-neutral')).toBeTruthy());
+      expect(screen.queryByTestId('aba-exit')).toBeNull();
+    });
   });
 });
 

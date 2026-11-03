@@ -3,7 +3,8 @@
  * конце и для жетона цикла сопряжения. Время — абсолютное, от показа кадра обмена `startedAt`:
  *
  * - `land` — только у жетона сопряжения (`landFirst`): жетон въезжает в ячейку `landMs` (calm — появляется на месте);
- * - `hold` — полная доска стоит `abaExchangeHoldMs(cells)`: 600 мс при одной ячейке, 1000 — при двух и больше;
+ * - `hold` — полная доска стоит `abaExchangeHoldMs(cells)`: 600 мс при одной ячейке, 1000 — при двух и больше; после
+ *   смены кадра с полной доски (доска переехала, №173) — `holdMs` пути, `abaExchange.fromFullBoard.holdMs`;
  * - `fly` — жетоны уходят в центр карточки со сдвигом `staggerMs` слева направо; ячейка пустеет в момент вылета своего
  *   жетона, поэтому опустевшая доска объяснена полётом;
  * - `received` — последний долетел: контур карточки 3 → 6, `receivedHoldMs`;
@@ -17,7 +18,7 @@ import { abaExchange, abaExchangeHoldMs, ABA_CONTROL_STROKE } from '../../../des
 
 export type ExchangeStage = 'land' | 'hold' | 'fly' | 'received' | 'open' | 'done';
 
-export type ExchangeRun = { startedAt: number; cells: number; calm: boolean; landFirst: boolean };
+export type ExchangeRun = { startedAt: number; cells: number; calm: boolean; landFirst: boolean; holdMs: number };
 
 export type ExchangeView = {
   stage: ExchangeStage;
@@ -29,13 +30,14 @@ export type ExchangeView = {
   rowVisible: boolean;
 };
 
-export function startExchange(input: { at: number; cells: number; calm: boolean; landFirst?: boolean }): ExchangeRun {
-  return { startedAt: input.at, cells: Math.max(1, input.cells), calm: input.calm, landFirst: input.landFirst === true };
+export function startExchange(input: { at: number; cells: number; calm: boolean; landFirst?: boolean; holdMs?: number }): ExchangeRun {
+  const cells = Math.max(1, input.cells);
+  return { startedAt: input.at, cells, calm: input.calm, landFirst: input.landFirst === true, holdMs: input.holdMs ?? abaExchangeHoldMs(cells) };
 }
 
 function times(r: ExchangeRun) {
   const holdAt = r.startedAt + (r.landFirst && !r.calm ? abaExchange.landMs : 0);
-  const flyAt = holdAt + abaExchangeHoldMs(r.cells);
+  const flyAt = holdAt + r.holdMs;
   const receivedAt = r.calm ? flyAt : flyAt + (r.cells - 1) * abaExchange.fly.staggerMs + abaExchange.fly.ms;
   const openAt = receivedAt + (r.calm ? abaExchange.calm.receivedHoldMs : abaExchange.receivedHoldMs);
   const endsAt = openAt + (r.calm ? 0 : abaExchange.openMs);

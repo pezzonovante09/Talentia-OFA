@@ -61,6 +61,7 @@ import {
   addTokens,
   isBoardFull,
   MIN_REINFORCER_POOL,
+  nonContingentRoom,
   participationAward,
   reinforcerChoices,
   type TokenBoard,
@@ -507,8 +508,10 @@ export function settleRoutineBoard(
   let board = addTokens(current, paid, claim.nonContingent);
   let offer: RoutineSettlement['offer'];
   // предложение — только если прогон выплатил жетон: доска, полная с прошлой сессии, ждёт своего
-  // момента, а не предлагается сразу после срыва (методист, 2026-10-12)
-  if (paid > 0 && isBoardFull(board)) {
+  // момента, а не предлагается сразу после срыва (методист, 2026-10-12). Прогон «за участие» на полной доске
+  // жетона не получает (№173: сверх доски он невидим), но точку обмена сохраняет там же, где до №173 получил бы жетон
+  const keptOffer = claim.nonContingent && isBoardFull(current) && nonContingentRoom(current);
+  if ((paid > 0 || keptOffer) && isBoardFull(board)) {
     offer = { tokens: board.earned, boardSize: size, options: reinforcerChoices(ctx.pool, ctx.history, seeded(ctx.seed).rng, ctx.apart) };
   }
   return {

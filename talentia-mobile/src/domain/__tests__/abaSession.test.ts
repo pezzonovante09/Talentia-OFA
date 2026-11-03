@@ -510,8 +510,11 @@ describe('остановка и закрытие', () => {
   it('блок не кончается провалом: перед концом блока — успешная закрывающая, потом участие и перерыв', () => {
     const [M, B] = [tgt('M'), tgt('B')];
     let teachingA = 0;
+    // первые три пробы A — приближение (похвала без жетона): к концу блока на доске из трёх есть место, и жетон за
+    // участие платится (на полной доске он не платится, №173)
     const { steps, state } = drive(begin([M, A, B], { M: mastered(M), A: acq(A), B: acq(B) }), (s) => {
       if (s.targetId === 'A' && s.trialKind === 'teaching') teachingA += 1;
+      if (s.targetId === 'A' && s.trialKind === 'teaching' && teachingA <= 3) return 'approx';
       return s.targetId === 'A' && ((s.trialKind === 'teaching' && teachingA === 5) || s.trialKind === 'transfer')
         ? 'wrong'
         : 'ok';
@@ -552,7 +555,9 @@ describe('время и доска', () => {
 
   it('перерыв в рабочее время не идёт', () => {
     let st = begin([A, B], { A: acq(A), B: acq(B) }, { timeLimitMs: 8000 });
-    for (let i = 1; i <= 5; i += 1) st = answer(st, i * 1000, 'ok').state;
+    // два жетона за пробы на доске из трёх: жетон за участие ложится в последнюю ячейку (на полной доске он не
+    // платится, №173), доска полна к перерыву — обмен и доступ
+    for (let i = 1; i <= 5; i += 1) st = answer(st, i * 1000, i <= 3 ? 'approx' : 'ok').state;
     const brk = nextStep(st, 5000);
     expect(brk.step.kind).toBe('break');
     st = finishBreak(brk.state, 60_000).state;
@@ -572,6 +577,59 @@ describe('время и доска', () => {
   it('доска — 3 ячейки на любой полосе (здесь 7, сохранённая ступень 5 работает как 3), жетоны сохраняются', () => {
     const st = begin([A], { A: acq(A) }, { board: { earned: 2, nonContingent: 1 } });
     expect(st.board).toEqual({ size: 3, earned: 2, nonContingent: 1 });
+  });
+});
+
+describe('обмен сразу с полной доски (№172–173): условия пути на экране', () => {
+  const A = tgt('A');
+  const stage = (s: TokenTrainingState['stage']): TokenTrainingState => ({ ...initialTokenTraining(), pairingDone: true, stage: s });
+  /** Блок A из пяти: четыре приближения (похвала без жетона), пятая — верно на старте; жетон пятой — последний в блоке. */
+  function lastOfBlock(s: TokenTrainingState['stage'], board: { earned: number; nonContingent: number }) {
+    let st = begin([A], { A: acq(A) }, { tokenTraining: stage(s), board });
+    for (let i = 1; i <= 4; i += 1) st = answer(st, i * 1000, 'approx').state;
+    const before = st.board.earned;
+    const { res } = answer(st, 5000, 'ok');
+    return { before, res };
+  }
+
+  it.each([1, 2] as const)('ступень %i: жетон пробы заполнил доску — обмен в той же записи, доступ первым в очереди', (s) => {
+    let st = begin([A], { A: acq(A) }, { tokenTraining: stage(s), board: { earned: s - 1, nonContingent: 0 } });
+    const before = st.board.earned;
+    const { res } = answer(st, 1000, 'ok');
+    st = res.state;
+    expect(res.trial.tokens).toBe(1);
+    // признак пути пробы на экране: доску заполнил жетон этой пробы
+    expect(before + res.trial.tokens).toBeGreaterThanOrEqual(s);
+    expect(res.exchanged).toBe(s);
+    expect(st.queue[0]).toEqual({ kind: 'access', durationMs: EXCHANGE_ACCESS_MS[s] });
+  });
+
+  it.each([3, 5] as const)('ступень %i (доска 3): жетон пробы заполнил доску — обмена сразу нет, пути Ц4 нет', (s) => {
+    const st = begin([A], { A: acq(A) }, { tokenTraining: stage(s), board: { earned: 2, nonContingent: 0 } });
+    const { res } = answer(st, 1000, 'ok');
+    expect(res.state.board).toMatchObject({ size: 3, earned: 3 });
+    expect(res.exchanged).toBe(0);
+    expect(res.state.events.some((e) => e.kind === 'exchange')).toBe(false);
+    expect(res.state.queue[0]?.kind).not.toBe('access');
+  });
+
+  it('ступень 2: жетон пробы заполнил доску в конце блока — жетона за участие сверху нет (№173 п. 2)', () => {
+    const { before, res } = lastOfBlock(2, { earned: 1, nonContingent: 0 });
+    expect(before + res.trial.tokens).toBe(2);
+    expect(res.participation).toBe(false);
+    expect(res.state.events.some((e) => e.kind === 'participation')).toBe(false);
+    // ушли ровно два жетона: невидимого третьего нет
+    expect(res.exchanged).toBe(2);
+    expect(res.state.events.filter((e) => e.kind === 'exchange')).toEqual([expect.objectContaining({ tokens: 2 })]);
+  });
+
+  it('ступень 2: первый жетон — за ответ, второй — за участие: доску заполнил жетон за участие, путь участия', () => {
+    const { before, res } = lastOfBlock(2, { earned: 0, nonContingent: 0 });
+    // доску не заполнил жетон пробы — экран идёт путём участия, а не пробы (огр. 2)
+    expect(before + res.trial.tokens).toBeLessThan(2);
+    expect(res.participation).toBe(true);
+    expect(res.exchanged).toBe(2);
+    expect(res.state.queue[0]).toEqual({ kind: 'access', durationMs: EXCHANGE_ACCESS_MS[2] });
   });
 });
 

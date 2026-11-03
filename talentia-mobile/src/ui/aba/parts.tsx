@@ -98,6 +98,7 @@ export function ChildPressable({
   frameShownAt,
   onCommit,
   onDownAt,
+  onUpAt,
   disabled,
   children,
   style,
@@ -108,6 +109,8 @@ export function ChildPressable({
   onCommit: (at: number) => void;
   /** Момент касания (для очереди панели взрослого и «активности» пробы) — даже если касание не засчитается. */
   onDownAt?: (at: number) => void;
+  /** Палец снят — или цель ушла с экрана, пока он лежал (смена кадра ждёт касание, Ц4 огр. 1). */
+  onUpAt?: (at: number) => void;
   disabled?: boolean;
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
@@ -116,10 +119,25 @@ export function ChildPressable({
 }) {
   const clock = useAbaClock();
   const down = useRef<{ at: number; x: number; y: number; id: number } | null>(null);
+  const pressing = useRef(false);
+  const onUpRef = useRef(onUpAt);
+  onUpRef.current = onUpAt;
+  useEffect(
+    () => () => {
+      if (pressing.current) onUpRef.current?.(clock.now());
+    },
+    [clock],
+  );
   const onPressIn = (e: GestureResponderEvent) => {
     const at = clock.now();
     down.current = { at, x: e.nativeEvent?.pageX ?? 0, y: e.nativeEvent?.pageY ?? 0, id: Number(e.nativeEvent?.identifier ?? 0) };
+    pressing.current = true;
     onDownAt?.(at);
+  };
+  const onPressOut = () => {
+    if (!pressing.current) return;
+    pressing.current = false;
+    onUpAt?.(clock.now());
   };
   const onPress = (e: GestureResponderEvent) => {
     const d = down.current ?? { at: clock.now(), x: 0, y: 0, id: 0 };
@@ -131,6 +149,7 @@ export function ChildPressable({
     // отклик на касание — сжатие 0.94 до отпускания у любой детской цели, и у неактивной (`inactiveChoice.tapPress`)
     <Pressable
       onPressIn={onPressIn}
+      onPressOut={onPressOut}
       onPress={onPress}
       disabled={disabled}
       style={({ pressed }) => [style, pressed ? { transform: [{ scale: inactiveChoice.tapPress.scale }] } : null]}
@@ -243,11 +262,23 @@ export function NonTrialRow({ onExit, exitLabel, exitHint, children }: { onExit?
  * Не цель, но касание не молчит (I-6, `inactiveChoice.tapPress`): сжатие до отпускания, без звука, записи и действия.
  * Для Tali и значков, которые ребёнок трогает на экранах ожидания и обмена.
  */
-export function PressOnly({ children, accessibilityLabel, testID }: { children: ReactNode; accessibilityLabel: string; testID?: string }) {
+export function PressOnly({
+  children,
+  accessibilityLabel,
+  selected,
+  testID,
+}: {
+  children: ReactNode;
+  accessibilityLabel: string;
+  /** Принятая просьба (след карточки «перерыв», Ц4 огр. 3). */
+  selected?: boolean;
+  testID?: string;
+}) {
   return (
     <Pressable
       accessibilityRole="image"
       accessibilityLabel={accessibilityLabel}
+      accessibilityState={selected ? { selected: true } : undefined}
       testID={testID}
       style={({ pressed }) => ({ transform: [{ scale: pressed ? inactiveChoice.tapPress.scale : 1 }] })}
     >

@@ -84,6 +84,20 @@ describe('settleRoutineBoard: выплата прогона по живой до
     expect(settle({ earned: 1, nonContingent: 1 }, 3, PARTICIPATION).token).toBe('participation');
   });
 
+  it('№173: прогон «за участие» на полной доске жетона не получает — доска не растёт, но точка обмена остаётся', () => {
+    const s = settle({ earned: 3, nonContingent: 0 }, 3, PARTICIPATION);
+    expect(s.token).toBeNull();
+    expect(s.board).toEqual({ earned: 3, nonContingent: 0 });
+    // прежде здесь платился четвёртый, невидимый жетон и делалось предложение — предложение осталось, жетона нет
+    expect(s.offer).toMatchObject({ tokens: 3, boardSize: 3 });
+    expect(s.offer?.options).toHaveLength(REINFORCER_CHOICES);
+  });
+
+  it('№173: прогон «за участие», заполнивший доску, платит жетон и предлагает обмен', () => {
+    const s = settle({ earned: 2, nonContingent: 0 }, 3, PARTICIPATION);
+    expect(s).toMatchObject({ token: 'participation', board: { earned: 3, nonContingent: 1 }, offer: { tokens: 3, boardSize: 3 } });
+  });
+
   it('Т5: жетон за результат лимитом не ограничен — последний жетон доски оплачен ответом', () => {
     const s = settle({ earned: 4, nonContingent: 4 }, 5, WORK);
     expect(s.offer?.tokens).toBe(5);

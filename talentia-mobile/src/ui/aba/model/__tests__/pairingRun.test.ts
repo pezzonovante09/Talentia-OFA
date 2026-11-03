@@ -95,7 +95,8 @@ describe('сопряжение', () => {
     const fx: PairingEffect[] = [];
     // 10 с — обмен одной ячейки начинается с въезда жетона
     r = dueStep(r, fx);
-    expect(r.exchange).toEqual({ startedAt: T0 + 12_800, cells: 1, calm: false, landFirst: true });
+    // удержание сопряжения — по числу ячеек (№171), не путь «с полной доски» (№173)
+    expect(r.exchange).toEqual({ startedAt: T0 + 12_800, cells: 1, calm: false, landFirst: true, holdMs: 600 });
     expect(exchangeView(r.exchange!, r.at)).toMatchObject({ stage: 'land', tokenInCell: false });
     expect(fx).toEqual([]);
     expect(pairingRunDueAt(r)).toBe(T0 + 12_800 + motion.base);

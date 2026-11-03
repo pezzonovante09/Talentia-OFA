@@ -7,12 +7,15 @@
  *   похвала голосом в 700 (calm 500), плашка уходит в 4000;
  * - `praise` / `listened` — **только голос** в 300 (без плашки: иначе подсказанный ответ получил бы тот же
  *   условный подкрепитель, что самостоятельный), `neutral` — ничего;
- * - следующий SD — `abaNextSdAt(markedAt, tokenAddedLandedAt)`; пустые плиты межпробной паузы — с 4000.
+ * - следующий SD — `abaNextSdAt(markedAt, tokenAddedLandedAt)`; пустые плиты межпробной паузы — с 4000;
+ * - жетон пробы заполнил доску (`exchange`, №172): плашки до 4000, пустых плит и SD нет — `exchange` через
+ *   `abaExchange.fromFullBoard.afterLandingMs` после посадки жетона (1040, calm 820); похвала договаривается на
+ *   удержании полной доски экрана обмена.
  *
  * Просьба «перерыв» в эту фазу — сразу в домен (`requestBreakBetweenTrials`, №160): модель её не ждёт, следующий
  * шаг в срок `next_sd` и будет перерывом.
  */
-import { abaInterTrial, abaNextSdAt, abaReinforcementOverlay, abaTokenLandingMs, abaConsequence } from '../../../design/abaTokens';
+import { abaExchange, abaInterTrial, abaNextSdAt, abaReinforcementOverlay, abaTokenLandingMs, abaConsequence } from '../../../design/abaTokens';
 import type { Feedback } from '../../../domain/abaTokens';
 
 export type ConsequenceEffect =
@@ -21,7 +24,8 @@ export type ConsequenceEffect =
   | { kind: 'say'; key: 'praise' | 'listened' }
   | { kind: 'overlay_hide' }
   | { kind: 'plates_empty' }
-  | { kind: 'next_sd' };
+  | { kind: 'next_sd' }
+  | { kind: 'exchange' };
 
 export type ConsequenceRun = {
   markedAt: number;
@@ -36,14 +40,22 @@ export function startConsequence(input: {
   feedback: Feedback;
   calm: boolean;
   tokenAddedLandedAt?: number;
+  /** Жетон этой пробы заполнил доску (обучение доске, №172): после посадки — сразу обмен. */
+  exchange?: boolean;
 }): ConsequenceRun {
   const { markedAt, feedback, calm } = input;
   const o = abaReinforcementOverlay;
   const plan: ConsequenceRun['plan'] = [];
   if (feedback === 'token_praise') {
+    const landedAt = markedAt + (calm ? o.tokenAppearsAtMsCalm : abaTokenLandingMs());
     plan.push({ at: markedAt, effect: { kind: 'overlay_show' } });
-    plan.push({ at: markedAt + (calm ? o.tokenAppearsAtMsCalm : abaTokenLandingMs()), effect: { kind: 'token_land' } });
+    plan.push({ at: landedAt, effect: { kind: 'token_land' } });
     plan.push({ at: markedAt + (calm ? o.praiseAtMsCalm : o.praiseAtMs), effect: { kind: 'say', key: 'praise' } });
+    if (input.exchange) {
+      plan.push({ at: landedAt + abaExchange.fromFullBoard.afterLandingMs, effect: { kind: 'exchange' } });
+      plan.sort((a, b) => a.at - b.at);
+      return { markedAt, plan, done: 0 };
+    }
     plan.push({ at: markedAt + o.holdFromMarkedMs, effect: { kind: 'overlay_hide' } });
   } else if (feedback === 'praise' || feedback === 'listened') {
     plan.push({ at: markedAt + abaConsequence.praiseOnlyAtMs, effect: { kind: 'say', key: feedback } });

@@ -124,6 +124,42 @@ describe('жетон сопряжения (landFirst)', () => {
   });
 });
 
+describe('удержание пути «с полной доски» (holdMs, №173)', () => {
+  const path = (cells: number, calm = false) => startExchange({ at: T0, cells, calm, holdMs: abaExchange.fromFullBoard.holdMs });
+
+  it('по умолчанию удержание — по числу ячеек (№171), в run оно записано', () => {
+    expect([board(1).holdMs, board(2).holdMs, board(5).holdMs]).toEqual([600, 1000, 1000]);
+    expect(startExchange({ at: T0, cells: 0, calm: false }).holdMs).toBe(600);
+  });
+
+  it('одна ячейка на пути с полной доски — 1000, а не 600: на 999 жетон в ячейке, в 1000 вылетел', () => {
+    const r = path(1);
+    expect(r.holdMs).toBe(1000);
+    expect(v(r, 999)).toMatchObject({ stage: 'hold', flown: 0, tokenInCell: true });
+    expect(v(r, 1000)).toMatchObject({ stage: 'fly', flown: 1 });
+    expect(exchangeDepartAt(r, 0) - T0).toBe(1000);
+  });
+
+  it('одна ячейка: «получено» 1360, раскрытие 1660, доступ 2020; две — второй вылет 1060, доступ 2080', () => {
+    expect(exchangeEndsAt(path(1)) - T0).toBe(1000 + 360 + 300 + 360);
+    expect(exchangeDueAt(path(1), T0)! - T0).toBe(1000);
+    expect([0, 1].map((i) => exchangeDepartAt(path(2), i) - T0)).toEqual([1000, 1060]);
+    expect(exchangeEndsAt(path(2)) - T0).toBe(1000 + 60 + 360 + 300 + 360);
+  });
+
+  it('calm: полная доска 1000 и в calm, затем одна смена кадра и доступ через 500', () => {
+    const r = path(1, true);
+    expect(v(r, 999)).toMatchObject({ stage: 'hold', flown: 0 });
+    expect(v(r, 1000)).toMatchObject({ stage: 'received', flown: 1, cardStroke: BOLD });
+    expect(exchangeEndsAt(r) - T0).toBe(1500);
+  });
+
+  it('удержание пути не трогает въезд сопряжения: сдвиг 220 сохраняется', () => {
+    const r = startExchange({ at: T0, cells: 1, calm: false, landFirst: true, holdMs: 1000 });
+    expect(exchangeDepartAt(r, 0) - T0).toBe(220 + 1000);
+  });
+});
+
 describe('exchangeDueAt — каждая граница кадра', () => {
   const walk = (r: ExchangeRun, from: number) => {
     const marks: number[] = [];

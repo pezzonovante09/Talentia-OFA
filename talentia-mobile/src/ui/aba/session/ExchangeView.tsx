@@ -116,7 +116,7 @@ const exitLabels = (t: (k: string) => string) => ({ exitLabel: t('abaSession.exi
  * Ожидание перед циклом сопряжения в конце (Ц3.2, №171): раскладка ожидания сопряжения с пустым слотом карточки —
  * Tali `idle`, пустая ячейка 64; статично. Карточка подкрепителя появится вместе с жетоном.
  */
-export function PairingWaitView({ onExit }: { onExit: () => void }) {
+export function PairingWaitView({ onExit }: { onExit?: () => void }) {
   const { t } = useTranslation();
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }} testID="aba-end-wait">
@@ -157,7 +157,8 @@ export function ExchangeView({
   reinforcerId: string;
   pairing: boolean;
   moving: boolean;
-  onExit: () => void;
+  /** Без него место выхода в строке 72 пустое: на экране сессии выход один на все кадры (Ц4, огр. 9). */
+  onExit?: () => void;
   testID: string;
 }) {
   const { t } = useTranslation();

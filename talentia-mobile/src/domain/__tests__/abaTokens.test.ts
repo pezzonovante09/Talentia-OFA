@@ -146,6 +146,22 @@ describe('жетоны не за результат', () => {
     expect(isBoardFull(board)).toBe(true);
   });
 
+  it('на полной доске жетон за участие не начисляется, даже когда место для жетона не за результат есть (№173)', () => {
+    // nonContingent 0 < size − 1: прежнее правило дало бы 1 — жетон ушёл бы в обмен невидимым
+    expect(participationAward({ size: 2, earned: 2, nonContingent: 0 }).tokens).toBe(0);
+    expect(participationAward({ size: 1, earned: 1, nonContingent: 0 }).tokens).toBe(0);
+    expect(participationAward({ size: 3, earned: 3, nonContingent: 0 }).tokens).toBe(0);
+    // переполненная доска — тоже полная
+    expect(participationAward({ size: 3, earned: 4, nonContingent: 0 }).tokens).toBe(0);
+  });
+
+  it('жетон за участие ложится в последнюю свободную ячейку и заполняет доску', () => {
+    const board: TokenBoard = { size: 2, earned: 1, nonContingent: 0 };
+    const p = participationAward(board);
+    expect(p).toEqual({ tokens: 1, reason: 'participation' });
+    expect(isBoardFull(addTokens(board, p.tokens, true))).toBe(true);
+  });
+
   it('обмен начинает новый цикл доски', () => {
     expect(tryExchange({ size: 3, earned: 3, nonContingent: 2 }).board).toEqual(emptyBoard(3));
   });

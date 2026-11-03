@@ -221,6 +221,9 @@ describe('слой жетонов запечатан', () => {
     let st = beginSession();
     let now = BASE_MS;
     let found: ReturnType<typeof mark> | null = null;
+    // первые четыре обучающие пробы блока — приближение (похвала без жетона): к концу блока на доске из трёх есть
+    // место, и жетон за участие платится (на полной доске он не платится, №173)
+    let teaching = 0;
     for (let i = 0; i < 40 && !found; i += 1) {
       now += 8000;
       const next = nextStep(st, now);
@@ -233,7 +236,8 @@ describe('слой жетонов запечатан', () => {
         continue;
       }
       if (next.step.kind !== 'trial') break;
-      const m = mark(st, 'correct', now);
+      const approx = next.step.trialKind === 'teaching' && (teaching += 1) % 5 !== 0;
+      const m = mark(st, approx ? 'approximation' : 'correct', now);
       const paid = m.rec.state.events.length - m.pre.events.length;
       if (m.rec.state.events.slice(m.pre.events.length).some((e) => e.kind === 'participation') && canUndo(m.rec.state, m.ctx, now + 100) && paid > 0) found = m;
       st = m.rec.state;

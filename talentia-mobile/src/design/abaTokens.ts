@@ -428,6 +428,11 @@ export const abaControls = {
    */
   exitHoldMs: 1500,
   exitHoldIdleMs: 300,
+  /**
+   * Один выход на экран сессии (Ц4, итог проверок, огр. 9): удержание идёт от первого касания через смены кадра
+   * «проба → плашка → обмен → доступ», 1500 — от исходного касания; на кадре без выхода (конец) снимается молча.
+   */
+  exitPersistsAcrossFrames: true,
   replaySize: 60,
   /**
    * Кнопка повтора инструкции (Ц2.1, Ц2.14 п. 9): в зарезервированном месте строки инструкции справа,
@@ -1071,7 +1076,8 @@ export const abaConsequence = {
  *
  * Время от `markedAt` (Ц2.6.1; в цикле 1 было `respondedAt + 4000`): t 0 — плашка **сменой кадра**, новая
  * ячейка пустая · 120 → 340 — жетон падает (`motion.base`), звук `token` в момент приземления · 700 — похвала
- * `voice` (≤ 2 с) · 4000 — плашка уходит сменой кадра. Calm и reduce motion: жетон **появляется** в ячейке в
+ * `voice` (≤ 800 мс, Ц4.2) · 4000 — плашка уходит сменой кадра; если доску заполнил жетон пробы — смена кадра на
+ * обмен в «посадка + 700» (`abaExchange.fromFullBoard`, №172). Calm и reduce motion: жетон **появляется** в ячейке в
  * t 120 без падения (короткий `token` в тот же кадр), похвала в t 500.
  * Без подушки и **без отклика на тап** — ни сжатия, ни звука: сжатие обещало бы, что она нажимается.
  * Кнопки «Дальше» нет: фаза кончается сама, ребёнку не нужен лишний тап на каждый жетон.
@@ -1089,11 +1095,13 @@ export const abaReinforcementOverlay = {
   holdFromMarkedMs: 4000,
   tokenDropAtMs: 120,
   tokenDropMs: motion.base,
+  /** Откуда падает жетон — та же короткая высота, что у жетона за участие в полосе (Ц4.1). */
+  tokenDropFromPt: 24,
   tokenSound: 'on_landing',
   tokenAppearsAtMsCalm: 120,
   praiseAtMs: 700,
   praiseAtMsCalm: 500,
-  praiseMaxMs: 2000,
+  praiseMaxMs: 800,
   nextButton: false,
   panelStays: true,
   topBarStays: true,
@@ -1368,6 +1376,23 @@ export const abaExchange = {
   openMs: motion.slow,
   button: false,
   calm: { receivedHoldMs: 500, open: 'cut' },
+  /**
+   * Обмен сразу из полной доски (цикл 4, №172–173): доску заполнил жетон пробы (плашка) или жетон за участие (полоса)
+   * — смена кадра на обмен через `afterLandingMs` после посадки жетона (calm и reduce motion — после появления), без
+   * межпробной паузы. Палец на карточке «перерыв» или на «Отказ» в этот момент откладывает смену до отпускания +
+   * `heldTouch.acceptedShowMs` (отклик «принято»), но не дальше посадки + `ceilingMs`; лежит и в потолке — касание
+   * засчитывается. Доска на экране обмена переехала, поэтому стоит `holdMs` при любом числе ячеек (№173); в
+   * сопряжении — `abaExchangeHoldMs` (№171). Голос, который ещё звучит в начале доступа, затухает за
+   * `voiceAtAccessFadeMs`.
+   */
+  fromFullBoard: {
+    afterLandingMs: 700,
+    ceilingMs: 920,
+    holdMs: 1000,
+    enter: 'cut',
+    heldTouch: { on: ['break_card', 'adult_refusal'], acceptedShowMs: 300, atCeiling: 'commit_if_inside' },
+    voiceAtAccessFadeMs: motion.base,
+  },
 } as const;
 
 /** Удержание полной доски перед полётом (№171): 600 мс при одной ячейке, 1000 — при двух и больше. */
@@ -1400,6 +1425,36 @@ export const abaEndDone = { height: touch.primary, glyph: 'ui-map', glyphSize: 3
  * перекрашивается, поэтому цвет один в обеих схемах: к плите 7.71 / 6.27.
  */
 export const abaAccessPlaceholderMark = { r: 16, fill: abaColors.light.reinforcement, max: 6 } as const;
+
+/* ───────────────── переход «плашка → обмен» (цикл 4, №172–173) ───────────────── */
+
+/**
+ * Жетон за участие (ABA.md «Подкрепление», Ц4.1): коротко падает в ячейку полосы с `drop.fromPt` выше за
+ * `drop.ms` (calm и reduce motion — появляется), при посадке — звук `token`, похвалы нет. Затем полоса стоит
+ * `holdMs`; если он заполнил доску — `abaExchange.fromFullBoard.afterLandingMs` до смены кадра на обмен.
+ */
+export const abaParticipation = { holdMs: 1000, drop: { fromPt: 24, ms: motion.quick } } as const;
+
+/**
+ * След принятой просьбы о перерыве (Ц4, итог проверок, огр. 3): просьбу приняли на плашке или на жетоне за участие,
+ * а по процедуре сначала обмен и доступ. Карточка «перерыв» в принятом виде — 64, контур 6 `controlInk`, глиф
+ * `pause_bars` 32, без подушки — поверх строки 72 справа (y 4–68: та же точка, что карточка в полосе 68). Стоит на
+ * обмене и доступе до смены кадра на следующий шаг; движения нет; касание — только сжатие (роль `image`).
+ */
+export const abaBreakTrace = {
+  size: abaLayout.breakCard,
+  place: 'non_trial_row_right_overlay',
+  top: 4,
+  stroke: stroke.bold,
+  cushion: 0,
+  glyph: 'pause_bars',
+  glyphSize: 32,
+  role: 'image',
+  tap: inactiveChoice.tapPress,
+  on: ['exchange', 'access'],
+  until: 'next_step_frame',
+  motion: false,
+} as const;
 
 /* ───────────────── рутины самообслуживания (Г8) ───────────────── */
 

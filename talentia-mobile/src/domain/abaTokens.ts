@@ -143,10 +143,11 @@ export function awardForTrial(
  * Жетон за завершение блока — независимо от точности. Ребёнок, у которого сегодня не
  * выходит, иначе не заработает ничего, и сеанс станет аверсивным целиком. Помечен
  * отдельной причиной и в результативность не входит; как жетон не за результат — только
- * пока на доске есть для него место.
+ * пока на доске есть для него место. На полной доске — не начисляется (№173): сверх доски он
+ * ушёл бы в обмен невидимым, а показать его до обмена — задержать обмен дольше 1 с (№172).
  */
 export function participationAward(board: TokenBoard): { tokens: 0 | 1; reason: 'participation' } {
-  return { tokens: nonContingentRoom(board) ? 1 : 0, reason: 'participation' };
+  return { tokens: nonContingentRoom(board) && !isBoardFull(board) ? 1 : 0, reason: 'participation' };
 }
 
 export function addTokens(board: TokenBoard, n: number, nonContingent = false): TokenBoard {

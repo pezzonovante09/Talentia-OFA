@@ -15,7 +15,7 @@ import { NonTrialRow } from '../parts';
 import { AccessRing, PictureCard } from '../reinforcer';
 import { GrowFrame } from './ExchangeView';
 
-export function AccessView({ run, tick, reinforcerId, moving, onExit }: { run: AccessRun; tick: number; reinforcerId: string; moving: boolean; onExit: () => void }) {
+export function AccessView({ run, tick, reinforcerId, moving, onExit }: { run: AccessRun; tick: number; reinforcerId: string; moving: boolean; onExit?: () => void }) {
   const { t } = useTranslation();
   const [area, setArea] = useState<{ w: number; h: number } | null>(null);
   // слот карточки блока обмена «карточка · 24 · ряд 88»: сцена убирается в ту же карточку, из которой раскрылась

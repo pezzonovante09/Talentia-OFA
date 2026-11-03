@@ -2,12 +2,12 @@
  * Детали экрана рабочей сессии ABA (раздел 5–7 направления, Ц2.2, Ц2.6): полоса с выходом и карточкой «перерыв»,
  * доска в полосе, поле `match`, панель взрослого, плашка подкрепления. Логика — модели `model/*` и домен; здесь вид.
  */
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, useColorScheme, View } from 'react-native';
+import { Animated, Easing, Platform, Pressable, Text, useColorScheme, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { abaAdultPanel, abaAdultPanelColors, abaBoardCell, abaBreak, abaLayout, abaRefusalPause, abaReinforcementOverlay, abaTokenBoard, ABA_CONTROL_STROKE, ABA_STRIP_SILHOUETTE, ABA_STRIP_SILHOUETTE_GAP } from '../../../design/abaTokens';
+import { abaAdultPanel, abaAdultPanelColors, abaBoardCell, abaBreak, abaBreakTrace, abaControls, abaLayout, abaRefusalPause, abaReinforcementOverlay, abaTokenBoard, ABA_CONTROL_STROKE, ABA_STRIP_SILHOUETTE, ABA_STRIP_SILHOUETTE_GAP } from '../../../design/abaTokens';
 import { parentColors, parentTypography } from '../../../design/parentTokens';
 import { radii } from '../../../design/tokens';
 import type { PromptVisualPlan } from '../../../domain/abaPrompting';
@@ -15,22 +15,26 @@ import type { PanelButton } from '../../../domain/abaScoring';
 import { fontFamilyFor } from '../../fonts';
 import { TaliFigure } from '../../TaliFigure';
 import { useAbaClock } from '../clock';
-import { ChildPressable, ExitHold, PlaceholderGlyph, useAbaColors } from '../parts';
+import { ChildPressable, ExitHold, PlaceholderGlyph, PressOnly, useAbaColors } from '../parts';
 import { ReinforcerArt, TokenCell } from '../reinforcer';
 import { StimulusPlate } from '../StimulusPlate';
 
 /**
  * Полоса 68: выход удержанием слева, карточка «перерыв» справа (не прячется, без подтверждения). `caption` — строка
  * взрослого справа от выхода (обучающий перерыв со второго приглашения, Ц3.9): родительский `caption` `textMuted`.
+ * Без `onExit` место выхода держится пустым: на экране сессии выход один на все кадры (Ц4, огр. 9).
  */
 export function TopBar({
   onExit,
   breakCard,
   caption,
 }: {
-  onExit: () => void;
-  /** `null` — карточки на этом экране нет (перерыв, конец). `highlight` — статичный контур 6 (пауза после «Отказ»). */
-  breakCard: { frameShownAt: number; onTap: (at: number) => void; highlight?: boolean } | null;
+  onExit?: () => void;
+  /**
+   * `null` — карточки на этом экране нет (перерыв, конец). `highlight` — статичный контур 6 (пауза после «Отказ»,
+   * принятая просьба). `onHold` — палец лёг / снят: смена кадра на обмен его ждёт (Ц4, огр. 1).
+   */
+  breakCard: { frameShownAt: number; onTap: (at: number) => void; highlight?: boolean; onHold?: (down: boolean) => void } | null;
   caption?: string;
 }) {
   const { t } = useTranslation();
@@ -40,7 +44,11 @@ export function TopBar({
   const cap = parentTypography.caption;
   return (
     <View style={{ height: abaLayout.topBar, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-      <ExitHold onExit={onExit} label={t('abaSession.exit')} hintLabel={t('abaSession.exitHint')} />
+      {onExit ? (
+        <ExitHold onExit={onExit} label={t('abaSession.exit')} hintLabel={t('abaSession.exitHint')} />
+      ) : (
+        <View style={{ width: abaControls.exitSize, height: abaControls.exitSize }} />
+      )}
       {caption !== undefined && (
         <Text
           testID="aba-adult-caption"
@@ -57,6 +65,8 @@ export function TopBar({
         <ChildPressable
           frameShownAt={breakCard.frameShownAt}
           onCommit={breakCard.onTap}
+          onDownAt={breakCard.onHold && (() => breakCard.onHold!(true))}
+          onUpAt={breakCard.onHold && (() => breakCard.onHold!(false))}
           testID="aba-break-card"
           accessibilityLabel={t('abaSession.breakCard')}
           style={{
@@ -77,8 +87,50 @@ export function TopBar({
   );
 }
 
+/**
+ * След принятой просьбы о перерыве (`abaBreakTrace`, Ц4 огр. 3): просьбу приняли на плашке или жетоне за участие, а
+ * по процедуре сначала обмен и доступ. Карточка «перерыв» в принятом виде поверх строки 72 справа — до экрана
+ * перерыва. Не кнопка: касание — только сжатие, без звука и действия.
+ */
+export function BreakTrace({ top }: { top: number }) {
+  const { t } = useTranslation();
+  const c = useAbaColors();
+  const b = abaBreakTrace;
+  return (
+    <View style={{ position: 'absolute', top, right: 16 }} testID="aba-break-trace">
+      <PressOnly accessibilityLabel={t('abaSession.breakCard')} selected>
+        <View
+          style={{
+            width: b.size,
+            height: b.size,
+            borderRadius: radii.md,
+            borderWidth: b.stroke,
+            borderColor: c.controlInk,
+            backgroundColor: c.controlFill,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <PlaceholderGlyph name="pause_bars" size={b.glyphSize} color={c.controlInk} />
+        </View>
+      </PressOnly>
+    </View>
+  );
+}
+
 /** Доска в полосе пробы: силуэт «работаю за…» и ячейки по рабочему размеру; жетон уже стоит, без анимации. */
-export function TokenStrip({ reinforcerId, size, earned }: { reinforcerId: string | null; size: number; earned: number }) {
+export function TokenStrip({
+  reinforcerId,
+  size,
+  earned,
+  dropping,
+}: {
+  reinforcerId: string | null;
+  size: number;
+  earned: number;
+  /** Жетон за участие падает в ячейку `earned` (Ц4.1); calm и reduce motion — не передаётся, жетон появляется. */
+  dropping?: { fromPt: number; ms: number };
+}) {
   return (
     <View
       testID="aba-token-strip"
@@ -88,7 +140,10 @@ export function TokenStrip({ reinforcerId, size, earned }: { reinforcerId: strin
     >
       {reinforcerId && <ReinforcerArt id={reinforcerId} size={ABA_STRIP_SILHOUETTE} silhouette />}
       {Array.from({ length: size }, (_, i) => (
-        <TokenCell key={i} size={abaTokenBoard.size} filled={i < earned} testID={i < earned ? 'aba-strip-token-filled' : 'aba-strip-token-empty'} />
+        <View key={i}>
+          <TokenCell size={abaTokenBoard.size} filled={i < earned} testID={i < earned ? 'aba-strip-token-filled' : 'aba-strip-token-empty'} />
+          {dropping && i === earned && <DroppingToken size={abaTokenBoard.size} fromPt={dropping.fromPt} delayMs={0} ms={dropping.ms} testID="aba-strip-token-dropping" />}
+        </View>
       ))}
     </View>
   );
@@ -235,6 +290,7 @@ export function AdultPanel({
   caption,
   pressed,
   onPress,
+  onHold,
 }: {
   buttons: readonly PanelButton[];
   height: number;
@@ -243,10 +299,21 @@ export function AdultPanel({
   pressed: PanelButton | null;
   /** `at` — касание вниз (`respondedAt: 'touch_down'`); действие — по отпусканию внутри кнопки. */
   onPress: (b: PanelButton, at: number) => void;
+  /** Палец лёг на кнопку / снят — или панель ушла с экрана, пока он лежал (Ц4, огр. 1: смена кадра ждёт «Отказ»). */
+  onHold?: (b: PanelButton, down: boolean) => void;
 }) {
   const { t } = useTranslation();
   const clock = useAbaClock();
   const downAt = useRef<Partial<Record<PanelButton, number>>>({});
+  const holding = useRef<PanelButton | null>(null);
+  const onHoldRef = useRef(onHold);
+  onHoldRef.current = onHold;
+  useEffect(
+    () => () => {
+      if (holding.current) onHoldRef.current?.(holding.current, false);
+    },
+    [],
+  );
   const p = abaAdultPanelColors(useColorScheme() === 'dark' ? 'dark' : 'light');
   const has = (b: PanelButton) => buttons.includes(b);
   const l4 = has('l4_done') || has('l4_resisted');
@@ -264,6 +331,13 @@ export function AdultPanel({
         // случайное касание ладонью ребёнка не необратимо: срабатывает отпускание, время — касания вниз
         onPressIn={() => {
           downAt.current[b] = clock.now();
+          holding.current = b;
+          onHold?.(b, true);
+        }}
+        onPressOut={() => {
+          if (holding.current !== b) return;
+          holding.current = null;
+          onHold?.(b, false);
         }}
         onPress={() => onPress(b, downAt.current[b] ?? clock.now())}
         testID={`aba-panel-${b}`}
@@ -306,11 +380,52 @@ export function AdultPanel({
   );
 }
 
+const NATIVE_DRIVER = Platform.OS !== 'web';
+
+/**
+ * Жетон падает в ячейку с `fromPt` выше за `ms`, начиная через `delayMs` (до этого не виден): на плашке (Ц2.6, Ц4.0
+ * п. 1 — падение приводит взгляд к доске) и в полосе (жетон за участие, Ц4.1). Calm и reduce motion его не рисуют.
+ */
+export function DroppingToken({ size, fromPt, delayMs, ms, testID }: { size: number; fromPt: number; delayMs: number; ms: number; testID: string }) {
+  const p = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const a = Animated.timing(p, { toValue: 1, delay: delayMs, duration: ms, easing: Easing.in(Easing.quad), useNativeDriver: NATIVE_DRIVER });
+    a.start();
+    return () => a.stop();
+  }, [p, delayMs, ms]);
+  return (
+    <Animated.View
+      style={{
+        position: 'absolute',
+        opacity: p.interpolate({ inputRange: [0, 0.001, 1], outputRange: [0, 1, 1] }),
+        transform: [{ translateY: p.interpolate({ inputRange: [0, 1], outputRange: [-fromPt, 0] }) }],
+      }}
+    >
+      <TokenCell size={size} filled testID={testID} />
+    </Animated.View>
+  );
+}
+
 /**
  * Плашка подкрепления (раздел 6, Ц2.6): ложится от доски до низа зоны стимула, Tali `cheer`, крупная доска, подпись.
- * Тап по ней ничего не делает. `landed` — жетон уже в ячейке (до приземления новая ячейка пустая).
+ * Тап по ней ничего не делает. `landed` — жетон уже в ячейке (до приземления новая ячейка пустая; `moving` — жетон
+ * падает в неё 120 → 340, Ц4.0 п. 1). Tali статичен: ни смены позы, ни анимации речи (Ц4, огр. 6).
  */
-export function ReinforcementOverlay({ size, earnedBefore, landed, calm, height }: { size: number; earnedBefore: number; landed: boolean; calm: boolean; height: number }) {
+export function ReinforcementOverlay({
+  size,
+  earnedBefore,
+  landed,
+  calm,
+  moving,
+  height,
+}: {
+  size: number;
+  earnedBefore: number;
+  landed: boolean;
+  calm: boolean;
+  moving: boolean;
+  height: number;
+}) {
   const { t } = useTranslation();
   const c = useAbaColors();
   const o = abaReinforcementOverlay;
@@ -334,7 +449,12 @@ export function ReinforcementOverlay({ size, earnedBefore, landed, calm, height 
       <TaliFigure pose="cheer" size={o.tali} crop accessibilityLabel={t('abaSession.tali')} testID="aba-reinforcement-tali" />
       <View style={{ flexDirection: 'row', gap: abaTokenBoard.gap }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         {Array.from({ length: size }, (_, i) => (
-          <TokenCell key={i} size={abaBoardCell(311, size)} filled={i < earned} testID={i < earned ? 'aba-overlay-token-filled' : 'aba-overlay-token-empty'} />
+          <View key={i}>
+            <TokenCell size={abaBoardCell(311, size)} filled={i < earned} testID={i < earned ? 'aba-overlay-token-filled' : 'aba-overlay-token-empty'} />
+            {moving && !landed && i === earnedBefore && (
+              <DroppingToken size={abaBoardCell(311, size)} fromPt={o.tokenDropFromPt} delayMs={o.tokenDropAtMs} ms={o.tokenDropMs} testID="aba-overlay-token-dropping" />
+            )}
+          </View>
         ))}
       </View>
       <Text style={{ color: calm ? c.ink : c.onReinforcement, fontSize: 24, lineHeight: 32, fontWeight: '700', textAlign: 'center', minHeight: o.caption }} numberOfLines={2} maxFontSizeMultiplier={1.2}>

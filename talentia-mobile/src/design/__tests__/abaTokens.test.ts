@@ -13,6 +13,8 @@ import {
   ABA_OVERLAY_CONTENT_HEIGHT,
   abaAccessScene,
   abaAccessPlaceholderMark,
+  abaBreakTrace,
+  abaParticipation,
   abaAccessRing,
   abaEndDone,
   abaEndTail,
@@ -1671,6 +1673,79 @@ describe('фаза 7, цикл 3 (№171)', () => {
     expect(abaEndTail.emptyCardSlot).toBe(true);
     expect(abaAccessPlaceholderMark.fill).not.toBe(abaColors.light.tokenEarned);
     expect(abaAccessPlaceholderMark.r).toBe(16);
+  });
+});
+
+describe('цикл 4: переход «плашка → обмен» (№172–173, Ц4.5 п. 5)', () => {
+  const f = abaExchange.fromFullBoard;
+  const o = abaReinforcementOverlay;
+  /** Посадка жетона на плашке от `markedAt`: обычный режим — падение 120 → 340, calm и reduce motion — появление в 120. */
+  const landing = { normal: abaTokenLandingMs(), calm: o.tokenAppearsAtMsCalm };
+  const praiseAt = { normal: o.praiseAtMs, calm: o.praiseAtMsCalm };
+
+  it('смена кадра в посадка + 700, потолок отсрочки касанием — 920 во всех режимах, и он не раньше плановой смены', () => {
+    expect(f.afterLandingMs).toBe(700);
+    expect(f.ceilingMs).toBe(920);
+    expect(f.afterLandingMs).toBeLessThanOrEqual(f.ceilingMs);
+    // «сразу» №172 — не позже 1 с после посадки, и с отсрочкой касанием тоже
+    expect(f.ceilingMs).toBeLessThanOrEqual(1000);
+    expect(f.enter).toBe('cut');
+    expect(f.heldTouch).toEqual({ on: ['break_card', 'adult_refusal'], acceptedShowMs: 300, atCeiling: 'commit_if_inside' });
+  });
+
+  it('удержание полной доски на этом пути — не короче удержания двух ячеек (≥ 1000, №173)', () => {
+    expect(f.holdMs).toBe(1000);
+    expect(f.holdMs).toBeGreaterThanOrEqual(abaExchange.holdMs.many);
+    expect(f.holdMs).toBeGreaterThan(abaExchangeHoldMs(1));
+  });
+
+  it('похвала начинается до смены кадра — и в обычном режиме, и в calm', () => {
+    expect(praiseAt.normal).toBeLessThan(landing.normal + f.afterLandingMs); // 700 < 1040
+    expect(praiseAt.calm).toBeLessThan(landing.calm + f.afterLandingMs); // 500 < 820
+  });
+
+  it('похвала ≤ 800 мс кончается до вылета жетонов, с запасом 140 / 120 (Ц4.2)', () => {
+    expect(o.praiseMaxMs).toBe(800);
+    expect(praiseAt.normal + o.praiseMaxMs + 140).toBeLessThanOrEqual(landing.normal + f.afterLandingMs + f.holdMs); // 1640 ≤ 2040
+    expect(praiseAt.calm + o.praiseMaxMs + 120).toBeLessThanOrEqual(landing.calm + f.afterLandingMs + f.holdMs); // 1420 ≤ 1820
+  });
+
+  it('похвала не накрывает звук жетона: token 250 мс в обычном режиме, 120 в calm', () => {
+    expect(praiseAt.normal).toBeGreaterThanOrEqual(abaTokenLandingMs() + 250);
+    expect(praiseAt.calm).toBeGreaterThanOrEqual(o.tokenAppearsAtMsCalm + 120);
+  });
+
+  it('от посадки до доступа ≤ 3000 при одной и двух ячейках, даже при отсрочке до потолка (920 + 1000 + 60 + 360 + 300 + 360)', () => {
+    const toAccess = (fromLanding: number, cells: 1 | 2) =>
+      fromLanding + f.holdMs + (cells - 1) * abaExchange.fly.staggerMs + abaExchange.fly.ms + abaExchange.receivedHoldMs + abaExchange.openMs;
+    const toAccessCalm = (fromLanding: number) => fromLanding + f.holdMs + abaExchange.calm.receivedHoldMs;
+    expect([toAccess(f.afterLandingMs, 1), toAccess(f.afterLandingMs, 2)]).toEqual([2720, 2780]);
+    expect(toAccess(f.ceilingMs, 2)).toBe(3000);
+    for (const from of [f.afterLandingMs, f.ceilingMs]) {
+      for (const cells of [1, 2] as const) expect(toAccess(from, cells)).toBeLessThanOrEqual(3000);
+      expect(toAccessCalm(from)).toBeLessThanOrEqual(3000);
+    }
+  });
+
+  it('жетон за участие: падение 24 pt за motion.quick, полоса 1000; заполнил доску — смена кадра раньше, через 700', () => {
+    expect(abaParticipation).toEqual({ holdMs: 1000, drop: { fromPt: 24, ms: motion.quick } });
+    expect(abaParticipation.drop.fromPt).toBe(o.tokenDropFromPt);
+    expect(f.afterLandingMs).toBeLessThan(abaParticipation.holdMs);
+  });
+
+  it('след просьбы о перерыве — принятая карточка: 64, контур 6, без подушки и движения, только на обмене и доступе', () => {
+    expect(abaBreakTrace.size).toBe(abaLayout.breakCard);
+    expect(abaBreakTrace.stroke).toBe(stroke.bold);
+    expect(abaBreakTrace.cushion).toBe(0);
+    expect(abaBreakTrace.motion).toBe(false);
+    expect(abaBreakTrace.role).toBe('image');
+    expect(abaBreakTrace.on).toEqual(['exchange', 'access']);
+    // y 4–68 — внутри строки 72
+    expect(abaBreakTrace.top + abaBreakTrace.size).toBeLessThanOrEqual(abaNonTrialRow.height);
+  });
+
+  it('выход удержанием один на экран — переживает смены кадра', () => {
+    expect(abaControls.exitPersistsAcrossFrames).toBe(true);
   });
 });
 
