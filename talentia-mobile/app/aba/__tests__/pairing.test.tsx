@@ -23,7 +23,7 @@ import { AbaClockProvider, manualClock, type ManualClock } from '../../../src/ui
 jest.mock('expo-router', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
-  const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn() };
+  const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn(), dismissTo: jest.fn() };
   return {
     __router: router,
     useRouter: () => router,
@@ -31,7 +31,7 @@ jest.mock('expo-router', () => {
     Redirect: ({ href }: { href: string }) => React.createElement(Text, { testID: 'redirect' }, href),
   };
 });
-const router = (jest.requireMock('expo-router') as { __router: { replace: jest.Mock } }).__router;
+const router = (jest.requireMock('expo-router') as { __router: { replace: jest.Mock; dismissTo: jest.Mock } }).__router;
 
 const KID = '00000000-0000-4000-8000-0000000000a1';
 let db: SqlDb;
@@ -87,6 +87,7 @@ async function oneCycle(pick: string) {
 
 beforeEach(async () => {
   router.replace.mockClear();
+  router.dismissTo.mockClear();
   clock = manualClock();
   db = await memoryDb();
   await grantAbaProcessing(db, { childId: KID, accountId: 'acc', lang: 'ru', at: new Date(clock.now()).toISOString(), randomBytes: (n) => new Uint8Array(n).fill(7) });
@@ -111,10 +112,10 @@ it('четыре цикла тапом: конец с Tali, итог запис�
   expect(rows.map((r) => r.chosen_by)).toEqual(['child', 'child', 'child', 'child']);
   // «Готово» (Ц3.8): касание в первые 1000 мс от показа кадра не засчитывается
   await fireEvent.press(screen.getByTestId('aba-end-done'));
-  expect(router.replace).not.toHaveBeenCalled();
+  expect(router.dismissTo).not.toHaveBeenCalled();
   await tick(abaEndDone.lockMs);
   await fireEvent.press(screen.getByTestId('aba-end-done'));
-  expect(router.replace).toHaveBeenCalledWith('/map');
+  expect(router.dismissTo).toHaveBeenCalledWith('/map');
 });
 
 it('«Со взрослым»: полоса через 30 с, нажатие в первые 500 мс не действует, затем выбор взрослого', async () => {
@@ -139,7 +140,7 @@ it('«Со взрослым»: выход удержанием — выбор з
   await oneCycle(cards()[1]);
   await fireEvent(screen.getByTestId('aba-exit'), 'pressIn');
   await tick(1500);
-  await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/map'));
+  await waitFor(() => expect(router.dismissTo).toHaveBeenCalledWith('/map'));
   expect(screen.queryByTestId('aba-end-normal')).toBeNull();
   // остановка взрослым сессию не засчитывает и серию не рвёт (`applyPairingSession`), выбор — в истории
   expect((await loadChildState(db, KID, 'tokenTraining')) ?? { pairingSessions: 0 }).toMatchObject({ pairingSessions: 0 });
@@ -153,7 +154,7 @@ it('«Сам»: выход удержанием — уход ребёнка, с�
   await oneCycle(cards()[0]);
   await fireEvent(screen.getByTestId('aba-exit'), 'pressIn');
   await tick(1500);
-  await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/map'));
+  await waitFor(() => expect(router.dismissTo).toHaveBeenCalledWith('/map'));
   expect(await loadChildState(db, KID, 'tokenTraining')).toMatchObject({ pairingSessions: 1, pairingStreak: 0 });
 });
 

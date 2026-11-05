@@ -288,7 +288,7 @@ export default function AbaSessionScreen() {
       }
       useAbaRun.getState().reset();
       if (exiting.current) {
-        router.replace('/map');
+        router.dismissTo('/map');
         return;
       }
       tail.current = steps;
@@ -875,7 +875,7 @@ export default function AbaSessionScreen() {
   const exit = () => {
     const s = st.current;
     if (!s || finished.current) {
-      router.replace('/map');
+      router.dismissTo('/map');
       return;
     }
     exiting.current = true;
@@ -949,7 +949,7 @@ export default function AbaSessionScreen() {
       );
       break;
     case 'ended':
-      body = <AbaEnd variant={phase.variant} board={phase.board ?? undefined} onDone={() => router.replace('/map')} />;
+      body = <AbaEnd variant={phase.variant} board={phase.board ?? undefined} onDone={() => router.dismissTo('/map')} />;
       break;
     case 'card': {
       // сменился ведущий наблюдатель — подсказка взрослому «жестом, не словами» (`BreakCardPlan.adultCoaching`)

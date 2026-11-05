@@ -36,7 +36,7 @@ jest.mock('../../../src/services/abaIds', () => {
 jest.mock('expo-router', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
-  const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn() };
+  const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn(), dismissTo: jest.fn() };
   return {
     __router: router,
     useRouter: () => router,
@@ -44,7 +44,7 @@ jest.mock('expo-router', () => {
     Redirect: ({ href }: { href: string }) => React.createElement(Text, { testID: 'redirect' }, href),
   };
 });
-const router = (jest.requireMock('expo-router') as { __router: { replace: jest.Mock } }).__router;
+const router = (jest.requireMock('expo-router') as { __router: { replace: jest.Mock; dismissTo: jest.Mock } }).__router;
 
 const KID = '00000000-0000-4000-8000-0000000000a1';
 const OBS = '00000000-0000-4000-8000-0000000000b1';
@@ -96,6 +96,7 @@ async function skipCardTraining() {
 
 beforeEach(async () => {
   router.replace.mockClear();
+  router.dismissTo.mockClear();
   clock = manualClock();
   db = await memoryDb();
   await grantAbaProcessing(db, { childId: KID, accountId: 'acc', lang: 'ru', at: new Date(clock.now() - 60_000).toISOString(), randomBytes: (n) => new Uint8Array(n).fill(7) });
@@ -241,7 +242,7 @@ it('выход удержанием — итог сессии записан, н
   await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
   await fireEvent(screen.getByTestId('aba-exit'), 'pressIn');
   await tick(1500);
-  await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/map'));
+  await waitFor(() => expect(router.dismissTo).toHaveBeenCalledWith('/map'));
   expect(await count('aba_sessions')).toBe(1);
   expect(await loadChildState(db, KID, 'abaSessionInProgress')).toBeFalsy();
 });
@@ -384,7 +385,7 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
     expect(screen.getByTestId('aba-end-done').props.accessibilityState?.disabled).toBeFalsy();
     await tick(abaEndDone.lockMs);
     await fireEvent.press(screen.getByTestId('aba-end-done'));
-    expect(router.replace).toHaveBeenCalledWith('/map');
+    expect(router.dismissTo).toHaveBeenCalledWith('/map');
   }
 
   /** Сессия со взрослым до перерыва по карточке в первой пробе. */
@@ -679,7 +680,7 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
   async function holdExit() {
     await fireEvent(screen.getByTestId('aba-exit'), 'pressIn');
     await tick(1500);
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/map'));
+    await waitFor(() => expect(router.dismissTo).toHaveBeenCalledWith('/map'));
   }
   type AccessEvent = { kind: 'access'; startedAt: string; endedAt: string };
   const accessEvents = async () => (await sessionBody()).events.filter((e) => e.kind === 'access') as unknown as AccessEvent[];
@@ -824,7 +825,7 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
     await stepTo(A + 20_400);
     expect(screen.getByTestId('aba-access-hold')).toBeTruthy();
     await stepTo(A + 21_000);
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/map'));
+    await waitFor(() => expect(router.dismissTo).toHaveBeenCalledWith('/map'));
     expect(await accessEvents()).toEqual([{ kind: 'access', startedAt: new Date(A).toISOString(), endedAt: new Date(A + 20_000).toISOString() }]);
   });
 
@@ -1420,9 +1421,9 @@ describe('цикл 4 (№172–173): плашка → обмен', () => {
       expect(screen.getAllByTestId('aba-exit')).toHaveLength(1);
       expect(exitRing()).toBe(true);
       await stepTo(M + 1999);
-      expect(router.replace).not.toHaveBeenCalled();
+      expect(router.dismissTo).not.toHaveBeenCalled();
       await stepTo(M + 2000);
-      await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/map'));
+      await waitFor(() => expect(router.dismissTo).toHaveBeenCalledWith('/map'));
       expect(await count('aba_sessions')).toBe(1);
     });
 
@@ -1440,7 +1441,7 @@ describe('цикл 4 (№172–173): плашка → обмен', () => {
       await fireEvent(screen.getByTestId('aba-exit'), 'pressIn');
       await stepTo(M + 1040 + 1500);
       await g.open();
-      await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/map'));
+      await waitFor(() => expect(router.dismissTo).toHaveBeenCalledWith('/map'));
     });
 
     it('на загрузке выход есть: старт завис — удержание уводит на карту', async () => {
@@ -1450,7 +1451,7 @@ describe('цикл 4 (№172–173): плашка → обмен', () => {
       expect(screen.getAllByTestId('aba-exit')).toHaveLength(1);
       await fireEvent(screen.getByTestId('aba-exit'), 'pressIn');
       await tick(1500);
-      expect(router.replace).toHaveBeenCalledWith('/map');
+      expect(router.dismissTo).toHaveBeenCalledWith('/map');
       await g.open();
     });
 
@@ -1485,7 +1486,7 @@ describe('«Готово» на экране конца (Ц3.8)', () => {
     await tick(abaEndDone.lockMs - 1);
     await fireEvent(screen.getByTestId('aba-end-done'), 'pressIn', touch);
     await fireEvent.press(screen.getByTestId('aba-end-done'), touch);
-    expect(router.replace).not.toHaveBeenCalled();
+    expect(router.dismissTo).not.toHaveBeenCalled();
   });
 
   it('касание, начатое до 1000 мс и отпущенное после, не засчитывается', async () => {
@@ -1494,7 +1495,7 @@ describe('«Готово» на экране конца (Ц3.8)', () => {
     await fireEvent(screen.getByTestId('aba-end-done'), 'pressIn', touch);
     await tick(600);
     await fireEvent.press(screen.getByTestId('aba-end-done'), touch);
-    expect(router.replace).not.toHaveBeenCalled();
+    expect(router.dismissTo).not.toHaveBeenCalled();
   });
 
   it('тап с 1000 мс — на карту', async () => {
@@ -1502,6 +1503,6 @@ describe('«Готово» на экране конца (Ц3.8)', () => {
     await tick(abaEndDone.lockMs);
     await fireEvent(screen.getByTestId('aba-end-done'), 'pressIn', touch);
     await fireEvent.press(screen.getByTestId('aba-end-done'), touch);
-    expect(router.replace).toHaveBeenCalledWith('/map');
+    expect(router.dismissTo).toHaveBeenCalledWith('/map');
   });
 });
