@@ -1,7 +1,7 @@
 /**
- * Карта региона «Числовая долина» (DESIGN_PROMPTS.md 1.2; docs/design/slice-screens-2026-10-24.md §2).
- * Safe area и полоса — цвет региона (focus — `background`), фон по `mapBackdrop`, лента узлов с Tali у
- * доступного урока. «К атласу» (книга) появляется с первой страницей атласа и ведёт в коллекцию `/atlas` (D2),
+ * Карта региона «Мир чисел» (DESIGN_PROMPTS.md 1.2; docs/design/slice-screens-2026-10-24.md §2).
+ * Название-наклейка стоит прямо на фоне карты; в calm, focus и у длинных названий safe area и полоса — цвет
+ * региона (focus — `background`). Фон по `mapBackdrop`, лента узлов с Tali у доступного урока. «К атласу» (книга) появляется с первой страницей атласа и ведёт в коллекцию `/atlas` (D2),
  * «ползунки» — гейт родителя (№141) — `router.push('/parent')`. Тап по Tali называет регион и следующий шаг
  * (`mapTaliTap`).
  */
@@ -12,7 +12,7 @@ import { AccessibilityInfo, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useDesign } from '../src/design';
-import { lessonLayout } from '../src/design/tokens';
+import { fitStickerTitle, lessonLayout, mapTitleWidth } from '../src/design/tokens';
 import { voice } from '../src/services/voice';
 import { useChildSession } from '../src/state/childSession';
 import { useMapModel } from '../src/state/mapModel';
@@ -44,7 +44,9 @@ function MapScreenBody() {
 
   const title = t(`content.regions.${model.region}.title`);
   const onRegion = theme.focusMode || theme.calmMode ? ('text' as const) : ('onRegion' as const);
-  const bandColor = theme.focusMode ? theme.colors.background : theme.colors.regions[model.region];
+  const titleWidth = mapTitleWidth(width);
+  const sticker = theme.focusMode || theme.calmMode ? null : fitStickerTitle(title, titleWidth);
+  const bandColor = sticker ? 'transparent' : theme.focusMode ? theme.colors.background : theme.colors.regions[model.region];
   const laneHeight = height - insets.top - lessonLayout.topBar - Math.max(insets.bottom, theme.spacing.lg);
 
   return (
@@ -53,7 +55,7 @@ function MapScreenBody() {
       <View style={{ height: insets.top, backgroundColor: bandColor }} />
       <View style={{ backgroundColor: bandColor }}>
         {/* «К атласу» — когда есть хотя бы одна страница (D2); до первого урока — пустое место той же ширины, не мёртвая цель */}
-        <MapBand title={title} ink={onRegion} onAtlas={atlasPages >= 1 ? () => router.push('/atlas' as Href) : undefined} onSettings={() => router.push('/parent')} />
+        <MapBand title={title} ink={onRegion} titleWidth={titleWidth} sticker={sticker} onAtlas={atlasPages >= 1 ? () => router.push('/atlas' as Href) : undefined} onSettings={() => router.push('/parent')} />
       </View>
       <MapLane
         model={model}

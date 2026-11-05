@@ -58,7 +58,7 @@ describe('карта региона', () => {
   it('чистая установка: полоса, узлы review + 1 + два замка, Tali у открытого', async () => {
     start();
     await renderWithProviders(<MapScreen />);
-    expect(screen.getByTestId('map-title').props.children).toBe('Числовая долина');
+    expect(screen.getByTestId('map-title').props.children).toBe('Мир чисел');
     expect(screen.getByTestId('map-node-review')).toBeTruthy();
     expect(screen.getByTestId('map-node-1')).toBeTruthy();
     expect(screen.getByTestId('map-node-2')).toBeTruthy();
@@ -86,12 +86,35 @@ describe('карта региона', () => {
     start();
     await renderWithProviders(<MapScreen />);
     await fireEvent.press(screen.getByTestId('map-tali-press'));
-    expect(voice.last).toEqual({ key: 'map.taliTap', params: { region: 'в Числовой долине' } });
+    expect(voice.last).toEqual({ key: 'map.taliTap', params: { region: 'в Мире чисел' } });
     // вопрос 60: кнопка с вечной голосовой заглушкой — мёртвая цель; место под неё остаётся, название по центру
     expect(screen.queryByTestId('map-atlas')).toBeNull();
     expect(screen.getByTestId('map-atlas-slot')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('map-settings'));
     expect(mockPush).toHaveBeenCalledWith('/parent');
+  });
+
+  it('обычный вид: название-наклейка, одна заливка поверх контура, для скринридера один заголовок', async () => {
+    start();
+    await renderWithProviders(<MapScreen />);
+    expect(screen.getByTestId('map-title-sticker')).toBeTruthy();
+    expect(screen.getAllByText('Мир чисел', { includeHiddenElements: false })).toHaveLength(1);
+    expect(screen.queryByTestId('map-atlas-slot')).toBeTruthy();
+  });
+
+  it('calm: без наклейки, плоская надпись и ориентир на песке', async () => {
+    start();
+    await renderWithProviders(<MapScreen />, { calmMode: true });
+    expect(screen.queryByTestId('map-title-sticker')).toBeNull();
+    expect(screen.getByTestId('map-title').props.children).toBe('Мир чисел');
+    expect(screen.getByTestId('map-landmark-sand')).toBeTruthy();
+  });
+
+  it('focus: без наклейки, плоская надпись', async () => {
+    start();
+    await renderWithProviders(<MapScreen />, { focusMode: true });
+    expect(screen.queryByTestId('map-title-sticker')).toBeNull();
+    expect(screen.getByTestId('map-title').props.children).toBe('Мир чисел');
   });
 
   it('focus: виден текущий узел с соседом и полоса целиком', async () => {
@@ -129,7 +152,7 @@ describe('карта региона', () => {
     expect(screen.getByTestId('map-tali-slot')).toHaveStyle({ left: anchorX(2) });
     expect(anchorX(2)).not.toBe(anchorX(1));
     await fireEvent.press(screen.getByTestId('map-tali-press'));
-    expect(voice.last).toEqual({ key: 'map.taliRest', params: { region: 'в Числовой долине' } });
+    expect(voice.last).toEqual({ key: 'map.taliRest', params: { region: 'в Мире чисел' } });
     // «спящий» урок без подушки; страницы в атласе есть — «к атласу» (книга) ведёт в коллекцию (D2)
     expect(screen.getByTestId('map-node-3')).toBeTruthy();
     expect(screen.queryByTestId('map-node-3-cushion')).toBeNull();

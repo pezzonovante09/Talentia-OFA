@@ -10,10 +10,12 @@ import {
   buildTheme,
   childSoundToggle,
   fitRegionTitle,
+  fitStickerTitle,
   isQuantityOrder,
   mapSettingsButton,
   mapTaliTap,
   mapTitle,
+  mapTitleWidth,
   orderEmptyPlaceTap,
   orderFirstPlaceCue,
   orderMark,
@@ -333,9 +335,7 @@ describe('карта региона (решение №89, Р9)', () => {
     expect(mapLayout.landmarkPlate).toBe('arch');
   });
 
-  it('ориентир: 64 в обычных видах, 32 в полосе calm (V22) — исключение одно и названо; верх панорамы 64 pt без деталей (Г7)', () => {
-    expect(mapLayout.landmarkCalmStrip).toBe(32);
-    expect(mapLayout.landmarkCalmStrip).toBeLessThan(mapLayout.landmarkMin);
+  it('ориентир: 64 во всех видах, в calm стоит на песке; верх панорамы 64 pt без деталей (Г7)', () => {
     expect(mapLayout.titleZone).toBe(64);
     // calm — единственный вид без панорамы-носителя ориентира на карте
     expect(mapBackdrop({ scheme: 'light', calmMode: true })).toBe('sand_strip');
@@ -515,20 +515,16 @@ describe('рабочие остатки раунда 3 (V1, V4, V5, V6, V2/V3)',
     expect(mapFocus.band).toBe(64);
     expect(mapFocus.atlasButton).toBeGreaterThanOrEqual(touch.min);
     expect(mapFocus.settings).toBe(mapSettingsButton.size);
-    expect(Math.max(mapFocus.atlasButton, mapFocus.settings, mapFocus.landmark)).toBeLessThanOrEqual(mapFocus.band);
-    expect(mapFocus.landmark).toBe(mapLayout.landmarkCalmStrip);
+    expect(Math.max(mapFocus.atlasButton, mapFocus.settings)).toBeLessThanOrEqual(mapFocus.band);
     expect(mapFocus.tali).toBe('static_at_node');
     // стороны и зазоры полосы (второй цикл UX): атлас слева, кнопка листа справа, зазор ≥ touch.gap
     expect(mapFocus.atlasSide).toBe('left');
     expect(mapFocus.settingsSide).toBe('right');
     expect(mapFocus.minGap).toBeGreaterThanOrEqual(touch.gap);
-    // самый узкий экран 360: поля + атлас + зазор + ориентир + зазор + кнопка + поля помещаются,
-    // а зазор между атласом и кнопкой листа (через ориентир) не меньше minGap
-    const W = 360;
-    const fixed = 2 * mapFocus.edgeInset + mapFocus.atlasButton + mapFocus.landmark + mapFocus.settings;
-    expect(fixed + 2 * mapFocus.minGap).toBeLessThanOrEqual(W);
-    const atlasToSettings = W - 2 * mapFocus.edgeInset - mapFocus.atlasButton - mapFocus.settings;
-    expect(atlasToSettings).toBeGreaterThanOrEqual(mapFocus.landmark + 2 * mapFocus.minGap);
+    // самый узкий экран 320: между кнопками остаётся место под название, полоса не ломается
+    expect(mapTitleWidth(320)).toBe(136);
+    expect(mapTitleWidth(360)).toBe(176);
+    expect(mapTitleWidth(390)).toBe(206);
     expect(modeToggleCue.voiced).toBe(true);
     expect(taliSatchelRule.distinguishesPose).toBe(false);
     expect(taliSatchelRule.pressable).toBe(false);
@@ -819,42 +815,49 @@ describe('карта: кнопка листа, звук, повтор голос
 
 describe('название региона в полосе карты (раунд 5, В4)', () => {
   /**
-   * Названия регионов — из макетов (DESIGN_PROMPTS.md 1.2); ключей `content.regions.*` в локалях ещё нет
-   * (раунд 5, контент В7). en — рабочие. Когда ключи появятся, фикстуру заменить чтением ru / en / ky.
+   * Названия регионов — из макетов (DESIGN_PROMPTS.md 1.2), первый — из локалей; ключей остальных
+   * `content.regions.*` в локалях пока нет (раунд 5, контент В7). en — рабочие.
    */
   const NAMES = {
-    ru: ['Числовая долина', 'Побережье слов', 'Живой лес', 'Мастерская', 'Кыргызский язык'],
-    en: ['Number Valley', 'Word Coast', 'Living Forest', 'Workshop', 'Kyrgyz Language'],
+    ru: ['Мир чисел', 'Побережье слов', 'Живой лес', 'Мастерская', 'Кыргызский язык'],
+    en: ['Number World', 'Word Coast', 'Living Forest', 'Workshop', 'Kyrgyz Language'],
   };
 
-  it('стиль — subtitle 22/30, две строки в полосе 64; title 28/36 в две строки не помещался', () => {
-    expect(mapTitle.size).toBe(typography.subtitle.size);
-    expect(mapTitle.lineHeight).toBe(typography.subtitle.lineHeight);
-    expect(mapTitle.maxLines * mapTitle.lineHeight).toBeLessThanOrEqual(mapFocus.band);
-    expect(2 * typography.title.lineHeight).toBeGreaterThan(mapFocus.band);
+  it('плоская надпись: Nunito 800, одна строка 24/32 или две 20/26 в полосе 64', () => {
+    expect(typography[mapTitle.style].family).toBe('Nunito');
+    expect(typography[mapTitle.style].weight).toBe('800');
+    expect(mapTitle.lineHeight).toBeLessThanOrEqual(mapFocus.band);
+    expect(mapTitle.maxLines * (mapTitle.twoLineSize + mapTitle.twoLineLeading)).toBeLessThanOrEqual(mapFocus.band);
     expect(mapTitle.maxFontSizeMultiplier).toBe(1);
     expect(mapTitle.minSize).toBe(18);
   });
 
-  it('ширина 136 — то, что остаётся на экране 360 между ориентиром и кнопками', () => {
-    const W = 360;
-    const rest = W - 2 * mapFocus.edgeInset - mapFocus.atlasButton - mapFocus.settings - 2 * mapFocus.minGap - mapFocus.landmark - 8;
-    expect(rest).toBe(mapTitle.width);
+  it('плоская надпись: сначала ужимается в одну строку, потом идёт в две', () => {
+    expect(fitRegionTitle('Мир чисел', 136)).toEqual({ size: 22, lineHeight: 30 });
+    expect(fitRegionTitle('Мир чисел', 176)).toEqual({ size: 24, lineHeight: 32 });
+    expect(fitRegionTitle('Кыргызский язык', 176)).toEqual({ size: 20, lineHeight: 26 });
+    expect(fitRegionTitle('Достопримечательностей', 136)).toBeNull();
   });
 
   (Object.keys(NAMES) as (keyof typeof NAMES)[]).forEach((lang) => {
-    it(`${lang}: самое длинное название помещается в 136 pt в ≤ 2 строки не мельче 18`, () => {
-      const longest = [...NAMES[lang]].sort((a, b) => b.length - a.length)[0];
-      const size = fitRegionTitle(longest);
-      expect(size).not.toBeNull();
-      expect(size ?? 0).toBeGreaterThanOrEqual(mapTitle.minSize);
-      NAMES[lang].forEach((name) => expect(fitRegionTitle(name)).not.toBeNull());
+    it(`${lang}: все названия помещаются плоско на экране 320 не мельче 18`, () => {
+      NAMES[lang].forEach((name) => {
+        const fit = fitRegionTitle(name, mapTitleWidth(320));
+        expect(fit).not.toBeNull();
+        expect(fit?.size ?? 0).toBeGreaterThanOrEqual(mapTitle.minSize);
+      });
     });
   });
 
-  it('ужатие работает: «Кыргызский» в 22 не помещается в строку, в 21 — да; слово длиннее строки при 18 — null', () => {
-    expect(fitRegionTitle('Кыргызский язык')).toBe(21);
-    expect(fitRegionTitle('Числовая долина')).toBe(22);
-    expect(fitRegionTitle('Достопримечательностей')).toBeNull();
+  it('наклейка: контраст букв к контуру и кегль по ширине экрана', () => {
+    expect(contrast(mapTitle.sticker.fill, mapTitle.sticker.outlineColor)).toBeGreaterThanOrEqual(4.5);
+    expect(fitStickerTitle('Мир чисел', mapTitleWidth(390))).toEqual({ size: 26, lineHeight: 34, outline: 2 });
+    expect(fitStickerTitle('Мир чисел', mapTitleWidth(360))).toEqual({ size: 24, lineHeight: 32, outline: 2 });
+    expect(fitStickerTitle('Мир чисел', mapTitleWidth(320))).toEqual({ size: 20, lineHeight: 28, outline: 1.5 });
+  });
+
+  it('наклейка: длинное название не входит — остаётся плоская надпись', () => {
+    expect(fitStickerTitle('Кыргызский язык', mapTitleWidth(390))).toBeNull();
+    expect(fitStickerTitle('Number World', mapTitleWidth(360))).toBeNull();
   });
 });

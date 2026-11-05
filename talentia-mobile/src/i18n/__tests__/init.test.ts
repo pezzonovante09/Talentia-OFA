@@ -12,13 +12,13 @@ describe('initI18n', () => {
   it('ru: строка есть; ky: ключа нет и fallback на ru не происходит', () => {
     initI18n({ lng: 'ru' });
     expect(i18n.language).toBe('ru');
-    expect(i18n.t('content.regions.numbers.title')).toBe('Числовая долина');
+    expect(i18n.t('content.regions.numbers.title')).toBe('Мир чисел');
     expect(keyExists('content.regions.numbers.title')).toBe(true);
 
     initI18n({ lng: 'ky' });
     expect(i18n.language).toBe('ky');
     expect(keyExists('content.regions.numbers.title')).toBe(false);
-    expect(i18n.t('content.regions.numbers.title')).not.toBe('Числовая долина');
+    expect(i18n.t('content.regions.numbers.title')).not.toBe('Мир чисел');
   });
 
   it('повторный вызов не создаёт второй экземпляр, а переключает язык', () => {

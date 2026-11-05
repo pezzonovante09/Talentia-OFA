@@ -2,7 +2,7 @@ import { countingTopic, numeralsTopic } from '../numbers-5-6';
 import { allLessons, lessonById, lessonsBefore, REGIONS, regionLessons, regionMapLessons, regionOfLesson } from '../index';
 import { REVIEW_LESSON_ID } from '../../domain/parentReport';
 
-describe('реестр контента (срез: Числовая долина, 5–6)', () => {
+describe('реестр контента (срез: Мир чисел, 5–6)', () => {
   it('один регион, две темы, шесть уроков в порядке тем', () => {
     expect(REGIONS.map((r) => r.id)).toEqual(['numbers']);
     const lessons = regionLessons('numbers');

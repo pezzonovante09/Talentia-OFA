@@ -1,7 +1,7 @@
 /**
  * Фон карты по `mapBackdrop()`: светлая обычная — панорама региона; тёмная обычная — заливка региона +
- * контур горизонта той же панорамы + ориентир-«вывеска» ≥ 64; calm — песок `background`. Панорама
- * прижата к низу и обрезается по ширине (`xMidYMax slice`): верхние 64 — ровная заливка под полосу.
+ * контур горизонта той же панорамы + ориентир-«вывеска» ≥ 64; calm — песок `background` и тот же ориентир.
+ * Панорама прижата к низу и обрезается по ширине (`xMidYMax slice`), её небо идёт под название.
  */
 import { StyleSheet, View } from 'react-native';
 
@@ -38,5 +38,13 @@ export function MapBackdrop({ region, width, height }: MapBackdropProps) {
       </View>
     );
   }
-  return <View style={[StyleSheet.absoluteFillObject, { backgroundColor: theme.colors.background }]} testID="map-backdrop-sand" pointerEvents="none" />;
+  return (
+    <View style={[StyleSheet.absoluteFillObject, { backgroundColor: theme.colors.background }]} testID="map-backdrop-sand" pointerEvents="none">
+      {Landmark && (
+        <View style={{ position: 'absolute', left: width / 2 - mapLayout.landmarkMin / 2, top: height * 0.3 }} testID="map-landmark-sand">
+          <Landmark width={mapLayout.landmarkMin} height={mapLayout.landmarkMin} color={theme.colors.text} stroke={theme.colors.outline} />
+        </View>
+      )}
+    </View>
+  );
 }

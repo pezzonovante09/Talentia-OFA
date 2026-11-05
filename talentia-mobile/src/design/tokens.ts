@@ -524,7 +524,7 @@ export const helpTaliButton = { bottomInset: 'safeAreaBottom', extra: 16 } as co
  */
 export const mapSettingsButton = { size: 60, keptInFocus: true, icon: 'sliders', opens: 'child_sheet' } as const;
 /**
- * Тап по Tali на карте (раунд 5, В3): Tali называет регион и следующий шаг («Мы в Числовой долине. Дальше —
+ * Тап по Tali на карте (раунд 5, В3): Tali называет регион и следующий шаг («Мы в Мире чисел. Дальше —
  * вот этот урок»; текст — основной поток) и указывает на следующий узел (поза `point`). Одинаково в обычном
  * виде, calm и focus — в focus Tali статичен, но тап работает так же. Это единственный повтор голосом на
  * карте; кнопки-динамика на карте нет.
@@ -557,14 +557,13 @@ export const childSoundToggle = {
 export const mapFocus = {
   band: 64,
   atlasButton: 60,
-  landmark: 32,
   settings: mapSettingsButton.size,
   tali: 'static_at_node',
   taliTap: mapTaliTap,
   /**
    * Раскладка полосы (второй цикл UX): атлас — у левого края, кнопка листа — у правого, как выход и
    * повтор на уроке (SCREENS.md 1.2: две цели на противоположных краях, промах по одной не попадает
-   * в другую); ориентир 32 с названием — между ними, не нажимается как цель. Поля `edgeInset` 16,
+   * в другую); название — между ними, по оси экрана, не нажимается как цель. Поля `edgeInset` 16,
    * зазор между любыми соседними элементами полосы ≥ `minGap` 16 (`touch.gap`).
    */
   atlasSide: 'left',
@@ -574,27 +573,55 @@ export const mapFocus = {
 } as const;
 
 /**
- * Название региона в полосе карты 64 (раунд 5, В4). `title` 28/36 в две строки — 72 > 64, а на
- * экране 360 между ориентиром и кнопками остаётся 136 pt: 360 − 2 × 16 (поля) − 2 × 60 (кнопки) −
- * 2 × 16 (зазоры) − 32 (ориентир) − 8 (до названия) = 136. Поэтому:
- * - `subtitle` Comfortaa 22/30 600, ≤ 2 строк (2 × 30 = 60 ≤ 64), `maxFontSizeMultiplier` 1 (полоса
- *   фиксирована; название звучит по тапу на Tali, `mapTaliTap`);
- * - не помещается — кегль ужимается шагом 1 до 18 (межстрочный 24), не ниже; кегль выбирает
- *   `fitRegionTitle` детерминированно, а не `adjustsFontSizeToFit` (на Android он ведёт себя иначе);
- * - перенос только по словам; ширина оценивается по `charWidthEm` 0.62 — запас для Comfortaa 600 на
- *   кириллице (широкие «Ж», «Ш», «Ы»).
+ * Название региона в полосе карты 64. Значка в полосе нет: название стоит по оси экрана между кнопками
+ * (ширина — `mapTitleWidth`: 136 на 320, 176 на 360, 206 на 390; в вёрстке — `flex: 1`).
+ *
+ * Обычный вид — наклейка (`mapTitle.sticker`): кремовые буквы с тёмным контуром прямо на фоне карты, без
+ * планки. Контур обязателен: без него кремовый на панораме даёт 1.6–3.4:1. Цвета заданы литералами и не
+ * зависят от схемы: наклейка несёт контраст сама (15.3:1 буквы к контуру). Одна строка, кегль выбирает
+ * `fitStickerTitle`.
+ *
+ * Плоская надпись — calm, focus и названия длиннее наклейки: цвет из темы, на цветной полосе:
+ * - одна строка 24/32, ужатие шагом 1 до 20 (межстрочный = кегль + 8);
+ * - не входит — две строки 20/26, ужатие до 18/24 (2 × 26 = 52 ≤ 64);
+ * - `maxFontSizeMultiplier` 1: полоса фиксирована, название звучит по тапу на Tali (`mapTaliTap`);
+ * - кегль выбирает `fitRegionTitle` детерминированно, а не `adjustsFontSizeToFit` (на Android он ведёт
+ *   себя иначе); перенос только по словам; ширина оценивается по `charWidthEm` 0.68 — запас для Nunito
+ *   800 на кириллице (широкие «Ж», «Ш», «Ы»), замера не было.
  */
 export const mapTitle = {
-  style: 'subtitle',
-  size: 22,
-  lineHeight: 30,
+  style: 'label',
+  size: 24,
+  lineHeight: 32,
+  minOneLineSize: 20,
+  oneLineLeading: 8,
+  twoLineSize: 20,
+  twoLineLeading: 6,
   minSize: 18,
   minLineHeight: 24,
   maxLines: 2,
   maxFontSizeMultiplier: 1,
-  width: 136,
-  charWidthEm: 0.62,
+  charWidthEm: 0.68,
+  sticker: {
+    fill: '#FFF3E3',
+    outlineColor: '#2A1A12',
+    /** Контур наружу; на самом мелком кегле тоньше, чтобы сохранить долю контура к букве. */
+    outline: 2,
+    outlineSmall: 1.5,
+    /** Контур — копии текста по кругу (`MapBand`), а не SVG: шрифт идёт обычным путём на обеих платформах. */
+    outlineSteps: 12,
+    tracking: 1,
+    wideWidth: 206,
+    wideSize: 26,
+    size: 24,
+    minSize: 20,
+  },
 } as const;
+
+/** Сколько ширины остаётся названию между кнопками полосы на экране `screenWidth`. */
+export function mapTitleWidth(screenWidth: number): number {
+  return screenWidth - 2 * mapFocus.edgeInset - mapFocus.atlasButton - mapFocus.settings - 2 * mapFocus.minGap;
+}
 
 /** Сколько строк займёт текст кеглем `size` в ширине `width` при переносе по словам (оценка). */
 function wrapLines(text: string, size: number, width: number): number {
@@ -614,10 +641,29 @@ function wrapLines(text: string, size: number, width: number): number {
   return lines;
 }
 
-/** Кегль названия региона в полосе карты: 22, ужатый до 18; `null` — не помещается и в 18 (правьте название). */
-export function fitRegionTitle(text: string, width: number = mapTitle.width): number | null {
-  for (let size: number = mapTitle.size; size >= mapTitle.minSize; size -= 1) {
-    if (wrapLines(text, size, width) <= mapTitle.maxLines) return size;
+export type RegionTitleFit = { size: number; lineHeight: number };
+
+/** Плоская надпись: одна строка, иначе две; `null` — не помещается и в 18 (правьте название). */
+export function fitRegionTitle(text: string, width: number): RegionTitleFit | null {
+  for (let size: number = mapTitle.size; size >= mapTitle.minOneLineSize; size -= 1) {
+    if (wrapLines(text, size, width) === 1) return { size, lineHeight: size + mapTitle.oneLineLeading };
+  }
+  for (let size: number = mapTitle.twoLineSize; size >= mapTitle.minSize; size -= 1) {
+    if (wrapLines(text, size, width) <= mapTitle.maxLines) return { size, lineHeight: size + mapTitle.twoLineLeading };
+  }
+  return null;
+}
+
+export type StickerTitleFit = RegionTitleFit & { outline: number };
+
+/** Наклейка: одна строка с запасом на трекинг и контур; `null` — не входит, нужна плоская надпись. */
+export function fitStickerTitle(text: string, width: number): StickerTitleFit | null {
+  const { sticker } = mapTitle;
+  const start = width >= sticker.wideWidth ? sticker.wideSize : sticker.size;
+  for (let size: number = start; size >= sticker.minSize; size -= 1) {
+    const outline = size === sticker.minSize ? sticker.outlineSmall : sticker.outline;
+    const needed = text.length * size * mapTitle.charWidthEm + (text.length - 1) * sticker.tracking + 2 * outline;
+    if (needed <= width) return { size, lineHeight: size + mapTitle.oneLineLeading, outline };
   }
   return null;
 }
@@ -785,8 +831,6 @@ export const mapLayout = {
    */
   landmarkTap: { scale: 0.96, durationMs: 90, sound: false, action: 'none' },
   landmarkPlate: 'arch',
-  /** В calm ориентир живёт в полосе-заголовке и равен 32 (V22): панорамы, на которой он стоял бы, нет. */
-  landmarkCalmStrip: 32,
   /**
    * Верхняя зона панорамы под заголовком карты — без деталей (Г7): текст шапки `#2A1A12`
    * обязан держать на ней ≥ 4.5:1. Высота зоны — высота полосы заголовка.
@@ -802,7 +846,7 @@ export type MapBackdrop = 'panorama' | 'flat_region' | 'sand_strip';
  * перекрашиваются). Тёмная обычная — сплошной `regions.<регион>` + силуэт горизонта
  * (обвод той же панорамы на той же высоте, контур `outline` `mapLayout.horizonStroke`) +
  * ориентир; текст — `onRegion` (≥ 4.5 на каждой заливке). Calm в обеих схемах — песок
- * `background` и цветная полоса-заголовок. Тропа, узлы, «повторение» и Tali стоят на тех
+ * `background`, ориентир и цветная полоса-заголовок. Тропа, узлы, «повторение» и Tali стоят на тех
  * же координатах во всех трёх видах.
  */
 export function mapBackdrop({ scheme, calmMode }: { scheme: Scheme; calmMode: boolean }): MapBackdrop {

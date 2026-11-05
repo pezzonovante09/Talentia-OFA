@@ -1131,8 +1131,8 @@ Tali говорит вопрос, затем называет числа ниж�
 Проверено на `W` 327 с зазором 24: 4 в ряд — 63.75, 3 в ряд — 93. Всё ≥ 60.
 
 **Мелочи, общие для режимов** (токены `tokens.ts`):
-- На карте в focus остаётся полоса-заголовок 64 — кнопка атласа 60 у левого края, ориентир 32
-  с названием посередине, кнопка детского листа «ползунки» 60 у правого края; поля 16, зазор между
+- На карте в focus остаётся полоса-заголовок 64 — кнопка атласа 60 у левого края, название
+  посередине, кнопка детского листа «ползунки» 60 у правого края; поля 16, зазор между
   соседними ≥ 16 (`mapFocus`, `mapSettingsButton`), — и статичный Tali у текущего узла, тап по нему
   называет регион и следующий шаг, как в обычном виде (`mapTaliTap`): без них нечитающему ребёнку в
   focus не услышать, где он, и не уйти с карты (раунд 4, раунд 5; DESIGN_PROMPTS.md 1.2; 8.3).
@@ -1188,10 +1188,8 @@ Tali говорит вопрос, затем называет числа ниж�
   4.53–4.68:1 (`outline` = `onRegion`). Узлы — по правилу перевода: заливка состояния,
   глиф `#1B1410`, контур `#FFF3E3`. Токен — `mapBackdrop`: светлая обычная — панорама,
   тёмная обычная — `flat_region`, calm в любой схеме — песок и цветная полоса.
-  **Ориентир (V22):** ≥ 64 pt (`mapLayout.landmarkMin`) в обоих обычных видах — светлом и
-  тёмном — и на одном и том же месте; в calm он 32 в полосе-заголовке
-  (`mapLayout.landmarkCalmStrip`): рисованной панорамы в calm нет, ориентиру негде стоять на
-  карте, и строка «ориентир во всех видах ≥ 64» относится только к обычным видам. Контур
+  **Ориентир:** ≥ 64 pt (`mapLayout.landmarkMin`) во всех видах и на одном и том же месте; в calm
+  он стоит на песке, в полосе-заголовке значка нет (решение владельца 2026-11-05 меняет V22). Контур
   горизонта и ориентир берутся из `horizon-<region>.svg` / `landmark-<region>.svg`
   (ASSETS.md, шаг 3); верхние 64 pt панорамы под заголовком карты — без деталей.
 - **Стимул и кучки счёта** лежат на `picturePlate` `#EDE7DC` (метка «сосчитано» и контур
@@ -1371,7 +1369,7 @@ reduce motion — позы те же, наклонов и подскоков н�
 `domain/countLayout.ts`), `numeralOption`, `symbolGlyph`, `countMark`, `mapLayout` +
 `mapBackdrop`. **Внесены в код 2026-10-12 (раунд 3):** `progressSegment`, `selectedStroke`,
 `emptyOutlineColor`, `listeningCue`, `countMark.{feedbackMs, repeatRing, missRing}`,
-`mapLayout.{landmarkCalmStrip, titleZone}`. ABA-токены (`abaLayout`, `abaAdultPanel`,
+`mapLayout.titleZone`. ABA-токены (`abaLayout`, `abaAdultPanel`,
 `promptVisual`, `inactiveChoice` и др.) — в `abaTokens.ts`; в раунде 3 добавлены
 `promptVisual.single` + `promptVisualSingleLevel`, `inactiveChoice.{hatchColor, tapPress}`,
 `abaAdultPanel.childTapLock` (очередь вместо блокировки), `abaWindowPolicy` (запрет с причиной),
@@ -1416,11 +1414,11 @@ withCounting}`, `missRing.colorRole` удалён (В5, М3); в `abaTokens.ts` 
 | `symbolGlyph` (**в коде**) | `{ 1: 64, 2: 48, 3: 40, 4: 32 }` | кегль знака в карточке-символе по числу символов (3.8.1); `maxFontSizeMultiplier` знака = 1 (`symbolGlyphMaxFontMultiplier`) |
 | `countMark` (**в коде**) | `{ dot: 12, ring: 2, dotColor: '#2A1A12', ringColor: '#FFFFFF', snapRadius: 32, snapRule: 'nearest', feedbackMs: 100, feedbackTrigger: 'touch_down', repeatRing: { from: 2, to: 6, durationMs: 90, shownUntil: 'touch_up', tailMs: 300, shape: 'mark_ring_solid', sound: false, haptic: 'parentSetting', peakOutline: { width: 2, color: '#2A1A12' } }, missRing: { size: 64, stroke: 3, shape: 'dashed_ring', dash: 8, gap: 6, color: '#6E564A', halo: { color: '#FFFFFF', pad: 2, solid: true }, shownUntil: 'touch_up', tailMs: 300, sound: false, records: false, clip: { count: 'stimulus_plate', point: 'scene_frame' }, outsideClip: 'nothing', pointers: 'first_only' } }` | метка «сосчитано» (3.8, №83, Р11); радиус 32 перекрывает соседей при шаге ≥ 44 — единственное правило: ближайшая фигура по расстоянию; отклик ≤ 100 мс по касанию вниз; повтор — кольцо 2→6 до отпускания + 300 мс, заметно без вибрации (вибрация — только при включённой родителем настройке «Вибрация при касании», №112); промах — пунктирное кольцо 64, один знак для счёта и `point` (V2, V3, V-8, I-2, раунд 4) |
 | `listeningCue`, `progressSegment`, `selectedStroke`, `emptyOutlineColor` (**в коде**) | `{ badge: 24, corner: 'top_right', inset: 4, fill: 'surfaceAlt', outlineChanges: false, animated: false }`; пройдено — `surfaceAlt` + контур 3; `{ lesson/map: 'primary', atlas: 'onRegion', aba: 'outline' }`; `'textMuted'` | подсветка «звучит сейчас» (I-1, V5), прогресс (V1), цвет контура «выбрано» (V4; атлас — раунд 4: `primary` на заливке региона давал 1.6–2.5:1), пунктир «пусто» (V6) |
-| `mapSettingsButton`, `mapFocus` (**в коде**) | `{ size: 60, keptInFocus: true, icon: 'ui-sliders', opens: 'child_sheet' }`; `{ band: 64, atlasButton: 60, landmark: 32, settings: 60, tali: 'static_at_node', taliTap: mapTaliTap, atlasSide: 'left', settingsSide: 'right', edgeInset: 16, minGap: 16 }` | карта в focus сохраняет полосу с атласом, ориентиром и кнопкой листа и статичного Tali у узла (раунд 4); кнопка листа — «ползунки», не динамик (раунд 5, 8.3) |
+| `mapSettingsButton`, `mapFocus` (**в коде**) | `{ size: 60, keptInFocus: true, icon: 'ui-sliders', opens: 'child_sheet' }`; `{ band: 64, atlasButton: 60, settings: 60, tali: 'static_at_node', taliTap: mapTaliTap, atlasSide: 'left', settingsSide: 'right', edgeInset: 16, minGap: 16 }` | карта в focus сохраняет полосу с атласом, ориентиром и кнопкой листа и статичного Tali у узла (раунд 4); кнопка листа — «ползунки», не динамик (раунд 5, 8.3) |
 | `orderMark`, `orderMarkFor()`, `isQuantityOrder()`, `orderFirstPlaceCue` (**в коде**) | засечка 12 вниз от линии `stroke.base` `outline`; цифра в круге 24 — с 7 лет и не у количеств; точек нет | метки мест `order` не кодируют количество (3.4, Е2) |
 | `selectedRepeatPress` (**в коде**) | `{ scale: 0.94, trigger: 'touch_down', feedbackMs: 100, heldUntil: 'touch_up', releaseMs: 90, pileTile: { scales: 'frame', figureFieldStatic: true, sound: false } }` | видимый отклик повторного тапа по выбранной плитке (2.3, В1) |
-| `mapTitle`, `fitRegionTitle()` (**в коде**) | `subtitle` 22/30, ≤ 2 строк, множитель 1, ужатие до 18, ширина 136 | название региона в полосе карты (8.3, В4) |
-| `mapLayout`, `mapBackdrop()` (**в коде**) | `{ node: 72, nodeGapMin: 88, trailStroke: 3, horizonStroke: 3, landmarkMin: 64, landmarkTap: { scale: 0.96, durationMs: 90, sound: false, action: 'none' }, landmarkPlate: 'arch', landmarkCalmStrip: 32, titleZone: 64 }`; фон: светлая — `panorama`, тёмная — `flat_region`, calm — `sand_strip` | карта региона (№89, Р9) |
+| `mapTitle`, `mapTitleWidth()`, `fitRegionTitle()`, `fitStickerTitle()` (**в коде**) | наклейка: Nunito 800, `#FFF3E3`, контур `#2A1A12` 2 (1.5 на кегле 20), трекинг 1, кегль 26 / 24 до 20, одна строка; плоско: 24/32 до 20, затем две строки 20/26 до 18/24; множитель 1; ширина 136 / 176 / 206 | название региона в полосе карты (8.3) |
+| `mapLayout`, `mapBackdrop()` (**в коде**) | `{ node: 72, nodeGapMin: 88, trailStroke: 3, horizonStroke: 3, landmarkMin: 64, landmarkTap: { scale: 0.96, durationMs: 90, sound: false, action: 'none' }, landmarkPlate: 'arch', titleZone: 64 }`; фон: светлая — `panorama`, тёмная — `flat_region`, calm — `sand_strip` | карта региона (№89, Р9) |
 | `lessonTiming` (**в коде**) | `{ errorHold: 600, nextUnlock: 900, nextGuard: 300, nudgeAfter: 5000, missesBeforeRepeat: 3 }` | таймлайн ошибки, «Дальше» (`nextGuard` — повторные касания после «Дальше» игнорируются 300 мс), напоминание, `point` |
 | `lessonLimits` | см. ниже | раскладка помещается на SE без прокрутки |
 
@@ -1648,11 +1646,16 @@ withCounting}`, `missRing.colorRole` удалён (В5, М3); в `abaTokens.ts` 
   Иначе малыш, выключивший «Звук», оставался без озвучки вопросов (№22). Видимый отклик на касание
   обязателен везде и от звука не зависит — с выключенными эффектами ни одна цель не молчит. Подпись
   плитки — ключ основного потока.
-- **Название региона в полосе 64** (`mapTitle`, `fitRegionTitle`): `subtitle` Comfortaa 22/30 600, ≤ 2
-  строк (60 ≤ 64), `maxFontSizeMultiplier` 1, перенос по словам; не помещается — кегль ужимается
-  шагом 1 до 18 (межстрочный 24), не ниже. Ширина — 136 pt на экране 360 (360 − 2 × 16 − 2 × 60 −
-  2 × 16 − 32 ориентир − 8). Прежний `title` 28/36 в две строки — 72 > 64. Тест — по самому длинному
-  названию ru / en (ky — когда появятся ключи `content.regions.*`): «Кыргызский язык» идёт кеглем 21.
+- **Название региона в полосе 64** (`mapTitle`; решение владельца 2026-11-05 вместо раунда 5, В4):
+  стоит по оси экрана между кнопками, значка в полосе нет. Ширина — `mapTitleWidth`: 136 на 320, 176 на
+  360, 206 на 390.
+  - **Наклейка** — обычный вид в обеих схемах: Nunito 800, буквы `#FFF3E3`, контур `#2A1A12` 2 pt наружу
+    (1.5 на кегле 20), трекинг 1, одна строка, кегль 26 на 390, 24 на 360, не меньше 20. Лежит прямо на
+    фоне карты, планки нет. Контур — копии текста по кругу, для скринридера узел один.
+  - **Плоская надпись** — calm, focus и всё, что в наклейку не вошло: цвет темы на цветной полосе, 24/32
+    в одну строку с ужатием до 20, затем две строки 20/26 с ужатием до 18/24.
+  - `maxFontSizeMultiplier` 1, перенос по словам. Тест — `tokens.test.ts`, по названиям ru / en на экране
+    320 (ky — когда появятся ключи `content.regions.*`).
 
 ---
 
