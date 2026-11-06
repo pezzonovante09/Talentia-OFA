@@ -30,6 +30,9 @@ import RegionKyrgyz from '../../assets/images/regions/region-kyrgyz.svg';
 import HorizonNumbers from '../../assets/images/regions/horizon-numbers.svg';
 import LandmarkNumbers from '../../assets/images/regions/landmark-numbers.svg';
 import LandmarkWords from '../../assets/images/regions/landmark-words.svg';
+import LandmarkNature from '../../assets/images/regions/landmark-nature.svg';
+import LandmarkWorkshop from '../../assets/images/regions/landmark-workshop.svg';
+import LandmarkKyrgyz from '../../assets/images/regions/landmark-kyrgyz.svg';
 
 import UiArrow from '../../assets/icons/ui-arrow.svg';
 import UiBackspace from '../../assets/icons/ui-backspace.svg';
@@ -41,9 +44,13 @@ import UiFingerRing from '../../assets/icons/ui-finger-ring.svg';
 import UiLock from '../../assets/icons/ui-lock.svg';
 import UiMap from '../../assets/icons/ui-map.svg';
 import UiNote from '../../assets/icons/ui-note.svg';
+import UiPauseBars from '../../assets/icons/ui-pause-bars.svg';
 import UiPauseBarsOutline from '../../assets/icons/ui-pause-bars-outline.svg';
 import UiPin from '../../assets/icons/ui-pin.svg';
+import UiRegionKyrgyz from '../../assets/icons/ui-region-kyrgyz.svg';
+import UiRegionNature from '../../assets/icons/ui-region-nature.svg';
 import UiRegionNumbers from '../../assets/icons/ui-region-numbers.svg';
+import UiRegionWords from '../../assets/icons/ui-region-words.svg';
 import UiRegionWorkshop from '../../assets/icons/ui-region-workshop.svg';
 import UiReview from '../../assets/icons/ui-review.svg';
 import UiShapeCircle from '../../assets/icons/ui-shape-circle.svg';
@@ -57,6 +64,7 @@ import UiSound from '../../assets/icons/ui-sound.svg';
 import UiSoundOn from '../../assets/icons/ui-sound-on.svg';
 import UiStampOpen from '../../assets/icons/ui-stamp-open.svg';
 import UiStar from '../../assets/icons/ui-star.svg';
+import UiStarHelped from '../../assets/icons/ui-star-helped.svg';
 import UiToken from '../../assets/icons/ui-token.svg';
 import UiTriangle from '../../assets/icons/ui-triangle.svg';
 import UiWaves from '../../assets/icons/ui-waves.svg';
@@ -159,9 +167,9 @@ export const REGION_HORIZONS = {
 export const REGION_LANDMARKS = {
   numbers: LandmarkNumbers,
   words: LandmarkWords,
-  nature: null,
-  workshop: null,
-  kyrgyz: null,
+  nature: LandmarkNature,
+  workshop: LandmarkWorkshop,
+  kyrgyz: LandmarkKyrgyz,
 } satisfies Record<RegionId, Svg | null>;
 
 export const ICONS = {
@@ -179,9 +187,11 @@ export const ICONS = {
   chevron: UiChevron,
   fingerRing: UiFingerRing,
   note: UiNote,
+  pauseBars: UiPauseBars,
   pauseBarsOutline: UiPauseBarsOutline,
   sleep: UiSleep,
   star: UiStar,
+  starHelped: UiStarHelped,
   token: UiToken,
   sliders: UiSliders,
   triangle: UiTriangle,
@@ -192,7 +202,10 @@ export const ICONS = {
   shapeTriangle: UiShapeTriangle,
   shapeDiamond: UiShapeDiamond,
   stampOpen: UiStampOpen,
+  regionKyrgyz: UiRegionKyrgyz,
+  regionNature: UiRegionNature,
   regionNumbers: UiRegionNumbers,
+  regionWords: UiRegionWords,
   regionWorkshop: UiRegionWorkshop,
   review: UiReview,
 } satisfies Record<string, Svg>;

@@ -57,5 +57,5 @@ app-example
 /android
 
 # Сырые и вычищенные файлы из Higgsfield (решение №177): карта партии в репозитории, сами файлы — нет
-scripts/input/higgsfield-raw/
-scripts/input/higgsfield-clean/
+scripts/input/higgsfield-raw*/
+scripts/input/higgsfield-clean*/

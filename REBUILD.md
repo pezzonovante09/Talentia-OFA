@@ -210,9 +210,10 @@ GitHub владельцем; `docs/legal/` под облако (№115) и ст�
    `assets/` и реестр 2026-11-06** — 13 иконок, `landmark-words`, 24 стимула (цвета подогнаны по №178; цели `match`
    ступени 1 теперь допускаются к сессии и в выпуске) и панорамы `kyrgyz`, `nature`, `workshop`; тесты реестра,
    токенов и контента переведены на «картинки есть»; заглушки `PlaceholderGlyph` на новые иконки не переведены
-   (с `design-lead`); перегенерировать 6 иконок (`sound`, `star-helped`, `region-words`, `region-nature`,
-   `region-kyrgyz`, `pause-bars`: рамка или контурный рисунок вместо залитого) и 3 ориентира (`nature`, `workshop`,
-   `kyrgyz`, контурные); `region-numbers` (618 КБ) и `region-words` (маяк у правого края) приняты №179 и положены —
+   (с `design-lead`); **вторая партия положена тем же днём**: 6 иконок (`sound`, `star-helped`, `region-words`,
+   `region-nature`, `region-kyrgyz`, `pause-bars`) и 3 ориентира (`nature`, `workshop`, `kyrgyz`) — иконки шага 4 и все
+   пять ориентиров закрыты (`ui-region-words` и `landmark-kyrgyz` выведены из принятых соседей, см. ASSETS.md);
+   `region-numbers` (618 КБ) и `region-words` (маяк у правого края) приняты №179 и положены —
    **все пять панорам из Higgsfield в приложении**; `horizon-numbers.svg` и `landmark-numbers.svg` остались от старой
    панорамы и с новой не совпадают — переобвести горизонт по `region-numbers.svg` и измерить `LANDMARK_AT`, затем
    горизонты и ориентиры остальных четырёх (ТЗ — ASSETS.md, шаг 3).

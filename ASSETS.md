@@ -722,9 +722,12 @@ Transparent background, no text, no letters, no frame, no border.
 **Состояние 2026-11-06 (первая партия Higgsfield, №177).** В `assets/icons/` положены и подключены в `ICONS`:
 перерисованные `ui-check`, `ui-x`, `ui-lock`, `ui-map` и новые `ui-star`, `ui-token`, `ui-chevron`, `ui-backspace`,
 `ui-note`, `ui-sleep`, `ui-region-workshop`, `ui-pause-bars-outline`, `ui-finger-ring`; ориентир `landmark-words.svg`;
-все 24 стимула ABA. Ждут перегенерации с припиской «one solid filled silhouette, not an outline drawing, no frame»:
-`ui-sound` (вышел контурным), `ui-star-helped` (двойной контур, читается пустой), `ui-region-words` и `ui-pause-bars`
-(рамка), `ui-region-nature` и `ui-region-kyrgyz` (контурные), ориентиры `nature`, `workshop`, `kyrgyz` (контурные).
+все 24 стимула ABA. **Вторая партия (тот же день):** перегенерированы со строкой «one solid filled silhouette, not an
+outline drawing, no frame» и положены `ui-sound`, `ui-star-helped`, `ui-pause-bars`, `ui-region-nature`,
+`ui-region-kyrgyz`, ориентиры `nature` и `workshop`. Два файла модель и со второй попытки рисовала контурными, поэтому
+они выведены из принятых соседей тем же скриптом (силуэт по ASSETS.md у них общий): `ui-region-words` — из
+`landmark-words` (сетка 32), `landmark-kyrgyz` — из `ui-region-kyrgyz` (сетка 64, без решётки). Набор иконок шага 4 и
+все пять ориентиров закрыты; `ui-bulb` остаётся до решения.
 Файлы из Higgsfield чистит `scripts/clean-higgsfield.mjs` (карта партии — `scripts/input/higgsfield-map-2026-11-06.json`):
 дырки в иконках там нарисованы белыми фигурами, скрипт делает их сквозными через `fill-rule="evenodd"`. Заглушки
 `PlaceholderGlyph` в `src/ui/aba/parts.tsx` (`pause_bars_outline`, `finger_ring`, `map`) на новые иконки ещё не

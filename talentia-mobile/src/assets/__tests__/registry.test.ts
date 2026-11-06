@@ -82,10 +82,10 @@ describe('реестр векторных ассетов', () => {
   });
 
   // Горизонты и ориентиры тёмной карты (ASSETS.md, «Контур горизонта и ориентир»).
-  // Горизонт есть только у «Цифр»; ориентиры — у «Цифр» и «Слов» (2026-11-06); остальные — заготовки `null`.
+  // Горизонт есть только у «Цифр»; ориентиры — у всех пяти (2026-11-06); остальные горизонты — заготовки `null`.
   describe.each([
     ['REGION_HORIZONS', 'horizon', 'Horizon', ['words', 'nature', 'workshop', 'kyrgyz']],
-    ['REGION_LANDMARKS', 'landmark', 'Landmark', ['nature', 'workshop', 'kyrgyz']],
+    ['REGION_LANDMARKS', 'landmark', 'Landmark', []],
   ])('%s', (mapName, filePrefix, importPrefix, PENDING) => {
     const entries = mapEntries(mapName);
 
