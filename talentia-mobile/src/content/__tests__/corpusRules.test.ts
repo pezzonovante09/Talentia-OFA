@@ -8,7 +8,7 @@
  * Фикстуры живут здесь, а не в `src/content`, — иначе гард принял бы их за
  * контент.
  */
-import { CHOOSE_SHARE_MIN_TASKS, RULES, childGenderCoreHits, childGenderHits, collectCorpus, emptyNameBroken, keysIn } from './corpusRules';
+import { CHOOSE_SHARE_MIN_TASKS, RULES, STYLE_RULES, childGenderCoreHits, childGenderHits, collectCorpus, emptyNameBroken, keysIn } from './corpusRules';
 import { countSilhouette } from '../../domain/countLayout';
 import type { Corpus, Locales, RuleId } from './corpusRules';
 import type { ChooseTask, Lesson, Task, TaskFormat, Topic } from '../../types/task';
@@ -1020,6 +1020,49 @@ describe('гард корпуса: знакомство и длина текст
     setKey(locale, t.promptKey, 'а'.repeat(40));
     setKey(locale, t.hintKey, 'б'.repeat(36));
     expect(run('textLength', c, { ru: locale })).toEqual([]);
+  });
+
+  describe('promptShownLength: вопрос en и ky (предупреждение, №122)', () => {
+    /** Локаль с одним вопросом: остальное в en и ky пока не переведено. */
+    const onePrompt = (key: string, text: string) => {
+      const locale: Record<string, unknown> = {};
+      setKey(locale, key, text);
+      return locale;
+    };
+
+    it('ky и en длиннее 92 знаков — предупреждение с языком и длиной', () => {
+      const c = goodCorpus();
+      const key = lessonAt(c, 0).tasks[0].promptKey;
+      const ky = run('promptShownLength', c, { ru: localeFor(c), ky: onePrompt(key, 'ң'.repeat(93)) });
+      const en = run('promptShownLength', c, { ru: localeFor(c), en: onePrompt(key, 'a'.repeat(120)) });
+      expect(ky).toEqual([expect.stringContaining('ky 93 знаков, нужно ≤ 92')]);
+      expect(en).toEqual([expect.stringContaining('en 120 знаков, нужно ≤ 92')]);
+    });
+
+    it('ровно 92 знака проходят', () => {
+      const c = goodCorpus();
+      const key = lessonAt(c, 0).tasks[0].promptKey;
+      expect(run('promptShownLength', c, { ru: localeFor(c), ky: onePrompt(key, 'ң'.repeat(92)) })).toEqual([]);
+    });
+
+    it('вопрос разобранного примера стоит в том же слоте и проверяется', () => {
+      const c = goodCorpus();
+      const model = lessonAt(c, 0).model;
+      if (!model) throw new Error('в фикстуре нет примера');
+      const out = run('promptShownLength', c, { ru: localeFor(c), ky: onePrompt(model.example.promptKey, 'ң'.repeat(93)) });
+      expect(out).toEqual([expect.stringContaining('/model: вопрос: ky 93 знаков')]);
+    });
+
+    it('пустые en и ky молчат, русский длинный вопрос — дело textLength', () => {
+      const c = goodCorpus();
+      const locale = localeFor(c);
+      setKey(locale, lessonAt(c, 0).tasks[0].promptKey, 'а'.repeat(120));
+      expect(run('promptShownLength', c, { ru: locale, en: {}, ky: {} })).toEqual([]);
+    });
+
+    it('это предупреждение, а не жёсткий гард: не валит corpus.test.ts', () => {
+      expect(STYLE_RULES.has('promptShownLength')).toBe(true);
+    });
   });
 });
 

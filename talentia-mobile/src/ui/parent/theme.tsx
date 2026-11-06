@@ -1,6 +1,6 @@
 /**
  * Тема родительского раздела — отдельная от детской (`PARENT.md`, «Визуальный язык»): та же
- * бумага без теплоты, без контура, подушки, Comfortaa и Tali. Схема — системная; calm / focus /
+ * бумага без теплоты, без контура, подушки и Tali. Схема — системная; calm / focus /
  * density сюда не проходят.
  */
 import { createContext, useContext, useMemo, type PropsWithChildren } from 'react';

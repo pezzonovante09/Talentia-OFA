@@ -318,14 +318,23 @@ export const lessonTiming = {
   missesBeforeRepeat: 3,
 } as const;
 
+/** Текст, который подбирает вид под фиксированный слот по замеру высоты (вопрос, заголовок). */
+export const textFit = {
+  /** Запас к слоту, pt: две строки вопроса при ×1.2 дают ровно 72, округление до пикселя их не бракует. */
+  tolerance: 1,
+  /** До замера текст прозрачен; дольше ждать нельзя, даже если замер не пришёл, мс. */
+  revealMax: 100,
+} as const;
+
 /**
  * Потолок системного шрифта на экране урока (I-11, раунд 3). Раньше `maxFontSizeMultiplier` был
  * задан только в ABA (`abaInstruction`, `abaAdultPanel`) и у знака в карточке-символе; на уроке
  * крупный системный шрифт выталкивал вопрос из слота 72 и реплику из пузыря 80. Слоты фиксированы
  * (экран не прокручивается), поэтому множитель — не пожелание, а часть раскладки.
- * - `prompt`: Comfortaa 22/30, 2 строки × 30 × 1.2 = 72 — ровно слот вопроса (как `abaInstruction`).
- *   Запасной вид 18/24 в 3 строки = 72 только при множителе 1 (`promptFallback`): строка, которой не
- *   хватило двух строк 22/30, включает запасной вид и отключает масштаб — иначе 3 × 24 × 1.2 = 86 > 72.
+ * - `prompt`: Nunito 700 22/30, 2 строки × 30 × 1.2 = 72 — ровно слот вопроса (как `abaInstruction`).
+ *   Не вошло в две строки — сначала 22/30 при множителе 1 (`promptFallback`), если системный шрифт
+ *   крупнее обычного, затем запасной вид 18/24 в 3 строки = 72: только при множителе 1, иначе
+ *   3 × 24 × 1.2 = 86 > 72. Ступени выбирает `Prompt` в `LessonChrome.tsx`.
  * - `bubble`: слот 80, вертикальное поле пузыря `bubblePadY` 6 → внутри 68; 18/26 × 2 × 1.1 = 57.2 и
  *   запасной 16/20 × 3 × 1.1 = 66 — оба помещаются.
  * - `action`: подпись кнопки действия 88 — одна строка, при нехватке ширины ужимается.
@@ -911,27 +920,21 @@ export const taliOnDark = { neutral: ['background', 'surface'], regionFill: 'reg
 /* ───────────────────────── типографика ───────────────────────── */
 
 /**
- * Comfortaa в заголовках вместо предложенной Fredoka: у Fredoka есть только
- * latin, latin-ext и hebrew — она не отрисует ни кыргызский, ни русский.
- * Comfortaa покрывает cyrillic-ext (U+0460–052F), где живут ң ө ү.
+ * Один шрифт на всё приложение, Nunito (№176). Прежний Comfortaa в заголовках и вопросах читался
+ * хуже: «т» похожа на m, «л» на Λ, низкий рост строчных, тонкие штрихи. Иерархию держат кегль и вес:
+ * крупные заголовки 800, вопрос задания 700 — просветы в ш, щ, ж, ң остаются открытыми на двух строках.
+ * Nunito покрывает cyrillic-ext (U+0460–052F), где живут ң ө ү (`fontGlyphs.test.ts`).
+ * Fredoka из первого макета не подходит: в ней нет кириллицы.
  */
-/**
- * Разделение работает на возраст, а не только на вкус: то, что ребёнок должен
- * узнать с одного взгляда — вопрос, подпись варианта, кнопка, — набрано мягким
- * характерным Comfortaa; то, что он или родитель читает построчно — подсказки,
- * длинный текст, родительский раздел — разборчивым Nunito. У Comfortaa низкий
- * рост строчных и тонкие штрихи, на мелком кегле он проигрывает.
- */
-const DISPLAY_FAMILY = 'Comfortaa';
-const TEXT_FAMILY = 'Nunito';
+const FAMILY = 'Nunito';
 
 export const typography: TypographyTokens = {
-  display: { size: 34, lineHeight: 40, weight: '700', family: DISPLAY_FAMILY },
-  title: { size: 28, lineHeight: 36, weight: '700', family: DISPLAY_FAMILY },
-  subtitle: { size: 22, lineHeight: 30, weight: '600', family: DISPLAY_FAMILY },
-  body: { size: 18, lineHeight: 26, weight: '400', family: TEXT_FAMILY },
-  label: { size: 18, lineHeight: 24, weight: '800', family: TEXT_FAMILY },
-  caption: { size: 14, lineHeight: 20, weight: '700', family: TEXT_FAMILY },
+  display: { size: 34, lineHeight: 40, weight: '800', family: FAMILY },
+  title: { size: 28, lineHeight: 36, weight: '800', family: FAMILY },
+  subtitle: { size: 22, lineHeight: 30, weight: '700', family: FAMILY },
+  body: { size: 18, lineHeight: 26, weight: '400', family: FAMILY },
+  label: { size: 18, lineHeight: 24, weight: '800', family: FAMILY },
+  caption: { size: 14, lineHeight: 20, weight: '700', family: FAMILY },
 };
 
 /**

@@ -1,14 +1,30 @@
 /**
  * Каркас экрана урока (SCREENS.md 1.1–1.5): верхняя панель (выход · прогресс · повтор), вопрос 72,
  * пузырь Tali 80, нижняя панель (Tali 88 · кнопка действия 88). Все высоты — `lessonLayout`.
+ *
+ * Вопрос подбирает вид под слот 72 по измеренной высоте: 22/30 с системным шрифтом → 22/30 без него →
+ * 18/24 в 3 строки без него (`lessonFontCaps`). Средняя ступень — только при шрифте крупнее обычного:
+ * иначе ребёнок с крупным шрифтом получал бы текст мельче, чем с обычным, там, где 22/30 ещё входит.
+ * Замер по `onLayout`, а не `onTextLayout`: тот не отдаёт строк сверх `numberOfLines`, на web его нет.
+ * До замера вопрос прозрачен, чтобы не мелькнул крупным и обрезанным.
  */
-import { useEffect, useRef } from 'react';
-import { Animated, Platform, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Platform, useWindowDimensions, View } from 'react-native';
 
 import { useDesign } from '../../design';
-import { bubblePadY, HINT_MAX_LINES, lessonLayout, PROMPT_MAX_LINES, progressSegment, listeningCue } from '../../design/tokens';
+import {
+  bubblePadY,
+  HINT_MAX_LINES,
+  lessonLayout,
+  listeningCue,
+  progressSegment,
+  PROMPT_MAX_LINES,
+  PROMPT_MIN_LINE_HEIGHT,
+  PROMPT_MIN_SIZE,
+  textFit,
+} from '../../design/tokens';
 import type { TaliPose } from '../../assets/registry';
-import { AppText } from '../AppText';
+import { AppText, useFitReveal } from '../AppText';
 import { CushionPressable } from '../CushionPressable';
 import { Icon } from '../Icon';
 import { TaliFigure } from '../TaliFigure';
@@ -49,12 +65,38 @@ export function TopBar({ segment, total, onExit, onReplay, replaying, labels }: 
   );
 }
 
+type PromptView = 'scaled' | 'unscaled' | 'small';
+
+function PromptText({ text, fontScale }: { text: string; fontScale: number }) {
+  const [view, setView] = useState<PromptView>('scaled');
+  const [measured, markMeasured] = useFitReveal();
+
+  return (
+    <AppText
+      role="subtitle"
+      cap={view === 'scaled' ? 'prompt' : 'promptFallback'}
+      lines={PROMPT_MAX_LINES}
+      testID="lesson-prompt-text"
+      onLayout={(e) => {
+        if (view === 'small' || e.nativeEvent.layout.height <= lessonLayout.prompt + textFit.tolerance) markMeasured();
+        else setView(view === 'scaled' && fontScale > 1 ? 'unscaled' : 'small');
+      }}
+      style={{
+        opacity: measured || view === 'small' ? 1 : 0,
+        ...(view === 'small' && { fontSize: PROMPT_MIN_SIZE, lineHeight: PROMPT_MIN_LINE_HEIGHT }),
+      }}
+    >
+      {text}
+    </AppText>
+  );
+}
+
 export function Prompt({ text }: { text: string }) {
+  const { fontScale } = useWindowDimensions();
   return (
     <View style={{ height: lessonLayout.prompt, justifyContent: 'center' }} testID="lesson-prompt">
-      <AppText role="subtitle" cap="prompt" lines={PROMPT_MAX_LINES}>
-        {text}
-      </AppText>
+      {/* Новый вопрос или другой системный шрифт — вид подбирается заново. */}
+      <PromptText key={`${fontScale}:${text}`} text={text} fontScale={fontScale} />
     </View>
   );
 }

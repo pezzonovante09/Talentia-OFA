@@ -3,15 +3,17 @@
  * строка переполнила бы слот), системный шрифт ограничен `lessonFontCaps` по роли: вопрос и реплика —
  * чуть, подписи на плитках и цифры — никогда (`fixed`).
  *
- * `fit="title"` — заголовок на две строки: если текст не вошёл в `TITLE_MAX_LINES`, кегль опускается
- * до `TITLE_MIN_SIZE` (метрики `subtitle`). Это детерминированный пересчёт по `onTextLayout`, а не
- * `adjustsFontSizeToFit`: тот на web не работает, а блок всё равно резервирует полную высоту.
+ * `fit="title"` — заголовок в слоте на две строки: если текст его перерос, кегль опускается до
+ * `TITLE_MIN_SIZE` (метрики `subtitle`). Это детерминированный пересчёт, а не `adjustsFontSizeToFit`:
+ * тот на web не работает, а блок всё равно резервирует полную высоту. Замер — по `onLayout` и с лимитом
+ * на строку больше слота: `onTextLayout` не отдаёт строк сверх `numberOfLines`, а на web его нет.
+ * До замера текст прозрачен, чтобы не мелькнул крупным и обрезанным (`useFitReveal`).
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, type TextProps, type TextStyle } from 'react-native';
 
 import { useDesign } from '../design';
-import { lessonFontCaps, TITLE_MAX_LINES, type TypographyTokens } from '../design/tokens';
+import { lessonFontCaps, textFit, TITLE_MAX_LINES, type TypographyTokens } from '../design/tokens';
 import type { ColorName } from './colors';
 import { fontFamilyFor } from './fonts';
 
@@ -37,21 +39,39 @@ export type AppTextProps = Omit<TextProps, 'style' | 'role'> & {
   style?: TextStyle;
 };
 
-export function AppText({ role, color = 'text', cap, align, lines, fit, style, onTextLayout, ...rest }: AppTextProps) {
+/**
+ * Показ текста, который подбирает вид по замеру: до первого «вошло» он прозрачен. Если замер не придёт,
+ * текст всё равно появится через `textFit.revealMax`: экран не должен остаться без него.
+ */
+export function useFitReveal(active = true): [measured: boolean, markMeasured: () => void] {
+  const [measured, setMeasured] = useState(false);
+  useEffect(() => {
+    if (!active) return;
+    const timer = setTimeout(() => setMeasured(true), textFit.revealMax);
+    return () => clearTimeout(timer);
+  }, [active]);
+  return [measured, () => setMeasured(true)];
+}
+
+export function AppText({ role, color = 'text', cap, align, lines, fit, style, onLayout, ...rest }: AppTextProps) {
   const theme = useDesign();
+  const fitting = fit === 'title';
   const [shrunk, setShrunk] = useState(false);
+  const [measured, markMeasured] = useFitReveal(fitting);
   const base = theme.typography[role];
-  const metrics = fit === 'title' && shrunk ? theme.typography.subtitle : base;
-  const maxLines = lines ?? (fit === 'title' ? TITLE_MAX_LINES : undefined);
+  const metrics = fitting && shrunk ? theme.typography.subtitle : base;
+  const maxLines = lines ?? (fitting ? (shrunk ? TITLE_MAX_LINES : TITLE_MAX_LINES + 1) : undefined);
 
   return (
     <Text
       {...rest}
       numberOfLines={maxLines}
       maxFontSizeMultiplier={lessonFontCaps[cap ?? DEFAULT_CAP[role]]}
-      onTextLayout={(e) => {
-        onTextLayout?.(e);
-        if (fit === 'title' && !shrunk && e.nativeEvent.lines.length > TITLE_MAX_LINES) setShrunk(true);
+      onLayout={(e) => {
+        onLayout?.(e);
+        if (!fitting) return;
+        if (!shrunk && e.nativeEvent.layout.height > TITLE_MAX_LINES * base.lineHeight + textFit.tolerance) setShrunk(true);
+        else markMeasured();
       }}
       style={[
         {
@@ -61,6 +81,7 @@ export function AppText({ role, color = 'text', cap, align, lines, fit, style, o
           lineHeight: metrics.lineHeight,
           color: theme.colors[color],
           textAlign: align,
+          ...(fitting && { opacity: measured || shrunk ? 1 : 0 }),
         },
         style,
       ]}

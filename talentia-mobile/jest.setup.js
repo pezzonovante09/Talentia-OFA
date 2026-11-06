@@ -21,4 +21,3 @@ jest.mock('expo-crypto', () => ({
 // Экспо-SQLite в Node нет: экраны аккаунта в тестах получают базу через `setDevice` + `memoryDb`.
 jest.mock('expo-sqlite', () => ({}));
 jest.mock('@expo-google-fonts/nunito', () => ({ Nunito_400Regular: 1, Nunito_700Bold: 2, Nunito_800ExtraBold: 3 }));
-jest.mock('@expo-google-fonts/comfortaa', () => ({ Comfortaa_600SemiBold: 4, Comfortaa_700Bold: 5 }));

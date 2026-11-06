@@ -13,7 +13,7 @@ import { FlatList, View } from 'react-native';
 
 import { lessonById, regionOfLesson } from '../../src/content';
 import { useDesign } from '../../src/design';
-import { atlasGrid, lessonLayout, mapFocus, taliSize } from '../../src/design/tokens';
+import { atlasGrid, lessonLayout, mapFocus, mapTitle, taliSize } from '../../src/design/tokens';
 import type { AtlasEntry } from '../../src/domain/lessonAssembly';
 import { voice } from '../../src/services/voice';
 import { useChildSession } from '../../src/state/childSession';
@@ -65,7 +65,7 @@ function AtlasCollectionBody() {
       </CushionPressable>
       <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: theme.spacing.sm }} accessibilityRole="header" accessibilityLabel={t('atlas.title')}>
         <Icon name="book" color="text" />
-        <AppText role="title" color="text" lines={1} testID="atlas-title">
+        <AppText role={mapTitle.style} color="text" cap="fixed" lines={1} style={{ fontSize: mapTitle.size, lineHeight: mapTitle.lineHeight }} testID="atlas-title">
           {t('atlas.title')}
         </AppText>
       </View>

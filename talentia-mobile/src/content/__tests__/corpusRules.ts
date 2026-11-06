@@ -30,6 +30,7 @@ import {
   PASSAGE_LIMITS,
   POINT_TARGET_GAP,
   pointTargets,
+  PROMPT_SHOWN_CHARS,
   TASKS_PER_LESSON,
   TEXT_LIMITS,
   textDigits,
@@ -860,6 +861,18 @@ export const RULES = {
         check(task.hintKey, TEXT_LIMITS.hintChars, 'подсказка');
         return bad;
       }),
+  },
+
+  promptShownLength: {
+    // Многоточие в `Prompt` — страховка, а не штатный случай: озвучки пока нет, и обрезанный
+    // вопрос ребёнку некому дочитать (`child-ux-specialist`, 2026-11-05). `ru` держит
+    // `textLength`; здесь en и ky, у которых лимита не было. Пример идёт в том же слоте
+    // вопроса, поэтому `formatTasksOf`. Предупреждение: это оценка по знакам, а не замер.
+    title: `вопрос в en и ky ≤ ${PROMPT_SHOWN_CHARS} знаков: длиннее рискует не войти в 3 строки 18/24`,
+    check: (corpus, { en, ky }) =>
+      formatTasksOf(corpus).flatMap(({ task, at }) =>
+        tooLong({ ru: undefined, en, ky }, task.promptKey, TEXT_LIMITS.promptChars, PROMPT_SHOWN_CHARS, `${at}: вопрос`),
+      ),
   },
 
   skillAndHint: {
@@ -1784,6 +1797,7 @@ export const STYLE_RULES: ReadonlySet<RuleId> = new Set<RuleId>([
   'chooseShare',
   'answerRank',
   'childGenderNeutralWide',
+  'promptShownLength',
 ]);
 
 export type RuleId = keyof typeof RULES;
