@@ -7,7 +7,7 @@
  * на `UNIQUE(child_id, session_index)`; ABA у ребёнка ломалось навсегда. Здесь — или всё,
  * или ничего.
  */
-import type { AbaIoaRecord, AbaObserver, AbaTargetState, AbaTrial, RoutineSetting } from '../../types/aba';
+import type { AbaIoaRecord, AbaObserver, AbaSessionTail, AbaTargetState, AbaTrial, RoutineSetting } from '../../types/aba';
 import { awayOutcome, resumeAbaSession as resumeSessionState, type AbaSessionResult, type AbaSessionState } from '../../domain/abaSession';
 import {
   finishRoutineRun,
@@ -50,6 +50,7 @@ import {
   appendRoutineAmendment,
   appendRoutineRun,
   appendSession,
+  appendSessionTail,
   appendTrial,
   appendTrialCorrection,
   openRoutineOfferOf,
@@ -350,6 +351,13 @@ export async function commitAbaSession(
   at: string,
 ): Promise<void> {
   await withAbaWrite(db, childId, async (tx) => {
+    // повтор после успеха (экран и родитель, повтор `finish`): итог записан — ничего не трогать, в том числе снимок:
+    // там может лежать уже следующая сессия. Проверка до сверки доски, иначе повтор упал бы на её версии (фаза 8)
+    const [seen] = await tx.all<{ n: number }>('SELECT COUNT(*) AS n FROM aba_sessions WHERE child_id = ? AND id = ?', [
+      childId,
+      result.session.id,
+    ]);
+    if ((seen?.n ?? 0) > 0) return;
     await writeSessionBoard(tx, childId, result.board, result.boardRev, at);
     // с нулём обменов и обменом рутины в окне без учёта признака ступень решилась бы ложно
     if (
@@ -389,6 +397,29 @@ export async function commitAbaSession(
     await saveChildState(tx, childId, 'identifySets', result.identifySets, at);
     await saveChildState(tx, childId, 'abaSessionIndex', result.session.index + 1, at);
     await saveChildState(tx, childId, 'abaSessionInProgress', null, at);
+  });
+}
+
+/**
+ * Хвост конца сессии (фаза 8, №172 п. 2): что было сделано после записанного итога — отрезки сцены доступа, жетон
+ * цикла, шаг и момент ухода. Строк на сессию может быть несколько, действует последняя по `seq`: уход пишется сразу,
+ * возврат дописывает итог. Повтор с тем же телом не пишется. Хвост без записанного итога — ошибка программы
+ * (`AbaSessionMissingError`): записи экрана не прошли через одну очередь, и хвост обогнал итог.
+ */
+export async function commitAbaSessionTail(db: SqlDb, childId: string, tail: AbaSessionTail, at: string): Promise<void> {
+  await withAbaWrite(db, childId, async (tx) => {
+    const [seen] = await tx.all<{ n: number }>('SELECT COUNT(*) AS n FROM aba_session_tails WHERE child_id = ? AND session_id = ? AND body = ?', [
+      childId,
+      tail.sessionId,
+      JSON.stringify(tail),
+    ]);
+    if ((seen?.n ?? 0) > 0) return;
+    const [session] = await tx.all<{ n: number }>('SELECT COUNT(*) AS n FROM aba_sessions WHERE child_id = ? AND id = ?', [
+      childId,
+      tail.sessionId,
+    ]);
+    if ((session?.n ?? 0) === 0) throw new AbaSessionMissingError(tail.sessionId);
+    await appendSessionTail(tx, childId, tail, at);
   });
 }
 

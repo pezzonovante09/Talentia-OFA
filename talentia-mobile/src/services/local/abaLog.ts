@@ -17,7 +17,15 @@
  * связывает устройство с ABA-режимом (ABA.md, «Согласие `aba_processing`»).
  */
 import { leaksTime } from '../../domain/ids';
-import { COUNTS_TOWARD_MASTERY, type AbaIoaRecord, type AbaPairingSession, type AbaRoutineRun, type AbaSession, type AbaTrial } from '../../types/aba';
+import {
+  COUNTS_TOWARD_MASTERY,
+  type AbaIoaRecord,
+  type AbaPairingSession,
+  type AbaRoutineRun,
+  type AbaSession,
+  type AbaSessionTail,
+  type AbaTrial,
+} from '../../types/aba';
 import { trialInvariantErrors, type SessionTrials } from '../../domain/abaPrompting';
 import { isGranted } from '../../domain/consent';
 import { openRoutineOffer, type RoutineOffer } from '../../domain/abaTokens';
@@ -189,6 +197,26 @@ export async function appendSession(db: SqlDb, childId: string, session: AbaSess
     'INSERT INTO aba_sessions (child_id, id, session_index, body, recorded_at) VALUES (?, ?, ?, ?, ?)',
     [childId, session.id, session.index, JSON.stringify(session), recordedAtIso(recordedAt)],
   );
+}
+
+/**
+ * Хвост конца сессии (фаза 8, №172 п. 2) — кирпич для `commit.ts`: строк на сессию может быть несколько, действует
+ * последняя по `seq`; идемпотентность и проверка, что итог сессии уже записан, — в `commitAbaSessionTail`.
+ */
+export async function appendSessionTail(db: SqlDb, childId: string, tail: AbaSessionTail, recordedAt: string): Promise<void> {
+  assertNoTimeInIds('Хвост сессии', tail.sessionId);
+  await db.run('INSERT INTO aba_session_tails (child_id, session_id, body, recorded_at) VALUES (?, ?, ?, ?)', [
+    childId,
+    tail.sessionId,
+    JSON.stringify(tail),
+    recordedAtIso(recordedAt),
+  ]);
+}
+
+/** Хвосты конца ребёнка по сессиям: действует последняя строка сессии (уход, затем доигранный возврат). */
+export async function sessionTailsOf(db: SqlDb, childId: string): Promise<Map<string, AbaSessionTail>> {
+  const rows = await db.all<{ body: string }>('SELECT body FROM aba_session_tails WHERE child_id = ? ORDER BY seq', [childId]);
+  return new Map(rows.map((r) => JSON.parse(r.body) as AbaSessionTail).map((t) => [t.sessionId, t]));
 }
 
 /** Локальный день `YYYY-MM-DD` — день сессии и сопряжения в журналах. */

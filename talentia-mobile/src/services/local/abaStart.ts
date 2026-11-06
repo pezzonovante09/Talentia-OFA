@@ -18,7 +18,14 @@ import { initialTokenTraining, workingBoardSize, EXCHANGE_ACCESS_MS } from '../.
 import { boardRevOf, MIN_REINFORCER_POOL } from '../../domain/abaTokens';
 import { lastSessionSummary, parentTargetStatus, sortForParent, type LastSessionSummary, type ParentTargetStatus } from '../../domain/abaParentProgress';
 import { aloneFormatKey, formatUnlockedAlone } from '../../domain/abaPlacement';
-import { finishAbaSession, stopSession, type AbaSessionState, type StartInput } from '../../domain/abaSession';
+import {
+  awayOutcome,
+  finishAbaSession,
+  resumeAbaSession as resumeSessionState,
+  stopSession,
+  type AbaSessionState,
+  type StartInput,
+} from '../../domain/abaSession';
 import type { RandomBytes } from '../../domain/ids';
 import { targetForBand } from '../../domain/abaTargetRules';
 import type { AbaConfig, AbaObserver, AbaPairingSession, AbaTarget } from '../../types/aba';
@@ -27,8 +34,8 @@ import { newAbaId } from '../abaIds';
 import { randomSeed } from '../random';
 import { abaLocalDay, pastSessionsOfTarget, reinforcerHistoryOf, sessionsOf, trialsOfSession } from './abaLog';
 import { REINFORCER_APART } from './abaCatalog';
-import { loadChildState } from './childState';
-import { commitAbaSession, routineExchangeInSessionWindow } from './commit';
+import { childStateUpdatedAt, loadChildState } from './childState';
+import { commitAbaSession, resumeAbaSession, routineExchangeInSessionWindow } from './commit';
 import { readConsentLog } from './consentLog';
 import type { SqlDb } from './sql';
 
@@ -37,12 +44,21 @@ export const DEV_PLACEHOLDER_ART: Readonly<Record<string, unknown>> = Object.fro
   ABA_STIMULI.filter((s) => s.kind === 'object').map((s) => [s.id, { placeholder: true }]),
 );
 
-export type AbaBlock = 'no_consent' | 'outdated' | 'paused' | 'in_progress' | 'pairing_needed' | 'no_ready_targets' | 'pool_small';
+/**
+ * Почему занятие не начать. `in_progress_stale` (фаза 8) — незаконченное занятие просрочено: приложение свёрнуто
+ * дольше `AWAY_ABANDON_MS` или до другого дня; его закрывает родитель («Закрыть занятие»), продолжить нельзя.
+ */
+export type AbaBlock = 'no_consent' | 'outdated' | 'paused' | 'in_progress' | 'in_progress_stale' | 'pairing_needed' | 'no_ready_targets' | 'pool_small';
 
 export type AbaOverview = {
   consent: ConsentStatus;
   paused: boolean;
   inProgress: AbaSessionState | null;
+  /**
+   * Когда снимок незаконченного занятия писался последний раз (`updated_at`) — это и момент ухода в фон: экран
+   * пересохраняет снимок на `background` (фаза 8, `backend-auditor`: отдельного ключа нет). `null` — снимка нет.
+   */
+  inProgressLeftAt: string | null;
   pairingDone: boolean;
   /** Обученный наблюдатель, записанный у ребёнка (первый по списку), — ему доступно «сопряжение подтверждено». */
   trainedObserverId: string | null;
@@ -92,10 +108,13 @@ export async function abaOverview(db: SqlDb, childId: string, art?: Readonly<Rec
   const pairingDone = ((await loadChildState(db, childId, 'tokenTraining')) ?? initialTokenTraining()).pairingDone;
   const ready = readyAbaTargets(ABA_TARGETS, artFor(art));
   const states = (await loadChildState(db, childId, 'abaTargets')) ?? {};
+  const inProgress = (await loadChildState(db, childId, 'abaSessionInProgress')) ?? null;
   return {
     consent: consentStatus(log, 'aba_processing', childId, CURRENT_CONSENT_TEXTS.aba_processing),
     paused: (await loadChildState(db, childId, 'abaPaused')) === true,
-    inProgress: (await loadChildState(db, childId, 'abaSessionInProgress')) ?? null,
+    inProgress,
+    // строка ключа остаётся и после итога (тело `null`) — момент ухода есть только у живого снимка
+    inProgressLeftAt: inProgress ? ((await childStateUpdatedAt(db, childId, 'abaSessionInProgress')) ?? null) : null,
     pairingDone,
     trainedObserverId: ((await loadChildState(db, childId, 'abaObservers')) ?? []).find((o) => o.trained)?.id ?? null,
     readyTargets: ready.length,
@@ -131,12 +150,26 @@ export async function loadAbaParentProgress(db: SqlDb, childId: string, targets:
   return { targets: sortForParent(rows), last };
 }
 
-/** Первая причина, по которой занятие не начать; `null` — можно. */
-export function abaBlockOf(o: AbaOverview): AbaBlock | null {
+/**
+ * Просрочено ли незаконченное занятие (фаза 8): свёрнуто дольше `AWAY_ABANDON_MS` или до другого локального дня —
+ * `awayOutcome` по моменту ухода (`inProgressLeftAt`). Без момента ухода просрочки нет.
+ */
+export function inProgressStale(o: Pick<AbaOverview, 'inProgress' | 'inProgressLeftAt'>, now: number): boolean {
+  if (!o.inProgress || o.inProgressLeftAt === null) return false;
+  const leftAt = Date.parse(o.inProgressLeftAt);
+  if (!Number.isFinite(leftAt)) return false;
+  return awayOutcome(Math.max(0, now - leftAt), o.inProgress.day === localDay(now)) === 'abandon';
+}
+
+/**
+ * Первая причина, по которой занятие не начать; `null` — можно. С `now` просроченное незаконченное занятие даёт
+ * `in_progress_stale` (раньше `in_progress`); без `now` — как прежде, `in_progress`.
+ */
+export function abaBlockOf(o: AbaOverview, now?: number): AbaBlock | null {
   if (o.consent === 'outdated') return 'outdated';
   if (o.consent !== 'granted') return 'no_consent';
   if (o.paused) return 'paused';
-  if (o.inProgress) return 'in_progress';
+  if (o.inProgress) return now !== undefined && inProgressStale(o, now) ? 'in_progress_stale' : 'in_progress';
   if (o.readyTargets === 0) return 'no_ready_targets';
   if (!o.pairingDone) return 'pairing_needed';
   return null;
@@ -154,10 +187,19 @@ export type StartOptions = {
 };
 
 /** Пул подкрепителей под сессию: фильтры каталога и классы стимулов допущенных целей. */
-function poolFor(targets: readonly AbaTarget[], o: Pick<StartOptions, 'config' | 'soundOn'>, accessMs: number): string[] {
+export function poolFor(targets: readonly AbaTarget[], o: Pick<StartOptions, 'config' | 'soundOn'>, accessMs: number): string[] {
   const byId = new Map(ABA_STIMULI.map((s) => [s.id, s]));
   const classes = [...new Set(targets.flatMap((t) => t.exemplars.flatMap((e) => e.cards ?? [])).map((id) => byId.get(id)?.class ?? ''))];
   return reinforcerPoolFor(REINFORCERS, { config: o.config, soundOn: o.soundOn, accessMs, stimulusClasses: classes.filter(Boolean) });
+}
+
+/**
+ * Пул подкрепителей для возобновления (фаза 8): по снимку сессии — её конфигурации, полосе и размеру доски, а не по
+ * текущему `tokenTraining`: иначе варианты нового выбора разошлись бы с доской сессии (`backend-auditor`).
+ */
+export function resumePoolFor(state: AbaSessionState, soundOn: boolean, art?: Readonly<Record<string, unknown>>): string[] {
+  const targets = readyAbaTargets(ABA_TARGETS, artFor(art)).map((t) => targetForBand(t, state.band));
+  return poolFor(targets, { config: state.config, soundOn }, EXCHANGE_ACCESS_MS[state.board.size]);
 }
 
 /** Вход рабочей сессии — или причина, почему её не начать. */
@@ -230,14 +272,47 @@ export async function loadFinishInputs(db: SqlDb, childId: string, state: AbaSes
 }
 
 /**
- * «Закончить без продолжения» у родителя: незаконченное занятие закрывается остановкой взрослого — без закрывающей
- * пробы и без жетона за участие (`stopSession`), итог пишется как обычно.
+ * Закрыть незаконченное занятие без ребёнка (фаза 8): «Закончить без продолжения» (`adult_stopped`), просрочка
+ * (`app_backgrounded`) у родителя и на экране сессии. Без закрывающей пробы и без жетона за участие (`stopSession`),
+ * итог пишется как обычно, но **моментом ухода** `at`, а не текущим временем: прерванные перерыв и доступ и
+ * `endedAt` не растягиваются до часов (методист, в2). Момент ухода не раньше последней записи снимка — иначе
+ * `endedAt` оказался бы раньше последней пробы. `recorded_at` — `now`.
+ *
+ * Одна транзакция: доска — живая, с устройства (`resumeAbaSession`, `awayMs = 0`); если вариантов для нового выбора нет
+ * (рутина обменяла, пул мал), закрываем по живой доске без выбора — закрытие по сырому снимку упало бы на версии доски
+ * при каждой попытке, и занятие стало бы незакрываемым (`backend-auditor`, B1).
+ */
+export async function abandonInProgressSession(
+  db: SqlDb,
+  childId: string,
+  o: { reason: 'adult_stopped' | 'app_backgrounded'; at: number; now: number; soundOn?: boolean; art?: Readonly<Record<string, unknown>> },
+): Promise<boolean> {
+  return db.transaction(async (tx) => {
+    const inProgress = await loadChildState(tx, childId, 'abaSessionInProgress');
+    if (!inProgress) return false;
+    let resumed: AbaSessionState | null = null;
+    try {
+      resumed = await resumeAbaSession(tx, childId, resumePoolFor(inProgress, o.soundOn ?? true, o.art), 0);
+    } catch {
+      // вариантов нет — варианты и не нужны: занятие закрывается
+    }
+    if (!resumed) {
+      const live = (await loadChildState(tx, childId, 'abaBoard')) ?? { earned: 0, nonContingent: 0 };
+      resumed = resumeSessionState(inProgress, { earned: live.earned, nonContingent: live.nonContingent, rev: boardRevOf(live) }, { routineExchanged: false });
+    }
+    const lastWrite = Date.parse((await childStateUpdatedAt(tx, childId, 'abaSessionInProgress')) ?? '');
+    const leftAt = Number.isFinite(lastWrite) ? Math.max(o.at, lastWrite) : o.at;
+    const stopped = stopSession(resumed, o.reason, leftAt);
+    const f = await loadFinishInputs(tx, childId, stopped);
+    await commitAbaSession(tx, childId, finishAbaSession(stopped, leftAt, f.pastSessions, undefined, f.signalHistory, f.extra), new Date(o.now).toISOString());
+    return true;
+  });
+}
+
+/**
+ * «Закончить без продолжения» у родителя: остановка взрослого моментом ухода (`updated_at` снимка; без него — `now`).
  */
 export async function finishInProgressSession(db: SqlDb, childId: string, now: number): Promise<boolean> {
-  const inProgress = await loadChildState(db, childId, 'abaSessionInProgress');
-  if (!inProgress) return false;
-  const stopped = stopSession(inProgress, 'adult_stopped', now);
-  const f = await loadFinishInputs(db, childId, stopped);
-  await commitAbaSession(db, childId, finishAbaSession(stopped, now, f.pastSessions, undefined, f.signalHistory, f.extra), new Date(now).toISOString());
-  return true;
+  const leftAt = Date.parse((await childStateUpdatedAt(db, childId, 'abaSessionInProgress')) ?? '');
+  return abandonInProgressSession(db, childId, { reason: 'adult_stopped', at: Number.isFinite(leftAt) ? Math.min(leftAt, now) : now, now });
 }

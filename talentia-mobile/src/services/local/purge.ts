@@ -6,7 +6,7 @@
  * транзакции и закрывают его в той же транзакции. Без корзины и «7 дней на
  * восстановление»: данные ребёнка не держат в корзине.
  */
-import type { AbaIoaRecord, AbaObserver, AbaPairingSession, AbaRoutineRun, AbaSession } from '../../types/aba';
+import type { AbaIoaRecord, AbaObserver, AbaPairingSession, AbaRoutineRun, AbaSession, AbaSessionTail } from '../../types/aba';
 import type { ConsentEvent, GuardianRole } from '../../domain/consent';
 import type { TokenTrainingState } from '../../domain/abaTokenTraining';
 import { withAmendments, type RoutineRunAmendment } from './abaLog';
@@ -27,8 +27,12 @@ const JOURNALS = [
   'aba_trial_corrections',
   'aba_routine_run_amendments',
   'aba_pairing_sessions',
+  'aba_session_tails',
   'lesson_runs',
 ] as const;
+
+/** Журналы ABA — всё из `JOURNALS`, кроме уроков: по ним идёт отзыв согласия `aba_processing`. */
+const ABA_JOURNALS = JOURNALS.filter((t) => t !== 'lesson_runs');
 
 /**
  * Состояние ABA для специалиста — явный список, а не все ключи ABA (`child-privacy-compliance`,
@@ -79,6 +83,7 @@ const RETENTION_COLUMNS = [
   ['aba_trial_corrections', 'recorded_at'],
   ['aba_routine_run_amendments', 'recorded_at'],
   ['aba_pairing_sessions', 'recorded_at'],
+  ['aba_session_tails', 'recorded_at'],
   ['lesson_runs', 'started_at'],
 ] as const;
 
@@ -332,14 +337,9 @@ export async function revokeAbaProcessing(db: SqlDb, revoke: ConsentEvent, actor
   await withDbLock(db, () =>
     db.transaction(async (tx) => {
       await tx.run('INSERT INTO purge_gate (child_id) VALUES (?)', [childId]);
-      await tx.run('DELETE FROM aba_trials WHERE child_id = ?', [childId]);
-      await tx.run('DELETE FROM aba_sessions WHERE child_id = ?', [childId]);
-      await tx.run('DELETE FROM aba_ioa WHERE child_id = ?', [childId]);
-      await tx.run('DELETE FROM aba_routine_runs WHERE child_id = ?', [childId]);
-      await tx.run('DELETE FROM aba_reinforcer_choices WHERE child_id = ?', [childId]);
-      await tx.run('DELETE FROM aba_trial_corrections WHERE child_id = ?', [childId]);
-      await tx.run('DELETE FROM aba_routine_run_amendments WHERE child_id = ?', [childId]);
-      await tx.run('DELETE FROM aba_pairing_sessions WHERE child_id = ?', [childId]);
+      // по списку журналов ABA, а не поимённо: новый журнал, забытый здесь, сделал бы отзыв невозможным
+      // (триггер отзыва его знает) — `backend-auditor` 2026-11-06
+      for (const table of ABA_JOURNALS) await tx.run(`DELETE FROM ${table} WHERE child_id = ?`, [childId]);
       await tx.run(
         `DELETE FROM child_state WHERE child_id = ? AND key IN (${ABA_DELETED_KEYS.map(() => '?').join(', ')})`,
         [childId, ...ABA_DELETED_KEYS],
@@ -364,6 +364,8 @@ export async function abaDataSummary(
   routineRuns: number;
   reinforcerChoices: number;
   pairingSessions: number;
+  /** Строки журнала хвоста конца (фаза 8): на сессию их может быть несколько. */
+  sessionTails: number;
   observers: number;
   settings: boolean;
 }> {
@@ -382,6 +384,7 @@ export async function abaDataSummary(
     routineRuns: await count('aba_routine_runs'),
     reinforcerChoices: await count('aba_reinforcer_choices'),
     pairingSessions: await count('aba_pairing_sessions'),
+    sessionTails: await count('aba_session_tails'),
     observers: observers?.length ?? 0,
     settings: settings.n > 0,
   };
@@ -416,6 +419,8 @@ export type ChildExport = {
   abaReinforcerChoices: unknown[];
   /** Сессии сопряжения (№164): конфигурация, исход, циклы, кто выбирал. */
   abaPairingSessions: unknown[];
+  /** Хвосты конца сессий (фаза 8, №172 п. 2): сделанное после записанного итога — отрезки доступа, жетон цикла, уход. */
+  abaSessionTails: unknown[];
   /** Исправления отметок взрослого: исходные пробы остаются в `abaTrials`, замены — отдельными строками. */
   abaTrialCorrections: unknown[];
   lessonRuns: unknown[];
@@ -482,6 +487,7 @@ async function collectExport(
     abaRoutineRunAmendments: await bodies('aba_routine_run_amendments'),
     abaReinforcerChoices: await choicesOf(db, childId),
     abaPairingSessions: await bodies('aba_pairing_sessions'),
+    abaSessionTails: await bodies('aba_session_tails'),
     abaTrialCorrections: await correctionsOf(db, childId),
     lessonRuns: await bodies('lesson_runs'),
     state,
@@ -564,7 +570,11 @@ export type SpecialistExport = {
   exportedAt: string;
   /** Пробы рутин и сессий: время — смещения в мс от начала прогона или сессии (№95, №96). */
   abaTrials: unknown[];
-  /** Сессии: `day`, `durationSec`, прочее время — смещения в мс от начала сессии (№96). */
+  /**
+   * Сессии: `day`, `durationSec`, прочее время — смещения в мс от начала сессии (№96). `tail` — хвост конца (фаза 8):
+   * сделанное после записанного итога — `accessScene` (отрезки), `pairingTokenAt`, `leftAtStep`, `leftAt`, `completed`;
+   * `null` — хвост не записан: шаги после итога «неизвестно», не «выдано». События самой записи остаются «назначено».
+   */
   abaSessions: unknown[];
   /** IOA: `enteredDay` вместо времени ввода (№96). Состояние ниже — даты без времени суток. */
   abaIoa: unknown[];
@@ -630,11 +640,17 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
     // время суток сессий и IOA — тот же режим дня дома (№96): день, длительность и смещения в мс
     // от начала сессии; день — локальный `day` записи сессии (старые записи — UTC-дата метки)
     const sessionStart = new Map(sessions.map((s) => [s.id, Date.parse(s.startedAt)]));
+    // хвост конца (фаза 8): что было сделано после записанного итога; `null` — хвост не записан, то есть «неизвестно», не
+    // «выдано». Времена — те же смещения от начала сессии; хвост без записи сессии не экспортируется (отсчёта нет)
+    // строки — по `seq`: у сессии действует последняя (уход, затем доигранный возврат)
+    const tailBySession = new Map((await bodies<AbaSessionTail>('aba_session_tails')).map((t) => [t.sessionId, t]));
     const abaSessions = sessions.map(({ startedAt, endedAt, ...s }) => {
       const origin = Date.parse(startedAt);
       const seconds = endedAt === null ? NaN : Math.round((Date.parse(endedAt) - origin) / 1000);
+      const t = tailBySession.get(s.id);
+      const tail = t ? (({ sessionId: _id, ...rest }) => rest)(t) : null;
       return {
-        ...relativeTimes(s, origin),
+        ...relativeTimes({ ...s, tail }, origin),
         // локальный день записи сессии; старые записи без него — UTC-дата метки
         day: s.day ?? startedAt.slice(0, 10),
         durationSec: Number.isFinite(seconds) ? Math.max(0, seconds) : null,

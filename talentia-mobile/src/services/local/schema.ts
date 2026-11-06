@@ -562,6 +562,49 @@ WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
 )
 BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
 `,
+  // 17 — хвост конца сессии (фаза 8, №172 п. 2; `aba-pedagogy-specialist`, `child-privacy-compliance`,
+  // `backend-auditor` 2026-11-06)
+  //
+  // Итог сессии пишется в момент конца, до хвоста (обмен, доступ, жетон цикла сопряжения), и события хвоста в
+  // нём — «назначено», а не «сделано». Хвост известен позже итога, а журнал сессий только дописывается, поэтому
+  // сделанное — отдельной строкой: фактические отрезки доступа, момент жетона цикла, шаг и момент ухода, признак
+  // «доигран». Уход пишется сразу (ребёнок может не вернуться), возврат до 2 мин доигрывает доступ и дописывает новую
+  // строку: действует последняя (`seq`) на сессию; нет строки — «неизвестно», не «выдано».
+  // Как прогоны: только дописывание, удаление — по ребёнку или сроку, запись — через ворота согласия, в облако
+  // не уходит. Отзыв согласия при оставшихся хвостах база не принимает. Момент ухода в фон хранится не отдельным
+  // ключом, а `updated_at` снимка `abaSessionInProgress` (`backend-auditor`): новых ключей состояния нет.
+  `
+CREATE TABLE aba_session_tails (
+  seq         INTEGER PRIMARY KEY AUTOINCREMENT,
+  child_id    TEXT NOT NULL,
+  session_id  TEXT NOT NULL,
+  body        TEXT NOT NULL,
+  recorded_at TEXT NOT NULL
+);
+CREATE INDEX aba_session_tails_by_session ON aba_session_tails (child_id, session_id, seq);
+${gated('aba_session_tails')}
+${retained('aba_session_tails', 'recorded_at')}
+CREATE TRIGGER aba_session_tails_need_consent BEFORE INSERT ON aba_session_tails
+WHEN NOT EXISTS (SELECT 1 FROM aba_write_gate WHERE child_id = NEW.child_id)
+BEGIN SELECT RAISE(ABORT, 'aba_session_tails: запись только через commit.ts при согласии на данные ABA'); END;
+DROP TRIGGER consent_events_aba_revoke_needs_purge;
+CREATE TRIGGER consent_events_aba_revoke_needs_purge BEFORE INSERT ON consent_events
+WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
+  EXISTS (SELECT 1 FROM aba_trials WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_sessions WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_ioa WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_routine_runs WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_reinforcer_choices WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_trial_corrections WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_routine_run_amendments WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_pairing_sessions WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_session_tails WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM child_state WHERE child_id = NEW.child_id AND key IN
+    ('abaTargets', 'tokenTraining', 'identifySets', 'abaBoard', 'abaSessionIndex', 'abaSessionInProgress', 'abaPaused',
+     'physicalPromptAllowed', 'abaObservers', 'abaRoutineRunInProgress', 'breakCard', 'abaRoutineSettingOpen'))
+)
+BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
+`,
 ];
 
 /**

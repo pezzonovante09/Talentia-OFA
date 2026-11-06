@@ -7,7 +7,8 @@
  * - посторонний ребёнок: запись, отзыв, удаление и экспорт одного не задевают другого;
  * - общий гард: каждая таблица с `child_id` — в `JOURNALS` purge.ts или в явном списке исключений;
  * - день выборов сопряжения у специалиста — локальный день записи при поясе UTC+6 около 02:00;
- * - накат v15 → v16 на базе с данными: триггер отзыва пересоздан со всеми прежними таблицами и ключами.
+ * - накат v15 → v16 на базе с данными (шаг, не «последняя»): триггер отзыва пересоздан со всеми прежними таблицами
+ *   и ключами; после полного наката он знает и журналы, пришедшие позже.
  */
 import { CURRENT_CONSENT_TEXTS } from '../../../domain/consentTexts';
 import * as fs from 'fs';
@@ -604,6 +605,21 @@ describe('накат миграции 15 → 16 на базе с данными'
     (await db.all<{ name: string; sql: string }>("SELECT name, sql FROM sqlite_master WHERE type = 'trigger' ORDER BY name")).filter(
       (t) => t.name !== 'consent_events_aba_revoke_needs_purge',
     );
+  const userVersion = async (db: SqlDb) => (await db.all<{ user_version: number }>('PRAGMA user_version'))[0].user_version;
+
+  /**
+   * Один шаг наката — ровно так, как `migrate` делает каждый свой шаг (миграция и номер версии одной
+   * транзакцией). Миграция 16 проверяется как шаг 15 → 16, а не как «последняя»: после неё есть
+   * следующие, и полный `migrate` проверяется отдельно.
+   */
+  async function stepTo(db: SqlDb, version: number): Promise<void> {
+    const current = await userVersion(db);
+    expect(current).toBe(version - 1); // предпосылка: шаг именно с предыдущей версии
+    await db.transaction(async (tx) => {
+      await tx.exec(MIGRATIONS[version - 1]);
+      await tx.exec(`PRAGMA user_version = ${version}`);
+    });
+  }
 
   it('фиксатор: база версии 15 без журнала сопряжения, триггер отзыва о нём не знает', async () => {
     const db = await v15WithData();
@@ -619,17 +635,19 @@ describe('накат миграции 15 → 16 на базе с данными'
     expect(await dump(db)).toEqual(before);
   });
 
-  it('user_version после наката — 16 (последняя)', async () => {
+  it('шаг 15 → 16 даёт версию 16 с журналом сопряжения; полный накат с версии 15 — последняя версия (MIGRATIONS.length ≥ 17)', async () => {
     const db = await v15WithData();
+    await stepTo(db, 16);
+    expect([await userVersion(db), (await db.all("SELECT 1 FROM sqlite_master WHERE name = 'aba_pairing_sessions'")).length]).toEqual([16, 1]);
     await migrate(db);
-    const [{ user_version }] = await db.all<{ user_version: number }>('PRAGMA user_version');
-    expect([user_version, MIGRATIONS.length]).toEqual([16, 16]);
+    expect(MIGRATIONS.length).toBeGreaterThanOrEqual(17);
+    expect(await userVersion(db)).toBe(MIGRATIONS.length);
   });
 
-  it('триггер отзыва пересоздан: все прежние таблицы на месте плюс aba_pairing_sessions, ключи состояния те же', async () => {
+  it('шаг 15 → 16: триггер отзыва пересоздан — все прежние таблицы на месте плюс aba_pairing_sessions, ключи состояния те же', async () => {
     const db = await v15WithData();
     const v15 = await revokeTriggerSql(db);
-    await migrate(db);
+    await stepTo(db, 16);
     const v16 = await revokeTriggerSql(db);
     expect(tablesIn(v15).length).toBeGreaterThanOrEqual(7); // предпосылка: разбор SQL работает
     expect(tablesIn(v16)).toEqual([...tablesIn(v15), 'aba_pairing_sessions']);
@@ -637,10 +655,20 @@ describe('накат миграции 15 → 16 на базе с данными'
     expect(keysIn(v15).length).toBeGreaterThanOrEqual(12);
   });
 
-  it('прочие триггеры версии 15 не тронуты', async () => {
+  it('после полного наката триггер отзыва знает и сопряжение, и все журналы, пришедшие позже (aba_session_tails)', async () => {
+    const db = await v15WithData();
+    const v15 = await revokeTriggerSql(db);
+    await migrate(db);
+    const last = await revokeTriggerSql(db);
+    expect(tablesIn(last).slice(0, tablesIn(v15).length)).toEqual(tablesIn(v15));
+    expect(tablesIn(last)).toEqual(expect.arrayContaining(['aba_pairing_sessions', 'aba_session_tails']));
+    expect(keysIn(last)).toEqual(keysIn(v15));
+  });
+
+  it('шаг 15 → 16: прочие триггеры версии 15 не тронуты, добавлены ровно три триггера журнала сопряжения', async () => {
     const db = await v15WithData();
     const before = await triggers(db);
-    await migrate(db);
+    await stepTo(db, 16);
     const after = await triggers(db);
     expect(after.filter((t) => !t.name.startsWith('aba_pairing_sessions_'))).toEqual(before);
     expect(after.filter((t) => t.name.startsWith('aba_pairing_sessions_')).map((t) => t.name)).toEqual([
@@ -650,7 +678,16 @@ describe('накат миграции 15 → 16 на базе с данными'
     ]);
   });
 
-  it('после наката отзыв блокирует каждая прежняя таблица и каждый ключ состояния по отдельности', async () => {
+  it('после полного наката триггеры версии 15 по-прежнему не тронуты', async () => {
+    const db = await v15WithData();
+    const before = await triggers(db);
+    await migrate(db);
+    const after = await triggers(db);
+    const names15 = new Set(before.map((t) => t.name));
+    expect(after.filter((t) => names15.has(t.name))).toEqual(before);
+  });
+
+  it('после полного наката отзыв блокирует каждая таблица триггера (включая пришедшие после 16) и каждый ключ состояния по отдельности', async () => {
     const db = await memoryDb(15, { account: false });
     await migrate(db);
     const sql = await revokeTriggerSql(db);
@@ -671,6 +708,7 @@ describe('накат миграции 15 → 16 на базе с данными'
         VALUES ('kid', 'x', 'x~c1', 's', '2026-10-25T10:00:00.000Z', 1, 'independent', 'incorrect', 0, 0, 'adult_misentry')`,
       aba_routine_run_amendments: "INSERT INTO aba_routine_run_amendments (child_id, run_id, body, recorded_at) VALUES ('kid', 'x', '{}', '2026-10-25T10:00:00.000Z')",
       aba_pairing_sessions: "INSERT INTO aba_pairing_sessions (child_id, id, day, body, recorded_at) VALUES ('kid', 'x', '2026-10-25', '{}', '2026-10-25T10:00:00.000Z')",
+      aba_session_tails: "INSERT INTO aba_session_tails (child_id, session_id, body, recorded_at) VALUES ('kid', 's', '{}', '2026-10-25T10:00:00.000Z')",
     };
     const cases = [
       ...tablesIn(sql).map((t) => ({ what: t, insert: rows[t], table: t })),
