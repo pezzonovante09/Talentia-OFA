@@ -79,7 +79,7 @@ export default function SetupScreen() {
                 } else {
                   setIntentError(t('parent.setup.intentWrong'));
                   setAnswer('');
-                  setChallenge(intentChallenge(Math.random));
+                  setChallenge(intentChallenge(Math.random, challenge));
                 }
               }}
               testID="intent-next"

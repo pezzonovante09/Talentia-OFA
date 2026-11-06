@@ -15,7 +15,7 @@ import { emptySkill } from '../../src/domain/mastery';
 import { voice } from '../../src/services/voice';
 import { useChildSession } from '../../src/state/childSession';
 import { DEMO_DELAY_MS, DEMO_HOLD_MS, LISTEN_STEP_MS, SHOW_AFTER_MS, UNLOCK_AFTER_MS } from '../../src/ui/lesson/useLessonController';
-import { act, fireEvent, renderWithProviders, screen } from '../../src/test/render';
+import { act, fireEvent, renderWithProviders, screen, waitFor } from '../../src/test/render';
 import type { ChooseTask, MatchTask, OrderTask, Task } from '../../src/types/task';
 
 let mockLessonId = 'nv-count-l1';
@@ -30,8 +30,6 @@ jest.mock('expo-router', () => {
     Redirect: ({ href }: { href: string }) => React.createElement(Text, { testID: 'redirect' }, href),
   };
 });
-
-jest.setTimeout(30000);
 
 const NOW = new Date('2026-10-24T10:00:00.000Z');
 const KID = '00000000-0000-4000-8000-000000000004';
@@ -206,7 +204,8 @@ describe('реплика к демо первой встречи (№35)', () =>
     await press(`option-${correctId(t)}`);
     await pressAction('lesson-action-check');
     await advance(lessonTiming.nextUnlock);
-    await pressAction('lesson-action-next');
+    // Вопрос звучит DEMO_DELAY_MS реального времени, потом его сменяет демо: проверяем сразу, без паузы `pressAction`.
+    await press('lesson-action-next');
     const match = useChildSession.getState().activeLesson!.queue[1].task as MatchTask;
     expect(activeTask().demo).toBe(true);
     expect(voice.last?.key).toBe(match.promptKey);
@@ -273,8 +272,10 @@ describe('подсветка исправленных после показа (�
     await press(`right-${p3}`);
     await press(`left-${p3}`);
     await press(`right-${p2}`);
-    await pressAction('lesson-action-check');
-    await advance(SHOW_AFTER_MS);
+    // Подсветка живёт LISTEN_STEP_MS * 2 реального времени от показа: ждём сам показ, а не паузу с запасом.
+    // Пауза кончалась на ≈ 400 мс позже показа, и занятый воркер приходил к уже погасшей подсветке.
+    await press('lesson-action-check');
+    await waitFor(() => expect(screen.queryAllByTestId(/-listening$/, HIDDEN).length).toBeGreaterThan(0), { timeout: 5000 });
     expect(activeTask().stage).toBe('active_response');
     const step = useChildSession.getState().activeLesson!;
     expect(step.task!.narrowing).toEqual({ kind: 'narrow', pin: false });
@@ -315,7 +316,7 @@ describe('подсветка исправленных после показа (�
     expect(screen.queryAllByTestId(/-listening$/, HIDDEN)).toHaveLength(0);
 
     // недоступное действие тоже: «Сначала покажи, что исправили» + подсветка
-    await pressAction('lesson-action-checkDisabled');
+    await press('lesson-action-checkDisabled');
     expect(voice.last?.key).toBe('lesson.tapCorrectedFirst');
     expect(lit(`left-${p2}-listening`)).toBe(true);
   });

@@ -65,14 +65,20 @@ describe('первая настройка', () => {
   });
 
   it('неверный ответ: сообщение, поле очищено, задача другая, шаг не меняется', async () => {
-    await render();
-    const before = screen.getByTestId('intent-challenge').props.children;
-    await passIntent('1');
-    expect(screen.getByTestId('intent-answer-error').props.children).toBe('Не сошлось. Вот другая задача');
-    expect(screen.getByTestId('intent-answer').props.value).toBe('');
-    onStep('intent');
-    // новая задача (совпадение возможно, но крайне редко: 17×17 вариантов)
-    expect(screen.getByTestId('intent-challenge').props.children === before).toBe(false);
+    // случайность по сценарию: вторая задача выпадает той же, что первая, — экран обязан взять другую
+    const random = jest.spyOn(Math, 'random');
+    [0, 0, 0, 0, 0.5, 0.5].forEach((v) => random.mockReturnValueOnce(v));
+    try {
+      await render();
+      expect(screen.getByTestId('intent-challenge').props.children).toBe('13 × 13 = ?');
+      await passIntent('1');
+      expect(screen.getByTestId('intent-answer-error').props.children).toBe('Не сошлось. Вот другая задача');
+      expect(screen.getByTestId('intent-answer').props.value).toBe('');
+      onStep('intent');
+      expect(screen.getByTestId('intent-challenge').props.children).toBe('21 × 21 = ?');
+    } finally {
+      random.mockRestore();
+    }
   });
 
   it('верный ответ ведёт к шагу PIN; «Назад» возвращает к задаче', async () => {

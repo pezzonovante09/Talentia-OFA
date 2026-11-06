@@ -159,7 +159,7 @@ describe('экран урока', () => {
     await pressAction('lesson-action-check');
     await advance(lessonTiming.nextUnlock);
     expect(actionId()).toBe('lesson-action-next');
-  }, 15000);
+  });
 
   it('выход: слой подтверждения, «Остаться» закрывает, «Выйти» оставляет урок ждать и ведёт на карту', async () => {
     await renderWithProviders(<LessonScreen />);

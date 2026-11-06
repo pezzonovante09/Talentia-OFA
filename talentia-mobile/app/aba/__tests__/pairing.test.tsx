@@ -70,7 +70,7 @@ async function oneCycle(pick: string) {
   expect(screen.getByTestId('aba-pairing-wait')).toBeTruthy();
   expect(screen.getByTestId('aba-pairing-token-empty', HIDDEN)).toBeTruthy();
   // шаги крупные: точные границы кадров проверяют тесты блока «цикл 3»; здесь — только порядок за четыре цикла
-  // (мелкий шаг на четырёх циклах — сотни `act` и таймаут 5 с под нагрузкой полного прогона)
+  // (мелкий шаг на четырёх циклах — сотни `act`, тест и с крупным идёт 3,8 с в одиночку)
   await stepTo(t0 + PAIRING.tokenAfterMs, 1000);
   expect(screen.getByTestId('aba-pairing-exchange')).toBeTruthy();
   await stepTo(t0 + PAIRING.tokenAfterMs + 220, 220);

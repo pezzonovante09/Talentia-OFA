@@ -237,10 +237,12 @@ export function canPerform(action: SensitiveAction, s: GateSession | null, now: 
  * тексте экрана и здесь. Упорный ребёнок с калькулятором его пройдёт, поэтому
  * выдавать его за проверяемое родительское согласие нельзя. Возраст проверяет
  * подтверждение почты при регистрации: ящик не его.
+ *
+ * После неверного ответа экран обещает другую задачу, поэтому прошлая не повторяется.
  */
 export type IntentChallenge = { a: number; b: number; answer: number };
 
-export function intentChallenge(rng: Rng): IntentChallenge {
+export function intentChallenge(rng: Rng, previous?: IntentChallenge): IntentChallenge {
   // 13–29 без круглых: умножение на 10 или 20 решается в уме за секунду
   const pick = () => {
     for (;;) {
@@ -248,8 +250,14 @@ export function intentChallenge(rng: Rng): IntentChallenge {
       if (n % 10 !== 0) return n;
     }
   };
-  const a = pick();
-  const b = pick();
+  let a = pick();
+  let b = pick();
+  for (let attempt = 0; attempt < 10 && a === previous?.a && b === previous.b; attempt += 1) {
+    a = pick();
+    b = pick();
+  }
+  // Генератор, десять раз подряд давший ту же задачу, сломан — берём соседнюю, минуя круглую.
+  if (a === previous?.a && b === previous.b) b = b === 29 ? 13 : b === 19 ? 21 : b + 1;
   return { a, b, answer: a * b };
 }
 
