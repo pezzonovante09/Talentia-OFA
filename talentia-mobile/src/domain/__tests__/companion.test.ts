@@ -1,4 +1,14 @@
-import { pickVariant, lineKey, SITUATIONS, VARIANTS_PER_SITUATION } from '../companionSituations';
+import {
+  DEFAULT_ADDRESS_FORM,
+  lineKeyFor,
+  OBJECT_CONSTRUCTIONS,
+  objectFormKey,
+  regionPhraseKey,
+  pickVariant,
+  lineKey,
+  SITUATIONS,
+  VARIANTS_PER_SITUATION,
+} from '../companionSituations';
 
 describe('реплики компаньона', () => {
   it('не повторяет вариант, пока не прозвучали остальные', () => {
@@ -22,6 +32,35 @@ describe('реплики компаньона', () => {
     expect(lineKey('correct-streak-3plus', 2)).toBe('companion.correct-streak-3plus.2');
   });
 
+  describe('форма обращения (№71)', () => {
+    const bank = new Set(['companion.correct-after-hint.0', 'companion.correct-after-hint.0_f', 'companion.correct-after-hint.0_m']);
+    const exists = (k: string) => bank.has(k);
+
+    it('по умолчанию — «не указывать», и тогда звучит безродовая реплика', () => {
+      expect(DEFAULT_ADDRESS_FORM).toBe('neutral');
+      expect(lineKeyFor('correct-after-hint', 0, DEFAULT_ADDRESS_FORM, exists)).toBe('companion.correct-after-hint.0');
+    });
+
+    it('родовая реплика — если она есть в банке', () => {
+      expect(lineKeyFor('correct-after-hint', 0, 'feminine', exists)).toBe('companion.correct-after-hint.0_f');
+      expect(lineKeyFor('correct-after-hint', 0, 'masculine', exists)).toBe('companion.correct-after-hint.0_m');
+    });
+
+    it('нет родовой — звучит безродовая', () => {
+      expect(lineKeyFor('correct-first', 1, 'feminine', exists)).toBe('companion.correct-first.1');
+    });
+  });
+
+  it('предмет и регион — ключом формы под конструкцию, а не строкой (А15)', () => {
+    expect(OBJECT_CONSTRUCTIONS.map((c) => objectFormKey('berry', c))).toEqual([
+      'content.objects.berry.count',
+      'content.objects.berry.howMany',
+      'content.objects.berry.acc',
+      'content.objects.berry.nom',
+    ]);
+    expect(regionPhraseKey('words', 'in')).toBe('content.regions.words.in');
+  });
+
   it('ситуации не дублируются', () => {
     expect(new Set(SITUATIONS).size).toBe(SITUATIONS.length);
   });
@@ -29,5 +68,19 @@ describe('реплики компаньона', () => {
   it('банк выходит в несколько десятков реплик', () => {
     const total = SITUATIONS.length * VARIANTS_PER_SITUATION;
     expect(total).toBeGreaterThanOrEqual(60);
+  });
+});
+
+describe('состав ситуаций после разбора 2026-10-31 (вопрос 71, №168)', () => {
+  it('ровно 18 ситуаций', () => {
+    expect(SITUATIONS).toHaveLength(18);
+  });
+
+  it.each(['review-intro', 'probe-intro', 'demo-composite', 'lesson-resume', 'lesson-done-clean', 'lesson-done-hinted', 'lesson-done-helped'])('есть «%s»', (s) => {
+    expect(SITUATIONS).toContain(s);
+  });
+
+  it.each(['lesson-start-first', 'error-first', 'error-second', 'correct-streak-2', 'cannot-answer-offline', 'lesson-done-3', 'lesson-done-2', 'lesson-done-1'])('убрана «%s»', (s) => {
+    expect(SITUATIONS).not.toContain(s);
   });
 });

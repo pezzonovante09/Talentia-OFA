@@ -3,8 +3,11 @@
   "private": true,
   "type": "module",
   "description": "Проверка миграций и RLS в PGlite — без Supabase и Docker",
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
-    "test": "node tests/children_and_guardians.test.mjs"
+    "test": "node tests/run.mjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.3.16"

@@ -26,6 +26,11 @@ export type SkillState = {
   correct: number;
   /** Номер урока, на котором навык встретился в последний раз. */
   lastSeenLesson: number;
+  /**
+   * День последней встречи — локальная дата устройства, `YYYY-MM-DD`. `null` — навык ещё
+   * не встречался (или запись старше календарного зазора: тогда зазор не проверяется).
+   */
+  lastSeenDay: string | null;
 };
 
 /**
@@ -38,11 +43,37 @@ export type SkillState = {
  */
 export const REVIEW_GAP: Record<Box, number> = { 1: 1, 2: 2, 3: 5, 4: 12 };
 
-/** Исход попытки. `helped` — ответ показали после второй ошибки. */
-export type Outcome = 'correct' | 'hinted' | 'helped';
+/**
+ * Календарный зазор: не раньше стольких дней после прошлой встречи. Интервалы в уроках
+ * не знают о времени: ребёнок, прошедший шесть уроков за час, получил бы «повторение
+ * через пять уроков» через двадцать минут, а «освоено» — без единого перерыва. Для
+ * младших коробок зазора нет: навык, вспомненный с трудом, надо трогать часто. Коробка 3 —
+ * не раньше чем через 3 дня, 4 — через 7: при 1 и 3 днях «освоено» наступало за два дня
+ * (решение владельца 2026-10-01 по аудиту, предложение `curriculum-content-reviewer`).
+ */
+export const REVIEW_MIN_DAYS: Record<Box, number> = { 1: 0, 2: 0, 3: 3, 4: 7 };
+
+/** Дней между двумя локальными датами `YYYY-MM-DD`. */
+export function daysBetween(from: string, to: string): number {
+  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
+}
+
+/**
+ * Исход попытки.
+ *
+ * - `helped` — ответ показали: после второй ошибки или сразу, когда сужать было
+ *   некуда (SCREENS.md, 2.6). В корпусе это почти не встречается: оценочное
+ *   задание обязано давать ≥ 3 альтернатив, два варианта — только в знакомстве,
+ *   которое в зачёт не идёт вовсе (`lessonFlow.countsTowardMastery`).
+ * - `transfer_correct` — верный ответ в пробе переноса: то же задание вернулось
+ *   позже в уроке после показа. Отдельная проба, коробку не двигает — ответ
+ *   получен в той же сессии после коррекции; самостоятельной считается следующая
+ *   встреча с навыком по `isDue`. Звёзды не меняет.
+ */
+export type Outcome = 'correct' | 'hinted' | 'helped' | 'transfer_correct';
 
 export function emptySkill(skill: string): SkillState {
-  return { skill, box: 1, correctInRow: 0, attempts: 0, correct: 0, lastSeenLesson: -1 };
+  return { skill, box: 1, correctInRow: 0, attempts: 0, correct: 0, lastSeenLesson: -1, lastSeenDay: null };
 }
 
 /**
@@ -50,11 +81,12 @@ export function emptySkill(skill: string): SkillState {
  * ребёнок справился, просто не сам. Показанный ответ возвращает в первую
  * коробку — засчитывать его как знание нельзя.
  */
-export function applyOutcome(s: SkillState, outcome: Outcome, lesson: number): SkillState {
+export function applyOutcome(s: SkillState, outcome: Outcome, lesson: number, day?: string): SkillState {
   const attempts = s.attempts + 1;
   const correct = s.correct + (outcome === 'correct' ? 1 : 0);
-  const base = { ...s, attempts, correct, lastSeenLesson: lesson };
+  const base = { ...s, attempts, correct, lastSeenLesson: lesson, lastSeenDay: day ?? s.lastSeenDay };
 
+  if (outcome === 'transfer_correct') return { ...base, correct: s.correct + 1 };
   if (outcome === 'helped') return { ...base, box: 1, correctInRow: 0 };
   if (outcome === 'hinted') return { ...base, correctInRow: 0 };
 
@@ -63,15 +95,65 @@ export function applyOutcome(s: SkillState, outcome: Outcome, lesson: number): S
   return { ...base, box, correctInRow };
 }
 
+/**
+ * Все попытки навыка за один урок — одним шагом коробки.
+ *
+ * Коробка — это интервал до следующей встречи, а не счётчик верных. В уроке часто
+ * два-три задания на один навык, и если двигать коробку на каждое, безошибочный
+ * первый урок сразу даёт «освоено»: навык уезжает в четвёртую коробку и не
+ * всплывает двенадцать уроков, хотя его ни разу не вспоминали после перерыва.
+ * Поэтому за урок коробка сдвигается не больше чем на шаг, и решает худший исход:
+ * хоть раз показали ответ — первая коробка; хоть раз с подсказкой — на месте;
+ * всё сам — на одну дальше. Счётчики попыток и серия верных копятся как обычно.
+ *
+ * «Освоено» не держится само: подсказка на навыке в четвёртой коробке возвращает его в
+ * третью — родитель видит «освоено» как факт, и навык, которому понадобилась помощь, им
+ * быть не может.
+ *
+ * Вперёд — только если навыку **подошёл срок** (или он встретился впервые). Иначе
+ * три урока одной темы с общим навыком, пройденные за вечер, дают четвёртую коробку
+ * без единого перерыва — та же ошибка в масштабе темы. Назад — при любом сроке:
+ * показанный ответ знанием не бывает.
+ */
+export function applyLessonOutcomes(
+  s: SkillState,
+  outcomes: readonly Outcome[],
+  lesson: number,
+  day?: string,
+): SkillState {
+  if (outcomes.length === 0) return s;
+  const counted = outcomes.reduce((acc, o) => applyOutcome(acc, o, lesson, day), s);
+  const forBox = outcomes.filter((o) => o !== 'transfer_correct');
+  const due = s.lastSeenLesson < 0 || isDue(s, lesson, day);
+  // Коробка — интервал между *плановыми* проверками. Спиральное задание темы (встреча не в срок,
+  // всё сам) — практика, не проверка: счётчики растут, а часы повторения не сбрасываются, иначе
+  // урок n+1 отодвигает срок навыка урока n, и до коробки 3 он не доходит никогда (разбор
+  // 2026-10-31). С подсказкой или показом не в срок — часы заново: ребёнку понадобилась помощь.
+  // Часы — момент последней *проверки*, не последней встречи. Проба переноса (`transfer_correct`) — тоже не проверка.
+  const practiceOnly = forBox.every((o) => o === 'correct');
+  const clock = !due && practiceOnly ? { lastSeenLesson: s.lastSeenLesson, lastSeenDay: s.lastSeenDay } : {};
+  let box = s.box;
+  if (forBox.includes('helped')) box = 1;
+  else if (forBox.includes('hinted')) box = s.box === 4 ? 3 : s.box;
+  else if (due && forBox.length > 0) box = Math.min(4, s.box + 1) as Box;
+  return { ...counted, ...clock, box };
+}
+
 /** Освоен ли навык: дошёл до последней коробки. */
 export function isMastered(s: SkillState): boolean {
   return s.box === 4;
 }
 
-/** Пора ли повторить навык на уроке с этим номером. */
-export function isDue(s: SkillState, lesson: number): boolean {
+/**
+ * Пора ли повторить навык на уроке с этим номером в этот день. Срок — и по урокам, и по
+ * дням (`REVIEW_MIN_DAYS`). Без дня (или без дня прошлой встречи) календарь не
+ * проверяется.
+ */
+export function isDue(s: SkillState, lesson: number, day?: string): boolean {
   if (s.lastSeenLesson < 0) return false;
-  return lesson - s.lastSeenLesson >= REVIEW_GAP[s.box];
+  if (lesson - s.lastSeenLesson < REVIEW_GAP[s.box]) return false;
+  if (!day || !s.lastSeenDay) return true;
+  return daysBetween(s.lastSeenDay, day) >= REVIEW_MIN_DAYS[s.box];
 }
 
 /**
@@ -80,18 +162,29 @@ export function isDue(s: SkillState, lesson: number): boolean {
  * Не больше двух: урок из пяти заданий, где три — повторение, перестаёт быть
  * новым уроком. Первыми идут навыки из младших коробок — те, что хуже держатся.
  */
-export function skillsToReview(all: SkillState[], lesson: number, limit = 2): SkillState[] {
+export function skillsToReview(all: readonly SkillState[], lesson: number, limit = 2, day?: string): SkillState[] {
   return all
-    .filter((s) => isDue(s, lesson))
+    .filter((s) => isDue(s, lesson, day))
     .sort((a, b) => a.box - b.box || a.lastSeenLesson - b.lastSeenLesson)
     .slice(0, limit);
+}
+
+/**
+ * Навыки для сессии повторения с узла карты: все в срок, младшие коробки первыми, и **не
+ * встречавшиеся сегодня** — одна встреча навыка в игровой день. Иначе навык из первой коробки
+ * после показанного ответа снова «в срок» тем же днём, и узел повторения не гаснет.
+ */
+export function skillsForReviewSession(all: readonly SkillState[], lesson: number, day: string): SkillState[] {
+  return skillsToReview(all, lesson, Infinity, day).filter((s) => s.lastSeenDay !== day);
 }
 
 /**
  * Звёзды за урок. Три градации, и различает их не цвет, а причина:
  * без единой ошибки, с одной, и «прошёл, но ответ показывали».
  */
-export function starsForLesson(outcomes: Outcome[]): 1 | 2 | 3 {
+export function starsForLesson(all: Outcome[]): 1 | 2 | 3 {
+  // проба переноса — повтор уже засчитанного задания, звёзды она не меняет
+  const outcomes = all.filter((o) => o !== 'transfer_correct');
   if (outcomes.some((o) => o === 'helped')) return 1;
   const hints = outcomes.filter((o) => o === 'hinted').length;
   if (hints === 0) return 3;

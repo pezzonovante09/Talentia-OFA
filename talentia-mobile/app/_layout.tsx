@@ -1,138 +1,62 @@
+/**
+ * Корень приложения (этап 9–10).
+ *
+ * Порядок: i18n без запасного языка — один раз при загрузке модуля; аккаунт с устройства (база,
+ * срок хранения, порт прогресса); шрифты из бандла под заставкой; жесты (лента карты); тема из
+ * настроек сеанса ребёнка; стек без системных заголовков и без свайпа «назад». Родительский раздел —
+ * группа `parent` как полноэкранная модалка: вход «как разрыв» (PARENT.md «Визуальный язык»).
+ */
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import 'react-native-reanimated';
-import React, { useEffect } from 'react';
-import { AppState } from 'react-native';
-import {
-  useFonts,
-  Nunito_400Regular,
-  Nunito_600SemiBold,
-  Nunito_700Bold,
-  Nunito_800ExtraBold,
-} from '@expo-google-fonts/nunito';
+import { useEffect } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { AppThemeProvider, useAppTheme } from '../src/theme';
-import i18n from '../src/i18n';
-import { checkEnvInDev } from '../src/utils/envCheck';
-import { useSettingsStore } from '../src/store/settingsStore';
-import { useTranslation } from 'react-i18next';
-import { AuthProvider } from '../src/context/AuthContext';
-import { ErrorBoundary } from '../src/components/ErrorBoundary';
-import { initSentry, Sentry } from '../src/services/sentry';
+import { DesignProvider } from '../src/design';
+import { deviceLang, initI18n } from '../src/i18n';
+import { expoSoundPlayer } from '../src/services/audioPlayer';
+import { installNetworkFuse, networkFuseEnabled } from '../src/services/networkFuse';
+import { createAudioVoice, setVoiceBackend } from '../src/services/voice';
+import { useAccount } from '../src/state/account';
+import { useChildSession } from '../src/state/childSession';
+import { FONT_FILES } from '../src/ui/fonts';
 
-SplashScreen.preventAutoHideAsync();
-checkEnvInDev();
-initSentry();
+// сеть закрыта до ворот «данные» (ментор П2): вне dev-сборки — с первого модуля корня
+if (networkFuseEnabled(__DEV__)) installNetworkFuse();
+initI18n({ lng: deviceLang() });
+// голос и звуки — файлы из сборки (№158); ключ без файла молчит
+setVoiceBackend(createAudioVoice(expoSoundPlayer()));
+void SplashScreen.preventAutoHideAsync();
 
-export const unstable_settings = {
-  initialRouteName: '(tabs)',
-};
-
-function RootStack() {
-  const { t } = useTranslation();
-  const theme = useAppTheme();
-
-  return (
-    <Stack
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: theme.colors.surface,
-        },
-        headerTintColor: theme.colors.text,
-        headerTitleStyle: {
-          fontSize: theme.typography.subtitle,
-          fontWeight: '700',
-        },
-        contentStyle: {
-          backgroundColor: theme.colors.background,
-        },
-      }}
-    >
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="lesson/[lessonId]"
-        options={{
-          headerShown: true,
-          title: t('lesson.header'),
-        }}
-      />
-      <Stack.Screen
-        name="tali"
-        options={{
-          headerShown: true,
-          title: t('tali.title'),
-        }}
-      />
-      <Stack.Screen
-        name="parent-report"
-        options={{
-          headerShown: true,
-          title: t('parentReport.title'),
-        }}
-      />
-      <Stack.Screen
-        name="collection"
-        options={{
-          headerShown: true,
-          title: t('collection.title'),
-        }}
-      />
-      <Stack.Screen
-        name="achievements"
-        options={{
-          headerShown: true,
-          title: t('achievements.title'),
-        }}
-      />
-    </Stack>
-  );
-}
-
-function RootLayout() {
-  const language = useSettingsStore((state) => state.language);
-  const [fontsLoaded] = useFonts({
-    Nunito_400Regular,
-    Nunito_600SemiBold,
-    Nunito_700Bold,
-    Nunito_800ExtraBold,
-  });
+export default function RootLayout() {
+  const [fontsReady, fontError] = useFonts(FONT_FILES);
+  const calmMode = useChildSession((s) => s.settings.calmMode);
+  const focusMode = useChildSession((s) => s.settings.focusMode);
+  const accountStatus = useAccount((s) => s.status);
+  const boot = useAccount((s) => s.boot);
 
   useEffect(() => {
-    i18n.changeLanguage(language);
-  }, [language]);
-
-  useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
-
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', (next) => {
-      if (next === 'background' || next === 'inactive') {
-        const { syncWithRetry } = require('../src/services/syncStatus');
-        void syncWithRetry('layout:flushAnalyticsQueue', () =>
-          require('../src/store/analyticsQueueStore').useAnalyticsQueueStore.getState().flushQueue(),
-        );
-      }
+    void boot().catch((e: unknown) => {
+      // Битая база или устройство: ребёнок получает режим без записи, причина видна в консоли разработчика.
+      if (__DEV__) console.warn('boot', e);
+      useAccount.getState().clear();
     });
-    return () => sub.remove();
-  }, []);
+  }, [boot]);
 
-  if (!fontsLoaded) return null;
+  const ready = (fontsReady || fontError) && accountStatus !== 'loading';
+  useEffect(() => {
+    if (ready) void SplashScreen.hideAsync();
+  }, [ready]);
+
+  if (!ready) return null;
 
   return (
-    <AppThemeProvider>
-      <ErrorBoundary>
-        <AuthProvider>
-          <StatusBar style="dark" />
-          <RootStack />
-        </AuthProvider>
-      </ErrorBoundary>
-    </AppThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <DesignProvider calmMode={calmMode} focusMode={focusMode}>
+        <Stack screenOptions={{ headerShown: false, gestureEnabled: false, animation: calmMode ? 'none' : 'default' }}>
+          <Stack.Screen name="parent" options={{ presentation: 'fullScreenModal', animation: 'fade', animationDuration: 140, gestureEnabled: false }} />
+        </Stack>
+      </DesignProvider>
+    </GestureHandlerRootView>
   );
 }
-
-export default Sentry.wrap(RootLayout);

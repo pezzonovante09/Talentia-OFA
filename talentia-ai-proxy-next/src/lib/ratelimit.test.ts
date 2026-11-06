@@ -88,3 +88,11 @@ describe("enforceRateLimit", () => {
     expect(res?.status).toBe(503);
   });
 });
+
+describe("бюджет по длине", () => {
+  it("списывает с окна длину текста, когда она передана", async () => {
+    const limiter = { limit: vi.fn(async () => ({ success: true, limit: 30000, remaining: 29000, reset: Date.now() })) };
+    await enforceRateLimit(makeRequest(), limiter as never, "parent-1", 1000);
+    expect(limiter.limit).toHaveBeenCalledWith("parent-1", { rate: 1000 });
+  });
+});

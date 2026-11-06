@@ -7,6 +7,7 @@ import {
   isRecentEmailOtp,
   type AccountDeletionPort,
 } from "@/lib/accountDeletion";
+import { reportError } from "@/lib/reportError";
 import { corsJson, corsPreflight } from "@/lib/api-cors";
 import { enforceRateLimit, ratelimitAccount, ratelimitAccountUser } from "@/lib/ratelimit";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
@@ -34,63 +35,67 @@ export async function OPTIONS(req: Request) {
 export async function POST(req: NextRequest) {
   const limited = await enforceRateLimit(req, ratelimitAccount);
   if (limited) return limited;
-  const auth = await verifyAuth(req);
-  if (!auth.ok) return authJsonError(req, auth);
-
-  const perUser = await enforceRateLimit(req, ratelimitAccountUser, auth.userId);
-  if (perUser) return perUser;
-
-  const jwt = bearerToken(req);
-  if (!isRecentEmailOtp(emailOtpVerifiedAt(jwt), Math.floor(Date.now() / 1000))) {
-    return corsJson({ error: "Email code confirmation required" }, 401, req);
-  }
-
-  const asUser = supabaseAsUser(jwt);
-  if (!asUser || !supabaseAdmin) {
-    return corsJson({ error: "Server is not configured" }, 500, req);
-  }
-
-  const parsed = AccountDeletionBodySchema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) {
-    return corsJson({ error: "Invalid request", details: parsed.error.flatten() }, 400, req);
-  }
-
-  // Список своих детей и передачи — под JWT пользователя: права проверяет база
-  // через RLS и функции, а не этот код. Service-role — только для удаления.
-  const admin = supabaseAdmin;
-
-  const port: AccountDeletionPort = {
-    async ownedChildren() {
-      const { data, error } = await asUser
-        .from("child_guardians")
-        .select("child_id")
-        .eq("user_id", auth.userId)
-        .eq("role", "owner");
-      if (error) throw error;
-      return (data ?? []).map((r: { child_id: string }) => r.child_id);
-    },
-    async transfer(childId, newOwnerId) {
-      const { error } = await asUser.rpc("transfer_child_ownership", {
-        target_child: childId,
-        new_owner: newOwnerId,
-      });
-      if (error) throw error;
-    },
-    async deleteUser(userId) {
-      // false — жёсткое удаление: на мягкое триггеры базы не срабатывают.
-      const { error } = await admin.auth.admin.deleteUser(userId, false);
-      if (error) throw error;
-    },
-  };
-
+  // всё под try: исключение `verifyAuth` раньше уходило дефолтным 500 без CORS (раунд 3, В-11)
   try {
+    const auth = await verifyAuth(req);
+    if (!auth.ok) return authJsonError(req, auth);
+
+    const perUser = await enforceRateLimit(req, ratelimitAccountUser, auth.userId);
+    if (perUser) return perUser;
+
+    const jwt = bearerToken(req);
+    if (!isRecentEmailOtp(emailOtpVerifiedAt(jwt), Math.floor(Date.now() / 1000))) {
+      return corsJson({ error: "Email code confirmation required" }, 401, req);
+    }
+
+    const asUser = supabaseAsUser(jwt);
+    if (!asUser || !supabaseAdmin) {
+      // 503, как в `/api/v2/tali` и `verifyAuth`: конфигурация — не сбой кода (К11)
+      console.error("[account/delete] SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY are not configured");
+      return corsJson({ error: "Service unavailable" }, 503, req);
+    }
+
+    const parsed = AccountDeletionBodySchema.safeParse(await req.json().catch(() => null));
+    if (!parsed.success) {
+      return corsJson({ error: "Invalid request", details: parsed.error.flatten() }, 400, req);
+    }
+
+    // Список своих детей и передачи — под JWT пользователя: права проверяет база
+    // через RLS и функции, а не этот код. Service-role — только для удаления.
+    const admin = supabaseAdmin;
+
+    const port: AccountDeletionPort = {
+      async ownedChildren() {
+        const { data, error } = await asUser
+          .from("child_guardians")
+          .select("child_id")
+          .eq("user_id", auth.userId)
+          .eq("role", "owner");
+        if (error) throw error;
+        return (data ?? []).map((r: { child_id: string }) => r.child_id);
+      },
+      async transfer(childId, newOwnerId) {
+        const { error } = await asUser.rpc("transfer_child_ownership", {
+          target_child: childId,
+          new_owner: newOwnerId,
+        });
+        if (error) throw error;
+      },
+      async deleteUser(userId) {
+        // false — жёсткое удаление: на мягкое триггеры базы не срабатывают.
+        const { error } = await admin.auth.admin.deleteUser(userId, false);
+        if (error) throw error;
+      },
+    };
+
     const result = await deleteAccount(auth.userId, parsed.data, port);
     if (!result.ok) {
       return corsJson({ error: result.error, transferred: result.transferred ?? [] }, result.status, req);
     }
     return corsJson(result, 200, req);
   } catch (e: unknown) {
-    console.error("[account/delete] Server error", e instanceof Error ? e.message : "unknown");
+    console.error("[account/delete] Server error", e instanceof Error ? e.name : "unknown");
+    reportError("account/delete", e);
     return corsJson({ error: "Server error" }, 500, req);
   }
 }

@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "Talentia — monorepo: Expo mobile app + Vercel AI proxy (Next.js)",
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
     "dev": "npm run start --prefix talentia-mobile",
     "dev:tunnel": "npm run start:tunnel --prefix talentia-mobile",

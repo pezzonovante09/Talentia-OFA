@@ -180,7 +180,12 @@ export type SensitiveAction =
   | 'change_band'
   | 'grant_access'
   | 'transfer_ownership'
-  | 'delete_account';
+  | 'delete_account'
+  /** Занятия ABA (этап 11): согласие на данные, снятие паузы, продолжение, экспорт специалисту, «сопряжение подтверждено» (вопрос 62). */
+  | 'aba_consent'
+  | 'aba_resume'
+  | 'aba_export'
+  | 'aba_pairing_confirm';
 
 /**
  * Чем подтверждается действие.
@@ -189,7 +194,9 @@ export type SensitiveAction =
  * удаление аккаунта подтверждает взрослого, а не устройство, и проверяет это сервер
  * (`/api/account/delete`), не приложение.
  */
-export const CONFIRMATION: Record<SensitiveAction, 'gate_fresh' | 'email_otp'> = {
+export type Confirmation = 'gate_fresh' | 'gate_now' | 'email_otp';
+
+export const CONFIRMATION: Record<SensitiveAction, Confirmation> = {
   clear_progress: 'gate_fresh',
   delete_child: 'gate_fresh',
   revoke_consent: 'gate_fresh',
@@ -197,12 +204,26 @@ export const CONFIRMATION: Record<SensitiveAction, 'gate_fresh' | 'email_otp'> =
   change_band: 'gate_fresh',
   grant_access: 'gate_fresh',
   transfer_ownership: 'gate_fresh',
-  delete_account: 'email_otp',
+  aba_consent: 'gate_fresh',
+  aba_resume: 'gate_fresh',
+  aba_export: 'gate_fresh',
+  aba_pairing_confirm: 'gate_fresh',
+  /**
+   * Временно, до облака (решение владельца 2026-10-25, проверка приватности): почты в локальной
+   * версии нет, поэтому `gate_now` — PIN вводится на самом экране удаления, окно свежести не
+   * считается. С появлением `cloud_sync` у аккаунта возвращается `email_otp` — `deleteAccountConfirmation`.
+   */
+  delete_account: 'gate_now',
 };
 
-/** Можно ли выполнить действие без нового подтверждения прямо сейчас. */
+/** Чем подтверждается удаление аккаунта: пока нет облачного согласия — PIN на месте, с ним — код из письма. */
+export function deleteAccountConfirmation(hasCloudGrant: boolean): Confirmation {
+  return hasCloudGrant ? 'email_otp' : CONFIRMATION.delete_account;
+}
+
+/** Можно ли выполнить действие без нового подтверждения прямо сейчас. `gate_now` и `email_otp` — никогда. */
 export function canPerform(action: SensitiveAction, s: GateSession | null, now: number): boolean {
-  if (CONFIRMATION[action] === 'email_otp') return false;
+  if (CONFIRMATION[action] !== 'gate_fresh') return false;
   return isOpen(s, now) && now - (s as GateSession).confirmedAt <= FRESH_CONFIRM_MS;
 }
 
@@ -216,10 +237,12 @@ export function canPerform(action: SensitiveAction, s: GateSession | null, now: 
  * тексте экрана и здесь. Упорный ребёнок с калькулятором его пройдёт, поэтому
  * выдавать его за проверяемое родительское согласие нельзя. Возраст проверяет
  * подтверждение почты при регистрации: ящик не его.
+ *
+ * После неверного ответа экран обещает другую задачу, поэтому прошлая не повторяется.
  */
 export type IntentChallenge = { a: number; b: number; answer: number };
 
-export function intentChallenge(rng: Rng): IntentChallenge {
+export function intentChallenge(rng: Rng, previous?: IntentChallenge): IntentChallenge {
   // 13–29 без круглых: умножение на 10 или 20 решается в уме за секунду
   const pick = () => {
     for (;;) {
@@ -227,8 +250,14 @@ export function intentChallenge(rng: Rng): IntentChallenge {
       if (n % 10 !== 0) return n;
     }
   };
-  const a = pick();
-  const b = pick();
+  let a = pick();
+  let b = pick();
+  for (let attempt = 0; attempt < 10 && a === previous?.a && b === previous.b; attempt += 1) {
+    a = pick();
+    b = pick();
+  }
+  // Генератор, десять раз подряд давший ту же задачу, сломан — берём соседнюю, минуя круглую.
+  if (a === previous?.a && b === previous.b) b = b === 29 ? 13 : b === 19 ? 21 : b + 1;
   return { a, b, answer: a * b };
 }
 

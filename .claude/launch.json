@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "talentia-web",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--max-old-space-size=4096",
+        "node_modules/expo/bin/cli",
+        "start",
+        "--web",
+        "--port",
+        "8081"
+      ],
+      "cwd": "talentia-mobile",
+      "port": 8081
+    }
+  ]
+}
