@@ -23,33 +23,69 @@ import RegionWorkshop from '../../assets/images/regions/region-workshop.svg';
 import RegionNature from '../../assets/images/regions/region-nature.svg';
 import RegionNumbers from '../../assets/images/regions/region-numbers.svg';
 import RegionWords from '../../assets/images/regions/region-words.svg';
+import RegionKyrgyz from '../../assets/images/regions/region-kyrgyz.svg';
 
 // Имена горизонтов и ориентиров намеренно не начинаются с `Region`: тест панорам
 // отбирает строки карты по префиксу импорта.
 import HorizonNumbers from '../../assets/images/regions/horizon-numbers.svg';
 import LandmarkNumbers from '../../assets/images/regions/landmark-numbers.svg';
+import LandmarkWords from '../../assets/images/regions/landmark-words.svg';
 
 import UiArrow from '../../assets/icons/ui-arrow.svg';
+import UiBackspace from '../../assets/icons/ui-backspace.svg';
 import UiBook from '../../assets/icons/ui-book.svg';
 import UiBulb from '../../assets/icons/ui-bulb.svg';
 import UiCheck from '../../assets/icons/ui-check.svg';
+import UiChevron from '../../assets/icons/ui-chevron.svg';
+import UiFingerRing from '../../assets/icons/ui-finger-ring.svg';
 import UiLock from '../../assets/icons/ui-lock.svg';
 import UiMap from '../../assets/icons/ui-map.svg';
+import UiNote from '../../assets/icons/ui-note.svg';
+import UiPauseBarsOutline from '../../assets/icons/ui-pause-bars-outline.svg';
 import UiPin from '../../assets/icons/ui-pin.svg';
 import UiRegionNumbers from '../../assets/icons/ui-region-numbers.svg';
+import UiRegionWorkshop from '../../assets/icons/ui-region-workshop.svg';
 import UiReview from '../../assets/icons/ui-review.svg';
 import UiShapeCircle from '../../assets/icons/ui-shape-circle.svg';
 import UiShapeDiamond from '../../assets/icons/ui-shape-diamond.svg';
 import UiShapeSquare from '../../assets/icons/ui-shape-square.svg';
 import UiShapeTriangle from '../../assets/icons/ui-shape-triangle.svg';
+import UiSleep from '../../assets/icons/ui-sleep.svg';
 import UiSliders from '../../assets/icons/ui-sliders.svg';
 import UiSocket from '../../assets/icons/ui-socket.svg';
 import UiSound from '../../assets/icons/ui-sound.svg';
 import UiSoundOn from '../../assets/icons/ui-sound-on.svg';
 import UiStampOpen from '../../assets/icons/ui-stamp-open.svg';
+import UiStar from '../../assets/icons/ui-star.svg';
+import UiToken from '../../assets/icons/ui-token.svg';
 import UiTriangle from '../../assets/icons/ui-triangle.svg';
 import UiWaves from '../../assets/icons/ui-waves.svg';
 import UiX from '../../assets/icons/ui-x.svg';
+
+import AbaObjApple from '../../assets/images/aba/stimuli/aba-obj-apple.svg';
+import AbaObjPear from '../../assets/images/aba/stimuli/aba-obj-pear.svg';
+import AbaObjCarrot from '../../assets/images/aba/stimuli/aba-obj-carrot.svg';
+import AbaObjMushroom from '../../assets/images/aba/stimuli/aba-obj-mushroom.svg';
+import AbaObjLeaf from '../../assets/images/aba/stimuli/aba-obj-leaf.svg';
+import AbaObjCar from '../../assets/images/aba/stimuli/aba-obj-car.svg';
+import AbaObjPlane from '../../assets/images/aba/stimuli/aba-obj-plane.svg';
+import AbaObjBoat from '../../assets/images/aba/stimuli/aba-obj-boat.svg';
+import AbaObjHouse from '../../assets/images/aba/stimuli/aba-obj-house.svg';
+import AbaObjUmbrella from '../../assets/images/aba/stimuli/aba-obj-umbrella.svg';
+import AbaObjKey from '../../assets/images/aba/stimuli/aba-obj-key.svg';
+import AbaObjSpoon from '../../assets/images/aba/stimuli/aba-obj-spoon.svg';
+import AbaObjTeapot from '../../assets/images/aba/stimuli/aba-obj-teapot.svg';
+import AbaObjBook from '../../assets/images/aba/stimuli/aba-obj-book.svg';
+import AbaObjHat from '../../assets/images/aba/stimuli/aba-obj-hat.svg';
+import AbaObjMitten from '../../assets/images/aba/stimuli/aba-obj-mitten.svg';
+import AbaObjPyramid from '../../assets/images/aba/stimuli/aba-obj-pyramid.svg';
+import AbaObjSock from '../../assets/images/aba/stimuli/aba-obj-sock.svg';
+import AbaObjChair from '../../assets/images/aba/stimuli/aba-obj-chair.svg';
+import AbaObjFlower from '../../assets/images/aba/stimuli/aba-obj-flower.svg';
+import AbaObjCup from '../../assets/images/aba/stimuli/aba-obj-cup.svg';
+import AbaObjTree from '../../assets/images/aba/stimuli/aba-obj-tree.svg';
+import AbaObjBus from '../../assets/images/aba/stimuli/aba-obj-bus.svg';
+import AbaObjBell from '../../assets/images/aba/stimuli/aba-obj-bell.svg';
 
 type Svg = React.FC<SvgProps>;
 
@@ -90,17 +126,15 @@ export const TALI_VIEWBOX: Record<TaliPose, number> = {
  * (`types/task.ts`); `satisfies` не даст забыть регион. Своего типа региона у реестра
  * больше нет (аудит 2026-10-06, А25).
  *
- * `kyrgyz: null` — заготовка: панорамы ещё нет (А17, ТЗ — шаг 6). Экран карты рисует
- * на её месте плоскую заливку `regions.kyrgyz` с подписью региона. Когда файл появится —
- * импорт `RegionKyrgyz`, строка `kyrgyz: RegionKyrgyz,` и снять `PANORAMA_PENDING`
- * в `__tests__/registry.test.ts`.
+ * Все пять — из Higgsfield, Recraft V4.1 `vector` (решение №177, 2026-11-06): `kyrgyz`, `nature`, `workshop`
+ * приняты; `numbers` и `words` пока старые, их замена ждёт решения владельца (вес и место маяка).
  */
 export const REGION_PANORAMAS = {
   numbers: RegionNumbers,
   words: RegionWords,
   nature: RegionNature,
   workshop: RegionWorkshop,
-  kyrgyz: null,
+  kyrgyz: RegionKyrgyz,
 } satisfies Record<RegionId, Svg | null>;
 
 /**
@@ -124,7 +158,7 @@ export const REGION_HORIZONS = {
  */
 export const REGION_LANDMARKS = {
   numbers: LandmarkNumbers,
-  words: null,
+  words: LandmarkWords,
   nature: null,
   workshop: null,
   kyrgyz: null,
@@ -140,7 +174,15 @@ export const ICONS = {
   map: UiMap,
   bulb: UiBulb,
   arrow: UiArrow,
+  backspace: UiBackspace,
   book: UiBook,
+  chevron: UiChevron,
+  fingerRing: UiFingerRing,
+  note: UiNote,
+  pauseBarsOutline: UiPauseBarsOutline,
+  sleep: UiSleep,
+  star: UiStar,
+  token: UiToken,
   sliders: UiSliders,
   triangle: UiTriangle,
   pin: UiPin,
@@ -151,6 +193,7 @@ export const ICONS = {
   shapeDiamond: UiShapeDiamond,
   stampOpen: UiStampOpen,
   regionNumbers: UiRegionNumbers,
+  regionWorkshop: UiRegionWorkshop,
   review: UiReview,
 } satisfies Record<string, Svg>;
 
@@ -167,31 +210,32 @@ export const PAIR_SHAPES = [
 /**
  * Картинки предметов-стимулов ABA (`src/content/aba/stimuli.ts`, партия `docs/assets/aba-match-stimuli.md`, скилл
  * `asset-pipeline`). Только SVG: растр на экране пробы запрещён. `null` — файла ещё нет, экран рисует заглушку-силуэт;
- * гард `abaTargets.test.ts` сверяет ключи со стимулами.
+ * гард `abaTargets.test.ts` сверяет ключи со стимулами. Все 24 — Higgsfield, Recraft V4.1 `vector`, цвета подогнаны к
+ * палитре скриптом (решение №178, 2026-11-06), сетка 512.
  */
 export const ABA_OBJECT_ART: Record<string, Svg | null> = {
-  'aba-obj-apple': null,
-  'aba-obj-pear': null,
-  'aba-obj-carrot': null,
-  'aba-obj-mushroom': null,
-  'aba-obj-leaf': null,
-  'aba-obj-car': null,
-  'aba-obj-plane': null,
-  'aba-obj-boat': null,
-  'aba-obj-house': null,
-  'aba-obj-umbrella': null,
-  'aba-obj-key': null,
-  'aba-obj-spoon': null,
-  'aba-obj-teapot': null,
-  'aba-obj-book': null,
-  'aba-obj-hat': null,
-  'aba-obj-mitten': null,
-  'aba-obj-pyramid': null,
-  'aba-obj-sock': null,
-  'aba-obj-chair': null,
-  'aba-obj-flower': null,
-  'aba-obj-cup': null,
-  'aba-obj-tree': null,
-  'aba-obj-bus': null,
-  'aba-obj-bell': null,
+  'aba-obj-apple': AbaObjApple,
+  'aba-obj-pear': AbaObjPear,
+  'aba-obj-carrot': AbaObjCarrot,
+  'aba-obj-mushroom': AbaObjMushroom,
+  'aba-obj-leaf': AbaObjLeaf,
+  'aba-obj-car': AbaObjCar,
+  'aba-obj-plane': AbaObjPlane,
+  'aba-obj-boat': AbaObjBoat,
+  'aba-obj-house': AbaObjHouse,
+  'aba-obj-umbrella': AbaObjUmbrella,
+  'aba-obj-key': AbaObjKey,
+  'aba-obj-spoon': AbaObjSpoon,
+  'aba-obj-teapot': AbaObjTeapot,
+  'aba-obj-book': AbaObjBook,
+  'aba-obj-hat': AbaObjHat,
+  'aba-obj-mitten': AbaObjMitten,
+  'aba-obj-pyramid': AbaObjPyramid,
+  'aba-obj-sock': AbaObjSock,
+  'aba-obj-chair': AbaObjChair,
+  'aba-obj-flower': AbaObjFlower,
+  'aba-obj-cup': AbaObjCup,
+  'aba-obj-tree': AbaObjTree,
+  'aba-obj-bus': AbaObjBus,
+  'aba-obj-bell': AbaObjBell,
 };

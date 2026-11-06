@@ -48,6 +48,16 @@
 Не берите «Digital illustration» — она даёт мягкие переходы, которые выпадут
 из направления.
 
+**Через Higgsfield (с 2026-11-06, кредитов Recraft нет).** В каталоге Higgsfield есть Recraft V4.1
+(`model_type: vector`, палитра до 10 цветов, фон цветом, образцов не принимает), Ideogram Vector
+(SVG из промпта и векторизация картинки), GPT Image 2.6 (PNG с прозрачным фоном, принимает образцы) и
+Nano Banana Pro. Модель и параметры на каждую группу, запасные пути и образцы для загрузки
+(`docs/assets/ref/*.png`) — `docs/assets/higgsfield-2026-11-06.md`; готовые промпты на каждый файл
+с кнопкой «Копировать» — `docs/assets/higgsfield-prompts-2026-11-06.html`. Тест 2026-11-06 показал: SVG
+приходит настоящий, но контур у Recraft выходит тонким и каллиграфическим, если не сказать прямо
+«uniform thick rounded stroke, same thickness everywhere, no tapering» и «outline about one tenth of
+the icon width» — эти строки уже в промптах. Приёмка не меняется.
+
 ### Прозрачный фон
 
 Включать для **Tali, жителей, иконок и предметов**. Для панорам не нужен.
@@ -336,6 +346,14 @@ Tali **не перекрашивается и без ореола**: слой и
 Четыре готовы (`numbers`, `words`, `nature`, `workshop`), пятой — кыргызской — нет; её ТЗ
 в конце шага. Имена регионов — `RegionId` из `types/task.ts`; `logic` больше не
 существует (А25).
+
+**2026-11-06, решение владельца: все пять панорам — через Higgsfield.** Кыргызская, сделанная
+Recraft V4.1 `vector` по промпту ниже, принята как эталон набора (498 путей; старые четыре —
+85–214), и четыре прежние перерисовываются по той же структуре промпта. Готовые промпты всех
+пяти с палитрами — `docs/assets/higgsfield-prompts-2026-11-06.html`, раздел 4; что делается с
+файлом из Higgsfield при приёмке и что ломается у Мира чисел (`horizon-numbers.svg`, `LANDMARK_AT`) —
+`docs/assets/higgsfield-2026-11-06.md`, раздел 4. Промпты ниже остаются справочно: структура та же,
+на странице к ним добавлены ориентир в средней трети, названный силуэт горизонта и пустые верхние 15 %.
 
 **Pro Vector**, формат **3:2 ландшафтный** (`viewBox="0 0 1264 848"`, как у четырёх готовых;
 прежние «16:9» были ошибкой — V19), фон не прозрачный, ссылка на стиль.
@@ -700,6 +718,17 @@ Transparent background, no text, no letters, no frame, no border.
 
 Каждый новый файл — строка в `ICONS` (`src/assets/registry.ts`): тест реестра не пустит
 файл, которого там нет.
+
+**Состояние 2026-11-06 (первая партия Higgsfield, №177).** В `assets/icons/` положены и подключены в `ICONS`:
+перерисованные `ui-check`, `ui-x`, `ui-lock`, `ui-map` и новые `ui-star`, `ui-token`, `ui-chevron`, `ui-backspace`,
+`ui-note`, `ui-sleep`, `ui-region-workshop`, `ui-pause-bars-outline`, `ui-finger-ring`; ориентир `landmark-words.svg`;
+все 24 стимула ABA. Ждут перегенерации с припиской «one solid filled silhouette, not an outline drawing, no frame»:
+`ui-sound` (вышел контурным), `ui-star-helped` (двойной контур, читается пустой), `ui-region-words` и `ui-pause-bars`
+(рамка), `ui-region-nature` и `ui-region-kyrgyz` (контурные), ориентиры `nature`, `workshop`, `kyrgyz` (контурные).
+Файлы из Higgsfield чистит `scripts/clean-higgsfield.mjs` (карта партии — `scripts/input/higgsfield-map-2026-11-06.json`):
+дырки в иконках там нарисованы белыми фигурами, скрипт делает их сквозными через `fill-rule="evenodd"`. Заглушки
+`PlaceholderGlyph` в `src/ui/aba/parts.tsx` (`pause_bars_outline`, `finger_ring`, `map`) на новые иконки ещё не
+переведены — отдельный шаг с `design-lead` (геометрия «Готово» и планок второго приглашения).
 
 ### Что отложено и почему
 

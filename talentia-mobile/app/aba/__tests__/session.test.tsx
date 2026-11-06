@@ -27,6 +27,18 @@ import { REFUSAL_QUIET_MS, RETURN_INVITE_AFTER_MS } from '../../../src/types/aba
 import { AbaClockProvider, manualClock, type ManualClock } from '../../../src/ui/aba/clock';
 
 jest.mock('expo-keep-awake', () => ({ useKeepAwake: () => undefined }));
+// Картинки предметов в реестре есть (2026-11-06), в Jest каждый `.svg` — один и тот же `SvgMock` без id стимула.
+// Тесту нужно знать, какой предмет на плите (`stimOf` → верный вариант), поэтому каждая картинка — свой View с
+// `testID="aba-art-<id>"`; допуск целей (`readyAbaTargets`) при этом остаётся как в продукте — картинка есть.
+jest.mock('../../../src/assets/registry', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const actual = jest.requireActual<typeof import('../../../src/assets/registry')>('../../../src/assets/registry');
+  const art = Object.fromEntries(
+    Object.entries(actual.ABA_OBJECT_ART).map(([id, Art]) => [id, Art == null ? null : (props: Record<string, unknown>) => React.createElement(View, { ...props, testID: `aba-art-${id}` })]),
+  );
+  return { ...actual, ABA_OBJECT_ART: art };
+});
 // `expo-crypto` в Jest детерминирован (jest.setup.js): без счётчика вторая проба сессии получает тот же id и
 // падает на UNIQUE `aba_trials.id` — тесты с двумя пробами подряд были бы невозможны.
 jest.mock('../../../src/services/abaIds', () => {
@@ -69,10 +81,10 @@ async function mount() {
   );
 }
 
-/** id стимула на плите (заглушка разработчика или фигура). */
+/** id стимула на плите (картинка предмета из реестра, заглушка разработчика или фигура). */
 const stimOf = (testID: string) => {
-  const n = within(screen.getByTestId(testID)).queryAllByTestId(/^aba-(stub|stim)-/)[0];
-  return String(n?.props.testID ?? '').replace(/^aba-(stub|stim)-/, '');
+  const n = within(screen.getByTestId(testID)).queryAllByTestId(/^aba-(art|stub|stim)-/)[0];
+  return String(n?.props.testID ?? '').replace(/^aba-(art|stub|stim)-/, '');
 };
 const correctOption = () => {
   const sample = stimOf('aba-sample');

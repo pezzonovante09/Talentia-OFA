@@ -77,22 +77,16 @@ describe('реестр векторных ассетов', () => {
 
   it('ключи панорам совпадают с идентификаторами регионов из схемы курса', () => {
     const inRegistry = [...src.matchAll(/^\s{2}(\w+): Region\w+,$/gm)].map((m) => m[1]).sort();
-    // Панорама кыргызского региона (решение №38) — шаг 6, `design-lead` и ассеты. Убрать
-    // исключение, когда она появится.
-    const PANORAMA_PENDING = ['kyrgyz'];
-    const inSchema = schemaRegionIds().filter((id) => !PANORAMA_PENDING.includes(id));
-    expect(inRegistry).toEqual(inSchema);
-    // Ожидающая панорама объявлена в реестре заготовкой `null`, а не пропущена молча.
-    PANORAMA_PENDING.forEach((id) => expect(src).toMatch(new RegExp(`^\\s{2}${id}: null,$`, 'm')));
+    // Все пять панорам на месте (кыргызская — с 2026-11-06, №177).
+    expect(inRegistry).toEqual(schemaRegionIds());
   });
 
   // Горизонты и ориентиры тёмной карты (ASSETS.md, «Контур горизонта и ориентир»).
-  // Файл есть только у «Цифр» (срез); остальные регионы объявлены заготовками `null`.
+  // Горизонт есть только у «Цифр»; ориентиры — у «Цифр» и «Слов» (2026-11-06); остальные — заготовки `null`.
   describe.each([
-    ['REGION_HORIZONS', 'horizon', 'Horizon'],
-    ['REGION_LANDMARKS', 'landmark', 'Landmark'],
-  ])('%s', (mapName, filePrefix, importPrefix) => {
-    const PENDING = ['words', 'nature', 'workshop', 'kyrgyz'];
+    ['REGION_HORIZONS', 'horizon', 'Horizon', ['words', 'nature', 'workshop', 'kyrgyz']],
+    ['REGION_LANDMARKS', 'landmark', 'Landmark', ['nature', 'workshop', 'kyrgyz']],
+  ])('%s', (mapName, filePrefix, importPrefix, PENDING) => {
     const entries = mapEntries(mapName);
 
     it('ключи — все RegionId; файл у «Цифр», у остальных null-заготовка', () => {

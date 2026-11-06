@@ -50,7 +50,7 @@ const REGISTERED = registeredIcons();
  * ASSETS.md, рисунка нет; детский лист в срезе не делается (№141: «ползунки» ведут к гейту родителя).
  * `sliders` нарисована 2026-10-24 (этап 9, 0b). Имена в токенах — ключи `ICONS` без префикса `ui-`.
  */
-const KNOWN_MISSING = ['finger_ring', 'note'];
+const KNOWN_MISSING: string[] = []; // 2026-11-06: `fingerRing` и `note` нарисованы (Higgsfield, №177)
 
 const missing = FOUND.filter((f) => !REGISTERED.includes(f.icon));
 
@@ -74,13 +74,11 @@ describe('иконки из токенов и реестр ICONS', () => {
     });
   });
 
-  // Красный по существу: иконки нет. `it.failing` держит это видимым и сам покраснеет, когда иконку
-  // добавят - тогда нужно снять `.failing` и очистить KNOWN_MISSING.
-  it.failing('abaControls.exitTapHint.icon есть в ICONS (ждёт рисунка: ASSETS.md, finger_ring)', () => {
+  it('abaControls.exitTapHint.icon есть в ICONS (`ui-finger-ring.svg`, 2026-11-06)', () => {
     expect(REGISTERED).toContain(abaTokens.abaControls.exitTapHint.icon);
   });
 
-  it.failing('вообще все иконки токенов есть в ICONS (без исключений)', () => {
+  it('вообще все иконки токенов есть в ICONS (без исключений)', () => {
     expect(missing.map((f) => `${f.path} = '${f.icon}'`)).toEqual([]);
   });
 });

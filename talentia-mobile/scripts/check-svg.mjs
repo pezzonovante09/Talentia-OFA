@@ -27,10 +27,25 @@ export function checkSvg(text, bytes = Buffer.byteLength(text)) {
   if (/<(linear|radial)Gradient/i.test(text)) problems.push('градиент');
   if (/<filter[\s>]/i.test(text)) problems.push('фильтр (тень, размытие)');
   if (/<rect[^>]*width="100%"[^>]*fill="#?(fff|ffffff|white)"/i.test(text)) problems.push('белая подложка во весь кадр — фон должен быть прозрачным');
+  if (/<metadata[\s>]/i.test(text)) problems.push('блок <metadata> (C2PA-подпись генератора) — удалить, это мёртвый вес');
+  if (/preserveAspectRatio="none"/i.test(text)) problems.push('preserveAspectRatio="none" — убрать, иначе картинка растягивается');
+  // Подложка во весь кадр, нарисованная путём: Higgsfield/Recraft отдают `<path fill="rgb(255,255,255)" d="M 0 0 L W 0 L W H L 0 H ...">`.
+  const vb = /viewBox="\s*0\s+0\s+([\d.]+)\s+([\d.]+)\s*"/i.exec(text);
+  if (vb) {
+    const [, w, h] = vb;
+    const num = (v) => v.replace(/\.0+$/, '').replace(/\\/g, '\\\\').replace(/\./g, '\\.');
+    const full = new RegExp(`<path[^>]*fill="(?:#?(?:fff|ffffff|white)|rgb\\(\\s*255\\s*,\\s*255\\s*,\\s*255\\s*\\))"[^>]*d="\\s*M\\s*0\\s+0\\s+L\\s*${num(w)}\\s+0\\s+L\\s*${num(w)}\\s+${num(h)}`, 'i');
+    if (full.test(text)) problems.push('белая подложка во весь кадр (путём) — удалить, фон должен быть прозрачным');
+  }
   const off = new Set();
   for (const m of text.matchAll(/#[0-9a-f]{6}\b|#[0-9a-f]{3}\b/gi)) {
     const c = expandHex(m[0]);
     if (!PALETTE.has(c)) off.add(c);
+  }
+  // Цвета в записи rgb(r,g,b) — так их пишет Higgsfield; чёрный #000000 допустим только как заливка иконки под `currentColor`.
+  for (const m of text.matchAll(/rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)/gi)) {
+    const c = `#${[m[1], m[2], m[3]].map((v) => Number(v).toString(16).padStart(2, '0')).join('')}`.toUpperCase();
+    if (!PALETTE.has(c) && c !== '#000000') off.add(`${c} (${m[0]})`);
   }
   if (off.size) problems.push(`цвета вне палитры: ${[...off].join(', ')}`);
   return problems;

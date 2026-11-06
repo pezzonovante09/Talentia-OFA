@@ -462,7 +462,7 @@ export const abaControls = {
    * calm и reduce motion). Тап по выходу не выходит. Для скринридера и переключателей выход
    * доступен как `accessibilityAction` — удержание им не нужно.
    */
-  exitTapHint: { icon: 'finger_ring', durationMs: 1200, animated: false },
+  exitTapHint: { icon: 'fingerRing', durationMs: 1200, animated: false },
   exitAccessibilityAction: true,
 } as const;
 

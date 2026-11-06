@@ -70,6 +70,12 @@ jest.mock('../../../src/services/local/shareSpecialistExport', () => {
   };
 });
 jest.mock('../../../src/services/local/buildInfo', () => ({ buildTime: () => null }));
+// Копия реестра картинок: тест «без картинок» обнуляет предметы ABA в копии и возвращает их, не трогая настоящий модуль.
+jest.mock('../../../src/assets/registry', () => {
+  const actual = jest.requireActual<typeof import('../../../src/assets/registry')>('../../../src/assets/registry');
+  return { ...actual, ABA_OBJECT_ART: { ...actual.ABA_OBJECT_ART } };
+});
+const { ABA_OBJECT_ART: objectArt } = jest.requireMock('../../../src/assets/registry') as { ABA_OBJECT_ART: Record<string, unknown> };
 
 const { __flags: exportFlags, shareSpecialistExport } = jest.requireMock('../../../src/services/local/shareSpecialistExport') as { __flags: { enabled: boolean }; shareSpecialistExport: jest.Mock };
 const { __router: router, __params: params, __focus: focus } = jest.requireMock('expo-router') as {
@@ -243,18 +249,41 @@ describe('«Занятия ABA»: кнопка занятия по состоя�
     expect([router.replace.mock.calls.length, router.dismissAll.mock.calls.length]).toEqual([0, 0]);
   });
 
-  it('в DEV-сборке нет — цели ждут картинок: статус об этом, кнопки занятия нет', async () => {
-    await grant();
-    await pair();
+  /** Сборка для детей: заглушек разработчика (`DEV_PLACEHOLDER_ART`) нет, допуск целей — только по реестру. */
+  async function inRelease(run: () => Promise<void>) {
     const g = global as unknown as { __DEV__: boolean };
     const dev = g.__DEV__;
     g.__DEV__ = false;
     try {
-      await renderAba();
-      await waitStatus('Цели ждут картинок');
-      expect([screen.queryByTestId('aba-start'), screen.queryByTestId('aba-continue'), screen.queryByTestId('aba-read-consent')]).toEqual([null, null, null]);
+      await run();
     } finally {
       g.__DEV__ = dev;
+    }
+  }
+
+  it('в выпуске с реестром по умолчанию картинки предметов есть — «Можно начинать», «Начать занятие»', async () => {
+    await grant();
+    await pair();
+    await inRelease(async () => {
+      await renderAba();
+      await waitStatus('Можно начинать');
+      expect(screen.getByTestId('aba-start').props.accessibilityLabel).toBe('Начать занятие');
+    });
+  });
+
+  it('в выпуске без картинок предметов в реестре — цели ждут картинок: статус об этом, кнопки занятия нет', async () => {
+    await grant();
+    await pair();
+    const saved = { ...objectArt };
+    for (const id of Object.keys(objectArt)) objectArt[id] = null;
+    try {
+      await inRelease(async () => {
+        await renderAba();
+        await waitStatus('Цели ждут картинок');
+        expect([screen.queryByTestId('aba-start'), screen.queryByTestId('aba-continue'), screen.queryByTestId('aba-read-consent')]).toEqual([null, null, null]);
+      });
+    } finally {
+      Object.assign(objectArt, saved);
     }
   });
 });

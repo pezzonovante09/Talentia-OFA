@@ -164,13 +164,15 @@ describe('связи лестницы match (решение владельца 2
 describe('допуск цели к сессии и полоса', () => {
   it('предметы без картинки — цель не допускается; формы и цвета рисует код', () => {
     expect(abaTargetReady(MATCH_SHAPE)).toBe(true);
-    expect(abaTargetReady(MATCH_LEVEL1[0])).toBe(false);
+    expect(abaTargetReady(MATCH_LEVEL1[0], {})).toBe(false);
+    // с 2026-11-06 все 24 предмета нарисованы (ABA_OBJECT_ART без null) — цель допускается и с реестром по умолчанию
+    expect(abaTargetReady(MATCH_LEVEL1[0])).toBe(true);
     const allArt = Object.fromEntries(ABA_STIMULI.map((x) => [x.id, x.kind === 'object' ? {} : null]));
     expect(MATCH_LEVEL1.every((t) => abaTargetReady(t, allArt))).toBe(true);
   });
 
   it('лестница: пока не готовы «одинаковые из 2», форма и цвет тоже закрыты (предпосылка)', () => {
-    expect(readyAbaTargets().map((t) => t.id)).toEqual([]);
+    expect(readyAbaTargets(ABA_TARGETS, {}).map((t) => t.id)).toEqual([]);
     const allArt = Object.fromEntries(ABA_STIMULI.map((x) => [x.id, {}]));
     expect(readyAbaTargets(ABA_TARGETS, allArt).map((t) => t.id)).toEqual(ABA_TARGETS.map((t) => t.id));
   });
