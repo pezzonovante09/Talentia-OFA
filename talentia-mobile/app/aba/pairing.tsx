@@ -21,6 +21,7 @@ import { loadPairingStart } from '../../src/services/local/abaStart';
 import { commitPairingSession } from '../../src/services/local/commit';
 import { voice } from '../../src/services/voice';
 import { useAbaRun } from '../../src/state/abaRun';
+import { leaveAba } from '../../src/ui/aba/leaveAba';
 import { useAccount } from '../../src/state/account';
 import { useChildSession } from '../../src/state/childSession';
 import { AbaEnd } from '../../src/ui/aba/AbaEnd';
@@ -101,7 +102,7 @@ export default function AbaPairingScreen() {
         if (__DEV__) console.warn('aba-pairing-commit', e);
       }
       // конфигурация и наблюдатель — на одно занятие: следующий вход идёт через 2.6
-      if (toMap) router.dismissTo('/map');
+      if (toMap) leaveAba(router);
       else setEnded({ variant: r.state.endReason === 'completed' ? 'normal' : 'neutral', toMap: false });
       useAbaRun.getState().reset();
     },
@@ -163,7 +164,7 @@ export default function AbaPairingScreen() {
 
   const exit = () => {
     if (!runRef.current || runRef.current.state.phase === 'done') {
-      router.dismissTo('/map');
+      leaveAba(router);
       return;
     }
     exiting.current = true;
@@ -180,7 +181,7 @@ export default function AbaPairingScreen() {
 
   let body: ReactNode = null;
   if (ended) {
-    body = <AbaEnd variant={ended.variant} onDone={() => router.dismissTo('/map')} />;
+    body = <AbaEnd variant={ended.variant} onDone={() => leaveAba(router)} />;
   } else if (run) {
     const s = run.state;
     if (s.phase === 'choose' && run.choice) {

@@ -11,6 +11,7 @@ import { abaEndDone } from '../../../src/design/abaTokens';
 import { PAIRING } from '../../../src/domain/abaTokenTraining';
 import { grantAbaProcessing } from '../../../src/services/local/abaConsent';
 import { loadChildState } from '../../../src/services/local/childState';
+import { setAbaPaused } from '../../../src/services/local/commit';
 import { memoryDb } from '../../../src/services/local/__tests__/nodeSql';
 import type { SqlDb } from '../../../src/services/local/sql';
 import { voice } from '../../../src/services/voice';
@@ -39,10 +40,22 @@ let clock: ManualClock;
 
 /** Доска и кольцо скрыты от скринридера (`accessibilityElementsHidden`) — ищутся с этим флагом. */
 const HIDDEN = { includeHiddenElements: true };
-const tick = async (ms: number) => act(async () => clock.advance(ms));
+/**
+ * Jest не прерывает функцию теста по таймауту: её цикл продолжил бы двигать часы и экран уже следующего теста (каскад
+ * падений при таймауте одного). Поэтому `afterEach` помечает тест мёртвым, а драйверы шагают только часами своего
+ * теста (`my`) и только пока он жив.
+ */
+let dead = false;
+const alive = (my: ManualClock) => !dead && clock === my;
+const tick = async (ms: number) => {
+  const my = clock;
+  if (!alive(my)) return;
+  await act(async () => my.advance(ms));
+};
 /** До момента `to` шагами не длиннее `step`: ручные часы будят один срок экрана за шаг — каждый кадр в свой срок. */
 async function stepTo(to: number, step = 20) {
-  while (clock.now() < to) await tick(Math.min(step, to - clock.now()));
+  const my = clock;
+  while (alive(my) && my.now() < to) await tick(Math.min(step, to - my.now()));
 }
 const filledCells = () => screen.queryAllByTestId('aba-exchange-token-filled', HIDDEN).length;
 const cardStroke = () => StyleSheet.flatten(screen.getByTestId('aba-exchange-card').props.style).borderWidth as number;
@@ -86,14 +99,19 @@ async function oneCycle(pick: string) {
 }
 
 beforeEach(async () => {
+  dead = false;
   router.replace.mockClear();
   router.dismissTo.mockClear();
   clock = manualClock();
   db = await memoryDb();
   await grantAbaProcessing(db, { childId: KID, accountId: 'acc', lang: 'ru', at: new Date(clock.now()).toISOString(), randomBytes: (n) => new Uint8Array(n).fill(7) });
   useAccount.setState({ db, accountId: 'acc', status: 'ready' });
-  useChildSession.setState({ childId: KID, mode: 'account' });
+  useChildSession.setState({ childId: KID, mode: 'account', openedForAba: false });
   useAbaRun.getState().set({ config: 'with_adult', observers: [], primaryObserverId: null });
+});
+
+afterEach(() => {
+  dead = true;
 });
 
 it('четыре цикла тапом: конец с Tali, итог записан, критерий — выбор ребёнка', async () => {
@@ -272,12 +290,17 @@ describe('цикл 3 (№171): обмен и кадр конца в сопряж
     await stepTo(A + PAIRING.accessMs - 1, 250);
     expect(screen.getByTestId('aba-access-ring', HIDDEN)).toBeTruthy();
     expect(screen.getByTestId('aba-access-ring-silhouette', HIDDEN)).toBeTruthy();
+    // карточка кадра конца рисуется только с измеренным местом: RNTL `onLayout` не шлёт, у области нет своего testID
+    const [area] = screen.getByTestId('aba-access-play').queryAll((n) => typeof n.props.onLayout === 'function');
+    await fireEvent(area, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 343, height: 543 } } });
     await stepTo(A + PAIRING.accessMs);
     expect(screen.queryByTestId('aba-access-ring', HIDDEN)).toBeNull();
     expect(screen.queryByTestId('aba-access-ring-silhouette', HIDDEN)).toBeNull();
-    expect(screen.getByTestId('aba-access-card')).toBeTruthy();
+    // сворачивание: кадр стадии `fold` и рамка с тем же testID; карточка встаёт в конце сворачивания
+    expect(screen.getAllByTestId('aba-access-fold')).toHaveLength(2);
     await stepTo(A + PAIRING.accessMs + END_FRAME_MS - 1);
     expect(screen.getByTestId('aba-access-hold')).toBeTruthy();
+    expect(screen.getByTestId('aba-access-card')).toBeTruthy();
     expect(screen.queryByTestId('aba-choice')).toBeNull();
     await stepTo(A + PAIRING.accessMs + END_FRAME_MS);
     await waitFor(() => expect(screen.getByTestId('aba-choice')).toBeTruthy());
@@ -320,5 +343,34 @@ describe('цикл 3 (№171): обмен и кадр конца в сопряж
       const [rec] = await db.all<{ body: string }>('SELECT body FROM aba_pairing_sessions WHERE child_id = ?', [KID]);
       expect(JSON.parse(rec.body)).toMatchObject({ endReason: 'completed', cycles: 4 });
     });
+  });
+});
+
+describe('занятие открыто ради другого ребёнка (`openedForAba`): конец ведёт к выбору профиля', () => {
+  beforeEach(() => {
+    useChildSession.setState({ openedForAba: true });
+  });
+
+  it('выход удержанием: к выбору профиля, а не на карту, детская сессия сброшена', async () => {
+    await mount();
+    await fireEvent(screen.getByTestId('aba-exit'), 'pressIn');
+    await tick(1500);
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'));
+    expect(router.dismissTo).not.toHaveBeenCalled();
+    expect(useChildSession.getState()).toMatchObject({ childId: null, mode: 'none', openedForAba: false });
+  });
+
+  it('«Готово» на экране конца: к выбору профиля', async () => {
+    expect(await setAbaPaused(db, KID, true, new Date(clock.now()).toISOString())).toBe('saved');
+    await renderWithProviders(
+      <AbaClockProvider clock={clock}>
+        <AbaPairingScreen />
+      </AbaClockProvider>,
+    );
+    await waitFor(() => expect(screen.getByTestId('aba-end-done')).toBeTruthy());
+    await tick(abaEndDone.lockMs);
+    await fireEvent.press(screen.getByTestId('aba-end-done'));
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'));
+    expect(router.dismissTo).not.toHaveBeenCalled();
   });
 });

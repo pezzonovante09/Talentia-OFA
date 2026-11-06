@@ -62,7 +62,7 @@ export type ChildSessionState = {
 
   startNoRecordSession(input: { childId: string; now: Date; interfaceLang: InterfaceLang }): void;
   /** Сеанс ребёнка с аккаунтом: настройки из профиля, прогресс — снимок с устройства (`ProgressPort.load`). */
-  startAccountSession(input: { profile: ChildProfile; snapshot: ProgressSnapshot; now: Date }): void;
+  startAccountSession(input: { profile: ChildProfile; snapshot: ProgressSnapshot; now: Date; openedForAba?: boolean }): void;
   setSettings(patch: Partial<Pick<ChildSettings, 'calmMode' | 'focusMode' | 'soundEffects'>>): void;
   /** Начать или продолжить урок. Возвращает состояние оркестратора для экрана. */
   openLesson(input: { lessonId: string; now: Date; seed: number; nodeState: NodeState }): LessonSessionState;
@@ -76,6 +76,8 @@ export type ChildSessionState = {
   leaveLesson(): void;
   /** Урок завершён: итог → порт → память. Чужие ошибки порта пробрасываются, память не трогается. */
   finishLesson(input: { port: ProgressPort; runId: string; at: string }): Promise<FinishOutcome>;
+  /** Сессию сменили с другого ребёнка ради занятия ABA: выход из занятия — к выбору профиля (`leaveAba`). */
+  openedForAba: boolean;
   reset(): void;
 };
 
@@ -98,12 +100,13 @@ const EMPTY = {
   openedAs: null,
   abandoned: [] as readonly string[],
   pendingResult: null,
+  openedForAba: false,
 };
 
 export const useChildSession = create<ChildSessionState>((set, get) => ({
   ...EMPTY,
 
-  startAccountSession({ profile, snapshot, now }) {
+  startAccountSession({ profile, snapshot, now, openedForAba }) {
     const settings: ChildSettings = {
       band: profile.band,
       calmMode: profile.calmMode,
@@ -116,6 +119,7 @@ export const useChildSession = create<ChildSessionState>((set, get) => ({
       ...EMPTY,
       mode: 'account',
       childId: profile.childId,
+      openedForAba: openedForAba ?? false,
       settings,
       progress: snapshot,
       portion: accruePortion(NEW_PORTION, gameDay(now), settings.band),

@@ -19,18 +19,20 @@
  * - конец: итог пишется сразу, затем хвост (`model/endTail.ts`) — обмен и доступ или цикл сопряжения (ожидание в
  *   раскладке сопряжения без карточки, Ц3.2), потом один раз «Закончили» с доской; выход удержанием — `stopSession`.
  *
- * Сворачивание и возобновление — фаза 8: пока свёрнутая проба просто теряется вместе с экраном. Ошибки записи
- * (согласие, пауза, конфликт доски) — спокойный конец; ни ошибки, ни имена ABA-экранов наружу не уходят.
+ * Сворачивание и возобновление (фаза 8, правила — ABA.md «Возврат после сворачивания»): на `background` снимок
+ * пересохраняется, экран пустеет, отложенные смены кадра и шаги замирают (`away`); на возврате и на холодном старте —
+ * `loadAbaResume`. Ошибки записи разбираются (`classifyAbaWriteError`): конфликт доски — живая доска и повтор шага
+ * (`boardRetry`), пауза и отзыв согласия — спокойный конец без записи, прочее — итог `app_error`. Ни ошибки, ни имена
+ * ABA-экранов наружу не уходят (только `__DEV__`).
  */
 import { useKeepAwake } from 'expo-keep-awake';
 import { Redirect, useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode, type SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler, Pressable, Text, View } from 'react-native';
+import { BackHandler, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
-  abaBreak,
   abaBreakTrace,
   abaChoiceZone,
   abaExchange,
@@ -41,19 +43,16 @@ import {
   abaReinforcementOverlay,
   abaTierFor,
   abaTokenLandingMs,
-  inactiveChoice,
-  ABA_CONTROL_STROKE,
   type AbaTier,
 } from '../../src/design/abaTokens';
-import { radii } from '../../src/design/tokens';
-import { BREAK_CARD_WAIT_MS, type BreakCardStep } from '../../src/domain/abaBreakCard';
-import { adultPanelButtons, type PanelButton } from '../../src/domain/abaScoring';
+import type { BreakCardStep } from '../../src/domain/abaBreakCard';
+import type { PanelButton } from '../../src/domain/abaScoring';
 import {
   chooseReinforcer,
-  finishAbaSession,
   finishAccess,
   finishBreak,
   nextStep,
+  noChoiceAtEnd,
   recordBreakCardTraining,
   recordTrial,
   requestBreakBetweenTrials,
@@ -66,26 +65,48 @@ import {
   type TrialStep,
 } from '../../src/domain/abaSession';
 import { newAbaId } from '../../src/services/abaIds';
-import { loadAbaStart, loadFinishInputs } from '../../src/services/local/abaStart';
-import { commitAbaSession, loadBreakCardPlan, recordAbaTrial, saveAbaSessionStep } from '../../src/services/local/commit';
+import { classifyAbaWriteError, closeSession, loadAbaResume, markAbaSessionLeft } from '../../src/services/local/abaResume';
+import { abandonInProgressSession, loadAbaStart } from '../../src/services/local/abaStart';
+import { loadChildState } from '../../src/services/local/childState';
+import { loadBreakCardPlan, recordAbaTrial } from '../../src/services/local/commit';
 import { voice } from '../../src/services/voice';
 import { useAbaRun } from '../../src/state/abaRun';
 import { useAccount } from '../../src/state/account';
 import { useChildSession } from '../../src/state/childSession';
-import { CHILD_BREAK_MS, RETURN_INVITE_AFTER_MS, type AbaTarget } from '../../src/types/aba';
+import { CHILD_BREAK_MS, type AbaTarget } from '../../src/types/aba';
 import { AbaEnd } from '../../src/ui/aba/AbaEnd';
 import { useAbaClock, useDue } from '../../src/ui/aba/clock';
-import { accessDueAt, startAccess, stepAccess, type AccessRun } from '../../src/ui/aba/model/accessRun';
-import { advanceConsequence, consequenceDueAt, startConsequence, type ConsequenceRun } from '../../src/ui/aba/model/consequenceRun';
-import { matchDueAt, matchTrialInput, matchVisual, optionActive, startMatchTrial, stepMatchTrial, type MatchEvent, type MatchTrialRun } from '../../src/ui/aba/model/matchTrialRun';
+import { startAccess, stepAccess, type AccessRun } from '../../src/ui/aba/model/accessRun';
+import { advanceConsequence, startConsequence } from '../../src/ui/aba/model/consequenceRun';
+import { matchTrialInput, startMatchTrial, stepMatchTrial, type MatchEvent, type MatchTrialRun } from '../../src/ui/aba/model/matchTrialRun';
 import { endTail, type TailStep } from '../../src/ui/aba/model/endTail';
-import { exchangeDueAt, exchangeEndsAt, exchangeView, startExchange, type ExchangeRun } from '../../src/ui/aba/model/exchangeRun';
-import { choiceDueAt, startChoice, stepChoice, type ChoiceRun } from '../../src/ui/aba/model/reinforcerChoiceRun';
-import { ChildPressable, ExitHold, NonTrialRow, PlaceholderGlyph, useAbaColors, useReduceMotion } from '../../src/ui/aba/parts';
-import { AccessRing, ReinforcerChoiceView } from '../../src/ui/aba/reinforcer';
+import {
+  accessSceneOnStop,
+  accessScenesAtEnd,
+  boardOf,
+  gateOnHold,
+  gateOnRelease,
+  gateWait,
+  participationPhase,
+  phaseDueAt,
+  type AccessScene,
+  type FullBoardGate,
+  type Phase,
+} from '../../src/ui/aba/model/sessionPhase';
+import { accessOnReturn, breakOnReturn, exchangePendingOnResume, exchangeUnseen } from '../../src/ui/aba/model/sessionResume';
+import { useAbaBackground } from '../../src/ui/aba/useAbaBackground';
+import { useSessionTail } from '../../src/ui/aba/useSessionTail';
+import { useSessionWrites } from '../../src/ui/aba/useSessionWrites';
+import { leaveAba } from '../../src/ui/aba/leaveAba';
+import { exchangeEndsAt, exchangeView, startExchange } from '../../src/ui/aba/model/exchangeRun';
+import { startChoice, stepChoice } from '../../src/ui/aba/model/reinforcerChoiceRun';
+import { ExitHold, useAbaColors, useReduceMotion } from '../../src/ui/aba/parts';
 import { AccessView } from '../../src/ui/aba/session/AccessView';
+import { BreakView } from '../../src/ui/aba/session/BreakView';
+import { ChooseFrame } from '../../src/ui/aba/session/ChooseFrame';
 import { ExchangeView, PairingWaitView } from '../../src/ui/aba/session/ExchangeView';
-import { AdultPanel, BreakTrace, MatchField, ReinforcementOverlay, TokenStrip, TopBar } from '../../src/ui/aba/session/parts';
+import { AdultPanel, BreakTrace, TokenStrip, TopBar } from '../../src/ui/aba/session/parts';
+import { TrialFrame } from '../../src/ui/aba/session/TrialFrame';
 
 const ZONE: Record<AbaTier, (typeof abaChoiceZone)[keyof typeof abaChoiceZone]> = {
   roomy: abaChoiceZone.regular,
@@ -93,88 +114,6 @@ const ZONE: Record<AbaTier, (typeof abaChoiceZone)[keyof typeof abaChoiceZone]> 
   tight: abaChoiceZone.tight,
 };
 const CARD_STEPS: BreakCardStep[] = ['model', 'prompted', 'independent'];
-
-type EndBoard = { cells: number; filled: number } | null;
-
-/**
- * Смена кадра с полной доски на обмен (Ц4, итог проверок, огр. 1): палец на карточке «перерыв» или «Отказ» её
- * откладывает — `frameAt` (после отпускания — ещё `acceptedShowMs` отклика), но не дальше `ceilingAt`. Держит только
- * касание, начатое не раньше показа кадра `since` (плашка — отметка, участие — посадка; как `abaTouchCommits`).
- */
-type FullBoardGate = { since: number; ceilingAt: number; frameAt: number | null };
-
-type Phase =
-  | { kind: 'loading' }
-  /** `gestureAt` — с этого момента подпись «жест»; на `independent` без касания и после жеста — пропуск по сроку. */
-  | { kind: 'card'; step: BreakCardStep; shownAt: number; gesture: boolean; gestureAt: number | null }
-  | { kind: 'choose'; options: string[]; choice: ChoiceRun }
-  | { kind: 'pause'; step: TrialStep; until: number }
-  | { kind: 'trial'; run: MatchTrialRun; pressed: PanelButton | null }
-  /**
-   * `stripEarned` — сколько жетонов показывать в полосе (без жетона за участие — он отдельным событием; при обмене сразу —
-   * полная доска до экрана обмена). `participation` — жетон за участие ждёт своего события после последствия.
-   */
-  | {
-      kind: 'consequence';
-      run: ConsequenceRun;
-      overlay: boolean;
-      earnedBefore: number;
-      landed: boolean;
-      empty: boolean;
-      field: TrialStep;
-      stripEarned: number;
-      participation: boolean;
-      chosenId: string | null;
-      /** Карточку «перерыв» коснулись: статичный контур 6 до начала перерыва — касание принято. */
-      breakAsked: boolean;
-      /** Жетон пробы заполнил доску (№172): после посадки — смена кадра на обмен, без межпробной паузы. */
-      gate: FullBoardGate | null;
-    }
-  /**
-   * Жетон за участие (ABA.md: отдельным событием): короткое падение в ячейку полосы со звуком, затем шаг домена.
-   * `gate` — он заполнил доску: через `afterLandingMs` смена кадра на обмен (Ц4.1).
-   */
-  | {
-      kind: 'participation';
-      landAt: number;
-      /** Посадка прошла (звук `token` дан): не пропускается, если кадр запоздал. */
-      landed: boolean;
-      until: number;
-      earned: number;
-      field: TrialStep | null;
-      then: AbaStep | null;
-      breakAsked: boolean;
-      gate: FullBoardGate | null;
-    }
-  /**
-   * `invite` — сколько приглашений вернуться показано (0 — идёт кольцо); `training` — обучающий перерыв по карточке:
-   * после второго приглашения сессия не кончается (№169).
-   */
-  | {
-      kind: 'break';
-      step: Extract<AbaStep, { kind: 'break' }>;
-      shownAt: number;
-      until: number;
-      tick?: number;
-      invite: 0 | 1 | 2;
-      inviteAt: number | null;
-      training: boolean;
-    }
-  /**
-   * Обмен без кнопки (`exchangeRun`): `pairing` — жетон цикла сопряжения в конце (Tali и одна ячейка); дальше — доступ
-   * шага домена или хвост конца. `tick` — время последнего кадра.
-   */
-  | { kind: 'exchange'; run: ExchangeRun; tick: number; pairing: boolean; next: Extract<AbaStep, { kind: 'access' }> | 'tail'; trace: boolean }
-  /**
-   * `sceneEndedAt` — T: время сцены для журнала (№171) — от `run.startedAt` до T. `trace` (и у обмена) — просьбу о
-   * перерыве приняли на плашке или жетоне за участие: карточка-след в строке 72 до экрана перерыва (`abaBreakTrace`).
-   */
-  | { kind: 'access'; run: AccessRun; tick: number; tail: boolean; sceneEndedAt: number | null; trace: boolean }
-  /** Ожидание цикла сопряжения в конце (Ц3.2): раскладка сопряжения без карточки. */
-  | { kind: 'end_wait'; until: number }
-  | { kind: 'busy' }
-  /** «Закончили» — один раз, в самом конце. */
-  | { kind: 'ended'; variant: 'normal' | 'neutral'; board: EndBoard };
 
 export default function AbaSessionScreen() {
   const { t } = useTranslation();
@@ -190,7 +129,13 @@ export default function AbaSessionScreen() {
   const primaryObserverId = useAbaRun((s) => s.primaryObserverId);
   useKeepAwake();
 
-  const [phase, setPhase] = useState<Phase>({ kind: 'loading' });
+  const [phase, showPhase] = useState<Phase>({ kind: 'loading' });
+  /** Свёрнуто: отложенные смены кадра и шаги не идут, кадр на возврате строится из снимка; `leaves` — номер ухода. */
+  const away = useRef(false);
+  const leaves = useRef(0);
+  const setPhase = useCallback((p: SetStateAction<Phase>) => {
+    if (!away.current) showPhase(p);
+  }, []);
   const [height, setHeight] = useState<number | null>(null);
   const [width, setWidth] = useState(375);
   const st = useRef<AbaSessionState | null>(null);
@@ -205,8 +150,6 @@ export default function AbaSessionScreen() {
   const exiting = useRef(false);
   /** Обмен прошёл (сразу, на перерыве): следующий доступ начинается с экрана обмена, а до него доска видна полной. */
   const exchangePending = useRef(false);
-  /** Запись просьбы, сделанной вне хода шага (карточка «перерыв» на последствии и участии): следующий шаг её ждёт. */
-  const writing = useRef<Promise<void> | null>(null);
   /** Просьба «перерыв» уже в домене: заранее взятый шаг участия (`then`) устарел — следующий берётся заново. */
   const breakQueued = useRef(false);
   /** Обмен идёт сменой кадра с полной доски (Ц4): доска переехала — удержание `fromFullBoard.holdMs` (№173). */
@@ -216,8 +159,15 @@ export default function AbaSessionScreen() {
   /** Палец, который сейчас лежит на карточке «перерыв» или «Отказ», и момент последнего отпускания (огр. 1). */
   const held = useRef<{ what: 'break_card' | 'adult_refusal'; at: number } | null>(null);
   const releasedAt = useRef(-Infinity);
-  const tail = useRef<TailStep[]>([]);
-  const endView = useRef<{ variant: 'normal' | 'neutral'; board: EndBoard }>({ variant: 'neutral', board: null });
+  /** Тир — один раз на сессию (`abaWindowPolicy.tierChosen`): первый `onLayout`; `null` на нём — к гейту `/aba`. */
+  const tierRef = useRef<AbaTier | null>(null);
+  /** Момент ухода в фон; на холодном старте — `updated_at` снимка. `accessLeft` — выданные отрезки и сцена, с которой ушли. */
+  const leftAt = useRef<number | null>(null);
+  const accessLeft = useRef<{ scenes: AccessScene[]; run: AccessRun } | null>(null);
+  /** Последнее начатое действие экрана (запись пробы, шага): уход в фон и возврат ждут его конца. */
+  const inFlight = useRef<Promise<unknown>>(Promise.resolve());
+  /** Итог пишется (`closeSession`): выход в это окно не уводит с экрана — конец сам уйдёт на карту. */
+  const closing = useRef(false);
   // старт один раз: настройки и наблюдатели берутся на момент старта
   const startOpts = useRef({ settings, observers, primaryObserverId });
   const calm = startOpts.current.settings.calmMode;
@@ -226,89 +176,96 @@ export default function AbaSessionScreen() {
   const still = calm || reduceMotion;
 
   const iso = useCallback(() => new Date(clock.now()).toISOString(), [clock]);
-  const boardOf = (s: AbaSessionState | null): EndBoard => (s ? { cells: s.board.size, filled: s.board.earned } : null);
-  const fail = useCallback((e: unknown) => {
-    if (__DEV__) console.warn('aba-session', e);
+  const tail = useSessionTail({ db, childId, still, setPhase });
+  const { writing, boardRetry, saveStep, writeAside } = useSessionWrites({ db, childId, st, now: () => clock.now() });
+  /** Спокойный конец без записи (пауза, отзыв согласия, конфликт доски не разрешился): снимок остаётся, стор сброшен. */
+  const endWithoutWrite = useCallback(() => {
+    finished.current = true;
+    away.current = false;
+    useAbaRun.getState().reset();
     // доска и при ошибке видна как есть (Ц2.10): жетоны не пропадают
-    setPhase({ kind: 'ended', variant: 'neutral', board: boardOf(st.current) });
-  }, []);
-
-  /** Следующий шаг хвоста конца: обмен, доступ, ожидание цикла, жетон сопряжения, «Закончили». */
-  const nextTail = useCallback(
-    (now: number) => {
-      const step = tail.current.shift() ?? { kind: 'end' as const };
-      const { variant, board } = endView.current;
-      switch (step.kind) {
-        case 'exchange':
-          setPhase({ kind: 'exchange', run: startExchange({ at: now, cells: step.boardSize, calm: still }), tick: now, pairing: false, next: 'tail', trace: false });
-          return;
-        case 'access':
-          setPhase({ kind: 'access', run: startAccess(now, step.durationMs, 0, still), tick: now, tail: true, sceneEndedAt: null, trace: false });
-          return;
-        case 'wait':
-          setPhase({ kind: 'end_wait', until: now + step.ms });
-          return;
-        case 'pairing_token':
-          // карточка появляется вместе с жетоном (№171); кадр «до жетона» — на миг раньше, чтобы звук `token` шёл при посадке
-          setPhase({ kind: 'exchange', run: startExchange({ at: now, cells: 1, calm: still, landFirst: true }), tick: now - 1, pairing: true, next: 'tail', trace: false });
-          return;
-        case 'end':
-          setPhase({ kind: 'ended', variant, board });
-      }
-    },
-    [still],
-  );
+    const end = { variant: 'neutral', board: boardOf(st.current) } as const;
+    tail.setEnd(end);
+    setPhase({ kind: 'ended', ...end });
+  }, [setPhase, tail]);
+  /** Конец без кадра: на пустом кадре (свёрнуто, холодный возврат) — момент ухода и выданные отрезки, иначе сейчас и сцена кадра. */
+  const stopPoint = () => {
+    const shown = lastPhase.current;
+    const gone = away.current || shown.kind === 'away' || shown.kind === 'loading' ? leftAt.current : null;
+    return gone === null ? { at: clock.now(), scenes: accessSceneOnStop(shown) } : { at: gone, scenes: accessLeft.current?.scenes, endedAt: gone };
+  };
+  /**
+   * Ошибка действия экрана (фаза 8): конфликт доски, оставшийся после повторов, пауза и отзыв согласия — спокойный конец
+   * без записи; остальное — итог сессии причиной `app_error` (ступень доски не решает, обмена нет). На возврате кадр пуст:
+   * конец — момент ухода, в журнале только выданные отрезки. Текст ошибки — только в `__DEV__`.
+   */
+  const fail = (e: unknown): Promise<void> => {
+    if (__DEV__) console.warn('aba-session', e);
+    if (finished.current) return Promise.resolve();
+    if (classifyAbaWriteError(e) !== 'other' || !st.current) {
+      endWithoutWrite();
+      return Promise.resolve();
+    }
+    const stop = stopPoint();
+    return finishRef.current(stopSession(st.current, 'app_error', stop.at, stop.scenes), 'neutral', stop.endedAt).catch(() => endWithoutWrite());
+  };
 
   /**
    * Конец: итог сессии одной транзакцией (повтор не пишет второй раз), затем хвост `endTail` — обмен и доступ или цикл
    * сопряжения. Итог — до доступа: свёрнутое во время доступа приложение не теряет итог по целям.
    */
   const finish = useCallback(
-    async (s: AbaSessionState, variant: 'normal' | 'neutral') => {
+    async (state: AbaSessionState, variant: 'normal' | 'neutral', endedAt?: number) => {
       if (finished.current) return;
       finished.current = true;
+      closing.current = true;
       setPhase({ kind: 'busy' });
-      // просьба вне хода шага ещё пишется — снимок «в работе» не должен лечь после итога
-      if (writing.current) await writing.current;
+      // просьба вне хода шага ещё пишется — снимок «в работе» не должен лечь после итога; её ошибка конца не отменяет
+      await writing.current?.catch(() => undefined);
+      // выход нажат, пока итог не записан: остановка перекрывает плановый конец — как до записи
+      const s = exiting.current ? stopSession(state, state.config === 'alone' ? 'abandoned' : 'adult_stopped', clock.now()) : state;
       let steps: TailStep[] = [{ kind: 'end' }];
       let board = boardOf(s);
-      try {
-        if (db && childId) {
-          const now = clock.now();
-          const inputs = await loadFinishInputs(db, childId, s);
-          const result = finishAbaSession(s, now, inputs.pastSessions, undefined, inputs.signalHistory, inputs.extra);
-          await commitAbaSession(db, childId, result, new Date(now).toISOString());
-          steps = endTail({ exchanged: result.exchanged, boardSize: result.session.boardSize, events: result.session.events });
+      if (db && childId) {
+        const now = clock.now();
+        // итог с повтором по живой доске при конфликте (`closeSession`); пауза, отзыв или иная ошибка — спокойный конец
+        // без итога, снимок остаётся: родитель закроет занятие
+        const out = await closeSession(db, childId, s, { endedAt: endedAt ?? now, now }).catch((error: unknown) => ({ kind: 'failed' as const, error }));
+        if (out.kind === 'ok') {
+          const { result } = out;
+          // подкрепителя нет — обмену и доступу нечего показать (пустой экран): сразу «Закончили» (фаза 8, защитная ветка)
+          if (s.reinforcerId !== null) steps = endTail({ exchanged: result.exchanged, boardSize: result.session.boardSize, events: result.session.events });
           board = { cells: result.board.size, filled: result.board.earned };
+          tail.closed(result.session.id);
+        } else {
+          if (__DEV__) console.warn('aba-session-commit', out.kind === 'failed' ? out.error : out.kind);
+          variant = 'neutral';
+          // итог не лёг: на конце живая доска, а не доска из памяти (методист, д)
+          const live = await loadChildState(db, childId, 'abaBoard').catch(() => null);
+          if (live) board = { cells: s.board.size, filled: live.earned };
         }
-      } catch (e) {
-        if (__DEV__) console.warn('aba-session-commit', e);
-        variant = 'neutral';
-        steps = [{ kind: 'end' }];
       }
+      closing.current = false;
       useAbaRun.getState().reset();
+      tail.arm(steps, { variant, board });
       if (exiting.current) {
-        router.dismissTo('/map');
+        tail.leave(steps[0].kind, null, clock.now());
+        leaveAba(router);
         return;
       }
-      tail.current = steps;
-      endView.current = { variant, board };
-      nextTail(clock.now());
+      // свернули, пока писался итог: хвост стоит на первом шаге, дальше решит возврат (а8)
+      if (away.current) tail.leave(steps[0].kind, null, leftAt.current ?? clock.now());
+      else tail.next(clock.now());
     },
-    [db, childId, clock, router, nextTail],
+    [db, childId, clock, router, tail, setPhase, writing],
   );
+  // `fail` объявлен выше и зовёт конец через ссылку: `finish` пересоздаётся позже него
+  const finishRef = useRef(finish);
+  finishRef.current = finish;
 
-  /** Сохранить снимок сессии в работе (после выкладки поля, выбора, перерыва, доступа). */
-  const save = useCallback(
-    async (s: AbaSessionState, choice?: Parameters<typeof saveAbaSessionStep>[4]) => {
-      if (!db || !childId) return s;
-      return saveAbaSessionStep(db, childId, s, iso(), choice);
-    },
-    [db, childId, iso],
-  );
-
-  /** Следующий шаг домена — в фазу экрана. */
+  /** Следующий шаг домена — в фазу экрана. Свёрнуто — шаг возьмёт возврат: перерыв и доступ не начинаются в фоне. */
   async function advance() {
+    if (away.current) return;
     // просьба вне хода шага ещё пишется: шаг берётся после записи, иначе следующая запись разойдётся с версией доски;
     // кадр на это время замирает — «Отказ» в этом окне дал бы второй шаг и обмен без экрана обмена
     if (writing.current) {
@@ -316,7 +273,7 @@ export default function AbaSessionScreen() {
       await writing.current;
     }
     const cur = st.current;
-    if (!cur || finished.current) return;
+    if (!cur || finished.current || away.current) return;
     const now = clock.now();
     const next = nextStep(cur, now);
     st.current = next.state;
@@ -325,36 +282,23 @@ export default function AbaSessionScreen() {
     if (next.state.exchangesMade > cur.exchangesMade) exchangePending.current = true;
     // жетон за участие от закрытия блока (`nextStep`) — своим событием до шага
     if (next.participation) {
-      setPhase(participationPhase(now, null, next.step));
+      setPhase(participationPhase({ now, field: null, then: next.step, board: next.state.board, fills: exchangePending.current }));
       return;
     }
     await show(next.step, now);
   }
 
-  /**
-   * Жетон за участие: падает в ячейку полосы за `drop.ms`, полоса стоит `holdMs`. Заполнил доску (обмен прошёл сразу) —
-   * до экрана обмена доска видна полной, а смена кадра на обмен — через `afterLandingMs` после посадки (Ц4.1).
-   */
-  function participationPhase(now: number, field: TrialStep | null, then: AbaStep | null): Phase {
-    const fills = exchangePending.current;
-    const board = st.current!.board;
-    const landAt = now + abaParticipation.drop.ms;
-    const f = abaExchange.fromFullBoard;
-    return {
-      kind: 'participation',
-      landAt,
-      landed: false,
-      until: landAt + (fills ? f.afterLandingMs : abaParticipation.holdMs),
-      earned: fills ? board.size : board.earned,
-      field,
-      then,
-      breakAsked: false,
-      gate: fills ? { since: landAt, ceilingAt: landAt + f.ceilingMs, frameAt: null } : null,
-    };
-  }
   // старт зовёт шаг через ссылку: функция пересоздаётся на каждом рендере
   const advanceRef = useRef(advance);
   advanceRef.current = advance;
+
+  /** После записи шага: конец уже идёт — шаг не нужен; просьба о перерыве легла во время записи — шаг устарел, берётся заново (№160). */
+  async function stepStale() {
+    if (finished.current) return true;
+    if (!breakQueued.current) return false;
+    await advance();
+    return true;
+  }
 
   async function show(step: AbaStep, now: number) {
     const cur = st.current!;
@@ -374,28 +318,64 @@ export default function AbaSessionScreen() {
         setPhase({ kind: 'choose', options: step.options, choice: startChoice(cur.config, now) });
         return;
       case 'trial': {
-        st.current = await save(cur);
+        await saveStep((c) => c);
+        if (await stepStale()) return;
         if (step.pauseBeforeMs > 0) setPhase({ kind: 'pause', step, until: now + step.pauseBeforeMs });
         else beginTrial(step, now);
         return;
       }
       case 'break': {
+        // снимок на входе: `breakStartedAt` доживает до холодного старта, в том числе если iOS заморозит JS сразу после `background`
+        await saveStep((c) => c);
+        if (await stepStale()) return;
         const head = cur.queue[0];
         const training = head?.kind === 'break' && head.training === true;
+        const maxMs = step.maxMs ?? CHILD_BREAK_MS[cur.band];
+        // перерыв начат до сворачивания (фаза 8): домен хранит `breakStartedAt` — кольцо по остатку, срок бездействия от возврата
+        const startedAt = cur.breakStartedAt ?? now;
+        if (startedAt < now) {
+          if (step.offerCardMs !== undefined) {
+            // тихая пауза после «Отказ» истекла в фоне — закрывается своим сроком, не моментом возврата
+            if (now >= startedAt + maxMs) {
+              await endBreak(now, startedAt + maxMs);
+              return;
+            }
+            setPhase({ kind: 'break', step, startedAt, shownAt: now, until: startedAt + maxMs, tick: now, invite: 0, inviteAt: null, training });
+            return;
+          }
+          setPhase({ kind: 'break', step, ...breakOnReturn({ startedAt, maxMs, now }), training });
+          return;
+        }
         // пауза после «Отказ»: карточка подсвечена `offerCardMs`, а сама тихая пауза — `maxMs` (`REFUSAL_QUIET_MS`, 30 с
         // от снятия требования, ABA.md блок 4 п. 1)
-        setPhase({ kind: 'break', step, shownAt: now, until: now + (step.maxMs ?? CHILD_BREAK_MS[cur.band]), invite: 0, inviteAt: null, training });
+        setPhase({ kind: 'break', step, startedAt: now, shownAt: now, until: now + maxMs, invite: 0, inviteAt: null, training });
         return;
       }
       case 'access':
+        // подкрепителя нет — показать нечего, а пустой экран хуже конца: программная ошибка, не решение ребёнка
+        if (cur.reinforcerId === null) {
+          await finish(stopSession(cur, 'app_error', now, null), 'neutral');
+          return;
+        }
         if (exchangePending.current) {
           exchangePending.current = false;
           const holdMs = fullBoard ? abaExchange.fromFullBoard.holdMs : undefined;
           setPhase({ kind: 'exchange', run: startExchange({ at: now, cells: cur.board.size, calm: still, holdMs }), tick: now, pairing: false, next: step, trace });
-        } else setPhase({ kind: 'access', run: startAccess(now, step.durationMs, 0, still), tick: now, tail: false, sceneEndedAt: null, trace });
+        } else if (cur.accessStartedAt !== null && cur.accessStartedAt < now) {
+          // доступ начат до сворачивания (фаза 8): до T — сцена с остатка, после T — только кадр конца; в журнал — выданные отрезки
+          // тёплый возврат знает настоящую сцену: T — от её начала, а не от кадра обмена
+          const was = accessLeft.current;
+          accessLeft.current = null;
+          const r = accessOnReturn({ accessStartedAt: was?.run.startedAt ?? cur.accessStartedAt, durationMs: was?.run.durationMs ?? step.durationMs, leftAt: leftAt.current ?? cur.accessStartedAt, now, still, delivered: was?.scenes });
+          setPhase({ kind: 'access', run: r.run, tick: now, tail: false, sceneEndedAt: null, trace, scenes: r.scenes, sceneFrom: r.sceneFrom });
+        } else {
+          await saveStep((c) => c);
+          if (finished.current) return;
+          setPhase({ kind: 'access', run: startAccess(now, step.durationMs, 0, still), tick: now, tail: false, sceneEndedAt: null, trace, scenes: [], sceneFrom: now });
+        }
         return;
       case 'end':
-        await finish(cur, step.endedOnSuccess ? 'normal' : 'neutral');
+        await finish(cur, step.endedOnSuccess && !step.byInactivity ? 'normal' : 'neutral');
         return;
       case 'adult_finish_chain':
         // цепочек в этапе 11 нет: неизвестный шаг — спокойный конец
@@ -404,7 +384,10 @@ export default function AbaSessionScreen() {
     }
   }
 
-  const run = (p: Promise<void>) => void p.catch(fail);
+  /** Действие экрана: ошибка — в `fail`. Уход в фон ждёт его конца. */
+  const run = (p: Promise<void>) => {
+    inFlight.current = Promise.allSettled([inFlight.current, p.catch((e: unknown) => fail(e))]);
+  };
 
   function beginTrial(step: TrialStep, now: number) {
     const s = st.current!;
@@ -416,17 +399,69 @@ export default function AbaSessionScreen() {
     });
   }
 
-  // старт
+  /** Незаконченное занятие просрочено (фаза 8, Ц2.11): закрыть `app_backgrounded` моментом ухода, без экрана конца — на карту. */
+  async function abandonAndLeave(at: number) {
+    if (db && childId) await abandonInProgressSession(db, childId, { reason: 'app_backgrounded', at, now: clock.now(), soundOn: startOpts.current.settings.soundEffects });
+    finished.current = true;
+    useAbaRun.getState().reset();
+    leaveAba(router);
+  }
+  /** Продолжить занятие из снимка (фаза 8): состояние уже по живой доске; обмен, которого ребёнок не видел, — заново. */
+  async function resumeFrom(state: AbaSessionState, from: number, o: { cold: boolean }) {
+    st.current = state;
+    leftAt.current = from;
+    // обучение карточке «перерыв» на холодном старте не повторяется: записанные возможности уже в событиях снимка
+    // (методист а9); при тёплом возврате refs целы — обучение продолжается
+    if (o.cold) cardLeft.current = 0;
+    exchangePending.current = exchangePendingOnResume(state);
+    // обмен заново — с удержанием полной доски 1000 и на одной ячейке (`design-lead`, огр. 4 `child-ux-specialist`)
+    if (exchangePending.current) fromFullBoard.current = true;
+    await advanceRef.current();
+  }
+  // старт и возврат зовут функции рендера через ссылку: подписка и эффект живут дольше рендера
+  const latest = useRef({ fail, abandonAndLeave, resumeFrom, endWithoutWrite });
+  latest.current = { fail, abandonAndLeave, resumeFrom, endWithoutWrite };
+  // старт один на жизнь экрана: его отменяет только уход с экрана, а не смена окна или настройки движения
+  const unmounted = useRef(false);
+  useEffect(() => {
+    unmounted.current = false;
+    return () => {
+      unmounted.current = true;
+    };
+  }, []);
+
+  // старт — после первого `onLayout`: тир фиксируется один раз на сессию, `null` («слишком мал») — к гейту `/aba`, пока
+  // ничего не начато и не записано (фаза 8, `abaWindowPolicy.tierChosen`)
   const started = useRef(false);
   useEffect(() => {
-    if (!db || !childId || !config || started.current) return;
+    if (!db || !childId || !config || started.current || height === null) return;
+    const tier = abaTierFor(height, insets.bottom);
+    if (tier === null) {
+      router.replace('/aba');
+      return;
+    }
+    tierRef.current = tier;
     started.current = true;
-    let live = true;
     const o = startOpts.current;
     const now = clock.now();
     void (async () => {
+      // незаконченное занятие — продолжить, закрыть как просроченное или закончить без записи (пауза, отзыв)
+      const r = await loadAbaResume(db, childId, { soundOn: o.settings.soundEffects, now });
+      if (unmounted.current) return;
+      if (r.kind === 'blocked') {
+        latest.current.endWithoutWrite();
+        return;
+      }
+      if (r.kind === 'abandon') {
+        await latest.current.abandonAndLeave(r.leftAt);
+        return;
+      }
+      if (r.kind === 'resume') {
+        await latest.current.resumeFrom(r.state, r.leftAt, { cold: true });
+        return;
+      }
       const start = await loadAbaStart(db, childId, { config, band: o.settings.band, soundOn: o.settings.soundEffects, observers: o.observers, primaryObserverId: o.primaryObserverId, now });
-      if (!live) return;
+      if (unmounted.current) return;
       if (start.kind === 'blocked') {
         setPhase({ kind: 'ended', variant: 'neutral', board: null });
         return;
@@ -444,12 +479,9 @@ export default function AbaSessionScreen() {
         cardIdx.current = CARD_STEPS.indexOf(plan.startStep);
         coaching.current = plan.adultCoaching;
       }
-      if (live) await advanceRef.current();
-    })().catch((e: unknown) => live && fail(e));
-    return () => {
-      live = false;
-    };
-  }, [db, childId, config, clock, fail]);
+      if (!unmounted.current) await advanceRef.current();
+    })().catch((e: unknown) => (unmounted.current ? undefined : latest.current.fail(e)));
+  }, [db, childId, config, clock, height, insets.bottom, router, setPhase]);
 
   // системный «назад» (жест от края, ладонь у кромки) не выходит мимо удержания выхода
   useEffect(() => {
@@ -457,45 +489,84 @@ export default function AbaSessionScreen() {
     return () => sub.remove();
   }, []);
 
-  // --- сроки фаз
-  const dueAt = (() => {
-    switch (phase.kind) {
-      case 'card':
-        // `independent`: 10 с без жеста, потом жест; после жеста ещё 10 с без касания — возможность пропущена
-        if (phase.step !== 'independent') return null;
-        return phase.gesture ? phase.gestureAt! + BREAK_CARD_WAIT_MS : phase.shownAt + BREAK_CARD_WAIT_MS;
-      case 'choose':
-        return choiceDueAt(phase.choice);
-      case 'pause':
-        return phase.until;
-      case 'trial':
-        return matchDueAt(phase.run);
-      case 'consequence':
-        return phase.gate?.frameAt ?? consequenceDueAt(phase.run);
-      case 'participation':
-        return !phase.landed ? phase.landAt : (phase.gate?.frameAt ?? phase.until);
-      case 'break':
-        // кольцо — шагами по 1 с (`abaBreak.timerCalmStepMs`), у паузы после «Отказ» — один срок
-        if (phase.step.offerCardMs) {
-          const cardEnd = phase.shownAt + phase.step.offerCardMs;
-          return (phase.tick ?? phase.shownAt) < cardEnd ? cardEnd : phase.until;
-        }
-        if (phase.invite === 0) return Math.min((phase.tick ?? phase.shownAt) + abaBreak.timerCalmStepMs, phase.until);
-        // после второго приглашения обучающий перерыв ждёт взрослого: конца по бездействию нет
-        if (phase.invite === 2 && phase.training) return null;
-        return phase.inviteAt! + RETURN_INVITE_AFTER_MS;
-      case 'exchange':
-        return exchangeDueAt(phase.run, phase.tick);
-      case 'access': {
-        const due = accessDueAt(phase.run);
-        return phase.run.stage === 'play' && due !== null ? Math.min(phase.tick + abaBreak.timerCalmStepMs, due) : due;
+  // сворачивание и возврат (фаза 8): уход — снимок с моментом ухода (или строка хвоста) и пустой экран; возврат —
+  // `loadAbaResume`: та же проба / новый выбор / просрочка; ветки возврата не начинают новую сессию
+  useAbaBackground({
+    enabled: phase.kind !== 'loading' && phase.kind !== 'ended',
+    onLeave: (now) => {
+      // лежащего пальца и следов касаний после возврата не существует (`child-ux-specialist`, огр. 7)
+      held.current = null;
+      releasedAt.current = -Infinity;
+      breakTrace.current = false;
+      fromFullBoard.current = false;
+      const p = phase;
+      leaves.current += 1;
+      showPhase({ kind: 'away' });
+      away.current = true;
+      // возврат не успел показать кадр: это тот же уход, момент — первый, иначе фон первого ухода стал бы рабочим временем
+      if (p.kind === 'away') return;
+      leftAt.current = now;
+      if (finished.current) {
+        tail.leaveOn(p, now);
+        return;
       }
-      case 'end_wait':
-        return phase.until;
-      default:
-        return null;
-    }
-  })();
+      if (p.kind === 'access') accessLeft.current = { scenes: accessScenesAtEnd(p, now), run: p.run };
+      const unseen = exchangePending.current || (p.kind === 'exchange' && p.next !== 'tail');
+      if (!db || !childId || !st.current) return;
+      // снимок с моментом ухода — после идущей записи; ждёт его только возврат, иначе шаг в работе ждал бы сам себя; ошибки —
+      // только `__DEV__`: пауза или отзыв в этот миг — штатный ход, на возврате их увидит `loadAbaResume`
+      inFlight.current = Promise.allSettled([writing.current, inFlight.current])
+        .then(() =>
+          boardRetry(async () => {
+            if (!st.current || finished.current) return;
+            st.current = await markAbaSessionLeft(db, childId, unseen ? exchangeUnseen(st.current, now) : st.current, new Date(now).toISOString());
+          }),
+        )
+        .catch((e: unknown) => {
+          if (__DEV__) console.warn('aba-session-leave', e);
+        });
+    },
+    onReturn: (now) => {
+      const mine = leaves.current;
+      run(
+        (async () => {
+          await Promise.allSettled([writing.current, inFlight.current]);
+          // снова свернули, пока шла запись: решит следующий возврат
+          if (mine !== leaves.current) return;
+          if (finished.current) {
+            away.current = false;
+            tail.back(now);
+            return;
+          }
+          if (!db || !childId) {
+            endWithoutWrite();
+            return;
+          }
+          const r = await loadAbaResume(db, childId, { soundOn: startOpts.current.settings.soundEffects, now });
+          if (mine !== leaves.current) return;
+          if (r.kind === 'none' || r.kind === 'blocked') {
+            // снимка нет (отзыв) или писать нельзя (пауза): конец без записи, новую сессию возврат не начинает
+            endWithoutWrite();
+            return;
+          }
+          if (r.kind === 'abandon') {
+            await latest.current.abandonAndLeave(r.leftAt);
+            return;
+          }
+          // тёплый возврат: обучение карточке продолжается (refs целы) — `cardLeft` не трогаем
+          away.current = false;
+          await latest.current.resumeFrom(r.state, r.leftAt, { cold: false });
+        })().catch((e: unknown) => {
+          // возврат не удался — кадр не должен остаться пустым: дальше обычный разбор ошибки
+          if (mine === leaves.current) away.current = false;
+          throw e;
+        }),
+      );
+    },
+  });
+
+  // --- сроки фаз
+  const dueAt = phaseDueAt(phase);
 
   useDue(dueAt, (at) => {
     const p = phase;
@@ -514,7 +585,7 @@ export default function AbaSessionScreen() {
           // смена кадра ждала касание: отклик показан или потолок
           if (!commitHeld(p.gate, at)) toFullBoardExchange(next);
         } else if (p.gate) {
-          const wait = gateWait(p.gate, at);
+          const wait = gateWait(p.gate, at, held.current, releasedAt.current);
           if (wait !== null) setPhase({ ...p, gate: { ...p.gate, frameAt: wait } });
           else toFullBoardExchange(next);
         } else next();
@@ -552,14 +623,14 @@ export default function AbaSessionScreen() {
             if (p.participation) {
               // жетон за участие — после последствия пробы, своим событием; затем следующий шаг домена (при обмене
               // сразу доска до экрана обмена видна полной)
-              setPhase({ ...participationPhase(at, p.field, null), breakAsked: p.breakAsked } as Phase);
+              setPhase(participationPhase({ now: at, field: p.field, then: null, board: st.current!.board, fills: exchangePending.current, breakAsked: p.breakAsked }));
               return;
             }
             run(advance());
             return;
           } else if (fx.kind === 'exchange') {
             // жетон пробы заполнил доску (№172): через 700 мс после посадки — смена кадра на обмен
-            const wait = p.gate ? gateWait(p.gate, at) : null;
+            const wait = p.gate ? gateWait(p.gate, at, held.current, releasedAt.current) : null;
             if (wait !== null) setPhase({ ...np, gate: { ...p.gate!, frameAt: wait } } as Phase);
             else toFullBoardExchange(() => run(advance()));
             return;
@@ -589,15 +660,23 @@ export default function AbaSessionScreen() {
       }
       case 'exchange': {
         // жетон цикла сопряжения сел в ячейку — звук `token` (Ц3.3: похвалы голосом в цикле нет)
-        if (p.pairing && !exchangeView(p.run, p.tick).tokenInCell && exchangeView(p.run, at).tokenInCell) voice.say('abaSession.sound.token');
+        if (p.pairing && !exchangeView(p.run, p.tick).tokenInCell && exchangeView(p.run, at).tokenInCell) {
+          voice.say('abaSession.sound.token');
+          tail.pairingTokenLanded(at);
+        }
         if (exchangeView(p.run, at).stage !== 'done') {
           setPhase({ ...p, tick: at });
           return;
         }
         // доступ открывается в конце раскрытия — его время считается отсюда
         const opened = exchangeEndsAt(p.run);
-        if (p.next === 'tail') nextTail(opened);
-        else setPhase({ kind: 'access', run: startAccess(opened, p.next.durationMs, 0, still), tick: opened, tail: false, sceneEndedAt: null, trace: p.trace });
+        if (p.next === 'tail') {
+          tail.next(opened);
+          return;
+        }
+        setPhase({ kind: 'access', run: startAccess(opened, p.next.durationMs, 0, still), tick: opened, tail: false, sceneEndedAt: null, trace: p.trace, scenes: [], sceneFrom: opened });
+        // обмен досмотрен, сцена началась: снимок с `accessStartedAt` — холодный старт не покажет обмен второй раз
+        run(writeAside());
         return;
       }
       case 'access': {
@@ -608,8 +687,11 @@ export default function AbaSessionScreen() {
           if (fx.type === 'cue') voice.say('abaSession.sound.wrapUp');
           else if (fx.type === 'scene_ended') sceneEndedAt = fx.at;
           else if (fx.type === 'done') {
-            if (p.tail) nextTail(fx.at);
-            else run(endAccess(fx.at, { startedAt: p.run.startedAt, endedAt: sceneEndedAt ?? fx.at }));
+            const scenes = accessScenesAtEnd({ ...p, sceneEndedAt }, fx.at);
+            if (p.tail) {
+              tail.accessGiven(scenes);
+              tail.next(fx.at);
+            } else run(endAccess(fx.at, scenes));
             return;
           }
         }
@@ -617,7 +699,7 @@ export default function AbaSessionScreen() {
         return;
       }
       case 'end_wait':
-        nextTail(at);
+        tail.next(at);
         return;
     }
   });
@@ -628,13 +710,13 @@ export default function AbaSessionScreen() {
       (async () => {
         const p = phase;
         if (p.kind !== 'card' || !st.current) return;
+        setPhase({ kind: 'busy' });
         const now = clock.now();
         const gestureGiven = p.step !== 'model' && p.gesture;
-        st.current = recordBreakCardTraining(st.current, { step: p.step, touched, gestureGiven, latencyMs: touched ? now - p.shownAt : null }, now);
         // самостоятельное касание — карточка принята на сегодня: остальные возможности не нужны
         cardLeft.current = touched && !gestureGiven && p.step === 'independent' ? 0 : cardLeft.current - 1;
         cardIdx.current += 1;
-        st.current = await save(st.current);
+        await saveStep((c) => recordBreakCardTraining(c, { step: p.step, touched, gestureGiven, latencyMs: touched ? now - p.shownAt : null }, now));
         await advance();
       })(),
     );
@@ -650,16 +732,24 @@ export default function AbaSessionScreen() {
         run(
           (async () => {
             setPhase({ kind: 'busy' });
-            const s = chooseReinforcer(st.current!, fx.reinforcerId, fx.at, fx.by);
+            let exchanged = false;
+            await saveStep(
+              (c) => {
+                const s = chooseReinforcer(c, fx.reinforcerId, fx.at, fx.by);
+                exchanged = s.exchangesMade > c.exchangesMade;
+                return s;
+              },
+              { source: 'session', sourceId: st.current!.sessionId, reinforcerId: fx.reinforcerId, chosenBy: fx.by },
+            );
             // повторный выбор при полной доске сам меняет жетоны (`settleBoard`): доступ — тоже через экран обмена (Ц3.4)
-            if (s.exchangesMade > st.current!.exchangesMade) exchangePending.current = true;
-            st.current = await save(s, { source: 'session', sourceId: s.sessionId, reinforcerId: fx.reinforcerId, chosenBy: fx.by });
+            if (exchanged) exchangePending.current = true;
             await advance();
           })(),
         );
       } else if (fx.type === 'no_choice') {
-        // «Сам», 60 с без выбора — сессия не начиналась: спокойный конец
-        run(finish(stopSession(st.current!, 'abandoned', fx.at), 'neutral'));
+        // «Сам», 60 с без выбора — сессия не начиналась: спокойный конец; конец уже наступил — итог с его причиной, это не уход
+        const cur = st.current!;
+        run(finish(cur.endReason ? noChoiceAtEnd(cur, fx.at) : stopSession(cur, 'abandoned', fx.at), 'neutral'));
       }
     }
   }
@@ -680,11 +770,15 @@ export default function AbaSessionScreen() {
   }
 
   async function record(r: MatchTrialRun, step: TrialStep) {
-    const s = st.current!;
+    // после конфликта доски проба считается заново от живой доски: один жетон, одна строка журнала
+    const { s, res } = await boardRetry(async () => {
+      const before = st.current!;
+      const out = recordTrial(before, matchTrialInput(r), clock.now());
+      if (!out.ok) throw new Error(out.errors.join('; '));
+      st.current = db && childId ? await recordAbaTrial(db, childId, out.trial, out.state, iso()) : out.state;
+      return { s: before, res: out };
+    });
     const earnedBefore = s.board.earned;
-    const res = recordTrial(s, matchTrialInput(r), clock.now());
-    if (!res.ok) throw new Error(res.errors.join('; '));
-    st.current = db && childId ? await recordAbaTrial(db, childId, res.trial, res.state, iso()) : res.state;
     // прерванная проба (карточка, «Отказ») — без последствия: перерыв ≤ 300 мс (`abaBreak.reactionMaxMs`)
     if (res.trial.response === 'interrupted') {
       await advance();
@@ -697,7 +791,7 @@ export default function AbaSessionScreen() {
     const tokens = res.trial.tokens;
     // обмен сразу (обучение доске) обнулил доску: до экрана обмена ребёнок видит её полной, а не пустой
     if (res.exchanged > 0) exchangePending.current = true;
-    const stripEarned = res.exchanged > 0 ? Math.min(s.board.size, earnedBefore + tokens) : Math.max(0, st.current.board.earned - (res.participation ? 1 : 0));
+    const stripEarned = res.exchanged > 0 ? Math.min(s.board.size, earnedBefore + tokens) : Math.max(0, st.current!.board.earned - (res.participation ? 1 : 0));
     // путь Ц4 — только если доску заполнил жетон этой пробы; обмен от жетона за участие идёт после последствия (огр. 2)
     const filledByTrial = res.exchanged > 0 && overlay && earnedBefore + tokens >= s.board.size;
     const landedAt = markedAt + (still ? abaReinforcementOverlay.tokenAppearsAtMsCalm : abaTokenLandingMs());
@@ -727,9 +821,10 @@ export default function AbaSessionScreen() {
         setPhase({ kind: 'busy' });
         // просьба о перерыве ещё пишется: отказ ложится после неё, а не под ней (методист, п. 4)
         if (writing.current) await writing.current;
-        const s = st.current!;
-        const last = s.trials[s.trials.length - 1];
-        st.current = await save(withdrawAssent(s, clock.now(), 'adult_observed', last ? { targetId: last.targetId, trialId: last.id } : {}));
+        await saveStep((s) => {
+          const last = s.trials[s.trials.length - 1];
+          return withdrawAssent(s, clock.now(), 'adult_observed', last ? { targetId: last.targetId, trialId: last.id } : {});
+        });
         await advance();
       })(),
     );
@@ -739,7 +834,7 @@ export default function AbaSessionScreen() {
     run(
       (async () => {
         setPhase({ kind: 'busy' });
-        st.current = await save(requestBreakBetweenTrials(st.current!, clock.now()));
+        await saveStep((s) => requestBreakBetweenTrials(s, clock.now()));
         await advance();
       })(),
     );
@@ -765,30 +860,13 @@ export default function AbaSessionScreen() {
   const hold = (what: 'break_card' | 'adult_refusal') => {
     const now = clock.now();
     held.current = { what, at: now };
-    // новое касание, пока кадр уже ждёт, — ждём до потолка (и засчитываем только там), а не до конца прежнего отклика
-    setPhase((p) =>
-      (p.kind === 'consequence' || p.kind === 'participation') && p.gate?.frameAt != null && now >= p.gate.since
-        ? ({ ...p, gate: { ...p.gate, frameAt: p.gate.ceilingAt } } as Phase)
-        : p,
-    );
+    setPhase((p) => gateOnHold(p, now));
   };
-  /** Палец сняли (или цель ушла с экрана): ждущая смена кадра — после отклика «принято», не дальше потолка. */
   const release = () => {
     held.current = null;
     const now = clock.now();
     releasedAt.current = now;
-    const shown = now + abaExchange.fromFullBoard.heldTouch.acceptedShowMs;
-    setPhase((p) =>
-      (p.kind === 'consequence' || p.kind === 'participation') && p.gate?.frameAt != null
-        ? ({ ...p, gate: { ...p.gate, frameAt: Math.min(shown, p.gate.ceilingAt) } } as Phase)
-        : p,
-    );
-  };
-  /** Срок, до которого смена кадра ждёт касание; `null` — менять сейчас. */
-  const gateWait = (gate: FullBoardGate, at: number): number | null => {
-    if (held.current && held.current.at >= gate.since) return gate.ceilingAt;
-    const shown = releasedAt.current + abaExchange.fromFullBoard.heldTouch.acceptedShowMs;
-    return shown > at ? Math.min(shown, gate.ceilingAt) : null;
+    setPhase((p) => gateOnRelease(p, now));
   };
   /**
    * Палец лежит и в потолке — касание засчитывается в момент смены кадра (`atCeiling: 'commit_if_inside'`): карточка —
@@ -823,39 +901,39 @@ export default function AbaSessionScreen() {
     if (next === st.current) return writing.current ?? Promise.resolve();
     st.current = next;
     breakQueued.current = true;
-    const w = (writing.current ?? Promise.resolve()).then(async () => {
-      const target = st.current!;
-      const saved = await save(target);
-      // пока шла запись, состояние ушло дальше (вторая просьба) — оно наследует новую версию доски
-      st.current = st.current === target ? saved : { ...st.current!, boardRev: saved.boardRev };
-    });
-    writing.current = w;
-    return w.finally(() => {
-      if (writing.current === w) writing.current = null;
-    });
+    return writeAside();
   }
 
   // --- перерыв и доступ
-  async function endBreak(at: number) {
+  /** `endedAt` — конец перерыва для процедуры, если он истёк в фоне раньше `at` (фаза 8): событие до срока, фон — не работа. */
+  async function endBreak(at: number, endedAt: number = at) {
     setPhase({ kind: 'busy' });
-    const done = finishBreak(st.current!, at);
+    let exchanged = false;
+    await saveStep((s) => {
+      const done = finishBreak(s, at, endedAt);
+      exchanged = done.exchanged > 0;
+      return done.state;
+    });
     // обмен на перерыве по расписанию (№169): доступ следующим шагом домена — сначала экран обмена
-    if (done.exchanged > 0) exchangePending.current = true;
-    st.current = await save(done.state);
+    if (exchanged) exchangePending.current = true;
     await advance();
   }
   /** Нет возврата после двух приглашений: конец по бездействию устройства — без обмена и сопряжения (№169). */
   async function noReturn(at: number) {
     setPhase({ kind: 'busy' });
-    const s = st.current!;
-    const last = s.trials[s.trials.length - 1];
-    st.current = await save(withdrawAssent(s, at, 'device_inactivity', last ? { targetId: last.targetId, trialId: last.id } : {}));
+    await saveStep((s) => {
+      const last = s.trials[s.trials.length - 1];
+      return withdrawAssent(s, at, 'device_inactivity', last ? { targetId: last.targetId, trialId: last.id } : {});
+    });
     await advance();
   }
-  /** Конец доступа: в журнал — время сцены (№171), рабочее время теряет весь шаг с обменом и кадром конца. */
-  async function endAccess(at: number, scene: { startedAt: number; endedAt: number }) {
+  /**
+   * Конец доступа: в журнал — отрезки сцены (№171; после сворачивания их может быть два или ноль — фаза 8), рабочее время
+   * теряет весь шаг с обменом и кадром конца.
+   */
+  async function endAccess(at: number, scenes: AccessScene[]) {
     setPhase({ kind: 'busy' });
-    st.current = await save(finishAccess(st.current!, at, scene));
+    await saveStep((s) => finishAccess(s, at, scenes));
     await advance();
   }
   const takeCard = () =>
@@ -863,27 +941,38 @@ export default function AbaSessionScreen() {
       (async () => {
         const p = phase;
         if (p.kind !== 'break') return;
+        setPhase({ kind: 'busy' });
         const now = clock.now();
-        st.current = await save(takeBreakCard(st.current!, now));
-        const step = nextStep(st.current, now).step;
+        await saveStep((s) => takeBreakCard(s, now));
+        const step = nextStep(st.current!, now).step;
         if (step.kind === 'break')
-          setPhase({ kind: 'break', step, shownAt: now, until: now + (step.maxMs ?? CHILD_BREAK_MS[st.current.band]), invite: 0, inviteAt: null, training: false });
+          setPhase({ kind: 'break', step, startedAt: now, shownAt: now, until: now + (step.maxMs ?? CHILD_BREAK_MS[st.current!.band]), invite: 0, inviteAt: null, training: false });
       })(),
     );
 
   // --- выход удержанием: остановка взрослым (в «Сам» — уход ребёнка)
   const exit = () => {
-    const s = st.current;
-    if (!s || finished.current) {
-      router.dismissTo('/map');
+    // итог пишется: конец сам запишет строку хвоста и уйдёт с экрана
+    if (closing.current) {
+      exiting.current = true;
+      return;
+    }
+    if (!st.current || finished.current) {
+      // выход на шаге хвоста — тот же уход: строка с выданным и шагом выхода
+      if (finished.current) tail.leaveOn(phase, clock.now());
+      leaveAba(router);
       return;
     }
     exiting.current = true;
-    const p = phase;
-    // доступ в журнале — время сцены (№171): на экране обмена сцена ещё не началась — доступа нет
-    const scene =
-      p.kind === 'exchange' && p.next !== 'tail' ? null : p.kind === 'access' && !p.tail ? { startedAt: p.run.startedAt, endedAt: p.sceneEndedAt ?? undefined } : undefined;
-    run(finish(stopSession(s, s.config === 'alone' ? 'abandoned' : 'adult_stopped', clock.now(), scene), 'neutral'));
+    // запись в работе (проба) — итог после неё, иначе журнал и итог разойдутся; доступ в журнале — время сцены (№171)
+    run(
+      inFlight.current.then(async () => {
+        const s = st.current;
+        if (!s || finished.current) return;
+        const stop = stopPoint();
+        await finish(stopSession(s, s.config === 'alone' ? 'abandoned' : 'adult_stopped', stop.at, stop.scenes), 'neutral', stop.endedAt);
+      }),
+    );
   };
 
   // без конфигурации — к взрослому: режим и «кто ведёт» выбираются на `parent/aba` (этап G1), детского экрана выбора нет
@@ -902,7 +991,8 @@ export default function AbaSessionScreen() {
   if (phase.kind !== 'busy') lastPhaseKind.current = phase.kind;
   if (phase.kind !== 'busy') lastPhase.current = phase;
   const shown = phase.kind === 'busy' ? lastPhase.current : phase;
-  const tier = height === null ? null : abaTierFor(height, insets.bottom);
+  // тир — один раз на сессию (`abaWindowPolicy.tierChosen`): зафиксирован на старте; до первого `onLayout` кадра ещё нет
+  const tier = tierRef.current;
   const layout = abaLayoutByTier[tier ?? 'compact'];
   const zone = ZONE[tier ?? 'compact'];
   const withAdult = s?.config === 'with_adult';
@@ -948,8 +1038,12 @@ export default function AbaSessionScreen() {
         </View>
       );
       break;
+    case 'away':
+      // свёрнуто (фаза 8, Ц2.11): пустой фон — на возврате кадр строится заново из снимка, прежний не мигает; без индикатора
+      body = <View style={{ flex: 1 }} testID="aba-away" />;
+      break;
     case 'ended':
-      body = <AbaEnd variant={phase.variant} board={phase.board ?? undefined} onDone={() => router.dismissTo('/map')} />;
+      body = <AbaEnd variant={phase.variant} board={phase.board ?? undefined} onDone={() => leaveAba(router)} />;
       break;
     case 'card': {
       // сменился ведущий наблюдатель — подсказка взрослому «жестом, не словами» (`BreakCardPlan.adultCoaching`)
@@ -968,26 +1062,15 @@ export default function AbaSessionScreen() {
       break;
     }
     case 'choose': {
-      const cardSize = height ? abaReinforcerCardSize(width - 32, height) : 160;
       body = (
-        <View style={{ flex: 1, paddingHorizontal: 16 }}>
-          {/* строка 72: выход слева, заголовок по центру, справа место под повтор (раздел 4, Ц3.0 п. 3) */}
-          <NonTrialRow exitLabel={t('abaSession.exit')} exitHint={t('abaSession.exitHint')}>
-            <Text style={{ color: c.ink, fontSize: 22, lineHeight: 30, fontWeight: '700', textAlign: 'center' }} numberOfLines={2} maxFontSizeMultiplier={1.2}>
-              {t('abaSession.chooseTitle')}
-            </Text>
-          </NonTrialRow>
-          <View style={{ height: 16 }} />
-          <ReinforcerChoiceView
-            run={phase.choice}
-            options={phase.options}
-            cardSize={cardSize}
-            boardCells={s?.board.size ?? 1}
-            pulse={false}
-            onTap={(id, at) => onChoice({ type: 'tap', reinforcerId: id, now: at })}
-            onAdultTap={(id) => onChoice({ type: 'adult_tap', reinforcerId: id, now: clock.now() })}
-          />
-        </View>
+        <ChooseFrame
+          run={phase.choice}
+          options={phase.options}
+          cardSize={height ? abaReinforcerCardSize(width - 32, height) : 160}
+          boardCells={s?.board.size ?? 1}
+          onTap={(id, at) => onChoice({ type: 'tap', reinforcerId: id, now: at })}
+          onAdultTap={(id) => onChoice({ type: 'adult_tap', reinforcerId: id, now: clock.now() })}
+        />
       );
       break;
     }
@@ -1008,53 +1091,24 @@ export default function AbaSessionScreen() {
         );
         break;
       }
-      const r = phase.kind === 'trial' ? phase.run : null;
-      const empty = phase.kind === 'pause' || phase.kind === 'participation' || (phase.kind === 'consequence' && phase.empty);
-      const overlayH = layout.tokenBoard + layout.gapAfterBoard + layout.instruction + layout.hintBand + zone.sample + 24 + zone.choice;
-      const buttons = r && withAdult ? adultPanelButtons(s!.config, step, r.awaitingL4) : (['adult_prompted', 'refusal'] as PanelButton[]);
-      const frame = r ? r.sdEndedAt : 0;
       body = (
-        <>
-          <TopBar
-            breakCard={{
-              frameShownAt: phase.kind === 'consequence' ? phase.run.markedAt : frame,
-              highlight: (phase.kind === 'consequence' || phase.kind === 'participation') && phase.breakAsked,
-              onHold: holdCard,
-              onTap: (at) =>
-                phase.kind === 'trial' ? onTrial({ type: 'break_card', at }) : phase.kind === 'pause' ? breakInPause() : phase.kind === 'participation' ? breakInParticipation() : breakInConsequence(),
-            }}
-          />
-          {phase.kind === 'consequence' && phase.overlay ? (
-            <ReinforcementOverlay size={s!.board.size} earnedBefore={phase.earnedBefore} landed={phase.landed} calm={calm} moving={!still} height={Math.min(overlayH, abaReinforcementOverlay.tali + 288)} />
-          ) : (
-            <>
-              {strip}
-              <View style={{ height: layout.gapAfterBoard }} />
-              {instruction(empty ? null : sdKeyOf(step))}
-              <MatchField
-                sampleId={step.sampleCardId!}
-                field={step.field!}
-                visual={r ? matchVisual(r) : null}
-                sampleTouched={r ? r.sampleTouchedAt !== null : phase.kind === 'consequence'}
-                // в последствии и пока проба пишется варианты не «гаснут»: цвет «неактивно» читался бы как «неверно»
-                activeIds={r && !r.done ? step.field!.filter((id) => optionActive(r, id)) : step.field!}
-                chosenId={r ? r.chosenCardId : phase.kind === 'consequence' ? phase.chosenId : null}
-                sampleSize={zone.sample}
-                choiceSize={zone.choice}
-                frameShownAt={frame}
-                empty={empty}
-                onSample={(at) => onTrial({ type: 'tap_sample', at })}
-                onOption={(id, at) => onTrial({ type: 'tap_option', id, at })}
-              />
-            </>
-          )}
-          <View style={{ flex: 1 }} />
-          {panel(
-            phase.kind === 'trial' ? buttons : ['refusal'],
-            phase.kind === 'trial' ? phase.pressed : null,
-            (b, at) => (phase.kind === 'trial' ? onTrial({ type: 'adult', button: b, at }) : b === 'refusal' ? refuseOutsideTrial() : undefined),
-          )}
-        </>
+        <TrialFrame
+          phase={phase}
+          step={step}
+          session={s!}
+          layout={layout}
+          zone={zone}
+          calm={calm}
+          still={still}
+          strip={strip}
+          sdKey={sdKeyOf(step)}
+          instruction={instruction}
+          panel={panel}
+          onTrial={onTrial}
+          onBreakCard={() => (phase.kind === 'pause' ? breakInPause() : phase.kind === 'participation' ? breakInParticipation() : breakInConsequence())}
+          onHoldCard={holdCard}
+          onRefuse={refuseOutsideTrial}
+        />
       );
       break;
     }
@@ -1063,7 +1117,7 @@ export default function AbaSessionScreen() {
       if (offer) {
         // пауза после «Отказ»: экран пробы без плит, карточка с контуром 6 всю паузу (Ц3.7, №171) — смена посреди
         // паузы была бы повторной подсказкой; жест и подпись взрослому — только `offerCardMs`
-        const hint = (phase.tick ?? phase.shownAt) < phase.shownAt + phase.step.offerCardMs!;
+        const hint = (phase.tick ?? phase.shownAt) < phase.startedAt + phase.step.offerCardMs!;
         body = (
           <>
             <TopBar breakCard={{ frameShownAt: phase.shownAt, onTap: takeCard, highlight: true, onHold: holdCard }} />
@@ -1073,66 +1127,7 @@ export default function AbaSessionScreen() {
           </>
         );
       } else {
-        const left = (phase.until - (phase.tick ?? phase.shownAt)) / (phase.until - phase.shownAt);
-        body = (
-          <View style={{ flex: 1 }} testID="aba-break">
-            {/* обучающий перерыв ждёт взрослого (№169): со второго приглашения — подпись взрослому (Ц3.9) */}
-            <TopBar breakCard={null} caption={phase.training && phase.invite === 2 ? t('abaBreak.trainingWaitHint') : undefined} />
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 24 }}>
-              {/* значок не нажимается, но похож на кнопку: касание — сжатие без звука и записи (Ц3.1) */}
-              <Pressable
-                accessibilityRole="image"
-                accessibilityLabel={t('abaSession.breakCard')}
-                testID="aba-break-icon"
-                style={({ pressed }) => ({
-                  width: abaBreak.timerRing,
-                  height: abaBreak.timerRing,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transform: [{ scale: pressed ? inactiveChoice.tapPress.scale : 1 }],
-                })}
-              >
-                {phase.invite === 0 && (
-                  <View style={{ position: 'absolute' }}>
-                    <AccessRing left={left} size={abaBreak.timerRing} />
-                  </View>
-                )}
-                {/* «две планки» 120 — внутри кольца и после него: место не пустеет (`abaBreak.atTimerEnd`); на втором
-                    приглашении — контурные, тот же значок, что на «Вернуться» */}
-                {phase.invite === 2 ? (
-                  <PlaceholderGlyph name="pause_bars_outline" size={abaBreak.icon} stroke={abaBreak.invite.second.iconStroke} color={c.ink} />
-                ) : (
-                  <PlaceholderGlyph name="pause_bars" size={abaBreak.icon} color={c.ink} />
-                )}
-              </Pressable>
-            </View>
-            {/* детская цель (`abaChildTouch`): сжатие 0.94 на касание, засчитывается по правилу кадра */}
-            <ChildPressable
-              frameShownAt={phase.shownAt}
-              onCommit={(at) => run(endBreak(at))}
-              testID="aba-break-return"
-              accessibilityLabel={t('abaBreak.return')}
-              style={{
-                height: abaBreak.returnButton,
-                marginHorizontal: 24,
-                marginBottom: 16,
-                borderRadius: radii.lg,
-                borderWidth: phase.invite > 0 ? abaBreak.invite.contour : ABA_CONTROL_STROKE,
-                borderColor: c.controlInk,
-                backgroundColor: c.controlFill,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 12,
-              }}
-            >
-              <PlaceholderGlyph name="pause_bars_outline" size={abaBreak.returnIcon.size} color={c.controlInk} />
-              <Text style={{ color: c.controlInk, fontSize: 22, fontWeight: '700' }} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2}>
-                {t('abaBreak.return')}
-              </Text>
-            </ChildPressable>
-          </View>
-        );
+        body = <BreakView phase={phase} onReturn={(at) => run(endBreak(at))} />;
       }
       break;
     }

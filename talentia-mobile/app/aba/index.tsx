@@ -14,6 +14,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { abaTierFor, abaWindowPolicy } from '../../src/design/abaTokens';
 import { useAbaRun } from '../../src/state/abaRun';
+import { useChildSession } from '../../src/state/childSession';
+import { leaveAba } from '../../src/ui/aba/leaveAba';
 import { useAbaColors } from '../../src/ui/aba/parts';
 import { ParentButton } from '../../src/ui/parent/primitives';
 import { ParentThemeProvider } from '../../src/ui/parent/theme';
@@ -44,7 +46,7 @@ export default function AbaGateScreen() {
             <Text style={{ color: c.ink, fontSize: 20, fontWeight: '700' }}>{t('abaSession.tooSmallTitle')}</Text>
             <Text style={{ color: c.ink, fontSize: 16 }}>{t('abaSession.tooSmallBody')}</Text>
             <ParentThemeProvider>
-              <ParentButton height={abaWindowPolicy.belowMinButtonHeight} label={t('abaSession.regularLessons')} onPress={() => router.replace('/map')} testID="aba-regular" />
+              <ParentButton height={abaWindowPolicy.belowMinButtonHeight} label={t('abaSession.regularLessons')} onPress={() => (useChildSession.getState().openedForAba ? leaveAba(router) : router.replace('/map'))} testID="aba-regular" />
               <ParentButton height={abaWindowPolicy.belowMinButtonHeight} variant="secondary" label={t('abaSession.back')} onPress={() => router.replace('/parent/aba')} testID="aba-too-small-back" />
             </ParentThemeProvider>
           </View>

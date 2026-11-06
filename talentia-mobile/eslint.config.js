@@ -69,6 +69,11 @@ module.exports = defineConfig([
     rules: offlineRules,
   },
   {
+    // экран сессии ABA не растёт: новое — в `src/ui/aba/model/` и `src/ui/aba/session/` (фаза 8); предупреждение, не ворота (№122)
+    files: ['app/aba/session.tsx'],
+    rules: { 'max-lines': ['warn', 1183] },
+  },
+  {
     // №168, вопрос 67, проверка child-privacy-compliance 2026-11-01: share-sheet — не сеть, файл уходит по выбору
     // родителя. Снят только `expo-sharing` и только здесь; остальные `offlineRules` действуют.
     files: ['src/services/local/shareSpecialistExport.ts'],

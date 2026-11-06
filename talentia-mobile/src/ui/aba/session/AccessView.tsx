@@ -37,8 +37,9 @@ export function AccessView({ run, tick, reinforcerId, moving, onExit }: { run: A
           {run.stage === 'fold' && moving && area && card && (
             <GrowFrame from={{ x: 0, y: 0, w: area.w, h: area.h }} to={card} ms={abaAccessScene.endFrame.foldMs} reinforcerId={reinforcerId} testID="aba-access-fold" />
           )}
-          {(run.stage === 'hold' || run.stage === 'done' || (run.stage === 'fold' && !(moving && card))) && (
-            <View style={{ position: 'absolute', left: card?.x ?? 0, top: card?.y ?? 0 }}>
+          {/* место карточки известно после `onLayout`: на кадре конца после возврата она не прыгает из угла, первый кадр — фон */}
+          {card && (run.stage === 'hold' || run.stage === 'done' || (run.stage === 'fold' && !moving)) && (
+            <View style={{ position: 'absolute', left: card.x, top: card.y }}>
               <PictureCard id={reinforcerId} stroke={abaAccessScene.endFrame.cardStroke} testID="aba-access-card" />
             </View>
           )}
