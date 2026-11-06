@@ -435,7 +435,7 @@ describe('(в) resumeAbaSession: обмен рутины, пока сессия 
   it('защита: finishAbaSession при устаревшем подкрепителе не обменивает, доска целиком уходит на следующую', () => {
     const full = beginSession({ board: { earned: 5, nonContingent: 0 } });
     const stale = resumeAbaSession(full, { earned: 5, nonContingent: 0, rev: 1 }, { routineExchanged: true, options: OPTIONS });
-    const r = finishSession(stopSession({ ...stale, endReason: 'completed' }, 'adult_stopped'), BASE_MS + 9000);
+    const r = finishSession({ ...stopSession(stale, 'adult_stopped'), endReason: 'completed' }, BASE_MS + 9000);
     expect([r.exchanged, r.board.earned]).toEqual([0, 5]);
   });
 

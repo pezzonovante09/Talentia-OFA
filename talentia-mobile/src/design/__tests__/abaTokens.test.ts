@@ -761,16 +761,17 @@ describe('раскладка экрана пробы (три тира)', () => {
       expect(src).toMatch(/ИЗВЕСТНЫЙ РИСК \(V-5\)/);
     });
 
-    it('сжатие окна в сессии — пауза: плита скрыта, проба interruptedBy app в очередь, панель внизу, без перестройки', () => {
+    it('сжатие окна в сессии — пауза: плита скрыта, проба не пишется и повторяется с SD (№155), панель внизу, без перестройки', () => {
       expect(abaWindowPolicy.onWindowChange).toBe('pause');
-      expect(abaWindowPolicy.pause).toEqual({
-        stimulusHidden: true,
-        trialInterruptedBy: 'app',
-        requeue: true,
-        adultCard: 'restore_window_size',
-        panelPinnedBottom: true,
-        relayout: false,
-      });
+      const p = abaWindowPolicy.pause;
+      expect(p.stimulusHidden).toBe(true);
+      // №155: домен не даёт исхода `interruptedBy: 'app'` — пауза не пишет пробу, та же проба идёт заново
+      expect(p.trialRecorded).toBe(false);
+      expect(p.requeue).toBe('same_trial');
+      expect(p).not.toHaveProperty('trialInterruptedBy');
+      expect(p.adultCard).toBe('restore_window_size');
+      expect(p.panelPinnedBottom).toBe(true);
+      expect(p.relayout).toBe(false);
     });
 
     it('формулировки «только предупреждение» и «решает владелец» в токенах не осталось', () => {

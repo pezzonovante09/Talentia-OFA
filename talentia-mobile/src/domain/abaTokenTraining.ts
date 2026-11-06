@@ -64,7 +64,17 @@ export type StageSession = {
    * говорит об обучении доске — её опустошила рутина.
    */
   routineExchangeInWindow?: boolean;
+  /**
+   * Конфигурация сессии (фаза 8): `app_backgrounded` в «Сам» — как `abandoned` (взрослого нет, «свернул» =
+   * «ушёл», зеркало №166), со взрослым — не участвует. У записей до фазы 8 поля нет — считаются «со взрослым».
+   */
+  config?: AbaConfig;
 };
+
+/** Для ступени доски уход ребёнка: `abandoned`, а в «Сам» — и свёрнутое приложение (фаза 8, №166). */
+function leftByChild(s: StageSession): boolean {
+  return s.endReason === 'abandoned' || (s.endReason === 'app_backgrounded' && s.config === 'alone');
+}
 
 /**
  * Сопряжение подтверждено вручную обученным наблюдателем (вопрос 62, 2026-10-31) — в обход критерия
@@ -172,16 +182,19 @@ export function confirmPairing(t: TokenTrainingState, by: PairingConfirmed): Tok
  * - Остановка взрослым в решениях не участвует. Жетоны при смене ступени сохраняются.
  * - Сессия с нулём обменов, в окне которой был обмен рутины, не участвует так же: ни вверх, ни
  *   вниз, серия не рвётся.
+ * - Фаза 8: программная ошибка (`app_error`) не участвует ни в каком режиме; свёрнутое приложение
+ *   (`app_backgrounded`) со взрослым не участвует, в «Сам» — как уход ребёнка (`leftByChild`, №166).
  */
 export function applyStageSession(t: TokenTrainingState, band: AgeBand, session: StageSession): TokenTrainingState {
-  if (!t.pairingDone || session.endReason === 'adult_stopped') return t;
+  if (!t.pairingDone || session.endReason === 'adult_stopped' || session.endReason === 'app_error') return t;
+  if (session.endReason === 'app_backgrounded' && session.config !== 'alone') return t;
   if (session.routineExchangeInWindow && session.exchanges === 0) return t;
   const atStage = [...t.atStage, session].slice(-STAGE_WINDOW);
   if (atStage.length < STAGE_WINDOW) return { ...t, atStage };
 
   const i = BOARD_STAGES.indexOf(t.stage);
-  const grows = atStage.every((x) => x.exchanges >= EXCHANGES_TO_GROW && x.endReason !== 'abandoned');
-  const falls = atStage.every((x) => x.exchanges === 0 || x.endReason === 'abandoned');
+  const grows = atStage.every((x) => x.exchanges >= EXCHANGES_TO_GROW && !leftByChild(x));
+  const falls = atStage.every((x) => x.exchanges === 0 || leftByChild(x));
 
   if (grows && t.stage < finalStage(band)) return { ...t, stage: BOARD_STAGES[i + 1], atStage: [] };
   if (falls) {

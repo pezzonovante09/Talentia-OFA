@@ -259,6 +259,8 @@ export type AbaStep =
   /** `endedOnSuccess: false` — спокойный экран «закончили» без оценки и до обмена. */
   | {
       kind: 'end';
+      /** Конец по бездействию: кадр конца нейтрален при любой причине, за пропущенным приглашением нет ничего приятного. */
+      byInactivity: boolean;
       reason: AbaSessionEndReason;
       endedOnSuccess: boolean;
       /**
@@ -303,6 +305,10 @@ export type AbaSessionState = {
   pausedMs: number;
   breakStartedAt: number | null;
   accessStartedAt: number | null;
+  /** Остановка после решённого конца (отказ): причина остаётся, но ребёнка нет — обмена в конце и цикла сопряжения не будет. */
+  stoppedAfterEnd?: boolean;
+  /** Остановка сняла обмен, которому конец и полная доска давали ход: сессия с нулём обменов не решает ступень доски. */
+  exchangeDropped?: boolean;
   /** Нейтральная пауза перед следующим шагом: мост не нашёл, чем закрыть блок успехом. */
   pendingPauseMs: number;
   targets: Record<string, AbaTarget>;
@@ -421,7 +427,10 @@ export type StartInput = {
 export const MASTERED_PHASES: ReadonlySet<string> = new Set(['mastered', 'maintenance']);
 export const TEACHING_PHASES: ReadonlySet<string> = new Set(['acquisition', 'generalization_check']);
 const SUCCESS: ReadonlySet<AbaResponse> = new Set(['independent', 'prompted', 'approximation']);
-/** Причины, по которым в конце сессии бывает обмен. Уход и остановка взрослым — нет. */
+/**
+ * Причины, по которым в конце сессии бывает обмен. Уход и остановка взрослым — нет; свёрнутое приложение
+ * (`app_backgrounded`) и программная ошибка (`app_error`) — тоже нет: жетоны остаются на живой доске (фаза 8).
+ */
 // отказ не отнимает заработанное: обмен — как при лимите
 const EXCHANGE_AT_END: ReadonlySet<AbaSessionEndReason> = new Set(['completed', 'time_limit', 'breakdown', 'assent_withdrawn']);
 
@@ -1047,7 +1056,8 @@ export function nextStep(
   while (st.queue[0]?.kind === 'block_end') st = endBlock(st, now).state;
   if (st.queue.length === 0 && st.endReason === null) st = closeOut(st, 'completed', now);
   // доступ к подкрепителю отложил закрытие — сессия всё равно кончается успехом
-  if (st.queue.length === 0 && st.endReason !== null && CLOSABLE.has(st.endReason)) st = ensureSuccessfulEnd(st, now);
+  // ребёнка нет (остановка после конца, бездействие): требования ему не предъявляются
+  if (st.queue.length === 0 && st.endReason !== null && CLOSABLE.has(st.endReason) && !st.stoppedAfterEnd && !endedByInactivity(st)) st = ensureSuccessfulEnd(st, now);
 
   const pause = st.pendingPauseMs;
   const head = st.queue[0];
@@ -1057,9 +1067,12 @@ export function nextStep(
   if (st.rechooseNow && st.reinforcerStale && head?.kind !== 'access' && head?.kind !== 'reinforcer' && st.endReason === null) {
     return done(st, { kind: 'choose_reinforcer', options: st.reinforcerOptions, adultChoosesAfterMs: REINFORCER_CHOICE_TIMEOUT_MS });
   }
+  // конец решён так, что обмена в нём не будет (бездействие, остановка, причина вне `EXCHANGE_AT_END`): выбор остался бы без последствия
+  const exchangeImpossible = st.endReason !== null && (!EXCHANGE_AT_END.has(st.endReason) || st.stoppedAfterEnd === true || endedByInactivity(st));
   if (
     st.reinforcerStale &&
     isBoardFull(st.board) &&
+    !exchangeImpossible &&
     head?.kind !== 'access' &&
     head?.kind !== 'reinforcer' &&
     (st.immediateExchange || !head || head.kind === 'break')
@@ -1073,6 +1086,7 @@ export function nextStep(
       { ...st, pendingPauseMs: 0 },
       {
         kind: 'end',
+        byInactivity: endedByInactivity(st),
         reason: st.endReason ?? 'completed',
         endedOnSuccess: st.endReason !== 'assent_withdrawn' && (!last || SUCCESS.has(last.response)),
         pairingCycle,
@@ -1152,6 +1166,12 @@ export type LiveBoard = Pick<TokenBoard, 'earned' | 'nonContingent'> & { rev: nu
  * потеряло основание: у сессии, уже выбравшей подкрепитель, он помечается устаревшим (до нового
  * выбора из `options` обмена в сессии нет); у ещё не выбравшей — просто обновляются варианты.
  * `options` — три подкрепителя по живой истории; нужны, когда `routineExchanged`.
+ *
+ * Возврат через 2–30 мин (`rechoose`, фаза 8, методист 2026-11-06): после нового выбора — одна высоковероятная
+ * проба другой освоенной цели перед первой пробой очереди, как после перерыва по карточке (`handleInterruption`):
+ * поведенческий момент при возврате к требованию. Не ставится, если других освоенных нет, если первая проба
+ * очереди уже высоковероятная, и при повторе после конфликта доски (`awayMs = 0`). Без `requeuedFromTrialId` —
+ * защитное окно не открывается.
  */
 export function resumeAbaSession(
   state: AbaSessionState,
@@ -1172,10 +1192,24 @@ export function resumeAbaSession(
   if (!ctx.options?.length) throw new Error('Нужны варианты подкрепителя для нового выбора');
   return {
     ...next,
+    queue: rechoose ? withHighPAfterAway(next) : next.queue,
     reinforcerOptions: ctx.options,
     ...(state.reinforcerId !== null ? { reinforcerStale: true } : {}),
     ...(rechoose ? { rechooseNow: true } : {}),
   };
+}
+
+/** Очередь с высоковероятной пробой другой цели перед первой пробой — после долгого сворачивания (фаза 8). */
+function withHighPAfterAway(state: AbaSessionState): QueueItem[] {
+  const i = state.queue.findIndex((q) => q.kind === 'trial');
+  if (i < 0) return state.queue;
+  const first = state.queue[i] as Extract<QueueItem, { kind: 'trial' }>;
+  if (first.trial.kind === 'high_p') return state.queue;
+  const others = state.highPTargetIds.filter((id) => id !== first.trial.targetId);
+  if (!others.length) return state.queue;
+  const r = seeded(state.seed + state.trials.length);
+  const highP: QueueItem = { kind: 'trial', trial: highPTrial(state.targets[pick(others, r.rng)], r.rng) };
+  return [...state.queue.slice(0, i), highP, ...state.queue.slice(i)];
 }
 
 /** Свёрнуто дольше — новый выбор подкрепителя при возврате; ещё дольше — сессия брошена. */
@@ -1184,8 +1218,9 @@ export const AWAY_ABANDON_MS = 30 * 60_000;
 
 /**
  * Что делать при возврате после сворачивания (`aba-pedagogy-specialist` 2026-10-25, п. 6): до 2 мин — та же
- * проба с SD (№155); 2–30 мин — новый выбор из трёх, затем та же проба; дольше или другой локальный день —
- * экран зовёт `stopSession(…, 'abandoned')` без экрана конца.
+ * проба с SD (№155); 2–30 мин — новый выбор из трёх (и одна высоковероятная проба другой цели, `resumeAbaSession`),
+ * затем та же проба; дольше или другой локальный день — экран зовёт `stopSession(…, 'app_backgrounded', момент ухода)`
+ * без экрана конца (фаза 8; до неё — `'abandoned'`). `sameDay` считает вызывающий: `state.day === abaLocalDay(now)`.
  */
 export function awayOutcome(awayMs: number, sameDay = true): 'same_trial' | 'rechoose' | 'abandon' {
   if (!sameDay || awayMs > AWAY_ABANDON_MS) return 'abandon';
@@ -1226,8 +1261,11 @@ function interruptedBreak(state: AbaSessionState, now: number): AbaSessionEvent[
 /**
  * Перерыв кончился. Обмен — если доска полна и перерыв не по просьбе ребёнка (№161); неполная доска
  * переходит на следующий блок как есть, жетоны не сгорают. Перерыв в рабочее время не идёт.
+ *
+ * `endedAt` — когда перерыв кончился для процедуры, если это раньше `now` (фаза 8: срок истёк, пока приложение было
+ * свёрнуто). Событие пишется до `endedAt`, а из рабочего времени уходит всё до `now`: фон — не перерыв и не работа.
  */
-export function finishBreak(state: AbaSessionState, now: number): { state: AbaSessionState; exchanged: number } {
+export function finishBreak(state: AbaSessionState, now: number, endedAt: number = now): { state: AbaSessionState; exchanged: number } {
   if (state.queue[0]?.kind !== 'break') throw new Error('Сейчас не перерыв');
   const startedAt = state.breakStartedAt ?? now;
   const head = state.queue[0];
@@ -1238,7 +1276,7 @@ export function finishBreak(state: AbaSessionState, now: number): { state: AbaSe
     {
       kind: 'break',
       startedAt: iso(startedAt),
-      endedAt: iso(now),
+      endedAt: iso(Math.min(endedAt, now)),
       initiatedBy: head.initiatedBy ?? 'schedule',
       ...(head.between ? { between: true as const } : {}),
       ...(head.cardTaken ? { cardTaken: true as const } : {}),
@@ -1272,47 +1310,90 @@ export function finishChainByAdult(state: AbaSessionState): AbaSessionState {
  * Доступ кончился. `scene` — время самой сцены (№171): от кадра, когда она отвечает, до T — без экрана обмена,
  * доигрывания и сворачивания; без него событие пишет весь шаг доступа. Рабочее время (`pausedMs`) теряет весь шаг:
  * обмен и кадр конца — тоже не работа.
+ *
+ * Массив отрезков (фаза 8): доступ, разрезанный сворачиванием, — по событию `access` на каждый реально выданный
+ * отрезок (вернулись до T — два: до ухода и от возврата до T; после T — один, до ухода); пустой массив — сцена
+ * не выдавалась, события нет. «Сделано, а не назначено» (№171 п. 3, №172 п. 2).
  */
-export function finishAccess(state: AbaSessionState, now: number, scene?: { startedAt: number; endedAt: number }): AbaSessionState {
+export function finishAccess(
+  state: AbaSessionState,
+  now: number,
+  scene?: { startedAt: number; endedAt: number } | { startedAt: number; endedAt: number }[],
+): AbaSessionState {
   if (state.queue[0]?.kind !== 'access') throw new Error('Сейчас не доступ к подкрепителю');
   const startedAt = state.accessStartedAt ?? now;
+  const scenes = scene === undefined ? [{ startedAt, endedAt: now }] : Array.isArray(scene) ? scene : [scene];
   return {
     ...state,
     pausedMs: state.pausedMs + (now - startedAt),
     accessStartedAt: null,
-    events: [...state.events, { kind: 'access', startedAt: iso(scene?.startedAt ?? startedAt), endedAt: iso(scene?.endedAt ?? now) }],
+    events: [...state.events, ...scenes.map((s) => ({ kind: 'access' as const, startedAt: iso(s.startedAt), endedAt: iso(s.endedAt) }))],
     queue: state.queue.slice(1),
   };
 }
 
 /**
  * Взрослый остановил или ребёнок ушёл. Ни закрывающей пробы, ни жетона за участие:
- * решение принял человек, и подкреплять уход нельзя.
+ * решение принял человек, и подкреплять уход нельзя. Фаза 8: `app_backgrounded` (свёрнуто дольше
+ * `AWAY_ABANDON_MS` или до другого дня) и `app_error` (программная ошибка) — те же правила; `now` тогда — момент
+ * ухода, а не текущее время, чтобы прерванные перерыв и доступ не растягивались в журнале до часов.
  */
+type AccessStopScene = { startedAt: number; endedAt?: number };
+
+/** Плановый конец: пока итог не записан, остановка его перекрывает (исключение — `noChoiceAtEnd`). */
+const PLANNED_ENDS: ReadonlySet<AbaSessionEndReason> = new Set(['completed', 'time_limit', 'breakdown']);
+/** Остановка: первая и действует. */
+const STOP_REASONS: ReadonlySet<AbaSessionEndReason> = new Set(['adult_stopped', 'abandoned', 'app_backgrounded', 'app_error']);
+
 export function stopSession(
   state: AbaSessionState,
-  reason: 'adult_stopped' | 'abandoned',
+  reason: 'adult_stopped' | 'abandoned' | 'app_backgrounded' | 'app_error',
   now?: number,
   /**
-   * Сцена доступа (№171): `null` — остановили на экране обмена, сцена не началась, доступа в журнале нет; число —
-   * доступ от начала сцены до остановки (или до T, если остановили на кадре конца); без аргумента — весь шаг доступа.
+   * Сцена доступа (№171): `null` — остановили на экране обмена, сцена не началась, доступа в журнале нет; отрезки — по
+   * событию на отрезок, без конца — до остановки (фаза 8: сворачивание режет сцену); без аргумента — весь шаг доступа.
    */
-  accessScene?: { startedAt: number; endedAt?: number } | null,
+  accessScene?: AccessStopScene | AccessStopScene[] | null,
 ): AbaSessionState {
   // доступ и перерыв, прерванные остановкой, остаются в журнале
+  const scenes = accessScene === null ? [] : accessScene === undefined ? null : Array.isArray(accessScene) ? accessScene : [accessScene];
   const access =
-    now === undefined || state.accessStartedAt === null || accessScene === null
+    now === undefined || state.accessStartedAt === null
       ? []
-      : [{ kind: 'access' as const, startedAt: iso(accessScene?.startedAt ?? state.accessStartedAt), endedAt: iso(accessScene?.endedAt ?? now) }];
-  const events = now === undefined ? state.events : [...state.events, ...interruptedBreak(state, now), ...access];
+      : (scenes ?? [{ startedAt: state.accessStartedAt }]).map((s) => ({ kind: 'access' as const, startedAt: iso(s.startedAt), endedAt: iso(s.endedAt ?? now) }));
+  // плановый конец перекрывается: ребёнка нет, обмен прошёл бы в пустоту и жетоны сгорели бы. Отказ — решение ребёнка, он
+  // остаётся причиной (критерий, `endedOnSuccess`), а остановка пишется событием и снимает обмен (методист 2026-11-06)
+  const kept = state.endReason !== null && (state.stoppedAfterEnd || !PLANNED_ENDS.has(state.endReason)) ? state.endReason : null;
+  const afterEnd = kept !== null && !STOP_REASONS.has(kept);
+  const stopped = afterEnd && !state.stoppedAfterEnd && now !== undefined ? [{ kind: 'stopped' as const, at: iso(now), reason }] : [];
+  const events = now === undefined ? state.events : [...state.events, ...interruptedBreak(state, now), ...access, ...stopped];
   return {
     ...state,
     events,
-    endReason: state.endReason ?? reason,
+    endReason: kept ?? reason,
+    ...(afterEnd ? { stoppedAfterEnd: true } : {}),
+    ...(exchangeWasDue(state) ? { exchangeDropped: true } : {}),
     queue: [],
     participationOwed: null,
     breakStartedAt: null,
     accessStartedAt: null,
+  };
+}
+
+/**
+ * «Сам», 60 с без выбора, когда конец уже наступил (фаза 8, методист 2026-11-06): план выполнен, это не уход ребёнка —
+ * причина остаётся. Выбора нет, поэтому обмена и цикла сопряжения нет, жетоны остаются на доске; журнал объясняет почему.
+ */
+export function noChoiceAtEnd(state: AbaSessionState, now: number): AbaSessionState {
+  return {
+    ...state,
+    events: [...state.events, ...interruptedBreak(state, now), { kind: 'stopped', at: iso(now), reason: 'no_choice' }],
+    queue: [],
+    participationOwed: null,
+    breakStartedAt: null,
+    accessStartedAt: null,
+    stoppedAfterEnd: true,
+    ...(exchangeWasDue(state) ? { exchangeDropped: true } : {}),
   };
 }
 
@@ -1329,11 +1410,12 @@ export function withdrawAssent(
   by: 'child_card' | 'adult_observed' | 'device_inactivity',
   where: { targetId?: string; trialId?: string } = {},
 ): AbaSessionState {
-  if (state.endReason !== null) return state;
+  // конец уже решён (лимит), а перерыв по просьбе не кончился: без возврата ребёнка нет, приглашения не идут по кругу
+  if (state.endReason !== null && by !== 'device_inactivity') return state;
   const pausedMs = state.breakStartedAt !== null ? state.pausedMs + (now - state.breakStartedAt) : state.pausedMs;
   return {
     ...state,
-    endReason: 'assent_withdrawn',
+    endReason: state.endReason ?? 'assent_withdrawn',
     queue: state.queue.filter((q) => q.kind === 'access'),
     participationOwed: null,
     openBlockTargetId: null,
@@ -1607,14 +1689,18 @@ function settleBoard(state: AbaSessionState, now: number): { state: AbaSessionSt
  * пустой комнате нет, доска ждёт следующей сессии, ступень доски не засчитывает обмен, которого не было (№169).
  */
 function endedByInactivity(state: AbaSessionState): boolean {
-  if (state.endReason !== 'assent_withdrawn') return false;
   const last = [...state.events].reverse().find((e) => e.kind === 'assent' && (e.action === 'end' || e.action === 'not_started'));
   return last?.kind === 'assent' && last.by === 'device_inactivity';
 }
 
 /** Обмен в конце сессии: полная доска, причина из `EXCHANGE_AT_END`, подкрепитель не устарел, ребёнок рядом. */
 function exchangesAtEnd(state: AbaSessionState): boolean {
-  return state.endReason !== null && EXCHANGE_AT_END.has(state.endReason) && !state.reinforcerStale && !endedByInactivity(state) && isBoardFull(state.board);
+  return state.endReason !== null && EXCHANGE_AT_END.has(state.endReason) && !state.stoppedAfterEnd && !state.reinforcerStale && !endedByInactivity(state) && isBoardFull(state.board);
+}
+
+/** Конец и полная доска давали обмену ход: остановка его снимает, ноль обменов — отсутствие ребёнка, а не результат на ступени. */
+function exchangeWasDue(state: AbaSessionState): boolean {
+  return state.endReason !== null && EXCHANGE_AT_END.has(state.endReason) && !endedByInactivity(state) && isBoardFull(state.board);
 }
 
 /**
@@ -1622,7 +1708,7 @@ function exchangesAtEnd(state: AbaSessionState): boolean {
  * обмена (№169): после обмена ребёнок уже получил доступ, и конец по отказу не подкрепляется сильнее обычного.
  */
 function needsPairingCycle(state: AbaSessionState): boolean {
-  if (endedByInactivity(state) || exchangesAtEnd(state)) return false;
+  if (state.stoppedAfterEnd || endedByInactivity(state) || exchangesAtEnd(state)) return false;
   const reason = state.endReason;
   // в «сам» высоковероятные пробы бывают без жетона («Tali послушал») — их не считаем
   const paying = state.highPTargetIds.some((id) => counts(state.targets[id], state.config));
@@ -2448,10 +2534,11 @@ export function finishAbaSession(
   const { board, exchanged } = exchangesAtEnd(state) ? tryExchange(state.board) : { board: state.board, exchanged: 0 };
   const exchangesMade = state.exchangesMade + (exchanged > 0 ? 1 : 0);
   // конец по бездействию — отсутствие ребёнка, а не результат на ступени: ступень доски не решает (№170)
-  const tokenTraining = endedByInactivity(state) ? state.tokenTraining : applyStageSession(state.tokenTraining, state.band, {
+  const tokenTraining = endedByInactivity(state) || (state.exchangeDropped && exchangesMade === 0) ? state.tokenTraining : applyStageSession(state.tokenTraining, state.band, {
     sessionIndex: idx,
     exchanges: exchangesMade,
     endReason: state.endReason,
+    config: state.config,
     ...(extra.routineExchangeInWindow ? { routineExchangeInWindow: true as const } : {}),
   });
   const at = iso(endedAt);

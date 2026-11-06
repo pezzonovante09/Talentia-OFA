@@ -53,7 +53,7 @@ describe.each(EXCHANGE_REASONS)('finishAbaSession при устаревшем п
 });
 
 describe('finishAbaSession: причины без обмена в конце', () => {
-  it.each(['adult_stopped', 'abandoned', 'unreliable_measurement'] as const)('%s: полная доска не обменивается и без stale', (reason) => {
+  it.each(['adult_stopped', 'abandoned', 'unreliable_measurement', 'app_backgrounded', 'app_error'] as const)('%s: полная доска не обменивается и без stale', (reason) => {
     const r = finishSession(ended(beginSession({ board: { earned: 5, nonContingent: 0 } }), reason), END_BASE);
     expect([r.exchanged, r.board.earned]).toEqual([0, 5]);
   });
