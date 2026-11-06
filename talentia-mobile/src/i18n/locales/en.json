@@ -580,6 +580,7 @@
         "outdated": "The consent text changed — please read it",
         "paused": "Paused",
         "in_progress": "A session is not finished",
+        "in_progress_stale": "The session was interrupted — close it to start a new one",
         "pairing_needed": "First, getting to know tokens — a short session without tasks",
         "no_ready_targets": "Targets are waiting for pictures",
         "pool_small": "Not enough rewards to choose from — turn sound on"
@@ -591,6 +592,8 @@
       "pairingConfirmedCaption": "For a trained observer: the child already knows tokens — skip the introduction and start with a one-cell board.",
       "continue": "Continue session",
       "finishWithout": "Finish without continuing",
+      "closeStale": "Close session",
+      "pausedInProgress": "The unfinished session can be closed once the pause is off",
       "unpauseToStart": "Turn off the pause to start",
       "mode": "Mode",
       "whoLeads": "Who leads",

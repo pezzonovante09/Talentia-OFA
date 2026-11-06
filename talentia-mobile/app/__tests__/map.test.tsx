@@ -10,23 +10,48 @@ import { nodeCenter, taliAnchor } from '../../src/domain/mapLane';
 import { gameDay } from '../../src/domain/mapProgress';
 import { emptySkill } from '../../src/domain/mastery';
 import { voice } from '../../src/services/voice';
-import { useChildSession } from '../../src/state/childSession';
+import { DEFAULT_SETTINGS, useChildSession } from '../../src/state/childSession';
 import { buildMapModel } from '../../src/state/mapModel';
-import { fireEvent, renderWithProviders, screen } from '../../src/test/render';
+import { useParentView } from '../../src/state/parentView';
+import { act, fireEvent, renderWithProviders, screen } from '../../src/test/render';
+import * as abaLeave from '../../src/ui/aba/leaveAba';
 import { LANE_GEOMETRY } from '../../src/ui/map/MapLane';
 
 jest.mock('expo-router', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
-  const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn() };
+  const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn(), dismissTo: jest.fn() };
+  /** Последний колбэк фокуса: «вернулись на экран» — вызвать его снова, как навигатор при возврате. */
+  const focus: { current: (() => void) | null } = { current: null };
   return {
     __router: router,
+    __focus: focus,
     useRouter: () => router,
-    useFocusEffect: (cb: () => void) => React.useEffect(cb, [cb]),
+    useFocusEffect: (cb: () => void) => {
+      focus.current = cb;
+      return React.useEffect(cb, [cb]);
+    },
     Redirect: ({ href }: { href: string }) => React.createElement(Text, { testID: 'redirect' }, href),
   };
 });
-const mockPush = (jest.requireMock('expo-router') as { __router: { push: jest.Mock } }).__router.push;
+const { __router: mockRouter, __focus: mockFocus } = jest.requireMock('expo-router') as {
+  __router: { push: jest.Mock; replace: jest.Mock; dismissTo: jest.Mock };
+  __focus: { current: (() => void) | null };
+};
+const mockPush = mockRouter.push;
+/** Ленте карты приходит `focusKey`: по нему она центруется при каждом появлении экрана. Оборачиваем, чтобы видеть его. */
+const mockFocusKeys: number[] = [];
+jest.mock('../../src/ui/map/MapLane', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const actual = jest.requireActual<typeof import('../../src/ui/map/MapLane')>('../../src/ui/map/MapLane');
+  return {
+    ...actual,
+    MapLane: (props: Parameters<typeof actual.MapLane>[0]) => {
+      mockFocusKeys.push(props.focusKey);
+      return React.createElement(actual.MapLane, props);
+    },
+  };
+});
 // Все svg в Jest — один и тот же мок, поза Tali по дереву не различима: позы реестра помечаются именем.
 jest.mock('../../src/assets/registry', () => {
   const React = jest.requireActual<typeof import('react')>('react');
@@ -45,8 +70,95 @@ const start = () => useChildSession.getState().startNoRecordSession({ childId: K
 
 beforeEach(() => {
   mockPush.mockClear();
+  mockRouter.replace.mockClear();
+  mockRouter.dismissTo.mockClear();
+  mockFocus.current = null;
+  mockFocusKeys.length = 0;
   voice.stop();
   useChildSession.getState().reset();
+});
+
+describe('фокус карты: сессию сменили ради занятия ABA, а вышли мимо него (`openedForAba`)', () => {
+  const lastFocusKey = () => mockFocusKeys[mockFocusKeys.length - 1];
+  const flagged = () => {
+    start();
+    useChildSession.setState({ mode: 'account', openedForAba: true });
+  };
+  /** Навигатор вернул фокус на смонтированную карту. */
+  const refocus = () => act(async () => mockFocus.current!());
+
+  it('с флагом: ведёт на «/» заменой, на карту не остаётся', async () => {
+    flagged();
+    await renderWithProviders(<MapScreen />);
+    expect(mockRouter.replace.mock.calls).toEqual([['/']]);
+    expect(mockRouter.dismissTo).not.toHaveBeenCalled();
+  });
+
+  it('с флагом: детская сессия сброшена вместе с флагом', async () => {
+    flagged();
+    await renderWithProviders(<MapScreen />);
+    expect(useChildSession.getState()).toMatchObject({ childId: null, mode: 'none', openedForAba: false });
+  });
+
+  describe('фокус с флагом только уводит: лента не получает нового `focusKey`', () => {
+    // настоящий `leaveAba` снимает экран сбросом сессии, и `focusKey` уже не виден: подмена оставляет экран стоять
+    let stay: jest.SpyInstance;
+    beforeEach(() => {
+      stay = jest.spyOn(abaLeave, 'leaveAba').mockImplementation(() => undefined);
+    });
+    afterEach(() => {
+      stay.mockRestore();
+    });
+
+    it('на первом фокусе', async () => {
+      flagged();
+      await renderWithProviders(<MapScreen />);
+      expect(stay).toHaveBeenCalledTimes(1);
+      expect(Math.max(...mockFocusKeys)).toBe(0);
+    });
+
+    it('на возврате к карте', async () => {
+      start();
+      await renderWithProviders(<MapScreen />);
+      const before = lastFocusKey();
+      useChildSession.setState({ openedForAba: true });
+      await refocus();
+      expect(stay).toHaveBeenCalledTimes(1);
+      expect(lastFocusKey()).toBe(before);
+    });
+  });
+
+  it('с флагом: режимы calm и focus не теряются', async () => {
+    flagged();
+    useChildSession.getState().setSettings({ calmMode: true, focusMode: true });
+    await renderWithProviders(<MapScreen />);
+    expect(useChildSession.getState().settings).toEqual({ ...DEFAULT_SETTINGS, calmMode: true, focusMode: true });
+  });
+
+  it('флаг поставлен, пока карта лежала под другими экранами: на возврате — к выбору профиля', async () => {
+    start();
+    useChildSession.setState({ mode: 'account' });
+    await renderWithProviders(<MapScreen />);
+    useChildSession.setState({ openedForAba: true });
+    await refocus();
+    expect(mockRouter.replace.mock.calls).toEqual([['/']]);
+  });
+
+  it('контроль: без флага переходов нет, сессия на месте', async () => {
+    start();
+    await renderWithProviders(<MapScreen />);
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+    expect(useChildSession.getState().childId).toBe(KID);
+  });
+
+  it('контроль: без флага `focusKey` растёт на каждом фокусе', async () => {
+    start();
+    await renderWithProviders(<MapScreen />);
+    const first = lastFocusKey();
+    await refocus();
+    await refocus();
+    expect(lastFocusKey()).toBe(first + 2);
+  });
 });
 
 describe('карта региона', () => {
@@ -92,6 +204,44 @@ describe('карта региона', () => {
     expect(screen.getByTestId('map-atlas-slot')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('map-settings'));
     expect(mockPush).toHaveBeenCalledWith('/parent');
+  });
+
+  describe('«ползунки»: раздел родителя открывается на ребёнке этой карты', () => {
+    const OTHER = '00000000-0000-4000-8000-000000000003';
+    beforeEach(() => {
+      useParentView.setState({ childId: OTHER });
+    });
+    afterEach(() => {
+      useParentView.setState({ childId: null });
+    });
+
+    it('с аккаунтом: выбран ребёнок сессии', async () => {
+      start();
+      useChildSession.setState({ mode: 'account' });
+      await renderWithProviders(<MapScreen />);
+      await fireEvent.press(screen.getByTestId('map-settings'));
+      expect(useParentView.getState().childId).toBe(KID);
+    });
+
+    it('с аккаунтом: выбор сделан до перехода', async () => {
+      start();
+      useChildSession.setState({ mode: 'account' });
+      const seen: { id: string | null } = { id: null };
+      mockPush.mockImplementationOnce(() => {
+        seen.id = useParentView.getState().childId;
+      });
+      await renderWithProviders(<MapScreen />);
+      await fireEvent.press(screen.getByTestId('map-settings'));
+      expect(seen.id).toBe(KID);
+    });
+
+    it('без записи (no_record): выбор не трогается, переход тот же', async () => {
+      start();
+      await renderWithProviders(<MapScreen />);
+      await fireEvent.press(screen.getByTestId('map-settings'));
+      expect(useParentView.getState().childId).toBe(OTHER);
+      expect(mockPush).toHaveBeenCalledWith('/parent');
+    });
   });
 
   it('обычный вид: название-наклейка, одна заливка поверх контура, для скринридера один заголовок', async () => {

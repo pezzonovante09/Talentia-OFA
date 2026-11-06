@@ -19,15 +19,26 @@ import { ABA_TARGETS } from '../../../src/content/aba';
 import { parentButton, parentSpacing } from '../../../src/design/parentTokens';
 import type { SensitiveAction } from '../../../src/domain/parentGate';
 import { newAbaId } from '../../../src/services/abaIds';
-import { abaBlockOf, abaLocalDay, abaOverview, finishInProgressSession, loadAbaParentProgress, type AbaOverview, type AbaParentProgress } from '../../../src/services/local/abaStart';
+import {
+  abaBlockOf,
+  abaLocalDay,
+  abaOverview,
+  abandonInProgressSession,
+  finishInProgressSession,
+  loadAbaParentProgress,
+  type AbaOverview,
+  type AbaParentProgress,
+} from '../../../src/services/local/abaStart';
 import { loadChildState } from '../../../src/services/local/childState';
 import { confirmAbaPairing, setAbaObservers, setAbaPaused } from '../../../src/services/local/commit';
 import { ABA_EXPORT_FILE_ENABLED, shareSpecialistExport } from '../../../src/services/local/shareSpecialistExport';
 import { useAbaRun } from '../../../src/state/abaRun';
 import { useAccount } from '../../../src/state/account';
+import { useChildSession } from '../../../src/state/childSession';
 import { device } from '../../../src/state/device';
 import { useGate } from '../../../src/state/gate';
 import { useSelectedProfile } from '../../../src/state/parentView';
+import { progressPort } from '../../../src/state/port';
 import type { AbaConfig, AbaObserver } from '../../../src/types/aba';
 import { ConfirmPinSheet } from '../../../src/ui/parent/ConfirmPinSheet';
 import { Card, GoalGlyph, ParentButton, ParentScreen, ParentText, Row, Segmented, type GoalGlyphStatus } from '../../../src/ui/parent/primitives';
@@ -72,6 +83,7 @@ export default function AbaParentScreen() {
   const router = useRouter();
   const db = useAccount((s) => s.db);
   const profile = useSelectedProfile();
+  const profiles = useAccount((s) => s.profiles);
   const can = useGate((s) => s.can);
   const [ov, setOv] = useState<AbaOverview | null>(null);
   const [progress, setProgress] = useState<AbaParentProgress | null>(null);
@@ -125,7 +137,8 @@ export default function AbaParentScreen() {
   };
 
   if (!profile || !db) return null;
-  const block = ov ? abaBlockOf(ov) : null;
+  // с `now`: незаконченное занятие старше 30 мин или другого дня — `in_progress_stale` (фаза 8), его только закрывают
+  const block = ov ? abaBlockOf(ov, Date.now()) : null;
   // текст согласия обновился — данные практики на устройстве остаются, пауза и отзыв доступны (ABA.md: другого пути отзыва нет)
   const hasData = ov?.consent === 'granted' || ov?.consent === 'outdated';
   const status = !ov ? '' : t(`parent.aba.status.${block ?? 'ready'}`);
@@ -145,11 +158,32 @@ export default function AbaParentScreen() {
     await finishInProgressSession(db, profile.childId, Date.now());
     await reload();
   });
+  /** Просроченное занятие (фаза 8): закрывается `app_backgrounded` моментом ухода; дальше — обычная карточка «Можно начинать». */
+  const closeStale = safely(async () => {
+    const leftAt = Date.parse(ov?.inProgressLeftAt ?? '');
+    const now = Date.now();
+    await abandonInProgressSession(db, profile.childId, { reason: 'app_backgrounded', at: Number.isFinite(leftAt) ? leftAt : now, now });
+    await reload();
+  });
 
-  /** К ребёнку — не `push`: карта между родительским экраном и гейтом не мелькает. */
-  const goChild = (href: '/aba/pairing' | '/aba/session') => {
+  /**
+   * К ребёнку через гейт окна `app/aba/index.tsx` (фаза 8, `design-lead`): экран «слишком мал» в одном месте, первый кадр
+   * детской стороны — пустой фон. Не `push`: карта между родительским экраном и гейтом не мелькает. Детская сессия — того
+   * ребёнка, чья карточка открыта: с карты другого ребёнка и на холодном старте она не совпадает (как `openProfile`), иначе
+   * занятие и его записи ушли бы чужому ребёнку.
+   */
+  const goChild = async (to: 'pairing' | 'session') => {
+    if (useChildSession.getState().childId !== profile.childId) {
+      if (useAccount.getState().consent === 'outdated') {
+        router.push('/parent/reconsent');
+        return;
+      }
+      const snapshot = await progressPort().load(profile.childId);
+      // ради занятия сменили живую сессию: выход из занятия — к выбору профиля (`leaveAba`)
+      useChildSession.getState().startAccountSession({ profile, snapshot, now: new Date(), openedForAba: useChildSession.getState().mode !== 'none' });
+    }
     router.dismissAll();
-    router.replace(href);
+    router.replace(to === 'pairing' ? { pathname: '/aba', params: { mode: 'pairing' } } : '/aba');
   };
 
   /** «Начать»: наблюдатели в базу и в стор до навигации (как делал `go()` на 2.6), затем сразу сопряжение или сессия. */
@@ -164,19 +198,24 @@ export default function AbaParentScreen() {
       await setAbaObservers(db, profile.childId, observers, new Date().toISOString());
     }
     useAbaRun.getState().set({ config: mode, observers, primaryObserverId: primary });
-    goChild(block === 'pairing_needed' ? '/aba/pairing' : '/aba/session');
+    await goChild(block === 'pairing_needed' ? 'pairing' : 'session');
   });
 
   /** «Начать» при «Со взрослым» и «Не выбрано» — не серая кнопка, а лист с причиной; «Готово» листа возвращает сюда. */
   const start = () => (mode === 'with_adult' && !who ? setSheet('start') : begin());
 
   /** «Продолжить»: конфигурация и наблюдатели — из снимка занятия, выбирать заново нечего. */
-  const resume = () => {
+  const resume = safely(async () => {
     const s = ov?.inProgress;
-    if (!s) return;
+    if (!ov || !s) return;
+    // карточка просрочилась, пока была открыта: занятие не закрывается молча, закрывает взрослый
+    if (abaBlockOf(ov, Date.now()) === 'in_progress_stale') {
+      await reload();
+      return;
+    }
     useAbaRun.getState().set({ config: s.config, observers: s.observers, primaryObserverId: s.primaryObserverId });
-    goChild('/aba/session');
-  };
+    await goChild('session');
+  });
 
   // «Сопряжение подтверждено» (вопрос 62): только обученному наблюдателю, за PIN; роль держателя PIN — владелец аккаунта
   const confirmPairing = safely(async () => {
@@ -233,9 +272,23 @@ export default function AbaParentScreen() {
     >
       <View style={{ gap: parentSpacing.lg }}>
         <Card title={t('parent.aba.session')} testID="aba-session">
+          {/* несколько детей: занятие и его данные идут этому ребёнку, имя нельзя угадывать */}
+          {profiles.length > 1 && (
+            <ParentText role="label" style={{ marginBottom: parentSpacing.xs }} testID="aba-child-name">
+              {profile.name || t('parent.profile.unnamed', { n: profiles.findIndex((p) => p.childId === profile.childId) + 1 })}
+            </ParentText>
+          )}
           <ParentText role="body" testID="aba-status">
             {status}
           </ParentText>
+          {block === 'paused' && ov?.inProgress && (
+            // незаконченное занятие под паузой (фаза 8, г2): писать нельзя — ни продолжить, ни закрыть; подпись принадлежит статусу
+            <View style={{ marginTop: parentSpacing.xs }}>
+              <ParentText role="caption" color="textMuted" lines={2} testID="aba-paused-in-progress">
+                {t('parent.aba.pausedInProgress')}
+              </ParentText>
+            </View>
+          )}
           {canChoose && (
             <View style={{ marginTop: parentSpacing.md }}>
               <Segmented
@@ -262,12 +315,12 @@ export default function AbaParentScreen() {
               </View>
             </View>
           )}
-          {block === 'in_progress' && ov?.inProgress && (
+          {(block === 'in_progress' || block === 'in_progress_stale') && ov?.inProgress && (
             <View style={{ marginTop: parentSpacing.md }}>
               <Row first kind="value" label={t('parent.aba.mode')} value={inProgressMode} testID="aba-mode-row" valueTestID="aba-mode-row-value" />
             </View>
           )}
-          <View style={{ marginTop: canChoose || block === 'in_progress' ? parentSpacing.md : parentSpacing.sm }}>
+          <View style={{ marginTop: canChoose || block === 'in_progress' || block === 'in_progress_stale' ? parentSpacing.md : parentSpacing.sm }}>
             {block === 'no_consent' || block === 'outdated' ? (
               <ParentButton label={t('parent.aba.readConsent')} onPress={() => router.push('/parent/aba/consent')} testID="aba-read-consent" />
             ) : block === 'paused' ? (
@@ -277,6 +330,9 @@ export default function AbaParentScreen() {
                 <ParentButton label={t('parent.aba.continue')} onPress={() => guarded('aba_resume', resume)} testID="aba-continue" />
                 <ParentButton variant="quiet" label={t('parent.aba.finishWithout')} onPress={finish} testID="aba-finish" />
               </>
+            ) : block === 'in_progress_stale' ? (
+              // просрочено (фаза 8, `design-lead`): одно действие и единственный путь к новому занятию — заметная кнопка
+              <ParentButton variant="secondary" label={t('parent.aba.closeStale')} onPress={closeStale} testID="aba-close-stale" />
             ) : block === 'no_ready_targets' || block === 'pool_small' ? null : (
               <ParentButton label={t(block === 'pairing_needed' ? 'parent.aba.startPairing' : 'parent.aba.start')} onPress={start} testID="aba-start" />
             )}

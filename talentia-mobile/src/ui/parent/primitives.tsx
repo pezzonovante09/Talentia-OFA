@@ -4,7 +4,7 @@
  * строка, сегменты, поле, точки и клавиатура PIN, полоса недели. Детские примитивы здесь не
  * используются: у них отклик игры.
  */
-import { useState, type PropsWithChildren, type ReactNode } from 'react';
+import { useRef, useState, type PropsWithChildren, type ReactNode } from 'react';
 import { Pressable, ScrollView, Switch, Text, TextInput, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -46,7 +46,7 @@ export type ParentButtonVariant = 'primary' | 'secondary' | 'destructive' | 'qui
 export function ParentButton({ variant = 'primary', label, onPress, disabled = false, reason, testID, underline = false, block = true, height = parentButton.height, minWidth }: { variant?: ParentButtonVariant; label: string; onPress: () => void; disabled?: boolean; /** Причина недоступности — подпись под кнопкой. */ reason?: string; testID?: string; underline?: boolean; block?: boolean; /** Высота зоны — по умолчанию 48; экран «слишком мал» ABA берёт `abaWindowPolicy.belowMinButtonHeight`. */ height?: number; minWidth?: number }) {
   const t = useParentTheme();
   const [pressed, setPressed] = useState(false);
-  const last = { at: 0 };
+  const last = useRef({ at: 0 }).current;
   const look = (() => {
     if (disabled) return { bg: t.colors.card, ink: t.colors.textMuted, border: t.colors.hairline };
     switch (variant) {

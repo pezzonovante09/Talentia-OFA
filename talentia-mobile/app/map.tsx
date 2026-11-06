@@ -16,6 +16,8 @@ import { fitStickerTitle, lessonLayout, mapTitleWidth } from '../src/design/toke
 import { voice } from '../src/services/voice';
 import { useChildSession } from '../src/state/childSession';
 import { useMapModel } from '../src/state/mapModel';
+import { useParentView } from '../src/state/parentView';
+import { leaveAba } from '../src/ui/aba/leaveAba';
 import { MapBackdrop } from '../src/ui/map/MapBackdrop';
 import { MapBand } from '../src/ui/map/MapBand';
 import { MapLane } from '../src/ui/map/MapLane';
@@ -38,9 +40,18 @@ function MapScreenBody() {
 
   useFocusEffect(
     useCallback(() => {
-      setFocusKey((k) => k + 1);
-    }, []),
+      // сессию сменили ради занятия, а вышли мимо него (гейт окна, системный «назад»): карта такой сессии не показывается
+      if (useChildSession.getState().openedForAba) leaveAba(router);
+      else setFocusKey((k) => k + 1);
+    }, [router]),
   );
+
+  // раздел родителя открывается на ребёнке этой карты: иначе занятие ABA ушло бы профилю по умолчанию
+  const openParent = () => {
+    const { mode, childId } = useChildSession.getState();
+    if (mode === 'account' && childId) useParentView.getState().select(childId);
+    router.push('/parent');
+  };
 
   const title = t(`content.regions.${model.region}.title`);
   const onRegion = theme.focusMode || theme.calmMode ? ('text' as const) : ('onRegion' as const);
@@ -55,7 +66,7 @@ function MapScreenBody() {
       <View style={{ height: insets.top, backgroundColor: bandColor }} />
       <View style={{ backgroundColor: bandColor }}>
         {/* «К атласу» — когда есть хотя бы одна страница (D2); до первого урока — пустое место той же ширины, не мёртвая цель */}
-        <MapBand title={title} ink={onRegion} titleWidth={titleWidth} sticker={sticker} onAtlas={atlasPages >= 1 ? () => router.push('/atlas' as Href) : undefined} onSettings={() => router.push('/parent')} />
+        <MapBand title={title} ink={onRegion} titleWidth={titleWidth} sticker={sticker} onAtlas={atlasPages >= 1 ? () => router.push('/atlas' as Href) : undefined} onSettings={openParent} />
       </View>
       <MapLane
         model={model}
