@@ -212,8 +212,10 @@ GitHub владельцем; `docs/legal/` под облако (№115) и ст�
    токенов и контента переведены на «картинки есть»; заглушки `PlaceholderGlyph` на новые иконки не переведены
    (с `design-lead`); перегенерировать 6 иконок (`sound`, `star-helped`, `region-words`, `region-nature`,
    `region-kyrgyz`, `pause-bars`: рамка или контурный рисунок вместо залитого) и 3 ориентира (`nature`, `workshop`,
-   `kyrgyz`, контурные); решения владельца ждут `region-numbers` (618 КБ после svgo при лимите 300) и `region-words`
-   (маяк у правого края, а не в средней трети).
+   `kyrgyz`, контурные); `region-numbers` (618 КБ) и `region-words` (маяк у правого края) приняты №179 и положены —
+   **все пять панорам из Higgsfield в приложении**; `horizon-numbers.svg` и `landmark-numbers.svg` остались от старой
+   панорамы и с новой не совпадают — переобвести горизонт по `region-numbers.svg` и измерить `LANDMARK_AT`, затем
+   горизонты и ориентиры остальных четырёх (ТЗ — ASSETS.md, шаг 3).
 0. **План правок по разбору (№168, `C:\Users\User\.claude\plans\cached-splashing-pnueli.md`)** — сделано 2026-10-31:
    этапы A (`a928218`, `d365e99`: часы Лейтнера, проба, булавка, сессия повторения `/review`), B (отчёт родителю,
    `homeTipKey`), C (пример: `modelStepMin`, «теперь ты», шаг `mistake`), E (18 ситуаций Tali), H (`742193f`:
