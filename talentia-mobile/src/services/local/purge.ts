@@ -574,6 +574,8 @@ export type SpecialistExport = {
    * Сессии: `day`, `durationSec`, прочее время — смещения в мс от начала сессии (№96). `tail` — хвост конца (фаза 8):
    * сделанное после записанного итога — `accessScene` (отрезки), `pairingTokenAt`, `leftAtStep`, `leftAt`, `completed`;
    * `null` — хвост не записан: шаги после итога «неизвестно», не «выдано». События самой записи остаются «назначено».
+   * `exchangesGiven` — выдано обменов (№183): `exchangesMade` без обмена в конце, жетоны которого хвост вернул на доску
+   * (`tail.exchangeReturned`); `exchangesMade` записи остаётся как было записано.
    */
   abaSessions: unknown[];
   /** IOA: `enteredDay` вместо времени ввода (№96). Состояние ниже — даты без времени суток. */
@@ -643,11 +645,15 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
     // хвост конца (фаза 8): что было сделано после записанного итога; `null` — хвост не записан, то есть «неизвестно», не
     // «выдано». Времена — те же смещения от начала сессии; хвост без записи сессии не экспортируется (отсчёта нет)
     // строки — по `seq`: у сессии действует последняя (уход, затем доигранный возврат)
-    const tailBySession = new Map((await bodies<AbaSessionTail>('aba_session_tails')).map((t) => [t.sessionId, t]));
+    const tailRows = await bodies<AbaSessionTail>('aba_session_tails');
+    const tailBySession = new Map(tailRows.map((t) => [t.sessionId, t]));
+    // возврат жетонов (№181) — один на сессию и в любой её строке: доска уже вернула жетоны, даже если позже легла строка без отметки
+    const returnedBySession = new Map(tailRows.flatMap((t) => (t.exchangeReturned ? [[t.sessionId, t.exchangeReturned] as const] : [])));
     const abaSessions = sessions.map(({ startedAt, endedAt, ...s }) => {
       const origin = Date.parse(startedAt);
       const seconds = endedAt === null ? NaN : Math.round((Date.parse(endedAt) - origin) / 1000);
       const t = tailBySession.get(s.id);
+      const returned = returnedBySession.get(s.id);
       // хвост — по явному списку полей: новое поле не уходит специалисту само; момент возврата жетонов не связан с сессией
       // (его подобрали позже), поэтому только факт и число
       const tail = t
@@ -658,8 +664,8 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
             leftAt: t.leftAt,
             completed: t.completed,
             ...(t.sceneStarted !== undefined ? { sceneStarted: t.sceneStarted } : {}),
-            ...(t.exchangeReturned
-              ? { exchangeReturned: { tokens: t.exchangeReturned.tokens, nonContingent: t.exchangeReturned.nonContingent, ...(t.exchangeReturned.belowBoard ? { belowBoard: true } : {}) } }
+            ...(returned
+              ? { exchangeReturned: { tokens: returned.tokens, nonContingent: returned.nonContingent, ...(returned.belowBoard ? { belowBoard: true } : {}) } }
               : {}),
           }
         : null;
@@ -668,6 +674,9 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
         // локальный день записи сессии; старые записи без него — UTC-дата метки
         day: s.day ?? startedAt.slice(0, 10),
         durationSec: Number.isFinite(seconds) ? Math.max(0, seconds) : null,
+        // выдано обменов (№183): обмен в конце, жетоны которого вернулись на доску, не выдан; снятый остановкой (`exchange_returned`)
+        // уже вычтен из `exchangesMade` доменом
+        exchangesGiven: Math.max(0, s.exchangesMade - (returned ? 1 : 0)),
         primaryObserverId: label(s.primaryObserverId),
       };
     });

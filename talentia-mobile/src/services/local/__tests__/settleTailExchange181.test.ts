@@ -281,4 +281,63 @@ describe('экспорт хвоста с возвратом жетонов (№1
     const exp = await exportChild(await settled(), 'kid', LATER, {});
     expect((exp.abaSessionTails.at(-1) as AbaSessionTail).exchangeReturned).toEqual({ tokens: 3, nonContingent: 1, at: LATER });
   });
+
+  // выдано обменов (№183): обмен в конце, жетоны которого хвост вернул на доску, не выдан; снятый остановкой домен уже вычел
+  const specialistSession = async (db: SqlDb) =>
+    (await exportForSpecialist(db, 'kid', LATER)).abaSessions[0] as { exchangesMade: number; exchangesGiven: number; tail: Record<string, unknown> | null };
+  /** Два обмена: посреди сессии и в конце (`at === endedAt`) — выданное отличимо и от `exchangesMade`, и от нуля. */
+  const twoExchanges = session('s-7', 7, {
+    exchangesMade: 2,
+    events: [
+      { kind: 'exchange', at: at(300_000), tokens: 3, nonContingent: 0 },
+      { kind: 'exchange', at: END, tokens: 3, nonContingent: 1 },
+    ],
+  });
+
+  it('exchangesGiven: хвост не записан — выдано столько, сколько записано обменов', async () => {
+    const s = await specialistSession(await withSession());
+    expect([s.tail, s.exchangesMade, s.exchangesGiven]).toEqual([null, 1, 1]);
+  });
+
+  it('exchangesGiven: ушли на обмене в конце, сцена не началась, жетоны вернулись — на один обмен меньше записанного', async () => {
+    const db = await withSession(twoExchanges);
+    await commitAbaSessionTail(db, 'kid', leftOnExchange('s-7'), NOW);
+    await settleTailExchange(db, 'kid', { at: LATER });
+    const s = await specialistSession(db);
+    expect([s.exchangesMade, s.exchangesGiven, s.tail?.exchangeReturned]).toEqual([2, 1, { tokens: 3, nonContingent: 1 }]);
+  });
+
+  it('exchangesGiven: обмен снят остановкой (exchange_returned в событиях, отметки в хвосте нет) — второй раз не вычитается', async () => {
+    // форма stopSession: обмен в конце снят, exchangesMade уже уменьшен доменом (2 − 1), конец — момент остановки
+    const db = await withSession(
+      session('s-7', 7, {
+        endReason: 'adult_stopped',
+        exchangesMade: 1,
+        events: [
+          { kind: 'exchange', at: at(300_000), tokens: 3, nonContingent: 0 },
+          { kind: 'exchange', at: at(590_000), tokens: 3, nonContingent: 1 },
+          { kind: 'exchange_returned', at: END, tokens: 3, nonContingent: 1, exchangeAt: at(590_000), reason: 'adult_stopped' },
+        ],
+      }),
+    );
+    expect(await settleTailExchange(db, 'kid', { at: LATER })).toBe(false);
+    const s = await specialistSession(db);
+    expect([s.exchangesMade, s.exchangesGiven]).toEqual([1, 1]);
+  });
+
+  it('exchangesGiven: после строки с возвратом легла строка без отметки — выдано по-прежнему на один меньше, возврат в хвосте есть', async () => {
+    const db = await settled();
+    await commitAbaSessionTail(db, 'kid', leftOnExchange('s-7', { leftAt: at(700_000) }), LATER);
+    const s = await specialistSession(db);
+    // хвост — по последней строке (leftAt из неё), возврат — из любой строки сессии
+    expect([s.tail?.leftAt, s.exchangesMade, s.exchangesGiven, s.tail?.exchangeReturned]).toEqual([700_000, 1, 0, { tokens: 3, nonContingent: 1 }]);
+  });
+
+  it('exchangesGiven: хвост доигран (completed, сцена была) — возврата нет, выдано столько, сколько записано', async () => {
+    const db = await withSession(twoExchanges);
+    await commitAbaSessionTail(db, 'kid', leftOnExchange('s-7', { leftAtStep: null, leftAt: null, completed: true, sceneStarted: true }), NOW);
+    expect(await settleTailExchange(db, 'kid', { at: LATER })).toBe(false);
+    const s = await specialistSession(db);
+    expect([s.exchangesMade, s.exchangesGiven, s.tail && 'exchangeReturned' in s.tail]).toEqual([2, 2, false]);
+  });
 });

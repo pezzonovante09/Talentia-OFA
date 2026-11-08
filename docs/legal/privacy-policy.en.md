@@ -24,6 +24,9 @@ settings, reports and data are available only to an adult behind a PIN.
 - Tali (the helper) answers with ready-made lines stored in the app. No AI model is used.
 - The microphone and camera are not used; the app has no access to contacts, location or photos.
 - You can export or delete your child's data inside the app at any time.
+  [[OWNER: there is no parent export screen yet, only the `exportChild` function (question 83, No. 184).
+  By release: either an export screen, or remove the export promise here, in sections 7 and 8 and on
+  the deletion page.]]
 
 ## 3. What data is processed on the device
 
@@ -77,7 +80,7 @@ is a barrier against accidental entry by a child, **not** verified proof of age 
 - Talentia is an app for children aged 5-10, used by a child under an adult's supervision.
 - A child's data does not leave the device: version 1 has no cloud, no accounts and no AI.
 - The parent manages the child's data in the parent area behind a PIN: export, clear progress, delete
-  the profile, withdraw consents. The child has no access to these actions.
+  the profile, withdraw consents. The child has no access to these actions. [[OWNER: see the export note in section 2.]]
 - We deliberately do not collect more than needed (see section 3: no surname, date of birth, email,
   photos, voice, location or advertising identifier; the in-game name is optional and stays on the
   device) and do not share a child's data with third parties. The app has no ads and no third-party
@@ -87,7 +90,7 @@ is a barrier against accidental entry by a child, **not** verified proof of age 
 
 ## 8. Your rights and retention
 
-You may obtain a copy of the data (export), clear progress, delete the child's profile and withdraw
+You may obtain a copy of the data (export) [[OWNER: see the export note in section 2.]], clear progress, delete the child's profile and withdraw
 any consent. All of this is done in the app's parent area (PIN required) without contacting us,
 because the data is only with you. Deletion is irreversible, there is no trash, and data is physically
 erased from the device. Full deletion is the Delete account button in Data. Uninstalling the app erases its data; [[iOS: before release, the PIN hash in Keychain is cleared on reinstall, #157]].
