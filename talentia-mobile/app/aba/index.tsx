@@ -12,10 +12,11 @@ import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { abaTierFor, abaWindowPolicy } from '../../src/design/abaTokens';
+import { abaWindowPolicy } from '../../src/design/abaTokens';
 import { useAbaRun } from '../../src/state/abaRun';
 import { useChildSession } from '../../src/state/childSession';
 import { leaveAba } from '../../src/ui/aba/leaveAba';
+import { tierForWindow } from '../../src/ui/aba/model/sessionResume';
 import { useAbaColors } from '../../src/ui/aba/parts';
 import { ParentButton } from '../../src/ui/parent/primitives';
 import { ParentThemeProvider } from '../../src/ui/parent/theme';
@@ -27,9 +28,10 @@ export default function AbaGateScreen() {
   const c = useAbaColors();
   const insets = useSafeAreaInsets();
   const config = useAbaRun((s) => s.config);
-  const [height, setHeight] = useState<number | null>(null);
+  const [size, setSize] = useState<{ height: number; width: number } | null>(null);
 
-  const tier = height === null ? 'pending' : abaTierFor(height, insets.bottom);
+  // тот же расчёт, что у экрана занятия: по высоте и ширине (№182), иначе узкое окно ходило бы между ними по кругу
+  const tier = size === null ? 'pending' : tierForWindow({ ...size, insetBottom: insets.bottom });
   const next = mode === 'pairing' ? '/aba/pairing' : '/aba/session';
 
   useEffect(() => {
@@ -40,7 +42,7 @@ export default function AbaGateScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: c.background, paddingTop: insets.top, paddingBottom: insets.bottom }} testID="aba-config">
-      <View style={{ flex: 1, paddingHorizontal: 16 }} onLayout={(e) => setHeight(e.nativeEvent.layout.height)}>
+      <View style={{ flex: 1, paddingHorizontal: 16 }} onLayout={(e) => setSize({ height: e.nativeEvent.layout.height, width: e.nativeEvent.layout.width })}>
         {tier === null ? (
           <View style={{ flex: 1, justifyContent: 'center', gap: abaWindowPolicy.belowMinButtonGap }} testID="aba-too-small">
             <Text style={{ color: c.ink, fontSize: 20, fontWeight: '700' }}>{t('abaSession.tooSmallTitle')}</Text>

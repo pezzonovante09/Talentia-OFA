@@ -2,7 +2,7 @@
  * Чистые правила возврата на экран сессии после сворачивания (фаза 8, `model/sessionResume.ts`): обмен, которого ребёнок
  * не видел; перерыв с остатка; доступ до и после T; записи хвоста конца и как он продолжается на возврате.
  */
-import { abaAccessScene } from '../../../../design/abaTokens';
+import { abaAccessScene, abaTierFor } from '../../../../design/abaTokens';
 import { AWAY_RECHOOSE_MS, type AbaSessionState } from '../../../../domain/abaSession';
 import { accessDueAt, startAccess } from '../accessRun';
 import { startExchange } from '../exchangeRun';
@@ -17,6 +17,9 @@ import {
   tailOnLeave,
   tailOnReturn,
   tailOnSceneStart,
+  tierForWindow,
+  tierRowWidth,
+  windowFitsTier,
   type TailFacts,
 } from '../sessionResume';
 
@@ -375,5 +378,81 @@ describe('accessSceneOnStop и accessScenesAtEnd: отрезки сцены на
     expect(accessScenesAtEnd(access({ scenes: [given], sceneFrom: T0 + 9000 }), T0 + 15_000)).toEqual([given, { startedAt: T0 + 9000, endedAt: T0 + 15_000 }]);
     expect(accessScenesAtEnd(access({ sceneEndedAt: T0 + 20_000 }), T0 + 21_000)).toEqual([{ startedAt: T0, endedAt: T0 + 20_000 }]);
     expect(accessScenesAtEnd(access({ scenes: [given], sceneFrom: null }), T0 + 21_000)).toEqual([given]);
+  });
+});
+
+describe('tierRowWidth и windowFitsTier: окно вмещает тир старта (№182)', () => {
+  it('ряд из трёх плит с двумя зазорами 24, без боковых полей экрана: roomy 336, compact 312, tight 264', () => {
+    expect([tierRowWidth('roomy'), tierRowWidth('compact'), tierRowWidth('tight')]).toEqual([336, 312, 264]);
+  });
+
+  // границы тиров при нижней safe area 0: tight с 584, compact с 616, roomy с 696; при 34 — 560, 592, 672
+  it.each([
+    ['roomy', 760, 0, true],
+    ['roomy', 696, 0, true],
+    ['roomy', 695, 0, false],
+    ['roomy', 650, 0, false],
+    ['roomy', 400, 0, false],
+    ['roomy', 672, 34, true],
+    ['roomy', 671, 34, false],
+    ['compact', 760, 0, true],
+    ['compact', 616, 0, true],
+    ['compact', 615, 0, false],
+    ['tight', 584, 0, true],
+    ['tight', 583, 0, false],
+  ] as const)('высота: тир старта %s, высота %i, нижняя safe area %i — вмещает %s', (tier, height, insetBottom, fits) => {
+    expect(windowFitsTier({ tier, height, width: 375, insetBottom, startWidth: 375 })).toBe(fits);
+  });
+
+  it('границы таблицы высот совпадают с выбором тира на старте', () => {
+    expect([abaTierFor(583, 0), abaTierFor(584, 0), abaTierFor(615, 0), abaTierFor(616, 0), abaTierFor(695, 0), abaTierFor(696, 0)]).toEqual([null, 'tight', 'tight', 'compact', 'compact', 'roomy']);
+  });
+
+  it.each([
+    ['не уже старта', 375, 375, true],
+    ['шире старта', 800, 375, true],
+    ['уже старта, но ряд roomy (336) помещается', 336, 375, true],
+    ['уже старта и уже ряда', 335, 375, false],
+    ['планшет: разделённый экран 768 → 300', 300, 768, false],
+    ['ширина на старте уже ряда, не менялась', 330, 330, true],
+    ['ширина на старте уже ряда, окно шире старта', 334, 330, true],
+    ['ширина на старте уже ряда, дальнейшее сужение', 320, 330, false],
+  ] as const)('ширина roomy: %s (%i при старте %i) — вмещает %s', (_name, width, startWidth, fits) => {
+    expect(windowFitsTier({ tier: 'roomy', height: 760, width, insetBottom: 0, startWidth })).toBe(fits);
+  });
+
+  it('ширина по ряду своего тира: compact при 312 вмещает, при 311 — нет', () => {
+    expect(windowFitsTier({ tier: 'compact', height: 650, width: 312, insetBottom: 0, startWidth: 375 })).toBe(true);
+    expect(windowFitsTier({ tier: 'compact', height: 650, width: 311, insetBottom: 0, startWidth: 375 })).toBe(false);
+  });
+
+  it('высота не вмещает — нет, даже если ширина прежняя', () => {
+    expect(windowFitsTier({ tier: 'roomy', height: 650, width: 1024, insetBottom: 0, startWidth: 1024 })).toBe(false);
+  });
+});
+
+describe('tierForWindow: самый крупный тир по высоте и ширине (№182)', () => {
+  it('высота roomy, ширина 300 — tight: ряды roomy 336 и compact 312 не помещаются, tight 264 помещается', () => {
+    expect(tierForWindow({ height: 760, width: 300, insetBottom: 0 })).toBe('tight');
+  });
+
+  it('высота roomy, ширина 250 — null: не помещается даже ряд tight 264', () => {
+    expect(tierForWindow({ height: 760, width: 250, insetBottom: 0 })).toBeNull();
+  });
+
+  it.each([
+    ['высота roomy, ширина ровно ряд roomy', 760, 336, 'roomy'],
+    ['высота roomy, ширина на 1 уже ряда roomy', 760, 335, 'compact'],
+    ['высота roomy, ширина ровно ряд tight', 760, 264, 'tight'],
+    ['высота roomy, ширина на 1 уже ряда tight', 760, 263, null],
+    ['высота compact, ширина 1024 — не крупнее тира по высоте', 650, 1024, 'compact'],
+    ['высота compact, ширина 300', 650, 300, 'tight'],
+    ['высота мала для любого тира, ширина 1024', 583, 1024, null],
+  ] as const)('%s (%i × %i) — %s', (_name, height, width, tier) => {
+    expect(tierForWindow({ height, width, insetBottom: 0 })).toBe(tier);
+  });
+
+  it('нижняя safe area учитывается по высоте: 672 при 34 — roomy, 671 при 34 — compact', () => {
+    expect([tierForWindow({ height: 672, width: 375, insetBottom: 34 }), tierForWindow({ height: 671, width: 375, insetBottom: 34 })]).toEqual(['roomy', 'compact']);
   });
 });

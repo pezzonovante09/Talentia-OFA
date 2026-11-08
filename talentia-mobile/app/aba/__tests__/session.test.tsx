@@ -2060,15 +2060,271 @@ describe('фаза 8: сворачивание и возобновление', (
     expect(s.reinforcerStale).toBeUndefined();
   });
 
-  it('13а. тир фиксируется первым onLayout: второе измерение меньшей высотой раскладку не меняет', async () => {
+  /** Высота панели взрослого — по ней видно, в каком тире стоит проба. */
+  const panelHeight = () => StyleSheet.flatten(screen.getByTestId('aba-adult-panel').props.style).height as number;
+  /**
+   * `AppState.currentState` в моке RN — функция: тест, где окно возвращается в фоне, ставит состояние сам. Снимается
+   * один раз — к исходному свойству, а не к предыдущей подмене.
+   */
+  const setAppState = (s: AppStateStatus) => {
+    const original = Object.getOwnPropertyDescriptor(AppState, 'currentState');
+    if (original && !('__set' in AppState)) {
+      Object.defineProperty(AppState, '__set', { value: true, configurable: true });
+      undo.push(() => {
+        Object.defineProperty(AppState, 'currentState', original);
+        delete (AppState as { __set?: true }).__set;
+      });
+    }
+    Object.defineProperty(AppState, 'currentState', { value: s, configurable: true, writable: true });
+  };
+
+  it('13а. тир фиксируется первым onLayout: второе измерение меньшей высотой посреди пробы — пауза (№182): кадр away со строкой «Верните размер окна», проба не пишется', async () => {
     expect([abaTierFor(760, 0), abaTierFor(650, 0)]).toEqual(['roomy', 'compact']);
     await toTrial();
-    const panelHeight = () => StyleSheet.flatten(screen.getByTestId('aba-adult-panel').props.style).height as number;
     expect(panelHeight()).toBe(abaLayoutByTier.roomy.adultPanel);
+    const leftAt = clock.now();
     await layout(650);
     await tick(10);
+    expect(screen.getByTestId('aba-away')).toBeTruthy();
+    expect(screen.getByTestId('aba-window-squeezed')).toHaveTextContent(ru.abaScreen.tooSmall.paused);
+    expect(screen.queryByTestId('aba-sample')).toBeNull();
+    expect(screen.queryByTestId('aba-adult-panel')).toBeNull();
+    await waitFor(async () => expect(await snapshotAt()).toBe(iso(leftAt)));
+    await tick(30_000);
+    expect(screen.getByTestId('aba-away')).toBeTruthy();
+    expect(await count('aba_trials')).toBe(0);
+  });
+
+  it('13в. сжатие посреди пробы, возврат размера через 30 с — та же проба с SD, тот же тир, проб не прибавилось', async () => {
+    await toTrial();
+    const sample = stimOf('aba-sample');
+    const before = (await snapshot())!;
+    await layout(650);
+    await tick(30_000);
+    await layout(760);
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    expect(screen.queryByTestId('aba-away')).toBeNull();
+    expect(stimOf('aba-sample')).toBe(sample);
+    expect(screen.getByTestId('aba-instruction')).toBeTruthy();
     expect(panelHeight()).toBe(abaLayoutByTier.roomy.adultPanel);
+    expect(await count('aba_trials')).toBe(0);
+    const after = (await snapshot())!;
+    expect(after.sessionId).toBe(before.sessionId);
+    expect(after.pausedMs).toBe(before.pausedMs + 30_000);
+    await answerRight();
+    await waitFor(async () => expect(await count('aba_trials')).toBe(1));
+  });
+
+  /** Сторона плиты образца: roomy 120, compact 88, tight 80 (`abaChoiceZone`) — панель у compact и tight одна (124). */
+  const sampleSide = () => StyleSheet.flatten(screen.getByTestId('aba-sample').props.style).width as number;
+
+  it('13г. второе измерение меньше на обучении карточке — уже не первая проверка (она прошла на старте обучения): пауза со строкой «Верните размер окна», тир не меняется; размер вернулся — обучение карточке, проба в roomy', async () => {
+    await mount();
+    await waitFor(() => expect(screen.getByTestId('aba-card-training')).toBeTruthy());
+    await layout(650);
+    await tick(10);
+    expect(screen.getByTestId('aba-away')).toBeTruthy();
+    expect(screen.getByTestId('aba-window-squeezed')).toHaveTextContent(ru.abaScreen.tooSmall.paused);
+    expect(screen.queryByTestId('aba-card-training')).toBeNull();
+    await tick(5000);
+    await layout(760);
+    await waitFor(() => expect(screen.getByTestId('aba-card-training')).toBeTruthy());
+    expect(screen.queryByTestId('aba-window-squeezed')).toBeNull();
+    await skipCardTraining();
+    await chooseFirst();
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    expect(panelHeight()).toBe(abaLayoutByTier.roomy.adultPanel);
+  });
+
+  it('13д. второе измерение меньше на выборе подкрепителя — уже не первая проверка: пауза со строкой «Верните размер окна», тир не меняется; размер вернулся — проба в roomy', async () => {
+    await mount();
+    await skipCardTraining();
+    await waitFor(() => expect(screen.getByTestId('aba-choice')).toBeTruthy());
+    await layout(650);
+    await tick(10);
+    expect(screen.getByTestId('aba-away')).toBeTruthy();
+    expect(screen.getByTestId('aba-window-squeezed')).toHaveTextContent(ru.abaScreen.tooSmall.paused);
+    expect(screen.queryByTestId('aba-choice')).toBeNull();
+    await tick(5000);
+    await layout(760);
+    await waitFor(() => expect(screen.getByTestId('aba-choice')).toBeTruthy());
+    await chooseFirst();
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    expect(panelHeight()).toBe(abaLayoutByTier.roomy.adultPanel);
+    expect(sampleSide()).toBe(120);
+  });
+
+  it('13е. сжатие → фон → active при сжатом окне: занятие не продолжается; окно вернулось — продолжение ровно один раз', async () => {
+    await toTrial();
+    const sample = stimOf('aba-sample');
+    const load = jest.spyOn(abaResume, 'loadAbaResume');
+    undo.push(() => load.mockRestore());
+    await layout(650);
+    await tick(10);
+    await background();
+    await tick(10_000);
+    await foreground();
+    await tick(2000);
+    expect(screen.getByTestId('aba-away')).toBeTruthy();
+    expect(screen.getByTestId('aba-window-squeezed')).toBeTruthy();
+    expect(screen.queryByTestId('aba-sample')).toBeNull();
+    expect(load).not.toHaveBeenCalled();
+    await layout(760);
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    expect(stimOf('aba-sample')).toBe(sample);
+    await tick(2000);
+    expect(load).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('aba-sample')).toBeTruthy();
+    expect(await count('aba_trials')).toBe(0);
+  });
+
+  it('13ж. сжатие → фон → окно вернулось, пока приложение в фоне: продолжения нет до active, на active — один раз', async () => {
+    await toTrial();
+    const load = jest.spyOn(abaResume, 'loadAbaResume');
+    undo.push(() => load.mockRestore());
+    await layout(650);
+    await tick(10);
+    setAppState('background');
+    await background();
+    await tick(5000);
+    await layout(760);
+    await tick(2000);
+    expect(screen.getByTestId('aba-away')).toBeTruthy();
+    expect(screen.queryByTestId('aba-sample')).toBeNull();
+    expect(load).not.toHaveBeenCalled();
+    setAppState('active');
+    await foreground();
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    await tick(2000);
+    expect(load).toHaveBeenCalledTimes(1);
+    expect(panelHeight()).toBe(abaLayoutByTier.roomy.adultPanel);
+  });
+
+  it('13з. сжатие на хвосте конца (ожидание цикла сопряжения) — тот же путь ухода: строка хвоста leftAtStep wait; возврат размера — «Закончили»', async () => {
+    await toTrial();
+    await answerRight();
+    await waitFor(async () => expect(await count('aba_trials')).toBe(1));
+    await fireEvent.press(screen.getByTestId('aba-panel-refusal'));
+    await waitFor(() => expect(screen.getByTestId('aba-end-wait')).toBeTruthy());
+    await tick(2000);
+    const leftAt = clock.now();
+    await layout(650);
+    await tick(10);
+    expect(screen.getByTestId('aba-away')).toBeTruthy();
+    expect(screen.getByTestId('aba-window-squeezed')).toBeTruthy();
+    await waitFor(async () => expect(await tails()).toHaveLength(1));
+    expect((await tails())[0]).toMatchObject({ leftAtStep: 'wait', pairingTokenAt: null, completed: false, leftAt: iso(leftAt), accessScene: [] });
+    await tick(60_000);
+    await layout(760);
+    await waitFor(() => expect(screen.getByTestId('aba-end-neutral')).toBeTruthy());
+    expect(screen.queryByTestId('aba-end-pairing')).toBeNull();
+    expect(await count('aba_sessions')).toBe(1);
+  });
+
+  it('13и. планшет: сужение по ширине уже ряда из трёх плит (разделённый экран) — пауза; ширина вернулась — та же проба', async () => {
+    await mount(null);
+    await layout(1000, 768);
+    await skipCardTraining();
+    await chooseFirst();
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    const sample = stimOf('aba-sample');
+    await layout(1000, 300);
+    await tick(10);
+    expect(screen.getByTestId('aba-away')).toBeTruthy();
+    expect(screen.getByTestId('aba-window-squeezed')).toBeTruthy();
+    await tick(5000);
+    await layout(1000, 768);
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    expect(stimOf('aba-sample')).toBe(sample);
+    expect(await count('aba_trials')).toBe(0);
+  });
+
+  // `layout` шлёт высоту корня, экран вычитает insets.top 20: 760 → 740, 716 → 696 — нижняя граница roomy
+  it('13к. лёгкое колебание высоты, которое тир вмещает (760 → 740 → 716 → 760), паузы не даёт', async () => {
+    expect(abaTierFor(696, 0)).toBe('roomy');
+    await toTrial();
+    const load = jest.spyOn(abaResume, 'loadAbaResume');
+    undo.push(() => load.mockRestore());
+    for (const h of [740, 716, 760]) {
+      await layout(h);
+      await tick(10);
+      expect(screen.queryByTestId('aba-away')).toBeNull();
+      expect(screen.getByTestId('aba-sample')).toBeTruthy();
+    }
+    expect(panelHeight()).toBe(abaLayoutByTier.roomy.adultPanel);
+    expect(load).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Регрессия №182 (была ошибкой кода: `canRetier` выбирал тир заново на кадре `away` после первой пробы). Стимул уже был
+   * показан — сжатие в фоне даёт паузу, как посреди пробы (13а), а не новый тир.
+   */
+  it('13л. первая проба показана, фон, окно сжалось в фоне — стимул уже был: на возврате пауза, а не новый тир', async () => {
+    await toTrial();
+    await background();
+    await layout(650);
+    await tick(5000);
+    await foreground();
+    await tick(2000);
+    expect(screen.getByTestId('aba-away')).toBeTruthy();
+    expect(screen.getByTestId('aba-window-squeezed')).toBeTruthy();
+    expect(screen.queryByTestId('aba-sample')).toBeNull();
+  });
+
+  it('13м. второе измерение меньше, пока идёт старт (первая проверка ещё впереди): тир выбран заново по высоте и ширине — 630 × 300 даёт tight, паузы нет', async () => {
+    expect(abaTierFor(630, 0)).toBe('compact');
+    const g = gatedLoad();
+    await mount();
+    await waitFor(() => expect(g.spy).toHaveBeenCalled());
+    await layout(650, 300);
+    await g.open();
+    await waitFor(() => expect(screen.getByTestId('aba-card-training')).toBeTruthy());
+    await tick(10);
+    expect(screen.queryByTestId('aba-away')).toBeNull();
+    await skipCardTraining();
+    await chooseFirst();
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    expect(screen.queryByTestId('aba-window-squeezed')).toBeNull();
+    expect(sampleSide()).toBe(80);
+  });
+
+  /**
+   * Регрессия (№182): старт и гейт окна выбирают тир по высоте и ширине (`tierForWindow`) — узкое с первого измерения
+   * окно получает тир, ряд которого помещается, а не roomy с обрезанным рядом.
+   */
+  it('13н. узкое окно с первого измерения: высота roomy, ширина 300 уже ряда roomy (336) — на первой проверке тир по ширине (tight), а не roomy', async () => {
+    await mount(null);
+    await layout(760, 300);
+    await waitFor(() => expect(screen.getByTestId('aba-card-training')).toBeTruthy());
+    await tick(10);
+    expect(screen.queryByTestId('aba-away')).toBeNull();
+    await skipCardTraining();
+    await chooseFirst();
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    expect(sampleSide()).toBe(80);
+  });
+
+  it('13о. размер окна вернулся, а возврат ещё читает снимок: строка «Верните размер окна» исчезает сразу, кадр away стоит до конца loadAbaResume', async () => {
+    const g = gatedDb();
+    await toTrial();
+    const sample = stimOf('aba-sample');
+    const leftAt = clock.now();
+    await layout(650);
+    await tick(10);
+    expect(screen.getByTestId('aba-window-squeezed')).toBeTruthy();
+    await waitFor(async () => expect(await snapshotAt()).toBe(iso(leftAt)));
+    const load = jest.spyOn(abaResume, 'loadAbaResume');
+    undo.push(() => load.mockRestore());
+    g.close();
+    await layout(760);
+    await tick(10);
+    expect(load).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('aba-away')).toBeTruthy();
+    expect(screen.queryByTestId('aba-window-squeezed')).toBeNull();
+    expect(screen.queryByTestId('aba-sample')).toBeNull();
+    await g.open();
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    expect(stimOf('aba-sample')).toBe(sample);
   });
 
   it('13б. первое измерение «слишком мало» — к гейту /aba, ничего не начато и не записано', async () => {

@@ -1,29 +1,17 @@
 /**
- * Рабочая сессия ABA (этап 11, фаза 6; спецификация `docs/design/aba-screens-spec-2026-10-25.md` п. 1–8, направление
- * разделы 4–7 и цикл 2). Домен (`abaSession.ts`) решает, что дальше, — экран только рисует шаг `nextStep` и пишет:
+ * Рабочая сессия ABA (этап 11; спецификация `docs/design/aba-screens-spec-2026-10-25.md`, направление
+ * `docs/design/aba-screens-2026-10-25.md`). Домен (`abaSession.ts`) решает, что дальше, — экран рисует шаг `nextStep` и пишет:
  *
- * - старт: `loadAbaStart` → `startAbaSession`; со взрослым — обучение карточке «перерыв» до первой пробы
- *   (`loadBreakCardPlan`, `recordBreakCardTraining`: модель → жест → 10 с, потом жест);
- * - 2.3 выбор подкрепителя тапом (`reinforcerChoiceRun`, одно правило с сопряжением) → `chooseReinforcer` и запись выбора;
- * - проба `match` (`model/matchTrialRun.ts`) с панелью взрослого; запись **до** последствия (`recordTrial` →
- *   `recordAbaTrial`), плашка — только при `token_praise` или жетоне за участие (`model/consequenceRun.ts`);
- *   карточка «перерыв» в фазе последствия — сразу в домен (`requestBreakBetweenTrials`, №160);
- * - перерыв (фаза 7, №169; вид — Ц3.1, Ц3.9): кольцо → приглашение (контур 6 у «Вернуться») → через
- *   `RETURN_INVITE_AFTER_MS` второе (планки 120 становятся контурными) → ещё столько же без возврата —
- *   `withdrawAssent(…, 'device_inactivity')`; обучающий перерыв по карточке сессию не кончает — со второго
- *   приглашения подпись взрослому, возврат делает взрослый;
- * - обмен (сразу, на перерыве, в конце, жетон цикла сопряжения) — один экран без кнопки (`model/exchangeRun.ts`,
- *   Ц3.4): доска полная → жетоны летят в карточку → «получено» → карточка раскрывается в сцену; доступ
- *   (`model/accessRun.ts`, Ц3.5): кольцо исчезает в T, сцена сворачивается в карточку, через 1 с дальше; в журнал —
- *   время самой сцены (№171);
- * - конец: итог пишется сразу, затем хвост (`model/endTail.ts`) — обмен и доступ или цикл сопряжения (ожидание в
- *   раскладке сопряжения без карточки, Ц3.2), потом один раз «Закончили» с доской; выход удержанием — `stopSession`.
+ * - старт: `loadAbaStart` → `startAbaSession`; со взрослым — обучение карточке «перерыв» до первой пробы;
+ * - выбор подкрепителя тапом → `chooseReinforcer`; проба `match` с панелью взрослого, запись **до** последствия
+ *   (`recordAbaTrial`); карточка «перерыв» в последствии — сразу в домен (№160);
+ * - перерыв (№169): кольцо → два приглашения → конец по бездействию; обмен — один экран без кнопки, доступ — время самой
+ *   сцены в журнал (№171); конец: итог сразу, затем хвост (`useSessionTail`), один раз «Закончили»; выход удержанием.
  *
- * Сворачивание и возобновление (фаза 8, правила — ABA.md «Возврат после сворачивания»): на `background` снимок
- * пересохраняется, экран пустеет, отложенные смены кадра и шаги замирают (`away`); на возврате и на холодном старте —
- * `loadAbaResume`. Ошибки записи разбираются (`classifyAbaWriteError`): конфликт доски — живая доска и повтор шага
- * (`boardRetry`), пауза и отзыв согласия — спокойный конец без записи, прочее — итог `app_error`. Ни ошибки, ни имена
- * ABA-экранов наружу не уходят (только `__DEV__`).
+ * Сворачивание и сжатие окна (фаза 8, №182; правила — ABA.md «Возврат после сворачивания»): снимок пересохраняется,
+ * экран пустеет, отложенные смены кадра и шаги замирают (`away`); возврат — `loadAbaResume`. Ошибки записи разбираются
+ * (`classifyAbaWriteError`): конфликт доски — повтор шага (`useSessionWrites`), пауза и отзыв согласия — спокойный конец
+ * без записи, прочее — итог `app_error`. Ни ошибки, ни имена ABA-экранов наружу не уходят (только `__DEV__`).
  */
 import { useKeepAwake } from 'expo-keep-awake';
 import { Redirect, useRouter } from 'expo-router';
@@ -41,7 +29,6 @@ import {
   abaParticipation,
   abaReinforcerCardSize,
   abaReinforcementOverlay,
-  abaTierFor,
   abaTokenLandingMs,
   type AbaTier,
 } from '../../src/design/abaTokens';
@@ -94,8 +81,9 @@ import {
   type FullBoardGate,
   type Phase,
 } from '../../src/ui/aba/model/sessionPhase';
-import { accessOnReturn, breakOnReturn, exchangePendingOnResume, exchangeUnseen } from '../../src/ui/aba/model/sessionResume';
+import { accessOnReturn, breakOnReturn, exchangePendingOnResume, exchangeUnseen, tierForWindow } from '../../src/ui/aba/model/sessionResume';
 import { useAbaBackground } from '../../src/ui/aba/useAbaBackground';
+import { useWindowSqueeze } from '../../src/ui/aba/useWindowSqueeze';
 import { useSessionTail } from '../../src/ui/aba/useSessionTail';
 import { useSessionWrites } from '../../src/ui/aba/useSessionWrites';
 import { leaveAba } from '../../src/ui/aba/leaveAba';
@@ -103,6 +91,7 @@ import { exchangeEndsAt, exchangeView, startExchange } from '../../src/ui/aba/mo
 import { startChoice, stepChoice } from '../../src/ui/aba/model/reinforcerChoiceRun';
 import { ExitHold, useAbaColors, useReduceMotion } from '../../src/ui/aba/parts';
 import { AccessView } from '../../src/ui/aba/session/AccessView';
+import { AwayFrame } from '../../src/ui/aba/session/AwayFrame';
 import { BreakView } from '../../src/ui/aba/session/BreakView';
 import { ChooseFrame } from '../../src/ui/aba/session/ChooseFrame';
 import { ExchangeView, PairingWaitView } from '../../src/ui/aba/session/ExchangeView';
@@ -138,6 +127,8 @@ export default function AbaSessionScreen() {
     if (!away.current) showPhase(p);
   }, []);
   const [height, setHeight] = useState<number | null>(null);
+  /** Одно измерение окна (высота, ширина, нижний отступ того же момента) — для проверки сжатия (№182). */
+  const [measured, setMeasured] = useState<{ height: number; width: number; insetBottom: number } | null>(null);
   const [width, setWidth] = useState(375);
   const st = useRef<AbaSessionState | null>(null);
   const cardLeft = useRef(0);
@@ -420,7 +411,6 @@ export default function AbaSessionScreen() {
     if (exchangePending.current) fromFullBoard.current = true;
     await advanceRef.current();
   }
-  // старт и возврат зовут функции рендера через ссылку: подписка и эффект живут дольше рендера
   const latest = useRef({ fail, abandonAndLeave, resumeFrom, endWithoutWrite });
   latest.current = { fail, abandonAndLeave, resumeFrom, endWithoutWrite };
   // старт один на жизнь экрана: его отменяет только уход с экрана, а не смена окна или настройки движения
@@ -437,7 +427,8 @@ export default function AbaSessionScreen() {
   const started = useRef(false);
   useEffect(() => {
     if (!db || !childId || !config || started.current || height === null) return;
-    const tier = abaTierFor(height, insets.bottom);
+    // тир по высоте и ширине — одна функция с гейтом окна и проверкой сжатия (№182)
+    const tier = tierForWindow({ height, width, insetBottom: insets.bottom });
     if (tier === null) {
       router.replace('/aba');
       return;
@@ -483,87 +474,96 @@ export default function AbaSessionScreen() {
       }
       if (!unmounted.current) await advanceRef.current();
     })().catch((e: unknown) => (unmounted.current ? undefined : latest.current.fail(e)));
-  }, [db, childId, config, clock, height, insets.bottom, router, setPhase]);
+  }, [db, childId, config, clock, height, width, insets.bottom, router, setPhase]);
 
-  // системный «назад» (жест от края, ладонь у кромки) не выходит мимо удержания выхода
   useEffect(() => {
+    // системный «назад» (жест от края, ладонь у кромки) не выходит мимо удержания выхода
     const sub = BackHandler.addEventListener('hardwareBackPress', () => true);
     return () => sub.remove();
   }, []);
 
   // сворачивание и возврат (фаза 8): уход — снимок с моментом ухода (или строка хвоста) и пустой экран; возврат —
   // `loadAbaResume`: та же проба / новый выбор / просрочка; ветки возврата не начинают новую сессию
-  useAbaBackground({
-    enabled: phase.kind !== 'loading' && phase.kind !== 'ended',
-    onLeave: (now) => {
-      // лежащего пальца и следов касаний после возврата не существует (`child-ux-specialist`, огр. 7)
-      held.current = null;
-      releasedAt.current = -Infinity;
-      breakTrace.current = false;
-      fromFullBoard.current = false;
-      const p = phase;
-      leaves.current += 1;
-      showPhase({ kind: 'away' });
-      away.current = true;
-      // возврат не успел показать кадр: это тот же уход, момент — первый, иначе фон первого ухода стал бы рабочим временем
-      if (p.kind === 'away') return;
-      leftAt.current = now;
-      if (finished.current) {
-        tail.leaveOn(p, now);
-        return;
-      }
-      if (p.kind === 'access') accessLeft.current = { scenes: accessScenesAtEnd(p, now), run: p.run };
-      const unseen = exchangePending.current || (p.kind === 'exchange' && p.next !== 'tail');
-      if (!db || !childId || !st.current) return;
-      // снимок с моментом ухода — после идущей записи; ждёт его только возврат, иначе шаг в работе ждал бы сам себя; ошибки —
-      // только `__DEV__`: пауза или отзыв в этот миг — штатный ход, на возврате их увидит `loadAbaResume`
-      inFlight.current = Promise.allSettled([writing.current, inFlight.current])
-        .then(() =>
-          boardRetry(async () => {
-            if (!st.current || finished.current) return;
-            st.current = await markAbaSessionLeft(db, childId, unseen ? exchangeUnseen(st.current, now) : st.current, new Date(now).toISOString());
-          }),
-        )
-        .catch((e: unknown) => {
-          if (__DEV__) console.warn('aba-session-leave', e);
-        });
-    },
-    onReturn: (now) => {
-      const mine = leaves.current;
-      run(
-        (async () => {
-          await Promise.allSettled([writing.current, inFlight.current]);
-          // снова свернули, пока шла запись: решит следующий возврат
-          if (mine !== leaves.current) return;
-          if (finished.current) {
-            away.current = false;
-            tail.back(now);
-            return;
-          }
-          if (!db || !childId) {
-            endWithoutWrite();
-            return;
-          }
-          const r = await loadAbaResume(db, childId, { soundOn: startOpts.current.settings.soundEffects, now });
-          if (mine !== leaves.current) return;
-          if (r.kind === 'none' || r.kind === 'blocked') {
-            // снимка нет (отзыв) или писать нельзя (пауза): конец без записи, новую сессию возврат не начинает
-            endWithoutWrite();
-            return;
-          }
-          if (r.kind === 'abandon') {
-            await latest.current.abandonAndLeave(r.leftAt);
-            return;
-          }
-          // тёплый возврат: обучение карточке продолжается (refs целы) — `cardLeft` не трогаем
-          away.current = false;
-          await latest.current.resumeFrom(r.state, r.leftAt, { cold: false });
-        })().catch((e: unknown) => {
-          // возврат не удался — кадр не должен остаться пустым: дальше обычный разбор ошибки
-          if (mine === leaves.current) away.current = false;
-          throw e;
+  const bgOn = phase.kind !== 'loading' && phase.kind !== 'ended';
+  const onLeave = (now: number) => {
+    // лежащего пальца и следов касаний после возврата не существует (`child-ux-specialist`, огр. 7)
+    held.current = null;
+    releasedAt.current = -Infinity;
+    breakTrace.current = false;
+    fromFullBoard.current = false;
+    const p = phase;
+    leaves.current += 1;
+    showPhase({ kind: 'away' });
+    away.current = true;
+    // возврат не успел показать кадр: это тот же уход, момент — первый, иначе фон первого ухода стал бы рабочим временем
+    if (p.kind === 'away') return;
+    leftAt.current = now;
+    if (finished.current) {
+      tail.leaveOn(p, now);
+      return;
+    }
+    if (p.kind === 'access') accessLeft.current = { scenes: accessScenesAtEnd(p, now), run: p.run };
+    const unseen = exchangePending.current || (p.kind === 'exchange' && p.next !== 'tail');
+    if (!db || !childId || !st.current) return;
+    // снимок с моментом ухода — после идущей записи; ждёт его только возврат, иначе шаг в работе ждал бы сам себя; ошибки —
+    // только `__DEV__`: пауза или отзыв в этот миг — штатный ход, на возврате их увидит `loadAbaResume`
+    inFlight.current = Promise.allSettled([writing.current, inFlight.current])
+      .then(() =>
+        boardRetry(async () => {
+          if (!st.current || finished.current) return;
+          st.current = await markAbaSessionLeft(db, childId, unseen ? exchangeUnseen(st.current, now) : st.current, new Date(now).toISOString());
         }),
-      );
+      )
+      .catch((e: unknown) => {
+        if (__DEV__) console.warn('aba-session-leave', e);
+      });
+  };
+  const onReturn = (now: number) => {
+    if (squeezed.current) return; // окно ещё сжато (№182): продолжит возврат размера окна
+    const mine = leaves.current;
+    run(
+      (async () => {
+        await Promise.allSettled([writing.current, inFlight.current]);
+        // снова свернули, пока шла запись: решит следующий возврат
+        if (mine !== leaves.current) return;
+        if (finished.current) {
+          away.current = false;
+          tail.back(now);
+          return;
+        }
+        if (!db || !childId) {
+          endWithoutWrite();
+          return;
+        }
+        const r = await loadAbaResume(db, childId, { soundOn: startOpts.current.settings.soundEffects, now });
+        if (mine !== leaves.current) return;
+        if (r.kind === 'none' || r.kind === 'blocked') {
+          // снимка нет (отзыв) или писать нельзя (пауза): конец без записи, новую сессию возврат не начинает
+          endWithoutWrite();
+          return;
+        }
+        if (r.kind === 'abandon') {
+          await latest.current.abandonAndLeave(r.leftAt);
+          return;
+        }
+        // тёплый возврат: обучение карточке продолжается (refs целы) — `cardLeft` не трогаем
+        away.current = false;
+        await latest.current.resumeFrom(r.state, r.leftAt, { cold: false });
+      })().catch((e: unknown) => {
+        // возврат не удался — кадр не должен остаться пустым: дальше обычный разбор ошибки
+        if (mine === leaves.current) away.current = false;
+        throw e;
+      }),
+    );
+  };
+  useAbaBackground({ enabled: bgOn, onLeave, onReturn });
+  // окно перестало вмещать раскладку тира (№182) — тем же путём, что уход в фон; вместило снова — тот же возврат
+  const [, retiered] = useState(0);
+  const squeezed = useWindowSqueeze({
+    ...{ tier: tierRef.current, measured, enabled: bgOn, onSqueeze: onLeave, onRelease: onReturn },
+    onRetier: (next) => {
+      tierRef.current = next;
+      retiered((n) => n + 1);
     },
   });
 
@@ -1042,8 +1042,7 @@ export default function AbaSessionScreen() {
       );
       break;
     case 'away':
-      // свёрнуто (фаза 8, Ц2.11): пустой фон — на возврате кадр строится заново из снимка, прежний не мигает; без индикатора
-      body = <View style={{ flex: 1 }} testID="aba-away" />;
+      body = <AwayFrame squeezed={squeezed.current} />;
       break;
     case 'ended':
       body = <AbaEnd variant={phase.variant} board={phase.board ?? undefined} onDone={() => leaveAba(router)} />;
@@ -1163,6 +1162,7 @@ export default function AbaSessionScreen() {
       style={{ flex: 1, backgroundColor: c.background, paddingTop: insets.top, paddingBottom: withPanel ? 0 : insets.bottom }}
       onLayout={(e) => {
         setHeight(e.nativeEvent.layout.height - insets.top - insets.bottom);
+        setMeasured({ height: e.nativeEvent.layout.height - insets.top - insets.bottom, width: e.nativeEvent.layout.width, insetBottom: insets.bottom });
         setWidth(e.nativeEvent.layout.width);
       }}
       testID="aba-session"

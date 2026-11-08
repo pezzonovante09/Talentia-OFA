@@ -16,11 +16,39 @@
  *
  * Тесты — на ручных часах (`src/ui/aba/model/__tests__/sessionResume.test.ts`).
  */
+import { abaChoiceZone, abaLayout, abaTierFor, type AbaTier } from '../../../design/abaTokens';
 import { AWAY_RECHOOSE_MS, type AbaSessionState } from '../../../domain/abaSession';
 import type { AbaSessionTail } from '../../../types/aba';
 import { startAccess, stepAccess, type AccessRun } from './accessRun';
 import type { TailStep } from './endTail';
 import type { AccessScene } from './sessionPhase';
+
+const TIER_RANK: Record<AbaTier, number> = { tight: 1, compact: 2, roomy: 3 };
+const ZONE_OF: Record<AbaTier, { choice: number }> = { roomy: abaChoiceZone.regular, compact: abaChoiceZone.compact, tight: abaChoiceZone.tight };
+
+/** Ширина ряда из трёх плит тира с зазорами: ряд может заходить на боковые поля экрана, но не за край окна. */
+export function tierRowWidth(tier: AbaTier): number {
+  return 3 * ZONE_OF[tier].choice + 2 * abaLayout.plateGap;
+}
+
+/** Самый крупный тир, что вмещает окно и по высоте, и по ширине; `null` — ни один (тогда пауза). */
+export function tierForWindow(o: { height: number; width: number; insetBottom: number }): AbaTier | null {
+  const byHeight = abaTierFor(o.height, o.insetBottom);
+  if (byHeight === null) return null;
+  const order: AbaTier[] = ['roomy', 'compact', 'tight'];
+  return order.slice(order.indexOf(byHeight)).find((t) => tierRowWidth(t) <= o.width) ?? null;
+}
+
+/**
+ * Вмещает ли окно раскладку тира, выбранного на старте (№182). По высоте — тот же расчёт, что выбор тира: тир или
+ * крупнее ещё помещается. По ширине — окно стало уже, чем на старте, и уже ряда из трёх плит: устройство, которое было
+ * таким с самого начала, паузой не встречается.
+ */
+export function windowFitsTier(o: { tier: AbaTier; height: number; width: number; insetBottom: number; startWidth: number }): boolean {
+  const now = abaTierFor(o.height, o.insetBottom);
+  if (now === null || TIER_RANK[now] < TIER_RANK[o.tier]) return false;
+  return !(o.width < o.startWidth && o.width < tierRowWidth(o.tier));
+}
 
 /** Остаток перерыва короче — кольца нет, сразу приглашение: кадр короче 5 с — мигание, не состояние. */
 export const RESUME_RING_MIN_MS = 5000;
