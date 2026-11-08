@@ -743,6 +743,10 @@ export type AbaSessionEndReason =
  * Правило чтения: `completed === false` — шаги после `leftAtStep` не выданы; записи нет — «неизвестно», не «выдано».
  */
 export type AbaSessionTail = {
+  /** Сцена доступа хвоста успела начаться; `false` — ушли до неё (№181: тогда жетоны обмена в конце возвращаются). */
+  sceneStarted?: boolean;
+  /** Жетоны обмена в конце вернулись на доску (№181): доступ не выдан; `belowBoard` — ступень выросла тем же итогом. */
+  exchangeReturned?: { tokens: number; nonContingent: number; at: string; belowBoard?: true };
   sessionId: string;
   accessScene: { startedAt: string; endedAt: string }[];
   pairingTokenAt: string | null;
@@ -912,9 +916,13 @@ export type AbaSessionEvent =
       /** Просьба карточкой во время последствия прошлой пробы — перерыв вместо следующего SD (№160). */
       between?: true;
     }
-  | { kind: 'exchange'; at: string; tokens: number }
+  /** `nonContingent` — сколько из них не за результат; `includesReturned` — в обмен вошли вернувшиеся жетоны (в ступень не идёт). */
+  | { kind: 'exchange'; at: string; tokens: number; nonContingent?: number; includesReturned?: true; returnedTokens?: number; fromSessionId?: string }
+  /** Обмен прошёл, а сцена доступа не началась (№181): жетоны этого обмена вернулись на доску; `reason` — остановка. */
+  | { kind: 'exchange_returned'; at: string; tokens: number; nonContingent: number; exchangeAt: string; reason: AbaSessionEndReason }
   /** Доступ к подкрепителю после обмена при обучении доске — фактическое время. */
-  | { kind: 'access'; startedAt: string; endedAt: string }
+  /** `endUnknown` — сцена шла, а конец неизвестен (холодный старт): в длительность доступа не входит. */
+  | { kind: 'access'; startedAt: string; endedAt: string; endUnknown?: true }
   | { kind: 'participation'; at: string; targetId: string }
   /** Цикл сопряжения в конце сессии без учебной и освоенной цели: жетон не в доску. */
   | { kind: 'pairing'; at: string }

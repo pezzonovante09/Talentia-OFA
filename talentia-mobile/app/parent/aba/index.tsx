@@ -30,7 +30,7 @@ import {
   type AbaParentProgress,
 } from '../../../src/services/local/abaStart';
 import { loadChildState } from '../../../src/services/local/childState';
-import { confirmAbaPairing, setAbaObservers, setAbaPaused } from '../../../src/services/local/commit';
+import { confirmAbaPairing, setAbaObservers, setAbaPaused, settleTailExchange } from '../../../src/services/local/commit';
 import { ABA_EXPORT_FILE_ENABLED, shareSpecialistExport } from '../../../src/services/local/shareSpecialistExport';
 import { useAbaRun } from '../../../src/state/abaRun';
 import { useAccount } from '../../../src/state/account';
@@ -103,6 +103,11 @@ export default function AbaParentScreen() {
   const childId = profile?.childId ?? null;
   const reload = useCallback(async () => {
     if (!db || !childId) return;
+    // прошлое занятие оборвалось на обмене в конце до сцены (№181): жетоны — на доску до показа карточки; на паузе и без
+    // согласия возврат не пишется, его подберёт следующий старт
+    await settleTailExchange(db, childId, { at: new Date().toISOString() }).catch((e: unknown) => {
+      if (__DEV__) console.warn('aba-tail-return', e);
+    });
     const o = await abaOverview(db, childId);
     const obs = (await loadChildState(db, childId, 'abaObservers')) ?? [];
     setOv(o);

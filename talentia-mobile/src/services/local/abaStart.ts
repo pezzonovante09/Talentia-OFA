@@ -15,7 +15,7 @@ import { CURRENT_CONSENT_TEXTS } from '../../domain/consentTexts';
 import { reinforcerPoolFor } from '../../domain/abaReinforcerCatalog';
 import { sessionSignals, type SessionSignal, type SignalSession } from '../../domain/abaBarriers';
 import { initialTokenTraining, workingBoardSize, EXCHANGE_ACCESS_MS } from '../../domain/abaTokenTraining';
-import { boardRevOf, MIN_REINFORCER_POOL } from '../../domain/abaTokens';
+import { boardRevOf, liveBoardOf, MIN_REINFORCER_POOL } from '../../domain/abaTokens';
 import { lastSessionSummary, parentTargetStatus, sortForParent, type LastSessionSummary, type ParentTargetStatus } from '../../domain/abaParentProgress';
 import { aloneFormatKey, formatUnlockedAlone } from '../../domain/abaPlacement';
 import {
@@ -35,7 +35,7 @@ import { randomSeed } from '../random';
 import { abaLocalDay, pastSessionsOfTarget, reinforcerHistoryOf, sessionsOf, trialsOfSession } from './abaLog';
 import { REINFORCER_APART } from './abaCatalog';
 import { childStateUpdatedAt, loadChildState } from './childState';
-import { commitAbaSession, resumeAbaSession, routineExchangeInSessionWindow } from './commit';
+import { commitAbaSession, resumeAbaSession, routineExchangeInSessionWindow, settleTailExchange } from './commit';
 import { readConsentLog } from './consentLog';
 import type { SqlDb } from './sql';
 
@@ -207,6 +207,11 @@ export async function loadAbaStart(db: SqlDb, childId: string, o: StartOptions):
   const art = artFor(o.art);
   const block = abaBlockOf(await abaOverview(db, childId, art));
   if (block) return { kind: 'blocked', reason: block };
+  // прошлое занятие оборвалось на обмене в конце до сцены (убитое приложение, №181): жетоны — на доску до старта. Сбой
+  // возврата старт не держит; проверка повторится только до записи следующей сессии
+  await settleTailExchange(db, childId, { at: new Date(o.now).toISOString() }).catch((e: unknown) => {
+    if (__DEV__) console.warn('aba-tail-return', e);
+  });
   const targets = readyAbaTargets(ABA_TARGETS, art).map((t) => targetForBand(t, o.band));
   const tokenTraining = (await loadChildState(db, childId, 'tokenTraining')) ?? initialTokenTraining();
   const accessMs = EXCHANGE_ACCESS_MS[workingBoardSize(tokenTraining, o.band)];
@@ -229,7 +234,7 @@ export async function loadAbaStart(db: SqlDb, childId: string, o: StartOptions):
       tokenTraining,
       startedAt: o.now,
       seed: randomSeed(o.randomBytes),
-      ...(board ? { board: { earned: board.earned, nonContingent: board.nonContingent }, boardRev: boardRevOf(board) } : {}),
+      ...(board ? { board: { earned: board.earned, nonContingent: board.nonContingent, ...(board.returned ? { returned: board.returned } : {}) }, boardRev: boardRevOf(board) } : {}),
       identifySets: (await loadChildState(db, childId, 'identifySets')) ?? [],
       physicalPromptAllowed: (await loadChildState(db, childId, 'physicalPromptAllowed'))?.value ?? false,
       // проверка сверху вниз включена (вопрос 63, 2026-10-31): домен сам ограничивает её «со взрослым»
@@ -297,8 +302,8 @@ export async function abandonInProgressSession(
       // вариантов нет — варианты и не нужны: занятие закрывается
     }
     if (!resumed) {
-      const live = (await loadChildState(tx, childId, 'abaBoard')) ?? { earned: 0, nonContingent: 0 };
-      resumed = resumeSessionState(inProgress, { earned: live.earned, nonContingent: live.nonContingent, rev: boardRevOf(live) }, { routineExchanged: false });
+      const live = await loadChildState(tx, childId, 'abaBoard');
+      resumed = resumeSessionState(inProgress, liveBoardOf(live), { routineExchanged: false });
     }
     const lastWrite = Date.parse((await childStateUpdatedAt(tx, childId, 'abaSessionInProgress')) ?? '');
     const leftAt = Number.isFinite(lastWrite) ? Math.max(o.at, lastWrite) : o.at;

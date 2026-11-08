@@ -51,6 +51,7 @@ import {
   chooseReinforcer,
   finishAccess,
   finishBreak,
+  accessShown,
   nextStep,
   noChoiceAtEnd,
   recordBreakCardTraining,
@@ -249,7 +250,7 @@ export default function AbaSessionScreen() {
       useAbaRun.getState().reset();
       tail.arm(steps, { variant, board });
       if (exiting.current) {
-        tail.leave(steps[0].kind, null, clock.now());
+        tail.leave(steps[0].kind, null, clock.now(), true);
         leaveAba(router);
         return;
       }
@@ -366,10 +367,11 @@ export default function AbaSessionScreen() {
           // тёплый возврат знает настоящую сцену: T — от её начала, а не от кадра обмена
           const was = accessLeft.current;
           accessLeft.current = null;
+          st.current = accessShown(cur);
           const r = accessOnReturn({ accessStartedAt: was?.run.startedAt ?? cur.accessStartedAt, durationMs: was?.run.durationMs ?? step.durationMs, leftAt: leftAt.current ?? cur.accessStartedAt, now, still, delivered: was?.scenes });
           setPhase({ kind: 'access', run: r.run, tick: now, tail: false, sceneEndedAt: null, trace, scenes: r.scenes, sceneFrom: r.sceneFrom });
         } else {
-          await saveStep((c) => c);
+          await saveStep(accessShown);
           if (finished.current) return;
           setPhase({ kind: 'access', run: startAccess(now, step.durationMs, 0, still), tick: now, tail: false, sceneEndedAt: null, trace, scenes: [], sceneFrom: now });
         }
@@ -675,7 +677,8 @@ export default function AbaSessionScreen() {
           return;
         }
         setPhase({ kind: 'access', run: startAccess(opened, p.next.durationMs, 0, still), tick: opened, tail: false, sceneEndedAt: null, trace: p.trace, scenes: [], sceneFrom: opened });
-        // обмен досмотрен, сцена началась: снимок с `accessStartedAt` — холодный старт не покажет обмен второй раз
+        // обмен досмотрен, сцена началась: обмен выдан (№181), снимок с `accessStartedAt` — холодный старт не покажет обмен второй раз
+        st.current = accessShown(st.current!);
         run(writeAside());
         return;
       }
@@ -959,7 +962,7 @@ export default function AbaSessionScreen() {
     }
     if (!st.current || finished.current) {
       // выход на шаге хвоста — тот же уход: строка с выданным и шагом выхода
-      if (finished.current) tail.leaveOn(phase, clock.now());
+      if (finished.current) tail.leaveOn(phase, clock.now(), true);
       leaveAba(router);
       return;
     }

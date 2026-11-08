@@ -55,16 +55,41 @@ export type Feedback = 'token_praise' | 'praise' | 'neutral' | 'listened';
  * последний жетон доски всегда оплачен ответом по цели. Иначе на полосе 5–6 разогрев
  * и участие заполняют доску из трёх, и обмен случается без единого ответа по цели.
  */
-export type TokenBoard = { size: BoardStage; earned: number; nonContingent: number };
+export type TokenBoard = {
+  size: BoardStage;
+  earned: number;
+  nonContingent: number;
+  /**
+   * Жетоны, вернувшиеся с обмена, за которым доступ не выдан (№181): обмен, в который они войдут, в ступень доски не идёт —
+   * одно заполнение доски не засчитывается дважды. Сбрасывается обменом.
+   */
+  returned?: { tokens: number; fromSessionId: string };
+};
 
 /**
  * Доска на устройстве между процедурами (`abaBoard`): единственный источник жетонов. `rev` растёт
  * при каждой записи, которая меняет доску; сессия помнит версию, с которой начала, и запись
  * поверх чужой отклоняется (`AbaBoardConflictError`). Без `rev` (старая запись) — 0.
  */
-export type BoardRecord = Pick<TokenBoard, 'earned' | 'nonContingent'> & { rev?: number };
+export type BoardRecord = Pick<TokenBoard, 'earned' | 'nonContingent' | 'returned'> & { rev?: number };
 
 export const boardRevOf = (b: BoardRecord | undefined): number => b?.rev ?? 0;
+
+/** Живая доска для возобновления сессии: жетоны, доля не за результат, метка вернувшихся и версия. */
+export function liveBoardOf(b: BoardRecord | null | undefined): Pick<TokenBoard, 'earned' | 'nonContingent' | 'returned'> & { rev: number } {
+  const r = b ?? { earned: 0, nonContingent: 0 };
+  return { earned: r.earned, nonContingent: r.nonContingent, rev: boardRevOf(r), ...(r.returned ? { returned: r.returned } : {}) };
+}
+
+/** Жетоны обмена, за которым доступ не выдан, — обратно на доску прибавлением, с меткой (№181). */
+export function withReturned<B extends Pick<TokenBoard, 'earned' | 'nonContingent' | 'returned'>>(board: B, r: { tokens: number; nonContingent: number; fromSessionId: string }): B {
+  return {
+    ...board,
+    earned: board.earned + r.tokens,
+    nonContingent: board.nonContingent + r.nonContingent,
+    returned: { tokens: (board.returned?.tokens ?? 0) + r.tokens, fromSessionId: r.fromSessionId },
+  };
+}
 
 export function emptyBoard(size: BoardStage): TokenBoard {
   return { size, earned: 0, nonContingent: 0 };

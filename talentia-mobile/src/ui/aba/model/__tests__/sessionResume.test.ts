@@ -16,6 +16,7 @@ import {
   tailOnEnd,
   tailOnLeave,
   tailOnReturn,
+  tailOnSceneStart,
   type TailFacts,
 } from '../sessionResume';
 
@@ -99,7 +100,7 @@ describe('accessOnReturn', () => {
   it('до T: сцена продолжается с остатка — play, отрезок до ухода, sceneFrom = now; эффектов (cue) наружу нет', () => {
     const r = accessOnReturn({ ...base, leftAt: A + 5000, now: A + 16_000 });
     expect(r.run).toMatchObject({ stage: 'play', startedAt: A, durationMs: D, cued: true });
-    expect(r.scenes).toEqual([{ startedAt: A, endedAt: A + 5000 }]);
+    expect(r.scenes).toEqual([{ startedAt: A, endedAt: A + 5000, endUnknown: true }]);
     expect(r.sceneFrom).toBe(A + 16_000);
     expect('effects' in r).toBe(false);
   });
@@ -117,17 +118,17 @@ describe('accessOnReturn', () => {
     expect(accessDueAt(r.run)).toBe(now + abaAccessScene.endSettleMs);
     expect(accessDueAt(r.run)).toBe(now + 1000);
     expect(r.sceneFrom).toBeNull();
-    expect(r.scenes).toEqual([{ startedAt: A, endedAt: A + 5000 }]);
+    expect(r.scenes).toEqual([{ startedAt: A, endedAt: A + 5000, endUnknown: true }]);
   });
 
   it('ушли уже после T — отрезок обрезан по T', () => {
     const r = accessOnReturn({ ...base, leftAt: A + D + 3000, now: A + D + 30_000 });
-    expect(r.scenes).toEqual([{ startedAt: A, endedAt: A + D }]);
+    expect(r.scenes).toEqual([{ startedAt: A, endedAt: A + D, endUnknown: true }]);
   });
 
-  it('leftAt раньше accessStartedAt (ушли с экрана обмена) — отрезков нет', () => {
-    expect(accessOnReturn({ ...base, leftAt: A - 1000, now: A + 3000 }).scenes).toEqual([]);
-    expect(accessOnReturn({ ...base, leftAt: A, now: A + 3000 }).scenes).toEqual([]);
+  it('холодный старт, leftAt не позже accessStartedAt: сцена шла (снимок ложится в её начале), конец неизвестен — отрезок нулевой длины с endUnknown (№181)', () => {
+    expect(accessOnReturn({ ...base, leftAt: A - 1000, now: A + 3000 }).scenes).toEqual([{ startedAt: A, endedAt: A, endUnknown: true }]);
+    expect(accessOnReturn({ ...base, leftAt: A, now: A + 3000 }).scenes).toEqual([{ startedAt: A, endedAt: A, endUnknown: true }]);
   });
 
   it('still (calm): run после T — calm, до T — still сессии', () => {
@@ -161,8 +162,8 @@ describe('accessOnReturn', () => {
       expect(accessOnReturn({ ...base, leftAt: A + 5000, now: A + 6000, delivered: [] }).scenes).toEqual([]);
     });
 
-    it('контроль: без delivered (холодный старт) — один отрезок от accessStartedAt', () => {
-      expect(accessOnReturn({ ...base, leftAt: A + 5000, now: A + 6000 }).scenes).toEqual([{ startedAt: A, endedAt: A + 5000 }]);
+    it('контроль: без delivered (холодный старт) — один отрезок от accessStartedAt с endUnknown', () => {
+      expect(accessOnReturn({ ...base, leftAt: A + 5000, now: A + 6000 }).scenes).toEqual([{ startedAt: A, endedAt: A + 5000, endUnknown: true }]);
     });
   });
 });
@@ -249,6 +250,7 @@ describe('tailOnLeave / tailOnEnd', () => {
       leftAtStep: 'access',
       leftAt: iso(T0 + 7000),
       completed: false,
+      sceneStarted: true,
     });
   });
 
@@ -260,13 +262,38 @@ describe('tailOnLeave / tailOnEnd', () => {
       leftAtStep: null,
       leftAt: iso(T0),
       completed: false,
+      sceneStarted: false,
     });
+  });
+
+  it('tailOnLeave на обмене до сцены — sceneStarted false (№181: жетоны обмена в конце вернутся)', () => {
+    expect(tailOnLeave('exchange', { ...facts, accessScenes: [] }, T0).sceneStarted).toBe(false);
+  });
+
+  it('tailOnLeave на доступе без выданных отрезков — sceneStarted true: шаг доступа и есть сцена', () => {
+    expect(tailOnLeave('access', { ...facts, accessScenes: [] }, T0).sceneStarted).toBe(true);
   });
 
   it('tailOnLeave: wait, exchange, pairing_token проходят как есть', () => {
     expect(tailOnLeave('wait', facts, T0).leftAtStep).toBe('wait');
     expect(tailOnLeave('exchange', facts, T0).leftAtStep).toBe('exchange');
     expect(tailOnLeave('pairing_token', facts, T0).leftAtStep).toBe('pairing_token');
+  });
+
+  it('tailOnSceneStart: сцена хвоста началась — шаг access, ухода нет, sceneStarted true, completed false (№181)', () => {
+    expect(tailOnSceneStart({ ...facts, accessScenes: [] })).toEqual({
+      sessionId: 's1',
+      accessScene: [],
+      pairingTokenAt: iso(T0 - 500),
+      leftAtStep: 'access',
+      leftAt: null,
+      completed: false,
+      sceneStarted: true,
+    });
+  });
+
+  it('tailOnSceneStart: уже выданные отрезки и жетон цикла — в ISO, как у строки ухода', () => {
+    expect(tailOnSceneStart(facts)).toMatchObject({ accessScene: [{ startedAt: iso(T0), endedAt: iso(T0 + 20_000) }], pairingTokenAt: iso(T0 - 500), leftAt: null });
   });
 
   it('tailOnEnd: completed true, ухода нет', () => {

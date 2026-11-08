@@ -1607,7 +1607,7 @@ describe('фаза 8: сворачивание и возобновление', (
   const snapshotAt = () => childStateUpdatedAt(db, KID, 'abaSessionInProgress');
   type SessionBody = { endReason: string; endedAt: string; tokensEarned: number; exchangesMade: number; events: { kind: string; startedAt?: string; endedAt?: string }[] };
   const sessions = async () => (await db.all<{ body: string }>('SELECT body FROM aba_sessions WHERE child_id = ? ORDER BY seq', [KID])).map((r) => JSON.parse(r.body) as SessionBody);
-  type TailRow = { sessionId: string; accessScene: { startedAt: string; endedAt: string }[]; pairingTokenAt: string | null; leftAtStep: string | null; leftAt: string | null; completed: boolean };
+  type TailRow = { sessionId: string; accessScene: { startedAt: string; endedAt: string }[]; pairingTokenAt: string | null; leftAtStep: string | null; leftAt: string | null; completed: boolean; sceneStarted?: boolean; exchangeReturned?: { tokens: number; nonContingent: number; at: string; belowBoard?: true } };
   const tails = async () => (await db.all<{ body: string }>('SELECT body FROM aba_session_tails WHERE child_id = ? ORDER BY seq', [KID])).map((r) => JSON.parse(r.body) as TailRow);
   const border = () => StyleSheet.flatten(screen.getByTestId('aba-break-return').props.style).borderWidth as number;
   const tickUntil = (pred: () => boolean, step = 250, max = 400) => tickUntilWith(pred, step, max);
@@ -2342,9 +2342,9 @@ describe('фаза 8: сворачивание и возобновление', (
     await tickUntil(inTrial, 250, 40);
     expect((await snapshot())!.exchangesMade).toBe(saved.exchangesMade);
     await holdExit();
-    // на холодном старте экран начала сцены не знает: первый отрезок — приближение от `accessStartedAt` (методист а7)
+    // на холодном старте экран конца сцены не знает: первый отрезок — от `accessStartedAt` с endUnknown, в длительность не идёт (№181)
     expect(await accessEvents()).toEqual([
-      { kind: 'access', startedAt: iso(S), endedAt: iso(A) },
+      { kind: 'access', startedAt: iso(S), endedAt: iso(A), endUnknown: true },
       { kind: 'access', startedAt: iso(R), endedAt: iso(T) },
     ]);
   });
@@ -2448,7 +2448,7 @@ describe('фаза 8: сворачивание и возобновление', (
   }
   const TAIL_ACCESS_MS = EXCHANGE_ACCESS_MS[3];
 
-  it('с6. хвост: уход на обмене, возврат до 2 минут — доступ с начала, затем «Закончили»; строки: уход и доигранный итог', async () => {
+  it('с6. хвост: уход на обмене, возврат до 2 минут — доступ с начала, затем «Закончили»; строки: уход, «сцена началась» и доигранный итог', async () => {
     await toTailExchange();
     await tick(500);
     const L = clock.now();
@@ -2463,12 +2463,14 @@ describe('фаза 8: сворачивание и возобновление', (
     await stepTo(R + TAIL_ACCESS_MS - 1, 250);
     expect(accessPlay()).toBe(true);
     await tickUntil(ended);
-    await tailRowsAre(2);
-    expect((await tails())[1]).toMatchObject({ leftAtStep: null, leftAt: null, completed: true, accessScene: [{ startedAt: iso(R), endedAt: iso(R + TAIL_ACCESS_MS) }] });
+    await tailRowsAre(3);
+    // №181: сцена хвоста началась — строка «сцена началась» перекрывает уход на обмене
+    expect((await tails())[1]).toMatchObject({ leftAtStep: 'access', leftAt: null, completed: false, sceneStarted: true, accessScene: [] });
+    expect((await tails())[2]).toMatchObject({ leftAtStep: null, leftAt: null, completed: true, accessScene: [{ startedAt: iso(R), endedAt: iso(R + TAIL_ACCESS_MS) }] });
     expect(await count('aba_sessions')).toBe(1);
   });
 
-  it('с7. хвост: уход на обмене, возврат от 2 минут — «Закончили», одна строка, доступа нет', async () => {
+  it('с7. хвост: уход на обмене, возврат от 2 минут — «Закончили» без доски, доступа нет, жетоны обмена вернулись (№181)', async () => {
     await toTailExchange();
     await tick(500);
     await background();
@@ -2476,11 +2478,58 @@ describe('фаза 8: сворачивание и возобновление', (
     await tick(2 * 60_000);
     await foreground();
     await waitFor(() => expect(ended()).toBe(true));
+    expect(screen.queryByTestId('aba-end-board')).toBeNull();
     expect(accessPlay()).toBe(false);
     await tick(60_000);
     expect(accessPlay()).toBe(false);
-    expect(await tails()).toHaveLength(1);
-    expect((await tails())[0]).toMatchObject({ leftAtStep: 'exchange', completed: false, accessScene: [] });
+    await tailRowsAre(2);
+    expect((await tails())[0]).toMatchObject({ leftAtStep: 'exchange', completed: false, accessScene: [], sceneStarted: false });
+    expect((await tails())[1]).toMatchObject({ leftAtStep: 'exchange', completed: false, accessScene: [], exchangeReturned: { tokens: 3, nonContingent: 0 } });
+    const sessionId = (await tails())[0].sessionId;
+    expect(await loadChildState(db, KID, 'abaBoard')).toMatchObject({ earned: 3, returned: { tokens: 3, fromSessionId: sessionId } });
+  });
+
+  it('с7а. хвост: уход на обмене, возврат до 2 минут — доступ доигран, жетоны не возвращаются (№181)', async () => {
+    await toTailExchange();
+    await tick(500);
+    await background();
+    await tailRowsAre(1);
+    await tick(2 * 60_000 - 1);
+    await foreground();
+    await waitFor(() => expect(accessPlay()).toBe(true));
+    await tickUntil(ended);
+    await tailRowsAre(3);
+    expect((await tails())[1]).toMatchObject({ leftAtStep: 'access', leftAt: null, completed: false, sceneStarted: true });
+    expect((await tails())[2]).toMatchObject({ completed: true });
+    expect((await tails()).some((t) => t.exchangeReturned !== undefined)).toBe(false);
+    expect((await loadChildState(db, KID, 'abaBoard'))?.earned ?? 0).toBe(0);
+  });
+
+  it('с7в. хвост: уход на обмене, возврат до 2 минут, приложение убито в сцене — холодный старт жетоны не возвращает (№181)', async () => {
+    await toTailExchange();
+    await tick(500);
+    await background();
+    await tailRowsAre(1);
+    await tick(10_000);
+    await foreground();
+    await waitFor(() => expect(accessPlay()).toBe(true));
+    await tailRowsAre(2);
+    expect((await tails())[1]).toMatchObject({ leftAtStep: 'access', leftAt: null, sceneStarted: true });
+    await tick(5000);
+    await kill(5000);
+    // тот же вызов, что делают холодный старт (loadAbaStart) и экран родителя: по строкам, которые записал экран
+    expect(await commit.settleTailExchange(db, KID, { at: iso(clock.now()) })).toBe(false);
+    expect((await tails()).some((t) => t.exchangeReturned !== undefined)).toBe(false);
+    expect((await loadChildState(db, KID, 'abaBoard'))?.earned ?? 0).toBe(0);
+  });
+
+  it('с7б. хвост: выход удержанием на обмене — жетоны обмена вернулись сразу (№181)', async () => {
+    await toTailExchange();
+    await tick(500);
+    await holdExit();
+    await tailRowsAre(1);
+    expect((await tails())[0]).toMatchObject({ leftAtStep: 'exchange', completed: false, sceneStarted: false, exchangeReturned: { tokens: 3, nonContingent: 0 } });
+    expect(await loadChildState(db, KID, 'abaBoard')).toMatchObject({ earned: 3, returned: { tokens: 3 } });
   });
 
   it('с8а. хвост: уход в доступе, возврат до T и до 2 минут — сцена с остатка, два отрезка во второй строке', async () => {
@@ -2688,11 +2737,12 @@ describe('фаза 8: сворачивание и возобновление', (
     await tickUntil(accessPlay, 20, 200);
     expect(clock.now()).toBe(R + 2140);
     await tickUntil(ended);
-    await tailRowsAre(2);
-    expect((await tails())[1]).toMatchObject({ completed: true, accessScene: [{ startedAt: iso(R + 2140), endedAt: iso(R + 2140 + TAIL_ACCESS_MS) }] });
+    await tailRowsAre(3);
+    expect((await tails())[1]).toMatchObject({ leftAtStep: 'access', leftAt: null, completed: false, sceneStarted: true, accessScene: [] });
+    expect((await tails())[2]).toMatchObject({ completed: true, accessScene: [{ startedAt: iso(R + 2140), endedAt: iso(R + 2140 + TAIL_ACCESS_MS) }] });
   });
 
-  it('с10б. уход, пока пишется итог, возврат от 2 минут — «Закончили», одна строка, ни обмена, ни доступа', async () => {
+  it('с10б. уход, пока пишется итог, возврат от 2 минут — «Закончили» без доски, ни обмена, ни доступа; жетоны вернулись (№181)', async () => {
     const g = await refusalWhileTotalIsWritten();
     await background();
     await g.open();
@@ -2700,10 +2750,13 @@ describe('фаза 8: сворачивание и возобновление', (
     await tick(2 * 60_000);
     await foreground();
     await waitFor(() => expect(ended()).toBe(true));
+    expect(screen.queryByTestId('aba-end-board')).toBeNull();
     expect(screen.queryByTestId('aba-exchange')).toBeNull();
     expect(accessPlay()).toBe(false);
-    expect(await tails()).toHaveLength(1);
+    await tailRowsAre(2);
     expect((await tails())[0]).toMatchObject({ leftAtStep: 'exchange', completed: false });
+    expect((await tails())[1]).toMatchObject({ leftAtStep: 'exchange', completed: false, exchangeReturned: { tokens: 3, nonContingent: 0 } });
+    expect((await loadChildState(db, KID, 'abaBoard'))?.earned).toBe(3);
   });
 
   it('с10в. уход, пока пишется итог без хвоста (только шаг end): на возврате одна строка completed true', async () => {

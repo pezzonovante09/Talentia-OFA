@@ -13,7 +13,7 @@
  * Ничего из этого не логируется вне `__DEV__`: сообщения ошибок записи связывают устройство с режимом (`abaLog.ts`).
  */
 import { awayOutcome, finishAbaSession, resumeAbaSession as resumeSessionState, type AbaSessionResult, type AbaSessionState } from '../../domain/abaSession';
-import { boardRevOf } from '../../domain/abaTokens';
+import { liveBoardOf } from '../../domain/abaTokens';
 import { AbaBoardConflictError, AbaConsentRequiredError, AbaPausedError, abaLocalDay } from './abaLog';
 import { abaOverview, loadFinishInputs, resumePoolFor, type AbaBlock } from './abaStart';
 import { loadChildState } from './childState';
@@ -101,8 +101,8 @@ export async function closeSession(
       if (kind === 'blocked') return { kind: 'blocked' };
       if (kind !== 'conflict' || attempt >= max) return { kind: 'failed', error: e };
       // рутина сменила доску, пока сессия шла: итог считается по живой доске (`resumeAbaSession`, `awayMs = 0`)
-      const live = (await loadChildState(db, childId, 'abaBoard')) ?? { earned: 0, nonContingent: 0 };
-      s = resumeSessionState(s, { earned: live.earned, nonContingent: live.nonContingent, rev: boardRevOf(live) }, { routineExchanged: false });
+      const live = await loadChildState(db, childId, 'abaBoard');
+      s = resumeSessionState(s, liveBoardOf(live), { routineExchanged: false });
     }
   }
 }

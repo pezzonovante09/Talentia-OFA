@@ -6,7 +6,7 @@
 import { useRef, type MutableRefObject } from 'react';
 
 import { resumeAbaSession, type AbaSessionState } from '../../domain/abaSession';
-import { boardRevOf } from '../../domain/abaTokens';
+import { liveBoardOf } from '../../domain/abaTokens';
 import { classifyAbaWriteError, MAX_BOARD_CONFLICT_RETRIES } from '../../services/local/abaResume';
 import { loadChildState } from '../../services/local/childState';
 import { saveAbaSessionStep } from '../../services/local/commit';
@@ -28,8 +28,8 @@ export function useSessionWrites(o: { db: SqlDb | null; childId: string | null; 
         if (classifyAbaWriteError(e) !== 'conflict' || !db || !childId || !st.current || conflictRetries.current >= MAX_BOARD_CONFLICT_RETRIES) throw e;
         if (__DEV__) console.warn('aba-session', e);
         conflictRetries.current += 1;
-        const live = (await loadChildState(db, childId, 'abaBoard')) ?? { earned: 0, nonContingent: 0 };
-        st.current = resumeAbaSession(st.current, { earned: live.earned, nonContingent: live.nonContingent, rev: boardRevOf(live) }, { routineExchanged: false });
+        const live = await loadChildState(db, childId, 'abaBoard');
+        st.current = resumeAbaSession(st.current, liveBoardOf(live), { routineExchanged: false });
       }
     }
   };

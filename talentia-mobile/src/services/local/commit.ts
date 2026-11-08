@@ -7,7 +7,7 @@
  * на `UNIQUE(child_id, session_index)`; ABA у ребёнка ломалось навсегда. Здесь — или всё,
  * или ничего.
  */
-import type { AbaIoaRecord, AbaObserver, AbaSessionTail, AbaTargetState, AbaTrial, RoutineSetting } from '../../types/aba';
+import type { AbaIoaRecord, AbaObserver, AbaSession, AbaSessionTail, AbaTargetState, AbaTrial, RoutineSetting } from '../../types/aba';
 import { awayOutcome, resumeAbaSession as resumeSessionState, type AbaSessionResult, type AbaSessionState } from '../../domain/abaSession';
 import {
   finishRoutineRun,
@@ -17,7 +17,7 @@ import {
   type RoutineRunState,
   type RoutineSettingOpen,
 } from '../../domain/abaRoutineRun';
-import { boardRevOf, reinforcerChoices, type BoardRecord } from '../../domain/abaTokens';
+import { boardRevOf, liveBoardOf, reinforcerChoices, withReturned, type BoardRecord } from '../../domain/abaTokens';
 import { applyPairingSession, confirmPairing, initialTokenTraining, PAIRING, workingBoardSize, type PairingConfirmed } from '../../domain/abaTokenTraining';
 import type { PairingResult } from '../../domain/abaPairing';
 import {
@@ -157,15 +157,16 @@ async function readBoard(tx: SqlDb, childId: string): Promise<BoardRecord> {
 async function writeSessionBoard(
   tx: SqlDb,
   childId: string,
-  board: Pick<BoardRecord, 'earned' | 'nonContingent'>,
+  board: Pick<BoardRecord, 'earned' | 'nonContingent' | 'returned'>,
   expectedRev: number,
   at: string,
 ): Promise<number> {
   const live = await readBoard(tx, childId);
   if (boardRevOf(live) !== expectedRev) throw new AbaBoardConflictError(expectedRev, boardRevOf(live));
-  if (live.earned === board.earned && live.nonContingent === board.nonContingent) return expectedRev;
+  const sameReturned = JSON.stringify(live.returned ?? null) === JSON.stringify(board.returned ?? null);
+  if (live.earned === board.earned && live.nonContingent === board.nonContingent && sameReturned) return expectedRev;
   const rev = expectedRev + 1;
-  await saveChildState(tx, childId, 'abaBoard', { earned: board.earned, nonContingent: board.nonContingent, rev }, at);
+  await saveChildState(tx, childId, 'abaBoard', { earned: board.earned, nonContingent: board.nonContingent, ...(board.returned ? { returned: board.returned } : {}), rev }, at);
   return rev;
 }
 
@@ -270,7 +271,7 @@ export async function resumeAbaSession(db: SqlDb, childId: string, reinforcerPoo
       : undefined;
     return resumeSessionState(
       state,
-      { earned: live.earned, nonContingent: live.nonContingent, rev: boardRevOf(live) },
+      liveBoardOf(live),
       { routineExchanged, awayMs, ...(options ? { options } : {}) },
     );
   });
@@ -424,6 +425,47 @@ export async function commitAbaSessionTail(db: SqlDb, childId: string, tail: Aba
 }
 
 /**
+ * Хвост конца (№181): обмен в конце записан итогом, а сцена доступа не началась — ушли на кадре обмена и не вернулись
+ * за 2 мин, взрослый вышел или приложение убито. Жетоны этого обмена возвращаются на доску от живой доски с версией +1,
+ * как у рутины, а строка хвоста дописывается с отметкой. Один раз на сессию, только последняя записанная сессия и без
+ * живого снимка. `row` — строка ухода, если в журнале её ещё нет (тёплый возврат, выход). `false` — возвращать нечего.
+ */
+export async function settleTailExchange(db: SqlDb, childId: string, o: { at: string; row?: AbaSessionTail }): Promise<boolean> {
+  let done = false;
+  await withAbaWrite(db, childId, async (tx) => {
+    if (await loadChildState(tx, childId, 'abaSessionInProgress')) return;
+    const [last] = await tx.all<{ id: string; body: string; recorded_at: string }>(
+      'SELECT id, body, recorded_at FROM aba_sessions WHERE child_id = ? ORDER BY session_index DESC LIMIT 1',
+      [childId],
+    );
+    if (!last) return;
+    const [marked] = await tx.all<{ n: number }>(
+      "SELECT COUNT(*) AS n FROM aba_session_tails WHERE child_id = ? AND session_id = ? AND json_extract(body, '$.exchangeReturned') IS NOT NULL",
+      [childId, last.id],
+    );
+    if ((marked?.n ?? 0) > 0) return;
+    const rows = await tx.all<{ body: string }>('SELECT body FROM aba_session_tails WHERE child_id = ? AND session_id = ? ORDER BY seq', [childId, last.id]);
+    const tail: AbaSessionTail | null = o.row?.sessionId === last.id ? o.row : rows.length ? (JSON.parse(rows[rows.length - 1].body) as AbaSessionTail) : null;
+    if (!tail || tail.completed || tail.leftAtStep !== 'exchange' || tail.sceneStarted === true) return;
+    const session = JSON.parse(last.body) as AbaSession;
+    const ex = [...session.events].reverse().find((e) => e.kind === 'exchange' && e.at === session.endedAt);
+    // обмен до №181 без разбивки «не за результат» — «неизвестно», жетоны не возвращаются
+    if (!ex || ex.kind !== 'exchange' || ex.nonContingent === undefined) return;
+    const live = await readBoard(tx, childId);
+    const nonContingent = ex.nonContingent;
+    // запись — моментом записи сессии: срок хранения строки и доски идёт от сессии, а не от того, когда возврат подобрали
+    const stamp = last.recorded_at;
+    const board = withReturned(live, { tokens: ex.tokens, nonContingent, fromSessionId: last.id });
+    await saveChildState(tx, childId, 'abaBoard', { earned: board.earned, nonContingent: board.nonContingent, returned: board.returned, rev: boardRevOf(live) + 1 }, stamp);
+    // ступень выросла тем же итогом — вернувшихся жетонов может не хватить на новую доску: отметка специалисту
+    const grew = session.events.some((e) => e.kind === 'board_stage' && e.to > e.from);
+    await appendSessionTail(tx, childId, { ...tail, exchangeReturned: { tokens: ex.tokens, nonContingent, at: o.at, ...(grew ? { belowBoard: true as const } : {}) } }, stamp);
+    done = true;
+  });
+  return done;
+}
+
+/**
  * Звено прогона рутины — сразу в журнал проб вместе со снимком прогона (`abaRoutineRunInProgress`):
  * свёрнутый посреди прогон продолжится с записанного звена. Только при согласии и не на паузе.
  * Доски звено не трогает. Звено нового прогона закрывает форму места прошлого (Д2).
@@ -500,7 +542,9 @@ export async function commitRoutineRun(
     );
     await saveChildState(tx, childId, 'abaTargets', { ...targets, [result.record.targetId]: result.state }, at);
     if (settled.board.earned !== live.earned || settled.board.nonContingent !== live.nonContingent) {
-      await saveChildState(tx, childId, 'abaBoard', { ...settled.board, rev: boardRevOf(live) + 1 }, at);
+      // метка вернувшихся жетонов (№181) живёт, пока рутина их не обменяла
+      const keep = live.returned && settled.board.earned >= live.earned ? { returned: live.returned } : {};
+      await saveChildState(tx, childId, 'abaBoard', { ...settled.board, ...keep, rev: boardRevOf(live) + 1 }, at);
     }
     // просьбы о перерыве в звеньях — на карточку ребёнка, не в срывы рутины (Д3)
     if (result.breakRequests.requests > 0) {

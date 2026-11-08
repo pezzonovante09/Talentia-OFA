@@ -4,7 +4,7 @@
  * Остановка: `null` — сцена не началась (экран обмена), доступа в журнале нет; объект — от начала сцены до
  * `endedAt ?? now`; без аргумента — весь шаг, как раньше.
  */
-import { finishAccess, finishBreak, nextStep, stopSession, type AbaSessionState } from '../abaSession';
+import { accessShown, finishAccess, finishBreak, nextStep, stopSession, type AbaSessionState } from '../abaSession';
 import { EXCHANGE_ACCESS_MS } from '../abaTokenTraining';
 import { answerNext, BASE_MS, beginSession } from './abaSessionDriver';
 
@@ -29,6 +29,8 @@ const SCENE_START = STEP + 2140;
 const SCENE_END = SCENE_START + DURATION;
 /** Сворачивание 360 + карточка 1000. */
 const STEP_END = SCENE_END + 1360;
+/** Сцена началась (первый кадр, №181): экран зовёт `accessShown` — обмен выдан, остановка жетоны не возвращает. */
+const inScene = (over: Parameters<typeof beginSession>[0] = {}) => accessShown(inAccess(over));
 const lastAccess = (st: AbaSessionState) => st.events.filter((e) => e.kind === 'access').at(-1);
 
 describe('finishAccess со сценой (№171)', () => {
@@ -78,17 +80,17 @@ describe('stopSession со сценой (№171)', () => {
 
   it('сцена играет — доступ от начала сцены до остановки', () => {
     const now = SCENE_START + 7000;
-    const st = stopSession(inAccess(), 'abandoned', now, { startedAt: SCENE_START });
+    const st = stopSession(inScene(), 'abandoned', now, { startedAt: SCENE_START });
     expect(lastAccess(st)).toEqual({ kind: 'access', startedAt: iso(SCENE_START), endedAt: iso(now) });
   });
 
   it('остановили на кадре конца — доступ до T, а не до остановки', () => {
-    const st = stopSession(inAccess(), 'adult_stopped', SCENE_END + 900, { startedAt: SCENE_START, endedAt: SCENE_END });
+    const st = stopSession(inScene(), 'adult_stopped', SCENE_END + 900, { startedAt: SCENE_START, endedAt: SCENE_END });
     expect(lastAccess(st)).toEqual({ kind: 'access', startedAt: iso(SCENE_START), endedAt: iso(SCENE_END) });
   });
 
   it('без аргумента — как раньше: весь шаг доступа до остановки', () => {
-    const st = stopSession(inAccess(), 'adult_stopped', STEP + 5000);
+    const st = stopSession(inScene(), 'adult_stopped', STEP + 5000);
     expect(lastAccess(st)).toEqual({ kind: 'access', startedAt: iso(STEP), endedAt: iso(STEP + 5000) });
   });
 
@@ -100,7 +102,7 @@ describe('stopSession со сценой (№171)', () => {
   });
 
   it('без времени остановки событий не добавляется даже со сценой', () => {
-    const st = inAccess();
+    const st = inScene();
     expect(stopSession(st, 'adult_stopped', undefined, { startedAt: SCENE_START }).events).toEqual(st.events);
   });
 });

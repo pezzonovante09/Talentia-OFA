@@ -19,7 +19,7 @@ export type EndBoard = { cells: number; filled: number } | null;
 export const boardOf = (s: AbaSessionState | null): EndBoard => (s ? { cells: s.board.size, filled: s.board.earned } : null);
 
 /** Отрезок сцены доступа для журнала (№171, фаза 8: доступ, разрезанный сворачиванием, — несколько отрезков). */
-export type AccessScene = { startedAt: number; endedAt: number };
+export type AccessScene = { startedAt: number; endedAt: number; endUnknown?: true };
 
 /**
  * Смена кадра с полной доски на обмен (Ц4, итог проверок, огр. 1): палец на карточке «перерыв» или «Отказ» её
@@ -220,7 +220,7 @@ export function tailPhase(step: TailStep, now: number, still: boolean, end: { va
  * (`null`); в доступе — отрезки, выданные до сворачивания, и текущий до остановки (или до T); иначе — весь шаг
  * (`undefined`).
  */
-export function accessSceneOnStop(phase: Phase): { startedAt: number; endedAt?: number }[] | null | undefined {
+export function accessSceneOnStop(phase: Phase): { startedAt: number; endedAt?: number; endUnknown?: true }[] | null | undefined {
   if (phase.kind === 'exchange' && phase.next !== 'tail') return null;
   if (phase.kind === 'participation' && phase.then?.kind === 'access') return null;
   if (phase.kind === 'access' && !phase.tail) {

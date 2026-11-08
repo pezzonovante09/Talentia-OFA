@@ -106,6 +106,7 @@ import {
   type TokenAward,
   type TokenBoard,
   type TokenSchedule,
+  withReturned,
 } from './abaTokens';
 import { programErrors, targetErrors, targetForBand } from './abaTargetRules';
 import { pick, seeded, shuffle } from './abaRandom';
@@ -309,6 +310,10 @@ export type AbaSessionState = {
   stoppedAfterEnd?: boolean;
   /** Остановка сняла обмен, которому конец и полная доска давали ход: сессия с нулём обменов не решает ступень доски. */
   exchangeDropped?: boolean;
+  /** Обмен прошёл, сцена доступа ещё не началась (№181): остановка в это окно вернёт жетоны этого обмена на доску. */
+  pendingExchange?: { at: number; tokens: number; nonContingent: number } | null;
+  /** Возврат, решённый остановкой: доска итога — доска плюс эти жетоны (и после повтора по живой доске). */
+  returnedOnStop?: { at: number; tokens: number; nonContingent: number } | null;
   /** Нейтральная пауза перед следующим шагом: мост не нашёл, чем закрыть блок успехом. */
   pendingPauseMs: number;
   targets: Record<string, AbaTarget>;
@@ -390,7 +395,7 @@ export type StartInput = {
   /** Выборы прошлых сессий, свежие в конце. */
   reinforcerHistory: string[];
   /** Доска с прошлой сессии: жетоны не сгорают. Размер — по ступени обучения доске. */
-  board?: Pick<TokenBoard, 'earned' | 'nonContingent'>;
+  board?: Pick<TokenBoard, 'earned' | 'nonContingent' | 'returned'>;
   /** Версия `abaBoard`, из которой взята доска (`BoardRecord.rev`; нет записи — 0). */
   boardRev?: number;
   /** Сопряжение и обучение доске — на ребёнке. Без сопряжения рабочая сессия не начинается. */
@@ -843,6 +848,7 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
       size: workingBoardSize(input.tokenTraining, band),
       earned: input.board?.earned ?? 0,
       nonContingent: input.board?.nonContingent ?? 0,
+      ...(input.board?.returned ? { returned: input.board.returned } : {}),
     },
     boardRev: input.boardRev ?? 0,
     tokenTraining: input.tokenTraining,
@@ -1155,7 +1161,7 @@ export function chooseReinforcer(
 }
 
 /** Доска на устройстве, как её видит сессия при возобновлении. */
-export type LiveBoard = Pick<TokenBoard, 'earned' | 'nonContingent'> & { rev: number };
+export type LiveBoard = Pick<TokenBoard, 'earned' | 'nonContingent' | 'returned'> & { rev: number };
 
 /**
  * Возобновить свёрнутую сессию по живой доске (`abaBoard`) — единственный путь продолжить (Р3,
@@ -1183,7 +1189,7 @@ export function resumeAbaSession(
   const pausedMs = state.breakStartedAt === null && state.accessStartedAt === null ? state.pausedMs + away : state.pausedMs;
   const next: AbaSessionState = {
     ...state,
-    board: { size: state.board.size, earned: live.earned, nonContingent: live.nonContingent },
+    board: { size: state.board.size, earned: live.earned, nonContingent: live.nonContingent, ...(live.returned ? { returned: live.returned } : {}) },
     boardRev: live.rev,
     pausedMs,
   };
@@ -1283,7 +1289,7 @@ export function finishBreak(state: AbaSessionState, now: number, endedAt: number
       ...(head.training ? { training: true as const } : {}),
     },
   ];
-  if (exchanged > 0) events.push({ kind: 'exchange', at: iso(now), tokens: exchanged });
+  if (exchanged > 0) events.push(exchangeEvent(state.board, now, exchanged));
   // обмен без доступа — жетон, который ничего не покупает (№169): доступ по ступени, как при обмене сразу
   const access: QueueItem[] = exchanged > 0 ? [{ kind: 'access', durationMs: EXCHANGE_ACCESS_MS[state.board.size] }] : [];
   return {
@@ -1291,6 +1297,7 @@ export function finishBreak(state: AbaSessionState, now: number, endedAt: number
       ...state,
       board,
       exchangesMade: state.exchangesMade + (exchanged > 0 ? 1 : 0),
+      ...(exchanged > 0 ? { pendingExchange: { at: now, tokens: exchanged, nonContingent: state.board.nonContingent } } : {}),
       pausedMs: state.pausedMs + (now - startedAt),
       breakStartedAt: null,
       events,
@@ -1315,10 +1322,35 @@ export function finishChainByAdult(state: AbaSessionState): AbaSessionState {
  * отрезок (вернулись до T — два: до ухода и от возврата до T; после T — один, до ухода); пустой массив — сцена
  * не выдавалась, события нет. «Сделано, а не назначено» (№171 п. 3, №172 п. 2).
  */
+type AccessScenePart = { startedAt: number; endedAt: number; endUnknown?: true };
+
+const accessEvent = (startedAt: number, endedAt: number, endUnknown?: true): AbaSessionEvent => ({
+  kind: 'access',
+  startedAt: iso(startedAt),
+  endedAt: iso(endedAt),
+  ...(endUnknown ? { endUnknown: true as const } : {}),
+});
+
+/** Событие обмена: сколько жетонов и сколько из них не за результат; вернувшиеся с прошлого раза помечены — в ступень не идут. */
+function exchangeEvent(board: TokenBoard, at: number, tokens: number): AbaSessionEvent {
+  return {
+    kind: 'exchange',
+    at: iso(at),
+    tokens,
+    nonContingent: board.nonContingent,
+    ...(board.returned ? { includesReturned: true as const, returnedTokens: board.returned.tokens, fromSessionId: board.returned.fromSessionId } : {}),
+  };
+}
+
+/** Сцена доступа началась (первый кадр, на который она отвечает, №171): обмен выдан, возвращать нечего (№181). */
+export function accessShown(state: AbaSessionState): AbaSessionState {
+  return state.pendingExchange ? { ...state, pendingExchange: null } : state;
+}
+
 export function finishAccess(
   state: AbaSessionState,
   now: number,
-  scene?: { startedAt: number; endedAt: number } | { startedAt: number; endedAt: number }[],
+  scene?: AccessScenePart | AccessScenePart[],
 ): AbaSessionState {
   if (state.queue[0]?.kind !== 'access') throw new Error('Сейчас не доступ к подкрепителю');
   const startedAt = state.accessStartedAt ?? now;
@@ -1327,7 +1359,8 @@ export function finishAccess(
     ...state,
     pausedMs: state.pausedMs + (now - startedAt),
     accessStartedAt: null,
-    events: [...state.events, ...scenes.map((s) => ({ kind: 'access' as const, startedAt: iso(s.startedAt), endedAt: iso(s.endedAt) }))],
+    pendingExchange: null,
+    events: [...state.events, ...scenes.map((s) => accessEvent(s.startedAt, s.endedAt, s.endUnknown))],
     queue: state.queue.slice(1),
   };
 }
@@ -1338,7 +1371,7 @@ export function finishAccess(
  * `AWAY_ABANDON_MS` или до другого дня) и `app_error` (программная ошибка) — те же правила; `now` тогда — момент
  * ухода, а не текущее время, чтобы прерванные перерыв и доступ не растягивались в журнале до часов.
  */
-type AccessStopScene = { startedAt: number; endedAt?: number };
+type AccessStopScene = { startedAt: number; endedAt?: number; endUnknown?: true };
 
 /** Плановый конец: пока итог не записан, остановка его перекрывает (исключение — `noChoiceAtEnd`). */
 const PLANNED_ENDS: ReadonlySet<AbaSessionEndReason> = new Set(['completed', 'time_limit', 'breakdown']);
@@ -1355,24 +1388,32 @@ export function stopSession(
    */
   accessScene?: AccessStopScene | AccessStopScene[] | null,
 ): AbaSessionState {
+  // обмен прошёл, а сцена доступа не началась (№181): жетоны этого обмена вернутся на доску в итоге, доступа в журнале нет
+  const giveBack = state.queue[0]?.kind === 'access' && state.pendingExchange ? state.pendingExchange : null;
   // доступ и перерыв, прерванные остановкой, остаются в журнале
   const scenes = accessScene === null ? [] : accessScene === undefined ? null : Array.isArray(accessScene) ? accessScene : [accessScene];
   const access =
-    now === undefined || state.accessStartedAt === null
+    now === undefined || state.accessStartedAt === null || giveBack
       ? []
-      : (scenes ?? [{ startedAt: state.accessStartedAt }]).map((s) => ({ kind: 'access' as const, startedAt: iso(s.startedAt), endedAt: iso(s.endedAt ?? now) }));
+      : (scenes ?? [{ startedAt: state.accessStartedAt }]).map((s) => accessEvent(s.startedAt, s.endedAt ?? now, s.endUnknown));
+  const back: AbaSessionEvent[] = giveBack
+    ? [{ kind: 'exchange_returned', at: iso(now ?? giveBack.at), tokens: giveBack.tokens, nonContingent: giveBack.nonContingent, exchangeAt: iso(giveBack.at), reason }]
+    : [];
   // плановый конец перекрывается: ребёнка нет, обмен прошёл бы в пустоту и жетоны сгорели бы. Отказ — решение ребёнка, он
   // остаётся причиной (критерий, `endedOnSuccess`), а остановка пишется событием и снимает обмен (методист 2026-11-06)
   const kept = state.endReason !== null && (state.stoppedAfterEnd || !PLANNED_ENDS.has(state.endReason)) ? state.endReason : null;
   const afterEnd = kept !== null && !STOP_REASONS.has(kept);
   const stopped = afterEnd && !state.stoppedAfterEnd && now !== undefined ? [{ kind: 'stopped' as const, at: iso(now), reason }] : [];
-  const events = now === undefined ? state.events : [...state.events, ...interruptedBreak(state, now), ...access, ...stopped];
+  const events = now === undefined ? [...state.events, ...back] : [...state.events, ...interruptedBreak(state, now), ...access, ...back, ...stopped];
   return {
     ...state,
     events,
     endReason: kept ?? reason,
     ...(afterEnd ? { stoppedAfterEnd: true } : {}),
     ...(exchangeWasDue(state) ? { exchangeDropped: true } : {}),
+    // возврат и есть снятый обмен: обмены считают выданное, ступень его не видит
+    ...(giveBack ? { exchangesMade: state.exchangesMade - 1, returnedOnStop: giveBack, exchangeDropped: true } : {}),
+    pendingExchange: null,
     queue: [],
     participationOwed: null,
     breakStartedAt: null,
@@ -1677,7 +1718,8 @@ function settleBoard(state: AbaSessionState, now: number): { state: AbaSessionSt
       ...state,
       board,
       exchangesMade: state.exchangesMade + 1,
-      events: [...state.events, { kind: 'exchange', at: iso(now), tokens: exchanged }],
+      events: [...state.events, exchangeEvent(state.board, now, exchanged)],
+      pendingExchange: { at: now, tokens: exchanged, nonContingent: state.board.nonContingent },
       queue: [access, ...state.queue],
     },
     exchanged,
@@ -2531,12 +2573,23 @@ export function finishAbaSession(
     states[id] = s;
   }
 
-  const { board, exchanged } = exchangesAtEnd(state) ? tryExchange(state.board) : { board: state.board, exchanged: 0 };
+  // возврат, решённый остановкой (№181), — от доски этого итога, в том числе живой после повтора по конфликту
+  const base = state.returnedOnStop ? withReturned(state.board, { ...state.returnedOnStop, fromSessionId: state.sessionId }) : state.board;
+  const { board, exchanged } = exchangesAtEnd(state) ? tryExchange(base) : { board: base, exchanged: 0 };
   const exchangesMade = state.exchangesMade + (exchanged > 0 ? 1 : 0);
+  // в ступень идут выданные обмены своих жетонов: снятый остановкой (`exchange_returned`) не выдан, а обмен вернувшихся
+  // жетонов засчитывается, только если своих в нём на целую доску — одно заполнение доски не считается дважды
+  const returnedAt = new Set(state.events.flatMap((e) => (e.kind === 'exchange_returned' ? [e.exchangeAt] : [])));
+  const own = (tokens: number, returned = 0) => tokens - returned >= state.board.size;
+  // снятый остановкой обмен уже вычтен из `exchangesMade` (`stopSession`): второй раз он не вычитается
+  const notOwn =
+    state.events.filter((e) => e.kind === 'exchange' && e.includesReturned && !returnedAt.has(e.at) && !own(e.tokens, e.returnedTokens)).length +
+    (exchanged > 0 && base.returned && !own(exchanged, base.returned.tokens) ? 1 : 0);
+  const stageExchanges = Math.max(0, exchangesMade - notOwn);
   // конец по бездействию — отсутствие ребёнка, а не результат на ступени: ступень доски не решает (№170)
-  const tokenTraining = endedByInactivity(state) || (state.exchangeDropped && exchangesMade === 0) ? state.tokenTraining : applyStageSession(state.tokenTraining, state.band, {
+  const tokenTraining = endedByInactivity(state) || (state.exchangeDropped && stageExchanges === 0) ? state.tokenTraining : applyStageSession(state.tokenTraining, state.band, {
     sessionIndex: idx,
-    exchanges: exchangesMade,
+    exchanges: stageExchanges,
     endReason: state.endReason,
     config: state.config,
     ...(extra.routineExchangeInWindow ? { routineExchangeInWindow: true as const } : {}),
@@ -2544,7 +2597,7 @@ export function finishAbaSession(
   const at = iso(endedAt);
   const events: AbaSessionEvent[] = [
     ...state.events,
-    ...(exchanged > 0 ? [{ kind: 'exchange' as const, at, tokens: exchanged }] : []),
+    ...(exchanged > 0 ? [exchangeEvent(base, endedAt, exchanged)] : []),
     ...(needsPairingCycle(state) ? [{ kind: 'pairing' as const, at }] : []),
     ...phaseEvents,
     ...(tokenTraining.stage !== state.tokenTraining.stage

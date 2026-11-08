@@ -72,12 +72,12 @@ export type AccessOnReturn = {
 /**
  * Доступ, начатый до сворачивания (`accessStartedAt`), на возврате `now`. До T — сцена продолжается с остатка; после T —
  * кадр конца `endSettleMs` без сцены и кольца, затем следующий шаг. `delivered` — отрезки, известные экрану (тёплый
- * возврат); на холодном старте их нет: один отрезок от `accessStartedAt` до ухода, начало сцены — не раньше него
- * (приближение ≤ 3 с экрана обмена, методист а7).
+ * возврат); на холодном старте их нет: сцена шла (снимок с началом доступа ложится только в начале сцены), а конец
+ * неизвестен — один отрезок от `accessStartedAt` с отметкой `endUnknown`, в длительность доступа не входит (№181).
  */
 export function accessOnReturn(o: { accessStartedAt: number; durationMs: number; leftAt: number; now: number; still: boolean; delivered?: AccessScene[] }): AccessOnReturn {
   const endsAt = o.accessStartedAt + o.durationMs;
-  const before: AccessScene[] = o.delivered ?? (o.leftAt > o.accessStartedAt ? [{ startedAt: o.accessStartedAt, endedAt: Math.min(o.leftAt, endsAt) }] : []);
+  const before: AccessScene[] = o.delivered ?? [{ startedAt: o.accessStartedAt, endedAt: Math.max(o.accessStartedAt, Math.min(o.leftAt, endsAt)), endUnknown: true }];
   if (o.now < endsAt) {
     // просроченные стадии (подсказка «закругляемся») проходят разом и без звука: `stepAccess` сам глушит `cue` после срока
     const { run } = stepAccess(startAccess(o.accessStartedAt, o.durationMs, 0, o.still), o.now);
@@ -118,7 +118,17 @@ export function tailOnLeave(step: TailStep['kind'], facts: TailFacts, leftAt: nu
     leftAtStep: step === 'end' ? null : step,
     leftAt: iso(leftAt),
     completed: false,
+    // сцена хвоста — его шаг доступа: ушли на обмене или ожидании — она не начиналась (№181)
+    sceneStarted: step === 'access' || facts.accessScenes.length > 0,
   };
+}
+
+/**
+ * Сцена доступа хвоста началась после ухода на обмене (тёплый возврат до 2 мин, №181): строка «сцена началась» перекрывает
+ * строку ухода — если приложение погибнет в сцене, жетоны обмена не вернутся поверх выданного доступа.
+ */
+export function tailOnSceneStart(facts: TailFacts): AbaSessionTail {
+  return { ...tailOnLeave('access', facts, 0), leftAt: null, sceneStarted: true };
 }
 
 /** Хвост доигран до «Закончили». */

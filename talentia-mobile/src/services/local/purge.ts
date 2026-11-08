@@ -519,7 +519,7 @@ function withoutBreakCardIds(state: Record<string, unknown>): Record<string, unk
 }
 
 /** Поля записей ABA, в которых лежат идентификаторы журнала (`ids.ts`). */
-const ID_FIELDS = ['id', 'sessionId', 'requeuedFromTrialId', 'trialId', 'replacementId', 'sourceId'];
+const ID_FIELDS = ['id', 'sessionId', 'fromSessionId', 'requeuedFromTrialId', 'trialId', 'replacementId', 'sourceId'];
 
 function collectIds(value: unknown, into: Set<string>): void {
   if (Array.isArray(value)) value.forEach((v) => collectIds(v, into));
@@ -648,7 +648,21 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
       const origin = Date.parse(startedAt);
       const seconds = endedAt === null ? NaN : Math.round((Date.parse(endedAt) - origin) / 1000);
       const t = tailBySession.get(s.id);
-      const tail = t ? (({ sessionId: _id, ...rest }) => rest)(t) : null;
+      // хвост — по явному списку полей: новое поле не уходит специалисту само; момент возврата жетонов не связан с сессией
+      // (его подобрали позже), поэтому только факт и число
+      const tail = t
+        ? {
+            accessScene: t.accessScene,
+            pairingTokenAt: t.pairingTokenAt,
+            leftAtStep: t.leftAtStep,
+            leftAt: t.leftAt,
+            completed: t.completed,
+            ...(t.sceneStarted !== undefined ? { sceneStarted: t.sceneStarted } : {}),
+            ...(t.exchangeReturned
+              ? { exchangeReturned: { tokens: t.exchangeReturned.tokens, nonContingent: t.exchangeReturned.nonContingent, ...(t.exchangeReturned.belowBoard ? { belowBoard: true } : {}) } }
+              : {}),
+          }
+        : null;
       return {
         ...relativeTimes({ ...s, tail }, origin),
         // локальный день записи сессии; старые записи без него — UTC-дата метки
