@@ -16,6 +16,7 @@ import {
   type AbaRoutineRun,
   type AbaSession,
   type AbaSessionEndReason,
+  type AbaSessionEvent,
   type AbaSessionTail,
   type AbaTarget,
   type AbaTargetState,
@@ -636,7 +637,8 @@ export type PromptLevelCounts = Record<PromptLevel, number>;
  * Исходы переноса (методист 2026-10-01, ABA.md «Решения методиста после проверки D1 и D2»): «сам / дождался /
  * подсказан / провал», приближение отдельно. Пять классов делят пробы переноса без остатка; прерванные и с подсказкой
  * взрослого вне процедуры — вне пятёрки, отдельными числами. «Подсказан» (`prompted`) — ответ с подсказкой, кроме
- * «дождался»: уровень выше старта или стартовый уровень > 0.
+ * «дождался» (`fadeClass`): уровень выше старта, стартовый уровень > 0, а также L1 со старта L0 после попытки ответить
+ * или после ненаблюдения образца `match`.
  */
 export type TransferOutcomes = {
   independent: number;
@@ -663,18 +665,24 @@ export type TrialDistribution = {
   fade: Record<FadeClass, number>;
   /** Все не прерванные пробы выборки по виду: сколько и сколько из них самостоятельных. */
   byKind: Partial<Record<AbaTrialKind, { trials: number; independent: number }>>;
-  /** Кто оценивал (все не прерванные пробы): доля «человек» — `adult` к сумме. */
+  /** Кто оценивал (все не прерванные пробы) и доля проб, оценённых человеком (`adult`); `null` — проб нет. */
   byScoredBy: Partial<Record<ScoringSource, number>>;
+  adultScoredRate: number | null;
   /**
-   * Латентность самостоятельных ответов со старта L0 в обучении (ABA.md: «только по `independent`»): медиана, число проб
-   * и чем измерено (`adult_press` отстаёт на 0,3–0,5 с). `null` — таких проб нет.
+   * Латентность самостоятельных ответов со старта L0 в обучении (ABA.md: «только по `independent`»): медиана `latencyMs`
+   * (у самостоятельного ответа равна времени от первого SD — инвариант пробы), число проб и чем измерено (`adult_press`
+   * отстаёт на 0,3–0,5 с). `null` — таких проб нет.
    */
   l0Latency: { medianMs: number; n: number; bySource: Partial<Record<LatencySource, number>> } | null;
-  /** Задержка до подсказки на старте L0 (обучение и перенос): история за выборку; `null` — проб со старта L0 не было. */
+  /**
+   * Задержка до подсказки на старте L0 (обучение и перенос): история за выборку, `last` — по порядку записи (у цели —
+   * по номеру сессии и пробы); `null` — проб со старта L0 не было.
+   */
   promptDelayMs: { min: number; max: number; last: number } | null;
   /**
-   * Среди несамостоятельных проб затухания — доля с попыткой до подсказки: зависимый от подсказки молчит до неё,
-   * не умеющий пробует и ошибается. `null` — несамостоятельных не было.
+   * Среди несамостоятельных обучающих проб со старта L0 — доля с попыткой до подсказки (та же выборка, что у детектора
+   * зависимости домена: при старте выше L0 подсказка идёт вместе с SD, и попытка до неё невозможна по построению).
+   * Зависимый от подсказки молчит до неё, не умеющий пробует и ошибается. `null` — таких проб не было.
    */
   emittedBeforePromptRate: number | null;
   transfer: TransferOutcomes;
@@ -695,12 +703,25 @@ export type SessionTargetSummary = TrialDistribution & {
   endReason: AbaSessionEndReason | null;
   /** Записи конца нет (`endedAt === null`): итог не окончательный. */
   incomplete: boolean;
+  /**
+   * Чем была сессия для цели: `teaching` — обучали (пробы обучения, коррекции, переноса), `baseline` — базовая линия,
+   * `probe_only` — только пробы поддержания, разогрева, закрывающие или проверочные. Счёт критерия — только у `teaching`:
+   * домен применяет итог сессии лишь к целям, которые в ней учили.
+   */
+  role: 'teaching' | 'baseline' | 'probe_only';
   /** Чем считает критерий: пробами (дискретная цель) или полными прогонами (цепочка). */
   unit: 'trials' | 'runs' | null;
-  /** Проб или прогонов в зачёт критерия; `null` — цели нет в каталоге (`catalogMissing`), счёт домена недоступен. */
+  /**
+   * Проб или прогонов в зачёт критерия; `null` — цель не учили (`role`) или её нет в каталоге (`catalogMissing`), счёт
+   * домена недоступен.
+   */
   trials: number | null;
   independentRate: number | null;
-  /** `meets` продлевает серию критерия, `breaks` рвёт, `neutral` — проб мало и 80% ещё достижимы. */
+  /**
+   * Как в домене при записи сессии: `meets` продлевает серию критерия, `breaks` рвёт, `neutral` — проб мало и 80% ещё
+   * достижимы, либо `meets` снят: конец по отказу ребёнка, снятая и не предъявленная снова проба цели, цель отмечена
+   * ненадёжной (`measurement: unreliable`). Срыв (`breakdown`) рвёт серию только сорвавшейся цели (`brokenTargetId`).
+   */
   outcome: SessionOutcome | null;
   counted: boolean | null;
   catalogMissing?: true;
@@ -713,14 +734,15 @@ export type TargetSummary = TrialDistribution & {
   /** Сессий (у рутины — прогонов) с пробами цели в файле. */
   sessions: number;
   /**
-   * Доля самостоятельных по зачётным пробам всех записанных сессий с последнего входа в обучение (событие `phase`
-   * с `to: 'acquisition'`) — объединённая. Критерий же считается по сессиям: `state.recentIndependentRates`.
+   * Объединённая доля самостоятельных: все пробы с правом на критерий (у цепочки — полные прогоны) из записанных
+   * обучающих сессий с последнего входа в обучение (событие `phase` с `to: 'acquisition'`), включая короткие сессии, где
+   * проб не хватило для `state.recentIndependentRates`, и сессии с итогом `neutral`. Критерий же считается по сессиям.
    */
   pooledIndependentRate: number | null;
   /** Номер сессии, с которой считается `pooledIndependentRate`; `null` — с начала файла. */
   pooledFromSessionIndex: number | null;
   /** Отсечки смены фазы на графике (ABA.md «Данные») — из событий `phase` записей сессий. */
-  phaseChanges: { sessionIndex: number; day: string; from: AbaPhase; to: AbaPhase; reason: string }[];
+  phaseChanges: { sessionIndex: number; day: string; from: AbaPhase; to: AbaPhase; reason: Extract<AbaSessionEvent, { kind: 'phase' }>['reason'] }[];
   /**
    * Из состояния цели на день выгрузки; `null` — состояния нет. У рутины `criterionGaps` не считается; у неполного
    * состояния (старая запись без списков критерия) `criterionGaps` и `generalizationPasses` — `null`, не ошибка выгрузки.
@@ -792,7 +814,8 @@ function distributionOf(trials: readonly AbaTrial[], target: AbaTarget | undefin
   const bySource: Partial<Record<LatencySource, number>> = {};
   for (const t of l0) if (t.latencySource) bySource[t.latencySource] = (bySource[t.latencySource] ?? 0) + 1;
   const delays = fadeTrials.filter((t) => t.startPromptLevel === 0 && t.promptDelayMs !== null).map((t) => t.promptDelayMs!);
-  const notIndependent = fadeTrials.filter((t) => t.response !== 'independent');
+  // та же выборка, что у `dependenceTrials` домена: обучение со старта L0, без самостоятельных
+  const notIndependent = fadeTrials.filter((t) => t.kind === 'teaching' && t.startPromptLevel === 0 && t.response !== 'independent');
   const transferAll = trials.filter((t) => t.kind === 'transfer');
   const transferLive = transferAll.filter(isFadeTrial);
   const transfer: TransferOutcomes = {
@@ -812,6 +835,7 @@ function distributionOf(trials: readonly AbaTrial[], target: AbaTarget | undefin
     fade,
     byKind,
     byScoredBy,
+    adultScoredRate: rate(byScoredBy.adult ?? 0, live.length),
     l0Latency: l0.length ? { medianMs: median(l0.map((t) => t.latencyMs!)), n: l0.length, bySource } : null,
     promptDelayMs: delays.length ? { min: Math.min(...delays), max: Math.max(...delays), last: delays[delays.length - 1] } : null,
     emittedBeforePromptRate: rate(notIndependent.filter((t) => t.emittedBeforePrompt).length, notIndependent.length),
@@ -831,6 +855,28 @@ function distributionOf(trials: readonly AbaTrial[], target: AbaTarget | undefin
     );
   }
   return out;
+}
+
+/**
+ * Проба цели снята (перерыв, отказ, сопротивление) и в этой сессии не предъявлена снова — повтор `hasUnpresentedDrop`
+ * домена (`abaSession.ts`, не экспортируется; домен заморожен №134 — при разморозке звать его, а копию убрать).
+ */
+function hasUnpresentedDrop(trials: readonly AbaTrial[], targetId: string): boolean {
+  const presented = new Set(trials.filter((t) => t.response !== 'interrupted').map((t) => t.requeuedFromTrialId));
+  return trials.some((t) => t.targetId === targetId && t.response === 'interrupted' && t.interruptedBy !== undefined && !presented.has(t.requeuedFromTrialId ?? t.id));
+}
+
+const TEACHING_KINDS: ReadonlySet<AbaTrialKind> = new Set(['teaching', 'correction', 'transfer']);
+
+/**
+ * Итог сессии по цели так, как его применил домен при записи (`finishSession`): срыв рвёт серию только сорвавшейся цели;
+ * конец по отказу, снятая и не предъявленная снова проба и ненадёжная цель снимают `meets` до `neutral`.
+ */
+function sessionOutcomeOf(target: AbaTarget, s: AbaSession, own: readonly AbaTrial[], mine: readonly AbaTrial[]) {
+  const raw = summarizeSession(target, [...mine], s.endReason === 'breakdown' && s.brokenTargetId === target.id ? 'breakdown' : null);
+  const unreliable = s.events.some((e) => e.kind === 'measurement' && e.targetId === target.id && e.action === 'unreliable');
+  const neutral = s.endReason === 'assent_withdrawn' || hasUnpresentedDrop(own, target.id) || unreliable;
+  return neutral && raw.outcome === 'meets' ? { ...raw, outcome: 'neutral' as const } : raw;
 }
 
 /**
@@ -862,7 +908,9 @@ export function specialistSummaries(o: {
       const target = targetOf(targetId);
       if (target && isRoutine(target)) continue;
       const mine = own.filter((t) => t.targetId === targetId);
-      const summary = target ? summarizeSession(target, mine, s.endReason) : null;
+      const baseline = mine.some((t) => t.kind === 'baseline') || s.events.some((e) => e.kind === 'phase' && e.targetId === targetId && e.reason === 'baseline');
+      const role = mine.some((t) => TEACHING_KINDS.has(t.kind)) ? 'teaching' : baseline ? 'baseline' : 'probe_only';
+      const summary = target && role === 'teaching' ? sessionOutcomeOf(target, s, own, mine) : null;
       if (summary) {
         counted.set(targetId, [...(counted.get(targetId) ?? []), { sessionIndex: s.index, trials: summary.trials, independent: Math.round(summary.independentRate * summary.trials) }]);
       }
@@ -873,7 +921,8 @@ export function specialistSummaries(o: {
         targetId,
         endReason: s.endReason,
         incomplete: s.endedAt === null,
-        unit: target ? (target.steps?.length ? 'runs' : 'trials') : null,
+        role,
+        unit: summary ? (target!.steps?.length ? 'runs' : 'trials') : null,
         trials: summary?.trials ?? null,
         independentRate: summary?.independentRate ?? null,
         outcome: summary?.outcome ?? null,
@@ -885,10 +934,16 @@ export function specialistSummaries(o: {
   }
 
   const targetIds = [...new Set([...trials.map((t) => t.targetId), ...Object.keys(o.targetStates)])].sort();
+  const indexOf = new Map(sessions.map((x) => [x.id, x.index]));
   const byTarget: TargetSummary[] = targetIds.map((targetId) => {
     const target = targetOf(targetId);
     const routine = target ? isRoutine(target) : false;
-    const mine = trials.filter((t) => t.targetId === targetId);
+    // порядок проб цели — по номеру сессии, затем по номеру пробы: `promptDelayMs.last` — из последней сессии
+    const mine = trials
+      .filter((t) => t.targetId === targetId)
+      .map((t, i) => ({ t, i }))
+      .sort((a, b) => (indexOf.get(a.t.sessionId) ?? Infinity) - (indexOf.get(b.t.sessionId) ?? Infinity) || a.t.index - b.t.index || a.i - b.i)
+      .map((x) => x.t);
     const phaseChanges: TargetSummary['phaseChanges'] = sessions.flatMap((s) =>
       s.events.flatMap((e) => (e.kind === 'phase' && e.targetId === targetId ? [{ sessionIndex: s.index, day: dayOf(s), from: e.from, to: e.to, reason: e.reason }] : [])),
     );

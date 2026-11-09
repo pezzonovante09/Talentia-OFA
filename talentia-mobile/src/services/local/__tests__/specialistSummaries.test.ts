@@ -15,6 +15,7 @@ import type { AbaSessionResult, AbaSessionState } from '../../../domain/abaSessi
 import { initialTokenTraining, type TokenTrainingState } from '../../../domain/abaTokenTraining';
 import type { ConsentEvent } from '../../../domain/consent';
 import { ABA_TARGETS } from '../../../content/aba';
+import { leaksTime } from '../../../domain/ids';
 import { MASTERY, type AbaSession, type AbaTarget, type AbaTargetState, type AbaTrial } from '../../../types/aba';
 import { abaIdGuard, appendTrialCorrection } from '../abaLog';
 import { saveChildState } from '../childState';
@@ -85,6 +86,8 @@ const TRIALS: AbaTrial[] = [
   tr('tr-10', { kind: 'transfer', response: 'no_response', promptLevelUsed: 4, emittedBeforePrompt: false, latencyMs: null, latencySource: null, tokens: 0 }),
   tr('tr-11', { response: 'interrupted', latencyMs: null, latencySource: null, tokens: 0, interruptedBy: 'child_break' }),
   tr('tr-12', { response: 'prompted', promptLevelUsed: 1, emittedBeforePrompt: false, adultUnplannedPrompt: true, tokens: 0 }),
+  // старт L1: попытка до подсказки невозможна по построению — вне знаменателя `emittedBeforePromptRate`
+  tr('tr-13', { response: 'prompted', startPromptLevel: 1, promptLevelUsed: 1, emittedBeforePrompt: false, promptDelayMs: null, tokens: 1 }),
   // исправленная отметка: исходная «неверно» и замена «сам» — считается только замена
   tr('tr-orig', { response: 'incorrect', emittedBeforePrompt: true, latencyMs: 300, tokens: 0 }),
   tr('tr-orig~c1', { latencyMs: 650, promptDelayMs: 3500 }),
@@ -131,19 +134,19 @@ describe('specialistSummaries: сессия × цель', () => {
   it('одна строка на пару сессия × цель; критерий — весь MASTERY', () => {
     expect(out.bySession).toHaveLength(1);
     expect(out.criterion).toEqual(MASTERY);
-    expect(s).toMatchObject({ sessionId: SESSION_ID, sessionIndex: 3, day: '2026-10-11', targetId: TARGET.id, endReason: 'completed', incomplete: false, unit: 'trials' });
+    expect(s).toMatchObject({ sessionId: SESSION_ID, sessionIndex: 3, day: '2026-10-11', targetId: TARGET.id, endReason: 'completed', incomplete: false, role: 'teaching', unit: 'trials' });
     expect(s.catalogMissing).toBeUndefined();
   });
 
-  it('зачёт критерия как в домене: 8 проб (обучение, не прерванные, источник с правом; исходная исправленной — нет), 5 самостоятельных, серия рвётся', () => {
-    expect([s.trials, s.independentRate, s.outcome, s.counted]).toEqual([8, 0.625, 'breaks', true]);
+  it('зачёт критерия как в домене: 9 проб (обучение, не прерванные, источник с правом; исходная исправленной — нет), 5 самостоятельных, серия рвётся', () => {
+    expect([s.trials, s.independentRate, s.outcome, s.counted]).toEqual([9, 5 / 9, 'breaks', true]);
   });
 
-  it('популяция затухания — обучение и перенос без прерванных и без подсказки вне процедуры: 10 проб, уровни и классы', () => {
-    expect(s.fadeTrials).toBe(10);
-    expect(s.byStartLevel).toEqual({ 0: 10, 1: 0, 2: 0, 3: 0, 4: 0 });
-    expect(s.byUsedLevel).toEqual({ 0: 7, 1: 1, 2: 0, 3: 1, 4: 1 });
-    expect(s.fade).toEqual({ at_start: 6, waited: 1, above: 3, approximation: 0 });
+  it('популяция затухания — обучение и перенос без прерванных и без подсказки вне процедуры: 11 проб, уровни и классы', () => {
+    expect(s.fadeTrials).toBe(11);
+    expect(s.byStartLevel).toEqual({ 0: 10, 1: 1, 2: 0, 3: 0, 4: 0 });
+    expect(s.byUsedLevel).toEqual({ 0: 7, 1: 2, 2: 0, 3: 1, 4: 1 });
+    expect(s.fade).toEqual({ at_start: 7, waited: 1, above: 3, approximation: 0 });
   });
 
   it('медиана латентности L0 — только самостоятельные ответы обучения: 5 проб, медиана 700, источники', () => {
@@ -157,19 +160,74 @@ describe('specialistSummaries: сессия × цель', () => {
   });
 
   it('по виду и по источнику оценки — все не прерванные пробы; коррекции, подсказки вне процедуры и прерванные — отдельно', () => {
-    expect(s.byKind).toEqual({ teaching: { trials: 8, independent: 5 }, correction: { trials: 1, independent: 0 }, transfer: { trials: 3, independent: 1 } });
-    expect(s.byScoredBy).toEqual({ adult: 11, device_tap: 1 });
+    expect(s.byKind).toEqual({ teaching: { trials: 9, independent: 5 }, correction: { trials: 1, independent: 0 }, transfer: { trials: 3, independent: 1 } });
+    expect(s.byScoredBy).toEqual({ adult: 12, device_tap: 1 });
+    expect(s.adultScoredRate).toBe(12 / 13);
     expect([s.corrections, s.adultUnplannedPrompts, s.interrupted]).toEqual([1, 1, 1]);
   });
 
-  it('задержка до подсказки — история по пробам со старта L0; попытка до подсказки — доля среди несамостоятельных проб затухания', () => {
+  it('задержка до подсказки — история по пробам со старта L0; попытка до подсказки — доля среди несамостоятельных обучающих проб со старта L0 (перенос и старт L1 — вне)', () => {
     expect(s.promptDelayMs).toEqual({ min: 3000, max: 4000, last: 3500 });
-    expect(s.emittedBeforePromptRate).toBe(0.25);
+    // tr-5 (дождался, без попытки) и tr-6 (ошибка после попытки): 1 из 2
+    expect(s.emittedBeforePromptRate).toBe(0.5);
   });
 
   it('исправленная отметка: исходная проба не считается нигде — без неё медиана и зачёт другие', () => {
     const raw = specialistSummaries({ sessions: [SESSION], trials: TRIALS, correctedTrialIds: new Set(), targetStates: {} }).bySession[0];
-    expect([raw.trials, raw.independentRate, raw.fadeTrials, raw.fade.above]).toEqual([9, 5 / 9, 11, 4]);
+    expect([raw.trials, raw.independentRate, raw.fadeTrials, raw.fade.above]).toEqual([10, 0.5, 12, 4]);
+  });
+});
+
+describe('specialistSummaries: итог сессии как в домене при записи (finishSession)', () => {
+  const OTHER = ABA_TARGETS.find((t) => t.id === 'match-same-3')!;
+  /** 4 самостоятельных и ошибка: ровно 80 % при минимуме 5 — `meets`, если его ничто не снимает. */
+  const fourOfFive = (sessionId = SESSION_ID, targetId = TARGET.id) => [
+    ...[1, 2, 3, 4].map((i) => tr(`f-${i}`, { sessionId, targetId })),
+    tr('f-5', { sessionId, targetId, response: 'incorrect', emittedBeforePrompt: true, latencyMs: 400, tokens: 0 }),
+  ];
+  const summaryOf = (session: AbaSession, trials: AbaTrial[], targetId = TARGET.id) =>
+    specialistSummaries({ sessions: [session], trials, correctedTrialIds: new Set(), targetStates: {} }).bySession.find((x) => x.targetId === targetId)!;
+
+  it('срыв рвёт серию только сорвавшейся цели: вторая цель сессии с 4/5 — meets', () => {
+    const session: AbaSession = { ...SESSION, targetIds: [TARGET.id, OTHER.id], endReason: 'breakdown', brokenTargetId: OTHER.id, events: [] };
+    const broken = [1, 2, 3].map((i) => tr(`b-${i}`, { targetId: OTHER.id, response: 'no_response', promptLevelUsed: 4, emittedBeforePrompt: false, latencyMs: null, latencySource: null, tokens: 0 }));
+    const trials = [...fourOfFive(), ...broken];
+    expect(summaryOf(session, trials).outcome).toBe('meets');
+    expect(summaryOf(session, trials, OTHER.id)).toMatchObject({ outcome: 'breaks', trials: 3 });
+  });
+
+  it('конец по отказу ребёнка снимает meets до neutral; breaks остаётся breaks', () => {
+    const withdrawn: AbaSession = { ...SESSION, endReason: 'assent_withdrawn', events: [] };
+    expect(summaryOf(withdrawn, fourOfFive())).toMatchObject({ outcome: 'neutral', counted: true, independentRate: 0.8 });
+    const bad = fourOfFive().map((t, i) => (i < 3 ? { ...t, response: 'incorrect' as const, latencyMs: 400, tokens: 0 as const } : t));
+    expect(summaryOf(withdrawn, bad).outcome).toBe('breaks');
+  });
+
+  it('снятая и не предъявленная снова проба цели — neutral; предъявленная повтором — meets', () => {
+    const plain: AbaSession = { ...SESSION, events: [] };
+    const dropped = tr('f-drop', { response: 'interrupted', interruptedBy: 'child_break', latencyMs: null, latencySource: null, tokens: 0 });
+    expect(summaryOf(plain, [...fourOfFive(), dropped]).outcome).toBe('neutral');
+    const requeued = tr('f-again', { requeuedFromTrialId: 'f-drop' });
+    expect(summaryOf(plain, [...fourOfFive(), dropped, requeued]).outcome).toBe('meets');
+  });
+
+  it('цель, отмеченная ненадёжной в этой сессии (measurement: unreliable), — neutral', () => {
+    const unreliable: AbaSession = { ...SESSION, events: [{ kind: 'measurement', at: at(2000), targetId: TARGET.id, action: 'unreliable' }] };
+    expect(summaryOf(unreliable, fourOfFive()).outcome).toBe('neutral');
+  });
+
+  it('роль сессии для цели: только пробы поддержания — probe_only без счёта критерия; базовая линия — baseline; цель с пробами обучения — teaching', () => {
+    const plain: AbaSession = { ...SESSION, events: [] };
+    const probe = summaryOf(plain, [tr('m-1', { kind: 'maintenance', promptDelayMs: null }), tr('m-2', { kind: 'high_p', promptDelayMs: null })]);
+    expect(probe).toMatchObject({ role: 'probe_only', unit: null, trials: null, independentRate: null, outcome: null, counted: null, fadeTrials: 0 });
+    expect(probe.byKind).toEqual({ maintenance: { trials: 1, independent: 1 }, high_p: { trials: 1, independent: 1 } });
+    const baseline = summaryOf(plain, [tr('bl-1', { kind: 'baseline', promptDelayMs: null })]);
+    expect(baseline).toMatchObject({ role: 'baseline', trials: null });
+    const byEvent = summaryOf({ ...SESSION, events: [{ kind: 'phase', at: at(1000), targetId: TARGET.id, from: 'baseline', to: 'acquisition', reason: 'baseline' }] }, [tr('bl-2', { kind: 'high_p', promptDelayMs: null })]);
+    expect(byEvent.role).toBe('baseline');
+    // в объединённую долю цели сессии без обучения не идут
+    const r = specialistSummaries({ sessions: [plain], trials: [tr('m-3', { kind: 'maintenance', promptDelayMs: null })], correctedTrialIds: new Set(), targetStates: {} });
+    expect(r.byTarget[0].pooledIndependentRate).toBeNull();
   });
 });
 
@@ -182,7 +240,7 @@ describe('specialistSummaries: цель', () => {
   });
 
   it('объединённая доля — по зачётным пробам с последнего входа в обучение', () => {
-    expect([t.sessions, t.pooledIndependentRate, t.pooledFromSessionIndex]).toEqual([1, 0.625, 3]);
+    expect([t.sessions, t.pooledIndependentRate, t.pooledFromSessionIndex]).toEqual([1, 5 / 9, 3]);
   });
 
   it('состояние: фаза, пробелы критерия домена, серия, подтверждённые сессии, дни, зачётные переносы, флаги, уровень и задержка', () => {
@@ -203,7 +261,7 @@ describe('specialistSummaries: цель', () => {
   });
 
   it('распределения на цель — по всем её пробам файла', () => {
-    expect([t.fadeTrials, t.fade, t.l0Latency?.medianMs]).toEqual([10, { at_start: 6, waited: 1, above: 3, approximation: 0 }, 700]);
+    expect([t.fadeTrials, t.fade, t.l0Latency?.medianMs]).toEqual([11, { at_start: 7, waited: 1, above: 3, approximation: 0 }, 700]);
   });
 
   it('цель есть в состоянии, но проб нет — строка с нулями и состоянием; состояния нет — state null', () => {
@@ -308,9 +366,9 @@ describe('exportForSpecialist: сводки в файле', () => {
     const out = await exported();
     expect(out.summaries.criterion).toEqual(MASTERY);
     expect(out.summaries.bySession).toHaveLength(1);
-    expect(out.summaries.bySession[0]).toMatchObject({ sessionIndex: 3, day: '2026-10-11', trials: 8, independentRate: 0.625, outcome: 'breaks', fadeTrials: 10 });
+    expect(out.summaries.bySession[0]).toMatchObject({ sessionIndex: 3, day: '2026-10-11', role: 'teaching', trials: 9, independentRate: 5 / 9, outcome: 'breaks', fadeTrials: 11 });
     expect(out.summaries.bySession[0].l0Latency).toEqual({ medianMs: 700, n: 5, bySource: { adult_press: 4, device_tap: 1 } });
-    expect(out.summaries.byTarget[0]).toMatchObject({ targetId: TARGET.id, pooledIndependentRate: 0.625, phaseChanges: [expect.objectContaining({ sessionIndex: 3, to: 'acquisition' })] });
+    expect(out.summaries.byTarget[0]).toMatchObject({ targetId: TARGET.id, pooledIndependentRate: 5 / 9, phaseChanges: [expect.objectContaining({ sessionIndex: 3, to: 'acquisition' })] });
     expect(out.summaries.byTarget[0].state?.criterionGaps).toEqual(['sessions', 'distinct_days', 'exemplars', 'generalization']);
   });
 
@@ -330,20 +388,40 @@ describe('exportForSpecialist: сводки в файле', () => {
     expect(numbers((await exported()).summaries).filter((n) => Math.abs(n) > 1e6)).toEqual([]);
   });
 
-  it('в сводках нет полей с именами, childId и id наблюдателей — только явные поля', async () => {
-    const out = await exported();
-    const keys = new Set<string>();
-    const walk = (v: unknown) => {
-      if (Array.isArray(v)) v.forEach(walk);
-      else if (v && typeof v === 'object') {
-        for (const [k, x] of Object.entries(v)) {
-          keys.add(k);
-          walk(x);
-        }
+  /** Все ключи и все строковые значения внутри значения. */
+  function keysAndStrings(v: unknown, keys = new Set<string>(), strings: string[] = []): { keys: Set<string>; strings: string[] } {
+    if (typeof v === 'string') strings.push(v);
+    else if (Array.isArray(v)) v.forEach((x) => keysAndStrings(x, keys, strings));
+    else if (v && typeof v === 'object') {
+      for (const [k, x] of Object.entries(v)) {
+        keys.add(k);
+        keysAndStrings(x, keys, strings);
       }
-    };
-    walk(out.summaries);
+    }
+    return { keys, strings };
+  }
+
+  it('в сводках нет полей с именами, childId и id наблюдателей — только явные поля; ключей времени нет; id — только sessionId и targetId', async () => {
+    const out = await exported();
+    const { keys } = keysAndStrings(out.summaries);
     expect([...keys].filter((k) => /name|child|observer|deviceId|account/i.test(k))).toEqual([]);
+    // смещение `at` события в сводки не попадает даже числом: порядок событий внутри сессии — не данные сводки
+    expect([...keys].filter((k) => /^at$|At$|time|date/i.test(k))).toEqual([]);
+    expect([...keys].filter((k) => /Id$/.test(k) && !['sessionId', 'targetId'].includes(k))).toEqual([]);
     expect(JSON.stringify(out.summaries)).not.toContain('kid');
+  });
+
+  it('ни одна строка и ни один ключ сводок (в том числе ключи byStep) не читают время (leaksTime)', async () => {
+    const { keys, strings } = keysAndStrings((await exported()).summaries);
+    expect([...keys].filter(leaksTime)).toEqual([]);
+    // дни `YYYY-MM-DD` — согласованные данные файла (№96); всё остальное, что читает время, — утечка
+    expect(strings.filter((x) => leaksTime(x) && !/^\d{4}-\d{2}-\d{2}$/.test(x))).toEqual([]);
+  });
+
+  it('сессия без поля day (старая запись): день сводки — тот же, что у записи сессии, формата YYYY-MM-DD', async () => {
+    const out = specialistSummaries({ sessions: [{ ...SESSION, day: undefined }], trials: TRIALS, correctedTrialIds: CORRECTED, targetStates: {} });
+    expect(out.bySession[0].day).toBe(START.slice(0, 10));
+    expect(out.bySession[0].day).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(out.byTarget[0].phaseChanges[0].day).toBe(START.slice(0, 10));
   });
 });
