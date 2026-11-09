@@ -11,7 +11,8 @@ import { atlasPage, palettes } from '../../src/design/tokens';
 import { applyLessonEvent, lessonStepOf, type LessonAnswer } from '../../src/domain/lessonSession';
 import { LessonConsentRequiredError } from '../../src/services/local/accountConsent';
 import { voice } from '../../src/services/voice';
-import type { ProgressPort } from '../../src/services/progressPort';
+import { newProfile } from '../../src/services/local/profiles';
+import { EMPTY_PROGRESS, type ProgressPort } from '../../src/services/progressPort';
 import { useChildSession } from '../../src/state/childSession';
 import { setProgressPort } from '../../src/state/port';
 import { act, fireEvent, renderWithProviders, screen, waitFor } from '../../src/test/render';
@@ -62,10 +63,11 @@ function correctAnswer(task: Task): LessonAnswer {
   }
 }
 
-/** Открыть урок и пройти его до фазы `done` прямо в сторе. */
-function finishInStore() {
+/** Открыть урок и пройти его до фазы `done` прямо в сторе. Пишущий порт вызывается только с аккаунтом (вопрос 84). */
+function finishInStore(mode: 'account' | 'no_record' = 'account') {
   const s = useChildSession.getState();
-  s.startNoRecordSession({ childId: KID, now: NOW, interfaceLang: 'ru' });
+  if (mode === 'no_record') s.startNoRecordSession({ childId: KID, now: NOW, interfaceLang: 'ru' });
+  else s.startAccountSession({ profile: newProfile({ childId: KID, band: '5-6', interfaceLang: 'ru', createdAt: NOW.toISOString() }), snapshot: { ...EMPTY_PROGRESS }, now: NOW });
   let state = s.openLesson({ lessonId: lesson.id, now: NOW, seed: 5, nodeState: 'open' });
   state = applyLessonEvent(state, { type: 'hook_done', at: at(1) });
   let sec = 2;
@@ -100,13 +102,13 @@ beforeEach(() => {
 });
 
 describe('страница атласа', () => {
-  it('без записи: порт вызван один раз, итог в памяти; в рамке — кучка первого задания с метками; печать после stampAfterMs, Tali write → cheer', async () => {
-    const commit = jest.fn(() => Promise.reject(new LessonConsentRequiredError('not_asked')));
+  it('без записи: пишущий порт не тронут, итог в памяти; в рамке — кучка первого задания с метками; печать после stampAfterMs, Tali write → cheer', async () => {
+    const commit = jest.fn(() => Promise.resolve());
     setProgressPort(port(commit));
-    finishInStore();
+    finishInStore('no_record');
     await renderWithProviders(<AtlasScreen />);
     await waitFor(() => expect(screen.getByTestId('atlas-screen')).toBeTruthy());
-    expect(commit).toHaveBeenCalledTimes(1);
+    expect(commit).not.toHaveBeenCalled();
     const s = useChildSession.getState();
     expect(s.activeLesson).toBeNull();
     expect(s.progress.atlas.map((e) => e.lessonId)).toEqual([lesson.id]);
@@ -132,6 +134,17 @@ describe('страница атласа', () => {
     expect(screen.getAllByTestId(/^atlas-slot-\d$/)).toHaveLength(3);
     expect(screen.getByTestId('atlas-trail')).toBeTruthy();
     expect(screen.queryByTestId('atlas-tail-cushion')).toBeNull();
+  });
+
+  it('аккаунт без согласия: порт отвечает LessonConsentRequiredError один раз, страница та же, итог в памяти', async () => {
+    const commit = jest.fn(() => Promise.reject(new LessonConsentRequiredError('not_asked')));
+    setProgressPort(port(commit));
+    finishInStore();
+    await renderWithProviders(<AtlasScreen />);
+    await waitFor(() => expect(screen.getByTestId('atlas-screen')).toBeTruthy());
+    expect(commit).toHaveBeenCalledTimes(1);
+    expect(useChildSession.getState().progress.atlas.map((e) => e.lessonId)).toEqual([lesson.id]);
+    expect(screen.getByTestId('atlas-entry').props.children).toBeTruthy();
   });
 
   it('с записью: порт записал, страница та же; слот ленты, хвост и «К карте» отвечают', async () => {

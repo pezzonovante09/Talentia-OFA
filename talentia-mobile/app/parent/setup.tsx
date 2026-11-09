@@ -2,6 +2,11 @@
  * Первая настройка (дизайн-док §2): порог намерения → PIN → повтор → согласие `account_local`.
  * Аккаунт и база создаются на шаге 3 (PIN принят), согласие пишется на шаге 4; закрытие до него —
  * `abandonSetup`, на устройстве ничего не остаётся. После согласия — профиль ребёнка.
+ *
+ * Сеанс «Попробовать без сохранения» кончается вместе с согласием (вопрос 84): с этого момента порт пишет в
+ * базу, а у случайного `childId` этого сеанса нет профиля — уроки легли бы мимо отчёта и `delete_child`.
+ * Сброс здесь, а не на создании профиля: системное «назад» с экрана профиля возвращает на карту тоже. Карта
+ * без сеанса уводит на первый запуск, там ребёнок выбирает карточку профиля.
  */
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -14,6 +19,7 @@ import type { InterfaceLang } from '../../src/domain/regionVisibility';
 import { accountLocalTextVersion } from '../../src/services/local/account';
 import { sha256 } from '../../src/services/digest';
 import { useAccount } from '../../src/state/account';
+import { useChildSession } from '../../src/state/childSession';
 import { useGate } from '../../src/state/gate';
 import { PinPad } from '../../src/ui/parent/PinPad';
 import { Card, Field, Keypad, ParentButton, ParentScreen, ParentText } from '../../src/ui/parent/primitives';
@@ -156,6 +162,8 @@ export default function SetupScreen() {
                 setBusy(true);
                 try {
                   await account.grantConsent(lang);
+                  const session = useChildSession.getState();
+                  if (session.mode === 'no_record') session.reset();
                   router.replace('/parent/profile/new');
                 } catch (e) {
                   if (__DEV__) console.warn('consent', e);

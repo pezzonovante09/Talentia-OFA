@@ -1,14 +1,16 @@
 /**
  * Сеанс ребёнка в памяти (режим без записи). Проверяется то, что увидит карта и атлас: порция,
  * узлы, продолжение брошенного урока, применение итога после `LessonConsentRequiredError`, запрет
- * применять память при чужой ошибке порта, накопление `formatsSeen` между уроками.
+ * применять память при чужой ошибке порта, накопление `formatsSeen` между уроками. Пишущий порт — только в
+ * сеансе с аккаунтом: сеанс без записи его не вызывает (вопрос 84).
  */
 import { regionLessons, regionMapLessons } from '../../content';
 import { applyLessonEvent, lessonStepOf, type LessonAnswer, type LessonSessionState } from '../../domain/lessonSession';
 import { mapNodes } from '../../domain/mapProgress';
 import { emptySkill, type SkillState } from '../../domain/mastery';
 import { LessonStaleError } from '../../services/local/commit';
-import { noRecordPort, type ProgressPort } from '../../services/progressPort';
+import { newProfile } from '../../services/local/profiles';
+import { EMPTY_PROGRESS, noRecordPort, type ProgressPort } from '../../services/progressPort';
 import type { Task } from '../../types/task';
 import { completedLessons, startedLessons, useChildSession } from '../childSession';
 
@@ -66,6 +68,14 @@ beforeEach(() => {
   useChildSession.getState().startNoRecordSession({ childId: KID, now: NOW, interfaceLang: 'ru' });
 });
 
+/** Сеанс с аккаунтом того же ребёнка: порт пишет только в нём (вопрос 84). */
+const startAccount = () =>
+  useChildSession.getState().startAccountSession({
+    profile: newProfile({ childId: KID, band: '5-6', interfaceLang: 'ru', createdAt: NOW.toISOString() }),
+    snapshot: { ...EMPTY_PROGRESS },
+    now: NOW,
+  });
+
 describe('старт без записи', () => {
   it('порция — потолок полосы 5–6 (3), на карте открыт первый урок, остальные впереди', () => {
     const s = useChildSession.getState();
@@ -122,7 +132,24 @@ describe('finishLesson', () => {
     expect(nodes()).toEqual(['done', 'open', 'ahead', 'ahead', 'ahead', 'ahead']);
   });
 
-  it('порт записал → persisted; повтор пройденного урока порцию не тратит', async () => {
+  /**
+   * Вопрос 84: взрослый завёл аккаунт, пока ребёнок играл без записи, — глобальный порт уже пишет в базу, а
+   * случайного `childId` сеанса нет ни в одном профиле. Сеанс без записи порт не трогает.
+   */
+  it('без записи: пишущий порт не вызывается, итог только в памяти (session_only)', async () => {
+    const commit = jest.fn<Promise<void>, Parameters<ProgressPort['commit']>>(() => Promise.resolve());
+    const port: ProgressPort = { load: noRecordPort.load, commit };
+    useChildSession.getState().openLesson({ lessonId: lessons[0].id, now: NOW, seed: 7, nodeState: 'open' });
+    playThrough();
+    await expect(useChildSession.getState().finishLesson({ port, runId: KID, at: at(100) })).resolves.toBe('session_only');
+    expect(commit).not.toHaveBeenCalled();
+    const s = useChildSession.getState();
+    expect(s.progress.atlas.map((e) => e.lessonId)).toEqual([lessons[0].id]);
+    expect(s.portion.left).toBe(2);
+  });
+
+  it('с аккаунтом: порт записал → persisted; повтор пройденного урока порцию не тратит', async () => {
+    startAccount();
     const commit = jest.fn<Promise<void>, Parameters<ProgressPort['commit']>>(() => Promise.resolve());
     const port: ProgressPort = { load: noRecordPort.load, commit };
     useChildSession.getState().openLesson({ lessonId: lessons[0].id, now: NOW, seed: 7, nodeState: 'open' });
@@ -139,6 +166,7 @@ describe('finishLesson', () => {
   });
 
   it('чужая ошибка порта (LessonStaleError) пробрасывается, память не меняется', async () => {
+    startAccount();
     const port: ProgressPort = { load: noRecordPort.load, commit: () => Promise.reject(new LessonStaleError(1, 1)) };
     useChildSession.getState().openLesson({ lessonId: lessons[0].id, now: NOW, seed: 7, nodeState: 'open' });
     playThrough();
@@ -276,6 +304,7 @@ describe('сессия повторения с узла карты (вопрос
   });
 
   it('finishLesson после повторения с портом: commit получает run review и счётчик +1, порция не тратится и при persisted', async () => {
+    startAccount();
     afterLesson(0);
     const commit = jest.fn<Promise<void>, Parameters<ProgressPort['commit']>>(() => Promise.resolve());
     const port: ProgressPort = { load: noRecordPort.load, commit };

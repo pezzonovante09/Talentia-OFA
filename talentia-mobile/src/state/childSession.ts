@@ -6,6 +6,8 @@
  * **после** ответа порта прогресса — `commitLesson` без согласия отвечает
  * `LessonConsentRequiredError`, и это «сессия без записи», а не сбой. С аккаунтом (`account_local`,
  * этап 10) тот же стор получает `sqlitePort(db)` и снимок прогресса с устройства; экраны не меняются.
+ * Сеанс без записи не пишет никогда, какой бы порт ни стоял (вопрос 84): взрослый может завести аккаунт,
+ * пока сеанс открыт, и у его случайного `childId` нет профиля — запись легла бы мимо отчёта и `delete_child`.
  *
  * Полоса меняется только взрослым (№142) — у стора нет действия для ребёнка. Настройки
  * calm / focus / звук — здесь же, пока родительский раздел не хранит их на устройстве.
@@ -29,7 +31,7 @@ import { accruePortion, afterCompletion, gameDay, NEW_PORTION, type NodeState, t
 import type { InterfaceLang } from '../domain/regionVisibility';
 import { LessonConsentRequiredError } from '../services/local/accountConsent';
 import type { ChildProfile } from '../services/local/profiles';
-import { EMPTY_PROGRESS, type ProgressPort, type ProgressSnapshot } from '../services/progressPort';
+import { EMPTY_PROGRESS, noRecordPort, type ProgressPort, type ProgressSnapshot } from '../services/progressPort';
 import type { AgeBand } from '../types/task';
 
 export type ChildSettings = {
@@ -74,7 +76,10 @@ export type ChildSessionState = {
   dispatch(event: LessonEvent): LessonSessionState;
   /** Ребёнок вышел из урока: урок остаётся ждать, память не меняется. */
   leaveLesson(): void;
-  /** Урок завершён: итог → порт → память. Чужие ошибки порта пробрасываются, память не трогается. */
+  /**
+   * Урок завершён: итог → порт → память. Чужие ошибки порта пробрасываются, память не трогается.
+   * В режиме без записи `port` не вызывается: итог идёт через `noRecordPort` (вопрос 84).
+   */
   finishLesson(input: { port: ProgressPort; runId: string; at: string }): Promise<FinishOutcome>;
   /** Сессию сменили с другого ребёнка ради занятия ABA: выход из занятия — к выбору профиля (`leaveAba`). */
   openedForAba: boolean;
@@ -215,8 +220,10 @@ export const useChildSession = create<ChildSessionState>((set, get) => ({
       result = lessonCommitOf(state, { lesson, skills: s.progress.skills, atlas: s.progress.atlas, runId });
     }
     let outcome: FinishOutcome = 'persisted';
+    // режим без записи пишет только в память, даже если глобальный порт уже `sqlitePort` (вопрос 84)
+    const target = s.mode === 'no_record' ? noRecordPort : port;
     try {
-      await port.commit(s.childId, { run: result.run, skills: result.skills, atlas: result.atlas, nextLessonNumber: result.nextLessonNumber, formatsSeen: state.formatsSeen }, at);
+      await target.commit(s.childId, { run: result.run, skills: result.skills, atlas: result.atlas, nextLessonNumber: result.nextLessonNumber, formatsSeen: state.formatsSeen }, at);
     } catch (e) {
       if (!(e instanceof LessonConsentRequiredError)) throw e;
       outcome = 'session_only';

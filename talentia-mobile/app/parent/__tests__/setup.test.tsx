@@ -6,6 +6,7 @@
 import SetupScreen from '../setup';
 import { parentPin } from '../../../src/design/parentTokens';
 import { useAccount, type AccountState } from '../../../src/state/account';
+import { useChildSession } from '../../../src/state/childSession';
 import { useGate } from '../../../src/state/gate';
 import { ParentThemeProvider } from '../../../src/ui/parent/theme';
 import { act, fireEvent, renderWithProviders, screen, waitFor } from '../../../src/test/render';
@@ -50,7 +51,18 @@ beforeEach(() => {
   jest.clearAllMocks();
   useGate.setState({ session: null });
   useAccount.setState({ status: 'none', accountId: null, db: null, profiles: [], consent: 'not_asked', createWithPin, grantConsent, abandonSetup });
+  useChildSession.getState().reset();
 });
+
+/** Пройти шаги 1–3 до экрана согласия. */
+async function toConsent() {
+  await render();
+  await passIntent();
+  await typePin('setup-pin', PIN);
+  await waitFor(() => onStep('repeat'));
+  await typePin('setup-repeat', PIN);
+  await waitFor(() => onStep('consent'));
+}
 
 describe('первая настройка', () => {
   it('шаг 1: порог намерения — задача, «Шаг 1 из 4», закрытие без аккаунта просто закрывает', async () => {
@@ -179,6 +191,35 @@ describe('первая настройка', () => {
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/parent/profile/new'));
     expect(grantConsent).toHaveBeenCalledWith('ru');
     expect(abandonSetup).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Вопрос 84: ребёнок играл «без сохранения», взрослый завёл аккаунт с карты. После согласия порт пишет в
+   * базу, а случайного `childId` этого сеанса нет ни в одном профиле — сеанс должен кончиться до выхода
+   * из раздела любым путём (создание профиля или системное «назад»).
+   */
+  it('согласие принято при сеансе без записи: сеанс сброшен, дальше — выбор профиля', async () => {
+    useChildSession.getState().startNoRecordSession({ childId: '00000000-0000-4000-8000-0000000000aa', now: new Date(), interfaceLang: 'ru' });
+    await toConsent();
+    expect(useChildSession.getState().mode).toBe('no_record');
+    await fireEvent.press(screen.getByTestId('consent-accept'));
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/parent/profile/new'));
+    expect(useChildSession.getState()).toMatchObject({ mode: 'none', childId: null, activeLesson: null });
+  });
+
+  it('согласие не записалось: сеанс без записи остаётся, ошибка на экране', async () => {
+    useChildSession.getState().startNoRecordSession({ childId: '00000000-0000-4000-8000-0000000000aa', now: new Date(), interfaceLang: 'ru' });
+    useAccount.setState({ grantConsent: jest.fn(async () => Promise.reject(new Error('внедрённый сбой записи'))) });
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      await toConsent();
+      await fireEvent.press(screen.getByTestId('consent-accept'));
+      await waitFor(() => expect(screen.getByTestId('consent-error')).toBeTruthy());
+      expect(router.replace).not.toHaveBeenCalled();
+      expect(useChildSession.getState()).toMatchObject({ mode: 'no_record', childId: '00000000-0000-4000-8000-0000000000aa' });
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it('ссылка на политику открывает /parent/policy, не сбрасывая шаг', async () => {
