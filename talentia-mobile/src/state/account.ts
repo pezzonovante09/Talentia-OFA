@@ -49,6 +49,13 @@ export type AccountState = {
   clear(): void;
 };
 
+/**
+ * Стирание брошенной настройки в полёте. Его могут позвать двое сразу — размонтирование настройки и слой
+ * раздела при полуаккаунте (вопрос 92); второе параллельное стирание оставило бы метку `WIPE_PENDING_KEY`,
+ * и следующий старт стёр бы аккаунт, заведённый уже после. Второй вызов получает тот же промис.
+ */
+let abandoning: Promise<void> | null = null;
+
 export const useAccount = create<AccountState>((set, get) => ({
   status: 'loading',
   accountId: null,
@@ -112,16 +119,25 @@ export const useAccount = create<AccountState>((set, get) => ({
     const { db, accountId } = get();
     if (!db || !accountId) throw new Error('Согласие без аккаунта');
     await grantAccountLocal(db, { accountId, lang, at: now.toISOString(), randomBytes });
-    set({ consent: await accountConsentStatus(db) });
+    const consent = await accountConsentStatus(db);
+    // аккаунт стёрт, пока писалось согласие (уход с настройки, вопрос 92): не возвращать `granted` в пустое состояние
+    if (get().db !== db) return;
+    set({ consent });
   },
 
-  async abandonSetup() {
-    const { db, accountId } = get();
-    if (db && accountId) {
-      await wipeAccountEverywhere({ db, device: device(), accountId, deleteDbFile: () => deleteLocalDb(accountId), deliverRevocations: async () => true });
-    }
-    setProgressPort(noRecordPort);
-    set({ status: 'none', accountId: null, db: null, profiles: [], consent: 'not_asked' });
+  abandonSetup() {
+    if (abandoning) return abandoning;
+    abandoning = (async () => {
+      const { db, accountId } = get();
+      if (db && accountId) {
+        await wipeAccountEverywhere({ db, device: device(), accountId, deleteDbFile: () => deleteLocalDb(accountId), deliverRevocations: async () => true });
+      }
+      setProgressPort(noRecordPort);
+      set({ status: 'none', accountId: null, db: null, profiles: [], consent: 'not_asked' });
+    })().finally(() => {
+      abandoning = null;
+    });
+    return abandoning;
   },
 
   async addProfile(p) {

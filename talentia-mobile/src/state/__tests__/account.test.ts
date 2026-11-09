@@ -204,6 +204,25 @@ describe('первая настройка', () => {
     expect(useAccount.getState().profiles).toEqual([]);
   });
 
+  /** Вопрос 92: стирание зовут сразу размонтирование настройки и слой раздела при полуаккаунте. */
+  it('два одновременных abandonSetup: одно стирание, метки прерванного удаления не остаётся; следующий вызов работает', async () => {
+    const id = await useAccount.getState().createWithPin(PIN, sha256, openEmpty);
+    const first = useAccount.getState().abandonSetup();
+    const second = useAccount.getState().abandonSetup();
+    expect(second).toBe(first);
+    await Promise.all([first, second]);
+    expect(mockDeleteLocalDb).toHaveBeenCalledTimes(1);
+    expect(mockDeleteLocalDb).toHaveBeenCalledWith(id);
+    expect(device.storage.size).toBe(0);
+    expect(device.secure.size).toBe(0);
+    expect(useAccount.getState().status).toBe('none');
+
+    await useAccount.getState().createWithPin(PIN, sha256, openEmpty);
+    await useAccount.getState().abandonSetup();
+    expect(mockDeleteLocalDb).toHaveBeenCalledTimes(2);
+    expect(device.storage.size + device.secure.size).toBe(0);
+  });
+
   it('abandonSetup без аккаунта: ничего не удаляет, состояние — none', async () => {
     await useAccount.getState().abandonSetup();
     expect(mockDeleteLocalDb).not.toHaveBeenCalled();

@@ -221,3 +221,56 @@ describe('с аккаунтом', () => {
     expect(screen.queryByTestId('parent-gate')).toBeNull();
   });
 });
+
+/**
+ * Вопрос 92: PIN придуман, согласия нет, первая настройка покинута (системное «назад»). Вне её экранов такой
+ * аккаунт стирается до гейта, как на старте, и раздел ведёт на первую настройку — ни главной, ни профиля, ни
+ * повторного согласия по ссылке.
+ */
+describe('полуаккаунт (вопрос 92)', () => {
+  const real = useAccount.getState().abandonSetup;
+  const abandonSetup = jest.fn(async () => {
+    useAccount.setState({ status: 'none', accountId: null, db: null, profiles: [], consent: 'not_asked' });
+  });
+
+  beforeEach(async () => {
+    const id = await createLocalAccount(device, PIN, { randomBytes, digest: sha256 });
+    useAccount.setState({ status: 'ready', accountId: id, profiles: [], consent: 'not_asked', abandonSetup });
+  });
+  afterEach(() => useAccount.setState({ abandonSetup: real }));
+
+  it.each(['/parent', '/parent/reconsent', '/parent/profile/new'])('%s: стирается без PIN, затем — первая настройка', async (path) => {
+    nav.pathname = path;
+    await render();
+    await waitFor(() => expect(screen.getByTestId('redirect').props.children).toBe('/parent/setup'));
+    expect(abandonSetup).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('parent-gate')).toBeNull();
+    expect(screen.queryByTestId('stack-content')).toBeNull();
+  });
+
+  it.each(['/parent/setup', '/parent/policy'])('%s: первая настройка идёт — не стирается', async (path) => {
+    nav.pathname = path;
+    await render();
+    expect(screen.getByTestId('stack-content')).toBeTruthy();
+    expect(abandonSetup).not.toHaveBeenCalled();
+  });
+
+  it('стирание не удалось: экран с «Закрыть», без гейта и экранов, повторно не стирает', async () => {
+    abandonSetup.mockImplementationOnce(async () => {
+      throw new Error('внедрённый сбой');
+    });
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      await render();
+      await waitFor(() => expect(abandonSetup).toHaveBeenCalledTimes(1));
+      expect(screen.getByTestId('parent-half-account')).toBeTruthy();
+      expect(screen.queryByTestId('parent-gate')).toBeNull();
+      expect(screen.queryByTestId('stack-content')).toBeNull();
+      await fireEvent.press(screen.getByTestId('half-account-close'));
+      expect(router.dismissAll).toHaveBeenCalled();
+      expect(abandonSetup).toHaveBeenCalledTimes(1);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+});

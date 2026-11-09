@@ -4,9 +4,12 @@
  * две минуты бездействия закрывают раздел; выход из раздела («Готово», создание профиля — размонтирование
  * группы) закрывает его тоже, иначе ребёнок с карты попадал бы внутрь в двухминутном окне. Без аккаунта
  * открыта только первая настройка; при устаревшем тексте согласия — только повторное согласие и удаление.
+ * Полуаккаунт (PIN придуман, согласия `account_local` нет, первая настройка покинута) вне её экранов
+ * стирается до гейта, как на старте (`boot`), и раздел ведёт на первую настройку (вопрос 92): данных ребёнка
+ * в нём нет, а без согласия ни профиль, ни повторное согласие по ссылке ему не положены.
  */
 import { Redirect, Stack, usePathname, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState, Platform, View } from 'react-native';
 
@@ -52,6 +55,22 @@ function Gate() {
   );
 }
 
+/** Полуаккаунт вне первой настройки: стереть один раз; «Закрыть» — если стирание не удалось. */
+function HalfAccount() {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const abandonSetup = useAccount((s) => s.abandonSetup);
+  const started = useRef(false);
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    abandonSetup().catch((e: unknown) => {
+      if (__DEV__) console.warn('half-account', e);
+    });
+  }, [abandonSetup]);
+  return <ParentScreen scroll={false} left={<ParentButton variant="quiet" label={t('parent.close')} onPress={() => router.dismissAll()} testID="half-account-close" block={false} />} testID="parent-half-account" />;
+}
+
 function Guarded() {
   const status = useAccount((s) => s.status);
   const consent = useAccount((s) => s.consent);
@@ -79,6 +98,7 @@ function Guarded() {
   }
   if (status === 'loading') return <View style={{ flex: 1 }} />;
   const setupRoute = OPEN_WITHOUT_ACCOUNT.includes(pathname);
+  if (status === 'ready' && consent === 'not_asked' && !setupRoute) return <HalfAccount />;
   if (status === 'none' && !setupRoute) return <Redirect href="/parent/setup" />;
   const unlocked = status === 'ready' && useGate.getState().unlocked();
   if (status === 'ready' && !unlocked && !setupRoute) return <Gate />;

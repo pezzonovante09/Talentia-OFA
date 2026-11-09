@@ -12,8 +12,10 @@ import { ParentThemeProvider } from '../../../src/ui/parent/theme';
 import { act, fireEvent, renderWithProviders, screen, waitFor } from '../../../src/test/render';
 
 jest.mock('expo-router', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn(), dismissAll: jest.fn() };
-  return { useRouter: () => router, Redirect: () => null, __router: router };
+  return { useRouter: () => router, Redirect: ({ href }: { href: string }) => React.createElement(Text, { testID: 'redirect' }, href), __router: router };
 });
 const router = (jest.requireMock('expo-router') as { __router: { replace: jest.Mock; push: jest.Mock; dismissAll: jest.Mock } }).__router;
 
@@ -56,12 +58,13 @@ beforeEach(() => {
 
 /** Пройти шаги 1–3 до экрана согласия. */
 async function toConsent() {
-  await render();
+  const view = await render();
   await passIntent();
   await typePin('setup-pin', PIN);
   await waitFor(() => onStep('repeat'));
   await typePin('setup-repeat', PIN);
   await waitFor(() => onStep('consent'));
+  return view;
 }
 
 describe('первая настройка', () => {
@@ -251,6 +254,112 @@ describe('первая настройка', () => {
     await waitFor(() => expect(abandonSetup).toHaveBeenCalledTimes(1));
     expect(router.dismissAll).toHaveBeenCalled();
     expect(grantConsent).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Вопрос 92: системное «назад» Android и браузера уводит с экрана без «Закрыть». Аккаунт с PIN и базой, но без
+   * согласия, оставался бы до следующего запуска, а раздел родителя с ним — тупик. Стирает размонтирование.
+   */
+  describe('уход без согласия (вопрос 92)', () => {
+    it('шаг согласия, уход без «Закрыть» (размонтирование): аккаунт стирается один раз', async () => {
+      const view = await toConsent();
+      expect(abandonSetup).not.toHaveBeenCalled();
+      await view.unmount();
+      await waitFor(() => expect(abandonSetup).toHaveBeenCalledTimes(1));
+      expect(router.dismissAll).not.toHaveBeenCalled();
+    });
+
+    it('после согласия размонтирование ничего не стирает', async () => {
+      const view = await toConsent();
+      await fireEvent.press(screen.getByTestId('consent-accept'));
+      await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/parent/profile/new'));
+      await view.unmount();
+      expect(abandonSetup).not.toHaveBeenCalled();
+    });
+
+    it('уход до создания аккаунта ничего не стирает', async () => {
+      const view = await render();
+      await passIntent();
+      onStep('pin');
+      await view.unmount();
+      expect(abandonSetup).not.toHaveBeenCalled();
+    });
+
+    it('«Закрыть» на шаге согласия и затем размонтирование: стирание одно', async () => {
+      useAccount.setState({
+        createWithPin: jest.fn(async () => {
+          useAccount.setState({ accountId: 'acc-1', status: 'ready' });
+          return 'acc-1';
+        }),
+      });
+      const view = await toConsent();
+      await fireEvent.press(screen.getByTestId('setup-close'));
+      await waitFor(() => expect(router.dismissAll).toHaveBeenCalled());
+      await view.unmount();
+      expect(abandonSetup).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      ['настоящий аккаунт', 'granted'],
+      ['полуаккаунт', 'not_asked'],
+    ] as const)('открыт поверх аккаунта (%s): сразу в раздел к гейту, ни шагов, ни стирания', async (_name, consent) => {
+      useAccount.setState({ status: 'ready', accountId: 'acc-real', consent });
+      const view = await render();
+      expect(screen.getByTestId('redirect').props.children).toBe('/parent');
+      expect(screen.queryByTestId('setup-step-intent')).toBeNull();
+      await view.unmount();
+      expect(abandonSetup).not.toHaveBeenCalled();
+      expect(createWithPin).not.toHaveBeenCalled();
+    });
+
+    it('«Закрыть» не смогло стереть: ошибка на экране, из раздела не выходит, размонтирование пробует ещё раз', async () => {
+      useAccount.setState({
+        createWithPin: jest.fn(async () => {
+          useAccount.setState({ accountId: 'acc-1', status: 'ready' });
+          return 'acc-1';
+        }),
+      });
+      abandonSetup.mockImplementationOnce(async () => Promise.reject(new Error('внедрённый сбой')));
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+      try {
+        const view = await toConsent();
+        await fireEvent.press(screen.getByTestId('setup-close'));
+        await waitFor(() => expect(screen.getByTestId('consent-error')).toBeTruthy());
+        expect(router.dismissAll).not.toHaveBeenCalled();
+        await view.unmount();
+        await waitFor(() => expect(abandonSetup).toHaveBeenCalledTimes(2));
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('ушли, пока писалось согласие: стирание одно, ни сброса сеанса, ни перехода к профилю', async () => {
+      let resolve: () => void = () => undefined;
+      useAccount.setState({ grantConsent: jest.fn(() => new Promise<void>((r) => (resolve = r))) });
+      useChildSession.getState().startNoRecordSession({ childId: '00000000-0000-4000-8000-0000000000aa', now: new Date(), interfaceLang: 'ru' });
+      const view = await toConsent();
+      await fireEvent.press(screen.getByTestId('consent-accept'));
+      await view.unmount();
+      await waitFor(() => expect(abandonSetup).toHaveBeenCalledTimes(1));
+      await act(async () => resolve());
+      expect(router.replace).not.toHaveBeenCalled();
+      expect(useChildSession.getState().mode).toBe('no_record');
+      expect(abandonSetup).toHaveBeenCalledTimes(1);
+    });
+
+    it('ушли, пока создавался аккаунт: он стирается сразу после создания', async () => {
+      let resolve: (id: string) => void = () => undefined;
+      useAccount.setState({ createWithPin: jest.fn(() => new Promise<string>((r) => (resolve = r))) });
+      const view = await render();
+      await passIntent();
+      await typePin('setup-pin', PIN);
+      await waitFor(() => onStep('repeat'));
+      await typePin('setup-repeat', PIN);
+      await view.unmount();
+      expect(abandonSetup).not.toHaveBeenCalled();
+      await act(async () => resolve('acc-1'));
+      await waitFor(() => expect(abandonSetup).toHaveBeenCalledTimes(1));
+    });
   });
 
   it('en: строки шагов переведены', async () => {

@@ -7,9 +7,15 @@
  * базу, а у случайного `childId` этого сеанса нет профиля — уроки легли бы мимо отчёта и `delete_child`.
  * Сброс здесь, а не на создании профиля: системное «назад» с экрана профиля возвращает на карту тоже. Карта
  * без сеанса уводит на первый запуск, там ребёнок выбирает карточку профиля.
+ *
+ * Уход с экрана без согласия любым путём — «Закрыть», системное «назад» Android и браузера — стирает аккаунт,
+ * созданный этим экраном (вопрос 92): иначе до следующего запуска остаётся полуаккаунт с PIN и базой, но без
+ * согласия, а раздел родителя с ним — тупик. Стирает размонтирование, поэтому `BackHandler` не нужен.
+ * Стирается только аккаунт этого экрана: открытый поверх существующего аккаунта (глубокая ссылка, адрес на web)
+ * экран сразу уводит в раздел, к гейту PIN, — иначе «Закрыть» или новый PIN стирали бы чужой аккаунт без PIN.
  */
-import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { Redirect, useRouter } from 'expo-router';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -28,6 +34,18 @@ type Step = 'intent' | 'pin' | 'repeat' | 'consent';
 const ORDER: Step[] = ['intent', 'pin', 'repeat', 'consent'];
 const PLAIN = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 
+/** Аккаунт создан этим экраном, согласия нет — стереть (вопрос 92). Повторный вызов ничего не делает. */
+function abandonIfPending(pending: { current: boolean }) {
+  if (!pending.current) return;
+  pending.current = false;
+  useAccount
+    .getState()
+    .abandonSetup()
+    .catch((e: unknown) => {
+      if (__DEV__) console.warn('setup', e);
+    });
+}
+
 export default function SetupScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
@@ -44,10 +62,32 @@ export default function SetupScreen() {
   const stepNo = ORDER.indexOf(step) + 1;
   const lang = i18n.language as InterfaceLang;
   const version = useMemo(() => accountLocalTextVersion(lang), [lang]);
+  /** Аккаунт создан на шаге 3, согласия ещё нет. */
+  const pending = useRef(false);
+  const mounted = useRef(true);
+  /** Экран открыт, когда аккаунт уже был: на монтировании, а не на каждом рендере — свой аккаунт появляется на шаге 3. */
+  const overExisting = useRef(account.status === 'ready');
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      abandonIfPending(pending);
+    };
+  }, []);
+
+  // настоящий аккаунт — к гейту PIN; полуаккаунт там же стирается (`app/parent/_layout.tsx`)
+  if (overExisting.current) return <Redirect href="/parent" />;
 
   const close = async () => {
-    if (account.accountId) await account.abandonSetup();
-    router.dismissAll();
+    try {
+      if (pending.current) await account.abandonSetup();
+      pending.current = false;
+      router.dismissAll();
+    } catch (e) {
+      if (__DEV__) console.warn('setup', e);
+      setFailure(t('parent.failed'));
+    }
   };
   const back = () => {
     if (step === 'pin') setStep('intent');
@@ -125,6 +165,12 @@ export default function SetupScreen() {
               setBusy(true);
               try {
                 await account.createWithPin(pin, sha256);
+                pending.current = true;
+                // ушли с экрана, пока создавался аккаунт: размонтирование уже прошло — стереть сейчас
+                if (!mounted.current) {
+                  abandonIfPending(pending);
+                  return { result: 'ok' };
+                }
                 openGate();
                 setStep('consent');
               } catch (e) {
@@ -162,6 +208,9 @@ export default function SetupScreen() {
                 setBusy(true);
                 try {
                   await account.grantConsent(lang);
+                  // ушли, пока писалось согласие: размонтирование уже стирает аккаунт — ни сброса, ни перехода
+                  if (!mounted.current) return;
+                  pending.current = false;
                   const session = useChildSession.getState();
                   if (session.mode === 'no_record') session.reset();
                   router.replace('/parent/profile/new');
