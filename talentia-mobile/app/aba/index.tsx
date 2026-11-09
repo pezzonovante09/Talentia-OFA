@@ -7,7 +7,7 @@
  * выросло — экран пропускает сам. Без конфигурации (пришли не через родителя) — к родителю.
  */
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -29,6 +29,8 @@ export default function AbaGateScreen() {
   const insets = useSafeAreaInsets();
   const config = useAbaRun((s) => s.config);
   const [size, setSize] = useState<{ height: number; width: number } | null>(null);
+  /** Уходим к урокам со сброшенным выбором: `config === null` в этот кадр — не повод для редиректа к родителю. */
+  const leaving = useRef(false);
 
   // тот же расчёт, что у экрана занятия: по высоте и ширине (№182), иначе узкое окно ходило бы между ними по кругу
   const tier = size === null ? 'pending' : tierForWindow({ ...size, insetBottom: insets.bottom });
@@ -38,7 +40,7 @@ export default function AbaGateScreen() {
     if (config !== null && tier !== 'pending' && tier !== null) router.replace(next);
   }, [config, tier, next, router]);
 
-  if (config === null) return <Redirect href="/parent/aba" />;
+  if (config === null) return leaving.current ? null : <Redirect href="/parent/aba" />;
 
   return (
     <View style={{ flex: 1, backgroundColor: c.background, paddingTop: insets.top, paddingBottom: insets.bottom }} testID="aba-config">
@@ -48,7 +50,20 @@ export default function AbaGateScreen() {
             <Text style={{ color: c.ink, fontSize: 20, fontWeight: '700' }}>{t('abaSession.tooSmallTitle')}</Text>
             <Text style={{ color: c.ink, fontSize: 16 }}>{t('abaSession.tooSmallBody')}</Text>
             <ParentThemeProvider>
-              <ParentButton height={abaWindowPolicy.belowMinButtonHeight} label={t('abaSession.regularLessons')} onPress={() => (useChildSession.getState().openedForAba ? leaveAba(router) : router.replace('/map'))} testID="aba-regular" />
+              <ParentButton
+                height={abaWindowPolicy.belowMinButtonHeight}
+                label={t('abaSession.regularLessons')}
+                onPress={() => {
+                  // конфигурацию и наблюдателей не оставлять: ссылка `/aba` открыла бы занятие без нового выбора взрослого
+                  // (контрольный аудит 2026-11-09, приватность п. 5); сначала уход, потом сброс — иначе кадр с
+                  // `config === null` увёл бы к родителю (`qa-engineer`)
+                  leaving.current = true;
+                  if (useChildSession.getState().openedForAba) leaveAba(router);
+                  else router.replace('/map');
+                  useAbaRun.getState().reset();
+                }}
+                testID="aba-regular"
+              />
               <ParentButton height={abaWindowPolicy.belowMinButtonHeight} variant="secondary" label={t('abaSession.back')} onPress={() => router.replace('/parent/aba')} testID="aba-too-small-back" />
             </ParentThemeProvider>
           </View>

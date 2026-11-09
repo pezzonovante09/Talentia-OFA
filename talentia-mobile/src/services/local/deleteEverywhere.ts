@@ -9,6 +9,7 @@
  * 3. вне базы: ключи AsyncStorage, кеш озвучки с его именем, файл экспорта, уведомления.
  */
 import {
+  accountKeyPrefix,
   ALL_KEYS_PREFIX,
   CHILD_VOICE_ROOT,
   childKeyPrefix,
@@ -20,13 +21,14 @@ import {
   DB_FILE,
   type DeviceStore,
   KNOWN_ACCOUNTS_PREFIX,
+  knownAccountKey,
   SECURE_ACCOUNTS_KEY,
   WIPE_PENDING_KEY,
 } from './device';
-import { CURRENT_ACCOUNT_KEY } from './account';
+import { CURRENT_ACCOUNT_KEY, forgetSecureAccount } from './account';
 import type { ConsentEvent } from '../../domain/consent';
 import { readConsentLog } from './consentLog';
-import { removeChildFromList } from './profiles';
+import { listChildIds, removeChildFromList } from './profiles';
 import { purgeChild, wipeDevice } from './purge';
 import type { SqlDb } from './sql';
 import { consentPlan, delivered, failedEvents, LOCAL_ONLY_SCOPES } from './sync';
@@ -139,6 +141,40 @@ export async function wipeAccountEverywhere(input: WipeAccountInput): Promise<Cl
     if (!resuming) throw e;
   }
   return ['sqlite', ...(await finishDeviceWipe(device, accountId))];
+}
+
+export type WipeOwnAccountInput = Pick<WipeAccountInput, 'db' | 'device' | 'accountId' | 'deleteDbFile'>;
+
+/**
+ * Стирание **одного** аккаунта — брошенной первой настройки (PIN придуман, согласия `account_local` нет;
+ * `useAccount.abandonSetup` и ветка `not_asked` в `boot`). Контрольный аудит 2026-11-09, Ж1: раньше сюда шёл
+ * `wipeAccountEverywhere`, а его `finishDeviceWipe` снимает базы **всех** аккаунтов устройства — после сбоя старта
+ * это стирало настоящий аккаунт со всеми журналами. По №148 зачистка всех — только у явного «Удалить аккаунт».
+ *
+ * Данных ребёнка в таком аккаунте нет (профили пишутся после согласия), сервера нет — отзывы не нужны. Порядок
+ * — строки, файл базы и спутники, PIN, реестры, и ключ `current` последним: сбой на любом шаге оставляет
+ * `current`, и следующий `boot` открывает пустую базу без согласия и стирает заново. Метка `WIPE_PENDING_KEY`
+ * не ставится: она означает зачистку всех.
+ */
+export async function wipeOwnAccount({ db, device, accountId, deleteDbFile }: WipeOwnAccountInput): Promise<CleanedPart[]> {
+  // дети этого аккаунта — до строк: их список лежит в AsyncStorage, а не в базе
+  const children = await listChildIds(device, accountId);
+  await wipeDevice(db);
+  await deleteDbFile();
+  const own = (await device.listDbFiles()).filter((f) => DB_FILE.exec(f)?.[1] === accountId);
+  await device.deleteDbFiles(own);
+  await device.removeSecure(secureKeys(accountId));
+  await forgetSecureAccount(device, accountId);
+  const keys = await device.keys();
+  const ownKeys = keys.filter((k) => k.startsWith(accountKeyPrefix(accountId)) || children.some((c) => k.startsWith(childKeyPrefix(c))));
+  await device.removeKeys([...ownKeys, knownAccountKey(accountId)]);
+  for (const c of children) {
+    await device.deleteCacheDir(childVoiceDir(c));
+    await device.cancelChildNotifications(c);
+  }
+  await device.deleteCacheDir(EXPORT_DIR);
+  if ((await device.getItem(CURRENT_ACCOUNT_KEY)) === accountId) await device.removeKeys([CURRENT_ACCOUNT_KEY]);
+  return ['sqlite', 'secure_store', 'async_storage', 'voice_cache', 'export_file', 'notifications'];
 }
 
 /**

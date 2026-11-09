@@ -61,6 +61,7 @@ const holdAt = (deviceNow: Date): Extract<RetentionOutcome, { kind: 'held' }> =>
   lastSeen: new Date(deviceNow.getTime() - 400 * DAY).toISOString(),
   wouldRemove: 1,
   abaGoalsChildren: 0,
+  driftDays: 400,
 });
 
 const renderHome = () => renderWithProviders(<ParentThemeProvider><ParentHome /></ParentThemeProvider>);

@@ -430,6 +430,11 @@
   },
   "parent": {
     "failed": "That did not work. Try again",
+    "bootError": {
+      "title": "Could not open the data",
+      "body": "There is an account on this device, but it could not be opened. Try again or restart the app. If that does not help, update the app to the latest version. Nothing is deleted; to remove everything from the device, uninstall the app.",
+      "retry": "Try again"
+    },
     "title": "For adults",
     "done": "Done",
     "back": "Back",
@@ -446,6 +451,7 @@
       "backspace": "Delete"
     },
     "setup": {
+      "accountExists": "This device already has an account. Close setup and sign in with the PIN.",
       "step": "Step {{n}} of {{total}}",
       "intentTitle": "Checking that you are an adult",
       "intentHint": "This is a threshold, not an age check",
@@ -563,6 +569,7 @@
       "homeBody": "The app has not been opened for a long time or the phone date changed. Old records are kept until you check the date.",
       "check": "Check the date",
       "body": "The phone now shows {{device}}; at the last launch it was {{last}}. If the date is right, records older than a year are deleted: {{n}}. They cannot be restored. If the date is wrong, fix it in the phone settings and nothing is deleted.",
+      "bodyDrift": "Over the last launches the phone date moved forward by {{days}} days more than usual between sessions. The phone now shows {{device}}. If the date is right, records older than a year are deleted: {{n}}. They cannot be restored. If the date is wrong, fix it in the phone settings and nothing is deleted.",
       "abaGoals": "ABA goals of children with no sessions for a year are deleted too: {{aba}}.",
       "confirm": "The date is right, delete old records",
       "confirmNothing": "The date is right, continue",

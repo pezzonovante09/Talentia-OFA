@@ -274,3 +274,97 @@ describe('полуаккаунт (вопрос 92)', () => {
     }
   });
 });
+
+/**
+ * Контрольный аудит 2026-11-09, Ж1: аккаунт есть, открыть не вышло (`status: 'error'`) — не первая настройка
+ * и не гейт, а экран «Повторить»; данные не трогаются. «Повторить» зовёт `boot`, успех — обычный путь через PIN.
+ */
+describe('сбой открытия аккаунта (Ж1)', () => {
+  const real = useAccount.getState().boot;
+  afterEach(() => useAccount.setState({ boot: real }));
+
+  it('status error: экран «Не удалось открыть данные» вместо гейта, редиректа и экранов', async () => {
+    useAccount.setState({ status: 'error' });
+    await render();
+    expect(screen.getByTestId('parent-boot-error')).toBeTruthy();
+    expect(screen.getByRole('header', { name: 'Не удалось открыть данные' })).toBeTruthy();
+    expect(screen.queryByTestId('parent-gate')).toBeNull();
+    expect(screen.queryByTestId('redirect')).toBeNull();
+    expect(screen.queryByTestId('stack-content')).toBeNull();
+  });
+
+  it.each(['/parent/setup', '/parent/done', '/parent/confirm/delete_account'])('status error: %s тоже не открыт', async (path) => {
+    useAccount.setState({ status: 'error' });
+    nav.pathname = path;
+    await render();
+    expect(screen.getByTestId('parent-boot-error')).toBeTruthy();
+    expect(screen.queryByTestId('stack-content')).toBeNull();
+  });
+
+  it('«Закрыть» выходит из раздела', async () => {
+    useAccount.setState({ status: 'error' });
+    await render();
+    await fireEvent.press(screen.getByTestId('boot-error-close'));
+    expect(router.dismissAll).toHaveBeenCalled();
+  });
+
+  it('«Повторить» зовёт boot; успех переводит в ready — дальше гейт с PIN', async () => {
+    const id = await createLocalAccount(device, PIN, { randomBytes, digest: sha256 });
+    const boot = jest.fn(async () => {
+      useAccount.setState({ status: 'ready', accountId: id, profiles: [], consent: 'granted' });
+    });
+    useAccount.setState({ status: 'error', boot });
+    await render();
+    await fireEvent.press(screen.getByTestId('boot-error-retry'));
+    expect(boot).toHaveBeenCalledTimes(1);
+    expect(useAccount.getState().status).toBe('ready');
+    await waitFor(() => expect(screen.getByTestId('parent-gate')).toBeTruthy());
+    expect(screen.queryByTestId('parent-boot-error')).toBeNull();
+    expect(screen.queryByTestId('stack-content')).toBeNull();
+  });
+
+  it('«Повторить» снова не удалось (boot бросил): остаётся error и экран «Повторить»', async () => {
+    const boot = jest.fn(async () => {
+      throw new Error('внедрённый сбой');
+    });
+    useAccount.setState({ status: 'error', boot });
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      await render();
+      await fireEvent.press(screen.getByTestId('boot-error-retry'));
+      await waitFor(() => expect(boot).toHaveBeenCalledTimes(1));
+      expect(useAccount.getState().status).toBe('error');
+      expect(screen.getByTestId('parent-boot-error')).toBeTruthy();
+      expect(screen.queryByTestId('redirect')).toBeNull();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+});
+
+/** Контрольный аудит 2026-11-09, приватность п. 8: при живом аккаунте «Удалено» и подтверждение удаления — за гейтом. */
+describe('маршруты без гейта при живом аккаунте', () => {
+  it.each(['/parent/confirm/delete_account', '/parent/done'])('%s при закрытом гейте → PinPad, а не экран', async (path) => {
+    await withAccount();
+    nav.pathname = path;
+    await render();
+    expect(screen.getByTestId('parent-gate')).toBeTruthy();
+    expect(screen.queryByTestId('stack-content')).toBeNull();
+  });
+
+  it.each(['/parent/setup', '/parent/policy'])('%s при закрытом гейте открыт', async (path) => {
+    await withAccount();
+    nav.pathname = path;
+    await render();
+    expect(screen.getByTestId('stack-content')).toBeTruthy();
+    expect(screen.queryByTestId('parent-gate')).toBeNull();
+  });
+
+  it.each(['/parent/done', '/parent/confirm/delete_account'])('без аккаунта (status none) %s открыт — удаление в полёте', async (path) => {
+    nav.pathname = path;
+    await render();
+    expect(screen.getByTestId('stack-content')).toBeTruthy();
+    expect(screen.queryByTestId('parent-gate')).toBeNull();
+    expect(screen.queryByTestId('redirect')).toBeNull();
+  });
+});

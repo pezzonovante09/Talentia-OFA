@@ -25,7 +25,7 @@ import {
 } from '../../domain/parentGate';
 import type { InterfaceLang } from '../../domain/regionVisibility';
 import { readConsentLog, appendConsentEvent } from './consentLog';
-import { ALL_KEYS_PREFIX, INSTALL_MARK_KEY, knownAccountKey, SECURE_ACCOUNTS_KEY, secureKeys, type DeviceStore } from './device';
+import { ALL_KEYS_PREFIX, DB_FILE, INSTALL_MARK_KEY, knownAccountKey, SECURE_ACCOUNTS_KEY, secureKeys, type DeviceStore } from './device';
 import type { SqlDb } from './sql';
 
 /** Ключ AsyncStorage с id текущего локального аккаунта (один аккаунт на устройство в v1). */
@@ -33,6 +33,35 @@ export const CURRENT_ACCOUNT_KEY = 'talentia:account:current';
 
 export async function currentAccountId(device: DeviceStore): Promise<string | null> {
   return device.getItem(CURRENT_ACCOUNT_KEY);
+}
+
+/**
+ * Аккаунт, который можно вернуть после сбоя (контрольный аудит 2026-11-09, Ж1): ключ `current` потерян
+ * (сбой посреди стирания брошенной настройки или старой зачистки), а файл базы с PIN в SecureStore на
+ * устройстве есть. Без PIN база — сирота без входа, её поднимать нельзя: PIN к ней не найти.
+ */
+export async function recoverableAccountId(device: DeviceStore): Promise<string | null> {
+  const ids = new Set<string>();
+  for (const f of await device.listDbFiles()) {
+    const m = DB_FILE.exec(f);
+    if (m) ids.add(m[1]);
+  }
+  // порядок файлов в каталоге зависит от ФС: при двух базах с PIN (наследие старых сборок) выбор должен быть
+  // одним и тем же на каждом старте; остальные снимет только «Удалить аккаунт»
+  for (const id of [...ids].sort()) if (await hasPin(device, id)) return id;
+  return null;
+}
+
+/**
+ * Первая настройка поверх аккаунта, который уже есть (контрольный аудит 2026-11-09, Ж1): по решению №148
+ * стирать все базы устройства вправе только явное «Удалить аккаунт» за PIN, поэтому второй аккаунт рядом
+ * с первым не создаётся — ни при живом `current`, ни при файле базы с PIN на устройстве.
+ */
+export class AccountExistsError extends Error {
+  constructor(readonly accountId: string) {
+    super('Аккаунт на устройстве уже есть');
+    this.name = 'AccountExistsError';
+  }
 }
 
 /** Соль PIN — 16 случайных байт в hex. */
@@ -51,6 +80,8 @@ export async function createLocalAccount(
 ): Promise<string> {
   const problem = pinProblem(pin);
   if (problem) throw new Error(`PIN не принят: ${problem}`);
+  const existing = (await currentAccountId(device)) ?? (await recoverableAccountId(device));
+  if (existing) throw new AccountExistsError(existing);
   const accountId = uuidV4(randomBytes);
   const record = await hashPin(pin, pinSalt(randomBytes), digest);
   const [pinKey, lockoutKey] = secureKeys(accountId);
@@ -76,6 +107,15 @@ async function secureAccounts(device: DeviceStore): Promise<string[]> {
 async function rememberSecureAccount(device: DeviceStore, accountId: string): Promise<void> {
   const ids = await secureAccounts(device);
   if (!ids.includes(accountId)) await device.setSecure(SECURE_ACCOUNTS_KEY, JSON.stringify([...ids, accountId]));
+}
+
+/** Убрать один аккаунт из реестра SecureStore (стирание брошенной настройки, `wipeOwnAccount`). */
+export async function forgetSecureAccount(device: DeviceStore, accountId: string): Promise<void> {
+  const ids = await secureAccounts(device);
+  if (!ids.includes(accountId)) return;
+  const rest = ids.filter((x) => x !== accountId);
+  if (rest.length === 0) await device.removeSecure([SECURE_ACCOUNTS_KEY]);
+  else await device.setSecure(SECURE_ACCOUNTS_KEY, JSON.stringify(rest));
 }
 
 /**

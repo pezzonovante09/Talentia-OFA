@@ -151,3 +151,31 @@ it('окно выросло — экран пропускает сам, без �
   await layout(627);
   await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/aba/session'));
 });
+
+/**
+ * Контрольный аудит 2026-11-09, приватность п. 5: «Обычные уроки» с экрана «слишком мал» не оставляют выбор
+ * взрослого в памяти — иначе ссылка `/aba` открыла бы занятие с прежними режимом и наблюдателями.
+ */
+describe('«слишком мал» → «Обычные уроки» сбрасывает выбор ABA', () => {
+  it('на карту: config null, наблюдателей нет, ведущего нет', async () => {
+    await mount(300);
+    await fireEvent.press(screen.getByTestId('aba-regular'));
+    expect(useAbaRun.getState()).toMatchObject({ config: null, observers: [], primaryObserverId: null });
+    expect(router.replace.mock.calls[0]).toEqual(['/map']);
+  });
+
+  it('открыто ради другого ребёнка (к выбору профиля): выбор ABA тоже сброшен', async () => {
+    useChildSession.setState({ childId: 'other', mode: 'account', openedForAba: true });
+    await mount(300);
+    await fireEvent.press(screen.getByTestId('aba-regular'));
+    expect(useAbaRun.getState()).toMatchObject({ config: null, observers: [], primaryObserverId: null });
+    expect(router.replace.mock.calls[0]).toEqual(['/']);
+  });
+
+  it('«Назад» к родителю выбор ABA не сбрасывает (взрослый поправит его там)', async () => {
+    await mount(300);
+    await fireEvent.press(screen.getByTestId('aba-too-small-back'));
+    expect(useAbaRun.getState().config).toBe('with_adult');
+    expect(useAbaRun.getState().observers).toHaveLength(1);
+  });
+});

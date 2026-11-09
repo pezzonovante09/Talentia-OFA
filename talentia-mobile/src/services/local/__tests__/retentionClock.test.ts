@@ -99,7 +99,7 @@ describe(`скачок вперёд больше ${CLOCK_JUMP_HOLD_DAYS} дне�
     const db = await seeded();
     const out = await runRetention(db, { deviceNow: JUMP, builtAt: null });
     // от SEEN + 46 дней старше 12 месяцев — OLD и MID
-    expect(out).toEqual({ kind: 'held', reason: 'clock_jump', deviceNow: iso(JUMP), lastSeen: SEEN, wouldRemove: 2, abaGoalsChildren: 0 });
+    expect(out).toEqual({ kind: 'held', reason: 'clock_jump', deviceNow: iso(JUMP), lastSeen: SEEN, wouldRemove: 2, abaGoalsChildren: 0, driftDays: 39 });
   });
 
   it('wouldRemove считает все журналы, а не только уроки', async () => {
@@ -165,6 +165,77 @@ describe('два скачка по полгода подряд', () => {
     const second = await runRetention(db, { deviceNow: at(SEEN, 366), builtAt: null });
     expect(second).toMatchObject({ kind: 'held', lastSeen: SEEN });
     expect(await runIds(db)).toEqual(['old', 'mid', 'fresh', 'half-year']);
+  });
+});
+
+/**
+ * Контрольный аудит 2026-11-09, Ж2: скачок меньше порога раньше проходил без вопроса и навсегда сдвигал `last_seen`
+ * — девять переводов по +40 дней стирали журналы за год без взрослого. Теперь шаги от `CLOCK_DRIFT_STEP_DAYS`
+ * копятся в `retention_clock.drift_ms`; сумма больше `CLOCK_JUMP_HOLD_DAYS` — удержание; подтверждение обнуляет.
+ */
+describe('накопленный сдвиг часов ступенями меньше порога', () => {
+  const driftOf = async (db: SqlDb) => (await db.all<{ drift_ms: number }>('SELECT drift_ms FROM retention_clock WHERE id = 1'))[0]?.drift_ms ?? 0;
+
+  it('один шаг +40 дней — обычный ход, но превышение над порогом (33 дня) запомнено', async () => {
+    const db = await seeded();
+    const out = await runRetention(db, { deviceNow: at(SEEN, 40), builtAt: null });
+    expect(out.kind).toBe('applied');
+    expect(await driftOf(db)).toBe(33 * DAY);
+  });
+
+  it('второй шаг +40 дней: сумма 66 > 45 — held, ничего не удалено, last_seen не двигается', async () => {
+    const db = await seeded();
+    await runRetention(db, { deviceNow: at(SEEN, 40), builtAt: null });
+    const out = await runRetention(db, { deviceNow: at(SEEN, 80), builtAt: null });
+    expect(out.kind).toBe('held');
+    expect(out.kind === 'held' && out.driftDays).toBe(66);
+    // первый шаг удалил OLD и MID законно (от SEEN + 40 они старше года); FRESH второй шаг не тронул
+    expect((await db.all<{ n: number }>('SELECT COUNT(*) AS n FROM lesson_runs'))[0].n).toBe(1);
+    expect((await db.all<{ last_seen: string }>('SELECT last_seen FROM retention_clock'))[0].last_seen).toBe(iso(at(SEEN, 40)));
+  });
+
+  it('девять шагов по +40 дней не стирают журналы: с второго шага каждый старт удержан', async () => {
+    const db = await seeded();
+    const kinds: string[] = [];
+    for (let i = 1; i <= 9; i += 1) kinds.push((await runRetention(db, { deviceNow: at(SEEN, 40 * i), builtAt: null })).kind);
+    expect(kinds).toEqual(['applied', ...Array<string>(8).fill('held')]);
+    // FRESH старше года от SEEN + 360 дней, но не удалён: удержание держит всё со второго шага
+    expect((await db.all<{ n: number }>('SELECT COUNT(*) AS n FROM lesson_runs'))[0].n).toBe(1);
+  });
+
+  it('шаги короче недели не копятся: пользование раз в несколько дней полгода подряд — без удержания', async () => {
+    const db = await seeded();
+    let kind = '';
+    for (let d = 3; d <= 180; d += 3) kind = (await runRetention(db, { deviceNow: at(SEEN, d), builtAt: null })).kind;
+    expect(kind).toBe('applied');
+    expect(await driftOf(db)).toBe(0);
+  });
+
+  it('занятия раз в 8 дней двадцать раз подряд: сумма растёт на день за шаг, удержания нет (`backend-auditor`)', async () => {
+    const db = await seeded();
+    const kinds = new Set<string>();
+    for (let i = 1; i <= 20; i += 1) kinds.add((await runRetention(db, { deviceNow: at(SEEN, 8 * i), builtAt: null })).kind);
+    expect([...kinds]).toEqual(['applied']);
+    expect(await driftOf(db)).toBe(20 * DAY);
+  });
+
+  it('подтверждение взрослого обнуляет сумму: после него +40 дней снова обычный ход', async () => {
+    const db = await seeded();
+    await runRetention(db, { deviceNow: at(SEEN, 40), builtAt: null });
+    const held = await runRetention(db, { deviceNow: at(SEEN, 80), builtAt: null });
+    expect(held.kind).toBe('held');
+    await confirmClockJump(db, { observedNow: iso(at(SEEN, 80)), deviceNow: at(SEEN, 80), builtAt: null });
+    expect(await driftOf(db)).toBe(0);
+    const out = await runRetention(db, { deviceNow: at(SEEN, 120), builtAt: null });
+    expect(out.kind).toBe('applied');
+    expect(await driftOf(db)).toBe(33 * DAY);
+  });
+
+  it('база v17 без drift_ms: миграция 18 добавляет колонку с нулём, прежняя строка цела', async () => {
+    const db = await memoryDb(17);
+    await db.run('INSERT INTO retention_clock (id, last_seen) VALUES (1, ?)', [SEEN]);
+    await migrate(db);
+    expect(await db.all('SELECT id, last_seen, drift_ms FROM retention_clock')).toEqual([{ id: 1, last_seen: SEEN, drift_ms: 0 }]);
   });
 });
 

@@ -15,7 +15,7 @@ import { insertConsentEvent, readConsentLog } from './consentLog';
 import { EXPORT_DIR, type DeviceStore } from './device';
 import { withDbLock } from './lock';
 import { leaksTime } from '../../domain/ids';
-import { CLOCK_JUMP_HOLD_DAYS, RETENTION_MONTHS } from './schema';
+import { CLOCK_DRIFT_STEP_DAYS, CLOCK_JUMP_HOLD_DAYS, RETENTION_MONTHS } from './schema';
 import type { SqlDb } from './sql';
 
 const JOURNALS = [
@@ -187,6 +187,11 @@ export type RetentionOutcome =
       wouldRemove: number;
       /** Детей, у которых вместе с журналами уйдут цели и настройки ABA (нет занятий 12 месяцев). */
       abaGoalsChildren: number;
+      /**
+       * Накопленный подозрительный сдвиг часов вместе с этим шагом, в днях (Ж2). Больше порога при малом
+       * шаге — удержание набралось несколькими переводами, а не одним скачком.
+       */
+      driftDays: number;
     };
 
 /** Подтверждение устарело: часы ушли от показанных на листе больше чем на сутки — показать заново. */
@@ -220,12 +225,21 @@ async function lastSeenOf(db: SqlDb): Promise<string | null> {
   return maxIso(...marks, c?.at ?? null);
 }
 
-/** Время только растёт: `MAX` с прежним; триггер миграции 15 держит то же в самой базе. */
-async function advanceLastSeen(db: SqlDb, at: string): Promise<void> {
+/** Накопленный подозрительный сдвиг часов, мс (миграция 18); строки нет — 0. */
+async function driftOf(db: SqlDb): Promise<number> {
+  const [row] = await db.all<{ drift_ms: number | null }>('SELECT drift_ms FROM retention_clock WHERE id = 1');
+  return row?.drift_ms ?? 0;
+}
+
+/**
+ * Время только растёт: `MAX` с прежним; триггер миграции 15 держит то же в самой базе. Сдвиг пишется как есть:
+ * подтверждение взрослого обнуляет его (`confirmClockJump`).
+ */
+async function advanceLastSeen(db: SqlDb, at: string, driftMs: number): Promise<void> {
   await db.run(
-    `INSERT INTO retention_clock (id, last_seen) VALUES (1, ?)
-     ON CONFLICT (id) DO UPDATE SET last_seen = MAX(last_seen, excluded.last_seen)`,
-    [at],
+    `INSERT INTO retention_clock (id, last_seen, drift_ms) VALUES (1, ?, ?)
+     ON CONFLICT (id) DO UPDATE SET last_seen = MAX(last_seen, excluded.last_seen), drift_ms = excluded.drift_ms`,
+    [at, Math.round(driftMs)],
   );
 }
 
@@ -247,6 +261,11 @@ async function countExpired(db: SqlDb, now: string): Promise<number> {
  * удаляется и дата не двигается: удаление ждёт взрослого (`confirmClockJump`), иначе ребёнок,
  * переведя дату «ради игр», стёр бы журналы всех детей без возврата. Удержание не хранится —
  * его заново находит каждый старт.
+ *
+ * Шаги короче порога тоже копятся (контрольный аудит 2026-11-09, Ж2): каждый шаг вперёд от
+ * `CLOCK_DRIFT_STEP_DAYS` прибавляется к `drift_ms`, и сумма больше `CLOCK_JUMP_HOLD_DAYS` — то же удержание.
+ * Иначе девять переводов по +40 дней стёрли бы журналы за год, а один перевод на +44 дня навсегда укоротил бы
+ * срок на 44 дня. Подтверждение взрослого обнуляет сумму.
  */
 export async function runRetention(
   db: SqlDb,
@@ -254,18 +273,32 @@ export async function runRetention(
 ): Promise<RetentionOutcome> {
   const device = deviceNow.toISOString();
   const lastSeen = await lastSeenOf(db);
-  if (lastSeen && deviceNow.getTime() - msOf(lastSeen) > CLOCK_JUMP_HOLD_DAYS * DAY_MS) {
+  const stepMs = lastSeen ? deviceNow.getTime() - msOf(lastSeen) : 0;
+  // копится только превышение над порогом шага: занятия раз в неделю-полторы дают сумму около нуля, а перевод
+  // на +40 дней — 33 (`backend-auditor` по диффу: иначе честные перерывы давали бы ложное «часы переведены»)
+  const stepFloor = CLOCK_DRIFT_STEP_DAYS * DAY_MS;
+  const suspicious = stepMs > stepFloor ? stepMs - stepFloor : 0;
+  const driftMs = (await driftOf(db)) + suspicious;
+  if (lastSeen && (stepMs > CLOCK_JUMP_HOLD_DAYS * DAY_MS || driftMs > CLOCK_JUMP_HOLD_DAYS * DAY_MS)) {
     // опорную дату — в строку, если её не было: иначе урок при сбитых часах сдвинул бы опору журналов
     // в будущее, и следующий старт удалил бы всё без подтверждения
     await db.run('INSERT INTO retention_clock (id, last_seen) VALUES (1, ?) ON CONFLICT (id) DO NOTHING', [lastSeen]);
     // считать от той же даты, от которой удалит подтверждение (`confirmClockJump`): дата сборки может быть позже часов
     const effective = maxIso(device, builtAt, lastSeen)!;
     const abaGoalsChildren = (await abaIdleChildren(db, retentionCutoff(new Date(effective)))).length;
-    return { kind: 'held', reason: 'clock_jump', deviceNow: device, lastSeen, wouldRemove: await countExpired(db, effective), abaGoalsChildren };
+    return {
+      kind: 'held',
+      reason: 'clock_jump',
+      deviceNow: device,
+      lastSeen,
+      wouldRemove: await countExpired(db, effective),
+      abaGoalsChildren,
+      driftDays: Math.round(driftMs / DAY_MS),
+    };
   }
   const now = maxIso(device, builtAt, lastSeen)!;
   const removed = await applyRetention(db, new Date(now));
-  await advanceLastSeen(db, now);
+  await advanceLastSeen(db, now, driftMs);
   return { kind: 'applied', removed, now };
 }
 
@@ -282,7 +315,8 @@ export async function confirmClockJump(
   }
   const now = maxIso(observedNow, builtAt, await lastSeenOf(db))!;
   const removed = await applyRetention(db, new Date(now));
-  await advanceLastSeen(db, now);
+  // взрослый видел дату и подтвердил её: накопленный сдвиг обнуляется (Ж2)
+  await advanceLastSeen(db, now, 0);
   return removed;
 }
 

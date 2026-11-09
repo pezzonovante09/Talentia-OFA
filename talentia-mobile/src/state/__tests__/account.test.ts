@@ -5,8 +5,8 @@
  * мокается (`expo-sqlite` в Jest — `{}`).
  */
 import { fakeDevice } from '../../test/fakeDevice';
-import { CURRENT_ACCOUNT_KEY, currentAccountId } from '../../services/local/account';
-import { secureKeys } from '../../services/local/device';
+import { AccountExistsError, CURRENT_ACCOUNT_KEY, currentAccountId } from '../../services/local/account';
+import { INSTALL_MARK_KEY, knownAccountKey, secureKeys } from '../../services/local/device';
 import { memoryDb, writeLessonRun } from '../../services/local/__tests__/nodeSql';
 import { sha256 } from '../../services/digest';
 import { noRecordPort } from '../../services/progressPort';
@@ -72,6 +72,8 @@ describe('boot', () => {
     await useAccount.getState().grantConsent('ru', NOW);
     const created = await useAccount.getState().addProfile({ childId: KID, name: 'Айгерим', band: '5-6', interfaceLang: 'ru', kyrgyzRegion: false, addressForm: 'neutral', hapticsEnabled: false, sessionMinutes: 10, calmMode: false, focusMode: false, soundEffects: true });
     const { accountId, db: setupDb } = useAccount.getState();
+    // файл базы на устройстве есть (в тесте `openDb` его не создаёт): иначе старт счёл бы его пропавшим (Ж1)
+    device.files.add(`talentia-${accountId}.db`);
     reset();
     setProgressPort(noRecordPort);
 
@@ -106,10 +108,78 @@ describe('boot', () => {
     expect(s.status).toBe('none');
     expect(s.accountId).toBeNull();
     expect(s.db).toBeNull();
-    expect(device.storage.size).toBe(0);
+    // метка установки остаётся: стирается только свой аккаунт, не устройство (Ж1)
+    expect([...device.storage.keys()]).toEqual([INSTALL_MARK_KEY]);
     expect(device.secure.size).toBe(0);
     expect(mockDeleteLocalDb).toHaveBeenCalledWith(id);
     expect(progressPort()).toBe(noRecordPort);
+  });
+
+  it('база не открывается (аккаунт есть): status error, ничего не стёрто, повторный boot поднимает аккаунт', async () => {
+    await device.setItem(CURRENT_ACCOUNT_KEY, 'acc-broken');
+    await device.setItem(knownAccountKey('acc-broken'), '1');
+    device.secure.set(secureKeys('acc-broken')[0], '{}');
+    device.files.add('talentia-acc-broken.db');
+    let broken = true;
+    const openDb = jest.fn(async () => {
+      if (broken) throw new Error('database disk image is malformed');
+      return openWithConsent();
+    });
+
+    await useAccount.getState().boot({ openDb, now: NOW });
+
+    const s = useAccount.getState();
+    expect(s.status).toBe('error');
+    expect(s.accountId).toBe('acc-broken');
+    expect(s.db).toBeNull();
+    expect(progressPort()).toBe(noRecordPort);
+    expect(mockDeleteLocalDb).not.toHaveBeenCalled();
+    expect(device.files.has('talentia-acc-broken.db')).toBe(true);
+    expect(await currentAccountId(device)).toBe('acc-broken');
+    // вторая настройка поверх такого аккаунта не создаётся
+    await expect(useAccount.getState().createWithPin(PIN, sha256, openEmpty)).rejects.toBeInstanceOf(AccountExistsError);
+
+    broken = false;
+    await useAccount.getState().boot({ openDb, now: NOW });
+    expect(useAccount.getState().status).toBe('ready');
+    expect(useAccount.getState().accountId).toBe('acc-broken');
+  });
+
+  it('ключ current потерян, а база с PIN на устройстве есть: boot возвращает её, а не ведёт к настройке', async () => {
+    await device.setItem(knownAccountKey('acc-lost'), '1');
+    device.secure.set(secureKeys('acc-lost')[0], '{}');
+    device.files.add('talentia-acc-lost.db');
+    const openDb = jest.fn(openWithConsent);
+
+    await useAccount.getState().boot({ openDb, now: NOW });
+
+    expect(openDb).toHaveBeenCalledWith('acc-lost');
+    expect(useAccount.getState().status).toBe('ready');
+    expect(await currentAccountId(device)).toBe('acc-lost');
+  });
+
+  it('файл базы пропал, а у аккаунта есть дети: status error, PIN и профили целы, стирания нет', async () => {
+    await device.setItem(CURRENT_ACCOUNT_KEY, 'acc-nofile');
+    await device.setItem(knownAccountKey('acc-nofile'), '1');
+    await device.setItem('talentia:account:acc-nofile:children', JSON.stringify([KID]));
+    await device.setItem(`talentia:child:${KID}:profile`, '{}');
+    device.secure.set(secureKeys('acc-nofile')[0], '{}');
+    // файла talentia-acc-nofile.db на устройстве нет; openDb создал бы пустую базу без согласия
+    const openDb = jest.fn(openEmpty);
+
+    await useAccount.getState().boot({ openDb, now: NOW });
+
+    expect(useAccount.getState().status).toBe('error');
+    expect(openDb).not.toHaveBeenCalled();
+    expect(mockDeleteLocalDb).not.toHaveBeenCalled();
+    expect(device.secure.has(secureKeys('acc-nofile')[0])).toBe(true);
+    expect(await device.getItem(`talentia:child:${KID}:profile`)).toBe('{}');
+  });
+
+  it('файл выгрузки специалисту, оставшийся в кеше, снимается на старте', async () => {
+    device.cache.add('export/talentia-aba-2026-11-01.json');
+    await useAccount.getState().boot({ openDb: jest.fn(openWithConsent), now: NOW });
+    expect([...device.cache]).toEqual([]);
   });
 
   it('с аккаунтом применяет срок хранения: прохождение старше 12 месяцев удаляется на старте', async () => {
@@ -202,6 +272,28 @@ describe('первая настройка', () => {
     expect(device.storage.size).toBe(0);
     expect(device.secure.size).toBe(0);
     expect(useAccount.getState().profiles).toEqual([]);
+  });
+
+  it('abandonSetup стирает только свой аккаунт: база и PIN другого аккаунта на устройстве остаются (Ж1)', async () => {
+    // чужой аккаунт — файл базы и PIN, но не `current` (иначе настройка не началась бы)
+    device.files.add('talentia-acc-other.db');
+    device.secure.set(secureKeys('acc-other')[0], '{"other":1}');
+    await device.setItem(knownAccountKey('acc-other'), '1');
+    await device.setItem('talentia:account:acc-other:children', '[]');
+    // `current` ещё не было, `recoverableAccountId` чужой нашёл бы — обойдём его, как это делал старый поток
+    device.secure.delete(secureKeys('acc-other')[0]);
+    const id = await useAccount.getState().createWithPin(PIN, sha256, openEmpty);
+    device.secure.set(secureKeys('acc-other')[0], '{"other":1}');
+
+    await useAccount.getState().abandonSetup();
+
+    expect(mockDeleteLocalDb).toHaveBeenCalledWith(id);
+    expect(device.files.has('talentia-acc-other.db')).toBe(true);
+    expect(device.secure.get(secureKeys('acc-other')[0])).toBe('{"other":1}');
+    expect(await device.getItem(knownAccountKey('acc-other'))).toBe('1');
+    expect(device.secure.has(secureKeys(id)[0])).toBe(false);
+    expect(await device.getItem(knownAccountKey(id))).toBeNull();
+    expect(await currentAccountId(device)).toBeNull();
   });
 
   /** Вопрос 92: стирание зовут сразу размонтирование настройки и слой раздела при полуаккаунте. */
@@ -306,6 +398,8 @@ describe('boot и скачок часов (№147)', () => {
       lastSeen: NOW.toISOString(),
       wouldRemove: 1,
       abaGoalsChildren: 0,
+      // Ж2: сумма превышений шага над 7 днями — первый старт шагнул от последней записи (2026-10-01) на 24 дня, второй — на 1826
+      driftDays: 24 - 7 + (1826 - 7),
     });
   });
 

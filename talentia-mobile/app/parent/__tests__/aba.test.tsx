@@ -18,6 +18,7 @@ import { isUuidV4 } from '../../../src/domain/ids';
 import { initialTargetState } from '../../../src/domain/abaPrompting';
 import { nextStep, startAbaSession } from '../../../src/domain/abaSession';
 import { CURRENT_CONSENT_TEXTS } from '../../../src/domain/consentTexts';
+import ru from '../../../src/i18n/locales/ru.json';
 import { initialTokenTraining } from '../../../src/domain/abaTokenTraining';
 import { createLocalAccount } from '../../../src/services/local/account';
 import { abaConsentTextVersion, grantAbaProcessing } from '../../../src/services/local/abaConsent';
@@ -105,12 +106,12 @@ let db: SqlDb;
 let accountId = '';
 
 const iso = (ms = Date.now()) => new Date(ms).toISOString();
-const wrap = (el: React.ReactElement, lng: 'ru' | 'en' = 'ru') => renderWithProviders(<ParentThemeProvider>{el}</ParentThemeProvider>, { lng });
+const wrap = (el: React.ReactElement, lng: 'ru' | 'en' | 'ky' = 'ru') => renderWithProviders(<ParentThemeProvider>{el}</ParentThemeProvider>, { lng });
 const renderAba = () => wrap(<AbaParentScreen />);
-const renderConsent = (lng: 'ru' | 'en' = 'ru') => wrap(<AbaConsentScreen />, lng);
-const renderRevoke = () => {
+const renderConsent = (lng: 'ru' | 'en' | 'ky' = 'ru') => wrap(<AbaConsentScreen />, lng);
+const renderRevoke = (lng: 'ru' | 'en' | 'ky' = 'ru') => {
   params.action = 'aba_revoke';
-  return wrap(<ConfirmScreen />);
+  return wrap(<ConfirmScreen />, lng);
 };
 
 async function typePin(pin: string) {
@@ -1452,6 +1453,21 @@ describe('экран согласия на данные практики', () =>
     expect([ev.textVersion.startsWith('en-'), CURRENT_CONSENT_TEXTS.aba_processing.includes(ev.textVersion)]).toEqual([true, true]);
   });
 
+  /**
+   * Кыргызского текста согласия нет (№108): экран показывает ru-текст (не ключи) и пишет ru-версию — версию того
+   * текста, который родитель видел (`consentLang`; `child-privacy-compliance` по диффу этапа A, 2026-11-09).
+   */
+  it('по-кыргызски без перевода: показан русский текст, записана версия ru-…', async () => {
+    await renderConsent('ky');
+    expect(screen.queryByText(/parent\.aba\./)).toBeNull();
+    expect(screen.getByText(ru.parent.aba.consentTitle)).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('aba-agree'));
+    await typePin(PIN);
+    await waitFor(() => expect(router.back).toHaveBeenCalled());
+    const [ev] = (await readConsentLog(db)).filter((e) => e.scope === 'aba_processing');
+    expect([ev.textVersion.startsWith('ru-'), CURRENT_CONSENT_TEXTS.aba_processing.includes(ev.textVersion)]).toEqual([true, true]);
+  });
+
   it('согласие даётся выбранному ребёнку, второму — нет', async () => {
     useAccount.setState({ profiles: [p1, p2] });
     useParentView.setState({ childId: KID2 });
@@ -1549,6 +1565,17 @@ describe('подтверждение aba_revoke', () => {
     await typePin(PIN);
     await waitFor(() => expect(router.back).toHaveBeenCalledTimes(1));
     expect([await sessionsOf(db, KID), await abaStateKeys(KID), (await abaOverview(db, KID)).consent]).toEqual([[], [], 'revoked']);
+  });
+
+  /** Контрольный аудит 2026-11-09, п. 9: в журнал — версия того текста, что родитель видел; ky без перевода → ru. */
+  it('по-кыргызски без перевода отзыв записан с версией ru-…, и она среди текущих', async () => {
+    await withAbaData();
+    await renderRevoke('ky');
+    await fireEvent.press(screen.getByTestId('confirm-action'));
+    await typePin(PIN);
+    await waitFor(() => expect(router.back).toHaveBeenCalled());
+    const [ev] = (await readConsentLog(db)).filter((e) => e.scope === 'aba_processing' && e.action === 'revoke');
+    expect([ev.textVersion.startsWith('ru-'), CURRENT_CONSENT_TEXTS.aba_processing.includes(ev.textVersion)]).toEqual([true, true]);
   });
 
   it('событие отзыва: владелец аккаунта, подтверждено PIN, текущая версия текста', async () => {

@@ -554,7 +554,10 @@ describe('накат миграции 15 → 16 на базе с данными'
 
   async function dump(db: SqlDb): Promise<Record<string, unknown[]>> {
     const out: Record<string, unknown[]> = {};
-    for (const t of TABLES_V15) out[t] = await db.all(`SELECT * FROM ${t} ORDER BY 1, 2`);
+    // колонки версии 15: поздние миграции вправе добавлять свои (18 — `retention_clock.drift_ms` с нулём,
+    // проверена в `retentionClock.test.ts`); здесь держится, что прежние строки и значения целы
+    const cols: Partial<Record<(typeof TABLES_V15)[number], string>> = { retention_clock: 'id, last_seen' };
+    for (const t of TABLES_V15) out[t] = await db.all(`SELECT ${cols[t] ?? '*'} FROM ${t} ORDER BY 1, 2`);
     return out;
   }
 

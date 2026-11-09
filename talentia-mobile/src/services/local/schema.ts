@@ -22,6 +22,13 @@ import type { SqlDb } from './sql';
 export const RETENTION_MONTHS = 12;
 /** Скачок часов вперёд, после которого срок хранения ждёт взрослого (№147). */
 export const CLOCK_JUMP_HOLD_DAYS = 45;
+/**
+ * Порог шага часов вперёд: превышение шага над этим числом дней копится в `retention_clock.drift_ms`;
+ * сумма больше `CLOCK_JUMP_HOLD_DAYS` — удержание, как при одном скачке (аудит 2026-11-09, Ж2). Занятия
+ * раз в неделю-полторы дают сумму около нуля, отпуск в три недели — две; перевод на +40 дней — 33, второй
+ * такой — удержание. Остаток риска: много переводов меньше недели — записано в PARENT.md.
+ */
+export const CLOCK_DRIFT_STEP_DAYS = 7;
 
 /** Удаление строк ребёнка разрешено, пока в `purge_gate` есть его id (или `*` — всё). */
 const gated = (table: string) => `
@@ -605,7 +612,22 @@ WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
 )
 BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
 `,
+  // 18. Накопленный сдвиг часов (контрольный аудит 2026-11-09, Ж2, `backend-auditor`): один скачок меньше
+  // `CLOCK_JUMP_HOLD_DAYS` проходил без вопроса и навсегда сдвигал `last_seen`, девять переводов по +40 дней
+  // стирали журналы за год без взрослого. Теперь шаги от `CLOCK_DRIFT_STEP_DAYS` суммируются, сумма больше
+  // порога — то же удержание до подтверждения, подтверждение обнуляет сумму.
+  `
+ALTER TABLE retention_clock ADD COLUMN drift_ms INTEGER NOT NULL DEFAULT 0;
+`,
 ];
+
+/** База новее приложения: откат версии открыл бы таблицы без их охран (аудит 2026-11-09, `backend-auditor`). */
+export class DbNewerThanAppError extends Error {
+  constructor(readonly dbVersion: number) {
+    super(`База версии ${dbVersion} новее приложения (${MIGRATIONS.length})`);
+    this.name = 'DbNewerThanAppError';
+  }
+}
 
 /**
  * Ворота удаления, срока хранения, записи ABA и записи урока открываются и закрываются внутри
@@ -625,6 +647,9 @@ async function closeGates(db: SqlDb): Promise<void> {
  */
 export async function migrate(db: SqlDb): Promise<void> {
   const [{ user_version: current }] = await db.all<{ user_version: number }>('PRAGMA user_version');
+  // старая сборка не знает новых таблиц: её `purgeChild` оставил бы строки, отзыв упёрся бы в триггер —
+  // не открывать (`useAccount.boot` покажет «Повторить», данные целы)
+  if (current > MIGRATIONS.length) throw new DbNewerThanAppError(current);
   for (let v = current; v < MIGRATIONS.length; v += 1) {
     await db.transaction(async (tx) => {
       await tx.exec(MIGRATIONS[v]);

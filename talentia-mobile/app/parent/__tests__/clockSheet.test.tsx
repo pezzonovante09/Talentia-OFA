@@ -52,6 +52,7 @@ const hold = (over: Partial<Extract<RetentionOutcome, { kind: 'held' }>> = {}): 
   lastSeen: new Date(Date.now() - 400 * DAY).toISOString(),
   wouldRemove: 1,
   abaGoalsChildren: 0,
+  driftDays: 400,
   ...over,
 });
 const renderConfirm = () => renderWithProviders(<ParentThemeProvider><ConfirmScreen /></ParentThemeProvider>);

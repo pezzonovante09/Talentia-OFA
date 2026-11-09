@@ -10,6 +10,7 @@ import { View } from 'react-native';
 
 import { parentSpacing } from '../../../src/design/parentTokens';
 import type { InterfaceLang } from '../../../src/domain/regionVisibility';
+import { consentLang } from '../../../src/i18n';
 import { abaConsentTextVersion, grantAbaProcessing } from '../../../src/services/local/abaConsent';
 import { randomBytes } from '../../../src/services/random';
 import { useAccount } from '../../../src/state/account';
@@ -29,7 +30,10 @@ export default function AbaConsentScreen() {
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   if (!db || !accountId || !profile) return null;
-  const lang = (i18n.language === 'en' ? 'en' : 'ru') as InterfaceLang;
+  // язык, на котором текст согласия показан (ky без перевода → ru): им рендерится текст и им берётся версия для
+  // журнала — версия того текста, который родитель видел (аудит 2026-11-09, `child-privacy-compliance` по диффу)
+  const lang = consentLang(i18n.language as InterfaceLang, 'parent.aba.consentBody');
+  const tc = (key: string, vars?: Record<string, unknown>) => t(key, { ...vars, lng: lang });
 
   const grant = async () => {
     setBusy(true);
@@ -49,22 +53,22 @@ export default function AbaConsentScreen() {
     <ParentScreen scroll left={<ParentButton variant="quiet" label={t('parent.back')} onPress={() => router.back()} block={false} testID="aba-consent-back" />} testID="parent-aba-consent">
       <View style={{ gap: parentSpacing.lg, paddingTop: parentSpacing.xl }}>
         <ParentText role="heading" accessibilityRole="header">
-          {t('parent.aba.consentTitle')}
+          {tc('parent.aba.consentTitle')}
         </ParentText>
         <Card>
-          <ParentText role="body">{t('parent.aba.consentBody')}</ParentText>
+          <ParentText role="body">{tc('parent.aba.consentBody')}</ParentText>
         </Card>
-        <ParentText role="caption">{t('parent.aba.localOnly')}</ParentText>
+        <ParentText role="caption">{tc('parent.aba.localOnly')}</ParentText>
         <View style={{ flexDirection: 'row', gap: parentSpacing.md }}>
           <View style={{ flex: 1 }}>
-            <ParentButton label={t('parent.aba.agree')} disabled={busy} onPress={() => (can('aba_consent') ? void grant() : setSheet(true))} testID="aba-agree" />
+            <ParentButton label={tc('parent.aba.agree')} disabled={busy} onPress={() => (can('aba_consent') ? void grant() : setSheet(true))} testID="aba-agree" />
           </View>
           <View style={{ flex: 1 }}>
-            <ParentButton variant="secondary" label={t('parent.aba.notNow')} onPress={() => router.back()} testID="aba-not-now" />
+            <ParentButton variant="secondary" label={tc('parent.aba.notNow')} onPress={() => router.back()} testID="aba-not-now" />
           </View>
         </View>
         <ParentText role="caption" color="textMuted" testID="aba-consent-version">
-          {t('parent.aba.version', { version: abaConsentTextVersion(lang) })}
+          {tc('parent.aba.version', { version: abaConsentTextVersion(lang) })}
         </ParentText>
         {failure && (
           <ParentText role="caption" color="error" align="center" testID="aba-consent-error">

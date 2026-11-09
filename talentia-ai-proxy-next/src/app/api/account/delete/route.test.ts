@@ -154,6 +154,19 @@ describe("/api/account/delete", () => {
     expect(deleteUser).not.toHaveBeenCalled();
   });
 
+  // аудит 2026-11-09, backend-auditor: структура схемы наружу не уходит, как в /api/v2/tali
+  it.each([
+    ["нет confirm", { children: [] }],
+    ["лишнее поле (user_id)", { ...OK_BODY, user_id: "someone-else" }],
+    ["невалидный JSON", "{not json"],
+  ] as const)("%s — тело 400 ровно { error: 'Invalid request' }, без details", async (_name, body) => {
+    const res = await POST(req(body));
+    expect(res.status).toBe(400);
+    const json = (await res.json()) as Record<string, unknown>;
+    expect(json).toEqual({ error: "Invalid request" });
+    expect(json).not.toHaveProperty("details");
+  });
+
   it("невалидный JSON — 400", async () => {
     const res = await POST(req("{not json"));
     expect(res.status).toBe(400);

@@ -19,13 +19,49 @@ import { useAccount } from '../../src/state/account';
 import { device } from '../../src/state/device';
 import { useGate } from '../../src/state/gate';
 import { PinPad } from '../../src/ui/parent/PinPad';
-import { ParentButton, ParentScreen } from '../../src/ui/parent/primitives';
+import { ParentButton, ParentScreen, ParentText } from '../../src/ui/parent/primitives';
 import { ParentThemeProvider } from '../../src/ui/parent/theme';
 import { gateAvailable } from '../../src/domain/parentGate';
 
-// `confirm/delete_account` — пока удаление в полёте: аккаунт уже стёрт, а переход на «Удалено» ещё не произошёл.
+// `confirm/delete_account` и `done` — пока удаление в полёте: аккаунт уже стёрт, а переход на «Удалено» ещё не
+// произошёл. При живом аккаунте они за гейтом, как всё остальное (контрольный аудит 2026-11-09, приватность п. 8).
 const OPEN_WITHOUT_ACCOUNT = ['/parent/setup', '/parent/policy', '/parent/done', '/parent/confirm/delete_account'];
+const OPEN_WITH_ACCOUNT_UNGATED = ['/parent/setup', '/parent/policy'];
 const OPEN_WHEN_OUTDATED = ['/parent/reconsent', '/parent/policy', '/parent/confirm/delete_account', '/parent/done'];
+
+/** Аккаунт есть, открыть не вышло (`status: 'error'`, Ж1): не первая настройка, а «Повторить» — данные не трогаются. */
+function BootError() {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const boot = useAccount((s) => s.boot);
+  const [busy, setBusy] = useState(false);
+  return (
+    <ParentScreen scroll={false} left={<ParentButton variant="quiet" label={t('parent.close')} onPress={() => router.dismissAll()} testID="boot-error-close" block={false} />} testID="parent-boot-error">
+      <View style={{ paddingTop: 24, gap: 16 }}>
+        <ParentText role="heading" accessibilityRole="header">
+          {t('parent.bootError.title')}
+        </ParentText>
+        <ParentText role="body">{t('parent.bootError.body')}</ParentText>
+        <ParentButton
+          label={t('parent.bootError.retry')}
+          disabled={busy}
+          testID="boot-error-retry"
+          onPress={async () => {
+            setBusy(true);
+            try {
+              await boot();
+            } catch (e) {
+              if (__DEV__) console.warn('boot', e);
+              useAccount.getState().fail();
+            } finally {
+              setBusy(false);
+            }
+          }}
+        />
+      </View>
+    </ParentScreen>
+  );
+}
 
 function Gate() {
   const { t } = useTranslation();
@@ -97,7 +133,8 @@ function Guarded() {
     // гейт всё же рисуется — это ворота прототипа, не выпуск.
   }
   if (status === 'loading') return <View style={{ flex: 1 }} />;
-  const setupRoute = OPEN_WITHOUT_ACCOUNT.includes(pathname);
+  if (status === 'error') return <BootError />;
+  const setupRoute = (status === 'ready' ? OPEN_WITH_ACCOUNT_UNGATED : OPEN_WITHOUT_ACCOUNT).includes(pathname);
   if (status === 'ready' && consent === 'not_asked' && !setupRoute) return <HalfAccount />;
   if (status === 'none' && !setupRoute) return <Redirect href="/parent/setup" />;
   const unlocked = status === 'ready' && useGate.getState().unlocked();

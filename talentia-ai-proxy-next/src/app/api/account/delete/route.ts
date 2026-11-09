@@ -57,7 +57,8 @@ export async function POST(req: NextRequest) {
 
     const parsed = AccountDeletionBodySchema.safeParse(await req.json().catch(() => null));
     if (!parsed.success) {
-      return corsJson({ error: "Invalid request", details: parsed.error.flatten() }, 400, req);
+      // без `details`: структура схемы наружу не уходит, как в `/api/v2/tali` (аудит 2026-11-09, `backend-auditor`)
+      return corsJson({ error: "Invalid request" }, 400, req);
     }
 
     // Список своих детей и передачи — под JWT пользователя: права проверяет база

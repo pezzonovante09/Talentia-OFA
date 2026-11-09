@@ -5,6 +5,7 @@
  */
 import SetupScreen from '../setup';
 import { parentPin } from '../../../src/design/parentTokens';
+import { AccountExistsError } from '../../../src/services/local/account';
 import { useAccount, type AccountState } from '../../../src/state/account';
 import { useChildSession } from '../../../src/state/childSession';
 import { useGate } from '../../../src/state/gate';
@@ -163,6 +164,46 @@ describe('первая настройка', () => {
     await typePin('setup-repeat', '295174');
     await waitFor(() => onStep('pin'));
     expect(screen.getByText('Не совпало, попробуйте ещё раз')).toBeTruthy();
+  });
+
+  /** Контрольный аудит 2026-11-09, Ж1: на устройстве уже есть аккаунт — второй не создаётся, родителя ведут ко входу по PIN. */
+  describe('аккаунт на устройстве уже есть (AccountExistsError)', () => {
+    const exists = () => jest.fn(async () => {
+      throw new AccountExistsError('acc-existing');
+    });
+
+    async function repeatWithExisting() {
+      const create = exists();
+      useAccount.setState({ createWithPin: create });
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const view = await render();
+      await passIntent();
+      await typePin('setup-pin', PIN);
+      await waitFor(() => onStep('repeat'));
+      await typePin('setup-repeat', PIN);
+      await waitFor(() => onStep('pin'));
+      warn.mockRestore();
+      return { view, create };
+    }
+
+    it('возврат на шаг PIN с текстом parent.setup.accountExists, а не «Не получилось»', async () => {
+      await repeatWithExisting();
+      expect(screen.getByText('На этом устройстве уже есть аккаунт. Закройте настройку и войдите по PIN.')).toBeTruthy();
+      expect(screen.queryByText('Не получилось. Попробуйте ещё раз')).toBeNull();
+    });
+
+    it('аккаунт не создан: гейт не открыт, до согласия не дошли', async () => {
+      const { create } = await repeatWithExisting();
+      expect(create).toHaveBeenCalledTimes(1);
+      expect(useGate.getState().unlocked()).toBe(false);
+      expect(screen.queryByTestId('setup-step-consent')).toBeNull();
+    });
+
+    it('уход после отказа ничего не стирает (чужой живой аккаунт цел)', async () => {
+      const { view } = await repeatWithExisting();
+      await view.unmount();
+      expect(abandonSetup).not.toHaveBeenCalled();
+    });
   });
 
   it('повтор совпал: createWithPin с этим PIN, гейт открыт, шаг согласия с текстом и версией', async () => {

@@ -14,6 +14,7 @@ import type { SqlDb } from '../../../src/services/local/sql';
 import { sha256 } from '../../../src/services/digest';
 import { noRecordPort, sqlitePort } from '../../../src/services/progressPort';
 import { randomBytes } from '../../../src/services/random';
+import { useAbaRun } from '../../../src/state/abaRun';
 import { useAccount } from '../../../src/state/account';
 import { useChildSession } from '../../../src/state/childSession';
 import { setDevice } from '../../../src/state/device';
@@ -124,6 +125,17 @@ describe('сбой wipeDevice после метки', () => {
     await deleteWithPin();
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/parent/done'));
     expect(leftovers()).toEqual(EMPTY);
+  });
+
+  /** Контрольный аудит 2026-11-09, приватность п. 6: и в ветке доводки выбор ABA и выбранный ребёнок в памяти сняты. */
+  it('выбор ABA сброшен и выбранный ребёнок снят', async () => {
+    useAbaRun.getState().set({ config: 'with_adult', observers: [{ id: 'obs-1', role: 'parent', trained: false }], primaryObserverId: 'obs-1' });
+    useParentView.setState({ childId: KID });
+    await renderConfirm();
+    await deleteWithPin();
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/parent/done'));
+    expect(useAbaRun.getState()).toMatchObject({ config: null, observers: [], primaryObserverId: null });
+    expect(useParentView.getState().childId).toBeFalsy();
   });
 });
 

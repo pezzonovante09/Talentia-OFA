@@ -12,6 +12,7 @@ import type { SqlDb } from '../../../src/services/local/sql';
 import { sha256 } from '../../../src/services/digest';
 import { noRecordPort } from '../../../src/services/progressPort';
 import { randomBytes } from '../../../src/services/random';
+import { useAbaRun } from '../../../src/state/abaRun';
 import { useAccount } from '../../../src/state/account';
 import { useChildSession } from '../../../src/state/childSession';
 import { setDevice } from '../../../src/state/device';
@@ -222,6 +223,39 @@ describe('подтверждение', () => {
     expect(useAccount.getState().status).toBe('ready');
     expect(useAccount.getState().accountId).toBe(accountId);
     expect(screen.getByTestId('confirm-error')).toBeTruthy();
+  });
+
+  /** Контрольный аудит 2026-11-09, приватность п. 6: выбор ABA (режим, наблюдатели) и выбранный ребёнок не переживают удаление. */
+  describe('после удаления в памяти не остаётся выбора ABA', () => {
+    const abaChosen = () => useAbaRun.getState().set({ config: 'with_adult', observers: [{ id: 'obs-1', role: 'parent', trained: false }], primaryObserverId: 'obs-1' });
+
+    it('delete_child: useAbaRun сброшен', async () => {
+      abaChosen();
+      useAccount.setState({ refreshProfiles: jest.fn(async () => useAccount.setState({ profiles: [p2] })) });
+      await renderConfirm('delete_child');
+      await confirmWithPin();
+      await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/parent'));
+      expect(useAbaRun.getState()).toMatchObject({ config: null, observers: [], primaryObserverId: null });
+    });
+
+    it('delete_account: useAbaRun сброшен и выбранный ребёнок снят', async () => {
+      abaChosen();
+      useParentView.setState({ childId: KID1 });
+      await renderConfirm('delete_account');
+      await confirmWithPin();
+      await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/parent/done'));
+      expect(useAbaRun.getState()).toMatchObject({ config: null, observers: [], primaryObserverId: null });
+      expect(useParentView.getState().childId).toBeFalsy();
+    });
+
+    it('сбой удаления аккаунта: выбор ABA остаётся (ничего не удалено)', async () => {
+      abaChosen();
+      wipeAccountEverywhere.mockRejectedValueOnce(new Error('внедрённый сбой'));
+      await renderConfirm('delete_account');
+      await confirmWithPin();
+      await waitFor(() => expect(screen.getByTestId('confirm-error')).toBeTruthy());
+      expect(useAbaRun.getState().config).toBe('with_adult');
+    });
   });
 
   it('без базы в сторе действие не выполняется', async () => {

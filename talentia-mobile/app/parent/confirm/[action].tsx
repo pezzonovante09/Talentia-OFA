@@ -18,6 +18,9 @@ import { buildTime } from '../../../src/services/local/buildInfo';
 import { abaConsentTextVersion } from '../../../src/services/local/abaConsent';
 import { abaDataSummary, clearChildProgress, confirmClockJump, revokeAbaProcessing, runRetention, StaleClockConfirmationError } from '../../../src/services/local/purge';
 import { randomBytes } from '../../../src/services/random';
+import type { InterfaceLang } from '../../../src/domain/regionVisibility';
+import { consentLang } from '../../../src/i18n';
+import { useAbaRun } from '../../../src/state/abaRun';
 import { useAccount } from '../../../src/state/account';
 import { useChildSession } from '../../../src/state/childSession';
 import { device } from '../../../src/state/device';
@@ -65,7 +68,10 @@ export default function ConfirmScreen() {
   const idx = profile ? profiles.findIndex((p) => p.childId === profile.childId) : -1;
   const name = profile ? profile.name || t('parent.profile.unnamed', { n: idx + 1 }) : '';
   const day = (iso: string) => new Date(iso).toLocaleDateString(i18n.language === 'en' ? 'en-GB' : 'ru-RU');
-  const vars = hold ? { name, device: day(hold.deviceNow), last: day(hold.lastSeen), n: hold.wouldRemove, aba: hold.abaGoalsChildren } : { name };
+  const vars = hold ? { name, device: day(hold.deviceNow), last: day(hold.lastSeen), n: hold.wouldRemove, aba: hold.abaGoalsChildren, days: hold.driftDays } : { name };
+  // удержание набралось суммой шагов, а не одним скачком (Ж2): текст про «при прошлом запуске было» вводил бы в заблуждение
+  const stepDays = hold ? (Date.parse(hold.deviceNow) - Date.parse(hold.lastSeen)) / 86_400_000 : 0;
+  const bodyKey = kind === 'clock_jump' && hold && stepDays <= 45 && hold.driftDays > 45 ? 'parent.clock.bodyDrift' : keys.body;
   // нечего удалять — подтверждение не разрушительное (child-privacy-compliance 2026-10-25)
   const nothingToRemove = kind === 'clock_jump' && hold !== null && hold.wouldRemove === 0 && hold.abaGoalsChildren === 0;
 
@@ -100,6 +106,8 @@ export default function ConfirmScreen() {
       } else if (kind === 'delete_child' && profile) {
         await deleteChildEverywhere({ db, device: device(), childId: profile.childId, pseudonym: uuidV4(randomBytes), deliverRevocation: async () => true, accountId });
         if (useChildSession.getState().childId === profile.childId) useChildSession.getState().reset();
+        // выбор ABA в памяти (конфигурация, uuid наблюдателей) — тоже прочь (аудит 2026-11-09, приватность п. 6)
+        useAbaRun.getState().reset();
         await account.refreshProfiles();
         select(useAccount.getState().profiles[0]?.childId ?? '');
         router.replace('/parent');
@@ -117,7 +125,8 @@ export default function ConfirmScreen() {
         }
       } else if (kind === 'aba_revoke' && profile) {
         // отзыв — только вместе с удалением данных практики (ABA.md «Согласие aba_processing»)
-        const lang = i18n.language === 'en' ? 'en' : 'ru';
+        // версия того текста, который родитель видел: ky без перевода → ru (аудит 2026-11-09, приватность по диффу)
+        const lang = consentLang(i18n.language as InterfaceLang, 'parent.aba.consentBody');
         await revokeAbaProcessing(
           db,
           { id: uuidV4(randomBytes), scope: 'aba_processing', action: 'revoke', childId: profile.childId, textVersion: abaConsentTextVersion(lang), confirmedBy: 'pin', actorId: accountId, at: new Date().toISOString() },
@@ -130,6 +139,9 @@ export default function ConfirmScreen() {
         // Сначала переход: гейт при `status: 'none'` держит открытыми только setup/policy/done.
         router.replace('/parent/done');
         useChildSession.getState().reset();
+        // выбор ABA и выбранный ребёнок в памяти — тоже прочь (аудит 2026-11-09, приватность п. 6)
+        useAbaRun.getState().reset();
+        select('');
         account.clear();
         lock();
       }
@@ -141,6 +153,9 @@ export default function ConfirmScreen() {
         await finishDeviceWipe(device(), account.accountId).catch(() => undefined);
         router.replace('/parent/done');
         useChildSession.getState().reset();
+        // выбор ABA и выбранный ребёнок в памяти — тоже прочь (аудит 2026-11-09, приватность п. 6)
+        useAbaRun.getState().reset();
+        select('');
         account.clear();
         lock();
         return;
@@ -158,7 +173,7 @@ export default function ConfirmScreen() {
           {t(keys.title, vars)}
         </ParentText>
         <Card>
-          <ParentText role="body">{t(keys.body, vars)}</ParentText>
+          <ParentText role="body">{t(bodyKey, vars)}</ParentText>
           {kind === 'aba_revoke' && abaCount && (
             <ParentText role="body" testID="aba-revoke-count">
               {t('parent.aba.revokeCount', abaCount)}

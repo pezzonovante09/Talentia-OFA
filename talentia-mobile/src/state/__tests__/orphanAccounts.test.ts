@@ -1,10 +1,12 @@
 /**
- * №148 через стор аккаунта: брошенные аккаунты появляются после сбоя старта (`boot` падает →
- * `_layout` зовёт `clear()` → новая настройка) и после сбоя `createLocalAccount` посередине. «Удалить
+ * №148 через стор аккаунта: брошенные аккаунты появляются после сбоя `createLocalAccount` посередине (а до
+ * контрольного аудита 2026-11-09, Ж1, — и после сбоя старта: `boot` падал → `_layout` звал `clear()` → новая
+ * настройка; теперь сбой старта даёт `status: 'error'`, и настройка поверх аккаунта отказана). «Удалить
  * аккаунт» обязан снять базы и PIN всех. И удаление, упавшее посередине, доводится до конца после
  * перезапуска приложения. Файлы баз — `fakeDevice().files`: `openDb` их создаёт, `deleteLocalDb` —
  * удаляет только основной файл, как `deleteDatabaseAsync`.
  */
+import { AccountExistsError, CURRENT_ACCOUNT_KEY } from '../../services/local/account';
 import { wipeAccountEverywhere } from '../../services/local/deleteEverywhere';
 import { DB_FILE, knownAccountKey, secureKeys } from '../../services/local/device';
 import { deleteLocalDb } from '../../services/local/expoSqlite';
@@ -91,37 +93,57 @@ beforeEach(() => {
 
 afterEach(() => setDevice(null));
 
-describe('сбой boot → clear() → новая настройка → «Удалить аккаунт»', () => {
+/**
+ * Контрольный аудит 2026-11-09, Ж1: сбой старта больше не ведёт к новой настройке (`status: 'error'`, не
+ * `'none'`), вторая настройка поверх аккаунта не создаётся, и ничего не стирается. Прежний путь «сбой → clear() →
+ * новая настройка → удаление снимает базы всех» остаётся только у явного «Удалить аккаунт» (`finishDeviceWipe`,
+ * описание ниже).
+ */
+describe('сбой boot → status error → настройка отказана → аккаунт цел', () => {
   async function scenario({ legacy = false } = {}) {
     const a = await setUp();
     // аккаунт создан до №148: реестра нет
     if (legacy) device.storage.delete(knownAccountKey(a));
-    await bootLikeLayout(brokenDb);
-    expect(useAccount.getState().status).toBe('none');
-    const b = await setUp();
-    expect(b).not.toBe(a);
-    await deleteAccount();
-    return { a, b };
+    const filesBefore = ourFiles();
+    const pinsBefore = pinsOf(a);
+    reset();
+    await useAccount.getState().boot({ openDb: brokenDb, now: NOW, builtAt: null });
+    expect(useAccount.getState().status).toBe('error');
+    expect(useAccount.getState().accountId).toBe(a);
+    await expect(setUp()).rejects.toBeInstanceOf(AccountExistsError);
+    return { a, filesBefore, pinsBefore };
   }
 
-  it('не осталось ни одного файла talentia-*.db*', async () => {
-    await scenario();
-    expect(ourFiles()).toEqual([]);
+  it('файлы базы и PIN аккаунта на месте, current не тронут', async () => {
+    const { a, filesBefore, pinsBefore } = await scenario();
+    expect(ourFiles()).toEqual(filesBefore);
+    expect(pinsOf(a)).toEqual(pinsBefore);
+    expect(device.storage.get(CURRENT_ACCOUNT_KEY)).toBe(a);
   });
 
-  it('не осталось PIN и таймаута ни старого, ни нового id', async () => {
-    const { a, b } = await scenario();
-    expect(pinsOf(a, b)).toEqual([]);
+  it('старый аккаунт без реестра (до №148): тоже цел', async () => {
+    const { a, filesBefore } = await scenario({ legacy: true });
+    expect([ourFiles(), pinsOf(a).length]).toEqual([filesBefore, 2]);
   });
 
-  it('SecureStore и AsyncStorage пусты', async () => {
-    await scenario();
-    expect([[...device.secure.keys()], [...device.storage.keys()]]).toEqual([[], []]);
+  it('следующий старт с исправной базой поднимает тот же аккаунт', async () => {
+    const { a } = await scenario();
+    reset();
+    await useAccount.getState().boot({ openDb, now: NOW, builtAt: null });
+    expect([useAccount.getState().status, useAccount.getState().accountId]).toEqual(['ready', a]);
   });
 
-  it('старый аккаунт без реестра (до №148): найден по файлу базы, PIN снят', async () => {
-    const { a } = await scenario({ legacy: true });
-    expect([ourFiles(), pinsOf(a)]).toEqual([[], []]);
+  it('сбой хранилища до чтения current (`_layout` → fail()): status error, настройка отказана', async () => {
+    const a = await setUp();
+    reset();
+    failOnce(device, 'getItem', 1);
+    await useAccount
+      .getState()
+      .boot({ openDb, now: NOW, builtAt: null })
+      .catch(() => useAccount.getState().fail());
+    expect(useAccount.getState().status).toBe('error');
+    await expect(setUp()).rejects.toBeInstanceOf(AccountExistsError);
+    expect(device.storage.get(CURRENT_ACCOUNT_KEY)).toBe(a);
   });
 });
 

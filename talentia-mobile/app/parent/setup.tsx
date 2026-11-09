@@ -22,7 +22,8 @@ import { View } from 'react-native';
 import { parentSpacing } from '../../src/design/parentTokens';
 import { checkIntent, intentChallenge, pinProblem } from '../../src/domain/parentGate';
 import type { InterfaceLang } from '../../src/domain/regionVisibility';
-import { accountLocalTextVersion } from '../../src/services/local/account';
+import { consentLang } from '../../src/i18n';
+import { AccountExistsError, accountLocalTextVersion } from '../../src/services/local/account';
 import { sha256 } from '../../src/services/digest';
 import { useAccount } from '../../src/state/account';
 import { useChildSession } from '../../src/state/childSession';
@@ -60,8 +61,11 @@ export default function SetupScreen() {
   const [failure, setFailure] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const stepNo = ORDER.indexOf(step) + 1;
-  const lang = i18n.language as InterfaceLang;
+  // язык, на котором текст согласия показан (ky без перевода → ru), им же берётся версия для журнала
+  const lang = consentLang(i18n.language as InterfaceLang, 'parent.consent.body');
   const version = useMemo(() => accountLocalTextVersion(lang), [lang]);
+  /** Строки согласия — тем языком, на котором текст есть. */
+  const tc = (key: string, vars?: Record<string, unknown>) => t(key, { ...vars, lng: lang });
   /** Аккаунт создан на шаге 3, согласия ещё нет. */
   const pending = useRef(false);
   const mounted = useRef(true);
@@ -176,7 +180,15 @@ export default function SetupScreen() {
               } catch (e) {
                 if (__DEV__) console.warn('setup', e);
                 setFirstPin(null);
-                setPinError(t('parent.failed'));
+                if (e instanceof AccountExistsError) {
+                  // аккаунт на устройстве уже есть (Ж1): второй не создаётся. Поднять его и уйти к гейту — иначе при
+                  // `none` строка «войдите по PIN» вела бы обратно на настройку (`child-privacy-compliance`)
+                  setPinError(t('parent.setup.accountExists'));
+                  await account.boot().catch(() => useAccount.getState().fail());
+                  if (mounted.current && useAccount.getState().status !== 'none') router.replace('/parent');
+                } else {
+                  setPinError(t('parent.failed'));
+                }
                 setStep('pin');
               } finally {
                 setBusy(false);
@@ -189,20 +201,20 @@ export default function SetupScreen() {
         {step === 'consent' && (
           <View style={{ gap: parentSpacing.lg, flex: 1 }}>
             <ParentText role="heading" accessibilityRole="header">
-              {t('parent.consent.title')}
+              {tc('parent.consent.title')}
             </ParentText>
             <ParentText role="caption" color="textMuted">
               {t('parent.setup.step', { n: stepNo, total: 4 })}
             </ParentText>
             <Card>
               <ParentText role="body" testID="consent-body">
-                {t('parent.consent.body')}
+                {tc('parent.consent.body')}
               </ParentText>
             </Card>
-            <ParentButton variant="quiet" label={t('parent.consent.policy')} underline onPress={() => router.push('/parent/policy')} testID="consent-policy" block={false} />
+            <ParentButton variant="quiet" label={tc('parent.consent.policy')} underline onPress={() => router.push('/parent/policy')} testID="consent-policy" block={false} />
             <View style={{ flex: 1 }} />
             <ParentButton
-              label={t('parent.consent.accept')}
+              label={tc('parent.consent.accept')}
               disabled={busy}
               onPress={async () => {
                 setBusy(true);
@@ -229,7 +241,7 @@ export default function SetupScreen() {
               </ParentText>
             )}
             <ParentText role="caption" color="textMuted" align="center">
-              {t('parent.consent.version', { version, date: new Date().toLocaleDateString(lang === 'en' ? 'en-GB' : 'ru-RU') })}
+              {tc('parent.consent.version', { version, date: new Date().toLocaleDateString(lang === 'en' ? 'en-GB' : 'ru-RU') })}
             </ParentText>
           </View>
         )}

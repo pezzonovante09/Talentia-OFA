@@ -55,4 +55,14 @@ export function initI18n({ lng }: { lng: InterfaceLang }): i18n {
 /** Есть ли ключ в текущем языке — без запасного языка это и есть «переведено». */
 export const keyExists = (key: string): boolean => i18next.exists(key);
 
+/**
+ * Язык, на котором текст согласия показан на самом деле. Запасного языка нет (`fallbackLng: false`), а ky-тексты
+ * согласий — долг носителя (№108): на ky-устройстве экран показал бы ключи, а в журнал легла бы версия `ky-…`
+ * текста, которого родитель не видел (контрольный аудит 2026-11-09, `child-privacy-compliance` по диффу этапа A).
+ * Экран рендерит текст через `t(key, { lng })` этим языком и этим же языком берёт версию.
+ */
+export function consentLang(lang: InterfaceLang, bodyKey: string): InterfaceLang {
+  return i18next.exists(bodyKey, { lng: lang }) ? lang : 'ru';
+}
+
 export default i18next;
