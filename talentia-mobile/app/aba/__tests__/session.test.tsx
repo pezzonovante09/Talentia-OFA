@@ -1347,6 +1347,24 @@ describe('цикл 4 (№172–173): плашка → обмен', () => {
       expect(childCardEvents(await snapshot())).toEqual([]);
     });
 
+    it('палец, лёгший на плашке до посадки жетона (кадр показан с отметки, не с посадки), держит смену кадра и засчитан в потолке', async () => {
+      // ворота плашки: `since = markedAt` (Ж19, мутация `since: landedAt` выживала): касание в окне до посадки 340 — уже на кадре
+      await prepare(1);
+      await toFirstTrial();
+      const M = await answerRight();
+      await tick(0);
+      await stepTo(M + 200);
+      await fireEvent(screen.getByTestId('aba-break-card'), 'pressIn', TOUCH);
+      await stepTo(M + 1040);
+      expect([overlay(), exchange()]).toEqual([true, false]);
+      await stepTo(M + 1259);
+      expect([overlay(), exchange()]).toEqual([true, false]);
+      await stepTo(M + 1260);
+      await waitFor(() => expect(exchange()).toBe(true));
+      expect(trace()).toBe(true);
+      expect(childCardEvents(await snapshot())).toHaveLength(1);
+    });
+
     it.each(['снят на следующей пробе', 'не снят'] as const)(
       'палец, лёгший на последствии обычной пробы (%s), не залипает: на следующей полной доске смена кадра в срок и ничего не записано',
       async (how) => {

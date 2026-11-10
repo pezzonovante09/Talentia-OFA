@@ -874,7 +874,9 @@ export default function AbaSessionScreen() {
   /**
    * Палец лежит и в потолке — касание засчитывается в момент смены кадра (`atCeiling: 'commit_if_inside'`): карточка —
    * просьба о перерыве (обмен идёт, след остаётся); «Отказ» сам ведёт дальше — тогда `true`. Раньше потолка и касание,
-   * начатое до показа кадра, не засчитываются.
+   * начатое до показа кадра, не засчитываются. Инвариант (Ж19): пока лежит засчитываемый палец, `frameAt` всегда равен
+   * потолку — его ставят `gateWait` и `gateOnHold` (`sessionPhase.test.ts`), а `at` здесь — это `frameAt`; проверка
+   * `at < gate.ceilingAt` — вторая линия той же защиты, отдельно недостижимая.
    */
   const commitHeld = (gate: FullBoardGate, at: number): boolean => {
     const h = held.current;
