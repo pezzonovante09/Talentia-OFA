@@ -12,11 +12,15 @@ import { lessonById, regionLessons } from '../../src/content';
 import { lessonTiming } from '../../src/design/tokens';
 import type { LessonAnswer } from '../../src/domain/lessonSession';
 import { emptySkill } from '../../src/domain/mastery';
+import i18n from '../../src/i18n';
 import { voice } from '../../src/services/voice';
 import { useChildSession } from '../../src/state/childSession';
 import { DEMO_DELAY_MS, DEMO_HOLD_MS, LISTEN_STEP_MS, SHOW_AFTER_MS, UNLOCK_AFTER_MS } from '../../src/ui/lesson/useLessonController';
 import { act, fireEvent, renderWithProviders, screen, waitFor } from '../../src/test/render';
 import type { ChooseTask, MatchTask, OrderTask, Task } from '../../src/types/task';
+
+/** Реплика из банка Tali (Ж14): любой из четырёх вариантов ситуации, родовой надстройки при форме «не указывать» нет. */
+const bank = (situation: string) => new RegExp(`^companion\\.${situation}\\.[0-3]$`);
 
 let mockLessonId = 'nv-count-l1';
 jest.mock('expo-router', () => {
@@ -102,7 +106,7 @@ describe('возврат в урок на той же стадии', () => {
     expect(screen.getByTestId(`option-${correctId(t)}-badge-triangle`)).toBeTruthy();
     expect(actionId()).toBe('lesson-action-checkDisabled');
     // вопрос после показа не повторяется — при возврате звучит только «Продолжим?» (ситуация lesson-resume)
-    expect(voice.last?.key).toBe('lesson.resume');
+    expect(voice.last?.key).toMatch(bank('lesson-resume'));
     await pressAction('lesson-action-checkDisabled');
     expect(voice.last?.key).toBe('lesson.chooseFirst');
     expect(activeTask().stage).toBe('active_response');
@@ -197,7 +201,7 @@ describe('голос завязки и примера', () => {
 });
 
 describe('реплика к демо первой встречи (№35)', () => {
-  it('match: после DEMO_DELAY_MS звучит lesson.demoMatch, тот же текст в пузыре, первая плитка выбрана', async () => {
+  it('match: после DEMO_DELAY_MS звучит реплика demo-composite, тот же текст в пузыре, первая плитка выбрана', async () => {
     await renderWithProviders(<LessonScreen />);
     await throughIntro();
     const t = firstTask();
@@ -211,14 +215,14 @@ describe('реплика к демо первой встречи (№35)', () =>
     expect(voice.last?.key).toBe(match.promptKey);
     // у пар с точками перечисления нет — демо через DEMO_DELAY_MS от открытия
     await advance(DEMO_DELAY_MS);
-    expect(voice.last?.key).toBe('lesson.demoMatch');
-    expect(screen.getByText('Я беру первую. Найди ей пару')).toBeTruthy();
+    expect(voice.last?.key).toMatch(bank('demo-composite'));
+    expect(screen.getByText(i18n.t(voice.last!.key))).toBeTruthy();
     expect(screen.getByTestId(`left-${match.pairs[0].id}`)).toBeSelected();
     // поза «указывает» держится DEMO_HOLD_MS — дождаться, чтобы таймер не стрелял после теста
     await advance(DEMO_HOLD_MS);
   });
 
-  it('order: после перечисления первого места и DEMO_DELAY_MS звучит lesson.demoOrder, тот же текст в пузыре', async () => {
+  it('order: после перечисления первого места и DEMO_DELAY_MS звучит реплика demo-composite, тот же текст в пузыре', async () => {
     // урок 2: до `order` — две `choose`; проходим их в сторе, экран открывается уже на `order`
     mockLessonId = 'nv-count-l2';
     const s = useChildSession.getState();
@@ -239,8 +243,8 @@ describe('реплика к демо первой встречи (№35)', () =>
     expect(screen.getByTestId('task-order')).toBeTruthy();
     expect(voice.last?.key).toBe(order.promptKey);
     await advance(LISTEN_STEP_MS + DEMO_DELAY_MS);
-    expect(voice.last?.key).toBe('lesson.demoOrder');
-    expect(screen.getByText('Я ставлю первый. Дальше — ты')).toBeTruthy();
+    expect(voice.last?.key).toMatch(bank('demo-composite'));
+    expect(screen.getByText(i18n.t(voice.last!.key))).toBeTruthy();
   });
 });
 
@@ -364,7 +368,7 @@ describe('связки Tali перед заданием (вопрос 71)', () =
   });
   const keys = () => say.mock.calls.map((c) => c[0] as string);
 
-  it('повторение из прошлого урока внутри урока: lesson.reviewIntro голосом и в пузыре, вопрос — через LISTEN_STEP_MS * 2', async () => {
+  it('повторение из прошлого урока внутри урока: реплика review-intro голосом и в пузыре, вопрос — через LISTEN_STEP_MS * 2', async () => {
     // урок 1 пройден, его навык виден на уроке 0; к уроку 3 (счётчик 2) зазор 2 ≥ REVIEW_GAP коробки 1 — в срок.
     // Составные форматы уже встречены: иначе демо `match` перебило бы вопрос повторения.
     mockLessonId = 'nv-count-l3';
@@ -398,11 +402,11 @@ describe('связки Tali перед заданием (вопрос 71)', () =
     say.mockClear();
     await pressAction('lesson-action-next');
     expect(useChildSession.getState().activeLesson!.index).toBe(ri);
-    expect(keys()).toEqual(['lesson.reviewIntro']);
-    expect(screen.getByText('А это помнишь?')).toBeTruthy();
+    expect(keys()).toEqual([expect.stringMatching(bank('review-intro'))]);
+    expect(screen.getByText(i18n.t(keys()[0]))).toBeTruthy();
     expect(screen.getByTestId('lesson-bubble-body')).toBeTruthy();
     await advance(LISTEN_STEP_MS * 2 - 380);
-    expect(keys()).toEqual(['lesson.reviewIntro', reviewTask.promptKey]);
+    expect(keys()).toEqual([expect.stringMatching(bank('review-intro')), reviewTask.promptKey]);
   });
 
   it('обычное задание урока связки не получает: сразу вопрос', async () => {
@@ -418,11 +422,10 @@ describe('связки Tali перед заданием (вопрос 71)', () =
     say.mockClear();
     await pressAction('lesson-action-next');
     expect(keys()[0]).toBe(currentTask().promptKey);
-    expect(keys()).not.toContain('lesson.reviewIntro');
-    expect(keys()).not.toContain('lesson.probeIntro');
+    expect(keys().filter((k) => /^companion\.(review|probe)-intro\./.test(k))).toEqual([]);
   });
 
-  it('проба переноса: lesson.probeIntro голосом и в пузыре, вопрос — через LISTEN_STEP_MS * 2', async () => {
+  it('проба переноса: реплика probe-intro голосом и в пузыре, вопрос — через LISTEN_STEP_MS * 2', async () => {
     const s = useChildSession.getState();
     s.openLesson({ lessonId: 'nv-count-l1', now: NOW, seed: 7, nodeState: 'open' });
     const at = NOW.toISOString();
@@ -451,13 +454,13 @@ describe('связки Tali перед заданием (вопрос 71)', () =
     say.mockClear();
     await pressAction('lesson-action-next');
     expect(useChildSession.getState().activeLesson!.index).toBe(pi);
-    expect(keys()).toEqual(['lesson.probeIntro']);
-    expect(screen.getByText('Ещё раз — теперь без меня')).toBeTruthy();
+    expect(keys()).toEqual([expect.stringMatching(bank('probe-intro'))]);
+    expect(screen.getByText(i18n.t(keys()[0]))).toBeTruthy();
     await advance(LISTEN_STEP_MS * 2 - 380);
-    expect(keys()).toEqual(['lesson.probeIntro', t1.promptKey]);
+    expect(keys()).toEqual([expect.stringMatching(bank('probe-intro')), t1.promptKey]);
   });
 
-  it('возврат в урок на стадии answer: сначала «Продолжим?» (lesson.resume), затем вопрос задания', async () => {
+  it('возврат в урок на стадии answer: сначала реплика lesson-resume («Продолжим?»), затем вопрос задания', async () => {
     const first = await renderWithProviders(<LessonScreen />);
     await throughIntro();
     const t = firstTask();
@@ -466,14 +469,14 @@ describe('связки Tali перед заданием (вопрос 71)', () =
 
     say.mockClear();
     await renderWithProviders(<LessonScreen />);
-    expect(keys()).toEqual(['lesson.resume', t.promptKey]);
+    expect(keys()).toEqual([expect.stringMatching(bank('lesson-resume')), t.promptKey]);
     expect(actionId()).toBe('lesson-action-checkDisabled');
     expect(activeTask().stage).toBe('answer');
   });
 
   it('первое открытие урока — без «Продолжим?»', async () => {
     await renderWithProviders(<LessonScreen />);
-    expect(keys()).not.toContain('lesson.resume');
+    expect(keys().filter((k) => k.startsWith('companion.lesson-resume.'))).toEqual([]);
     expect(keys()[0]).toBe(lesson.hook.lineKey);
   });
 });

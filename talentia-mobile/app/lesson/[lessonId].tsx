@@ -14,6 +14,7 @@ import { lessonLayout } from '../../src/design/tokens';
 import { randomSeed } from '../../src/services/random';
 import { voice } from '../../src/services/voice';
 import { completedLessons, useChildSession } from '../../src/state/childSession';
+import { companionLine } from '../../src/state/companionMemory';
 import { ExitLayer } from '../../src/ui/lesson/ExitLayer';
 import { HookScreen } from '../../src/ui/lesson/HookScreen';
 import { TaskScreen, type TaskScreenFormat } from '../../src/ui/lesson/TaskScreen';
@@ -38,8 +39,8 @@ function LessonBody({ lessonId }: { lessonId: string }) {
     opened.current = true;
     const s = useChildSession.getState();
     if (s.activeLesson?.lessonId === lessonId) {
-      // вернулись в брошенный урок (ситуация `lesson-resume`, вопрос 71)
-      voice.say('lesson.resume');
+      // вернулись в брошенный урок (ситуация `lesson-resume`, вопрос 71; реплика из банка, Ж14)
+      voice.say(companionLine('lesson-resume', s.settings.addressForm));
       return;
     }
     s.openLesson({ lessonId, now: new Date(), seed: randomSeed(), nodeState: completedLessons(s).has(lessonId) ? 'done' : 'open' });

@@ -9,10 +9,11 @@ import { Animated, Platform, View } from 'react-native';
 import Svg, { Line } from 'react-native-svg';
 
 import { useDesign } from '../../../design';
+import { orderTile } from '../../../design/taskTiles';
 import { lessonLayout, orderMark } from '../../../design/tokens';
 import { emptyOrderDraft, orderAfterNarrowing, orderAnswerOf, orderShown, orderTap, orderWrongOf, slotOf, type OrderDraft } from '../../../domain/taskDraft';
 import type { OrderTask as OrderTaskType } from '../../../types/task';
-import { MediaContent, speaksOnTap } from '../MediaContent';
+import { isSilentCard, MediaContent, speaksOnTap, symbolFitFor } from '../MediaContent';
 import { Tile, type TileState } from '../Tile';
 import type { FormatProps, FormatSpec, TaskStep } from './types';
 
@@ -50,13 +51,12 @@ export function OrderTaskView(rawProps: FormatProps<OrderDraft>) {
   const theme = useDesign();
   const gap = theme.spacing.lg;
   const n = task.items.length;
-  const tileW = (props.width - gap * (n - 1)) / n;
   const lift = theme.elevation.raised.offsetY;
-  const tileH = Math.min(Math.floor((props.height - orderMark.strip - lessonLayout.trayGap - lift * 2) / 2), tileW * 1.4);
+  const { w: tileW, h: tileH } = orderTile(props.width, props.height, n, lift);
   const colX = (i: number) => i * (tileW + gap);
   const placesY = orderMark.strip;
   const trayY = placesY + tileH + lift + lessonLayout.trayGap;
-  const maxChars = Math.max(...task.items.map((m) => String(m.numeral ?? '').length), 1);
+  const symbol = symbolFitFor(task.items, tileW, tileH);
   const instant = theme.still;
 
   return (
@@ -116,10 +116,10 @@ export function OrderTaskView(rawProps: FormatProps<OrderDraft>) {
                 badge={badgeKind}
                 onPress={() => props.onTap(at >= 0 ? { kind: 'slot', index: at } : { kind: 'tray', id: item.id })}
                 onPressIn={props.onTouch}
-                accessibilityLabel={speaksOnTap(item) ? props.t(item.labelKey) : props.t('a11y.pile', { n: i + 1 })}
+                accessibilityLabel={speaksOnTap(item) ? props.t(item.labelKey) : props.t(isSilentCard(item) ? 'a11y.option' : 'a11y.pile', { n: i + 1 })}
                 testID={`item-${item.id}`}
               >
-                <MediaContent media={item} t={props.t} maxChars={maxChars} />
+                <MediaContent media={item} t={props.t} symbol={symbol} />
               </Tile>
             </FlyingTile>
           );

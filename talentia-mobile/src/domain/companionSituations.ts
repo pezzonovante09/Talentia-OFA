@@ -14,6 +14,7 @@
  */
 
 import type { Region } from '../types/task';
+import type { Attempt } from './lessonFlow';
 
 /**
  * Состав пересмотрен 2026-10-31 (разбор, вопрос 71, №168): убраны `lesson-start-first` (её работу делает
@@ -163,4 +164,31 @@ export function lineKeyFor(s: Situation, variant: number, form: AddressForm, exi
   // суффиксом, как context в i18next: точкой нельзя — в JSON ключ `<n>` уже строка
   const gendered = `${base}_${FORM_SUFFIX[form]}`;
   return exists(gendered) ? gendered : base;
+}
+
+/**
+ * Какая реплика звучит на итог задания (этап D5 по аудиту 2026-11-09, Ж14). Не «похвала за всё»: на 5–6 в уроке
+ * четыре-пять заданий, и реплика на каждый верный ответ стала бы сценарием (как прежняя серия из двух, №168).
+ * - Ответ показали — `null`: там уже звучит объяснение, Tali — поза.
+ * - Проба переноса — `null`: перед ней прозвучала `probe-intro`.
+ * - Со второй попытки — `correct-after-hint`.
+ * - С первой: ровно третий подряд с первой попытки — `correct-streak-3plus` (один раз на серию); первый верный ответ
+ *   урока — `correct-first`; иначе молча (поза `cheer`).
+ * `before` — попытки уже законченных заданий урока по порядку (`LessonSessionState.played`), без текущего.
+ * Когда подключат `correct-previously-failed` (нужна история навыка), она встаёт **выше** `correct-first` и серии
+ * (`curriculum-content-reviewer`, этап D): это самая ценная реплика банка.
+ */
+export function correctSituation(before: readonly Attempt[], attempt: Attempt, transferProbe: boolean): Situation | null {
+  if (attempt === 'shown' || transferProbe) return null;
+  if (attempt === 'second') return 'correct-after-hint';
+  let streak = 1;
+  for (let i = before.length - 1; i >= 0 && before[i] === 'first'; i -= 1) streak += 1;
+  if (streak === 3) return 'correct-streak-3plus';
+  return before.some((a) => a !== 'shown') ? null : 'correct-first';
+}
+
+/** Итог урока — по причине, а не по звёздам (№7): показывали ответ → `helped`, была подсказка → `hinted`, иначе `clean`. */
+export function doneSituation(attempts: readonly Attempt[]): Extract<Situation, `lesson-done-${string}`> {
+  if (attempts.includes('shown')) return 'lesson-done-helped';
+  return attempts.includes('second') ? 'lesson-done-hinted' : 'lesson-done-clean';
 }

@@ -1,20 +1,39 @@
 /**
- * Содержимое плитки по `Media`: кучка (с корзинкой), карточка-число / немая карточка, иначе подпись.
+ * Содержимое плитки по `Media`: кучка (с корзинкой), карточка-символ (цифра, буква, слог; немая — так же), иначе подпись.
  */
 import type { TFunction } from 'i18next';
 
 import { AppText } from '../AppText';
 import { NumeralCard } from './NumeralCard';
 import { Pile } from './Pile';
+import { symbolBox, symbolFontSize } from '../../design/glyphFit';
 import type { Media } from '../../types/task';
 
 export function isSilentCard(media: Media): boolean {
   return media.voice === 'select';
 }
 
-export function MediaContent({ media, t, maxChars = 1, testID }: { media: Media; t: TFunction; maxChars?: number; testID?: string }) {
+/** Знак карточки-символа или `undefined`, если элемент — не символ. */
+export function symbolText(media: Media): string | undefined {
+  if (media.glyph !== undefined) return media.glyph;
+  return media.numeral !== undefined ? String(media.numeral) : undefined;
+}
+
+/**
+ * Кегль и рамка карточек-символов одного задания: один кегль на все (`symbolFontSize`) по ширине и высоте плитки,
+ * рамка — плитка внутри контура «выбрано» (`symbolBox`).
+ */
+export type SymbolFit = { size: number; boxW: number; boxH: number };
+
+export function symbolFitFor(media: readonly Media[], tileW: number, tileH: number): SymbolFit {
+  const texts = media.map(symbolText).filter((t): t is string => t !== undefined);
+  return { size: symbolFontSize(texts, tileW, tileH), boxW: symbolBox(tileW), boxH: symbolBox(tileH) };
+}
+
+export function MediaContent({ media, t, symbol, testID }: { media: Media; t: TFunction; symbol?: SymbolFit; testID?: string }) {
   if (media.count !== undefined || media.container) return <Pile media={media} variant="tile" testID={testID} />;
-  if (media.numeral !== undefined) return <NumeralCard text={String(media.numeral)} maxChars={maxChars} testID={testID} />;
+  const text = symbolText(media);
+  if (text !== undefined) return <NumeralCard text={text} size={symbol?.size} boxW={symbol?.boxW} boxH={symbol?.boxH} testID={testID} />;
   return (
     <AppText role="label" align="center" lines={2} testID={testID}>
       {t(media.labelKey)}

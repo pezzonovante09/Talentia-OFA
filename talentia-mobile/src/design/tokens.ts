@@ -9,6 +9,7 @@
  * (`contrast.ts`) и проверены тестами; менять цвет без пересчёта нельзя.
  */
 import type { AgeBand, Region } from '../types/task';
+import { NUNITO_LINE_RATIO } from './glyphMetrics';
 
 export type Scheme = 'light' | 'dark';
 
@@ -386,6 +387,15 @@ export const symbolGlyph = { 1: 64, 2: 48, 3: 40, 4: 32 } as const;
  * а размер знака не должен подсказывать ответ. Значение для `maxFontSizeMultiplier`.
  */
 export const symbolGlyphMaxFontMultiplier = 1;
+
+/**
+ * Карточка-символ для цифры, буквы и слога (`design-lead`, этап D2 по аудиту 2026-11-09). Кегль — меньшее из ступени
+ * `symbolGlyph` по числу знаков и того, что входит по ширине: ширины Nunito 800 из TTF (`glyphMetrics.ts`), расчёт —
+ * `glyphFit.ts`. Поле под знак — плитка минус контур «выбрано» `stroke.bold` и `inset` с двух сторон. Высота строки —
+ * натуральная высота шрифта: при 1.15 кегля обрезались бы Й, Ё и хвост Ң. Кегль меньше `minSize` на самом узком
+ * экране (`narrowContentW` — 320 pt без полей 2 × 16) — ошибка корпуса (гард `glyphFit`), а не уменьшение на ходу.
+ */
+export const glyphCard = { inset: 4, minSize: 32, lineHeightRatio: NUNITO_LINE_RATIO, narrowContentW: 288 } as const;
 
 /**
  * Разделитель разрядов в числах ответа из 5+ цифр (9–10 лет, `build`, до 7 цифр): тонкий

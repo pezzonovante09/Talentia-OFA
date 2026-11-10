@@ -11,15 +11,20 @@ import { BackHandler } from 'react-native';
 import type { TaliPose } from '../../assets/registry';
 import { lessonTiming } from '../../design/tokens';
 import { lessonById } from '../../content';
+import { correctSituation } from '../../domain/companionSituations';
 import { isReviewSession, lessonStepOf, type LessonEvent, type LessonSessionState, type LessonStep } from '../../domain/lessonSession';
 import { placeVoice } from '../../domain/taskDraft';
 import { voice } from '../../services/voice';
 import { useChildSession } from '../../state/childSession';
+import { companionLine } from '../../state/companionMemory';
 import type { Task } from '../../types/task';
 import { FORMATS } from './formats';
 import type { FormatPhase, FormatSpec, FormatTap, TaskStep } from './formats/types';
 import type { ActionState } from './LessonChrome';
 import { speaksOnTap } from './MediaContent';
+
+/** Форма обращения ребёнка — в момент реплики (родовая надстройка банка, №71). */
+const addressForm = () => useChildSession.getState().settings.addressForm;
 
 export const LISTEN_STEP_MS = 700;
 export const DEMO_DELAY_MS = 600;
@@ -132,9 +137,10 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
       if (taskStep.stage === 'active_response') later(LISTEN_STEP_MS * 2, () => patch({ listening: [] }));
       return;
     }
-    // повторение из чужого урока и проба переноса — сначала связка Tali (ситуации `review-intro`,
-    // `probe-intro`; вопрос 71), вопрос — следом; в сессии повторения связка уже прозвучала на входе
-    const intro = taskStep.transferProbe ? 'lesson.probeIntro' : taskStep.review && !isReviewSession(state!) ? 'lesson.reviewIntro' : null;
+    // повторение из чужого урока и проба переноса — сначала связка Tali из банка (ситуации `review-intro`,
+    // `probe-intro`; вопрос 71, Ж14), вопрос — следом; в сессии повторения связка уже прозвучала на входе
+    const introSituation = taskStep.transferProbe ? 'probe-intro' : taskStep.review && !isReviewSession(state!) ? 'review-intro' : null;
+    const intro = introSituation ? companionLine(introSituation, addressForm()) : null;
     if (intro) {
       voice.say(intro);
       patch({ bubble: t(intro), pose: 'point' });
@@ -151,8 +157,8 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
         if (!first) return;
         const r = spec.tap(u.draft, first, taskStep);
         if (!r) return;
-        // Tali называет, что делает (№35): молчаливо выбранная плитка ребёнку непонятна
-        const key = task.format === 'match' ? 'lesson.demoMatch' : 'lesson.demoOrder';
+        // Tali называет, что делает (№35): молчаливо выбранная плитка ребёнку непонятна — ситуация `demo-composite`
+        const key = companionLine('demo-composite', addressForm());
         voice.say(key);
         patch({ draft: r.draft, pose: 'point', bubble: t(key) });
         later(DEMO_HOLD_MS, () => patch({ pose: 'idle' }));
@@ -298,7 +304,12 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
       return;
     }
     if (next.stage === 'next') {
-      patch({ phase: 'done', pose: next.feedback === 'neutral' ? 'idle' : 'cheer', bubble: null, nextReady: false });
+      // реплика на итог — не на каждый верный ответ (`correctSituation`, Ж14): первый верный, третий подряд, со второй попытки
+      const before = useChildSession.getState().activeLesson?.played.map((p) => p.attempt) ?? [];
+      const situation = correctSituation(before, next.attempt, next.transferProbe);
+      const line = situation ? companionLine(situation, addressForm()) : null;
+      if (line) voice.say(line);
+      patch({ phase: 'done', pose: next.feedback === 'neutral' ? 'idle' : 'cheer', bubble: line ? t(line) : null, nextReady: false });
       later(lessonTiming.nextUnlock, () => patch({ nextReady: true }));
       // ребёнок 5–6 после «верно» может просто ждать: через `nudgeAfter` Tali указывает на «Дальше»
       // (контрольный аудит 2026-11-09, `child-ux-specialist` п. 8)

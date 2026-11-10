@@ -230,7 +230,7 @@
         "model": {
           "prompt": "Which numeral fits?",
           "stimulus": "leaves",
-          "s1": "Three leaves: one, two, three.",
+          "s1": "I count the leaves: one, two, three.",
           "s2": "Three leaves, and this is numeral three."
         },
         "t1": {
@@ -255,7 +255,7 @@
         },
         "t4": {
           "prompt": "Put the numerals in order.",
-          "hint": "Count on from two. Which comes first?",
+          "hint": "One, two… what comes next? Which goes first?",
           "explain": "Three, four, five, in order!"
         }
       },
@@ -278,7 +278,7 @@
           "leaves": "basket with leaves"
         },
         "t2": {
-          "prompt": "Match each basket to its numeral.",
+          "prompt": "Match each basket to its number.",
           "hint": "How many are in the basket? Find that number.",
           "explain": "Empty is zero, one berry, two leaves.",
           "empty": "empty basket",
@@ -292,7 +292,7 @@
           "explain": "Five leaves. That's a five!"
         },
         "t4": {
-          "prompt": "Put the baskets in order: zero, one, two.",
+          "prompt": "Put them in order: zero, one, two.",
           "hint": "Count what is in the basket, then place it.",
           "explain": "Zero, one, two, in order!",
           "berries": "basket with berries",
@@ -307,14 +307,14 @@
         "model": {
           "prompt": "Which numeral fits?",
           "stimulus": "stones",
-          "s1": "Is it eight? Something is off.",
-          "s2": "I count: seven. It looks like this."
+          "s1": "Here's six! Oh no, the tail goes down.",
+          "s2": "The tail goes up. That's a six!"
         },
         "t1": {
           "prompt": "Count the leaves. Which numeral?",
           "stimulus": "leaves",
           "hint": "Count one by one to the end.",
-          "explain": "Nine: a circle on top, a tail going down."
+          "explain": "Nine leaves. The tail goes down!"
         },
         "t2": {
           "prompt": "Put the numerals in order.",
@@ -400,12 +400,7 @@
     "unsupported": "This format is not ready yet",
     "tapCorrectedFirst": "First tap what was fixed",
     "orderMirrored": "From the other end! We start right here",
-    "demoMatch": "I take the first one. Find its pair",
-    "demoOrder": "I place the first one. Now you",
     "nowYouTap": "Show me the right one",
-    "reviewIntro": "Remember this one?",
-    "probeIntro": "Once more — on your own now",
-    "resume": "Keep going?",
     "placeStart": "The start is here",
     "placeMiddle": "Further along the arrow",
     "placeEnd": "The end is here"
@@ -719,6 +714,116 @@
       "prompted": "Point to it with a gesture",
       "independent": "Wait 10 seconds, then gesture",
       "gesture": "Now point to it with a gesture"
+    }
+  },
+  "companion": {
+    "lesson-start-repeat": {
+      "0": "Back here? Great, let's remember!",
+      "1": "A familiar place! Shall we start?",
+      "2": "We know this one. Once more?",
+      "3": "Another round. Here we go!"
+    },
+    "lesson-resume": {
+      "0": "Keep going?",
+      "1": "We stopped right here. Next?",
+      "2": "I waited for you! Shall we go on?",
+      "3": "We're back! On we go?"
+    },
+    "return-after-break": {
+      "0": "Long time no see! I missed you.",
+      "1": "Yay, you're here! Where shall we go?",
+      "2": "The map is waiting! Shall we start?",
+      "3": "Hi! I saved your spot."
+    },
+    "new-topic": {
+      "0": "A new topic! Shall we take a look?",
+      "1": "Something new is here!",
+      "2": "Look, a new path is open!",
+      "3": "We'll figure this out together!"
+    },
+    "new-region": {
+      "0": "A new land! I've never been there.",
+      "1": "Look, the map got bigger!",
+      "2": "Wow! There's new land over there.",
+      "3": "We haven't been there yet. Let's go?"
+    },
+    "review-intro": {
+      "0": "Remember this one?",
+      "1": "Shall we try an old one?",
+      "2": "We've seen this before. Know it?",
+      "3": "An old friend! How does this one go?"
+    },
+    "probe-intro": {
+      "0": "Once more, on your own now!",
+      "1": "Now you try!",
+      "2": "A similar one. Your turn!",
+      "3": "Show me how you do it!"
+    },
+    "demo-composite": {
+      "0": "I took one. Where does it go? Show me!",
+      "1": "This one's my pick. Find where it goes!",
+      "2": "You finish what I started. Where does it go?",
+      "3": "Look, I took one. Now where does it go?"
+    },
+    "correct-first": {
+      "0": "Yes! First try!",
+      "1": "You got it! Keep it up.",
+      "2": "Wow! That's right.",
+      "3": "Exactly! You know how."
+    },
+    "correct-streak-3plus": {
+      "0": "Three in a row! Even I can't do that!",
+      "1": "Right again. That's a streak!",
+      "2": "In a row, no mistakes! Wow!",
+      "3": "One, two, three, and all correct!"
+    },
+    "correct-after-hint": {
+      "0": "Second try, and you got it!",
+      "1": "With a hint, it's easier. That's right!",
+      "2": "There it is! Found it.",
+      "3": "We worked it out! Now it's right."
+    },
+    "correct-previously-failed": {
+      "0": "This used to be hard, and now you've got it!",
+      "1": "It was tricky before. Now it's easy!",
+      "2": "That one used to get mixed up. Now it's right!",
+      "3": "Now the hard one makes sense! Hooray!"
+    },
+    "idle": {
+      "0": "I'm here. Tap whenever you like.",
+      "1": "Thinking? I'll wait.",
+      "2": "Take your time. Look again.",
+      "3": "You can listen again."
+    },
+    "rapid-guessing": {
+      "0": "No rush. Shall we look together?",
+      "1": "Whoa, fast! Let's slow down.",
+      "2": "First we listen, then we tap.",
+      "3": "Let's think together. We have time!"
+    },
+    "replay-many": {
+      "0": "Like listening? Me too!",
+      "1": "Listen as much as you like.",
+      "2": "One more time? Sure!",
+      "3": "That works too. Shall we choose now?"
+    },
+    "lesson-done-clean": {
+      "0": "Got them all on the first try! Hooray!",
+      "1": "Not a single hint! Great.",
+      "2": "Lesson done! We could try a harder one.",
+      "3": "What a lesson! It all worked out."
+    },
+    "lesson-done-hinted": {
+      "0": "Lesson done! The hints helped.",
+      "1": "Done! We figured it out together.",
+      "2": "Some parts were hard, but it worked!",
+      "3": "With a hint, it's a win too!"
+    },
+    "lesson-done-helped": {
+      "0": "Lesson done! Step by step, we made it.",
+      "1": "It wasn't easy, but we got there!",
+      "2": "With practice, it gets easier.",
+      "3": "I'm right here. Next time it'll be easier."
     }
   }
 }

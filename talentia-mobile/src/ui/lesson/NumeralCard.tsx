@@ -1,12 +1,16 @@
 /**
- * Содержимое карточки-числа и немой карточки (SCREENS.md 3.8, 3.8.1): поле `numeralOption.plate` 88,
- * знак Nunito 800 `symbolGlyph` по числу символов (один на все карточки задания), цвет `text`, без
- * внутреннего контура. Системный шрифт не масштабируется (`fixed`).
+ * Карточка-символ: цифра, буква, слог и немая карточка (SCREENS.md 3.8, 3.8.1; буква и слог — `design-lead`, этап D2 по
+ * аудиту 2026-11-09). Знак Nunito 800 цветом `text`, без внутреннего контура, без декора и анимации — в calm и focus
+ * такой же. Кегль один на все карточки задания: формат считает его `symbolFontSize` по самому широкому знаку и ширине
+ * и высоте плитки; без него — ступень `symbolGlyph` по числу знаков (атлас). Высота строки — натуральная высота
+ * шрифта (`glyphCard.lineHeightRatio`), чтобы Й, Ё и хвост Ң не обрезались; одна строка, системный шрифт не
+ * масштабирует (`fixed`). Рамка — по плитке (`boxW` × `boxH`), а не поле 88: кегль считается от поля на `inset`
+ * меньше рамки, этот запас и `ellipsizeMode="clip"` не дают округлению ширины на Android показать «М…».
  */
 import { View } from 'react-native';
 
 import { useDesign } from '../../design';
-import { numeralOption, symbolGlyph } from '../../design/tokens';
+import { glyphCard, numeralOption, symbolGlyph } from '../../design/tokens';
 import { AppText } from '../AppText';
 
 export function glyphSizeFor(maxChars: number): number {
@@ -14,12 +18,18 @@ export function glyphSizeFor(maxChars: number): number {
   return symbolGlyph[n];
 }
 
-export function NumeralCard({ text, maxChars = text.length, testID }: { text: string; maxChars?: number; testID?: string }) {
+export function NumeralCard({ text, size, boxW, boxH, testID }: { text: string; size?: number; boxW?: number; boxH?: number; testID?: string }) {
   const theme = useDesign();
-  const size = glyphSizeFor(maxChars);
+  const fontSize = size ?? glyphSizeFor([...text].length);
   return (
-    <View style={{ width: numeralOption.plate, height: numeralOption.plate, alignItems: 'center', justifyContent: 'center' }} testID={testID}>
-      <AppText role="label" cap="fixed" style={{ fontSize: size, lineHeight: size * 1.15, fontFamily: 'Nunito_800ExtraBold', color: theme.colors.text }}>
+    <View style={{ width: boxW ?? numeralOption.plate, height: boxH ?? numeralOption.plate, alignItems: 'center', justifyContent: 'center' }} testID={testID}>
+      <AppText
+        role="label"
+        cap="fixed"
+        lines={1}
+        ellipsizeMode="clip"
+        style={{ fontSize, lineHeight: Math.ceil(fontSize * glyphCard.lineHeightRatio), fontFamily: 'Nunito_800ExtraBold', color: theme.colors.text, includeFontPadding: false, textAlignVertical: 'center' }}
+      >
         {text}
       </AppText>
     </View>

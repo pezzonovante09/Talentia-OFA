@@ -7,11 +7,12 @@ import { View } from 'react-native';
 import Svg, { Line } from 'react-native-svg';
 
 import { useDesign } from '../../../design';
+import { matchTile } from '../../../design/taskTiles';
 import { badge, lessonLayout } from '../../../design/tokens';
 import { emptyMatchDraft, matchAfterNarrowing, matchAnswerOf, matchShown, matchTap, matchWrongOf, type MatchDraft, type MatchSide } from '../../../domain/taskDraft';
 import type { MatchTask as MatchTaskType } from '../../../types/task';
 import { Icon } from '../../Icon';
-import { MediaContent, speaksOnTap } from '../MediaContent';
+import { isSilentCard, MediaContent, speaksOnTap, symbolFitFor } from '../MediaContent';
 import type { BadgeKind } from '../Badge';
 import { Tile, type TileState } from '../Tile';
 import type { FormatProps, FormatSpec, TaskStep } from './types';
@@ -42,13 +43,12 @@ export function MatchTaskView(rawProps: FormatProps<MatchDraft>) {
   const task = props.step.task as MatchTaskType;
   const gap = theme.spacing.lg;
   const n = task.pairs.length;
-  const tileW = (props.width - gap * (n - 1)) / n;
-  const tileH = Math.min(Math.floor((props.height - lessonLayout.matchGutter) / 2) - theme.elevation.raised.offsetY, tileW * 1.4);
+  const { w: tileW, h: tileH } = matchTile(props.width, props.height, n, theme.elevation.raised.offsetY);
   const rightOrder = props.step.rightOrder ?? task.pairs.map((p) => p.id);
   const colX = (i: number) => i * (tileW + gap) + tileW / 2;
   const topY = tileH + theme.elevation.raised.offsetY;
   const bottomY = topY + lessonLayout.matchGutter;
-  const maxChars = Math.max(...task.pairs.flatMap((p) => [p.left, p.right]).map((m) => String(m.numeral ?? '').length), 1);
+  const symbol = symbolFitFor(task.pairs.flatMap((p) => [p.left, p.right]), tileW, tileH);
   const shapeOf = (leftId: string): BadgeKind => `pair${task.pairs.findIndex((p) => p.id === leftId) % 4}` as BadgeKind;
   const lineColor = props.phase === 'done' ? theme.colors.success : theme.colors.outline;
 
@@ -70,11 +70,11 @@ export function MatchTaskView(rawProps: FormatProps<MatchDraft>) {
         listening={props.listening.includes(`${side}:${id}`)}
         onPress={() => props.onTap({ kind: 'element', id, side })}
         onPressIn={props.onTouch}
-        accessibilityLabel={speaksOnTap(media) ? props.t(media.labelKey) : props.t('a11y.pile', { n: i + 1 })}
+        accessibilityLabel={speaksOnTap(media) ? props.t(media.labelKey) : props.t(isSilentCard(media) ? 'a11y.option' : 'a11y.pile', { n: i + 1 })}
         accessibilityValue={partner ? props.t('a11y.pairedWith', { name: props.t(partner.labelKey) }) : undefined}
         testID={`${side}-${id}`}
       >
-        <MediaContent media={media} t={props.t} maxChars={maxChars} />
+        <MediaContent media={media} t={props.t} symbol={symbol} />
       </Tile>
     );
   };

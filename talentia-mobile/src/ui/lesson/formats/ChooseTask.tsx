@@ -5,9 +5,10 @@
 import { View } from 'react-native';
 
 import { useDesign } from '../../../design';
+import { chooseTile } from '../../../design/taskTiles';
 import { chooseAnswerOf, chooseCorrectId, chooseTap, emptyChooseDraft, type ChooseDraft } from '../../../domain/taskDraft';
 import type { ChooseTask as ChooseTaskType } from '../../../types/task';
-import { MediaContent } from '../MediaContent';
+import { MediaContent, symbolFitFor } from '../MediaContent';
 import { Pile } from '../Pile';
 import { Tile, type TileState } from '../Tile';
 import type { FormatProps, FormatSpec, TaskStep } from './types';
@@ -36,12 +37,10 @@ export function ChooseTaskView(rawProps: FormatProps<ChooseDraft>) {
   const task = props.step.task as ChooseTaskType;
   const gap = theme.spacing.lg;
   const correct = chooseCorrectId(task);
-  const maxChars = Math.max(...task.options.map((o) => String(o.numeral ?? '').length), 1);
   const options = task.options;
   const withStimulus = !!task.stimulus;
-  const cols = withStimulus ? options.length : Math.min(2, options.length);
-  const tileW = (props.width - gap * (cols - 1)) / cols;
-  const tileH = withStimulus ? 112 : options.length === 2 ? Math.min(196, props.height) : Math.min(129, (props.height - gap) / 2);
+  const { w: tileW, h: tileH } = chooseTile(props.width, props.height, options.length, withStimulus);
+  const symbol = symbolFitFor(options, tileW, tileH);
   const stimulusH = withStimulus ? props.height - gap - tileH - theme.elevation.raised.offsetY : 0;
 
   const renderOption = (o: ChooseTaskType['options'][number], i: number) => {
@@ -61,7 +60,7 @@ export function ChooseTaskView(rawProps: FormatProps<ChooseDraft>) {
         accessibilityLabel={silentPile || o.voice === 'select' ? props.t('a11y.option', { n: i + 1 }) : props.t(o.labelKey)}
         testID={`option-${o.id}`}
       >
-        <MediaContent media={o} t={props.t} maxChars={maxChars} />
+        <MediaContent media={o} t={props.t} symbol={symbol} />
       </Tile>
     );
   };

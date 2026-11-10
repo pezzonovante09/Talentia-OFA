@@ -15,6 +15,7 @@
 import { create } from 'zustand';
 
 import { allLessons, lessonById, lessonsBefore } from '../content';
+import { DEFAULT_ADDRESS_FORM, type AddressForm } from '../domain/companionSituations';
 import { buildReviewPool } from '../domain/lessonAssembly';
 import {
   applyLessonEvent,
@@ -34,6 +35,7 @@ import { LessonStaleError } from '../services/local/commit';
 import type { ChildProfile } from '../services/local/profiles';
 import { EMPTY_PROGRESS, noRecordPort, type ProgressPort, type ProgressSnapshot } from '../services/progressPort';
 import type { AgeBand } from '../types/task';
+import { resetCompanionMemory } from './companionMemory';
 
 export type ChildSettings = {
   band: AgeBand;
@@ -42,6 +44,8 @@ export type ChildSettings = {
   soundEffects: boolean;
   interfaceLang: InterfaceLang;
   kyrgyzRegion: false;
+  /** Как Tali обращается к ребёнку (№71): только выбор родовой надстройки реплики, на устройстве (`lineKeyFor`). */
+  addressForm: AddressForm;
 };
 
 export type SessionMode = 'none' | 'no_record' | 'account';
@@ -100,6 +104,7 @@ export const DEFAULT_SETTINGS: ChildSettings = {
   soundEffects: true,
   interfaceLang: 'ru',
   kyrgyzRegion: false,
+  addressForm: DEFAULT_ADDRESS_FORM,
 };
 
 const EMPTY = {
@@ -127,7 +132,9 @@ export const useChildSession = create<ChildSessionState>((set, get) => ({
       soundEffects: profile.soundEffects,
       interfaceLang: profile.interfaceLang,
       kyrgyzRegion: false,
+      addressForm: profile.addressForm,
     };
+    resetCompanionMemory();
     set({
       ...EMPTY,
       mode: 'account',
@@ -141,6 +148,7 @@ export const useChildSession = create<ChildSessionState>((set, get) => ({
 
   startNoRecordSession({ childId, now, interfaceLang }) {
     const settings = { ...DEFAULT_SETTINGS, interfaceLang };
+    resetCompanionMemory();
     set({
       ...EMPTY,
       mode: 'no_record',
@@ -264,6 +272,7 @@ export const useChildSession = create<ChildSessionState>((set, get) => ({
   },
 
   reset() {
+    resetCompanionMemory();
     set({ ...EMPTY });
   },
 }));

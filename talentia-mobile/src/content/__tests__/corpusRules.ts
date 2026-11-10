@@ -36,6 +36,10 @@ import {
   textDigits,
   type Range,
 } from '../../domain/lessonLimits';
+import { symbolFontSize } from '../../design/glyphFit';
+import { chooseTile, matchTile, NARROW_TASK_ZONE, orderTile, type TileSize } from '../../design/taskTiles';
+import { GLYPH_ADVANCE_800 } from '../../design/glyphMetrics';
+import { glyphCard } from '../../design/tokens';
 import { bandIndex, registryProblems, SKILL_BY_ID, SKILLS } from '../../domain/skills';
 import { countSilhouette } from '../../domain/countLayout';
 import { applyName } from '../../domain/taliName';
@@ -498,6 +502,13 @@ export const TOUCH_VERB = words(
   ].join('|'),
 );
 
+/** Письменность знаков `glyph` по языку (`glyphScript`): ky — кириллица с ң ө ү (U+04A2/A3, U+04E8/E9, U+04AE/AF). */
+export const GLYPH_SCRIPT: Record<'ru' | 'en' | 'ky', RegExp> = {
+  ru: /^[А-ЯЁа-яё]+$/u,
+  ky: /^[А-ЯЁа-яёҢңӨөҮү]+$/u,
+  en: /^[A-Za-z]+$/,
+};
+
 /**
  * Вопрос `order` называет механику «лоток → место» (FORMATS.md; раунд 5, Е1): «разложи / поставь по
  * порядку». «Нажми на кучки: три, четыре, пять» — три перевыбора, ничего не встаёт на место.
@@ -510,8 +521,10 @@ export const ORDER_TAP_PROMPT = words('нажми\\s+на|нажимай|тап�
  * меньшего к большему». ky — когда появится, со своим словом.
  */
 export const ORDER_WORD: Partial<Record<string, { re: RegExp; label: string }>> = {
-  ru: { re: /по\s+порядку|по\s+возрастанию|по\s+убыванию|от\s+меньш|от\s+больш/iu, label: 'по порядку' },
-  en: { re: /\bin\s+order\b|smallest|largest|biggest/i, label: 'in order' },
+  // вопрос о последовательности событий — «Что было сначала?» (`curriculum-content-reviewer`, аудит 2026-11-09); голое
+  // «сначала» / first не годится: «Сначала послушай, потом разложи», «Tap the first one» порядка не называют (`localization-qa`)
+  ru: { re: /по\s+порядку|по\s+возрастанию|по\s+убыванию|от\s+меньш|от\s+больш|что\s+(?:было\s+|случилось\s+)?сначала/iu, label: 'по порядку' },
+  en: { re: /\bin\s+order\b|smallest|largest|biggest|\bwhat\s+(?:came|happened|comes|was)\s+first\b/i, label: 'in order' },
 };
 
 /** Точек на нижней стороне пары `match` на 5–6: узнаются без пересчёта (раунд 5, `child-ux-specialist`). */
@@ -551,7 +564,8 @@ const PAST_PREFIX = '(?:подо|под|разо|раз|рас|пере|ото|�
 /**
  * Подлежащие задач и жителей, кроме местоимений и Tali: имена жителей (из реестра, когда
  * появится) и нарицательные персонажи задач («заяц», «мама»). Иначе гард примет «Айбек нашёл»
- * за обращение к ребёнку. В нижнем регистре.
+ * за обращение к ребёнку. В нижнем регистре. Герои сказок («репка», «колобок», «дед») заводятся сюда вместе с темой,
+ * которая их вводит (`curriculum-content-reviewer`, аудит 2026-11-09).
  */
 export const KNOWN_SUBJECTS: string[] = [];
 const THIRD_PERSON = ['я', 'мы', 'он', 'она', 'оно', 'они', 'кто', 'тали', 'tali'];
@@ -912,7 +926,7 @@ export const RULES = {
     // Нечитающему ребёнку текстовый вариант не «сложнее» — его для него нет.
     // Поэтому на 5-6 только picture, и у каждого элемента, в который он
     // тыкает, есть картинка и labelKey (он же адрес озвучки).
-    title: 'полоса 5-6: presentation только picture, у каждого варианта/элемента/стороны пары есть labelKey и картинка',
+    title: 'полоса 5-6: presentation только picture, у каждого варианта/элемента/стороны пары есть labelKey и картинка (shape, image, numeral или glyph)',
     check: (corpus) =>
       formatTasksOf(corpus).flatMap(({ task, lesson, at }) => {
         if (lesson.band !== '5-6') return [];
@@ -922,8 +936,8 @@ export const RULES = {
         }
         for (const { m, at: el } of mediaOf(task, false)) {
           if (!isNonEmptyString(m.labelKey)) bad.push(`${at}: ${el} без labelKey — нечего озвучить`);
-          if (m.shape === undefined && m.image === undefined && m.numeral === undefined) {
-            bad.push(`${at}: ${el} без картинки (shape, image или numeral)`);
+          if (m.shape === undefined && m.image === undefined && m.numeral === undefined && m.glyph === undefined) {
+            bad.push(`${at}: ${el} без картинки (shape, image, numeral или glyph)`);
           }
         }
         return bad;
@@ -1134,13 +1148,19 @@ export const RULES = {
     // подряд без действия пятилетка не слушает. Пример с тем же стимулом и ответом, что
     // задание урока, превращает первое задание в списывание. Знакомство с форматом
     // после примера — 15–20 с без зачёта: «теперь ты» уже знакомит (решение №28).
-    title: 'разобранный пример: шагов Tali по полосе, реплика ≤ 36 (в других локалях ≤ пузыря), reveal на элемент примера, без отрывка, формат как у первого задания навыка, не совпадает с заданиями урока; в уроке нет знакомства; на 5-6 завязка ≤ 36 и первое задание — того же навыка и формата, без отрывка',
+    title: 'разобранный пример: пока только в choose (ведомый тап «теперь ты» в других форматах не реализован); шагов Tali по полосе, реплика ≤ 36 (в других локалях ≤ пузыря), reveal на элемент примера, без отрывка, формат как у первого задания навыка, не совпадает с заданиями урока; в уроке нет знакомства; на 5-6 завязка ≤ 36 и первое задание — того же навыка и формата, без отрывка',
     check: (corpus, locales) =>
       lessonsOf(corpus).flatMap(({ topic, lesson, where }) => {
         const m = lesson.model;
         if (!m) return [];
         const at = `${where}/model`;
         const bad: string[] = [];
+        // Аудит 2026-11-09, Ж13 (п. 21): «теперь ты» завершается только тапом по верному варианту
+        // `choose` (`useLessonController.onModelTap`); пример в `match` / `order` / `group` / `build`
+        // ребёнок не пройдёт. Снять, когда ведомый тап появится в этих форматах (SKILL.md 2а, п. 1).
+        if (m.example.format !== 'choose') {
+          bad.push(`${at}: пример в формате ${m.example.format} — пока только choose: ведомый тап «теперь ты» в других форматах не реализован`);
+        }
         const steps = outOfRange(m.steps.length, MODEL_STEPS[lesson.band], false, 'шагов Tali');
         if (steps) bad.push(`${at}: ${steps} (без «теперь ты»)`);
         const ids = new Set(elementIds(m.example));
@@ -1511,6 +1531,74 @@ export const RULES = {
       }),
   },
 
+  glyphScript: {
+    // Буква и слог на карточке-символе (аудит 2026-11-09, Ж13; `design-lead`, этап D2). Латинская A и кириллическая А
+    // выглядят одинаково, но у них разные ширины в таблице и разная озвучка: знаки — только из письменности `lang`
+    // и из таблицы `GLYPH_ADVANCE_800`. Регистр в одном задании один: строчные «д», «у», «р» уходят вниз, и
+    // неровность ряда становится подсказкой. Карточку рисуют только варианты `choose`, стороны `match` и предметы
+    // `order` (`MediaContent`); в стимуле и в `group` знак не нарисуется.
+    title: 'glyph: с lang, знаки письменности языка и таблицы ширин, 1–3 знака, без shape/image/count/numeral, один регистр в задании; только в вариантах choose, сторонах match и предметах order',
+    check: (corpus) =>
+      formatTasksOf(corpus).flatMap(({ task, at }) => {
+        const bad: string[] = [];
+        const glyphs: string[] = [];
+        for (const { m, at: el } of mediaOf(task, true)) {
+          if (m.glyph === undefined) continue;
+          glyphs.push(m.glyph);
+          if (el === 'stimulus' || task.format === 'group') bad.push(`${at}: ${el} — glyph здесь не рисуется: только варианты choose, стороны match, предметы order`);
+          if (m.shape !== undefined || m.image !== undefined || m.count !== undefined || m.numeral !== undefined) {
+            bad.push(`${at}: ${el} — карточка буквы или слога без фигур, картинки и цифры`);
+          }
+          const chars = [...m.glyph];
+          if (chars.length < 1 || chars.length > 3) bad.push(`${at}: ${el} glyph «${m.glyph}» — 1–3 знака (буква или слог)`);
+          if (m.lang === undefined) {
+            bad.push(`${at}: ${el} glyph без lang — неизвестно, чья это письменность и голос`);
+          } else if (!GLYPH_SCRIPT[m.lang].test(m.glyph)) {
+            bad.push(`${at}: ${el} glyph «${m.glyph}» — знаки не из письменности ${m.lang} (латиница и кириллица выглядят одинаково)`);
+          }
+          const unknown = chars.filter((ch) => GLYPH_ADVANCE_800[ch] === undefined);
+          if (unknown.length) bad.push(`${at}: ${el} glyph «${m.glyph}» — нет в таблице ширин: ${unknown.join(' ')}`);
+          if (m.glyph !== m.glyph.toUpperCase() && m.glyph !== m.glyph.toLowerCase()) bad.push(`${at}: ${el} glyph «${m.glyph}» — смешанный регистр`);
+        }
+        const upper = glyphs.filter((g) => g === g.toUpperCase()).length;
+        if (upper > 0 && upper < glyphs.length) bad.push(`${at}: заглавные и строчные карточки в одном задании — высота знака подсказывает ответ`);
+        return bad;
+      }),
+  },
+
+  glyphFit: {
+    // Кегль карточки-символа считается по измеренной ширине знаков и по их чернилам относительно высоты плитки
+    // (`symbolFontSize`); в самой малой зоне задания (`NARROW_TASK_ZONE`, 288×172) он не опускается ниже `glyphCard.minSize`
+    // — иначе это ошибка корпуса, а не уменьшение на ходу (`design-lead`, этап D2; высота — `child-ux-specialist`).
+    // Пример: «МАШ» в ряду из трёх плиток по 85 — 24 pt, не проходит; «МА» — 40. Плитка — той же формулой, что на
+    // экране (`taskTiles.ts`): `choose` со стимулом, `match`, `order` — все в ряд; `choose` без стимула — две колонки.
+    title: 'карточки-символы задания (glyph и numeral) в самой малой зоне задания (NARROW_TASK_ZONE) — кегль не меньше glyphCard.minSize',
+    check: (corpus) =>
+      formatTasksOf(corpus).flatMap(({ task, at }) => {
+        const { width, height } = NARROW_TASK_ZONE;
+        let tile: TileSize;
+        let media: Media[];
+        if (task.format === 'choose') {
+          tile = chooseTile(width, height, task.options.length, !!task.stimulus);
+          media = task.options;
+        } else if (task.format === 'match') {
+          tile = matchTile(width, height, task.pairs.length);
+          media = task.pairs.flatMap((p) => [p.left, p.right]);
+        } else if (task.format === 'order') {
+          tile = orderTile(width, height, task.items.length);
+          media = task.items;
+        } else {
+          return [];
+        }
+        const texts = media.flatMap((m) => (m.glyph !== undefined ? [m.glyph] : m.numeral !== undefined ? [String(m.numeral)] : []));
+        if (!media.some((m) => m.glyph !== undefined)) return [];
+        const size = symbolFontSize(texts, tile.w, tile.h);
+        return size >= glyphCard.minSize
+          ? []
+          : [`${at}: кегль карточек ${size} pt < ${glyphCard.minSize} в самой малой зоне задания 288×172 (плитка ${Math.floor(tile.w)}×${Math.floor(tile.h)}) — короче знак или меньше плиток в ряду`];
+      }),
+  },
+
   symbolVoice: {
     // Решение №88 (раунд 2, Р13; `curriculum-content-reviewer`, `child-ux-specialist`): в навыке
     // узнавания символа цифра, буква, слог до ответа не называются — иначе ответ находится на
@@ -1526,7 +1614,7 @@ export const RULES = {
         const media = mediaOf(task, true);
         const hasPile = media.some(({ m }) => m.shape !== undefined && m.count !== undefined);
         const bad = media.flatMap(({ m, at: el }) => {
-          const isSymbol = m.numeral !== undefined || (m.shape === undefined && m.image === undefined);
+          const isSymbol = m.numeral !== undefined || m.glyph !== undefined || (m.shape === undefined && m.image === undefined);
           if (symbolSkill && isSymbol && m.voice !== 'select') return [`${at}: ${el}: символ звучит именем до ответа — найдётся на слух (№88)`];
           if (m.voice === 'select' && (!symbolSkill || !isSymbol)) return [`${at}: ${el}: немая карточка вне проверки символа (№88)`];
           if (!symbolSkill && m.numeral !== undefined && !hasPile) {

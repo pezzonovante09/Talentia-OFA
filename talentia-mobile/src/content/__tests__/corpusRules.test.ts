@@ -133,9 +133,10 @@ function lessonPicture(): Lesson {
 }
 
 /**
- * Второй урок 5-6: `group` (новый навык и формат примера), два задания первого урока под
- * своими ключами и `order`. Составные форматы разнесены по урокам: в уроке 5-6 с примером
- * не больше одного нового (`newCompositeFormat`).
+ * Второй урок 5-6: `group`, два задания первого урока под своими ключами и `order`. Нового навыка
+ * и примера в уроке нет: пример разрешён только в `choose` (Ж13, правило `model`), а первое задание
+ * здесь — `group`. Составные форматы разнесены по урокам: в уроке 5-6 с примером не больше одного
+ * нового (`newCompositeFormat`).
  */
 function lessonPictureTwo(): Lesson {
   const renamed = JSON.parse(
@@ -161,28 +162,10 @@ function lessonPictureTwo(): Lesson {
     band: '5-6',
     hook: { taliPose: 'found', lineKey: k('a.l2.hook') },
     atlasEntryKey: k('a.l2.atlas'),
-    model: {
-      skill: 'sort-by-kind',
-      example: {
-        format: 'group',
-        presentation: 'picture',
-        promptKey: k('a.l2.m.prompt'),
-        groups: [
-          { id: 'g1', labelKey: k('a.l2.m.g1'), shape: 'berry' },
-          { id: 'g2', labelKey: k('a.l2.m.g2') },
-        ],
-        items: [
-          { id: 'i1', labelKey: k('a.l2.m.i1'), shape: 'berry', count: 2, groupId: 'g1' },
-          { id: 'i2', labelKey: k('a.l2.m.i2'), image: 'leaf-small', groupId: 'g2' },
-          { id: 'i3', labelKey: k('a.l2.m.i3'), image: 'leaf-big', groupId: 'g2' },
-        ],
-      },
-      steps: [{ lineKey: k('a.l2.m.s1'), reveal: 'i1' }, { lineKey: k('a.l2.m.s2'), reveal: 'i2' }],
-    },
     tasks: [
       {
         id: 'fx-a-l2-t1',
-        skill: 'sort-by-kind',
+        skill: 'count-to-3',
         format: 'group',
         presentation: 'picture',
         promptKey: k('a.l2.t1.prompt'),
@@ -206,7 +189,9 @@ function lessonPictureTwo(): Lesson {
 
 /**
  * Урок 9-10: текстовая подача, build с фрагментами и без, общий ключ, отрывок, объяснение
- * из двух реплик. Один навык — новый, пример в формате первого задания (`build`).
+ * из двух реплик. Один навык — новый, пример в формате первого задания (`choose`: пример разрешён только в нём, Ж13);
+ * первым идёт `choose` с отрывком (t2), за ним `build` с фишками (t1). Верный вариант примера — с `lang`: слово
+ * показывается на своём языке, и пример не совпадает по ответу с текстовыми `choose` урока.
  */
 function lessonText(): Lesson {
   const t = (n: number) => ({ promptKey: k(`b.l1.t${n}.prompt`), hintKey: k(`b.l1.t${n}.hint`), explainKey: [k(`b.l1.t${n}.explain`)] });
@@ -218,11 +203,15 @@ function lessonText(): Lesson {
     atlasEntryKey: k('b.l1.atlas'),
     model: {
       skill: 'read-words',
-      example: { format: 'build', promptKey: k('b.l1.m.prompt'), answer: 'дом', fragments: [{ id: 'f1', labelKey: k('b.l1.m.f1') }, { id: 'f2', labelKey: k('b.l1.m.f2') }] },
-      steps: [{ lineKey: k('b.l1.m.s1'), reveal: 'f1' }, { lineKey: k('b.l1.m.s2'), reveal: 'f2' }, { lineKey: k('b.l1.m.s3') }],
+      example: {
+        format: 'choose',
+        presentation: 'text',
+        promptKey: k('b.l1.m.prompt'),
+        options: [{ id: 'a', labelKey: k('b.l1.m.a'), correct: false }, { id: 'b', labelKey: k('b.l1.m.b'), lang: 'ru', correct: true }, { id: 'c', labelKey: k('b.l1.m.c'), correct: false }],
+      },
+      steps: [{ lineKey: k('b.l1.m.s1'), reveal: 'a' }, { lineKey: k('b.l1.m.s2'), reveal: 'b' }, { lineKey: k('b.l1.m.s3') }],
     },
     tasks: [
-      { id: 'fx-b-l1-t1', skill: 'read-words', format: 'build', ...t(1), answer: 'кот', fragments: [{ id: 'f1', labelKey: k('b.l1.t1.f1') }, { id: 'f2', labelKey: k('b.l1.t1.f2') }] },
       {
         id: 'fx-b-l1-t2',
         skill: 'read-words',
@@ -238,6 +227,7 @@ function lessonText(): Lesson {
           { id: 'd', labelKey: k('b.l1.t2.d'), correct: false },
         ],
       },
+      { id: 'fx-b-l1-t1', skill: 'read-words', format: 'build', ...t(1), answer: 'кот', fragments: [{ id: 'f1', labelKey: k('b.l1.t1.f1') }, { id: 'f2', labelKey: k('b.l1.t1.f2') }] },
       { id: 'fx-b-l1-t3', skill: 'read-words', format: 'build', ...t(3), answer: '256' },
       { id: 'fx-b-l1-t4', skill: 'read-words', format: 'point', ...t(4), scene: 'region-words', targets: [{ id: 'z', x: 0.5, y: 0.5, r: 0.15, correct: true, labelKey: k('b.l1.t4.z') }, { id: 'w', x: 0.15, y: 0.25, r: 0.15, correct: false, labelKey: k('b.l1.t4.w') }, { id: 'u', x: 0.85, y: 0.25, r: 0.15, correct: false, labelKey: k('b.l1.t4.u') }] },
       { id: 'fx-b-l1-t5', skill: 'read-words', format: 'match', presentation: 'text', ...t(5), pairs: [{ id: 'p1', left: { labelKey: k('b.l1.t5.l1') }, right: { labelKey: k('b.l1.t5.r1') } }, { id: 'p2', left: { labelKey: k('b.l1.t5.l2') }, right: { labelKey: k('b.l1.t5.r2') } }, { id: 'p3', left: { labelKey: k('b.l1.t5.l3') }, right: { labelKey: k('b.l1.t5.r3') } }] },
@@ -777,7 +767,8 @@ describe('гард корпуса: структура урока', () => {
   it('ловит три задания одного формата подряд', () => {
     const c = goodCorpus();
     const l = lessonAt(c, 1);
-    l.tasks = [l.tasks[1], simpleChoose('x1'), simpleChoose('x2'), ...l.tasks.slice(2)];
+    // первым в уроке 9-10 стоит choose t2 (пример только в choose, Ж13): t2, два choose и дальше без t1
+    l.tasks = [l.tasks[0], simpleChoose('x1'), simpleChoose('x2'), ...l.tasks.slice(2)];
     expectRed('formatSequence', c, 'три задания choose подряд, начиная с fx-b-l1-t2');
   });
 
@@ -1091,7 +1082,7 @@ describe('гард корпуса: новый навык и пример', () =>
 
   it('ловит пример в уроке без нового навыка', () => {
     const c = goodCorpus();
-    c[0].topic.lessons[1].tasks[0].skill = 'count-to-3';
+    c[0].topic.lessons[1].model = lessonAt(c, 0).model;
     expectRed('newSkillModel', c, 'разобранный пример без нового навыка');
   });
 
@@ -1163,8 +1154,23 @@ describe('гард корпуса: разобранный пример', () => {
 
   it('ловит пример не в формате первого задания навыка', () => {
     const c = goodCorpus();
-    modelAt(c, 1).example = { format: 'choose', presentation: 'text', promptKey: k('b.l1.m.prompt'), options: [{ id: 'a', labelKey: k('b.l1.m.a'), correct: true }, { id: 'b', labelKey: k('b.l1.m.b'), correct: false }, { id: 'c', labelKey: k('b.l1.m.c'), correct: false }] };
-    expectRed('model', c, 'пример в формате choose, а первое задание навыка fx-b-l1-t1 — build');
+    modelAt(c, 1).example = { format: 'build', promptKey: k('b.l1.m.prompt'), answer: 'дом', fragments: [{ id: 'f1', labelKey: k('b.l1.m.f1') }, { id: 'f2', labelKey: k('b.l1.m.f2') }] };
+    modelAt(c, 1).steps = [{ lineKey: k('b.l1.m.s1'), reveal: 'f1' }, { lineKey: k('b.l1.m.s2'), reveal: 'f2' }];
+    expectRed('model', c, 'пример в формате build, а первое задание навыка fx-b-l1-t2 — choose');
+  });
+
+  it('ловит пример не в choose — ведомый тап «теперь ты» есть только там (Ж13)', () => {
+    const c = goodCorpus();
+    const l = lessonAt(c, 0);
+    const match = l.tasks.find((t) => t.format === 'match')!;
+    const { id: _id, skill: _skill, hintKey: _hint, explainKey: _explain, ...example } = match;
+    // пример — не копия задания (иначе ещё и «списывание»): на пару меньше
+    if (example.format === 'match') example.pairs = example.pairs.slice(0, 2);
+    l.model = { skill: 'count-to-3', example: example as NonNullable<Lesson['model']>['example'], steps: [{ lineKey: k('a.l1.m.s1'), reveal: 'p1' }, { lineKey: k('a.l1.m.s2'), reveal: 'p2' }] };
+    l.tasks = [match, ...l.tasks.filter((t) => t !== match)];
+    expectRed('model', c, 'fx-a/fx-a-l1/model: пример в формате match — пока только choose');
+    // первое задание того же формата, что пример, — остальные ветки правила молчат
+    expect(run('model', c)).toHaveLength(1);
   });
 
   it('ловит пример с тем же стимулом и ответом, что задание урока, — ключи и порядок вариантов не спасают', () => {
@@ -1236,7 +1242,7 @@ describe('гард корпуса: объяснение', () => {
   it('ловит две реплики на 5-6 и три на 9-10, пропускает две на 7', () => {
     const c = goodCorpus();
     lessonAt(c, 0).tasks[0].explainKey = [k('a.l1.t1.explain'), k('a.l1.t1.explain2')];
-    lessonAt(c, 1).tasks[0].explainKey = [k('b.l1.t1.explain'), k('b.l1.t1.explain2'), k('b.l1.t1.explain3')];
+    lessonAt(c, 1).tasks.find((x) => x.id === 'fx-b-l1-t1')!.explainKey = [k('b.l1.t1.explain'), k('b.l1.t1.explain2'), k('b.l1.t1.explain3')];
     const out = run('explain', c).join('\n');
     expect(out).toContain('fx-a-l1-t1: реплик объяснения 2, нужно 1');
     expect(out).toContain('fx-b-l1-t1: реплик объяснения 3, нужно 1–2');
@@ -2278,5 +2284,140 @@ describe('гард корпуса: шаг «Tali ошибся» (mistake)', () =
     const { id: _id, skill: _skill, hintKey: _hint, ...example } = order;
     third.model = { skill: 'count-to-3', example: example as unknown as NonNullable<Lesson['model']>['example'], steps: [{ lineKey: k('a.l1.m.s1'), mistake: true }, { lineKey: k('a.l1.m.s2') }] };
     expectRed('model', c, 'fx-a-l3/model: шаг 1 «Tali ошибся» — пока только в примере choose');
+  });
+});
+
+/**
+ * Буква и слог на карточке-символе — `glyph` (аудит 2026-11-09, Ж13; `design-lead`, этап D2). Навык фикстуры
+ * `count-to-3` временно получает `symbol: 'letter'`, как будущий «Знакомимся с буквами».
+ */
+describe('гард корпуса: буква и слог (glyph)', () => {
+  const entry = SKILL_BY_ID.get('count-to-3') as SkillEntry;
+  afterEach(() => {
+    delete entry.symbol;
+  });
+  const letters = (glyphs: string[], lang: 'ru' | 'en' | 'ky' = 'ru', silent = true) =>
+    glyphs.map((g, i) => ({
+      id: 'abcd'[i],
+      labelKey: k(`a.l1.t1.g${i}`),
+      glyph: g,
+      lang,
+      correct: i === 1,
+      ...(silent ? { voice: 'select' as const } : {}),
+    }));
+  const withLetters = (glyphs: string[], lang?: 'ru' | 'en' | 'ky', silent?: boolean) => {
+    entry.symbol = 'letter';
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0] as ChooseTask;
+    t.options = letters(glyphs, lang, silent);
+    return { c, t };
+  };
+
+  it('годная карточка: буквы ru, немые в навыке-символе — все гарды молчат, picture56 принимает glyph', () => {
+    const { c } = withLetters(['А', 'О', 'У']);
+    for (const id of ['glyphScript', 'glyphFit', 'picture56', 'symbolVoice', 'shapeCount'] as const) expect(run(id, c)).toEqual([]);
+  });
+
+  it('ky с ң ө ү — годится; те же буквы при lang ru — красно', () => {
+    expect(run('glyphScript', withLetters(['Ң', 'Ө', 'Ү'], 'ky').c)).toEqual([]);
+    expectRed('glyphScript', withLetters(['Ң', 'О', 'У'], 'ru').c, 'знаки не из письменности ru');
+  });
+
+  it('латинская A при lang ru — красно: выглядит как А, но ширина и голос другие', () => {
+    expectRed('glyphScript', withLetters(['A', 'О', 'У']).c, 'options[a] glyph «A» — знаки не из письменности ru');
+  });
+
+  it('без lang, длиннее трёх знаков, смешанный регистр — красно', () => {
+    const { c, t } = withLetters(['А', 'О', 'У']);
+    delete t.options[0].lang;
+    t.options[1].glyph = 'МАМА';
+    t.options[2].glyph = 'Ма';
+    const out = run('glyphScript', c).join('\n');
+    expect(out).toContain('options[a] glyph без lang');
+    expect(out).toContain('options[b] glyph «МАМА» — 1–3 знака');
+    expect(out).toContain('options[c] glyph «Ма» — смешанный регистр');
+  });
+
+  it('заглавные и строчные карточки в одном задании — красно', () => {
+    expectRed('glyphScript', withLetters(['А', 'о', 'у']).c, 'заглавные и строчные карточки в одном задании');
+  });
+
+  it('glyph вместе с фигурой и в стимуле — красно', () => {
+    const { c, t } = withLetters(['А', 'О', 'У']);
+    Object.assign(t.options[0], { shape: 'dot', count: 1 });
+    t.stimulus = { labelKey: k('a.l1.t1.stimulus'), glyph: 'А', lang: 'ru', voice: 'select' };
+    const out = run('glyphScript', c).join('\n');
+    expect(out).toContain('options[a] — карточка буквы или слога без фигур, картинки и цифры');
+    expect(out).toContain('stimulus — glyph здесь не рисуется');
+  });
+
+  it('слог из трёх заглавных в ряду из трёх плиток (85 pt) — красно; в choose без стимула (две колонки) — нет', () => {
+    const { c, t } = withLetters(['МАШ', 'КОТ', 'ЛЕС']);
+    expectRed('glyphFit', c, 'кегль карточек 24 pt < 32 в самой малой зоне задания 288×172 (плитка 85×112)');
+    delete t.stimulus;
+    expect(run('glyphFit', c)).toEqual([]);
+  });
+
+  it('буква в навыке-символе звучит именем до ответа — красно (symbolVoice, №88)', () => {
+    expectRed('symbolVoice', withLetters(['А', 'О', 'У'], 'ru', false).c, 'options[a]: символ звучит именем до ответа');
+  });
+
+  // Дополнено QA (этап D по аудиту 2026-11-09): ветки гардов, которые выше не трогались.
+
+  it('en: латиница годится; кириллическая А при lang en — красно', () => {
+    expect(run('glyphScript', withLetters(['A', 'O', 'U'], 'en').c)).toEqual([]);
+    expectRed('glyphScript', withLetters(['А', 'O', 'U'], 'en').c, 'options[a] glyph «А» — знаки не из письменности en');
+  });
+
+  it('знак вне таблицы ширин — красно и называется', () => {
+    expectRed('glyphScript', withLetters(['Ä', 'O', 'U'], 'en').c, 'нет в таблице ширин: Ä');
+  });
+
+  it('пустой glyph — красно (1–3 знака)', () => {
+    const { c, t } = withLetters(['А', 'О', 'У']);
+    t.options[0].glyph = '';
+    expectRed('glyphScript', c, 'options[a] glyph «» — 1–3 знака');
+  });
+
+  it('glyph в group — красно: там карточка-символ не рисуется', () => {
+    entry.symbol = 'letter';
+    const c = goodCorpus();
+    const g = taskOf(c, 0, 'group');
+    const item = g.items[0] as Record<string, unknown>;
+    delete item.shape;
+    delete item.count;
+    Object.assign(item, { glyph: 'А', lang: 'ru' });
+    expectRed('glyphScript', c, 'glyph здесь не рисуется');
+  });
+
+  it('glyphFit в match: три пары слогов из трёх знаков — красно на плитке match (85×58), две пары — нет', () => {
+    entry.symbol = 'letter';
+    const c = goodCorpus();
+    const m = lessonAt(c, 0).tasks[2] as Extract<Task, { format: 'match' }>;
+    const syll = ['МАШ', 'КОТ', 'ЛЕС'];
+    m.pairs = m.pairs.map((p, i) => ({
+      id: p.id,
+      left: { labelKey: p.left.labelKey, glyph: syll[i], lang: 'ru' as const },
+      right: { labelKey: p.right.labelKey, glyph: syll[i], lang: 'ru' as const },
+    }));
+    expectRed('glyphFit', c, 'плитка 85×58');
+    m.pairs = m.pairs.slice(0, 2);
+    expect(run('glyphFit', c)).toEqual([]);
+  });
+
+  it('glyphFit в order: три слога из трёх знаков — красно на плитке order (85×58)', () => {
+    entry.symbol = 'letter';
+    const c = goodCorpus();
+    const o = taskOf(c, 0, 'order');
+    const syll = ['МАШ', 'КОТ', 'ЛЕС'];
+    o.items = o.items.map((it, i) => ({ id: it.id, labelKey: it.labelKey, position: it.position, glyph: syll[i], lang: 'ru' as const }));
+    expectRed('glyphFit', c, 'плитка 85×58');
+  });
+
+  it('glyphFit не трогает задания без glyph — даже с цифрами', () => {
+    const c = goodCorpus();
+    const t = lessonAt(c, 0).tasks[0] as ChooseTask;
+    t.options = t.options.map((o, i) => ({ id: o.id, labelKey: o.labelKey, correct: o.correct, numeral: [1, 2, 3][i] }));
+    expect(run('glyphFit', c)).toEqual([]);
   });
 });

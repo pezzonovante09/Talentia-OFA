@@ -10,6 +10,7 @@ import {
   buildTheme,
   childSoundToggle,
   fitRegionTitle,
+  glyphCard,
   fitStickerTitle,
   isQuantityOrder,
   mapSettingsButton,
@@ -61,6 +62,7 @@ import {
   type RegionId,
   type Scheme,
 } from '../tokens';
+import { glyphEm } from '../glyphFit';
 import { contrast, luminance } from '../contrast';
 
 /** Все регионы схемы курса (`Region['id']`), включая кыргызский (А17). */
@@ -569,12 +571,12 @@ describe('счёт на 5–6 (SCREENS.md 3.8)', () => {
     expect(numeralOption.digit).toBeLessThan(numeralOption.plate);
   });
 
-  it('знак символа: самое длинное слово из 4 знаков помещается в поле 88 (ширина ≈ 0.65 кегля на знак)', () => {
-    ([1, 2, 3, 4] as const).forEach((n) => {
-      expect(n * symbolGlyph[n] * 0.65).toBeLessThanOrEqual(numeralOption.plate);
-    });
+  it('знак символа: ступень symbolGlyph — потолок кегля, по ширине его считает symbolFontSize (glyphMetrics.test.ts)', () => {
+    // прежнее «0.65 кегля на знак» верно для цифр и ложно зеленело для кириллицы: «МАШ» при 40 — около 108 pt
     expect(symbolGlyph[1]).toBe(numeralOption.digit);
-    expect(symbolGlyph[4]).toBeGreaterThanOrEqual(32);
+    expect(symbolGlyph[4]).toBeGreaterThanOrEqual(glyphCard.minSize);
+    // самая длинная карточка-число «10» на своей ступени входит в поле 88
+    expect(symbolGlyph[2] * glyphEm('10')).toBeLessThanOrEqual(numeralOption.plate);
   });
 
   it('защита «Дальше» короче разблокировки', () => {

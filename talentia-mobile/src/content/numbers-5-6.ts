@@ -562,10 +562,11 @@ const lessonNumeralsToTen: Lesson = {
       format: 'choose',
       presentation: 'picture',
       promptKey: 'content.numbers.num-l3.model.prompt',
-      stimulus: { labelKey: 'content.numbers.num-l3.model.stimulus', shape: 'stone', count: 7, layout: 'row' },
-      options: [card('a', 6, false), card('b', 7, true), card('c', 8, false)],
+      stimulus: { labelKey: 'content.numbers.num-l3.model.stimulus', shape: 'stone', count: 6, layout: 'row' },
+      options: [card('a', 5, false), card('b', 6, true), card('c', 9, false)],
     },
-    // Урок 3 темы — Tali ошибается (TALI.md, №70): путает похожие 7 и 8, пересчитывает, находит семь.
+    // Урок 3 темы — Tali ошибается (TALI.md, №70) типичной ошибкой навыка: берёт девять вместо шести (хвостик не туда),
+    // как обещает завязка («похожие цифры»; `curriculum-content-reviewer`, аудит 2026-11-09).
     steps: [
       { lineKey: 'content.numbers.num-l3.model.s1', reveal: 'c', mistake: true },
       { lineKey: 'content.numbers.num-l3.model.s2', reveal: 'b' },

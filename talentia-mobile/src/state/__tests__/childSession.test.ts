@@ -12,7 +12,8 @@ import { LessonStaleError } from '../../services/local/commit';
 import { newProfile } from '../../services/local/profiles';
 import { EMPTY_PROGRESS, noRecordPort, type ProgressPort } from '../../services/progressPort';
 import type { Task } from '../../types/task';
-import { completedLessons, startedLessons, useChildSession } from '../childSession';
+import { completedLessons, DEFAULT_SETTINGS, startedLessons, useChildSession } from '../childSession';
+import { companionLine } from '../companionMemory';
 
 const NOW = new Date('2026-10-24T10:00:00.000Z');
 const KID = '00000000-0000-4000-8000-000000000001';
@@ -400,5 +401,80 @@ describe('finishLesson: сбой записи на устройство', () => 
     await useChildSession.getState().finishLesson({ port: failingPort, runId: KID, at: at(100) });
     useChildSession.getState().reset();
     expect(useChildSession.getState().lastWriteError).toBeNull();
+  });
+});
+
+/* ------------------------------------------------------------------------ */
+/* Форма обращения и память реплик Tali (этап D5 по аудиту 2026-11-09, Ж14)   */
+/* ------------------------------------------------------------------------ */
+
+describe('форма обращения из профиля и память реплик Tali', () => {
+  const OTHER = '00000000-0000-4000-8000-000000000002';
+  const account = (childId: string, addressForm?: 'feminine' | 'masculine' | 'neutral') =>
+    useChildSession.getState().startAccountSession({
+      profile: newProfile({ childId, band: '5-6', interfaceLang: 'ru', createdAt: NOW.toISOString(), ...(addressForm ? { addressForm } : {}) }),
+      snapshot: { ...EMPTY_PROGRESS },
+      now: NOW,
+    });
+  /** Номер варианта реплики при random → 0: 0 — память ситуации пуста, иначе вариант 0 уже прозвучал. */
+  const nextVariant = () => Number(/\.(\d)$/.exec(companionLine('review-intro', 'neutral', () => 0))![1]);
+
+  it('без записи и в DEFAULT_SETTINGS форма обращения — neutral', () => {
+    expect(DEFAULT_SETTINGS.addressForm).toBe('neutral');
+    expect(useChildSession.getState().settings.addressForm).toBe('neutral');
+  });
+
+  it('startAccountSession берёт форму обращения из профиля', () => {
+    account(KID, 'feminine');
+    expect(useChildSession.getState().settings.addressForm).toBe('feminine');
+    account(KID, 'masculine');
+    expect(useChildSession.getState().settings.addressForm).toBe('masculine');
+  });
+
+  it('профиль без явной формы (newProfile) — neutral', () => {
+    account(KID);
+    expect(useChildSession.getState().settings.addressForm).toBe('neutral');
+  });
+
+  it('смена ребёнка не уносит форму прежнего: feminine → другой ребёнок neutral → neutral', () => {
+    account(KID, 'feminine');
+    account(OTHER, 'neutral');
+    expect(useChildSession.getState().settings.addressForm).toBe('neutral');
+  });
+
+  it('сеанс без записи после сеанса с формой — снова neutral', () => {
+    account(KID, 'masculine');
+    useChildSession.getState().startNoRecordSession({ childId: KID, now: NOW, interfaceLang: 'ru' });
+    expect(useChildSession.getState().settings.addressForm).toBe('neutral');
+  });
+
+  it('память реплик живёт в сеансе: второй вызов той же ситуации — другой вариант', () => {
+    expect(nextVariant()).toBe(0);
+    expect(nextVariant()).not.toBe(0);
+  });
+
+  it('startAccountSession сбрасывает память реплик', () => {
+    nextVariant();
+    account(OTHER, 'neutral');
+    expect(nextVariant()).toBe(0);
+  });
+
+  it('startNoRecordSession сбрасывает память реплик', () => {
+    nextVariant();
+    useChildSession.getState().startNoRecordSession({ childId: OTHER, now: NOW, interfaceLang: 'ru' });
+    expect(nextVariant()).toBe(0);
+  });
+
+  it('reset сбрасывает память реплик', () => {
+    nextVariant();
+    useChildSession.getState().reset();
+    expect(nextVariant()).toBe(0);
+  });
+
+  it('openLesson и setSettings память не сбрасывают — повтор внутри сеанса ловится', () => {
+    nextVariant();
+    useChildSession.getState().openLesson({ lessonId: 'nv-count-l1', now: NOW, seed: 7, nodeState: 'open' });
+    useChildSession.getState().setSettings({ calmMode: true });
+    expect(nextVariant()).not.toBe(0);
   });
 });
