@@ -135,6 +135,12 @@ export type AppTheme = {
   scheme: Scheme;
   calmMode: boolean;
   focusMode: boolean;
+  /**
+   * Без движения: calm ребёнка **или** системное «уменьшить движение» (аудит 2026-11-09, Ж9). Анимации экранов
+   * смотрят сюда, а не на `calmMode`: иначе ребёнок с вестибулярной чувствительностью без calm получал пульс,
+   * перелёты плиток и покачивания.
+   */
+  still: boolean;
   density: Density;
 
   colors: ColorTokens;
@@ -421,9 +427,9 @@ export const countMark = {
   feedbackTrigger: 'touch_down',
   /**
    * Повторное касание отмеченной фигуры: метку не снимает и состояния не меняет; белое кольцо метки
-   * растёт 2 → 6 (метка 16 → 24 pt) и держится **до отпускания пальца + `tailMs` 300 мс**, затем
+   * растёт 2 → 6 (метка 16 → 24 pt) и держится **до отпускания пальца + `tailMs` 600 мс**, затем
    * возвращается к 2 за `motion.press` (раунд 4, UX): метка лежит под подушечкой пальца, и пока палец
-   * на фигуре, отклика не видно — его видно после отпускания, 300 мс достаточно, чтобы ребёнок 5–6
+   * на фигуре, отклика не видно — его видно после отпускания; 600 мс (было 300) нужно, чтобы ребёнок 5–6
    * лет его заметил. Без звука. Форма — **другая, чем у промаха**: сплошное белое кольцо вокруг точки
    * в центре фигуры против пунктирного кольца 64 в точке касания (`missRing`).
    * Вибрация — **только по настройке родителя** (№112, `pressHaptic`): `haptic: 'parentSetting'` значит
@@ -434,14 +440,16 @@ export const countMark = {
    * его обводит снаружи контур `peakOutline` 2 pt `#2A1A12`: метка на пике 12 + 2 × 6 + 2 × 2 = **28**
    * ≤ фигура стимула 40. Двухцветный край виден на любой фигуре: для любого фона хотя бы одна из
    * пар «белый / фон» и «#2A1A12 / фон» даёт ≥ √16.73 ≈ 4.09 (на белой — 16.73, на жёлтой — 10.5).
-   * В покое (кольцо 2) контура нет — метка та же, что в решении №83.
+   * В покое (кольцо 2) контура нет — метка та же, что в решении №83. Переход 2 → 6 и назад мгновенный во всех
+   * режимах (`durationMs` описывает допустимую анимацию, в `Pile` она не нужна: рост виден после отпускания).
    */
   repeatRing: {
     from: 2,
     to: 6,
     durationMs: motion.press,
     shownUntil: 'touch_up',
-    tailMs: 300,
+    /** 600, не 300: кольцо 28 целиком под пальцем, видно только после отпускания — ребёнку 5–6 нужно время перевести взгляд (UX по диффу B). */
+    tailMs: 600,
     shape: 'mark_ring_solid',
     sound: false,
     haptic: 'parentSetting',
@@ -564,6 +572,8 @@ export const childSoundToggle = {
  * тап — как в обычном виде: называет регион и следующий шаг (`mapTaliTap`, раунд 5).
  */
 export const mapFocus = {
+  /** Замок 16 у «ползунков» — «тут взрослый», как у «+» на первом запуске (Ж8, `child-ux-specialist` по диффу B). */
+  settingsLock: 16,
   band: 64,
   atlasButton: 60,
   settings: mapSettingsButton.size,
@@ -1251,6 +1261,13 @@ export const firstRun = {
   childActionFirst: true,
   adultCardLabelKey: 'firstRun.adultOnly',
   adultSecondTapMs: 3000,
+  /**
+   * Второй тап раньше этого срока не считается (контрольный аудит 2026-11-09, Ж8, `child-ux-specialist`): без голоса
+   * ребёнок тапает дважды подряд и попадал в PIN. Отклик первого тапа виден: замок растёт до `lockNudge.to` и держится
+   * `lockNudge.holdMs`, Tali — поза `point`. То же правило у «ползунков» карты (вопрос 102, рабочее допущение №185).
+   */
+  adultSecondTapMinMs: 800,
+  lockNudge: { to: 32, holdMs: 600 },
 } as const;
 
 /**
@@ -1319,6 +1336,15 @@ export function atlasPageHeight(safeTop: number, safeBottom = 0): number {
  * карточка 164×216: рамка 96 с плиточным примитивом (кучка ≤ 5 — `Pile tile`, иначе карточка-цифра), название
  * урока `label` ≤ 2 строк, плашка 32 с печатью 24 — статичной. Одна пунктирная карточка «?» после последней.
  */
+/**
+ * Ширина карточки коллекции под окно: не больше `atlasGrid.card.w`, но так, чтобы `columns` карточек с зазорами
+ * вошли в экран за вычетом полей `pad` с двух сторон (320 pt: 2 × 136 + 16 = 288). Аудит 2026-11-09, UX п. 12.
+ */
+export function atlasCardWidth(windowWidth: number, columns: number, pad: number): number {
+  const fit = Math.floor((windowWidth - pad * 2 - atlasGrid.gap * (columns - 1)) / columns);
+  return Math.max(96, Math.min(atlasGrid.card.w, fit));
+}
+
 export const atlasGrid = {
   columns: 2,
   columnsFocus: 1,
@@ -1375,11 +1401,14 @@ export function buildTheme({
   scheme,
   calmMode,
   focusMode,
+  reduceMotion = false,
   density = focusMode ? 'roomy' : 'default',
 }: {
   scheme: Scheme;
   calmMode: boolean;
   focusMode: boolean;
+  /** Системное «уменьшить движение»; `still = calmMode || reduceMotion`. */
+  reduceMotion?: boolean;
   density?: Density;
 }): AppTheme {
   const colors = calmMode ? palettes[scheme].calm : palettes[scheme].normal;
@@ -1389,6 +1418,7 @@ export function buildTheme({
     scheme,
     calmMode,
     focusMode,
+    still: calmMode || reduceMotion,
     density,
     colors,
     spacing: roomy ? { ...spacing, lg: 24, xl: 32, xxl: 40 } : spacing,

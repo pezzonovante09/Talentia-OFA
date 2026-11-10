@@ -11,7 +11,7 @@
 import { Redirect, Stack, usePathname, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AppState, Platform, View } from 'react-native';
+import { AppState, Platform, Pressable, View } from 'react-native';
 
 import { checkPin } from '../../src/services/local/account';
 import { sha256 } from '../../src/services/digest';
@@ -19,7 +19,7 @@ import { useAccount } from '../../src/state/account';
 import { device } from '../../src/state/device';
 import { useGate } from '../../src/state/gate';
 import { PinPad } from '../../src/ui/parent/PinPad';
-import { ParentButton, ParentScreen, ParentText } from '../../src/ui/parent/primitives';
+import { ParentButton, ParentIcon, ParentScreen, ParentText } from '../../src/ui/parent/primitives';
 import { ParentThemeProvider } from '../../src/ui/parent/theme';
 import { gateAvailable } from '../../src/domain/parentGate';
 
@@ -63,13 +63,33 @@ function BootError() {
   );
 }
 
-function Gate() {
+/**
+ * «Закрыть» на экране PIN — иконка в зоне 48, не только слово: нечитающий ребёнок, попавший сюда с карты, иначе
+ * жмёт цифры и за 30 тапов блокирует вход родителю на 1 → 5 → 15 минут (контрольный аудит 2026-11-09, Ж8).
+ */
+function GateClose({ onPress, testID }: { onPress: () => void; testID: string }) {
   const { t } = useTranslation();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={t('parent.close')}
+      hitSlop={4}
+      style={({ pressed }) => ({ width: 48, height: 48, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.6 : 1 })}
+      testID={testID}
+    >
+      <ParentIcon name="x" />
+    </Pressable>
+  );
+}
+
+function Gate() {
   const router = useRouter();
   const accountId = useAccount((s) => s.accountId);
   const open = useGate((s) => s.open);
+  const { t } = useTranslation();
   return (
-    <ParentScreen scroll={false} left={<ParentButton variant="quiet" label={t('parent.close')} onPress={() => router.dismissAll()} testID="gate-close" block={false} />} testID="parent-gate">
+    <ParentScreen scroll={false} left={<GateClose onPress={() => router.dismissAll()} testID="gate-close" />} testID="parent-gate">
       <View style={{ paddingTop: 24 }}>
         <PinPad
           title={t('parent.pin.title')}

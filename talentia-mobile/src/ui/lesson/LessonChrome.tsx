@@ -106,12 +106,12 @@ export function TaliBubble({ text, speaking, onPress, label }: { text: string | 
   const grow = useRef(new Animated.Value(text ? 1 : 0.9)).current;
   useEffect(() => {
     if (!text) return;
-    if (theme.calmMode) grow.setValue(1);
+    if (theme.still) grow.setValue(1);
     else {
       grow.setValue(0.9);
       Animated.timing(grow, { toValue: 1, duration: theme.motion.base, useNativeDriver: NATIVE_DRIVER }).start();
     }
-  }, [text, grow, theme.calmMode, theme.motion.base]);
+  }, [text, grow, theme.still, theme.motion.base]);
 
   return (
     <View style={{ height: lessonLayout.bubble }} testID="lesson-bubble">
@@ -165,12 +165,12 @@ export function BottomBar({ pose, onTali, action, onAction, labels, pulse }: { p
   const primary = action === 'check' || action === 'next';
   const scale = useRef(new Animated.Value(1)).current;
   useEffect(() => {
-    if (pulse === 0 || theme.calmMode) return;
+    if (pulse === 0 || theme.still) return;
     Animated.sequence([
       Animated.timing(scale, { toValue: 1.06, duration: theme.motion.slow / 2, useNativeDriver: NATIVE_DRIVER }),
       Animated.timing(scale, { toValue: 1, duration: theme.motion.slow / 2, useNativeDriver: NATIVE_DRIVER }),
     ]).start();
-  }, [pulse, scale, theme.calmMode, theme.motion.slow]);
+  }, [pulse, scale, theme.still, theme.motion.slow]);
   const icon = action === 'checkDisabled' || action === 'check' ? 'check' : 'arrow';
   const label = action === 'next' ? labels.next : labels.check;
 

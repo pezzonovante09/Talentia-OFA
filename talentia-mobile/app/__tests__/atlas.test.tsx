@@ -147,6 +147,23 @@ describe('страница атласа', () => {
     expect(screen.getByTestId('atlas-entry').props.children).toBeTruthy();
   });
 
+  /** Контрольный аудит 2026-11-09, UX п. 13 (B6): сбой базы — не редирект на карту, а та же страница; ошибку видит взрослый. */
+  it('сбой записи итога (обычная Error порта): страница атласа показывается, редиректа на карту нет, lastWriteError в сторе', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const commit = jest.fn(() => Promise.reject(new Error('database is locked')));
+    setProgressPort(port(commit));
+    finishInStore();
+    await renderWithProviders(<AtlasScreen />);
+    await waitFor(() => expect(screen.getByTestId('atlas-screen')).toBeTruthy());
+    expect(commit).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('redirect')).toBeNull();
+    expect(router.replace).not.toHaveBeenCalled();
+    expect(screen.getByTestId('atlas-entry').props.children).toBeTruthy();
+    expect(useChildSession.getState().lastWriteError).toBe('database is locked');
+    expect(useChildSession.getState().progress.atlas.map((e) => e.lessonId)).toEqual([lesson.id]);
+    warn.mockRestore();
+  });
+
   it('с записью: порт записал, страница та же; слот ленты, хвост и «К карте» отвечают', async () => {
     const commit = jest.fn(() => Promise.resolve());
     setProgressPort(port(commit));

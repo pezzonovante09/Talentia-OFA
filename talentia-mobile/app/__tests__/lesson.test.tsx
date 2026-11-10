@@ -4,10 +4,14 @@
  * блокировка, снятый вариант и подсказка; вторая — показ с треугольником и активный ответ; `match` —
  * пары и единое правило; выход через слой подтверждения оставляет урок ждать.
  */
+import { BackHandler } from 'react-native';
+
 import LessonScreen from '../lesson/[lessonId]';
 import { regionLessons } from '../../src/content';
 import { lessonTiming } from '../../src/design/tokens';
 import { voice } from '../../src/services/voice';
+import { newProfile } from '../../src/services/local/profiles';
+import { EMPTY_PROGRESS } from '../../src/services/progressPort';
 import { useChildSession } from '../../src/state/childSession';
 import { SHOW_AFTER_MS, UNLOCK_AFTER_MS } from '../../src/ui/lesson/useLessonController';
 import { act, fireEvent, renderWithProviders, screen } from '../../src/test/render';
@@ -25,6 +29,36 @@ jest.mock('expo-router', () => {
   };
 });
 const router = (jest.requireMock('expo-router') as { __router: { replace: jest.Mock; push: jest.Mock; navigate: jest.Mock } }).__router;
+
+// Все svg в Jest — один мок; позы Tali помечаются именем, как в atlas.test.tsx.
+jest.mock('../../src/assets/registry', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const actual = jest.requireActual<typeof import('../../src/assets/registry')>('../../src/assets/registry');
+  const poses = Object.fromEntries(
+    Object.keys(actual.TALI_POSES).map((pose) => [pose, (props: Record<string, unknown>) => React.createElement(View, { ...props, accessibilityHint: `pose:${pose}` })]),
+  );
+  return { ...actual, TALI_POSES: poses };
+});
+
+/**
+ * В jest-окружении (платформа ios) `BackHandler` — пустышка: подписки собираем сами и зовём, как Android, —
+ * с последней подписавшейся, пока кто-то не вернёт true.
+ */
+type BackFn = () => boolean | null | undefined;
+let backSubs: BackFn[] = [];
+const pressBack = async (): Promise<boolean> => {
+  let handled = false;
+  await act(async () => {
+    for (const h of [...backSubs].reverse()) {
+      if (h()) {
+        handled = true;
+        break;
+      }
+    }
+  });
+  return handled;
+};
 
 // Таймлайн экрана идёт в реальном времени (блокировка 1040, «Дальше» 900, демо 2000): под нагрузкой
 // полного прогона 5 с не хватает.
@@ -60,6 +94,11 @@ async function throughIntro() {
 }
 
 beforeEach(() => {
+  backSubs = [];
+  jest.spyOn(BackHandler, 'addEventListener').mockImplementation((_name, handler) => {
+    backSubs.push(handler as BackFn);
+    return { remove: () => void (backSubs = backSubs.filter((x) => x !== handler)) };
+  });
   router.replace.mockClear();
   router.navigate.mockClear();
   voice.stop();
@@ -173,5 +212,87 @@ describe('экран урока', () => {
     await press('exit-leave');
     expect(router.navigate).toHaveBeenCalledWith('/map');
     expect(useChildSession.getState().activeLesson?.lessonId).toBe(lesson.id);
+  });
+
+  /** Контрольный аудит 2026-11-09, Ж7 (этап B1): системная «назад» не уводит из урока мимо подтверждения. */
+  describe('системная «назад» (Android)', () => {
+    it('на задании: «назад» открывает слой выхода и перехвачена; роутер не звался, урок ждёт', async () => {
+      await renderWithProviders(<LessonScreen />);
+      await throughIntro();
+      expect(screen.getByTestId('task-choose')).toBeTruthy();
+      expect(await pressBack()).toBe(true);
+      expect(screen.getByTestId('exit-layer')).toBeTruthy();
+      expect(router.navigate).not.toHaveBeenCalled();
+      expect(router.replace).not.toHaveBeenCalled();
+      expect(useChildSession.getState().activeLesson?.lessonId).toBe(lesson.id);
+    });
+
+    it('на завязке: «назад» открывает тот же слой выхода', async () => {
+      await renderWithProviders(<LessonScreen />);
+      expect(screen.getByTestId('lesson-hook')).toBeTruthy();
+      expect(await pressBack()).toBe(true);
+      expect(screen.getByTestId('exit-layer')).toBeTruthy();
+      expect(router.navigate).not.toHaveBeenCalled();
+    });
+
+    it('на завязке: «Выйти» из слоя ведёт на карту, урок ждёт', async () => {
+      await renderWithProviders(<LessonScreen />);
+      await pressBack();
+      await press('exit-leave');
+      expect(router.navigate).toHaveBeenCalledWith('/map');
+      expect(useChildSession.getState().activeLesson?.lessonId).toBe(lesson.id);
+    });
+
+    it('открытие слоя говорит lesson.exitConfirm', async () => {
+      await renderWithProviders(<LessonScreen />);
+      await throughIntro();
+      voice.stop();
+      await pressBack();
+      expect(voice.last?.key).toBe('lesson.exitConfirm');
+    });
+
+    it('при открытом слое «назад» — «остаться»: слой закрыт, задание на месте, на карту не ушли', async () => {
+      await renderWithProviders(<LessonScreen />);
+      await throughIntro();
+      await pressBack();
+      expect(await pressBack()).toBe(true);
+      expect(screen.queryByTestId('exit-layer')).toBeNull();
+      expect(screen.getByTestId('task-choose')).toBeTruthy();
+      expect(router.navigate).not.toHaveBeenCalled();
+    });
+
+    it('после размонтирования экрана подписок на «назад» не остаётся', async () => {
+      const { unmount } = await renderWithProviders(<LessonScreen />);
+      await throughIntro();
+      await unmount();
+      expect(backSubs).toHaveLength(0);
+    });
+  });
+
+  it('сеанс с аккаунтом: в слое выхода подпись «прогресс сохранится» (persists)', async () => {
+    useChildSession.getState().reset();
+    useChildSession.getState().startAccountSession({
+      profile: newProfile({ childId: KID, band: '5-6', interfaceLang: 'ru', createdAt: NOW.toISOString() }),
+      snapshot: { ...EMPTY_PROGRESS },
+      now: NOW,
+    });
+    await renderWithProviders(<LessonScreen />);
+    await throughIntro();
+    await press('lesson-exit');
+    expect(screen.getByTestId('exit-persists')).toBeTruthy();
+  });
+
+  /** Аудит 2026-11-09, `child-ux-specialist` п. 8 (B6): ребёнок ждёт после «верно» — Tali указывает на «Дальше». */
+  it('после «верно» и nudgeAfter без нажатия Tali переходит в point', async () => {
+    await renderWithProviders(<LessonScreen />);
+    await throughIntro();
+    const task = useChildSession.getState().activeLesson!.queue[0].task as ChooseTask;
+    await press(`option-${task.options.find((o) => o.correct)!.id}`);
+    await pressAction('lesson-action-check');
+    await advance(lessonTiming.nextUnlock);
+    expect(screen.getByTestId('lesson-tali-svg').props.accessibilityHint).toBe('pose:cheer');
+    await advance(lessonTiming.nudgeAfter);
+    expect(screen.getByTestId('lesson-tali-svg').props.accessibilityHint).toBe('pose:point');
+    expect(actionId()).toBe('lesson-action-next');
   });
 });

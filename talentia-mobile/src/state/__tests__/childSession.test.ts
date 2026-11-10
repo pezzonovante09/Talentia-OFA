@@ -325,3 +325,80 @@ describe('сессия повторения с узла карты (вопрос
     expect(useChildSession.getState().openReview({ now: NOW, seed: 8 })).toBeNull();
   });
 });
+
+/** Контрольный аудит 2026-11-09, UX п. 13 (этап B6): сбой записи итога — не тупик для ребёнка. */
+describe('finishLesson: сбой записи на устройство', () => {
+  let warn: jest.SpyInstance;
+  beforeEach(() => {
+    warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+  });
+  afterEach(() => warn.mockRestore());
+
+  const failingPort: ProgressPort = { load: noRecordPort.load, commit: () => Promise.reject(new Error('disk I/O error')) };
+
+  it('обычная Error порта → write_failed, а не исключение', async () => {
+    startAccount();
+    useChildSession.getState().openLesson({ lessonId: lessons[0].id, now: NOW, seed: 7, nodeState: 'open' });
+    playThrough();
+    await expect(useChildSession.getState().finishLesson({ port: failingPort, runId: KID, at: at(100) })).resolves.toBe('write_failed');
+  });
+
+  it('при write_failed итог остаётся в памяти: урок пройден, счётчик +1, pendingResult есть, activeLesson снят', async () => {
+    startAccount();
+    useChildSession.getState().openLesson({ lessonId: lessons[0].id, now: NOW, seed: 7, nodeState: 'open' });
+    playThrough();
+    await useChildSession.getState().finishLesson({ port: failingPort, runId: KID, at: at(100) });
+    const s = useChildSession.getState();
+    expect(s.progress.lessonCounter).toBe(1);
+    expect(completedLessons(s).has(lessons[0].id)).toBe(true);
+    expect(s.pendingResult?.run.lessonId).toBe(lessons[0].id);
+    expect(s.activeLesson).toBeNull();
+  });
+
+  it('при write_failed lastWriteError — сообщение ошибки порта', async () => {
+    startAccount();
+    useChildSession.getState().openLesson({ lessonId: lessons[0].id, now: NOW, seed: 7, nodeState: 'open' });
+    playThrough();
+    await useChildSession.getState().finishLesson({ port: failingPort, runId: KID, at: at(100) });
+    expect(useChildSession.getState().lastWriteError).toBe('disk I/O error');
+  });
+
+  it('не-Error в reject тоже даёт write_failed со строкой', async () => {
+    startAccount();
+    const port: ProgressPort = { load: noRecordPort.load, commit: () => Promise.reject('SQLITE_FULL') };
+    useChildSession.getState().openLesson({ lessonId: lessons[0].id, now: NOW, seed: 7, nodeState: 'open' });
+    playThrough();
+    await expect(useChildSession.getState().finishLesson({ port, runId: KID, at: at(100) })).resolves.toBe('write_failed');
+    expect(useChildSession.getState().lastWriteError).toBe('SQLITE_FULL');
+  });
+
+  it('следующая удачная запись снимает lastWriteError', async () => {
+    startAccount();
+    useChildSession.getState().openLesson({ lessonId: lessons[0].id, now: NOW, seed: 7, nodeState: 'open' });
+    playThrough();
+    await useChildSession.getState().finishLesson({ port: failingPort, runId: KID, at: at(100) });
+    const ok: ProgressPort = { load: noRecordPort.load, commit: () => Promise.resolve() };
+    useChildSession.getState().openLesson({ lessonId: lessons[0].id, now: NOW, seed: 9, nodeState: 'done' });
+    playThrough();
+    await expect(useChildSession.getState().finishLesson({ port: ok, runId: KID, at: at(200) })).resolves.toBe('persisted');
+    expect(useChildSession.getState().lastWriteError).toBeNull();
+  });
+
+  it('LessonStaleError по-прежнему пробрасывается и lastWriteError не ставит', async () => {
+    startAccount();
+    const port: ProgressPort = { load: noRecordPort.load, commit: () => Promise.reject(new LessonStaleError(1, 1)) };
+    useChildSession.getState().openLesson({ lessonId: lessons[0].id, now: NOW, seed: 7, nodeState: 'open' });
+    playThrough();
+    await expect(useChildSession.getState().finishLesson({ port, runId: KID, at: at(100) })).rejects.toBeInstanceOf(LessonStaleError);
+    expect(useChildSession.getState().lastWriteError).toBeNull();
+  });
+
+  it('reset снимает lastWriteError', async () => {
+    startAccount();
+    useChildSession.getState().openLesson({ lessonId: lessons[0].id, now: NOW, seed: 7, nodeState: 'open' });
+    playThrough();
+    await useChildSession.getState().finishLesson({ port: failingPort, runId: KID, at: at(100) });
+    useChildSession.getState().reset();
+    expect(useChildSession.getState().lastWriteError).toBeNull();
+  });
+});

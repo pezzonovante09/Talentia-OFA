@@ -8,8 +8,10 @@ import React, { PropsWithChildren, createContext, useContext, useMemo } from 're
 import { useColorScheme } from 'react-native';
 
 import { type AppTheme, type Scheme, buildTheme } from './tokens';
+import { useReduceMotion } from './useReduceMotion';
 
 export * from './tokens';
+export { useReduceMotion } from './useReduceMotion';
 
 const DesignContext = createContext<AppTheme>(
   buildTheme({ scheme: 'light', calmMode: false, focusMode: false }),
@@ -26,10 +28,12 @@ export function DesignProvider({
   // при `calmMode && systemScheme === 'dark'`, поэтому ребёнок с системной
   // тёмной темой и без спокойного режима получал светлый фон ночью.
   const scheme: Scheme = systemScheme === 'dark' ? 'dark' : 'light';
+  // системное «уменьшить движение» складывается с calm в `theme.still` (аудит 2026-11-09, Ж9)
+  const reduceMotion = useReduceMotion();
 
   const theme = useMemo(
-    () => buildTheme({ scheme, calmMode, focusMode }),
-    [scheme, calmMode, focusMode],
+    () => buildTheme({ scheme, calmMode, focusMode, reduceMotion }),
+    [scheme, calmMode, focusMode, reduceMotion],
   );
 
   return <DesignContext.Provider value={theme}>{children}</DesignContext.Provider>;

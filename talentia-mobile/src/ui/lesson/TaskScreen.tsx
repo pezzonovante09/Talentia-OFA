@@ -45,6 +45,8 @@ export type TaskScreenProps = {
   /** `null` — формат не поддержан: подпись `lesson.unsupported`. */
   format: TaskScreenFormat | null;
   exitOpen: boolean;
+  /** Итог сохранится (сеанс с аккаунтом) — подпись слоя выхода; режим без записи — `false`. */
+  persists: boolean;
   onTap: (tap: FormatTap) => void;
   onTouch: () => void;
   onAction: () => void;
@@ -104,7 +106,7 @@ export function TaskScreen(p: TaskScreenProps) {
         <View style={{ height: lessonLayout.gapHintBar }} />
         <BottomBar pose={p.pose} onTali={p.onTali} action={p.action} onAction={p.onAction} labels={{ tali: labels.tali, check: labels.check, next: labels.next }} pulse={p.pulse} />
       </View>
-      <ExitLayer visible={p.exitOpen} regionColor={p.regionColor} persists={false} onLeave={p.onLeave} onStay={p.onStay} />
+      <ExitLayer visible={p.exitOpen} regionColor={p.regionColor} persists={p.persists} onLeave={p.onLeave} onStay={p.onStay} />
     </View>
   );
 }

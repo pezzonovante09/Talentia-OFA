@@ -12,7 +12,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { DesignProvider } from '../src/design';
+import { DesignProvider, useReduceMotion } from '../src/design';
 import { deviceLang, initI18n } from '../src/i18n';
 import { expoSoundPlayer } from '../src/services/audioPlayer';
 import { installNetworkFuse, networkFuseEnabled } from '../src/services/networkFuse';
@@ -32,6 +32,9 @@ export default function RootLayout() {
   const [fontsReady, fontError] = useFonts(FONT_FILES);
   const calmMode = useChildSession((s) => s.settings.calmMode);
   const focusMode = useChildSession((s) => s.settings.focusMode);
+  // переходы стека — без движения и при системном «уменьшить движение» (аудит 2026-11-09, Ж9)
+  const reduceMotion = useReduceMotion();
+  const still = calmMode || reduceMotion;
   const accountStatus = useAccount((s) => s.status);
   const boot = useAccount((s) => s.boot);
 
@@ -54,7 +57,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <DesignProvider calmMode={calmMode} focusMode={focusMode}>
-        <Stack screenOptions={{ headerShown: false, gestureEnabled: false, animation: calmMode ? 'none' : 'default' }}>
+        <Stack screenOptions={{ headerShown: false, gestureEnabled: false, animation: still ? 'none' : 'default' }}>
           <Stack.Screen name="parent" options={{ presentation: 'fullScreenModal', animation: 'fade', animationDuration: 140, gestureEnabled: false }} />
         </Stack>
       </DesignProvider>

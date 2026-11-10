@@ -5,7 +5,7 @@
  */
 import MapScreen from '../map';
 import { regionLessons } from '../../src/content';
-import { mapLane, taliSize } from '../../src/design/tokens';
+import { firstRun, mapLane, taliSize } from '../../src/design/tokens';
 import { nodeCenter, taliAnchor } from '../../src/domain/mapLane';
 import { gameDay } from '../../src/domain/mapProgress';
 import { emptySkill } from '../../src/domain/mastery';
@@ -16,6 +16,16 @@ import { useParentView } from '../../src/state/parentView';
 import { act, fireEvent, renderWithProviders, screen } from '../../src/test/render';
 import * as abaLeave from '../../src/ui/aba/leaveAba';
 import { LANE_GEOMETRY } from '../../src/ui/map/MapLane';
+
+/** «Ползунки» открывают раздел вторым тапом не раньше `adultSecondTapMinMs` и не позже `adultSecondTapMs` (Ж8). */
+async function pressSettingsTwice() {
+  const now = jest.spyOn(Date, 'now');
+  now.mockReturnValue(5_000_000);
+  await fireEvent.press(screen.getByTestId('map-settings'));
+  now.mockReturnValue(5_000_000 + firstRun.adultSecondTapMinMs + 1);
+  await fireEvent.press(screen.getByTestId('map-settings'));
+  now.mockRestore();
+}
 
 jest.mock('expo-router', () => {
   const React = jest.requireActual<typeof import('react')>('react');
@@ -202,8 +212,25 @@ describe('карта региона', () => {
     // вопрос 60: кнопка с вечной голосовой заглушкой — мёртвая цель; место под неё остаётся, название по центру
     expect(screen.queryByTestId('map-atlas')).toBeNull();
     expect(screen.getByTestId('map-atlas-slot')).toBeTruthy();
+    // «ползунки» — как «+»: первый тап только голос, PIN вторым тапом не раньше 800 мс (Ж8, вопрос 102)
+    const now = jest.spyOn(Date, 'now');
+    now.mockReturnValue(5_000_000);
+    await fireEvent.press(screen.getByTestId('map-settings'));
+    expect(voice.last?.key).toBe('firstRun.callAdult');
+    expect(mockPush).not.toHaveBeenCalled();
+    // ранний тап не считается и перезапускает окно
+    now.mockReturnValue(5_000_000 + firstRun.adultSecondTapMinMs - 1);
+    await fireEvent.press(screen.getByTestId('map-settings'));
+    expect(mockPush).not.toHaveBeenCalled();
+    now.mockReturnValue(5_000_000 + firstRun.adultSecondTapMinMs + 1);
+    await fireEvent.press(screen.getByTestId('map-settings'));
+    expect(mockPush).not.toHaveBeenCalled();
+    // пауза ≥ 800 мс после последнего тапа — открывает; замок у «ползунков» на месте
+    expect(screen.getByTestId('map-settings-lock')).toBeTruthy();
+    now.mockReturnValue(5_000_000 + firstRun.adultSecondTapMinMs + 1 + firstRun.adultSecondTapMinMs + 1);
     await fireEvent.press(screen.getByTestId('map-settings'));
     expect(mockPush).toHaveBeenCalledWith('/parent');
+    now.mockRestore();
   });
 
   describe('«ползунки»: раздел родителя открывается на ребёнке этой карты', () => {
@@ -219,7 +246,7 @@ describe('карта региона', () => {
       start();
       useChildSession.setState({ mode: 'account' });
       await renderWithProviders(<MapScreen />);
-      await fireEvent.press(screen.getByTestId('map-settings'));
+      await pressSettingsTwice();
       expect(useParentView.getState().childId).toBe(KID);
     });
 
@@ -231,14 +258,14 @@ describe('карта региона', () => {
         seen.id = useParentView.getState().childId;
       });
       await renderWithProviders(<MapScreen />);
-      await fireEvent.press(screen.getByTestId('map-settings'));
+      await pressSettingsTwice();
       expect(seen.id).toBe(KID);
     });
 
     it('без записи (no_record): выбор не трогается, переход тот же', async () => {
       start();
       await renderWithProviders(<MapScreen />);
-      await fireEvent.press(screen.getByTestId('map-settings'));
+      await pressSettingsTwice();
       expect(useParentView.getState().childId).toBe(OTHER);
       expect(mockPush).toHaveBeenCalledWith('/parent');
     });

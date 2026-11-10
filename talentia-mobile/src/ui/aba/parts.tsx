@@ -4,7 +4,7 @@
  * Цвета и размеры — только токены `design/abaTokens.ts`.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { AccessibilityInfo, Pressable, useColorScheme, View, type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, useColorScheme, View, type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { abaColors, abaControls, abaNonTrialRow, ABA_CONTROL_STROKE, abaTouchCommits, inactiveChoice, type AbaColors } from '../../design/abaTokens';
@@ -16,21 +16,8 @@ export function useAbaColors(): AbaColors {
 }
 
 /** Системное «уменьшить движение»: вместе с calm — только смены кадра (полёт жетонов, раскрытие и сворачивание сцены). */
-export function useReduceMotion(): boolean {
-  const [on, setOn] = useState(false);
-  useEffect(() => {
-    let live = true;
-    void AccessibilityInfo.isReduceMotionEnabled?.()
-      .then((v) => live && setOn(v))
-      .catch(() => undefined);
-    const sub = AccessibilityInfo.addEventListener?.('reduceMotionChanged', (v: boolean) => setOn(v));
-    return () => {
-      live = false;
-      sub?.remove();
-    };
-  }, []);
-  return on;
-}
+/** Системное «уменьшить движение» — общий хук темы (этап B аудита 2026-11-09); здесь — для прежних импортов. */
+export { useReduceMotion } from '../../design/useReduceMotion';
 
 /**
  * Глифы, которых ещё нет в `ICONS` (`pause_bars` — «перерыв», `finger_ring` — подсказка выхода, `ui-replay`) или

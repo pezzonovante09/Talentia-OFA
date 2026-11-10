@@ -14,6 +14,7 @@ import { lessonLayout } from '../../src/design/tokens';
 import { randomSeed } from '../../src/services/random';
 import { voice } from '../../src/services/voice';
 import { completedLessons, useChildSession } from '../../src/state/childSession';
+import { ExitLayer } from '../../src/ui/lesson/ExitLayer';
 import { HookScreen } from '../../src/ui/lesson/HookScreen';
 import { TaskScreen, type TaskScreenFormat } from '../../src/ui/lesson/TaskScreen';
 import { FORMATS } from '../../src/ui/lesson/formats';
@@ -49,6 +50,8 @@ function LessonBody({ lessonId }: { lessonId: string }) {
   const onLeave = useCallback(() => router.navigate('/map'), [router]);
   const c = useLessonController(lessonId, onFinished, onLeave);
   const { t, ui, step, taskStep, task, spec } = c;
+  // подпись «прогресс сохранится» — только в сеансе с аккаунтом (аудит 2026-11-09, UX п. 9)
+  const persists = useChildSession((s) => s.mode !== 'no_record');
 
   if (!c.lesson) return <Redirect href="/map" />;
   if (!c.state || !step) return <View style={{ flex: 1, backgroundColor: theme.colors.background }} testID="lesson-loading" />;
@@ -75,6 +78,8 @@ function LessonBody({ lessonId }: { lessonId: string }) {
             labels={{ replay: t('lesson.replay'), help: t('lesson.helpTali'), tali: t('a11y.tali') }}
           />
         </View>
+        {/* системная «назад» на завязке — тот же слой выхода, что в задании (Ж7) */}
+        <ExitLayer visible={ui.exitOpen} regionColor={regionColor} persists={persists} onLeave={c.leave} onStay={c.stay} />
       </View>
     );
   }
@@ -133,6 +138,7 @@ function LessonBody({ lessonId }: { lessonId: string }) {
       marksKey={ui.marksKey}
       format={format}
       exitOpen={ui.exitOpen}
+      persists={persists}
       onTap={isModel ? c.onModelTap : c.onTap}
       onTouch={c.onTouch}
       onAction={c.onAction}

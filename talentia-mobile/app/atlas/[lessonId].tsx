@@ -13,7 +13,7 @@
 import { Redirect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AccessibilityInfo, Animated, Platform, View } from 'react-native';
+import { Animated, Platform, View } from 'react-native';
 import Svg, { Line } from 'react-native-svg';
 
 import { lessonById, regionOfLesson } from '../../src/content';
@@ -56,13 +56,9 @@ function AtlasBody({ lessonId, readOnly }: { lessonId: string; readOnly: boolean
   const activeLesson = useChildSession((s) => s.activeLesson);
   const [status, setStatus] = useState<'pending' | 'ready' | 'failed'>(readOnly || pendingResult?.run.lessonId === lessonId ? 'ready' : 'pending');
   const [stamped, setStamped] = useState(readOnly);
-  const [reduceMotion, setReduceMotion] = useState(false);
   const started = useRef(false);
   const stampScale = useRef(new Animated.Value(readOnly ? atlasPage.stampEnter.to : atlasPage.stampEnter.from)).current;
 
-  useEffect(() => {
-    void AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
-  }, []);
 
   // Итог записывается ровно один раз (StrictMode и повторный рендер — через ref); в readOnly — не пишется вовсе.
   useEffect(() => {
@@ -91,12 +87,12 @@ function AtlasBody({ lessonId, readOnly }: { lessonId: string; readOnly: boolean
   // Появление печати: сжатие 1.4 → 1 за `motion.base`; calm / reduce motion — сразу.
   useEffect(() => {
     if (!stamped) return;
-    if (readOnly || theme.calmMode || reduceMotion) {
+    if (readOnly || theme.still) {
       stampScale.setValue(atlasPage.stampEnter.to);
       return;
     }
     Animated.timing(stampScale, { toValue: atlasPage.stampEnter.to, duration: theme.motion.base, useNativeDriver: NATIVE_DRIVER }).start();
-  }, [stamped, readOnly, theme.calmMode, reduceMotion, theme.motion.base, stampScale]);
+  }, [stamped, readOnly, theme.still, theme.motion.base, stampScale]);
 
   if (!lesson || status === 'failed') return <Redirect href="/map" />;
   if (status === 'pending' && !activeLesson) return <Redirect href="/map" />;

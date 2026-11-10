@@ -4,7 +4,8 @@
  * `add` — «+ Добавить», взрослая карточка 120: пунктир `textMuted` на `surfaceSunken`, без подушки, плюс 32 и
  * подпись «Для взрослых» `textMuted`, замок 24 в правом верхнем углу (inset 8) — тот же глиф, что у строки
  * «Для взрослых» внизу: одна форма = один смысл «тут взрослый». Сжатие 0.98 (UX п. 8). Смена `nudgeKey` —
- * покачивание замка за `motion.quick` (первый тап ребёнка: «Позови взрослого»); в calm — без движения.
+ * покачивание и рост замка 24 → 32 на `lockNudge.holdMs` (первый тап ребёнка: «Позови взрослого»); при `still`
+ * (calm или системное «уменьшить движение») — без движения, рост мгновенный.
  * `profile` — карточка ребёнка 160: `surface`, контур, подушка, круг аватара 88 и имя `label` под ним
  * (место 24 есть и у безымянных — «Профиль N»). Аватаров в ассетах нет: в круге — первая буква имени или номер.
  */
@@ -32,14 +33,30 @@ export function ProfileCard(props: ProfileCardProps) {
   const nudgeKey = props.kind === 'add' ? (props.nudgeKey ?? 0) : 0;
   const seenNudge = useRef(nudgeKey);
 
+  /** Замок растёт до `lockNudge.to` и держится `lockNudge.holdMs`: покачивание ±4 pt за 140 мс почти не видно (Ж8). */
+  const lockScale = useRef(new Animated.Value(1)).current;
   useEffect(() => {
-    if (seenNudge.current === nudgeKey) return;
+    if (seenNudge.current === nudgeKey) return undefined;
     seenNudge.current = nudgeKey;
-    if (theme.calmMode) return;
+    const peak = firstRun.lockNudge.to / profileCard.addBadge;
+    if (theme.still) {
+      // без движения: вырос — подержали — вернулся, без анимации
+      lockScale.setValue(peak);
+      const id = setTimeout(() => lockScale.setValue(1), firstRun.lockNudge.holdMs);
+      return () => clearTimeout(id);
+    }
     const step = theme.motion.quick / 4;
     const to = (v: number) => Animated.timing(shake, { toValue: v, duration: step, useNativeDriver: NATIVE_DRIVER });
-    Animated.sequence([to(-1), to(1), to(-1), to(0)]).start();
-  }, [nudgeKey, shake, theme.calmMode, theme.motion.quick]);
+    Animated.parallel([
+      Animated.sequence([to(-1), to(1), to(-1), to(0)]),
+      Animated.sequence([
+        Animated.timing(lockScale, { toValue: peak, duration: theme.motion.quick, useNativeDriver: NATIVE_DRIVER }),
+        Animated.delay(firstRun.lockNudge.holdMs),
+        Animated.timing(lockScale, { toValue: 1, duration: theme.motion.quick, useNativeDriver: NATIVE_DRIVER }),
+      ]),
+    ]).start();
+    return undefined;
+  }, [nudgeKey, shake, lockScale, theme.still, theme.motion.quick]);
 
   if (props.kind === 'profile') {
     const { name, onPress, accessibilityLabel, testID = 'profile-card' } = props;
@@ -97,7 +114,7 @@ export function ProfileCard(props: ProfileCardProps) {
       accessibilityLabel={accessibilityLabel}
       testID={testID}
     >
-      <Animated.View style={{ position: 'absolute', top: profileCard.addBadgeInset, right: profileCard.addBadgeInset, transform: [{ translateX }] }} testID={`${testID}-lock`}>
+      <Animated.View style={{ position: 'absolute', top: profileCard.addBadgeInset, right: profileCard.addBadgeInset, transform: [{ translateX }, { scale: lockScale }], transformOrigin: 'top right' }} testID={`${testID}-lock`}>
         <Icon name="lock" size={profileCard.addBadge} color="textMuted" />
       </Animated.View>
       <View style={{ alignItems: 'center', gap: theme.spacing.sm }}>

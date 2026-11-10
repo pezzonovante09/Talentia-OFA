@@ -19,17 +19,19 @@ export type AtlasCardProps = {
   lesson: Lesson;
   region: RegionId;
   onPress: () => void;
+  /** Узкий экран: две карточки 164 с зазором 16 не входят в 320 (аудит 2026-11-09, UX п. 12) — `atlasCardWidth`. */
+  width?: number;
   testID?: string;
 };
 
-export function AtlasCard({ lesson, region, onPress, testID = 'atlas-card' }: AtlasCardProps) {
+export function AtlasCard({ lesson, region, onPress, width = atlasGrid.card.w, testID = 'atlas-card' }: AtlasCardProps) {
   const theme = useDesign();
   const { t } = useTranslation();
   const pad = theme.spacing.md;
   return (
     <CushionPressable
       role="control"
-      width={atlasGrid.card.w}
+      width={width}
       height={atlasGrid.card.h}
       radius={theme.radii.lg}
       fill="surface"
@@ -62,14 +64,14 @@ export function AtlasCard({ lesson, region, onPress, testID = 'atlas-card' }: At
 }
 
 /** Пунктирная карточка «?» — следующая страница (одна после последней, в любом режиме). */
-export function AtlasFutureCard({ onPress, testID = 'atlas-future-card' }: { onPress: () => void; testID?: string }) {
+export function AtlasFutureCard({ onPress, width = atlasGrid.card.w, testID = 'atlas-future-card' }: { onPress: () => void; /** Узкий экран: карточка уже 164 (`atlasCardWidth`). */ width?: number; testID?: string }) {
   const theme = useDesign();
   const { t } = useTranslation();
   return (
     <CushionPressable
       role="tali"
       dashed
-      width={atlasGrid.card.w}
+      width={width}
       height={atlasGrid.card.h}
       radius={theme.radii.lg}
       fill="surfaceSunken"

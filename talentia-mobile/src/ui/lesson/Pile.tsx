@@ -47,7 +47,16 @@ export function Pile({ media, variant, onTouch, marksKey = 0, markedAll = false,
   const offY = (fieldH - placed.height) / 2 + pad;
 
   const [marks, setMarks] = useState<Mark[]>([]);
-  const [miss, setMiss] = useState<{ x: number; y: number } | null>(null);
+  /** Знак промаха держится до отпускания пальца + `missRing.tailMs` (`shownUntil: 'touch_up'`): под пальцем его не видно. */
+  const [miss, setMiss] = useState<{ x: number; y: number; until: number | null } | null>(null);
+  const missTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /**
+   * Повторное касание уже сосчитанной фигуры: кольцо метки растёт до `repeatRing.to` и держится до отпускания
+   * пальца + `tailMs` (контрольный аудит 2026-11-09, Ж9: раньше обе ветки давали кольцо 2, и ребёнок не видел,
+   * что фигура уже сосчитана). `until === null` — палец ещё на фигуре.
+   */
+  const [peak, setPeak] = useState<{ index: number; until: number | null } | null>(null);
+  const peakTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const seenKey = useRef(marksKey);
   if (seenKey.current !== marksKey) {
     seenKey.current = marksKey;
@@ -68,10 +77,27 @@ export function Pile({ media, variant, onTouch, marksKey = 0, markedAll = false,
       }
     });
     if (best >= 0 && bestD <= countMark.snapRadius) {
+      const repeated = marks.some((x) => x.index === best);
       setMarks((m) => (m.some((x) => x.index === best) ? m.map((x) => (x.index === best ? { ...x, at: Date.now() } : x)) : [...m, { index: best, at: Date.now() }]));
+      if (repeated) {
+        if (peakTimer.current) clearTimeout(peakTimer.current);
+        setPeak({ index: best, until: null });
+      }
     } else {
-      setMiss({ x: locationX, y: locationY });
-      setTimeout(() => setMiss(null), 300);
+      if (missTimer.current) clearTimeout(missTimer.current);
+      setMiss({ x: locationX, y: locationY, until: null });
+    }
+  };
+
+  /** Отпустили палец: выросшее кольцо и знак промаха держатся ещё `tailMs`, потом снимаются. */
+  const release = () => {
+    if (peak && peak.until === null) {
+      setPeak({ ...peak, until: Date.now() + countMark.repeatRing.tailMs });
+      peakTimer.current = setTimeout(() => setPeak(null), countMark.repeatRing.tailMs);
+    }
+    if (miss && miss.until === null) {
+      setMiss({ ...miss, until: Date.now() + countMark.missRing.tailMs });
+      missTimer.current = setTimeout(() => setMiss(null), countMark.missRing.tailMs);
     }
   };
 
@@ -80,6 +106,8 @@ export function Pile({ media, variant, onTouch, marksKey = 0, markedAll = false,
       style={{ width: w, height: h, backgroundColor: theme.scheme === 'dark' ? theme.colors.picturePlate : 'transparent', borderRadius: theme.radii.sm, overflow: 'hidden' }}
       onStartShouldSetResponder={() => variant === 'stimulus'}
       onResponderGrant={touch}
+      onResponderRelease={release}
+      onResponderTerminate={release}
       testID={testID}
       accessibilityRole="image"
     >
@@ -103,22 +131,28 @@ export function Pile({ media, variant, onTouch, marksKey = 0, markedAll = false,
         ))}
       {(markedAll ? placed.points.map((_, index) => ({ index, at: 0 })) : marks).map((m) => {
         const p = placed.points[m.index];
-        const fresh = Date.now() - m.at < 300;
-        const ring = fresh && marks.length > 0 ? countMark.ring : countMark.ring;
+        const peaked = !markedAll && peak !== null && peak.index === m.index;
+        const ring = peaked ? countMark.repeatRing.to : countMark.ring;
+        // на пике кольцо обводит контур `peakOutline`: белое кольцо на белой или жёлтой фигуре иначе не видно
+        const outline = peaked ? countMark.repeatRing.peakOutline.width : 0;
+        const size = countMark.dot + ring * 2 + outline * 2;
+        const c = size / 2;
         return (
-          <View key={m.index} style={{ position: 'absolute', left: p.x + offX - countMark.dot / 2 - ring, top: p.y + offY - countMark.dot / 2 - ring }} pointerEvents="none" testID={`${testID}-mark-${m.index}`}>
-            <Svg width={countMark.dot + ring * 2} height={countMark.dot + ring * 2}>
-              <Circle cx={(countMark.dot + ring * 2) / 2} cy={(countMark.dot + ring * 2) / 2} r={countMark.dot / 2 + ring} fill={countMark.ringColor} />
-              <Circle cx={(countMark.dot + ring * 2) / 2} cy={(countMark.dot + ring * 2) / 2} r={countMark.dot / 2} fill={countMark.dotColor} />
+          <View key={m.index} style={{ position: 'absolute', left: p.x + offX - c, top: p.y + offY - c }} pointerEvents="none" testID={`${testID}-mark-${m.index}${peaked ? '-peak' : ''}`}>
+            <Svg width={size} height={size}>
+              {peaked && <Circle cx={c} cy={c} r={countMark.dot / 2 + ring + outline / 2} fill="none" stroke={countMark.repeatRing.peakOutline.color} strokeWidth={outline} />}
+              <Circle cx={c} cy={c} r={countMark.dot / 2 + ring} fill={countMark.ringColor} />
+              <Circle cx={c} cy={c} r={countMark.dot / 2} fill={countMark.dotColor} />
             </Svg>
           </View>
         );
       })}
       {miss && (
-        <View style={{ position: 'absolute', left: miss.x - 32, top: miss.y - 32 }} pointerEvents="none" testID={`${testID}-miss`}>
-          <Svg width={64} height={64}>
-            <Circle cx={32} cy={32} r={30} fill="none" stroke="#FFFFFF" strokeWidth={7} />
-            <Circle cx={32} cy={32} r={30} fill="none" stroke="#6E564A" strokeWidth={3} strokeDasharray="8 6" />
+        // знак промаха — из токена `missRing`, не литералами (аудит 2026-11-09, `design-lead` п. 5)
+        <View style={{ position: 'absolute', left: miss.x - countMark.missRing.size / 2, top: miss.y - countMark.missRing.size / 2 }} pointerEvents="none" testID={`${testID}-miss`}>
+          <Svg width={countMark.missRing.size} height={countMark.missRing.size}>
+            <Circle cx={countMark.missRing.size / 2} cy={countMark.missRing.size / 2} r={countMark.missRing.size / 2 - countMark.missRing.stroke / 2 - countMark.missRing.halo.pad} fill="none" stroke={countMark.missRing.halo.color} strokeWidth={countMark.missRing.stroke + countMark.missRing.halo.pad * 2} />
+            <Circle cx={countMark.missRing.size / 2} cy={countMark.missRing.size / 2} r={countMark.missRing.size / 2 - countMark.missRing.stroke / 2 - countMark.missRing.halo.pad} fill="none" stroke={countMark.missRing.color} strokeWidth={countMark.missRing.stroke} strokeDasharray={`${countMark.missRing.dash} ${countMark.missRing.gap}`} />
           </Svg>
         </View>
       )}

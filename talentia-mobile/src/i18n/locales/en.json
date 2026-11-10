@@ -80,7 +80,10 @@
       "atlas": "To the atlas",
       "settings": "For adults",
       "review": "Review",
-      "lesson": "Lesson {{n}}"
+      "lesson": "Lesson {{n}}",
+      "open": "ready to play",
+      "done": "completed",
+      "locked": "locked"
     },
     "pile": "Pile {{n}}",
     "pairedWith": "paired with {{name}}",
@@ -430,6 +433,10 @@
   },
   "parent": {
     "failed": "That did not work. Try again",
+    "writeFailed": {
+      "title": "Lesson result was not saved",
+      "body": "The last lesson was completed, but it could not be saved on the device. It counts in the app until a restart; after a restart the child will see it again. If this keeps happening, restart the app or check the free space on the device."
+    },
     "bootError": {
       "title": "Could not open the data",
       "body": "There is an account on this device, but it could not be opened. Try again or restart the app. If that does not help, update the app to the latest version. Nothing is deleted; to remove everything from the device, uninstall the app.",

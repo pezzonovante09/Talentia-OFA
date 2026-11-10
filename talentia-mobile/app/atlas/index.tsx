@@ -9,11 +9,11 @@
 import { useRouter, type Href } from 'expo-router';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, View } from 'react-native';
+import { FlatList, useWindowDimensions, View } from 'react-native';
 
 import { lessonById, regionOfLesson } from '../../src/content';
 import { useDesign } from '../../src/design';
-import { atlasGrid, lessonLayout, mapFocus, mapTitle, taliSize } from '../../src/design/tokens';
+import { atlasCardWidth, atlasGrid, lessonLayout, mapFocus, mapTitle, taliSize } from '../../src/design/tokens';
 import type { AtlasEntry } from '../../src/domain/lessonAssembly';
 import { voice } from '../../src/services/voice';
 import { useChildSession } from '../../src/state/childSession';
@@ -47,6 +47,9 @@ function AtlasCollectionBody() {
   }, [atlas]);
 
   const columns = theme.focusMode ? atlasGrid.columnsFocus : atlasGrid.columns;
+  const { width: windowW } = useWindowDimensions();
+  // две карточки 164 с зазором 16 не входят в 320 pt (аудит 2026-11-09, UX п. 12): ширина — от окна
+  const cardW = atlasCardWidth(windowW, columns, theme.spacing.lg);
   const toMap = () => router.navigate('/map');
   const sayAhead = () => voice.say('atlas.pageAhead');
   const openPage = (lessonId: string) => {
@@ -112,9 +115,9 @@ function AtlasCollectionBody() {
         showsVerticalScrollIndicator={false}
         testID="atlas-grid"
         renderItem={({ item, index }) => {
-          if (item.kind === 'future') return <AtlasFutureCard onPress={sayAhead} />;
+          if (item.kind === 'future') return <AtlasFutureCard onPress={sayAhead} width={cardW} />;
           const lesson = lessonById(item.entry.lessonId)!;
-          return <AtlasCard lesson={lesson} region={regionOfLesson(lesson.id) ?? 'numbers'} onPress={() => openPage(lesson.id)} testID={`atlas-card-${index + 1}`} />;
+          return <AtlasCard lesson={lesson} region={regionOfLesson(lesson.id) ?? 'numbers'} onPress={() => openPage(lesson.id)} width={cardW} testID={`atlas-card-${index + 1}`} />;
         }}
       />
     </Screen>

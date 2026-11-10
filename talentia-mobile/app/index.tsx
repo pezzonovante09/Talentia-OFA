@@ -46,10 +46,24 @@ export default function FirstRunScreen() {
   const consent = useAccount((s) => s.consent);
   const opening = useRef(false);
   const hasAccount = accountStatus === 'ready';
+  /**
+   * Нужен взрослый, а ребёнку нечем ответить на «Кто сегодня исследует?»: аккаунт без профилей (вопрос 93) или
+   * аккаунт не открылся (`error`, Ж1). Заголовок и голос — «Позови взрослого», Tali указывает на «+».
+   */
+  const adultNeeded = (hasAccount && profiles.length === 0) || accountStatus === 'error';
+  const titleKey = adultNeeded ? 'firstRun.callAdult' : 'firstRun.title';
+  const [taliPose, setTaliPose] = useState<'hello' | 'point'>('hello');
+  const poseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    voice.say('firstRun.title');
-  }, []);
+    voice.say(titleKey);
+  }, [titleKey]);
+  useEffect(
+    () => () => {
+      if (poseTimer.current) clearTimeout(poseTimer.current);
+    },
+    [],
+  );
 
   const openAdult = (sayKey: string, href: '/parent' | '/parent/profile/new') => {
     voice.say(sayKey);
@@ -61,7 +75,14 @@ export default function FirstRunScreen() {
   const [nudgeKey, setNudgeKey] = useState(0);
   const tapAdd = () => {
     const now = Date.now();
-    if (now - adultTapAt.current < firstRun.adultSecondTapMs) {
+    const since = now - adultTapAt.current;
+    if (adultTapAt.current > 0 && since < firstRun.adultSecondTapMs) {
+      // второй тап раньше `adultSecondTapMinMs` не считается и перезапускает окно: стук без паузы не пройдёт,
+      // взрослый тапает с паузой (Ж8, `child-ux-specialist` по диффу)
+      if (since < firstRun.adultSecondTapMinMs) {
+        adultTapAt.current = now;
+        return;
+      }
       adultTapAt.current = 0;
       router.push(hasAccount ? '/parent/profile/new' : '/parent');
       return;
@@ -69,6 +90,10 @@ export default function FirstRunScreen() {
     adultTapAt.current = now;
     voice.say('firstRun.callAdult');
     setNudgeKey((k) => k + 1);
+    // видимый отклик первого тапа: Tali указывает на «+», пока держится выросший замок
+    setTaliPose('point');
+    if (poseTimer.current) clearTimeout(poseTimer.current);
+    poseTimer.current = setTimeout(() => setTaliPose('hello'), firstRun.lockNudge.holdMs);
   };
 
   const tryWithoutSaving = () => {
@@ -108,18 +133,19 @@ export default function FirstRunScreen() {
       <View style={{ height: theme.spacing.lg }} />
       {!theme.focusMode && (
         <View style={{ alignItems: 'center' }}>
-          <TaliFigure pose="hello" size={taliSize.hero} onPress={() => voice.say('firstRun.title')} accessibilityLabel={t('a11y.tali')} />
+          <TaliFigure pose={adultNeeded ? 'point' : taliPose} size={taliSize.hero} onPress={() => voice.say(titleKey)} accessibilityLabel={t('a11y.tali')} />
         </View>
       )}
       <View style={{ height: theme.spacing.lg }} />
       <View style={{ height: theme.typography.title.lineHeight * 2, justifyContent: 'center' }}>
-        <AppText role="title" fit="title" align="center" accessibilityRole="header">
-          {t('firstRun.title')}
+        <AppText role="title" fit="title" align="center" accessibilityRole="header" testID="first-run-title">
+          {t(titleKey)}
         </AppText>
       </View>
       <View style={{ height: theme.spacing.xl }} />
       {/* Детская кнопка — сразу под заголовком, выше взрослой карточки «+» (`firstRun.childActionFirst`) */}
-      {!hasAccount && (
+      {/* при `error` аккаунт есть: яркая кнопка спорила бы с голосом «Позови взрослого»; при `loading` не мелькает */}
+      {!hasAccount && accountStatus !== 'error' && accountStatus !== 'loading' && (
         <>
           <CushionPressable
             role="control"

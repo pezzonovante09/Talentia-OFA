@@ -13,6 +13,7 @@ import AbaConsentScreen from '../aba/consent';
 import ConfirmScreen from '../confirm/[action]';
 import { ABA_TARGETS } from '../../../src/content/aba';
 import { parentButton } from '../../../src/design/parentTokens';
+import { firstRun } from '../../../src/design/tokens';
 import { markMastered } from '../../../src/domain/abaCriterion';
 import { isUuidV4 } from '../../../src/domain/ids';
 import { initialTargetState } from '../../../src/domain/abaPrompting';
@@ -1889,7 +1890,15 @@ describe('«Занятия ABA»: чьё это занятие при неско
       await observers(OBS, KID3);
       useChildSession.getState().startAccountSession({ profile: beck, snapshot: { ...EMPTY_PROGRESS }, now: new Date() });
       await renderWithProviders(<MapScreen />);
+      // «ползунки» открывают раздел вторым тапом не раньше adultSecondTapMinMs (аудит 2026-11-09, Ж8)
+      const now = jest.spyOn(Date, 'now');
+      const t0 = Date.now();
+      now.mockReturnValue(t0);
       await fireEvent.press(screen.getByTestId('map-settings'));
+      now.mockReturnValue(t0 + firstRun.adultSecondTapMinMs + 1);
+      await fireEvent.press(screen.getByTestId('map-settings'));
+      now.mockRestore();
+      expect(router.push).toHaveBeenCalledWith('/parent');
       await screen.unmount();
       router.push.mockClear();
       await renderAba();

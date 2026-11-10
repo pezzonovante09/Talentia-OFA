@@ -23,7 +23,6 @@ export type MapLaneProps = {
   height: number;
   /** Ключ, по которому лента заново центруется (смена фокуса экрана). */
   focusKey: number;
-  reduceMotion: boolean;
   onOpenLesson: (lessonId: string) => void;
   /** Активный узел «повторение» — сессия повторения (вопрос 56). */
   onOpenReview: () => void;
@@ -40,7 +39,7 @@ export const LANE_GEOMETRY: LaneGeometry = {
   tail: 96,
 };
 
-export function MapLane({ model, height, focusKey, reduceMotion, onOpenLesson, onOpenReview, onVoice, onTali, taliLabel }: MapLaneProps) {
+export function MapLane({ model, height, focusKey, onOpenLesson, onOpenReview, onVoice, onTali, taliLabel }: MapLaneProps) {
   const theme = useDesign();
   const [viewport, setViewport] = useState(0);
   const offset = useRef(new Animated.Value(0)).current;
@@ -81,9 +80,9 @@ export function MapLane({ model, height, focusKey, reduceMotion, onOpenLesson, o
     if (!viewport) return;
     const target = nodeCenter(taliIndex, baseY, g).x;
     const to = centerOffset(contentWidth, viewport, target);
-    if (reduceMotion || theme.calmMode) offset.setValue(to);
+    if (theme.still) offset.setValue(to);
     else Animated.timing(offset, { toValue: to, duration: theme.motion.slow, useNativeDriver: NATIVE_DRIVER }).start();
-  }, [focusKey, viewport, taliIndex, contentWidth, baseY, g, offset, reduceMotion, theme.calmMode, theme.motion.slow]);
+  }, [focusKey, viewport, taliIndex, contentWidth, baseY, g, offset, theme.still, theme.motion.slow]);
 
   const pan = useMemo(
     () =>

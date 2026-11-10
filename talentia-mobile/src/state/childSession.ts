@@ -30,6 +30,7 @@ import {
 import { accruePortion, afterCompletion, gameDay, NEW_PORTION, type NodeState, type Portion } from '../domain/mapProgress';
 import type { InterfaceLang } from '../domain/regionVisibility';
 import { LessonConsentRequiredError } from '../services/local/accountConsent';
+import { LessonStaleError } from '../services/local/commit';
 import type { ChildProfile } from '../services/local/profiles';
 import { EMPTY_PROGRESS, noRecordPort, type ProgressPort, type ProgressSnapshot } from '../services/progressPort';
 import type { AgeBand } from '../types/task';
@@ -45,7 +46,8 @@ export type ChildSettings = {
 
 export type SessionMode = 'none' | 'no_record' | 'account';
 
-export type FinishOutcome = 'persisted' | 'session_only';
+/** `write_failed` — итог не записался на устройство (сбой базы): в памяти сеанса он есть, ребёнок видит страницу, взрослый — карточку в разделе. */
+export type FinishOutcome = 'persisted' | 'session_only' | 'write_failed';
 
 export type ChildSessionState = {
   mode: SessionMode;
@@ -61,6 +63,11 @@ export type ChildSessionState = {
   abandoned: readonly string[];
   /** Итог последнего завершённого урока — для страницы атласа. */
   pendingResult: LessonCommitResult | null;
+  /**
+   * Последний итог не записался на устройство (контрольный аудит 2026-11-09, UX п. 13): ребёнок всё равно видит
+   * страницу атласа или «Повторили!», а взрослый — карточку в разделе. Снимается следующей удачной записью.
+   */
+  lastWriteError: string | null;
 
   startNoRecordSession(input: { childId: string; now: Date; interfaceLang: InterfaceLang }): void;
   /** Сеанс ребёнка с аккаунтом: настройки из профиля, прогресс — снимок с устройства (`ProgressPort.load`). */
@@ -105,6 +112,7 @@ const EMPTY = {
   openedAs: null,
   abandoned: [] as readonly string[],
   pendingResult: null,
+  lastWriteError: null,
   openedForAba: false,
 };
 
@@ -222,11 +230,19 @@ export const useChildSession = create<ChildSessionState>((set, get) => ({
     let outcome: FinishOutcome = 'persisted';
     // режим без записи пишет только в память, даже если глобальный порт уже `sqlitePort` (вопрос 84)
     const target = s.mode === 'no_record' ? noRecordPort : port;
+    let writeError: string | null = null;
     try {
       await target.commit(s.childId, { run: result.run, skills: result.skills, atlas: result.atlas, nextLessonNumber: result.nextLessonNumber, formatsSeen: state.formatsSeen }, at);
     } catch (e) {
-      if (!(e instanceof LessonConsentRequiredError)) throw e;
-      outcome = 'session_only';
+      if (e instanceof LessonConsentRequiredError) outcome = 'session_only';
+      // устаревший счётчик уроков — не сбой записи, а неверный итог: наверх, память не меняется
+      else if (e instanceof LessonStaleError) throw e;
+      else {
+        // сбой записи — не тупик для ребёнка: итог остаётся в памяти сеанса, страница показывается, ошибку видит взрослый
+        if (__DEV__) console.warn('finishLesson', e);
+        outcome = 'write_failed';
+        writeError = e instanceof Error ? e.message : String(e);
+      }
     }
 
     set({
@@ -242,6 +258,7 @@ export const useChildSession = create<ChildSessionState>((set, get) => ({
       openedAs: null,
       abandoned: s.abandoned.filter((id) => id !== state.lessonId),
       pendingResult: result,
+      lastWriteError: writeError,
     });
     return outcome;
   },

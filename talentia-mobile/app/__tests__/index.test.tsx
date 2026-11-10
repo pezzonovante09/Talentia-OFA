@@ -11,12 +11,24 @@ import { voice } from '../../src/services/voice';
 import { useAccount } from '../../src/state/account';
 import { useChildSession } from '../../src/state/childSession';
 import { setProgressPort } from '../../src/state/port';
-import { fireEvent, renderWithProviders, screen } from '../../src/test/render';
-import { firstRun } from '../../src/design/tokens';
+import { Animated } from 'react-native';
+
+import { act, fireEvent, renderWithProviders, screen } from '../../src/test/render';
+import { firstRun, profileCard } from '../../src/design/tokens';
 
 jest.mock('expo-router', () => {
   const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn() };
   return { useRouter: () => router, Redirect: () => null, __router: router };
+});
+// Все svg в Jest — один мок; позы Tali помечаются именем, как в atlas.test.tsx.
+jest.mock('../../src/assets/registry', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const actual = jest.requireActual<typeof import('../../src/assets/registry')>('../../src/assets/registry');
+  const poses = Object.fromEntries(
+    Object.keys(actual.TALI_POSES).map((pose) => [pose, (props: Record<string, unknown>) => React.createElement(View, { ...props, accessibilityHint: `pose:${pose}` })]),
+  );
+  return { ...actual, TALI_POSES: poses };
 });
 const { replace: mockReplace, push: mockPush } = (jest.requireMock('expo-router') as { __router: { replace: jest.Mock; push: jest.Mock } }).__router;
 
@@ -60,16 +72,39 @@ describe('первый запуск', () => {
   });
 
   it('«+ Добавить» без аккаунта: первый тап — голос «позови взрослого», замок и подпись «Для взрослых»; второй в 3 с — родительский раздел', async () => {
+    const now = jest.spyOn(Date, 'now');
+    now.mockReturnValue(1_000_000);
     await renderWithProviders(<FirstRunScreen />);
     expect(screen.getByTestId('profile-add-lock')).toBeTruthy();
     expect(screen.getAllByText('Для взрослых')).toHaveLength(2);
     await fireEvent.press(screen.getByTestId('profile-add'));
     expect(voice.last?.key).toBe('firstRun.callAdult');
     expect(mockPush).not.toHaveBeenCalled();
+    now.mockReturnValue(1_000_000 + firstRun.adultSecondTapMinMs + 1);
     await fireEvent.press(screen.getByTestId('profile-add'));
     expect(mockPush).toHaveBeenCalledWith('/parent');
     expect(useChildSession.getState().mode).toBe('none');
     expect(mockReplace).not.toHaveBeenCalled();
+    now.mockRestore();
+  });
+
+  /** Контрольный аудит 2026-11-09, Ж8: без голоса ребёнок тапает дважды подряд — второй тап раньше 800 мс не считается. */
+  it('«+ Добавить»: ранний второй тап не считается и перезапускает окно — стук без паузы в PIN не проходит', async () => {
+    const now = jest.spyOn(Date, 'now');
+    now.mockReturnValue(1_000_000);
+    await renderWithProviders(<FirstRunScreen />);
+    await fireEvent.press(screen.getByTestId('profile-add'));
+    // стук: 250, 500, 750, 1000 мс от первого — каждый раньше 800 от предыдущего, ни один не открывает
+    for (const at of [250, 500, 750, 1000]) {
+      now.mockReturnValue(1_000_000 + at);
+      await fireEvent.press(screen.getByTestId('profile-add'));
+    }
+    expect(mockPush).not.toHaveBeenCalled();
+    // пауза ≥ 800 мс после последнего тапа — открывает
+    now.mockReturnValue(1_000_000 + 1000 + firstRun.adultSecondTapMinMs + 1);
+    await fireEvent.press(screen.getByTestId('profile-add'));
+    expect(mockPush).toHaveBeenCalledWith('/parent');
+    now.mockRestore();
   });
 
   it('«+ Добавить»: второй тап позже adultSecondTapMs — снова только голос, без перехода', async () => {
@@ -108,10 +143,14 @@ describe('первый запуск', () => {
       // «+» — последним в ряду, после детей
       const row = screen.getAllByTestId(/^(profile-\d|profile-add)$/).map((el) => el.props.testID);
       expect(row).toEqual(['profile-1', 'profile-2', 'profile-add']);
+      const now = jest.spyOn(Date, 'now');
+      now.mockReturnValue(1_000_000);
       await fireEvent.press(screen.getByTestId('profile-add'));
       expect(mockPush).not.toHaveBeenCalled();
+      now.mockReturnValue(1_000_000 + firstRun.adultSecondTapMinMs + 1);
       await fireEvent.press(screen.getByTestId('profile-add'));
       expect(mockPush).toHaveBeenCalledWith('/parent/profile/new');
+      now.mockRestore();
     });
 
     it('тап по карточке: прогресс из порта → сеанс с записью → карта', async () => {
@@ -148,5 +187,101 @@ describe('первый запуск', () => {
   it('en: строки переведены', async () => {
     await renderWithProviders(<FirstRunScreen />, { lng: 'en' });
     expect(screen.getByText('Try without saving')).toBeTruthy();
+  });
+
+  /** Контрольный аудит 2026-11-09, Ж8 (этап B2): видимый отклик первого тапа. */
+  describe('отклик первого тапа по «+»', () => {
+    const pose = () => screen.getByTestId('tali-svg').props.accessibilityHint;
+    const lockScale = () => {
+      const t = screen.getByTestId('profile-add-lock').props.style.transform as Record<string, unknown>[];
+      return t.find((x) => 'scale' in x)!.scale as number;
+    };
+    const wait = (ms: number) => act(async () => { await new Promise((r) => setTimeout(r, ms)); });
+
+    it('первый тап: Tali в point, через lockNudge.holdMs снова hello', async () => {
+      await renderWithProviders(<FirstRunScreen />);
+      expect(pose()).toBe('pose:hello');
+      await fireEvent.press(screen.getByTestId('profile-add'));
+      expect(pose()).toBe('pose:point');
+      await wait(firstRun.lockNudge.holdMs + 50);
+      expect(pose()).toBe('pose:hello');
+    });
+
+    it('calm (still): замок сразу в lockNudge.to / addBadge, через holdMs — 1', async () => {
+      await renderWithProviders(<FirstRunScreen />, { calmMode: true });
+      expect(lockScale()).toBe(1);
+      await fireEvent.press(screen.getByTestId('profile-add'));
+      expect(lockScale()).toBeCloseTo(firstRun.lockNudge.to / profileCard.addBadge);
+      await wait(firstRun.lockNudge.holdMs + 50);
+      expect(lockScale()).toBe(1);
+    });
+
+    // С движением анимация идёт на нативном драйвере — в Jest значение в дереве не меняется; проверяем, что рост запущен.
+    it('с движением: запущена анимация роста замка до lockNudge.to / addBadge и возврата к 1', async () => {
+      const timing = jest.spyOn(Animated, 'timing');
+      try {
+        await renderWithProviders(<FirstRunScreen />);
+        timing.mockClear();
+        await fireEvent.press(screen.getByTestId('profile-add'));
+        const targets = timing.mock.calls.map((c) => (c[1] as { toValue: number }).toValue);
+        expect(targets).toContain(firstRun.lockNudge.to / profileCard.addBadge);
+        expect(targets[targets.length - 1]).toBe(1);
+      } finally {
+        timing.mockRestore();
+      }
+    });
+
+    it('с движением: повторный рендер без нового тапа анимацию не запускает', async () => {
+      const timing = jest.spyOn(Animated, 'timing');
+      try {
+        await renderWithProviders(<FirstRunScreen />);
+        const peak = firstRun.lockNudge.to / profileCard.addBadge;
+        expect(timing.mock.calls.some((c) => (c[1] as { toValue: number }).toValue === peak)).toBe(false);
+      } finally {
+        timing.mockRestore();
+      }
+    });
+  });
+
+  /** Вопрос 93 (этап B5): ребёнку нечем ответить на «Кто сегодня исследует?» — зовём взрослого. */
+  describe('нужен взрослый', () => {
+    it('аккаунт без профилей: заголовок и голос «Позови взрослого», Tali point', async () => {
+      withAccount([]);
+      await renderWithProviders(<FirstRunScreen />);
+      expect(screen.getByTestId('first-run-title').props.children).toBe('Позови взрослого');
+      expect(voice.last?.key).toBe('firstRun.callAdult');
+      expect(screen.getByTestId('tali-svg').props.accessibilityHint).toBe('pose:point');
+    });
+
+    it('аккаунт без профилей: тап по Tali повторяет «Позови взрослого»', async () => {
+      withAccount([]);
+      await renderWithProviders(<FirstRunScreen />);
+      voice.stop();
+      await fireEvent.press(screen.getByTestId('tali-press'));
+      expect(voice.last?.key).toBe('firstRun.callAdult');
+    });
+
+    it('аккаунт не открылся (error): «Позови взрослого», Tali point, кнопки без сохранения нет', async () => {
+      useAccount.setState({ status: 'error', accountId: null, profiles: [], consent: 'not_asked' });
+      await renderWithProviders(<FirstRunScreen />);
+      expect(screen.getByTestId('first-run-title').props.children).toBe('Позови взрослого');
+      expect(voice.last?.key).toBe('firstRun.callAdult');
+      expect(screen.getByTestId('tali-svg').props.accessibilityHint).toBe('pose:point');
+      // аккаунт на устройстве есть: яркая кнопка спорила бы с голосом «Позови взрослого» (`child-ux-specialist` по диффу B)
+      expect(screen.queryByTestId('try-without-saving')).toBeNull();
+    });
+
+    it('аккаунт с профилем: обычный заголовок «Кто сегодня исследует?» и поза hello', async () => {
+      withAccount();
+      await renderWithProviders(<FirstRunScreen />);
+      expect(screen.getByTestId('first-run-title').props.children).toBe('Кто сегодня исследует?');
+      expect(voice.last?.key).toBe('firstRun.title');
+      expect(screen.getByTestId('tali-svg').props.accessibilityHint).toBe('pose:hello');
+    });
+
+    it('без аккаунта (none): обычный заголовок', async () => {
+      await renderWithProviders(<FirstRunScreen />);
+      expect(screen.getByTestId('first-run-title').props.children).toBe('Кто сегодня исследует?');
+    });
   });
 });

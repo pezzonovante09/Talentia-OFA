@@ -6,10 +6,12 @@
  * Наклейка: контур собран из копий текста по кругу, заливка лежит поверх. В RN нет обводки текста, а копии
  * идут обычным путём шрифтов на обеих платформах. Для скринридера узел один — заголовок с `title`.
  */
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Animated, View } from 'react-native';
 
-import { fitRegionTitle, mapFocus, mapTitle, lessonLayout, type StickerTitleFit } from '../../design/tokens';
+import { firstRun, fitRegionTitle, mapFocus, mapTitle, lessonLayout, type StickerTitleFit } from '../../design/tokens';
+import { useDesign } from '../../design';
 import { AppText } from '../AppText';
 import { CushionPressable } from '../CushionPressable';
 import { Icon } from '../Icon';
@@ -26,6 +28,8 @@ export type MapBandProps = {
   /** Кнопка «к атласу» (с первой страницы атласа, D2); без неё — пустое место той же ширины, чтобы название осталось по центру. */
   onAtlas?: () => void;
   onSettings: () => void;
+  /** Смена значения — рост замка у «ползунков» (первый тап ребёнка: «Позови взрослого», Ж8). */
+  adultNudgeKey?: number;
 };
 
 function StickerTitle({ title, fit, width }: { title: string; fit: StickerTitleFit; width: number }) {
@@ -59,7 +63,27 @@ function StickerTitle({ title, fit, width }: { title: string; fit: StickerTitleF
   );
 }
 
-export function MapBand({ title, ink, titleWidth, sticker, onAtlas, onSettings }: MapBandProps) {
+export function MapBand({ title, ink, titleWidth, sticker, onAtlas, onSettings, adultNudgeKey = 0 }: MapBandProps) {
+  const theme = useDesign();
+  /** Замок «тут взрослый» у «ползунков» — тот же глиф, что у «+» и строки «Для взрослых»; на первый тап растёт, как на «+». */
+  const lockScale = useRef(new Animated.Value(1)).current;
+  const seenNudge = useRef(adultNudgeKey);
+  useEffect(() => {
+    if (seenNudge.current === adultNudgeKey) return undefined;
+    seenNudge.current = adultNudgeKey;
+    const peak = firstRun.lockNudge.to / mapFocus.settingsLock;
+    if (theme.still) {
+      lockScale.setValue(peak);
+      const id = setTimeout(() => lockScale.setValue(1), firstRun.lockNudge.holdMs);
+      return () => clearTimeout(id);
+    }
+    Animated.sequence([
+      Animated.timing(lockScale, { toValue: peak, duration: theme.motion.quick, useNativeDriver: true }),
+      Animated.delay(firstRun.lockNudge.holdMs),
+      Animated.timing(lockScale, { toValue: 1, duration: theme.motion.quick, useNativeDriver: true }),
+    ]).start();
+    return undefined;
+  }, [adultNudgeKey, lockScale, theme.still, theme.motion.quick]);
   const { t } = useTranslation();
   const flat = fitRegionTitle(title, titleWidth) ?? { size: mapTitle.minSize, lineHeight: mapTitle.minLineHeight };
 
@@ -90,9 +114,14 @@ export function MapBand({ title, ink, titleWidth, sticker, onAtlas, onSettings }
           </AppText>
         )}
       </View>
-      <CushionPressable role="control" width={mapFocus.settings} height={mapFocus.settings} radius="pill" fill="surface" onPress={onSettings} accessibilityLabel={t('a11y.map.settings')} testID="map-settings">
-        <Icon name="sliders" color="text" />
-      </CushionPressable>
+      <View>
+        <CushionPressable role="control" width={mapFocus.settings} height={mapFocus.settings} radius="pill" fill="surface" onPress={onSettings} accessibilityLabel={t('a11y.map.settings')} testID="map-settings">
+          <Icon name="sliders" color="text" />
+        </CushionPressable>
+        <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 0, right: 0, transform: [{ scale: lockScale }], transformOrigin: 'top right' }} testID="map-settings-lock">
+          <Icon name="lock" size={mapFocus.settingsLock} color="textMuted" />
+        </Animated.View>
+      </View>
     </View>
   );
 }

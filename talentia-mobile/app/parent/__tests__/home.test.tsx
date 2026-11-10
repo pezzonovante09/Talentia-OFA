@@ -9,6 +9,7 @@ import { memoryDb, writeLessonRun, writeLessonState } from '../../../src/service
 import { newProfile } from '../../../src/services/local/profiles';
 import type { SqlDb } from '../../../src/services/local/sql';
 import { useAccount } from '../../../src/state/account';
+import { useChildSession } from '../../../src/state/childSession';
 import { useParentView } from '../../../src/state/parentView';
 import { ParentThemeProvider } from '../../../src/ui/parent/theme';
 import { fireEvent, renderWithProviders, screen, waitFor, within } from '../../../src/test/render';
@@ -40,6 +41,7 @@ beforeEach(async () => {
   jest.clearAllMocks();
   db = await memoryDb();
   useParentView.setState({ childId: null });
+  useChildSession.getState().reset();
   useAccount.setState({ status: 'ready', accountId: 'acc', db, profiles: [p1], consent: 'granted' });
 });
 
@@ -193,5 +195,34 @@ describe('«Даётся тяжело»: совет по навыку (разб�
     await render();
     await waitFor(() => expect(screen.getByTestId('hard-count-to-5')).toBeTruthy());
     expect(screen.getByTestId('hard-count-to-5-tip').props.children).toBe('Дома: считайте вслух до 5 — ступеньки, ложки, пальцы.');
+  });
+});
+
+/** Контрольный аудит 2026-11-09, UX п. 13 (B6): итог урока не записался — взрослый видит карточку. */
+describe('сбой записи итога', () => {
+  it('lastWriteError есть → карточка card-write-failed с заголовком и текстом', async () => {
+    useChildSession.setState({ lastWriteError: 'disk I/O error' });
+    await render();
+    const card = screen.getByTestId('card-write-failed');
+    expect(within(card).getByText('Итог урока не записался')).toBeTruthy();
+    expect(within(card).getByText(/сохранить его на устройстве не удалось/)).toBeTruthy();
+  });
+
+  it('сырой текст ошибки базы взрослому не показывается', async () => {
+    useChildSession.setState({ lastWriteError: 'disk I/O error' });
+    await render();
+    expect(screen.queryByText(/disk I\/O error/)).toBeNull();
+  });
+
+  it('карточка сбоя стоит выше имени ребёнка', async () => {
+    useChildSession.setState({ lastWriteError: 'x' });
+    await render();
+    const order = screen.getAllByTestId(/^(card-write-failed|home-name)$/).map((el) => el.props.testID);
+    expect(order).toEqual(['card-write-failed', 'home-name']);
+  });
+
+  it('lastWriteError нет → карточки нет', async () => {
+    await render();
+    expect(screen.queryByTestId('card-write-failed')).toBeNull();
   });
 });

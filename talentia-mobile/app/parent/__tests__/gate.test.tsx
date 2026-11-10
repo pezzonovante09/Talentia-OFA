@@ -97,6 +97,18 @@ describe('с аккаунтом', () => {
     expect(router.dismissAll).toHaveBeenCalled();
   });
 
+  /** Контрольный аудит 2026-11-09, Ж8 (этап B2): «Закрыть» — иконка в зоне 48×48 с подписью для скринридера. */
+  it('«Закрыть» на гейте: кнопка 48×48 с подписью «Закрыть», нажатие — dismissAll, цифры не тронуты', async () => {
+    await withAccount();
+    await render();
+    const close = screen.getByTestId('gate-close');
+    expect(close.props.accessibilityLabel).toBe('Закрыть');
+    expect(close.props.accessibilityRole).toBe('button');
+    expect(close).toHaveStyle({ width: 48, height: 48 });
+    await fireEvent.press(close);
+    expect(router.dismissAll).toHaveBeenCalledTimes(1);
+  });
+
   it('клавиатура: десять цифр и «стереть»; стирание убирает последнюю точку', async () => {
     await withAccount();
     await render();

@@ -6,6 +6,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BackHandler } from 'react-native';
 
 import type { TaliPose } from '../../assets/registry';
 import { lessonTiming } from '../../design/tokens';
@@ -299,6 +300,9 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
     if (next.stage === 'next') {
       patch({ phase: 'done', pose: next.feedback === 'neutral' ? 'idle' : 'cheer', bubble: null, nextReady: false });
       later(lessonTiming.nextUnlock, () => patch({ nextReady: true }));
+      // ребёнок 5–6 после «верно» может просто ждать: через `nudgeAfter` Tali указывает на «Дальше»
+      // (контрольный аудит 2026-11-09, `child-ux-specialist` п. 8)
+      later(lessonTiming.nextUnlock + lessonTiming.nudgeAfter, () => patch((x) => (x.phase === 'done' && x.nextReady ? { pulse: x.pulse + 1, pose: 'point' } : {})));
       return;
     }
     const wrong = spec.wrongOf(u.draft, task);
@@ -399,6 +403,19 @@ export function useLessonController(lessonId: string, onFinished: () => void, on
 
   const openExit = useCallback(() => patch({ exitOpen: true }), [patch]);
   const stay = useCallback(() => patch({ exitOpen: false }), [patch]);
+  // Системная «назад» на Android (кнопка, свайп от края) — не выход на карту мимо подтверждения, а слой выхода:
+  // иначе урок оставался в `activeLesson`, а ребёнок выпадал из пути (контрольный аудит 2026-11-09, Ж7).
+  // При открытом слое «назад» перехватывает сам `ExitLayer` («остаться»).
+  const stepKind = step?.kind;
+  useEffect(() => {
+    // только на шагах урока: на «Повторили!» и при загрузке слоя выхода нет, и нажатие пропадало бы без отклика
+    if (ui.exitOpen || (stepKind !== 'hook' && stepKind !== 'model' && stepKind !== 'task')) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      openExit();
+      return true;
+    });
+    return () => sub.remove();
+  }, [ui.exitOpen, stepKind, openExit]);
   const leave = useCallback(() => {
     clearTimers();
     useChildSession.getState().leaveLesson();

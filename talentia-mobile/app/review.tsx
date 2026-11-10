@@ -21,6 +21,7 @@ import { useChildSession } from '../src/state/childSession';
 import { progressPort } from '../src/state/port';
 import { AppText } from '../src/ui/AppText';
 import { CushionPressable } from '../src/ui/CushionPressable';
+import { Icon } from '../src/ui/Icon';
 import { TaskScreen } from '../src/ui/lesson/TaskScreen';
 import { useLessonController } from '../src/ui/lesson/useLessonController';
 import { RequireSession } from '../src/ui/RequireSession';
@@ -68,9 +69,13 @@ function ReviewDone() {
         </AppText>
       </View>
       <CushionPressable role="control" width="100%" height={theme.touch.primary} radius={theme.radii.lg} fill="primary" onPress={() => router.navigate('/map')} accessibilityLabel={t('atlas.toMap')} testID="review-to-map">
-        <AppText role="label" color="onPrimary">
-          {t('atlas.toMap')}
-        </AppText>
+        {/* иконка карты, как у той же кнопки в атласе и слое выхода: навигация без чтения (аудит 2026-11-09, UX п. 10) */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md }}>
+          <Icon name="map" color="onPrimary" />
+          <AppText role="label" color="onPrimary" cap="action" lines={1}>
+            {t('atlas.toMap')}
+          </AppText>
+        </View>
       </CushionPressable>
       <View style={{ height: Math.max(theme.spacing.lg, 0) }} />
     </Screen>
@@ -140,6 +145,7 @@ function ReviewBody() {
       marksKey={ui.marksKey}
       format={Component ? { Component, step: taskStep, draft: ui.draft, phase: ui.phase } : null}
       exitOpen={ui.exitOpen}
+      persists={useChildSession.getState().mode !== 'no_record'}
       onTap={c.onTap}
       onTouch={c.onTouch}
       onAction={c.onAction}

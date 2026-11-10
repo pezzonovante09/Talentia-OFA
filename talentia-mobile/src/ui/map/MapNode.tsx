@@ -54,7 +54,11 @@ function lookOf(node: MapNodeKind): Look {
 export function MapNode({ node, onOpen, onVoice, panning, testID }: MapNodeProps) {
   const { t } = useTranslation();
   const look = lookOf(node);
-  const label = node.kind === 'review' ? t('a11y.map.review') : t('a11y.map.lesson', { n: node.number });
+  // состояние узла — в подписи для скринридера: пройденный, доступный и закрытый иначе звучали одинаково (аудит 2026-11-09, UX п. 11)
+  const stateKey =
+    node.kind === 'review' ? null : node.unavailable || node.state === 'sleeping' || node.state === 'ahead' ? 'a11y.map.locked' : node.state === 'open' ? 'a11y.map.open' : 'a11y.map.done';
+  const base = node.kind === 'review' ? t('a11y.map.review') : t('a11y.map.lesson', { n: node.number });
+  const label = stateKey ? `${base}, ${t(stateKey)}` : base;
 
   return (
     <CushionPressable

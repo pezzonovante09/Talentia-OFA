@@ -57,7 +57,7 @@ export function OrderTaskView(rawProps: FormatProps<OrderDraft>) {
   const placesY = orderMark.strip;
   const trayY = placesY + tileH + lift + lessonLayout.trayGap;
   const maxChars = Math.max(...task.items.map((m) => String(m.numeral ?? '').length), 1);
-  const instant = theme.calmMode;
+  const instant = theme.still;
 
   return (
     <View style={{ width: props.width, height: props.height, justifyContent: 'center' }} testID="task-order">

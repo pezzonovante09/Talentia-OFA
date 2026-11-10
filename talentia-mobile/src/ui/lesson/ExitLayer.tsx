@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useDesign } from '../../design';
 import { exitLayer, taliSize } from '../../design/tokens';
+import { voice } from '../../services/voice';
 import { AppText } from '../AppText';
 import { CushionPressable } from '../CushionPressable';
 import { Icon } from '../Icon';
@@ -21,6 +22,11 @@ export function ExitLayer({ visible, regionColor, persists, onLeave, onStay }: {
   const theme = useDesign();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+
+  // голос вопроса при открытии: без него нечитающий ребёнок видит две кнопки без объяснения (аудит 2026-11-09, UX п. 9)
+  useEffect(() => {
+    if (visible) voice.say('lesson.exitConfirm');
+  }, [visible]);
 
   useEffect(() => {
     if (!visible) return;
@@ -44,13 +50,13 @@ export function ExitLayer({ visible, regionColor, persists, onLeave, onStay }: {
   );
 
   return (
-    <Modal visible={visible} animationType={theme.calmMode ? 'none' : 'fade'} onRequestClose={onStay} transparent={false}>
+    <Modal visible={visible} animationType={theme.still ? 'none' : 'fade'} onRequestClose={onStay} transparent={false}>
       <View style={{ flex: 1, backgroundColor: theme.colors.background }} testID="exit-layer">
         <View style={{ height: insets.top, backgroundColor: safeColor }} />
         <View style={{ flex: 1, paddingHorizontal: theme.spacing.lg, paddingBottom: Math.max(insets.bottom, theme.spacing.lg) }}>
           <View style={{ height: exitLayer.topInset }} />
           <View style={{ alignItems: 'center' }}>
-            <TaliFigure pose="idle" size={taliSize.crop} crop onPress={() => undefined} accessibilityLabel={t('a11y.tali')} testID="exit-tali" />
+            <TaliFigure pose="idle" size={taliSize.crop} crop onPress={() => voice.say('lesson.exitConfirm')} accessibilityLabel={t('a11y.tali')} testID="exit-tali" />
           </View>
           <View style={{ height: exitLayer.taliGap }} />
           <View style={{ height: theme.typography.title.lineHeight * 2, justifyContent: 'center' }}>

@@ -294,7 +294,8 @@ export function Keypad({ layout, onDigit, onBackspace, backspaceLabel, testID = 
             const back = k === 'back';
             return (
               <Pressable key={c} accessibilityRole="button" accessibilityLabel={back ? backspaceLabel : k} onPress={() => (back ? onBackspace() : onDigit(k))} testID={back ? `${testID}-back` : `${testID}-${k}`} style={({ pressed }) => ({ width: parentPin.keyW, height: parentPin.keyH, borderRadius: t.shape.radius, backgroundColor: pressed ? t.pressed.card : t.colors.card, borderWidth: t.shape.hairline, borderColor: t.colors.hairline, alignItems: 'center', justifyContent: 'center' })}>
-                {back ? <ParentIcon name="x" /> : <ParentText role="heading">{k}</ParentText>}
+                {/* «стереть» — своя форма: `x` в шапке экрана PIN значит «закрыть» (аудит 2026-11-09, `design-lead` по диффу B) */}
+                {back ? <ParentIcon name="backspace" /> : <ParentText role="heading">{k}</ParentText>}
               </Pressable>
             );
           })}

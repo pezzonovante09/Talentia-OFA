@@ -9,7 +9,10 @@ import { lessonTiming } from '../../src/design/tokens';
 import { gameDay } from '../../src/domain/mapProgress';
 import { emptySkill } from '../../src/domain/mastery';
 import { voice } from '../../src/services/voice';
+import { newProfile } from '../../src/services/local/profiles';
+import { EMPTY_PROGRESS, noRecordPort } from '../../src/services/progressPort';
 import { useChildSession } from '../../src/state/childSession';
+import { setProgressPort } from '../../src/state/port';
 import { act, fireEvent, renderWithProviders, screen, waitFor } from '../../src/test/render';
 import type { ChooseTask } from '../../src/types/task';
 
@@ -151,6 +154,34 @@ describe('экран повторения', () => {
     await press('review-to-map');
     expect(router.navigate).toHaveBeenCalledWith('/map');
     expect(router.replace).not.toHaveBeenCalled();
+  });
+
+  /** Контрольный аудит 2026-11-09, UX п. 13 (B6): сбой записи итога повторения — «Повторили!» показывается, на карту не выкидывает. */
+  it('сбой записи итога (обычная Error порта): review-done показывается, редиректа на карту нет, lastWriteError в сторе', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const commit = jest.fn(() => Promise.reject(new Error('disk full')));
+    setProgressPort({ load: noRecordPort.load, commit });
+    try {
+      useChildSession.getState().startAccountSession({
+        profile: newProfile({ childId: KID, band: '5-6', interfaceLang: 'ru', createdAt: NOW.toISOString() }),
+        snapshot: { ...EMPTY_PROGRESS },
+        now: NOW,
+      });
+      dueAfterSecondLesson();
+      await renderWithProviders(<ReviewScreen />);
+      const task = useChildSession.getState().activeLesson!.queue[0].task as ChooseTask;
+      await press(`option-${task.options.find((o) => o.correct)!.id}`);
+      await pressAction('lesson-action-check');
+      await advance(lessonTiming.nextUnlock);
+      await pressAction('lesson-action-next');
+      await waitFor(() => expect(screen.getByTestId('review-done')).toBeTruthy());
+      expect(commit).toHaveBeenCalledTimes(1);
+      expect(screen.queryByTestId('redirect')).toBeNull();
+      expect(useChildSession.getState().lastWriteError).toBe('disk full');
+    } finally {
+      setProgressPort(noRecordPort);
+      warn.mockRestore();
+    }
   });
 
   it('выход посреди повторения: слой подтверждения, «Выйти» ведёт на карту, повторение ждёт и продолжается при возврате', async () => {

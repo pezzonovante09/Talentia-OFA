@@ -10,6 +10,7 @@ import { View } from 'react-native';
 import { parentSpacing } from '../../src/design/parentTokens';
 import { SKILL_BY_ID } from '../../src/domain/skills';
 import { useAccount } from '../../src/state/account';
+import { useChildSession } from '../../src/state/childSession';
 import { useParentReport, useParentView, useSelectedProfile } from '../../src/state/parentView';
 import { Card, ParentButton, ParentScreen, ParentText, Row, Segmented, WeekStrip } from '../../src/ui/parent/primitives';
 import { useParentTheme } from '../../src/ui/parent/theme';
@@ -28,6 +29,7 @@ export default function ParentHome() {
   const profiles = useAccount((s) => s.profiles);
   const consent = useAccount((s) => s.consent);
   const clockHold = useAccount((s) => s.retentionHold);
+  const writeError = useChildSession((s) => s.lastWriteError);
   const profile = useSelectedProfile();
   const select = useParentView((s) => s.select);
   const report = useParentReport(profile?.childId ?? null);
@@ -44,6 +46,12 @@ export default function ParentHome() {
 
   return (
     <ParentScreen right={<ParentButton variant="quiet" label={t('parent.done')} onPress={() => router.dismissAll()} block={false} testID="parent-done" />} testID="parent-home">
+      {/* ошибка записи — про устройство, а не про выбранного ребёнка: выше переключателя детей и имени; без сырого текста ошибки */}
+      {writeError !== null && (
+        <Card title={t('parent.writeFailed.title')} testID="card-write-failed" style={{ marginBottom: parentSpacing.md }}>
+          <ParentText role="body">{t('parent.writeFailed.body')}</ParentText>
+        </Card>
+      )}
       {profiles.length > 1 && (
         <View style={{ marginBottom: parentSpacing.md }}>
           <Segmented options={profiles.map((p, i) => ({ value: p.childId, label: name(p, i) }))} value={profile.childId} onChange={select} testID="child-segments" />

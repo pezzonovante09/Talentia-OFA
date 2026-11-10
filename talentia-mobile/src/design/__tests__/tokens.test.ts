@@ -419,7 +419,7 @@ describe('рабочие остатки раунда 3 (V1, V4, V5, V6, V2/V3)',
     expect(worst).toBeLessThan(3);
   });
 
-  it('метка «сосчитано»: отклик ≤ 100 мс от касания вниз; повтор — кольцо 2→6, держится 300 мс после отпускания; мимо — пунктирное кольцо 64 без звука (V2, V3, I-2, раунд 4)', () => {
+  it('метка «сосчитано»: отклик ≤ 100 мс от касания вниз; повтор — кольцо 2→6, держится 600 мс после отпускания; мимо — пунктирное кольцо 64 без звука (V2, V3, I-2, раунд 4)', () => {
     expect(countMark.feedbackMs).toBeLessThanOrEqual(100);
     expect(countMark.feedbackTrigger).toBe('touch_down');
     expect(countMark.repeatRing).toEqual({
@@ -427,7 +427,7 @@ describe('рабочие остатки раунда 3 (V1, V4, V5, V6, V2/V3)',
       to: 6,
       durationMs: motion.press,
       shownUntil: 'touch_up',
-      tailMs: 300,
+      tailMs: 600,
       shape: 'mark_ring_solid',
       sound: false,
       haptic: 'parentSetting',
@@ -436,9 +436,9 @@ describe('рабочие остатки раунда 3 (V1, V4, V5, V6, V2/V3)',
     expect(countMark.repeatRing.from).toBe(countMark.ring);
     expect(countMark.repeatRing.durationMs).toBe(90);
     expect(countMark.missRing.shownUntil).toBe('touch_up');
-    // второй цикл UX: знак промаха держится столько же, сколько отклик повтора
+    // знак промаха 64 выходит из-под пальца — ему хватает 300 мс; кольцо повтора 28 целиком под пальцем — 600 (UX по диффу B, 2026-11-10)
     expect(countMark.missRing.tailMs).toBe(300);
-    expect(countMark.missRing.tailMs).toBe(countMark.repeatRing.tailMs);
+    expect(countMark.repeatRing.tailMs).toBeGreaterThanOrEqual(countMark.missRing.tailMs);
     expect(countMark.missRing.size).toBeGreaterThanOrEqual(64);
     expect(countMark.missRing.sound).toBe(false);
     expect(countMark.missRing.records).toBe(false);

@@ -6,13 +6,13 @@
  * (`mapTaliTap`).
  */
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AccessibilityInfo, View, useWindowDimensions } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useDesign } from '../src/design';
-import { fitStickerTitle, lessonLayout, mapTitleWidth } from '../src/design/tokens';
+import { firstRun, fitStickerTitle, lessonLayout, mapTitleWidth } from '../src/design/tokens';
 import { voice } from '../src/services/voice';
 import { useChildSession } from '../src/state/childSession';
 import { useMapModel } from '../src/state/mapModel';
@@ -32,11 +32,7 @@ function MapScreenBody() {
   const model = useMapModel(new Date());
   const atlasPages = useChildSession((s) => s.progress.atlas.length);
   const [focusKey, setFocusKey] = useState(0);
-  const [reduceMotion, setReduceMotion] = useState(false);
-
-  useEffect(() => {
-    void AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
-  }, []);
+  const [adultNudge, setAdultNudge] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -46,11 +42,29 @@ function MapScreenBody() {
     }, [router]),
   );
 
-  // раздел родителя открывается на ребёнке этой карты: иначе занятие ABA ушло бы профилю по умолчанию
+  // раздел родителя открывается на ребёнке этой карты: иначе занятие ABA ушло бы профилю по умолчанию.
+  // «Ползунки» — как «+» на первом запуске: первый тап — голос «Позови взрослого», PIN — вторым тапом не раньше
+  // `adultSecondTapMinMs` и не позже `adultSecondTapMs` (аудит 2026-11-09, Ж8; вопрос 102, допущение №185)
+  const adultTapAt = useRef(0);
   const openParent = () => {
-    const { mode, childId } = useChildSession.getState();
-    if (mode === 'account' && childId) useParentView.getState().select(childId);
-    router.push('/parent');
+    const now = Date.now();
+    const since = now - adultTapAt.current;
+    if (adultTapAt.current > 0 && since < firstRun.adultSecondTapMs) {
+      // ранний тап перезапускает окно: стук без паузы не проходит (`child-ux-specialist` по диффу)
+      if (since < firstRun.adultSecondTapMinMs) {
+        adultTapAt.current = now;
+        return;
+      }
+      adultTapAt.current = 0;
+      const { mode, childId } = useChildSession.getState();
+      if (mode === 'account' && childId) useParentView.getState().select(childId);
+      router.push('/parent');
+      return;
+    }
+    adultTapAt.current = now;
+    voice.say('firstRun.callAdult');
+    // видимый отклик и без звука: замок у «ползунков» растёт, как на «+»
+    setAdultNudge((k) => k + 1);
   };
 
   const title = t(`content.regions.${model.region}.title`);
@@ -66,13 +80,12 @@ function MapScreenBody() {
       <View style={{ height: insets.top, backgroundColor: bandColor }} />
       <View style={{ backgroundColor: bandColor }}>
         {/* «К атласу» — когда есть хотя бы одна страница (D2); до первого урока — пустое место той же ширины, не мёртвая цель */}
-        <MapBand title={title} ink={onRegion} titleWidth={titleWidth} sticker={sticker} onAtlas={atlasPages >= 1 ? () => router.push('/atlas' as Href) : undefined} onSettings={openParent} />
+        <MapBand title={title} ink={onRegion} titleWidth={titleWidth} sticker={sticker} onAtlas={atlasPages >= 1 ? () => router.push('/atlas' as Href) : undefined} onSettings={openParent} adultNudgeKey={adultNudge} />
       </View>
       <MapLane
         model={model}
         height={laneHeight}
         focusKey={focusKey}
-        reduceMotion={reduceMotion}
         onOpenLesson={(lessonId) => router.push({ pathname: '/lesson/[lessonId]', params: { lessonId } })}
         // typed routes узнают `/review` при следующей генерации (`expo start`); до неё — явный Href
         onOpenReview={() => router.push('/review' as Href)}
