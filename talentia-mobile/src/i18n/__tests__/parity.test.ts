@@ -12,6 +12,7 @@
 import en from '../locales/en.json';
 import ky from '../locales/ky.json';
 import ru from '../locales/ru.json';
+import { PENDING_KEYS } from '../pendingKeys';
 
 type Tree = { [k: string]: string | Tree };
 
@@ -124,6 +125,25 @@ describe('ru', () => {
   it('«(а)» и прочие скобочные окончания рода в ru-текстах нет (№71)', () => {
     const bad = [...flat(ru as Tree)].filter(([, v]) => /\((а|ла|ся|ая|ый|ой|ен|на)\)/.test(v)).map(([k]) => k);
     expect(bad).toEqual([]);
+  });
+
+  /**
+   * Пол взрослого и ребёнка неизвестен (контрольный аудит 2026-11-09, Ж15): «Согласен», «Прошёл обучение», «обучен»,
+   * «Сам» читаются как мужской род. Стилистический гард — предупреждение, не падение (№122).
+   */
+  it('мужские формы во взрослых строках — предупреждением', () => {
+    const MASC = /(?<!\p{L})(?:Согласен|согласен|готов|обучен|прошёл|Прошёл|сделал|выбрал|уверен|должен|Сам)(?!\p{L})/u;
+    const hits = [...flat(ru as Tree)]
+      .filter(([k]) => /^(parent|aba|consent|a11y\.parent)/.test(k))
+      .filter(([, v]) => MASC.test(v))
+      .map(([k, v]) => `${k}: ${v}`);
+    if (hits.length > 0) console.warn(`Мужские формы во взрослых строках (${hits.length}):\n${hits.join('\n')}`);
+    expect(Array.isArray(hits)).toBe(true);
+  });
+
+  it('ждущие экранов ключи (PENDING_KEYS) есть в ru: список не протух', () => {
+    const keys = flat(ru as Tree);
+    expect(PENDING_KEYS.filter((k) => !keys.has(k))).toEqual([]);
   });
 
   it('подписи a11y.option обязаны нести {{n}} во всех локалях, где они есть', () => {

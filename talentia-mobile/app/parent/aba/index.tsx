@@ -420,7 +420,7 @@ export default function AbaParentScreen() {
               </ParentText>
             )}
             <ParentText role="caption" color="textMuted" testID="aba-export-note">
-              {!ABA_EXPORT_FILE_ENABLED || exportState === 'unavailable' ? t('parent.aba.exportLater') : t('parent.aba.exportCaption')}
+              {!ABA_EXPORT_FILE_ENABLED ? t('parent.aba.exportLater') : exportState === 'unavailable' ? t('parent.aba.exportUnavailable') : t('parent.aba.exportCaption')}
             </ParentText>
           </Card>
         )}

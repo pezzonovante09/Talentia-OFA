@@ -14,7 +14,7 @@ import { Icon } from '../Icon';
 import { TaliFigure } from '../TaliFigure';
 import { MapBackdrop } from '../map/MapBackdrop';
 
-export function HookScreen({ lesson, region, text, width, height, onReplay, onHelp, labels }: { lesson: Lesson; region: Region['id']; text: string; width: number; height: number; onReplay: () => void; onHelp: () => void; labels: { replay: string; help: string; tali: string } }) {
+export function HookScreen({ lesson, region, text, width, height, onReplay, onHelp, labels }: { lesson: Lesson; region: Region['id']; text: string; width: number; height: number; onReplay: () => void; onHelp: () => void; labels: { replay: string; help: string; /** Подпись для скринридера: имя кириллицей (TALI.md «Как пишется имя»). */ helpA11y?: string; tali: string } }) {
   const theme = useDesign();
   const cardW = Math.min(342, width);
   const cardH = Math.min(420, height - theme.touch.primary - theme.spacing.xl * 2 - theme.touch.min - theme.spacing.lg);
@@ -51,7 +51,7 @@ export function HookScreen({ lesson, region, text, width, height, onReplay, onHe
         </View>
       </View>
       <View style={{ height: lessonLayout.actionBar + theme.elevation.raised.offsetY }}>
-        <CushionPressable role="control" width="100%" height={theme.touch.primary} radius={theme.radii.lg} fill="primary" onPress={onHelp} guardMs={theme.motion.slow} accessibilityLabel={labels.help} testID="hook-help">
+        <CushionPressable role="control" width="100%" height={theme.touch.primary} radius={theme.radii.lg} fill="primary" onPress={onHelp} guardMs={theme.motion.slow} accessibilityLabel={labels.helpA11y ?? labels.help} testID="hook-help">
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md }}>
             <Icon name="arrow" color="onPrimary" />
             <AppText role="label" color="onPrimary" cap="action" lines={1}>

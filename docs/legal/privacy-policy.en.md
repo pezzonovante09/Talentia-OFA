@@ -35,7 +35,7 @@ settings, reports and data are available only to an adult behind a PIN.
 | Child profile: age band (5-6, 7, 8, 9-10), language, mode; a name only if the parent chooses to enter one (**optional**) | choose tasks and language | on the device until the profile is deleted |
 | Learning progress: lesson runs (day, duration, task results), skill mastery | show progress, repeat difficult skills, parent report | on the device; the run log for 12 months by the device date, then deleted (if the app has not been opened for more than 45 days or the date jumped forward, deletion waits for an adult to confirm in the parent section and records may be kept longer until then; manual deletion is always available); the summary skill state while the profile exists |
 | Parent consent log: what was confirmed, when, which text version | prove consent was given and withdrawn | on the device |
-| Parent PIN (stored only as a salted hash in the system's secure storage), failed-attempt counter | keep the parent area away from the child | on the device |
+| Parent PIN (stored only as a salted hash in the system's secure storage), failed-attempt counter | keep the For adults section away from the child | on the device |
 | ABA mode data, **only if you turn the mode on and give a separate consent**: targets, trials, sessions, prompt levels, ratings, observer details, reward choices and time to choose, who the session was with | support ABA-style practice; trials are recorded only with consent | on the device; logs for 12 months |
 
 ABA mode implies that a child may have developmental differences, so we treat these records as
@@ -79,7 +79,7 @@ is a barrier against accidental entry by a child, **not** verified proof of age 
 
 - Talentia is an app for children aged 5-10, used by a child under an adult's supervision.
 - A child's data does not leave the device: version 1 has no cloud, no accounts and no AI.
-- The parent manages the child's data in the parent area behind a PIN: export, clear progress, delete
+- The parent manages the child's data in the For adults section behind a PIN: export, clear progress, delete
   the profile, withdraw consents. The child has no access to these actions. [[OWNER: see the export note in section 2.]]
 - We deliberately do not collect more than needed (see section 3: no surname, date of birth, email,
   photos, voice, location or advertising identifier; the in-game name is optional and stays on the
@@ -91,14 +91,15 @@ is a barrier against accidental entry by a child, **not** verified proof of age 
 ## 8. Your rights and retention
 
 You may obtain a copy of the data (export) [[OWNER: see the export note in section 2.]], clear progress, delete the child's profile and withdraw
-any consent. All of this is done in the app's parent area (PIN required) without contacting us,
+any consent. All of this is done in the app's For adults section (PIN required) without contacting us,
 because the data is only with you. Deletion is irreversible, there is no trash, and data is physically
-erased from the device. Full deletion is the Delete account button in Data. Uninstalling the app erases its data; [[iOS: before release, the PIN hash in Keychain is cleared on reinstall, #157]].
+erased from the device. Full deletion is the Delete all data button in Data. Uninstalling the app erases its data; [[iOS: the PIN hash in Keychain is cleared on the next install (#157); between uninstall and reinstall it stays - adult's data, not the child's]].
 
 After a child's profile is deleted, the consent log stays on the device without any link to the child
 (the identifier is replaced with a random one) as evidence that consent was given and withdrawn.
-"Delete everything on this device" also erases the consent log and the PIN: then nothing is left on the
-device. [[LAWYER: log retention period - three years in the spec; confirm or shorten for the
+"Delete all data" also erases the consent log and the PIN: then nothing is left on the
+device. [[LAWYER: retention of the consent log (not of lesson and session records, which are kept for 12 months) - three
+years in the spec, on the device now - until "Delete all data"; confirm or shorten for the
 on-device-only mode.]] [[OWNER/LAWYER: the "Delete everything" behaviour comes from the code (`purge.ts`,
 `wipeDevice`); `PARENT.md` describes the log as surviving deletion - see the note in
 `account-deletion.en.md`.]]
@@ -109,7 +110,7 @@ time: [[OWNER/LAWYER: response deadline under the governing law]].
 ## 9. Security
 
 The PIN is stored only as a hash in the system's secure storage; after failed attempts sign-in is
-locked with a growing delay; the keypad layout is shuffled on every entry; the parent area closes when
+locked with a growing delay; the keypad layout is shuffled on every entry; the For adults section closes when
 the app goes to the background and after inactivity; the data file is excluded from backups; deleted
 data is physically erased. No protection is absolute: if the device is unlocked and a child knows the
 PIN, whoever holds the device can reach the data.

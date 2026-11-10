@@ -34,6 +34,8 @@ export default function ConsentsScreen() {
           {t(`parent.consent.status.${consent}`)}
         </ParentText>
         {consent === 'outdated' && <ParentButton label={t('parent.consent.readAndConfirm')} onPress={() => router.push('/parent/reconsent')} testID="consent-reconfirm" />}
+        {/* политика — и после первой настройки: в ней данные практики и файл специалисту (аудит 2026-11-09, приватность по диффу C) */}
+        <Row kind="link" label={t('parent.policy.title')} onPress={() => router.push('/parent/policy')} testID="consents-policy" />
         <Row kind="destructive" label={t('parent.consent.revokeLocal')} onPress={() => router.push({ pathname: '/parent/confirm/[action]', params: { action: 'delete_account' } })} testID="consent-revoke" />
       </Card>
     </ParentScreen>

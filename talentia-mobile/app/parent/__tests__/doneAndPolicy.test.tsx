@@ -43,7 +43,7 @@ describe('политика конфиденциальности', () => {
   it('заголовок и текст политики на экране', async () => {
     await render();
     expect(screen.getByText('Политика конфиденциальности')).toBeTruthy();
-    expect(screen.getByText(/В интернет ничего не отправляется/)).toBeTruthy();
+    expect(screen.getByText(/Само приложение ничего не отправляет в интернет/)).toBeTruthy();
   });
 
   it('«Назад» — назад', async () => {

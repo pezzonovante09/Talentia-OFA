@@ -3,7 +3,8 @@
  *
  * Запасного языка нет: `fallbackLng: false`. Ребёнок с ky-интерфейсом не должен услышать русскую
  * реплику под видом кыргызской — отсутствие ключа видно (`i18n.exists`), и урок без перевода на
- * карте помечается, а не открывается (`domain/lessonKeys.ts`, `lessonAvailable`).
+ * карте помечается, а не открывается (`domain/lessonKeys.ts`, `lessonAvailable`). По той же причине
+ * язык интерфейса включается только с полным словарём (`UI_LANGS`, Ж17): иначе экран взрослых показал бы ключи.
  *
  * Ресурсы лежат в бандле, инициализация синхронна (`initImmediate: false`): к первому рендеру
  * строки уже есть, экран не мигает ключами.
@@ -16,6 +17,7 @@ import type { InterfaceLang } from '../domain/regionVisibility';
 import en from './locales/en.json';
 import ky from './locales/ky.json';
 import ru from './locales/ru.json';
+import { PENDING_KEYS } from './pendingKeys';
 
 export const INTERFACE_LANGS: readonly InterfaceLang[] = ['ru', 'en', 'ky'];
 
@@ -25,10 +27,45 @@ export const resources = {
   ky: { translation: ky },
 } as const;
 
-/** Язык устройства, если он один из трёх; иначе русский (основной язык выпуска, №126). */
+type Tree = { [k: string]: string | Tree };
+const PLURAL_SUFFIX = /_(zero|one|two|few|many|other)$/;
+
+/** Основы ключей словаря: plural-суффиксы сворачиваются (у ru четыре формы, у en и ky две). */
+function keyBases(tree: Tree, prefix = '', out = new Set<string>()): Set<string> {
+  for (const [k, v] of Object.entries(tree)) {
+    if (typeof v === 'string') out.add((prefix + k).replace(PLURAL_SUFFIX, ''));
+    else keyBases(v, `${prefix}${k}.`, out);
+  }
+  return out;
+}
+
+/**
+ * Что язык обязан покрыть, чтобы интерфейс включился: все ключи ru, **кроме** ждущих экранов (`PENDING_KEYS` — их
+ * носитель не переводит) и текстов уроков (`content.<регион>.*`: непереведённый урок помечается на карте и не
+ * открывается, №78, `lessonAvailable`). Общие разделы `content.common/skills/skillTips/regions/objects` — интерфейс
+ * карты и раздела взрослых, они нужны (`localization-qa` по диффу этапа C).
+ */
+const CONTENT_SHARED = /^content\.(common|skills|skillTips|regions|objects)\./;
+const gateKey = (k: string) => !PENDING_KEYS.includes(k) && (!k.startsWith('content.') || CONTENT_SHARED.test(k));
+const RU_KEYS = new Set([...keyBases(ru as Tree)].filter(gateKey));
+/** Словарь покрывает каждый ключ ru — без запасного языка это единственное условие, при котором экран не покажет ключ. */
+const coversRu = (tree: Tree): boolean => {
+  const own = keyBases(tree);
+  for (const k of RU_KEYS) if (!own.has(k)) return false;
+  return true;
+};
+
+/**
+ * Языки, которые интерфейс вправе включить (Ж17): словарь полный относительно ru. Пока `ky.json` пишет носитель (№108),
+ * ky здесь нет, и устройство с кыргызским получает русский интерфейс, а не сырые ключи. Список считается на старте по
+ * бандлу; когда ky заполнится, язык включится сам — тогда же вернуть `ky` в `CFBundleLocalizations` (`app.json`).
+ */
+export const UI_LANGS: readonly InterfaceLang[] = INTERFACE_LANGS.filter((lang) => lang === 'ru' || coversRu(resources[lang].translation as Tree));
+
+/** Язык устройства, если его словарь полный (`UI_LANGS`); иначе русский (основной язык выпуска, №126). */
 export function deviceLang(): InterfaceLang {
   const code = getLocales()[0]?.languageCode ?? '';
-  return (INTERFACE_LANGS as readonly string[]).includes(code) ? (code as InterfaceLang) : 'ru';
+  return (UI_LANGS as readonly string[]).includes(code) ? (code as InterfaceLang) : 'ru';
 }
 
 const i18next: i18n = createInstance();

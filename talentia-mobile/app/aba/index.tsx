@@ -47,8 +47,8 @@ export default function AbaGateScreen() {
       <View style={{ flex: 1, paddingHorizontal: 16 }} onLayout={(e) => setSize({ height: e.nativeEvent.layout.height, width: e.nativeEvent.layout.width })}>
         {tier === null ? (
           <View style={{ flex: 1, justifyContent: 'center', gap: abaWindowPolicy.belowMinButtonGap }} testID="aba-too-small">
-            <Text style={{ color: c.ink, fontSize: 20, fontWeight: '700' }}>{t('abaSession.tooSmallTitle')}</Text>
-            <Text style={{ color: c.ink, fontSize: 16 }}>{t('abaSession.tooSmallBody')}</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ color: c.ink, fontSize: 20, fontWeight: '700' }}>{t('abaSession.tooSmallTitle')}</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ color: c.ink, fontSize: 16 }}>{t('abaSession.tooSmallBody')}</Text>
             <ParentThemeProvider>
               <ParentButton
                 height={abaWindowPolicy.belowMinButtonHeight}

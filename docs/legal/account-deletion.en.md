@@ -1,4 +1,4 @@
-# Deleting your Talentia data and account
+# Deleting your Talentia data
 
 > DRAFT FOR LEGAL REVIEW. Do not publish. The stores require this page (link in Google Play and App
 > Store) and it must open without signing in. Publication URL: [[OWNER: page URL]].
@@ -10,7 +10,7 @@ for you - it exists only on your device. You delete it yourself, quickly and irr
 
 ## How to delete your child's data
 
-1. Open the app and enter the parent area (PIN).
+1. Open the app and enter the For adults section (PIN).
 2. Open "Data". [[OWNER: match the menu names to the finished screens.]]
 3. Choose an action:
    - **Export** - save a copy of the data as a file (do this first if you want a copy);
@@ -18,7 +18,7 @@ for you - it exists only on your device. You delete it yourself, quickly and irr
    - **Clear progress** - the child's profile stays, learning progress is erased;
    - **Delete child profile** - erases the profile, the name (if any), lesson runs, skill mastery,
      ABA mode data, cache and the export file;
-   - **Delete everything on this device** - the same for all profiles, plus the PIN and consent log
+   - **Delete all data** - the same for all profiles, plus the PIN and consent log
      (in the code `wipeDevice` also erases the consent log; afterwards nothing is left on the device).
 4. Confirm. There is no undo and no trash.
 
@@ -29,7 +29,7 @@ You can also delete the data by **uninstalling the app** from the device.
 - After **"Delete child profile"** the device keeps the consent log with no link to the child (the
   identifier is replaced with a random one) as evidence that consent was given and withdrawn;
   retention: [[LAWYER: period; three years in the spec]].
-- After **"Delete everything on this device"** nothing remains, including the consent log and PIN.
+- After **"Delete all data"** nothing remains, including the consent log and PIN.
 - Off the device: nothing, because version 1 sends no data anywhere.
 
 [[OWNER/LAWYER: the text above follows the code (`purge.ts`: `purgeChild` keeps the log under a

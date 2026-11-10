@@ -10,6 +10,7 @@ import type { InterfaceLang } from '../../domain/regionVisibility';
 import type { ChildProfile } from '../../services/local/profiles';
 import type { AgeBand } from '../../types/task';
 import { Card, Field, Row, Segmented } from './primitives';
+import { UI_LANGS } from '../../i18n';
 
 export type ProfileDraft = Omit<ChildProfile, 'childId' | 'createdAt'>;
 
@@ -19,11 +20,15 @@ const BANDS: { value: AgeBand; label: string }[] = [
   { value: '8', label: '8' },
   { value: '9-10', label: '9–10' },
 ];
-const LANGS: { value: InterfaceLang; label: string }[] = [
-  { value: 'ru', label: 'Русский' },
-  { value: 'en', label: 'English' },
-  { value: 'ky', label: 'Кыргызча' },
-];
+// Только языки с полным словарём (`UI_LANGS`, Ж17): «Кыргызча» без перевода оставляла бы интерфейс русским
+// (`localization-qa` по диффу этапа C). Вернётся сама, когда носитель заполнит `ky.json` (№108).
+const LANGS: { value: InterfaceLang; label: string }[] = (
+  [
+    { value: 'ru', label: 'Русский' },
+    { value: 'en', label: 'English' },
+    { value: 'ky', label: 'Кыргызча' },
+  ] as const
+).filter((l) => UI_LANGS.includes(l.value));
 const MINUTES = [10, 15, 20];
 
 export function ProfileForm({ draft, onChange, extended = false, onBandChange }: { draft: ProfileDraft; onChange: (d: ProfileDraft) => void; extended?: boolean; /** Смена полосы — через подтверждение (настройки). */ onBandChange?: (band: AgeBand) => void }) {

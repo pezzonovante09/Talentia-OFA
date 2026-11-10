@@ -74,10 +74,11 @@ export default function ParentHome() {
       <Card title={t('parent.home.week')} testID="card-week">
         <View style={{ flexDirection: 'row', marginBottom: parentSpacing.lg }}>
           {[
-            [week?.activeDays ?? 0, t('parent.home.daysOf7')],
-            [week?.minutes ?? 0, t('parent.home.minutes')],
-            [week?.lessons ?? 0, t('parent.home.lessons')],
-            [week?.reviewTasks ?? 0, t('parent.home.reviews')],
+            // подпись согласуется с числом: «1 урок», «2 урока», «5 уроков» (аудит 2026-11-09, Ж15)
+            [week?.activeDays ?? 0, t('parent.home.daysOf7', { count: week?.activeDays ?? 0 })],
+            [week?.minutes ?? 0, t('parent.home.minutes', { count: week?.minutes ?? 0 })],
+            [week?.lessons ?? 0, t('parent.home.lessons', { count: week?.lessons ?? 0 })],
+            [week?.reviewTasks ?? 0, t('parent.home.reviews', { count: week?.reviewTasks ?? 0 })],
           ].map(([n, label], i) => (
             <View key={i} style={{ flex: 1, alignItems: 'center' }}>
               <ParentText role="number" testID={`week-n-${i}`}>

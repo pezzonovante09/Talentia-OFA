@@ -72,7 +72,7 @@ describe('первая настройка', () => {
   it('шаг 1: порог намерения — задача, «Шаг 1 из 4», закрытие без аккаунта просто закрывает', async () => {
     await render();
     onStep('intent');
-    expect(screen.getByRole('header', { name: 'Проверка, что вы взрослый' })).toBeTruthy();
+    expect(screen.getByRole('header', { name: 'Проверка для взрослых' })).toBeTruthy();
     expect(screen.getByText(/Шаг 1 из 4/)).toBeTruthy();
     expect(screen.getByTestId('intent-challenge').props.children).toMatch(/^\d+ × \d+ = \?$/);
     await fireEvent.press(screen.getByTestId('setup-close'));
@@ -188,7 +188,7 @@ describe('первая настройка', () => {
 
     it('возврат на шаг PIN с текстом parent.setup.accountExists, а не «Не получилось»', async () => {
       await repeatWithExisting();
-      expect(screen.getByText('На этом устройстве уже есть аккаунт. Закройте настройку и войдите по PIN.')).toBeTruthy();
+      expect(screen.getByText('Раздел «Для взрослых» на этом устройстве уже настроен. Закройте настройку и войдите по PIN.')).toBeTruthy();
       expect(screen.queryByText('Не получилось. Попробуйте ещё раз')).toBeNull();
     });
 

@@ -19,14 +19,18 @@ const DRAFT = ['ru-draft-1', 'en-draft-1', 'ky-draft-1'] as const;
  * `aba_processing`, черновик 2 (№168, вопрос 67, 2026-11-01): добавлена выгрузка записей файлом по решению
  * родителя. Согласия на черновик 1 — `outdated`: родителя спрашивают заново перед занятием. Кыргызский текст
  * — долг носителя (№108), версия поднята вместе с ru/en, чтобы смена языка не возвращала старый черновик.
+ *
+ * `aba_processing`, черновик 3 (контрольный аудит 2026-11-09, этап C, Ж5): подпись под согласием «Только на этом
+ * устройстве» стояла под текстом, который разрешает выгрузку файлом, — теперь «Хранится на этом устройстве». Подпись —
+ * утверждение о хранении, она входит в хеш стража (`consentTexts.test.ts`); согласия на черновик 2 — `outdated`.
  */
-const ABA_DRAFT_2 = ['ru-draft-2', 'en-draft-2', 'ky-draft-2'] as const;
+const ABA_DRAFT_3 = ['ru-draft-3', 'en-draft-3', 'ky-draft-3'] as const;
 
 export const CURRENT_CONSENT_TEXTS: Record<ConsentScope, readonly string[]> = {
   account_local: DRAFT,
   cloud_sync: DRAFT,
   companion_ai: DRAFT,
   voice_asr: DRAFT,
-  aba_processing: ABA_DRAFT_2,
+  aba_processing: ABA_DRAFT_3,
   telemetry: DRAFT,
 };

@@ -1,6 +1,6 @@
 /**
- * Согласие на данные практики (`aba_processing`) — шаблон экрана согласия раздела (направление §1): текст, «Только на
- * этом устройстве», «Согласен» и «Не сейчас» одной высоты и ширины, версия текста. Даётся за свежим PIN
+ * Согласие на данные практики (`aba_processing`) — шаблон экрана согласия раздела (направление §1): текст, «Хранится на
+ * этом устройстве», ссылка на политику, «Даю согласие» и «Не сейчас» одной высоты и ширины, версия текста. Даётся за свежим PIN
  * (`aba_consent`). Текст — черновик (`DRAFT`), итог — после юриста: с ним к детям нельзя.
  */
 import { useRouter } from 'expo-router';
@@ -59,6 +59,7 @@ export default function AbaConsentScreen() {
           <ParentText role="body">{tc('parent.aba.consentBody')}</ParentText>
         </Card>
         <ParentText role="caption">{tc('parent.aba.localOnly')}</ParentText>
+        <ParentButton variant="quiet" label={tc('parent.consent.policy')} underline onPress={() => router.push('/parent/policy')} testID="aba-consent-policy" block={false} />
         <View style={{ flexDirection: 'row', gap: parentSpacing.md }}>
           <View style={{ flex: 1 }}>
             <ParentButton label={tc('parent.aba.agree')} disabled={busy} onPress={() => (can('aba_consent') ? void grant() : setSheet(true))} testID="aba-agree" />

@@ -318,7 +318,7 @@ describe('«Занятия ABA»: кнопка занятия по состоя�
 
 describe('«Занятия ABA»: режим и «Кто ведёт» у взрослого (этап G1, вопрос 59)', () => {
   const PAIRING_STATUS = 'Сначала знакомство с жетонами — короткое занятие без заданий';
-  const ALONE_LOCKED = '«Сам» откроется, когда задание будет освоено со взрослым';
+  const ALONE_LOCKED = '«Без взрослого» — когда задание освоено со взрослым';
   const TOGETHER = 'Пока это занятие лучше вместе — побудьте рядом';
   const segment = (cfg: 'with_adult' | 'alone') => screen.getByTestId(`aba-mode-${cfg}`);
   const setTargets = (states: Record<string, ReturnType<typeof markMastered>>) => asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'abaTargets', states, iso()));
@@ -443,7 +443,7 @@ describe('«Занятия ABA»: режим и «Кто ведёт» у взр�
     await fireEvent(screen.getByTestId('aba-trained-switch'), 'valueChange', true);
     await fireEvent.press(screen.getByTestId('aba-who-done'));
     expect(screen.queryByTestId('aba-who-leads')).toBeNull();
-    expect(whoValue()).toBe('Специалист центра · обучен');
+    expect(whoValue()).toBe('Специалист центра · с обучением');
     expect(router.replace).not.toHaveBeenCalled();
     await pastGuard(() => fireEvent.press(screen.getByTestId('aba-start')));
     await waitFor(() => expectWentTo(TO_PAIRING));
@@ -473,7 +473,7 @@ describe('«Занятия ABA»: режим и «Кто ведёт» у взр�
     await observers([{ id: 'obs-spec', role: 'specialist', trained: true }, { id: 'obs-1', role: 'parent', trained: false }]);
     await renderAba();
     await waitStatus('Можно начинать');
-    await waitFor(() => expect(whoValue()).toBe('Специалист центра · обучен'));
+    await waitFor(() => expect(whoValue()).toBe('Специалист центра · с обучением'));
     await fireEvent.press(screen.getByTestId('aba-who-row'));
     expect(screen.getByTestId('aba-who-caption').props.children).toBe('Как в прошлый раз');
     expect(screen.getByTestId('aba-role-specialist').props.accessibilityState.selected).toBe(true);
@@ -1260,7 +1260,9 @@ describe('«Занятия ABA»: согласие, пауза, файл, отз
 
   // --- файл для специалиста (G3, вопрос 67) ---
   const CAPTION = 'Что в файле: задания, подсказки, итоги занятий и выбор наград — без имени ребёнка. Вы сами решаете, кому передать файл; что с ним будет дальше, приложение не контролирует.';
-  const LATER = 'Файл появится позже, вместе с облачной копией.';
+  // «выключено» и «на устройстве не передать» — разные подписи (приватность по диффу этапа C, М1)
+  const LATER = 'Выгрузка файлом пока выключена.';
+  const UNAVAILABLE = 'На этом устройстве файл не передать: нет системного листа «Поделиться».';
   const note = () => screen.getByTestId('aba-export-note').props.children as string;
   const exportValue = () => screen.queryByTestId('aba-export-value')?.props.children as string | undefined;
 
@@ -1332,7 +1334,7 @@ describe('«Занятия ABA»: согласие, пауза, файл, отз
     await waitFor(() => expect(screen.getByTestId('aba-export')).toBeTruthy());
     await fireEvent.press(screen.getByTestId('aba-export'));
     await waitFor(() => expect(exportValue()).toBe('Позже'));
-    expect(note()).toBe(LATER);
+    expect(note()).toBe(UNAVAILABLE);
     expect(screen.getByTestId('aba-export').props.accessibilityRole).toBeUndefined();
   });
 
@@ -1409,10 +1411,10 @@ describe('«Занятия ABA»: согласие, пауза, файл, отз
 });
 
 describe('экран согласия на данные практики', () => {
-  it('заголовок, текст, «Только на этом устройстве» и версия текста на языке экрана', async () => {
+  it('заголовок, текст, «Хранится на этом устройстве» и версия текста на языке экрана', async () => {
     await renderConsent();
     expect(screen.getByRole('header', { name: 'Согласие на данные практики' })).toBeTruthy();
-    expect(screen.getByText('Только на этом устройстве')).toBeTruthy();
+    expect(screen.getByText('Хранится на этом устройстве')).toBeTruthy();
     expect(screen.getByTestId('aba-consent-version').props.children).toBe(`Текст ${abaConsentTextVersion('ru')}`);
   });
 
@@ -1915,5 +1917,65 @@ describe('«Занятия ABA»: чьё это занятие при неско
       await waitFor(() => expectWentTo(TO_SESSION));
       expect(useChildSession.getState()).toMatchObject({ childId: KID3, openedForAba: false });
     });
+  });
+});
+
+/**
+ * Смена версии текста ABA-согласия (контрольный аудит 2026-11-09, этап C, Ж5): `aba_processing` поднят до черновика 3
+ * (подпись «Хранится на этом устройстве»). Согласие, выданное на черновик 2 — последнюю версию до правки, — должно
+ * стать `outdated`, закрыть начало занятия и вести на экран согласия, где родителя спрашивают заново. В отличие от
+ * `grantOutdated` (выдуманная `ru-draft-0`) здесь — та версия, которая реально была у родителей.
+ */
+describe('ABA-согласие на черновик 2 после подъёма до черновика 3 — спрашивают заново', () => {
+  async function grantVersion(textVersion: string, childId = KID) {
+    await appendConsentEvent(db, { id: `v-${textVersion}-${childId}`, scope: 'aba_processing', action: 'grant', childId, textVersion, confirmedBy: 'pin', actorId: accountId, at: iso(Date.now() - 120_000) }, 'owner');
+  }
+
+  it('черновик 2 больше не текущий ни на одном языке', () => {
+    expect(CURRENT_CONSENT_TEXTS.aba_processing.filter((v) => v.endsWith('-draft-2'))).toEqual([]);
+  });
+
+  it.each(['ru-draft-2', 'en-draft-2', 'ky-draft-2'])('согласие на %s — статус outdated', async (version) => {
+    await grantVersion(version);
+    expect((await abaOverview(db, KID)).consent).toBe('outdated');
+  });
+
+  it('согласие на ru-draft-2 — занятие не начать: причина outdated', async () => {
+    await grantVersion('ru-draft-2');
+    await pair();
+    const r = await loadAbaStart(db, KID, { config: 'with_adult', band: '5-6', soundOn: true, observers: OBS, primaryObserverId: 'obs-1', now: Date.now(), art: DEV_PLACEHOLDER_ART, randomBytes: bytes });
+    expect(r).toEqual({ kind: 'blocked', reason: 'outdated' });
+  });
+
+  it('согласие на ru-draft-2 — экран «Занятия ABA»: «Текст согласия обновился», «Начать» нет, «Прочитать согласие» ведёт на экран согласия', async () => {
+    await grantVersion('ru-draft-2');
+    await pair();
+    await renderAba();
+    await waitStatus('Текст согласия обновился — прочитайте его');
+    expect(screen.queryByTestId('aba-start')).toBeNull();
+    await fireEvent.press(screen.getByTestId('aba-read-consent'));
+    expect(router.push).toHaveBeenCalledWith('/parent/aba/consent');
+  });
+
+  it('согласие на ru-draft-2 → экран согласия → «Согласен» + PIN: новое согласие на текущую версию, статус granted, старое событие в журнале осталось', async () => {
+    await grantVersion('ru-draft-2');
+    await renderConsent();
+    expect(screen.getByTestId('aba-consent-version').props.children).toBe(`Текст ${abaConsentTextVersion('ru')}`);
+    await fireEvent.press(screen.getByTestId('aba-agree'));
+    await typePin(PIN);
+    await waitFor(() => expect(router.back).toHaveBeenCalledTimes(1));
+    const versions = (await readConsentLog(db)).filter((e) => e.scope === 'aba_processing' && e.action === 'grant').map((e) => e.textVersion);
+    expect(versions).toEqual(['ru-draft-2', abaConsentTextVersion('ru')]);
+    expect((await abaOverview(db, KID)).consent).toBe('granted');
+  });
+
+  it('повторное согласие на текущую версию снимает блок: после «Согласен» и знакомства — «Можно начинать»', async () => {
+    await grantVersion('ru-draft-2');
+    await pair();
+    await grant();
+    await observers(OBS);
+    await renderAba();
+    await waitStatus('Можно начинать');
+    expect(screen.getByTestId('aba-start')).toBeTruthy();
   });
 });

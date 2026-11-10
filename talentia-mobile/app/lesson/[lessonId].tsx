@@ -75,7 +75,7 @@ function LessonBody({ lessonId }: { lessonId: string }) {
             height={height - insets.top - bottomInset}
             onReplay={c.replayHook}
             onHelp={c.onAction}
-            labels={{ replay: t('lesson.replay'), help: t('lesson.helpTali'), tali: t('a11y.tali') }}
+            labels={{ replay: t('lesson.replay'), help: t('lesson.helpTali'), helpA11y: t('a11y.helpTali'), tali: t('a11y.tali') }}
           />
         </View>
         {/* системная «назад» на завязке — тот же слой выхода, что в задании (Ж7) */}

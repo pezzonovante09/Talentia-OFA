@@ -62,16 +62,24 @@ describe('новый профиль', () => {
     expect(useParentView.getState().childId).toBe(KID);
   });
 
-  it('заполненная форма: имя, полоса 9–10, язык ky, регион включён — всё уходит в addProfile', async () => {
+  it('заполненная форма: имя, полоса 9–10, язык en, регион включён — всё уходит в addProfile', async () => {
     await render();
     await fireEvent.changeText(screen.getByTestId('profile-name'), 'Айгерим');
     await fireEvent.press(screen.getByTestId('profile-band-9-10'));
-    await fireEvent.press(screen.getByTestId('profile-lang-ky'));
+    await fireEvent.press(screen.getByTestId('profile-lang-en'));
     await fireEvent(screen.getByTestId('profile-kyrgyz-switch'), 'valueChange', true);
     expect(screen.getByTestId('profile-band-9-10').props.accessibilityState).toEqual({ selected: true });
     await fireEvent.press(screen.getByTestId('profile-create'));
     await waitFor(() => expect(addProfile).toHaveBeenCalledTimes(1));
-    expect(addProfile.mock.calls[0][0]).toMatchObject({ name: 'Айгерим', band: '9-10', interfaceLang: 'ky', kyrgyzRegion: true });
+    expect(addProfile.mock.calls[0][0]).toMatchObject({ name: 'Айгерим', band: '9-10', interfaceLang: 'en', kyrgyzRegion: true });
+  });
+
+  /** Ж17 (`localization-qa` по диффу этапа C): язык без полного словаря профилю не предлагается — «Кыргызча» вернётся с `ky.json`. */
+  it('выбор языка — только языки с полным словарём: ky нет, пока ky.json пуст', async () => {
+    await render();
+    expect(screen.getByTestId('profile-lang-ru')).toBeTruthy();
+    expect(screen.getByTestId('profile-lang-en')).toBeTruthy();
+    expect(screen.queryByTestId('profile-lang-ky')).toBeNull();
   });
 
   it('язык профиля по умолчанию — язык экрана', async () => {

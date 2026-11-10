@@ -97,7 +97,7 @@ describe('с профилем', () => {
     expect(screen.queryByTestId('mastered-all')).toBeNull();
 
     expect(screen.getByTestId('hard-subitize-1-3')).toBeTruthy();
-    expect(screen.getByText('4 попыток, 1 верных')).toBeTruthy();
+    expect(screen.getByText('Попыток: 4, верных: 1')).toBeTruthy();
     expect(screen.queryByTestId('hard-empty')).toBeNull();
     // навык с одной попыткой — не трудный, а «в работе»
     expect(screen.queryByTestId('hard-count-to-10')).toBeNull();
@@ -224,5 +224,78 @@ describe('сбой записи итога', () => {
   it('lastWriteError нет → карточки нет', async () => {
     await render();
     expect(screen.queryByTestId('card-write-failed')).toBeNull();
+  });
+});
+
+/**
+ * Подписи «За неделю» согласуются с числом (контрольный аудит 2026-11-09, Ж15): экран передаёт `count`, и i18next
+ * выбирает plural-форму локали. Проверяется подпись, которая реально стоит под числом в той же колонке, а не
+ * наличие слова где-то на экране.
+ */
+describe('«За неделю»: подпись согласуется с числом', () => {
+  /** Подпись под числом `week-n-<i>`: следующий текст в карточке после самого числа. */
+  const captionUnder = (i: number) => {
+    const texts = within(screen.getByTestId('card-week')).getAllByText(/.+/);
+    const at = texts.findIndex((el) => el.props.testID === `week-n-${i}`);
+    expect(at).toBeGreaterThanOrEqual(0);
+    return texts[at + 1].props.children as string;
+  };
+
+  const lessonsInWeek = async (n: number) => {
+    for (let k = 0; k < n; k++) {
+      await writeLessonRun(db, { id: `w${k}`, childId: KID1, lessonId: 'l1', startedAt: hourAgo(), taskSeconds: [], reviewTasks: 0 });
+    }
+  };
+
+  it.each([
+    [0, 'уроков'],
+    [1, 'урок'],
+    [2, 'урока'],
+    [5, 'уроков'],
+    [21, 'урок'],
+  ])('ru: %i — «%s»', async (n, form) => {
+    await lessonsInWeek(n);
+    await render();
+    await waitFor(() => expect(screen.getByTestId('week-n-2').props.children).toBe(String(n)));
+    expect(captionUnder(2)).toBe(form);
+  });
+
+  it.each([
+    [0, 'lessons'],
+    [1, 'lesson'],
+    [2, 'lessons'],
+    [5, 'lessons'],
+    [21, 'lessons'],
+  ])('en: %i — «%s»', async (n, form) => {
+    await lessonsInWeek(n);
+    await renderWithProviders(<ParentThemeProvider><ParentHome /></ParentThemeProvider>, { lng: 'en' });
+    await waitFor(() => expect(screen.getByTestId('week-n-2').props.children).toBe(String(n)));
+    expect(captionUnder(2)).toBe(form);
+  });
+
+  /**
+   * Каждая подпись — от своего числа, а не от соседнего: числа в колонках разные и попадают в разные plural-категории.
+   * Двух сценариев хватает, чтобы перепутанная пара колонок дала другую форму хотя бы в одном из них.
+   */
+  it.each([
+    // дней 1 (one), минут 5 (many), уроков 2 (few), повторов 4 (few)
+    [[[100, 50], [100, 50]], [2, 2], ['1', '5', '2', '4'], ['день из 7', 'минут', 'урока', 'повтора']],
+    // дней 1 (one), минут 1 (one), уроков 2 (few), повторов 5 (many)
+    [[[30], [30]], [2, 3], ['1', '1', '2', '5'], ['день из 7', 'минута', 'урока', 'повторов']],
+  ])('ru: каждая подпись берёт своё число (задания %j, повторы %j → %j)', async (tasks, reviews, numbers, captions) => {
+    // секунды задания ниже потолка TASK_SECONDS_CAP, иначе минуты срежутся
+    for (let k = 0; k < tasks.length; k++) {
+      await writeLessonRun(db, { id: `mix${k}`, childId: KID1, lessonId: 'l1', startedAt: hourAgo(), taskSeconds: tasks[k], reviewTasks: reviews[k] });
+    }
+    await render();
+    await waitFor(() => expect(screen.getByTestId('week-n-2').props.children).toBe('2'));
+    expect([0, 1, 2, 3].map((i) => screen.getByTestId(`week-n-${i}`).props.children)).toEqual(numbers);
+    expect([0, 1, 2, 3].map(captionUnder)).toEqual(captions);
+  });
+
+  it('ru: без занятий — родительный множественного у всех четырёх', async () => {
+    await render();
+    await waitFor(() => expect(screen.getByTestId('home-last').props.children).toBe('Ещё не занимались'));
+    expect([0, 1, 2, 3].map(captionUnder)).toEqual(['дней из 7', 'минут', 'уроков', 'повторов']);
   });
 });

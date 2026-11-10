@@ -35,8 +35,8 @@ const TEXT_KEYS: Partial<Record<ConsentScope, readonly string[]>> = {
 const KNOWN_HASHES: Record<string, string> = {
   'account_local:ru-draft-1': '0f6159f617cc8542cd5bc8d38ca69ea49069e55ee7135d8e25cd74a0897e762c',
   'account_local:en-draft-1': '533e4ed847e171ab3837772369fbbbcb1bcbae2373544e1661cf27e3189cec6d',
-  'aba_processing:ru-draft-2': '22d94a1019ec362dcd4c11356d9bf42f032c5e5582b315aae4c9e1b5d1cb323b',
-  'aba_processing:en-draft-2': 'ce5021757f47d75e5e284c882fc7c76facdb2b3c9e02f31883f60db5496adb2a',
+  'aba_processing:ru-draft-3': 'b6e760af8850f8af9a8daf12740377695495fd126458665f8788856975245085',
+  'aba_processing:en-draft-3': 'e1aef0b702ce523ea83e82efeeb405141b41c13124c986abc925f72efdf3360f',
 };
 
 const pick = (obj: Locale, path: string): string | undefined =>

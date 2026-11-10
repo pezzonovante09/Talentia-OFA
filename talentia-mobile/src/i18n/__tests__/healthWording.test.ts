@@ -5,6 +5,9 @@
  * «терапии», «лечения», «аутизма». Иначе опросник Apple даёт 13+, а Google требует декларацию
  * здоровья. Гард идёт по всем ключам всех локалей: в тексте для ребёнка этих слов тем более нет.
  */
+import fs from 'fs';
+import path from 'path';
+
 import en from '../locales/en.json';
 import ky from '../locales/ky.json';
 import ru from '../locales/ru.json';
@@ -58,6 +61,60 @@ const banks: Record<Lang, Record<string, string>> = { ru: flat(ru as Tree), en: 
 describe.each(['ru', 'en', 'ky'] as const)('локаль %s без медицинской лексики', (lang) => {
   it('ни один ключ не называет диагнозов, терапии и лечения', () => {
     expect(healthWordingProblems(lang, banks[lang])).toEqual([]);
+  });
+});
+
+/**
+ * Публичные юртексты (`docs/legal/*.{ru,en}.md`) — тот же словарь (контрольный аудит 2026-11-09, Ж16,
+ * `release-readiness-auditor`): декларация сторов «нет функций здоровья» разошлась бы с политикой, где данные практики
+ * названы данными о здоровье. Пометки для юриста и владельца `[[…]]` — не публичный текст, их гард не читает; README —
+ * чеклист владельца, не публикуется.
+ */
+/**
+ * Единственное исключение — оговорка условий использования «не является медицинским изделием, не ставит диагнозов»: она
+ * отрицает функцию, а не описывает её, и юристу нужна.
+ */
+const DISCLAIMER = /\*\*не является\*\* медицинским изделием, не ставит диагнозов|\*\*not\*\* a medical device, does not diagnose/g;
+
+/**
+ * Абзацы md-файла: строки внутри абзаца склеены (составные основы «нарушение развития», «special needs» ловятся и на
+ * переносе), пометки `[[…]]` заменены пробелами с сохранением переводов строк (номера не съезжают), из текста вырезана
+ * только фраза оговорки, а не вся строка (`release-readiness-auditor` по диффу этапа C). Ключ — файл и строка начала абзаца.
+ */
+function paragraphs(file: string, raw: string): Record<string, string> {
+  const clean = raw.replace(/\r\n/g, '\n').replace(/\[\[[\s\S]*?\]\]/g, (m) => m.replace(/[^\n]/g, ' '));
+  const out: Record<string, string> = {};
+  let buf: string[] = [];
+  let start = 1;
+  const flush = () => {
+    if (buf.length) out[`${file}:${start}`] = buf.join(' ').replace(DISCLAIMER, ' ');
+    buf = [];
+  };
+  clean.split('\n').forEach((line, i) => {
+    if (line.trim() === '') flush();
+    else {
+      if (buf.length === 0) start = i + 1;
+      buf.push(line);
+    }
+  });
+  flush();
+  return out;
+}
+
+describe.each(['ru', 'en'] as const)('юртексты %s без медицинской лексики', (lang) => {
+  const dir = path.join(__dirname, '../../../../docs/legal');
+  it.each(['privacy-policy', 'terms-of-use', 'account-deletion'])('%s', (name) => {
+    const file = `${name}.${lang}.md`;
+    expect(healthWordingProblems(lang, paragraphs(file, fs.readFileSync(path.join(dir, file), 'utf8')))).toEqual([]);
+  });
+
+  it('абзацы: основа на переносе строки ловится, пометка юриста — нет, оговорка вырезается только своей фразой', () => {
+    const md =
+      lang === 'ru'
+        ? 'Занятия при нарушении\nразвития.\n\n[[ЮРИСТ: про диагноз]]\n\nОно **не является** медицинским изделием, не ставит диагнозов, это лечение.'
+        : 'Sessions for special\nneeds.\n\n[[LAWYER: diagnosis]]\n\nIt is **not** a medical device, does not diagnose, it is a treatment.';
+    const hits = healthWordingProblems(lang, paragraphs('x.md', md));
+    expect(hits.map((h) => h.split(': ')[0])).toEqual([`${lang} x.md:1`, `${lang} x.md:6`]);
   });
 });
 

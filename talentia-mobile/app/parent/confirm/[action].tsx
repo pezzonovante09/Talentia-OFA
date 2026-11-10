@@ -182,7 +182,8 @@ export default function ConfirmScreen() {
           {kind === 'clock_jump' && hold !== null && hold.abaGoalsChildren > 0 && <ParentText role="body">{t('parent.clock.abaGoals', vars)}</ParentText>}
           {kind !== 'clear_progress' && kind !== 'clock_jump' && kind !== 'aba_revoke' && (
             <ParentText role="caption" color="textMuted">
-              {t('parent.data.remains')}
+              {/* профиль: журнал согласий остаётся под псевдонимом (`purgeChild`); всё — не остаётся ничего; копии у специалиста — у него */}
+              {t(kind === 'delete_child' ? 'parent.data.remainsChild' : 'parent.data.remainsAll')}
             </ParentText>
           )}
         </Card>

@@ -13,12 +13,7 @@
   },
   "abaScreen": {
     "tooSmall": {
-      "title": "This screen is too small for this mode",
-      "body": "This mode needs more room on the screen. Close the second window or reduce the display size in your phone settings.",
-      "estimate": "The screen may be too small",
-      "paused": "Restore the window size",
-      "regular": "Regular lessons",
-      "back": "Back"
+      "paused": "Restore the window size"
     }
   },
   "abaBreak": {
@@ -64,18 +59,15 @@
     }
   },
   "abaReinforcement": {
-    "token": "Here's your token!",
-    "repeated": "You did it again!"
+    "token": "Here's your token!"
   },
   "profile": {
     "unnamed": "Profile {{n}}"
   },
   "a11y": {
     "option": "Card {{n}}",
-    "breakCard": "Break",
     "tali": "Tali",
     "addProfile": "Add a profile",
-    "close": "Close",
     "map": {
       "atlas": "To the atlas",
       "settings": "For adults",
@@ -89,7 +81,8 @@
     "pairedWith": "paired with {{name}}",
     "placeStart": "Place at the start of the arrow",
     "placeMiddle": "Place further along the arrow",
-    "placeEnd": "Place at the end of the arrow"
+    "placeEnd": "Place at the end of the arrow",
+    "helpTali": "Help Tali"
   },
   "content": {
     "common": {
@@ -244,7 +237,7 @@
           "prompt": "Count the stones. Which numeral?",
           "stimulus": "stones",
           "hint": "Count the pile, then find that numeral.",
-          "explain": "Four stones. This is numeral four!"
+          "explain": "Four stones. That's a four!"
         },
         "t2": {
           "prompt": "Match each pile to its numeral.",
@@ -258,7 +251,7 @@
           "prompt": "How many berries? Pick the numeral.",
           "stimulus": "berries",
           "hint": "Look at the berries all at once.",
-          "explain": "Two berries. This is numeral two!"
+          "explain": "Two berries. That's a two!"
         },
         "t4": {
           "prompt": "Put the numerals in order.",
@@ -279,7 +272,7 @@
         "t1": {
           "prompt": "Which basket has zero?",
           "hint": "Zero means empty.",
-          "explain": "Here it is: nothing inside. That is zero!",
+          "explain": "Here it is: nothing inside. That's zero!",
           "berries": "basket with berries",
           "empty": "empty basket",
           "leaves": "basket with leaves"
@@ -296,7 +289,7 @@
           "prompt": "How many leaves? Pick the numeral.",
           "stimulus": "leaves",
           "hint": "Touch each leaf as you count.",
-          "explain": "Five leaves. This is numeral five!"
+          "explain": "Five leaves. That's a five!"
         },
         "t4": {
           "prompt": "Put the baskets in order: zero, one, two.",
@@ -329,7 +322,7 @@
           "explain": "Six, seven, eight, in order!"
         },
         "t3": {
-          "prompt": "Find each basket’s number.",
+          "prompt": "Find each basket's number.",
           "hint": "Count what is in the basket. Where is that number?",
           "explain": "Empty is zero, two berries, three stones.",
           "empty": "empty basket",
@@ -357,7 +350,7 @@
       "count-to-5": "At home: count aloud to 5 — steps, spoons, fingers.",
       "count-to-10": "At home: count to 10 while setting the table or tidying toys.",
       "numeral-1-5": "At home: spot the numerals 1–5 in the lift, on clocks, on doors.",
-      "zero": "At home: the plate is empty — ask “how many?”. That is zero.",
+      "zero": "At home: the plate is empty — ask \"how many?\". That's zero.",
       "numeral-6-10": "At home: spot the numerals 6–10 on price tags, the remote, floors."
     },
     "regions": {
@@ -370,7 +363,6 @@
   },
   "firstRun": {
     "title": "Who is exploring today?",
-    "addProfile": "Add",
     "tryWithoutSaving": "Try without saving",
     "noSaveNote": "Progress will be lost when the app closes",
     "forAdults": "For adults",
@@ -383,9 +375,8 @@
     "reviewLater": "Finish a lesson first",
     "reviewNothing": "Everything is reviewed",
     "noTranslation": "Nothing here yet",
-    "atlasLater": "The atlas opens after the first lesson",
-    "taliTap": "We are {{region}}. Next is this lesson",
-    "taliRest": "We are {{region}}. That’s all for today — more tomorrow!"
+    "taliTap": "We're {{region}}. This lesson is next!",
+    "taliRest": "We're {{region}}. That's all for today — see you tomorrow!"
   },
   "lesson": {
     "exit": "To the map",
@@ -399,9 +390,6 @@
     "arrangeFirst": "Arrange everything first",
     "thatsHow": "Like this",
     "pinnedHere": "This one is already in place",
-    "placeStart": "The start is here",
-    "placeMiddle": "Further along the arrow",
-    "placeEnd": "The end is here",
     "chooseWhatToPlace": "First choose what to place",
     "nowYou": "Now you",
     "exitConfirm": "The task will wait. Leave?",
@@ -417,15 +405,18 @@
     "nowYouTap": "Show me the right one",
     "reviewIntro": "Remember this one?",
     "probeIntro": "Once more — on your own now",
-    "resume": "Shall we go on?"
+    "resume": "Keep going?",
+    "placeStart": "The start is here",
+    "placeMiddle": "Further along the arrow",
+    "placeEnd": "The end is here"
   },
   "review": {
-    "intro": "Shall we recall what we already know?",
-    "done": "We remembered it all!"
+    "intro": "Let's remember what we know!",
+    "done": "We reviewed it all!"
   },
   "atlas": {
     "title": "Atlas",
-    "empty": "The atlas is empty for now — let’s begin!",
+    "empty": "The atlas is empty for now — let's begin!",
     "toAtlas": "To the atlas",
     "toMap": "To the map",
     "pageAhead": "This page is still ahead",
@@ -439,16 +430,14 @@
     },
     "bootError": {
       "title": "Could not open the data",
-      "body": "There is an account on this device, but it could not be opened. Try again or restart the app. If that does not help, update the app to the latest version. Nothing is deleted; to remove everything from the device, uninstall the app.",
+      "body": "There is data on this device, but it could not be opened. Try again or restart the app. If that does not help, update the app to the latest version. Nothing is deleted; to remove the app's data, uninstall it.",
       "retry": "Try again"
     },
-    "title": "For adults",
     "done": "Done",
     "back": "Back",
     "close": "Close",
     "next": "Next",
     "cancel": "Cancel",
-    "continue": "Continue",
     "pin": {
       "title": "For adults",
       "hint": "The layout changes every time",
@@ -458,7 +447,7 @@
       "backspace": "Delete"
     },
     "setup": {
-      "accountExists": "This device already has an account. Close setup and sign in with the PIN.",
+      "accountExists": "The For adults section is already set up on this device. Close setup and enter your PIN.",
       "step": "Step {{n}} of {{total}}",
       "intentTitle": "Checking that you are an adult",
       "intentHint": "This is a threshold, not an age check",
@@ -475,11 +464,10 @@
       "body": "Nothing goes online until you turn it on. Lessons played, skills and the in-game name live here. To pick the next lessons and show you what is working, the app remembers which lessons were played, when and how long they took. Lesson records are kept for 12 months. You can delete everything in Data. To refuse, close the setup: nothing will remain on the device.",
       "policy": "Privacy policy",
       "version": "Text {{version}} · {{date}}",
-      "accept": "Continue",
+      "accept": "I agree",
       "updatedTitle": "The consent text has changed",
       "whatChanged": "What changed",
       "confirm": "Confirm",
-      "deleteInstead": "Delete the profile",
       "status": {
         "granted": "Active",
         "outdated": "The text changed — confirm again",
@@ -488,12 +476,12 @@
       },
       "accepted": "Accepted {{date}} · text {{version}}",
       "localScope": "Storage on this device",
-      "revokeLocal": "Revoke and delete the account",
+      "revokeLocal": "Revoke and delete all data",
       "readAndConfirm": "Read and confirm"
     },
     "policy": {
       "title": "Privacy policy",
-      "body": "Draft. The app keeps the child's data only on this device: lessons played, skills, in-game name, settings and the consent log. Nothing is sent online. Lesson records are deleted after 12 months by the device date. If the app has not been opened for more than 45 days or the device date jumped forward, deletion waits until an adult checks the date in the parent section, so records may be kept longer until then. You can delete them at any time in Data. A parent can delete data in Data; export arrives with the cloud copy. Final text follows legal review."
+      "body": "Draft. The app keeps the child's data only on this device: lessons played, skills, in-game name, settings and the consent log, and, if you turned on step-by-step practice, the records of its sessions. The app itself sends nothing online. Practice records can be exported as a file for a specialist: the file leaves the device only if you export it yourself. Lesson and session records are deleted after 12 months by the device date. If the app has not been opened for more than 45 days or the device date moved forward, at once or bit by bit, deletion waits until an adult checks the date in the For adults section; until then records may be kept longer. You can delete everything at any time in Data. Final text follows legal review."
     },
     "profile": {
       "newTitle": "New profile",
@@ -523,15 +511,19 @@
       "yesterday": "yesterday",
       "daysAgo": "{{n}} days ago",
       "week": "This week",
-      "daysOf7": "days of 7",
-      "minutes": "minutes",
-      "lessons": "lessons",
-      "reviews": "reviews",
+      "daysOf7_one": "day of 7",
+      "daysOf7_other": "days of 7",
+      "minutes_one": "minute",
+      "minutes_other": "minutes",
+      "lessons_one": "lesson",
+      "lessons_other": "lessons",
+      "reviews_one": "review",
+      "reviews_other": "reviews",
       "mastered": "Mastered",
       "showAll": "Show all ({{n}})",
       "nothingYet": "Nothing yet — topics appear after the first lesson",
       "hard": "Hard going",
-      "hardStats": "{{attempts}} attempts, {{correct}} correct",
+      "hardStats": "Attempts: {{attempts}}, correct: {{correct}}",
       "hardAdvice": "At home: count something real together — spoons, steps, buttons.",
       "nothingStuck": "Nothing is stuck right now",
       "inProgress": "In progress",
@@ -547,19 +539,20 @@
       "title": "Data",
       "exportJson": "Download JSON",
       "exportCsv": "Download CSV",
-      "exportHint": "Built on the device: profile, lessons, skills, consent log",
-      "exportSoon": "Saving the file arrives with the cloud copy",
+      "exportHint": "The file will be built on the device: profile, lessons, skills, practice records, consent log.",
+      "exportSoon": "Saving the file is not available yet; it arrives with the app release.",
       "deletion": "Deletion",
       "clearProgress": "Clear progress",
-      "deleteChild": "Delete the child's profile",
-      "deleteAccount": "Delete the account",
+      "deleteChild": "Delete child profile",
+      "deleteAccount": "Delete all data",
       "confirmClearTitle": "Clear progress: {{name}}?",
-      "confirmClearBody": "Lessons and skills are deleted at once, no recycle bin. Profile and settings stay.",
+      "confirmClearBody": "Lessons, skills and practice records (if practice is on) are deleted at once, no recycle bin; a practice pause is lifted. Profile and settings stay.",
       "confirmChildTitle": "Delete profile: {{name}}?",
-      "confirmChildBody": "Profile, lessons and skills are deleted at once, no recycle bin.",
-      "confirmAccountTitle": "Delete the account?",
-      "confirmAccountBody": "Everything on this device is deleted: child profiles, lessons, skills, PIN and the consent log.",
-      "remains": "What remains: nothing",
+      "confirmChildBody": "Profile, lessons, skills and practice records are deleted at once, no recycle bin.",
+      "confirmAccountTitle": "Delete all data?",
+      "confirmAccountBody": "Everything on this device is deleted: child profiles, lessons, skills, practice records, PIN and the consent log.",
+      "remainsChild": "What remains: the consent log, unlinked from the child. Copies given to a specialist are not deleted by the app.",
+      "remainsAll": "Nothing remains on the device. Copies given to a specialist are not deleted by the app.",
       "pinRequired": "Enter the PIN to confirm",
       "working": "Deleting…",
       "deletedTitle": "Deleted",
@@ -615,14 +608,14 @@
       "whoLeadsNotNeeded": "not needed",
       "whoLeadsValue": "{{role}} · trained",
       "whoLeadsReason": "Mark who is next to the child",
-      "aloneLocked": "“Alone” opens once a task is mastered with an adult",
+      "aloneLocked": "\"No adult\" opens once a task is mastered with an adult",
       "done": "Done",
       "goals": "Goals",
       "goal": {
         "match-same-2": "Same one of two",
         "match-same-3": "Same one of three",
         "match-shape": "By shape",
-        "match-color": "By colour"
+        "match-color": "By color"
       },
       "goalStatus": {
         "ahead": "ahead",
@@ -630,7 +623,7 @@
         "almost": "almost",
         "mastered": "mastered"
       },
-      "lastSession": "Session {{day}}: {{trials}} trials, {{independent}} independent",
+      "lastSession": "Session {{day}}: trials — {{trials}}, on their own — {{independent}}",
       "lastSessionNoTrials": "Session {{day}}: no trials",
       "lastSessionPairing": "Session {{day}}: getting to know the rewards, no trials yet",
       "goalsEmpty": "The first session will show what the child already can do",
@@ -648,7 +641,8 @@
       "specialist": "For a specialist",
       "exportRow": "Export for a specialist",
       "exportCaption": "The file has tasks, prompts, session results and reward choices — without the child's name. You decide who receives the file; what happens to it afterwards is outside the app's control.",
-      "exportLater": "The file will come later, with the cloud copy.",
+      "exportLater": "Export as a file is turned off for now.",
+      "exportUnavailable": "This device cannot share the file: there is no system share sheet.",
       "exportLaterValue": "Later",
       "exportPreparing": "Preparing…",
       "exportShared": "The file was handed to the app you chose",
@@ -660,7 +654,7 @@
       "revokeButton": "Revoke and delete",
       "consentTitle": "Consent to practice data",
       "consentBody": "Draft. To run the step-by-step practice, the app records on this device how sessions go: which tasks, how many prompts were needed, tokens and breaks, which reward the child chose and how quickly, who the session was with and who chose — the child or the adult. These records can show features of the child's development. Nothing goes online. You can export the records as a file and pass them to a specialist yourself — copies given to a specialist are not deleted by the app. You can revoke consent at any time — the practice records are then deleted. Final text follows legal review.",
-      "localOnly": "Only on this device",
+      "localOnly": "Stored on this device",
       "agree": "I agree",
       "notNow": "Not now",
       "version": "Text {{version}}",
@@ -692,9 +686,8 @@
   "abaSession": {
     "config": {
       "with_adult": "With an adult",
-      "alone": "On my own"
+      "alone": "No adult"
     },
-    "aloneCaption": "Some tasks are only with an adult",
     "togetherHint": "This one goes better together for now — stay close",
     "start": "Start",
     "back": "Back",
@@ -706,13 +699,13 @@
     "whoLeads": "Who leads the session?",
     "asLastTime": "Same as last time",
     "role": {
-      "specialist": "Centre specialist",
+      "specialist": "Center specialist",
       "parent": "Parent",
       "other_adult": "Another adult"
     },
     "trained": "Trained by a specialist",
     "chooseTitle": "What are we playing for today?",
-    "adultChooses": "The child isn’t choosing — choose for them",
+    "adultChooses": "The child isn't choosing — choose for them",
     "endedToday": "All done for today",
     "done": "Done",
     "tali": "Tali, your helper",
@@ -720,8 +713,7 @@
     "breakCard": "Break",
     "sample": "Sample",
     "option": "Option {{n}}",
-    "offerCardHint": "Point to the card with a gesture, don’t coax",
-    "l4Hint": "Gently guide the hand, stop if they resist",
+    "offerCardHint": "Point to the card with a gesture, don't coax",
     "breakTraining": {
       "model": "Touch the break card yourself",
       "prompted": "Point to it with a gesture",

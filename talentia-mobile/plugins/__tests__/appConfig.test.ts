@@ -6,6 +6,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { UI_LANGS } from '../../src/i18n';
+
+jest.mock('expo-localization', () => ({ getLocales: () => [{ languageCode: 'ru' }] }));
+
 const root = path.join(__dirname, '..', '..');
 const read = (f: string) => JSON.parse(fs.readFileSync(path.join(root, f), 'utf-8'));
 const app = read('app.json').expo;
@@ -51,8 +55,12 @@ describe('app.json: разрешения и платформы', () => {
     expect(plugin('expo-secure-store')).toEqual(['expo-secure-store', { faceIDPermission: false }]);
   });
 
-  it('локализации iOS: ru, en, ky; язык разработки ru', () => {
-    expect(app.ios.infoPlist.CFBundleLocalizations).toEqual(['ru', 'en', 'ky']);
+  // Объявлены ровно те языки, которые интерфейс вправе включить (Ж17, `UI_LANGS` в `src/i18n/index.ts`): ky — только с
+  // полным словарём, иначе устройство с кыргызским показало бы ключи. Заполнится `ky.json` (№108) — `UI_LANGS` включит ky
+  // сам, и этот тест потребует вернуть `ky` в `app.json` (`release-readiness-auditor` по диффу этапа C).
+  it('локализации iOS = UI_LANGS (сейчас ru, en); язык разработки ru', () => {
+    expect(app.ios.infoPlist.CFBundleLocalizations).toEqual([...UI_LANGS]);
+    expect(UI_LANGS).toEqual(['ru', 'en']);
     expect(app.ios.infoPlist.CFBundleDevelopmentRegion).toBe('ru');
   });
 

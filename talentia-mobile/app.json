@@ -16,8 +16,7 @@
         "CFBundleDevelopmentRegion": "ru",
         "CFBundleLocalizations": [
           "ru",
-          "en",
-          "ky"
+          "en"
         ]
       },
       "bundleIdentifier": "com.talentia.mobile",
