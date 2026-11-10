@@ -4,10 +4,11 @@
  * (фаза 8). Пауза после «Отказ» — не здесь: у неё экран пробы без плит (`app/aba/session.tsx`).
  */
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { abaBreak, inactiveChoice, ABA_CONTROL_STROKE } from '../../../design/abaTokens';
-import { radii } from '../../../design/tokens';
+import { radii, typography } from '../../../design/tokens';
+import { AbaText } from '../AbaText';
 import type { Phase } from '../model/sessionPhase';
 import { ChildPressable, PlaceholderGlyph, useAbaColors } from '../parts';
 import { AccessRing } from '../reinforcer';
@@ -70,9 +71,9 @@ export function BreakView({ phase, onReturn }: { phase: Extract<Phase, { kind: '
         }}
       >
         <PlaceholderGlyph name="pause_bars_outline" size={abaBreak.returnIcon.size} color={c.controlInk} />
-        <Text style={{ color: c.controlInk, fontSize: 22, fontWeight: '700' }} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2}>
+        <AbaText type={typography.subtitle} color={c.controlInk} max={1.2} lines={1} adjustsFontSizeToFit>
           {t('abaBreak.return')}
-        </Text>
+        </AbaText>
       </ChildPressable>
     </View>
   );

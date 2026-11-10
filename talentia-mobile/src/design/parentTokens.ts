@@ -36,11 +36,11 @@ export const parentColors: Record<Scheme, ParentColors> = {
     background: '#F4F1EC', // к детскому #FFF3E3 1.03:1 — та же бумага без теплоты
     card: '#FFFFFF',
     hairline: '#C9C1B6', // группировка, а не граница элемента
-    text: '#2A1A12', // 14.85:1
+    text: palettes.light.normal.text, // #2A1A12 // 14.85:1
     textMuted: '#6E564A', // 6.03:1 к фону, 6.79:1 к карточке
-    primary: '#5A34C4',
-    onPrimary: '#FFFFFF',
-    error: '#BB1E1E', // как у ребёнка; к карточке 6.33, к фону 5.62
+    primary: palettes.light.normal.primary, // #5A34C4
+    onPrimary: palettes.light.normal.onPrimary, // #FFFFFF
+    error: palettes.light.normal.error, // #BB1E1E // как у ребёнка; к карточке 6.33, к фону 5.62
     onError: '#FFFFFF',
     // Те же чернила, что у ребёнка. После А25 они держат 4.5 и на детской surfaceSunken,
     // поэтому здесь с запасом: к карточке 6.38–6.44, к фону 5.66–5.71 (kyrgyz #964460 —
@@ -82,9 +82,9 @@ export const parentColors: Record<Scheme, ParentColors> = {
     hairline: '#5A5550', // 2.10:1 к карточке, 2.38:1 к фону — группировка
     text: '#F4F1EC', // 13.73:1 к карточке
     textMuted: '#A39C94', // 5.70:1 к карточке
-    primary: '#9B7CFF', // 4.95:1 к карточке, 5.62:1 к фону
-    onPrimary: '#1B1410', // на primary 5.82:1
-    error: '#FF6B6B', // 5.57:1 к карточке
+    primary: palettes.dark.normal.primary, // #9B7CFF // 4.95:1 к карточке, 5.62:1 к фону
+    onPrimary: palettes.dark.normal.onPrimary, // #1B1410 // на primary 5.82:1
+    error: palettes.dark.normal.error, // #FF6B6B // 5.57:1 к карточке
     onError: '#1B1410', // на error 6.56:1
     regionsInk: {
       numbers: '#D4A25A', // 6.71:1 к карточке, 7.62:1 к фону — охра, не жёлтый
@@ -110,7 +110,8 @@ export const REGION_INK_SURFACE = 'card' as const;
 export type ParentTypeStyle = {
   size: number;
   lineHeight: number;
-  weight: '400' | '600' | '800';
+  /** Только загруженные начертания Nunito (`src/ui/fonts.ts`): 600 в сборке нет (аудит 2026-11-09, Ж18). */
+  weight: '400' | '700' | '800';
   family: 'Nunito';
   tabularNums?: boolean;
 };
@@ -119,11 +120,11 @@ export type ParentTypeStyle = {
 export const parentTypography: Record<'heading' | 'body' | 'caption' | 'number' | 'label', ParentTypeStyle> = {
   heading: { size: 24, lineHeight: 30, weight: '800', family: 'Nunito' },
   body: { size: 16, lineHeight: 22, weight: '400', family: 'Nunito' },
-  caption: { size: 14, lineHeight: 20, weight: '600', family: 'Nunito' },
+  caption: { size: 14, lineHeight: 20, weight: '700', family: 'Nunito' },
   /** Числа недели: табличные цифры, чтобы «12» и «7» стояли в колонке. */
   number: { size: 32, lineHeight: 36, weight: '800', family: 'Nunito', tabularNums: true },
   /** Кнопки и названия строк (`docs/design/parent-screens-2026-10-25.md`). */
-  label: { size: 16, lineHeight: 22, weight: '600', family: 'Nunito' },
+  label: { size: 16, lineHeight: 22, weight: '700', family: 'Nunito' },
 };
 
 /* ───────────── раскладка раздела (docs/design/parent-screens-2026-10-25.md, этап 10) ───────────── */
@@ -151,8 +152,6 @@ export const parentCard = { padX: 16, padY: 12, gap: 16 } as const;
 export const parentButton = { height: 48, guardMs: 300 } as const;
 /** Полоса недели: 7 клеток 36 с зазором 8; день с занятием — заливка `text`, без — пунктир `hairline`. */
 export const weekStrip = { cell: 36, gap: 8, filled: 'text', emptyDash: 'hairline' } as const;
-/** Автозакрытие 2 мин, свежесть подтверждения 5 мин, блокировка 1 → 5 → 15 мин (`domain/parentGate.ts`). */
-export const parentIdle = { lockAfterMs: 120_000, confirmFreshMs: 300_000, lockoutMin: [1, 5, 15] } as const;
 export const parentHeader = 48;
 
 export const parentShape = {

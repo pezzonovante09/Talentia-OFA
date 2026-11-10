@@ -355,14 +355,22 @@ describe('экспорт исправлений', () => {
 
 describe('читатели aba_trials — только через EFFECTIVE', () => {
   const SRC = path.resolve(__dirname, '../../..');
+  /** `src/test` — обвязка тестов (её `testMatch` не берёт, поэтому она не под `__tests__`): сырое чтение там — как в тестах. */
+  const TEST_SUPPORT = path.join(SRC, 'test');
   const files = (dir: string): string[] =>
     fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
       const p = path.join(dir, e.name);
-      if (e.isDirectory()) return e.name === '__tests__' || e.name === 'node_modules' ? [] : files(p);
+      if (e.isDirectory()) return e.name === '__tests__' || e.name === 'node_modules' || p === TEST_SUPPORT ? [] : files(p);
       return /\.(ts|tsx)$/.test(e.name) ? [p] : [];
     });
   const rel = (p: string) => path.relative(SRC, p).split(path.sep).join('/');
   const sources = files(SRC).map((p) => ({ file: rel(p), text: fs.readFileSync(p, 'utf8') }));
+
+  it('обвязка src/test в код приложения не импортируется: исключение выше не прячет читателя', () => {
+    const app = files(path.join(SRC, '..', 'app')).map((p) => ({ file: rel(p), text: fs.readFileSync(p, 'utf8') }));
+    const importers = [...sources, ...app].filter((s) => /from\s+['"][^'"]*\/test\/[^'"]*['"]/.test(s.text)).map((s) => s.file);
+    expect(importers).toEqual([]);
+  });
 
   it('сырое чтение FROM/JOIN aba_trials — только в abaLog.ts, purge.ts и триггерах schema.ts', () => {
     const allowed = new Set(['services/local/abaLog.ts', 'services/local/purge.ts', 'services/local/schema.ts']);

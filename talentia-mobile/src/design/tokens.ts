@@ -37,8 +37,6 @@ export type ColorTokens = {
 
   text: string;
   textMuted: string;
-  /** Текст на цветной заливке. */
-  textInverse: string;
 
   /** Контур фигур. Несущий элемент направления: 3 pt на всём интерактивном. */
   outline: string;
@@ -52,25 +50,19 @@ export type ColorTokens = {
   onPrimary: string;
 
   secondary: string;
-  secondaryInk: string;
   onSecondary: string;
 
   /** Награда. Сам по себе даёт 1.45:1 к фону — ВСЕГДА только с контуром. */
   accent: string;
-  /** Тот же смысл для текста; ≥4.5:1 на каждой поверхности `INK_SURFACES`. */
-  accentInk: string;
   onAccent: string;
 
   /** Заливка «верно». */
   success: string;
-  successInk: string;
   onSuccess: string;
 
   /** Ошибка. Служит и заливкой (с `onError`), и текстом — поэтому тоже чернила. */
   error: string;
   onError: string;
-
-  focusRing: string;
 
   /**
    * Подложка под картинкой и под фигурами счёта. Контур предметов всегда `#2A1A12`, поэтому
@@ -126,11 +118,11 @@ export type ElevationSpec = {
 };
 
 export type SpacingTokens = Record<'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl', number>;
-export type RadiiTokens = Record<'sm' | 'md' | 'lg' | 'xl' | 'pill', number>;
+export type RadiiTokens = Record<'sm' | 'md' | 'lg' | 'pill', number>;
 export type StrokeTokens = Record<'hairline' | 'base' | 'bold', number>;
 export type TouchTokens = Record<'min' | 'comfortable' | 'primary' | 'gap', number>;
 export type MotionTokens = Record<'instant' | 'press' | 'quick' | 'base' | 'slow' | 'celebrate', number>;
-export type ElevationTokens = Record<'flat' | 'raised' | 'overlay', ElevationSpec>;
+export type ElevationTokens = Record<'flat' | 'raised', ElevationSpec>;
 
 export type AppTheme = {
   scheme: Scheme;
@@ -167,11 +159,21 @@ export const spacing: SpacingTokens = {
   xxxl: 48,
 };
 
+/**
+ * Чернила рисунка — контур предметов, фигур счёта, корзинки, Tali, заголовка карты и плиты стимула ABA. От схемы не
+ * зависит: рисунок одинаков днём и вечером (поэтому вне `ColorTokens`). Тот же hex у роли `text` / `outline` светлой
+ * схемы — это совпадение значения, а не одна роль: UI-роли ссылаются на палитру, рисунок — сюда. Сборка svg подменяет
+ * его на `stroke` (`.svgrrc.js`, литерал там же). Контрольный аудит 2026-11-09, п. 34 (`design-lead`, этап F).
+ */
+export const illustrationInk = '#2A1A12';
+
+/** Заливки фигур счёта (`CountableShape`): рисунок, обе схемы одинаково; контур — `illustrationInk`. */
+export const countShapeFill = { stone: '#B9A48A', berry: '#D93A1E', leaf: '#3FC08A', dot: illustrationInk, highlight: '#FFFFFF' } as const;
+
 export const radii: RadiiTokens = {
   sm: 12,
   md: 20,
   lg: 28,
-  xl: 36,
   pill: 999,
 };
 
@@ -215,14 +217,12 @@ export const motion: MotionTokens = {
 export const elevation: ElevationTokens = {
   flat: { offsetY: 0 },
   raised: { offsetY: 4 },
-  overlay: { offsetY: 6 },
 };
 
 /** Подушка тоньше в спокойном режиме. */
 export const elevationCalm: ElevationTokens = {
   flat: { offsetY: 0 },
   raised: { offsetY: 2 },
-  overlay: { offsetY: 3 },
 };
 
 /**
@@ -420,7 +420,7 @@ export function groupDigits(digits: string): string {
 export const countMark = {
   dot: 12,
   ring: 2,
-  dotColor: '#2A1A12',
+  dotColor: illustrationInk,
   ringColor: '#FFFFFF',
   /**
    * Касание привязывается к ближайшей фигуре в этом радиусе. Шаг фигур ≥ 44, радиусы соседних
@@ -463,7 +463,7 @@ export const countMark = {
     shape: 'mark_ring_solid',
     sound: false,
     haptic: 'parentSetting',
-    peakOutline: { width: 2, color: '#2A1A12' },
+    peakOutline: { width: 2, color: illustrationInk },
   },
   /**
    * Касание мимо (дальше `snapRadius` от любой фигуры) — **знак промаха, один для счёта и `point`**
@@ -633,7 +633,7 @@ export const mapTitle = {
   charWidthEm: 0.68,
   sticker: {
     fill: '#FFF3E3',
-    outlineColor: '#2A1A12',
+    outlineColor: illustrationInk,
     /** Контур наружу; на самом мелком кегле тоньше, чтобы сохранить долю контура к букве. */
     outline: 2,
     outlineSmall: 1.5,
@@ -897,7 +897,7 @@ export const taliArt = {
   accent: '#FFC42E',
   satchel: '#D93A1E',
   glass: '#0E8FBF',
-  outline: '#2A1A12',
+  outline: illustrationInk,
 } as const;
 
 /**
@@ -935,7 +935,7 @@ export const taliIdleTap = { travel: 4, beats: 2, beatMs: motion.quick } as cons
  *   `background`), на заливку региона в тёмной завязке он не выходит — он внутри карточки `surface`.
  * - Сумка `satchel` на `surfaceAlt` тёмной даёт 2.99:1 — аксессуар, не силуэт, допустимо.
  */
-export const taliOnDark = { neutral: ['background', 'surface'], regionFill: 'regions', haloNeeded: false } as const;
+// Правило без экспорта (потребителей и тестов нет; `design-lead`, этап F): Tali на нейтральных поверхностях, без ореола.
 
 /* ───────────────────────── типографика ───────────────────────── */
 
@@ -976,7 +976,6 @@ const lightColors: ColorTokens = {
 
   text: '#2A1A12', // 15.28:1
   textMuted: '#6E564A', // 6.20:1
-  textInverse: '#FFF3E3',
 
   outline: '#2A1A12',
   border: '#D4A66A', // 2.03:1 — мягкая группировка; настоящее разделение несёт outline
@@ -986,23 +985,16 @@ const lightColors: ColorTokens = {
   onPrimary: '#FFFFFF', // на primary: 7.71:1
 
   secondary: '#D93A1E', // 4.19:1 — только крупное и иконки
-  // Чернила ниже — «к фону / к surfaceSunken» (самая тёмная поверхность светлой схемы).
-  // Прежние #CE371D, #906800, #C42020 давали на surfaceSunken 3.68 / 3.70 / 4.31.
-  secondaryInk: '#B12E17', // 5.86 / 4.70
   onSecondary: '#FFFFFF', // на secondary: 4.59:1
 
   accent: '#FFC42E', // 1.45:1 — только заливка с контуром
-  accentInk: '#7C5900', // 5.84 / 4.68
   onAccent: '#2A1A12', // на accent: 10.51:1
 
   success: '#12855A',
-  successInk: '#0D6B48', // 5.97 / 4.79
   onSuccess: '#FFFFFF', // на success: 4.64:1
 
   error: '#BB1E1E', // 5.78 / 4.64; был #C42020 — тот же красный на полтона глубже
   onError: '#FFFFFF', // на error: 6.33:1
-
-  focusRing: '#5A34C4', // primaryInk тот же: 7.04 / 5.65
 
   picturePlate: '#FFFFFF', // контур предмета #2A1A12 на ней 16.73:1
 
@@ -1055,7 +1047,6 @@ const darkColors: ColorTokens = {
   // #997867 давал 4.54:1 к фону, но 3.93:1 на карточке — проходил только там, где
   // его не используют. #AD8F7E: 6.07 к фону, 5.26 на surface, 4.57 на surfaceAlt.
   textMuted: '#AD8F7E',
-  textInverse: '#1B1410',
 
   outline: '#FFF3E3', // контур инвертируется — главный приём тёмной темы
   border: '#775F4D', // 3.06:1 (#4A3B30 давал 1.70:1 и был отвергнут)
@@ -1067,21 +1058,16 @@ const darkColors: ColorTokens = {
   onPrimary: '#1B1410',
 
   secondary: '#FF7455', // 6.83:1
-  secondaryInk: '#FF7455',
   onSecondary: '#1B1410',
 
   accent: '#FFD46B', // 12.89:1
-  accentInk: '#FFD46B',
   onAccent: '#1B1410',
 
   success: '#4FC694', // 8.52:1
-  successInk: '#4FC694',
   onSuccess: '#1B1410',
 
   error: '#FF6B6B', // 6.56:1
   onError: '#1B1410',
-
-  focusRing: '#9B7CFF',
 
   picturePlate: '#EDE7DC', // контур предмета #2A1A12 на ней 13.60:1; плита стимула ABA того же цвета
 
@@ -1113,13 +1099,9 @@ const lightCalmColors: ColorTokens = {
   primary: '#6851A7', // 5.77:1
   primaryInk: '#6851A7', // 5.77 / 4.63
   secondary: '#B45443',
-  secondaryInk: '#984637', // 5.87 / 4.71; был #B25342 — 3.66 на surfaceSunken
   accent: '#D5B258', // заливка с контуром
-  accentInk: '#725C30', // 5.83 / 4.68; был #7A6234 — 4.25
   success: '#296E54', // 5.56:1, onSuccess 6.08
-  successInk: '#276A51', // 5.87 / 4.71; отделён от заливки — #296E54 давал 4.46
   error: '#A34141', // 5.66 / 4.54
-  focusRing: '#6851A7',
   regions: {
     numbers: '#C39F34', // с onRegion: 6.64:1
     words: '#378EAF', // 4.50:1
@@ -1141,13 +1123,9 @@ const darkCalmColors: ColorTokens = {
   primary: '#A996E5', // 7.09:1
   primaryInk: '#A996E5',
   secondary: '#DD8A77', // 6.91:1
-  secondaryInk: '#DD8A77',
   accent: '#E1C889', // 11.11:1
-  accentInk: '#E1C889',
   success: '#67AE90', // 6.96:1
-  successInk: '#67AE90',
   error: '#E18989', // 7.05:1
-  focusRing: '#A996E5',
   regions: {
     numbers: '#715C1E', // с onRegion: 5.90:1
     words: '#2A6A82', // 5.51:1
@@ -1299,7 +1277,7 @@ export function firstRunHeight(safeTop: number, safeBottom = 0): number {
  * фиксированы в обеих схемах (на `surfaceAlt` тёмной схемы контур фигур `#2A1A12` давал бы ≈ 1.4:1),
  * в тёмной лежит на `picturePlate`. В стимуле корзинка шире кучки на `padInStimulus` с каждой стороны.
  */
-export const basketArt = { fill: '#FFE6C7', outline: '#2A1A12', stroke: 'base', padInStimulus: 16 } as const;
+export const basketArt = { fill: '#FFE6C7', outline: illustrationInk, stroke: 'base', padInStimulus: 16 } as const;
 
 /**
  * Страница атласа 5–6 (§4; этап D, docs/design/atlas-firstrun-2026-10-31.md D1): рамка находки 120 со стимулом

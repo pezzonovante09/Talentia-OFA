@@ -711,7 +711,7 @@ Transparent background, no text, no letters, no frame, no border.
 | `ui-region-numbers/words/nature/workshop/kyrgyz.svg` | stepped hill; lighthouse; spruce; gear; yurt | ориентир региона: calm, атлас, шапка карты |
 | `ui-pause-bars.svg` | two vertical rounded bars (pause), solid | ABA: карточка «перерыв» 64×64 (иконка 32), экран перерыва (иконка 120 в кольце, 2.4), «Tali предлагает перерыв» (64 на карточке 120). Не знак «стоп», не рука |
 | `ui-pause-bars-outline.svg` | the same two bars, outline only, no fill | ABA: значок кнопки «Вернуться» 32 (`abaBreak.returnIcon`, «перерыв» кончился — планки опустели) |
-| `ui-finger-ring.svg` | a fingertip inside a ring, outline | ABA: тихая подсказка «держите» у кнопки выхода (`abaControls.exitTapHint`, 1.2 с, статично); строка `finger_ring` в `ICONS`, пока её нет, `tokenIcons.test.ts` держит «известный пропуск» |
+| `ui-finger-ring.svg` | a fingertip inside a ring, outline | ABA: тихая подсказка «держите» у кнопки выхода (`abaControls.exitTapHint`, 1.2 с, статично); в реестре — `ICONS.fingerRing` (нарисована 2026-11-06, №177) |
 
 Размеры в таблице — для штриха: во всех иконках набора заливка `currentColor`, контур `#2A1A12`
 3 pt, скруглённые концы; «перерыв» на карточке — одноцветная, без подписи.
@@ -730,8 +730,10 @@ outline drawing, no frame» и положены `ui-sound`, `ui-star-helped`, `u
 все пять ориентиров закрыты; `ui-bulb` остаётся до решения.
 Файлы из Higgsfield чистит `scripts/clean-higgsfield.mjs` (карта партии — `scripts/input/higgsfield-map-2026-11-06.json`):
 дырки в иконках там нарисованы белыми фигурами, скрипт делает их сквозными через `fill-rule="evenodd"`. Заглушки
-`PlaceholderGlyph` в `src/ui/aba/parts.tsx` (`pause_bars_outline`, `finger_ring`, `map`) на новые иконки ещё не
-переведены — отдельный шаг с `design-lead` (геометрия «Готово» и планок второго приглашения).
+`PlaceholderGlyph` в `src/ui/aba/parts.tsx`: `finger_ring` переведён на `ICONS.fingerRing` (этап F, 2026-11-10);
+`pause_bars` / `pause_bars_outline` остаются кодом, пока `ui-pause-bars-outline.svg` не перерисован с внешним габаритом
+сплошного (иначе планки 120 второго приглашения прыгнут; перевод — сразу во всех местах, `design-lead`); `map` — геометрия
+«Готово».
 
 ### Что отложено и почему
 

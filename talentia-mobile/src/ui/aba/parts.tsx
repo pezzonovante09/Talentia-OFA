@@ -10,6 +10,7 @@ import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { abaColors, abaControls, abaNonTrialRow, ABA_CONTROL_STROKE, abaTouchCommits, inactiveChoice, type AbaColors } from '../../design/abaTokens';
 import { radii } from '../../design/tokens';
 import { useAbaClock } from './clock';
+import { Icon } from '../Icon';
 
 export function useAbaColors(): AbaColors {
   return abaColors[useColorScheme() === 'dark' ? 'dark' : 'light'];
@@ -20,7 +21,8 @@ export function useAbaColors(): AbaColors {
 export { useReduceMotion } from '../../design/useReduceMotion';
 
 /**
- * Глифы, которых ещё нет в `ICONS` (`pause_bars` — «перерыв», `finger_ring` — подсказка выхода, `ui-replay`) или
+ * Глифы, которых ещё нет в `ICONS` (`ui-replay`), рисунок которых не годится (`pause_bars` — «перерыв»: у сплошного и
+ * контурного svg разный внешний габарит, на втором приглашении прыгнет — ждёт перерисовки, `design-lead`, этап F) или
  * есть только с контуром набора (`map` — геометрия `ui-map.svg` одним цветом для «Готово», Ц3.8): простая геометрия
  * кодом до ассета (скилл `asset-pipeline`). Одноцветные, как иконки направления. `stroke` — штрих контурного глифа в
  * pt на его размере (планки 120 второго приглашения — 6, Ц3.1).
@@ -32,7 +34,7 @@ export function PlaceholderGlyph({
   stroke,
   cut,
 }: {
-  name: 'pause_bars' | 'pause_bars_outline' | 'finger_ring' | 'ui-replay' | 'map';
+  name: 'pause_bars' | 'pause_bars_outline' | 'ui-replay' | 'map';
   size: number;
   color: string;
   stroke?: number;
@@ -57,12 +59,6 @@ export function PlaceholderGlyph({
           {/* штрих внутрь: внешний габарит совпадает со сплошными планками — смена кадра без прыжка */}
           <Rect x={6 + inset} y={4 + inset} width={4 - 2 * inset} height={16 - 2 * inset} rx={1} stroke={color} strokeWidth={sw} fill="none" />
           <Rect x={14 + inset} y={4 + inset} width={4 - 2 * inset} height={16 - 2 * inset} rx={1} stroke={color} strokeWidth={sw} fill="none" />
-        </>
-      )}
-      {name === 'finger_ring' && (
-        <>
-          <Circle cx={12} cy={12} r={9} stroke={color} strokeWidth={2} fill="none" />
-          <Circle cx={12} cy={12} r={3} fill={color} />
         </>
       )}
       {/* силуэт `ui-map.svg` (сложенная карта) одним цветом: заливка, сгибы — вырезом цвета `cut` (Ц3.8, огр. 8) */}
@@ -222,8 +218,12 @@ export function ExitHold({ onExit, label, hintLabel }: { onExit: () => void; lab
       </Pressable>
       {hint && (
         // поверх соседей, а не в ряду: подсказка не сдвигает заголовок, кольцо и подпись взрослому
-        <View testID="aba-exit-hint" accessibilityLabel={hintLabel} style={{ position: 'absolute', left: abaControls.exitSize + 8 }}>
-          <PlaceholderGlyph name="finger_ring" size={32} color={c.ink} />
+        <View
+          testID="aba-exit-hint"
+          accessibilityLabel={hintLabel}
+          style={{ position: 'absolute', left: abaControls.exitSize + 8, padding: 4, borderRadius: radii.sm, backgroundColor: c.background }}
+        >
+          <Icon name="fingerRing" size={32} color="text" tint={c.ink} outline={c.ink} />
         </View>
       )}
     </View>
@@ -238,7 +238,8 @@ export function NonTrialRow({ onExit, exitLabel, exitHint, children }: { onExit?
   const r = abaNonTrialRow;
   return (
     <View style={{ height: r.height, flexDirection: 'row', alignItems: 'flex-start', paddingTop: r.exitTopInset }} testID="aba-row-72">
-      <View style={{ width: r.rightSlot }}>{onExit && <ExitHold onExit={onExit} label={exitLabel} hintLabel={exitHint} />}</View>
+      {/* левый слот выше центра: подсказка «держите» на подложке закрывает заголовок, а не уходит под него */}
+      <View style={{ width: r.rightSlot, zIndex: 1 }}>{onExit && <ExitHold onExit={onExit} label={exitLabel} hintLabel={exitHint} />}</View>
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', height: abaControls.exitSize }}>{children}</View>
       <View style={{ width: r.rightSlot }} />
     </View>

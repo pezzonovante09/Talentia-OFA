@@ -96,7 +96,7 @@ describe('контраст палитр', () => {
         it('чернильные варианты акцентов читаются на каждой поверхности, а не только на фоне', () => {
           // А25: прежние чернила проходили к фону и давали 3.7:1 на surfaceSunken
           INK_SURFACES.forEach((surface) => {
-            [c.primaryInk, c.secondaryInk, c.accentInk, c.successInk, c.error].forEach((ink) => {
+            [c.primaryInk, c.error].forEach((ink) => {
               expect(contrast(ink, c[surface])).toBeGreaterThanOrEqual(TEXT);
             });
           });

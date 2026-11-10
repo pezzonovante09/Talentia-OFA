@@ -14,7 +14,7 @@
 import type { PanelButton } from '../domain/abaScoring';
 import type { RoutineRunKind } from '../types/aba';
 import { parentColors } from './parentTokens';
-import { motion, radii, selectedRepeatPress, stroke, touch, type Scheme } from './tokens';
+import { illustrationInk, motion, palettes, radii, selectedRepeatPress, stroke, touch, typography, type Scheme } from './tokens';
 
 export type AbaColors = {
   /** Фон экрана пробы. */
@@ -63,35 +63,39 @@ export type AbaColors = {
   inactiveHatch: string;
 };
 
+/** Детские палитры обычного режима: у ABA calm своих цветов не меняет, совпадающие значения — ссылкой (п. 34 аудита). */
+const L = palettes.light.normal;
+const D = palettes.dark.normal;
+
 export const abaColors: Record<Scheme, AbaColors> = {
   light: {
-    background: '#FFF3E3',
-    plate: '#FFFFFF', // к фону 1.09:1 — границу несёт только контур
-    plateOutline: '#2A1A12', // к плите 16.73:1, к фону 15.28:1
-    ink: '#2A1A12',
-    tokenSlot: '#F2D9B8',
-    tokenSlotOutline: '#2A1A12',
-    tokenEarned: '#FFC42E', // к фону 1.45:1 — только с контуром
-    tokenOutline: '#2A1A12', // к жёлтому 10.51:1
-    reinforcement: '#5A34C4',
-    onReinforcement: '#FFFFFF', // 7.71:1
-    controlFill: '#FFFFFF',
-    controlInk: '#2A1A12', // 16.73:1
-    inactiveHatch: '#B5A08C', // к плите 2.51:1 (≤ 3 по условию UX), контур #2A1A12 к ней 6.67:1
+    background: L.background,
+    plate: L.picturePlate, // к фону 1.09:1 — границу несёт только контур
+    plateOutline: illustrationInk, // к плите 16.73:1, к фону 15.28:1
+    ink: L.text,
+    tokenSlot: L.surfaceSunken,
+    tokenSlotOutline: L.outline,
+    tokenEarned: L.accent, // к фону 1.45:1 — только с контуром
+    tokenOutline: illustrationInk, // к жёлтому 10.51:1
+    reinforcement: L.primary,
+    onReinforcement: L.onPrimary, // 7.71:1
+    controlFill: L.surface,
+    controlInk: L.outline, // 16.73:1
+    inactiveHatch: '#B5A08C', // своя роль ABA: к плите 2.51:1 (≤ 3 по условию UX), контур рисунка к ней 6.67:1
   },
   dark: {
-    background: '#1B1410',
-    plate: '#EDE7DC', // к фону 14.79:1 — плита сама отделилась от фона
-    plateOutline: '#2A1A12', // к плите 13.60:1; светлый дал бы 1.12:1
-    ink: '#FFF3E3',
-    tokenSlot: '#221A15',
-    tokenSlotOutline: '#FFF3E3',
-    tokenEarned: '#FFC42E', // тот же жёлтый: жетон — тот же объект вечером и днём
-    tokenOutline: '#2A1A12',
-    reinforcement: '#9B7CFF',
-    onReinforcement: '#1B1410', // 5.82:1; белое дало бы ≈3:1 (правило перевода, tokens.ts)
-    controlFill: '#2A211B',
-    controlInk: '#FFF3E3', // 14.40:1
+    background: D.background,
+    plate: D.picturePlate, // к фону 14.79:1 — плита сама отделилась от фона
+    plateOutline: illustrationInk, // к плите 13.60:1; светлый дал бы 1.12:1
+    ink: D.text,
+    tokenSlot: D.surfaceSunken,
+    tokenSlotOutline: D.outline,
+    tokenEarned: L.accent, // тот же жёлтый, что днём: жетон — тот же объект вечером и днём (тёмный accent светлее)
+    tokenOutline: illustrationInk,
+    reinforcement: D.primary,
+    onReinforcement: D.onPrimary, // 5.82:1; белое дало бы ≈3:1 (правило перевода, tokens.ts)
+    controlFill: D.surface,
+    controlInk: D.outline, // 14.40:1
     inactiveHatch: '#B5A08C', // тот же hex: к плите #EDE7DC 2.04:1 (Ц2.16 п. 5 — проверить на устройстве вечером)
   },
 };
@@ -472,7 +476,7 @@ export const abaControls = {
 } as const;
 
 /** Инструкция экрана пробы: кегль Subtitle (30 межстрочный) ×1.2 × 2 строки = 72 — ровно её слот. */
-export const abaInstruction = { maxFontSizeMultiplier: 1.2, lines: 2, lineHeight: 30 } as const;
+export const abaInstruction = { maxFontSizeMultiplier: 1.2, lines: 2, lineHeight: typography.subtitle.lineHeight } as const;
 
 /** Контур детской кнопки в ABA не понижается в calm: на плите и рядом с ней он несёт границу. */
 export const ABA_CONTROL_STROKE = 3;
@@ -507,7 +511,11 @@ export const abaAdultPanel = {
   hitSlopUp: 0,
   /** Подпись — родительский `caption` 14/20, до двух строк. */
   labelLines: 2,
-  /** Горизонтальное поле внутри кнопки (было 8): «Сопротивляется» ≈ 110 pt в слоте 126. */
+  /**
+   * Горизонтальное поле внутри кнопки (было 8): «Сопротивляется» — 111 pt Nunito 700 при 14 (замер TTF, этап F) в
+   * слоте 126; при ×1.2 — 134, iOS ужимает до `minimumFontScale`, Android — `adjustsFontSizeToFit` без нижней границы
+   * (проверить на устройстве, К2).
+   */
   labelPadX: 4,
   /** Потолок системного шрифта: 2 строки × 20 × 1.2 = 48 — ровно кнопка, вертикальных полей нет. */
   maxFontSizeMultiplier: 1.2,
@@ -998,7 +1006,9 @@ export const abaBreak = {
    * Обучающий перерыв ждёт взрослого бесконечно (№169) — подпись взрослому со второго приглашения (Ц3.9): в
    * полосе 68 справа от выхода, родительский `caption` `textMuted`, 2 строки, ×1.2; статично до «Вернуться». Смысл
    * — «подождите → покажите жестом без слов → нажмите сами» (физическая подсказка — только при `physicalPromptAllowed`).
-   * Предел знаков — под две строки 267 pt при ×1.2 (замер Nunito 600, `localization-qa`): кириллица шире.
+   * Предел знаков — под две строки при ×1.2 (`localization-qa`): кириллица шире. Поле — 252 pt (328 − выход 60 − 16), шрифт —
+   * Nunito 700 (этап F): ru 57 знаков на грани (вторая строка ≈ 251 из 252, `child-ux-specialist`); третья строка ужимается
+   * без многоточия — проверить на устройстве (К2).
    */
   trainingWait: { adultCaption: true, from: 'second_invite', place: 'top_bar_right_of_exit', color: 'textMuted', lines: 2, maxFontSizeMultiplier: 1.2, maxChars: { ru: 57, en: 70 } },
   endScreen: { tali: false, farewell: false, praise: false },
@@ -1095,7 +1105,8 @@ export const abaReinforcementOverlay = {
   pad: 16,
   tali: 88,
   gap: 16,
-  caption: 72,
+  /** Две строки `subtitle` при ×1.2: 2 × 30 × 1.2 = 72 (подпись плашки, `AbaText`). */
+  caption: Math.round(2 * typography.subtitle.lineHeight * 1.2),
   appears: 'cut',
   holdFromMarkedMs: 4000,
   tokenDropAtMs: 120,

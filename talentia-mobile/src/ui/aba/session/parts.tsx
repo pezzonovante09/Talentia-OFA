@@ -4,15 +4,15 @@
  */
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, Easing, Platform, Pressable, Text, useColorScheme, View } from 'react-native';
+import { Animated, Easing, Platform, Pressable, useColorScheme, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { abaAdultPanel, abaAdultPanelColors, abaBoardCell, abaBreak, abaBreakTrace, abaControls, abaLayout, abaRefusalPause, abaReinforcementOverlay, abaTokenBoard, ABA_CONTROL_STROKE, ABA_STRIP_SILHOUETTE, ABA_STRIP_SILHOUETTE_GAP } from '../../../design/abaTokens';
+import { abaAdultPanel, abaAdultPanelColors, abaInstruction, abaBoardCell, abaBreak, abaBreakTrace, abaControls, abaLayout, abaRefusalPause, abaReinforcementOverlay, abaTokenBoard, ABA_CONTROL_STROKE, ABA_STRIP_SILHOUETTE, ABA_STRIP_SILHOUETTE_GAP } from '../../../design/abaTokens';
 import { parentColors, parentTypography } from '../../../design/parentTokens';
-import { radii } from '../../../design/tokens';
+import { radii, typography } from '../../../design/tokens';
+import { AbaText } from '../AbaText';
 import type { PromptVisualPlan } from '../../../domain/abaPrompting';
 import type { PanelButton } from '../../../domain/abaScoring';
-import { fontFamilyFor } from '../../fonts';
 import { TaliFigure } from '../../TaliFigure';
 import { useAbaClock } from '../clock';
 import { ChildPressable, ExitHold, PlaceholderGlyph, PressOnly, useAbaColors } from '../parts';
@@ -41,7 +41,6 @@ export function TopBar({
   const c = useAbaColors();
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
   const w = abaBreak.trainingWait;
-  const cap = parentTypography.caption;
   return (
     <View style={{ height: abaLayout.topBar, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
       {onExit ? (
@@ -50,16 +49,18 @@ export function TopBar({
         <View style={{ width: abaControls.exitSize, height: abaControls.exitSize }} />
       )}
       {caption !== undefined && (
-        <Text
+        <AbaText
           testID="aba-adult-caption"
-          style={{ flex: 1, marginLeft: 16, color: parentColors[scheme][w.color], fontFamily: fontFamilyFor(cap), fontWeight: cap.weight, fontSize: cap.size, lineHeight: cap.lineHeight, textAlign: 'left' }}
-          numberOfLines={w.lines}
+          type={parentTypography.caption}
+          color={parentColors[scheme][w.color]}
+          max={w.maxFontSizeMultiplier}
+          lines={w.lines}
+          style={{ flex: 1, marginLeft: 16, textAlign: 'left' }}
           adjustsFontSizeToFit
           minimumFontScale={abaAdultPanel.minimumFontScale}
-          maxFontSizeMultiplier={w.maxFontSizeMultiplier}
         >
           {caption}
-        </Text>
+        </AbaText>
       )}
       {breakCard && (
         <ChildPressable
@@ -344,6 +345,9 @@ export function AdultPanel({
         accessibilityRole="button"
         style={{
           flex: 1,
+          // во всю высоту ряда: у ряда 1 `alignItems: 'center'` сжимал кнопку до строки текста (22 pt вместо 48;
+          // `child-ux-specialist`, этап F)
+          alignSelf: 'stretch',
           borderRadius: radii.sm,
           borderWidth: pressed === b ? 3 : 1,
           borderColor: p.border,
@@ -353,24 +357,27 @@ export function AdultPanel({
           paddingHorizontal: abaAdultPanel.labelPadX,
         }}
       >
-        <Text
-          style={{ color: p.label, fontSize: 14, lineHeight: 20, textAlign: 'center' }}
-          numberOfLines={abaAdultPanel.labelLines}
-          maxFontSizeMultiplier={abaAdultPanel.maxFontSizeMultiplier}
+        <AbaText
+          type={parentTypography.caption}
+          color={p.label}
+          max={abaAdultPanel.maxFontSizeMultiplier}
+          // одно слово — одна строка: при двух RN переносит слово по буквам вместо ужатия
+          lines={t(PANEL_LABEL[b]).includes(' ') ? abaAdultPanel.labelLines : 1}
+          style={{ textAlign: 'center' }}
           minimumFontScale={abaAdultPanel.minimumFontScale}
           adjustsFontSizeToFit
         >
           {t(PANEL_LABEL[b])}
-        </Text>
+        </AbaText>
       </Pressable>
     );
   return (
     <View testID="aba-adult-panel" style={{ height: height + Math.max(0, insetBottom - pad), backgroundColor: p.band, padding: pad, paddingBottom: Math.max(pad, insetBottom), gap: 12 }}>
       <View style={{ flex: 1, flexDirection: 'row', gap: 8, alignItems: 'center' }}>
         {caption && row1.length === 0 ? (
-          <Text testID="aba-panel-caption" style={{ color: p.label, fontSize: 14, lineHeight: 20, flex: 1 }} numberOfLines={2} maxFontSizeMultiplier={abaAdultPanel.maxFontSizeMultiplier}>
+          <AbaText testID="aba-panel-caption" type={parentTypography.caption} color={p.label} max={abaAdultPanel.maxFontSizeMultiplier} lines={2} style={{ flex: 1 }}>
             {caption}
-          </Text>
+          </AbaText>
         ) : (
           row1.map(button)
         )}
@@ -457,9 +464,9 @@ export function ReinforcementOverlay({
           </View>
         ))}
       </View>
-      <Text style={{ color: calm ? c.ink : c.onReinforcement, fontSize: 24, lineHeight: 32, fontWeight: '700', textAlign: 'center', minHeight: o.caption }} numberOfLines={2} maxFontSizeMultiplier={1.2}>
+      <AbaText type={typography.subtitle} color={calm ? c.ink : c.onReinforcement} max={abaInstruction.maxFontSizeMultiplier} lines={abaInstruction.lines} style={{ textAlign: 'center', minHeight: o.caption }}>
         {t('abaReinforcement.token')}
-      </Text>
+      </AbaText>
     </View>
   );
 }

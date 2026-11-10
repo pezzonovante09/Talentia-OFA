@@ -17,13 +17,14 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { Redirect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, type ReactNode, type SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler, Text, View } from 'react-native';
+import { BackHandler, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   abaBreakTrace,
   abaChoiceZone,
   abaExchange,
+  abaInstruction,
   abaLayoutByTier,
   abaNonTrialRow,
   abaParticipation,
@@ -32,6 +33,7 @@ import {
   abaTokenLandingMs,
   type AbaTier,
 } from '../../src/design/abaTokens';
+import { typography } from '../../src/design/tokens';
 import type { BreakCardStep } from '../../src/domain/abaBreakCard';
 import type { PanelButton } from '../../src/domain/abaScoring';
 import {
@@ -63,6 +65,7 @@ import { useAccount } from '../../src/state/account';
 import { useChildSession } from '../../src/state/childSession';
 import { CHILD_BREAK_MS, type AbaTarget } from '../../src/types/aba';
 import { AbaEnd } from '../../src/ui/aba/AbaEnd';
+import { AbaText } from '../../src/ui/aba/AbaText';
 import { useAbaClock, useDue } from '../../src/ui/aba/clock';
 import { startAccess, stepAccess, type AccessRun } from '../../src/ui/aba/model/accessRun';
 import { advanceConsequence, startConsequence } from '../../src/ui/aba/model/consequenceRun';
@@ -1024,9 +1027,9 @@ export default function AbaSessionScreen() {
   const instruction = (key: string | null) => (
     <View style={{ height: layout.instruction, justifyContent: 'center', paddingHorizontal: 16 }}>
       {key && (
-        <Text testID="aba-instruction" style={{ color: c.ink, fontSize: 22, lineHeight: 30, fontWeight: '700', textAlign: 'center' }} numberOfLines={2} maxFontSizeMultiplier={1.2}>
+        <AbaText testID="aba-instruction" type={typography.subtitle} color={c.ink} max={abaInstruction.maxFontSizeMultiplier} lines={abaInstruction.lines} style={{ textAlign: 'center' }}>
           {t(key)}
-        </Text>
+        </AbaText>
       )}
     </View>
   );

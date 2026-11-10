@@ -50,25 +50,25 @@ Plain white background, no text, no letters, no frame, no border.
 
 | Файл | {ПРЕДМЕТ} | Статус |
 |---|---|---|
-| `ui-check.svg` (перерисовать) | bold check mark | ждём |
-| `ui-x.svg` (перерисовать) | bold X cross with rounded ends | ждём |
-| `ui-lock.svg` (перерисовать) | closed padlock | ждём |
-| `ui-sound.svg` (перерисовать) | loudspeaker, no sound waves | ждём |
-| `ui-map.svg` (перерисовать) | folded map with one route line, solid | ждём |
-| `ui-star.svg` | five-pointed star with rounded points | ждём |
-| `ui-star-helped.svg` | five-pointed star with rounded points with a cut-out hole in the centre shaped like a three-toed dinosaur paw print, the hole shows the background through (hole is 25–35 % of the star) | ждём |
-| `ui-token.svg` | rounded square with a five-pointed star inside | ждём |
-| `ui-chevron.svg` | open V-shaped chevron pointing down, outline stroke only, no fill | ждём |
-| `ui-backspace.svg` | tag-shaped backspace key with a small cross inside | ждём |
-| `ui-note.svg` | single eighth music note, solid head and flag | ждём |
-| `ui-sleep.svg` | crescent moon | ждём |
-| `ui-region-words.svg` | lighthouse | ждём |
-| `ui-region-nature.svg` | spruce tree | ждём |
-| `ui-region-workshop.svg` | cog gear | ждём |
-| `ui-region-kyrgyz.svg` | round felt yurt with a domed roof | ждём |
-| `ui-pause-bars.svg` | two vertical rounded bars (pause sign), solid | ждём |
-| `ui-pause-bars-outline.svg` | two vertical rounded bars (pause sign), outline stroke only, no fill | ждём |
-| `ui-finger-ring.svg` | a fingertip inside a ring, outline stroke only | ждём |
+| `ui-check.svg` (перерисовать) | bold check mark | в приложении |
+| `ui-x.svg` (перерисовать) | bold X cross with rounded ends | в приложении |
+| `ui-lock.svg` (перерисовать) | closed padlock | в приложении |
+| `ui-sound.svg` (перерисовать) | loudspeaker, no sound waves | в приложении |
+| `ui-map.svg` (перерисовать) | folded map with one route line, solid | в приложении |
+| `ui-star.svg` | five-pointed star with rounded points | в приложении |
+| `ui-star-helped.svg` | five-pointed star with rounded points with a cut-out hole in the centre shaped like a three-toed dinosaur paw print, the hole shows the background through (hole is 25–35 % of the star) | в приложении |
+| `ui-token.svg` | rounded square with a five-pointed star inside | в приложении |
+| `ui-chevron.svg` | open V-shaped chevron pointing down, outline stroke only, no fill | в приложении |
+| `ui-backspace.svg` | tag-shaped backspace key with a small cross inside | в приложении |
+| `ui-note.svg` | single eighth music note, solid head and flag | в приложении |
+| `ui-sleep.svg` | crescent moon | в приложении |
+| `ui-region-words.svg` | lighthouse | в приложении |
+| `ui-region-nature.svg` | spruce tree | в приложении |
+| `ui-region-workshop.svg` | cog gear | в приложении |
+| `ui-region-kyrgyz.svg` | round felt yurt with a domed roof | в приложении |
+| `ui-pause-bars.svg` | two vertical rounded bars (pause sign), solid | в реестре; на экранах — код, пока контурный не перерисован с габаритом сплошного |
+| `ui-pause-bars-outline.svg` | two vertical rounded bars (pause sign), outline stroke only, no fill | в реестре; на экранах — код, пока контурный не перерисован с габаритом сплошного |
+| `ui-finger-ring.svg` | a fingertip inside a ring, outline stroke only | в приложении |
 
 `ui-star-helped`: после векторизации вырез должен быть сквозным (`fill-rule="evenodd"`), не белой заплаткой.
 Проверка: при 24 pt в ч/б «сам» и «с помощью» различимы.
@@ -82,10 +82,10 @@ Plain white background, no text, no letters, no frame, no border.
 
 | Файл | {ПРЕДМЕТ} | Статус |
 |---|---|---|
-| `landmark-words.svg` | lighthouse with a round lamp room, same silhouette as the lighthouse in the words panorama | ждём |
-| `landmark-nature.svg` | spruce tree, three tiers of branches | ждём |
-| `landmark-workshop.svg` | cog gear with eight rounded teeth | ждём |
-| `landmark-kyrgyz.svg` | round felt yurt with a domed roof and a lattice band | ждём |
+| `landmark-words.svg` | lighthouse with a round lamp room, same silhouette as the lighthouse in the words panorama | в приложении |
+| `landmark-nature.svg` | spruce tree, three tiers of branches | в приложении |
+| `landmark-workshop.svg` | cog gear with eight rounded teeth | в приложении |
+| `landmark-kyrgyz.svg` | round felt yurt with a domed roof and a lattice band | в приложении |
 
 Горизонты `horizon-words/nature/workshop/kyrgyz.svg` **не генерируются**: один открытый путь обводится по панораме
 в редакторе (ТЗ там же).
@@ -138,7 +138,8 @@ ASSETS.md плюс `#2A1A12`), на странице копируются кно
 
 **Итог 2026-11-06 (№179):** все пять панорам приняты и лежат в `assets/images/regions/`; вес Мира чисел (618 КБ) и маяк
 у правого края у Побережья слов приняты владельцем как есть. Девять контурных иконок и ориентиров перегенерируются по
-карточкам со строкой «solid filled silhouette».
+карточкам со строкой «solid filled silhouette» — сделано второй партией (выше): семь приняты, два заменены выводом из
+принятых соседей.
 
 **Последствия перерисовки Мира чисел:** `horizon-numbers.svg` и `landmark-numbers.svg` привязаны к старой панораме
 (контур совпадает с её формами точка в точку, центр ориентира — в `LANDMARK_AT`); после новой панорамы горизонт
@@ -179,6 +180,10 @@ Image Background Remover или сгенерировать на `#FFF3E3` и в�
 появляются вместе с уроками (`lesson-author`), каждая партия — отдельный документ здесь же.
 
 ## Порядок и расход
+
+**Статус на 2026-11-10** (контрольный аудит 2026-11-09, п. 34): разделы 1–3 сделаны — иконки, ориентиры и стимулы ABA
+в `assets/` и `registry.ts`; панорамы приняты (№179); горизонт есть только у Мира чисел и привязан к старой панораме,
+остальные четыре не обведены; раздел 5 (иконка приложения и заставка) — ждём.
 
 1. Тест `ui-token` (раздел 0) — решает путь для разделов 1–4.
 2. Стимулы ABA (24) — в выпуске цели закрыты, пока их нет.

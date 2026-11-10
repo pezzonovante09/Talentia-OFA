@@ -7,10 +7,11 @@
  */
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { abaEndDone, abaNonTrialRow, abaTokenBoard, ABA_CONTROL_STROKE } from '../../design/abaTokens';
-import { radii } from '../../design/tokens';
+import { radii, typography } from '../../design/tokens';
+import { AbaText } from './AbaText';
 import { TaliFigure } from '../TaliFigure';
 import { useAbaClock } from './clock';
 import { ChildPressable, PlaceholderGlyph, useAbaColors } from './parts';
@@ -31,9 +32,9 @@ export function AbaEnd({ variant, board, onDone }: { variant: 'normal' | 'neutra
           <TaliFigure pose="hello" size={88} crop accessibilityLabel={t('abaSession.tali')} />
         </View>
       )}
-      <Text style={{ color: c.ink, fontSize: 26, lineHeight: 36, fontWeight: '700', textAlign: 'center', marginTop: variant === 'normal' ? 16 : 48 }} numberOfLines={2} accessibilityRole="header">
+      <AbaText type={typography.title} color={c.ink} max={1.2} lines={2} style={{ textAlign: 'center', marginTop: variant === 'normal' ? 16 : 48 }} accessibilityRole="header">
         {t('abaSession.endedToday')}
-      </Text>
+      </AbaText>
       {board && board.cells > 0 && (
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: abaTokenBoard.gap, marginTop: 24 }} testID="aba-end-board">
           {Array.from({ length: board.cells }, (_, i) => (
@@ -61,9 +62,9 @@ export function AbaEnd({ variant, board, onDone }: { variant: 'normal' | 'neutra
         }}
       >
         <PlaceholderGlyph name="map" size={d.glyphSize} color={c.onReinforcement} cut={c.reinforcement} />
-        <Text style={{ color: c.onReinforcement, fontSize: 22, fontWeight: '700' }} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2}>
+        <AbaText type={typography.subtitle} color={c.onReinforcement} max={1.2} lines={1} adjustsFontSizeToFit>
           {t('abaSession.done')}
-        </Text>
+        </AbaText>
       </ChildPressable>
     </View>
   );

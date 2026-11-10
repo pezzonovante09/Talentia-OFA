@@ -3,8 +3,11 @@
  * выбора. Что выбрано и что дальше — решает экран сессии.
  */
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
+import { abaInstruction } from '../../../design/abaTokens';
+import { typography } from '../../../design/tokens';
+import { AbaText } from '../AbaText';
 import type { ChoiceRun } from '../model/reinforcerChoiceRun';
 import { NonTrialRow, useAbaColors } from '../parts';
 import { ReinforcerChoiceView } from '../reinforcer';
@@ -15,9 +18,10 @@ export function ChooseFrame(o: { run: ChoiceRun; options: string[]; cardSize: nu
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>
       <NonTrialRow exitLabel={t('abaSession.exit')} exitHint={t('abaSession.exitHint')}>
-        <Text style={{ color: c.ink, fontSize: 22, lineHeight: 30, fontWeight: '700', textAlign: 'center' }} numberOfLines={2} maxFontSizeMultiplier={1.2}>
+        {/* строка `NonTrialRow` 60: 2 × 30 = 60 без роста шрифта, длинное ужимается (`design-lead`, этап F) */}
+        <AbaText type={typography.subtitle} color={c.ink} max={1} lines={abaInstruction.lines} adjustsFontSizeToFit style={{ textAlign: 'center' }}>
           {t('abaSession.chooseTitle')}
-        </Text>
+        </AbaText>
       </NonTrialRow>
       <View style={{ height: 16 }} />
       <ReinforcerChoiceView run={o.run} options={o.options} cardSize={o.cardSize} boardCells={o.boardCells} pulse={false} onTap={o.onTap} onAdultTap={o.onAdultTap} />

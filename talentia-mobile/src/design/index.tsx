@@ -42,24 +42,3 @@ export function DesignProvider({
 export function useDesign(): AppTheme {
   return useContext(DesignContext);
 }
-
-/**
- * Стиль «подушки» — замена тени в направлении B.
- *
- * Возвращает подложку, которую кладут ПОД фигуру: дубль того же силуэта
- * цветом контура, смещённый вниз. При нажатии фигура съезжает на ту же
- * величину и подушка исчезает — тактильность без прозрачности, одинаково
- * работает в обеих схемах.
- */
-export function cushion(theme: AppTheme, level: 'flat' | 'raised' | 'overlay' = 'raised') {
-  const offsetY = theme.elevation[level].offsetY;
-  return {
-    backgroundColor: theme.colors.outline,
-    transform: [{ translateY: offsetY }],
-  };
-}
-
-/** Смещение самой фигуры при нажатии: она садится на подушку. */
-export function pressedOffset(theme: AppTheme, level: 'flat' | 'raised' | 'overlay' = 'raised') {
-  return { transform: [{ translateY: theme.elevation[level].offsetY }] };
-}

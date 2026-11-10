@@ -14,11 +14,13 @@ export type IconProps = {
   color: ColorName;
   /** Цвет глифа строкой — для палитр регионов (`regionsInk`), которых нет среди `ColorName`; перекрывает `color`. */
   tint?: string;
+  /** Цвет контура строкой — для палитр вне детской темы (ABA, `abaColors`); перекрывает `colors.outline`. */
+  outline?: string;
   testID?: string;
 };
 
-export function Icon({ name, size = iconSize.size, color, tint, testID }: IconProps) {
+export function Icon({ name, size = iconSize.size, color, tint, outline, testID }: IconProps) {
   const theme = useDesign();
   const Svg = ICONS[name];
-  return <Svg width={size} height={size} color={tint ?? theme.colors[color]} stroke={theme.colors.outline} testID={testID} />;
+  return <Svg width={size} height={size} color={tint ?? theme.colors[color]} stroke={outline ?? theme.colors.outline} testID={testID} />;
 }

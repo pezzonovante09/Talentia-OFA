@@ -73,7 +73,7 @@ describe('чем раздел непривлекателен для ребёнк
     (['light', 'dark'] as const).forEach((s) =>
       (['normal', 'calm'] as const).forEach((v) => {
         const p = palettes[s][v];
-        [p.accent, p.accentInk, ...Object.values(p.regions)].forEach((x) => kidLoud.add(x.toUpperCase()));
+        [p.accent, ...Object.values(p.regions)].forEach((x) => kidLoud.add(x.toUpperCase()));
       }),
     );
     SCHEMES.forEach((scheme) => {

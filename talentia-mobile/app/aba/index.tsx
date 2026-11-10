@@ -9,12 +9,14 @@
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { abaWindowPolicy } from '../../src/design/abaTokens';
+import { parentTypography } from '../../src/design/parentTokens';
 import { useAbaRun } from '../../src/state/abaRun';
 import { useChildSession } from '../../src/state/childSession';
+import { AbaText } from '../../src/ui/aba/AbaText';
 import { leaveAba } from '../../src/ui/aba/leaveAba';
 import { tierForWindow } from '../../src/ui/aba/model/sessionResume';
 import { useAbaColors } from '../../src/ui/aba/parts';
@@ -46,9 +48,14 @@ export default function AbaGateScreen() {
     <View style={{ flex: 1, backgroundColor: c.background, paddingTop: insets.top, paddingBottom: insets.bottom }} testID="aba-config">
       <View style={{ flex: 1, paddingHorizontal: 16 }} onLayout={(e) => setSize({ height: e.nativeEvent.layout.height, width: e.nativeEvent.layout.width })}>
         {tier === null ? (
-          <View style={{ flex: 1, justifyContent: 'center', gap: abaWindowPolicy.belowMinButtonGap }} testID="aba-too-small">
-            <Text maxFontSizeMultiplier={1.3} style={{ color: c.ink, fontSize: 20, fontWeight: '700' }}>{t('abaSession.tooSmallTitle')}</Text>
-            <Text maxFontSizeMultiplier={1.3} style={{ color: c.ink, fontSize: 16 }}>{t('abaSession.tooSmallBody')}</Text>
+          // прокрутка: при ×1.3 блок ≈ 324 pt, половина экрана Android — 256–280 (`child-ux-specialist`, этап F)
+          <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: abaWindowPolicy.belowMinButtonGap }} testID="aba-too-small">
+            <AbaText type={parentTypography.heading} color={c.ink} max={1.3}>
+              {t('abaSession.tooSmallTitle')}
+            </AbaText>
+            <AbaText type={parentTypography.body} color={c.ink} max={1.3}>
+              {t('abaSession.tooSmallBody')}
+            </AbaText>
             <ParentThemeProvider>
               <ParentButton
                 height={abaWindowPolicy.belowMinButtonHeight}
@@ -66,7 +73,7 @@ export default function AbaGateScreen() {
               />
               <ParentButton height={abaWindowPolicy.belowMinButtonHeight} variant="secondary" label={t('abaSession.back')} onPress={() => router.replace('/parent/aba')} testID="aba-too-small-back" />
             </ParentThemeProvider>
-          </View>
+          </ScrollView>
         ) : null}
       </View>
     </View>

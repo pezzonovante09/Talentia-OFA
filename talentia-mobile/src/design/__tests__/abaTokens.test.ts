@@ -96,7 +96,8 @@ import {
   type PromptVisual,
 } from '../abaTokens';
 import { contrast, SHAPE_CONTRAST, TEXT_CONTRAST } from '../contrast';
-import { touchAdult } from '../parentTokens';
+import { parentTypography, touchAdult } from '../parentTokens';
+import { textEm } from '../../test/fontMetrics';
 import {
   buildTheme,
   cushionByRole,
@@ -139,8 +140,7 @@ describe('цвет в ABA не бывает стимулом', () => {
       (['light', 'dark'] as const).forEach((s) =>
         (['normal', 'calm'] as const).forEach((v) => {
           const p = palettes[s][v];
-          [...Object.values(p.regions), ...Object.values(p.regionsInk), p.secondary, p.secondaryInk, p.error,
-            p.success, p.successInk].forEach((x) => forbidden.add(x.toUpperCase()));
+          [...Object.values(p.regions), ...Object.values(p.regionsInk), p.secondary, p.error, p.success].forEach((x) => forbidden.add(x.toUpperCase()));
         }),
       );
       trialColorsWithInactive(abaColors[scheme]).forEach((x) => expect(forbidden.has(x.toUpperCase())).toBe(false));
@@ -904,7 +904,6 @@ describe('панель взрослого (Р6)', () => {
       l4_skipped: 'Пропустить',
       adult_completed: 'Звено — самостоятельно',
     };
-    const CHAR = 0.56; // средний шаг знака Nunito 600, em; с запасом
     // масштаб шрифта: 1 и худший допустимый «потолок ×1.2, ужатый до minimumFontScale» (1.2 × 0.86)
     const scales = [1, abaAdultPanel.maxFontSizeMultiplier * abaAdultPanel.minimumFontScale];
     scales.forEach((scale) =>
@@ -915,8 +914,9 @@ describe('панель взрослого (Р6)', () => {
         (Object.keys(labels) as (PanelButton | 'undo')[]).forEach((id) => {
           const { row, col } = abaAdultPanelSlot[id];
           const slot = row === 0 ? unit * abaAdultPanel.colWeights[col] : (inner - p.colGap) / 2;
-          const longest = Math.max(...labels[id].split(' ').map((w) => w.length));
-          expect(longest * CHAR * 14 * scale).toBeLessThanOrEqual(slot - 2 * abaAdultPanel.labelPadX);
+          // настоящая ширина слова в Nunito 700 по TTF (этап F): средний шаг знака занижал «Сопротивляется»
+          const longest = Math.max(...labels[id].split(' ').map((w) => textEm('700Bold', w) * parentTypography.caption.size));
+          expect(longest * scale).toBeLessThanOrEqual(slot - 2 * abaAdultPanel.labelPadX);
         });
       }),
     );

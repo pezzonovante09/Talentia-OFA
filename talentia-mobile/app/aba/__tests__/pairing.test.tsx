@@ -4,7 +4,7 @@
  * доступ с кадром конца (Ц3.5); выбор взрослого полосой; выход удержанием пишет остановку взрослого и ведёт на карту;
  * без конфигурации — на 2.6.
  */
-import { AppState, StyleSheet, type AppStateStatus } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import AbaPairingScreen from '../pairing';
 import { abaEndDone } from '../../../src/design/abaTokens';
@@ -18,20 +18,15 @@ import { voice } from '../../../src/services/voice';
 import { useAbaRun } from '../../../src/state/abaRun';
 import { useAccount } from '../../../src/state/account';
 import { useChildSession } from '../../../src/state/childSession';
-import { act, fireEvent, renderWithProviders, screen, waitFor } from '../../../src/test/render';
-import { AbaClockProvider, manualClock, type ManualClock } from '../../../src/ui/aba/clock';
+import { appStateFake } from '../../../src/test/appStateFake';
+import { manualClockDriver } from '../../../src/test/manualClockDriver';
+import { fireEvent, renderWithProviders, screen, waitFor } from '../../../src/test/render';
+import { AbaClockProvider, type ManualClock } from '../../../src/ui/aba/clock';
 
-jest.mock('expo-router', () => {
-  const React = jest.requireActual<typeof import('react')>('react');
-  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
-  const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn(), dismissTo: jest.fn() };
-  return {
-    __router: router,
-    useRouter: () => router,
-    useLocalSearchParams: () => ({}),
-    Redirect: ({ href }: { href: string }) => React.createElement(Text, { testID: 'redirect' }, href),
-  };
-});
+// экран на ручных часах: тест — сотни шагов `act`; под нагрузкой всего набора нужен прежний запас (общий testTimeout — 15 с)
+jest.setTimeout(60_000);
+
+jest.mock('expo-router', () => jest.requireActual<typeof import('../../../src/test/abaScreenMocks')>('../../../src/test/abaScreenMocks').expoRouterMock());
 const router = (jest.requireMock('expo-router') as { __router: { replace: jest.Mock; dismissTo: jest.Mock } }).__router;
 
 const KID = '00000000-0000-4000-8000-0000000000a1';
@@ -40,23 +35,9 @@ let clock: ManualClock;
 
 /** Доска и кольцо скрыты от скринридера (`accessibilityElementsHidden`) — ищутся с этим флагом. */
 const HIDDEN = { includeHiddenElements: true };
-/**
- * Jest не прерывает функцию теста по таймауту: её цикл продолжил бы двигать часы и экран уже следующего теста (каскад
- * падений при таймауте одного). Поэтому `afterEach` помечает тест мёртвым, а драйверы шагают только часами своего
- * теста (`my`) и только пока он жив.
- */
-let dead = false;
-const alive = (my: ManualClock) => !dead && clock === my;
-const tick = async (ms: number) => {
-  const my = clock;
-  if (!alive(my)) return;
-  await act(async () => my.advance(ms));
-};
-/** До момента `to` шагами не длиннее `step`: ручные часы будят один срок экрана за шаг — каждый кадр в свой срок. */
-async function stepTo(to: number, step = 20) {
-  const my = clock;
-  while (alive(my) && my.now() < to) await tick(Math.min(step, to - my.now()));
-}
+/** Часы с выключателем (`afterEach`): цикл теста, переживший таймаут, не двигает часы следующего (`manualClockDriver`). */
+const clockDriver = manualClockDriver();
+const { tick, stepTo } = clockDriver;
 const filledCells = () => screen.queryAllByTestId('aba-exchange-token-filled', HIDDEN).length;
 const cardStroke = () => StyleSheet.flatten(screen.getByTestId('aba-exchange-card').props.style).borderWidth as number;
 /** Обмен одной ячейки от начала въезда: 220 + 600 + 360 + 300 + 360. */
@@ -99,10 +80,9 @@ async function oneCycle(pick: string) {
 }
 
 beforeEach(async () => {
-  dead = false;
   router.replace.mockClear();
   router.dismissTo.mockClear();
-  clock = manualClock();
+  clock = clockDriver.start();
   db = await memoryDb();
   await grantAbaProcessing(db, { childId: KID, accountId: 'acc', lang: 'ru', at: new Date(clock.now()).toISOString(), randomBytes: (n) => new Uint8Array(n).fill(7) });
   useAccount.setState({ db, accountId: 'acc', status: 'ready' });
@@ -111,7 +91,7 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
-  dead = true;
+  clockDriver.kill();
 });
 
 it('четыре цикла тапом: конец с Tali, итог записан, критерий — выбор ребёнка', async () => {
@@ -177,18 +157,13 @@ it('«Сам»: выход удержанием — уход ребёнка, с�
 });
 
 it('свернули посреди сопряжения — сессия не засчитана, конец нейтральный, просроченные стадии не проходят', async () => {
-  const handlers: ((s: AppStateStatus) => void)[] = [];
-  // подмена, а не `spyOn`: `mockRestore` у мока RN снял бы и его реализацию, и следующие экраны получили бы `undefined`
-  const original = AppState.addEventListener;
-  AppState.addEventListener = ((_t: string, fn: (s: AppStateStatus) => void) => {
-    handlers.push(fn);
-    return { remove: () => undefined };
-  }) as typeof AppState.addEventListener;
+  const appState = appStateFake();
+  appState.install();
   try {
     await mount();
     await fireEvent.press(screen.getByTestId(`aba-reinforcer-${cards()[0]}`));
     await tick(800);
-    await act(async () => handlers.forEach((h) => h('background')));
+    await appState.emit('background');
     await waitFor(() => expect(screen.getByTestId('aba-end-neutral')).toBeTruthy());
     await tick(60_000);
     expect(screen.queryByTestId('aba-access-scene')).toBeNull();
@@ -197,7 +172,7 @@ it('свернули посреди сопряжения — сессия не �
     const [rec] = await db.all<{ body: string }>('SELECT body FROM aba_pairing_sessions WHERE child_id = ?', [KID]);
     expect(JSON.parse(rec.body)).toMatchObject({ endReason: 'app_backgrounded', config: 'with_adult', cycles: 0 });
   } finally {
-    AppState.addEventListener = original;
+    appState.restore();
   }
 });
 

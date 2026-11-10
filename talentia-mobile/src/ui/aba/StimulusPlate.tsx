@@ -13,8 +13,9 @@ import Svg, { Circle, Polygon, Rect } from 'react-native-svg';
 
 import { ABA_OBJECT_ART } from '../../assets/registry';
 import { ABA_SHAPE_SPEC, ABA_STIMULI, type AbaStimulus } from '../../content/aba/stimuli';
+import { illustrationInk } from '../../design/tokens';
 
-const OUTLINE = '#2A1A12';
+const OUTLINE = illustrationInk;
 const byId = new Map(ABA_STIMULI.map((s) => [s.id, s]));
 
 function Shape({ s, size }: { s: Extract<AbaStimulus, { kind: 'shape' }>; size: number }) {

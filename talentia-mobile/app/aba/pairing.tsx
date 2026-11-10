@@ -10,10 +10,11 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { Redirect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AppState, BackHandler, Text, View } from 'react-native';
+import { AppState, BackHandler, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { abaPairingLayout, abaReinforcerCardSize, abaReinforcerChoice } from '../../src/design/abaTokens';
+import { abaInstruction, abaPairingLayout, abaReinforcerCardSize, abaReinforcerChoice } from '../../src/design/abaTokens';
+import { typography } from '../../src/design/tokens';
 import { pairingResultOf, startPairing } from '../../src/domain/abaPairing';
 import { seeded } from '../../src/domain/abaRandom';
 import { newAbaId } from '../../src/services/abaIds';
@@ -25,6 +26,7 @@ import { leaveAba } from '../../src/ui/aba/leaveAba';
 import { useAccount } from '../../src/state/account';
 import { useChildSession } from '../../src/state/childSession';
 import { AbaEnd } from '../../src/ui/aba/AbaEnd';
+import { AbaText } from '../../src/ui/aba/AbaText';
 import { useAbaClock, useDue } from '../../src/ui/aba/clock';
 import { pairingRunDueAt, startPairingRun, stepPairingRun, type PairingRun, type PairingRunEvent } from '../../src/ui/aba/model/pairingRun';
 import { NonTrialRow, PressOnly, useAbaColors, useReduceMotion } from '../../src/ui/aba/parts';
@@ -189,9 +191,9 @@ export default function AbaPairingScreen() {
       body = (
         <View style={{ flex: 1, paddingHorizontal: 16 }}>
           {header(
-            <Text style={{ color: c.ink, fontSize: 22, lineHeight: 30, fontWeight: '700', textAlign: 'center' }} numberOfLines={2} maxFontSizeMultiplier={1.2}>
+            <AbaText type={typography.subtitle} color={c.ink} max={1} lines={abaInstruction.lines} adjustsFontSizeToFit style={{ textAlign: 'center' }}>
               {t(s.cycles === 0 ? 'abaSession.chooseTitle' : 'abaReinforcer.again')}
-            </Text>,
+            </AbaText>,
           )}
           <View style={{ height: 16 }} />
           <ReinforcerChoiceView

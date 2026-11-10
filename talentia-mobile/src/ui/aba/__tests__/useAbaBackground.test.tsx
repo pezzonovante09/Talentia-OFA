@@ -4,26 +4,18 @@
  * `AppState.currentState`, как только экран включил подписку.
  */
 import type { ReactNode } from 'react';
-import { AppState, type AppStateStatus } from 'react-native';
 
+import { appStateFake } from '../../../test/appStateFake';
 import { act, renderHook } from '../../../test/render';
 import { AbaClockProvider, manualClock, type ManualClock } from '../clock';
 import { useAbaBackground } from '../useAbaBackground';
 
-const app = AppState as unknown as { currentState: unknown; addEventListener: typeof AppState.addEventListener };
-const realState = app.currentState;
-const realAdd = app.addEventListener;
-let handlers: ((s: AppStateStatus) => void)[] = [];
+const appState = appStateFake({ syncCurrentState: true });
+/** Событие AppState: как на устройстве, `currentState` обновляется раньше подписчиков. */
+const emit = appState.emit;
 let clock: ManualClock;
 const onLeave = jest.fn();
 const onReturn = jest.fn();
-
-/** Событие AppState: как на устройстве, `currentState` обновляется раньше подписчиков. */
-const emit = (s: AppStateStatus) =>
-  act(async () => {
-    app.currentState = s;
-    handlers.slice().forEach((h) => h(s));
-  });
 
 function mount(enabled: boolean) {
   const wrapper = ({ children }: { children: ReactNode }) => <AbaClockProvider clock={clock}>{children}</AbaClockProvider>;
@@ -31,24 +23,15 @@ function mount(enabled: boolean) {
 }
 
 beforeEach(() => {
-  handlers = [];
   onLeave.mockClear();
   onReturn.mockClear();
   clock = manualClock();
-  app.currentState = 'active';
-  app.addEventListener = ((_t: string, fn: (s: AppStateStatus) => void) => {
-    handlers.push(fn);
-    return {
-      remove: () => {
-        handlers = handlers.filter((h) => h !== fn);
-      },
-    };
-  }) as typeof AppState.addEventListener;
+  appState.install();
+  appState.setCurrent('active');
 });
 
 afterEach(() => {
-  app.currentState = realState;
-  app.addEventListener = realAdd;
+  appState.restore();
 });
 
 it('уход, пока подписка выключена: при включении onLeave один раз с моментом включения', async () => {
@@ -103,7 +86,7 @@ it('ушли и вернулись, пока подписка выключена
 });
 
 it('смонтирован уже в фоне с включённой подпиской: onLeave один раз, active — onReturn', async () => {
-  app.currentState = 'background';
+  appState.setCurrent('background');
   await mount(true);
   expect(onLeave).toHaveBeenCalledTimes(1);
   await emit('active');

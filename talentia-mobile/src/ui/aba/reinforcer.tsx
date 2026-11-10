@@ -18,8 +18,11 @@ import {
   ABA_CONTROL_STROKE,
   ABA_STRIP_SILHOUETTE,
   ABA_STRIP_SILHOUETTE_GAP,
+  abaAdultPanel,
 } from "../../design/abaTokens";
+import { parentTypography } from "../../design/parentTokens";
 import { radii } from "../../design/tokens";
+import { AbaText } from "./AbaText";
 import type { ChoiceRun } from "./model/reinforcerChoiceRun";
 import { ChildPressable, useAbaColors } from "./parts";
 
@@ -194,12 +197,10 @@ function AdultStrip({
         gap: 6,
       }}
     >
-      <Text
-        style={{ color: p.label, fontSize: 14, lineHeight: 20 }}
-        numberOfLines={1}
-      >
+      {/* полоса 88 уже на 2 pt меньше содержимого — без роста шрифта (`design-lead`, этап F) */}
+      <AbaText type={parentTypography.caption} color={p.label} max={1} lines={1} adjustsFontSizeToFit minimumFontScale={0.9}>
         {t("abaSession.adultChooses")}
-      </Text>
+      </AbaText>
       <View style={{ flexDirection: "row", gap: 8, flex: 1 }}>
         {options.map((id) => (
           <Pressable
@@ -218,13 +219,18 @@ function AdultStrip({
               justifyContent: "center",
             }}
           >
-            <Text
-              style={{ color: p.label, fontSize: 14 }}
-              numberOfLines={2}
+            <AbaText
+              type={parentTypography.caption}
+              color={p.label}
+              max={abaAdultPanel.maxFontSizeMultiplier}
+              // одно слово — одна строка: при двух RN переносит «Калейдоскоп» по буквам вместо ужатия
+              lines={t(labelKeyOf(id)).includes(" ") ? 2 : 1}
+              minimumFontScale={abaAdultPanel.minimumFontScale}
+              style={{ textAlign: "center" }}
               adjustsFontSizeToFit
             >
               {t(labelKeyOf(id))}
-            </Text>
+            </AbaText>
           </Pressable>
         ))}
       </View>

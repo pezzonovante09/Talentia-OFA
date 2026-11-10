@@ -19,6 +19,10 @@ import { DEMO_DELAY_MS, DEMO_HOLD_MS, LISTEN_STEP_MS, SHOW_AFTER_MS, UNLOCK_AFTE
 import { act, fireEvent, renderWithProviders, screen, waitFor } from '../../src/test/render';
 import type { ChooseTask, MatchTask, OrderTask, Task } from '../../src/types/task';
 
+// экран урока на реальных таймерах контроллера: тест «подсветка исправленных» под нагрузкой всего набора шёл дольше
+// общего testTimeout (15 с) — прогон 2026-11-10, этап F3; файлу — прежний запас
+jest.setTimeout(60_000);
+
 /** Реплика из банка Tali (Ж14): любой из четырёх вариантов ситуации, родовой надстройки при форме «не указывать» нет. */
 const bank = (situation: string) => new RegExp(`^companion\\.${situation}\\.[0-3]$`);
 
