@@ -15,9 +15,10 @@
  */
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { I18nextProvider, useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
+import { adultI18n } from '../src/i18n';
 import { useDesign } from '../src/design';
 import { firstRun, profileCard, taliSize } from '../src/design/tokens';
 import { uuidV4 } from '../src/domain/ids';
@@ -35,7 +36,16 @@ import { ProfileCard } from '../src/ui/ProfileCard';
 import { Screen } from '../src/ui/Screen';
 import { TaliFigure } from '../src/ui/TaliFigure';
 
+/** Выбор профиля и первый запуск — на языке устройства (№190): сессии ребёнка здесь ещё нет или она сменится. */
 export default function FirstRunScreen() {
+  return (
+    <I18nextProvider i18n={adultI18n()}>
+      <FirstRun />
+    </I18nextProvider>
+  );
+}
+
+function FirstRun() {
   const theme = useDesign();
   const { t, i18n } = useTranslation();
   const router = useRouter();

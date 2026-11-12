@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { useChildT } from '../../i18n';
 import { abaEndDone, abaNonTrialRow, abaTokenBoard, ABA_CONTROL_STROKE } from '../../design/abaTokens';
 import { radii, typography } from '../../design/tokens';
 import { AbaText } from './AbaText';
@@ -19,6 +20,8 @@ import { TokenCell } from './reinforcer';
 
 export function AbaEnd({ variant, board, onDone }: { variant: 'normal' | 'neutral'; board?: { cells: number; filled: number }; onDone: () => void }) {
   const { t } = useTranslation();
+  // конец и «Готово» — ребёнку, на его языке (№190)
+  const childT = useChildT();
   const c = useAbaColors();
   const clock = useAbaClock();
   // кадр показан сейчас: блокировка «Готово» считается от него
@@ -33,7 +36,7 @@ export function AbaEnd({ variant, board, onDone }: { variant: 'normal' | 'neutra
         </View>
       )}
       <AbaText type={typography.title} color={c.ink} max={1.2} lines={2} style={{ textAlign: 'center', marginTop: variant === 'normal' ? 16 : 48 }} accessibilityRole="header">
-        {t('abaSession.endedToday')}
+        {childT('abaSession.endedToday')}
       </AbaText>
       {board && board.cells > 0 && (
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: abaTokenBoard.gap, marginTop: 24 }} testID="aba-end-board">
@@ -47,7 +50,7 @@ export function AbaEnd({ variant, board, onDone }: { variant: 'normal' | 'neutra
         frameShownAt={shownAt + d.lockMs}
         onCommit={onDone}
         testID="aba-end-done"
-        accessibilityLabel={t('abaSession.done')}
+        accessibilityLabel={childT('abaSession.done')}
         style={{
           height: d.height,
           marginBottom: 16,
@@ -63,7 +66,7 @@ export function AbaEnd({ variant, board, onDone }: { variant: 'normal' | 'neutra
       >
         <PlaceholderGlyph name="map" size={d.glyphSize} color={c.onReinforcement} cut={c.reinforcement} />
         <AbaText type={typography.subtitle} color={c.onReinforcement} max={1.2} lines={1} adjustsFontSizeToFit>
-          {t('abaSession.done')}
+          {childT('abaSession.done')}
         </AbaText>
       </ChildPressable>
     </View>

@@ -10,9 +10,10 @@
  */
 import { Redirect, Stack, usePathname, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { I18nextProvider, useTranslation } from 'react-i18next';
 import { AppState, Platform, Pressable, View } from 'react-native';
 
+import { adultI18n } from '../../src/i18n';
 import { checkPin } from '../../src/services/local/account';
 import { sha256 } from '../../src/services/digest';
 import { useAccount } from '../../src/state/account';
@@ -169,9 +170,12 @@ function Guarded() {
 }
 
 export default function ParentLayout() {
+  // раздел взрослого — на языке устройства, а не профиля ребёнка (№190): отчёты и согласия читает родитель
   return (
-    <ParentThemeProvider>
-      <Guarded />
-    </ParentThemeProvider>
+    <I18nextProvider i18n={adultI18n()}>
+      <ParentThemeProvider>
+        <Guarded />
+      </ParentThemeProvider>
+    </I18nextProvider>
   );
 }

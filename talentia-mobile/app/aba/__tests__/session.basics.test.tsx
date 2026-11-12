@@ -11,7 +11,8 @@ import { loadChildState, saveChildState } from '../../../src/services/local/chil
 import { asAbaWriter } from '../../../src/services/local/__tests__/nodeSql';
 import { voice } from '../../../src/services/voice';
 import { useAbaRun } from '../../../src/state/abaRun';
-import { fireEvent, screen, waitFor } from '../../../src/test/render';
+import i18n, { adultI18n, setChildLang } from '../../../src/i18n';
+import { act, fireEvent, screen, waitFor } from '../../../src/test/render';
 import { KID, HIDDEN, router, clock, db, count, mount, stimOf, correctOption, chooseFirst, skipCardTraining, registerAbaSessionHooks, tick, stepTo } from '../../../src/test/abaSessionHarness';
 
 // экран на ручных часах: тест — сотни шагов `act`; под нагрузкой всего набора нужен прежний запас (общий testTimeout — 15 с)
@@ -44,6 +45,19 @@ it('касание карточки при обучении — перерыв, 
   await waitFor(() => expect(screen.getByTestId('aba-break')).toBeTruthy());
   await fireEvent.press(screen.getByTestId('aba-break-return'));
   await waitFor(() => expect(screen.getByTestId('aba-panel-caption').props.children).toBe('Покажите на неё жестом'));
+});
+
+it('язык профиля en на русском устройстве: «За что играем?» и SD — на английском, выход и подсказка взрослому — на русском (№190)', async () => {
+  await mount(760, { adult: true });
+  await act(async () => setChildLang('en'));
+  await skipCardTraining();
+  await waitFor(() => expect(screen.getByText(i18n.getFixedT('en')('abaSession.chooseTitle'))).toBeTruthy());
+  await chooseFirst();
+  await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+  const sd = String(screen.getByTestId('aba-instruction').props.children);
+  expect(sd).toMatch(/[A-Za-z]/);
+  expect(sd).not.toMatch(/[А-Яа-яЁё]/);
+  expect(screen.getByTestId('aba-exit').props.accessibilityLabel).toBe(adultI18n().getFixedT('ru')('abaSession.exit'));
 });
 
 it('выбор → проба: варианты до касания образца не отвечают; верный ответ записан до последствия', async () => {

@@ -33,6 +33,7 @@ import {
   abaTokenLandingMs,
   type AbaTier,
 } from '../../src/design/abaTokens';
+import { useChildT } from '../../src/i18n';
 import { typography } from '../../src/design/tokens';
 import type { BreakCardStep } from '../../src/domain/abaBreakCard';
 import type { PanelButton } from '../../src/domain/abaScoring';
@@ -110,6 +111,8 @@ const CARD_STEPS: BreakCardStep[] = ['model', 'prompted', 'independent'];
 
 export default function AbaSessionScreen() {
   const { t } = useTranslation();
+  // SD звучит и показывается ребёнку — на его языке (№190)
+  const childT = useChildT();
   const router = useRouter();
   const c = useAbaColors();
   const insets = useSafeAreaInsets();
@@ -1028,7 +1031,7 @@ export default function AbaSessionScreen() {
     <View style={{ height: layout.instruction, justifyContent: 'center', paddingHorizontal: 16 }}>
       {key && (
         <AbaText testID="aba-instruction" type={typography.subtitle} color={c.ink} max={abaInstruction.maxFontSizeMultiplier} lines={abaInstruction.lines} style={{ textAlign: 'center' }}>
-          {t(key)}
+          {childT(key)}
         </AbaText>
       )}
     </View>

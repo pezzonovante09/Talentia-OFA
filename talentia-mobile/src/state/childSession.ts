@@ -76,7 +76,7 @@ export type ChildSessionState = {
   startNoRecordSession(input: { childId: string; now: Date; interfaceLang: InterfaceLang }): void;
   /** Сеанс ребёнка с аккаунтом: настройки из профиля, прогресс — снимок с устройства (`ProgressPort.load`). */
   startAccountSession(input: { profile: ChildProfile; snapshot: ProgressSnapshot; now: Date; openedForAba?: boolean }): void;
-  setSettings(patch: Partial<Pick<ChildSettings, 'calmMode' | 'focusMode' | 'soundEffects'>>): void;
+  setSettings(patch: Partial<Pick<ChildSettings, 'calmMode' | 'focusMode' | 'soundEffects' | 'interfaceLang'>>): void;
   /** Начать или продолжить урок. Возвращает состояние оркестратора для экрана. */
   openLesson(input: { lessonId: string; now: Date; seed: number; nodeState: NodeState }): LessonSessionState;
   /**

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Animated, Easing, Platform, Pressable, useColorScheme, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
+import { useChildT } from '../../../i18n';
 import { abaAdultPanel, abaAdultPanelColors, abaInstruction, abaBoardCell, abaBreak, abaBreakTrace, abaControls, abaLayout, abaRefusalPause, abaReinforcementOverlay, abaTokenBoard, ABA_CONTROL_STROKE, ABA_STRIP_SILHOUETTE, ABA_STRIP_SILHOUETTE_GAP } from '../../../design/abaTokens';
 import { parentColors, parentTypography } from '../../../design/parentTokens';
 import { radii, typography } from '../../../design/tokens';
@@ -434,6 +435,7 @@ export function ReinforcementOverlay({
   height: number;
 }) {
   const { t } = useTranslation();
+  const childT = useChildT();
   const c = useAbaColors();
   const o = abaReinforcementOverlay;
   const earned = earnedBefore + (landed ? 1 : 0);
@@ -465,7 +467,7 @@ export function ReinforcementOverlay({
         ))}
       </View>
       <AbaText type={typography.subtitle} color={calm ? c.ink : c.onReinforcement} max={abaInstruction.maxFontSizeMultiplier} lines={abaInstruction.lines} style={{ textAlign: 'center', minHeight: o.caption }}>
-        {t('abaReinforcement.token')}
+        {childT('abaReinforcement.token')}
       </AbaText>
     </View>
   );

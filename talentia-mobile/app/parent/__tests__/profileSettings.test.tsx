@@ -9,6 +9,8 @@ import { newProfile } from '../../../src/services/local/profiles';
 import { sha256 } from '../../../src/services/digest';
 import { randomBytes } from '../../../src/services/random';
 import { useAccount } from '../../../src/state/account';
+import { useChildSession } from '../../../src/state/childSession';
+import { EMPTY_PROGRESS } from '../../../src/services/progressPort';
 import { setDevice } from '../../../src/state/device';
 import { useGate } from '../../../src/state/gate';
 import { fakeDevice } from '../../../src/test/fakeDevice';
@@ -70,6 +72,30 @@ describe('настройки ребёнка', () => {
     expect(screen.getByTestId('profile-calm-switch').props.value).toBe(false);
     expect(screen.getByTestId('profile-focus-switch').props.value).toBe(false);
     expect(screen.getByTestId('profile-sound-switch').props.value).toBe(true);
+  });
+
+  it('язык профиля уходит и в идущую сессию этого ребёнка — карта под разделом переходит на него (№190)', async () => {
+    useChildSession.getState().startAccountSession({ profile, snapshot: { ...EMPTY_PROGRESS }, now: new Date('2026-11-12T10:00:00.000Z') });
+    try {
+      await render();
+      await fireEvent.press(screen.getByTestId('profile-lang-en'));
+      expect(updateProfile).toHaveBeenCalledWith({ ...profile, interfaceLang: 'en' });
+      expect(useChildSession.getState().settings.interfaceLang).toBe('en');
+    } finally {
+      useChildSession.getState().reset();
+    }
+  });
+
+  it('язык профиля другого ребёнка идущую сессию не трогает', async () => {
+    const other = newProfile({ childId: '00000000-0000-4000-8000-0000000000d2', band: '7', interfaceLang: 'ru', createdAt: '2026-10-25T00:00:00.000Z' });
+    useChildSession.getState().startAccountSession({ profile: other, snapshot: { ...EMPTY_PROGRESS }, now: new Date('2026-11-12T10:00:00.000Z') });
+    try {
+      await render();
+      await fireEvent.press(screen.getByTestId('profile-lang-en'));
+      expect(useChildSession.getState().settings.interfaceLang).toBe('ru');
+    } finally {
+      useChildSession.getState().reset();
+    }
   });
 
   it('обычная настройка сохраняется сразу без PIN: спокойный режим и длительность', async () => {

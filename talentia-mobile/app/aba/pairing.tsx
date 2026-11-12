@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { AppState, BackHandler, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useChildT } from '../../src/i18n';
 import { abaInstruction, abaPairingLayout, abaReinforcerCardSize, abaReinforcerChoice } from '../../src/design/abaTokens';
 import { typography } from '../../src/design/tokens';
 import { pairingResultOf, startPairing } from '../../src/domain/abaPairing';
@@ -39,6 +40,7 @@ type Ended = { variant: 'normal' | 'neutral'; toMap: boolean };
 
 export default function AbaPairingScreen() {
   const { t } = useTranslation();
+  const childT = useChildT();
   const router = useRouter();
   const c = useAbaColors();
   const insets = useSafeAreaInsets();
@@ -192,7 +194,7 @@ export default function AbaPairingScreen() {
         <View style={{ flex: 1, paddingHorizontal: 16 }}>
           {header(
             <AbaText type={typography.subtitle} color={c.ink} max={1} lines={abaInstruction.lines} adjustsFontSizeToFit style={{ textAlign: 'center' }}>
-              {t(s.cycles === 0 ? 'abaSession.chooseTitle' : 'abaReinforcer.again')}
+              {childT(s.cycles === 0 ? 'abaSession.chooseTitle' : 'abaReinforcer.again')}
             </AbaText>,
           )}
           <View style={{ height: 16 }} />

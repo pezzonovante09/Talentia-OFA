@@ -7,6 +7,7 @@ import { Pressable, Text, useColorScheme, View } from "react-native";
 import Svg, { Circle, Path } from "react-native-svg";
 
 import { REINFORCERS } from "../../content/aba/reinforcers";
+import { useChildT } from "../../i18n";
 import {
   abaAccessRing,
   abaAdultPanelColors,
@@ -42,7 +43,8 @@ export function ReinforcerArt({
   size: number;
   silhouette?: boolean;
 }) {
-  const { t } = useTranslation();
+  // название — ребёнку, на его языке (№190)
+  const t = useChildT();
   const c = useAbaColors();
   if (__DEV__ && !silhouette) {
     return (
@@ -144,7 +146,8 @@ function ReinforcerCard({
   frameShownAt: number;
   onTap: (at: number) => void;
 }) {
-  const { t } = useTranslation();
+  // название — ребёнку, на его языке (№190)
+  const t = useChildT();
   const c = useAbaColors();
   const stroke = selected
     ? abaReinforcerChoice.selected.stroke
@@ -419,7 +422,8 @@ export function PictureCard({
   size?: number;
   testID?: string;
 }) {
-  const { t } = useTranslation();
+  // название — ребёнку, на его языке (№190)
+  const t = useChildT();
   const c = useAbaColors();
   return (
     <Pressable

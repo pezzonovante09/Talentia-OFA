@@ -23,6 +23,10 @@ import { chooseReinforcer, nextStep, startAbaSession, type AbaSessionState } fro
 import { useAbaRun } from '../state/abaRun';
 import { useAccount } from '../state/account';
 import { useChildSession } from '../state/childSession';
+import type { ReactNode } from 'react';
+import { I18nextProvider } from 'react-i18next';
+
+import { adultI18n } from '../i18n';
 import { act, fireEvent, renderWithProviders, screen, waitFor, within } from './render';
 import { CHILD_BREAK_MS } from '../types/aba';
 import { AbaClockProvider, type ManualClock } from '../ui/aba/clock';
@@ -61,12 +65,19 @@ export async function layout(height: number, width = 375) {
     fireEvent(screen.getByTestId('aba-session'), 'layout', { nativeEvent: { layout: { height, width, x: 0, y: 0 } } });
   });
 }
-export async function mount(height: number | null = 760) {
-  await renderWithProviders(
+/** Провайдер языка взрослого — компонентом: `adultI18n()` берётся при рендере, после `initI18n` в `renderWithProviders`. */
+function AdultLanguage({ children }: { children: ReactNode }) {
+  return <I18nextProvider i18n={adultI18n()}>{children}</I18nextProvider>;
+}
+
+/** `adult` — экран под провайдером языка взрослого, как в `app/aba/_layout.tsx` (№190). */
+export async function mount(height: number | null = 760, { adult = false }: { adult?: boolean } = {}) {
+  const screenEl = (
     <AbaClockProvider clock={clock}>
       <AbaSessionScreen />
-    </AbaClockProvider>,
+    </AbaClockProvider>
   );
+  await renderWithProviders(adult ? <AdultLanguage>{screenEl}</AdultLanguage> : screenEl);
   if (height !== null) await layout(height);
 }
 

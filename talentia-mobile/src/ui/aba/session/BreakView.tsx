@@ -6,6 +6,7 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
+import { useChildT } from '../../../i18n';
 import { abaBreak, inactiveChoice, ABA_CONTROL_STROKE } from '../../../design/abaTokens';
 import { radii, typography } from '../../../design/tokens';
 import { AbaText } from '../AbaText';
@@ -16,6 +17,7 @@ import { TopBar } from './parts';
 
 export function BreakView({ phase, onReturn }: { phase: Extract<Phase, { kind: 'break' }>; onReturn: (at: number) => void }) {
   const { t } = useTranslation();
+  const childT = useChildT();
   const c = useAbaColors();
   const left = (phase.until - (phase.tick ?? phase.shownAt)) / (phase.until - phase.startedAt);
   return (
@@ -55,7 +57,7 @@ export function BreakView({ phase, onReturn }: { phase: Extract<Phase, { kind: '
         frameShownAt={phase.shownAt}
         onCommit={onReturn}
         testID="aba-break-return"
-        accessibilityLabel={t('abaBreak.return')}
+        accessibilityLabel={childT('abaBreak.return')}
         style={{
           height: abaBreak.returnButton,
           marginHorizontal: 24,
@@ -72,7 +74,7 @@ export function BreakView({ phase, onReturn }: { phase: Extract<Phase, { kind: '
       >
         <PlaceholderGlyph name="pause_bars_outline" size={abaBreak.returnIcon.size} color={c.controlInk} />
         <AbaText type={typography.subtitle} color={c.controlInk} max={1.2} lines={1} adjustsFontSizeToFit>
-          {t('abaBreak.return')}
+          {childT('abaBreak.return')}
         </AbaText>
       </ChildPressable>
     </View>

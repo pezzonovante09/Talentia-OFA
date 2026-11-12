@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useAccount } from '../../../src/state/account';
+import { useChildSession } from '../../../src/state/childSession';
 import { useGate } from '../../../src/state/gate';
 import type { AgeBand } from '../../../src/types/task';
 import { ConfirmPinSheet } from '../../../src/ui/parent/ConfirmPinSheet';
@@ -21,7 +22,14 @@ export default function ChildSettingsScreen() {
 
   if (!profile) return <Redirect href="/parent" />;
   const draft: ProfileDraft = profile;
-  const save = (d: ProfileDraft) => void updateProfile({ ...profile, ...d });
+  const save = (d: ProfileDraft) => {
+    void updateProfile({ ...profile, ...d });
+    // язык — сразу и в идущую сессию этого ребёнка: карта под разделом взрослого переходит на него (№190)
+    const session = useChildSession.getState();
+    if (session.mode !== 'none' && session.childId === profile.childId && session.settings.interfaceLang !== d.interfaceLang) {
+      session.setSettings({ interfaceLang: d.interfaceLang });
+    }
+  };
 
   return (
     <ParentScreen title={t('parent.profile.settings')} left={<ParentButton variant="quiet" label={t('parent.back')} onPress={() => router.back()} block={false} testID="settings-back" />} right={<ParentButton variant="quiet" label={t('parent.done')} onPress={() => router.dismissAll()} block={false} testID="settings-done" />} testID="parent-settings">

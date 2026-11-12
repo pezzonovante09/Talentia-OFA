@@ -18,12 +18,15 @@ import { expoSoundPlayer } from '../src/services/audioPlayer';
 import { installNetworkFuse, networkFuseEnabled } from '../src/services/networkFuse';
 import { createAudioVoice, setVoiceBackend } from '../src/services/voice';
 import { useAccount } from '../src/state/account';
+import { bindChildLanguage } from '../src/state/childLanguage';
 import { useChildSession } from '../src/state/childSession';
 import { FONT_FILES } from '../src/ui/fonts';
 
 // сеть закрыта до ворот «данные» (ментор П2): вне dev-сборки — с первого модуля корня
 if (networkFuseEnabled(__DEV__)) installNetworkFuse();
 initI18n({ lng: deviceLang() });
+// детские экраны — на языке профиля ребёнка, пока идёт его сессия (№190)
+bindChildLanguage();
 // голос и звуки — файлы из сборки (№158); ключ без файла молчит
 setVoiceBackend(createAudioVoice(expoSoundPlayer()));
 void SplashScreen.preventAutoHideAsync();

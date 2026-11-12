@@ -10,8 +10,8 @@
  * строки уже есть, экран не мигает ключами.
  */
 import { getLocales } from 'expo-localization';
-import { createInstance, type i18n } from 'i18next';
-import { initReactI18next } from 'react-i18next';
+import { createInstance, type i18n, type TFunction } from 'i18next';
+import { initReactI18next, useTranslation } from 'react-i18next';
 
 import type { InterfaceLang } from '../domain/regionVisibility';
 import en from './locales/en.json';
@@ -79,10 +79,21 @@ export function deviceLang(): InterfaceLang {
 
 const i18next: i18n = createInstance();
 
-/** Один раз на старте приложения; повторный вызов только переключает язык. */
+/**
+ * Два языка (№190, `localization-qa`): общий экземпляр — язык детских экранов (язык профиля ребёнка, пока идёт его
+ * сессия, `setChildLang`), его клон — язык взрослого, то есть устройства: раздел взрослого, выбор профиля и экраны ABA
+ * получают его через `I18nextProvider`, а не через `changeLanguage` по маршруту (раздел взрослого — модалка поверх
+ * карты: карта под ним перерисовывалась бы туда и обратно, `consentLang` получил бы гонку). Словарь у них общий.
+ */
+let adult: i18n | null = null;
+
+/**
+ * Один раз на старте приложения, `lng` — язык устройства; повторный вызов (тесты) переключает оба экземпляра.
+ */
 export function initI18n({ lng }: { lng: InterfaceLang }): i18n {
   if (i18next.isInitialized) {
     if (i18next.language !== lng) void i18next.changeLanguage(lng);
+    if (adult && adult.language !== lng) void adult.changeLanguage(lng);
     return i18next;
   }
   void i18next.use(initReactI18next).init({
@@ -95,7 +106,33 @@ export function initI18n({ lng }: { lng: InterfaceLang }): i18n {
     returnEmptyString: false,
     interpolation: { escapeValue: false },
   });
+  adult = i18next.cloneInstance({ lng });
   return i18next;
+}
+
+/** Экземпляр на языке взрослого (устройства) — для `I18nextProvider` раздела взрослого, выбора профиля и ABA. */
+export function adultI18n(): i18n {
+  if (!adult) throw new Error('initI18n ещё не вызван');
+  return adult;
+}
+
+/**
+ * Язык детских экранов (№190): язык профиля ребёнка, пока идёт его сессия; без сессии и для языка не из `UI_LANGS`
+ * (ky закрыт гейтом) — язык взрослого. Имена навыков в разделе взрослого (`content.skills.*`) гейт `UI_LANGS` требует
+ * от каждого языка, так что сырого ключа там не будет и без запасного языка.
+ */
+export function setChildLang(lang: InterfaceLang | null): void {
+  // закрытый ky — русский, как у `deviceLang`: ребёнок из КР английский не прочтёт
+  const target = lang === null ? adultI18n().language : (UI_LANGS as readonly string[]).includes(lang) ? lang : lang === 'ky' ? 'ru' : adultI18n().language;
+  if (i18next.language !== target) void i18next.changeLanguage(target);
+}
+
+/**
+ * `t` на языке ребёнка внутри экранов на языке взрослого — то, что в ABA обращено к ребёнку: SD, «За что играем?»,
+ * «Держи жетон!», конец, «Возвращаемся» (№190). Панель, подсказки взрослому и данные — обычным `useTranslation`.
+ */
+export function useChildT(): TFunction {
+  return useTranslation(undefined, { i18n: i18next }).t;
 }
 
 /** Есть ли ключ в текущем языке — без запасного языка это и есть «переведено». */
