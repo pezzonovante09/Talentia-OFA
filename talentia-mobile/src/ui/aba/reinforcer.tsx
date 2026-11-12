@@ -23,6 +23,7 @@ import {
 } from "../../design/abaTokens";
 import { parentTypography } from "../../design/parentTokens";
 import { radii, typography } from "../../design/tokens";
+import { REWARD_ART, REWARD_ICONS } from "../../assets/registry";
 import { rewardPicture } from "./access/RewardPicture";
 import { AbaText } from "./AbaText";
 import type { ChoiceRun } from "./model/reinforcerChoiceRun";
@@ -32,10 +33,10 @@ const labelKeyOf = (id: string) =>
   REINFORCERS.find((r) => r.id === id)?.labelKey ?? id;
 
 /**
- * Картинка позиции каталога (правка 2, 2026-11-12). У наград со сценой кодом — неподвижный кадр той же сцены
- * (`access/RewardPicture.tsx`), в силуэте — одним цветом: «картинка = то, что будет в сцене». У остальных, пока нет
- * ассетов партии 1 (`docs/assets/aba-rewards-batch1.md`), — название словом во всех сборках (одинаковые круги не давали
- * выбора; прочтёт взрослый) и нейтральный круг в силуэте.
+ * Картинка позиции каталога (правка 2, 2026-11-12; ассеты партии 1 — 2026-11-13). Карточка: картинка из
+ * `REWARD_ART`, иначе неподвижный кадр сцены кодом (`access/RewardPicture.tsx`) — «картинка = то, что будет в сцене».
+ * Силуэт: `REWARD_ICONS` одним цветом, иначе кадр сцены одним цветом. Без того и другого (барабан, ксилофон,
+ * песенка, пазл — партия 2) — название словом и нейтральный круг.
  */
 export function ReinforcerArt({
   id,
@@ -49,7 +50,12 @@ export function ReinforcerArt({
   // название — ребёнку, на его языке (№190)
   const t = useChildT();
   const c = useAbaColors();
-  const picture = rewardPicture(id, size, t(labelKeyOf(id)), silhouette ? c.ink : undefined);
+  const Art = silhouette ? REWARD_ICONS[id] : REWARD_ART[id];
+  const picture = Art ? (
+    <Art width={size} height={size} color={c.ink} />
+  ) : (
+    rewardPicture(id, size, t(labelKeyOf(id)), silhouette ? c.ink : undefined)
+  );
   if (picture) {
     return (
       <View

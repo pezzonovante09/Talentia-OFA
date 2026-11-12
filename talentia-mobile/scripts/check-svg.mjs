@@ -35,7 +35,9 @@ export function checkSvg(text, bytes = Buffer.byteLength(text)) {
     const [, w, h] = vb;
     const num = (v) => v.replace(/\.0+$/, '').replace(/\\/g, '\\\\').replace(/\./g, '\\.');
     const full = new RegExp(`<path[^>]*fill="(?:#?(?:fff|ffffff|white)|rgb\\(\\s*255\\s*,\\s*255\\s*,\\s*255\\s*\\))"[^>]*d="\\s*M\\s*0\\s+0\\s+L\\s*${num(w)}\\s+0\\s+L\\s*${num(w)}\\s+${num(h)}`, 'i');
-    if (full.test(text)) problems.push('белая подложка во весь кадр (путём) — удалить, фон должен быть прозрачным');
+    // та же подложка в короткой записи после svgo: `M0 0h512v512H0z` (2026-11-12, вертушка партии наград)
+    const short = new RegExp(`<path[^>]*fill="(?:#?(?:fff|ffffff|white)|rgb\\(\\s*255\\s*,\\s*255\\s*,\\s*255\\s*\\))"[^>]*d="\\s*M\\s*0[\\s,]+0\\s*h\\s*${num(w)}\\s*v\\s*${num(h)}\\s*H\\s*0\\s*z`, 'i');
+    if (full.test(text) || short.test(text)) problems.push('белая подложка во весь кадр (путём) — удалить, фон должен быть прозрачным');
   }
   const off = new Set();
   for (const m of text.matchAll(/#[0-9a-f]{6}\b|#[0-9a-f]{3}\b/gi)) {

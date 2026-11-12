@@ -7,7 +7,9 @@
  */
 import { BubblesScene } from './BubblesScene';
 import { KaleidoscopeScene } from './KaleidoscopeScene';
+import { MarbleRunScene } from './MarbleRunScene';
 import { PaintDropScene } from './PaintDropScene';
+import { PinwheelScene } from './PinwheelScene';
 import { PlaceholderScene } from './PlaceholderScene';
 import { SingTogetherScene } from './SingTogetherScene';
 import { TaliDanceScene } from './TaliDanceScene';
@@ -18,6 +20,10 @@ export function RewardScene({ reinforcerId, ended, still }: { reinforcerId: stri
       return <BubblesScene ended={ended} still={still} />;
     case 'kaleidoscope':
       return <KaleidoscopeScene ended={ended} still={still} />;
+    case 'pinwheel':
+      return <PinwheelScene ended={ended} still={still} />;
+    case 'marble_run':
+      return <MarbleRunScene ended={ended} still={still} />;
     case 'tali_dance':
       return <TaliDanceScene ended={ended} still={still} />;
     case 'paint_drop':

@@ -69,6 +69,13 @@ import UiToken from '../../assets/icons/ui-token.svg';
 import UiTriangle from '../../assets/icons/ui-triangle.svg';
 import UiWaves from '../../assets/icons/ui-waves.svg';
 import UiX from '../../assets/icons/ui-x.svg';
+import UiRewardBubbles from '../../assets/icons/ui-reward-bubbles.svg';
+import UiRewardKaleidoscope from '../../assets/icons/ui-reward-kaleidoscope.svg';
+import UiRewardPinwheel from '../../assets/icons/ui-reward-pinwheel.svg';
+import UiRewardMarbleRun from '../../assets/icons/ui-reward-marble-run.svg';
+import UiRewardTaliDance from '../../assets/icons/ui-reward-tali-dance.svg';
+import UiRewardPaintDrop from '../../assets/icons/ui-reward-paint-drop.svg';
+import UiRewardSingTogether from '../../assets/icons/ui-reward-sing-together.svg';
 
 import AbaObjApple from '../../assets/images/aba/stimuli/aba-obj-apple.svg';
 import AbaObjPear from '../../assets/images/aba/stimuli/aba-obj-pear.svg';
@@ -80,6 +87,12 @@ import AbaObjPlane from '../../assets/images/aba/stimuli/aba-obj-plane.svg';
 import AbaObjBoat from '../../assets/images/aba/stimuli/aba-obj-boat.svg';
 import AbaObjHouse from '../../assets/images/aba/stimuli/aba-obj-house.svg';
 import AbaObjUmbrella from '../../assets/images/aba/stimuli/aba-obj-umbrella.svg';
+import AbaRewardBubbles from '../../assets/images/aba/rewards/aba-reward-bubbles.svg';
+import AbaRewardPinwheel from '../../assets/images/aba/rewards/aba-reward-pinwheel.svg';
+import AbaRewardPaintDrop from '../../assets/images/aba/rewards/aba-reward-paint-drop.svg';
+import AbaRewardPinwheelHead from '../../assets/images/aba/rewards/aba-reward-pinwheel-head.svg';
+import AbaRewardMarbleTrack from '../../assets/images/aba/rewards/aba-reward-marble-track.svg';
+import AbaRewardMarble from '../../assets/images/aba/rewards/aba-reward-marble.svg';
 import AbaObjKey from '../../assets/images/aba/stimuli/aba-obj-key.svg';
 import AbaObjSpoon from '../../assets/images/aba/stimuli/aba-obj-spoon.svg';
 import AbaObjTeapot from '../../assets/images/aba/stimuli/aba-obj-teapot.svg';
@@ -208,6 +221,13 @@ export const ICONS = {
   regionWords: UiRegionWords,
   regionWorkshop: UiRegionWorkshop,
   review: UiReview,
+  rewardBubbles: UiRewardBubbles,
+  rewardKaleidoscope: UiRewardKaleidoscope,
+  rewardPinwheel: UiRewardPinwheel,
+  rewardMarbleRun: UiRewardMarbleRun,
+  rewardTaliDance: UiRewardTaliDance,
+  rewardPaintDrop: UiRewardPaintDrop,
+  rewardSingTogether: UiRewardSingTogether,
 } satisfies Record<string, Svg>;
 
 export type IconName = keyof typeof ICONS;
@@ -251,4 +271,32 @@ export const ABA_OBJECT_ART: Record<string, Svg | null> = {
   'aba-obj-tree': AbaObjTree,
   'aba-obj-bus': AbaObjBus,
   'aba-obj-bell': AbaObjBell,
+};
+
+/**
+ * Награды ABA, партия 1 (`docs/assets/aba-rewards-batch1.md`, принято 2026-11-13). `REWARD_ART` — картинка карточки
+ * выбора и обмена; калейдоскопа и горки нет: карточка — кадр той же сцены (`access/RewardPicture`): у калейдоскопа сцена
+ * рисуется кодом, у горки карточка собрана из рельсов и шарика сцены.
+ * `REWARD_PARTS` — детали сцен вертушки и горки. `REWARD_ICONS` — одноцветный силуэт для полосы «работаю за…» и кольца.
+ */
+export const REWARD_ART: Readonly<Partial<Record<string, Svg>>> = {
+  bubbles: AbaRewardBubbles,
+  pinwheel: AbaRewardPinwheel,
+  paint_drop: AbaRewardPaintDrop,
+};
+
+export const REWARD_PARTS = {
+  pinwheelHead: AbaRewardPinwheelHead,
+  marbleTrack: AbaRewardMarbleTrack,
+  marble: AbaRewardMarble,
+} satisfies Record<string, Svg>;
+
+export const REWARD_ICONS: Readonly<Partial<Record<string, Svg>>> = {
+  bubbles: ICONS.rewardBubbles,
+  kaleidoscope: ICONS.rewardKaleidoscope,
+  pinwheel: ICONS.rewardPinwheel,
+  marble_run: ICONS.rewardMarbleRun,
+  tali_dance: ICONS.rewardTaliDance,
+  paint_drop: ICONS.rewardPaintDrop,
+  sing_together: ICONS.rewardSingTogether,
 };

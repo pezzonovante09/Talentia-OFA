@@ -9,27 +9,27 @@
 (жёлтый). Силуэты — `#000000 #2A1A12`, после приёмки чёрный → `currentColor`. Запасной путь — Nano Banana Pro с
 образцом `ref/tali-hello-1024.png` → Ideogram Vector `vectorize`.
 
-**После №201 (`73cc305`) обязательны 7 файлов — вертушка и горка.** Картинки и силуэты пузырей, калейдоскопа, капли, танца Tali и «Поём вместе» рисует код кадром той же сцены; генерировать их — по желанию, если картинка сцены не понравится.
+**Партия принята 2026-11-13**: 15 генераций из Higgsfield, чистка `scripts/clean-higgsfield.mjs` (карта `scripts/input/higgsfield-map-2026-11-12.json`), у вертушки снята белая подложка, в пузырях розовый `#E36A93` (так подогнал скрипт) заменён на лавандовый `#9671DB` — розовый из цветов целей. **После №201 (`73cc305`) обязательны были 7 файлов — вертушка и горка.** Картинки и силуэты пузырей, калейдоскопа, капли, танца Tali и «Поём вместе» рисует код кадром той же сцены; генерировать их — по желанию, если картинка сцены не понравится.
 
 Генерирует владелец, файлы — в `talentia-mobile/scripts/input/`. Не генерируются: сцены пузырей, капли и узор
 калейдоскопа (код), карточки «Танец Tali» и «Поём вместе» (позы Tali и значок ноты из реестра).
 
 | id файла | Что | Куда после приёмки | Статус |
 |---|---|---|---|
-| `aba-reward-bubbles.svg` | пузыри, карточка | `assets/images/aba/rewards/` | по желанию: код рисует кадр сцены (№201) |
-| `aba-reward-kaleidoscope.svg` | калейдоскоп, карточка (лепестки и завитки, без фигур) | `assets/images/aba/rewards/` | по желанию: код рисует кадр сцены (№201) |
-| `aba-reward-pinwheel.svg` | вертушка на палочке, карточка | `assets/images/aba/rewards/` | ждём |
-| `aba-reward-marble-run.svg` | горка с шариком и ведёрком, карточка | `assets/images/aba/rewards/` | ждём |
-| `aba-reward-paint-drop.svg` | капля краски и брызги, карточка | `assets/images/aba/rewards/` | по желанию: код рисует кадр сцены (№201) |
-| `aba-reward-pinwheel-head.svg` | головка вертушки без палочки, для вращения | `assets/images/aba/rewards/` | ждём |
-| `aba-reward-marble-track.svg` | рельсы горки с ведёрком, без шарика | `assets/images/aba/rewards/` | ждём |
-| `aba-reward-marble.svg` | стеклянный шарик | `assets/images/aba/rewards/` | ждём |
-| `ui-reward-bubbles.svg` | силуэт: три пузыря разного размера | `assets/icons/` | по желанию: код рисует кадр сцены (№201) |
-| `ui-reward-kaleidoscope.svg` | силуэт: розетка из 8 лепестков | `assets/icons/` | по желанию: код рисует кадр сцены (№201) |
-| `ui-reward-pinwheel.svg` | силуэт: вертушка | `assets/icons/` | ждём |
-| `ui-reward-marble-run.svg` | силуэт: горка и шарик | `assets/icons/` | ждём |
-| `ui-reward-tali-dance.svg` | силуэт: танцующий тираннозавр | `assets/icons/` | по желанию: код рисует кадр сцены (№201) |
-| `ui-reward-paint-drop.svg` | силуэт: капля над брызгами | `assets/icons/` | по желанию: код рисует кадр сцены (№201) |
-| `ui-reward-sing-together.svg` | силуэт: две ноты с ребром | `assets/icons/` | по желанию: код рисует кадр сцены (№201) |
+| `aba-reward-bubbles.svg` | пузыри, карточка | `assets/images/aba/rewards/` | принято 2026-11-13 |
+| `aba-reward-kaleidoscope.svg` | калейдоскоп, карточка (лепестки и завитки, без фигур) | `assets/images/aba/rewards/` | сгенерировано, не используется: карточка = кадр сцены кодом |
+| `aba-reward-pinwheel.svg` | вертушка на палочке, карточка | `assets/images/aba/rewards/` | принято 2026-11-13 |
+| `aba-reward-marble-run.svg` | горка с шариком и ведёрком, карточка | `assets/images/aba/rewards/` | сгенерировано, не используется: карточка = кадр сцены (рельсы и шарик) |
+| `aba-reward-paint-drop.svg` | капля краски и брызги, карточка | `assets/images/aba/rewards/` | принято 2026-11-13 |
+| `aba-reward-pinwheel-head.svg` | головка вертушки без палочки, для вращения | `assets/images/aba/rewards/` | принято 2026-11-13 |
+| `aba-reward-marble-track.svg` | рельсы горки с ведёрком, без шарика | `assets/images/aba/rewards/` | принято 2026-11-13 |
+| `aba-reward-marble.svg` | стеклянный шарик | `assets/images/aba/rewards/` | принято 2026-11-13 |
+| `ui-reward-bubbles.svg` | силуэт: три пузыря разного размера | `assets/icons/` | принято 2026-11-13 |
+| `ui-reward-kaleidoscope.svg` | силуэт: розетка из 8 лепестков | `assets/icons/` | принято 2026-11-13 |
+| `ui-reward-pinwheel.svg` | силуэт: вертушка | `assets/icons/` | принято 2026-11-13 |
+| `ui-reward-marble-run.svg` | силуэт: горка и шарик | `assets/icons/` | принято 2026-11-13 |
+| `ui-reward-tali-dance.svg` | силуэт: танцующий тираннозавр | `assets/icons/` | принято 2026-11-13 |
+| `ui-reward-paint-drop.svg` | силуэт: капля над брызгами | `assets/icons/` | принято 2026-11-13 |
+| `ui-reward-sing-together.svg` | силуэт: две ноты с ребром | `assets/icons/` | принято 2026-11-13 |
 
 Звуки партии — таблица на той же странице и `docs/aba-center/voice-lines-ru.md`.

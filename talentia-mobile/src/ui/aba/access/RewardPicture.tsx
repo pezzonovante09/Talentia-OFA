@@ -1,16 +1,18 @@
 /**
  * Неподвижный кадр сцены награды — картинка карточки выбора и обмена, а одним цветом (`mono`) — силуэт в полосе
  * «работаю за…» и в кольце доступа (`aba-pedagogy-specialist`, проверка правок 2026-11-12: «картинка = то, что
- * будет в сцене»). Только для наград со сценой кодом; у вертушки и горки картинки придут ассетами партии 1.
- * `null` — для этой награды картинки нет.
+ * будет в сцене»). Карточки из ассетов (`REWARD_ART`) — главнее, сюда доходят только награды без них; горка — кадр из
+ * деталей самой сцены. `null` — для этой награды картинки нет.
  */
 import type * as React from 'react';
+import { View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import { ICONS } from '../../../assets/registry';
 import { abaRewardScene } from '../../../design/abaTokens';
 import { TaliFigure } from '../../TaliFigure';
 import { KaleidoscopePicture } from './KaleidoscopeScene';
+import { MarbleRunPicture } from './MarbleRunScene';
 import { blob, drop } from './PaintDropScene';
 
 const INK = abaRewardScene.colors;
@@ -56,7 +58,21 @@ export function rewardPicture(id: string, size: number, label: string, mono?: st
       // силуэт мелкий — Tali «по пояс», в цвете: одним цветом его не перекрасить
       return <TaliFigure pose="cheer" size={size} crop={!!mono} accessibilityLabel={label} testID={`aba-reward-picture-${id}`} />;
     case 'sing_together':
-      return mono ? <Note width={size} height={size} color={mono} stroke={mono} /> : <TaliFigure pose="hello" size={size} accessibilityLabel={label} testID={`aba-reward-picture-${id}`} />;
+      // как в сцене: Tali и ноты — иначе карточка не отличается от «Танца Tali» (`aba-pedagogy-specialist`)
+      return mono ? (
+        <Note width={size} height={size} color={mono} stroke={mono} />
+      ) : (
+        <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'flex-end' }} testID={`aba-reward-picture-${id}`}>
+          <View style={{ position: 'absolute', top: 0, flexDirection: 'row', gap: size * 0.04 }}>
+            {[INK.violet, INK.lavender, INK.violet].map((color, i) => (
+              <Note key={i} width={size * 0.24} height={size * 0.24} color={color} stroke={INK.ink} />
+            ))}
+          </View>
+          <TaliFigure pose="hello" size={size * 0.74} accessibilityLabel={label} />
+        </View>
+      );
+    case 'marble_run':
+      return mono ? null : <MarbleRunPicture size={size} />;
     default:
       return null;
   }
