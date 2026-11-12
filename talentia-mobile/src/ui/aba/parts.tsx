@@ -34,7 +34,7 @@ export function PlaceholderGlyph({
   stroke,
   cut,
 }: {
-  name: 'pause_bars' | 'pause_bars_outline' | 'ui-replay' | 'map';
+  name: 'pause_bars' | 'pause_bars_outline' | 'ui-replay' | 'map' | 'check';
   size: number;
   color: string;
   stroke?: number;
@@ -68,6 +68,8 @@ export function PlaceholderGlyph({
           <Path d="M8.6 3.8v13.9M15.4 6.4v13.9" stroke={cut ?? 'none'} strokeWidth={1.5} strokeLinecap="round" />
         </>
       )}
+      {/* галочка «Готово» в сборке «только ABA»: карты там нет (правка 6), геометрия `ui-check.svg` одним цветом */}
+      {name === 'check' && <Path d="M4.5 12.5l5 5L19.5 7" stroke={color} strokeWidth={3.2} fill="none" strokeLinecap="round" strokeLinejoin="round" />}
       {name === 'ui-replay' && <Path d="M12 5a7 7 0 1 1-6.6 4.7M5 4v5h5" stroke={color} strokeWidth={2} fill="none" strokeLinecap="round" />}
     </Svg>
   );

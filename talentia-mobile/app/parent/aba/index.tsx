@@ -96,6 +96,8 @@ export default function AbaParentScreen() {
   const [whoFromLast, setWhoFromLast] = useState(false);
   /** Предвыбор «Кто ведёт» из прошлой сессии делается один раз: взрослый мог уже переставить роль в этот раз. */
   const whoSettled = useRef(false);
+  /** «Начать» уже переходит к ребёнку — второй тап не повторяет переход (правка 9). */
+  const starting = useRef(false);
   const [sheet, setSheet] = useState<'row' | 'start' | null>(null);
   const [pending, setPending] = useState<{ action: SensitiveAction; run: () => void } | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -196,6 +198,16 @@ export default function AbaParentScreen() {
 
   /** «Начать»: наблюдатели в базу и в стор до навигации (как делал `go()` на 2.6), затем сразу сопряжение или сессия. */
   const begin = safely(async () => {
+    // второй тап, пока идёт переход, не начинает занятие заново (правка 9)
+    if (starting.current) return;
+    starting.current = true;
+    try {
+      await beginNow();
+    } finally {
+      starting.current = false;
+    }
+  });
+  const beginNow = async () => {
     let observers: AbaObserver[] = [];
     let primary: string | null = null;
     if (mode === 'with_adult' && who) {
@@ -207,7 +219,7 @@ export default function AbaParentScreen() {
     }
     useAbaRun.getState().set({ config: mode, observers, primaryObserverId: primary });
     await goChild(block === 'pairing_needed' ? 'pairing' : 'session');
-  });
+  };
 
   /** «Начать» при «Со взрослым» и «Не выбрано» — не серая кнопка, а лист с причиной; «Готово» листа возвращает сюда. */
   const start = () => (mode === 'with_adult' && !who ? setSheet('start') : begin());
@@ -221,8 +233,15 @@ export default function AbaParentScreen() {
       await reload();
       return;
     }
-    useAbaRun.getState().set({ config: s.config, observers: s.observers, primaryObserverId: s.primaryObserverId });
-    await goChild('session');
+    // второй тап, пока идёт переход, не повторяет его (как у «Начать», правка 9)
+    if (starting.current) return;
+    starting.current = true;
+    try {
+      useAbaRun.getState().set({ config: s.config, observers: s.observers, primaryObserverId: s.primaryObserverId });
+      await goChild('session');
+    } finally {
+      starting.current = false;
+    }
   });
 
   // «Сопряжение подтверждено» (вопрос 62): только обученному наблюдателю, за PIN; роль держателя PIN — владелец аккаунта
@@ -275,7 +294,8 @@ export default function AbaParentScreen() {
     <ParentScreen
       title={t('parent.aba.title')}
       scroll
-      left={<ParentButton variant="quiet" label={t('parent.back')} onPress={() => router.back()} block={false} testID="aba-back" />}
+      // сборка «только ABA»: назад некуда (после «слишком мал» раздел — единственный экран) — на первый экран (правка 7)
+      left={<ParentButton variant="quiet" label={t('parent.back')} onPress={() => (ALONE_HIDDEN && !router.canGoBack() ? router.replace('/') : router.back())} block={false} testID="aba-back" />}
       testID="parent-aba"
     >
       <View style={{ gap: parentSpacing.lg }}>

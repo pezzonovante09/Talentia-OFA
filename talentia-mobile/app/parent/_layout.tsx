@@ -14,6 +14,7 @@ import { I18nextProvider, useTranslation } from 'react-i18next';
 import { AppState, Platform, Pressable, View } from 'react-native';
 
 import { adultI18n } from '../../src/i18n';
+import { ABA_ONLY } from '../../src/services/buildScope';
 import { checkPin } from '../../src/services/local/account';
 import { sha256 } from '../../src/services/digest';
 import { useAccount } from '../../src/state/account';
@@ -90,7 +91,8 @@ function Gate() {
   const open = useGate((s) => s.open);
   const { t } = useTranslation();
   return (
-    <ParentScreen scroll={false} left={<GateClose onPress={() => router.dismissAll()} testID="gate-close" />} testID="parent-gate">
+    // сборка «только ABA»: после «слишком мал» раздел бывает единственным экраном стека — тогда «X» ведёт на первый экран (правка 7)
+    <ParentScreen scroll={false} left={<GateClose onPress={() => (ABA_ONLY && !router.canGoBack() ? router.replace('/') : router.dismissAll())} testID="gate-close" />} testID="parent-gate">
       <View style={{ paddingTop: 24 }}>
         <PinPad
           title={t('parent.pin.title')}

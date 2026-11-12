@@ -1442,6 +1442,33 @@ export const abaEndDone = { height: touch.primary, glyph: 'ui-map', glyphSize: 3
  */
 export const abaAccessPlaceholderMark = { r: 16, fill: abaColors.light.reinforcement, max: 6 } as const;
 
+/* ───────────────── сцены наград (правка 2, 2026-11-12; Ц2.9) ───────────────── */
+
+/**
+ * Сцены наград, которые рисует код: пузыри, калейдоскоп, танец Tali, капля краски, «Поём вместе»; вертушка и горка —
+ * с ассетами партии 1 (`docs/assets/aba-rewards-batch1.md`). Цвета — «фиолетовая семья» наград: без цветов целей
+ * (синий, красно-оранжевый, зелёный, пурпурный) и жетона (жёлтый), иначе награда похожа на стимул (аудит контента
+ * 2026-11-12, `aba-pedagogy-specialist`); в calm — calm-палитра. Сроки и размеры — Ц2.9.
+ */
+const rewardInks = (calm: boolean) => {
+  const p = calm ? palettes.light.calm : palettes.light.normal;
+  return { violet: p.primary, lavender: p.regions.workshop, cream: p.surfaceAlt, white: p.surface, ink: illustrationInk };
+};
+export const abaRewardScene = {
+  colors: rewardInks(false),
+  calmColors: rewardInks(true),
+  /** Зона касания пузыря ≥ 72, рисунок 56; лопается кольцом 220 мс; потолок 6 (calm — 3, лопается сжатием). */
+  bubbles: { hit: 72, size: 56, popMs: 220, max: 6, calmMax: 3, start: 3, rise: 48, riseMs: 1800, calmRiseMs: 3600, tailStepMs: 300 },
+  /** 8 симметричных раскладок, смена 220 мс (calm — сменой кадра); ничего не вращается. */
+  kaleidoscope: { layouts: 8, swapMs: 220 },
+  /** Движение держится 600 мс, затем `idle`; calm — 1200 мс и две позы без движения. `share` — доля меньшей стороны сцены. */
+  taliDance: { holdMs: 600, calmHoldMs: 1200, hop: 16, swayDeg: 8, bounce: 1.08, share: 0.6 },
+  /** Капля появляется в 72 pt над пальцем, падает 300 мс и растекается пятном 220 мс; на поле не больше 14 пятен. */
+  paintDrop: { fallMs: 300, spreadMs: 220, max: 14, size: 72, dropFrom: 72 },
+  /** Поёт взрослый: тап — Tali одно покачивание 1200 мс (calm — сжатие 0.94), ноты — статичные значки. */
+  singTogether: { swayMs: 1200, swayDeg: 6, calmScale: 0.94, share: 0.55, note: 44 },
+} as const;
+
 /* ───────────────── переход «плашка → обмен» (цикл 4, №172–173) ───────────────── */
 
 /**

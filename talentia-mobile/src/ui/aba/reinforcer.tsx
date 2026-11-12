@@ -3,7 +3,7 @@
  * `choose` сопряжения (Ц2.4) и полоса взрослого. Логика выбора — `model/reinforcerChoiceRun.ts`; здесь только вид.
  */
 import { useTranslation } from "react-i18next";
-import { Pressable, Text, useColorScheme, View } from "react-native";
+import { Pressable, useColorScheme, View } from "react-native";
 import Svg, { Circle, Path } from "react-native-svg";
 
 import { REINFORCERS } from "../../content/aba/reinforcers";
@@ -22,7 +22,8 @@ import {
   abaAdultPanel,
 } from "../../design/abaTokens";
 import { parentTypography } from "../../design/parentTokens";
-import { radii } from "../../design/tokens";
+import { radii, typography } from "../../design/tokens";
+import { rewardPicture } from "./access/RewardPicture";
 import { AbaText } from "./AbaText";
 import type { ChoiceRun } from "./model/reinforcerChoiceRun";
 import { ChildPressable, useAbaColors } from "./parts";
@@ -31,8 +32,10 @@ const labelKeyOf = (id: string) =>
   REINFORCERS.find((r) => r.id === id)?.labelKey ?? id;
 
 /**
- * Картинка позиции каталога. Ассетов ещё нет (`asset-pipeline`): в `__DEV__` — название словом, чтобы пройти
- * занятие и различать позиции; в сборке — нейтральный силуэт.
+ * Картинка позиции каталога (правка 2, 2026-11-12). У наград со сценой кодом — неподвижный кадр той же сцены
+ * (`access/RewardPicture.tsx`), в силуэте — одним цветом: «картинка = то, что будет в сцене». У остальных, пока нет
+ * ассетов партии 1 (`docs/assets/aba-rewards-batch1.md`), — название словом во всех сборках (одинаковые круги не давали
+ * выбора; прочтёт взрослый) и нейтральный круг в силуэте.
  */
 export function ReinforcerArt({
   id,
@@ -46,7 +49,20 @@ export function ReinforcerArt({
   // название — ребёнку, на его языке (№190)
   const t = useChildT();
   const c = useAbaColors();
-  if (__DEV__ && !silhouette) {
+  const picture = rewardPicture(id, size, t(labelKeyOf(id)), silhouette ? c.ink : undefined);
+  if (picture) {
+    return (
+      <View
+        testID={`aba-reinforcer-stub-${id}`}
+        accessible
+        accessibilityLabel={t(labelKeyOf(id))}
+        style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}
+      >
+        {picture}
+      </View>
+    );
+  }
+  if (!silhouette) {
     return (
       <View
         testID={`aba-reinforcer-stub-${id}`}
@@ -57,18 +73,16 @@ export function ReinforcerArt({
           justifyContent: "center",
         }}
       >
-        <Text
-          style={{
-            color: c.plateOutline,
-            fontSize: Math.max(10, size / 7),
-            fontWeight: "700",
-            textAlign: "center",
-          }}
-          numberOfLines={2}
+        <AbaText
+          type={typography.subtitle}
+          color={c.plateOutline}
+          max={1.2}
+          lines={2}
           adjustsFontSizeToFit
+          style={{ textAlign: "center" }}
         >
           {t(labelKeyOf(id))}
-        </Text>
+        </AbaText>
       </View>
     );
   }

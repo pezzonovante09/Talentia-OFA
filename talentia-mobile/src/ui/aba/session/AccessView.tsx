@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { abaAccessScene, abaExchange, abaPairingLayout } from '../../../design/abaTokens';
-import { PlaceholderScene } from '../access/PlaceholderScene';
+import { RewardScene } from '../access/RewardScene';
 import { accessLeft, accessRingVisible, type AccessRun } from '../model/accessRun';
 import { NonTrialRow } from '../parts';
 import { AccessRing, PictureCard } from '../reinforcer';
@@ -31,7 +31,8 @@ export function AccessView({ run, tick, reinforcerId, moving, onExit }: { run: A
         <View style={{ flex: 1, alignItems: 'center' }} onLayout={(e) => setArea({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
           {scene && (
             <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }}>
-              <PlaceholderScene reinforcerId={reinforcerId} ended={run.stage !== 'play'} />
+              {/* своя сцена у готовых наград, у остальных — заглушка (правка 2) */}
+              <RewardScene reinforcerId={reinforcerId} ended={run.stage !== 'play'} still={!moving} />
             </View>
           )}
           {run.stage === 'fold' && moving && area && card && (

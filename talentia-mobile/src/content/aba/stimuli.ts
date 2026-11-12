@@ -20,14 +20,17 @@ const obj = (name: string, cls: string): AbaStimulus => ({ id: `aba-obj-${name}`
 /**
  * Заливка форм — **не из цветов-целей** (`aba-pedagogy-specialist` 2026-10-26, п. 5): иначе синий круг формы был бы
  * тем же стимулом, что синий цвета, и навык держался бы за «этот синий круг». У переноса — другая заливка.
+ * 2026-11-12 (аудит контента, правка 3): прежние синий и зелёный были почти теми же цветами, что в цели «цвет», —
+ * теперь коричневый и серый: далеко от синего, красно-оранжевого, зелёного, пурпурного, жёлтого жетона и фиолетовых наград.
  */
-export const ABA_SHAPE_FILL = { teaching: '#0E8FBF', generalization: '#2FA24E' } as const;
+export const ABA_SHAPE_FILL = { teaching: '#7A4E2D', generalization: '#5E5E5E' } as const;
 
 /**
  * Пропорции форм для рендера (п. 4): ромб — углы 60° / 120°, не повёрнутый квадрат; кольцо — внутренний диаметр
- * 0.5 внешнего. Все формы вписаны в один квадрат.
+ * 0.5 внешнего. Все формы вписаны в один квадрат. `area` — площадь каждой формы как доля площади плиты (правка 3):
+ * фигуры различаются только формой, а не размером; предел задаёт ромб 60° — его длинная диагональ ≈ 0.87 плиты.
  */
-export const ABA_SHAPE_SPEC = { rhombusAcuteDeg: 60, ringInnerRatio: 0.5 } as const;
+export const ABA_SHAPE_SPEC = { rhombusAcuteDeg: 60, ringInnerRatio: 0.5, area: 0.22 } as const;
 
 const shape = (name: AbaShape, alt = false): AbaStimulus => ({
   id: `aba-shape-${name}${alt ? '-alt' : ''}`,

@@ -3,9 +3,9 @@
  * только `AbaText` (`src/ui/aba/AbaText.tsx`, Nunito по весу, потолок системного масштаба). Голый `Text` из
  * `react-native` в `app/aba/**` и `src/ui/aba/**` (кроме тестов) — падение.
  *
- * Исключения прибиты числом: сам `AbaText.tsx` и две заглушки разработчика под `__DEV__` — по одному `<Text` в
- * `reinforcer.tsx` (карточка подкрепителя без картинки) и `StimulusPlate.tsx` (предмет без картинки). Вторая такая
- * строка в этих файлах — тоже падение.
+ * Исключения прибиты числом: сам `AbaText.tsx` и заглушка разработчика под `__DEV__` — один `<Text` в
+ * `StimulusPlate.tsx` (предмет без картинки). Вторая такая строка — тоже падение. Карточка награды без картинки с
+ * 2026-11-12 пишет название через `AbaText` во всех сборках (правка 2) — в `reinforcer.tsx` голых `Text` нет.
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -15,7 +15,6 @@ const SCANNED = ['app/aba', 'src/ui/aba'];
 /** Файл → сколько голых `Text` в нём разрешено (относительно корня пакета, через `/`). */
 const ALLOWED: Record<string, number | 'any'> = {
   'src/ui/aba/AbaText.tsx': 'any',
-  'src/ui/aba/reinforcer.tsx': 1,
   'src/ui/aba/StimulusPlate.tsx': 1,
 };
 
@@ -72,8 +71,8 @@ describe('ABA: текст — только через AbaText (этап F1, Ж18
     expect(offenders).toEqual([]);
   });
 
-  it('заглушки разработчика: ровно один Text в reinforcer.tsx и один в StimulusPlate.tsx', () => {
-    expect(renders['src/ui/aba/reinforcer.tsx']).toBe(1);
+  it('заглушка разработчика: ровно один Text в StimulusPlate.tsx; в reinforcer.tsx — ни одного', () => {
+    expect(renders['src/ui/aba/reinforcer.tsx'] ?? 0).toBe(0);
     expect(renders['src/ui/aba/StimulusPlate.tsx']).toBe(1);
   });
 

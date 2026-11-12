@@ -133,6 +133,16 @@ export function Card({ title, children, testID, style }: PropsWithChildren<{ tit
 export function Row({ label, caption, value, valueColor = 'textMuted', valueTestID, kind = 'value', onPress, toggle, onToggle, first = false, testID, hex, selected, leading, accessibilityLabel }: { label: string; caption?: string; value?: string; /** Цвет значения справа: по умолчанию `textMuted`; слово статуса цели — `text`. */ valueColor?: ParentColorName; /** testID текста значения — только по запросу: общий суффикс ломал бы запросы тестов по маске. */ valueTestID?: string; kind?: 'link' | 'value' | 'toggle' | 'destructive'; onPress?: () => void; toggle?: boolean; onToggle?: (v: boolean) => void; first?: boolean; testID?: string; /** Чернила предмета — только на карточке. */ hex?: string; /** Строка-выбор: `true` — галочка `check` вместо шеврона, `false` — пустое место той же ширины (подпись не сдвигается). */ selected?: boolean; /** Ведущий слот слева от подписи (глиф цели): ширина `parentGoalGlyph.size` + зазор. */ leading?: ReactNode; accessibilityLabel?: string }) {
   const t = useParentTheme();
   const [pressed, setPressed] = useState(false);
+  // двойной тап не открывает экран дважды — тот же порог, что у кнопок раздела (правка 9)
+  const last = useRef({ at: 0 }).current;
+  const press = onPress
+    ? () => {
+        const now = Date.now();
+        if (now - last.at < parentButton.guardMs) return;
+        last.at = now;
+        onPress();
+      }
+    : undefined;
   const interactive = kind === 'link' || kind === 'destructive' || (kind === 'value' && !!onPress);
   const trailing = (() => {
     if (selected === true) return <ParentIcon name="check" />;
@@ -166,7 +176,7 @@ export function Row({ label, caption, value, valueColor = 'textMuted', valueTest
   );
   if (!interactive) return <View testID={testID} accessible={!!accessibilityLabel} accessibilityLabel={accessibilityLabel}>{content}</View>;
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} accessibilityState={selected !== undefined ? { selected } : undefined} onPress={onPress} onPressIn={() => setPressed(true)} onPressOut={() => setPressed(false)} testID={testID}>
+    <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} accessibilityState={selected !== undefined ? { selected } : undefined} onPress={press} onPressIn={() => setPressed(true)} onPressOut={() => setPressed(false)} testID={testID}>
       {content}
     </Pressable>
   );

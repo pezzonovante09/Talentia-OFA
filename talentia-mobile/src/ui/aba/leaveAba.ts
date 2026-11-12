@@ -18,5 +18,8 @@ export function leaveAba(router: ReturnType<typeof useRouter>): void {
   const { calmMode, focusMode } = session.settings;
   session.reset();
   useChildSession.getState().setSettings({ calmMode, focusMode });
-  router.replace('/');
+  // в сборке «только ABA» первый экран часто уже в стеке: вернуться к нему, а не класть копию (правка 8);
+  // если его нет — `dismissTo` заменяет текущий экран, как `replace`
+  if (ABA_ONLY) router.dismissTo('/');
+  else router.replace('/');
 }

@@ -209,6 +209,7 @@ function FirstRun() {
         radius={theme.radii.md}
         fill="background"
         outlineColor="background"
+        guardMs={theme.motion.slow}
         onPress={() => openAdult('firstRun.forAdults', '/parent')}
         accessibilityLabel={t('firstRun.forAdults')}
         testID="for-adults"

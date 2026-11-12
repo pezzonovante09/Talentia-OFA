@@ -8,7 +8,7 @@
  * в сборке для детей цели ждут картинок.
  */
 import { ABA_TARGETS, readyAbaTargets } from '../../content/aba';
-import { REINFORCERS } from '../../content/aba/reinforcers';
+import { REINFORCERS, REWARD_SCENE_READY } from '../../content/aba/reinforcers';
 import { ABA_STIMULI } from '../../content/aba/stimuli';
 import { consentStatus, type ConsentStatus } from '../../domain/consent';
 import { CURRENT_CONSENT_TEXTS } from '../../domain/consentTexts';
@@ -190,7 +190,13 @@ export type StartOptions = {
 export function poolFor(targets: readonly AbaTarget[], o: Pick<StartOptions, 'config' | 'soundOn'>, accessMs: number): string[] {
   const byId = new Map(ABA_STIMULI.map((s) => [s.id, s]));
   const classes = [...new Set(targets.flatMap((t) => t.exemplars.flatMap((e) => e.cards ?? [])).map((id) => byId.get(id)?.class ?? ''))];
-  return reinforcerPoolFor(REINFORCERS, { config: o.config, soundOn: o.soundOn, accessMs, stimulusClasses: classes.filter(Boolean) });
+  const filter = { config: o.config, soundOn: o.soundOn, accessMs, stimulusClasses: classes.filter(Boolean) };
+  // в выбор — только награды с готовой сценой (правка 1); пока их меньше порога — весь каталог, как раньше
+  const ready = reinforcerPoolFor(
+    REINFORCERS.filter((r) => REWARD_SCENE_READY.has(r.id)),
+    filter,
+  );
+  return ready.length >= MIN_REINFORCER_POOL ? ready : reinforcerPoolFor(REINFORCERS, filter);
 }
 
 /**

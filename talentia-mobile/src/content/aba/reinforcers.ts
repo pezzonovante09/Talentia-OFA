@@ -6,6 +6,13 @@
  */
 import type { ReinforcerItem } from '../../types/aba';
 
+/**
+ * Награды, у которых есть настоящая сцена (правка 1, 2026-11-12): в выбор идут только они, как цели — только с
+ * картинками. Пока готовых меньше `MIN_REINFORCER_POOL` после всех фильтров, выбор берёт весь каталог, как раньше
+ * (`services/local/abaStart.ts`): иначе занятие не начнётся. Вертушка и горка — с ассетами партии 1.
+ */
+export const REWARD_SCENE_READY: ReadonlySet<string> = new Set(['bubbles', 'kaleidoscope', 'tali_dance', 'paint_drop', 'sing_together']);
+
 export const REINFORCERS: readonly ReinforcerItem[] = [
   { id: 'bubbles', labelKey: 'abaReinforcer.items.bubbles', sound: false, classes: ['bubble'] },
   { id: 'kaleidoscope', labelKey: 'abaReinforcer.items.kaleidoscope', sound: false, classes: ['pattern'] },

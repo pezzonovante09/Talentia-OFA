@@ -61,6 +61,7 @@ import { abandonInProgressSession, loadAbaStart } from '../../src/services/local
 import { loadChildState } from '../../src/services/local/childState';
 import { loadBreakCardPlan, recordAbaTrial } from '../../src/services/local/commit';
 import { voice } from '../../src/services/voice';
+import { nextPraiseKey } from '../../src/ui/aba/praise';
 import { useAbaRun } from '../../src/state/abaRun';
 import { useAccount } from '../../src/state/account';
 import { useChildSession } from '../../src/state/childSession';
@@ -624,7 +625,8 @@ export default function AbaSessionScreen() {
             np = { ...np, landed: true } as Phase;
           } else if (fx.kind === 'say') {
             // похвала — только голосом (№158): без плашки подсказанный ответ не получает условного подкрепителя
-            voice.say(fx.key === 'praise' ? 'abaSession.sound.praise' : 'abaSession.sound.listened');
+            // варианты похвалы — по кругу среди записанных (правка 4)
+            voice.say(fx.key === 'praise' ? nextPraiseKey() : 'abaSession.sound.listened');
           } else if (fx.kind === 'overlay_hide') np = { ...np, overlay: false } as Phase;
           else if (fx.kind === 'plates_empty') np = { ...np, empty: true } as Phase;
           else if (fx.kind === 'next_sd') {

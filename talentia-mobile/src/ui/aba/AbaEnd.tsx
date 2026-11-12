@@ -12,6 +12,7 @@ import { View } from 'react-native';
 import { useChildT } from '../../i18n';
 import { abaEndDone, abaNonTrialRow, abaTokenBoard, ABA_CONTROL_STROKE } from '../../design/abaTokens';
 import { radii, typography } from '../../design/tokens';
+import { ABA_ONLY } from '../../services/buildScope';
 import { AbaText } from './AbaText';
 import { TaliFigure } from '../TaliFigure';
 import { useAbaClock } from './clock';
@@ -64,7 +65,8 @@ export function AbaEnd({ variant, board, onDone }: { variant: 'normal' | 'neutra
           gap: d.gap,
         }}
       >
-        <PlaceholderGlyph name="map" size={d.glyphSize} color={c.onReinforcement} cut={c.reinforcement} />
+        {/* в сборке «только ABA» «Готово» ведёт к выбору профиля, а не на карту — галочка (правка 6) */}
+        <PlaceholderGlyph name={ABA_ONLY ? 'check' : 'map'} size={d.glyphSize} color={c.onReinforcement} cut={c.reinforcement} />
         <AbaText type={typography.subtitle} color={c.onReinforcement} max={1.2} lines={1} adjustsFontSizeToFit>
           {childT('abaSession.done')}
         </AbaText>
