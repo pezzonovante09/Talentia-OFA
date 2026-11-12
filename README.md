@@ -46,6 +46,7 @@ npm run typecheck
 npm test              # Jest (mobile) + Vitest (proxy)
 npm run test:db       # RLS и функции базы в PGlite
 npm run build:api     # сборка прокси
+npm run build:aba     # preview-сборка Android «только ABA» на EAS (запускать можно из корня)
 ```
 
 В `talentia-mobile/`: `npm run assets:check` — приёмка SVG по `ASSETS.md`.

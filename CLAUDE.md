@@ -43,6 +43,7 @@ npm run typecheck       # tsc --noEmit в обоих пакетах
 npm test                # Jest (mobile) + Vitest (proxy)
 npm run test:db         # RLS и функции базы в PGlite
 npm run build:api       # сборка прокси
+npm run build:aba       # preview-сборка Android «только ABA» на EAS (eas build из talentia-mobile)
 npm run dev             # expo start
 npm run dev:api         # прокси локально
 ```

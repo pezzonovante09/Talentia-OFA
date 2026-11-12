@@ -11,6 +11,7 @@
     "dev:tunnel": "npm run start:tunnel --prefix talentia-mobile",
     "dev:api": "npm run dev --prefix talentia-ai-proxy-next",
     "build:api": "npm run build --prefix talentia-ai-proxy-next",
+    "build:aba": "npm run build:aba --prefix talentia-mobile",
     "lint": "npm run lint --prefix talentia-mobile && npm run lint --prefix talentia-ai-proxy-next",
     "typecheck": "npm run typecheck --prefix talentia-mobile && npm run typecheck --prefix talentia-ai-proxy-next",
     "test": "npm run test --prefix talentia-mobile && npm run test --prefix talentia-ai-proxy-next",
