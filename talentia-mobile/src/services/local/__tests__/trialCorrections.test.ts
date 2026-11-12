@@ -277,10 +277,10 @@ describe('удаление исправлений', () => {
     expect([await count(db, 'kid'), await count(db, 'sib')]).toEqual([0, 1]);
   });
 
-  it('clearChildProgress удаляет исправления ребёнка, чужие остаются', async () => {
+  it('clearChildProgress исправления проб не трогает (№189)', async () => {
     const db = await two();
     await clearChildProgress(db, 'kid');
-    expect([await count(db, 'kid'), await count(db, 'sib')]).toEqual([0, 1]);
+    expect([await count(db, 'kid'), await count(db, 'sib')]).toEqual([1, 1]);
   });
 
   it('wipeDevice удаляет исправления всех детей', async () => {

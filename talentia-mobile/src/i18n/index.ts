@@ -62,10 +62,19 @@ const coversRu = (tree: Tree): boolean => {
  */
 export const UI_LANGS: readonly InterfaceLang[] = INTERFACE_LANGS.filter((lang) => lang === 'ru' || coversRu(resources[lang].translation as Tree));
 
-/** Язык устройства, если его словарь полный (`UI_LANGS`); иначе русский (основной язык выпуска, №126). */
+/**
+ * Язык устройства: первый из списка языков устройства по порядку, чей словарь полный (`UI_LANGS`); иначе русский
+ * (основной язык выпуска, №126). Весь список, а не первый (№190, `localization-qa`): у «Deutsch, English» —
+ * английский, а не русский. Кыргызский, закрытый гейтом, сразу даёт русский, а не язык после него: «Кыргызча,
+ * English» — семья из КР, и пятилетка английский не прочтёт. Когда ky откроется, правило отпадёт само.
+ */
 export function deviceLang(): InterfaceLang {
-  const code = getLocales()[0]?.languageCode ?? '';
-  return (UI_LANGS as readonly string[]).includes(code) ? (code as InterfaceLang) : 'ru';
+  for (const { languageCode } of getLocales()) {
+    if (!languageCode) continue;
+    if ((UI_LANGS as readonly string[]).includes(languageCode)) return languageCode as InterfaceLang;
+    if (languageCode === 'ky') return 'ru';
+  }
+  return 'ru';
 }
 
 const i18next: i18n = createInstance();

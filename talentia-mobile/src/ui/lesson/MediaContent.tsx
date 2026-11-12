@@ -6,7 +6,7 @@ import type { TFunction } from 'i18next';
 import { AppText } from '../AppText';
 import { NumeralCard } from './NumeralCard';
 import { Pile } from './Pile';
-import { symbolBox, symbolFontSize } from '../../design/glyphFit';
+import { symbolBox, symbolFontSize, symbolShift } from '../../design/glyphFit';
 import type { Media } from '../../types/task';
 
 export function isSilentCard(media: Media): boolean {
@@ -21,19 +21,21 @@ export function symbolText(media: Media): string | undefined {
 
 /**
  * Кегль и рамка карточек-символов одного задания: один кегль на все (`symbolFontSize`) по ширине и высоте плитки,
- * рамка — плитка внутри контура «выбрано» (`symbolBox`).
+ * рамка — плитка внутри контура «выбрано» (`symbolBox`), один сдвиг на все (`symbolShift`, №192): середина общих
+ * чернил задания — в середине карточки, базовая линия общая.
  */
-export type SymbolFit = { size: number; boxW: number; boxH: number };
+export type SymbolFit = { size: number; boxW: number; boxH: number; shift: number };
 
 export function symbolFitFor(media: readonly Media[], tileW: number, tileH: number): SymbolFit {
   const texts = media.map(symbolText).filter((t): t is string => t !== undefined);
-  return { size: symbolFontSize(texts, tileW, tileH), boxW: symbolBox(tileW), boxH: symbolBox(tileH) };
+  const size = symbolFontSize(texts, tileW, tileH);
+  return { size, boxW: symbolBox(tileW), boxH: symbolBox(tileH), shift: symbolShift(texts, size) };
 }
 
 export function MediaContent({ media, t, symbol, testID }: { media: Media; t: TFunction; symbol?: SymbolFit; testID?: string }) {
   if (media.count !== undefined || media.container) return <Pile media={media} variant="tile" testID={testID} />;
   const text = symbolText(media);
-  if (text !== undefined) return <NumeralCard text={text} size={symbol?.size} boxW={symbol?.boxW} boxH={symbol?.boxH} testID={testID} />;
+  if (text !== undefined) return <NumeralCard text={text} size={symbol?.size} boxW={symbol?.boxW} boxH={symbol?.boxH} shift={symbol?.shift} testID={testID} />;
   return (
     <AppText role="label" align="center" lines={2} testID={testID}>
       {t(media.labelKey)}

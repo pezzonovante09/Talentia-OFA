@@ -235,10 +235,18 @@ describe('экспорт, отзыв и стирание карточки', () =
     ).rejects.toThrow(/вместе с удалением/);
   });
 
-  it('purgeChild, clearChildProgress и wipeDevice стирают карточку', async () => {
+  it('clearChildProgress карточку не трогает: очистка прогресса — только уроки (№189)', async () => {
+    const db = await setup();
+    await commitAbaSession(db, 'kid', sessionWith([independentTouch]), iso(BASE_MS + 60_000));
+    const before = await loadChildState(db, 'kid', 'breakCard');
+    expect(before).toBeDefined();
+    await clearChildProgress(db, 'kid');
+    expect(await loadChildState(db, 'kid', 'breakCard')).toEqual(before);
+  });
+
+  it('purgeChild и wipeDevice стирают карточку', async () => {
     for (const wipe of [
       (db: SqlDb) => purgeChild(db, 'kid', PSEUDO),
-      (db: SqlDb) => clearChildProgress(db, 'kid'),
       (db: SqlDb) => wipeDevice(db),
     ]) {
       const db = await setup();

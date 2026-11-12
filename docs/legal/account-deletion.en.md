@@ -15,7 +15,8 @@ for you - it exists only on your device. You delete it yourself, quickly and irr
 3. Choose an action:
    - **Export** - save a copy of the data as a file (do this first if you want a copy);
      [[OWNER: there is no export screen yet (question 83, No. 184): by release, either a screen or remove this item.]]
-   - **Clear progress** - the child's profile stays, learning progress is erased;
+   - **Clear progress** - the child's profile stays, lesson results and skills are erased; ABA mode data stays; the
+     "Revoke and delete practice data" button on the "ABA sessions" screen removes it;
    - **Delete child profile** - erases the profile, the name (if any), lesson runs, skill mastery,
      ABA mode data, cache and the export file;
    - **Delete all data** - the same for all profiles, plus the PIN and consent log

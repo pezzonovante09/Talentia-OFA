@@ -3,10 +3,10 @@ import type { ConsentEvent } from '../../../domain/consent';
 import { emptySkill } from '../../../domain/mastery';
 import type { LessonRun } from '../../../domain/parentReport';
 import { appendSession, appendTrial, pastSessionsOfTarget, trialsOfSession, trialsOfTarget } from '../abaLog';
-import { loadChildState, saveChildState } from '../childState';
+import { LESSON_STATE_KEYS, loadChildState, saveChildState } from '../childState';
 import { appendConsentEvent, readConsentLog } from '../consentLog';
 import { appendLessonRun, lessonRunsOf } from '../lessonRuns';
-import { applyRetention, clearChildProgress, exportChild, purgeChild, retentionCutoff, wipeDevice } from '../purge';
+import { abaDataSummary, applyRetention, clearChildProgress, exportChild, purgeChild, retentionCutoff, wipeDevice } from '../purge';
 import { MIGRATIONS, migrate } from '../schema';
 import { asAbaWriter, asLessonWriter, memoryDb } from './nodeSql';
 
@@ -216,6 +216,32 @@ describe('удаление и экспорт', () => {
     const db = await filled();
     await purgeChild(db, 'kid-a', PSEUDO);
     await expect(db.run("DELETE FROM aba_trials WHERE child_id = 'kid-b'")).rejects.toThrow(/только дописывание/);
+  });
+
+  it('очистка прогресса стирает уроки, а записи ABA и пауза практики остаются (№189)', async () => {
+    const db = await filled();
+    await saveChildState(db, 'kid-a', 'abaPaused', true, NOW);
+    const before = await abaDataSummary(db, 'kid-a');
+    expect(before.trials).toBeGreaterThan(0);
+    const keys = async (kid: string) =>
+      (await db.all<{ key: string }>('SELECT key FROM child_state WHERE child_id = ? ORDER BY key', [kid])).map((r) => r.key);
+    const keysA = await keys('kid-a');
+    const keysB = await keys('kid-b');
+    for (const kind of ['lesson_run', 'lesson_runs', 'skill_state', 'consent']) {
+      await db.run('INSERT INTO sync_problems (child_id, event_id, reason, noticed_at, kind) VALUES (?, ?, ?, ?, ?)', ['kid-a', `e-${kind}`, 'x', NOW, kind]);
+    }
+    await clearChildProgress(db, 'kid-a');
+    // у kid-a ушли ровно ключи уроков, у kid-b не ушло ничего
+    expect(await keys('kid-a')).toEqual(keysA.filter((k) => !(LESSON_STATE_KEYS as readonly string[]).includes(k)));
+    expect(await keys('kid-b')).toEqual(keysB);
+    // проблемы синхронизации уроков — прочь, согласия — остаются
+    expect((await db.all<{ kind: string }>("SELECT kind FROM sync_problems WHERE child_id = 'kid-a'")).map((r) => r.kind)).toEqual(['consent']);
+    expect(await lessonRunsOf(db, 'kid-a')).toEqual([]);
+    expect(await loadChildState(db, 'kid-a', 'lessonCounter')).toBeUndefined();
+    expect(await trialsOfTarget(db, 'kid-a', 't-1')).toHaveLength(1);
+    expect(await abaDataSummary(db, 'kid-a')).toEqual(before);
+    expect(await loadChildState(db, 'kid-a', 'abaPaused')).toBe(true);
+    expect(await lessonRunsOf(db, 'kid-b')).toHaveLength(1);
   });
 
   it('очистка прогресса оставляет согласия', async () => {

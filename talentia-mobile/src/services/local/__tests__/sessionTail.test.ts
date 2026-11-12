@@ -329,10 +329,12 @@ describe('хвост сессии: отзыв, удаление, сводка', 
     expect(await countOf(db, 'aba_sessions', 'kid')).toBe(0);
   });
 
-  it('clearChildProgress удаляет хвосты, согласие остаётся', async () => {
+  it('clearChildProgress хвосты не трогает, согласие остаётся (№189)', async () => {
     const db = await withTail();
+    const before = await countOf(db, 'aba_session_tails', 'kid');
+    expect(before).toBeGreaterThan(0);
     await clearChildProgress(db, 'kid');
-    expect(await countOf(db, 'aba_session_tails', 'kid')).toBe(0);
+    expect(await countOf(db, 'aba_session_tails', 'kid')).toBe(before);
     expect(await countOf(db, 'consent_events', 'kid')).toBe(1);
   });
 

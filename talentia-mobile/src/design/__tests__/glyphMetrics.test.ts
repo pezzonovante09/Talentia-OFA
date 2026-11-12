@@ -4,13 +4,23 @@
  * 1. Таблица ширин `GLYPH_ADVANCE_800` и высота строки — те, что в файле шрифта. Разбор `cmap` / `hmtx` / `hhea`
  *    написан здесь заново, независимо от генератора `scripts/glyph-metrics.mjs`: поменялся шрифт — тест красный,
  *    таблицу перегенерировать (`node scripts/glyph-metrics.mjs > src/design/glyphMetrics.ts`).
- * 2. Кегль `symbolFontSize`: ступень по числу знаков или меньше — по ширине и по чернилам знаков в высоте плитки
- *    (`child-ux-specialist` после D2); замеры в самой малой зоне задания 288×172.
+ * 2. Кегль `symbolFontSize`: ступень по числу знаков или меньше — по ширине и по общим чернилам знаков задания в
+ *    высоте плитки (`child-ux-specialist` после D2; общие чернила и сдвиг — №192); замеры в самой малой зоне 288×172.
  */
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-import { glyphEm, glyphReach, narrowTileW, symbolField, symbolFontSize } from '../glyphFit';
+import {
+  glyphEm,
+  glyphInk,
+  hasTwinDetail,
+  narrowTileW,
+  symbolField,
+  symbolFontSize,
+  symbolInkGaps,
+  symbolMinSize,
+  symbolShift,
+} from '../glyphFit';
 import { GLYPH_ADVANCE_800, GLYPH_INK_800, NUNITO_LINE_CENTER, NUNITO_LINE_RATIO } from '../glyphMetrics';
 import { chooseTile, matchTile, NARROW_TASK_ZONE, orderTile } from '../taskTiles';
 import { glyphCard, stroke, symbolGlyph } from '../tokens';
@@ -147,13 +157,15 @@ describe('кегль карточки-символа', () => {
     expect(NARROW_TASK_ZONE).toEqual({ width: 288, height: 172 });
   });
 
-  // Чернила знака в плитке не выходят за поле (плитка минус контур «выбрано» и отступ) ни вверх, ни вниз: бреве Й,
+  // Общие чернила задания в плитке не выходят за поле (плитка минус контур «выбрано» и отступ) ни вверх, ни вниз: бреве Й,
   // точки Ё, хвосты Щ, Ң, Д — тот различающий признак, который раньше сливался с контуром (`child-ux-specialist`).
   const inkFits = (texts: string[], tile: { w: number; h: number }) => {
     const size = symbolFontSize(texts, tile.w, tile.h);
-    return 2 * Math.max(...texts.map(glyphReach)) * size <= symbolField(tile.h) + 1e-9;
+    const [lo, hi] = glyphInk(texts);
+    return (hi - lo) * size <= symbolField(tile.h) + 1e-9;
   };
   const { width, height } = NARROW_TASK_ZONE;
+  const TWINS = [['И', 'Й'], ['Е', 'Ё'], ['Ш', 'Щ'], ['Н', 'Ң'], ['П', 'Ц'], ['О', 'Ө'], ['У', 'Ү']];
 
   it.each([
     ['match, 3 пары', matchTile(width, height, 3)],
@@ -161,22 +173,74 @@ describe('кегль карточки-символа', () => {
     ['choose без стимула', chooseTile(width, height, 3, false)],
     ['choose со стимулом', chooseTile(width, height, 3, true)],
   ])('%s в зоне 288×172: чернила Й, Ё, Щ, Ң, Д и ц внутри поля; без Й кегль ≥ 32', (_name, tile) => {
-    for (const set of [['Й', 'Щ'], ['Ё', 'Ң'], ['Д', 'Ц'], ['й', 'ц', 'у']]) expect(inkFits(set, tile)).toBe(true);
-    for (const set of [['Ё', 'Ң'], ['Д', 'Ц'], ['й', 'ц', 'у']]) expect(symbolFontSize(set, tile.w, tile.h)).toBeGreaterThanOrEqual(glyphCard.minSize);
+    for (const set of [['Й', 'Щ'], ['Ё', 'Ң'], ['Д', 'Ц'], ['й', 'ц', 'у'], ...TWINS]) expect(inkFits(set, tile)).toBe(true);
+    for (const set of [['Д', 'Ц'], ['й', 'ц', 'у']]) expect(symbolFontSize(set, tile.w, tile.h)).toBeGreaterThanOrEqual(glyphCard.minSize);
   });
 
-  it('заглавная Й в match и order на самой малой зоне — 31 pt: такое задание гард не пустит, в choose — да', () => {
-    expect(symbolFontSize(['Й'], matchTile(width, height, 3).w, matchTile(width, height, 3).h)).toBe(31);
-    expect(symbolFontSize(['Й'], orderTile(width, height, 3).w, orderTile(width, height, 3).h)).toBeLessThan(glyphCard.minSize);
+  it('буквы с мелкой деталью (№192): Й, Ё, Щ, Ц, Ң, Ө, Ү в обоих регистрах — порог 40, без них — 32', () => {
+    expect(glyphCard.twinMinSize).toBe(40);
+    for (const ch of 'ЙЁЩЦҢӨҮйёщцңөү') expect([ch, hasTwinDetail(['А', ch])]).toEqual([ch, true]);
+    for (const ch of 'ИЕШПНОУиешпноу') expect([ch, hasTwinDetail([ch])]).toEqual([ch, false]);
+    expect(symbolMinSize(['И', 'Й'])).toBe(40);
+    expect(symbolMinSize(['И', 'Ш', '7'])).toBe(glyphCard.minSize);
+  });
+
+  it.each([
+    ['И', 'Й', 40],
+    ['Е', 'Ё', 41],
+    ['Ш', 'Щ', 42],
+    ['Н', 'Ң', 42],
+    ['П', 'Ц', 42],
+    ['О', 'Ө', 52],
+    ['У', 'Ү', 52],
+  ])('пара %s/%s в match и order самой малой зоны — %i pt, не меньше порога 40 (было 31 для Й)', (a, b, size) => {
+    for (const tile of [matchTile(width, height, 3), orderTile(width, height, 3)]) {
+      expect(symbolFontSize([a, b], tile.w, tile.h)).toBe(size);
+      expect(size).toBeGreaterThanOrEqual(symbolMinSize([a, b]));
+    }
+  });
+
+  it('детали и сверху, и снизу (Й с Щ, Ё с Ң) — 34 pt в match: ниже 40, только choose без стимула', () => {
+    const m = matchTile(width, height, 3);
     const choose = chooseTile(width, height, 3, false);
-    expect(symbolFontSize(['Й'], choose.w, choose.h)).toBeGreaterThanOrEqual(glyphCard.minSize);
+    for (const set of [['Й', 'Щ'], ['Ё', 'Ң']]) {
+      expect(symbolFontSize(set, m.w, m.h)).toBe(34);
+      expect(symbolFontSize(set, m.w, m.h)).toBeLessThan(symbolMinSize(set));
+      expect(symbolFontSize(set, choose.w, choose.h)).toBeGreaterThanOrEqual(symbolMinSize(set));
+    }
+  });
+
+  it('сдвиг один на все знаки задания: середина общих чернил — в середине карточки, базовая линия общая', () => {
+    const size = 40;
+    // бреве Й поднимает чернила — знаки опускаются; хвост Щ опускает — поднимаются
+    expect(symbolShift(['И', 'Й'], size)).toBeGreaterThan(0);
+    expect(symbolShift(['Ш', 'Щ'], size)).toBeLessThan(0);
+    const [lo, hi] = glyphInk(['И', 'Й']);
+    expect(lo).toBe(Math.min(GLYPH_INK_800['И'][0], GLYPH_INK_800['Й'][0]));
+    expect(hi).toBe(GLYPH_INK_800['Й'][1]);
+    expect(symbolShift(['И', 'Й'], size)).toBeCloseTo(((lo + hi) / 2 - NUNITO_LINE_CENTER) * size, 9);
+    // у цифр сдвиг мал: не больше 1.5 pt
+    expect(Math.abs(symbolShift(['1', '2', '3'], 52))).toBeLessThanOrEqual(1.5);
+  });
+
+  it('сдвиг уравнивает зазоры сверху и снизу, и оба не меньше inset 4 pt (child-ux, №192; округление Android — К2 5.1д)', () => {
+    const tiles = [matchTile(width, height, 3), orderTile(width, height, 3), chooseTile(width, height, 3, false), chooseTile(width, height, 3, true)];
+    for (const tile of tiles) {
+      for (const set of [...TWINS, ['Й', 'Щ'], ['Ё', 'Ң'], ['1', '2', '3'], ['7']]) {
+        const size = symbolFontSize(set, tile.w, tile.h);
+        const [top, bottom] = symbolInkGaps(set, tile.h, size);
+        // без сдвига у И/Й зазор сверху был бы на 2 × shift меньше нижнего — бреве у рамки
+        expect([set.join(''), tile.h, Math.abs(top - bottom) < 1e-9, Math.min(top, bottom) >= glyphCard.inset - 1e-9]).toEqual([set.join(''), tile.h, true, true]);
+      }
+    }
   });
 
   it('в плитке match 85×58 высота режет кегль буквы: без высоты он вышел бы за поле', () => {
     const tile = matchTile(width, height, 3);
     expect(tile.h).toBe(58);
     const byWidth = symbolFontSize(['Й'], tile.w);
-    expect(2 * glyphReach('Й') * byWidth).toBeGreaterThan(symbolField(tile.h));
+    const [lo, hi] = glyphInk(['Й']);
+    expect((hi - lo) * byWidth).toBeGreaterThan(symbolField(tile.h));
     expect(symbolFontSize(['Й'], tile.w, tile.h)).toBeLessThan(byWidth);
   });
 

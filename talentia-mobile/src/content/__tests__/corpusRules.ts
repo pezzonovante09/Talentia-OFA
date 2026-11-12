@@ -36,7 +36,7 @@ import {
   textDigits,
   type Range,
 } from '../../domain/lessonLimits';
-import { symbolFontSize } from '../../design/glyphFit';
+import { hasTwinDetail, symbolFontSize, symbolMinSize } from '../../design/glyphFit';
 import { chooseTile, matchTile, NARROW_TASK_ZONE, orderTile, type TileSize } from '../../design/taskTiles';
 import { GLYPH_ADVANCE_800 } from '../../design/glyphMetrics';
 import { glyphCard } from '../../design/tokens';
@@ -1572,7 +1572,10 @@ export const RULES = {
     // — иначе это ошибка корпуса, а не уменьшение на ходу (`design-lead`, этап D2; высота — `child-ux-specialist`).
     // Пример: «МАШ» в ряду из трёх плиток по 85 — 24 pt, не проходит; «МА» — 40. Плитка — той же формулой, что на
     // экране (`taskTiles.ts`): `choose` со стимулом, `match`, `order` — все в ряд; `choose` без стимула — две колонки.
-    title: 'карточки-символы задания (glyph и numeral) в самой малой зоне задания (NARROW_TASK_ZONE) — кегль не меньше glyphCard.minSize',
+    // Буква с мелкой деталью (`glyphCard.twinDetail`: Й, Ё, Щ, Ц, Ң, Ө, Ү) — не меньше `twinMinSize` 40 (№192): порог
+    // внутри этого гарда, нового гарда нет (№122). Задание, где детали и сверху, и снизу (Й с Щ), выходит 34 pt — только
+    // `choose` без стимула.
+    title: 'карточки-символы задания (glyph и numeral) в самой малой зоне задания (NARROW_TASK_ZONE) — кегль не меньше glyphCard.minSize (с буквой-близнецом — twinMinSize)',
     check: (corpus) =>
       formatTasksOf(corpus).flatMap(({ task, at }) => {
         const { width, height } = NARROW_TASK_ZONE;
@@ -1593,9 +1596,12 @@ export const RULES = {
         const texts = media.flatMap((m) => (m.glyph !== undefined ? [m.glyph] : m.numeral !== undefined ? [String(m.numeral)] : []));
         if (!media.some((m) => m.glyph !== undefined)) return [];
         const size = symbolFontSize(texts, tile.w, tile.h);
-        return size >= glyphCard.minSize
-          ? []
-          : [`${at}: кегль карточек ${size} pt < ${glyphCard.minSize} в самой малой зоне задания 288×172 (плитка ${Math.floor(tile.w)}×${Math.floor(tile.h)}) — короче знак или меньше плиток в ряду`];
+        const min = symbolMinSize(texts);
+        if (size >= min) return [];
+        const why = hasTwinDetail(texts)
+          ? 'в задании буква с мелкой деталью (Й, Ё, Щ, Ц, Ң, Ө, Ү, №192) — меньше плиток, choose без стимула или без деталей сверху и снизу сразу'
+          : 'короче знак или меньше плиток в ряду';
+        return [`${at}: кегль карточек ${size} pt < ${min} в самой малой зоне задания 288×172 (плитка ${Math.floor(tile.w)}×${Math.floor(tile.h)}) — ${why}`];
       }),
   },
 

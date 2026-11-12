@@ -362,15 +362,26 @@ export async function purgeChild(db: SqlDb, childId: string, childPseudonym: str
 }
 
 /**
- * Очистить прогресс — профиль остаётся. Родители просят это чаще удаления. Согласия не
- * трогаются; курсоры синхронизации начинаются заново. С `device` снимается и каталог файла
- * экспорта (вопрос 54, m5): файл из него — копия удалённых записей.
+ * Очистить прогресс уроков — профиль остаётся. Родители просят это чаще удаления. Стираются прохождения уроков и
+ * состояние ребёнка, кроме ABA (№189, вопрос 105): журналы практики, цели, доска, пауза, разрешение физической
+ * подсказки и наблюдатели остаются — их удаляет только отзыв согласия (`revokeAbaProcessing`) с подсчётом перед ним.
+ * Иначе очистка молча стирала бы историю, нужную специалисту, и снимала паузу, поставленную по его совету.
+ * Ключи — «всё, кроме `ABA_DELETED_KEYS`», а не список уроков: новый ключ урока, забытый в списке, пережил бы
+ * очистку (что каждый ключ — ровно в одном из двух списков, держит `childStateKeys.test.ts`). Согласия не трогаются;
+ * курсоры синхронизации начинаются заново (в облако уходят только уроки, №18), проблемы синхронизации уроков — прочь:
+ * иначе родитель увидит проблему по уроку, которого уже нет. Облачных копий уроков очистка пока не удаляет —
+ * приложение офлайн; к воротам «Данные» — удаление на сервере (REBUILD «Отложено»). С `device` снимается и каталог
+ * файла экспорта (вопрос 54, m5): файл из него несёт и удалённые уроки; каталог общий, файл другого ребёнка тоже уходит.
  */
 export async function clearChildProgress(db: SqlDb, childId: string, device?: DeviceStore): Promise<void> {
   await withGate(db, childId, async (tx) => {
-    for (const t of JOURNALS) await tx.run(`DELETE FROM ${t} WHERE child_id = ?`, [childId]);
-    await tx.run('DELETE FROM child_state WHERE child_id = ?', [childId]);
+    await tx.run('DELETE FROM lesson_runs WHERE child_id = ?', [childId]);
+    await tx.run(
+      `DELETE FROM child_state WHERE child_id = ? AND key NOT IN (${ABA_DELETED_KEYS.map(() => '?').join(', ')})`,
+      [childId, ...ABA_DELETED_KEYS],
+    );
     await tx.run('DELETE FROM sync_cursor WHERE child_id = ?', [childId]);
+    await tx.run("DELETE FROM sync_problems WHERE child_id = ? AND kind IN ('lesson_run', 'lesson_runs', 'skill_state')", [childId]);
   });
   await device?.deleteCacheDir(EXPORT_DIR);
 }

@@ -541,7 +541,7 @@
       "deleteChild": "Delete child profile",
       "deleteAccount": "Delete all data",
       "confirmClearTitle": "Clear progress: {{name}}?",
-      "confirmClearBody": "Lessons, skills and practice records (if practice is on) are deleted at once, no recycle bin; a practice pause is lifted. Profile and settings stay.",
+      "confirmClearBody": "Lesson results and skills are deleted at once, no recycle bin. Profile and settings stay. Practice records, if any, stay too; the “Revoke and delete practice data” button in ABA sessions removes them.",
       "confirmChildTitle": "Delete profile: {{name}}?",
       "confirmChildBody": "Profile, lessons, skills and practice records are deleted at once, no recycle bin.",
       "confirmAccountTitle": "Delete all data?",

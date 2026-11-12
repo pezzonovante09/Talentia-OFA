@@ -7,7 +7,7 @@
 import { StyleSheet } from 'react-native';
 
 import i18n, { initI18n } from '../../../i18n';
-import { symbolBox, symbolFontSize } from '../../../design/glyphFit';
+import { symbolBox, symbolFontSize, symbolShift } from '../../../design/glyphFit';
 import { chooseTile } from '../../../design/taskTiles';
 import { glyphCard } from '../../../design/tokens';
 import { emptyChooseDraft } from '../../../domain/taskDraft';
@@ -37,6 +37,9 @@ describe('карточка буквы и слога', () => {
     expect(text.props.numberOfLines).toBe(1);
     expect(text.props.ellipsizeMode).toBe('clip');
     expect(flat(screen.getByTestId('card'))).toMatchObject({ width: symbolBox(85), height: symbolBox(60) });
+    // один сдвиг на задание (№192): середина общих чернил — в середине карточки
+    expect(fit.shift).toBeCloseTo(symbolShift(['ЙА'], fit.size), 9);
+    expect(style.transform).toEqual([{ translateY: fit.shift }]);
   });
 
   it('choose с буквами: у всех карточек один кегль — по самому широкому знаку', async () => {
@@ -64,5 +67,8 @@ describe('карточка буквы и слога', () => {
     const tile = chooseTile(width, 300, 3, true);
     expect(sizes[0]).toBe(symbolFontSize(['А', 'МА', 'Ш'], tile.w, tile.h));
     expect(sizes[0]).toBeLessThan(64);
+    // сдвиг у всех карточек задания один: базовая линия общая, положение знака не подсказывает ответ (№192)
+    const shifts = ['А', 'МА', 'Ш'].map((g) => JSON.stringify(flat(screen.getByText(g)).transform));
+    expect(new Set(shifts).size).toBe(1);
   });
 });

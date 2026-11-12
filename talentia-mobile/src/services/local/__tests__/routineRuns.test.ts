@@ -271,10 +271,12 @@ describe('удаление, срок хранения и отзыв видят �
     expect(await routineRunsOf(db, 'sib')).toHaveLength(1);
   });
 
-  it('clearChildProgress удаляет прогоны ребёнка', async () => {
+  it('clearChildProgress прогоны рутин не трогает (№189)', async () => {
     const db = await twoKids();
+    const before = await routineRunsOf(db, 'kid');
+    expect(before).toHaveLength(1);
     await clearChildProgress(db, 'kid');
-    expect(await routineRunsOf(db, 'kid')).toEqual([]);
+    expect(await routineRunsOf(db, 'kid')).toEqual(before);
     expect(await routineRunsOf(db, 'sib')).toHaveLength(1);
   });
 

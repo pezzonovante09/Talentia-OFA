@@ -1029,12 +1029,12 @@ describe('журнал выборов: согласие, неизменяемо�
     expect(await reinforcerHistoryOf(db, 'sib')).toEqual(['drum']);
   });
 
-  it('clearChildProgress удаляет выборы ребёнка, чужие остаются', async () => {
+  it('clearChildProgress выборы подкрепителя не трогает — очистка прогресса только про уроки (№189)', async () => {
     const db = await setup({ kids: ['kid', 'sib'] });
     await put(db, 'kid', 'puzzle');
     await put(db, 'sib', 'drum');
     await clearChildProgress(db, 'kid');
-    expect(await reinforcerHistoryOf(db, 'kid')).toEqual([]);
+    expect(await reinforcerHistoryOf(db, 'kid')).toEqual(['puzzle']);
     expect(await reinforcerHistoryOf(db, 'sib')).toEqual(['drum']);
   });
 

@@ -394,8 +394,21 @@ export const symbolGlyphMaxFontMultiplier = 1;
  * `glyphFit.ts`. Поле под знак — плитка минус контур «выбрано» `stroke.bold` и `inset` с двух сторон. Высота строки —
  * натуральная высота шрифта: при 1.15 кегля обрезались бы Й, Ё и хвост Ң. Кегль меньше `minSize` на самом узком
  * экране (`narrowContentW` — 320 pt без полей 2 × 16) — ошибка корпуса (гард `glyphFit`), а не уменьшение на ходу.
+ *
+ * Буквы с мелкой различающей деталью (`twinDetail`; пары-близнецы И/Й, Е/Ё, Ш/Щ, П/Ц, Н/Ң, О/Ө, У/Ү) держат кегль не
+ * ниже `twinMinSize` (№192, `design-lead`, проверка `child-ux-specialist`): ниже ребёнок 5–6 лет ошибается из-за детали,
+ * а не из-за навыка. На 40 pt выступ детали заглавных — Й 8.7, Ё 8.5, Щ, Ц, Ң 7.1–7.2 pt; у Ө (черта) и Ү (прямая ножка)
+ * деталь не выступает, порог держит крупность различия. Строчные включены (гард не знает полосы): выступ щ, ц, ң —
+ * 5.6 pt, порог для строчных не откалиброван — перед первым уроком строчных букв на 7 спросить `child-ux-specialist`.
  */
-export const glyphCard = { inset: 4, minSize: 32, lineHeightRatio: NUNITO_LINE_RATIO, narrowContentW: 288 } as const;
+export const glyphCard = {
+  inset: 4,
+  minSize: 32,
+  twinMinSize: 40,
+  twinDetail: 'ЙЁЩЦҢӨҮйёщцңөү',
+  lineHeightRatio: NUNITO_LINE_RATIO,
+  narrowContentW: 288,
+} as const;
 
 /**
  * Разделитель разрядов в числах ответа из 5+ цифр (9–10 лет, `build`, до 7 цифр): тонкий

@@ -40,6 +40,25 @@ describe('initI18n', () => {
     expect(deviceLang()).toBe('ru');
   });
 
+  it('deviceLang смотрит весь список языков устройства по порядку (№190)', () => {
+    const cases: [string | null, string | null, string][] = [
+      ['de', 'en', 'en'], // второй язык пользователя, а не русский
+      ['ky', 'en', 'ru'], // ky закрыт гейтом: семья из КР получает русский, а не английский
+      ['kk', 'ru', 'ru'],
+      ['fr', 'de', 'ru'], // ничего не совпало
+      [null, 'en', 'en'], // язык без кода пропускается
+      ['en', 'ru', 'en'], // порядок устройства, а не порядок наших языков
+      ['en', 'ky', 'en'], // ky после найденного языка ни на что не влияет
+    ];
+    for (const [first, second, want] of cases) {
+      (getLocales as jest.Mock).mockReturnValueOnce([{ languageCode: first }, { languageCode: second }]);
+      expect([first, second, deviceLang()]).toEqual([first, second, want]);
+    }
+    // закрытый ky в середине списка останавливает поиск: русский, а не английский после него
+    (getLocales as jest.Mock).mockReturnValueOnce([{ languageCode: 'de' }, { languageCode: 'ky' }, { languageCode: 'en' }]);
+    expect(deviceLang()).toBe('ru');
+  });
+
   it('Ж17: устройство с кыргызским при пустом ky.json → интерфейс ru, экран взрослых без сырых ключей', () => {
     expect(UI_LANGS).toEqual(['ru', 'en']);
     (getLocales as jest.Mock).mockReturnValueOnce([{ languageCode: 'ky' }]);

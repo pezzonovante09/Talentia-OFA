@@ -345,11 +345,12 @@ describe('сопряжение: посторонний ребёнок', () => {
     expect([await pairingFootprint(db, KID_A), await pairingFootprint(db, KID_B)]).toEqual([{ sessions: 0, choices: 0, tokenTraining: null }, b]);
   });
 
-  it('clearChildProgress kid-a не трогает сопряжение kid-b', async () => {
+  it('clearChildProgress kid-a не трогает сопряжение ни kid-a, ни kid-b (№189)', async () => {
     const db = await siblings();
+    const a = await pairingFootprint(db, KID_A);
     const b = await pairingFootprint(db, KID_B);
     await clearChildProgress(db, KID_A);
-    expect([await pairingFootprint(db, KID_A), await pairingFootprint(db, KID_B)]).toEqual([{ sessions: 0, choices: 0, tokenTraining: null }, b]);
+    expect([await pairingFootprint(db, KID_A), await pairingFootprint(db, KID_B)]).toEqual([a, b]);
   });
 
   it('exportChild(kid-a) не содержит записей и выборов kid-b', async () => {
@@ -391,7 +392,7 @@ describe('журналы: каждая таблица с child_id учтена �
     aba_write_gate: 'ворота записи ABA — пусты вне транзакции',
     lesson_write_gate: 'ворота записи урока — пусты вне транзакции',
     consent_events: 'журнал согласий — псевдоним вместо удаления (purgeChild)',
-    child_state: 'сводное состояние — удаляется отдельной строкой purgeChild / clearChildProgress',
+    child_state: 'сводное состояние — удаляется отдельной строкой purgeChild / clearChildProgress (без ключей ABA, №189)',
     sync_cursor: 'курсоры синхронизации — удаляются отдельной строкой',
     sync_problems: 'проблемы синхронизации — удаляются отдельной строкой purgeChild',
   };
@@ -459,10 +460,12 @@ describe('журналы: каждая таблица с child_id учтена �
     expect(left).toEqual({});
   });
 
-  it('clearChildProgress удаляет сопряжение и его выборы, согласие остаётся', async () => {
+  it('clearChildProgress сопряжение и его выборы не трогает, согласие остаётся (№189)', async () => {
     const db = await withPairing();
+    const before = await pairingFootprint(db, KID_A);
+    expect(before.sessions).toBeGreaterThan(0);
     await clearChildProgress(db, KID_A);
-    expect(await pairingFootprint(db, KID_A)).toEqual({ sessions: 0, choices: 0, tokenTraining: null });
+    expect(await pairingFootprint(db, KID_A)).toEqual(before);
     expect(await countOf(db, 'consent_events', KID_A)).toBe(1);
   });
 

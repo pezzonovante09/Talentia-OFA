@@ -5,7 +5,9 @@
  * и высоте плитки; без него — ступень `symbolGlyph` по числу знаков (атлас). Высота строки — натуральная высота
  * шрифта (`glyphCard.lineHeightRatio`), чтобы Й, Ё и хвост Ң не обрезались; одна строка, системный шрифт не
  * масштабирует (`fixed`). Рамка — по плитке (`boxW` × `boxH`), а не поле 88: кегль считается от поля на `inset`
- * меньше рамки, этот запас и `ellipsizeMode="clip"` не дают округлению ширины на Android показать «М…».
+ * меньше рамки, этот запас и `ellipsizeMode="clip"` не дают округлению ширины на Android показать «М…». `shift` —
+ * общий сдвиг знаков задания вниз (`symbolShift`, №192): середина чернил задания в середине карточки; без него (атлас)
+ * знак стоит по середине строки.
  */
 import { View } from 'react-native';
 
@@ -18,7 +20,21 @@ export function glyphSizeFor(maxChars: number): number {
   return symbolGlyph[n];
 }
 
-export function NumeralCard({ text, size, boxW, boxH, testID }: { text: string; size?: number; boxW?: number; boxH?: number; testID?: string }) {
+export function NumeralCard({
+  text,
+  size,
+  boxW,
+  boxH,
+  shift,
+  testID,
+}: {
+  text: string;
+  size?: number;
+  boxW?: number;
+  boxH?: number;
+  shift?: number;
+  testID?: string;
+}) {
   const theme = useDesign();
   const fontSize = size ?? glyphSizeFor([...text].length);
   return (
@@ -28,7 +44,15 @@ export function NumeralCard({ text, size, boxW, boxH, testID }: { text: string; 
         cap="fixed"
         lines={1}
         ellipsizeMode="clip"
-        style={{ fontSize, lineHeight: Math.ceil(fontSize * glyphCard.lineHeightRatio), fontFamily: 'Nunito_800ExtraBold', color: theme.colors.text, includeFontPadding: false, textAlignVertical: 'center' }}
+        style={{
+          fontSize,
+          lineHeight: Math.ceil(fontSize * glyphCard.lineHeightRatio),
+          fontFamily: 'Nunito_800ExtraBold',
+          color: theme.colors.text,
+          includeFontPadding: false,
+          textAlignVertical: 'center',
+          ...(shift ? { transform: [{ translateY: shift }] } : null),
+        }}
       >
         {text}
       </AppText>

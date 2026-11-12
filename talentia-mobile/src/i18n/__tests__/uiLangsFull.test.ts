@@ -15,5 +15,8 @@ describe('UI_LANGS при полном ky', () => {
     expect(deviceLang()).toBe('ky');
     (getLocales as jest.Mock).mockReturnValueOnce([{ languageCode: 'de' }]);
     expect(deviceLang()).toBe('ru');
+    // открытый ky — обычный язык списка (№190)
+    (getLocales as jest.Mock).mockReturnValueOnce([{ languageCode: 'ky' }, { languageCode: 'en' }]);
+    expect(deviceLang()).toBe('ky');
   });
 });
