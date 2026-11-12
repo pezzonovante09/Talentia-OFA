@@ -8,6 +8,8 @@
  *
  * Корень приложения ставит настоящий проигрыватель (`setVoiceBackend`); экраны держат один `voice`.
  */
+import { RECORDED_SOUND_FILES } from './soundFiles';
+
 export type VoicePort = {
   say(key: string, params?: Record<string, string | number>): void;
   stop(): void;
@@ -36,8 +38,8 @@ export type SoundPlayer = {
   stop(): void;
 };
 
-/** Ключ реплики или звука → файл из бандла (`require('…/assets/audio/…')`). Наполняется озвучкой (этап 13). */
-export const SOUND_FILES: Record<string, number> = {};
+/** Ключ реплики или звука → файл из бандла. Записи ABA — `assets/audio/aba/`, список — `npm run audio:register` (№195). */
+export const SOUND_FILES: Record<string, number> = { ...RECORDED_SOUND_FILES };
 
 export function createAudioVoice(player: SoundPlayer, files: Readonly<Record<string, number>> = SOUND_FILES): VoicePort {
   const silent = createSilentVoice();

@@ -23,11 +23,13 @@ import { useDesign } from '../src/design';
 import { firstRun, profileCard, taliSize } from '../src/design/tokens';
 import { uuidV4 } from '../src/domain/ids';
 import type { InterfaceLang } from '../src/domain/regionVisibility';
+import { ABA_ONLY } from '../src/services/buildScope';
 import type { ChildProfile } from '../src/services/local/profiles';
 import { randomBytes } from '../src/services/random';
 import { voice } from '../src/services/voice';
 import { useAccount } from '../src/state/account';
 import { useChildSession } from '../src/state/childSession';
+import { useParentView } from '../src/state/parentView';
 import { progressPort } from '../src/state/port';
 import { AppText } from '../src/ui/AppText';
 import { CushionPressable } from '../src/ui/CushionPressable';
@@ -61,7 +63,8 @@ function FirstRun() {
    * аккаунт не открылся (`error`, Ж1). Заголовок и голос — «Позови взрослого», Tali указывает на «+».
    */
   const adultNeeded = (hasAccount && profiles.length === 0) || accountStatus === 'error';
-  const titleKey = adultNeeded ? 'firstRun.callAdult' : 'firstRun.title';
+  // в сборке «только ABA» (№195) ребёнку здесь нечего выбрать самому — сразу «Позови взрослого» (`child-ux-specialist`)
+  const titleKey = adultNeeded || ABA_ONLY ? 'firstRun.callAdult' : 'firstRun.title';
   const [taliPose, setTaliPose] = useState<'hello' | 'point'>('hello');
   const poseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -75,7 +78,7 @@ function FirstRun() {
     [],
   );
 
-  const openAdult = (sayKey: string, href: '/parent' | '/parent/profile/new') => {
+  const openAdult = (sayKey: string, href: '/parent' | '/parent/profile/new' | '/parent/aba') => {
     voice.say(sayKey);
     router.push(href);
   };
@@ -113,6 +116,13 @@ function FirstRun() {
 
   const openProfile = async (profile: ChildProfile) => {
     if (opening.current) return;
+    // сборка «только ABA» (№195): обычного режима нет — ребёнок зовёт взрослого, после PIN сразу «Занятия ABA»
+    // именно этого ребёнка, а не главная раздела с первым профилем (`child-ux-specialist`)
+    if (ABA_ONLY) {
+      useParentView.getState().select(profile.childId);
+      openAdult('firstRun.callAdult', '/parent/aba');
+      return;
+    }
     if (consent === 'outdated') {
       router.push('/parent/reconsent');
       return;
@@ -155,7 +165,7 @@ function FirstRun() {
       <View style={{ height: theme.spacing.xl }} />
       {/* Детская кнопка — сразу под заголовком, выше взрослой карточки «+» (`firstRun.childActionFirst`) */}
       {/* при `error` аккаунт есть: яркая кнопка спорила бы с голосом «Позови взрослого»; при `loading` не мелькает */}
-      {!hasAccount && accountStatus !== 'error' && accountStatus !== 'loading' && (
+      {!ABA_ONLY && !hasAccount && accountStatus !== 'error' && accountStatus !== 'loading' && (
         <>
           <CushionPressable
             role="control"

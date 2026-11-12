@@ -5,11 +5,13 @@
  */
 import type { useRouter } from 'expo-router';
 
+import { ABA_ONLY } from '../../services/buildScope';
 import { useChildSession } from '../../state/childSession';
 
 export function leaveAba(router: ReturnType<typeof useRouter>): void {
   const session = useChildSession.getState();
-  if (!session.openedForAba) {
+  // в сборке «только ABA» (№195) карты нет — всегда к выбору профиля
+  if (!session.openedForAba && !ABA_ONLY) {
     router.dismissTo('/map');
     return;
   }

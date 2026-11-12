@@ -16,6 +16,9 @@
     },
     "preview": {
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_BUILD_SCOPE": "aba"
+      },
       "android": {
         "buildType": "apk"
       }

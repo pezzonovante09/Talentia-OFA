@@ -19,6 +19,7 @@ import { ABA_TARGETS } from '../../../src/content/aba';
 import { parentButton, parentSpacing } from '../../../src/design/parentTokens';
 import type { SensitiveAction } from '../../../src/domain/parentGate';
 import { newAbaId } from '../../../src/services/abaIds';
+import { ABA_ONLY } from '../../../src/services/buildScope';
 import {
   abaBlockOf,
   abaLocalDay,
@@ -45,6 +46,8 @@ import { Card, GoalGlyph, ParentButton, ParentScreen, ParentText, Row, Segmented
 import { WhoLeadsSheet, type WhoLeadsChoice } from '../../../src/ui/parent/WhoLeadsSheet';
 
 const CONFIGS: readonly AbaConfig[] = ['with_adult', 'alone'];
+/** В сборке «только ABA» (№195) режима «Сам» нет: выбора режима не показываем, занятие всегда «Со взрослым». */
+const ALONE_HIDDEN = ABA_ONLY;
 
 /** Слот подсказки под сегментами — резерв всегда (две строки caption), карточка не прыгает. */
 const HINT_SLOT = 40;
@@ -119,7 +122,7 @@ export default function AbaParentScreen() {
     }
     // предвыбор режима до первого кадра карточки — из обзора, не отдельным запросом: «Со взрослым» по умолчанию и по
     // подсказке №166; выбранный «Сам» держится, пока доступен
-    setConfig((cur) => (cur === 'alone' && o.aloneAvailable ? cur : 'with_adult'));
+    setConfig((cur) => (cur === 'alone' && o.aloneAvailable && !ALONE_HIDDEN ? cur : 'with_adult'));
     const hasData = o.consent === 'granted' || o.consent === 'outdated';
     setProgress(hasData ? await loadAbaParentProgress(db, childId) : null);
   }, [db, childId]);
@@ -149,7 +152,7 @@ export default function AbaParentScreen() {
   const status = !ov ? '' : t(`parent.aba.status.${block ?? 'ready'}`);
   const mode: AbaConfig = config ?? 'with_adult';
   const aloneAvailable = ov?.aloneAvailable ?? true;
-  const hint = !ov ? '' : block === 'pairing_needed' && ov.suggestAdult ? t('abaSession.togetherHint') : block !== 'pairing_needed' && !aloneAvailable ? t('parent.aba.aloneLocked') : '';
+  const hint = !ov ? '' : block === 'pairing_needed' && ov.suggestAdult ? t('abaSession.togetherHint') : block !== 'pairing_needed' && !aloneAvailable && !ALONE_HIDDEN ? t('parent.aba.aloneLocked') : '';
   const whoValue = who ? (who.trained ? t('parent.aba.whoLeadsValue', { role: t(`abaSession.role.${who.role}`) }) : t(`abaSession.role.${who.role}`)) : t('parent.aba.whoLeadsNone');
 
   const setPaused = (paused: boolean) =>
@@ -296,14 +299,14 @@ export default function AbaParentScreen() {
           )}
           {canChoose && (
             <View style={{ marginTop: parentSpacing.md }}>
-              <Segmented
+              {!ALONE_HIDDEN && <Segmented
                 options={CONFIGS.map((c) => ({ value: c, label: t(`abaSession.config.${c}`) }))}
                 value={mode}
                 onChange={setConfig}
                 disabled={aloneAvailable ? [] : ['alone']}
                 disabledHint={t('parent.aba.aloneLocked')}
                 testID="aba-mode"
-              />
+              />}
               <View style={{ minHeight: HINT_SLOT, marginTop: parentSpacing.sm, justifyContent: 'center' }} testID="aba-hint-slot">
                 {hint ? (
                   <ParentText role="caption" color="textMuted" lines={2} testID="aba-hint">

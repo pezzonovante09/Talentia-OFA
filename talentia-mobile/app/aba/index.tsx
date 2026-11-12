@@ -13,6 +13,7 @@ import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { abaWindowPolicy } from '../../src/design/abaTokens';
+import { ABA_ONLY } from '../../src/services/buildScope';
 import { parentTypography } from '../../src/design/parentTokens';
 import { useAbaRun } from '../../src/state/abaRun';
 import { useChildSession } from '../../src/state/childSession';
@@ -57,7 +58,8 @@ export default function AbaGateScreen() {
               {t('abaSession.tooSmallBody')}
             </AbaText>
             <ParentThemeProvider>
-              <ParentButton
+              {/* в сборке «только ABA» (№195) обычных уроков нет — остаётся «Назад» */}
+              {!ABA_ONLY && <ParentButton
                 height={abaWindowPolicy.belowMinButtonHeight}
                 label={t('abaSession.regularLessons')}
                 onPress={() => {
@@ -70,7 +72,7 @@ export default function AbaGateScreen() {
                   useAbaRun.getState().reset();
                 }}
                 testID="aba-regular"
-              />
+              />}
               <ParentButton height={abaWindowPolicy.belowMinButtonHeight} variant="secondary" label={t('abaSession.back')} onPress={() => router.replace('/parent/aba')} testID="aba-too-small-back" />
             </ParentThemeProvider>
           </ScrollView>
