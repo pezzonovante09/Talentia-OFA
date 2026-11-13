@@ -1,12 +1,17 @@
 /**
  * RLS и функции доступа для детей, родителей и согласий
  * (migrations/20260924120000_children_and_guardians.sql,
- * migrations/20260924140000_children_privacy_hardening.sql, PARENT.md).
+ * migrations/20260924140000_children_privacy_hardening.sql,
+ * migrations/20261010120000_cloud_sync_client_ids.sql, PARENT.md).
+ *
+ * id ребёнка и события облачного согласия задаёт клиент; идемпотентность повторов —
+ * в cloud_sync_idempotency.test.mjs.
  *
  * Каждая группа — на своей чистой базе со всеми миграциями.
  *
  * Запуск: npm test --prefix supabase
  */
+import { randomUUID } from 'node:crypto';
 import { actor, denied, eq, runner } from './harness.mjs';
 
 const { check, group, finish } = runner();
@@ -33,8 +38,17 @@ async function setup(db) {
     await db.query(`SELECT set_config('request.jwt.claim.sub', '', false), set_config('request.jwt.claims', '', false)`);
     return db.query(sql, params);
   };
-  const makeChild = async (owner = A, name = 'Лиса') =>
-    (await as(owner, `SELECT public.create_child($1, '5-6', 'ru-v1', 'biometric') AS id`, [name])).rows[0].id;
+  // id ребёнка и события — с устройства; сервер свой id не выдаёт.
+  const makeChild = async (owner = A, name = 'Лиса') => {
+    const id = randomUUID();
+    const r = (await as(owner, `SELECT public.create_child($1, $2, '5-6', 'ru-v1', 'biometric', now(), $3) AS r`, [id, randomUUID(), name])).rows[0].r;
+    eq(r, 'created', 'create_child:');
+    return id;
+  };
+  const grantCloud = (user, kid, version, via) =>
+    as(user, `SELECT public.grant_cloud_sync($1, $2, $3, $4, now())`, [kid, randomUUID(), version, via]);
+  const revokeCloud = (user, kid, version, via) =>
+    as(user, `SELECT public.revoke_cloud_sync($1, $2, $3, $4, now())`, [kid, randomUUID(), version, via]);
   const invite = async (kid, owner = A) =>
     (await as(owner, `SELECT public.create_child_invite($1) AS c`, [kid])).rows[0].c;
   const redeem = async (user, code) => (await as(user, `SELECT public.redeem_child_invite($1) AS s`, [code])).rows[0].s;
@@ -44,7 +58,7 @@ async function setup(db) {
   };
   const count = async (user, sql, params = []) => (await as(user, `SELECT count(*)::int AS n FROM ${sql}`, params)).rows[0].n;
   const adminCount = async (sql, params = []) => (await admin(`SELECT count(*)::int AS n FROM ${sql}`, params)).rows[0].n;
-  return { as, admin, makeChild, invite, redeem, link, count, adminCount };
+  return { as, admin, makeChild, grantCloud, revokeCloud, invite, redeem, link, count, adminCount };
 }
 
 // ---------------------------------------------------------------------------
@@ -53,8 +67,9 @@ await group('создание и видимость', async (db) => {
   let kid;
 
   await check('ребёнок появляется только с согласием на облако по текущему тексту', async () => {
-    await denied(as(A, `SELECT public.create_child('x', '7', 'ru-v0', 'biometric')`));
-    await denied(as(A, `SELECT public.create_child('x', '7', 'ru-v1', 'signup')`));
+    await denied(as(A, `SELECT public.create_child(gen_random_uuid(), gen_random_uuid(), '7', 'ru-v0', 'biometric', now(), 'x')`));
+    await denied(as(A, `SELECT public.create_child(gen_random_uuid(), gen_random_uuid(), '7', 'ru-v1', 'signup', now(), 'x')`));
+    eq(await adminCount('children'), 0, 'без согласия ребёнка нет:');
     kid = await makeChild();
     eq((await as(A, `SELECT role, status FROM child_guardians WHERE child_id = $1`, [kid])).rows, [
       { role: 'owner', status: 'active' },
@@ -79,11 +94,13 @@ await group('создание и видимость', async (db) => {
   });
 
   await check('анонимный вход Supabase ребёнка не создаёт', async () => {
-    await denied(as(ANON_SIGNIN, `SELECT public.create_child('x', '7', 'ru-v1', 'pin')`));
+    await denied(as(ANON_SIGNIN, `SELECT public.create_child(gen_random_uuid(), gen_random_uuid(), '7', 'ru-v1', 'pin', now(), 'x')`));
   });
 
   await check('аноним без входа не вызывает функции', async () => {
-    await denied(as(null, `SELECT public.create_child('x', '7', 'ru-v1', 'pin')`));
+    await denied(as(null, `SELECT public.create_child(gen_random_uuid(), gen_random_uuid(), '7', 'ru-v1', 'pin', now(), 'x')`));
+    await denied(as(null, `SELECT public.grant_cloud_sync($1, gen_random_uuid(), 'ru-v1', 'pin', now())`, [kid]));
+    await denied(as(null, `SELECT public.revoke_cloud_sync($1, gen_random_uuid(), 'ru-v1', 'pin', now())`, [kid]));
     await denied(as(null, `SELECT public.redeem_child_invite('AAAAAAAA')`));
     await denied(as(null, `SELECT public.has_child_access($1)`, [kid]));
     await denied(as(null, `SELECT public.approve_guardian($1, $2)`, [kid, C]));
@@ -284,7 +301,7 @@ await group('права второго родителя и специалист�
 
 // ---------------------------------------------------------------------------
 await group('данные ребёнка и согласие на облако', async (db) => {
-  const { as, admin, makeChild, link, count, adminCount } = await setup(db);
+  const { as, admin, makeChild, grantCloud, revokeCloud, link, count, adminCount } = await setup(db);
   const kid = await makeChild();
   const other = await makeChild(C, 'Чужой');
   await link(kid, B);
@@ -320,9 +337,9 @@ await group('данные ребёнка и согласие на облако',
     await admin(`UPDATE consent_texts SET is_current = false WHERE scope = 'cloud_sync'`);
     await admin(`INSERT INTO consent_texts (scope, version, locale, body_sha256, is_current) VALUES ('cloud_sync', 'ru-v2', 'ru', sha256('cloud v2'::bytea), true)`);
     await denied(as(B, `INSERT INTO skill_state (child_id, skill, box) VALUES ($1, 'new', 1)`, [kid]));
-    await denied(as(B, `SELECT public.grant_cloud_sync($1, 'ru-v2', 'pin')`, [kid]));
-    await denied(as(A, `SELECT public.grant_cloud_sync($1, 'ru-v1', 'pin')`, [kid]));
-    await as(A, `SELECT public.grant_cloud_sync($1, 'ru-v2', 'pin')`, [kid]);
+    await denied(grantCloud(B, kid, 'ru-v2', 'pin'));
+    await denied(grantCloud(A, kid, 'ru-v1', 'pin'));
+    eq((await grantCloud(A, kid, 'ru-v2', 'pin')).rows[0].grant_cloud_sync, 'granted');
     await as(B, `INSERT INTO skill_state (child_id, skill, box) VALUES ($1, 'new', 1)`, [kid]);
   });
 
@@ -333,8 +350,9 @@ await group('данные ребёнка и согласие на облако',
   });
 
   await check('отзыв облака — только владельцем, и убирает собранное', async () => {
-    await denied(as(B, `SELECT public.revoke_cloud_sync($1, 'ru-v2', 'pin')`, [kid]));
-    await as(A, `SELECT public.revoke_cloud_sync($1, 'ru-v2', 'pin')`, [kid]);
+    await denied(revokeCloud(B, kid, 'ru-v2', 'pin'));
+    eq(await adminCount(`children WHERE id = '${kid}'`), 1, 'чужой отзыв не удалил:');
+    eq((await revokeCloud(A, kid, 'ru-v2', 'pin')).rows[0].revoke_cloud_sync, 'revoked');
     eq(await adminCount(`children WHERE id = '${kid}'`), 0);
     eq(await adminCount(`skill_state WHERE child_id = '${kid}'`), 0);
     eq(await adminCount(`lesson_runs WHERE child_id = '${kid}'`), 0);
@@ -513,7 +531,7 @@ await group('сроки хранения', async (db) => {
 
 // ---------------------------------------------------------------------------
 await group('передача: согласие переданного ребёнка и семь дней на своё', async (db) => {
-  const { as, admin, makeChild, link, count } = await setup(db);
+  const { as, admin, makeChild, grantCloud, link, count } = await setup(db);
   const kid = await makeChild();
   await link(kid, B);
   await as(A, `INSERT INTO consent_events (scope, action, text_version, confirmed_by, client_at) VALUES ('account_local', 'grant', 'ru-v1', 'signup', now())`);
@@ -549,7 +567,7 @@ await group('передача: согласие переданного ребё�
   });
 
   await check('своё согласие — и запись снова открыта', async () => {
-    await as(B, `SELECT public.grant_cloud_sync($1, 'ru-v1', 'biometric')`, [kid]);
+    eq((await grantCloud(B, kid, 'ru-v1', 'biometric')).rows[0].grant_cloud_sync, 'granted');
     await as(B, `INSERT INTO skill_state (child_id, skill, box) VALUES ($1, 'b', 1)`, [kid]);
     eq(await count(B, 'skill_state'), 2);
   });
@@ -651,7 +669,7 @@ await group('запрос второго родителя на отзыв', asyn
 
 // ---------------------------------------------------------------------------
 await group('журналы нельзя переписать даже в обход RLS', async (db) => {
-  const { as, admin, makeChild } = await setup(db);
+  const { as, admin, makeChild, revokeCloud } = await setup(db);
   const kid = await makeChild();
   const other = await makeChild(C, 'Другой');
 
@@ -665,7 +683,7 @@ await group('журналы нельзя переписать даже в обх
   });
 
   await check('псевдоним не переписать второй раз', async () => {
-    await as(A, `SELECT public.revoke_cloud_sync($1, 'ru-v1', 'pin')`, [kid]);
+    eq((await revokeCloud(A, kid, 'ru-v1', 'pin')).rows[0].revoke_cloud_sync, 'revoked');
     await denied(admin(`UPDATE consent_events SET child_id = gen_random_uuid() WHERE actor_id = $1 AND scope = 'cloud_sync'`, [A]));
   });
 
@@ -782,7 +800,8 @@ await group('проверка согласия для сервера', async (db
   await check('на каждый язык — своя действующая версия', async () => {
     await db.query(`INSERT INTO consent_texts (scope, version, locale, body_sha256, is_current) VALUES ('cloud_sync', 'ky-1', 'ky', sha256('ky'::bytea), true)`);
     await denied(db.query(`INSERT INTO consent_texts (scope, version, locale, body_sha256, is_current) VALUES ('cloud_sync', 'ru-2', 'ru', sha256('ru2'::bytea), true)`));
-    const other = (await as(B, `SELECT public.create_child('Айбек', '7', 'ky-1', 'pin') AS id`)).rows[0].id;
+    const other = randomUUID();
+    eq((await as(B, `SELECT public.create_child($1, gen_random_uuid(), '7', 'ky-1', 'pin', now(), 'Айбек') AS r`, [other])).rows[0].r, 'created');
     eq((await as(B, `SELECT public.has_consent($1, 'cloud_sync') AS ok`, [other])).rows[0].ok, true);
   });
 });

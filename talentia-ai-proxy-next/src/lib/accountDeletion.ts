@@ -1,3 +1,4 @@
+import { reportError } from "@/lib/reportError";
 import { z } from "zod";
 
 /**
@@ -91,14 +92,19 @@ export async function deleteAccount(
     try {
       await port.transfer(d.childId, d.newOwnerId);
       transferred.push(d.childId);
-    } catch {
+    } catch (e: unknown) {
+      // без id ребёнка и нового владельца: в лог и Sentry — только класс ошибки (раунд 3, В-11)
+      console.error("[account/delete] transfer failed", e instanceof Error ? e.name : "unknown");
+      reportError("account/delete.transfer", e);
       return { ok: false, status: 409, error: "transfer failed; account was not deleted", transferred };
     }
   }
 
   try {
     await port.deleteUser(userId);
-  } catch {
+  } catch (e: unknown) {
+    console.error("[account/delete] deleteUser failed", e instanceof Error ? e.name : "unknown");
+    reportError("account/delete.deleteUser", e);
     return { ok: false, status: 502, error: "account deletion failed", transferred };
   }
   const deletedChildren = body.children.filter((d) => d.action === "delete").map((d) => d.childId);

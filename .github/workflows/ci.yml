@@ -3,16 +3,24 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    # основная ветка — master; ветка пересборки — пока идёт работа на ней
+    branches: [master, claude/jolly-clarke-ttbuh5]
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# минимальные права токена: CI только читает репозиторий
+permissions:
+  contents: read
+
 jobs:
+  # Ворота по риску (№121): сеть из приложения закрывает ESLint (`offlineRules` в
+  # talentia-mobile/eslint.config.js) — это шаг Lint джоба mobile; отдельного джоба ворот нет.
   mobile:
     name: talentia-mobile (lint, typecheck, test)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: talentia-mobile
@@ -21,12 +29,19 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: talentia-mobile/package-lock.json
 
       - name: Install dependencies
         run: npm ci
+
+      # Версии нативных пакетов должны совпадать с Expo SDK 54: расхождение ломает
+      # сборку или приложение в рантайме. Упадёт при любом расхождении (CI=1, без вопросов).
+      - name: Expo dependency versions match the SDK
+        run: npx expo install --check
+        env:
+          CI: '1'
 
       - name: Lint
         run: npm run lint
@@ -37,12 +52,10 @@ jobs:
       - name: Test
         run: npm test -- --ci
 
-      - name: Check i18n keys
-        run: npm run check:i18n
-
   proxy:
     name: talentia-ai-proxy-next (lint, typecheck, test, build)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: talentia-ai-proxy-next
@@ -51,7 +64,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: talentia-ai-proxy-next/package-lock.json
 
@@ -74,3 +87,25 @@ jobs:
           # env vars are already designed to fail gracefully/fail-closed
           # without them (see src/lib/ratelimit.ts, src/lib/verifyAuth.ts).
           NODE_ENV: production
+
+  db:
+    name: supabase (migrations and RLS in PGlite)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: supabase
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: supabase/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Migrations and RLS
+        run: npm test

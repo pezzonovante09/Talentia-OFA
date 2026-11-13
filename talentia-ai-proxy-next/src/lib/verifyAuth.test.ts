@@ -50,6 +50,12 @@ describe("verifyAuth", () => {
     expect(res).toEqual({ ok: false, error: "Unauthorized", status: 401 });
   });
 
+  it("отклоняет анонимную сессию: это не родитель", async () => {
+    getUser.mockResolvedValue({ data: { user: { id: "anon-1", is_anonymous: true } }, error: null });
+    const res = await verifyAuth(makeRequest("Bearer anon.token"));
+    expect(res).toEqual({ ok: false, error: "Anonymous sessions are not allowed", status: 403 });
+  });
+
   it("returns userId on success", async () => {
     getUser.mockResolvedValue({
       data: { user: { id: "user-123" } },

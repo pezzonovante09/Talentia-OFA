@@ -7,16 +7,23 @@
  * В прежней версии критерия в коде не было вовсе.
  */
 import {
+  APP_MAX_PROMPT,
   COUNTS_TOWARD_MASTERY,
   MAINTENANCE_FAILS_TO_REACQUIRE,
   MAINTENANCE_GAP,
   MASTERY,
+  ROUTINE,
+  type AbaConfig,
   type AbaSessionEndReason,
   type AbaTarget,
   type AbaTargetState,
   type AbaTrial,
+  type PromptLevel,
+  type RoutineRunRecord,
+  type RoutineSetting,
+  type StepPromptState,
 } from '../types/aba';
-import { clampToApp } from './abaPrompting';
+import { clampToApp, promptStateOf } from './abaPrompting';
 
 /** С какой доли самостоятельных цель получает пробы переноса. */
 export const GENERALIZATION_PROBE_FROM = 0.6;
@@ -29,7 +36,10 @@ export type SessionOutcome = 'meets' | 'breaks' | 'neutral';
 
 /** Итог сессии по одной цели. */
 export type AbaSessionSummary = {
-  /** Проб в зачёт: обучающие, не прерванные, оценённые источником с правом на критерий. */
+  /**
+   * Проб в зачёт: обучающие, не прерванные, оценённые источником с правом на критерий.
+   * У цепочки — полных прогонов.
+   */
   trials: number;
   independentRate: number;
   outcome: SessionOutcome;
@@ -55,23 +65,42 @@ function allowedMisses(min: number): number {
   return min - Math.ceil(MASTERY.minIndependentRate * min - 1e-9);
 }
 
-function summarizeGroup(trials: AbaTrial[], min: number): AbaSessionSummary {
-  const counted = trials.filter(countable);
-  const independent = counted.filter((t) => t.response === 'independent');
-  const independentRate = counted.length ? independent.length / counted.length : 0;
-  const enough = counted.length >= min;
+function summarizeCounts(total: number, independent: number, min: number, exemplars: string[]): AbaSessionSummary {
+  const independentRate = total ? independent / total : 0;
+  const enough = total >= min;
 
   let outcome: SessionOutcome;
   if (enough) outcome = independentRate >= MASTERY.minIndependentRate ? 'meets' : 'breaks';
-  else outcome = counted.length - independent.length > allowedMisses(min) ? 'breaks' : 'neutral';
+  else outcome = total - independent > allowedMisses(min) ? 'breaks' : 'neutral';
 
-  return {
-    trials: counted.length,
-    independentRate,
-    outcome,
-    counted: enough,
-    independentExemplars: [...new Set(independent.map((t) => t.exemplarId))],
-  };
+  return { trials: total, independentRate, outcome, counted: enough, independentExemplars: [...new Set(exemplars)] };
+}
+
+function summarizeGroup(trials: AbaTrial[], min: number): AbaSessionSummary {
+  const counted = trials.filter(countable);
+  const independent = counted.filter((t) => t.response === 'independent');
+  return summarizeCounts(counted.length, independent.length, min, independent.map((t) => t.exemplarId));
+}
+
+/**
+ * Прогоны цепочки по `runIndex`. Прогон в зачёте, только если в нём есть все звенья. Проба звена
+ * без `runIndex` в прогоны не идёт: прежний запасной путь («k-я проба звена — k-й прогон») после
+ * прерванного звена склеивал звенья разных прогонов в один «полный» (аудит 2026-10-06, А21) —
+ * оркестратор пишет `runIndex` всегда. `filter` — какие пробы считаются: обучающие по умолчанию,
+ * базовой линии — `baselineTrials`.
+ */
+export function chainRuns(
+  target: AbaTarget,
+  trials: readonly AbaTrial[],
+  filter: (t: AbaTrial) => boolean = countable,
+): AbaTrial[][] {
+  const steps = target.steps ?? [];
+  const runs = new Map<number, AbaTrial[]>();
+  for (const t of trials.filter(filter)) {
+    if (t.runIndex === undefined) continue;
+    runs.set(t.runIndex, [...(runs.get(t.runIndex) ?? []), t]);
+  }
+  return [...runs.values()].filter((run) => steps.every((st) => run.some((t) => t.stepId === st.id)));
 }
 
 /**
@@ -81,9 +110,11 @@ function summarizeGroup(trials: AbaTrial[], min: number): AbaSessionSummary {
  * в полной сессии были бы недостижимы, или если она оборвалась по критерию
  * остановки: короткими бывают как раз худшие сессии.
  *
- * У цепочки каждый шаг считается как отдельная цель, минимум — в прогонах, и
- * сессия в зачёт, только если в зачёт каждый шаг: ребёнок, стабильно
- * сыплющийся на третьем звене, руки не моет.
+ * У цепочки считаются **прогоны, выполненные целиком самостоятельно**: сессия в зачёт,
+ * если таких не меньше 80% при минимуме в три прогона. «80% на каждом звене» пропускал
+ * бы сессию, где ни один прогон не выполнен целиком — в каждом сыплется своё звено;
+ * «все звенья в каждом прогоне» — это 100%, строже дискретных целей без причины.
+ * Данные по звеньям остаются для диагностики (решение методиста, `ABA.md`).
  */
 export function summarizeSession(
   target: AbaTarget,
@@ -92,17 +123,21 @@ export function summarizeSession(
 ): AbaSessionSummary {
   const own = sessionTrials.filter((t) => t.targetId === target.id);
 
+  // рутина в сессию не входит: её прогон — `abaRoutineRun.ts`, критерий — окно прогонов по дням
+  if (isRoutine(target)) throw new Error(`Рутина ${target.id} не проходит через сессию: прогон рутины — abaRoutineRun`);
+
   let summary: AbaSessionSummary;
   if (!target.steps?.length) {
     summary = summarizeGroup(own, MASTERY.minTrialsPerSession);
   } else {
-    const min = MASTERY.minChainRunsPerSession;
-    const perStep = target.steps.map((step) => summarizeGroup(own.filter((t) => t.stepId === step.id), min));
-    const all = summarizeGroup(own, min * target.steps.length);
-    let outcome: SessionOutcome = 'neutral';
-    if (perStep.some((x) => x.outcome === 'breaks')) outcome = 'breaks';
-    else if (perStep.every((x) => x.outcome === 'meets')) outcome = 'meets';
-    summary = { ...all, outcome, counted: perStep.every((x) => x.counted) };
+    const runs = chainRuns(target, own);
+    const whole = runs.filter((run) => run.every((t) => t.response === 'independent'));
+    summary = summarizeCounts(
+      runs.length,
+      whole.length,
+      MASTERY.minChainRunsPerSession,
+      whole.map((run) => run[0].exemplarId),
+    );
   }
 
   if (endReason === 'breakdown' && summary.outcome !== 'breaks') return { ...summary, outcome: 'breaks' };
@@ -122,6 +157,8 @@ export function applySession(
   summary: AbaSessionSummary,
   sessionIndex: number,
   day: string,
+  /** Сессия подтверждена обученным наблюдателем (`abaIoa.isVerified`). */
+  verified = false,
 ): AbaTargetState {
   const base = { ...s, lastSessionIndex: sessionIndex };
   const recentIndependentRates = summary.counted
@@ -136,6 +173,7 @@ export function applySession(
       sessionsAtCriterion: 0,
       criterionDays: [],
       exemplarsAtCriterion: [],
+      criterionSessions: [],
     };
   }
   return {
@@ -144,6 +182,7 @@ export function applySession(
     sessionsAtCriterion: s.sessionsAtCriterion + 1,
     criterionDays: s.criterionDays.includes(day) ? s.criterionDays : [...s.criterionDays, day],
     exemplarsAtCriterion: [...new Set([...s.exemplarsAtCriterion, ...summary.independentExemplars])],
+    criterionSessions: [...(s.criterionSessions ?? []), { sessionIndex, verified }],
   };
 }
 
@@ -192,11 +231,321 @@ export function isMasteryMet(s: AbaTargetState): boolean {
   return criterionGaps(s).length === 0;
 }
 
+/** Проб базовой линии на дискретную цель. */
+export const BASELINE_TRIALS = 3;
+
+/**
+ * Прогонов базовой линии цепочки — проверка task analysis с множеством возможностей
+ * (multiple-opportunity probe): проваленное звено выполняет взрослый, пробой ребёнка
+ * это не пишется, и прогон идёт дальше.
+ */
+export const BASELINE_CHAIN_RUNS = 2;
+
+/** Новых целей на базовой линии за сессию — не больше. */
+export const MAX_BASELINE_TARGETS = 2;
+
+/**
+ * Базовая линия цели набора `identify`: 5 проб вперемешку с целями набора. С выбором
+ * угадывание сильнее: при поле из трёх 3/5 и больше выпадают случайно в ~21% случаев,
+ * 4/5 — в ~4.5%, поэтому пороги строже, и даже 5/5 — не «освоено», а обучение с L0.
+ */
+export const IDENTIFY_BASELINE = { trials: 5, fromL0: 5, fromL1: 4 } as const;
+
+/**
+ * Базовая линия `match` (методист, 2026-10-02): 5 проб в поле полного размера. 5/5 при поле ≥ 3 —
+ * сразу освоено (угадать — 0,4%); при поле 2 и у сортировки — обучение с L0 (угадать 5/5 — 3%);
+ * 4/5 — старт L1; меньше — L3.
+ */
+export const MATCH_BASELINE = { trials: 5, masteredFrom: 5, fromL1: 4, minFieldForMastery: 3 } as const;
+
+/** Рутина самообслуживания: цепочка области `self_care` (`ROUTINE`). Отдельного флага нет — один источник истины. */
+export function isRoutine(t: Pick<AbaTarget, 'area' | 'steps'>): boolean {
+  return t.area === 'self_care' && !!t.steps?.length;
+}
+
+/** Выполнен ли критерий рутины на последних прогонах (без условия переноса — `routineTransferMet`). */
+export function routineCriterionMet(runs: readonly { day: string; whole: boolean }[]): boolean {
+  const w = runs.slice(-ROUTINE.windowRuns);
+  return (
+    w.length === ROUTINE.windowRuns &&
+    w.filter((r) => r.whole).length >= ROUTINE.minWhole &&
+    new Set(w.map((r) => r.day)).size >= ROUTINE.minDistinctDays &&
+    w[w.length - 1].whole
+  );
+}
+
+/**
+ * Перенос (генерализация) рутины: в окне критерия есть целиком самостоятельный прогон, без срыва,
+ * вне привычного контекста — другой взрослый ИЛИ другое место (`setting ≠ usual`, методист
+ * 2026-10-12, Г4). Без отметки `setting` — `usual`: засчитывается безопасная сторона. Прогон вне
+ * окна из последних `windowRuns` не считается — свежесть доказательства важнее удобства.
+ */
+export function routineTransferMet(runs: readonly { whole: boolean; interrupted?: true; setting?: RoutineSetting }[]): boolean {
+  return runs
+    .slice(-ROUTINE.windowRuns)
+    .some((r) => r.whole && !r.interrupted && (r.setting === 'other_adult' || r.setting === 'other_place'));
+}
+
+/** Рутина освоена по окну прогонов: критерий выполнен **и** перенос подтверждён. */
+export function routineMasteryMet(
+  runs: readonly { day: string; whole: boolean; interrupted?: true; setting?: RoutineSetting }[],
+): boolean {
+  return routineCriterionMet(runs) && routineTransferMet(runs);
+}
+
+/**
+ * Запись прогона обучения для окна: целиком сам — каждое звено самостоятельно (доделанное
+ * взрослым — промах), сумма стартовых уровней звеньев — по состоянию до прогона.
+ */
+export function routineRunRecord(
+  target: AbaTarget,
+  before: AbaTargetState,
+  run: readonly AbaTrial[],
+  day: string,
+  extra: Pick<RoutineRunRecord, 'interrupted' | 'setting'> = {},
+): RoutineRunRecord {
+  const steps = target.steps ?? [];
+  // проба, снятая просьбой о перерыве или «Отказом», пробой не считается: звено повторено после
+  // перерыва, и в зачёт идёт повтор (раунд 4, Д3)
+  const scored = run.filter((t) => t.response !== 'interrupted');
+  const complete = steps.every((st) => scored.some((t) => t.stepId === st.id));
+  return {
+    day,
+    whole: !extra.interrupted && complete && scored.every((t) => t.response === 'independent'),
+    ...(extra.interrupted ? { interrupted: true as const } : {}),
+    startLevelSum: steps.reduce((sum, st) => sum + clampToApp(promptStateOf(before, st.id).startPromptLevel), 0),
+    ...(extra.setting ? { setting: extra.setting } : {}),
+  };
+}
+
+/**
+ * Прогон рутины в обучении — в окно (по прогону в день, `abaRoutineRun.ts`). Промах — любое звено
+ * не самостоятельно, в том числе доделанное взрослым, и прогон, оборванный срывом (В1). Критерий
+ * выполнен — «освоено»: `by` — `criterion`, если прогон вёл обученный наблюдатель, иначе
+ * `home_unverified` (блок 5: освоение у цели взрослого — только с подтверждением). Номер сессии
+ * прогон не двигает: поддержание обычных целей считается по сессиям.
+ */
+export function applyRoutineRun(
+  s: AbaTargetState,
+  record: RoutineRunRecord,
+  sessionIndex: number,
+  by: 'criterion' | 'home_unverified',
+  config?: AbaConfig,
+): AbaTargetState {
+  const routineRuns = [...(s.routineRuns ?? []), record].slice(-ROUTINE.keepRuns);
+  const others = s.flags.filter((f) => f !== 'no_progress' && f !== 'needs_transfer');
+  if (routineMasteryMet(routineRuns)) {
+    // окно обнуляется: после возврата в обучение освоение снова требует своих прогонов и дней,
+    // а не одного прогона поверх старых (методист, 2026-10-09)
+    return { ...markMastered({ ...s, routineRuns: [], flags: others }, sessionIndex, by, config), lastMaintenanceDay: record.day };
+  }
+  // критерий выполнен, переноса нет — «почти»: фаза прежняя, окно сохранено, флаг родителю и специалисту
+  if (routineCriterionMet(routineRuns)) return { ...s, routineRuns, flags: [...others, 'needs_transfer'] };
+  return { ...s, routineRuns, flags: routineStuck(routineRuns) ? [...others, 'no_progress'] : others };
+}
+
+/**
+ * Срыв в прогоне обучения: в окно критерия **не идёт** (окно измеряет навык, а не состояние
+ * ребёнка), а копится в `routineBreakdowns`. Затухание по уже записанным звеньям остаётся.
+ */
+export function applyRoutineBreakdown(
+  s: AbaTargetState,
+  record: { day: string; kind: 'baseline' | 'teaching' | 'maintenance' | 'verification'; setting: RoutineSetting; atStep: number },
+): AbaTargetState {
+  return { ...s, routineBreakdowns: [...(s.routineBreakdowns ?? []), record].slice(-10) };
+}
+
+/**
+ * Рутина застряла — аналог `no_progress` по окну прогонов: `ROUTINE.noProgressRuns` прогонов
+ * не меньше чем за `noProgressDays` разных дней, а во второй половине окна **и** доля целиком
+ * самостоятельных не выше, чем в первой, **и** стартовые уровни звеньев не снизились (В2,
+ * методист 2026-10-11): при нормальном затухании подсказок доля целиком самих растёт поздно, и
+ * без второго условия флаг ложный. Иначе рутина стояла бы неделями, и специалист не увидел бы.
+ */
+export function routineStuck(runs: readonly RoutineRunRecord[]): boolean {
+  // ребёнок на 100% в усвоенном контексте и ждёт переноса не застрял: доли равны, уровни уже 0
+  if (routineCriterionMet(runs)) return false;
+  if (runs.length < ROUTINE.noProgressRuns || new Set(runs.map((r) => r.day)).size < ROUTINE.noProgressDays) return false;
+  const half = Math.floor(runs.length / 2);
+  const [early, late] = [runs.slice(0, half), runs.slice(half)];
+  const share = (xs: readonly RoutineRunRecord[]) => xs.filter((r) => r.whole).length / xs.length;
+  const start = (xs: readonly RoutineRunRecord[]) => xs.reduce((sum, r) => sum + r.startLevelSum, 0) / xs.length;
+  return share(late) <= share(early) && start(late) >= start(early);
+}
+
+/**
+ * Базовая линия рутины — `ROUTINE.baselineRuns` прогона **в разные дни**, по одному в сессию,
+ * множеством возможностей (несделанное звено доделывает взрослый, ребёнок продолжает). Второй
+ * прогон в тот же день не в счёт. Оба целиком сами **и был целиком самостоятельный прогон вне
+ * привычного контекста** — освоено по базовой линии (перенос, Г4; методист 2026-10-12); иначе
+ * старт звена: сам в обоих — L0, в одном — L1, ни в одном — полная модель.
+ *
+ * Оба целиком сами, но переноса не было — фаза остаётся `baseline` с флагом `needs_transfer`;
+ * следующий прогон решает: целиком сам вне контекста — освоено; любое звено не сам — обучение;
+ * целиком сам в привычном — состояние держится; срыв — без изменений.
+ */
+export function applyRoutineBaseline(
+  s: AbaTargetState,
+  trials: readonly AbaTrial[],
+  day: string,
+  sessionIndex: number,
+  target: AbaTarget,
+  config?: AbaConfig,
+  /**
+   * Прогон оборван срывом, остаток довёл взрослый без записи (В1): день засчитывается,
+   * недойденные звенья — «не сам». Сдвиг в сторону большей помощи — безопасный.
+   */
+  interrupted = false,
+  /** Где и с кем прошёл прогон; нет отметки — `usual`. */
+  setting: RoutineSetting = 'usual',
+): AbaTargetState {
+  if (s.phase !== 'baseline') return s;
+  const run = interrupted
+    ? trials.filter((t) => t.targetId === target.id && isBaselineCountable(t))
+    : chainRuns(target, trials, isBaselineCountable)[0];
+  // срыв про навык ничего не говорит: прогон не засчитывается ни как «сам», ни как «не сам»
+  // (день занят — `lastRoutineRunDay`, его ставит `finishRoutineRun`)
+  if (interrupted) return s;
+  const acc = s.routineBaseline ?? { days: [], independentByStep: {} };
+  if (!run || acc.days.includes(day)) return s;
+  const steps = target.steps ?? [];
+  const independentNow = new Set(run.filter((t) => t.stepId && t.response === 'independent').map((t) => t.stepId!));
+  const wholeNow = !interrupted && steps.every((st) => independentNow.has(st.id));
+  const held = acc.days.length >= ROUTINE.baselineRuns;
+
+  const independentByStep = { ...acc.independentByStep };
+  for (const t of run) {
+    if (t.stepId && t.response === 'independent') independentByStep[t.stepId] = (independentByStep[t.stepId] ?? 0) + 1;
+  }
+  const days = [...acc.days, day];
+  const transferSeen = acc.transferSeen === true || (wholeNow && setting !== 'usual');
+  const rest = s.flags.filter((f) => f !== 'needs_transfer');
+  if (days.length < ROUTINE.baselineRuns) return { ...s, routineBaseline: { days, independentByStep, transferSeen } };
+
+  const allIndependent = steps.every((st) => (independentByStep[st.id] ?? 0) >= ROUTINE.baselineRuns);
+  const done: AbaTargetState = { ...s, flags: rest };
+  delete done.routineBaseline;
+  // в held-состоянии звено, не сделанное самим в этом прогоне, возвращает в обучение, даже если счёт накопленный
+  if (allIndependent && (!held || wholeNow)) {
+    if (transferSeen) return { ...markMastered(done, sessionIndex, 'baseline', config), lastMaintenanceDay: day };
+    return { ...s, flags: [...rest, 'needs_transfer'], routineBaseline: { days, independentByStep, transferSeen } };
+  }
+  const stepPrompts = Object.fromEntries(
+    steps.map((st) => {
+      const ok = independentByStep[st.id] ?? 0;
+      let level: PromptLevel;
+      if (held) level = independentNow.has(st.id) ? 0 : ok > 0 ? 1 : APP_MAX_PROMPT;
+      else level = ok >= ROUTINE.baselineRuns ? 0 : ok > 0 ? 1 : APP_MAX_PROMPT;
+      return [st.id, fresh(level, s.currentDelayMs)];
+    }),
+  );
+  return { ...done, phase: 'acquisition', stepPrompts };
+}
+
+/**
+ * Пора ли проба поддержания рутины: интервалы `ROUTINE.maintenanceGapDays` — в днях от последней
+ * пробы (или освоения). Индекс интервала — общий `maintenanceGapIndex`.
+ */
+export function isRoutineMaintenanceDue(s: AbaTargetState, day: string): boolean {
+  if (s.phase !== 'mastered' && s.phase !== 'maintenance') return false;
+  if (!s.lastMaintenanceDay) return true;
+  const days = Math.round((Date.parse(day) - Date.parse(s.lastMaintenanceDay)) / 86_400_000);
+  return days >= ROUTINE.maintenanceGapDays[s.maintenanceGapIndex];
+}
+
+/** Проба базовой линии, которая имеет право решать о старте: не прервана, засчитана не детектором. */
+export function isBaselineCountable(t: AbaTrial): boolean {
+  return t.kind === 'baseline' && t.response !== 'interrupted' && COUNTS_TOWARD_MASTERY[t.scoredBy];
+}
+
+function baselineTrials(trials: AbaTrial[]): AbaTrial[] {
+  return trials.filter(isBaselineCountable);
+}
+
+/** Состояние подсказки после базовой линии; задержка — прежняя (у звена — задержка цели). */
+const fresh = (start: PromptLevel, currentDelayMs: number): StepPromptState => ({
+  currentDelayMs,
+  startPromptLevel: start,
+  lastSuccessfulPromptLevel: start,
+  consecutiveIndependentAtStart: 0,
+  consecutiveAboveStart: 0,
+  consecutiveFailures: 0,
+});
+
+/**
+ * Итог базовой линии: с чего начинать обучение. Не набралось проб (сессию прервали) —
+ * базовая линия повторяется в следующей сессии.
+ *
+ * Дискретная цель, три пробы без подсказки:
+ * - все три самостоятельно — навык уже есть: сразу в поддержание с первого интервала,
+ *   ближайшая проба поддержания сама перепроверит (`masteredBy: 'baseline'`);
+ * - одна-две — обучение со старта L1: ребёнок почти умеет, полная модель научила бы его
+ *   ждать модель;
+ * - ни одной — обучение с полной модели, безошибочный старт.
+ *
+ * Цепочка, два прогона: у каждого звена свой старт — самостоятельно в обоих прогонах
+ * L0, в одном — L1, ни в одном — L3. Цепочка идёт в обучение.
+ *
+ * Цель набора `identify` — `IDENTIFY_BASELINE`: 5/5 — L0, 4/5 — L1, меньше — L3.
+ */
+export function applyBaseline(
+  s: AbaTargetState,
+  trials: AbaTrial[],
+  sessionIndex: number,
+  target: AbaTarget,
+  config?: AbaConfig,
+): AbaTargetState {
+  if (s.phase !== 'baseline') return s;
+  const own = baselineTrials(trials);
+
+  if (target.steps?.length) {
+    const byStep = target.steps.map((st) => own.filter((t) => t.stepId === st.id));
+    if (byStep.some((x) => x.length < BASELINE_CHAIN_RUNS)) return s;
+    const stepPrompts = Object.fromEntries(
+      target.steps.map((st, i) => {
+        const ok = byStep[i].filter((t) => t.response === 'independent').length;
+        const level: PromptLevel = ok >= BASELINE_CHAIN_RUNS ? 0 : ok > 0 ? 1 : APP_MAX_PROMPT;
+        return [st.id, fresh(level, s.currentDelayMs)];
+      }),
+    );
+    return { ...s, phase: 'acquisition', stepPrompts };
+  }
+
+  if (target.format === 'match') {
+    if (own.length < MATCH_BASELINE.trials) return s;
+    const ok = own.filter((t) => t.response === 'independent').length;
+    const wide = target.matchMode !== 'sort' && (target.fieldSize ?? 2) >= MATCH_BASELINE.minFieldForMastery;
+    if (ok >= MATCH_BASELINE.masteredFrom && wide) return markMastered(s, sessionIndex, 'baseline', config);
+    const level: PromptLevel = ok >= MATCH_BASELINE.masteredFrom ? 0 : ok >= MATCH_BASELINE.fromL1 ? 1 : APP_MAX_PROMPT;
+    return { ...s, phase: 'acquisition', ...fresh(level, s.currentDelayMs) };
+  }
+
+  if (target.format === 'identify') {
+    if (own.length < IDENTIFY_BASELINE.trials) return s;
+    const ok = own.filter((t) => t.response === 'independent').length;
+    const level: PromptLevel = ok >= IDENTIFY_BASELINE.fromL0 ? 0 : ok >= IDENTIFY_BASELINE.fromL1 ? 1 : APP_MAX_PROMPT;
+    return { ...s, phase: 'acquisition', ...fresh(level, s.currentDelayMs) };
+  }
+
+  if (own.length < BASELINE_TRIALS) return s;
+  const independent = own.filter((t) => t.response === 'independent').length;
+  if (independent === own.length) return markMastered(s, sessionIndex, 'baseline', config);
+  return { ...s, phase: 'acquisition', ...fresh(independent > 0 ? 1 : APP_MAX_PROMPT, s.currentDelayMs) };
+}
+
 /** Перевести освоенную цель в поддержание: расписание начинается с этой сессии и первого интервала. */
-export function markMastered(s: AbaTargetState, sessionIndex: number): AbaTargetState {
+export function markMastered(
+  s: AbaTargetState,
+  sessionIndex: number,
+  by: 'criterion' | 'baseline' | 'home_unverified' | 'inferred' = 'criterion',
+  config?: AbaConfig,
+): AbaTargetState {
   return {
     ...s,
     phase: 'mastered',
+    masteredBy: by,
+    ...(config ? { masteredConfig: config } : {}),
+    flags: s.flags.filter((f) => f !== 'needs_verification'),
     maintenanceGapIndex: 0,
     maintenanceFailsInRow: 0,
     lastMaintenanceSessionIndex: sessionIndex,
@@ -248,6 +597,17 @@ export function applyMaintenanceProbe(
     };
   }
 
+  // Выведенная по проверке сверху вниз (автоподбор) — назад на базовую линию с первого провала:
+  // уровня последнего успеха у неё нет, учить с него нечего (методист, 2026-10-02).
+  if (s.masteredBy === 'inferred') {
+    return {
+      ...base,
+      phase: 'baseline',
+      masteredBy: undefined,
+      maintenanceGapIndex: 0 as GapIndex,
+      maintenanceFailsInRow: 0,
+    };
+  }
   const lastSuccessfulPromptLevel =
     t.response === 'prompted' ? clampToApp(t.promptLevelUsed) : clampToApp(s.lastSuccessfulPromptLevel);
   const fails = s.maintenanceFailsInRow + 1;

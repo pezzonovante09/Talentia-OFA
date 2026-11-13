@@ -2,7 +2,9 @@ import { emptySkill, type SkillState } from '../mastery';
 import {
   buildParentReport,
   HARD_LIMIT,
+  isHard,
   lastSevenDays,
+  REVIEW_LESSON_ID,
   runSeconds,
   skillsSummary,
   weekSummary,
@@ -77,13 +79,31 @@ describe('навыки', () => {
     expect(s.mastered.map((x) => x.skill)).toEqual(['a', 'b']);
   });
 
-  it('тяжело — младшие коробки при трёх и больше попытках, худшие первыми', () => {
+  it('тяжело — коробка 1 при ≥ 3 попытках и ≤ половины верных, коробка 2 при ≥ 5 и меньше половины; худшие первыми', () => {
     const s = skillsSummary([
       skill('new', { box: 1, attempts: 1 }),
-      skill('ok', { box: 2, attempts: 5, correct: 3 }),
+      skill('ok', { box: 2, attempts: 5, correct: 2 }),
       skill('bad', { box: 1, attempts: 7, correct: 2 }),
     ]);
     expect(s.hard.map((x) => x.skill)).toEqual(['bad', 'ok']);
+  });
+
+  it('не трудность: безошибочный первый урок (коробка 2, 4 из 4), два из трёх верно в коробке 1, коробка 2 с половиной верных (вопрос 57)', () => {
+    expect(isHard(skill('clean', { box: 2, attempts: 4, correct: 4 }))).toBe(false);
+    expect(isHard(skill('two-of-three', { box: 1, attempts: 3, correct: 2 }))).toBe(false);
+    expect(isHard(skill('half', { box: 2, attempts: 6, correct: 3 }))).toBe(false);
+    expect(isHard(skill('shown', { box: 1, attempts: 3, correct: 1 }))).toBe(true);
+    expect(isHard(skill('box3', { box: 3, attempts: 9, correct: 1 }))).toBe(false);
+  });
+
+  it('прохождение-повторение не входит в число уроков недели, его задания — в повторения', () => {
+    const base = { childId: 'c', taskSeconds: [10, 10] };
+    const runs = [
+      { ...base, id: 'r1', lessonId: 'nv-count-l1', startedAt: '2026-10-05T10:00:00.000Z', reviewTasks: 1 },
+      { ...base, id: 'r2', lessonId: REVIEW_LESSON_ID, startedAt: '2026-10-05T11:00:00.000Z', reviewTasks: 2 },
+    ];
+    const w = weekSummary(runs, '2026-10-05', (iso) => iso.slice(0, 10));
+    expect({ lessons: w.lessons, reviewTasks: w.reviewTasks, activeDays: w.activeDays }).toEqual({ lessons: 1, reviewTasks: 3, activeDays: 1 });
   });
 
   it('не больше пяти строк', () => {

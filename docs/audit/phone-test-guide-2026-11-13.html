@@ -1,0 +1,598 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Talentia: проверка сборки на телефоне</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#FFF3E3;color:#2A1A12;font:15px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif}
+header,section{max-width:900px;margin:auto;padding:18px 20px 6px}h1{font-size:24px;margin:0 0 6px}h2{font-size:19px;margin:18px 0 8px}
+nav{position:sticky;top:0;z-index:2;background:#FFF3E3f2;padding:8px 20px;border-bottom:1px solid #e0d8cd}nav div{max-width:900px;margin:auto;display:flex;gap:6px 14px;flex-wrap:wrap}nav a{color:#5A34C4;font-weight:600;text-decoration:none;font-size:14px}
+.box{background:#fff;border:1px solid #e0d8cd;border-radius:12px;padding:10px 14px;margin:0 0 12px}.warn{border-color:#D93A1E;background:#FFF0EC}
+ol li{margin:0 0 8px}code{font:13px Consolas,monospace;background:#fff;border:1px solid #e8dfd3;border-radius:5px;padding:0 4px}
+.cmd{display:flex;gap:8px;align-items:center;background:#FAF6F0;border:1px solid #ece4d8;border-radius:10px;padding:8px 10px;margin:6px 0}.cmd code{flex:1;border:0;background:none}
+button{all:unset;cursor:pointer;background:#5A34C4;color:#fff;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px}
+.item{background:#fff;border:1px solid #e0d8cd;border-radius:12px;padding:10px 14px;margin:0 0 10px}.item.ok{border-color:#12855A;background:#F1FBF5}.item.bad{border-color:#D93A1E;background:#FFF3F0}.item.skip{opacity:.7}
+.head{font-weight:700;margin-bottom:6px}.num{display:inline-block;min-width:28px;color:#5A34C4}.row{display:grid;grid-template-columns:140px 1fr;gap:8px;font-size:14px;margin:2px 0}.lbl{color:#6b5a4f}
+.hint{background:#F3EEFF;border-radius:8px;padding:4px 6px}.mark{display:flex;gap:16px;margin:8px 0 6px;font-size:14px;flex-wrap:wrap}textarea{width:100%;min-height:42px;border:1px solid #e0d8cd;border-radius:8px;padding:6px;font:14px inherit}
+.bar{position:sticky;bottom:0;background:#FFF3E3f2;border-top:1px solid #e0d8cd;padding:10px 20px}.bar div{max-width:900px;margin:auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+@media (max-width:600px){.row{grid-template-columns:1fr}}
+</style></head><body>
+<header><h1>Проверка сборки на телефоне</h1>
+<p>Версия «только ABA, со взрослым». Около 1,5 часа. Отмечайте каждый пункт «всё так / проблема / пропущено» и пишите, что увидели. В конце — кнопка <b>«Скопировать отчёт»</b>: вставьте его в чат со мной. Отметки сохраняются в этом браузере.</p>
+<div class="box warn"><b>Открывайте эту страницу в Chrome или Edge на компьютере</b> (двойной клик по файлу <code>docs/audit/phone-test-guide-2026-11-13.html</code>). Во встроенном просмотрщике Claude кнопки и отметки не работают.</div>
+</header>
+<nav><div><a href="#prep">0. Что нужно</a><a href="#build">1. Собрать</a><a href="#install">2. Поставить</a><a href="#main">3. Основные 20 шагов</a><a href="#rewards">4. Награды</a><a href="#buttons">5. Кнопки</a><a href="#extra">6. Тема, режим, звук</a><a href="#send">7. Отправить</a></div></nav>
+
+<section id="prep"><h2>0. Что нужно</h2>
+<div class="box"><ul>
+<li>Android-телефон и компьютер с проектом.</li>
+<li>Второй телефон — чтобы вам позвонили во время задания (шаг 18).</li>
+<li>Бумага и ручка: записать PIN из 6 цифр.</li>
+<li>Мессенджер или почта на телефоне — для выгрузки файла специалисту (шаг 20).</li>
+<li>Детям сборку не давать, настоящие имена не вводить: ребёнка назовите «Тест».</li>
+</ul>
+<b>Правило остановки:</b> если в шаге 6 или 12 данные пропали после закрытия или перезагрузки — дальше не идите, отправьте отчёт.<br>
+<b>Какие задания увидите:</b> первое занятие — фигуры (3 плитки), второе — фигуры, цвета и предметы, третье — цвета. Приложение начинает с трудного и идёт вниз: так оно проверяет, что ребёнок уже умеет. <b>Не проверяется</b> только режим «Сам» (скрыт).<br><b>Как выйти из занятия:</b> кнопка «Назад» телефона в занятии не работает. Прижмите стрелку слева вверху и держите 1,5 секунды; короткий тап покажет значок пальца — это подсказка «держите».</div></section>
+
+<section id="build"><h2>1. Собрать сборку (компьютер, 15–25 минут)</h2>
+<ol>
+<li>Откройте PowerShell и перейдите в папку проекта:<div class="cmd"><code>cd C:\Users\User\Desktop\Talentia-v1.0</code><button type="button" class="cp" data-copy-text="cd C:\Users\User\Desktop\Talentia-v1.0">Копировать</button></div></li>
+<li>Запустите сборку:<div class="cmd"><code>npm run build:aba</code><button type="button" class="cp" data-copy-text="npm run build:aba">Копировать</button></div>
+Если попросит войти — ваш аккаунт Expo. <b>Если спросит «создать новый проект» — нажмите Ctrl+C:</b> вы не в той папке, вернитесь к пункту 1.</li>
+<li>Ждите, пока в конце не появится <b>ссылка, которая заканчивается на <code>.apk</code></b> (и QR-код). QR-код может открыть страницу с ошибкой — берите прямую ссылку на <code>.apk</code>. Не нашли ссылку — напишите мне «дай ссылку на apk».</li>
+</ol></section>
+
+<section id="install"><h2>2. Поставить на телефон (5 минут)</h2>
+<ol>
+<li><b>Удалите старую Talentia</b> (долгое нажатие на значок → «Удалить»). Вместе с ней уйдёт тестовый профиль, в котором знакомство могло засчитаться на одинаковых карточках.</li>
+<li>Перешлите себе ссылку на <code>.apk</code> (например, в «Избранное» Telegram), откройте на телефоне — файл скачается.</li>
+<li>Откройте скачанный файл → разрешите установку из этого источника → на предупреждение Play Защиты «Всё равно установить».</li>
+<li>Откройте приложение: заголовок <b>«Позови взрослого»</b> и <b>нет</b> кнопки «Попробовать без сохранения». Иначе стоит старая сборка — удалите и поставьте заново.</li>
+</ol></section>
+
+<section id="main"><h2>3. Основные 20 шагов (около часа)</h2>
+<p>Это чеклист <code>docs/audit/smoke-aba-20.md</code>. В занятиях отвечайте верно и без пауз: сначала касайтесь верхней карточки, потом такой же внизу. Молчание дольше 5 секунд считается ошибкой.</p>
+
+<div class="item" data-id="1">
+  <div class="head"><span class="num">1</span> <span class="title">Удалите все старые Talentia. Откройте на телефоне прямую ссылку на .apk, скачайт…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Удалите все старые Talentia. Откройте на телефоне прямую ссылку на <code>.apk</code>, скачайте и установите файл (на предупреждение защиты — «Всё равно установить»).</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Приложение установилось, на экране телефона есть иконка Talentia.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="1" value="ok"> всё так</label>
+    <label><input type="radio" name="1" value="bad"> проблема</label>
+    <label><input type="radio" name="1" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="2">
+  <div class="head"><span class="num">2</span> <span class="title">Откройте приложение.</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Откройте приложение.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Заставка, затем «Позови взрослого»: Tali, карточка с плюсом, внизу серая строка «Для взрослых». Кнопки «Попробовать без сохранения» нет. Русские буквы без квадратиков, ничего не залезает под панели телефона.</div></div>
+  <div class="row hint"><div class="lbl">Пояснение</div><div>«Позови взрослого» — надпись для ребёнка; взрослый здесь вы. Жмите серую строку «Для взрослых» в самом низу. Карточка с плюсом с первого тапа только качает замок — так задумано, чтобы ребёнок не зашёл случайно.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="2" value="ok"> всё так</label>
+    <label><input type="radio" name="2" value="bad"> проблема</label>
+    <label><input type="radio" name="2" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="3">
+  <div class="head"><span class="num">3</span> <span class="title">Нажмите «Для взрослых» и пройдите настройку: решите пример на калькуляторе, введ…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Нажмите «Для взрослых» и пройдите настройку: решите пример на калькуляторе, введите ответ кнопками на экране, «Дальше»; придумайте PIN из 6 цифр (запишите на бумагу), повторите его; на экране «Шаг 4 из 4» нажмите «Даю согласие».</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Клавиатура телефона не выезжает, цифры PIN на экране перемешаны, после шестой цифры экран сам идёт дальше. После «Даю согласие» — «Новый профиль», ошибки «Не получилось» нет.</div></div>
+  <div class="row hint"><div class="lbl">Пояснение</div><div>Пример нужен, чтобы дальше не прошёл маленький ребёнок; ошиблись — дадут другой. Цифры PIN стоят не по порядку и каждый раз по-новому — смотрите на кнопки. Кнопки «ОК» нет: шестая цифра — и экран идёт дальше. PIN запишите сразу: восстановить его нельзя. «Закрыть» не трогайте — настройка сотрётся.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="3" value="ok"> всё так</label>
+    <label><input type="radio" name="3" value="bad"> проблема</label>
+    <label><input type="radio" name="3" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="4">
+  <div class="head"><span class="num">4</span> <span class="title">Впишите имя «Тест», выберите полосу 5–6, «Создать профиль».</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Впишите имя «Тест», выберите полосу 5–6, «Создать профиль».</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Поле видно над клавиатурой, русские буквы печатаются. После создания — первый экран с карточкой «Тест».</div></div>
+  <div class="row hint"><div class="lbl">Пояснение</div><div>Язык и «Регион „Кыргызский“» не трогайте. После «Создать профиль» вас вернёт на первый экран — это не ошибка: занятия открываются оттуда, тапом по карточке «Тест».</div></div>
+  <div class="mark">
+    <label><input type="radio" name="4" value="ok"> всё так</label>
+    <label><input type="radio" name="4" value="bad"> проблема</label>
+    <label><input type="radio" name="4" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="5">
+  <div class="head"><span class="num">5</span> <span class="title">Нажмите карточку «Тест».</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Нажмите карточку «Тест».</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Карта с уроками не открывается: сразу экран PIN «Для взрослых». После верного PIN — экран «Занятия ABA».</div></div>
+  <div class="row hint"><div class="lbl">Пояснение</div><div>Тап по карточке ребёнка всегда сначала просит PIN — занятие запускает только взрослый. Свернули приложение или 2 минуты ничего не нажимали — PIN спросят снова. Крестик слева вверху возвращает на первый экран.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="5" value="ok"> всё так</label>
+    <label><input type="radio" name="5" value="bad"> проблема</label>
+    <label><input type="radio" name="5" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="6">
+  <div class="head"><span class="num">6</span> <span class="title">Закройте приложение совсем (смахните из списка недавних) и откройте снова.</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Закройте приложение совсем (смахните из списка недавних) и откройте снова.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Карточка «Тест» на месте, настройку заново не спрашивает. <b>Не так — дальше не идите.</b></div></div>
+  <div class="mark">
+    <label><input type="radio" name="6" value="ok"> всё так</label>
+    <label><input type="radio" name="6" value="bad"> проблема</label>
+    <label><input type="radio" name="6" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="7">
+  <div class="head"><span class="num">7</span> <span class="title">«Тест» → PIN → на экране «Занятия ABA» нажмите «Прочитать согласие» → «Даю согла…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>«Тест» → PIN → на экране «Занятия ABA» нажмите «Прочитать согласие» → «Даю согласие» (PIN попросит, только если читали дольше 5 минут).</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>До согласия — «Нужно согласие на данные практики». После — «Сначала знакомство с жетонами…», «Кто ведёт» — «Не выбрано», кнопка «Начать знакомство». Переключателя «Со взрослым» / «Сам» нет. Если вместо этого «Цели ждут картинок» — дальше не идите, пришлите снимок экрана.</div></div>
+  <div class="row hint"><div class="lbl">Пояснение</div><div>Это второе, отдельное согласие — на записи о том, как ребёнок занимается. Из всего экрана «Занятия ABA» вам нужна верхняя карточка «Занятие». Красную строку внизу («Отозвать и удалить…») не нажимайте — она стирает записи.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="7" value="ok"> всё так</label>
+    <label><input type="radio" name="7" value="bad"> проблема</label>
+    <label><input type="radio" name="7" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="8">
+  <div class="head"><span class="num">8</span> <span class="title">«Начать знакомство». В листе выберите «Родитель», включите «Обучение у специалис…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>«Начать знакомство». В листе выберите «Родитель», включите «Обучение у специалиста пройдено», «Готово» (справа вверху). Снова «Начать знакомство».</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Лист «Кто ведёт занятие?» помещается целиком, в строке — «Родитель · с обучением». После второго нажатия сразу песочный экран «За что играем сегодня?» с тремя <b>разными</b> картинками наград; экран не белый.</div></div>
+  <div class="row hint"><div class="lbl">Пояснение</div><div>Жетон — звёздочка, которую ребёнок получает за верный ответ и тут же меняет на короткую игру-награду. «Знакомство с жетонами» — занятие без заданий: ребёнку четыре раза показывают «звёздочка → игра». Лист «Кто ведёт» только запоминает выбор — после «Готово» ещё раз нажмите «Начать знакомство».</div></div>
+  <div class="mark">
+    <label><input type="radio" name="8" value="ok"> всё так</label>
+    <label><input type="radio" name="8" value="bad"> проблема</label>
+    <label><input type="radio" name="8" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="9">
+  <div class="head"><span class="num">9</span> <span class="title">Пройдите знакомство: 4 круга, около 3 минут. В каждом круге коснитесь одной карт…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Пройдите знакомство: 4 круга, около 3 минут. В каждом круге коснитесь одной картинки (берите разные), потом ничего не нажимайте 10 секунд. В середине один раз нажмите системную «Назад». Приложение не сворачивайте.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>В каждом круге: выбор («За что играем сегодня?», дальше «За что играем теперь?»), 10 секунд неподвижного ожидания, жетон въезжает в ячейку и летит в картинку, она раскрывается в игру-награду на весь экран с убывающим кольцом сверху (около 20 секунд), награда кончается сама. «Назад» ничего не делает. В конце Tali, «Закончили на сегодня», «Готово» (с галочкой) ведёт на первый экран.</div></div>
+  <div class="row hint"><div class="lbl">Пояснение</div><div>Экран «За что играем?» — не задание, а выбор награды: три картинки — три игры, правильной нет. Коснитесь любой один раз — появится толстая рамка, и экран сам пойдёт дальше; кнопки «Дальше» нет. Потом экран 10 секунд стоит неподвижно — это не зависание. Игра-награда идёт около 20 секунд и кончается сама: кольцо сверху — оставшееся время; закрыть её раньше нельзя, трогать экран можно. Счётчика кругов нет — считайте сами.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="9" value="ok"> всё так</label>
+    <label><input type="radio" name="9" value="bad"> проблема</label>
+    <label><input type="radio" name="9" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="10">
+  <div class="head"><span class="num">10</span> <span class="title">«Тест» → PIN. Статус снова «Сначала знакомство…» — нажмите тихую строку под кноп…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>«Тест» → PIN. Статус снова «Сначала знакомство…» — нажмите тихую строку под кнопкой: «Знакомство с жетонами уже пройдено». Затем «Начать занятие» и пройдите обучение карточке «перерыв»: три раза коснитесь квадрата с двумя полосками справа вверху (в третий раз — сразу, не выжидая), каждый раз на открывшемся экране нажмите «Возвращаемся». «Пропустить» не нажимайте.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>После «уже пройдено» — «Можно начинать». В обучении: справа вверху карточка с двумя полосками, внизу панель взрослого с подсказками («Коснитесь карточки „перерыв“ сами», «Покажите на неё жестом», «Подождите 10 секунд, потом жест») и «Пропустить» — целиком выше системных кнопок. Касание карточки открывает перерыв: полоски в кольце (15 секунд), «Возвращаемся». После трёх раз — «За что играем сегодня?».</div></div>
+  <div class="row hint"><div class="lbl">Пояснение</div><div>Знакомство по правилам нужно пройти дважды, поэтому статус снова «Сначала знакомство…» — строка «уже пройдено» это пропускает. Карточка «перерыв» — квадрат с двумя полосками: ребёнок касается её, когда устал. Перед первым заданием приложение три раза учит ей пользоваться; подсказки в серой панели — вам. В проверке вы за обоих: коснитесь карточки, нажмите «Возвращаемся». «Пропустить» значит «ребёнок не коснулся».</div></div>
+  <div class="mark">
+    <label><input type="radio" name="10" value="ok"> всё так</label>
+    <label><input type="radio" name="10" value="bad"> проблема</label>
+    <label><input type="radio" name="10" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="11">
+  <div class="head"><span class="num">11</span> <span class="title">Выберите награду и ответьте верно на 5 заданий с фигурами (три нижние плитки). Н…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Выберите награду и ответьте верно на 5 заданий с фигурами (три нижние плитки). На первом сначала нажмите нижнюю плитку, потом верхнюю, потом такую же внизу.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Пока не нажата верхняя, нижние в штриховку и не отвечают. Фигуры коричневые, различаются только формой, у кольца есть обводка. После ответа жетона нет — так и должно быть в первом занятии; через 5 секунд следующее задание. В конце 10 секунд ожидания с Tali, жетон летит в картинку, награда 20 секунд, «Закончили на сегодня». Плитки и панель не обрезаны.</div></div>
+  <div class="row hint"><div class="lbl">Пояснение</div><div>Порядок всегда такой: сначала верхняя плитка (образец), потом такая же внизу. Приложение намеренно не показывает «неверно»: после ответа толстая рамка у плитки, несколько секунд тишины и следующее задание. Первое занятие проверочное — приложение смотрит, что ребёнок уже умеет, поэтому жетонов нет. Серая панель внизу — для взрослого: «Была подсказка» жмут, если вы помогли ребёнку; «Отказ» — если ребёнок не хочет. В проверке не нажимайте их до шага 16.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="11" value="ok"> всё так</label>
+    <label><input type="radio" name="11" value="bad"> проблема</label>
+    <label><input type="radio" name="11" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="12">
+  <div class="head"><span class="num">12</span> <span class="title">Перезагрузите телефон. Откройте Talentia → «Тест» → тот же PIN.</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Перезагрузите телефон. Откройте Talentia → «Тест» → тот же PIN.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Профиль, PIN и согласие на месте, «Можно начинать». В «Целях» подпись «Занятие сегодня: проб — 5, самостоятельно — 5» (если ошибались, числа другие, но пробы записаны). <b>Не так — дальше не идите.</b></div></div>
+  <div class="mark">
+    <label><input type="radio" name="12" value="ok"> всё так</label>
+    <label><input type="radio" name="12" value="bad"> проблема</label>
+    <label><input type="radio" name="12" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="13">
+  <div class="head"><span class="num">13</span> <span class="title">«Начать занятие», выберите награду и отвечайте верно до конца: 13 заданий, около…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>«Начать занятие», выберите награду и отвечайте верно до конца: 13 заданий, около 3 минут. Если после касания образца светлая только одна нижняя плитка — это подсказка, нажмите её.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Задания с фигурами, цветами и предметами. <b>Жетонов и награды в этом занятии нет вообще</b> — так задумано; в конце сразу «Закончили на сегодня» с Tali. К последнему заданию плитки откликаются так же быстро, как в начале. Обрыв посреди занятия без Tali — ошибка, сделайте снимок экрана.</div></div>
+  <div class="row hint"><div class="lbl">Пояснение</div><div>Без звуковых файлов в этом занятии нет вообще никакого отклика на ответы — ни жетона, ни похвалы, ни награды. Это ожидаемо для сборки без звука; запишите, насколько это странно ощущается. Если в начале снова экран с карточкой «перерыв» — пройдите его, как в шаге 10.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="13" value="ok"> всё так</label>
+    <label><input type="radio" name="13" value="bad"> проблема</label>
+    <label><input type="radio" name="13" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="14">
+  <div class="head"><span class="num">14</span> <span class="title">«Тест» → PIN → «Начать занятие», выберите награду. Первые два задания — с подска…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>«Тест» → PIN → «Начать занятие», выберите награду. Первые два задания — с подсказкой (светлая одна плитка), жетона за них нет. На третьем ответьте верно.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>С третьего задания: фиолетовая плашка с Tali и «Держи жетон!», жетон падает в ячейку, меньше чем через секунду летит в картинку, и она раскрывается в награду на 20 секунд — без пустых кадров. Дальше так после каждого верного ответа. Если задания кончились раньше шага 19 — начните новое занятие и продолжайте с того же шага.</div></div>
+  <div class="row hint"><div class="lbl">Пояснение</div><div>С этого занятия жетоны настоящие: верный ответ без подсказки → «Держи жетон!» → награда. Первые два задания приложение само подсказывает — за них жетона нет.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="14" value="ok"> всё так</label>
+    <label><input type="radio" name="14" value="bad"> проблема</label>
+    <label><input type="radio" name="14" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="15">
+  <div class="head"><span class="num">15</span> <span class="title">На следующем задании коснитесь карточки «перерыв» (квадрат с полосками справа вв…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>На следующем задании коснитесь карточки «перерыв» (квадрат с полосками справа вверху). Подождите минуту, пока у «Возвращаемся» не появится толстая рамка, и нажмите её.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Экран перерыва: полоски в убывающем кольце; через 60 секунд кольцо кончается, у «Возвращаемся» толстая рамка («Возвращаемся» работает и раньше). После нажатия — снова задание, занятие продолжается.</div></div>
+  <div class="row hint"><div class="lbl">Пояснение</div><div>Перерыв длится минуту. Не ждите дольше двух минут: если никто не вернётся, занятие закончится само.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="15" value="ok"> всё так</label>
+    <label><input type="radio" name="15" value="bad"> проблема</label>
+    <label><input type="radio" name="15" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="16">
+  <div class="head"><span class="num">16</span> <span class="title">После перерыва ответьте верно на два задания. На третьем нажмите «Отказ» внизу с…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>После перерыва ответьте верно на два задания. На третьем нажмите «Отказ» внизу справа — один раз.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>«Отказ» нажимается с первого раза, системный жест не срабатывает. Плитки исчезают, у карточки «перерыв» толстая рамка, пустой экран 30 секунд; первые 10 секунд в панели «Покажите на карточку жестом, не уговаривайте». Потом занятие продолжается. (Второй «Отказ» за занятие или «Отказ» сразу после перерыва заканчивают занятие — это норма.)</div></div>
+  <div class="row hint"><div class="lbl">Пояснение</div><div>После «Отказ» экран 30 секунд пустой — это тихая пауза, от ребёнка ничего не требуется. Карточку «перерыв» и «Отказ» в это время не трогайте — просто дождитесь следующего задания.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="16" value="ok"> всё так</label>
+    <label><input type="radio" name="16" value="bad"> проблема</label>
+    <label><input type="radio" name="16" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="17">
+  <div class="head"><span class="num">17</span> <span class="title">На задании, ничего не нажимая, запомните картинки на плитках. Сверните приложени…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>На задании, ничего не нажимая, запомните картинки на плитках. Сверните приложение кнопкой «Домой», через 30 секунд вернитесь из списка недавних и ответьте верно.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>То же задание с теми же плитками, старый кадр не мелькает, PIN не спрашивает. Время в фоне не засчитано как молчание: ответ принят, занятие идёт дальше.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="17" value="ok"> всё так</label>
+    <label><input type="radio" name="17" value="bad"> проблема</label>
+    <label><input type="radio" name="17" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="18">
+  <div class="head"><span class="num">18</span> <span class="title">На задании попросите позвонить вам со второго телефона. Сразу примите звонок, по…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>На задании попросите позвонить вам со второго телефона. Сразу примите звонок, поговорите 20–30 секунд, положите трубку; если Talentia не вернулась сама — откройте её из недавних. Ответьте верно.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Приложение не перезапустилось: то же задание с теми же плитками, ответ принят, занятие идёт дальше. Если пока телефон звонил, вышла подсказка, — запишите, сколько секунд он звонил.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="18" value="ok"> всё так</label>
+    <label><input type="radio" name="18" value="bad"> проблема</label>
+    <label><input type="radio" name="18" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="19">
+  <div class="head"><span class="num">19</span> <span class="title">Отвечайте верно до конца занятия. Когда сам появится экран перерыва (плановый) —…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Отвечайте верно до конца занятия. Когда сам появится экран перерыва (плановый) — нажмите «Возвращаемся».</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Плановый перерыв: кольцо 60 секунд и «Возвращаемся». Занятие доходит до «Закончили на сегодня» с Tali, без обрыва посреди; этот экран появляется один раз. «Готово» первую секунду не нажимается, потом ведёт на первый экран, не на карту. Системная «Назад» на первом экране сворачивает приложение с первого нажатия.</div></div>
+  <div class="row hint"><div class="lbl">Пояснение</div><div>В конце экран с Tali несколько секунд неподвижен — ждите. Следующее занятие — снова карточка «Тест» и PIN.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="19" value="ok"> всё так</label>
+    <label><input type="radio" name="19" value="bad"> проблема</label>
+    <label><input type="radio" name="19" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="20">
+  <div class="head"><span class="num">20</span> <span class="title">«Тест» → PIN → прокрутите «Занятия ABA» вниз → «Выгрузить для специалиста». Отпр…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>«Тест» → PIN → прокрутите «Занятия ABA» вниз → «Выгрузить для специалиста». Отправьте себе <b>дважды</b>: в мессенджер и на почту. Откройте оба полученных файла.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>«Готовится…», окно выбора приложения. Оба файла с названием «talentia-aba-» и сегодняшней датой дошли, их размер не нулевой, внутри текст без имени «Тест». После возврата приложение снова просит PIN — это норма. Пустой или не прикрепившийся файл — запишите, в каком приложении.</div></div>
+  <div class="row hint"><div class="lbl">Пояснение</div><div>Файл проверяем в двух приложениях: есть риск, что на Android он удаляется раньше, чем получатель успел его прочитать.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="20" value="ok"> всё так</label>
+    <label><input type="radio" name="20" value="bad"> проблема</label>
+    <label><input type="radio" name="20" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+</section>
+
+<section id="rewards"><h2>4. Награды — 7 штук (по ходу занятий)</h2>
+<p>Награду выбирают в каждом круге знакомства и в начале каждого занятия; приложение показывает случайные 3 из 7. За 20 шагов вы сыграете максимум в 5 наград. <b>Чтобы увидеть больше:</b> в шаге 10, до нажатия «Знакомство с жетонами уже пройдено», запустите знакомство ещё 1–2 раза — каждый запуск даёт новую тройку. Что так и не выпало — отметьте «пропущено», это не проблема.</p>
+
+<div class="item" data-id="Н0">
+  <div class="head"><span class="num">Н0</span> <span class="title">Экран выбора</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Посмотрите на карточки наград и на полоску «работаю за…» после выбора.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Три разные картинки; после выбора наверху маленький силуэт именно этой награды.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="Н0" value="ok"> всё так</label>
+    <label><input type="radio" name="Н0" value="bad"> проблема</label>
+    <label><input type="radio" name="Н0" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+
+<div class="item" data-id="Н1">
+  <div class="head"><span class="num">Н1</span> <span class="title">Пузыри</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Тапните по пузырю, потом по пустому месту, потом много раз подряд.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Пузырь под пальцем лопается сразу (не рядом появляется новый). По пустому месту — новый пузырь поднимается вверх. Больше 6 пузырей не бывает: лишний тап лопает ближайший.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="Н1" value="ok"> всё так</label>
+    <label><input type="radio" name="Н1" value="bad"> проблема</label>
+    <label><input type="radio" name="Н1" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="Н2">
+  <div class="head"><span class="num">Н2</span> <span class="title">Калейдоскоп</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Тапайте по одному разу, потом быстро-быстро.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Каждый тап — новый узор из лепестков. При частых тапах узор не мигает пустым кадром.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="Н2" value="ok"> всё так</label>
+    <label><input type="radio" name="Н2" value="bad"> проблема</label>
+    <label><input type="radio" name="Н2" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="Н3">
+  <div class="head"><span class="num">Н3</span> <span class="title">Вертушка</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Один тап, подождите; потом 5 тапов подряд.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>После тапа вертушка делает оборот и плавно останавливается. Частые тапы не раскручивают её до бешеной скорости, нет рывков назад.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="Н3" value="ok"> всё так</label>
+    <label><input type="radio" name="Н3" value="bad"> проблема</label>
+    <label><input type="radio" name="Н3" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="Н4">
+  <div class="head"><span class="num">Н4</span> <span class="title">Горка с шариком</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>До тапа посмотрите на верх горки; тапните; пока шарик катится — тапните ещё 2–3 раза.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>До тапа шарик ждёт наверху у упора. После тапа катится по жёлобу (по кремовой дорожке, не по краю) и пропадает в ведёрке. Тап на ходу — упор качнулся, новый шарик ждёт наверху (не больше двух), потом катится сам.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="Н4" value="ok"> всё так</label>
+    <label><input type="radio" name="Н4" value="bad"> проблема</label>
+    <label><input type="radio" name="Н4" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="Н5">
+  <div class="head"><span class="num">Н5</span> <span class="title">Танец Tali</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Тапните несколько раз с паузами.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Каждый тап — новое движение Tali (прыжок, покачивание, «подпрыгнул»), без тапов Tali стоит.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="Н5" value="ok"> всё так</label>
+    <label><input type="radio" name="Н5" value="bad"> проблема</label>
+    <label><input type="radio" name="Н5" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="Н6">
+  <div class="head"><span class="num">Н6</span> <span class="title">Капля краски</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Тапните в разные места.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Капля появляется сразу над пальцем, падает и растекается волнистым пятном. Пятна копятся.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="Н6" value="ok"> всё так</label>
+    <label><input type="radio" name="Н6" value="bad"> проблема</label>
+    <label><input type="radio" name="Н6" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="Н7">
+  <div class="head"><span class="num">Н7</span> <span class="title">Поём вместе</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Посмотрите на верх экрана; тапните.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Сверху надпись взрослому «Спойте вместе с ребёнком». Тап — Tali покачивается. На карточке выбора — Tali с нотами (отличается от «Танца Tali»).</div></div>
+  <div class="mark">
+    <label><input type="radio" name="Н7" value="ok"> всё так</label>
+    <label><input type="radio" name="Н7" value="bad"> проблема</label>
+    <label><input type="radio" name="Н7" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+</section>
+
+<section id="buttons"><h2>5. Кнопки (15 минут)</h2>
+
+<div class="item" data-id="К1">
+  <div class="head"><span class="num">К1</span> <span class="title">Карточка ребёнка → PIN → «Назад» в «Занятиях ABA». Отдельно: карточка…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Карточка ребёнка → PIN → «Назад» в «Занятиях ABA». Отдельно: карточка → «X» на экране PIN.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Первый экран, приложение не сворачивается.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="К1" value="ok"> всё так</label>
+    <label><input type="radio" name="К1" value="bad"> проблема</label>
+    <label><input type="radio" name="К1" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="К2">
+  <div class="head"><span class="num">К2</span> <span class="title">Во время задания, перерыва, обмена, награды и знакомства — системная «…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Во время задания, перерыва, обмена, награды и знакомства — системная «Назад» и свайп от края экрана.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Ничего не происходит. Короткий тап по стрелке выхода — подсказка, удержание 1,5 с — выход.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="К2" value="ok"> всё так</label>
+    <label><input type="radio" name="К2" value="bad"> проблема</label>
+    <label><input type="radio" name="К2" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="К3">
+  <div class="head"><span class="num">К3</span> <span class="title">Выход удержанием стрелки и «Готово» (с галочкой) в конце.</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Выход удержанием стрелки и «Готово» (с галочкой) в конце.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Первый экран с карточками; «Позови взрослого» звучит один раз (если записан); тап по карточке снова просит PIN.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="К3" value="ok"> всё так</label>
+    <label><input type="radio" name="К3" value="bad"> проблема</label>
+    <label><input type="radio" name="К3" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="К4">
+  <div class="head"><span class="num">К4</span> <span class="title">«Для взрослых» → «Занятия ABA» → занятие → выход → системная «Назад» н…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>«Для взрослых» → «Занятия ABA» → занятие → выход → системная «Назад» на первом экране.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Приложение сворачивается с первого нажатия (не показывает тот же экран ещё раз).</div></div>
+  <div class="mark">
+    <label><input type="radio" name="К4" value="ok"> всё так</label>
+    <label><input type="radio" name="К4" value="bad"> проблема</label>
+    <label><input type="radio" name="К4" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="К5">
+  <div class="head"><span class="num">К5</span> <span class="title">Свернуть посреди занятия на 1 минуту и вернуться. Потом свернуть на 3…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Свернуть посреди занятия на 1 минуту и вернуться. Потом свернуть на 3 минуты и вернуться.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Через 1 минуту — то же задание, PIN не спрашивает. Через 3 минуты — сначала новый выбор награды, потом задание.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="К5" value="ok"> всё так</label>
+    <label><input type="radio" name="К5" value="bad"> проблема</label>
+    <label><input type="radio" name="К5" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="К6">
+  <div class="head"><span class="num">К6</span> <span class="title">Посреди занятия смахнуть приложение из списка недавних. Открыть заново…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Посреди занятия смахнуть приложение из списка недавних. Открыть заново → «Тест» → PIN.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>В «Занятиях ABA» — «Занятие не закончено» и кнопки «Продолжить занятие» / «Закончить без продолжения». «Продолжить» открывает занятие.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="К6" value="ok"> всё так</label>
+    <label><input type="radio" name="К6" value="bad"> проблема</label>
+    <label><input type="radio" name="К6" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="К7">
+  <div class="head"><span class="num">К7</span> <span class="title">Карточка с плюсом на первом экране: тапнуть один раз; потом два раза с…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Карточка с плюсом на первом экране: тапнуть один раз; потом два раза с паузой в секунду.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Первый тап — только качается замок. Второй тап через 1–3 секунды открывает PIN.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="К7" value="ok"> всё так</label>
+    <label><input type="radio" name="К7" value="bad"> проблема</label>
+    <label><input type="radio" name="К7" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="К8">
+  <div class="head"><span class="num">К8</span> <span class="title">На экране PIN ввести неверный PIN 5 раз.</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>На экране PIN ввести неверный PIN 5 раз.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>«Осталось попыток: N», потом блокировка на 1 минуту. Через минуту верный PIN работает.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="К8" value="ok"> всё так</label>
+    <label><input type="radio" name="К8" value="bad"> проблема</label>
+    <label><input type="radio" name="К8" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="К9">
+  <div class="head"><span class="num">К9</span> <span class="title">«Выгрузить для специалиста» → в окне выбора приложения нажать «Назад».</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>«Выгрузить для специалиста» → в окне выбора приложения нажать «Назад».</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>После «Назад» — PIN, затем «Занятия ABA»; повторное нажатие «Выгрузить» работает.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="К9" value="ok"> всё так</label>
+    <label><input type="radio" name="К9" value="bad"> проблема</label>
+    <label><input type="radio" name="К9" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="К10">
+  <div class="head"><span class="num">К10</span> <span class="title">Быстрый двойной тап по «Начать занятие», «Для взрослых», строке «Согла…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Быстрый двойной тап по «Начать занятие», «Для взрослых», строке «Согласие», «Продолжить».</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Каждый экран открывается один раз.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="К10" value="ok"> всё так</label>
+    <label><input type="radio" name="К10" value="bad"> проблема</label>
+    <label><input type="radio" name="К10" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="К11">
+  <div class="head"><span class="num">К11</span> <span class="title">Разделённый экран: Talentia в маленькой половине → «Начать занятие» →…</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Разделённый экран: Talentia в маленькой половине → «Начать занятие» → «Экран слишком мал» → «Назад» → «X» на PIN.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Первый экран. Если ничего не происходит — запишите.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="К11" value="ok"> всё так</label>
+    <label><input type="radio" name="К11" value="bad"> проблема</label>
+    <label><input type="radio" name="К11" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+</section>
+
+<section id="extra"><h2>6. Тёмная тема, спокойный режим, звук, плавность</h2>
+
+<div class="item" data-id="Д1">
+  <div class="head"><span class="num">Д1</span> <span class="title">Тёмная тема телефона</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Включите тёмную тему в настройках Android, откройте занятие и выбор награды.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Карточки наград читаются; на плитах задания нет белых квадратов вокруг картинок; силуэт награды наверху виден.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="Д1" value="ok"> всё так</label>
+    <label><input type="radio" name="Д1" value="bad"> проблема</label>
+    <label><input type="radio" name="Д1" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="Д2">
+  <div class="head"><span class="num">Д2</span> <span class="title">Спокойный режим</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>«Для взрослых» → PIN → карточка «Настройки ребёнка» → строка «Возрастная полоса 5–6» → «Спокойный режим» → включить. Начните новое занятие (режим действует со следующего занятия) и посмотрите награду, которая выпадет.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Всё спокойнее: жетон появляется без полёта, экраны меняются без анимации. В награде, которая выпала: вертушка вдвое медленнее; шарик медленнее и без очереди; пузырей не больше 3; узор калейдоскопа меняется сразу.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="Д2" value="ok"> всё так</label>
+    <label><input type="radio" name="Д2" value="bad"> проблема</label>
+    <label><input type="radio" name="Д2" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="Д3">
+  <div class="head"><span class="num">Д3</span> <span class="title">Звук</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Если вы уже положили записи: прислушайтесь в занятии. Если нет — это пункт «пропущено».</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>С записями: «дзынь» при жетоне, «Молодец!» и другие похвалы по очереди, сигнал перед концом награды. Без записей — тишина, это ожидаемо.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="Д3" value="ok"> всё так</label>
+    <label><input type="radio" name="Д3" value="bad"> проблема</label>
+    <label><input type="radio" name="Д3" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+<div class="item" data-id="Д4">
+  <div class="head"><span class="num">Д4</span> <span class="title">Плавность</span></div>
+  <div class="row"><div class="lbl">Что сделать</div><div>Всё время теста.</div></div>
+  <div class="row"><div class="lbl">Что должно быть</div><div>Анимации не дёргаются, касания отвечают сразу, приложение не вылетает. Если тормозит — где именно.</div></div>
+  <div class="mark">
+    <label><input type="radio" name="Д4" value="ok"> всё так</label>
+    <label><input type="radio" name="Д4" value="bad"> проблема</label>
+    <label><input type="radio" name="Д4" value="skip"> пропущено</label>
+  </div>
+  <textarea placeholder="Что я увидел (необязательно, но при «проблема» — опишите)"></textarea>
+</div>
+</section>
+
+<section id="send"><h2>7. Отправить результат</h2>
+<div class="box">Нажмите <b>«Скопировать отчёт»</b> внизу и вставьте в чат со мной. Скриншоты проблем присылайте отдельными картинками (на Android — кнопки «питание + громкость вниз»). Я разберу отчёт и скажу, что чинить.</div>
+</section>
+
+<div class="bar"><div><button type="button" id="copy">Скопировать отчёт</button><span id="stat"></span><button type="button" id="reset" style="background:#9a8f85">Очистить отметки</button></div></div>
+
+<script>
+const KEY = 'talentia-phone-test-2026-11-13';
+const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; } };
+const save = (s) => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {} };
+let state = load();
+const items = [...document.querySelectorAll('.item')];
+function paint() {
+  let ok = 0, bad = 0, skip = 0;
+  for (const el of items) {
+    const v = state[el.dataset.id] || {};
+    el.className = 'item' + (v.mark ? ' ' + v.mark : '');
+    el.querySelectorAll('input').forEach((i) => (i.checked = i.value === v.mark));
+    const ta = el.querySelector('textarea'); if (ta && ta.value !== (v.note || '')) ta.value = v.note || '';
+    if (v.mark === 'ok') ok++; else if (v.mark === 'bad') bad++; else if (v.mark === 'skip') skip++;
+  }
+  document.getElementById('stat').textContent = 'отмечено ' + (ok + bad + skip) + ' из ' + items.length + ' · проблем: ' + bad;
+}
+for (const el of items) {
+  const id = el.dataset.id;
+  el.querySelectorAll('input').forEach((i) => i.addEventListener('change', () => { state[id] = { ...(state[id] || {}), mark: i.value }; save(state); paint(); }));
+  el.querySelector('textarea').addEventListener('input', (e) => { state[id] = { ...(state[id] || {}), note: e.target.value }; save(state); });
+}
+const label = { ok: 'всё так', bad: 'ПРОБЛЕМА', skip: 'пропущено' };
+document.getElementById('copy').addEventListener('click', () => {
+  const lines = ['Отчёт: проверка сборки на телефоне (гайд 2026-11-13)'];
+  for (const el of items) {
+    const v = state[el.dataset.id] || {};
+    const title = el.querySelector('.title').textContent.trim();
+    lines.push(el.dataset.id + '. ' + title + ' — ' + (label[v.mark] || 'не отмечено') + (v.note ? ': ' + v.note.trim() : ''));
+  }
+  navigator.clipboard.writeText(lines.join('\n')).then(() => { const b = document.getElementById('copy'); b.textContent = 'Скопировано'; setTimeout(() => (b.textContent = 'Скопировать отчёт'), 1500); });
+});
+document.getElementById('reset').addEventListener('click', () => { if (confirm('Очистить все отметки?')) { state = {}; save(state); paint(); } });
+document.addEventListener('click', (e) => { const b = e.target.closest('.cp'); if (!b) return; navigator.clipboard.writeText(b.dataset.copyText).then(() => { b.textContent = 'Скопировано'; setTimeout(() => (b.textContent = 'Копировать'), 1200); }); });
+paint();
+</script></body></html>

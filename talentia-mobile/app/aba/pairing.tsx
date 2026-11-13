@@ -1,0 +1,246 @@
+/**
+ * Сессия сопряжения (раздел 3 направления, Ц2.4, цикл 3; домен `abaPairing.ts`, модель `src/ui/aba/model/pairingRun.ts`):
+ * выбор из трёх тапом → 10 с ожидания → жетон в ячейку из одной → сразу обмен (тот же экран, что в сессии, Ц3.4) →
+ * доступ 20 с, кадр конца — сцена сворачивается в карточку (Ц3.5); строка 72 общая с сессией; четыре цикла, затем
+ * `commitPairingSession` и конец. Панели взрослого нет; выход — удержанием в строке 72. Свернули — итог пишется
+ * сразу как `app_backgrounded` (№164); середина не сохраняется, и убитое без сворачивания приложение теряет выборы
+ * (методист 2026-10-28: для плейтеста при взрослом допустимо).
+ */
+import { useKeepAwake } from 'expo-keep-awake';
+import { Redirect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { AppState, BackHandler, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { useChildT } from '../../src/i18n';
+import { abaInstruction, abaPairingLayout, abaReinforcerCardSize, abaReinforcerChoice } from '../../src/design/abaTokens';
+import { typography } from '../../src/design/tokens';
+import { pairingResultOf, startPairing } from '../../src/domain/abaPairing';
+import { seeded } from '../../src/domain/abaRandom';
+import { newAbaId } from '../../src/services/abaIds';
+import { loadPairingStart } from '../../src/services/local/abaStart';
+import { commitPairingSession } from '../../src/services/local/commit';
+import { voice } from '../../src/services/voice';
+import { useAbaRun } from '../../src/state/abaRun';
+import { leaveAba } from '../../src/ui/aba/leaveAba';
+import { useAccount } from '../../src/state/account';
+import { useChildSession } from '../../src/state/childSession';
+import { AbaEnd } from '../../src/ui/aba/AbaEnd';
+import { AbaText } from '../../src/ui/aba/AbaText';
+import { useAbaClock, useDue } from '../../src/ui/aba/clock';
+import { pairingRunDueAt, startPairingRun, stepPairingRun, type PairingRun, type PairingRunEvent } from '../../src/ui/aba/model/pairingRun';
+import { NonTrialRow, PressOnly, useAbaColors, useReduceMotion } from '../../src/ui/aba/parts';
+import { PictureCard, ReinforcerChoiceView, TokenCell } from '../../src/ui/aba/reinforcer';
+import { AccessView } from '../../src/ui/aba/session/AccessView';
+import { ExchangeView } from '../../src/ui/aba/session/ExchangeView';
+import { TaliFigure } from '../../src/ui/TaliFigure';
+
+type Ended = { variant: 'normal' | 'neutral'; toMap: boolean };
+
+export default function AbaPairingScreen() {
+  const { t } = useTranslation();
+  const childT = useChildT();
+  const router = useRouter();
+  const c = useAbaColors();
+  const insets = useSafeAreaInsets();
+  const clock = useAbaClock();
+  const db = useAccount((s) => s.db);
+  const childId = useChildSession((s) => s.childId);
+  const soundOn = useChildSession((s) => s.settings.soundEffects);
+  const calm = useChildSession((s) => s.settings.calmMode);
+  const reduceMotion = useReduceMotion();
+  const reduceRef = useRef(reduceMotion);
+  reduceRef.current = reduceMotion;
+  const config = useAbaRun((s) => s.config);
+  const primaryObserverId = useAbaRun((s) => s.primaryObserverId);
+  const [run, setRun] = useState<PairingRun | null>(null);
+  const [ended, setEnded] = useState<Ended | null>(null);
+  const [pulse, setPulse] = useState(false);
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+  const [tick, setTick] = useState(() => clock.now());
+  const runRef = useRef<PairingRun | null>(null);
+  const exiting = useRef(false);
+  const finished = useRef(false);
+  // экран не гаснет посреди сопряжения: погасший экран глушит таймеры, и доступ «проходил» бы без ребёнка (Б1)
+  useKeepAwake();
+  // старт один раз на экран: звук и calm берутся на момент старта и посреди сопряжения не перечитываются
+  const startOpts = useRef({ soundOn, calm });
+
+  useEffect(() => {
+    if (!db || !childId || !config) return;
+    let live = true;
+    void loadPairingStart(db, childId, { config, soundOn: startOpts.current.soundOn }).then(
+      (start) => {
+        if (!live) return;
+        if ('blocked' in start) {
+          setEnded({ variant: 'neutral', toMap: false });
+          return;
+        }
+        const now = clock.now();
+        const state = startPairing({ sessionId: newAbaId(), config, pool: start.pool, history: start.history, apart: start.apart, rng: seeded(now >>> 0).rng, now });
+        // calm и «уменьшить движение» — смены кадра и сроки calm у обмена и кадра конца
+        runRef.current = startPairingRun(state, config, startOpts.current.calm || reduceRef.current);
+        setRun(runRef.current);
+      },
+      (e: unknown) => {
+        if (__DEV__) console.warn('aba-pairing', e);
+        if (live) setEnded({ variant: 'neutral', toMap: false });
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [db, childId, config, clock]);
+
+  const finish = useCallback(
+    async (r: PairingRun) => {
+      // итог пишется один раз на экран; повтор того же итога отсекает и `commitPairingSession` — по записи сессии
+      if (finished.current) return;
+      finished.current = true;
+      const toMap = exiting.current;
+      try {
+        if (db && childId) await commitPairingSession(db, childId, pairingResultOf(r.state), new Date(clock.now()).toISOString(), { primaryObserverId });
+      } catch (e) {
+        // согласие отозвано или пауза — итог не пишется, конец нейтральный
+        if (__DEV__) console.warn('aba-pairing-commit', e);
+      }
+      // конфигурация и наблюдатель — на одно занятие: следующий вход идёт через 2.6
+      if (toMap) leaveAba(router);
+      else setEnded({ variant: r.state.endReason === 'completed' ? 'normal' : 'neutral', toMap: false });
+      useAbaRun.getState().reset();
+    },
+    [db, childId, clock, router, primaryObserverId],
+  );
+
+  const dispatch = useCallback(
+    (e: PairingRunEvent) => {
+      const cur = runRef.current;
+      if (!cur) return;
+      const { run: next, effects } = stepPairingRun(cur, e);
+      runRef.current = next;
+      setRun(next);
+      for (const fx of effects) {
+        if (fx.type === 'nudge') {
+          // повтор инструкции голосом — когда будет голос; пульс — кроме calm и «уменьшить движение»
+          if (!next.calm) {
+            setPulse(true);
+            clock.at(clock.now() + abaReinforcerChoice.aloneRepeat.pulse.durationMs, () => setPulse(false));
+          }
+        } else if (fx.type === 'done') {
+          void finish(next);
+        } else if (fx.type === 'token_landed') {
+          // звук жетона при посадке — как в сессии и цикле в конце: связь «звук — жетон» ставится здесь; файл подключит озвучка
+          voice.say('abaSession.sound.token');
+        }
+        // `show_strip` рисуется из состояния
+      }
+    },
+    [clock, finish],
+  );
+
+  useDue(run ? pairingRunDueAt(run) : null, (at) => dispatch({ type: 'due', at }));
+  // кольцо доступа — шагами по 1 с, пока сцена играет
+  const inAccess = run?.access?.stage === 'play';
+  useDue(inAccess ? tick + 1000 : null, (at) => setTick(at));
+  useEffect(() => {
+    if (inAccess) setTick(clock.now());
+  }, [inAccess, clock]);
+
+  // свернули или заблокировали экран посреди сопряжения — сессия кончается незасчитанной (`app_backgrounded`, №164:
+  // не считается и серию не рвёт, в данных отличима от остановки взрослым), конец нейтральный: просроченные стадии иначе прошли бы разом с плановыми метками (Б1)
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (st) => {
+      const cur = runRef.current;
+      if (st === 'background' && cur && cur.state.phase !== 'done') dispatch({ type: 'stop', reason: 'app_backgrounded', now: clock.now() });
+    });
+    return () => sub.remove();
+  }, [dispatch, clock]);
+
+  // системный «назад» (жест от края, ладонь у кромки) не уводит мимо выхода удержанием — как в сессии
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => true);
+    return () => sub.remove();
+  }, []);
+
+  // без конфигурации — только до старта: после конца она сброшена, а экран конца ещё на месте
+  if (!config && !runRef.current && !ended) return <Redirect href="/parent/aba" />;
+
+  const exit = () => {
+    if (!runRef.current || runRef.current.state.phase === 'done') {
+      leaveAba(router);
+      return;
+    }
+    exiting.current = true;
+    // в «Сам» удержать выход может только ребёнок — это его уход, а не остановка взрослым (Б2)
+    dispatch({ type: 'stop', reason: config === 'alone' ? 'abandoned' : 'adult_stopped', now: clock.now() });
+  };
+
+  const header = (center?: ReactNode) => (
+    <NonTrialRow onExit={exit} exitLabel={t('abaSession.exit')} exitHint={t('abaSession.exitHint')}>
+      {center}
+    </NonTrialRow>
+  );
+  const moving = !(run?.calm ?? true);
+
+  let body: ReactNode = null;
+  if (ended) {
+    body = <AbaEnd variant={ended.variant} onDone={() => leaveAba(router)} />;
+  } else if (run) {
+    const s = run.state;
+    if (s.phase === 'choose' && run.choice) {
+      const cardSize = size ? abaReinforcerCardSize(size.w - 32, size.h) : abaPairingLayout.cardSize;
+      body = (
+        <View style={{ flex: 1, paddingHorizontal: 16 }}>
+          {header(
+            <AbaText type={typography.subtitle} color={c.ink} max={1} lines={abaInstruction.lines} adjustsFontSizeToFit style={{ textAlign: 'center' }}>
+              {childT(s.cycles === 0 ? 'abaSession.chooseTitle' : 'abaReinforcer.again')}
+            </AbaText>,
+          )}
+          <View style={{ height: 16 }} />
+          <ReinforcerChoiceView
+            run={run.choice}
+            options={s.options}
+            cardSize={cardSize}
+            boardCells={1}
+            pulse={pulse}
+            onTap={(id, at) => dispatch({ type: 'tap', reinforcerId: id, now: at })}
+            onAdultTap={(id) => dispatch({ type: 'adult_tap', reinforcerId: id, now: clock.now() })}
+          />
+        </View>
+      );
+    } else if (s.phase === 'wait_token' && s.reinforcerId && run.exchange) {
+      body = <ExchangeView run={run.exchange} at={run.at} reinforcerId={s.reinforcerId} pairing moving={moving} onExit={exit} testID="aba-pairing-exchange" />;
+    } else if (s.phase === 'wait_token' && s.reinforcerId) {
+      // ожидание жетона — 10 с без движения: карточка выбранного, Tali `idle`, пустая ячейка (та же раскладка, что у
+      // обмена); касание карточки — сжатие без действия и записи (I-6: ни одна цель не молчит)
+      body = (
+        <View style={{ flex: 1, paddingHorizontal: 16 }}>
+          {header()}
+          <View style={{ flex: 1, paddingVertical: 16, alignItems: 'center', justifyContent: 'center' }} testID="aba-pairing-wait">
+            <PictureCard id={s.reinforcerId} testID="aba-pairing-wait-card" />
+            <View style={{ flexDirection: 'row', alignItems: 'center', height: 88, marginTop: abaPairingLayout.gapCardRow, gap: abaPairingLayout.gapTaliCell }}>
+              <PressOnly accessibilityLabel={t('abaSession.tali')}>
+                <TaliFigure pose="idle" size={abaPairingLayout.tali} crop accessibilityLabel={t('abaSession.tali')} testID="aba-pairing-tali" />
+              </PressOnly>
+              <TokenCell size={abaPairingLayout.cell} filled={false} testID="aba-pairing-token-empty" />
+            </View>
+          </View>
+        </View>
+      );
+    } else if (s.phase === 'access' && s.reinforcerId && run.access) {
+      body = <AccessView run={run.access} tick={tick} reinforcerId={s.reinforcerId} moving={moving} onExit={exit} />;
+    }
+  }
+
+  return (
+    <View
+      style={{ flex: 1, backgroundColor: c.background, paddingTop: insets.top, paddingBottom: insets.bottom }}
+      onLayout={(e) => setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height - insets.top - insets.bottom })}
+      testID="aba-pairing"
+    >
+      {body}
+    </View>
+  );
+}
+

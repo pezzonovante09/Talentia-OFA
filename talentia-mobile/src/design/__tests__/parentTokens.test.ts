@@ -13,7 +13,7 @@ import {
 import { palettes, touch, type RegionId, type Scheme } from '../tokens';
 
 const SCHEMES: Scheme[] = ['light', 'dark'];
-const REGIONS: RegionId[] = ['numbers', 'words', 'nature', 'logic'];
+const REGIONS: RegionId[] = ['numbers', 'words', 'nature', 'workshop', 'kyrgyz'];
 
 describe('контраст родительского раздела', () => {
   SCHEMES.forEach((scheme) => {
@@ -36,12 +36,28 @@ describe('контраст родительского раздела', () => {
     it(`${scheme}: предметные чернила читаются на карточке`, () => {
       REGIONS.forEach((r) => expect(contrast(c.regionsInk[r], c.card)).toBeGreaterThanOrEqual(TEXT_CONTRAST));
     });
+
+    it(`${scheme}: чернила объявлены для всех регионов схемы курса, включая кыргызский`, () => {
+      expect(Object.keys(c.regionsInk).sort()).toEqual([...REGIONS].sort());
+    });
+
+    it(`${scheme}: кыргызские чернила — не детская заливка региона`, () => {
+      const kidFills = new Set<string>();
+      (['normal', 'calm'] as const).forEach((v) =>
+        (['light', 'dark'] as const).forEach((s) => kidFills.add(palettes[s][v].regions.kyrgyz.toUpperCase())),
+      );
+      expect(kidFills.has(c.regionsInk.kyrgyz.toUpperCase())).toBe(false);
+    });
   });
 
-  it('чернила — только на карточке: на фоне «Числа» не проходят на сотых', () => {
+  it('чернила — только на карточке: правило композиции, а не обход контраста', () => {
+    // Раньше правило держалось на контрасте: «Числа» #8C6A03 давали на фоне 4.46. После
+    // А25 детские чернила затемнены и проходят и на фоне — правило остаётся композиционным.
     expect(REGION_INK_SURFACE).toBe('card');
-    const light = parentColors.light;
-    expect(contrast(light.regionsInk.numbers, light.background)).toBeLessThan(TEXT_CONTRAST);
+    SCHEMES.forEach((scheme) => {
+      const c = parentColors[scheme];
+      REGIONS.forEach((r) => expect(contrast(c.regionsInk[r], c.background)).toBeGreaterThanOrEqual(TEXT_CONTRAST));
+    });
   });
 
   it('та же бумага без теплоты: фон раздела почти не отличается от детского', () => {
@@ -57,7 +73,7 @@ describe('чем раздел непривлекателен для ребёнк
     (['light', 'dark'] as const).forEach((s) =>
       (['normal', 'calm'] as const).forEach((v) => {
         const p = palettes[s][v];
-        [p.accent, p.accentInk, ...Object.values(p.regions)].forEach((x) => kidLoud.add(x.toUpperCase()));
+        [p.accent, ...Object.values(p.regions)].forEach((x) => kidLoud.add(x.toUpperCase()));
       }),
     );
     SCHEMES.forEach((scheme) => {
