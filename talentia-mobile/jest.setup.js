@@ -21,3 +21,5 @@ jest.mock('expo-crypto', () => ({
 // Экспо-SQLite в Node нет: экраны аккаунта в тестах получают базу через `setDevice` + `memoryDb`.
 jest.mock('expo-sqlite', () => ({}));
 jest.mock('@expo-google-fonts/nunito', () => ({ Nunito_400Regular: 1, Nunito_700Bold: 2, Nunito_800ExtraBold: 3 }));
+// Golos Text — раздел взрослого и ABA («Тихий кабинет», №203); TTF тесты метрик читают из node_modules напрямую.
+jest.mock('@expo-google-fonts/golos-text', () => ({ GolosText_400Regular: 4, GolosText_500Medium: 5, GolosText_600SemiBold: 6, GolosText_700Bold: 7 }));

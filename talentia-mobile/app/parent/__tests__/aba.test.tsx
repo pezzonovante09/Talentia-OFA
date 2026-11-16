@@ -12,7 +12,7 @@ import AbaParentScreen from '../aba/index';
 import AbaConsentScreen from '../aba/consent';
 import ConfirmScreen from '../confirm/[action]';
 import { ABA_TARGETS } from '../../../src/content/aba';
-import { parentButton } from '../../../src/design/parentTokens';
+import { parentButton, parentColors } from '../../../src/design/parentTokens';
 import { firstRun } from '../../../src/design/tokens';
 import { markMastered } from '../../../src/domain/abaCriterion';
 import { isUuidV4 } from '../../../src/domain/ids';
@@ -218,6 +218,11 @@ describe('«Где мы сейчас» и введение (№202)', () => {
     await waitFor(() => expect(screen.getByTestId('aba-where-line-0')).toHaveTextContent(/Знакомство с жетонами: 1 из 2/));
     expect(screen.getByTestId('aba-where-line-1')).toHaveTextContent('Ещё одно знакомство, потом — первые задания.');
     expect(screen.getByTestId('aba-where-line-2')).toHaveTextContent('Засчитывается, если ребёнок сам выбирает игру и занятие не прерывается.');
+    // №203: полоса этапов — знакомство текущее, остальное впереди; подпись «Следующее занятие» в шапке блока
+    expect(screen.getByTestId('aba-stage-strip-pairing-now')).toBeTruthy();
+    ['placement', 'teaching', 'maintenance'].forEach((s) => expect(screen.getByTestId(`aba-stage-strip-${s}-next`)).toBeTruthy());
+    expect(screen.queryByTestId('aba-stage-strip-pairing-check')).toBeNull();
+    expect(screen.getByText(ru.parent.aba.where.next)).toBeTruthy();
     await fireEvent.press(screen.getByTestId('aba-where-intro'));
     expect(router.push).toHaveBeenCalledWith('/parent/aba/intro');
   });
@@ -229,7 +234,16 @@ describe('«Где мы сейчас» и введение (№202)', () => {
     await renderAba();
     await waitFor(() => expect(screen.getByTestId('aba-where-line-0')).toHaveTextContent('Сначала ребёнок научится просить перерыв карточкой с двумя полосками.'));
     expect(screen.getByTestId('aba-where-line-1')).toHaveTextContent(/Проверяем, что ребёнок уже умеет: «По форме»/);
-    expect(screen.getByTestId('aba-where-line-2')).toHaveTextContent('За задания проверки жетонов нет.');
+    // №203: «без жетонов» уже сказано в строке проверки — отдельной строки о жетонах нет
+    expect(screen.queryByTestId('aba-where-line-2')).toBeNull();
+    expect(screen.queryByText(ru.parent.aba.where.noTokens)).toBeNull();
+    // полоса: знакомство пройдено (✓ на конце полосы), проверка — текущая
+    expect(screen.getByTestId('aba-stage-strip-pairing-done')).toBeTruthy();
+    expect(screen.getByTestId('aba-stage-strip-pairing-check')).toBeTruthy();
+    expect(screen.getByTestId('aba-stage-strip-placement-now')).toBeTruthy();
+    expect(screen.getByTestId('aba-stage-strip-placement').props.accessibilityState).toEqual({ selected: true });
+    expect(screen.getByTestId('aba-stage-strip-teaching-next')).toBeTruthy();
+    expect(screen.getByTestId('aba-stage-strip-placement-label')).toHaveTextContent(ru.parent.aba.where.stage.placement);
     expect(screen.getByTestId('aba-exit-hint')).toHaveTextContent('Выйти из занятия — держите стрелку слева вверху.');
   });
 
@@ -238,6 +252,27 @@ describe('«Где мы сейчас» и введение (№202)', () => {
     await waitStatus('Нужно согласие на данные практики');
     expect(screen.getByTestId('aba-where-intro')).toBeTruthy();
     expect(screen.queryByTestId('aba-where-lines')).toBeNull();
+    // этапа нет — ни полосы, ни подписи «Следующее занятие»
+    expect(screen.queryByTestId('aba-stage-strip')).toBeNull();
+    expect(screen.queryByText(ru.parent.aba.where.next)).toBeNull();
+  });
+
+  it('«Где мы сейчас» — блок тона where, иконка в круге; «Начать занятие» — единственная залитая, высота 56', async () => {
+    await grant();
+    await pair();
+    await observers(OBS);
+    await renderAba();
+    await waitFor(() => expect(screen.getByTestId('aba-stage-strip')).toBeTruthy());
+    const flat = (st: unknown) => Object.assign({}, ...[st].flat(Infinity).filter(Boolean)) as Record<string, unknown>;
+    expect(flat(screen.getByTestId('aba-where').props.style).backgroundColor).toBe(parentColors.light.blockWhere);
+    expect(screen.getByTestId('aba-where-icon')).toBeTruthy();
+    const start = screen.getByTestId('aba-start');
+    expect(start).toHaveTextContent(ru.parent.aba.start);
+    expect(flat(start.props.style)).toMatchObject({ height: parentButton.mainHeight, backgroundColor: parentColors.light.primary });
+    // других залитых `primary` кнопок на экране нет
+    const filled = screen.getAllByRole('button').filter((b) => flat(b.props.style).backgroundColor === parentColors.light.primary);
+    expect(filled).toHaveLength(1);
+    expect(filled[0]).toBe(start);
   });
 });
 

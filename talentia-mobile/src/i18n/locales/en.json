@@ -11,7 +11,7 @@
     "stepAlone": "Step — independent",
     "undo": "Change mark",
     "choiceWait": "The child chooses the game. Do not point or name it — wait for the touch.",
-    "waitQuiet": "Wait quietly — the app will prompt if needed."
+    "waitQuiet": "Wait quietly — the app will prompt"
   },
   "abaScreen": {
     "tooSmall": {
@@ -675,7 +675,13 @@
         "noTokens": "Check tasks earn no tokens.",
         "tokens": "This session has tokens.",
         "howItWorks": "How sessions work",
-        "exitHint": "To leave a session, hold the arrow at the top left."
+        "exitHint": "To leave a session, hold the arrow at the top left.",
+        "stage": {
+          "pairing": "Intro",
+          "placement": "Check",
+          "teaching": "Learning",
+          "maintenance": "Review"
+        }
       },
       "intro": {
         "title": "How sessions work",
@@ -690,7 +696,11 @@
         "step3Title": "What the child does",
         "step3": "First touches the picture at the top, then the same one below. The app never says “wrong”: it calmly shows the right answer or moves on. When the child needs a rest, they touch the two-stripe card and a break starts.",
         "step4Title": "Tokens and the reward",
-        "step4": "Correct answers earn tokens. With enough tokens (one at first, then more) the child plays the game they chose. Tokens are never taken away. The first sessions check what the child can already do: checks earn no tokens, by design. To leave, hold the arrow at the top left."
+        "step4": "Correct answers earn tokens. With enough tokens (one at first, then more) the child plays the game they chose. Tokens are never taken away. The first sessions check what the child can already do: checks earn no tokens, by design. To leave, hold the arrow at the top left.",
+        "panelExample": "Example: the bottom of the session screen",
+        "panelNames": "Here are the “{{prompted}}” and “{{refused}}” buttons",
+        "ruleNoPoint": "No pointing or looking",
+        "ruleNoTalk": "No repeating the question, no “well done” or “no”"
       }
     }
   },

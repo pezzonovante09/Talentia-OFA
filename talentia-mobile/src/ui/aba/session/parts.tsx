@@ -8,15 +8,15 @@ import { Animated, Easing, Platform, Pressable, useColorScheme, View } from 'rea
 import Svg, { Path } from 'react-native-svg';
 
 import { useChildT } from '../../../i18n';
-import { abaAdultPanel, abaAdultPanelColors, abaInstruction, abaBoardCell, abaBreak, abaBreakTrace, abaControls, abaLayout, abaRefusalPause, abaReinforcementOverlay, abaTokenBoard, ABA_CONTROL_STROKE, ABA_STRIP_SILHOUETTE, ABA_STRIP_SILHOUETTE_GAP } from '../../../design/abaTokens';
-import { parentColors, parentTypography } from '../../../design/parentTokens';
+import { abaAdultPanel, abaAdultPanelColors, abaAdultSheet, abaInstruction, abaBoardCell, abaBreak, abaBreakTrace, abaControls, abaLayout, abaRefusalPause, abaReinforcementOverlay, abaTokenBoard, ABA_CONTROL_STROKE, ABA_STRIP_SILHOUETTE, ABA_STRIP_SILHOUETTE_GAP, abaTypography } from '../../../design/abaTokens';
+import { parentColors, parentPressed, parentTypography } from '../../../design/parentTokens';
 import { radii, typography } from '../../../design/tokens';
 import { AbaText } from '../AbaText';
 import type { PromptVisualPlan } from '../../../domain/abaPrompting';
 import type { PanelButton } from '../../../domain/abaScoring';
 import { TaliFigure } from '../../TaliFigure';
 import { useAbaClock } from '../clock';
-import { ChildPressable, ExitHold, PlaceholderGlyph, PressOnly, useAbaColors } from '../parts';
+import { ChildPressable, ControlLip, ExitHold, PlaceholderGlyph, PressOnly, useAbaColors } from '../parts';
 import { ReinforcerArt, TokenCell } from '../reinforcer';
 import { StimulusPlate } from '../StimulusPlate';
 
@@ -24,11 +24,14 @@ import { StimulusPlate } from '../StimulusPlate';
  * Полоса 68: выход удержанием слева, карточка «перерыв» справа (не прячется, без подтверждения). `caption` — строка
  * взрослого справа от выхода (обучающий перерыв со второго приглашения, Ц3.9): родительский `caption` `textMuted`.
  * Без `onExit` место выхода держится пустым: на экране сессии выход один на все кадры (Ц4, огр. 9).
+ * Выход и карточка — детские кнопки «Тихого кабинета» (№203): белые, контур `controlInk`, борт `controlLip` под
+ * кнопкой (4, в calm 2) за её габаритом — места и зоны нажатия прежние (№198).
  */
 export function TopBar({
   onExit,
   breakCard,
   caption,
+  calm = false,
 }: {
   onExit?: () => void;
   /**
@@ -37,6 +40,8 @@ export function TopBar({
    */
   breakCard: { frameShownAt: number; onTap: (at: number) => void; highlight?: boolean; onHold?: (down: boolean) => void } | null;
   caption?: string;
+  /** Calm: борт детских кнопок 2 вместо 4 (`abaControlLip`); без пропа — 4. */
+  calm?: boolean;
 }) {
   const { t } = useTranslation();
   const c = useAbaColors();
@@ -45,7 +50,7 @@ export function TopBar({
   return (
     <View style={{ height: abaLayout.topBar, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
       {onExit ? (
-        <ExitHold onExit={onExit} label={t('abaSession.exit')} hintLabel={t('abaSession.exitHint')} />
+        <ExitHold onExit={onExit} label={t('abaSession.exit')} hintLabel={t('abaSession.exitHint')} calm={calm} />
       ) : (
         <View style={{ width: abaControls.exitSize, height: abaControls.exitSize }} />
       )}
@@ -64,26 +69,29 @@ export function TopBar({
         </AbaText>
       )}
       {breakCard && (
-        <ChildPressable
-          frameShownAt={breakCard.frameShownAt}
-          onCommit={breakCard.onTap}
-          onDownAt={breakCard.onHold && (() => breakCard.onHold!(true))}
-          onUpAt={breakCard.onHold && (() => breakCard.onHold!(false))}
-          testID="aba-break-card"
-          accessibilityLabel={t('abaSession.breakCard')}
-          style={{
-            width: abaLayout.breakCard,
-            height: abaLayout.breakCard,
-            borderRadius: radii.md,
-            borderWidth: breakCard.highlight ? abaRefusalPause.cardContour : ABA_CONTROL_STROKE,
-            borderColor: c.controlInk,
-            backgroundColor: c.controlFill,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <PlaceholderGlyph name="pause_bars" size={32} color={c.controlInk} />
-        </ChildPressable>
+        <View style={{ width: abaLayout.breakCard, height: abaLayout.breakCard }}>
+          <ControlLip radius={radii.md} calm={calm} testID="aba-break-card-lip" />
+          <ChildPressable
+            frameShownAt={breakCard.frameShownAt}
+            onCommit={breakCard.onTap}
+            onDownAt={breakCard.onHold && (() => breakCard.onHold!(true))}
+            onUpAt={breakCard.onHold && (() => breakCard.onHold!(false))}
+            testID="aba-break-card"
+            accessibilityLabel={t('abaSession.breakCard')}
+            style={{
+              width: abaLayout.breakCard,
+              height: abaLayout.breakCard,
+              borderRadius: radii.md,
+              borderWidth: breakCard.highlight ? abaRefusalPause.cardContour : ABA_CONTROL_STROKE,
+              borderColor: c.controlInk,
+              backgroundColor: c.controlFill,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <PlaceholderGlyph name="pause_bars" size={32} color={c.controlInk} />
+          </ChildPressable>
+        </View>
       )}
     </View>
   );
@@ -284,6 +292,13 @@ const PANEL_LABEL: Record<PanelButton, string> = {
 /**
  * Панель взрослого (Ц2.2 / №159): места кнопок постоянные — ряд 1 «Верно · Почти · Неверно» (у `match` пуст) или
  * карточка L4; ряд 2 «Была подсказка» · «Отказ» у нижнего края. `caption` — подсказка взрослому вместо ряда 1.
+ *
+ * Вид — лист «Тихого кабинета» (№203, п. 5): заливка `zone`, скруглённый верх 24 и кромка 2 `edge` по верху; кнопки
+ * белые, граница 1.5 `edge`, радиус 14 — без контура 3 и борта детских кнопок. Заголовка «Для взрослого» нет: его
+ * заменяют лист и кромка. Подпись — одна строка `abaTypography.sheetCaption` 14/20 500 чернилами `caption` (11.85 к
+ * листу), длинная ужимается до `minimumFontScale` 0.86. Кромка входит в верхнее поле (`padding − edge`), поэтому ряды
+ * и кнопки стоят там же, где по `abaAdultPanelTier` (№198). Низ: заливка уходит под нижний системный отступ
+ * (`insetBottom`), кнопки — над ним.
  */
 export function AdultPanel({
   buttons,
@@ -316,7 +331,9 @@ export function AdultPanel({
     },
     [],
   );
-  const p = abaAdultPanelColors(useColorScheme() === 'dark' ? 'dark' : 'light');
+  const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
+  const p = abaAdultPanelColors(scheme);
+  const pressedFill = parentPressed[scheme].card;
   const has = (b: PanelButton) => buttons.includes(b);
   const l4 = has('l4_done') || has('l4_resisted');
   const row1: (PanelButton | null)[] = l4 ? ['l4_done', 'l4_resisted'] : has('correct') ? ['correct', 'approximation', 'incorrect'] : [];
@@ -324,6 +341,7 @@ export function AdultPanel({
   const right: PanelButton | null = has('refusal') ? 'refusal' : !l4 && has('l4_skipped') ? 'l4_skipped' : null;
   const row2: (PanelButton | null)[] = [l4 ? (has('l4_skipped') ? 'l4_skipped' : null) : has('adult_prompted') ? 'adult_prompted' : null, right];
   const pad = abaAdultPanel.padding;
+  const edge = abaAdultSheet.edge;
   const button = (b: PanelButton | null, i: number) =>
     b === null ? (
       <View key={i} style={{ flex: 1 }} />
@@ -344,22 +362,25 @@ export function AdultPanel({
         onPress={() => onPress(b, downAt.current[b] ?? clock.now())}
         testID={`aba-panel-${b}`}
         accessibilityRole="button"
+        accessibilityState={{ selected: pressed === b }}
         style={{
           flex: 1,
           // во всю высоту ряда: у ряда 1 `alignItems: 'center'` сжимал кнопку до строки текста (22 pt вместо 48;
           // `child-ux-specialist`, этап F)
           alignSelf: 'stretch',
-          borderRadius: radii.sm,
-          borderWidth: pressed === b ? 3 : 1,
-          borderColor: p.border,
-          backgroundColor: p.button,
+          borderRadius: abaAdultSheet.buttonRadius,
+          // «нажата» (и в очереди, `pressed_queued`) — не толщиной: граница 1.5 у обоих видов, подпись не сдвигается
+          // и контура 3 в зоне нет; у нажатой граница чернилами и заливка `parentPressed.card`
+          borderWidth: abaAdultSheet.buttonBorder,
+          borderColor: pressed === b ? p.label : p.border,
+          backgroundColor: pressed === b ? pressedFill : p.button,
           alignItems: 'center',
           justifyContent: 'center',
           paddingHorizontal: abaAdultPanel.labelPadX,
         }}
       >
         <AbaText
-          type={parentTypography.caption}
+          type={abaTypography.panelLabel}
           color={p.label}
           max={abaAdultPanel.maxFontSizeMultiplier}
           // одно слово — одна строка: при двух RN переносит слово по буквам вместо ужатия
@@ -373,10 +394,33 @@ export function AdultPanel({
       </Pressable>
     );
   return (
-    <View testID="aba-adult-panel" style={{ height: height + Math.max(0, insetBottom - pad), backgroundColor: p.band, padding: pad, paddingBottom: Math.max(pad, insetBottom), gap: 12 }}>
+    <View
+      testID="aba-adult-panel"
+      style={{
+        height: height + Math.max(0, insetBottom - pad),
+        backgroundColor: p.band,
+        borderTopLeftRadius: abaAdultSheet.radius,
+        borderTopRightRadius: abaAdultSheet.radius,
+        borderTopWidth: edge,
+        borderTopColor: p.edge,
+        padding: pad,
+        paddingTop: pad - edge,
+        paddingBottom: Math.max(pad, insetBottom),
+        gap: 12,
+      }}
+    >
       <View style={{ flex: 1, flexDirection: 'row', gap: 8, alignItems: 'center' }}>
         {caption && row1.length === 0 ? (
-          <AbaText testID="aba-panel-caption" type={parentTypography.caption} color={p.label} max={abaAdultPanel.maxFontSizeMultiplier} lines={2} style={{ flex: 1 }}>
+          <AbaText
+            testID="aba-panel-caption"
+            type={abaTypography.sheetCaption}
+            color={p.caption}
+            max={abaAdultPanel.maxFontSizeMultiplier}
+            lines={1}
+            style={{ flex: 1 }}
+            adjustsFontSizeToFit
+            minimumFontScale={abaAdultPanel.minimumFontScale}
+          >
             {caption}
           </AbaText>
         ) : (

@@ -10,11 +10,15 @@
  *
  * Запрещены целиком: цвета регионов, secondary, error, success, растр, градиенты,
  * эмодзи. Проверяет `__tests__/abaTokens.test.ts`.
+ *
+ * Светлая схема с №203 — «Тихий кабинет» (`docs/design/aba-direction-b-spec-2026-11-16.md`): холодный фон,
+ * чернила `#1E2A2F`, белые детские кнопки с серым бортом, лист взрослого `zone` с кромкой, Golos Text
+ * (`abaTypography`). Плита, её контур, жёлтый жетон и фиолетовый награды — прежние (№198).
  */
 import type { PanelButton } from '../domain/abaScoring';
 import type { RoutineRunKind } from '../types/aba';
 import { parentColors } from './parentTokens';
-import { illustrationInk, motion, palettes, radii, selectedRepeatPress, stroke, touch, typography, type Scheme } from './tokens';
+import { illustrationInk, motion, palettes, radii, selectedRepeatPress, stroke, touch, typography, type Scheme, type TypeStyle } from './tokens';
 
 export type AbaColors = {
   /** Фон экрана пробы. */
@@ -54,6 +58,13 @@ export type AbaColors = {
   controlFill: string;
   controlInk: string;
   /**
+   * Борт детской кнопки (№203): мягкий серый уступ под кнопкой вместо чернильной подушки — высота
+   * `abaControlLip` (4, в calm 2). Не граница: границу несёт контур `controlInk`.
+   */
+  controlLip: string;
+  /** Окно сцены награды (выбор подкрепителя, доступ): лаванда — только награда, как и фиолетовый. */
+  rewardWindow: string;
+  /**
    * Штриховка неактивной плиты (Ц2.5, UX «важно» 7) — новый hex под уже существующую роль «неактивно»,
    * а не новая роль: тёплый серо-коричневый из семейства песка и `ink`, один в обеих схемах. К плите
    * 2.51 / 2.04 — **намеренно ≤ 3:1** (условие UX): прежний `plateOutline` (16.73 / 13.60) с шагом 8 давал
@@ -63,25 +74,31 @@ export type AbaColors = {
   inactiveHatch: string;
 };
 
-/** Детские палитры обычного режима: у ABA calm своих цветов не меняет, совпадающие значения — ссылкой (п. 34 аудита). */
+/**
+ * Детские палитры обычного режима — только для тёмной схемы (заморожена, №197). Светлая ABA — «Тихий кабинет»
+ * (№203): свои литералы, без ссылок на детскую палитру, чтобы правка обычного режима не перекрашивала ABA и
+ * наоборот (`tokens.ts` не меняется, №196). Тест ловит возвращение ссылок.
+ */
 const L = palettes.light.normal;
 const D = palettes.dark.normal;
 
 export const abaColors: Record<Scheme, AbaColors> = {
   light: {
-    background: L.background,
-    plate: L.picturePlate, // к фону 1.09:1 — границу несёт только контур
-    plateOutline: illustrationInk, // к плите 16.73:1, к фону 15.28:1
-    ink: L.text,
-    tokenSlot: L.surfaceSunken,
-    tokenSlotOutline: L.outline,
-    tokenEarned: L.accent, // к фону 1.45:1 — только с контуром
-    tokenOutline: illustrationInk, // к жёлтому 10.51:1
-    reinforcement: L.primary,
-    onReinforcement: L.onPrimary, // 7.71:1
-    controlFill: L.surface,
-    controlInk: L.outline, // 16.73:1
-    inactiveHatch: '#B5A08C', // своя роль ABA: к плите 2.51:1 (≤ 3 по условию UX), контур рисунка к ней 6.67:1
+    background: '#F4F6F5', // тот же фон, что у раздела взрослого: холодная нейтраль вместо тёплой бумаги
+    plate: '#FFFFFF', // не меняется (№198); к фону 1.09:1 — границу несёт только контур
+    plateOutline: '#2A1A12', // не меняется (№198): к плите 16.73:1, к фону 15.41:1
+    ink: '#1E2A2F', // 13.55:1 к фону; к plateOutline 1.14:1 — оба почти-чёрные, цвета-сигнала нет
+    tokenSlot: '#E6EBEA', // пустой слот: утоплен заливкой; пунктир на нём 5.04:1
+    tokenSlotOutline: '#55656B', // пунктир 3: 5.59:1 к фону
+    tokenEarned: '#FFC42E', // не меняется (№198, выученный подкрепитель); к фону 1.45:1 — только с контуром
+    tokenOutline: '#2A1A12', // к жёлтому 10.51:1
+    reinforcement: '#5A34C4', // не меняется: фиолетовый — только награда; к фону 7.11:1
+    onReinforcement: '#FFFFFF', // 7.71:1
+    rewardWindow: '#ECE6F8', // ink на нём 12.08:1
+    controlFill: '#FFFFFF',
+    controlInk: '#1E2A2F', // 14.71:1 к заливке, 13.55:1 к фону
+    controlLip: '#C7D0CD', // борт 4 / calm 2 под белой кнопкой; не граница
+    inactiveHatch: '#B5A08C', // не меняется: к плите 2.51:1 (≤ 3 по условию UX), контур рисунка к ней 6.67:1
   },
   dark: {
     background: D.background,
@@ -96,28 +113,87 @@ export const abaColors: Record<Scheme, AbaColors> = {
     onReinforcement: D.onPrimary, // 5.82:1; белое дало бы ≈3:1 (правило перевода, tokens.ts)
     controlFill: D.surface,
     controlInk: D.outline, // 14.40:1
+    // новые роли №203 в тёмной схеме — временно из её же тонов (тёмная тема заморожена, №197; сборка ABA — светлая)
+    controlLip: D.surfaceSunken,
+    rewardWindow: D.surface,
     inactiveHatch: '#B5A08C', // тот же hex: к плите #EDE7DC 2.04:1 (Ц2.16 п. 5 — проверить на устройстве вечером)
   },
 };
 
 /**
- * Панель взрослого в родительской тональности (Р6): полоса — `background` раздела, кнопка —
- * `card` + `hairline` + `text`; недоступная в этом окне кнопка — без заливки и **без границы**
- * (`borderDisabled` = цвет полосы: габарит и место те же, линии нет), подпись `textMuted`
- * (6.03 / 6.47 к полосе). Кнопка не исчезает — её держит подпись на том же месте. Недоступность
- * не рисуется прозрачностью и пунктиром: пунктир в ABA значит «здесь пусто» (слот жетона).
+ * Лист взрослого (Р6, «Тихий кабинет» №203): полоса — `zone` с кромкой `edge` по верху (`abaAdultSheet.edge` 2;
+ * 3.39 к листу, 3.87 к фону пробы), кнопка — белая `card` с границей `edge` 1.5 и подписью `text`; недоступная в
+ * этом окне кнопка — без заливки и **без границы** (`borderDisabled` = цвет листа: габарит и место те же, линии
+ * нет), подпись `textMuted` (4.89 к листу). Кнопка не исчезает — её держит подпись на том же месте. Недоступность
+ * не рисуется прозрачностью и пунктиром: пунктир в ABA значит «здесь пусто» (слот жетона). Подпись в пустом ряду
+ * (`waitQuiet`) — `caption` = чернила `text`, 11.85 к листу (условие UX ≥ 7). Контура 3 и борта в зоне нет.
  */
 export const abaAdultPanelColors = (scheme: Scheme) => {
   const p = parentColors[scheme];
   return {
-    band: p.background,
+    band: p.zone,
+    edge: p.edge,
     button: p.card,
-    border: p.hairline,
-    borderDisabled: p.background,
+    border: p.edge,
+    borderDisabled: p.zone,
     label: p.text,
     labelDisabled: p.textMuted,
+    caption: p.text,
   };
 };
+
+/**
+ * Геометрия листа взрослого (№203): скругление верха 24, кромка 2, кнопки — радиус 14 и граница 1.5. Высоты, слоты
+ * и зазоры — по-прежнему `abaAdultPanelTier` (№198 не трогает).
+ */
+export const abaAdultSheet = { radius: 24, edge: 2, buttonRadius: 14, buttonBorder: 1.5 } as const;
+
+/** Борт детской кнопки ABA (`controlLip`): 4 pt, в calm 2 (№203). Зона нажатия и габарит кнопки не меняются. */
+export const abaControlLip = { height: 4, calm: 2 } as const;
+
+/**
+ * Первый экран сборки «только ABA» (№203, `app/index.tsx`, ветка `ABA_ONLY`): «+ Для взрослых» — взрослый тон `zone`
+ * с кромкой `edge` 2 (как верх листа, 3.87 к фону), без борта, замок 36; за Tali — круг `blockExplain`, шире фигуры
+ * на `taliHalo` с каждой стороны (входит в отступы 16 над и под Tali — бюджет высоты `firstRunHeight` тот же; в calm
+ * круга нет). Подпись «Для взрослых» в карточке — одна строка, не вошла при ×1.2 — ужатие до `addLabelMinScale`.
+ * Размер карточки и Tali — прежние (`profileCard.addSize`, `taliSize.hero`).
+ */
+export const abaFirstRun = { addEdge: abaAdultSheet.edge, addLock: 36, addLabelMinScale: 0.86, taliHalo: 16, pressedOpacity: 0.55 } as const;
+
+/** Стиль текста ABA: кегль, интерлиньяж, вес, семейство (`AbaText`). */
+export type AbaTypeStyle = Pick<TypeStyle, 'size' | 'lineHeight' | 'weight' | 'family'>;
+
+/**
+ * Набор ABA на Golos Text (№203). Кегли и интерлиньяжи детских ролей прежние — слот инструкции 72 и строки
+ * 56 рассчитаны под них (`abaInstruction`); меняются семейство и вес: заголовок 700, инструкция и кнопки 600,
+ * подпись на листе 500. Взрослые роли ABA берутся из `parentTypography` (они уже на Golos).
+ */
+export const abaTypography = {
+  /** Экран конца, первый экран. Кегль Title 28/36. */
+  title: { size: typography.title.size, lineHeight: typography.title.lineHeight, weight: '700', family: 'Golos Text' },
+  /** Инструкция пробы, плашка, детские кнопки с подписью, кадр «свёрнуто». Кегль Subtitle 22/30. */
+  subtitle: { size: typography.subtitle.size, lineHeight: typography.subtitle.lineHeight, weight: '600', family: 'Golos Text' },
+  /** Подпись на листе взрослого (`waitQuiet`): одна строка 14/20. */
+  sheetCaption: { size: 14, lineHeight: 20, weight: '500', family: 'Golos Text' },
+  /**
+   * Названия кнопок панели взрослого: Golos 500 13/18. «Сопротивляется» в Golos шире Nunito: при 14 pt и ×1.2×0.86 не
+   * входит в слот 126 − 2 × 4 даже в весе 500 (117.9 > 115.1) — кегль 13 (109.5), вес 500 (№203, риск ж(2) спецификации).
+   */
+  panelLabel: { size: 13, lineHeight: 18, weight: '500', family: 'Golos Text' },
+} as const satisfies Record<string, AbaTypeStyle>;
+
+/** Вес детской роли (Nunito) → вес Golos в ABA: 800 → 700 (заголовок), 700 → 600 (инструкция, кнопки). */
+const ABA_GOLOS_WEIGHT: Record<TypeStyle['weight'], TypeStyle['weight']> = { '400': '400', '500': '500', '600': '600', '700': '600', '800': '700' };
+
+/**
+ * Стиль текста ABA для любой роли: роль Golos — как есть; детская роль Nunito (`typography.subtitle` / `title` в
+ * разметке экранов) — тот же кегль и интерлиньяж на Golos с весом по `ABA_GOLOS_WEIGHT`. Так экраны ABA получают
+ * новый шрифт через `AbaText`, без правок разметки; урок и `glyphFit` остаются на Nunito.
+ */
+export function abaTypeFor(type: AbaTypeStyle): AbaTypeStyle {
+  if (type.family === 'Golos Text') return type;
+  return { size: type.size, lineHeight: type.lineHeight, weight: ABA_GOLOS_WEIGHT[type.weight], family: 'Golos Text' };
+}
 
 /**
  * Контур плиты стимула. Спокойный режим понижает `stroke.base` 3 → 2, но у плиты
@@ -509,12 +585,12 @@ export const abaAdultPanel = {
   slotsPerRow: [3, 2],
   colWeights: [1, 1.25, 1],
   hitSlopUp: 0,
-  /** Подпись — родительский `caption` 14/20, до двух строк. */
+  /** Подпись — родительский `caption` 14/20 (Golos Text 600, №203), до двух строк. */
   labelLines: 2,
   /**
-   * Горизонтальное поле внутри кнопки (было 8): «Сопротивляется» — 111 pt Nunito 700 при 14 (замер TTF, этап F) в
-   * слоте 126; при ×1.2 — 134, iOS ужимает до `minimumFontScale`, Android — `adjustsFontSizeToFit` без нижней границы
-   * (проверить на устройстве, К2).
+   * Горизонтальное поле внутри кнопки (было 8): «Сопротивляется» в слоте 126 — ширина по TTF шрифта роли `caption`
+   * (тест «подписи (ru) на экране шириной 360»; Nunito 700 давал 111 pt при 14, Golos 600 меряется там же); при ×1.2
+   * iOS ужимает до `minimumFontScale`, Android — `adjustsFontSizeToFit` без нижней границы (проверить на устройстве, К2).
    */
   labelPadX: 4,
   /** Потолок системного шрифта: 2 строки × 20 × 1.2 = 48 — ровно кнопка, вертикальных полей нет. */
@@ -750,6 +826,39 @@ export function abaReinforcerCardSize(contentWidth: number, availableHeight: num
     Math.floor((contentWidth - abaReinforcerCard.gap) / 2),
     Math.floor((availableHeight - abaReinforcerCard.reservedHeight) / 2),
   );
+}
+
+/**
+ * Лицо карточки награды («Тихий кабинет» №203, шаг 8; размер — по-прежнему `abaReinforcerCardSize`). Белая карточка
+ * с контуром 3 и бортом `controlLip`, внутри — окно сцены `rewardWindow` и подпись названием **в одну строку**
+ * (не входит — ужатие до 0.86, второй строки нет). Поля считаются от контура «выбрано» `stroke.bold`: контур 3 → 6
+ * растёт внутрь, а окно и подпись стоят по центру и не сдвигаются. Радиус окна — вложенный: `radii.lg` − 6 − 4 = 18.
+ * Выбранная — три признака без цвета: контур 6, борта нет и карточка опущена на высоту борта («нажата»), галочка в
+ * кружке 32 чернилами в правом верхнем углу (белая галочка на `controlInk` — 14.71:1). Соседи без прозрачности.
+ */
+export const abaReinforcerCardFace = {
+  /** Поле от контура 6 до окна и подписи. */
+  inset: 4,
+  windowRadius: radii.lg - stroke.bold - 4,
+  /** Строка подписи 20 × потолок масштаба 1.2. */
+  labelSlot: 24,
+  labelMax: 1.2,
+  labelMinScale: 0.86,
+  /** Поле картинки внутри окна: картинка = меньшая сторона окна − 2 × 8. */
+  artPad: 8,
+  check: { size: 32, ring: 2, glyph: 18, inset: 4 },
+  /** Сдвиг выбранной вниз — на высоту борта, который у неё пропадает. */
+  selectedDrop: abaControlLip.height,
+  selectedDropCalm: abaControlLip.calm,
+} as const;
+
+/** Окно сцены карточки награды по размеру карточки: ширина, высота и сторона картинки (`abaReinforcerCardFace`). */
+export function abaReinforcerCardWindow(size: number): { width: number; height: number; art: number } {
+  const f = abaReinforcerCardFace;
+  const inner = size - 2 * stroke.bold - 2 * f.inset;
+  const width = inner;
+  const height = inner - f.labelSlot;
+  return { width, height, art: Math.min(width, height) - 2 * f.artPad };
 }
 
 /**

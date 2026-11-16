@@ -21,6 +21,7 @@
     "build:aba": "eas build --profile preview --platform android"
   },
   "dependencies": {
+    "@expo-google-fonts/golos-text": "^0.4.2",
     "@expo-google-fonts/nunito": "^0.4.2",
     "@expo/vector-icons": "^15.0.3",
     "@react-native-async-storage/async-storage": "2.2.0",

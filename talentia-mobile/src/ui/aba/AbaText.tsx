@@ -1,20 +1,22 @@
 /**
- * Текст ABA-экранов на Nunito (решение №176; контрольный аудит 2026-11-09, Ж18: ABA был набран системным шрифтом).
- * Роль — готовый стиль, новых ролей нет (`design-lead`, этап F): детское — из `typography` (`subtitle` у инструкции,
- * плашки, кнопок и кадра «свёрнуто», `title` у экрана конца), взрослое — из `parentTypography` (панель взрослого,
- * подписи, экран «слишком мал»). Файл шрифта по весу — `fontFamilyFor`, только загруженные 400/700/800. Цвет — явно из
- * `abaColors` / `parentColors`: у ABA своя палитра, не детская тема. Потолок системного масштаба — по месту (`max`).
+ * Текст ABA-экранов на Golos Text («Тихий кабинет», №203; до него — Nunito, №176 / Ж18). Роль — готовый стиль, новых
+ * ролей в разметке нет: детское — `typography.subtitle` / `title` (инструкция, плашка, кнопки, кадр «свёрнуто», экран
+ * конца), взрослое — `parentTypography` (панель взрослого, подписи, экран «слишком мал»), подпись листа —
+ * `abaTypography.sheetCaption`. Детская роль переводится на Golos через `abaTypeFor` (кегль и интерлиньяж прежние,
+ * вес 800 → 700, 700 → 600), поэтому урок и `glyphFit` остаются на Nunito, а ABA — целиком на Golos. Файл шрифта
+ * по весу — `fontFamilyFor`. Цвет — явно из `abaColors` / `abaAdultPanelColors`: у ABA своя палитра, не детская тема.
+ * Потолок системного масштаба — по месту (`max`).
  */
 import type { ComponentProps } from 'react';
 import { Text, type StyleProp, type TextStyle } from 'react-native';
 
-import type { TypeStyle } from '../../design/tokens';
+import { abaTypeFor, type AbaTypeStyle } from '../../design/abaTokens';
 import { fontFamilyFor } from '../fonts';
 
-export type AbaTextRole = Pick<TypeStyle, 'size' | 'lineHeight' | 'weight' | 'family'>;
+export type AbaTextRole = AbaTypeStyle;
 
 export type AbaTextProps = Omit<ComponentProps<typeof Text>, 'style' | 'maxFontSizeMultiplier' | 'numberOfLines'> & {
-  /** Стиль роли (`typography.*` или `parentTypography.*`); не `role` — так у Text называется роль доступности. */
+  /** Стиль роли (`typography.*`, `parentTypography.*`, `abaTypography.*`); не `role` — так у Text называется роль доступности. */
   type: AbaTextRole;
   color: string;
   /** `maxFontSizeMultiplier`: 1.2 у детских кадров и панели, 1.3 у свободного текста взрослому, 1 — где места нет. */
@@ -24,11 +26,12 @@ export type AbaTextProps = Omit<ComponentProps<typeof Text>, 'style' | 'maxFontS
 };
 
 export function AbaText({ type, color, max, lines, style, ...rest }: AbaTextProps) {
+  const t = abaTypeFor(type);
   return (
     <Text
       maxFontSizeMultiplier={max}
       numberOfLines={lines}
-      style={[{ color, fontFamily: fontFamilyFor(type), fontWeight: type.weight, fontSize: type.size, lineHeight: type.lineHeight }, style]}
+      style={[{ color, fontFamily: fontFamilyFor(t), fontWeight: t.weight, fontSize: t.size, lineHeight: t.lineHeight }, style]}
       {...rest}
     />
   );

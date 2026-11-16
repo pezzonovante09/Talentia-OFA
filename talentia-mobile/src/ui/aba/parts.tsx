@@ -7,7 +7,8 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Pressable, useColorScheme, View, type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
-import { abaColors, abaControls, abaNonTrialRow, ABA_CONTROL_STROKE, abaTouchCommits, inactiveChoice, type AbaColors } from '../../design/abaTokens';
+import { abaColors, abaControlLip, abaControls, abaNonTrialRow, ABA_CONTROL_STROKE, abaTouchCommits, inactiveChoice, type AbaColors } from '../../design/abaTokens';
+import { useDesign } from '../../design';
 import { radii } from '../../design/tokens';
 import { useAbaClock } from './clock';
 import { Icon } from '../Icon';
@@ -148,11 +149,32 @@ export function ChildPressable({
 }
 
 /**
+ * Борт детской кнопки ABA («Тихий кабинет», №203): серый уступ `controlLip` под белой кнопкой — 4 pt, в calm 2
+ * (`abaControlLip`). Рисуется за габаритом кнопки (сдвиг вниз, `overflow` видим), поэтому раскладка, слоты и зона
+ * нажатия не меняются (№198). Родитель — `View` размером с кнопку; борт ставится первым ребёнком, кнопка — поверх.
+ * Границу кнопки несёт контур `controlInk`, борт — только «это можно нажать». Спокойный режим берётся из темы
+ * (`useDesign().calmMode`, корень оборачивает экраны настройками ребёнка) — вызывающим не нужно его протаскивать.
+ */
+export function ControlLip({ radius, calm = false, testID }: { radius: number; calm?: boolean; testID?: string }) {
+  const c = useAbaColors();
+  const calmTheme = useDesign().calmMode;
+  const h = calm || calmTheme ? abaControlLip.calm : abaControlLip.height;
+  return (
+    <View
+      testID={testID}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={{ position: 'absolute', left: 0, right: 0, top: h, bottom: -h, borderRadius: radius, backgroundColor: c.controlLip, pointerEvents: 'none' }}
+    />
+  );
+}
+
+/**
  * Выход удержанием (`abaControls.exitHoldMs` 1500, первые 300 — без отклика): ребёнок до конца не удержит, взрослый
  * выйдет. Короткий тап — тихая подсказка «держите» на 1200 мс (`exitTapHint`), не выход. Для скринридера —
- * `accessibilityAction` без удержания.
+ * `accessibilityAction` без удержания. Белая кнопка с контуром `controlInk` и бортом `controlLip` (№203).
  */
-export function ExitHold({ onExit, label, hintLabel }: { onExit: () => void; label: string; hintLabel: string }) {
+export function ExitHold({ onExit, label, hintLabel, calm = false }: { onExit: () => void; label: string; hintLabel: string; /** Calm: борт 2 вместо 4. */ calm?: boolean }) {
   const c = useAbaColors();
   const clock = useAbaClock();
   const [holding, setHolding] = useState(false);
@@ -194,30 +216,33 @@ export function ExitHold({ onExit, label, hintLabel }: { onExit: () => void; lab
   };
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-      <Pressable
-        onPressIn={start}
-        onPressOut={stop}
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        accessibilityActions={[{ name: 'activate', label }]}
-        onAccessibilityAction={onExit}
-        testID="aba-exit"
-        style={{
-          width: abaControls.exitSize,
-          height: abaControls.exitSize,
-          borderRadius: radii.md,
-          borderWidth: ABA_CONTROL_STROKE,
-          borderColor: c.controlInk,
-          backgroundColor: c.controlFill,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Svg width={28} height={28} viewBox="0 0 24 24">
-          <Path d="M15 5l-7 7 7 7" stroke={c.controlInk} strokeWidth={3} fill="none" strokeLinecap="round" />
-          {holding && <Circle cx={12} cy={12} r={11} stroke={c.controlInk} strokeWidth={2} fill="none" />}
-        </Svg>
-      </Pressable>
+      <View style={{ width: abaControls.exitSize, height: abaControls.exitSize }}>
+        <ControlLip radius={radii.md} calm={calm} testID="aba-exit-lip" />
+        <Pressable
+          onPressIn={start}
+          onPressOut={stop}
+          accessibilityRole="button"
+          accessibilityLabel={label}
+          accessibilityActions={[{ name: 'activate', label }]}
+          onAccessibilityAction={onExit}
+          testID="aba-exit"
+          style={{
+            width: abaControls.exitSize,
+            height: abaControls.exitSize,
+            borderRadius: radii.md,
+            borderWidth: ABA_CONTROL_STROKE,
+            borderColor: c.controlInk,
+            backgroundColor: c.controlFill,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Svg width={28} height={28} viewBox="0 0 24 24">
+            <Path d="M15 5l-7 7 7 7" stroke={c.controlInk} strokeWidth={3} fill="none" strokeLinecap="round" />
+            {holding && <Circle cx={12} cy={12} r={11} stroke={c.controlInk} strokeWidth={2} fill="none" />}
+          </Svg>
+        </Pressable>
+      </View>
       {hint && (
         // поверх соседей, а не в ряду: подсказка не сдвигает заголовок, кольцо и подпись взрослому
         <View

@@ -10,11 +10,13 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { Appearance } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { DesignProvider, useReduceMotion } from '../src/design';
 import { deviceLang, initI18n } from '../src/i18n';
 import { expoSoundPlayer } from '../src/services/audioPlayer';
+import { ABA_ONLY } from '../src/services/buildScope';
 import { installNetworkFuse, networkFuseEnabled } from '../src/services/networkFuse';
 import { createAudioVoice, setVoiceBackend } from '../src/services/voice';
 import { useAccount } from '../src/state/account';
@@ -30,6 +32,9 @@ bindChildLanguage();
 // голос и звуки — файлы из сборки (№158); ключ без файла молчит
 setVoiceBackend(createAudioVoice(expoSoundPlayer()));
 void SplashScreen.preventAutoHideAsync();
+// сборка «только ABA» (№203): вид «Тихий кабинет» сделан только светлым, тёмная тема отложена (№197) — тёмный режим
+// телефона иначе показал бы старую тёмную «гуашь» рядом с новым видом
+if (ABA_ONLY) Appearance.setColorScheme('light');
 
 export default function RootLayout() {
   const [fontsReady, fontError] = useFonts(FONT_FILES);

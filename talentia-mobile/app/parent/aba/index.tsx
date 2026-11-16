@@ -13,6 +13,9 @@
  * №202 (вопрос 116): над «Занятием» — карточка «Где мы сейчас»: что будет на следующем занятии простыми словами
  * (`previewParentStage` — план вхолостую, процедура не меняется) и строка «Как проходят занятия». Первое «Начать»
  * на аккаунте открывает это введение (`intro.tsx`).
+ *
+ * №203 «Тихий кабинет»: «Где мы сейчас» — блок тона `where` с полосой этапов `StageStrip` (Знакомство · Проверка ·
+ * Учимся · Повторяем); главная кнопка состояния — единственная залитая, высота `parentButton.mainHeight` 56.
  */
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -52,6 +55,7 @@ import { progressPort } from '../../../src/state/port';
 import type { AbaConfig, AbaObserver } from '../../../src/types/aba';
 import { ConfirmPinSheet } from '../../../src/ui/parent/ConfirmPinSheet';
 import { Card, GoalGlyph, ParentButton, ParentScreen, ParentText, Row, Segmented, type GoalGlyphStatus } from '../../../src/ui/parent/primitives';
+import { StageStrip, stageStepOf } from '../../../src/ui/parent/StageStrip';
 import { WhoLeadsSheet, type WhoLeadsChoice } from '../../../src/ui/parent/WhoLeadsSheet';
 
 const CONFIGS: readonly AbaConfig[] = ['with_adult', 'alone'];
@@ -99,7 +103,8 @@ export function stageLines(t: (k: string, o?: Record<string, unknown>) => string
   }
   if (st.kind === 'maintenance') lines.push(t('parent.aba.where.maintenance', { targets: st.targetIds.map(goal).join(', ') }));
   else if (st.kind === 'all_mastered') lines.push(t('parent.aba.where.allMastered'));
-  if (v.tokens === false) lines.push(t('parent.aba.where.noTokens'));
+  // на проверке и первых пробах «без жетонов» уже сказано в строке этапа — повтор не пишем (№203, макет Б)
+  if (v.tokens === false && st.kind !== 'placement' && st.kind !== 'baseline') lines.push(t('parent.aba.where.noTokens'));
   else if (v.tokens === true) lines.push(t('parent.aba.where.tokens'));
   return lines;
 }
@@ -371,6 +376,9 @@ export default function AbaParentScreen() {
 
   const canChoose = block === null || block === 'pairing_needed';
   const goals = progress ? goalRows(progress, (ov?.readyTargets ?? 0) > 0) : [];
+  // этап считается для «Со взрослым»; в «Сам» (обычная сборка) план другой — этап не показываем
+  const whereLines = canChoose && mode === 'with_adult' && stage ? stageLines(t, stage, profile.band) : [];
+  const whereStep = whereLines.length > 0 && stage ? stageStepOf(stage.stage.kind) : null;
 
   return (
     <ParentScreen
@@ -382,14 +390,16 @@ export default function AbaParentScreen() {
     >
       <View style={{ gap: parentSpacing.lg }}>
         {ov && (
-          <Card title={t('parent.aba.where.title')} testID="aba-where">
-            {/* этап считается для «Со взрослым»; в «Сам» (обычная сборка) план другой — этап не показываем */}
-            {(block === null || block === 'pairing_needed') && mode === 'with_adult' && stage && stageLines(t, stage, profile.band).length > 0 && (
+          // №203: блок тона `where` с иконкой в круге; подпись «Следующее занятие» — только когда этап показан
+          <Card tone="where" icon="map" title={t('parent.aba.where.title')} caption={whereLines.length > 0 ? t('parent.aba.where.next') : undefined} testID="aba-where">
+            {whereLines.length > 0 && (
               <View style={{ gap: parentSpacing.xs, marginBottom: parentSpacing.sm }} testID="aba-where-lines">
-                <ParentText role="label" testID="aba-where-next">
-                  {t('parent.aba.where.next')}
-                </ParentText>
-                {stageLines(t, stage, profile.band).map((line, i) => (
+                {whereStep && (
+                  <View style={{ marginBottom: parentSpacing.sm }}>
+                    <StageStrip current={whereStep} testID="aba-stage-strip" />
+                  </View>
+                )}
+                {whereLines.map((line, i) => (
                   <ParentText key={i} role={i === 0 ? 'body' : 'caption'} color={i === 0 ? 'text' : 'textMuted'} testID={`aba-where-line-${i}`}>
                     {line}
                   </ParentText>
@@ -450,19 +460,20 @@ export default function AbaParentScreen() {
           )}
           <View style={{ marginTop: canChoose || block === 'in_progress' || block === 'in_progress_stale' ? parentSpacing.md : parentSpacing.sm }}>
             {block === 'no_consent' || block === 'outdated' ? (
-              <ParentButton label={t('parent.aba.readConsent')} onPress={() => router.push('/parent/aba/consent')} testID="aba-read-consent" />
+              <ParentButton label={t('parent.aba.readConsent')} height={parentButton.mainHeight} onPress={() => router.push('/parent/aba/consent')} testID="aba-read-consent" />
             ) : block === 'paused' ? (
-              <ParentButton variant="secondary" label={t('parent.aba.start')} disabled reason={t('parent.aba.unpauseToStart')} onPress={() => undefined} testID="aba-start" />
+              <ParentButton variant="secondary" label={t('parent.aba.start')} height={parentButton.mainHeight} disabled reason={t('parent.aba.unpauseToStart')} onPress={() => undefined} testID="aba-start" />
             ) : block === 'in_progress' ? (
               <>
-                <ParentButton label={t('parent.aba.continue')} onPress={() => guarded('aba_resume', resume)} testID="aba-continue" />
+                <ParentButton label={t('parent.aba.continue')} height={parentButton.mainHeight} onPress={() => guarded('aba_resume', resume)} testID="aba-continue" />
                 <ParentButton variant="quiet" label={t('parent.aba.finishWithout')} onPress={finish} testID="aba-finish" />
               </>
             ) : block === 'in_progress_stale' ? (
               // просрочено (фаза 8, `design-lead`): одно действие и единственный путь к новому занятию — заметная кнопка
               <ParentButton variant="secondary" label={t('parent.aba.closeStale')} onPress={closeStale} testID="aba-close-stale" />
             ) : block === 'no_ready_targets' || block === 'pool_small' ? null : (
-              <ParentButton label={t(block === 'pairing_needed' ? 'parent.aba.startPairing' : 'parent.aba.start')} onPress={start} testID="aba-start" />
+              // единственная залитая кнопка экрана — главная, 56 (№203)
+              <ParentButton label={t(block === 'pairing_needed' ? 'parent.aba.startPairing' : 'parent.aba.start')} height={parentButton.mainHeight} onPress={start} testID="aba-start" />
             )}
           </View>
           {(canChoose || block === 'in_progress') && (

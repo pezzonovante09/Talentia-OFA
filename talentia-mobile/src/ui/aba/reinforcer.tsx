@@ -11,6 +11,10 @@ import { useChildT } from "../../i18n";
 import {
   abaAccessRing,
   abaAdultPanelColors,
+  abaAdultSheet,
+  abaReinforcerCardFace,
+  abaReinforcerCardWindow,
+  abaTypography,
   abaExchange,
   abaReinforcerCard,
   abaReinforcerChoice,
@@ -27,7 +31,7 @@ import { REWARD_ART, REWARD_ICONS } from "../../assets/registry";
 import { rewardPicture } from "./access/RewardPicture";
 import { AbaText } from "./AbaText";
 import type { ChoiceRun } from "./model/reinforcerChoiceRun";
-import { ChildPressable, useAbaColors } from "./parts";
+import { ChildPressable, ControlLip, PlaceholderGlyph, useAbaColors } from "./parts";
 
 const labelKeyOf = (id: string) =>
   REINFORCERS.find((r) => r.id === id)?.labelKey ?? id;
@@ -150,12 +154,18 @@ export function TokenCell({
   );
 }
 
-/** Карточка подкрепителя: белая, контур 3, выбранная — контур 6 внутрь; `pulse` — общий пульс «Сам» 1.04. */
+/**
+ * Карточка подкрепителя («Тихий кабинет» №203, шаг 8; `abaReinforcerCardFace`): белая, контур 3 `controlInk`, борт
+ * `controlLip` (4, в calm 2), внутри окно сцены `rewardWindow` и подпись названием в одну строку (ужатие до 0.86).
+ * Выбранная — контур 6 внутрь, без борта, опущена на высоту борта, галочка в кружке 32 чернилами; соседи как были.
+ * `pulse` — общий пульс «Сам» 1.04 (вместе с бортом). Размер — `abaReinforcerCardSize`, логика выбора не здесь.
+ */
 function ReinforcerCard({
   id,
   size,
   selected,
   pulse,
+  calm,
   frameShownAt,
   onTap,
 }: {
@@ -163,40 +173,120 @@ function ReinforcerCard({
   size: number;
   selected: boolean;
   pulse: boolean;
+  calm: boolean;
   frameShownAt: number;
   onTap: (at: number) => void;
 }) {
   // название — ребёнку, на его языке (№190)
   const t = useChildT();
   const c = useAbaColors();
-  const stroke = selected
-    ? abaReinforcerChoice.selected.stroke
-    : ABA_CONTROL_STROKE;
+  const f = abaReinforcerCardFace;
+  const name = t(labelKeyOf(id));
+  const win = abaReinforcerCardWindow(size);
+  // без картинки (партия 2) название уже написано в окне — подпись под ним его бы повторила; слот подписи остаётся
+  const namedInWindow = !REWARD_ART[id] && rewardPicture(id, win.art, name) === null;
+  const drop = calm ? f.selectedDropCalm : f.selectedDrop;
   return (
-    <ChildPressable
-      frameShownAt={frameShownAt}
-      onCommit={onTap}
-      testID={`aba-reinforcer-${id}`}
-      accessibilityLabel={t(labelKeyOf(id))}
+    <View
+      testID={`aba-choice-card-${id}`}
       style={{
         width: size,
         height: size,
-        borderRadius: radii.lg,
-        borderWidth: stroke,
-        borderColor: c.controlInk,
-        backgroundColor: c.controlFill,
-        alignItems: "center",
-        justifyContent: "center",
         transform: [
+          { translateY: selected ? drop : 0 },
           { scale: pulse ? abaReinforcerChoice.aloneRepeat.pulse.scale : 1 },
         ],
       }}
     >
-      <View style={{ backgroundColor: c.plate, borderRadius: radii.md }}>
-        <ReinforcerArt id={id} size={size - 32} />
-      </View>
-    </ChildPressable>
+      {/* борт — только у невыбранной: выбранная «нажата», борта под ней нет */}
+      {!selected && <ControlLip radius={radii.lg} calm={calm} testID={`aba-choice-lip-${id}`} />}
+      <ChildPressable
+        frameShownAt={frameShownAt}
+        onCommit={onTap}
+        testID={`aba-reinforcer-${id}`}
+        accessibilityLabel={name}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: radii.lg,
+          borderWidth: selected ? abaReinforcerChoice.selected.stroke : ABA_CONTROL_STROKE,
+          borderColor: c.controlInk,
+          backgroundColor: c.controlFill,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <View
+          testID={`aba-choice-window-${id}`}
+          style={{
+            width: win.width,
+            height: win.height,
+            borderRadius: f.windowRadius,
+            backgroundColor: c.rewardWindow,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <ReinforcerArt id={id} size={win.art} />
+        </View>
+        <View style={{ width: win.width, height: f.labelSlot, justifyContent: "center" }}>
+          {!namedInWindow && (
+            <AbaText
+              testID={`aba-choice-label-${id}`}
+              type={parentTypography.caption}
+              color={c.ink}
+              max={f.labelMax}
+              lines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={f.labelMinScale}
+              style={{ textAlign: "center" }}
+            >
+              {name}
+            </AbaText>
+          )}
+        </View>
+        {selected && (
+          <View
+            testID={`aba-choice-check-${id}`}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            style={{
+              position: "absolute",
+              top: f.check.inset,
+              right: f.check.inset,
+              width: f.check.size,
+              height: f.check.size,
+              borderRadius: f.check.size / 2,
+              borderWidth: f.check.ring,
+              borderColor: c.controlFill,
+              backgroundColor: c.controlInk,
+              alignItems: "center",
+              justifyContent: "center",
+              pointerEvents: "none",
+            }}
+          >
+            <PlaceholderGlyph name="check" size={f.check.glyph} color={c.controlFill} />
+          </View>
+        )}
+      </ChildPressable>
+    </View>
   );
+}
+
+/**
+ * Лист взрослого в зоне 88 под карточками — как лист панели (№203, п. 5): `zone`, кромка 2 `edge`, радиус 24. Поле
+ * 8 = кромка 2 + 6: содержимое стоит там же, где стояло без кромки. Один вид у подписи ожидания и у полосы
+ * взрослого — смена между ними не двигает зону.
+ */
+function sheetStyle(p: ReturnType<typeof abaAdultPanelColors>) {
+  return {
+    height: abaReinforcerChoice.adultStripHeight,
+    backgroundColor: p.band,
+    borderWidth: abaAdultSheet.edge,
+    borderColor: p.edge,
+    borderRadius: abaAdultSheet.radius,
+    padding: abaAdultPanel.padding - abaAdultSheet.edge,
+  } as const;
 }
 
 /** Полоса взрослого 88 на месте «Начать» (раздел 4): подпись и три кнопки названиями, без картинок. */
@@ -210,18 +300,16 @@ function AdultStrip({
   const { t } = useTranslation();
   const p = abaAdultPanelColors(useColorScheme() === "dark" ? "dark" : "light");
   return (
-    <View
-      testID="aba-adult-strip"
-      style={{
-        height: abaReinforcerChoice.adultStripHeight,
-        backgroundColor: p.band,
-        borderRadius: radii.md,
-        padding: 8,
-        gap: 6,
-      }}
-    >
+    <View testID="aba-adult-strip" style={{ ...sheetStyle(p), gap: 6 }}>
       {/* полоса 88 уже на 2 pt меньше содержимого — без роста шрифта (`design-lead`, этап F) */}
-      <AbaText type={parentTypography.caption} color={p.label} max={1} lines={1} adjustsFontSizeToFit minimumFontScale={0.9}>
+      <AbaText
+        type={abaTypography.sheetCaption}
+        color={p.caption}
+        max={1}
+        lines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={abaAdultPanel.minimumFontScale}
+      >
         {t("abaSession.adultChooses")}
       </AbaText>
       <View style={{ flexDirection: "row", gap: 8, flex: 1 }}>
@@ -234,8 +322,8 @@ function AdultStrip({
             style={{
               flex: 1,
               height: 48,
-              borderRadius: radii.sm,
-              borderWidth: 1,
+              borderRadius: abaAdultSheet.buttonRadius,
+              borderWidth: abaAdultSheet.buttonBorder,
               borderColor: p.border,
               backgroundColor: p.button,
               alignItems: "center",
@@ -263,7 +351,8 @@ function AdultStrip({
 
 /**
  * Экран выбора (раздел 4 / Ц2.4): две карточки в ряд, третья по центру, доска с силуэтом выбранного, внизу 88 —
- * пусто или полоса взрослого. Карточка — `abaReinforcerCardSize` от размеров зоны.
+ * пусто, подпись ожидания или полоса взрослого (обе — листом взрослого). Карточка — `abaReinforcerCardSize` от
+ * размеров зоны.
  */
 export function ReinforcerChoiceView({
   run,
@@ -274,6 +363,7 @@ export function ReinforcerChoiceView({
   onTap,
   onAdultTap,
   waitCaption,
+  calm = false,
 }: {
   run: ChoiceRun;
   options: string[];
@@ -287,9 +377,11 @@ export function ReinforcerChoiceView({
    * не задание, ждать касания. Только «Со взрослым»; мелко, цветом подписей панели взрослого.
    */
   waitCaption?: string;
+  /** Calm: борт карточек 2 вместо 4 (и сдвиг выбранной — на него же). */
+  calm?: boolean;
 }) {
   const c = useAbaColors();
-  const adultInk = abaAdultPanelColors(useColorScheme() === "dark" ? "dark" : "light").label;
+  const p = abaAdultPanelColors(useColorScheme() === "dark" ? "dark" : "light");
   const card = (id: string) => (
     <ReinforcerCard
       key={id}
@@ -297,6 +389,7 @@ export function ReinforcerChoiceView({
       size={cardSize}
       selected={run.selected === id}
       pulse={pulse}
+      calm={calm}
       frameShownAt={run.shownAt}
       onTap={(at) => onTap(id, at)}
     />
@@ -357,8 +450,17 @@ export function ReinforcerChoiceView({
           <AdultStrip options={options} onTap={onAdultTap} />
         )}
         {run.stripShownAt === null && run.selected === null && waitCaption ? (
-          <View testID="aba-choice-wait" style={{ flex: 1, justifyContent: "flex-end", paddingHorizontal: 8 }}>
-            <AbaText type={parentTypography.caption} color={adultInk} max={1} lines={2} adjustsFontSizeToFit minimumFontScale={0.9} style={{ textAlign: "center" }}>
+          <View testID="aba-choice-wait" style={{ ...sheetStyle(p), justifyContent: "center" }}>
+            {/* подпись листа 14/20 500 чернилами (11.85 к листу); фраза длинная — две строки, ужатие до 0.86 */}
+            <AbaText
+              type={abaTypography.sheetCaption}
+              color={p.caption}
+              max={1}
+              lines={2}
+              adjustsFontSizeToFit
+              minimumFontScale={abaAdultPanel.minimumFontScale}
+              style={{ textAlign: "center" }}
+            >
               {waitCaption}
             </AbaText>
           </View>

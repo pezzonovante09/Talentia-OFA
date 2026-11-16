@@ -1,20 +1,21 @@
 /**
- * Примитивы родительского раздела (`docs/design/parent-screens-2026-10-25.md` §0): текст по ролям,
- * экран с шапкой 48, кнопка без масштаба (заливка под пальцем за 140 мс), карточка с hairline,
- * строка, сегменты, поле, точки и клавиатура PIN, полоса недели. Детские примитивы здесь не
- * используются: у них отклик игры.
+ * Примитивы раздела взрослого — «Тихий кабинет» (№203, `docs/design/aba-direction-b-spec-2026-11-16.md`): текст по
+ * ролям на Golos Text, экран с шапкой 56 и заголовком 21, кнопка без масштаба (заливка под пальцем за 140 мс;
+ * вторичная — белая с кромкой `edge` 1.5), карточка-блок радиуса 24 (тон `where` / `explain` / `rule` — без hairline,
+ * `plain` — с hairline; иконка в круге 40 и заголовок), строка с разделителем hairline, сегменты, поле, точки и
+ * клавиатура PIN, полоса недели. Детские примитивы здесь не используются: у них отклик игры.
  */
 import { useRef, useState, type PropsWithChildren, type ReactNode } from 'react';
 import { Pressable, ScrollView, Switch, Text, TextInput, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ICONS, type IconName } from '../../assets/registry';
-import { parentButton, parentCard, parentGoalGlyph, parentHeader, parentPin, parentRow, parentSegmented, parentSpacing, parentSwitch, touchAdult, weekStrip, type ParentColors } from '../../design/parentTokens';
+import { parentButton, parentCard, parentFontScaleMax, parentGoalGlyph, parentHeader, parentPin, parentRow, parentSegmented, parentSpacing, parentSwitch, touchAdult, weekStrip, type ParentColors, type ParentTypeRole } from '../../design/parentTokens';
 import { fontFamilyFor } from '../fonts';
 import { useParentTheme } from './theme';
 
 export type ParentColorName = Exclude<keyof ParentColors, 'regionsInk'>;
-export type ParentTextRole = 'heading' | 'body' | 'caption' | 'number' | 'label';
+export type ParentTextRole = ParentTypeRole;
 
 export function ParentText({ role, color = 'text', align, lines, style, children, testID, accessibilityRole, hex }: PropsWithChildren<{ role: ParentTextRole; color?: ParentColorName; hex?: string; align?: TextStyle['textAlign']; lines?: number; style?: TextStyle; testID?: string; accessibilityRole?: 'header' | 'text' }>) {
   const t = useParentTheme();
@@ -22,7 +23,7 @@ export function ParentText({ role, color = 'text', align, lines, style, children
   return (
     <Text
       numberOfLines={lines}
-      maxFontSizeMultiplier={role === 'number' ? 1 : 1.3}
+      maxFontSizeMultiplier={parentFontScaleMax[role]}
       accessibilityRole={accessibilityRole}
       testID={testID}
       style={[
@@ -43,10 +44,11 @@ export function ParentIcon({ name, color = 'text', size = 24 }: { name: IconName
 
 export type ParentButtonVariant = 'primary' | 'secondary' | 'destructive' | 'quiet';
 
-export function ParentButton({ variant = 'primary', label, onPress, disabled = false, reason, testID, underline = false, block = true, height = parentButton.height, minWidth }: { variant?: ParentButtonVariant; label: string; onPress: () => void; disabled?: boolean; /** Причина недоступности — подпись под кнопкой. */ reason?: string; testID?: string; underline?: boolean; block?: boolean; /** Высота зоны — по умолчанию 48; экран «слишком мал» ABA берёт `abaWindowPolicy.belowMinButtonHeight`. */ height?: number; minWidth?: number }) {
+export function ParentButton({ variant = 'primary', label, onPress, disabled = false, reason, testID, underline = false, block = true, height = parentButton.height, minWidth }: { variant?: ParentButtonVariant; label: string; onPress: () => void; disabled?: boolean; /** Причина недоступности — подпись под кнопкой. */ reason?: string; testID?: string; underline?: boolean; block?: boolean; /** Высота зоны — по умолчанию 52; главная кнопка экрана — `parentButton.mainHeight` 56, экран «слишком мал» ABA — `abaWindowPolicy.belowMinButtonHeight`. */ height?: number; minWidth?: number }) {
   const t = useParentTheme();
   const [pressed, setPressed] = useState(false);
   const last = useRef({ at: 0 }).current;
+  // толщина границы одна у всех вариантов (`edge` 1.5): смена варианта или недоступность не сдвигает подпись
   const look = (() => {
     if (disabled) return { bg: t.colors.card, ink: t.colors.textMuted, border: t.colors.hairline };
     switch (variant) {
@@ -55,7 +57,8 @@ export function ParentButton({ variant = 'primary', label, onPress, disabled = f
       case 'destructive':
         return { bg: pressed ? t.pressed.error : t.colors.error, ink: t.colors.onError, border: 'transparent' };
       case 'secondary':
-        return { bg: pressed ? t.pressed.card : t.colors.card, ink: t.colors.text, border: t.colors.hairline };
+        // белая кнопка держит границу кромкой: hairline (1.6:1) границей не считается
+        return { bg: pressed ? t.pressed.card : t.colors.card, ink: t.colors.text, border: t.colors.edge };
       case 'quiet':
         return { bg: pressed ? t.pressed.card : 'transparent', ink: t.colors.primary, border: 'transparent' };
     }
@@ -76,7 +79,7 @@ export function ParentButton({ variant = 'primary', label, onPress, disabled = f
           onPress();
         }}
         testID={testID}
-        style={{ height, minWidth, borderRadius: t.shape.radius, backgroundColor: look.bg, borderWidth: t.shape.hairline, borderColor: look.border, alignItems: 'center', justifyContent: 'center', paddingHorizontal: parentSpacing.lg }}
+        style={{ height, minWidth, borderRadius: t.shape.radius, backgroundColor: look.bg, borderWidth: t.shape.edge, borderColor: look.border, alignItems: 'center', justifyContent: 'center', paddingHorizontal: parentSpacing.lg }}
       >
         <ParentText role="label" hex={look.ink} style={{ textDecorationLine: underline ? 'underline' : 'none' }}>
           {label}
@@ -104,7 +107,7 @@ export function ParentScreen({ title, left, right, scroll = true, children, test
         <View style={{ minWidth: 48, alignItems: 'flex-start' }}>{left}</View>
         <View style={{ flex: 1 }}>
           {title ? (
-            <ParentText role="heading" lines={1} accessibilityRole="header">
+            <ParentText role="screen" lines={1} accessibilityRole="header">
               {title}
             </ParentText>
           ) : null}
@@ -116,15 +119,79 @@ export function ParentScreen({ title, left, right, scroll = true, children, test
   );
 }
 
-export function Card({ title, children, testID, style }: PropsWithChildren<{ title?: string; testID?: string; style?: StyleProp<ViewStyle> }>) {
+/** Тон блока: `plain` — белая карточка с hairline; остальные — тонированные блоки без линии (№203). */
+export type CardTone = 'plain' | 'where' | 'explain' | 'rule';
+
+const CARD_FILL: Record<CardTone, 'card' | 'blockWhere' | 'blockExplain' | 'blockRule'> = {
+  plain: 'card',
+  where: 'blockWhere',
+  explain: 'blockExplain',
+  rule: 'blockRule',
+};
+
+/**
+ * Карточка-блок (№203), радиус 24. Тон — роль, а не украшение: `where` — «где мы сейчас», `explain` — объяснение,
+ * `rule` — правило взрослому; тонированный блок отделён заливкой и обходится без hairline. С `icon` — шапка блока:
+ * иконка 24 в круге 40 (на тонированном круг белый, на простой карточке — `blockWhere`) и заголовок роли `title`
+ * 19/24 с подписью под ним. Без `icon` заголовок — прежняя подпись раздела (`caption`, `textMuted`).
+ */
+export function Card({ title, caption, icon, tone = 'plain', children, testID, style }: PropsWithChildren<{ title?: string; /** Подпись под заголовком («Следующее занятие»). */ caption?: string; icon?: IconName; tone?: CardTone; testID?: string; style?: StyleProp<ViewStyle> }>) {
   const t = useParentTheme();
+  const tinted = tone !== 'plain';
+  const block = tinted || icon !== undefined;
+  const head =
+    icon !== undefined ? (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: parentCard.iconGap, marginBottom: parentSpacing.md }}>
+        <View
+          testID={testID ? `${testID}-icon` : undefined}
+          style={{ width: parentCard.icon, height: parentCard.icon, borderRadius: parentCard.icon / 2, backgroundColor: tinted ? t.colors.card : t.colors.blockWhere, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <ParentIcon name={icon} size={parentCard.iconGlyph} />
+        </View>
+        <View style={{ flex: 1 }}>
+          {title ? (
+            <ParentText role="title" accessibilityRole="header">
+              {title}
+            </ParentText>
+          ) : null}
+          {caption ? (
+            <ParentText role="caption" color="textMuted">
+              {caption}
+            </ParentText>
+          ) : null}
+        </View>
+      </View>
+    ) : title || caption ? (
+      <View style={{ marginBottom: parentSpacing.sm }}>
+        {title ? (
+          <ParentText role="caption" color="textMuted">
+            {title}
+          </ParentText>
+        ) : null}
+        {caption ? (
+          <ParentText role="caption" color="textMuted">
+            {caption}
+          </ParentText>
+        ) : null}
+      </View>
+    ) : null;
   return (
-    <View style={[{ backgroundColor: t.colors.card, borderWidth: t.shape.hairline, borderColor: t.colors.hairline, borderRadius: t.shape.radius, paddingHorizontal: parentCard.padX, paddingVertical: parentCard.padY, marginBottom: parentCard.gap }, style]} testID={testID}>
-      {title ? (
-        <ParentText role="caption" color="textMuted" style={{ marginBottom: parentSpacing.sm }}>
-          {title}
-        </ParentText>
-      ) : null}
+    <View
+      style={[
+        {
+          backgroundColor: t.colors[CARD_FILL[tone]],
+          borderWidth: tinted ? 0 : t.shape.hairline,
+          borderColor: t.colors.hairline,
+          borderRadius: t.shape.blockRadius,
+          paddingHorizontal: block ? parentCard.blockPad : parentCard.padX,
+          paddingVertical: block ? parentCard.blockPad : parentCard.padY,
+          marginBottom: parentCard.gap,
+        },
+        style,
+      ]}
+      testID={testID}
+    >
+      {head}
       {children}
     </View>
   );
@@ -193,7 +260,7 @@ export function Segmented<T extends string>({ options, value, onChange, testID, 
   const pad = (touchAdult - parentSegmented.height) / 2;
   return (
     <View style={{ paddingVertical: pad }} accessibilityRole="radiogroup" testID={testID}>
-      <View style={{ flexDirection: 'row', height: parentSegmented.height, borderWidth: t.shape.hairline, borderColor: t.colors.hairline, borderRadius: t.shape.radius, overflow: 'hidden' }}>
+      <View style={{ flexDirection: 'row', height: parentSegmented.height, borderWidth: t.shape.edge, borderColor: t.colors.edge, borderRadius: t.shape.radius, overflow: 'hidden' }}>
         {options.map((o) => {
           const selected = o.value === value;
           const off = disabled.includes(o.value);
@@ -265,7 +332,7 @@ export function Field({ value, onChange, placeholder, caption, error, width, key
         textContentType="none"
         importantForAutofill="no"
         testID={testID}
-        style={{ height: parentButton.height, borderRadius: t.shape.radius, backgroundColor: t.colors.card, borderWidth: error ? 2 : focused ? 2 : t.shape.hairline, borderColor: error ? t.colors.error : focused ? t.colors.primary : t.colors.hairline, paddingHorizontal: parentSpacing.md, color: t.colors.text, fontFamily: fontFamilyFor(ty), fontSize: ty.size, textAlign: align }}
+        style={{ height: parentButton.height, borderRadius: t.shape.radius, backgroundColor: t.colors.card, borderWidth: error ? 2 : focused ? 2 : t.shape.edge, borderColor: error ? t.colors.error : focused ? t.colors.primary : t.colors.edge, paddingHorizontal: parentSpacing.md, color: t.colors.text, fontFamily: fontFamilyFor(ty), fontSize: ty.size, textAlign: align }}
       />
       {error ? (
         <ParentText role="caption" color="error" style={{ marginTop: parentSpacing.xs }} testID={testID ? `${testID}-error` : undefined}>
@@ -303,7 +370,7 @@ export function Keypad({ layout, onDigit, onBackspace, backspaceLabel, testID = 
             if (k === '') return <View key={c} style={{ width: parentPin.keyW, height: parentPin.keyH }} />;
             const back = k === 'back';
             return (
-              <Pressable key={c} accessibilityRole="button" accessibilityLabel={back ? backspaceLabel : k} onPress={() => (back ? onBackspace() : onDigit(k))} testID={back ? `${testID}-back` : `${testID}-${k}`} style={({ pressed }) => ({ width: parentPin.keyW, height: parentPin.keyH, borderRadius: t.shape.radius, backgroundColor: pressed ? t.pressed.card : t.colors.card, borderWidth: t.shape.hairline, borderColor: t.colors.hairline, alignItems: 'center', justifyContent: 'center' })}>
+              <Pressable key={c} accessibilityRole="button" accessibilityLabel={back ? backspaceLabel : k} onPress={() => (back ? onBackspace() : onDigit(k))} testID={back ? `${testID}-back` : `${testID}-${k}`} style={({ pressed }) => ({ width: parentPin.keyW, height: parentPin.keyH, borderRadius: t.shape.radius, backgroundColor: pressed ? t.pressed.card : t.colors.card, borderWidth: t.shape.edge, borderColor: t.colors.edge, alignItems: 'center', justifyContent: 'center' })}>
                 {/* «стереть» — своя форма: `x` в шапке экрана PIN значит «закрыть» (аудит 2026-11-09, `design-lead` по диффу B) */}
                 {back ? <ParentIcon name="backspace" /> : <ParentText role="heading">{k}</ParentText>}
               </Pressable>

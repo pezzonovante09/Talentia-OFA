@@ -64,6 +64,10 @@ import {
   ABA_STIMULUS_STROKE,
   abaAdultPanel,
   abaAdultPanelColors,
+  abaAdultSheet,
+  abaControlLip,
+  abaTypeFor,
+  abaTypography,
   abaAdultPanelSlot,
   abaAdultPanelStages,
   abaAdultPanelTier,
@@ -96,8 +100,9 @@ import {
   type PromptVisual,
 } from '../abaTokens';
 import { contrast, SHAPE_CONTRAST, TEXT_CONTRAST } from '../contrast';
-import { parentTypography, touchAdult } from '../parentTokens';
+import { parentColors, parentTypography, touchAdult } from '../parentTokens';
 import { textEm } from '../../test/fontMetrics';
+import { fontFamilyFor } from '../../ui/fonts';
 import {
   buildTheme,
   cushionByRole,
@@ -130,8 +135,17 @@ function hslSaturation(hex: string): number {
 }
 
 describe('цвет в ABA не бывает стимулом', () => {
-  it('на экране пробы в светлой схеме ровно три цвета: песок, плита, почти-чёрный', () => {
-    expect(new Set(trialColors(abaColors.light)).size).toBe(3);
+  it('на экране пробы в светлой схеме фон, плита и почти-чёрные: чернила и контур плиты — один тон «почти-чёрный»', () => {
+    // №203: чернила интерфейса #1E2A2F, контур плиты остался #2A1A12 (№198) — два hex одной роли. Правило держится не
+    // числом hex, а тем, что оба почти-чёрные и между собой неразличимы как цвет (≈ 1.14:1), а фон и плита — светлые.
+    const c = abaColors.light;
+    expect(new Set(trialColors(c)).size).toBe(4);
+    expect(contrast(c.ink, c.plateOutline)).toBeLessThan(1.25);
+    [c.ink, c.plateOutline].forEach((x) => {
+      expect(contrast(x, c.background)).toBeGreaterThanOrEqual(13);
+      expect(hslSaturation(x)).toBeLessThanOrEqual(0.45);
+    });
+    expect(contrast(c.plate, c.background)).toBeLessThan(1.2);
   });
 
   SCHEMES.forEach((scheme) => {
@@ -914,8 +928,9 @@ describe('панель взрослого (Р6)', () => {
         (Object.keys(labels) as (PanelButton | 'undo')[]).forEach((id) => {
           const { row, col } = abaAdultPanelSlot[id];
           const slot = row === 0 ? unit * abaAdultPanel.colWeights[col] : (inner - p.colGap) / 2;
-          // настоящая ширина слова в Nunito 700 по TTF (этап F): средний шаг знака занижал «Сопротивляется»
-          const longest = Math.max(...labels[id].split(' ').map((w) => textEm('700Bold', w) * parentTypography.caption.size));
+          // настоящая ширина слова по TTF шрифта названий кнопок панели (этап F — Nunito 700; №203 — Golos Text 500, `abaTypography.panelLabel`): средний
+          // шаг знака занижал «Сопротивляется»
+          const longest = Math.max(...labels[id].split(' ').map((w) => textEm(fontFamilyFor(abaTypography.panelLabel), w) * abaTypography.panelLabel.size));
           expect(longest * scale).toBeLessThanOrEqual(slot - 2 * abaAdultPanel.labelPadX);
         });
       }),
@@ -979,6 +994,92 @@ describe('панель взрослого (Р6)', () => {
       expect(c.borderDisabled).toBe(c.band);
       expect(c.border).not.toBe(c.band);
     });
+
+    it(`${scheme}: лист взрослого (№203) — кромка ≥ 3:1 к фону пробы и к листу, граница кнопки ≥ 3:1 к листу и к кнопке`, () => {
+      const p = abaAdultPanelColors(scheme);
+      expect(contrast(p.edge, abaColors[scheme].background)).toBeGreaterThanOrEqual(SHAPE_CONTRAST);
+      expect(contrast(p.edge, p.band)).toBeGreaterThanOrEqual(SHAPE_CONTRAST);
+      expect(contrast(p.border, p.band)).toBeGreaterThanOrEqual(SHAPE_CONTRAST);
+      expect(contrast(p.border, p.button)).toBeGreaterThanOrEqual(SHAPE_CONTRAST);
+    });
+
+    it(`${scheme}: подпись на листе (waitQuiet) ≥ 7:1 — условие UX`, () => {
+      const p = abaAdultPanelColors(scheme);
+      expect(contrast(p.caption, p.band)).toBeGreaterThanOrEqual(7);
+    });
+  });
+
+  it('лист — из токенов кабинета: zone, edge, белые кнопки; геометрия 24 / 2 / 14 / 1.5', () => {
+    const p = abaAdultPanelColors('light');
+    expect(p).toMatchObject({ band: parentColors.light.zone, edge: parentColors.light.edge, button: '#FFFFFF', border: parentColors.light.edge, caption: '#1E2A2F' });
+    expect(abaAdultSheet).toEqual({ radius: 24, edge: 2, buttonRadius: 14, buttonBorder: 1.5 });
+    expect(contrast(p.caption, p.band)).toBeCloseTo(11.85, 1);
+  });
+});
+
+describe('«Тихий кабинет» в ABA (№203)', () => {
+  it('светлая палитра — по спецификации; плита, контур, жетон, фиолетовый и штриховка прежние (№198)', () => {
+    expect(abaColors.light).toMatchObject({
+      background: '#F4F6F5',
+      ink: '#1E2A2F',
+      controlInk: '#1E2A2F',
+      controlFill: '#FFFFFF',
+      controlLip: '#C7D0CD',
+      tokenSlot: '#E6EBEA',
+      tokenSlotOutline: '#55656B',
+      rewardWindow: '#ECE6F8',
+      plate: '#FFFFFF',
+      plateOutline: '#2A1A12',
+      tokenEarned: '#FFC42E',
+      tokenOutline: '#2A1A12',
+      reinforcement: '#5A34C4',
+      onReinforcement: '#FFFFFF',
+      inactiveHatch: '#B5A08C',
+    });
+  });
+
+  it('abaColors.light не ссылается на детскую палитру: только литералы, правка tokens.ts ABA не перекрасит', () => {
+    const src = fs.readFileSync(path.join(__dirname, '..', 'abaTokens.ts'), 'utf8');
+    const start = src.indexOf('export const abaColors');
+    const light = src.slice(src.indexOf('light: {', start), src.indexOf('dark: {', start));
+    expect(light.length).toBeGreaterThan(0);
+    expect(light).not.toMatch(/\bL\.|\bD\.|palettes|illustrationInk/);
+    const values = [...light.matchAll(/^\s+(\w+):\s*([^,\n]+),/gm)];
+    expect(values.map((m) => m[1]).sort()).toEqual(Object.keys(abaColors.light).sort());
+    values.forEach(([, , v]) => expect(v.trim()).toMatch(/^'#[0-9A-F]{6}'$/));
+  });
+
+  it('пустой слот: пунктир читается и на фоне, и на заливке слота', () => {
+    const c = abaColors.light;
+    expect(contrast(c.tokenSlotOutline, c.background)).toBeGreaterThanOrEqual(SHAPE_CONTRAST);
+    expect(contrast(c.tokenSlotOutline, c.tokenSlot)).toBeGreaterThanOrEqual(SHAPE_CONTRAST);
+  });
+
+  it('окно награды — лаванда только у награды: инструкция читается на нём, на экране пробы её нет', () => {
+    const c = abaColors.light;
+    expect(contrast(c.ink, c.rewardWindow)).toBeGreaterThanOrEqual(TEXT_CONTRAST);
+    expect(trialColorsWithInactive(c)).not.toContain(c.rewardWindow);
+  });
+
+  it('борт детской кнопки: 4, в calm 2; он светлее контура и не заменяет его как границу', () => {
+    expect(abaControlLip).toEqual({ height: 4, calm: 2 });
+    expect(abaControlLip.calm).toBeLessThan(abaControlLip.height);
+    // борт помещается в полосу так же, как прежняя подушка
+    expect(abaControls.exitSize + abaControlLip.height).toBeLessThanOrEqual(abaLayout.topBar);
+    expect(abaLayout.breakCard + abaControlLip.height).toBeLessThanOrEqual(abaLayout.topBar);
+    const c = abaColors.light;
+    expect(contrast(c.controlInk, c.controlLip)).toBeGreaterThanOrEqual(SHAPE_CONTRAST);
+  });
+
+  it('набор ABA — Golos Text; кегли и интерлиньяжи детских ролей прежние (слот инструкции 72)', () => {
+    Object.values(abaTypography).forEach((t) => expect(t.family).toBe('Golos Text'));
+    expect(abaTypography.subtitle).toMatchObject({ size: 22, lineHeight: 30, weight: '600' });
+    expect(abaTypography.title).toMatchObject({ size: 28, lineHeight: 36, weight: '700' });
+    expect(abaTypography.sheetCaption).toMatchObject({ size: 14, lineHeight: 20, weight: '500' });
+    expect(abaTypography.subtitle.lineHeight).toBe(abaInstruction.lineHeight);
+    // подпись листа одной строкой при ×1.2 — 24 ≤ кнопка 48 / ряд 56
+    expect(Math.ceil(abaTypography.sheetCaption.lineHeight * abaAdultPanel.maxFontSizeMultiplier)).toBeLessThanOrEqual(abaAdultPanelTier.tight.buttonHeight);
+    expect(abaTypeFor(parentTypography.caption)).toBe(parentTypography.caption);
   });
 });
 
