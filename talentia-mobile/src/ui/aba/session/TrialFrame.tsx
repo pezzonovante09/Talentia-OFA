@@ -24,7 +24,9 @@ type Props = {
   strip: ReactNode;
   sdKey: string | null;
   instruction: (key: string | null) => ReactNode;
-  panel: (buttons: readonly PanelButton[], pressed: PanelButton | null, onPress: (b: PanelButton, at: number) => void) => ReactNode;
+  panel: (buttons: readonly PanelButton[], pressed: PanelButton | null, onPress: (b: PanelButton, at: number) => void, caption?: string) => ReactNode;
+  /** Подпись взрослому на время пробы (№202): постоянная, в ряду 1 панели, когда кнопок оценки там нет. */
+  adultCaption?: string;
   onTrial: (e: MatchEvent) => void;
   /** Карточка «перерыв» вне пробы: пауза перед SD, последствие, жетон за участие. */
   onBreakCard: () => void;
@@ -32,7 +34,7 @@ type Props = {
   onRefuse: () => void;
 };
 
-export function TrialFrame({ phase, step, session: s, layout, zone, calm, still, strip, sdKey, instruction, panel, onTrial, onBreakCard, onHoldCard, onRefuse }: Props) {
+export function TrialFrame({ phase, step, session: s, layout, zone, calm, still, strip, sdKey, instruction, panel, adultCaption, onTrial, onBreakCard, onHoldCard, onRefuse }: Props) {
   const r = phase.kind === 'trial' ? phase.run : null;
   const empty = phase.kind === 'pause' || phase.kind === 'participation' || (phase.kind === 'consequence' && phase.empty);
   const overlayH = layout.tokenBoard + layout.gapAfterBoard + layout.instruction + layout.hintBand + zone.sample + 24 + zone.choice;
@@ -77,6 +79,7 @@ export function TrialFrame({ phase, step, session: s, layout, zone, calm, still,
         phase.kind === 'trial' ? buttons : ['refusal'],
         phase.kind === 'trial' ? phase.pressed : null,
         (b, at) => (phase.kind === 'trial' ? onTrial({ type: 'adult', button: b, at }) : b === 'refusal' ? onRefuse() : undefined),
+        phase.kind === 'trial' ? adultCaption : undefined,
       )}
     </>
   );

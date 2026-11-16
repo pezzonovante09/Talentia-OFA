@@ -17,11 +17,14 @@ import { sessionSignals, type SessionSignal, type SignalSession } from '../../do
 import { initialTokenTraining, workingBoardSize, EXCHANGE_ACCESS_MS } from '../../domain/abaTokenTraining';
 import { boardRevOf, liveBoardOf, MIN_REINFORCER_POOL } from '../../domain/abaTokens';
 import { lastSessionSummary, parentTargetStatus, sortForParent, type LastSessionSummary, type ParentTargetStatus } from '../../domain/abaParentProgress';
+import { alsoTeachingOf, pairingStage, stageOfPlan, tokensOf, type ParentStageView } from '../../domain/abaParentStage';
+import { BREAK_CARD_MAX_OPPORTUNITIES, breakCardPlan, initialBreakCard } from '../../domain/abaBreakCard';
 import { aloneFormatKey, formatUnlockedAlone } from '../../domain/abaPlacement';
 import {
   awayOutcome,
   finishAbaSession,
   resumeAbaSession as resumeSessionState,
+  startAbaSession,
   stopSession,
   type AbaSessionState,
   type StartInput,
@@ -60,6 +63,9 @@ export type AbaOverview = {
    */
   inProgressLeftAt: string | null;
   pairingDone: boolean;
+  /** Удачных сессий знакомства подряд и всего (для «знакомство 1 из 2», №202). */
+  pairingStreak: number;
+  pairingSessions: number;
   /** Обученный наблюдатель, записанный у ребёнка (первый по списку), — ему доступно «сопряжение подтверждено». */
   trainedObserverId: string | null;
   readyTargets: number;
@@ -105,7 +111,8 @@ function artFor(art?: Readonly<Record<string, unknown>>): Readonly<Record<string
 /** Что видит раздел родителя: согласие, пауза, незаконченное занятие, сопряжение, сколько целей готово. */
 export async function abaOverview(db: SqlDb, childId: string, art?: Readonly<Record<string, unknown>>): Promise<AbaOverview> {
   const log = await readConsentLog(db);
-  const pairingDone = ((await loadChildState(db, childId, 'tokenTraining')) ?? initialTokenTraining()).pairingDone;
+  const tokenTraining = (await loadChildState(db, childId, 'tokenTraining')) ?? initialTokenTraining();
+  const pairingDone = tokenTraining.pairingDone;
   const ready = readyAbaTargets(ABA_TARGETS, artFor(art));
   const states = (await loadChildState(db, childId, 'abaTargets')) ?? {};
   const inProgress = (await loadChildState(db, childId, 'abaSessionInProgress')) ?? null;
@@ -116,6 +123,8 @@ export async function abaOverview(db: SqlDb, childId: string, art?: Readonly<Rec
     // строка ключа остаётся и после итога (тело `null`) — момент ухода есть только у живого снимка
     inProgressLeftAt: inProgress ? ((await childStateUpdatedAt(db, childId, 'abaSessionInProgress')) ?? null) : null,
     pairingDone,
+    pairingStreak: tokenTraining.pairingStreak,
+    pairingSessions: tokenTraining.pairingSessions,
     trainedObserverId: ((await loadChildState(db, childId, 'abaObservers')) ?? []).find((o) => o.trained)?.id ?? null,
     readyTargets: ready.length,
     aloneAvailable: !pairingDone || ready.some((t) => formatUnlockedAlone(aloneFormatKey(t), ABA_TARGETS, states)),
@@ -210,14 +219,62 @@ export function resumePoolFor(state: AbaSessionState, soundOn: boolean, art?: Re
 
 /** Вход рабочей сессии — или причина, почему её не начать. */
 export async function loadAbaStart(db: SqlDb, childId: string, o: StartOptions): Promise<{ kind: 'ready'; input: StartInput } | { kind: 'blocked'; reason: AbaBlock }> {
-  const art = artFor(o.art);
-  const block = abaBlockOf(await abaOverview(db, childId, art));
+  const block = abaBlockOf(await abaOverview(db, childId, artFor(o.art)));
   if (block) return { kind: 'blocked', reason: block };
   // прошлое занятие оборвалось на обмене в конце до сцены (убитое приложение, №181): жетоны — на доску до старта. Сбой
   // возврата старт не держит; проверка повторится только до записи следующей сессии
   await settleTailExchange(db, childId, { at: new Date(o.now).toISOString() }).catch((e: unknown) => {
     if (__DEV__) console.warn('aba-tail-return', e);
   });
+  return readAbaStartInput(db, childId, o);
+}
+
+/** Id и seed превью: план от seed по составу не зависит (разбор теста 2026-11-15), но превью должно быть стабильным. */
+const PREVIEW_IDS = { sessionId: 'preview', seed: 1 } as const;
+
+/**
+ * «Где мы сейчас» (№202): этап следующего занятия для взрослого. Только чтение: вход — `readAbaStartInput`, план —
+ * `startAbaSession` вхолостую (чистая функция), обучение карточке — `breakCardPlan`. До знакомства — его счёт; план не
+ * построился — `unknown`, карточка показывает общий статус.
+ */
+export async function previewParentStage(db: SqlDb, childId: string, o: StartOptions): Promise<ParentStageView> {
+  const unknown: ParentStageView = { stage: { kind: 'unknown' }, alsoTeaching: null, breakCardTraining: false, tokens: null };
+  try {
+    const ov = await abaOverview(db, childId, artFor(o.art));
+    if (!ov.pairingDone) return { ...unknown, stage: pairingStage(ov) };
+    const card = breakCardPlan((await loadChildState(db, childId, 'breakCard')) ?? initialBreakCard(), {
+      config: o.config === 'alone' ? 'alone' : 'with_adult',
+      day: localDay(o.now),
+      observerId: o.primaryObserverId,
+    });
+    const breakCardTraining = card.opportunities === BREAK_CARD_MAX_OPPORTUNITIES;
+    const start = await readAbaStartInput(db, childId, o, PREVIEW_IDS);
+    if (start.kind === 'blocked') return { ...unknown, breakCardTraining };
+    const plan = startAbaSession(start.input);
+    const stage = stageOfPlan(plan, start.input.states, start.input.targets.map((t) => t.id));
+    const alsoTeaching = alsoTeachingOf(plan, stage);
+    return { stage, alsoTeaching, breakCardTraining, tokens: tokensOf(stage, alsoTeaching) };
+  } catch (e) {
+    // превью — пояснение, а не занятие: сбой чтения не держит экран, карточка остаётся со строкой «Как проходят занятия»
+    if (__DEV__) console.warn('aba-stage-preview', e);
+    return unknown;
+  }
+}
+
+/**
+ * Вход рабочей сессии без записи в базу (№202): тот же вход, что у `loadAbaStart`, но без возврата оборванного обмена.
+ * Им пользуется превью «Где мы сейчас» — план превью не расходится с настоящим, источник входа один. `ids` — id и
+ * seed сессии; без них — случайные, как у настоящего старта.
+ */
+export async function readAbaStartInput(
+  db: SqlDb,
+  childId: string,
+  o: StartOptions,
+  ids?: { sessionId: string; seed: number },
+): Promise<{ kind: 'ready'; input: StartInput } | { kind: 'blocked'; reason: AbaBlock }> {
+  const art = artFor(o.art);
+  const block = abaBlockOf(await abaOverview(db, childId, art));
+  if (block) return { kind: 'blocked', reason: block };
   const targets = readyAbaTargets(ABA_TARGETS, art).map((t) => targetForBand(t, o.band));
   const tokenTraining = (await loadChildState(db, childId, 'tokenTraining')) ?? initialTokenTraining();
   const accessMs = EXCHANGE_ACCESS_MS[workingBoardSize(tokenTraining, o.band)];
@@ -227,7 +284,7 @@ export async function loadAbaStart(db: SqlDb, childId: string, o: StartOptions):
   return {
     kind: 'ready',
     input: {
-      sessionId: newAbaId(o.randomBytes),
+      sessionId: ids?.sessionId ?? newAbaId(o.randomBytes),
       sessionIndex: (await loadChildState(db, childId, 'abaSessionIndex')) ?? 0,
       day: localDay(o.now),
       config: o.config,
@@ -239,7 +296,7 @@ export async function loadAbaStart(db: SqlDb, childId: string, o: StartOptions):
       reinforcerHistory: await reinforcerHistoryOf(db, childId),
       tokenTraining,
       startedAt: o.now,
-      seed: randomSeed(o.randomBytes),
+      seed: ids?.seed ?? randomSeed(o.randomBytes),
       ...(board ? { board: { earned: board.earned, nonContingent: board.nonContingent, ...(board.returned ? { returned: board.returned } : {}) }, boardRev: boardRevOf(board) } : {}),
       identifySets: (await loadChildState(db, childId, 'identifySets')) ?? [],
       physicalPromptAllowed: (await loadChildState(db, childId, 'physicalPromptAllowed'))?.value ?? false,

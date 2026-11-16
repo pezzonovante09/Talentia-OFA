@@ -13,7 +13,7 @@ import type { ChoiceRun } from '../model/reinforcerChoiceRun';
 import { NonTrialRow, useAbaColors } from '../parts';
 import { ReinforcerChoiceView } from '../reinforcer';
 
-export function ChooseFrame(o: { run: ChoiceRun; options: string[]; cardSize: number; boardCells: number; onTap: (id: string, at: number) => void; onAdultTap: (id: string) => void }) {
+export function ChooseFrame(o: { run: ChoiceRun; options: string[]; cardSize: number; boardCells: number; onTap: (id: string, at: number) => void; onAdultTap: (id: string) => void; waitCaption?: string }) {
   const { t } = useTranslation();
   const childT = useChildT();
   const c = useAbaColors();
@@ -26,7 +26,7 @@ export function ChooseFrame(o: { run: ChoiceRun; options: string[]; cardSize: nu
         </AbaText>
       </NonTrialRow>
       <View style={{ height: 16 }} />
-      <ReinforcerChoiceView run={o.run} options={o.options} cardSize={o.cardSize} boardCells={o.boardCells} pulse={false} onTap={o.onTap} onAdultTap={o.onAdultTap} />
+      <ReinforcerChoiceView run={o.run} options={o.options} cardSize={o.cardSize} boardCells={o.boardCells} pulse={false} onTap={o.onTap} onAdultTap={o.onAdultTap} waitCaption={o.waitCaption} />
     </View>
   );
 }

@@ -9,6 +9,10 @@
  * `app/aba/index.tsx`. Этап G2 (вопрос 66): карточка «Цели» — три слова на цель и две цифры за занятие. Этап G3
  * (вопрос 67): «Выгрузить для специалиста» — файл через системный лист (`shareSpecialistExport`), строка в трёх
  * состояниях; за флагом `ABA_EXPORT_FILE_ENABLED` — «Позже», как раньше.
+ *
+ * №202 (вопрос 116): над «Занятием» — карточка «Где мы сейчас»: что будет на следующем занятии простыми словами
+ * (`previewParentStage` — план вхолостую, процедура не меняется) и строка «Как проходят занятия». Первое «Начать»
+ * на аккаунте открывает это введение (`intro.tsx`).
  */
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -16,6 +20,9 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { ABA_TARGETS } from '../../../src/content/aba';
+import type { ParentStageView } from '../../../src/domain/abaParentStage';
+import { CHILD_BREAK_MS } from '../../../src/types/aba';
+import type { AgeBand } from '../../../src/types/task';
 import { parentButton, parentSpacing } from '../../../src/design/parentTokens';
 import type { SensitiveAction } from '../../../src/domain/parentGate';
 import { newAbaId } from '../../../src/services/abaIds';
@@ -27,9 +34,11 @@ import {
   abandonInProgressSession,
   finishInProgressSession,
   loadAbaParentProgress,
+  previewParentStage,
   type AbaOverview,
   type AbaParentProgress,
 } from '../../../src/services/local/abaStart';
+import { abaIntroSeen } from '../../../src/services/local/abaIntro';
 import { loadChildState } from '../../../src/services/local/childState';
 import { confirmAbaPairing, setAbaObservers, setAbaPaused, settleTailExchange } from '../../../src/services/local/commit';
 import { ABA_EXPORT_FILE_ENABLED, shareSpecialistExport } from '../../../src/services/local/shareSpecialistExport';
@@ -65,6 +74,36 @@ function dayLabel(t: (k: string, o?: Record<string, unknown>) => string, day: st
   return days <= 0 ? t('parent.home.today') : days === 1 ? t('parent.home.yesterday') : t('parent.home.daysAgo', { n: days });
 }
 
+/**
+ * Строки карточки «Где мы сейчас» (№202): этап следующего занятия, перерыв, жетоны. Тексты проверил
+ * `aba-pedagogy-specialist` 2026-11-16. `unknown` — пусто: карточка остаётся со строкой «Как проходят занятия».
+ */
+export function stageLines(t: (k: string, o?: Record<string, unknown>) => string, v: ParentStageView, band: AgeBand): string[] {
+  const goal = (id: string) => t(`parent.aba.goal.${id}`);
+  const st = v.stage;
+  if (st.kind === 'pairing') {
+    return [
+      t('parent.aba.where.pairing', { n: st.n, of: st.of }),
+      ...(st.reset ? [t('parent.aba.where.pairingReset')] : []),
+      t(st.n < st.of ? 'parent.aba.where.pairingThen' : 'parent.aba.where.pairingLast'),
+      t('parent.aba.where.pairingRule'),
+    ];
+  }
+  const lines: string[] = v.breakCardTraining ? [t('parent.aba.where.breakCard')] : [];
+  if (st.kind === 'placement') lines.push(t('parent.aba.where.placement', { target: goal(st.targetId) }));
+  else if (st.kind === 'baseline') lines.push(t('parent.aba.where.baseline', { target: goal(st.targetId) }));
+  const teaching = st.kind === 'teaching' ? st : v.alsoTeaching;
+  if (teaching) {
+    lines.push(t('parent.aba.where.teaching', { target: goal(teaching.targetId) }));
+    if (teaching.plannedBreak) lines.push(t(CHILD_BREAK_MS[band] > 60_000 ? 'parent.aba.where.plannedBreak90' : 'parent.aba.where.plannedBreak60'));
+  }
+  if (st.kind === 'maintenance') lines.push(t('parent.aba.where.maintenance', { targets: st.targetIds.map(goal).join(', ') }));
+  else if (st.kind === 'all_mastered') lines.push(t('parent.aba.where.allMastered'));
+  if (v.tokens === false) lines.push(t('parent.aba.where.noTokens'));
+  else if (v.tokens === true) lines.push(t('parent.aba.where.tokens'));
+  return lines;
+}
+
 /** Строки «Целей»: начатые цели в порядке лестницы `ABA_TARGETS` плюс одна следующая как «впереди». */
 function goalRows(progress: AbaParentProgress, ready: boolean): { id: string; status: GoalGlyphStatus }[] {
   const byId = new Map(progress.targets.map((r) => [r.id, r]));
@@ -88,6 +127,10 @@ export default function AbaParentScreen() {
   const profile = useSelectedProfile();
   const profiles = useAccount((s) => s.profiles);
   const can = useGate((s) => s.can);
+  const accountId = useAccount((s) => s.accountId);
+  const [stage, setStage] = useState<ParentStageView | null>(null);
+  /** Введение «Как проходят занятия» просмотрено на этом аккаунте; `null` — ещё не прочитано. */
+  const [introSeen, setIntroSeen] = useState<boolean | null>(null);
   const [ov, setOv] = useState<AbaOverview | null>(null);
   const [progress, setProgress] = useState<AbaParentProgress | null>(null);
   const [prevObservers, setPrevObservers] = useState<AbaObserver[]>([]);
@@ -127,7 +170,35 @@ export default function AbaParentScreen() {
     setConfig((cur) => (cur === 'alone' && o.aloneAvailable && !ALONE_HIDDEN ? cur : 'with_adult'));
     const hasData = o.consent === 'granted' || o.consent === 'outdated';
     setProgress(hasData ? await loadAbaParentProgress(db, childId) : null);
-  }, [db, childId]);
+    if (accountId) setIntroSeen(await abaIntroSeen(device(), accountId).catch(() => true));
+  }, [db, childId, accountId]);
+
+  // «Где мы сейчас»: план следующего занятия вхолостую — по тем, кто ведёт сейчас (обученный наблюдатель меняет план)
+  const band = profile?.band;
+  const soundOn = profile?.soundEffects ?? true;
+  useEffect(() => {
+    if (!db || !childId || !band || !ov) return;
+    let alive = true;
+    const lead: AbaObserver | null = who ? { id: prevObservers.find((o) => o.role === who.role)?.id ?? 'preview', role: who.role, trained: who.trained } : null;
+    previewParentStage(db, childId, {
+      config: 'with_adult',
+      band,
+      soundOn,
+      observers: lead ? [lead, ...prevObservers.filter((o) => o.id !== lead.id)] : prevObservers,
+      primaryObserverId: lead?.id ?? null,
+      now: Date.now(),
+    })
+      .then((v) => {
+        if (alive) setStage(v);
+      })
+      .catch((e: unknown) => {
+        if (__DEV__) console.warn('aba-stage', e);
+        if (alive) setStage(null);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [db, childId, band, soundOn, ov, who, prevObservers]);
   // согласие и отзыв уходят назад через `router.back()` — этот экран остаётся смонтированным, читать на фокус
   useFocusEffect(
     useCallback(() => {
@@ -221,8 +292,19 @@ export default function AbaParentScreen() {
     await goChild(block === 'pairing_needed' ? 'pairing' : 'session');
   };
 
-  /** «Начать» при «Со взрослым» и «Не выбрано» — не серая кнопка, а лист с причиной; «Готово» листа возвращает сюда. */
-  const start = () => (mode === 'with_adult' && !who ? setSheet('start') : begin());
+  /**
+   * «Начать» при «Со взрослым» и «Не выбрано» — не серая кнопка, а лист с причиной; «Готово» листа возвращает сюда.
+   * Первое «Начать» на аккаунте — сначала введение (№202); вернувшись, взрослый нажимает «Начать» сам.
+   */
+  const start = () => {
+    // флаг ещё не прочитан (`null`) — тоже «не просмотрено»: быстрый первый тап не проскакивает введение
+    if (introSeen !== true) {
+      router.push('/parent/aba/intro');
+      return;
+    }
+    if (mode === 'with_adult' && !who) setSheet('start');
+    else begin();
+  };
 
   /** «Продолжить»: конфигурация и наблюдатели — из снимка занятия, выбирать заново нечего. */
   const resume = safely(async () => {
@@ -299,6 +381,24 @@ export default function AbaParentScreen() {
       testID="parent-aba"
     >
       <View style={{ gap: parentSpacing.lg }}>
+        {ov && (
+          <Card title={t('parent.aba.where.title')} testID="aba-where">
+            {/* этап считается для «Со взрослым»; в «Сам» (обычная сборка) план другой — этап не показываем */}
+            {(block === null || block === 'pairing_needed') && mode === 'with_adult' && stage && stageLines(t, stage, profile.band).length > 0 && (
+              <View style={{ gap: parentSpacing.xs, marginBottom: parentSpacing.sm }} testID="aba-where-lines">
+                <ParentText role="label" testID="aba-where-next">
+                  {t('parent.aba.where.next')}
+                </ParentText>
+                {stageLines(t, stage, profile.band).map((line, i) => (
+                  <ParentText key={i} role={i === 0 ? 'body' : 'caption'} color={i === 0 ? 'text' : 'textMuted'} testID={`aba-where-line-${i}`}>
+                    {line}
+                  </ParentText>
+                ))}
+              </View>
+            )}
+            <Row first kind="link" label={t('parent.aba.where.howItWorks')} onPress={() => router.push('/parent/aba/intro')} testID="aba-where-intro" />
+          </Card>
+        )}
         <Card title={t('parent.aba.session')} testID="aba-session">
           {/* несколько детей: занятие и его данные идут этому ребёнку, имя нельзя угадывать */}
           {profiles.length > 1 && (
@@ -365,6 +465,11 @@ export default function AbaParentScreen() {
               <ParentButton label={t(block === 'pairing_needed' ? 'parent.aba.startPairing' : 'parent.aba.start')} onPress={start} testID="aba-start" />
             )}
           </View>
+          {(canChoose || block === 'in_progress') && (
+            <ParentText role="caption" color="textMuted" style={{ marginTop: parentSpacing.sm }} testID="aba-exit-hint">
+              {t('parent.aba.where.exitHint')}
+            </ParentText>
+          )}
           {block === 'pairing_needed' && ov?.trainedObserverId && (
             <>
               <ParentButton variant="quiet" label={t('parent.aba.pairingConfirmed')} onPress={() => guarded('aba_pairing_confirm', confirmPairing)} testID="aba-pairing-confirm" />

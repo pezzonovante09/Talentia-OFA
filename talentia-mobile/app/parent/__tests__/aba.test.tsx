@@ -22,6 +22,7 @@ import { CURRENT_CONSENT_TEXTS } from '../../../src/domain/consentTexts';
 import ru from '../../../src/i18n/locales/ru.json';
 import { initialTokenTraining } from '../../../src/domain/abaTokenTraining';
 import { createLocalAccount } from '../../../src/services/local/account';
+import { abaIntroSeen, markAbaIntroSeen } from '../../../src/services/local/abaIntro';
 import { abaConsentTextVersion, grantAbaProcessing } from '../../../src/services/local/abaConsent';
 import { appendPairingSession, sessionsOf } from '../../../src/services/local/abaLog';
 import { abaBlockOf, abaOverview, DEV_PLACEHOLDER_ART, finishInProgressSession, loadAbaStart } from '../../../src/services/local/abaStart';
@@ -182,6 +183,8 @@ beforeEach(async () => {
   useGate.setState({ session: null });
   db = await memoryDb();
   accountId = await createLocalAccount(device, PIN, { randomBytes, digest: sha256 });
+  // введение «Как проходят занятия» (№202) уже просмотрено: сценарии ниже — про старт; первый показ — свой блок
+  await markAbaIntroSeen(device, accountId);
   useAccount.setState({ status: 'ready', accountId, db, profiles: [p1], consent: 'granted', retentionHold: null });
   // как на холодном старте: детской сессии нет, переход к ребёнку читает прогресс через настоящий порт
   useChildSession.getState().reset();
@@ -191,6 +194,51 @@ beforeEach(async () => {
 afterEach(() => {
   setDevice(null);
   setProgressPort(noRecordPort);
+});
+
+describe('«Где мы сейчас» и введение (№202)', () => {
+  it('введение не просмотрено — первое «Начать знакомство» ведёт во введение, а не к ребёнку', async () => {
+    const device = fakeDevice();
+    setDevice(device);
+    accountId = await createLocalAccount(device, PIN, { randomBytes, digest: sha256 });
+    useAccount.setState({ accountId });
+    expect(await abaIntroSeen(device, accountId)).toBe(false);
+    await grant();
+    await observers(OBS);
+    await renderAba();
+    await waitStatus('Сначала знакомство с жетонами — короткое занятие без заданий');
+    await fireEvent.press(screen.getByTestId('aba-start'));
+    expect(router.push).toHaveBeenCalledWith('/parent/aba/intro');
+    expect(router.replace).not.toHaveBeenCalled();
+  });
+
+  it('до знакомства: «Знакомство с жетонами: 1 из 2», правило засчёта и строка «Как проходят занятия»', async () => {
+    await grant();
+    await renderAba();
+    await waitFor(() => expect(screen.getByTestId('aba-where-line-0')).toHaveTextContent(/Знакомство с жетонами: 1 из 2/));
+    expect(screen.getByTestId('aba-where-line-1')).toHaveTextContent('Ещё одно знакомство, потом — первые задания.');
+    expect(screen.getByTestId('aba-where-line-2')).toHaveTextContent('Засчитывается, если ребёнок сам выбирает игру и занятие не прерывается.');
+    await fireEvent.press(screen.getByTestId('aba-where-intro'));
+    expect(router.push).toHaveBeenCalledWith('/parent/aba/intro');
+  });
+
+  it('знакомство пройдено: проверка «По форме» без жетонов и обучение карточке «перерыв»', async () => {
+    await grant();
+    await pair();
+    await observers(OBS);
+    await renderAba();
+    await waitFor(() => expect(screen.getByTestId('aba-where-line-0')).toHaveTextContent('Сначала ребёнок научится просить перерыв карточкой с двумя полосками.'));
+    expect(screen.getByTestId('aba-where-line-1')).toHaveTextContent(/Проверяем, что ребёнок уже умеет: «По форме»/);
+    expect(screen.getByTestId('aba-where-line-2')).toHaveTextContent('За задания проверки жетонов нет.');
+    expect(screen.getByTestId('aba-exit-hint')).toHaveTextContent('Выйти из занятия — держите стрелку слева вверху.');
+  });
+
+  it('без согласия — только строка «Как проходят занятия», этапа нет', async () => {
+    await renderAba();
+    await waitStatus('Нужно согласие на данные практики');
+    expect(screen.getByTestId('aba-where-intro')).toBeTruthy();
+    expect(screen.queryByTestId('aba-where-lines')).toBeNull();
+  });
 });
 
 describe('«Занятия ABA»: кнопка занятия по состоянию', () => {

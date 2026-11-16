@@ -259,6 +259,8 @@ describe('abaBlockOf(o, now)', () => {
     inProgress: null,
     inProgressLeftAt: null,
     pairingDone: true,
+    pairingStreak: 2,
+    pairingSessions: 2,
     trainedObserverId: null,
     readyTargets: 3,
     aloneAvailable: true,

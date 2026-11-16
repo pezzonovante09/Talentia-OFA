@@ -9,7 +9,9 @@
     "prompted": "Prompted",
     "refused": "Refused",
     "stepAlone": "Step — independent",
-    "undo": "Change mark"
+    "undo": "Change mark",
+    "choiceWait": "The child chooses the game. Do not point or name it — wait for the touch.",
+    "waitQuiet": "Wait quietly — the app will prompt if needed."
   },
   "abaScreen": {
     "tooSmall": {
@@ -653,7 +655,43 @@
       "agree": "I agree",
       "notNow": "Not now",
       "version": "Text {{version}}",
-      "revokeCount": "Sessions: {{sessions}}, trials: {{trials}}."
+      "revokeCount": "Sessions: {{sessions}}, trials: {{trials}}.",
+      "where": {
+        "title": "Where we are now",
+        "next": "Next session",
+        "pairing": "Getting to know tokens: {{n}} of {{of}}. The child learns that a token turns into a game. No tasks.",
+        "pairingRule": "It counts if the child chose the game and the session was not interrupted.",
+        "pairingReset": "Two successful sessions in a row are needed.",
+        "pairingThen": "One more such session, then the first tasks.",
+        "pairingLast": "After it, the first tasks.",
+        "breakCard": "First the child learns to ask for a break with the two-stripe card.",
+        "placement": "Checking what the child can already do: “{{target}}”. No prompts and no tokens — do not help, even if you see a mistake. If it does not work out, next session the app checks an easier task.",
+        "baseline": "First tries at “{{target}}” without help and without tokens — to see where teaching should start.",
+        "teaching": "Learning: “{{target}}”. The app prompts by itself and gradually removes the prompts. Correct answers earn tokens and a game.",
+        "plannedBreak60": "A break of up to a minute in the middle.",
+        "plannedBreak90": "A break of up to a minute and a half in the middle.",
+        "maintenance": "Reviewing what is learned: {{targets}}.",
+        "allMastered": "All tasks are learned. Show the report to the specialist.",
+        "noTokens": "Check tasks earn no tokens.",
+        "tokens": "This session has tokens.",
+        "howItWorks": "How sessions work",
+        "exitHint": "To leave a session, hold the arrow at the top left."
+      },
+      "intro": {
+        "title": "How sessions work",
+        "counter": "{{n}} of {{of}}",
+        "next": "Next",
+        "back": "Back",
+        "done": "Got it",
+        "step1Title": "What happens",
+        "step1": "A session lasts 5–10 minutes: a “find the same” game. The first one or two sessions introduce tokens and have no tasks. You sit nearby; the child touches the screen.",
+        "step2Title": "What you do",
+        "step2": "Start the session and sit nearby. While the child thinks, do not help: no pointing or looking, no repeating the question, no “well done” or “no” — the app does that. If you did help, tap “Prompted” right away. If the child turns away, leaves or protests, tap “Refused”. Staying silent on one task is not a refusal: the app records it.",
+        "step3Title": "What the child does",
+        "step3": "First touches the picture at the top, then the same one below. The app never says “wrong”: it calmly shows the right answer or moves on. When the child needs a rest, they touch the two-stripe card and a break starts.",
+        "step4Title": "Tokens and the reward",
+        "step4": "Correct answers earn tokens. With enough tokens (one at first, then more) the child plays the game they chose. Tokens are never taken away. The first sessions check what the child can already do: checks earn no tokens, by design. To leave, hold the arrow at the top left."
+      }
     }
   },
   "region": {

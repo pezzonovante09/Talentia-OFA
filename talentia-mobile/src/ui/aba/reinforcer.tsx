@@ -273,6 +273,7 @@ export function ReinforcerChoiceView({
   pulse,
   onTap,
   onAdultTap,
+  waitCaption,
 }: {
   run: ChoiceRun;
   options: string[];
@@ -281,8 +282,14 @@ export function ReinforcerChoiceView({
   pulse: boolean;
   onTap: (id: string, at: number) => void;
   onAdultTap: (id: string) => void;
+  /**
+   * Подпись взрослому в зоне полосы, пока полосы «Ребёнок не выбирает» ещё нет и ребёнок не выбрал (№202): выбор —
+   * не задание, ждать касания. Только «Со взрослым»; мелко, цветом подписей панели взрослого.
+   */
+  waitCaption?: string;
 }) {
   const c = useAbaColors();
+  const adultInk = abaAdultPanelColors(useColorScheme() === "dark" ? "dark" : "light").label;
   const card = (id: string) => (
     <ReinforcerCard
       key={id}
@@ -349,6 +356,13 @@ export function ReinforcerChoiceView({
         {run.stripShownAt !== null && (
           <AdultStrip options={options} onTap={onAdultTap} />
         )}
+        {run.stripShownAt === null && run.selected === null && waitCaption ? (
+          <View testID="aba-choice-wait" style={{ flex: 1, justifyContent: "flex-end", paddingHorizontal: 8 }}>
+            <AbaText type={parentTypography.caption} color={adultInk} max={1} lines={2} adjustsFontSizeToFit minimumFontScale={0.9} style={{ textAlign: "center" }}>
+              {waitCaption}
+            </AbaText>
+          </View>
+        ) : null}
       </View>
     </View>
   );

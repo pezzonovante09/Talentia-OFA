@@ -109,6 +109,8 @@ const ZONE: Record<AbaTier, (typeof abaChoiceZone)[keyof typeof abaChoiceZone]> 
   tight: abaChoiceZone.tight,
 };
 const CARD_STEPS: BreakCardStep[] = ['model', 'prompted', 'independent'];
+/** Подпись взрослому «Ждите молча…» в панели — столько первых проб занятия (№202, `aba-pedagogy-specialist`). */
+const WAIT_QUIET_TRIALS = 3;
 
 export default function AbaSessionScreen() {
   const { t } = useTranslation();
@@ -1082,6 +1084,7 @@ export default function AbaSessionScreen() {
           boardCells={s?.board.size ?? 1}
           onTap={(id, at) => onChoice({ type: 'tap', reinforcerId: id, now: at })}
           onAdultTap={(id) => onChoice({ type: 'adult_tap', reinforcerId: id, now: clock.now() })}
+          waitCaption={config === 'with_adult' ? t('abaPanel.choiceWait') : undefined}
         />
       );
       break;
@@ -1116,6 +1119,8 @@ export default function AbaSessionScreen() {
           sdKey={sdKeyOf(step)}
           instruction={instruction}
           panel={panel}
+          // подпись взрослому — в первых пробах занятия (№202); не меняется по касанию, уходит между пробами
+          adultCaption={(s?.trials.length ?? 0) < WAIT_QUIET_TRIALS ? t('abaPanel.waitQuiet') : undefined}
           onTrial={onTrial}
           onBreakCard={() => (phase.kind === 'pause' ? breakInPause() : phase.kind === 'participation' ? breakInParticipation() : breakInConsequence())}
           onHoldCard={holdCard}

@@ -206,6 +206,7 @@ export default function AbaPairingScreen() {
             pulse={pulse}
             onTap={(id, at) => dispatch({ type: 'tap', reinforcerId: id, now: at })}
             onAdultTap={(id) => dispatch({ type: 'adult_tap', reinforcerId: id, now: clock.now() })}
+            waitCaption={config === 'with_adult' ? t('abaPanel.choiceWait') : undefined}
           />
         </View>
       );
