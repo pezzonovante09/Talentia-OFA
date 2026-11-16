@@ -9,7 +9,7 @@
 <style>
   :root{
     --bg:#F4F6F5; --card:#FFFFFF; --sage:#DDEDE6; --sky:#DCE8F2; --apricot:#FBE7D3; --lav:#ECE6F8;
-    --ink:#1E2A2F; --muted:#55656B; --action:#1D6B66; --token:#F7C548; --zone:#E2E8E6; --zline:#6F7E84;
+    --ink:#1E2A2F; --muted:#55656B; --action:#1D6B66; --token:#FFC42E; --zone:#E2E8E6; --zline:#6F7E84;
     --shape:#5B8DB8; --lip:#C7D0CD;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -48,13 +48,18 @@
   .ico{width:40px;height:40px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex:none}
   .steps{display:flex;gap:6px;margin-top:12px}
   .stp{flex:1;display:flex;flex-direction:column;gap:6px}
-  .stp u{display:block;height:6px;border-radius:3px;background:#fff;border:1px solid #9AA8AD;text-decoration:none}
+  .stp u{position:relative;display:block;height:6px;border-radius:3px;background:#fff;border:1px solid #9AA8AD;text-decoration:none}
   .stp.done u{background:var(--action);border-color:var(--action)}
+  .stp.done u em{position:absolute;right:-2px;top:-7px;width:20px;height:20px;border-radius:50%;background:var(--action);border:2px solid #DDEDE6;color:#fff;font-style:normal;font-size:11px;line-height:16px;text-align:center;font-weight:700}
   .stp.now u{height:12px;margin-top:-3px;background:#fff;border:3px solid var(--action)}
-  .stp span{font-size:12px;line-height:15px;font-weight:600}
+  .stp span{font-size:13px;line-height:16px;font-weight:600}
   .stp.next span{color:var(--muted);font-weight:500}
   .kv{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid #E3E8E6}
-  .zone{position:absolute;left:0;right:0;background:var(--zone);border-radius:24px 24px 0 0;border-top:1px solid #B9C4C1}
+  /* лист взрослого: кромка 2 pt #6F7E84 обязательна (3.87:1 к фону, 3.39:1 к листу); контура 3 чернилами и борта внутри нет */
+  .zone{position:absolute;left:0;right:0;background:var(--zone);border-radius:24px 24px 0 0;border-top:2px solid var(--zline)}
+  .zcap{font-size:14px;line-height:20px;font-weight:500;color:var(--ink)}
+  /* «+ Для взрослых» на первом экране: язык взрослого — без борта, кромка 2 серым, замок 36 */
+  .azone{background:var(--zone);border:2px solid var(--zline);border-radius:28px;display:flex;align-items:center;justify-content:center}
   .zlabel{font-size:11px;line-height:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
   .pbtn{height:56px;border-radius:14px;background:#fff;border:1.5px solid var(--zline);font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center}
   .tok{width:48px;height:48px;border-radius:50%;border:3px dashed var(--muted);background:#E6EBEA}
@@ -62,7 +67,11 @@
   .plate{position:absolute;background:#fff;border:3px solid var(--ink);border-radius:20px;display:flex;align-items:center;justify-content:center}
   .rc{position:absolute;width:136px;height:136px;background:#fff;border:3px solid var(--ink);border-radius:28px;box-shadow:0 4px 0 var(--lip);overflow:hidden;display:flex;flex-direction:column;align-items:center}
   .rc .pic{margin-top:8px;width:116px;height:88px;border-radius:18px;background:var(--lav);display:flex;align-items:center;justify-content:center}
-  .rc span{font-weight:600;font-size:14px;line-height:30px}
+  .rc span{font-weight:600;font-size:14px;line-height:30px;white-space:nowrap}
+  .rc span.fit{font-size:12px} /* одна строка, ужатие до 0.86 (14 → 12): «Горка с шариком» */
+  /* выбрано: контур 6 (stroke.bold) против 3, борта нет (нажата, сдвиг 4), галочка 32 в углу; соседей не гасим */
+  .rc.sel{border-width:6px;box-shadow:none;transform:translateY(4px)}
+  .rc .chk{position:absolute;right:4px;top:4px;width:32px;height:32px;border-radius:50%;background:var(--ink);border:2px solid #fff;display:flex;align-items:center;justify-content:center}
   .seg{display:flex;gap:6px}
   .seg i{flex:1;height:6px;border-radius:3px;background:#C9D2CF;display:block}
   .seg i.on{background:var(--action)}
@@ -134,6 +143,7 @@
 </svg>
 
 <h1>Направление Б — «Тихий кабинет»</h1>
+<p class="lead" style="color:#1D6B66"><b>Выбрано владельцем (№203).</b> Редакция 2 — правки по проверке <code>child-ux-specialist</code> 2026-11-16: кромка листа взрослого обязательна, подпись на пробе в одну строку чернилами без заголовка «Для взрослого», на пробе с оценкой взрослым подписи нет, выбранная карточка награды, Tali машет вверх, у «+» нет борта, подписи этапов 13 pt, превью панели во введении — неинтерактивное. Спецификация: <code>docs/design/aba-direction-b-spec-2026-11-16.md</code>.</p>
 <p class="lead">Одна фраза: <b>спокойный светлый кабинет, где каждый смысл живёт в своём мягком цветном блоке, а яркое остаётся только у награды.</b>
 Взрослые экраны строятся не строками-анкетой, а 2–3 крупными блоками с иконкой и одной залитой кнопкой; Tali появляется только там, где смотрит ребёнок.
 Цвет-роль: шалфей — «где мы», небо — «как это устроено», абрикос — «правило для взрослого», лаванда и фиолетовый — только награда.</p>
@@ -145,11 +155,13 @@
   <div class="sw"><b style="background:#FBE7D3"></b>#FBE7D3 абрикос · правило взрослому</div>
   <div class="sw"><b style="background:#ECE6F8"></b>#ECE6F8 лаванда · только награды</div>
   <div class="sw"><b style="background:#E2E8E6"></b>#E2E8E6 зона взрослого</div>
+  <div class="sw"><b style="background:#6F7E84"></b>#6F7E84 кромка листа, граница кнопок взрослого</div>
+  <div class="sw"><b style="background:#C7D0CD"></b>#C7D0CD борт детских кнопок</div>
   <div class="sw"><b style="background:#1E2A2F"></b>#1E2A2F чернила</div>
   <div class="sw"><b style="background:#55656B"></b>#55656B вторичный</div>
   <div class="sw"><b style="background:#1D6B66"></b>#1D6B66 действие (вместо фиолетового)</div>
-  <div class="sw"><b style="background:#F7C548"></b>#F7C548 жетон (с контуром)</div>
-  <div class="sw"><b style="background:#5B8DB8"></b>#5B8DB8 стимул (слой рисунка)</div>
+  <div class="sw"><b style="background:#FFC42E"></b>#FFC42E жетон — прежний, не меняется (с контуром)</div>
+  <div class="sw"><b style="background:#5B8DB8"></b>#5B8DB8 стимул в макете условно — стимулы не меняются (№198)</div>
 </div>
 <p class="lead" style="color:#55656B">Шрифт: <b>Golos Text</b> 400/500/600/700 — один на всё (сделан под русский интерфейс, ровная кириллица, спокойные пропорции). Экран 360×780, светлая схема.</p>
 
@@ -160,13 +172,14 @@
   <div class="sb"><span>9:41</span><span>● ● ▮</span></div>
   <div class="abs" style="left:60px;top:70px;width:240px;height:240px;border-radius:50%;background:#DCE8F2"></div>
   <svg class="abs" style="left:85px;top:92px" width="190" height="206"><use href="#tali"/></svg>
-  <svg class="abs" style="left:240px;top:240px" width="70" height="80"><path d="M6 6 Q40 20 52 62" fill="none" stroke="#2A1A12" stroke-width="13" stroke-linecap="round"/><path d="M6 6 Q40 20 52 62" fill="none" stroke="#3FC08A" stroke-width="7" stroke-linecap="round"/></svg>
+  <!-- рука машет вверх (поза hello), ни на одну цель не указывает -->
+  <svg class="abs" style="left:210px;top:136px" width="80" height="100"><path d="M16 88 Q50 72 56 26" fill="none" stroke="#2A1A12" stroke-width="13" stroke-linecap="round"/><path d="M16 88 Q50 72 56 26" fill="none" stroke="#3FC08A" stroke-width="7" stroke-linecap="round"/><circle cx="57" cy="18" r="10" fill="#3FC08A" stroke="#2A1A12" stroke-width="4"/></svg>
   <h2 class="abs" style="left:0;right:0;top:336px;text-align:center;font-size:30px;font-weight:700">Позови взрослого</h2>
   <div class="abs cbtn" style="left:40px;top:408px;width:128px;height:152px;flex-direction:column;gap:8px;border-radius:28px">
     <svg width="72" height="72"><use href="#bear"/></svg>
     <span style="font-weight:600;font-size:18px">Тимур</span>
   </div>
-  <div class="abs cbtn" style="left:192px;top:408px;width:128px;height:152px;flex-direction:column;border-radius:28px;background:#E2E8E6">
+  <div class="abs azone" style="left:192px;top:408px;width:128px;height:152px;flex-direction:column">
     <svg width="56" height="56" viewBox="0 0 56 56"><path d="M28 10v36M10 28h36" stroke="#1E2A2F" stroke-width="6" stroke-linecap="round"/></svg>
     <span class="abs" style="right:-10px;top:-12px;width:36px;height:36px;border-radius:50%;background:#fff;border:3px solid #1E2A2F;display:flex;align-items:center;justify-content:center"><svg width="16" height="16"><use href="#lock"/></svg></span>
   </div>
@@ -174,8 +187,8 @@
   <div class="nav"><i></i></div>
 </div></div>
 <div class="cap"><b>1. Первый экран «Позови взрослого»</b>
-Tali на мягком круге неба — единственное цветное пятно, заголовок крупно, две цели. Пузыря-реплики нет: текст один раз, голос его дублирует. «+» — на сером «взрослом» тоне, тем же, что зона взрослого в пробе.
-<i>Calm: круг неба убирается, Tali статичен, борт кнопок 4→2.</i></div></div>
+Tali на мягком круге неба — единственное цветное пятно, заголовок крупно, две цели. Пузыря-реплики нет: текст один раз, голос его дублирует; <b style="display:inline;font-size:14px">касание Tali (190×206) повторяет «Позови взрослого»</b>. Tali машет рукой вверх (поза <code>hello</code>) — на «+» не указывает. «+» — на сером «взрослом» тоне без борта, кромка 2 pt <code>#6F7E84</code> (3.87:1 к фону), замок 36.
+<i>Calm: круг неба убирается, Tali статичен, борт карточки ребёнка 4→2.</i></div></div>
 
 <!-- ============ 2. Занятия ABA ============ -->
 <div class="cell"><div class="dev"><div class="ph">
@@ -189,13 +202,12 @@ Tali на мягком круге неба — единственное цвет
         <div><div style="font-weight:700;font-size:19px;line-height:24px">Где мы сейчас</div><div class="t12 mut" style="font-weight:500">Следующее занятие</div></div>
       </div>
       <div class="steps">
-        <div class="stp done"><u></u><span>✓ Знакомство</span></div>
+        <div class="stp done" style="flex:1.25"><u><em>✓</em></u><span>Знакомство</span></div>
         <div class="stp now"><u></u><span>Проверка</span></div>
-        <div class="stp next"><u></u><span>Учимся</span></div>
-        <div class="stp next"><u></u><span>Повторяем</span></div>
+        <div class="stp next" style="flex:.85"><u></u><span>Учимся</span></div>
+        <div class="stp next" style="flex:1.1"><u></u><span>Повторяем</span></div>
       </div>
       <p class="t14" style="margin-top:14px">Проверяем, что ребёнок уже умеет: <b style="font-weight:600">«По форме»</b>. Без подсказок и жетонов — не помогайте, даже если видите ошибку. Если не получится, на следующем занятии приложение проверит задание попроще.</p>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:10px;background:#fff;border-radius:12px;padding:8px 10px" class="t14"><svg width="22" height="22" style="flex:none"><use href="#i-token"/></svg>За задания проверки жетонов нет.</div>
       <div style="margin-top:10px;font-weight:600;font-size:15px;color:#1D6B66">Как проходят занятия ›</div>
     </div>
     <div class="blk" style="background:#fff;margin-top:12px;padding:14px 16px 6px">
@@ -213,7 +225,7 @@ Tali на мягком круге неба — единственное цвет
   <div class="nav"><i></i></div>
 </div></div>
 <div class="cap"><b>2. «Занятия ABA» с карточкой «Где мы сейчас»</b>
-Два блока вместо столбца строк: шалфейный «где мы» (этапы — полосы, текущий выше и в рамке, пройденный залит и с ✓) и белый «занятие». Единственная залитая — «Начать занятие».
+Два блока вместо столбца строк: шалфейный «где мы» (этапы — полосы, текущий выше и в рамке 3, пройденный залит, ✓ — кружок 20 на конце полосы, а не в подписи) и белый «занятие». Подписи этапов 13/16 Golos 600, до 2 строк, колонки по весам 1.25 / 1 / 0.85 / 1.1 под длину слова («Знакомство» ≈74 pt в колонке ≈82). Повтор «За задания проверки жетонов нет» убран: то же сказано в тексте этапа. Единственная залитая — «Начать занятие».
 <i>Calm/focus к разделу взрослого не применяются; анимаций на экране нет.</i></div></div>
 
 <!-- ============ 3. Введение, шаг 2 ============ -->
@@ -229,9 +241,10 @@ Tali на мягком круге неба — единственное цвет
       <div class="rule"><div class="ico" style="width:36px;height:36px"><svg width="22" height="22"><use href="#i-talk"/></svg></div>не повторяйте вопрос, не говорите «молодец» или «нет»</div>
     </div>
     <p class="t15" style="margin-top:12px">Запускаете занятие и сидите рядом. Пока ребёнок думает, не помогайте: не показывайте пальцем или взглядом, не повторяйте вопрос, не говорите «молодец» или «нет» — это делает приложение. Если всё же помогли, сразу нажмите «Была подсказка». Ребёнок отворачивается, уходит, протестует — нажмите «Отказ». Если он просто промолчал в одном задании, это не отказ: приложение отметит это само.</p>
-    <div style="margin-top:12px;background:#E2E8E6;border-radius:18px;padding:10px">
-      <div class="zlabel" style="margin-bottom:8px">Внизу экрана занятия</div>
-      <div style="display:flex;gap:10px"><div class="pbtn" style="flex:1;height:44px">Была подсказка</div><div class="pbtn" style="flex:1;height:44px">Отказ</div></div>
+    <!-- неинтерактивная врезка: без границ и высоты кнопок, названия в кавычках -->
+    <div style="margin-top:12px;background:#E2E8E6;border-radius:18px 18px 6px 6px;border-top:2px solid #6F7E84;padding:10px 14px">
+      <div class="t12" style="font-weight:600;color:#1E2A2F">Пример: так выглядит низ экрана занятия</div>
+      <div class="t14" style="margin-top:4px;color:#1E2A2F">две кнопки — «Была подсказка» и «Отказ»</div>
     </div>
   </div>
   <div class="abs" style="left:16px;right:16px;bottom:30px;display:flex;gap:12px">
@@ -240,7 +253,7 @@ Tali на мягком круге неба — единственное цвет
   <div class="nav"><i></i></div>
 </div></div>
 <div class="cap"><b>3. Введение, шаг 2 «Что делаете вы»</b>
-Абрикосовый блок «правило взрослому» с двумя запретами-иконками (фрагменты того же текста шага), затем полный текст и превью панели в цвете зоны взрослого. Без персонажа: взрослому объясняют, а не развлекают.
+Абрикосовый блок «правило взрослому» с двумя запретами-иконками (фрагменты того же текста шага), затем полный текст и врезка-пример панели: лист с кромкой, как в пробе, но без кнопок — названия словами в кавычках, ничего не выглядит нажимаемым. Без персонажа: взрослому объясняют, а не развлекают.
 <i>Calm/focus: не применяются.</i></div></div>
 
 <!-- ============ 4. Проба match ============ -->
@@ -259,9 +272,8 @@ Tali на мягком круге неба — единственное цвет
   <div class="plate" style="left:132px;top:428px;width:96px;height:96px"><svg width="60" height="60"><circle cx="30" cy="30" r="27" fill="#5B8DB8" stroke="#1E2A2F" stroke-width="3"/></svg></div>
   <div class="plate" style="left:252px;top:428px;width:96px;height:96px"><svg width="76" height="68"><path d="M38 3 L73 65 L3 65 Z" fill="#5B8DB8" stroke="#1E2A2F" stroke-width="3" stroke-linejoin="round"/></svg></div>
   <div class="zone" style="top:612px;height:148px;padding:8px">
-    <div style="height:56px;display:flex;flex-direction:column;justify-content:center;padding:0 8px;gap:3px">
-      <div class="zlabel">Для взрослого</div>
-      <div class="t14" style="font-weight:500;color:#55656B;display:flex;gap:8px;align-items:flex-start"><svg width="18" height="18" style="flex:none;margin-top:1px"><use href="#i-hush"/></svg>Ждите молча — если нужно, приложение подскажет само.</div>
+    <div style="height:56px;display:flex;align-items:center;padding:0 8px">
+      <div class="zcap" style="display:flex;gap:8px;align-items:center;white-space:nowrap"><svg width="18" height="18" style="flex:none"><use href="#i-hush"/></svg>Ждите молча — подскажет приложение</div>
     </div>
     <div style="display:flex;gap:12px;margin-top:12px">
       <div class="pbtn" style="flex:1">Была подсказка</div><div class="pbtn" style="flex:1">Отказ</div>
@@ -269,9 +281,38 @@ Tali на мягком круге неба — единственное цвет
   </div>
   <div class="nav" style="background:#E2E8E6"><i></i></div>
 </div></div>
-<div class="cap"><b>4. Проба <code>match</code> «По форме»</b>
-Геометрия <code>abaLayout</code> без изменений, мёртвая зона 88 pt. Плиты — белые, контур 3 чернилами <code>#1E2A2F</code>, фигуры в приглушённом синем <code>#5B8DB8</code>, равной площади. Зона взрослого — «лист» со скруглённым верхом, подписью «Для взрослого» и кнопками без заливки.
-<i>Calm: экран пробы тот же; борт детских кнопок 4→2. Цвета плиты и стимула от режима не зависят.</i></div></div>
+<div class="cap"><b>4. Проба <code>match</code> «По форме» — ответ оценивает приложение</b>
+Геометрия <code>abaLayout</code> без изменений, мёртвая зона 88 pt, <code>childTapLockMs</code> тот же. Плиты и стимулы — как в коде (№198); синий в макете условный. Зона взрослого — «лист» со скруглённым верхом и <b style="display:inline;font-size:14px">обязательной кромкой 2 pt <code>#6F7E84</code></b>. Заголовка «Для взрослого» нет — лист и кромка его заменяют. Подпись стоит в пустом ряду 1: одна строка 14/20 чернилами <code>#1E2A2F</code> (11.85:1), блок 24 pt ≤ 56 даже при ×1.2; не вошла по ширине — ужатие до 0.86. Кнопки панели на своих местах. Панель стоит над нижним системным отступом (safe area), а не по координате.
+<i>Calm: экран пробы тот же; борт детских кнопок 4→2. Цвета плиты, стимула и листа от режима не зависят.</i></div></div>
+
+<!-- ============ 4b. Проба, оценивает взрослый ============ -->
+<div class="cell"><div class="dev"><div class="ph">
+  <div class="sb"><span>9:41</span><span>● ● ▮</span></div>
+  <div class="abs cbtn" style="left:16px;top:28px;width:60px;height:60px;border-radius:20px"><svg width="32" height="32"><use href="#exit"/></svg></div>
+  <div class="abs cbtn" style="right:16px;top:26px;width:64px;height:64px;border-radius:20px"><svg width="32" height="32"><use href="#brk"/></svg></div>
+  <svg class="abs" style="left:16px;top:96px" width="40" height="40" viewBox="0 0 80 80"><use href="#pinwheel"/></svg>
+  <div class="abs" style="left:64px;top:92px;display:flex;gap:8px">
+    <div class="tok on"><svg width="24" height="24"><use href="#star"/></svg></div><div class="tok on"><svg width="24" height="24"><use href="#star"/></svg></div><div class="tok"></div>
+  </div>
+  <div class="abs" style="left:16px;top:174px;width:240px;font-weight:600;font-size:24px;line-height:30px">Найди такую же</div>
+  <div class="abs cbtn" style="right:16px;top:176px;width:60px;height:60px;border-radius:20px"><svg width="32" height="32"><use href="#replay"/></svg></div>
+  <div class="plate" style="left:120px;top:284px;width:120px;height:120px;border-radius:24px"><svg width="72" height="72"><rect x="6" y="6" width="60" height="60" rx="2" fill="#5B8DB8" stroke="#1E2A2F" stroke-width="3"/></svg></div>
+  <div class="plate" style="left:12px;top:428px;width:96px;height:96px"><svg width="60" height="60"><circle cx="30" cy="30" r="27" fill="#5B8DB8" stroke="#1E2A2F" stroke-width="3"/></svg></div>
+  <div class="plate" style="left:132px;top:428px;width:96px;height:96px"><svg width="76" height="68"><path d="M38 3 L73 65 L3 65 Z" fill="#5B8DB8" stroke="#1E2A2F" stroke-width="3" stroke-linejoin="round"/></svg></div>
+  <div class="plate" style="left:252px;top:428px;width:96px;height:96px"><svg width="60" height="60"><rect x="6" y="6" width="48" height="48" rx="2" fill="#5B8DB8" stroke="#1E2A2F" stroke-width="3"/></svg></div>
+  <div class="zone" style="top:612px;height:148px;padding:8px">
+    <div style="display:flex;gap:12px">
+      <div class="pbtn" style="flex:1">Верно</div><div class="pbtn" style="flex:1.25">Почти</div><div class="pbtn" style="flex:1">Неверно</div>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:12px">
+      <div class="pbtn" style="flex:1">Была подсказка</div><div class="pbtn" style="flex:1">Отказ</div>
+    </div>
+  </div>
+  <div class="nav" style="background:#E2E8E6"><i></i></div>
+</div></div>
+<div class="cap"><b>4б. Проба, где ответ оценивает взрослый</b>
+Ряд 1 занят «Верно / Почти / Неверно» (веса 1 / 1.25 / 1) — подписи нет вовсе: лист с кромкой сам говорит «это для взрослого». Слоты и высоты те же, что на 4: ни одна кнопка не сдвигается между типами проб (<code>relayout: false</code>). Кнопки — белые, граница 1.5 <code>#6F7E84</code>, без контура 3 и без борта.
+<i>Calm: то же, что на 4.</i></div></div>
 
 <!-- ============ 5. Выбор награды ============ -->
 <div class="cell"><div class="dev"><div class="ph">
@@ -283,28 +324,48 @@ Tali на мягком круге неба — единственное цвет
   </div>
   <div class="rc" style="left:36px;top:232px"><div class="pic"><svg width="72" height="72"><use href="#bubbles"/></svg></div><span>Пузыри</span></div>
   <div class="rc" style="left:188px;top:232px"><div class="pic"><svg width="72" height="72"><use href="#pinwheel"/></svg></div><span>Вертушка</span></div>
-  <div class="rc" style="left:112px;top:388px"><div class="pic"><svg width="72" height="72"><use href="#marble"/></svg></div><span>Горка с шариком</span></div>
+  <div class="rc" style="left:112px;top:388px"><div class="pic"><svg width="72" height="72"><use href="#marble"/></svg></div><span class="fit">Горка с шариком</span></div>
   <div class="zone" style="top:660px;height:100px;padding:14px 18px">
-    <div class="zlabel" style="margin-bottom:4px">Для взрослого</div>
-    <div class="t14" style="font-weight:500;color:#55656B">Ребёнок сам выбирает игру. Не показывайте и не называйте — ждите касания.</div>
+    <div class="zcap">Ребёнок сам выбирает игру. Не показывайте и не называйте — ждите касания.</div>
   </div>
   <div class="nav" style="background:#E2E8E6"><i></i></div>
 </div></div>
 <div class="cap"><b>5. Выбор награды «За что играем сегодня?»</b>
-Лаванда и фиолетовый существуют только здесь и на экране игры — экран сразу узнаётся как «награда». Карточки 136, сцена в лавандовом окне, подпись внизу. Tali нет: выбор делает ребёнок, персонаж не должен тянуть к одной из карточек.
+Лаванда и фиолетовый существуют только здесь и на экране игры — экран сразу узнаётся как «награда». Карточки по <code>abaReinforcerCardSize</code> (здесь 136), сцена в лавандовом окне, подпись в одну строку: не входит — ужатие до 0.86 («Горка с шариком» ≈138 → ≈119 pt при ×1.2). Tali нет: выбор делает ребёнок, персонаж не должен тянуть к одной из карточек. Лист взрослого — с кромкой, без заголовка, текст чернилами.
 <i>Calm: окна наград — статичные кадры, борт 2; лаванда остаётся (она роль, а не украшение).</i></div></div>
+
+<!-- ============ 5b. Выбрано ============ -->
+<div class="cell"><div class="dev"><div class="ph">
+  <div class="sb"><span>9:41</span><span>● ● ▮</span></div>
+  <div class="abs cbtn" style="left:16px;top:28px;width:60px;height:60px;border-radius:20px"><svg width="32" height="32"><use href="#exit"/></svg></div>
+  <div class="abs" style="left:16px;right:16px;top:104px;text-align:center;font-weight:700;font-size:26px;line-height:32px">За что играем сегодня?</div>
+  <div class="abs" style="left:0;right:0;top:160px;display:flex;justify-content:center;gap:8px">
+    <div class="tok"></div><div class="tok"></div><div class="tok"></div>
+  </div>
+  <div class="rc" style="left:36px;top:232px"><div class="pic"><svg width="72" height="72"><use href="#bubbles"/></svg></div><span>Пузыри</span></div>
+  <div class="rc sel" style="left:188px;top:232px"><div class="pic"><svg width="72" height="72"><use href="#pinwheel"/></svg></div><span>Вертушка</span>
+    <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M3 9.5 L7.5 14 L15 4.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+  <div class="rc" style="left:112px;top:388px"><div class="pic"><svg width="72" height="72"><use href="#marble"/></svg></div><span class="fit">Горка с шариком</span></div>
+  <div class="zone" style="top:660px;height:100px;padding:14px 18px">
+    <div class="zcap">Ребёнок сам выбирает игру. Не показывайте и не называйте — ждите касания.</div>
+  </div>
+  <div class="nav" style="background:#E2E8E6"><i></i></div>
+</div></div>
+<div class="cap"><b>5б. Выбор награды — карточка выбрана (удержание 800 мс)</b>
+Выбранная отличается тремя признаками без цвета: контур 6 (<code>stroke.bold</code>, ≥5) против 3, борта нет и карточка опущена на 4 (нажата), галочка в кружке 32 чернилами в правом верхнем углу (белая галочка на <code>#1E2A2F</code> — 14.71:1). Соседи остаются как были — без прозрачности. Другое касание переносит выбор (правило <code>abaReinforcerChoice</code> не меняется).
+<i>Calm: те же три признака; переход без анимации (cut).</i></div></div>
 
 <!-- ============ 5b. calm ============ -->
 <div class="cell"><div class="dev"><div class="ph calm">
   <div class="sb"><span>9:41</span><span>● ● ▮</span></div>
   <svg class="abs" style="left:85px;top:92px" width="190" height="206"><use href="#tali"/></svg>
-  <svg class="abs" style="left:240px;top:240px" width="70" height="80"><path d="M6 6 Q40 20 52 62" fill="none" stroke="#2A1A12" stroke-width="13" stroke-linecap="round"/><path d="M6 6 Q40 20 52 62" fill="none" stroke="#3FC08A" stroke-width="7" stroke-linecap="round"/></svg>
+  <svg class="abs" style="left:210px;top:136px" width="80" height="100"><path d="M16 88 Q50 72 56 26" fill="none" stroke="#2A1A12" stroke-width="13" stroke-linecap="round"/><path d="M16 88 Q50 72 56 26" fill="none" stroke="#3FC08A" stroke-width="7" stroke-linecap="round"/><circle cx="57" cy="18" r="10" fill="#3FC08A" stroke="#2A1A12" stroke-width="4"/></svg>
   <h2 class="abs" style="left:0;right:0;top:336px;text-align:center;font-size:30px;font-weight:700">Позови взрослого</h2>
   <div class="abs cbtn" style="left:40px;top:408px;width:128px;height:152px;flex-direction:column;gap:8px;border-radius:28px">
     <svg width="72" height="72"><use href="#bear"/></svg>
     <span style="font-weight:600;font-size:18px">Тимур</span>
   </div>
-  <div class="abs cbtn" style="left:192px;top:408px;width:128px;height:152px;flex-direction:column;border-radius:28px;background:#E2E8E6">
+  <div class="abs azone" style="left:192px;top:408px;width:128px;height:152px;flex-direction:column">
     <svg width="56" height="56" viewBox="0 0 56 56"><path d="M28 10v36M10 28h36" stroke="#1E2A2F" stroke-width="6" stroke-linecap="round"/></svg>
     <span class="abs" style="right:-10px;top:-12px;width:36px;height:36px;border-radius:50%;background:#fff;border:3px solid #1E2A2F;display:flex;align-items:center;justify-content:center"><svg width="16" height="16"><use href="#lock"/></svg></span>
   </div>
@@ -328,26 +389,33 @@ Tali на мягком круге неба — единственное цвет
     <tr><td>#1E2A2F на абрикосе #FBE7D3 / небе #DCE8F2 / лаванде #ECE6F8</td><td>12.24 / 11.81 / 12.08</td><td>проходит</td></tr>
     <tr><td>#FFFFFF на #1D6B66 (кнопка)</td><td>6.27</td><td>проходит</td></tr>
     <tr><td>#1E2A2F на зоне взрослого #E2E8E6</td><td>11.85</td><td>проходит</td></tr>
-    <tr><td>#55656B на зоне взрослого (подпись «Ждите молча»)</td><td>4.89</td><td>проходит 4.5, запас мал</td></tr>
+    <tr><td>Подпись на листе: #1E2A2F на зоне #E2E8E6 (было #55656B, 4.89)</td><td>11.85</td><td>проходит ≥7 (условие UX)</td></tr>
+    <tr><td>Кромка листа #6F7E84 к фону #F4F6F5 / к зоне #E2E8E6</td><td>3.87 / 3.39</td><td>проходит 3 с обеих сторон</td></tr>
     <tr><td>Граница кнопки #6F7E84 к зоне / к белому</td><td>3.39 / 4.20</td><td>проходит 3</td></tr>
-    <tr><td>#1E2A2F на жетоне #F7C548</td><td>9.13</td><td>проходит</td></tr>
-    <tr><td>Стимул #5B8DB8 на плите #FFFFFF</td><td>3.53</td><td>фигура ≥3 и без контура</td></tr>
-    <tr><td>Зона взрослого к фону (граница зон)</td><td>1.15</td><td><b>не несёт границу</b> — её держат форма листа и подпись; см. риск</td></tr>
+    <tr><td>Граница «+ Для взрослых» #6F7E84 к фону</td><td>3.87</td><td>проходит 3</td></tr>
+    <tr><td>Галочка выбора #FFFFFF на #1E2A2F</td><td>14.71</td><td>проходит</td></tr>
+    <tr><td>Подписи этапов: #1E2A2F / #55656B на шалфее</td><td>12.14 / 5.01</td><td>проходит</td></tr>
+    <tr><td>#55656B на абрикосе / на небе</td><td>5.05 / 4.88</td><td>проходит</td></tr>
+    <tr><td>#1D6B66 к фону (ссылка, кружок ✓)</td><td>5.78</td><td>проходит</td></tr>
+    <tr><td>Контур жетона #2A1A12 на жёлтом #FFC42E (жетон не меняется)</td><td>10.51</td><td>проходит</td></tr>
+    <tr><td>Зона взрослого к фону по заливке</td><td>1.15</td><td>границу несёт кромка (3.87), не заливка</td></tr>
   </table>
 </section>
 <section>
-  <h3>Что меняется в токенах</h3>
+  <h3>Что меняется в токенах (редакция 2)</h3>
   <ul>
-    <li>Новая светлая палитра: <code>primary #5A34C4 → #1D6B66</code> во всём приложении «Со взрослым»; фиолетовый уходит в роль <code>reinforcement</code> (уже так в <code>abaColors</code>) — правило «фиолетовый только у награды» становится общим.</li>
-    <li><code>illustrationInk</code> остаётся <code>#2A1A12</code> (Tali, награды); UI-чернила <code>text/outline</code> → <code>#1E2A2F</code>. Плита стимула: контур <code>plateOutline</code> → <code>#1E2A2F</code> — проверить пересчёт <code>abaTokens.test.ts</code>.</li>
-    <li>Подушка цвета <code>outline</code> → «борт» <code>#C7D0CD</code> (<code>elevation.raised</code> тот же 4/2, меняется цвет).</li>
-    <li>Новые роли-блоки взрослого: <code>blockWhere</code>, <code>blockExplain</code>, <code>blockRule</code>, <code>blockReward</code>; <code>abaAdultPanelColors.band → #E2E8E6</code>.</li>
-    <li>Шрифт: Nunito → <code>Golos Text</code> (<code>@expo-google-fonts/golos-text</code>) везде; пересчитать <code>glyphMetrics</code>, <code>glyphFit</code>, <code>fontGlyphs.test.ts</code> (ң ө ү — в Golos есть, проверить на сборке).</li>
+    <li>Детские <code>tokens.ts</code> не трогаем: обычный режим заморожен (№196). <code>primary #1D6B66</code> — только в <code>parentColors.light</code>; <code>abaColors.light</code> получает свои литералы вместо ссылок на детскую палитру.</li>
+    <li>Плита, контур плиты <code>#2A1A12</code>, стимулы и жёлтый жетон <code>#FFC42E</code> — без изменений (№198, жетон — выученный подкрепитель). Меняются фон пробы, детские кнопки (чернила <code>#1E2A2F</code>, борт <code>#C7D0CD</code>) и лист взрослого.</li>
+    <li>Новые роли взрослого: <code>blockWhere</code>, <code>blockExplain</code>, <code>blockRule</code>, <code>zone</code>, <code>edge</code>; лист <code>abaAdultPanelColors.band → #E2E8E6</code> + кромка 2.</li>
+    <li>Шрифт Golos Text — только раздел взрослого и ABA (<code>parentTypography</code>, новая <code>abaTypography</code>); урок и <code>glyphFit</code> остаются на Nunito.</li>
   </ul>
-  <h3 style="margin-top:12px">Риск для ABA</h3>
+  <h3 style="margin-top:12px">Закрыто по проверке UX</h3>
   <ul>
-    <li>Зона взрослого отделена слабее, чем в А (1.15:1 по цвету) — держится на скруглённом листе и подписи. Если UX скажет «мало», ставим кромку 2 pt <code>#6F7E84</code> по верху листа.</li>
-    <li>Смена <code>primary</code> трогает весь детский урок (замороженный режим), а не только ABA — объём больше, чем у А.</li>
+    <li>Б1: заголовка «Для взрослого» на пробе нет, подпись — одна строка в пустом ряду 1; при оценке взрослым подписи нет (4б).</li>
+    <li>Кромка 2 pt обязательна; в зоне взрослого нет контура 3 и борта.</li>
+    <li>Выбранная карточка награды определена (5б); подпись карточки — одна строка с ужатием до 0.86.</li>
+    <li>Tali не указывает на цель, «+» без борта, касание Tali повторяет голос.</li>
+    <li>Этапы 13 pt, ✓ на полосе, дубль про жетоны убран; превью панели — неинтерактивная врезка.</li>
   </ul>
 </section>
 </div>
