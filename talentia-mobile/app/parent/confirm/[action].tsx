@@ -3,6 +3,7 @@
  * текстом действия, затем свежий PIN на листе (окно 5 минут здесь не действует — решение владельца
  * 2026-10-25). Очистка — `clearChildProgress`; профиль — `deleteChildEverywhere`; аккаунт —
  * `wipeAccountEverywhere` + файл базы; скачок часов (№147) — `confirmClockJump` по дате с листа.
+ * После каждого удаления — `resetPreparedExport()`: подготовленная выгрузка специалисту не остаётся в памяти.
  */
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -17,6 +18,7 @@ import { deleteLocalDb } from '../../../src/services/local/expoSqlite';
 import { buildTime } from '../../../src/services/local/buildInfo';
 import { abaConsentTextVersion } from '../../../src/services/local/abaConsent';
 import { abaDataSummary, clearChildProgress, confirmClockJump, revokeAbaProcessing, runRetention, StaleClockConfirmationError } from '../../../src/services/local/purge';
+import { resetPreparedExport } from '../../../src/services/local/shareSpecialistExport';
 import { randomBytes } from '../../../src/services/random';
 import type { InterfaceLang } from '../../../src/domain/regionVisibility';
 import { consentLang } from '../../../src/i18n';
@@ -50,12 +52,16 @@ export default function ConfirmScreen() {
   const [sheet, setSheet] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
-  // отзыв называет, что удалится, числом занятий и проб (ABA.md «Согласие aba_processing», направление §1)
-  const [abaCount, setAbaCount] = useState<{ sessions: number; trials: number } | null>(null);
+  // отзыв называет, что удалится, числом занятий и проб (ABA.md «Согласие aba_processing», направление §1), а также
+  // журнал раздела «Для специалиста» и сохранённые параметры занятий — их отзыв тоже удаляет
+  const [abaCount, setAbaCount] = useState<{ sessions: number; trials: number; specialistEvents: number; sessionParams: boolean } | null>(null);
   const revokeChild = action === 'aba_revoke' ? (profile?.childId ?? null) : null;
   useEffect(() => {
     if (!revokeChild || !account.db) return;
-    void abaDataSummary(account.db, revokeChild).then((s) => setAbaCount({ sessions: s.sessions + s.pairingSessions, trials: s.trials }), () => setAbaCount(null));
+    void abaDataSummary(account.db, revokeChild).then(
+      (s) => setAbaCount({ sessions: s.sessions + s.pairingSessions, trials: s.trials, specialistEvents: s.specialistEvents, sessionParams: s.sessionParams }),
+      () => setAbaCount(null),
+    );
   }, [revokeChild, account.db]);
 
   if (!action || !(action in KEYS)) return <Redirect href="/parent/data" />;
@@ -101,10 +107,13 @@ export default function ConfirmScreen() {
       if (kind === 'clear_progress' && profile) {
         // с портом устройства: снимается и каталог файла экспорта (вопрос 54, m5)
         await clearChildProgress(db, profile.childId, device());
+        // подготовленная выгрузка в памяти (JSON и отчёт) — тоже прочь: каталог снят, копии данных не держим
+        resetPreparedExport();
         if (useChildSession.getState().childId === profile.childId) useChildSession.getState().reset();
         router.back();
       } else if (kind === 'delete_child' && profile) {
         await deleteChildEverywhere({ db, device: device(), childId: profile.childId, pseudonym: uuidV4(randomBytes), deliverRevocation: async () => true, accountId });
+        resetPreparedExport();
         if (useChildSession.getState().childId === profile.childId) useChildSession.getState().reset();
         // выбор ABA в памяти (конфигурация, uuid наблюдателей) — тоже прочь (аудит 2026-11-09, приватность п. 6)
         useAbaRun.getState().reset();
@@ -133,9 +142,11 @@ export default function ConfirmScreen() {
           'owner',
           device(),
         );
+        resetPreparedExport();
         router.back();
       } else if (kind === 'delete_account') {
         await wipeAccountEverywhere({ db, device: device(), accountId, deleteDbFile: () => deleteLocalDb(accountId), deliverRevocations: async () => true });
+        resetPreparedExport();
         // Сначала переход: гейт при `status: 'none'` держит открытыми только setup/policy/done.
         router.replace('/parent/done');
         useChildSession.getState().reset();
@@ -151,6 +162,7 @@ export default function ConfirmScreen() {
       // приговорённые к удалению, не пишутся; остаток доведёт следующий старт (№148, child-privacy-compliance)
       if (kind === 'delete_account' && (await device().getItem(WIPE_PENDING_KEY).catch(() => null)) !== null) {
         await finishDeviceWipe(device(), account.accountId).catch(() => undefined);
+        resetPreparedExport();
         router.replace('/parent/done');
         useChildSession.getState().reset();
         // выбор ABA и выбранный ребёнок в памяти — тоже прочь (аудит 2026-11-09, приватность п. 6)
@@ -177,6 +189,14 @@ export default function ConfirmScreen() {
           {kind === 'aba_revoke' && abaCount && (
             <ParentText role="body" testID="aba-revoke-count">
               {t('parent.aba.revokeCount', abaCount)}
+            </ParentText>
+          )}
+          {kind === 'aba_revoke' && abaCount && (abaCount.specialistEvents > 0 || abaCount.sessionParams) && (
+            <ParentText role="body" testID="aba-revoke-specialist">
+              {[
+                ...(abaCount.specialistEvents > 0 ? [t('parent.aba.revokeSpecialistEvents', { n: abaCount.specialistEvents })] : []),
+                ...(abaCount.sessionParams ? [t('parent.aba.revokeSessionParams')] : []),
+              ].join(' ')}
             </ParentText>
           )}
           {kind === 'clock_jump' && hold !== null && hold.abaGoalsChildren > 0 && <ParentText role="body">{t('parent.clock.abaGoals', vars)}</ParentText>}

@@ -440,12 +440,15 @@ export async function abaDataSummary(
   sessionTails: number;
   /** Записи журнала раздела «Для специалиста». */
   specialistEvents: number;
+  /** Сохранены параметры занятий от специалиста (`abaSessionParams`) — отзыв их тоже удаляет. */
+  sessionParams: boolean;
   observers: number;
   settings: boolean;
 }> {
   const count = async (table: string) =>
     (await db.all<{ n: number }>(`SELECT count(*) AS n FROM ${table} WHERE child_id = ?`, [childId]))[0].n;
   const observers = await loadChildState(db, childId, 'abaObservers');
+  const sessionParams = await loadChildState(db, childId, 'abaSessionParams');
   const [settings] = await db.all<{ n: number }>(
     "SELECT count(*) AS n FROM child_state WHERE child_id = ? AND key IN ('physicalPromptAllowed', 'abaPaused')",
     [childId],
@@ -460,6 +463,7 @@ export async function abaDataSummary(
     pairingSessions: await count('aba_pairing_sessions'),
     sessionTails: await count('aba_session_tails'),
     specialistEvents: await count('aba_specialist_events'),
+    sessionParams: sessionParams !== undefined && sessionParams !== null,
     observers: observers?.length ?? 0,
     settings: settings.n > 0,
   };

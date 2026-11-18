@@ -141,7 +141,7 @@ describe('экран «Для специалиста»', () => {
     expect(screen.getByTestId(`spec-flag-${tg.id}-no_progress`)).toHaveTextContent(spec.flag.no_progress);
     expect(screen.getByTestId(`spec-flag-${tg.id}-prompt_dependent`)).toHaveTextContent(spec.flag.prompt_dependent);
     expect(screen.getByTestId(`spec-target-${tg.id}`)).toHaveTextContent(/обучение/);
-    expect(screen.getByTestId(`spec-target-${tg.id}`)).toHaveTextContent(/ожидание перед подсказкой 2.5 с/);
+    expect(screen.getByTestId(`spec-target-${tg.id}`)).toHaveTextContent(/задержка до подсказки 2.5 с/);
     expect(screen.getByTestId('spec-actions-caption')).toHaveTextContent(spec.noActions);
     expect(screen.getByTestId('spec-claimed')).toHaveTextContent(spec.claimed);
     expect(screen.getByTestId('spec-no-changes')).toBeTruthy();
@@ -162,7 +162,7 @@ describe('экран «Для специалиста»', () => {
     const goal = (id: string) => (ru.parent.aba.goal as Record<string, string>)[id] ?? id;
     await waitFor(() =>
       expect(screen.getByTestId('spec-note-0')).toHaveTextContent(
-        `2026-11-17 · проверка вперемешку без итога (${goal(a.id)}, ${goal(b.id)}): остановил взрослый, не засчитано, следующее занятие — без блока`,
+        `2026-11-17 · проверка вперемешку без итога (${goal(a.id)}, ${goal(b.id)}): остановлено взрослым, не засчитано, следующее занятие — без блока`,
       ),
     );
   });

@@ -79,7 +79,11 @@ export type ShareSpecialistExportOptions = {
 type Prepared = { childId: string; json: string; html: string; jsonFile: File; htmlFile: File };
 let prepared: Prepared | null = null;
 
-/** Для тестов: забыть подготовленную выгрузку (как после перезапуска приложения). */
+/**
+ * Забыть подготовленную выгрузку (как после перезапуска приложения): копия JSON и отчёта в памяти не переживает
+ * удаление данных. Зовёт экран подтверждения после очистки прогресса, удаления профиля, отзыва согласия ABA и
+ * удаления аккаунта (`app/parent/confirm/[action].tsx`, `child-privacy-compliance` 2026-11-19); тесты — между кейсами.
+ */
 export function resetPreparedExport(): void {
   prepared = null;
 }
