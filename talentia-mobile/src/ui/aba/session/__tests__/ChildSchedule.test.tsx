@@ -1,7 +1,7 @@
 /**
  * Расписание ребёнку (решение методиста 34, ревью методиста и `child-ux-specialist`): «сначала задание → потом
- * жетоны и награда», мини-плиты по одной на отрезок работы, награда одна — только при гарантированном обмене; без
- * таймера; касание — сжатие как у значка перерыва; на перерыве под кольцом. Показ только на перерыве — `app/aba/__tests__`.
+ * жетоны и награда», мини-плиты по одной на отрезок работы; «потом» — всегда доска с окном награды, на перерыве с
+ * запасным обменом полосы нет (`then: null`); без таймера; касание — сжатие как у значка перерыва; на перерыве под кольцом. Показ только на перерыве — `app/aba/__tests__`.
  */
 import { StyleSheet } from 'react-native';
 
@@ -18,7 +18,7 @@ const c = abaColors.light;
 const HIDDEN = { includeHiddenElements: true };
 const flat = (id: string) => StyleSheet.flatten(screen.getByTestId(id, HIDDEN).props.style);
 const sched = ru.abaBreak.schedule;
-const boardThen = (earned: number, size = 5): ScheduleThen => ({ kind: 'board', size, earned });
+const boardThen = (earned: number, size = 5): ScheduleThen => ({ size, earned });
 const view = (over: Partial<ChildScheduleView> = {}): ChildScheduleView => ({
   blocksLeft: 3,
   isLast: false,
@@ -63,20 +63,20 @@ it('мини-плит не больше потолка: длинный план 
   expect(screen.getAllByTestId('aba-schedule-segment', HIDDEN)).toHaveLength(abaSchedule.maxSegments);
 });
 
-it('обмен гарантирован — награда одна в окне, доски нет, подпись «потом награда»', async () => {
-  await renderWithProviders(<ChildSchedule {...view({ then: { kind: 'reward' } })} />);
-  expect(screen.queryByTestId('aba-schedule-board', HIDDEN)).toBeNull();
-  expect(screen.queryByTestId('aba-schedule-token-filled', HIDDEN)).toBeNull();
-  expect(flat('aba-schedule-reward')).toMatchObject({ backgroundColor: c.rewardWindow, width: abaSchedule.cell });
-  expect(screen.getByTestId('aba-reinforcer-stub-bubbles', HIDDEN)).toBeTruthy();
-  expect(screen.getByTestId('aba-schedule').props.accessibilityLabel).toBe(`${sched.firstThen}. ${sched.left.replace('{{count}}', '3')}`);
+it('перерыв кончится запасным обменом (порядок «перерыв → награда → задание») — полосы нет совсем', async () => {
+  await renderWithProviders(<ChildSchedule {...view({ then: null })} />);
+  expect(screen.queryByTestId('aba-schedule', HIDDEN)).toBeNull();
+  expect(screen.queryByTestId('aba-schedule-reward', HIDDEN)).toBeNull();
+  // варианта «одна награда» нет: подписи «потом награда» в локалях не осталось
+  expect(Object.keys(sched)).not.toContain('firstThen');
 });
 
-it('обмен не гарантирован — награда никогда не одна: всегда при доске', async () => {
+it('награда никогда не одна: всегда окно при доске', async () => {
   for (const then of [boardThen(0), boardThen(4), boardThen(5), boardThen(0, 1)]) {
     await renderWithProviders(<ChildSchedule {...view({ then })} />);
     expect(screen.getByTestId('aba-schedule-board', HIDDEN)).toBeTruthy();
-    expect(screen.getAllByTestId(/^aba-schedule-token-/, HIDDEN)).toHaveLength(then.kind === 'board' ? then.size : 0);
+    expect(screen.getAllByTestId(/^aba-schedule-token-/, HIDDEN)).toHaveLength(then.size);
+    expect(flat('aba-schedule-reward')).toMatchObject({ backgroundColor: c.rewardWindow, width: abaSchedule.boardReward });
   }
 });
 

@@ -111,8 +111,11 @@ export function stageLines(t: (k: string, o?: Record<string, unknown>) => string
 
 type GoalRowStatus = AbaParentProgress['targets'][number]['status'] | 'ahead';
 
-/** Глиф строки: «освоено отдельно, ждёт проверки вперемешку» — половинный, как «почти»: окончательно ещё не освоено. */
-const glyphOf = (status: GoalRowStatus): GoalGlyphStatus => (status === 'mixed_pending' ? 'almost' : status);
+/**
+ * Глиф строки: «освоено отдельно» (ждёт проверки вперемешку или её назначит специалист) — половинный, как «почти»:
+ * окончательно ещё не освоено.
+ */
+const glyphOf = (status: GoalRowStatus): GoalGlyphStatus => (status === 'mixed_pending' || status === 'mixed_by_specialist' ? 'almost' : status);
 
 /** Строки «Целей»: начатые цели в порядке лестницы `ABA_TARGETS` плюс одна следующая как «впереди». */
 function goalRows(progress: AbaParentProgress, ready: boolean): { id: string; status: GoalRowStatus }[] {

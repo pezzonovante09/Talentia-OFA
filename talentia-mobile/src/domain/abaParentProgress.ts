@@ -8,7 +8,9 @@
  *   критерию или по проверенной базовой линии: «освоено по выводу» и «дома, без проверки» родителю как освоенное
  *   не показываются — это качество измерения, а не навыка, и для родителя оно «почти» (`transitionOffer` считает так же).
  * - Цель смешанного блока (`mixWith`, решение методиста 43; ревью 2026-11-18), освоенная по отдельности, пока блок не
- *   пройден, — «освоено отдельно, ждёт проверки вперемешку», а не «освоено».
+ *   пройден, — «освоено отдельно, ждёт проверки вперемешку», а не «освоено». Блок снят с плана (флаг
+ *   `mixed_not_established`, две сессии без итога) — «освоено отдельно, проверку вперемешку назначит специалист»:
+ *   «ждёт» обещало бы проверку, которой план больше не ставит (финальная рецензия методиста).
  * - За занятие: N — пробы, где ребёнок отвечал по навыку (без прерванных, без разогрева и закрывающей пробы — они
  *   про настроение сессии; без коррекционной пробы — она успешна по построению и «сам» быть не может), M — из них
  *   самостоятельные; проба переноса считается — ответ без подсказки после отвлечения честно «сам».
@@ -16,7 +18,7 @@
  */
 import type { AbaFlag, AbaSession, AbaTargetState, AbaTrial } from '../types/aba';
 
-export type ParentTargetStatus = 'learning' | 'almost' | 'mixed_pending' | 'mastered';
+export type ParentTargetStatus = 'learning' | 'almost' | 'mixed_pending' | 'mixed_by_specialist' | 'mastered';
 
 type StatusInput = Pick<AbaTargetState, 'phase' | 'sessionsAtCriterion' | 'masteredBy' | 'mixedCheck'> & { flags?: readonly AbaFlag[] };
 
@@ -27,7 +29,8 @@ export function parentTargetStatus(s: StatusInput, opts: { mixes?: boolean } = {
     case 'mastered':
     case 'maintenance':
       if (s.masteredBy === 'inferred' || s.masteredBy === 'home_unverified') return 'almost';
-      return opts.mixes && !s.mixedCheck?.done ? 'mixed_pending' : 'mastered';
+      if (!opts.mixes || s.mixedCheck?.done) return 'mastered';
+      return flags.includes('mixed_not_established') ? 'mixed_by_specialist' : 'mixed_pending';
     case 'generalization_check':
       return 'almost';
     case 'acquisition':
@@ -57,7 +60,7 @@ export function lastSessionSummary(session: Pick<AbaSession, 'day' | 'startedAt'
 }
 
 /** Порядок строк для родителя: сначала то, что учим, потом «почти», освоенное — внизу. */
-const ORDER: Record<ParentTargetStatus, number> = { learning: 0, almost: 1, mixed_pending: 2, mastered: 3 };
+const ORDER: Record<ParentTargetStatus, number> = { learning: 0, almost: 1, mixed_pending: 2, mixed_by_specialist: 2, mastered: 3 };
 
 export function sortForParent<T extends { status: ParentTargetStatus }>(rows: readonly T[]): T[] {
   return [...rows].sort((a, b) => ORDER[a.status] - ORDER[b.status]);

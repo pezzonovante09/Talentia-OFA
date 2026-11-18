@@ -10,7 +10,7 @@
  * специалисту; повтор блока в день, уже засчитанный цели, её не судит.
  */
 import { MAINTENANCE_GAP, MASTERY, MIXED_BLOCK, type AbaTarget, type AbaTargetState, type AbaTrial, type PromptLevel } from '../types/aba';
-import { arrange } from './abaIdentifySet';
+import { arrange, MAX_SAME_SD } from './abaIdentifySet';
 import { answerLevel } from './abaPrompting';
 import type { Rng } from './abaTokens';
 
@@ -79,7 +79,9 @@ function readyForMix(s: AbaTargetState | undefined): boolean {
 /**
  * Группа на смешанный блок этой сессии: первая по программе, где все участники освоены по отдельности, а кто-то ещё
  * не прошёл блок и сегодня зачёта не имеет (дни должны быть разными). `allowed` — цель можно ставить в эту сессию.
- * Группа с флагом `mixed_not_established` не планируется: блок без итога решает специалист.
+ * Группа с флагом `mixed_not_established` не планируется: блок без итога решает специалист — флаг снимает только его
+ * будущее действие (экрана специалиста пока нет), код здесь его не снимает. Группа, где участник сегодня уже провалил
+ * блок (`mixedCheck.failedDay`), в этот день не планируется снова: провал за день — один (финальная рецензия).
  */
 export function mixedGroupDue(
   groups: readonly AbaTarget[][],
@@ -90,7 +92,13 @@ export function mixedGroupDue(
   return (
     groups.find(
       (g) =>
-        g.every((t) => allowed(t) && readyForMix(states[t.id]) && !states[t.id].flags.includes('mixed_not_established')) &&
+        g.every(
+          (t) =>
+            allowed(t) &&
+            readyForMix(states[t.id]) &&
+            !states[t.id].flags.includes('mixed_not_established') &&
+            states[t.id].mixedCheck?.failedDay !== day,
+        ) &&
         g.some((t) => !states[t.id].mixedCheck?.done && !(states[t.id].mixedCheck?.days ?? []).includes(day)),
     ) ?? null
   );
@@ -112,12 +120,31 @@ export function mixedBlockTrials(
   return arrange(items, rng);
 }
 
+/**
+ * Место замены промаха наблюдения в смешанном блоке (финальная рецензия решения 43): самое позднее до конца блока,
+ * где цель замены не идёт больше `MAX_SAME_SD` раз подряд. `shown` — цели проб, показанных с начала блока, по порядку
+ * (промах — последней), `ahead` — цели проб, оставшихся до конца блока. Ответ — сколько из `ahead` идёт до замены;
+ * `null` — места нет (например, промах — последняя проба и перед ним та же цель): замены нет, правило «не больше двух
+ * подряд» сильнее, у цели меньше 5 проб — блок без итога по промаху наблюдения.
+ */
+export function replacementSlot(shown: readonly string[], ahead: readonly string[], id: string): number | null {
+  const seq = [...shown, ...ahead];
+  for (let p = ahead.length; p >= 0; p -= 1) {
+    const at = shown.length + p;
+    let run = 1;
+    for (let i = at - 1; i >= 0 && seq[i] === id; i -= 1) run += 1;
+    for (let i = at; i < seq.length && seq[i] === id; i += 1) run += 1;
+    if (run <= MAX_SAME_SD) return p;
+  }
+  return null;
+}
+
 /** Id конца блока: у блока нет своей цели, участники — в `members`. */
 export const mixedBlockId = (group: readonly Pick<AbaTarget, 'id'>[]): string => `mixed:${group.map((t) => t.id).join('+')}`;
 
 /**
  * Итог смешанного блока по одной цели. `own` — засчитываемые пробы цели в сессии (без промахов наблюдения). День,
- * уже засчитанный цели, повтором блока не судится: пробы пишутся, итога нет. Меньше `trialsPerTarget` непрерванных
+ * уже засчитанный цели или уже проваленный ею (`failedDay`), повтором блока не судится: пробы пишутся, итога нет. Меньше `trialsPerTarget` непрерванных
  * проб блока — не решает ничего. ≥ 80 % самостоятельных — день в зачёт, второй день — `done`; блок — ещё и пройденная
  * проба поддержания. Меньше — первый раз цель остаётся освоенной со своими днями; второй блок подряд — обучение:
  * при 0–2 из 5 со старта первого уровня, несущего ответ, иначе с последнего успешного, но не выше того (как проверка
@@ -131,7 +158,8 @@ export function mixedVerdict(
   day: string,
 ): { state: AbaTargetState; reason: 'mixed_passed' | 'mixed_failed' | null } | null {
   const before = s.mixedCheck?.days ?? [];
-  if (before.includes(day)) return null;
+  // провал за день — один (финальная рецензия): повтор блока в день провала цель не судит, как и в день зачёта
+  if (before.includes(day) || s.mixedCheck?.failedDay === day) return null;
   const v = own.filter((t) => t.kind === 'verification' && t.response !== 'interrupted');
   if (v.length < MIXED_BLOCK.trialsPerTarget) return null;
   const independent = v.filter((t) => t.response === 'independent').length;
@@ -155,7 +183,7 @@ export function mixedVerdict(
     // `done`, ни обучением и держал бы оба слота без предела; повтор — следующей сессией, как после первого провала
     // поддержания
     const { noVerdict: _n, ...check } = s.mixedCheck ?? { days: [] };
-    return { state: { ...s, mixedCheck: { ...check, failsInRow: fails } }, reason: null };
+    return { state: { ...s, mixedCheck: { ...check, failsInRow: fails, failedDay: day } }, reason: null };
   }
   // не выше первого уровня, несущего ответ: у освоенной по базовой линии «последний успех» мог остаться стартовым L3
   const start: PromptLevel = independent <= 2 ? answerLevel(target) : (Math.min(answerLevel(target), s.lastSuccessfulPromptLevel) as PromptLevel);

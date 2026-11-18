@@ -34,6 +34,21 @@ describe('прогресс ABA для родителя (вопрос 66)', () =>
     expect(parentTargetStatus({ phase: 'acquisition', sessionsAtCriterion: 0 }, { mixes: true })).toBe('learning');
   });
 
+  it('блок снят с плана (`mixed_not_established`) — «проверку вперемешку назначит специалист», а не «ждёт»', () => {
+    const own = { phase: 'mastered' as const, sessionsAtCriterion: 3, masteredBy: 'criterion' as const, flags: ['mixed_not_established' as const] };
+    expect(parentTargetStatus({ ...own, mixedCheck: { days: [] } }, { mixes: true })).toBe('mixed_by_specialist');
+    expect(parentTargetStatus({ ...own, phase: 'maintenance', mixedCheck: { days: ['2026-11-18'] } }, { mixes: true })).toBe('mixed_by_specialist');
+    // партнёр, успевший пройти блок, — освоен, флаг ему не мешает
+    expect(parentTargetStatus({ ...own, mixedCheck: { days: ['2026-11-18', '2026-11-19'], done: true } }, { mixes: true })).toBe('mastered');
+    // вернулась в обучение — «учим», как у всех
+    expect(parentTargetStatus({ ...own, phase: 'acquisition', sessionsAtCriterion: 0 }, { mixes: true })).toBe('learning');
+    expect(sortForParent([{ status: 'mastered' as const }, { status: 'mixed_by_specialist' as const }, { status: 'learning' as const }]).map((r) => r.status)).toEqual([
+      'learning',
+      'mixed_by_specialist',
+      'mastered',
+    ]);
+  });
+
   it('за занятие: пробы без разогрева, закрывающей, коррекционной и прерванных; перенос считается; самостоятельные отдельно', () => {
     const trials = [
       trial('high_p', 'independent'),

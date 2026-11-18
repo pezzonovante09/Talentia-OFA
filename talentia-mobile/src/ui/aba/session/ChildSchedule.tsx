@@ -1,9 +1,10 @@
 /**
  * Расписание ребёнку (решение методиста 34, ревью методиста и `child-ux-specialist`, токены `abaSchedule`):
  * «сначала задание → потом жетоны и награда», под полосой — мини-плиты по одной на оставшийся отрезок работы (на
- * последнем — одна). «Потом» — доска жетонов с наградой при ней; награда одна — только при гарантированном обмене
- * (`childSchedule`). Показывается только на перерыве (`BreakView`); без таймера; касание — сжатие 0.94 без звука и
- * записи, как у значка перерыва. Работы не осталось или награда не выбрана — ничего не рисуется.
+ * последнем — одна). «Потом» — всегда доска жетонов с окном награды при ней (финальная рецензия методиста: варианта
+ * «одна награда» нет). Показывается только на перерыве (`BreakView`); без таймера; касание — сжатие 0.94 без звука и
+ * записи, как у значка перерыва. Работы не осталось, награда не выбрана или перерыв кончится запасным обменом
+ * (`then: null`, `childSchedule`) — ничего не рисуется.
  */
 import { Pressable, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
@@ -43,10 +44,10 @@ export function scheduleStripStyle(pressed: boolean) {
 export function ChildSchedule({ blocksLeft, reinforcerId, then }: ChildScheduleView) {
   const childT = useChildT();
   const c = useAbaColors();
-  if (blocksLeft <= 0 || !reinforcerId) return null;
+  if (blocksLeft <= 0 || !reinforcerId || !then) return null;
   const s = abaSchedule;
   const plates = Math.min(blocksLeft, s.maxSegments);
-  const firstThen = then.kind === 'reward' ? childT('abaBreak.schedule.firstThen') : childT('abaBreak.schedule.firstThenTokens');
+  const firstThen = childT('abaBreak.schedule.firstThenTokens');
   const left = blocksLeft === 1 ? childT('abaBreak.schedule.last') : childT('abaBreak.schedule.left', { count: blocksLeft });
   const cell = { width: s.cell, height: s.cell, borderRadius: s.cellRadius, alignItems: 'center', justifyContent: 'center' } as const;
   // окно награды к фону 1.12:1 — край несёт контур плиты (design-lead)
@@ -64,30 +65,24 @@ export function ChildSchedule({ blocksLeft, reinforcerId, then }: ChildScheduleV
           <TaskGlyph size={s.taskGlyph} color={c[s.color.taskGlyph]} />
         </View>
         <ArrowGlyph size={s.arrow} color={c[s.color.arrow]} />
-        {then.kind === 'reward' ? (
-          <View testID="aba-schedule-reward" style={{ ...cell, ...rewardWindow }}>
-            <ReinforcerArt id={reinforcerId} size={s.rewardArt} />
+        <View testID="aba-schedule-board" style={{ flexDirection: 'row', alignItems: 'center', gap: s.boardRewardGap }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: s.boardGap }}>
+            {Array.from({ length: then.size }, (_, i) => (
+              <TokenCell
+                key={i}
+                size={s.boardCell}
+                filled={i < then.earned}
+                testID={i < then.earned ? 'aba-schedule-token-filled' : 'aba-schedule-token-empty'}
+              />
+            ))}
           </View>
-        ) : (
-          <View testID="aba-schedule-board" style={{ flexDirection: 'row', alignItems: 'center', gap: s.boardRewardGap }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: s.boardGap }}>
-              {Array.from({ length: then.size }, (_, i) => (
-                <TokenCell
-                  key={i}
-                  size={s.boardCell}
-                  filled={i < then.earned}
-                  testID={i < then.earned ? 'aba-schedule-token-filled' : 'aba-schedule-token-empty'}
-                />
-              ))}
-            </View>
-            <View
-              testID="aba-schedule-reward"
-              style={{ width: s.boardReward, height: s.boardReward, borderRadius: s.cellRadius, alignItems: 'center', justifyContent: 'center', ...rewardWindow }}
-            >
-              <ReinforcerArt id={reinforcerId} size={s.boardRewardArt} />
-            </View>
+          <View
+            testID="aba-schedule-reward"
+            style={{ width: s.boardReward, height: s.boardReward, borderRadius: s.cellRadius, alignItems: 'center', justifyContent: 'center', ...rewardWindow }}
+          >
+            <ReinforcerArt id={reinforcerId} size={s.boardRewardArt} />
           </View>
-        )}
+        </View>
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: s.segmentGap }}>
         {Array.from({ length: plates }, (_, i) => (

@@ -91,7 +91,7 @@ describe('награда «потом» — только выбранная и �
       blocksLeft: 1,
       isLast: true,
       reinforcerId: 'bubbles',
-      then: { kind: 'board', size: 5, earned: 2 },
+      then: { size: 5, earned: 2 },
     });
   });
   it('рутина обменяла жетоны (reinforcerStale) — прежней картинки нет', () => {
@@ -102,29 +102,31 @@ describe('награда «потом» — только выбранная и �
   });
 });
 
-describe('награда одна — только при гарантированном обмене (блокер ревью методиста)', () => {
+describe('«потом» — всегда доска с наградой; перерыв с запасным обменом — без полосы (финальная рецензия 34)', () => {
   const work: Queue = [...trials('t2', 5), end('t2')];
   const then = (queue: Queue, b: TokenBoard, reinforcerStale?: boolean) =>
     childSchedule({ queue, reinforcerId: 'bubbles', board: b, ...(reinforcerStale ? { reinforcerStale } : {}) }).then;
 
-  it('перерыв по расписанию и полная доска — обмен в конце перерыва гарантирован: награда', () => {
-    expect(then([brk(), ...work], board(5))).toEqual({ kind: 'reward' });
-    expect(then([brk(), ...work], board(1, 1))).toEqual({ kind: 'reward' });
+  it('перерыв по расписанию и полная доска — обмен в конце перерыва («перерыв → награда → задание»): полосы нет', () => {
+    expect(then([brk(), ...work], board(5))).toBeNull();
+    expect(then([brk(), ...work], board(1, 1))).toBeNull();
+    // счёт отрезков при этом остаётся — его читают проверки сквозного занятия
+    expect(childSchedule({ queue: [brk(), ...work], reinforcerId: 'bubbles', board: board(5) })).toMatchObject({ blocksLeft: 1, isLast: true });
   });
   it('доска не полна — обмен не обещан: доска с наградой, как есть', () => {
-    expect(then([brk(), ...work], board(4))).toEqual({ kind: 'board', size: 5, earned: 4 });
-    expect(then([brk(), ...work], board(0, 3))).toEqual({ kind: 'board', size: 3, earned: 0 });
+    expect(then([brk(), ...work], board(4))).toEqual({ size: 5, earned: 4 });
+    expect(then([brk(), ...work], board(0, 3))).toEqual({ size: 3, earned: 0 });
   });
   it('полная доска, но перерыв не по расписанию (карточка, отказ, предложение устройства) — обмена здесь нет: доска', () => {
-    expect(then([brk({ initiatedBy: 'child_card' }), ...work], board(5)).kind).toBe('board');
-    expect(then([brk({ initiatedBy: 'adult' }), ...work], board(5)).kind).toBe('board');
-    expect(then([brk({ initiatedBy: 'device_offer' }), ...work], board(5)).kind).toBe('board');
-    expect(then([brk({ cardTaken: true }), ...work], board(5)).kind).toBe('board');
+    expect(then([brk({ initiatedBy: 'child_card' }), ...work], board(5))).toEqual({ size: 5, earned: 5 });
+    expect(then([brk({ initiatedBy: 'adult' }), ...work], board(5))).toEqual({ size: 5, earned: 5 });
+    expect(then([brk({ initiatedBy: 'device_offer' }), ...work], board(5))).toEqual({ size: 5, earned: 5 });
+    expect(then([brk({ cardTaken: true }), ...work], board(5))).toEqual({ size: 5, earned: 5 });
   });
-  it('полная доска, подкрепитель устарел — обмена нет: не награда', () => {
-    expect(then([brk(), ...work], board(5), true).kind).toBe('board');
+  it('полная доска, подкрепитель устарел — обмена нет: доска', () => {
+    expect(then([brk(), ...work], board(5), true)).toEqual({ size: 5, earned: 5 });
   });
   it('заполнение «по плану» не предсказывается: впереди перерыв по расписанию, доска почти полна — доска', () => {
-    expect(then([...work, brk(), ...work], board(4))).toEqual({ kind: 'board', size: 5, earned: 4 });
+    expect(then([...work, brk(), ...work], board(4))).toEqual({ size: 5, earned: 4 });
   });
 });

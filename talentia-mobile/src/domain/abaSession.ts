@@ -27,6 +27,7 @@ import {
   MAINTENANCE_GAP,
   MASTERY,
   MIXED_BLOCK,
+  MIXED_NO_VERDICT_COUNTED,
   REFUSALS_TO_END,
   IOA_AFTER_FAILED_VERIFICATION,
   VERIFICATION_CHAIN_RUNS,
@@ -47,6 +48,7 @@ import {
   type AbaTargetState,
   type AbaTrial,
   type AbaTrialKind,
+  type MixedNoVerdictReason,
   type PromptLevel,
   type ScoringSource,
 } from '../types/aba';
@@ -129,7 +131,7 @@ import {
   type BreakCardStep,
 } from './abaBreakCard';
 import { arrange, baselineMembers, poolErrors, setHalves, updateSets, type IdentifySet } from './abaIdentifySet';
-import { mixedBlockId, mixedBlockTrials, mixedGroupDue, mixedVerdict, mixGroups } from './abaMixedBlock';
+import { mixedBlockId, mixedBlockTrials, mixedGroupDue, mixedVerdict, mixGroups, replacementSlot } from './abaMixedBlock';
 import {
   applyStageSession,
   EXCHANGE_ACCESS_MS,
@@ -1174,8 +1176,9 @@ function withObservingReplacement(state: AbaSessionState, trial: AbaTrial, r: { 
 
 /**
  * Промах наблюдения в смешанном блоке (ревью решения 43, 2026-11-18): первый по цели за сессию заменяется пробой той же
- * цели с другим экземпляром — в конце блока, перед его концом (как `withObservingReplacement` у базовой линии); второй
- * не заменяется, и у цели меньше 5 проб — блок без итога (`finishAbaSession` считает такие сессии).
+ * цели с другим экземпляром — как можно ближе к концу блока, но так, чтобы цель не шла больше двух раз подряд
+ * (`replacementSlot`, финальная рецензия): перед последними пробами или после пробы другой цели. Места нет — замены
+ * нет. Второй промах не заменяется; у цели меньше 5 проб — блок без итога (`finishAbaSession` считает такие сессии).
  */
 function replaceMixedObservingMiss(state: AbaSessionState, trial: AbaTrial, r: { rng: Rng }): AbaSessionState {
   const ids = state.mixedTargetIds;
@@ -1186,6 +1189,17 @@ function replaceMixedObservingMiss(state: AbaSessionState, trial: AbaTrial, r: {
   const blockId = mixedBlockId(ids.map((id) => ({ id })));
   const end = state.queue.findIndex((q) => q.kind === 'block_end' && q.targetId === blockId);
   if (end < 0) return state;
+  // показанное с начала блока (промах — последним) и оставшееся до его конца: все пробы, и чужие тоже рвут серию
+  const first = state.trials.findIndex((t) => t.kind === 'verification' && ids.includes(t.targetId));
+  const shown = state.trials.slice(first).map((t) => t.targetId);
+  const aheadAt = state.queue.slice(0, end).flatMap((q, i) => (q.kind === 'trial' ? [i] : []));
+  const slot = replacementSlot(
+    shown,
+    aheadAt.map((i) => (state.queue[i] as Extract<QueueItem, { kind: 'trial' }>).trial.targetId),
+    trial.targetId,
+  );
+  if (slot === null) return state;
+  const at = slot < aheadAt.length ? aheadAt[slot] : end;
   const pool = teachingExemplars(state.targets[trial.targetId]);
   const others = pool.filter((e) => e.id !== trial.exemplarId);
   const exemplarId = pick(others.length ? others : pool, r.rng).id;
@@ -1196,11 +1210,11 @@ function replaceMixedObservingMiss(state: AbaSessionState, trial: AbaTrial, r: {
       targetId: trial.targetId,
       exemplarId,
       replacesTrialId: trial.id,
-      // промах был последней пробой блока — замена идёт сразу, после нейтральной паузы
-      ...(end === 0 ? { pauseBeforeMs: NEUTRAL_PAUSE_MS } : {}),
+      // замена идёт сразу за промахом — после нейтральной паузы
+      ...(at === 0 ? { pauseBeforeMs: NEUTRAL_PAUSE_MS } : {}),
     },
   };
-  return { ...state, queue: [...state.queue.slice(0, end), replacement, ...state.queue.slice(end)] };
+  return { ...state, queue: [...state.queue.slice(0, at), replacement, ...state.queue.slice(at)] };
 }
 
 /** Промахи наблюдения в базовой линии цели за сессию. */
@@ -1427,8 +1441,8 @@ function breakExchanges(state: Pick<AbaSessionState, 'reinforcerStale'>, head: E
 
 /**
  * Перерыв в голове очереди кончится обменом (запасной обмен `finishBreak`): доска уже полна, перерыв по расписанию,
- * подкрепитель не устарел. Единственный случай, когда награда в точке обмена известна наверняка — заполнение доски
- * «по плану» не предсказуемо (жетоны зависят от ответов и расписания), его не считаем (решение методиста 34, ревью).
+ * подкрепитель не устарел. Порядок здесь «перерыв → награда → задание» — расписание ребёнку на таком перерыве не
+ * показывается (`childSchedule`, финальная рецензия решения 34).
  */
 export function breakEndsWithExchange(state: Pick<AbaSessionState, 'queue' | 'board' | 'reinforcerStale'>): boolean {
   const head = state.queue[0];
@@ -2904,7 +2918,7 @@ export function finishAbaSession(
     states[id] = s;
   }
 
-  mixedNoVerdict(state, states, changedIds, mixedJudged);
+  const mixedEvent = mixedNoVerdict(state, states, changedIds, mixedJudged, iso(endedAt));
 
   // возврат, решённый остановкой (№181), — от доски этого итога, в том числе живой после повтора по конфликту
   const base = state.returnedOnStop ? withReturned(state.board, { ...state.returnedOnStop, fromSessionId: state.sessionId }) : state.board;
@@ -2939,6 +2953,7 @@ export function finishAbaSession(
     ...(exchanged > 0 ? [exchangeEvent(base, endedAt, exchanged)] : []),
     ...(needsPairingCycle(state) ? [{ kind: 'pairing' as const, at }] : []),
     ...phaseEvents,
+    ...(mixedEvent ? [mixedEvent] : []),
     ...(tokenTraining.stage !== state.tokenTraining.stage
       ? [{ kind: 'board_stage' as const, at, from: state.tokenTraining.stage, to: tokenTraining.stage }]
       : []),
@@ -2987,33 +3002,65 @@ export function finishAbaSession(
 }
 
 /**
- * Смешанный блок без итога (ревью решения 43, 2026-11-18): блок начался, а по участнику, которого он должен был судить
- * (не пройден и сегодня не засчитан), итога нет — промахи наблюдения, прерывания, отказ. Две такие сессии подряд —
- * блок группы снимается с плана, всем участникам флаг `mixed_not_established`: решает специалист, обучение и
- * поддержание идут как обычно. Сессия с итогом по всем — счётчик снимается. Блок не начался — сессия нейтральна.
+ * Почему у участника смешанного блока нет итога (финальная рецензия решения 43). Второй промах наблюдения закрывает
+ * пробы цели сразу — это причина, даже если потом сессию остановил взрослый; дальше — причина конца сессии (конец по
+ * бездействию устройства — `device_inactivity`, а не отказ); сессия кончилась плановым порядком — промах без места
+ * для замены или прерванные пробы.
+ */
+function mixedNoVerdictReason(state: AbaSessionState, id: string): MixedNoVerdictReason {
+  if (state.unreliableTargetIds.includes(id)) return 'unreliable_measurement';
+  const own = state.trials.filter((t) => t.targetId === id && t.kind === 'verification');
+  const misses = own.filter((t) => isObservingMiss(t)).length;
+  if (misses > OBSERVING_MISS_REPLACED) return 'observing_miss';
+  if (endedByInactivity(state)) return 'device_inactivity';
+  const end = state.endReason ?? 'completed';
+  if (end !== 'completed') return end;
+  if (misses > 0) return 'observing_miss';
+  if (own.some((t) => t.response === 'interrupted')) return 'interrupted';
+  return 'completed';
+}
+
+/**
+ * Смешанный блок без итога (ревью решения 43, 2026-11-18; финальная рецензия): блок начался, а по участнику, которого
+ * он должен был судить (не пройден, сегодня не засчитан и не провален), итога нет. Причина пишется событием
+ * `measurement / mixed_no_verdict`. В счёт идут только причины со стороны ребёнка (`MIXED_NO_VERDICT_COUNTED`: отказ,
+ * лимит времени, прерывания, промахи наблюдения): две такие сессии подряд — блок группы снимается с плана, всем
+ * участникам флаг `mixed_not_established`, решает специалист; обучение и поддержание идут как обычно. Нейтральная
+ * причина (остановка взрослым, бездействие, сворачивание, ошибка) не считается и счёт не сбрасывает. Сессия с итогом
+ * по всем — счётчик снимается. Блок не начался — сессия нейтральна, события нет.
  */
 function mixedNoVerdict(
   state: AbaSessionState,
   states: Record<string, AbaTargetState>,
   changedIds: Set<string>,
   judged: ReadonlySet<string>,
-): void {
+  at: string,
+): AbaSessionEvent | null {
   const ids = state.mixedTargetIds ?? [];
-  if (!ids.length || !state.trials.some((t) => t.kind === 'verification' && ids.includes(t.targetId))) return;
+  if (!ids.length || !state.trials.some((t) => t.kind === 'verification' && ids.includes(t.targetId))) return null;
   const due = ids.filter((id) => {
     const check = state.states[id].mixedCheck;
-    return !check?.done && !(check?.days ?? []).includes(state.day);
+    return !check?.done && !(check?.days ?? []).includes(state.day) && check?.failedDay !== state.day;
   });
-  const missing = due.some((id) => !judged.has(id));
+  const missing = due.filter((id) => !judged.has(id));
+  const reasons = missing.map((id) => mixedNoVerdictReason(state, id));
+  const reason = reasons.find((x) => MIXED_NO_VERDICT_COUNTED.has(x)) ?? reasons[0];
+  const counted = reason !== undefined && MIXED_NO_VERDICT_COUNTED.has(reason);
   const n = Math.max(0, ...ids.map((id) => state.states[id].mixedCheck?.noVerdict ?? 0)) + 1;
+  const dropped = counted && n >= MIXED_BLOCK.noVerdictSessions;
   for (const id of ids) {
     const s = states[id];
     // провал вернул цель в обучение — её блок кончился, счётчика нет
     if (!s || !MASTERED_PHASES.has(s.phase)) continue;
     const { noVerdict: _n, ...check } = s.mixedCheck ?? { days: [] };
-    if (!missing) {
+    if (!missing.length) {
       if (s.mixedCheck?.noVerdict !== undefined) states[id] = { ...s, mixedCheck: check };
-    } else if (n >= MIXED_BLOCK.noVerdictSessions) {
+    } else if (!counted) {
+      // нейтрально: счёт как до сессии (зачёт или провал участника его не снимают)
+      const before = state.states[id].mixedCheck?.noVerdict;
+      if (s.mixedCheck?.noVerdict === before) continue;
+      states[id] = { ...s, mixedCheck: before === undefined ? check : { ...check, noVerdict: before } };
+    } else if (dropped) {
       states[id] = {
         ...s,
         mixedCheck: check,
@@ -3024,6 +3071,17 @@ function mixedNoVerdict(
     }
     changedIds.add(id);
   }
+  if (!missing.length || reason === undefined) return null;
+  return {
+    kind: 'measurement',
+    at,
+    targetId: missing[0],
+    action: 'mixed_no_verdict',
+    reason,
+    counted,
+    targetIds: missing,
+    ...(dropped ? { dropped: true as const } : {}),
+  };
 }
 
 /**

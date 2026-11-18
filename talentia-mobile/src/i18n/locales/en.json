@@ -25,7 +25,6 @@
     "offer": "Want a rest?",
     "trainingWaitHint": "Wait. No? Point to the button silently. No? Press it yourself",
     "schedule": {
-      "firstThen": "First the task, then the reward",
       "firstThenTokens": "First the task, then tokens toward the reward",
       "left": "Tasks left: {{count}}",
       "last": "Last task"
@@ -628,6 +627,7 @@
         "learning": "learning",
         "almost": "almost",
         "mixed_pending": "mastered separately, waiting for a mixed check",
+        "mixed_by_specialist": "mastered separately, a specialist will schedule the mixed check",
         "mastered": "mastered"
       },
       "lastSession": "Session {{day}}: trials — {{trials}}, on their own — {{independent}}",

@@ -35,28 +35,26 @@ export function blockSchedule(queue: Queue): BlockSchedule {
 
 /**
  * Что «потом» в расписании. Наверняка за работой следуют только жетоны: обмен бывает лишь на полной доске, цикл
- * сопряжения в конце — лишь в сессии без обучения и обменов. Поэтому «потом» — доска (заработанные и пустые
- * ячейки) с наградой при ней («жетоны → награда»). Награда одна — только когда обмен в ближайшей точке гарантирован
- * (`breakEndsWithExchange`); заполнение доски «по плану» не предсказуемо и не считается.
+ * сопряжения в конце — лишь в сессии без обучения и обменов. Поэтому «потом» всегда одно — доска (заработанные и
+ * пустые ячейки) с окном награды при ней («задание → жетоны → награда»; финальная рецензия методиста 34: варианта
+ * «одна награда» нет).
  */
-export type ScheduleThen =
-  | { kind: 'board'; size: number; earned: number }
-  | { kind: 'reward' };
+export type ScheduleThen = { size: number; earned: number };
 
-export type ChildScheduleView = BlockSchedule & { reinforcerId: string | null; then: ScheduleThen };
+/** `then: null` — полосы на этом перерыве нет (`childSchedule`). */
+export type ChildScheduleView = BlockSchedule & { reinforcerId: string | null; then: ScheduleThen | null };
 
 /**
  * Расписание для экрана. Выбор награды ещё впереди (рутина обменяла жетоны, пока сессия была свёрнута, —
  * `reinforcerStale`, или выбор из трёх стоит в очереди) — прежняя картинка была бы ложным обещанием: награды нет,
- * и расписание не показывается.
+ * и расписание не показывается. Перерыв кончится запасным обменом (`breakEndsWithExchange`: порядок там «перерыв →
+ * награда → задание») — «сначала задание, потом награда» был бы неверным порядком: полосы нет (`then: null`).
  */
 export function childSchedule(
   state: Pick<AbaSessionState, 'queue' | 'reinforcerId' | 'reinforcerStale' | 'board'>,
 ): ChildScheduleView {
   const rechoice = state.reinforcerStale === true || state.queue.some((q) => q.kind === 'reinforcer');
   const { size, earned } = state.board;
-  const then: ScheduleThen = breakEndsWithExchange(state)
-    ? { kind: 'reward' }
-    : { kind: 'board', size, earned: Math.max(0, Math.min(earned, size)) };
+  const then = breakEndsWithExchange(state) ? null : { size, earned: Math.max(0, Math.min(earned, size)) };
   return { ...blockSchedule(state.queue), reinforcerId: rechoice ? null : state.reinforcerId, then };
 }
