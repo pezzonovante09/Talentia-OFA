@@ -4,6 +4,7 @@
  */
 import { ABA_TARGETS } from '../../content/aba';
 import { mixGroups } from '../../domain/abaMixedBlock';
+import { deepEqual } from '../../domain/deepEqual';
 import { sanitizeSessionParams, type AbaSessionParams } from '../../domain/abaSessionParams';
 import { adultRewardChange, type SpecialistEvent } from '../../domain/abaSpecialist';
 import { initialTokenTraining, type TokenTrainingFlag } from '../../domain/abaTokenTraining';
@@ -24,7 +25,7 @@ export type SpecialistSessionNote =
 export type SpecialistView = {
   /** Действующие параметры (`{}` — по умолчанию полосы). */
   params: AbaSessionParams;
-  /** В хранилище параметры есть, но не годятся при полосе профиля: старт их пропускает. */
+  /** В хранилище есть поля, которые не годятся при полосе профиля: старт их пропускает (годные — берёт). */
   paramsIgnored: boolean;
   observers: AbaObserver[];
   pairingDone: boolean;
@@ -75,7 +76,8 @@ export async function loadSpecialistView(db: SqlDb, childId: string, band: AgeBa
   }
   return {
     params: params ?? {},
-    paramsIgnored: stored !== undefined && params === undefined && Object.keys(stored ?? {}).length > 0,
+    // снято хоть одно поле (по полю, `sanitizeSessionParams`): старт идёт без него — предупреждение на экране
+    paramsIgnored: stored !== undefined && Object.keys(stored ?? {}).length > 0 && !deepEqual(stored, params ?? {}),
     observers,
     pairingDone: token.pairingDone,
     trainedObserverId: observers.find((o) => o.trained)?.id ?? null,

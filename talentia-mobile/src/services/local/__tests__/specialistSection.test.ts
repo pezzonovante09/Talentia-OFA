@@ -181,6 +181,19 @@ describe('параметры сессии', () => {
     }
   });
 
+  it('негодное поле снимается по одному: годная «одна цель в обучении» доходит до старта, экран предупреждает', async () => {
+    const db = await paired();
+    await asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'abaSessionParams', { maxTeachingTargets: 1, responseWindowMs: { match: 2000 } }, AT));
+    const r = await loadAbaStart(db, KID, opts());
+    if (r.kind !== 'ready') throw new Error(r.reason);
+    expect(r.input.params).toEqual({ maxTeachingTargets: 1 });
+    expect(() => startAbaSession(r.input)).not.toThrow();
+    const view = await loadSpecialistView(db, KID, '7');
+    expect([view.params, view.paramsIgnored]).toEqual([{ maxTeachingTargets: 1 }, true]);
+    // запись по-прежнему только годных: setAbaSessionParams негодное не пишет
+    await expect(setAbaSessionParams(db, KID, { maxTeachingTargets: 1, responseWindowMs: { match: 2000 } }, '7', AT)).rejects.toBeInstanceOf(AbaSessionParamsInvalidError);
+  });
+
   it('очистка прогресса параметры и журнал оставляет (№189), отзыв и удаление ребёнка — стирают; другого ребёнка не трогают', async () => {
     const db = await granted(KID, OTHER);
     for (const kid of [KID, OTHER]) await setAbaSessionParams(db, kid, { maxTeachingTargets: 1 }, '7', AT);

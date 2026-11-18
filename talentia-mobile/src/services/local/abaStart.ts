@@ -287,8 +287,8 @@ export async function readAbaStartInput(
   const art = artFor(o.art);
   const block = abaBlockOf(await abaOverview(db, childId, art));
   if (block) return { kind: 'blocked', reason: block };
-  // параметры специалиста (раздел «Для специалиста»): негодные — пропускаются, сессия идёт по умолчанию полосы
-  // (`startAbaSession` на них бросил бы, и занятие не началось бы вовсе)
+  // параметры специалиста (раздел «Для специалиста»): негодное поле снимается, годные остаются — по ним и идёт сессия,
+  // остальное по умолчанию полосы (`startAbaSession` на негодных бросил бы, и занятие не началось бы вовсе)
   const params = sanitizeSessionParams(await loadChildState(db, childId, 'abaSessionParams'), o.band);
   // полоса параметров заменяет полосу профиля во всём сразу (№61): и цели, и доступ обмена — как доска сессии
   const band = params?.paramsBand ?? o.band;

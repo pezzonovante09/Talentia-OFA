@@ -66,36 +66,24 @@ const isWholeMs = (v: unknown): v is number => typeof v === 'number' && Number.i
 
 /**
  * Параметры из хранилища — ко входу старта (раздел «Для специалиста», методист 2026-11-18). `startAbaSession` на негодных
- * параметрах бросает, поэтому старт берёт их только отсюда: неверная форма (незнакомая полоса, формат, число слотов,
- * дробные мс, лишнее поле) или ошибка `sessionParamsErrors` при полосе профиля — `undefined`, сессия идёт по умолчанию
- * полосы. Пустые параметры — тоже `undefined`.
+ * параметрах бросает, поэтому старт берёт их только отсюда. Проверка **по полю** (финальная рецензия методиста): поле
+ * неверной формы (незнакомая полоса, формат, число слотов, дробные мс) или вне пределов при полосе профиля
+ * (`pruneSessionParams`) снимается — «по умолчанию полосы», — остальные годные поля остаются (например,
+ * `maxTeachingTargets: 1` при негодном окне). Незнакомые поля не читаются. Ничего годного — `undefined`.
  */
 export function sanitizeSessionParams(raw: unknown, profileBand: AgeBand): AbaSessionParams | undefined {
   if (!isObject(raw)) return undefined;
-  const known = new Set(['paramsBand', 'timeLimitMs', 'responseWindowMs', 'maxTeachingTargets']);
-  if (Object.keys(raw).some((k) => !known.has(k))) return undefined;
   const out: AbaSessionParams = {};
-  if (raw.paramsBand !== undefined) {
-    if (!BANDS.includes(raw.paramsBand as AgeBand)) return undefined;
-    out.paramsBand = raw.paramsBand as AgeBand;
-  }
-  if (raw.timeLimitMs !== undefined) {
-    if (!isWholeMs(raw.timeLimitMs)) return undefined;
-    out.timeLimitMs = raw.timeLimitMs;
-  }
-  if (raw.maxTeachingTargets !== undefined) {
-    if (raw.maxTeachingTargets !== 1 && raw.maxTeachingTargets !== 2) return undefined;
-    out.maxTeachingTargets = raw.maxTeachingTargets;
-  }
-  if (raw.responseWindowMs !== undefined) {
-    if (!isObject(raw.responseWindowMs)) return undefined;
+  if (BANDS.includes(raw.paramsBand as AgeBand)) out.paramsBand = raw.paramsBand as AgeBand;
+  if (isWholeMs(raw.timeLimitMs)) out.timeLimitMs = raw.timeLimitMs;
+  if (raw.maxTeachingTargets === 1 || raw.maxTeachingTargets === 2) out.maxTeachingTargets = raw.maxTeachingTargets;
+  if (isObject(raw.responseWindowMs)) {
     const windows: Partial<Record<AbaFormat, number>> = {};
     for (const [format, ms] of Object.entries(raw.responseWindowMs)) {
-      if (!Object.prototype.hasOwnProperty.call(RESPONSE_WINDOW_MS, format) || !isWholeMs(ms)) return undefined;
-      windows[format as AbaFormat] = ms;
+      if (Object.prototype.hasOwnProperty.call(RESPONSE_WINDOW_MS, format) && isWholeMs(ms)) windows[format as AbaFormat] = ms;
     }
     if (Object.keys(windows).length) out.responseWindowMs = windows;
   }
-  if (!Object.keys(out).length) return undefined;
-  return sessionParamsErrors(out, profileBand).length ? undefined : out;
+  const pruned = pruneSessionParams(out, profileBand);
+  return Object.keys(pruned).length ? pruned : undefined;
 }

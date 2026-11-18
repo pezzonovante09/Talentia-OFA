@@ -6,7 +6,7 @@
  */
 import type { AbaResponse, AbaTargetState } from '../../types/aba';
 import { assignMixedCheck, paramsChanges } from '../abaSpecialist';
-import { pruneSessionParams, sanitizeSessionParams } from '../abaSessionParams';
+import { pruneSessionParams, sanitizeSessionParams, sessionParamsErrors } from '../abaSessionParams';
 import { startAbaSession, type AbaSessionState, type StartInput } from '../abaSession';
 import { finishSession, trial } from './abaFixtures';
 import { acq, BASE_MS, DAY, masteredState, POOL, tgt, trained } from './abaSessionDriver';
@@ -143,7 +143,7 @@ describe('«Назначить проверку вперемешку»', () => {
 });
 
 describe('параметры специалиста: чтение из хранилища и события', () => {
-  it('sanitizeSessionParams: годные — как есть, негодные по форме или пределам — undefined', () => {
+  it('sanitizeSessionParams: годные — как есть; негодное поле снимается, годные остаются; ничего годного — undefined', () => {
     expect(sanitizeSessionParams({ paramsBand: '8', timeLimitMs: 600_000, responseWindowMs: { match: 7000 }, maxTeachingTargets: 1 }, '7')).toEqual({
       paramsBand: '8',
       timeLimitMs: 600_000,
@@ -157,6 +157,23 @@ describe('параметры специалиста: чтение из хран�
     expect(sanitizeSessionParams({ responseWindowMs: { match: 11_000 } }, '7')).toBeUndefined();
     expect(sanitizeSessionParams({ extra: 1 }, '7')).toBeUndefined();
     expect(sanitizeSessionParams([], '7')).toBeUndefined();
+    // по полю: негодное окно или лимит не уносят «одну цель в обучении»
+    expect(sanitizeSessionParams({ maxTeachingTargets: 1, responseWindowMs: { match: 2000 } }, '7')).toEqual({ maxTeachingTargets: 1 });
+    expect(sanitizeSessionParams({ maxTeachingTargets: 1, timeLimitMs: 18 * 60_000 }, '5-6')).toEqual({ maxTeachingTargets: 1 });
+    expect(sanitizeSessionParams({ maxTeachingTargets: 3, timeLimitMs: 600_000, paramsBand: '11', extra: 1 }, '7')).toEqual({ timeLimitMs: 600_000 });
+    expect(sanitizeSessionParams({ responseWindowMs: { match: 7000, nope: 7000, identify: 7.5 } }, '7')).toEqual({ responseWindowMs: { match: 7000 } });
+  });
+
+  it('sanitizeSessionParams: итог годится для любой полосы профиля — старт не бросит', () => {
+    const raws: unknown[] = [
+      { paramsBand: '5-6', timeLimitMs: 20 * 60_000, responseWindowMs: { match: 3000 }, maxTeachingTargets: 1 },
+      { timeLimitMs: 16 * 60_000, responseWindowMs: { match: 6000, identify: 10_000 } },
+      { timeLimitMs: 60_000, responseWindowMs: { match: 12_000 }, maxTeachingTargets: 2 },
+      { paramsBand: '9-10', timeLimitMs: 15 * 60_000 },
+    ];
+    for (const band of ['5-6', '7', '8', '9-10'] as const) {
+      for (const raw of raws) expect(sessionParamsErrors(sanitizeSessionParams(raw, band), band)).toEqual([]);
+    }
   });
 
   it('pruneSessionParams: смена полосы снимает то, что при ней вне пределов', () => {
