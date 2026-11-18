@@ -952,6 +952,7 @@
         "noChanges": "Изменений пока не было.",
         "changeLine": "{{day}} · {{field}}: было {{from}}, стало {{to}}",
         "field": {
+          "band": "полоса профиля",
           "paramsBand": "полоса параметров",
           "timeLimitMs": "длительность, мс",
           "responseWindowMs": "время на ответ, мс",
@@ -961,6 +962,12 @@
           "pairingDone": "знакомство с жетонами",
           "flag": "сигнал"
         },
+        "touchFlag": {
+          "sample_touch_not_acquired": "шаг «коснись картинки» не пройден за три занятия",
+          "assent_concern": "беспокойство по согласию на шаге «коснись картинки»: занятие часто прерывается"
+        },
+        "assentReviewedTouch": "Беспокойство по согласию просмотрено: шаг «коснись картинки»",
+        "changeLineParent": "{{line}} (родитель)",
         "valueOn": "да",
         "valueOff": "нет",
         "valueDefault": "обычно"

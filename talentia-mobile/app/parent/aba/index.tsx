@@ -305,7 +305,8 @@ export default function AbaParentScreen() {
       const me: AbaObserver = { id: same?.id ?? newAbaId(), role: who.role, trained: who.trained };
       observers = [me, ...prevObservers.filter((o) => o.id !== me.id)];
       primary = me.id;
-      await setAbaObservers(db, profile.childId, observers, new Date().toISOString());
+      // «обучен» сменился через «Кто ведёт» — событие журнала условий с ролью «родитель» (`observerTrainedChanges`)
+      await setAbaObservers(db, profile.childId, observers, new Date().toISOString(), 'parent');
     }
     useAbaRun.getState().set({ config: mode, observers, primaryObserverId: primary });
     await goChild(block === 'pairing_needed' ? 'pairing' : 'session');

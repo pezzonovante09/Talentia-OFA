@@ -5,6 +5,10 @@
  */
 import ChildSettingsScreen from '../profile/[childId]';
 import { createLocalAccount } from '../../../src/services/local/account';
+import { grantAbaProcessing } from '../../../src/services/local/abaConsent';
+import { loadChildState, saveChildState } from '../../../src/services/local/childState';
+import { abaSpecialistEventsOf } from '../../../src/services/local/commit';
+import { asAbaWriter, memoryDb } from '../../../src/services/local/__tests__/nodeSql';
 import { newProfile } from '../../../src/services/local/profiles';
 import { sha256 } from '../../../src/services/digest';
 import { randomBytes } from '../../../src/services/random';
@@ -188,5 +192,33 @@ describe('настройки ребёнка', () => {
     expect(router.back).toHaveBeenCalled();
     await fireEvent.press(screen.getByTestId('settings-done'));
     expect(router.dismissAll).toHaveBeenCalled();
+  });
+});
+
+describe('настройки ребёнка: условия ABA — в журнал с ролью «родитель»', () => {
+  it('смена полосы снимает параметры специалиста вне её пределов и пишет событие band; «Награда от взрослого» — adultReward', async () => {
+    const db = await memoryDb();
+    const at = new Date(Date.now() - 60_000).toISOString();
+    await grantAbaProcessing(db, { childId: KID, accountId: 'acc', lang: 'ru', at, randomBytes });
+    await asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'abaSessionParams', { timeLimitMs: 15 * 60_000, maxTeachingTargets: 1 }, at));
+    const kid = { ...profile, band: '9-10' as const };
+    useAccount.setState({ db, profiles: [kid] });
+    useGate.getState().open();
+    await render();
+    await fireEvent.press(screen.getByTestId('profile-band-5-6'));
+    expect(updateProfile).toHaveBeenCalledWith({ ...kid, band: '5-6' });
+    await waitFor(async () => expect((await abaSpecialistEventsOf(db, KID)).map((e) => [e.role, e.field, e.from, e.to])).toEqual([['parent', 'band', '9-10', '5-6']]));
+    // 15 мин при 5–6 — в пределах (3–15): параметры остались
+    expect(await loadChildState(db, KID, 'abaSessionParams')).toEqual({ timeLimitMs: 15 * 60_000, maxTeachingTargets: 1 });
+  });
+
+  it('без согласия на ABA — только профиль, без ошибки', async () => {
+    const db = await memoryDb();
+    useAccount.setState({ db });
+    useGate.getState().open();
+    await render();
+    await fireEvent.press(screen.getByTestId('profile-band-9-10'));
+    expect(updateProfile).toHaveBeenCalledWith({ ...profile, band: '9-10' });
+    await waitFor(async () => expect(await abaSpecialistEventsOf(db, KID)).toEqual([]));
   });
 });

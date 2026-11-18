@@ -3,6 +3,7 @@ import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { saveProfileAsParent } from '../../../src/services/local/abaSpecialist';
 import { useAccount } from '../../../src/state/account';
 import { useChildSession } from '../../../src/state/childSession';
 import { useGate } from '../../../src/state/gate';
@@ -17,13 +18,20 @@ export default function ChildSettingsScreen() {
   const { childId } = useLocalSearchParams<{ childId: string }>();
   const profile = useAccount((s) => s.profiles.find((p) => p.childId === childId));
   const updateProfile = useAccount((s) => s.updateProfile);
+  const db = useAccount((s) => s.db);
   const can = useGate((s) => s.can);
   const [pendingBand, setPendingBand] = useState<AgeBand | null>(null);
 
   if (!profile) return <Redirect href="/parent" />;
   const draft: ProfileDraft = profile;
   const save = (d: ProfileDraft) => {
-    void updateProfile({ ...profile, ...d });
+    const next = { ...profile, ...d };
+    // полоса и «Награда от взрослого» — условия ABA: событие журнала с ролью «родитель», полоса ещё и снимает параметры
+    // специалиста вне её пределов (финальная рецензия методиста 2026-11-18); без данных ABA — только профиль
+    const write = db ? saveProfileAsParent(db, profile, next, updateProfile, new Date().toISOString()) : updateProfile(next);
+    void write.catch((e: unknown) => {
+      if (__DEV__) console.warn('profile-save', e);
+    });
     // язык — сразу и в идущую сессию этого ребёнка: карта под разделом взрослого переходит на него (№190)
     const session = useChildSession.getState();
     if (session.mode !== 'none' && session.childId === profile.childId && session.settings.interfaceLang !== d.interfaceLang) {

@@ -9,8 +9,13 @@
  *
  * Событие журнала — без имён и uuid взрослых: роль `specialist` **заявленная** (телефон семьи, PIN родителя — кто держит
  * телефон, приложение не проверяет), поле, было, стало, момент. По ним отчёт рисует линию смены условий.
+ *
+ * Те же условия меняются и вне раздела (финальная рецензия методиста 2026-11-18) — тем же событием с ролью `parent`,
+ * тоже заявленной: «обучен» через «Кто ведёт», «Награда от взрослого» в профиле, «Сопряжение подтверждено» в карточке
+ * ABA, смена полосы профиля (`band`, с параметрами, которые при новой полосе сняты).
  */
 import type { AbaFormat, AbaObserver, AbaTarget, AbaTargetState } from '../types/aba';
+import type { AgeBand } from '../types/task';
 import type { AbaSessionParams } from './abaSessionParams';
 import { mixGroups } from './abaMixedBlock';
 import type { TokenTrainingFlag, TokenTrainingState } from './abaTokenTraining';
@@ -19,6 +24,7 @@ type Value = string | number | boolean | null;
 
 /** Что изменено. `responseWindowMs.<формат>` — окно одного формата; `flag.<флаг>` — снятый флаг. */
 export type SpecialistField =
+  | 'band'
   | 'paramsBand'
   | 'timeLimitMs'
   | `responseWindowMs.${AbaFormat}`
@@ -32,9 +38,12 @@ export type SpecialistField =
   | 'flag.pairing_keeps_breaking'
   | 'flag.ioa_low';
 
+/** Кто изменил: раздел «Для специалиста» — `specialist`; профиль, «Кто ведёт», карточка ABA — `parent`. Обе заявленные. */
+export type SpecialistRole = 'specialist' | 'parent';
+
 export type SpecialistEvent = {
   /** Роль заявленная, не проверенная: `claimed: true` всегда. */
-  role: 'specialist';
+  role: SpecialistRole;
   claimed: true;
   field: SpecialistField;
   from: Value;
@@ -44,10 +53,16 @@ export type SpecialistEvent = {
   targetIds?: string[];
   /** Роль наблюдателя для `observerTrained` — без uuid. */
   observerRole?: AbaObserver['role'];
+  /** `band`: параметры специалиста, снятые при новой полосе (`pruneSessionParams`), — имена полей, как в `field`. */
+  removed?: SpecialistField[];
+  /** Флаг шага «коснись картинки» (`flag.assent_concern` у шага, а не у цели). */
+  step?: 'sample_touch';
 };
 
-const event = (field: SpecialistField, from: Value, to: Value, at: string, extra: Pick<SpecialistEvent, 'targetIds' | 'observerRole'> = {}): SpecialistEvent => ({
-  role: 'specialist',
+type Extra = Pick<SpecialistEvent, 'targetIds' | 'observerRole' | 'removed' | 'step'> & { role?: SpecialistRole };
+
+const event = (field: SpecialistField, from: Value, to: Value, at: string, { role = 'specialist', ...extra }: Extra = {}): SpecialistEvent => ({
+  role,
   claimed: true,
   field,
   from,
@@ -57,24 +72,46 @@ const event = (field: SpecialistField, from: Value, to: Value, at: string, extra
 });
 
 /** События смены параметров: по одному на изменённое поле; ничего не изменилось — пусто. `null` — «по умолчанию полосы». */
-export function paramsChanges(before: AbaSessionParams | undefined, after: AbaSessionParams, at: string): SpecialistEvent[] {
+export function paramsChanges(before: AbaSessionParams | undefined, after: AbaSessionParams, at: string, role: SpecialistRole = 'specialist'): SpecialistEvent[] {
   const b = before ?? {};
   const out: SpecialistEvent[] = [];
   for (const field of ['paramsBand', 'timeLimitMs', 'maxTeachingTargets'] as const) {
     const from = b[field] ?? null;
     const to = after[field] ?? null;
-    if (from !== to) out.push(event(field, from, to, at));
+    if (from !== to) out.push(event(field, from, to, at, { role }));
   }
   const formats = new Set([...Object.keys(b.responseWindowMs ?? {}), ...Object.keys(after.responseWindowMs ?? {})]) as Set<AbaFormat>;
   for (const f of [...formats].sort()) {
     const from = b.responseWindowMs?.[f] ?? null;
     const to = after.responseWindowMs?.[f] ?? null;
-    if (from !== to) out.push(event(`responseWindowMs.${f}`, from, to, at));
+    if (from !== to) out.push(event(`responseWindowMs.${f}`, from, to, at, { role }));
   }
   return out;
 }
 
-export const adultRewardChange = (from: boolean, to: boolean, at: string): SpecialistEvent[] => (from === to ? [] : [event('adultReward', from, to, at)]);
+export const adultRewardChange = (from: boolean, to: boolean, at: string, role: SpecialistRole = 'specialist'): SpecialistEvent[] =>
+  from === to ? [] : [event('adultReward', from, to, at, { role })];
+
+/**
+ * «Обучен» вне раздела — «Кто ведёт» перед занятием (`parent`): по событию на наблюдателя, у которого отметка сменилась;
+ * новый наблюдатель — как был «не обучен». Без uuid — только роль наблюдателя.
+ */
+export function observerTrainedChanges(before: readonly AbaObserver[], after: readonly AbaObserver[], at: string, role: SpecialistRole): SpecialistEvent[] {
+  return after.flatMap((o) => {
+    const from = before.find((x) => x.id === o.id)?.trained ?? false;
+    return from === o.trained ? [] : [event('observerTrained', from, o.trained, at, { role, observerRole: o.role })];
+  });
+}
+
+/**
+ * Смена полосы профиля (`parent`): событие `band` со снятыми полями и по событию на каждое снятое поле
+ * (`paramsChanges`), чтобы линия смены условий у параметра была и здесь. Полоса та же — пусто.
+ */
+export function bandChange(from: AgeBand, to: AgeBand, before: AbaSessionParams, after: AbaSessionParams, at: string): SpecialistEvent[] {
+  if (from === to) return [];
+  const removed = paramsChanges(before, after, at, 'parent');
+  return [event('band', from, to, at, { role: 'parent', ...(removed.length ? { removed: removed.map((e) => e.field) } : {}) }), ...removed];
+}
 
 /** «Обучен» у наблюдателя: новый список и событие без uuid; наблюдателя нет или значение то же — `null`. */
 export function setObserverTrained(
@@ -123,7 +160,11 @@ export function reviewTokenFlag(t: TokenTrainingState, flag: Exclude<TokenTraini
   return t.flags.includes(flag) ? { ...t, flags: t.flags.filter((f) => f !== flag) } : null;
 }
 
-export const flagReviewed = (flag: 'assent_concern' | 'mixed_not_established' | 'token_training_stalled' | 'pairing_keeps_breaking' | 'ioa_low', at: string, targetIds?: string[]): SpecialistEvent =>
-  event(`flag.${flag}`, true, false, at, targetIds ? { targetIds } : {});
+export const flagReviewed = (
+  flag: 'assent_concern' | 'mixed_not_established' | 'token_training_stalled' | 'pairing_keeps_breaking' | 'ioa_low',
+  at: string,
+  targetIds?: string[],
+  step?: 'sample_touch',
+): SpecialistEvent => event(`flag.${flag}`, true, false, at, { ...(targetIds ? { targetIds } : {}), ...(step ? { step } : {}) });
 
-export const pairingConfirmedEvent = (at: string): SpecialistEvent => event('pairingDone', false, true, at);
+export const pairingConfirmedEvent = (at: string, role: SpecialistRole = 'specialist'): SpecialistEvent => event('pairingDone', false, true, at, { role });

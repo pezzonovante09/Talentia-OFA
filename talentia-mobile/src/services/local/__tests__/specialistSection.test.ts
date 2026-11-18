@@ -12,7 +12,8 @@ import { initialTokenTraining } from '../../../domain/abaTokenTraining';
 import type { AbaTargetState } from '../../../types/aba';
 import { grantAbaProcessing } from '../abaConsent';
 import { AbaPausedError } from '../abaLog';
-import { loadSpecialistView, setAdultRewardAsSpecialist } from '../abaSpecialist';
+import { initialSampleTouch } from '../../../domain/abaSampleTouch';
+import { loadSpecialistView, saveProfileAsParent, setAdultRewardAsSpecialist } from '../abaSpecialist';
 import { DEV_PLACEHOLDER_ART, loadAbaStart } from '../abaStart';
 import { loadChildState, saveChildState } from '../childState';
 import {
@@ -20,9 +21,12 @@ import {
   AbaSessionParamsInvalidError,
   abaSpecialistEventsOf,
   assignAbaMixedCheck,
+  confirmAbaPairing,
   confirmAbaPairingAsSpecialist,
   reviewAbaAssentConcern,
   reviewAbaFlag,
+  reviewAbaSampleTouchAssentConcern,
+  setAbaObservers,
   setAbaObserverTrained,
   setAbaPaused,
   setAbaSessionParams,
@@ -297,6 +301,106 @@ describe('действия специалиста: состояние и соб�
       ['adultReward', true, false],
       ['adultReward', false, true],
     ]);
+  });
+});
+
+describe('изменения условий вне раздела — роль parent (финальная рецензия методиста 2026-11-18)', () => {
+  const events = async (db: SqlDb) => (await abaSpecialistEventsOf(db, KID)).map(({ at: _a, claimed: _c, ...e }) => e);
+  const profile = newProfile({ childId: KID, band: '7', interfaceLang: 'ru', createdAt: AT });
+  const saver = () => {
+    const saved: unknown[] = [];
+    return { saved, save: async (p: unknown) => void saved.push(p) };
+  };
+
+  it('«Кто ведёт»: смена «обучен» — событие parent без uuid; новый наблюдатель — как был «не обучен»; без роли — без события', async () => {
+    const db = await granted();
+    await setAbaObservers(db, KID, [{ id: 'obs-1', role: 'parent', trained: false }], AT, 'parent');
+    expect(await events(db)).toEqual([]);
+    await setAbaObservers(db, KID, [{ id: 'obs-1', role: 'parent', trained: true }], AT, 'parent');
+    await setAbaObservers(db, KID, [{ id: 'obs-2', role: 'specialist', trained: true }, { id: 'obs-1', role: 'parent', trained: true }], AT, 'parent');
+    await setAbaObservers(db, KID, [{ id: 'obs-1', role: 'parent', trained: false }], AT);
+    expect(await events(db)).toEqual([
+      { role: 'parent', field: 'observerTrained', from: false, to: true, observerRole: 'parent' },
+      { role: 'parent', field: 'observerTrained', from: false, to: true, observerRole: 'specialist' },
+    ]);
+    expect(JSON.stringify(await abaSpecialistEventsOf(db, KID))).not.toMatch(/obs-/);
+  });
+
+  it('«Сопряжение подтверждено» в карточке ABA — событие parent одной транзакцией; повтор — ничего', async () => {
+    const db = await granted();
+    await setAbaObservers(db, KID, [{ id: 'obs-1', role: 'parent', trained: true }], AT);
+    await confirmAbaPairing(db, KID, { observerId: 'obs-1', byRole: 'owner', at: AT });
+    await confirmAbaPairing(db, KID, { observerId: 'obs-1', byRole: 'owner', at: AT });
+    expect(await events(db)).toEqual([{ role: 'parent', field: 'pairingDone', from: false, to: true }]);
+    expect((await loadChildState(db, KID, 'tokenTraining'))?.pairingDone).toBe(true);
+  });
+
+  it('смена полосы профиля: параметры вне пределов новой полосы сняты, событие band со снятыми полями и по полю', async () => {
+    const db = await granted();
+    await setAbaSessionParams(db, KID, { timeLimitMs: 18 * 60_000, maxTeachingTargets: 1 }, '7', AT);
+    const before = await countOf(db, 'aba_specialist_events');
+    const { saved, save } = saver();
+    expect(await saveProfileAsParent(db, profile, { ...profile, band: '5-6' }, save, AT)).toBe(true);
+    expect(saved).toEqual([{ ...profile, band: '5-6' }]);
+    // 5–6: лимит до 15 мин — 18 мин сняты, «одна цель» осталась
+    expect(await loadChildState(db, KID, 'abaSessionParams')).toEqual({ maxTeachingTargets: 1 });
+    expect((await events(db)).slice(before)).toEqual([
+      { role: 'parent', field: 'band', from: '7', to: '5-6', removed: ['timeLimitMs'] },
+      { role: 'parent', field: 'timeLimitMs', from: 18 * 60_000, to: null },
+    ]);
+  });
+
+  it('смена полосы без параметров специалиста — событие band без removed, параметров не появляется', async () => {
+    const db = await granted();
+    const { save } = saver();
+    await saveProfileAsParent(db, profile, { ...profile, band: '8' }, save, AT);
+    expect(await events(db)).toEqual([{ role: 'parent', field: 'band', from: '7', to: '8' }]);
+    expect(await loadChildState(db, KID, 'abaSessionParams')).toBeUndefined();
+  });
+
+  it('«Награда от взрослого» в профиле — событие parent; то же значение — ничего', async () => {
+    const db = await granted();
+    const { save } = saver();
+    expect(await saveProfileAsParent(db, profile, { ...profile, adultReward: true }, save, AT)).toBe(true);
+    expect(await saveProfileAsParent(db, { ...profile, adultReward: true }, { ...profile, adultReward: true, sessionMinutes: 20 }, save, AT)).toBe(false);
+    expect(await events(db)).toEqual([{ role: 'parent', field: 'adultReward', from: false, to: true }]);
+  });
+
+  it('без согласия на ABA и на паузе — профиль пишется, события нет, ошибки нет', async () => {
+    const plain = await memoryDb();
+    const a = saver();
+    expect(await saveProfileAsParent(plain, profile, { ...profile, band: '5-6', adultReward: true }, a.save, AT)).toBe(false);
+    expect(a.saved).toHaveLength(1);
+    const db = await granted();
+    await setAbaPaused(db, KID, true, AT);
+    const b = saver();
+    expect(await saveProfileAsParent(db, profile, { ...profile, band: '5-6', adultReward: true }, b.save, AT)).toBe(false);
+    expect([b.saved.length, await countOf(db, 'aba_specialist_events')]).toEqual([1, 0]);
+  });
+
+  it('профиль не записался — события нет, ошибка наружу', async () => {
+    const db = await granted();
+    await expect(
+      saveProfileAsParent(db, profile, { ...profile, band: '5-6' }, async () => {
+        throw new Error('диск');
+      }, AT),
+    ).rejects.toThrow('диск');
+    expect(await countOf(db, 'aba_specialist_events')).toBe(0);
+  });
+});
+
+describe('шаг «коснись картинки» в разделе специалиста', () => {
+  it('флаги шага видны; assent_concern снимается отметкой с событием step; повтор — ничего', async () => {
+    const db = await granted();
+    const st = { ...initialSampleTouch(), flags: ['sample_touch_not_acquired' as const, 'assent_concern' as const], assentSessionsInRow: 2 };
+    await asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'sampleTouch', st, AT));
+    expect((await loadSpecialistView(db, KID, '7')).sampleTouchFlags).toEqual(['sample_touch_not_acquired', 'assent_concern']);
+    expect(await reviewAbaSampleTouchAssentConcern(db, KID, AT)).toBe(true);
+    expect(await loadChildState(db, KID, 'sampleTouch')).toMatchObject({ flags: ['sample_touch_not_acquired'], assentSessionsInRow: 0, assentConcernReviewed: { role: 'specialist', at: AT } });
+    expect((await abaSpecialistEventsOf(db, KID)).at(-1)).toEqual({ role: 'specialist', claimed: true, field: 'flag.assent_concern', from: true, to: false, at: AT, step: 'sample_touch' });
+    expect(await reviewAbaSampleTouchAssentConcern(db, KID, AT)).toBe(false);
+    const out = await exportForSpecialist(db, KID, AT);
+    expect(out.abaSpecialistEvents.at(-1)).toMatchObject({ field: 'flag.assent_concern', step: 'sample_touch' });
   });
 });
 
