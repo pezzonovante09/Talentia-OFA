@@ -12,7 +12,7 @@ import { initialTokenTraining } from '../../../domain/abaTokenTraining';
 import type { AbaTargetState } from '../../../types/aba';
 import { grantAbaProcessing } from '../abaConsent';
 import { AbaPausedError } from '../abaLog';
-import { setAdultRewardAsSpecialist } from '../abaSpecialist';
+import { loadSpecialistView, setAdultRewardAsSpecialist } from '../abaSpecialist';
 import { DEV_PLACEHOLDER_ART, loadAbaStart } from '../abaStart';
 import { loadChildState, saveChildState } from '../childState';
 import {
@@ -119,6 +119,15 @@ describe('параметры сессии', () => {
     await expect(setAbaSessionParams(db, KID, { responseWindowMs: { match: 3000 } }, '7', AT)).rejects.toBeInstanceOf(AbaSessionParamsInvalidError);
     await expect(setAbaSessionParams(db, KID, { timeLimitMs: 18 * 60_000 }, '5-6', AT)).rejects.toBeInstanceOf(AbaSessionParamsInvalidError);
     expect([await loadChildState(db, KID, 'abaSessionParams'), await countOf(db, 'aba_specialist_events')]).toEqual([undefined, 0]);
+  });
+
+  it('негодные сохранённые параметры снимаются выбором «по умолчанию» — без события: условия занятий не менялись', async () => {
+    const db = await granted();
+    await asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'abaSessionParams', { responseWindowMs: { match: 2000 } }, AT));
+    expect((await loadSpecialistView(db, KID, '7')).paramsIgnored).toBe(true);
+    expect(await setAbaSessionParams(db, KID, {}, '7', AT)).toEqual([]);
+    expect([await loadChildState(db, KID, 'abaSessionParams'), await countOf(db, 'aba_specialist_events')]).toEqual([{}, 0]);
+    expect((await loadSpecialistView(db, KID, '7')).paramsIgnored).toBe(false);
   });
 
   it('на паузе изменения не пишутся (withAbaWrite)', async () => {

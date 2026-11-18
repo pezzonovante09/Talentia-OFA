@@ -13,7 +13,9 @@ import { createLocalAccount } from '../../../src/services/local/account';
 import { grantAbaProcessing } from '../../../src/services/local/abaConsent';
 import { markAbaIntroSeen } from '../../../src/services/local/abaIntro';
 import { loadChildState, saveChildState } from '../../../src/services/local/childState';
-import { abaSpecialistEventsOf } from '../../../src/services/local/commit';
+import { appendSession } from '../../../src/services/local/abaLog';
+import { abaSpecialistEventsOf, setAbaObserverTrained } from '../../../src/services/local/commit';
+import type { AbaSession } from '../../../src/types/aba';
 import { asAbaWriter, memoryDb } from '../../../src/services/local/__tests__/nodeSql';
 import { newProfile } from '../../../src/services/local/profiles';
 import type { SqlDb } from '../../../src/services/local/sql';
@@ -33,18 +35,24 @@ import { fireEvent, renderWithProviders, screen, waitFor } from '../../../src/te
 jest.mock('expo-router', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn(), dismissAll: jest.fn(), canGoBack: () => true };
+  /** Последний колбэк фокуса: «вернулись на экран» — вызвать его снова, как навигатор при возврате. */
+  const focus: { current: (() => void) | null } = { current: null };
   return {
     __router: router,
+    __focus: focus,
     useRouter: () => router,
     useLocalSearchParams: () => ({}),
-    useFocusEffect: (cb: () => void) => React.useEffect(() => cb(), [cb]),
+    useFocusEffect: (cb: () => void) => {
+      focus.current = cb;
+      React.useEffect(() => cb(), [cb]);
+    },
   };
 });
 jest.mock('../../../src/services/local/expoSqlite', () => ({ openLocalDb: jest.fn(), deleteLocalDb: jest.fn(async () => undefined) }));
 jest.mock('../../../src/services/local/shareSpecialistExport', () => ({ ABA_EXPORT_FILE_ENABLED: true, shareSpecialistExport: jest.fn(async () => 'shared') }));
 jest.mock('../../../src/services/local/buildInfo', () => ({ buildTime: () => null }));
 
-const { __router: router } = jest.requireMock('expo-router') as { __router: { push: jest.Mock } };
+const { __router: router, __focus: focus } = jest.requireMock('expo-router') as { __router: { push: jest.Mock; replace: jest.Mock }; __focus: { current: (() => void) | null } };
 
 const PIN = '295173';
 const KID = '00000000-0000-4000-8000-0000000000a1';
@@ -95,6 +103,23 @@ describe('вход в раздел «Для специалиста»', () => {
     await waitFor(() => expect(router.push).toHaveBeenCalledWith('/parent/aba/specialist'));
   });
 
+  it('«обучен», отмеченный специалистом, не затирается следующим «Начать» (предвыбор «Кто ведёт» перечитывается)', async () => {
+    useGate.getState().open();
+    await write('tokenTraining', { ...initialTokenTraining(), pairingDone: true });
+    await write('abaObservers', [{ id: 'obs-1', role: 'specialist', trained: false }]);
+    await wrap(<AbaParentScreen />);
+    await waitFor(() => expect(screen.getByTestId('aba-who-row-value')).toHaveTextContent(ru.abaSession.role.specialist));
+    await fireEvent.press(screen.getByTestId('aba-specialist-row'));
+    // на экране специалиста: «обучен»
+    await setAbaObserverTrained(db, KID, 'obs-1', true, iso());
+    // назад — фокус перечитывает
+    focus.current?.();
+    await waitFor(() => expect(screen.getByTestId('aba-who-row-value')).not.toHaveTextContent(new RegExp(`^${ru.abaSession.role.specialist}$`)));
+    await fireEvent.press(screen.getByTestId('aba-start'));
+    await waitFor(() => expect(router.replace).toHaveBeenCalled());
+    expect((await loadChildState(db, KID, 'abaObservers'))?.[0]).toEqual({ id: 'obs-1', role: 'specialist', trained: true });
+  });
+
   it('в окне свежести — сразу, без листа', async () => {
     useGate.getState().open();
     await wrap(<AbaParentScreen />);
@@ -120,6 +145,26 @@ describe('экран «Для специалиста»', () => {
     expect(screen.getByTestId('spec-actions-caption')).toHaveTextContent(spec.noActions);
     expect(screen.getByTestId('spec-claimed')).toHaveTextContent(spec.claimed);
     expect(screen.getByTestId('spec-no-changes')).toBeTruthy();
+  });
+
+  it('события занятий словами: смешанный блок без итога с пропуском следующего занятия', async () => {
+    const [a, b] = ABA_TARGETS;
+    const session = {
+      id: 's-1',
+      index: 4,
+      day: '2026-11-17',
+      startedAt: '2026-11-17T09:00:00.000Z',
+      endedAt: '2026-11-17T09:10:00.000Z',
+      events: [{ kind: 'measurement', at: '2026-11-17T09:10:00.000Z', targetId: a.id, action: 'mixed_no_verdict', reason: 'adult_stopped', counted: false, targetIds: [a.id, b.id], yielded: true }],
+    } as unknown as AbaSession;
+    await asAbaWriter(db, KID, (tx) => appendSession(tx, KID, session, session.endedAt!));
+    await wrap(<AbaSpecialistScreen />);
+    const goal = (id: string) => (ru.parent.aba.goal as Record<string, string>)[id] ?? id;
+    await waitFor(() =>
+      expect(screen.getByTestId('spec-note-0')).toHaveTextContent(
+        `2026-11-17 · проверка вперемешку без итога (${goal(a.id)}, ${goal(b.id)}): остановил взрослый, не засчитано, следующее занятие — без блока`,
+      ),
+    );
   });
 
   it('«Просмотрено» без свежего PIN — лист, флаг на месте; после PIN — флаг снят, событие в журнале и на экране', async () => {

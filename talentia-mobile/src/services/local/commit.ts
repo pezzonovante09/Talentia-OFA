@@ -866,7 +866,9 @@ export async function setAbaSessionParams(
   await withAbaWrite(db, childId, async (tx) => {
     const before = await loadChildState(tx, childId, 'abaSessionParams');
     events = paramsChanges(sanitizeSessionParams(before, profileBand), clean, at);
-    if (!events.length) return;
+    // негодные сохранённые параметры старт и так пропускал: «по умолчанию» поверх них — запись без события (условия
+    // занятий не меняются), но предупреждение на экране уходит
+    if (!events.length && (before === undefined || deepEqual(before, clean))) return;
     await saveChildState(tx, childId, 'abaSessionParams', clean, at);
     await appendSpecialistEvents(tx, childId, events);
   });
