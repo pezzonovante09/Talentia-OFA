@@ -96,13 +96,13 @@ function runSession(states: Record<string, AbaTargetState>, seed: number): AbaTr
 /** С пробой переноса: последняя сессия цели — 100 % самостоятельных. */
 const nearCriterion = (t: AbaTarget): AbaTargetState => ({ ...acq(t), recentIndependentRates: [1] });
 
-/** Обучение всех четырёх целей в двух занятиях: «из 3» с цветом, затем форма. */
+/** Обучение всех четырёх целей в двух занятиях: «из 3», затем цвет из трёх (решение 40) с формой. */
 const PLANS: Record<string, AbaTargetState>[] = [
-  { 'match-same-2': masteredState(TGT('match-same-2'), 0), 'match-color': nearCriterion(TGT('match-color')), 'match-same-3': nearCriterion(TGT('match-same-3')) },
+  { 'match-same-2': masteredState(TGT('match-same-2'), 0), 'match-same-3': nearCriterion(TGT('match-same-3')) },
   {
     'match-same-2': masteredState(TGT('match-same-2'), 0),
     'match-same-3': masteredState(TGT('match-same-3'), 0),
-    'match-color': masteredState(TGT('match-color'), 0),
+    'match-color-3': nearCriterion(TGT('match-color-3')),
     'match-shape': nearCriterion(TGT('match-shape')),
   },
   // свежий ребёнок: проверка сверху вниз и обучение «одинаковых из 2»
@@ -121,7 +121,7 @@ const TEACHING_FIELDS = ALL.filter((t) => exemplarOf(t).role === 'teaching');
 
 describe('решение 41: соседи образца match меняются на каждой пробе', () => {
   it('харнесс доходит до всех четырёх целей и до проб переноса', () => {
-    expect(new Set(TEACHING_FIELDS.map((t) => t.targetId))).toEqual(new Set(['match-same-2', 'match-same-3', 'match-color', 'match-shape']));
+    expect(new Set(TEACHING_FIELDS.map((t) => t.targetId))).toEqual(new Set(['match-same-2', 'match-same-3', 'match-color-3', 'match-shape']));
     expect(ALL.filter((t) => t.kind === 'generalization').length).toBeGreaterThan(0);
   });
 
