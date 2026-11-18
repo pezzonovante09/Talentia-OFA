@@ -20,6 +20,7 @@ import { lastSessionSummary, parentTargetStatus, sortForParent, type LastSession
 import { alsoTeachingOf, pairingStage, stageOfPlan, tokensOf, type ParentStageView } from '../../domain/abaParentStage';
 import { BREAK_CARD_MAX_OPPORTUNITIES, breakCardPlan, initialBreakCard } from '../../domain/abaBreakCard';
 import { aloneFormatKey, formatUnlockedAlone } from '../../domain/abaPlacement';
+import { mixGroups } from '../../domain/abaMixedBlock';
 import {
   awayOutcome,
   finishAbaSession,
@@ -142,10 +143,16 @@ export type AbaParentProgress = {
 /** Прогресс ABA для экрана родителя (вопрос 66): три слова на цель, две цифры за занятие — ничего больше. */
 export async function loadAbaParentProgress(db: SqlDb, childId: string, targets: readonly AbaTarget[] = ABA_TARGETS): Promise<AbaParentProgress> {
   const states = (await loadChildState(db, childId, 'abaTargets')) ?? {};
+  // смешанный блок (решение методиста 43): освоенное по отдельности ждёт проверки вперемешку
+  const mixing = new Set(mixGroups(targets).flat().map((t) => t.id));
   const rows = targets.map((tg) => {
     const s = states[tg.id];
     // состояние цели заводится при планировании сессии — «начата» только та, до которой дошли (методист 2026-11-01)
-    return { id: tg.id, status: s ? parentTargetStatus(s) : ('learning' as const), started: s !== undefined && (s.lastSessionIndex >= 0 || s.phase !== 'baseline') };
+    return {
+      id: tg.id,
+      status: s ? parentTargetStatus(s, { mixes: mixing.has(tg.id) }) : ('learning' as const),
+      started: s !== undefined && (s.lastSessionIndex >= 0 || s.phase !== 'baseline'),
+    };
   });
   const sessions = await sessionsOf(db, childId);
   const lastSession = sessions.at(-1) ?? null;

@@ -7,6 +7,8 @@
  *   (рутина без переноса) и `needs_verification` (критерий без обученного наблюдателя); «освоено» — только по
  *   критерию или по проверенной базовой линии: «освоено по выводу» и «дома, без проверки» родителю как освоенное
  *   не показываются — это качество измерения, а не навыка, и для родителя оно «почти» (`transitionOffer` считает так же).
+ * - Цель смешанного блока (`mixWith`, решение методиста 43; ревью 2026-11-18), освоенная по отдельности, пока блок не
+ *   пройден, — «освоено отдельно, ждёт проверки вперемешку», а не «освоено».
  * - За занятие: N — пробы, где ребёнок отвечал по навыку (без прерванных, без разогрева и закрывающей пробы — они
  *   про настроение сессии; без коррекционной пробы — она успешна по построению и «сам» быть не может), M — из них
  *   самостоятельные; проба переноса считается — ответ без подсказки после отвлечения честно «сам».
@@ -14,16 +16,18 @@
  */
 import type { AbaFlag, AbaSession, AbaTargetState, AbaTrial } from '../types/aba';
 
-export type ParentTargetStatus = 'learning' | 'almost' | 'mastered';
+export type ParentTargetStatus = 'learning' | 'almost' | 'mixed_pending' | 'mastered';
 
-type StatusInput = Pick<AbaTargetState, 'phase' | 'sessionsAtCriterion' | 'masteredBy'> & { flags?: readonly AbaFlag[] };
+type StatusInput = Pick<AbaTargetState, 'phase' | 'sessionsAtCriterion' | 'masteredBy' | 'mixedCheck'> & { flags?: readonly AbaFlag[] };
 
-export function parentTargetStatus(s: StatusInput): ParentTargetStatus {
+/** `mixes` — цель входит в группу смешанного блока программы (`mixGroups`: связь `mixWith` объявлена с одной стороны). */
+export function parentTargetStatus(s: StatusInput, opts: { mixes?: boolean } = {}): ParentTargetStatus {
   const flags = s.flags ?? [];
   switch (s.phase) {
     case 'mastered':
     case 'maintenance':
-      return s.masteredBy === 'inferred' || s.masteredBy === 'home_unverified' ? 'almost' : 'mastered';
+      if (s.masteredBy === 'inferred' || s.masteredBy === 'home_unverified') return 'almost';
+      return opts.mixes && !s.mixedCheck?.done ? 'mixed_pending' : 'mastered';
     case 'generalization_check':
       return 'almost';
     case 'acquisition':
@@ -53,7 +57,7 @@ export function lastSessionSummary(session: Pick<AbaSession, 'day' | 'startedAt'
 }
 
 /** Порядок строк для родителя: сначала то, что учим, потом «почти», освоенное — внизу. */
-const ORDER: Record<ParentTargetStatus, number> = { learning: 0, almost: 1, mastered: 2 };
+const ORDER: Record<ParentTargetStatus, number> = { learning: 0, almost: 1, mixed_pending: 2, mastered: 3 };
 
 export function sortForParent<T extends { status: ParentTargetStatus }>(rows: readonly T[]): T[] {
   return [...rows].sort((a, b) => ORDER[a.status] - ORDER[b.status]);

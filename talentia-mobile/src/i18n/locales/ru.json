@@ -634,6 +634,7 @@
         "ahead": "впереди",
         "learning": "учим",
         "almost": "почти",
+        "mixed_pending": "освоено отдельно, ждёт проверки вперемешку",
         "mastered": "освоено"
       },
       "lastSession": "Занятие {{day}}: проб — {{trials}}, самостоятельно — {{independent}}",

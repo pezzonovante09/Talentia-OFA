@@ -247,10 +247,11 @@ describe('телефон: на третьей пробе проверки обр
   });
 
   // цвет из 3 (решение методиста 40): поле 3 осваивается по базовой линии — при «всё верно» обучения нет вовсе
-  it('контроль: при «всё верно» следующее занятие — первые пробы цвета из трёх, за ним — всё освоено', () => {
+  // за ним — смешанный блок формы и цвета (решение методиста 43): «всё освоено» только после него
+  it('контроль: при «всё верно» следующее занятие — первые пробы цвета из трёх, за ним — повторение вперемешку', () => {
     expect(path(allCorrect, 2)).toEqual([
       { kind: 'baseline', targetId: 'match-color-3' },
-      { kind: 'all_mastered' },
+      { kind: 'maintenance', targetIds: ['match-shape', 'match-color-3'] },
     ]);
   });
 
@@ -258,7 +259,7 @@ describe('телефон: на третьей пробе проверки обр
     expect(path(phoneMiss, 3)).toEqual([
       { kind: 'placement', targetId: TOP },
       { kind: 'baseline', targetId: 'match-color-3' },
-      { kind: 'all_mastered' },
+      { kind: 'maintenance', targetIds: ['match-shape', 'match-color-3'] },
     ]);
   });
 });

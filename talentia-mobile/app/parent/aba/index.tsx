@@ -109,10 +109,15 @@ export function stageLines(t: (k: string, o?: Record<string, unknown>) => string
   return lines;
 }
 
+type GoalRowStatus = AbaParentProgress['targets'][number]['status'] | 'ahead';
+
+/** Глиф строки: «освоено отдельно, ждёт проверки вперемешку» — половинный, как «почти»: окончательно ещё не освоено. */
+const glyphOf = (status: GoalRowStatus): GoalGlyphStatus => (status === 'mixed_pending' ? 'almost' : status);
+
 /** Строки «Целей»: начатые цели в порядке лестницы `ABA_TARGETS` плюс одна следующая как «впереди». */
-function goalRows(progress: AbaParentProgress, ready: boolean): { id: string; status: GoalGlyphStatus }[] {
+function goalRows(progress: AbaParentProgress, ready: boolean): { id: string; status: GoalRowStatus }[] {
   const byId = new Map(progress.targets.map((r) => [r.id, r]));
-  const rows: { id: string; status: GoalGlyphStatus }[] = [];
+  const rows: { id: string; status: GoalRowStatus }[] = [];
   let aheadShown = false;
   for (const tg of ABA_TARGETS) {
     const r = byId.get(tg.id);
@@ -499,7 +504,7 @@ export default function AbaParentScreen() {
               <Row
                 key={g.id}
                 first={i === 0}
-                leading={<GoalGlyph status={g.status} testID={`aba-goal-${g.id}-glyph-${g.status}`} />}
+                leading={<GoalGlyph status={glyphOf(g.status)} testID={`aba-goal-${g.id}-glyph-${glyphOf(g.status)}`} />}
                 label={t(`parent.aba.goal.${g.id}`)}
                 value={t(`parent.aba.goalStatus.${g.status}`)}
                 valueColor={g.status === 'ahead' ? 'textMuted' : 'text'}

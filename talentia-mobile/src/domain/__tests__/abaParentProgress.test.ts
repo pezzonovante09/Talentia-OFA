@@ -21,6 +21,19 @@ describe('прогресс ABA для родителя (вопрос 66)', () =>
     expect(parentTargetStatus({ phase: 'acquisition', sessionsAtCriterion: 0, flags: ['prompt_dependent'] })).toBe('learning');
   });
 
+  it('смешанный блок (решение 43): освоенное отдельно до пройденного блока — «ждёт проверки вперемешку»', () => {
+    const own = { phase: 'mastered' as const, sessionsAtCriterion: 3, masteredBy: 'criterion' as const };
+    expect(parentTargetStatus(own, { mixes: true })).toBe('mixed_pending');
+    expect(parentTargetStatus({ ...own, mixedCheck: { days: ['2026-11-18'] } }, { mixes: true })).toBe('mixed_pending');
+    expect(parentTargetStatus({ ...own, phase: 'maintenance', mixedCheck: { days: [], failsInRow: 1 } }, { mixes: true })).toBe('mixed_pending');
+    expect(parentTargetStatus({ ...own, mixedCheck: { days: ['2026-11-18', '2026-11-19'], done: true } }, { mixes: true })).toBe('mastered');
+    // цели без смешанного блока — как прежде
+    expect(parentTargetStatus(own)).toBe('mastered');
+    // «почти» сильнее: непроверенное освоение — сначала своя проверка
+    expect(parentTargetStatus({ ...own, masteredBy: 'home_unverified' }, { mixes: true })).toBe('almost');
+    expect(parentTargetStatus({ phase: 'acquisition', sessionsAtCriterion: 0 }, { mixes: true })).toBe('learning');
+  });
+
   it('за занятие: пробы без разогрева, закрывающей, коррекционной и прерванных; перенос считается; самостоятельные отдельно', () => {
     const trials = [
       trial('high_p', 'independent'),
@@ -41,8 +54,13 @@ describe('прогресс ABA для родителя (вопрос 66)', () =>
     expect(last.kind === 'pairing_only' && last.day).toBe('2026-11-01');
   });
 
-  it('порядок строк: учим, почти, освоено', () => {
-    const rows = sortForParent([{ id: 'c', status: 'mastered' as const }, { id: 'a', status: 'learning' as const }, { id: 'b', status: 'almost' as const }]);
-    expect(rows.map((r) => r.id)).toEqual(['a', 'b', 'c']);
+  it('порядок строк: учим, почти, ждёт проверки вперемешку, освоено', () => {
+    const rows = sortForParent([
+      { id: 'd', status: 'mastered' as const },
+      { id: 'c', status: 'mixed_pending' as const },
+      { id: 'a', status: 'learning' as const },
+      { id: 'b', status: 'almost' as const },
+    ]);
+    expect(rows.map((r) => r.id)).toEqual(['a', 'b', 'c', 'd']);
   });
 });
