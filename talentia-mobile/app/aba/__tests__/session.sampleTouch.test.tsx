@@ -5,6 +5,7 @@
  * шаг пройденным; здесь — снова не пройден).
  */
 import { initialSampleTouch } from '../../../src/domain/abaSampleTouch';
+import ru from '../../../src/i18n/locales/ru.json';
 import { loadChildState, saveChildState } from '../../../src/services/local/childState';
 import { asAbaWriter } from '../../../src/services/local/__tests__/nodeSql';
 import { fireEvent, screen, waitFor } from '../../../src/test/render';
@@ -80,12 +81,15 @@ it('5 самостоятельных подряд — шаг пройден, д�
   await waitFor(async () => expect((await loadChildState(db, KID, 'sampleTouch'))?.passed).toBe(true));
 });
 
-it('«Отказ» в пробе шага — шаг на сегодня кончен, match нет: занятие кончается', async () => {
+it('«Отказ» в пробе шага — подсвеченная карточка «перерыв», шаг на сегодня кончен, match нет: занятие кончается', async () => {
   await toTouch();
   await fireEvent.press(screen.getByTestId('aba-panel-refusal'));
+  // как после отказа на пробе: тихая пауза, карточка подсвечена, взрослому — «жестом, не уговаривайте»
+  await waitFor(() => expect(screen.getByText(ru.abaSession.offerCardHint)).toBeTruthy());
   for (let i = 0; i < 80 && !screen.queryByTestId(/^aba-end-(normal|neutral)$/); i += 1) await tick(500);
   expect(screen.getByTestId(/^aba-end-(normal|neutral)$/)).toBeTruthy();
   expect(screen.queryByTestId('aba-option-0')).toBeNull();
+  // шаг оборван «Отказом», а не дошёл до своего конца — для sample_touch_not_acquired не в счёт
   const st = await loadChildState(db, KID, 'sampleTouch');
-  expect(st).toMatchObject({ passed: false, sessionsTried: 1 });
+  expect(st).toMatchObject({ passed: false, sessionsTried: 0, assentSessionsInRow: 1 });
 });

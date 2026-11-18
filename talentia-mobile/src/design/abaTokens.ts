@@ -1689,8 +1689,18 @@ export const abaParticipation = { holdMs: 1000, drop: { fromPt: 24, ms: motion.q
  * Шаг «коснись картинки» (решение 1, часть В). Модель L3 — «экранная рука касается образца»: нового ассета нет, пока —
  * точка касания (круг цвета чернил) в центре образца. **Временно, на ревью `design-lead`**: рука, движение, calm.
  * `praiseMs` — сколько держится знак «принято» у касания на L1–L3 (решение 35).
+ *
+ * `model` — короткое «нажатие» вместо неподвижной точки (финальная рецензия методиста 2026-11-18): метка появляется
+ * крупнее (`fromScale`), вжимается в центр образца (`toScale`) и гаснет — `presses` раза, ~1,2 с на предъявление L3
+ * (окно касания — `SAMPLE_TOUCH_WINDOW_MS`, 5 с). В calm / reduce motion — без движения: `presses` вспышки кадром
+ * (`stillOnMs` видна, `stillOffMs` нет). Заглушка под будущий ассет руки.
  */
-export const abaSampleTouch = { handDot: 36, handDotOpacity: 0.55, praiseMs: 1500 } as const;
+export const abaSampleTouch = {
+  handDot: 36,
+  handDotOpacity: 0.55,
+  praiseMs: 1500,
+  model: { presses: 2, appearMs: 150, pressMs: 300, fadeMs: 150, fromScale: 1.3, toScale: 0.7, stillOnMs: 300, stillOffMs: 300 },
+} as const;
 
 /**
  * Расписание ребёнку (решение методиста 34): полоса «сначала задание → потом жетоны и награда» и под ней «ещё N»
