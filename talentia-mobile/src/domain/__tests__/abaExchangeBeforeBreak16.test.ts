@@ -109,6 +109,10 @@ describe('решение 16: без обмена перед перерывом',
     const st: AbaSessionState = { ...withHead(full(afterTrial()), SCHEDULE), breakStartedAt: T };
     const next = nextStep(st, T + 5000);
     expect([next.step.kind, next.exchanged, next.state.queue[0]]).toEqual(['break', 0, SCHEDULE]);
+    // запасной путь: доска так и полна в конце перерыва — обмен в `finishBreak`, доступ следом (прежний порядок)
+    const done = finishBreak(next.state, T + 30_000);
+    expect(done.exchanged).toBe(st.board.size);
+    expect(done.state.queue[0]).toMatchObject({ kind: 'access' });
   });
 });
 

@@ -261,13 +261,14 @@ describe('Т2 и Т4: рутина заполняет доску, пока се�
     expect([next.state.exchangesMade, next.state.board.earned]).toEqual([0, 3]);
   });
 
-  it('сессия выбрала подкрепитель и обменяла сама на перерыве: доска пуста, предложение рутины закрыто, второго обмена нет', async () => {
+  it('сессия выбрала подкрепитель и обменяла сама перед перерывом: доска пуста, предложение рутины закрыто, второго обмена нет', async () => {
     const { db } = await scenario();
     const r = (await resumeAbaSession(db, 'kid', POOL))!;
     const pick = r.reinforcerOptions[0];
-    const chosen = chooseReinforcer(atBreak(r), pick, BASE_MS + 7000, 'child');
-    const done = finishBreak(chosen, BASE_MS + 8000);
-    expect(done.exchanged).toBe(3);
+    // перерыв по расписанию ещё не начат: после выбора обмен и доступ до него (решение 16)
+    const chosen = chooseReinforcer({ ...r, queue: [{ kind: 'break' as const }, ...r.queue] }, pick, BASE_MS + 7000, 'child');
+    const done = nextStep(chosen, BASE_MS + 8000);
+    expect([done.exchanged, done.step.kind]).toEqual([3, 'access']);
     const saved = await saveAbaSessionStep(db, 'kid', done.state, iso(BASE_MS + 8000), {
       source: 'session',
       sourceId: chosen.sessionId,
@@ -285,11 +286,11 @@ describe('Т3: обратный порядок — сессия обменяла
   it('рутина ложится на пустую доску без обмена', async () => {
     const db = await setup({ stage: 3, board: { earned: 2, nonContingent: 0 } });
     const st = await startSession(db, { band: '5-6', tokenTraining: { ...initialTokenTraining(), pairingDone: true, stage: 3 } });
-    // перерыв с обменом (доска полна: 2 + жетон пробы)
+    // обмен перед перерывом (доска полна: 2 + жетон пробы; решение 16)
     const full = await workTrial(db, st, BASE_MS + 1000);
     expect(full.board.earned).toBeGreaterThanOrEqual(3);
-    const br = { ...full, queue: [{ kind: 'break' as const }, ...full.queue], breakStartedAt: BASE_MS + 2000 } as AbaSessionState;
-    const done = finishBreak(br, BASE_MS + 3000);
+    const br = { ...full, queue: [{ kind: 'break' as const }, ...full.queue] } as AbaSessionState;
+    const done = nextStep(br, BASE_MS + 3000);
     expect(done.exchanged).toBeGreaterThanOrEqual(3);
     await saveAbaSessionStep(db, 'kid', done.state, iso(BASE_MS + 3000));
     expect((await boardOf(db))!.earned).toBe(0);
@@ -780,8 +781,9 @@ describe('(а) и (в) в хранилище', () => {
     expect(finishBreak(full, BASE_MS + 7000).exchanged).toBe(0);
     const chosen = chooseReinforcer(stale, stale.reinforcerOptions[0], BASE_MS + 8000, 'child');
     expect(chosen.reinforcerStale).toBeUndefined();
-    const fullChosen = { ...chosen, board: { ...chosen.board, earned: 5 }, queue: [{ kind: 'break' as const }, ...chosen.queue], breakStartedAt: BASE_MS + 8500 } as AbaSessionState;
-    expect(finishBreak(fullChosen, BASE_MS + 9000).exchanged).toBe(5);
+    // после выбора — обмен перед перерывом по расписанию (решение 16)
+    const fullChosen = { ...chosen, board: { ...chosen.board, earned: 5 }, queue: [{ kind: 'break' as const }, ...chosen.queue] } as AbaSessionState;
+    expect(nextStep(fullChosen, BASE_MS + 9000).exchanged).toBe(5);
   });
 
   it('(в) повторное возобновление после выбора рутины и нового выбора сессии stale заново не ставит; новый выбор рутины — ставит', async () => {
