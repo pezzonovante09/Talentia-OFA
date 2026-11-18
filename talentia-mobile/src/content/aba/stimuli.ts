@@ -111,8 +111,18 @@ export const ABA_SHAPE_NOT_TOGETHER: readonly [AbaShape, AbaShape][] = [
  * Все пары «не вместе» как id карточек — для `AbaTarget.notTogether`: соседей образца сессия выбирает на каждой пробе
  * (решение методиста 41), и правило должно держаться в любом собранном поле, а не только в написанных экземплярах.
  */
+/**
+ * Предметы с близким силуэтом — не в одно поле (рецензия методиста к решению 41, 2026-11-18): один класс сам по себе
+ * не запрет (самолёт и лодка можно), близкий силуэт — запрет, как квадрат и ромб.
+ */
+export const ABA_OBJECT_NOT_TOGETHER: readonly [string, string][] = [
+  ['aba-obj-apple', 'aba-obj-pear'],
+  ['aba-obj-mitten', 'aba-obj-sock'],
+];
+
 export const ABA_CARDS_NOT_TOGETHER: readonly (readonly [string, string])[] = [
   ...ABA_COLOR_NOT_TOGETHER,
+  ...ABA_OBJECT_NOT_TOGETHER,
   ...ABA_SHAPE_NOT_TOGETHER.flatMap(([a, b]): [string, string][] => [
     [`aba-shape-${a}`, `aba-shape-${b}`],
     [`aba-shape-${a}-alt`, `aba-shape-${b}-alt`],

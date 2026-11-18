@@ -4,13 +4,14 @@
  * сворачивается в карточку 160 на её место в блоке обмена (calm и reduce motion — смена кадра), карточка стоит секунду. Одна раскладка
  * с экраном обмена: раскрытие кончается ровно там, где стоит сцена.
  */
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, useColorScheme, View } from 'react-native';
 
-import { abaAccessScene, abaAdultPanelColors, abaAdultSheet, abaExchange, abaPairingLayout, abaRewardScene } from '../../../design/abaTokens';
+import { abaAccessScene, abaAdultPanelColors, abaAdultSheet, abaControls, abaExchange, abaPairingLayout, abaRewardScene } from '../../../design/abaTokens';
 import { parentPressed, parentTypography } from '../../../design/parentTokens';
 import { AbaText } from '../AbaText';
+import { useAbaClock } from '../clock';
 import { RewardScene } from '../access/RewardScene';
 import { accessLeft, accessRingVisible, type AccessRun } from '../model/accessRun';
 import { NonTrialRow } from '../parts';
@@ -55,7 +56,7 @@ export function AccessView({
           )}
           {/* «Готово» взрослого поверх низа сцены, не в раскладке: место карточки конца то же, что у обмена */}
           {reinforcerId === 'from_adult' && run.stage === 'play' && onAdultDone && (
-            <AdultDone label={t('abaSession.fromAdultDone')} scheme={scheme} onPress={onAdultDone} />
+            <AdultDone label={t('abaSession.fromAdultDone')} holdLabel={t('abaSession.fromAdultHold')} scheme={scheme} onDone={onAdultDone} />
           )}
           {run.stage === 'fold' && moving && area && card && (
             <GrowFrame from={{ x: 0, y: 0, w: area.w, h: area.h }} to={card} ms={abaAccessScene.endFrame.foldMs} reinforcerId={reinforcerId} testID="aba-access-fold" />
@@ -72,17 +73,63 @@ export function AccessView({
   );
 }
 
-/** Кнопка листа взрослого (№203: белая, граница 1.5 `edge`, радиус 14, без борта детских кнопок); срабатывает по отпусканию. */
-function AdultDone({ label, scheme, onPress }: { label: string; scheme: 'light' | 'dark'; onPress: () => void }) {
+/**
+ * Кнопка листа взрослого (№203: белая, граница 1.5 `edge`, радиус 14, без борта детских кнопок). Срабатывает
+ * **удержанием**, как выход (`abaControls.exitHoldMs`, первые `exitHoldIdleMs` без отклика): ребёнок дотянется до любой
+ * кнопки, а случайное касание обрывало бы доступ без отмены (`child-ux-specialist`, 2026-11-18). Короткое касание —
+ * подсказка «держите» в самой кнопке. Скринридеру — действие `activate`.
+ */
+function AdultDone({ label, holdLabel, scheme, onDone }: { label: string; holdLabel: string; scheme: 'light' | 'dark'; onDone: () => void }) {
   const p = abaAdultPanelColors(scheme);
   const K = abaRewardScene.fromAdult;
+  const clock = useAbaClock();
+  const [holding, setHolding] = useState(false);
+  const [hint, setHint] = useState(false);
+  const cancel = useRef<(() => void) | null>(null);
+  const hintCancel = useRef<(() => void) | null>(null);
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
+  useEffect(
+    () => () => {
+      cancel.current?.();
+      hintCancel.current?.();
+    },
+    [],
+  );
+  const start = () => {
+    const t0 = clock.now();
+    const idle = clock.at(t0 + abaControls.exitHoldIdleMs, () => setHolding(true));
+    const done = clock.at(t0 + abaControls.exitHoldMs, () => {
+      setHolding(false);
+      cancel.current = null;
+      onDoneRef.current();
+    });
+    cancel.current = () => {
+      idle();
+      done();
+    };
+  };
+  const stop = () => {
+    if (!cancel.current) return;
+    cancel.current();
+    cancel.current = null;
+    setHolding(false);
+    setHint(true);
+    hintCancel.current?.();
+    hintCancel.current = clock.at(clock.now() + abaControls.exitTapHint.durationMs, () => setHint(false));
+  };
+  const pressed = holding;
   return (
     <Pressable
-      onPress={onPress}
+      onPressIn={start}
+      onPressOut={stop}
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityHint={holdLabel}
+      accessibilityActions={[{ name: 'activate', label }]}
+      onAccessibilityAction={onDone}
       testID="aba-from-adult-done"
-      style={({ pressed }) => ({
+      style={() => ({
         position: 'absolute',
         left: K.doneInset,
         right: K.doneInset,
@@ -97,7 +144,7 @@ function AdultDone({ label, scheme, onPress }: { label: string; scheme: 'light' 
       })}
     >
       <AbaText type={parentTypography.label} color={p.label} max={1.3} lines={1} adjustsFontSizeToFit>
-        {label}
+        {hint ? holdLabel : label}
       </AbaText>
     </Pressable>
   );
