@@ -711,6 +711,122 @@
         "panelNames": "Here are the “{{prompted}}” and “{{refused}}” buttons",
         "ruleNoPoint": "No pointing or looking",
         "ruleNoTalk": "No repeating the question, no “well done” or “no”"
+      },
+      "spec": {
+        "row": "Specialist settings",
+        "rowCaption": "Session parameters, observers and specialist marks — behind the PIN.",
+        "title": "For a specialist",
+        "claimed": "Changes are recorded under the role “specialist” as stated: the app does not check who holds the phone.",
+        "params": "Session parameters",
+        "fixed": "Not changeable: mastery criterion, block size, prompt-wait ceiling, prompt escalation, token rules.",
+        "paramsIgnored": "The saved parameters do not fit the child's band — sessions run with the defaults.",
+        "invalid": "These parameters do not fit the child's band.",
+        "band": "Parameter band",
+        "bandDefault": "Profile",
+        "time": "Session length",
+        "teaching": "Targets taught per session",
+        "window": "Response time: {{format}}",
+        "default": "Usual",
+        "minutes": "{{n}} min",
+        "seconds": "{{n}} s",
+        "format": {
+          "identify": "point",
+          "match": "match",
+          "imitate_sound": "repeat a sound",
+          "repeat_word": "repeat a word",
+          "voice_volume": "voice volume",
+          "do_action": "do an action",
+          "say": "say"
+        },
+        "people": "Reward and observers",
+        "observerTrained": "{{role}}: trained",
+        "noObservers": "No observers yet — “Who leads” records them before a session.",
+        "actions": "Marks",
+        "noActions": "Nothing to mark right now.",
+        "assentReviewed": "Assent concern reviewed: {{target}}",
+        "pairingConfirm": "Confirm the token introduction",
+        "mixedAssign": "Schedule the mixed check: {{targets}}",
+        "reviewed": {
+          "token_training_stalled": "Reviewed: the token board is not growing",
+          "pairing_keeps_breaking": "Reviewed: the token introduction keeps breaking off",
+          "ioa_low": "Reviewed: observers disagree — {{target}}"
+        },
+        "reviewedCaption": "The mark clears the signal. If it happens again, the signal comes back.",
+        "seen": "What the app sees",
+        "boardStage": "Token board: step {{n}}",
+        "targetLine": "{{target}}: {{phase}}",
+        "targetDetail": "Starts at prompt level {{level}} of 4 · wait before the prompt {{delay}} s",
+        "phase": {
+          "baseline": "check",
+          "acquisition": "learning",
+          "generalization_check": "transfer check",
+          "mastered": "mastered",
+          "maintenance": "review"
+        },
+        "flag": {
+          "prompt_dependent": "waits for the prompt instead of answering",
+          "no_progress": "no progress",
+          "needs_easier_step": "needs an easier step",
+          "assent_concern": "assent concern: the session is often interrupted",
+          "needs_verification": "mastery waits for a trained observer to confirm",
+          "needs_transfer": "needs transfer: another place or another adult",
+          "ioa_low": "observers disagree in their marks",
+          "position_bias": "often picks the same place on the screen",
+          "card_preference": "picks the same card whatever the instruction",
+          "alternation_bias": "picks the side opposite the last choice",
+          "mixed_not_established": "the mixed check is off the plan"
+        },
+        "tokenFlag": {
+          "pairing_not_established": "the token introduction is not working out",
+          "pairing_keeps_breaking": "the token introduction keeps breaking off",
+          "token_training_stalled": "the token board is not growing"
+        },
+        "breakFlag": {
+          "break_card_not_acquired": "does not ask for a break with the card yet",
+          "break_card_frequent": "asks for breaks often"
+        },
+        "noteMixed": "{{day}} · mixed check without a result ({{targets}}): {{reason}}",
+        "noteObserving": "{{day}} · attention to the sample not established ({{targets}}): {{then}}",
+        "noteCounted": "counted",
+        "noteNeutral": "not counted",
+        "noteDropped": "block taken off the plan",
+        "noteYielded": "next session without the block",
+        "mixedReason": {
+          "completed": "trials incomplete",
+          "time_limit": "time ran out",
+          "breakdown": "breakdown",
+          "adult_stopped": "an adult stopped it",
+          "abandoned": "session abandoned",
+          "assent_withdrawn": "the child declined",
+          "unreliable_measurement": "unreliable measurement",
+          "app_backgrounded": "app minimized",
+          "app_error": "app error",
+          "device_inactivity": "the phone was idle",
+          "observing_miss": "did not look at the sample",
+          "observing_miss_unreplaced": "one miss without a replacement",
+          "interrupted": "trials were interrupted"
+        },
+        "observingThen": {
+          "placement_dropped": "top-down check removed",
+          "teaching_from_l1": "teaching from the first prompt"
+        },
+        "noNotes": "Nothing unusual in the sessions.",
+        "changes": "Change log",
+        "noChanges": "No changes yet.",
+        "changeLine": "{{day}} · {{field}}: {{from}} → {{to}}",
+        "field": {
+          "paramsBand": "parameter band",
+          "timeLimitMs": "session length, ms",
+          "responseWindowMs": "response time, ms",
+          "maxTeachingTargets": "targets taught",
+          "adultReward": "reward from an adult",
+          "observerTrained": "observer trained",
+          "pairingDone": "token introduction",
+          "flag": "signal"
+        },
+        "valueOn": "yes",
+        "valueOff": "no",
+        "valueDefault": "usual"
       }
     }
   },

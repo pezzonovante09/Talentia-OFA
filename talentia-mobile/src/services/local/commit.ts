@@ -7,7 +7,7 @@
  * на `UNIQUE(child_id, session_index)`; ABA у ребёнка ломалось навсегда. Здесь — или всё,
  * или ничего.
  */
-import type { AbaIoaRecord, AbaObserver, AbaSession, AbaSessionTail, AbaTargetState, AbaTrial, RoutineSetting } from '../../types/aba';
+import type { AbaIoaRecord, AbaObserver, AbaSession, AbaSessionTail, AbaTarget, AbaTargetState, AbaTrial, RoutineSetting } from '../../types/aba';
 import {
   finishRoutineRun,
   routineResultWithSetting,
@@ -45,8 +45,6 @@ import {
   setObserverTrained,
   type SpecialistEvent,
 } from '../../domain/abaSpecialist';
-import type { AbaTarget } from '../../types/aba';
-import type { AgeBand } from '../../types/task';
 import { deepEqual } from '../../domain/deepEqual';
 import {
   AbaBoardConflictError,
@@ -80,7 +78,7 @@ import { readConsentLog } from './consentLog';
 import { consentStatus, isGranted, type GuardianRole } from '../../domain/consent';
 import { CURRENT_CONSENT_TEXTS } from '../../domain/consentTexts';
 import { appendLessonRun, withLessonWrite } from './lessonRuns';
-import type { TaskFormat } from '../../types/task';
+import type { AgeBand, TaskFormat } from '../../types/task';
 import type { SqlDb } from './sql';
 
 export type LessonCommit = {

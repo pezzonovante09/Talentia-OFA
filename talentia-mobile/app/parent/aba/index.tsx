@@ -571,6 +571,12 @@ export default function AbaParentScreen() {
             <ParentText role="caption" color="textMuted" testID="aba-export-note">
               {!ABA_EXPORT_FILE_ENABLED ? t('parent.aba.exportLater') : exportState === 'unavailable' ? t('parent.aba.exportUnavailable') : t('parent.aba.exportCaption')}
             </ParentText>
+            {ov?.consent === 'granted' && (
+              // раздел «Для специалиста» (методист 2026-11-18): параметры, наблюдатели, отметки — за свежим PIN
+              <View style={{ marginTop: parentSpacing.md }}>
+                <Row first kind="link" label={t('parent.aba.spec.row')} caption={t('parent.aba.spec.rowCaption')} onPress={() => guarded('aba_specialist', () => router.push('/parent/aba/specialist'))} testID="aba-specialist-row" />
+              </View>
+            )}
           </Card>
         )}
 

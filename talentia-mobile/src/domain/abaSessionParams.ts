@@ -45,6 +45,21 @@ export function sessionParamsErrors(p: AbaSessionParams | undefined, profileBand
   return errors;
 }
 
+/**
+ * Параметры после смены полосы: лимит времени и окна, которые при новой полосе вне пределов, снимаются («по умолчанию»),
+ * остальное остаётся. Экран специалиста зовёт это перед записью — смена полосы не упирается в старые числа.
+ */
+export function pruneSessionParams(p: AbaSessionParams, profileBand: AgeBand): AbaSessionParams {
+  const { timeLimitMs, responseWindowMs, ...rest } = p;
+  const out: AbaSessionParams = { ...rest };
+  if (timeLimitMs !== undefined && !sessionParamsErrors({ ...rest, timeLimitMs }, profileBand).length) out.timeLimitMs = timeLimitMs;
+  const windows = Object.fromEntries(
+    Object.entries(responseWindowMs ?? {}).filter(([f, ms]) => !sessionParamsErrors({ ...rest, responseWindowMs: { [f]: ms } }, profileBand).length),
+  );
+  if (Object.keys(windows).length) out.responseWindowMs = windows;
+  return out;
+}
+
 const BANDS: readonly AgeBand[] = ['5-6', '7', '8', '9-10'];
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const isWholeMs = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v > 0;
