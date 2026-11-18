@@ -188,14 +188,14 @@ describe('решение 43: смешанный блок', () => {
     expect(start(later, { sessionIndex: 22, day: '2026-10-14' }).mixedTargetIds).toBeUndefined();
   });
 
-  it('один проваленный блок — цель остаётся освоенной, дни заново; второй подряд — в обучение, партнёр со своим днём', () => {
+  it('один проваленный блок — цель остаётся освоенной со своим днём; второй подряд — в обучение, партнёр со своим днём', () => {
     const probe = { kind: 'new_exemplar', exemplarId: 'C-e2', response: 'independent', sessionIndex: 10 } as unknown as AbaGeneralizationProbe;
     const states = { ...bothMastered(), C: { ...bothMastered().C, mixedCheck: { days: ['2026-10-10'] }, generalizationProbes: [probe] } };
     const failC = (id: string, i: number): AbaResponse => (id === 'C' && i < 2 ? 'incorrect' : 'independent');
     const r1 = finishMixed(start(states), failC);
     expect(r1.states.C.phase).toBe('mastered');
     expect(r1.states.C.masteredBy).toBe('criterion');
-    expect(r1.states.C.mixedCheck).toEqual({ days: [], failsInRow: 1 });
+    expect(r1.states.C.mixedCheck).toEqual({ days: ['2026-10-10'], failsInRow: 1 });
     expect(r1.session.events.some((e) => e.kind === 'phase' && e.targetId === 'C')).toBe(false);
     expect(r1.states.S.mixedCheck).toEqual({ days: [DAY] });
 
@@ -237,6 +237,22 @@ describe('решение 43: смешанный блок', () => {
     expect(mixedVerdict(passed.state, C, fail, 22, '2026-10-14')?.state.phase).toBe('mastered');
   });
 
+  it('зачёт и провал вперемешку не держат блок без конца: дни копятся до `done`', () => {
+    const own = (r: AbaResponse[]) => r.map((response) => trial({ targetId: 'C', kind: 'verification', response, promptLevelUsed: 0 }));
+    const fail = own(['incorrect', 'incorrect', 'independent', 'independent', 'independent']);
+    const pass = own(['independent', 'independent', 'independent', 'independent', 'independent']);
+    let s = masteredState(C);
+    const days = ['2026-10-12', '2026-10-13', '2026-10-14', '2026-10-15'];
+    const answers = [pass, fail, pass, fail];
+    let at = 0;
+    for (; at < days.length && !s.mixedCheck?.done && s.phase !== 'acquisition'; at += 1) {
+      s = mixedVerdict(s, C, answers[at], 20 + at, days[at])!.state;
+    }
+    // зачёт, провал, зачёт — освоено окончательно на третьем блоке
+    expect(at).toBe(3);
+    expect(s.mixedCheck).toEqual({ days: ['2026-10-12', '2026-10-14'], done: true });
+  });
+
   it('повтор блока в день, уже засчитанный цели, её не судит: пробы пишутся, провала нет', () => {
     // S засчитан сегодня, C — нет (блок не дал по нему итога): блок снова в плане того же дня
     const states = { ...bothMastered(), S: { ...bothMastered().S, mixedCheck: { days: [DAY] } } };
@@ -261,6 +277,7 @@ describe('решение 43: смешанный блок', () => {
     // итога нет — сессия идёт в счёт «без итога» (потолок ревью 2026-11-18); S провален впервые — тоже без фазы
     expect(r.states.C.mixedCheck).toEqual({ days: [], noVerdict: 1 });
     expect(r.states.S.mixedCheck).toEqual({ days: [], failsInRow: 1, noVerdict: 1 });
+    expect(r.states.S.phase).toBe('mastered');
   });
 
   it('блок не начался (сессия кончилась раньше) — сессия для счётчика «без итога» нейтральна', () => {
@@ -428,6 +445,18 @@ describe('решение 43 на настоящих целях: форма и ц
     expect(r.result.states[SHAPE.id].phase).not.toBe('acquisition');
   });
 
+  it('промах на последней пробе блока — замена сразу за ней, до конца блока', () => {
+    const last = (r: ReturnType<typeof runReal>) => r.planned.queue.flatMap((q) => (q.kind === 'trial' && q.trial.kind === 'verification' ? [q.trial] : [])).at(-1)!;
+    const plan = runReal(allMastered(), '2026-11-18', 1, () => 'correct');
+    const lastId = last(plan).targetId;
+    const r = runReal(allMastered(), '2026-11-18', 1, (id, n) => (id === lastId && n === 4 ? 'none' : 'correct'));
+    const mixed = r.final.trials.filter((t) => t.kind === 'verification');
+    expect(mixed).toHaveLength(11);
+    expect(mixed[10]).toMatchObject({ targetId: lastId, replacesTrialId: mixed[9].id });
+    expect(mixed[10].exemplarId).not.toBe(mixed[9].exemplarId);
+    for (const id of PAIR) expect(r.result.states[id].mixedCheck).toEqual({ days: ['2026-11-18'] });
+  });
+
   it('второй промах цели не заменяется; две сессии подряд без итога — блок снят с плана, флаг специалисту', () => {
     const color = PAIR.find((id) => id !== SHAPE.id)!;
     const twoMisses = (id: string, n: number): Act => (id === SHAPE.id && (n === 1 || n === 2) ? 'none' : 'correct');
@@ -464,6 +493,7 @@ describe('решение 43 на настоящих целях: форма и ц
     const d1 = runReal(allMastered(), '2026-11-18', 1, failColor);
     expect(d1.result.states[color].phase).not.toBe('acquisition');
     expect(d1.result.states[color].mixedCheck).toEqual({ days: [], failsInRow: 1 });
+    expect(d1.result.states[color].masteredBy).toBe('criterion');
     expect(d1.result.states[SHAPE.id].mixedCheck).toEqual({ days: ['2026-11-18'] });
     const d2 = runReal(d1.states, '2026-11-19', 2, failColor);
     expect(d2.result.states[color].phase).toBe('acquisition');
