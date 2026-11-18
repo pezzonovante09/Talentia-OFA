@@ -69,7 +69,7 @@ import { CHILD_BREAK_MS, type AbaTarget } from '../../src/types/aba';
 import { AbaEnd } from '../../src/ui/aba/AbaEnd';
 import { AbaText } from '../../src/ui/aba/AbaText';
 import { useAbaClock, useDue } from '../../src/ui/aba/clock';
-import { startAccess, stepAccess, type AccessRun } from '../../src/ui/aba/model/accessRun';
+import { finishAccessNow, startAccess, stepAccess, type AccessRun } from '../../src/ui/aba/model/accessRun';
 import { advanceConsequence, startConsequence } from '../../src/ui/aba/model/consequenceRun';
 import { matchTrialInput, startMatchTrial, stepMatchTrial, type MatchEvent, type MatchTrialRun } from '../../src/ui/aba/model/matchTrialRun';
 import { endTail, type TailStep } from '../../src/ui/aba/model/endTail';
@@ -135,6 +135,7 @@ export default function AbaSessionScreen() {
   const setPhase = useCallback((p: SetStateAction<Phase>) => {
     if (!away.current) showPhase(p);
   }, []);
+  const adultDone = (at: number) => setPhase((p) => (p.kind === 'access' ? { ...p, run: finishAccessNow(p.run, at) } : p));
   const [height, setHeight] = useState<number | null>(null);
   /** Одно измерение окна (высота, ширина, нижний отступ того же момента) — для проверки сжатия (№182). */
   const [measured, setMeasured] = useState<{ height: number; width: number; insetBottom: number } | null>(null);
@@ -403,7 +404,7 @@ export default function AbaSessionScreen() {
 
   /** Незаконченное занятие просрочено (фаза 8, Ц2.11): закрыть `app_backgrounded` моментом ухода, без экрана конца — на карту. */
   async function abandonAndLeave(at: number) {
-    if (db && childId) await abandonInProgressSession(db, childId, { reason: 'app_backgrounded', at, now: clock.now(), soundOn: startOpts.current.settings.soundEffects });
+    if (db && childId) await abandonInProgressSession(db, childId, { reason: 'app_backgrounded', at, now: clock.now(), soundOn: startOpts.current.settings.soundEffects, adultReward: startOpts.current.settings.adultReward });
     finished.current = true;
     useAbaRun.getState().reset();
     leaveAba(router);
@@ -448,7 +449,7 @@ export default function AbaSessionScreen() {
     const now = clock.now();
     void (async () => {
       // незаконченное занятие — продолжить, закрыть как просроченное или закончить без записи (пауза, отзыв)
-      const r = await loadAbaResume(db, childId, { soundOn: o.settings.soundEffects, now });
+      const r = await loadAbaResume(db, childId, { soundOn: o.settings.soundEffects, adultReward: o.settings.adultReward, now });
       if (unmounted.current) return;
       if (r.kind === 'blocked') {
         latest.current.endWithoutWrite();
@@ -462,7 +463,7 @@ export default function AbaSessionScreen() {
         await latest.current.resumeFrom(r.state, r.leftAt, { cold: true });
         return;
       }
-      const start = await loadAbaStart(db, childId, { config, band: o.settings.band, soundOn: o.settings.soundEffects, observers: o.observers, primaryObserverId: o.primaryObserverId, now });
+      const start = await loadAbaStart(db, childId, { config, band: o.settings.band, soundOn: o.settings.soundEffects, adultReward: o.settings.adultReward, observers: o.observers, primaryObserverId: o.primaryObserverId, now });
       if (unmounted.current) return;
       if (start.kind === 'blocked') {
         setPhase({ kind: 'ended', variant: 'neutral', board: null });
@@ -544,7 +545,7 @@ export default function AbaSessionScreen() {
           endWithoutWrite();
           return;
         }
-        const r = await loadAbaResume(db, childId, { soundOn: startOpts.current.settings.soundEffects, now });
+        const r = await loadAbaResume(db, childId, { soundOn: startOpts.current.settings.soundEffects, adultReward: startOpts.current.settings.adultReward, now });
         if (mine !== leaves.current) return;
         if (r.kind === 'none' || r.kind === 'blocked') {
           // снимка нет (отзыв) или писать нельзя (пауза): конец без записи, новую сессию возврат не начинает
@@ -1150,7 +1151,8 @@ export default function AbaSessionScreen() {
       break;
     }
     case 'access':
-      body = s?.reinforcerId ? <AccessView run={phase.run} tick={phase.tick} reinforcerId={s.reinforcerId} moving={!still} /> : null;
+      // «Готово» взрослого у «Награды от взрослого» (решение 14): T — сейчас, дальше обычный кадр конца по сроку фазы
+      body = s?.reinforcerId ? <AccessView run={phase.run} tick={phase.tick} reinforcerId={s.reinforcerId} moving={!still} onAdultDone={() => adultDone(clock.now())} /> : null;
       break;
     case 'exchange':
       // обмен без кнопки «Получить!» на всех путях (Ц3.4): требования к ребёнку нет, жетоны уходят в карточку сами

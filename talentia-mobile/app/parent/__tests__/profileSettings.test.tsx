@@ -98,6 +98,20 @@ describe('настройки ребёнка', () => {
     }
   });
 
+  it('«Награда от взрослого» (решение 14): по умолчанию выключена; включение — в профиль и в идущую сессию ребёнка', async () => {
+    useChildSession.getState().startAccountSession({ profile, snapshot: { ...EMPTY_PROGRESS }, now: new Date('2026-11-12T10:00:00.000Z') });
+    try {
+      await render();
+      expect(screen.getByTestId('profile-adult-reward-switch').props.value).toBe(false);
+      expect(useChildSession.getState().settings.adultReward).toBe(false);
+      await fireEvent(screen.getByTestId('profile-adult-reward-switch'), 'valueChange', true);
+      expect(updateProfile).toHaveBeenCalledWith({ ...profile, adultReward: true });
+      expect(useChildSession.getState().settings.adultReward).toBe(true);
+    } finally {
+      useChildSession.getState().reset();
+    }
+  });
+
   it('обычная настройка сохраняется сразу без PIN: спокойный режим и длительность', async () => {
     await render();
     await fireEvent(screen.getByTestId('profile-calm-switch'), 'valueChange', true);

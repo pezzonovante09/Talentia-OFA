@@ -31,7 +31,7 @@ export type AbaResume =
   /** Продолжить: состояние уже по живой доске, с `rechooseNow` при 2–30 мин (и высоковероятной пробой). */
   | { kind: 'resume'; state: AbaSessionState; leftAt: number; awayMs: number; outcome: 'same_trial' | 'rechoose' };
 
-export type ResumeOptions = { soundOn: boolean; now: number; art?: Readonly<Record<string, unknown>> };
+export type ResumeOptions = { soundOn: boolean; now: number; art?: Readonly<Record<string, unknown>>; /** «Награда от взрослого» (решение 14). */ adultReward?: boolean };
 
 /**
  * Что делать со снимком при старте экрана сессии и при возврате из фона. `leftAt` — `updated_at` снимка; без него
@@ -48,7 +48,7 @@ export async function loadAbaResume(db: SqlDb, childId: string, o: ResumeOptions
   const awayMs = Math.max(0, o.now - leftAt);
   const outcome = awayOutcome(awayMs, ov.inProgress.day === abaLocalDay(o.now));
   if (outcome === 'abandon') return { kind: 'abandon', state: ov.inProgress, leftAt };
-  const state = await resumeAbaSession(db, childId, resumePoolFor(ov.inProgress, o.soundOn, o.art), awayMs);
+  const state = await resumeAbaSession(db, childId, resumePoolFor(ov.inProgress, o.soundOn, o.art, o.adultReward), awayMs);
   if (!state) return { kind: 'none' };
   return { kind: 'resume', state, leftAt, awayMs, outcome };
 }

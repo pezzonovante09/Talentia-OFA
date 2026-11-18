@@ -1,8 +1,13 @@
 /**
  * Каталог подкрепителей ABA v1 (№149; состав — `aba-pedagogy-specialist` 2026-10-25, седьмая беззвучная —
  * `paint_drop`, владелец 2026-10-26). Сцены — `docs/design/aba-screens-2026-10-25.md` Ц2.9: каждая отвечает на
- * одиночный тап, кончается сама, работает офлайн. Нельзя: еда, внешние экраны, покупки, коллекции и наклейки,
- * разговор с Tali, физический контакт, свои названия и фото.
+ * одиночный тап, кончается сама, работает офлайн. Нельзя в каталоге: еда, внешние экраны, покупки, коллекции и
+ * наклейки, разговор с Tali, физический контакт, свои названия и фото.
+ *
+ * Исключение — «Награда от взрослого» (`from_adult`, решение 14 методиста; пересматривает №149 «в v1 только
+ * фиксированный каталог с картинками», подтверждено владельцем 2026-11-18): что дать, решает взрослый рядом, вне
+ * приложения. Только «Со взрослым», по умолчанию выключена — включает взрослый в настройках профиля; что именно дали, не
+ * записывается и не вводится (в журнале — только id позиции); в тройке выбора — не больше одного раза.
  */
 import type { ReinforcerItem } from '../../types/aba';
 
@@ -10,9 +15,9 @@ import type { ReinforcerItem } from '../../types/aba';
  * Награды, у которых есть настоящая сцена (правка 1, 2026-11-12): в выбор идут только они, как цели — только с
  * картинками. Пока готовых меньше `MIN_REINFORCER_POOL` после всех фильтров, выбор берёт весь каталог, как раньше
  * (`services/local/abaStart.ts`): иначе занятие не начнётся. С 2026-11-13 готовы 7: шесть беззвучных и «Поём вместе»;
- * барабан, ксилофон, песенка и пазл — партия 2.
+ * с 2026-11-18 — и «Награда от взрослого» (только при включённой настройке). Барабан, ксилофон, песенка и пазл — партия 2.
  */
-export const REWARD_SCENE_READY: ReadonlySet<string> = new Set(['bubbles', 'kaleidoscope', 'pinwheel', 'marble_run', 'tali_dance', 'paint_drop', 'sing_together']);
+export const REWARD_SCENE_READY: ReadonlySet<string> = new Set(['bubbles', 'kaleidoscope', 'pinwheel', 'marble_run', 'tali_dance', 'paint_drop', 'sing_together', 'from_adult']);
 
 export const REINFORCERS: readonly ReinforcerItem[] = [
   { id: 'bubbles', labelKey: 'abaReinforcer.items.bubbles', sound: false, classes: ['bubble'] },
@@ -27,4 +32,6 @@ export const REINFORCERS: readonly ReinforcerItem[] = [
   { id: 'xylophone', labelKey: 'abaReinforcer.items.xylophone', sound: true, classes: ['instrument'] },
   { id: 'song', labelKey: 'abaReinforcer.items.song', sound: true, classes: ['music'], apartFrom: ['sing_together'] },
   { id: 'sing_together', labelKey: 'abaReinforcer.items.sing_together', sound: false, configs: ['with_adult'], classes: ['music'] },
+  // сцена — значок, кольцо доступа и «Готово» взрослого (`access/FromAdultScene`); стимулов-классов у неё нет
+  { id: 'from_adult', labelKey: 'abaReinforcer.items.from_adult', sound: false, configs: ['with_adult'], adultGiven: true, classes: [] },
 ];

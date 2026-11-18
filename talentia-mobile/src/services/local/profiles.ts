@@ -29,6 +29,11 @@ export type ChildProfile = {
   calmMode: boolean;
   focusMode: boolean;
   soundEffects: boolean;
+  /**
+   * «Награда от взрослого» в ABA «Со взрослым» (решение 14 методиста, 2026-11-18): в выбор награды добавляется
+   * `from_adult`. Выключена по умолчанию; в профилях, записанных до неё, поля нет — нет поля значит «выключена».
+   */
+  adultReward?: boolean;
   createdAt: string;
 };
 
@@ -54,6 +59,7 @@ export function newProfile(input: Pick<ChildProfile, 'childId' | 'band' | 'inter
     calmMode: false,
     focusMode: false,
     soundEffects: true,
+    adultReward: false,
     ...input,
   };
 }

@@ -31,6 +31,16 @@ export function startAccess(startedAt: number, durationMs: number, settleMs = 0,
   return { startedAt, durationMs, settleMs: Math.min(Math.max(0, settleMs), abaAccessScene.settleMaxMs), calm, stage: 'play', cued: false };
 }
 
+/**
+ * «Готово» взрослого у «Награды от взрослого» (`from_adult`, решение 14): награду дал взрослый вне приложения, и конец
+ * доступа — его касание, если оно раньше кольца. T переносится на `at`, дальше — обычный кадр конца по `stepAccess`
+ * (кольцо исчезает, карточка, `done`); «закругляемся» уже не звучит. После T касание ничего не меняет.
+ */
+export function finishAccessNow(r: AccessRun, at: number): AccessRun {
+  if (r.stage !== 'play' || at >= accessEndsAt(r)) return r;
+  return { ...r, durationMs: Math.max(1, at - r.startedAt), cued: true };
+}
+
 /** T — конец времени ребёнка. */
 export const accessEndsAt = (r: AccessRun) => r.startedAt + r.durationMs;
 const foldAt = (r: AccessRun) => accessEndsAt(r) + r.settleMs;

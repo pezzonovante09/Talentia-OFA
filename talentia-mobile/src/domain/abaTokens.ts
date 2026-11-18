@@ -242,7 +242,8 @@ export const MIN_REINFORCER_POOL = 6;
  * `history` — выборы прошлых сессий, свежие в конце. `apart` — пары, которые не ставятся в одну
  * тройку (`song` и `sing_together`: один и тот же подкрепитель двумя способами). Пара и для
  * «дважды подряд» — один подкрепитель (№165): после `[song, sing_together]` в третий раз не
- * предлагается ни то, ни другое.
+ * предлагается ни то, ни другое. Позиция в тройке не повторяется: «Награда от взрослого» (`from_adult`, решение 14) —
+ * не больше одного раза, как любая; в пул она попадает только «Со взрослым» и при настройке профиля (`reinforcerPoolFor`).
  */
 export function reinforcerChoices(pool: string[], history: string[], rng: Rng, apart: readonly [string, string][] = []): string[] {
   if (pool.length < MIN_REINFORCER_POOL) {

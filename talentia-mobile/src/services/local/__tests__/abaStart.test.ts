@@ -190,6 +190,19 @@ describe('вход сессии', () => {
     expect(r.input.reinforcerPool.length).toBeGreaterThanOrEqual(MIN_REINFORCER_POOL);
   });
 
+  it('«Награда от взрослого» (решение 14): в пуле «Со взрослым» только при включённой настройке; в «Сам» — нет', async () => {
+    const db = await paired();
+    const off = await loadAbaStart(db, KID, opts());
+    if (off.kind !== 'ready') throw new Error(off.reason);
+    expect(off.input.reinforcerPool).not.toContain('from_adult');
+    const on = await loadAbaStart(db, KID, opts({ adultReward: true }));
+    if (on.kind !== 'ready') throw new Error(on.reason);
+    expect(on.input.reinforcerPool).toContain('from_adult');
+    const alone = await loadAbaStart(db, KID, opts({ config: 'alone', adultReward: true, observers: [], primaryObserverId: null }));
+    if (alone.kind !== 'ready') throw new Error(alone.reason);
+    expect(alone.input.reinforcerPool).not.toContain('from_adult');
+  });
+
   it('сопряжение: вход есть до сопряжения, пул под доступ 20 с — без пазла', async () => {
     const db = await granted();
     const p = await loadPairingStart(db, KID, { config: 'with_adult', soundOn: true, art: DEV_PLACEHOLDER_ART });

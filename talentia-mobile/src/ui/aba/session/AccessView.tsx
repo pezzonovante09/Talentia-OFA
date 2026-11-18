@@ -6,17 +6,35 @@
  */
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Pressable, useColorScheme, View } from 'react-native';
 
-import { abaAccessScene, abaExchange, abaPairingLayout } from '../../../design/abaTokens';
+import { abaAccessScene, abaAdultPanelColors, abaAdultSheet, abaExchange, abaPairingLayout, abaRewardScene } from '../../../design/abaTokens';
+import { parentPressed, parentTypography } from '../../../design/parentTokens';
+import { AbaText } from '../AbaText';
 import { RewardScene } from '../access/RewardScene';
 import { accessLeft, accessRingVisible, type AccessRun } from '../model/accessRun';
 import { NonTrialRow } from '../parts';
 import { AccessRing, PictureCard } from '../reinforcer';
 import { GrowFrame } from './ExchangeView';
 
-export function AccessView({ run, tick, reinforcerId, moving, onExit }: { run: AccessRun; tick: number; reinforcerId: string; moving: boolean; onExit?: () => void }) {
+export function AccessView({
+  run,
+  tick,
+  reinforcerId,
+  moving,
+  onExit,
+  onAdultDone,
+}: {
+  run: AccessRun;
+  tick: number;
+  reinforcerId: string;
+  moving: boolean;
+  onExit?: () => void;
+  /** «Готово» взрослого у «Награды от взрослого» (решение 14): конец доступа раньше кольца (`finishAccessNow`). */
+  onAdultDone?: () => void;
+}) {
   const { t } = useTranslation();
+  const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
   const [area, setArea] = useState<{ w: number; h: number } | null>(null);
   // слот карточки блока обмена «карточка · 24 · ряд 88»: сцена убирается в ту же карточку, из которой раскрылась
   const block = abaExchange.cardSize + abaPairingLayout.gapCardRow + abaExchange.rowHeight;
@@ -35,6 +53,10 @@ export function AccessView({ run, tick, reinforcerId, moving, onExit }: { run: A
               <RewardScene reinforcerId={reinforcerId} ended={run.stage !== 'play'} still={!moving} />
             </View>
           )}
+          {/* «Готово» взрослого поверх низа сцены, не в раскладке: место карточки конца то же, что у обмена */}
+          {reinforcerId === 'from_adult' && run.stage === 'play' && onAdultDone && (
+            <AdultDone label={t('abaSession.fromAdultDone')} scheme={scheme} onPress={onAdultDone} />
+          )}
           {run.stage === 'fold' && moving && area && card && (
             <GrowFrame from={{ x: 0, y: 0, w: area.w, h: area.h }} to={card} ms={abaAccessScene.endFrame.foldMs} reinforcerId={reinforcerId} testID="aba-access-fold" />
           )}
@@ -47,5 +69,36 @@ export function AccessView({ run, tick, reinforcerId, moving, onExit }: { run: A
         </View>
       </View>
     </View>
+  );
+}
+
+/** Кнопка листа взрослого (№203: белая, граница 1.5 `edge`, радиус 14, без борта детских кнопок); срабатывает по отпусканию. */
+function AdultDone({ label, scheme, onPress }: { label: string; scheme: 'light' | 'dark'; onPress: () => void }) {
+  const p = abaAdultPanelColors(scheme);
+  const K = abaRewardScene.fromAdult;
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      testID="aba-from-adult-done"
+      style={({ pressed }) => ({
+        position: 'absolute',
+        left: K.doneInset,
+        right: K.doneInset,
+        bottom: K.doneInset,
+        height: K.doneHeight,
+        borderRadius: abaAdultSheet.buttonRadius,
+        borderWidth: abaAdultSheet.buttonBorder,
+        borderColor: pressed ? p.label : p.border,
+        backgroundColor: pressed ? parentPressed[scheme].card : p.button,
+        alignItems: 'center',
+        justifyContent: 'center',
+      })}
+    >
+      <AbaText type={parentTypography.label} color={p.label} max={1.3} lines={1} adjustsFontSizeToFit>
+        {label}
+      </AbaText>
+    </Pressable>
   );
 }
