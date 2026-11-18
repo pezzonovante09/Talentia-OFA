@@ -183,7 +183,7 @@ const pairings = (r: Run) => r.result.session.events.filter((e) => e.kind === 'p
 
 const allCorrect: Policy = () => 'correct';
 const TOP = 'match-shape';
-const COLOR = 'match-color';
+const COLOR = 'match-color-3';
 const BOARD_1 = { size: 1 as const, earned: 0, nonContingent: 0 };
 
 // ---------------------------------------------------------------------------
@@ -237,7 +237,7 @@ describe('вопрос 115: занятия 1 и 2 после знакомств�
     expect(baseline.every((s) => s.praiseAttentionBeforeSd === false)).toBe(true);
   });
 
-  it('занятие 2 — доска на 1; разогрев и отвлекающие — освоенная match-shape; базовая линия match-color; обучения нет', () => {
+  it('занятие 2 — доска на 1; разогрев и отвлекающие — освоенная match-shape; базовая линия match-color-3; обучения нет', () => {
     expect(s2.planned.board).toMatchObject({ size: 1 });
     expect(s2.planned.immediateExchange).toBe(true);
     expect(s2.planned.placementTargetIds).toEqual([]);

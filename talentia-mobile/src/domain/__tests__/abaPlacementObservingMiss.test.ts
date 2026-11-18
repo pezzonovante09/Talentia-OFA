@@ -246,18 +246,19 @@ describe('телефон: на третьей пробе проверки обр
     }
   });
 
-  it('контроль: при «всё верно» обучение цвету начинается со 2-го следующего занятия', () => {
+  // цвет из 3 (решение методиста 40): поле 3 осваивается по базовой линии — при «всё верно» обучения нет вовсе
+  it('контроль: при «всё верно» следующее занятие — первые пробы цвета из трёх, за ним — всё освоено', () => {
     expect(path(allCorrect, 2)).toEqual([
-      { kind: 'baseline', targetId: 'match-color' },
-      { kind: 'teaching', targetId: 'match-color', plannedBreak: true },
+      { kind: 'baseline', targetId: 'match-color-3' },
+      { kind: 'all_mastered' },
     ]);
   });
 
   it('путь не откатывается: следующим — снова проверка той же вершины, дальше как при «всё верно» со сдвигом на одно занятие', () => {
     expect(path(phoneMiss, 3)).toEqual([
       { kind: 'placement', targetId: TOP },
-      { kind: 'baseline', targetId: 'match-color' },
-      { kind: 'teaching', targetId: 'match-color', plannedBreak: true },
+      { kind: 'baseline', targetId: 'match-color-3' },
+      { kind: 'all_mastered' },
     ]);
   });
 });
@@ -344,7 +345,7 @@ describe('две сессии подряд без итога из-за пром�
 
 describe('обычная базовая линия: промах наблюдения не понижает старт', () => {
   const placed = runSession(freshChild(), allCorrect).child;
-  const COLOR = 'match-color';
+  const COLOR = 'match-color-3';
   const isColor = (s: TrialStep) => s.targetId === COLOR && s.trialKind === 'baseline';
   const control = runSession(placed, allCorrect);
   const missed = runSession(placed, (s, n) => (isColor(s) && n === 0 ? 'none' : 'correct'));
@@ -352,7 +353,7 @@ describe('обычная базовая линия: промах наблюде�
   const wrong = runSession(placed, (s, n) => (isColor(s) && n === 0 ? 'incorrect' : 'correct'));
   const pick = (s: AbaTargetState) => [s.phase, s.startPromptLevel];
 
-  it('предусловие: match-color — обычная базовая линия, не проверка', () => {
+  it('предусловие: match-color-3 — обычная базовая линия, не проверка', () => {
     expect(control.planned.baselineTargetIds).toContain(COLOR);
     expect(control.planned.placementTargetIds).not.toContain(COLOR);
   });

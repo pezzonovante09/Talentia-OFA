@@ -152,7 +152,7 @@ describe('stageLines — строки «Где мы сейчас»', () => {
   const W = ru.parent.aba.where;
 
   it('обучение на полосе 5–6: цель, перерыв до минуты, жетоны', () => {
-    expect(stageLines(t, view({ stage: { kind: 'teaching', targetId: 'match-color', plannedBreak: true }, tokens: true }), '5-6')).toEqual([
+    expect(stageLines(t, view({ stage: { kind: 'teaching', targetId: 'match-color-3', plannedBreak: true }, tokens: true }), '5-6')).toEqual([
       W.teaching.replace('{{target}}', 'По цвету'),
       W.plannedBreak60,
       W.tokens,
@@ -165,7 +165,7 @@ describe('stageLines — строки «Где мы сейчас»', () => {
   });
 
   it('смешанное занятие: первые пробы и обучение — обе строки и «будут жетоны», не «жетонов нет»', () => {
-    const lines = stageLines(t, view({ stage: { kind: 'baseline', targetId: 'match-color' }, alsoTeaching: { targetId: 'match-same-2', plannedBreak: true }, tokens: true }), '5-6');
+    const lines = stageLines(t, view({ stage: { kind: 'baseline', targetId: 'match-color-3' }, alsoTeaching: { targetId: 'match-same-2', plannedBreak: true }, tokens: true }), '5-6');
     expect(lines).toEqual([W.baseline.replace('{{target}}', 'По цвету'), W.teaching.replace('{{target}}', 'Одинаковые из двух'), W.plannedBreak60, W.tokens]);
   });
 
@@ -187,7 +187,7 @@ describe('stageLines — строки «Где мы сейчас»', () => {
 
   it('проверка и первые пробы без обучения: «без жетонов» уже в строке этапа — строки noTokens нет (№203)', () => {
     expect(stageLines(t, view({ stage: { kind: 'placement', targetId: 'match-shape' }, tokens: false }), '5-6')).toEqual([W.placement.replace('{{target}}', 'По форме')]);
-    expect(stageLines(t, view({ stage: { kind: 'baseline', targetId: 'match-color' }, tokens: false }), '5-6')).toEqual([W.baseline.replace('{{target}}', 'По цвету')]);
+    expect(stageLines(t, view({ stage: { kind: 'baseline', targetId: 'match-color-3' }, tokens: false }), '5-6')).toEqual([W.baseline.replace('{{target}}', 'По цвету')]);
   });
 
   it('план не построился — строк нет', () => {
