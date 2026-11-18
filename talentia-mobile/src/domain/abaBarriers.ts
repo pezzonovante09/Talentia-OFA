@@ -4,7 +4,8 @@
  * профилактика уже встроена (балансировка позиций и образцов, ротация подкрепителей).
  * Автоматическая реакция есть только у `prompt_dependent` (`abaPrompting.ts`).
  *
- * - на цели: смещение по позиции (`position_bias`), предпочтение карточки (`card_preference`);
+ * - на цели: смещение по позиции (`position_bias`), предпочтение карточки (`card_preference`), чередование сторон
+ *   при выборе из двух (`alternation_bias`, решение методиста 39);
  * - на сессии: перебор (`over_tapping`), слабая мотивация (`low_motivation`).
  *
  * Флаг ставится и снимается по двум сессиям подряд: ставится, когда условие держится на окнах,
@@ -60,21 +61,45 @@ function topShare(values: readonly (string | number)[]): number {
 }
 
 /** Флаги цели на окне сессий (свежие в конце). Группы — по размеру поля. */
-export function choiceBiasIn(sessions: readonly SessionTrials[], format: AbaFormat): ('position_bias' | 'card_preference')[] {
-  const trials = sessions
-    .slice(-BARRIERS.windowSessions)
-    .flatMap((x) => x.trials)
-    .filter((t) => choiceAtFullField(t, format));
+type BiasFlag = 'position_bias' | 'card_preference' | 'alternation_bias';
+
+export function choiceBiasIn(sessions: readonly SessionTrials[], format: AbaFormat): BiasFlag[] {
+  const window = sessions.slice(-BARRIERS.windowSessions);
+  const trials = window.flatMap((x) => x.trials).filter((t) => choiceAtFullField(t, format));
   const bySize = new Map<number, AbaTrial[]>();
   for (const t of trials) bySize.set(t.field!.length, [...(bySize.get(t.field!.length) ?? []), t]);
-  const out = new Set<'position_bias' | 'card_preference'>();
+  const out = new Set<BiasFlag>();
   for (const [n, group] of bySize) {
     const threshold = BARRIERS.shareAt[n];
     if (threshold === undefined || group.length < BARRIERS.minTrials) continue;
     if (topShare(group.map((t) => t.field!.indexOf(t.chosenCardId!))) >= threshold) out.add('position_bias');
     if (prefersCard(group, threshold)) out.add('card_preference');
   }
+  if (alternates(sessions, format)) out.add('alternation_bias');
   return [...out];
+}
+
+/**
+ * Чередование при выборе из двух (решение методиста 39, рецензия 2026-11-18). Считаются только пары соседних проб
+ * одной сессии, где место верной **не сменилось**: сравнивающий ребёнок там сторону не меняет, случайный — в
+ * половине пар, «жми на другую сторону» — всегда. Пар мало (блок из 5 проб даёт ~2 такие пары за сессию), поэтому
+ * окно — последние `pairs` таких пар за до `maxSessions` сессий, а не три сессии. При 10 из 12 у случайного ответа
+ * ложное срабатывание ≈ 2 %.
+ */
+export const ALTERNATION = { pairs: 12, minSwitched: 10, maxSessions: 10 } as const;
+
+function alternates(sessions: readonly SessionTrials[], format: AbaFormat): boolean {
+  const flips: boolean[] = [];
+  for (const x of [...sessions.slice(-ALTERNATION.maxSessions)].reverse()) {
+    const two = x.trials.filter((t) => choiceAtFullField(t, format) && t.field!.length === 2 && t.sampleCardId !== undefined);
+    for (let i = two.length - 1; i >= 1 && flips.length < ALTERNATION.pairs; i -= 1) {
+      const [a, b] = [two[i - 1], two[i]];
+      if (a.field!.indexOf(a.sampleCardId!) !== b.field!.indexOf(b.sampleCardId!)) continue;
+      flips.push(a.field!.indexOf(a.chosenCardId!) !== b.field!.indexOf(b.chosenCardId!));
+    }
+    if (flips.length >= ALTERNATION.pairs) break;
+  }
+  return flips.length >= ALTERNATION.pairs && flips.filter(Boolean).length >= ALTERNATION.minSwitched;
 }
 
 /**
@@ -101,7 +126,7 @@ export function applyChoiceBias(s: AbaTargetState, sessions: readonly SessionTri
   const now = choiceBiasIn(sessions, format);
   const before = sessions.length > 1 ? choiceBiasIn(sessions.slice(0, -1), format) : [];
   const flags: AbaFlag[] = s.flags.filter((f) => {
-    if (f !== 'position_bias' && f !== 'card_preference') return true;
+    if (f !== 'position_bias' && f !== 'card_preference' && f !== 'alternation_bias') return true;
     return now.includes(f) || before.includes(f);
   });
   for (const f of now) if (!flags.includes(f)) flags.push(f);

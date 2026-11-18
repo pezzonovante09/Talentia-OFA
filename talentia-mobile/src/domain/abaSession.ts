@@ -192,6 +192,28 @@ export const MAX_CLOSING_ATTEMPTS = 2;
 export const MAX_SAME_POSITION = 2;
 
 /**
+ * Место верной карточки при выборе из двух (решение методиста 39, 2026-11-18; приём рядов Геллермана): случайно, не
+ * больше 3 раз подряд на одной стороне и не больше 4 мест подряд с чередованием (Л-П-Л-П), без выравнивания счёта
+ * сторон. Выравнивание «реже занятое место» при двух местах давало почти строгое чередование — стратегия «жми на
+ * другую сторону» брала ≈ 75 % проб.
+ */
+export const TWO_CHOICE_SIDE = { maxSameInRow: 3, maxAlternatingRun: 4 } as const;
+
+/** Место верной при выборе из двух по прошлым местам цели в сессии (свежие в конце). */
+export function twoChoicePosition(positions: readonly number[], rng: Rng): number {
+  const ban = new Set<number>();
+  const same = positions.slice(-TWO_CHOICE_SIDE.maxSameInRow);
+  if (same.length === TWO_CHOICE_SIDE.maxSameInRow && same.every((p) => p === same[0])) ban.add(same[0]);
+  const alt = positions.slice(-TWO_CHOICE_SIDE.maxAlternatingRun);
+  if (alt.length === TWO_CHOICE_SIDE.maxAlternatingRun && alt.every((p, i) => i === 0 || p !== alt[i - 1])) {
+    // ещё одно чередование продлило бы ряд: место — то же, что в прошлой пробе
+    ban.add(1 - alt[alt.length - 1]);
+  }
+  const allowed = [0, 1].filter((p) => !ban.has(p));
+  return allowed.length === 1 ? allowed[0] : pick(allowed.length ? allowed : [0, 1], rng);
+}
+
+/**
  * Сессий обучения без снижения стартового уровня и без роста доли самостоятельных, после
  * которых цель считается застрявшей: флаг `no_progress` специалисту, и цель уступает
  * слот следующей по программе. Иначе две застрявшие цели навсегда занимают оба слота, а
@@ -984,9 +1006,14 @@ function withMatchField(state: AbaSessionState, planned: PlannedTrial, target: A
     const samples = before.filter((t) => t.exemplarId === exemplar.id).map((t) => t.sampleCardId!);
     sample = leastUsed(cards, samples, r.rng, samples.slice(-1));
     const positions = before.map((t) => t.field!.indexOf(t.sampleCardId!));
-    const last2 = positions.slice(-MAX_SAME_POSITION);
-    const ban = last2.length === MAX_SAME_POSITION && last2.every((p) => p === last2[0]) ? [last2[0]] : [];
-    const at = leastUsed(cards.map((_, i) => i), positions, r.rng, ban);
+    let at: number;
+    if (cards.length === 2) {
+      at = twoChoicePosition(positions, r.rng);
+    } else {
+      const last2 = positions.slice(-MAX_SAME_POSITION);
+      const ban = last2.length === MAX_SAME_POSITION && last2.every((p) => p === last2[0]) ? [last2[0]] : [];
+      at = leastUsed(cards.map((_, i) => i), positions, r.rng, ban);
+    }
     const rest = shuffle(cards.filter((c) => c !== sample), r.rng);
     field = [...rest.slice(0, at), sample, ...rest.slice(at)];
   }
