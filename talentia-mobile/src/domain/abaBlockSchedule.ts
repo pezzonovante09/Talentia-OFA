@@ -1,59 +1,62 @@
 /**
- * Расписание ребёнку (решение методиста 34): сколько рабочих блоков осталось в плане сессии и последний ли следующий.
- * Только чтение очереди — план не меняется; без I/O.
+ * Расписание ребёнку (решение методиста 34, ревью методиста): сколько отрезков работы осталось в плане сессии,
+ * последний ли следующий и что «потом». Только чтение очереди и доски — план не меняется; без I/O.
  *
- * Правило счёта (структурное, без id целей — новый вид блока считается так же):
- * - очередь режется перерывами (`break`) на отрезки;
- * - в отрезке блок — это пробы, закрытые `block_end`; `block_end` без проб перед ним (блок уже доигран) не считается;
- * - пробы отрезка без единого закрытого блока (поддержание и обобщение в конце, после перерыва) — один блок;
- *   хвост проб после последнего `block_end` в том же отрезке — часть того же отрезка, отдельно не считается.
+ * Правило счёта (структурное, без id целей): очередь режется перерывами (`break`) на отрезки, отрезок с хотя бы
+ * одной пробой — одна точка. Считаются отрезки, а не блоки: расписание видно только на перерыве, и два блока в одном
+ * отрезке сняли бы две точки разом. `block_end` без проб (блок уже доигран), доступ и выбор награды — не работа.
  * Перерыв в голове очереди (идёт сейчас) ничего не меняет: пустой отрезок даёт 0.
  * Лимит времени может кончить сессию раньше — «последнее» обещает план, а не часы (таймера ребёнку нет).
  */
 import type { AbaSessionState } from './abaSession';
+import { breakEndsWithExchange } from './abaSession';
 
 type Queue = AbaSessionState['queue'];
 
 export type BlockSchedule = {
-  /** Рабочих блоков впереди, считая следующий. 0 — работы больше нет: расписание не показывается. */
+  /** Отрезков работы впереди, считая следующий. 0 — работы больше нет: расписание не показывается. */
   blocksLeft: number;
-  /** Следующий блок — последний: значок «последнее» вместо точек. */
+  /** Следующий отрезок — последний. */
   isLast: boolean;
 };
 
 export function blockSchedule(queue: Queue): BlockSchedule {
   let total = 0;
-  let closed = 0; // закрытых блоков в текущем отрезке
-  let trials = 0; // проб с прошлого `block_end` или начала отрезка
-  let anyTrial = false; // проба в отрезке вообще
-  const closeStretch = () => {
-    total += closed > 0 ? closed : anyTrial ? 1 : 0;
-    closed = 0;
-    trials = 0;
-    anyTrial = false;
-  };
+  let anyTrial = false; // проба в текущем отрезке
   for (const item of queue) {
-    if (item.kind === 'break') closeStretch();
-    else if (item.kind === 'trial') {
-      trials += 1;
-      anyTrial = true;
-    } else if (item.kind === 'block_end') {
-      if (trials > 0) closed += 1;
-      trials = 0;
-    }
+    if (item.kind === 'break') {
+      if (anyTrial) total += 1;
+      anyTrial = false;
+    } else if (item.kind === 'trial') anyTrial = true;
   }
-  closeStretch();
+  if (anyTrial) total += 1;
   return { blocksLeft: total, isLast: total === 1 };
 }
 
 /**
- * Расписание для экрана: блоки и награда «потом». Выбор награды ещё впереди (рутина обменяла жетоны, пока сессия
- * была свёрнута, — `reinforcerStale`, или выбор из трёх стоит в очереди) — прежняя картинка была бы ложным обещанием:
- * награды нет, и расписание не показывается.
+ * Что «потом» в расписании. Наверняка за работой следуют только жетоны: обмен бывает лишь на полной доске, цикл
+ * сопряжения в конце — лишь в сессии без обучения и обменов. Поэтому «потом» — доска (заработанные и пустые
+ * ячейки) с наградой при ней («жетоны → награда»). Награда одна — только когда обмен в ближайшей точке гарантирован
+ * (`breakEndsWithExchange`); заполнение доски «по плану» не предсказуемо и не считается.
+ */
+export type ScheduleThen =
+  | { kind: 'board'; size: number; earned: number }
+  | { kind: 'reward' };
+
+export type ChildScheduleView = BlockSchedule & { reinforcerId: string | null; then: ScheduleThen };
+
+/**
+ * Расписание для экрана. Выбор награды ещё впереди (рутина обменяла жетоны, пока сессия была свёрнута, —
+ * `reinforcerStale`, или выбор из трёх стоит в очереди) — прежняя картинка была бы ложным обещанием: награды нет,
+ * и расписание не показывается.
  */
 export function childSchedule(
-  state: Pick<AbaSessionState, 'queue' | 'reinforcerId' | 'reinforcerStale'>,
-): BlockSchedule & { reinforcerId: string | null } {
+  state: Pick<AbaSessionState, 'queue' | 'reinforcerId' | 'reinforcerStale' | 'board'>,
+): ChildScheduleView {
   const rechoice = state.reinforcerStale === true || state.queue.some((q) => q.kind === 'reinforcer');
-  return { ...blockSchedule(state.queue), reinforcerId: rechoice ? null : state.reinforcerId };
+  const { size, earned } = state.board;
+  const then: ScheduleThen = breakEndsWithExchange(state)
+    ? { kind: 'reward' }
+    : { kind: 'board', size, earned: Math.max(0, Math.min(earned, size)) };
+  return { ...blockSchedule(state.queue), reinforcerId: rechoice ? null : state.reinforcerId, then };
 }

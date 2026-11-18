@@ -26,6 +26,7 @@
     "trainingWaitHint": "Wait. No? Point to the button silently. No? Press it yourself",
     "schedule": {
       "firstThen": "First the task, then the reward",
+      "firstThenTokens": "First the task, then tokens toward the reward",
       "left": "Tasks left: {{count}}",
       "last": "Last task"
     }

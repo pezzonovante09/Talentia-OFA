@@ -1388,9 +1388,19 @@ export function awayOutcome(awayMs: number, sameDay = true): 'same_trial' | 'rec
  * перерыве, предложенном приложением после тихих проб (`device_offer`: иначе «молчание → перерыв → подкрепитель»),
  * обмена нет — полная доска ждёт перерыва по расписанию или конца. Пока подкрепитель устарел (обмен рутины) — тоже.
  */
-function breakExchanges(state: AbaSessionState, head: Extract<QueueItem, { kind: 'break' }>): boolean {
+function breakExchanges(state: Pick<AbaSessionState, 'reinforcerStale'>, head: Extract<QueueItem, { kind: 'break' }>): boolean {
   if (state.reinforcerStale || head.cardTaken === true) return false;
   return head.initiatedBy === undefined;
+}
+
+/**
+ * Перерыв в голове очереди кончится обменом (запасной обмен `finishBreak`): доска уже полна, перерыв по расписанию,
+ * подкрепитель не устарел. Единственный случай, когда награда в точке обмена известна наверняка — заполнение доски
+ * «по плану» не предсказуемо (жетоны зависят от ответов и расписания), его не считаем (решение методиста 34, ревью).
+ */
+export function breakEndsWithExchange(state: Pick<AbaSessionState, 'queue' | 'board' | 'reinforcerStale'>): boolean {
+  const head = state.queue[0];
+  return head?.kind === 'break' && isBoardFull(state.board) && breakExchanges(state, head);
 }
 
 /**
