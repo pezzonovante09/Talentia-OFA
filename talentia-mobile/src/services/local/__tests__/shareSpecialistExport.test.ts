@@ -138,7 +138,7 @@ describe('shareSpecialistExport: два файла, лист, без удале�
     expect([...fs.__disk.keys()]).toEqual(['cache/export/F1/talentia-aba-2026-11-01.html', 'cache/export/F1/talentia-aba-2026-11-01.json']);
   });
 
-  it('файл для программы той же выгрузки — соседний JSON, без очистки и без перезаписи: отчёт первого получателя цел', async () => {
+  it('файл данных той же выгрузки — соседний JSON, без очистки и без перезаписи: отчёт первого получателя цел', async () => {
     await shareSpecialistExport(db, KID, device, NOW, opts());
     events.length = 0;
     await expect(shareSpecialistExport(db, KID, device, NOW, opts({ kind: 'data' }))).resolves.toBe('shared');

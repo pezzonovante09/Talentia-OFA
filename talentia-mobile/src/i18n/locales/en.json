@@ -772,6 +772,42 @@
           "token_training_stalled": "token board training is stuck: two sessions without exchanges"
         },
         "levelsNote": "Prompt level: 0 means no prompt; the higher the number, the stronger the prompt. Probes on new cards are given without prompts. The file keeps no time of day, only days.",
+        "paramsLine": "session conditions saved in “For a specialist”: {{list}}",
+        "paramsDefault": "session conditions: the profile band defaults",
+        "param": {
+          "band": "parameter band {{value}}",
+          "time": "length {{value}}",
+          "teaching": "targets taught per session: {{value}}",
+          "window": "time to answer ({{format}}): {{value}}",
+          "windowDefault": "time to answer: default"
+        },
+        "changesTitle": "Condition changes",
+        "changesNote": "The “For a specialist” log. Who made a change is as stated: the app does not check who is holding the phone. The file keeps no time of day, only days.",
+        "noChanges": "No condition changes in the file.",
+        "changeCol": {
+          "who": "Who",
+          "what": "What changed",
+          "from": "Before",
+          "to": "After"
+        },
+        "roleSpecialist": "specialist",
+        "roleSpecialistClaimed": "specialist (as stated)",
+        "field": {
+          "paramsBand": "parameter band",
+          "timeLimitMs": "session length",
+          "responseWindowMs": "time to answer ({{format}})",
+          "maxTeachingTargets": "targets taught per session",
+          "adultReward": "reward from the adult",
+          "observerTrained": "observer trained by the specialist",
+          "pairingDone": "getting to know tokens done",
+          "flag": "signal reviewed: {{text}}"
+        },
+        "valueDefault": "default",
+        "valueProfile": "as in profile",
+        "valueOn": "yes",
+        "valueOff": "no",
+        "seconds": "{{n}} s",
+        "changeLegend": "Dotted vertical line with a date: the day conditions changed (see “Condition changes”). The file keeps no time of day: if there was a session that day, the line is drawn before it, though the change may have come after.",
         "dataFile": "Full records are in the data file {{file}}.",
         "decimal": ".",
         "percent": "{{value}}%",
