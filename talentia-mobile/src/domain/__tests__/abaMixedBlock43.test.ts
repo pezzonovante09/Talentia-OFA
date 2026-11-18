@@ -3,12 +3,15 @@
  * 10 проб (5 + 5), одна цель не больше двух раз подряд, со старта L0 без подсказок; «освоено» окончательно — ≥ 80 %
  * самостоятельных по каждой цели в двух сессиях в разные дни, иначе цель назад в обучение (`abaMixedBlock.ts`).
  */
+import { ABA_TARGETS, readyAbaTargets } from '../../content/aba';
 import { MATCH_LEVEL1 } from '../../content/aba/match-level1';
+import { DEV_PLACEHOLDER_ART } from '../../services/local/abaStart';
 import type { AbaResponse, AbaTarget, AbaTargetState } from '../../types/aba';
+import { matchDueAt, matchTrialInput, optionActive, startMatchTrial, stepMatchTrial, type MatchTrialRun } from '../../ui/aba/model/matchTrialRun';
 import { mixedVerdict, mixErrors, mixGroups } from '../abaMixedBlock';
-import { chooseReinforcer, nextStep, recordTrial, startAbaSession, type AbaSessionState, type StartInput } from '../abaSession';
-import { isBreakdown } from '../abaPrompting';
-import { programErrors } from '../abaTargetRules';
+import { accessShown, chooseReinforcer, finishAbaSession, finishAccess, finishBreak, nextStep, recordTrial, startAbaSession, type AbaSessionState, type StartInput } from '../abaSession';
+import { answerLevel, isBreakdown } from '../abaPrompting';
+import { programErrors, targetForBand } from '../abaTargetRules';
 import { finishSession, trial } from './abaFixtures';
 import { acq, BASE_MS, correctInput, DAY, masteredState, POOL, tgt, trained } from './abaSessionDriver';
 
@@ -215,5 +218,146 @@ describe('решение 43: смешанный блок', () => {
     const own = Array.from({ length: 5 }, () => trial({ targetId: t.id, kind: 'verification', response: 'incorrect', promptLevelUsed: 0 }));
     expect(isBreakdown(own, t.id)).toBe(false);
     expect(mixedVerdict(masteredState(t), t, own, 20, DAY)?.reason).toBe('mixed_failed');
+  });
+
+  it('3 из 5 у освоенной по базовой линии — не с полной модели: не выше первого уровня, несущего ответ', () => {
+    // формат, где первый уровень, несущий ответ, ниже полной модели (у `match` и подражания это и есть L3)
+    const V = tgt('V', { format: 'voice_volume' });
+    const fromBaseline: AbaTargetState = { ...masteredState(V), masteredBy: 'baseline', startPromptLevel: 3, lastSuccessfulPromptLevel: 3 };
+    const own = [0, 1, 2, 3, 4].map((i) =>
+      trial({ targetId: V.id, kind: 'verification', response: i < 3 ? 'independent' : 'incorrect', promptLevelUsed: 0 }),
+    );
+    const v = mixedVerdict(fromBaseline, V, own, 20, DAY);
+    expect(v?.reason).toBe('mixed_failed');
+    expect(v?.state.startPromptLevel).toBe(answerLevel(V));
+    expect(v?.state.startPromptLevel).toBeLessThan(3);
+  });
+});
+
+// ---------- настоящие цели `match`: форма ↔ цвет через модель экрана ----------
+
+type Act = 'correct' | 'none' | 'incorrect';
+const T0 = Date.UTC(2026, 10, 18, 6);
+const REAL = readyAbaTargets(ABA_TARGETS, DEV_PLACEHOLDER_ART).map((t) => targetForBand(t, '5-6'));
+const SHAPE = REAL.find((t) => t.mixWith?.length)!;
+const PAIR = mixGroups(REAL)[0].map((t) => t.id);
+
+/** «Верно» — образец и такая же карточка; «неверно» — образец и другая; «нет ответа» — окна истекают без касаний. */
+function runMatch(r0: MatchTrialRun, act: Act, at0: number): { r: MatchTrialRun; at: number } {
+  let r = r0;
+  let at = at0;
+  if (act !== 'none') {
+    if (r.sampleTouchedAt === null) r = stepMatchTrial(r, { type: 'tap_sample', at: (at += 1000) });
+    const id = act === 'correct' ? r.step.sampleCardId! : r.step.field!.find((x) => x !== r.step.sampleCardId)!;
+    if (optionActive(r, id)) r = stepMatchTrial(r, { type: 'tap_option', id, at: (at += 500) });
+  }
+  for (let guard = 0; !r.done && guard < 50; guard += 1) {
+    if (r.awaitingL4) {
+      r = stepMatchTrial(r, { type: 'adult', button: 'l4_skipped', at });
+      break;
+    }
+    const due = matchDueAt(r);
+    if (due === null) break;
+    at = Math.max(at, due);
+    r = stepMatchTrial(r, { type: 'due', at });
+  }
+  return { r, at };
+}
+
+/** Занятие целиком; `policy(targetId, n)` — n-я проба смешанного блока цели, остальное верно. */
+function runReal(states: Record<string, AbaTargetState>, day: string, index: number, policy: (id: string, n: number) => Act) {
+  let now = T0 + index * 86_400_000;
+  let st = startAbaSession({
+    sessionId: `r${index}`,
+    sessionIndex: index,
+    day,
+    config: 'with_adult',
+    band: '5-6',
+    targets: REAL,
+    states,
+    reinforcerPool: POOL,
+    reinforcerApart: [],
+    reinforcerHistory: [],
+    tokenTraining: trained(5),
+    startedAt: now,
+    seed: 500 + index,
+    physicalPromptAllowed: false,
+    observers: [{ id: 'o1', role: 'specialist', trained: true }],
+    primaryObserverId: 'o1',
+  });
+  const planned = st;
+  const seen = new Map<string, number>();
+  let seq = 0;
+  for (let guard = 0; guard < 400; guard += 1) {
+    const next = nextStep(st, now);
+    st = next.state;
+    const step = next.step;
+    if (step.kind === 'choose_reinforcer') st = chooseReinforcer(st, step.options[0], now, 'child');
+    else if (step.kind === 'break') st = finishBreak(st, (now += 60_000)).state;
+    else if (step.kind === 'access') {
+      st = accessShown(st);
+      st = finishAccess(st, (now += step.durationMs));
+    } else if (step.kind === 'end') break;
+    else if (step.kind === 'adult_finish_chain') throw new Error('цепочек в match нет');
+    else {
+      const n = seen.get(step.targetId) ?? 0;
+      const mixedTrial = step.trialKind === 'verification';
+      if (mixedTrial) seen.set(step.targetId, n + 1);
+      const act = mixedTrial ? policy(step.targetId, n) : 'correct';
+      const run = startMatchTrial({
+        step,
+        target: st.targets[step.targetId],
+        config: 'with_adult',
+        seed: st.seed,
+        trialId: `t${(seq += 1)}`,
+        sessionId: st.sessionId,
+        index: st.trials.length,
+        shownAt: now,
+      });
+      const done = runMatch(run, act, now);
+      now = done.at + 200;
+      const res = recordTrial(st, matchTrialInput(done.r), now);
+      if (!res.ok) throw new Error(res.errors.join('; '));
+      st = res.state;
+      now += 5000;
+    }
+  }
+  const result = finishAbaSession(st, now, {}, undefined, undefined, { routineExchangeInWindow: false });
+  return { planned, final: st, result, states: { ...states, ...result.states } };
+}
+
+describe('решение 43 на настоящих целях: форма и цвет', () => {
+  const allMastered = (): Record<string, AbaTargetState> =>
+    Object.fromEntries(REAL.map((t) => [t.id, { ...masteredState(t, 1), masteredBy: 'criterion' as const }]));
+
+  it('пара в контенте — форма и цвет; поля строятся, записи принимаются, два дня — освоено', () => {
+    expect(SHAPE.id).toBe('match-shape');
+    expect(PAIR).toHaveLength(2);
+    const d1 = runReal(allMastered(), '2026-11-18', 1, () => 'correct');
+    expect(d1.planned.mixedTargetIds).toEqual(PAIR);
+    const mixed = d1.final.trials.filter((t) => t.kind === 'verification');
+    expect(mixed).toHaveLength(10);
+    expect(mixed.every((t) => t.field?.length === d1.final.targets[t.targetId].fieldSize && t.startPromptLevel === 0)).toBe(true);
+    expect(longestRun(mixed.map((t) => t.targetId))).toBeLessThanOrEqual(2);
+    for (const id of PAIR) expect(d1.result.states[id].mixedCheck).toEqual({ days: ['2026-11-18'] });
+    // сессия, где был только смешанный блок, не кончается циклом сопряжения
+    expect(d1.result.session.events.some((e) => e.kind === 'pairing')).toBe(false);
+
+    const d2 = runReal(d1.states, '2026-11-19', 2, () => 'correct');
+    for (const id of PAIR) expect(d2.result.states[id].mixedCheck).toEqual({ days: ['2026-11-18', '2026-11-19'], done: true });
+  });
+
+  it('промах наблюдения в блоке не заменяется базовой линией освоенной цели и итога не даёт', () => {
+    const r = runReal(allMastered(), '2026-11-18', 1, (id, n) => (id === SHAPE.id && n === 1 ? 'none' : 'correct'));
+    expect(r.final.trials.some((t) => t.kind === 'baseline')).toBe(false);
+    expect(r.result.states[SHAPE.id].mixedCheck).toBeUndefined();
+    expect(r.result.states[SHAPE.id].phase).not.toBe('acquisition');
+  });
+
+  it('ошибки по цвету — цвет в обучение, форма остаётся освоенной', () => {
+    const color = PAIR.find((id) => id !== SHAPE.id)!;
+    const r = runReal(allMastered(), '2026-11-18', 1, (id, n) => (id === color && n < 2 ? 'incorrect' : 'correct'));
+    expect(r.result.states[color].phase).toBe('acquisition');
+    expect(r.result.states[SHAPE.id].mixedCheck).toEqual({ days: ['2026-11-18'] });
   });
 });

@@ -114,7 +114,8 @@ export const mixedBlockId = (group: readonly Pick<AbaTarget, 'id'>[]): string =>
  * Итог смешанного блока по одной цели. `own` — засчитываемые пробы цели в сессии (без промахов наблюдения). Меньше
  * `trialsPerTarget` непрерванных проб блока — не решает ничего. ≥ 80 % самостоятельных — день в зачёт (тот же день
  * второй раз не считается), второй день — `done`; блок — ещё и пройденная проба поддержания. Меньше — обучение:
- * при 0–2 из 5 со старта первого уровня, несущего ответ, иначе с последнего успешного (как проверка `home_unverified`);
+ * при 0–2 из 5 со старта первого уровня, несущего ответ, иначе с последнего успешного, но не выше того (как проверка
+ * `home_unverified`);
  * серия критерия и доли — заново, как после распада на поддержании.
  */
 export function mixedVerdict(
@@ -142,7 +143,8 @@ export function mixedVerdict(
       reason: done ? 'mixed_passed' : null,
     };
   }
-  const start: PromptLevel = independent <= 2 ? answerLevel(target) : s.lastSuccessfulPromptLevel;
+  // не выше первого уровня, несущего ответ: у освоенной по базовой линии «последний успех» мог остаться стартовым L3
+  const start: PromptLevel = independent <= 2 ? answerLevel(target) : (Math.min(answerLevel(target), s.lastSuccessfulPromptLevel) as PromptLevel);
   const { mixedCheck: _m, masteredBy: _b, ...rest } = s;
   return {
     state: {
