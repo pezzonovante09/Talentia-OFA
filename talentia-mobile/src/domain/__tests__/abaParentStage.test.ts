@@ -149,14 +149,16 @@ describe('stageOfPlan на настоящих целях', () => {
   });
 
   // цвет из 3 (решение методиста 40): поле 3 осваивается по базовой линии — 5/5 даёт «освоено» без обучения
-  it('всё верно: занятие 2 — первые пробы цвета из трёх без жетонов, занятие 3 — всё освоено', () => {
+  // занятие 3 — смешанный блок формы и цвета (решение методиста 43): освоено по отдельности, «всё освоено» — после него
+  it('всё верно: занятие 2 — первые пробы цвета из трёх без жетонов, занятие 3 — повторение освоенного вперемешку', () => {
     let c = runSession(freshChild(), () => 'correct');
     const second = preview(c);
     expect(second.stage).toEqual({ kind: 'baseline', targetId: 'match-color-3' });
     expect(second.tokens).toBe(false);
     c = runSession(c, () => 'correct');
     expect(c.states['match-color-3']).toMatchObject({ phase: 'mastered', masteredBy: 'baseline' });
-    expect(preview(c).stage).toEqual({ kind: 'all_mastered' });
+    expect(preview(c).stage).toEqual({ kind: 'maintenance', targetIds: ['match-shape', 'match-color-3'] });
+    expect(preview(c).plan.mixedTargetIds).toEqual(['match-shape', 'match-color-3']);
   });
 
   it('ошибки на первых пробах цвета: занятие 3 — обучение цвету из трёх с жетонами и плановым перерывом', () => {

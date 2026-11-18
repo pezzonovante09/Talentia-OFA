@@ -26,6 +26,7 @@ import {
   COUNTS_TOWARD_MASTERY,
   MAINTENANCE_GAP,
   MASTERY,
+  MIXED_BLOCK,
   REFUSALS_TO_END,
   IOA_AFTER_FAILED_VERIFICATION,
   VERIFICATION_CHAIN_RUNS,
@@ -1171,6 +1172,37 @@ function withObservingReplacement(state: AbaSessionState, trial: AbaTrial, r: { 
   return [...state.queue.slice(0, at), replacement, ...state.queue.slice(at)];
 }
 
+/**
+ * Промах наблюдения в смешанном блоке (ревью решения 43, 2026-11-18): первый по цели за сессию заменяется пробой той же
+ * цели с другим экземпляром — в конце блока, перед его концом (как `withObservingReplacement` у базовой линии); второй
+ * не заменяется, и у цели меньше 5 проб — блок без итога (`finishAbaSession` считает такие сессии).
+ */
+function replaceMixedObservingMiss(state: AbaSessionState, trial: AbaTrial, r: { rng: Rng }): AbaSessionState {
+  const ids = state.mixedTargetIds;
+  if (trial.kind !== 'verification' || !ids?.includes(trial.targetId) || !isObservingMiss(trial)) return state;
+  if (state.endReason !== null || state.unreliableTargetIds.includes(trial.targetId)) return state;
+  const misses = state.trials.filter((t) => t.targetId === trial.targetId && t.kind === 'verification' && isObservingMiss(t)).length;
+  if (misses > OBSERVING_MISS_REPLACED) return state;
+  const blockId = mixedBlockId(ids.map((id) => ({ id })));
+  const end = state.queue.findIndex((q) => q.kind === 'block_end' && q.targetId === blockId);
+  if (end < 0) return state;
+  const pool = teachingExemplars(state.targets[trial.targetId]);
+  const others = pool.filter((e) => e.id !== trial.exemplarId);
+  const exemplarId = pick(others.length ? others : pool, r.rng).id;
+  const replacement: QueueItem = {
+    kind: 'trial',
+    trial: {
+      kind: 'verification',
+      targetId: trial.targetId,
+      exemplarId,
+      replacesTrialId: trial.id,
+      // промах был последней пробой блока — замена идёт сразу, после нейтральной паузы
+      ...(end === 0 ? { pauseBeforeMs: NEUTRAL_PAUSE_MS } : {}),
+    },
+  };
+  return { ...state, queue: [...state.queue.slice(0, end), replacement, ...state.queue.slice(end)] };
+}
+
 /** Промахи наблюдения в базовой линии цели за сессию. */
 function observingMisses(trials: readonly AbaTrial[], targetId: string): number {
   return trials.filter((t) => t.targetId === targetId && t.kind === 'baseline' && isObservingMiss(t)).length;
@@ -2222,6 +2254,7 @@ export function recordTrial(
   }
 
   st = stopPlacementOnFailure(st, trial, r);
+  st = replaceMixedObservingMiss(st, trial, r);
   st = bridgeFailedBlock(st, trial);
 
   let participation = false;
@@ -2706,6 +2739,8 @@ export function finishAbaSession(
   const changedIds = new Set(touched);
 
   const phaseEvents: AbaSessionEvent[] = [];
+  /** Участники смешанного блока, по которым он дал итог (зачёт дня или провал). */
+  const mixedJudged = new Set<string>();
 
   for (const id of touched) {
     const target = state.targets[id];
@@ -2827,6 +2862,7 @@ export function finishAbaSession(
       const verdict = mixedVerdict(s, target, own, idx, day);
       if (verdict) {
         s = verdict.state;
+        mixedJudged.add(id);
         if (verdict.reason) reason = verdict.reason;
       }
     }
@@ -2867,6 +2903,8 @@ export function finishAbaSession(
     }
     states[id] = s;
   }
+
+  mixedNoVerdict(state, states, changedIds, mixedJudged);
 
   // возврат, решённый остановкой (№181), — от доски этого итога, в том числе живой после повтора по конфликту
   const base = state.returnedOnStop ? withReturned(state.board, { ...state.returnedOnStop, fromSessionId: state.sessionId }) : state.board;
@@ -2946,6 +2984,46 @@ export function finishAbaSession(
         }
       : {}),
   };
+}
+
+/**
+ * Смешанный блок без итога (ревью решения 43, 2026-11-18): блок начался, а по участнику, которого он должен был судить
+ * (не пройден и сегодня не засчитан), итога нет — промахи наблюдения, прерывания, отказ. Две такие сессии подряд —
+ * блок группы снимается с плана, всем участникам флаг `mixed_not_established`: решает специалист, обучение и
+ * поддержание идут как обычно. Сессия с итогом по всем — счётчик снимается. Блок не начался — сессия нейтральна.
+ */
+function mixedNoVerdict(
+  state: AbaSessionState,
+  states: Record<string, AbaTargetState>,
+  changedIds: Set<string>,
+  judged: ReadonlySet<string>,
+): void {
+  const ids = state.mixedTargetIds ?? [];
+  if (!ids.length || !state.trials.some((t) => t.kind === 'verification' && ids.includes(t.targetId))) return;
+  const due = ids.filter((id) => {
+    const check = state.states[id].mixedCheck;
+    return !check?.done && !(check?.days ?? []).includes(state.day);
+  });
+  const missing = due.some((id) => !judged.has(id));
+  const n = Math.max(0, ...ids.map((id) => state.states[id].mixedCheck?.noVerdict ?? 0)) + 1;
+  for (const id of ids) {
+    const s = states[id];
+    // провал вернул цель в обучение — её блок кончился, счётчика нет
+    if (!s || !MASTERED_PHASES.has(s.phase)) continue;
+    const { noVerdict: _n, ...check } = s.mixedCheck ?? { days: [] };
+    if (!missing) {
+      if (s.mixedCheck?.noVerdict !== undefined) states[id] = { ...s, mixedCheck: check };
+    } else if (n >= MIXED_BLOCK.noVerdictSessions) {
+      states[id] = {
+        ...s,
+        mixedCheck: check,
+        flags: s.flags.includes('mixed_not_established') ? s.flags : [...s.flags, 'mixed_not_established'],
+      };
+    } else {
+      states[id] = { ...s, mixedCheck: { ...check, noVerdict: n } };
+    }
+    changedIds.add(id);
+  }
 }
 
 /**

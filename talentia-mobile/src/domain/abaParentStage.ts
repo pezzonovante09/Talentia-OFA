@@ -55,7 +55,7 @@ export function hasPlannedBreak(plan: Pick<AbaSessionState, 'queue'>): boolean {
 
 /** Этап по плану следующего занятия; `states` — состояния целей ребёнка до занятия (для «всё освоено»). */
 export function stageOfPlan(
-  plan: Pick<AbaSessionState, 'placementTargetIds' | 'baselineTargetIds' | 'teachingTargetIds' | 'maintenanceTargetIds' | 'queue'>,
+  plan: Pick<AbaSessionState, 'placementTargetIds' | 'baselineTargetIds' | 'teachingTargetIds' | 'maintenanceTargetIds' | 'queue' | 'mixedTargetIds'>,
   states: Readonly<Record<string, AbaTargetState>>,
   targetIds: readonly string[],
 ): ParentStage {
@@ -65,7 +65,9 @@ export function stageOfPlan(
   if (baseline) return { kind: 'baseline', targetId: baseline };
   const [teaching] = plan.teachingTargetIds;
   if (teaching) return { kind: 'teaching', targetId: teaching, plannedBreak: hasPlannedBreak(plan) };
-  if (targetIds.length > 0 && targetIds.every((id) => states[id] !== undefined && MASTERED_PHASES.has(states[id].phase))) {
+  // смешанный блок впереди или не пройден (решение методиста 43) — освоено по отдельности, ещё не «всё освоено»
+  const mixedPending = (plan.mixedTargetIds?.length ?? 0) > 0 || targetIds.some((id) => states[id]?.mixedCheck && !states[id].mixedCheck?.done);
+  if (!mixedPending && targetIds.length > 0 && targetIds.every((id) => states[id] !== undefined && MASTERED_PHASES.has(states[id].phase))) {
     return { kind: 'all_mastered' };
   }
   if (plan.maintenanceTargetIds.length) return { kind: 'maintenance', targetIds: [...plan.maintenanceTargetIds] };

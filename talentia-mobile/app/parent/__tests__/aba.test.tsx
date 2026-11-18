@@ -639,6 +639,26 @@ describe('«Занятия ABA»: карточка «Цели» (этап G2, в
     expect(screen.getByTestId('aba-goal-match-same-2-glyph-almost-half')).toBeTruthy();
   });
 
+  it('смешанный блок (решение 43): форма и цвет освоены отдельно — «ждёт проверки вперемешку», пройден — «освоено»', async () => {
+    await grant();
+    await pair();
+    const [same2, same3, shape, color] = ABA_TARGETS;
+    const own = (t: (typeof ABA_TARGETS)[number]) => markMastered(initialTargetState(t), 1, 'criterion', 'with_adult');
+    await setTargets({
+      [same2.id]: own(same2),
+      [same3.id]: own(same3),
+      [shape.id]: own(shape),
+      [color.id]: { ...own(color), mixedCheck: { days: ['2026-11-18', '2026-11-19'], done: true } },
+    });
+    await renderAba();
+    await waitFor(() => expect(screen.getByTestId('aba-goals')).toBeTruthy());
+    expect([shape.id, color.id]).toEqual(['match-shape', 'match-color-3']);
+    expect(goalStatus('match-shape')).toBe('освоено отдельно, ждёт проверки вперемешку');
+    expect(screen.getByTestId('aba-goal-match-shape-glyph-almost-half')).toBeTruthy();
+    expect(goalStatus('match-color-3')).toBe('освоено');
+    expect(goalStatus('match-same-2')).toBe('освоено');
+  });
+
   it('после занятия — итог под строками: день словами отчёта, без проб — «без проб»', async () => {
     await grant();
     await pair();

@@ -627,6 +627,7 @@
         "ahead": "ahead",
         "learning": "learning",
         "almost": "almost",
+        "mixed_pending": "mastered separately, waiting for a mixed check",
         "mastered": "mastered"
       },
       "lastSession": "Session {{day}}: trials — {{trials}}, on their own — {{independent}}",
