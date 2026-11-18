@@ -1,5 +1,5 @@
 /**
- * №169 (фаза 7, домен): обмен на перерыве по расписанию даёт доступ по ступени; перерыв, оборванный концом сессии,
+ * №169 (фаза 7, домен): обмен перед перерывом по расписанию (решение 16) даёт доступ по ступени; перерыв, оборванный концом сессии,
  * пишется; конец по бездействию устройства — без обмена и без сопряжения; сопряжение — только без обмена в конце.
  */
 import { REFUSAL_CARD_OFFER_MS, REFUSAL_QUIET_MS } from '../../types/aba';
@@ -21,6 +21,7 @@ function afterTrial(over: Parameters<typeof beginSession>[0] = {}): AbaSessionSt
 const full = (st: AbaSessionState): AbaSessionState => ({ ...st, board: { ...st.board, earned: st.board.size } });
 const almostFull = (st: AbaSessionState): AbaSessionState => ({ ...st, board: { ...st.board, earned: st.board.size - 1 } });
 const SCHEDULE: BreakItem = { kind: 'break', maxMs: 30_000 };
+const CHILD_CARD: BreakItem = { kind: 'break', initiatedBy: 'child_card', between: true, maxMs: 90_000 };
 
 /** Перерыв `item` в голове очереди и показан экраном в `T` (`nextStep` ставит `breakStartedAt`). */
 function inBreak(st: AbaSessionState, item: BreakItem = SCHEDULE): AbaSessionState {
@@ -45,45 +46,52 @@ function driveToEnd(state: AbaSessionState): { state: AbaSessionState; end: Extr
   throw new Error('сессия не кончилась');
 }
 
-describe('обмен на перерыве по расписанию даёт доступ (№169, п. 1)', () => {
-  it('полная доска: после перерыва следующий шаг — доступ по ступени доски', () => {
-    const st = inBreak(full(afterTrial()));
-    const done = finishBreak(st, T + 30_000);
-    expect(done.exchanged).toBeGreaterThan(0);
-    expect(nextStep(done.state, T + 30_000).step).toEqual({ kind: 'access', durationMs: EXCHANGE_ACCESS_MS[st.board.size as BoardStage] });
+/** Перерыв по расписанию следом, доска полна: обмен до него (решение 16) — шаг доступа в `T`, перерыв за ним. */
+function beforeBreak(st: AbaSessionState): ReturnType<typeof nextStep> {
+  return nextStep({ ...st, queue: [SCHEDULE, ...st.queue] }, T);
+}
+
+describe('обмен перед перерывом по расписанию даёт доступ (№169, п. 1; решение 16)', () => {
+  it('полная доска: до перерыва следующий шаг — доступ по ступени доски, перерыв за ним', () => {
+    const next = beforeBreak(full(afterTrial()));
+    expect(next.exchanged).toBeGreaterThan(0);
+    expect(next.step).toEqual({ kind: 'access', durationMs: EXCHANGE_ACCESS_MS[next.state.board.size as BoardStage] });
+    expect(next.state.queue[1]).toEqual(SCHEDULE);
   });
 
   it('на доске из трёх ячеек доступ — 40 с', () => {
-    const st = inBreak(full(afterTrial()));
-    expect(st.board.size).toBe(3);
-    expect(finishBreak(st, T + 30_000).state.queue[0]).toEqual({ kind: 'access', durationMs: 40_000 });
+    const next = beforeBreak(full(afterTrial()));
+    expect(next.state.board.size).toBe(3);
+    expect(next.state.queue[0]).toEqual({ kind: 'access', durationMs: 40_000 });
   });
 
   it.each([1, 2, 3] as const)('длительность доступа — по размеру доски %i, как при обмене сразу', (stage) => {
-    const st = inBreak(full(afterTrial({ tokenTraining: trained(stage) })));
-    expect(st.board.size).toBe(stage);
-    expect(finishBreak(st, T + 30_000).state.queue[0]).toEqual({ kind: 'access', durationMs: EXCHANGE_ACCESS_MS[stage] });
+    const next = beforeBreak(full(afterTrial({ tokenTraining: trained(stage) })));
+    expect(next.state.board.size).toBe(stage);
+    expect(next.state.queue[0]).toEqual({ kind: 'access', durationMs: EXCHANGE_ACCESS_MS[stage] });
   });
 
-  it('после доступа в журнале по порядку перерыв, обмен, доступ', () => {
-    const st = finishBreak(inBreak(full(afterTrial())), T + 30_000).state;
-    const after = finishAccess(nextStep(st, T + 30_000).state, T + 70_000);
-    expect(after.events.slice(-3).map((e) => e.kind)).toEqual(['break', 'exchange', 'access']);
+  it('в журнале по порядку обмен, доступ, перерыв; после перерыва обмена нет', () => {
+    const accessed = finishAccess(beforeBreak(full(afterTrial())).state, T + 40_000);
+    const brk = nextStep(accessed, T + 40_000);
+    expect(brk.step).toMatchObject({ kind: 'break', canExchange: false });
+    const done = finishBreak(brk.state, T + 70_000);
+    expect(done.exchanged).toBe(0);
+    expect(done.state.events.slice(-3).map((e) => e.kind)).toEqual(['exchange', 'access', 'break']);
   });
 
-  it('доступ после обмена на перерыве — фактическое время в журнале', () => {
-    const st = finishBreak(inBreak(full(afterTrial())), T + 30_000).state;
-    const after = finishAccess(nextStep(st, T + 30_000).state, T + 70_000);
-    expect(after.events.at(-1)).toEqual({ kind: 'access', startedAt: iso(T + 30_000), endedAt: iso(T + 70_000) });
+  it('доступ после обмена перед перерывом — фактическое время в журнале', () => {
+    const after = finishAccess(beforeBreak(full(afterTrial())).state, T + 40_000);
+    expect(after.events.at(-1)).toEqual({ kind: 'access', startedAt: iso(T), endedAt: iso(T + 40_000) });
   });
 
-  it('ни перерыв, ни доступ не съедают рабочее время: лимит не наступает', () => {
-    // работа идёт с BASE_MS; к T отработано 2 с, лимит 10 с; перерыв 30 с и доступ 40 с — вне рабочего времени
-    const st = inBreak({ ...full(afterTrial()), timeLimitMs: 10_000 });
-    const access = nextStep(finishBreak(st, T + 30_000).state, T + 30_000);
+  it('ни доступ, ни перерыв не съедают рабочее время: лимит не наступает', () => {
+    // работа идёт с BASE_MS; к T отработано 2 с, лимит 10 с; доступ 40 с и перерыв 30 с — вне рабочего времени
+    const access = beforeBreak({ ...full(afterTrial()), timeLimitMs: 10_000 });
     expect(access.step.kind).toBe('access');
-    const after = finishAccess(access.state, T + 70_000);
-    expect(nextStep(after, T + 70_000).step.kind).toBe('trial');
+    const brk = nextStep(finishAccess(access.state, T + 40_000), T + 40_000);
+    expect(brk.step.kind).toBe('break');
+    expect(nextStep(finishBreak(brk.state, T + 70_000).state, T + 70_000).step.kind).toBe('trial');
   });
 
   it('контроль: те же 70 с без перерыва и доступа — лимит наступает', () => {
@@ -179,7 +187,8 @@ describe('перерыв, оборванный концом сессии, пиш
   });
 
   it('оборванный перерыв не меняет доску: обмена в момент обрыва нет даже при полной доске', () => {
-    const st = inBreak(full(afterTrial()));
+    // полная доска в перерыве — у перерыва по просьбе: перед перерывом по расписанию она обменяна (решение 16)
+    const st = inBreak(full(afterTrial()), CHILD_CARD);
     const r = withdrawAssent(st, END, 'adult_observed');
     expect(r.events.some((e) => e.kind === 'exchange')).toBe(false);
     expect(r.board).toEqual(st.board);
@@ -201,8 +210,9 @@ describe('перерыв, оборванный концом сессии, пиш
 });
 
 describe('конец по бездействию устройства (№169, п. 4)', () => {
-  // нет возврата после двух приглашений на перерыве по расписанию при полной доске
-  const inactive = () => withdrawAssent(inBreak(full(afterTrial())), T + 90_000, 'device_inactivity');
+  // нет возврата после двух приглашений на перерыве по просьбе ребёнка при полной доске (перед перерывом по
+  // расписанию полная доска обменяна — решение 16)
+  const inactive = () => withdrawAssent(inBreak(full(afterTrial()), CHILD_CARD), T + 90_000, 'device_inactivity');
 
   it('обмена в конце нет: exchanged 0, события обмена нет', () => {
     const r = finishSession(inactive(), T + 91_000);
@@ -254,8 +264,8 @@ describe('конец по отказу и цикл сопряжения (№169,
     expect(finishSession(st, T + 1000).session.events.some((e) => e.kind === 'pairing')).toBe(false);
   });
 
-  it('отказ, оборвавший перерыв по расписанию с полной доской: обмен в конце, не на перерыве', () => {
-    const r = finishSession(withdrawAssent(inBreak(full(afterTrial())), T + 10_000, 'adult_observed'), T + 11_000);
+  it('отказ, оборвавший перерыв по просьбе ребёнка с полной доской: обмен в конце, не на перерыве', () => {
+    const r = finishSession(withdrawAssent(inBreak(full(afterTrial()), CHILD_CARD), T + 10_000, 'adult_observed'), T + 11_000);
     const kinds = r.session.events.map((e) => e.kind);
     expect(kinds.indexOf('exchange')).toBeGreaterThan(kinds.indexOf('assent'));
     expect(r.exchanged).toBeGreaterThan(0);

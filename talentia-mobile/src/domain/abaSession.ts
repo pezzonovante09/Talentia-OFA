@@ -1166,6 +1166,9 @@ export function nextStep(
   // доступ к подкрепителю отложил закрытие — сессия всё равно кончается успехом
   // ребёнка нет (остановка после конца, бездействие): требования ему не предъявляются
   if (st.queue.length === 0 && st.endReason !== null && CLOSABLE.has(st.endReason) && !st.stoppedAfterEnd && !endedByInactivity(st)) st = ensureSuccessfulEnd(st, now);
+  // полная доска перед перерывом по расписанию — обмен и доступ до него (методист, решение 16); после концов блоков:
+  // доску мог заполнить жетон за участие
+  st = exchangeBeforeBreak(st, now);
 
   const pause = st.pendingPauseMs;
   const head = st.queue[0];
@@ -1336,7 +1339,8 @@ export function awayOutcome(awayMs: number, sameDay = true): 'same_trial' | 'rec
 }
 
 /**
- * Обмен после перерыва (№161, №169, №170): только по расписанию. По просьбе ребёнка (карточка — в пробе, между
+ * Обмен у перерыва (№161, №169, №170): только по расписанию — и до него (методист, решение 16: `exchangeBeforeBreak`),
+ * а не после. По просьбе ребёнка (карточка — в пробе, между
  * пробами, после отказа), в тихой паузе после «Отказ» (`adult`: «без жетонов, подкрепителей и внимания») и на
  * перерыве, предложенном приложением после тихих проб (`device_offer`: иначе «молчание → перерыв → подкрепитель»),
  * обмена нет — полная доска ждёт перерыва по расписанию или конца. Пока подкрепитель устарел (обмен рутины) — тоже.
@@ -1367,8 +1371,10 @@ function interruptedBreak(state: AbaSessionState, now: number): AbaSessionEvent[
 }
 
 /**
- * Перерыв кончился. Обмен — если доска полна и перерыв не по просьбе ребёнка (№161); неполная доска
- * переходит на следующий блок как есть, жетоны не сгорают. Перерыв в рабочее время не идёт.
+ * Перерыв кончился. Полная доска перед перерывом по расписанию уже обменяна до него (`nextStep`, методист,
+ * решение 16), так что обычно обмена здесь нет; неполная доска переходит на следующий блок как есть, жетоны не
+ * сгорают. Обмен здесь — только запасной путь: доска полна в конце перерыва по расписанию, начатого до обмена
+ * (снимок прежней версии, живая доска при возврате). Перерыв в рабочее время не идёт.
  *
  * `endedAt` — когда перерыв кончился для процедуры, если это раньше `now` (фаза 8: срок истёк, пока приложение было
  * свёрнуто). Событие пишется до `endedAt`, а из рабочего времени уходит всё до `now`: фон — не перерыв и не работа.
@@ -1377,7 +1383,7 @@ export function finishBreak(state: AbaSessionState, now: number, endedAt: number
   if (state.queue[0]?.kind !== 'break') throw new Error('Сейчас не перерыв');
   const startedAt = state.breakStartedAt ?? now;
   const head = state.queue[0];
-  // обмен — только на перерыве по расписанию (`breakExchanges`, одно правило с `canExchange` шага); жетоны не сгорают
+  // запасной обмен — только на перерыве по расписанию (`breakExchanges`, одно правило с `canExchange` шага); жетоны не сгорают
   const { board, exchanged } = breakExchanges(state, head) ? tryExchange(state.board) : { board: state.board, exchanged: 0 };
   const events: AbaSessionEvent[] = [
     ...state.events,
@@ -1713,7 +1719,8 @@ export function takeBreakCard(state: AbaSessionState, now: number): AbaSessionSt
  * - следом коррекция ошибки — как перерыв внутри пробы (В2): перерыв, высоковероятная, коррекция с открытым
  *   защитным окном; иначе пара «ошибка → карточка» уводила бы от коррекции бесплатно;
  * - следом перерыв по расписанию — просьба им и удовлетворена, он помечается просьбой;
- * - следом доступ к подкрепителю — перерыв сразу после доступа;
+ * - следом доступ к подкрепителю — перерыв сразу после доступа; за доступом перерыв по расписанию (обмен перед ним,
+ *   решение 16) — просьба им и удовлетворена;
  * - следом выбор подкрепителя — перерыв до выбора;
  * - сессия кончается (очередь пуста, `endReason` выставлен) — требований больше нет: закрывающая проба
  *   снимается, просьба записывается.
@@ -1742,9 +1749,16 @@ export function requestBreakBetweenTrials(state: AbaSessionState, now: number): 
     case 'break':
       queue = [{ ...head, initiatedBy: 'child_card', between: true, maxMs: Math.max(head.maxMs ?? 0, CHILD_BREAK_MS[state.band]) }, ...rest];
       break;
-    case 'access':
-      queue = [head, pause, ...rest];
+    case 'access': {
+      // доступ за обмен перед перерывом по расписанию (решение 16): просьба удовлетворяется этим перерывом, как
+      // при перерыве в голове, — иначе два перерыва подряд
+      const after = rest[0];
+      queue =
+        after?.kind === 'break' && after.initiatedBy === undefined
+          ? [head, { ...after, initiatedBy: 'child_card', between: true, maxMs: Math.max(after.maxMs ?? 0, CHILD_BREAK_MS[state.band]) }, ...rest.slice(1)]
+          : [head, pause, ...rest];
       break;
+    }
     case 'trial':
       if (head.trial.kind === 'correction' && last) {
         const r = seeded(state.seed);
@@ -1816,6 +1830,24 @@ function payParticipation(state: AbaSessionState, targetId: string, now: number)
  */
 function settleBoard(state: AbaSessionState, now: number): { state: AbaSessionState; exchanged: number } {
   if (!state.immediateExchange || state.reinforcerStale || !isBoardFull(state.board)) return { state, exchanged: 0 };
+  return exchangeWithAccess(state, now);
+}
+
+/**
+ * Решение методиста 16 (2026-11-18, к №161): доска полна, а следом перерыв по расписанию — обмен и доступ сразу,
+ * до перерыва; затем перерыв по плану. Ещё не начатый перерыв (`breakStartedAt`): начатый, в том числе при возврате
+ * из фона, доступом не перебивается. Перерыв по просьбе ребёнка, тихая пауза и предложение устройства обмена
+ * не дают (`breakExchanges`).
+ */
+function exchangeBeforeBreak(state: AbaSessionState, now: number): AbaSessionState {
+  const head = state.queue[0];
+  if (head?.kind !== 'break' || state.breakStartedAt !== null || state.endReason !== null) return state;
+  if (!isBoardFull(state.board) || !breakExchanges(state, head)) return state;
+  return exchangeWithAccess(state, now).state;
+}
+
+/** Обмен полной доски и доступ по ступени первым в очереди — одно правило для обмена сразу и перед перерывом. */
+function exchangeWithAccess(state: AbaSessionState, now: number): { state: AbaSessionState; exchanged: number } {
   const { board, exchanged } = tryExchange(state.board);
   const access: QueueItem = { kind: 'access', durationMs: EXCHANGE_ACCESS_MS[state.board.size] };
   return {

@@ -1,6 +1,6 @@
 /**
  * №181 (вопрос 82, 2026-11-08): обмен прошёл, а сцена доступа не началась — остановка возвращает жетоны этого обмена на
- * доску. Окно — от обмена (`settleBoard`, `finishBreak`, `chooseReinforcer` с полной доской) до первого кадра сцены
+ * доску. Окно — от обмена (`settleBoard`, перед перерывом в `nextStep`, `chooseReinforcer` с полной доской) до первого кадра сцены
  * (`accessShown`) или `finishAccess`. Доступа в журнале нет, событие `exchange_returned` одно, `exchangesMade − 1`,
  * `tokensEarned` не трогается, событие `exchange` остаётся. Доска итога — живая плюс вернувшиеся, с меткой; обмен
  * вернувшихся жетонов в следующей сессии помечен `includesReturned` и в ступень доски не идёт.
@@ -10,7 +10,6 @@ import {
   chooseReinforcer,
   finishAbaSession,
   finishAccess,
-  finishBreak,
   nextStep,
   resumeAbaSession,
   stopSession,
@@ -28,13 +27,12 @@ const returnedEvents = (st: AbaSessionState) => st.events.filter((e) => e.kind =
 const accessEvents = (st: AbaSessionState) => st.events.filter((e) => e.kind === 'access');
 const exchangeEvents = (st: AbaSessionState) => st.events.filter((e) => e.kind === 'exchange');
 
-/** Перерыв по расписанию кончился в `STEP` при доске `earned/nonContingent`: `finishBreak` обменял, голова — доступ. */
+/** Перед перерывом по расписанию в `STEP` при доске `earned/nonContingent`: обмен до него (решение 16), голова — доступ, кадра ещё нет. */
 function exchangedOnBreak(board: { earned?: number; nonContingent?: number } = {}, over: Partial<StartInput> = {}): AbaSessionState {
   const worked = answerNext(beginSession(over), BASE_MS + 1000).state;
   const full = { ...worked, board: { ...worked.board, earned: board.earned ?? worked.board.size, nonContingent: board.nonContingent ?? 0 } };
-  const shown = nextStep({ ...full, queue: [{ kind: 'break', maxMs: 30_000 }, ...full.queue] }, T).state;
-  const st = finishBreak(shown, STEP).state;
-  expect(st.queue[0]?.kind).toBe('access');
+  const st: AbaSessionState = { ...nextStep({ ...full, queue: [{ kind: 'break', maxMs: 30_000 }, ...full.queue] }, STEP).state, accessStartedAt: null };
+  expect(st.queue.map((q) => q.kind).slice(0, 2)).toEqual(['access', 'break']);
   return st;
 }
 
@@ -71,7 +69,7 @@ function exchangedOnRechoose(): AbaSessionState {
 
 describe('stopSession на кадре обмена (№181): жетоны обмена возвращаются', () => {
   it.each<[string, () => AbaSessionState]>([
-    ['после finishBreak', () => exchangedOnBreak()],
+    ['перед перерывом по расписанию', () => exchangedOnBreak()],
     ['после settleBoard (обучение доске)', () => exchangedBySettle()],
     ['после chooseReinforcer с полной доской', exchangedOnRechoose],
   ])('%s: доска итога — вернувшиеся жетоны, доступа нет, exchange_returned один', (_name, make) => {
@@ -260,9 +258,8 @@ describe('следующая сессия с вернувшейся доской
       ...worked,
       board: { ...worked.board, earned, nonContingent: 0, returned: { tokens: returnedTokens, fromSessionId: 'prev' } },
     };
-    const shown = nextStep({ ...full, queue: [{ kind: 'break', maxMs: 30_000 }, ...full.queue] }, T).state;
-    const st = finishBreak(shown, STEP).state;
-    const played = finishAccess(accessShown(nextStep(st, STEP).state), STEP + 50_000);
+    const st = nextStep({ ...full, queue: [{ kind: 'break', maxMs: 30_000 }, ...full.queue] }, STEP).state;
+    const played = finishAccess(accessShown(st), STEP + 50_000);
     return { st, r: finish(stopSession(played, 'abandoned', STEP + 51_000), STEP + 51_000) };
   }
 

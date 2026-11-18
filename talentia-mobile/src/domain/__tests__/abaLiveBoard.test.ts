@@ -295,18 +295,21 @@ describe('(а) ступень доски: сессия с нулём обмен�
 describe('(в) resumeAbaSession: обмен рутины, пока сессия свёрнута', () => {
   const OPTIONS = ['paint_drop', 'kaleidoscope', 'pinwheel'];
 
-  /** Идём по сессии до перерыва: на нём обмен, если доска полна. */
-  function toBreak(state: AbaSessionState) {
+  /** Идём по сессии до перерыва по расписанию с полной доской: обмен и доступ до него (решение 16), перерыв следом. */
+  function toExchangeBeforeBreak(state: AbaSessionState) {
     let st = state;
     let now = BASE_MS;
     for (let guard = 0; guard < 60; guard += 1) {
       now += 1000;
       const next = nextStep(st, now);
-      if (next.step.kind === 'break') return { state: next.state, step: next.step, now };
-      if (next.step.kind !== 'trial') throw new Error(`до перерыва встретили ${next.step.kind}`);
+      if (next.step.kind === 'access') {
+        expect(next.state.queue[1]?.kind).toBe('break');
+        return { state: next.state, exchanged: next.exchanged, now };
+      }
+      if (next.step.kind !== 'trial') throw new Error(`до обмена встретили ${next.step.kind}`);
       st = answerNext(st, now).state;
     }
-    throw new Error('перерыва нет');
+    throw new Error('обмена нет');
   }
 
   it('без обмена рутины: доска и версия — с устройства, размер (3) и счётчики сессии свои, stale не ставится', () => {
@@ -367,15 +370,14 @@ describe('(в) resumeAbaSession: обмен рутины, пока сессия 
     expect([ch.state.exchangesMade, ch.state.board.earned >= 5]).toEqual([0, true]);
   });
 
-  it('после выбора при устаревшем подкрепителе наступает перерыв, и на нём полная доска обменивается', () => {
+  it('после выбора при устаревшем подкрепителе наступает перерыв, и перед ним полная доска обменивается', () => {
     const full = beginSession({ board: { earned: 5, nonContingent: 0 } });
     const stale = resumeAbaSession(full, { earned: 5, nonContingent: 0, rev: 1 }, { routineExchanged: true, options: OPTIONS });
     const ch = toChoice(stale);
     const chosen = chooseReinforcer(ch.state, 'kaleidoscope', ch.now + 500, 'adult');
     expect([chosen.reinforcerStale, chosen.reinforcerId]).toEqual([undefined, 'kaleidoscope']);
-    const br = toBreak(chosen);
-    expect(br.step).toMatchObject({ kind: 'break', canExchange: true });
-    expect(finishBreak(br.state, br.now).exchanged).toBeGreaterThanOrEqual(5);
+    const ex = toExchangeBeforeBreak(chosen);
+    expect(ex.exchanged).toBeGreaterThanOrEqual(5);
   });
 
   it('защита: finishBreak при устаревшем подкрепителе не обменивает, даже если вызван напрямую', () => {
@@ -392,10 +394,8 @@ describe('(в) resumeAbaSession: обмен рутины, пока сессия 
     expect(nextStep(stale, BASE_MS + 1000).step.kind).toBe('trial');
   });
 
-  it('без устаревшего выбора та же полная доска на перерыве обменивается', () => {
-    const br = toBreak(beginSession({ board: { earned: 5, nonContingent: 0 } }));
-    expect(br.step).toMatchObject({ kind: 'break', canExchange: true });
-    expect(finishBreak(br.state, br.now).exchanged).toBeGreaterThanOrEqual(5);
+  it('без устаревшего выбора та же полная доска перед перерывом обменивается', () => {
+    expect(toExchangeBeforeBreak(beginSession({ board: { earned: 5, nonContingent: 0 } })).exchanged).toBeGreaterThanOrEqual(5);
   });
 
   it('после нового выбора из трёх обмен снова выдаётся', () => {
@@ -408,9 +408,7 @@ describe('(в) resumeAbaSession: обмен рутины, пока сессия 
       'adult',
       BASE_MS + 500,
     ]);
-    const br = toBreak(chosen);
-    expect(br.step).toMatchObject({ canExchange: true });
-    expect(finishBreak(br.state, br.now).exchanged).toBeGreaterThanOrEqual(5);
+    expect(toExchangeBeforeBreak(chosen).exchanged).toBeGreaterThanOrEqual(5);
   });
 
   it('новый выбор не сбрасывает время работы и не трогает очередь', () => {
