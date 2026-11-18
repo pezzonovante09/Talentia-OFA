@@ -886,7 +886,13 @@ export const MIXED_BLOCK = {
  * по бездействию устройства пишется как `assent_withdrawn`, но это не отказ), `observing_miss` — промахи наблюдения
  * закрыли пробы цели, `interrupted` — прерванные пробы. Категорий отказа нет (№21) — только ход процедуры.
  */
-export type MixedNoVerdictReason = AbaSessionEndReason | 'device_inactivity' | 'observing_miss' | 'interrupted';
+export type MixedNoVerdictReason =
+  | AbaSessionEndReason
+  | 'device_inactivity'
+  | 'observing_miss'
+  /** Один промах наблюдения без места для замены (правило «не больше двух подряд») — нейтрально. */
+  | 'observing_miss_unreplaced'
+  | 'interrupted';
 
 /**
  * Причины со стороны ребёнка — только они идут в счёт `MIXED_BLOCK.noVerdictSessions`. Остальные (остановка взрослым,

@@ -2872,7 +2872,9 @@ export function finishAbaSession(
     }
     // смешанный блок: его пробы `verification` судит своё правило, а не проверка «дома, без проверки»
     const mixedHere = state.mixedTargetIds?.includes(id) === true;
-    if (mixedHere && !unreliable && state.endReason !== 'assent_withdrawn' && !state.states[id].mixedCheck?.done) {
+    // отказ после того, как пробы блока пройдены, итог не отменяет: `mixedVerdict` судит только по полным пробам цели,
+    // оборванный отказом блок итога и так не даёт (рецензия методиста, 2026-11-18)
+    if (mixedHere && !unreliable && !state.states[id].mixedCheck?.done) {
       const verdict = mixedVerdict(s, target, own, idx, day);
       if (verdict) {
         s = verdict.state;
@@ -3015,7 +3017,8 @@ function mixedNoVerdictReason(state: AbaSessionState, id: string): MixedNoVerdic
   if (endedByInactivity(state)) return 'device_inactivity';
   const end = state.endReason ?? 'completed';
   if (end !== 'completed') return end;
-  if (misses > 0) return 'observing_miss';
+  // промах, которому не нашлось места для замены (не больше двух подряд), — шум, как первый промах решения 1: нейтрально
+  if (misses > 0) return own.some((t) => t.replacesTrialId !== undefined) ? 'observing_miss' : 'observing_miss_unreplaced';
   if (own.some((t) => t.response === 'interrupted')) return 'interrupted';
   return 'completed';
 }

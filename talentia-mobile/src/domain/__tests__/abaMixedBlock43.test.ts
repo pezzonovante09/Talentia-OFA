@@ -572,9 +572,9 @@ describe('решение 43 на настоящих целях: форма и ц
             if (mixed.at(-1)?.id !== replacement.id) moved += 1;
             expect(r.result.states[id].mixedCheck?.days).toEqual(['2026-11-18']);
           } else {
-            // места нет — замены нет, блок без итога по промаху наблюдения (в счёт)
+            // места нет — замены нет, блок без итога; одиночный промах без места — шум, нейтрально (рецензия методиста)
             skipped += 1;
-            expect(r.result.session.events).toContainEqual(expect.objectContaining({ action: 'mixed_no_verdict', reason: 'observing_miss', counted: true }));
+            expect(r.result.session.events).toContainEqual(expect.objectContaining({ action: 'mixed_no_verdict', reason: 'observing_miss_unreplaced', counted: false }));
           }
         }
       }
