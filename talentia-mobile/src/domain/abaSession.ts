@@ -60,6 +60,7 @@ import {
   answerLevel,
   initialTargetState,
   isBreakdown,
+  isObservingMiss,
   isPromptDependent,
   promptStateOf,
   trialInvariantErrors,
@@ -71,6 +72,7 @@ import {
   aloneFormatKey,
   formatUnlockedAlone,
   ladderBelow,
+  ladderOf,
   placementCandidates,
   placementPassed,
 } from './abaPlacement';
@@ -93,6 +95,7 @@ import {
   MAX_BASELINE_TARGETS,
   needsGeneralizationProbe,
   summarizeSession,
+  startAfterObservingMisses,
 } from './abaCriterion';
 import {
   addTokens,
@@ -993,7 +996,18 @@ function withMatchField(state: AbaSessionState, planned: PlannedTrial, target: A
 function stopPlacementOnFailure(state: AbaSessionState, trial: AbaTrial, r: { rng: Rng }): AbaSessionState {
   if (trial.kind !== 'baseline' || trial.response === 'independent' || trial.response === 'interrupted') return state;
   const target = state.targets[trial.targetId];
-  if (!state.placementTargetIds.includes(target.id)) return state;
+  // промах наблюдения — не провал (решение методиста 1, 2026-11-18): первый заменяется новой пробой, второй
+  // закрывает измерение цели без итога — и проверку сверху вниз, и обычную базовую линию
+  let observingClose = false;
+  if (isObservingMiss(trial)) {
+    // сессия уже кончается или цель снята как ненадёжная — заменять нечего и некому
+    if (state.endReason !== null || state.unreliableTargetIds.includes(trial.targetId)) return state;
+    if (observingMisses(state.trials, trial.targetId) <= OBSERVING_MISS_REPLACED) {
+      return { ...state, queue: withObservingReplacement(state, trial, r) };
+    }
+    observingClose = true;
+  }
+  if (!observingClose && !state.placementTargetIds.includes(target.id)) return state;
   // снимается весь остаток, у цепочки — и остаток прогона: его доводит взрослый, без записи
   const isRest = (q: QueueItem) => q.kind === 'trial' && q.trial.targetId === trial.targetId && q.trial.kind === 'baseline';
   const removedAt = state.queue.findIndex(isRest);
@@ -1030,6 +1044,57 @@ function stopPlacementOnFailure(state: AbaSessionState, trial: AbaTrial, r: { rn
 
 /** Высоковероятных проб взамен снятой проверки сверху вниз — не больше. */
 export const PLACEMENT_FILL_MAX = 2;
+
+/** Сколько промахов наблюдения на цель за сессию заменяются новой пробой базовой линии. */
+export const OBSERVING_MISS_REPLACED = 1;
+
+/**
+ * Сессий подряд, где измерение цели закрыл второй промах наблюдения: проверка сверху вниз снимается с лестницы,
+ * обычная базовая линия переходит в обучение со старта L1.
+ */
+export const OBSERVING_MISS_SESSIONS = 2;
+
+function withoutObservingMissSessions(s: AbaTargetState): AbaTargetState {
+  if (s.observingMissSessions === undefined) return s;
+  const { observingMissSessions: _, ...rest } = s;
+  return rest;
+}
+
+/**
+ * Замена пробы базовой линии с промахом наблюдения: та же цель, по возможности другой экземпляр, — место
+ * перед остатком её проб (или в начале очереди, если остатка нет). Позицию верной карточки выбирает поле.
+ */
+function withObservingReplacement(state: AbaSessionState, trial: AbaTrial, r: { rng: Rng }): QueueItem[] {
+  const target = state.targets[trial.targetId];
+  const pool = teachingExemplars(target);
+  const others = pool.filter((e) => e.id !== trial.exemplarId);
+  const exemplarId = pick(others.length ? others : pool, r.rng).id;
+  const isRest = (q: QueueItem) => q.kind === 'trial' && q.trial.targetId === target.id && q.trial.kind === 'baseline';
+  let last = -1;
+  state.queue.forEach((q, i) => {
+    if (isRest(q)) last = i;
+  });
+  if (last >= 0) {
+    // в конец блока цели, через высоковероятную — как чередует `baselineBlock`
+    const highP = state.highPTargetIds.map((id) => state.targets[id]);
+    const replacement: QueueItem = { kind: 'trial', trial: { kind: 'baseline', targetId: target.id, exemplarId, replacesTrialId: trial.id } };
+    const items: QueueItem[] = highP.length ? [{ kind: 'trial', trial: highPTrial(pick(highP, r.rng), r.rng) }, replacement] : [replacement];
+    return [...state.queue.slice(0, last + 1), ...items, ...state.queue.slice(last + 1)];
+  }
+  // остатка нет — перед следующей пробой, не обгоняя перерыв и доступ, с нейтральной паузой
+  const replacement: QueueItem = {
+    kind: 'trial',
+    trial: { kind: 'baseline', targetId: target.id, exemplarId, replacesTrialId: trial.id, pauseBeforeMs: NEUTRAL_PAUSE_MS },
+  };
+  const next = state.queue.findIndex((q) => q.kind === 'trial');
+  const at = next < 0 ? state.queue.length : next;
+  return [...state.queue.slice(0, at), replacement, ...state.queue.slice(at)];
+}
+
+/** Промахи наблюдения в базовой линии цели за сессию. */
+function observingMisses(trials: readonly AbaTrial[], targetId: string): number {
+  return trials.filter((t) => t.targetId === targetId && t.kind === 'baseline' && isObservingMiss(t)).length;
+}
 
 function workedMs(state: AbaSessionState, now: number): number {
   if (state.workStartedAt === null) return 0;
@@ -1950,6 +2015,7 @@ export function recordTrial(
   const trial: AbaTrial = {
     ...full,
     ...(head.trial.requeuedFromTrialId ? { requeuedFromTrialId: head.trial.requeuedFromTrialId } : {}),
+    ...(head.trial.replacesTrialId ? { replacesTrialId: head.trial.replacesTrialId } : {}),
     tokens: award.tokens,
     ...(award.reason ? { tokenReason: award.reason } : {}),
   };
@@ -2473,7 +2539,11 @@ export function finishAbaSession(
 
   for (const id of touched) {
     const target = state.targets[id];
-    const own = state.trials.filter((t) => t.targetId === id && COUNTS_TOWARD_MASTERY[t.scoredBy]);
+    // промахи наблюдения в измерительных пробах ничего не измеряют (решение методиста 1, 2026-11-18)
+    const counted = state.trials.filter((t) => t.targetId === id && COUNTS_TOWARD_MASTERY[t.scoredBy]);
+    const own = counted.filter((t) => !(MEASURING_KINDS.has(t.kind) && isObservingMiss(t)));
+    // измерение закрыл второй промах наблюдения (первый заменяется) — сессия «без итога из-за промахов»
+    const closedByMisses = observingMisses(counted, id) > OBSERVING_MISS_REPLACED;
     const from = states[id].phase;
     let s: AbaTargetState = { ...states[id], lastSessionIndex: idx };
     let reason: PhaseReason | null = null;
@@ -2497,8 +2567,54 @@ export function finishAbaSession(
           changedIds.add(k);
         }
         s = placed[id];
+        if (passed === null && closedByMisses) {
+          const n = (s.observingMissSessions ?? 0) + 1;
+          s = { ...s, observingMissSessions: n };
+          // внимание к образцу не установлено — проверка сверху вниз снимается со всей лестницы
+          if (n >= OBSERVING_MISS_SESSIONS) {
+            const dropped: string[] = [];
+            for (const x of ladderOf(target, Object.values(state.targets))) {
+              if (x.id === id) {
+                s = { ...s, placementTriedAt: idx };
+                dropped.push(x.id);
+              } else if (states[x.id] && states[x.id].placementTriedAt === undefined) {
+                states[x.id] = { ...states[x.id], placementTriedAt: idx };
+                changedIds.add(x.id);
+                dropped.push(x.id);
+              }
+            }
+            s = withoutObservingMissSessions(s);
+            phaseEvents.push({
+              kind: 'measurement',
+              at: iso(endedAt),
+              targetId: id,
+              action: 'observing_not_established',
+              then: 'placement_dropped',
+              targetIds: dropped,
+            });
+          }
+        } else if (passed !== null) {
+          s = withoutObservingMissSessions(s);
+        }
       } else {
         s = applyBaseline(s, own, idx, target, state.config);
+        if (s.phase === 'baseline' && closedByMisses) {
+          const n = (s.observingMissSessions ?? 0) + 1;
+          s = { ...s, observingMissSessions: n };
+          if (n >= OBSERVING_MISS_SESSIONS) {
+            s = withoutObservingMissSessions(startAfterObservingMisses(s));
+            phaseEvents.push({
+              kind: 'measurement',
+              at: iso(endedAt),
+              targetId: id,
+              action: 'observing_not_established',
+              then: 'teaching_from_l1',
+              targetIds: [id],
+            });
+          }
+        } else if (s.phase !== 'baseline') {
+          s = withoutObservingMissSessions(s);
+        }
       }
       reason = 'baseline';
     }

@@ -52,7 +52,7 @@ export function ladderBelow(t: AbaTarget, targets: readonly AbaTarget[]): AbaTar
 }
 
 /** Лестница цели целиком — она сама, всё ниже и всё выше по той же области и формату. */
-function ladderOf(t: AbaTarget, targets: readonly AbaTarget[]): AbaTarget[] {
+export function ladderOf(t: AbaTarget, targets: readonly AbaTarget[]): AbaTarget[] {
   const same = targets.filter((x) => x.area === t.area && x.format === t.format && x.format !== 'identify');
   const ids = new Set<string>([t.id]);
   let grew = true;

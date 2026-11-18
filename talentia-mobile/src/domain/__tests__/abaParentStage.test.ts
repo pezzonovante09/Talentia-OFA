@@ -155,11 +155,12 @@ describe('stageOfPlan на настоящих целях', () => {
     expect(hasPlannedBreak(third.plan)).toBe(true);
   });
 
-  it('неответ на третьей пробе первого занятия: следующее — проверка задания попроще, без жетонов', () => {
+  // образца не коснулись — промах наблюдения, не провал проверки (решение методиста 1, 2026-11-18; телефон 2026-11-15)
+  it('неответ на третьей пробе первого занятия: следующее — снова проверка того же задания, без жетонов', () => {
     const c = runSession(freshChild(), (n) => (n < 2 ? 'correct' : 'none'));
-    expect(c.states['match-shape']?.placementTriedAt).toBe(0);
+    expect(c.states['match-shape']?.placementTriedAt).toBeUndefined();
     const v = preview(c);
-    expect(v.stage).toEqual({ kind: 'placement', targetId: 'match-same-3' });
+    expect(v.stage).toEqual({ kind: 'placement', targetId: 'match-shape' });
     expect(v.tokens).toBe(false);
   });
 

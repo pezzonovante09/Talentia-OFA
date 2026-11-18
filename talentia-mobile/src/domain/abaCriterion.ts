@@ -23,7 +23,7 @@ import {
   type RoutineSetting,
   type StepPromptState,
 } from '../types/aba';
-import { clampToApp, promptStateOf } from './abaPrompting';
+import { clampToApp, isObservingMiss, promptStateOf } from './abaPrompting';
 
 /** С какой доли самостоятельных цель получает пробы переноса. */
 export const GENERALIZATION_PROBE_FROM = 0.6;
@@ -453,13 +453,27 @@ export function isRoutineMaintenanceDue(s: AbaTargetState, day: string): boolean
   return days >= ROUTINE.maintenanceGapDays[s.maintenanceGapIndex];
 }
 
-/** Проба базовой линии, которая имеет право решать о старте: не прервана, засчитана не детектором. */
+/**
+ * Проба базовой линии, которая имеет право решать о старте: не прервана, засчитана не детектором и не промах
+ * наблюдения — образца не коснулись, выбирать было нельзя, о сопоставлении проба ничего не говорит (решение
+ * методиста 1, 2026-11-18, №205; дефект теста владельца 2026-11-15).
+ */
 export function isBaselineCountable(t: AbaTrial): boolean {
-  return t.kind === 'baseline' && t.response !== 'interrupted' && COUNTS_TOWARD_MASTERY[t.scoredBy];
+  return t.kind === 'baseline' && t.response !== 'interrupted' && COUNTS_TOWARD_MASTERY[t.scoredBy] && !isObservingMiss(t);
 }
 
 function baselineTrials(trials: AbaTrial[]): AbaTrial[] {
   return trials.filter(isBaselineCountable);
+}
+
+/**
+ * Базовая линия без итога две сессии подряд из-за промахов наблюдения: в обучение со старта L1 — метка над образцом
+ * вместе с SD, тому, что ребёнок не смотрит на образец, учит обучение, а не новые пробы без подкрепления (решение
+ * методиста 1, 2026-11-18; L1 — как серия промахов наблюдения в №165).
+ */
+export function startAfterObservingMisses(s: AbaTargetState): AbaTargetState {
+  if (s.phase !== 'baseline') return s;
+  return { ...s, phase: 'acquisition', ...fresh(1, s.currentDelayMs) };
 }
 
 /** Состояние подсказки после базовой линии; задержка — прежняя (у звена — задержка цели). */

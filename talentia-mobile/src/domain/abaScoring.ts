@@ -60,6 +60,11 @@ export type ScoreContext = {
    * `match`. До касания «Была подсказка» принимается всё окно наблюдения (№167), после — обычное окно предъявления.
    */
   sampleTouchedAt?: string | null;
+  /**
+   * `match`, обучение: L1 наблюдения включило нажатие на вариант до касания образца (решение методиста 1,
+   * 2026-11-18) — второе предъявление приложения может начаться раньше конца окна первого.
+   */
+  observingCue?: 'bottom_tap';
 };
 
 const RESPONSES: ReadonlySet<PresentationOutcome> = new Set(['correct', 'approximation', 'incorrect']);
@@ -108,8 +113,14 @@ function logErrors(log: readonly AbaPresentation[], ctx: ScoreContext): string[]
       const expected = i === 0 ? (ctx.promptDelayMs ?? ctx.responseWindowMs) : ctx.responseWindowMs;
       if (p.windowMs !== expected) errors.push(`предъявление ${i + 1}: не то окно`);
       if (prev && ms(p.startedAt) < ms(prev.endedAt)) errors.push(`предъявление ${i + 1}: началось раньше конца предыдущего`);
-      // следующая подсказка приложения — не раньше конца окна, если ответа не было
-      if (prev?.outcome === 'none' && ms(p.startedAt) < ms(prev.endedAt) + prev.windowMs) {
+      // следующая подсказка приложения — не раньше конца окна, если ответа не было; исключение — L1 наблюдения,
+      // включённая нажатием на вариант до касания образца (было касание, образца не касались)
+      const earlyCue =
+        ctx.observingCue === 'bottom_tap' &&
+        i === 1 &&
+        prev?.activity === true &&
+        (ctx.sampleTouchedAt === null || (ctx.sampleTouchedAt !== undefined && ms(ctx.sampleTouchedAt) >= ms(p.startedAt)));
+      if (prev?.outcome === 'none' && !earlyCue && ms(p.startedAt) < ms(prev.endedAt) + prev.windowMs) {
         errors.push(`предъявление ${i + 1}: началось раньше конца окна`);
       }
       lastApp = p;

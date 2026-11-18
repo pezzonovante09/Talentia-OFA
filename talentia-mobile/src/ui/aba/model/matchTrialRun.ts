@@ -48,6 +48,8 @@ export type MatchTrialRun = {
   log: Pres[];
   sampleTouchedAt: number | null;
   observingPrompted: boolean;
+  /** L1 наблюдения включило нажатие на вариант до касания образца, а не истёкшее окно (решение методиста 1). */
+  observingCue: 'bottom_tap' | null;
   taps: { id: string; at: number }[];
   tapCount: number;
   lastChildTapAt: number | null;
@@ -101,6 +103,7 @@ export function startMatchTrial(input: {
     log: [first],
     sampleTouchedAt: null,
     observingPrompted: false,
+    observingCue: null,
     taps: [],
     tapCount: 0,
     lastChildTapAt: null,
@@ -131,6 +134,19 @@ export function optionActive(r: MatchTrialRun, id: string): boolean {
 function windowEnd(r: MatchTrialRun): number {
   const p = current(r);
   return r.sampleTouchedAt === null ? p.endedAt + Math.max(p.windowMs, MATCH_OBSERVING_MS) : p.endedAt + p.windowMs;
+}
+
+/** Включить L1 наблюдения нажатием на вариант: только обучение со старта L0 и только первое предъявление. */
+function earlyObservingCue(r: MatchTrialRun): boolean {
+  return (
+    r.sampleTouchedAt === null &&
+    !r.awaitingL4 &&
+    r.step.trialKind === 'teaching' &&
+    r.step.allowEscalation &&
+    r.step.startPromptLevel === 0 &&
+    r.log.length === 1 &&
+    current(r).by === 'app'
+  );
 }
 
 const lockEnd = (r: MatchTrialRun) => (r.lastChildTapAt ?? -Infinity) + abaAdultPanel.childTapLockMs;
@@ -200,6 +216,9 @@ export function stepMatchTrial(r: MatchTrialRun, e: MatchEvent): MatchTrialRun {
     }
     case 'tap_option': {
       const t = tapped(r, e.id, e.at);
+      // обучение со старта L0: нажал вариант, не коснувшись образца, — метка над образцом сразу, без окна
+      // наблюдения; это не ошибка выбора, коррекции нет (решение методиста 1, 2026-11-18)
+      if (earlyObservingCue(r)) return { ...escalate(t, e.at, 'none'), observingCue: 'bottom_tap' };
       if (!optionActive(r, e.id)) return t;
       const answered: MatchTrialRun = { ...t, chosenCardId: e.id, fieldSizeAtResponse: matchVisual(r).activeChoiceIds.length };
       const correct = e.id === r.step.sampleCardId;
@@ -270,6 +289,7 @@ export function matchTrialInput(r: MatchTrialRun): AbaTrialInput {
     sdEndedAt: iso(r.sdEndedAt),
     scoredBy: step.scoredBy,
     ...(r.observingPrompted ? { observingPrompted: true as const } : {}),
+    ...(r.observingCue ? { observingCue: r.observingCue } : {}),
     observingLatencyMs: r.sampleTouchedAt === null ? null : r.sampleTouchedAt - r.sdEndedAt,
   };
 }

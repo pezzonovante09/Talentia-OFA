@@ -42,6 +42,8 @@ export type PlannedTrial = {
   escalateOnIncorrect?: true;
   /** Повтор пробы, снятой перерывом ребёнка или отказом. */
   requeuedFromTrialId?: string;
+  /** Замена пробы базовой линии с промахом наблюдения (решение методиста 1, 2026-11-18). */
+  replacesTrialId?: string;
   /** Закрывающая проба: блок или сессию. */
   closes?: 'block' | 'session';
   /** Без подсказок: прогон поддержания рутины измеряет, звено с L0 без эскалации (методист, Р3). */
@@ -222,21 +224,26 @@ export function scoreAgainst(
             input.observingLatencyMs === null || input.observingLatencyMs === undefined
               ? null
               : new Date(Date.parse(input.sdEndedAt) + input.observingLatencyMs).toISOString(),
+          ...(input.observingCue ? { observingCue: input.observingCue } : {}),
         }
       : {}),
     sdEndedAt: input.sdEndedAt,
   });
   if (!scored.ok) return { ok: false, errors: scored.errors };
   // флаг наблюдения согласован с журналом: старт L0, второе предъявление — L1 приложения не раньше конца SD + 5000
-  // (флаг выкидывает пробу из детектора зависимости и роста задержки — ложный стоил бы данных, №163)
+  // (флаг выкидывает пробу из детектора зависимости и роста задержки — ложный стоил бы данных, №163); включённая
+  // нажатием на вариант (`observingCue`) — только в обучении и не раньше конца SD
+  if (input.observingCue && !input.observingPrompted) return { ok: false, errors: ['причина подсказки к образцу без самой подсказки'] };
   if (input.observingPrompted) {
     const l1 = input.presentationLog[1];
+    const early = input.observingCue === 'bottom_tap';
     const ok =
       input.startPromptLevel === 0 &&
+      (!early || (input.kind === 'teaching' && input.presentationLog[0]?.activity === true)) &&
       l1 !== undefined &&
       l1.by === 'app' &&
       l1.level === 1 &&
-      Date.parse(l1.startedAt) >= Date.parse(input.sdEndedAt) + MATCH_OBSERVING_MS;
+      Date.parse(l1.startedAt) >= Date.parse(input.sdEndedAt) + (early ? 0 : MATCH_OBSERVING_MS);
     if (!ok) return { ok: false, errors: ['подсказка к образцу не согласована с журналом'] };
   }
   // образца не коснулись вовремя — дана L1, самостоятельной проба быть не может

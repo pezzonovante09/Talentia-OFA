@@ -352,7 +352,8 @@ export function fadeClass(t: AbaTrial): FadeClass {
  * Провал наблюдения `match`: образца так и не коснулись — с любого старта (методист 2026-10-29): на старте L1 пульс
  * над образцом идёт вместе с SD, и непройденное наблюдение то же. Строго `null`: у других форматов поля нет.
  */
-const observingMiss = (t: AbaTrial) => t.observingLatencyMs === null && FAILURE.has(t.response);
+export const isObservingMiss = (t: AbaTrial): boolean => t.observingLatencyMs === null && FAILURE.has(t.response);
+const observingMiss = isObservingMiss;
 
 function fadeStep(ps: StepPromptState, t: AbaTrial, answerFloor: PromptLevel, ladder: PromptLadder): StepPromptState {
   const succeeded = SUCCESS.has(t.response);
