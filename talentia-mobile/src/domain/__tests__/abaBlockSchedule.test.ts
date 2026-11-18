@@ -4,7 +4,7 @@
  * пробы поддержания и обобщения в конце, иногда за своим перерывом.
  */
 import type { AbaSessionState } from '../abaSession';
-import { blockSchedule } from '../abaBlockSchedule';
+import { blockSchedule, childSchedule } from '../abaBlockSchedule';
 
 type Queue = AbaSessionState['queue'];
 type Item = Queue[number];
@@ -72,4 +72,17 @@ it('набор: две половины вокруг перерыва — два
 it('доступ и выбор награды в очереди — не работа и не разрезают отрезок', () => {
   const q: Queue = [{ kind: 'access', durationMs: 1000 }, ...trials('t1', 2), { kind: 'reinforcer' }, ...trials('t1', 2), end('t1')];
   expect(blockSchedule(q)).toEqual({ blocksLeft: 1, isLast: true });
+});
+
+describe('награда «потом» — только выбранная и не устаревшая', () => {
+  const rest: Queue = [...trials('t2', 5), end('t2')];
+  it('выбрана — её id', () => {
+    expect(childSchedule({ queue: rest, reinforcerId: 'bubbles' })).toEqual({ blocksLeft: 1, isLast: true, reinforcerId: 'bubbles' });
+  });
+  it('рутина обменяла жетоны (reinforcerStale) — прежней картинки нет', () => {
+    expect(childSchedule({ queue: rest, reinforcerId: 'bubbles', reinforcerStale: true }).reinforcerId).toBeNull();
+  });
+  it('выбор из трёх стоит в очереди — прежней картинки нет', () => {
+    expect(childSchedule({ queue: [{ kind: 'reinforcer' }, ...rest], reinforcerId: 'bubbles' }).reinforcerId).toBeNull();
+  });
 });

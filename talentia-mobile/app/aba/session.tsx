@@ -35,7 +35,7 @@ import {
 } from '../../src/design/abaTokens';
 import { useChildT } from '../../src/i18n';
 import { typography } from '../../src/design/tokens';
-import { blockSchedule } from '../../src/domain/abaBlockSchedule';
+import { childSchedule } from '../../src/domain/abaBlockSchedule';
 import type { BreakCardStep } from '../../src/domain/abaBreakCard';
 import type { PanelButton } from '../../src/domain/abaScoring';
 import {
@@ -1148,7 +1148,7 @@ export default function AbaSessionScreen() {
         );
       } else {
         // расписание ребёнку (решение методиста 34) — только здесь, не на паузе после «Отказ»
-        body = <BreakView phase={phase} onReturn={(at) => run(endBreak(at))} schedule={s && <ChildSchedule {...blockSchedule(s.queue)} reinforcerId={s.reinforcerId} />} />;
+        body = <BreakView phase={phase} onReturn={(at) => run(endBreak(at))} schedule={s && <ChildSchedule {...childSchedule(s)} />} />;
       }
       break;
     }

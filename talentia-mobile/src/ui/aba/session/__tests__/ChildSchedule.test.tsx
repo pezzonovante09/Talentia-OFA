@@ -81,3 +81,9 @@ it('перерыв: расписание под кольцом, «Вернуть
   expect(screen.getByTestId('aba-schedule')).toBeTruthy();
   expect(screen.getByTestId('aba-break-return')).toBeTruthy();
 });
+
+it('награда без картинки (партия 2: барабан) — заглушка каталога в окне награды, полоса не ломается', async () => {
+  await renderWithProviders(<ChildSchedule blocksLeft={2} isLast={false} reinforcerId="drum" />);
+  expect(screen.getByTestId('aba-reinforcer-stub-drum', HIDDEN)).toBeTruthy();
+  expect(screen.getAllByTestId('aba-schedule-dot', HIDDEN)).toHaveLength(2);
+});

@@ -45,3 +45,15 @@ export function blockSchedule(queue: Queue): BlockSchedule {
   closeStretch();
   return { blocksLeft: total, isLast: total === 1 };
 }
+
+/**
+ * Расписание для экрана: блоки и награда «потом». Выбор награды ещё впереди (рутина обменяла жетоны, пока сессия
+ * была свёрнута, — `reinforcerStale`, или выбор из трёх стоит в очереди) — прежняя картинка была бы ложным обещанием:
+ * награды нет, и расписание не показывается.
+ */
+export function childSchedule(
+  state: Pick<AbaSessionState, 'queue' | 'reinforcerId' | 'reinforcerStale'>,
+): BlockSchedule & { reinforcerId: string | null } {
+  const rechoice = state.reinforcerStale === true || state.queue.some((q) => q.kind === 'reinforcer');
+  return { ...blockSchedule(state.queue), reinforcerId: rechoice ? null : state.reinforcerId };
+}
