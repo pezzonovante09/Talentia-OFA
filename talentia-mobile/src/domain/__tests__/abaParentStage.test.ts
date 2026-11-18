@@ -12,20 +12,25 @@ import { accessShown, chooseReinforcer, finishAbaSession, finishAccess, finishBr
 import { targetForBand } from '../abaTargetRules';
 import { initialTokenTraining, type TokenTrainingState } from '../abaTokenTraining';
 
-type Act = 'correct' | 'none';
+type Act = 'correct' | 'wrong' | 'none';
 
 const POOL = ['puzzle', 'bubbles', 'drum', 'paint_drop', 'kaleidoscope', 'pinwheel'];
 const T0 = Date.UTC(2026, 10, 15, 6);
 const TARGETS = readyAbaTargets(ABA_TARGETS, DEV_PLACEHOLDER_ART).map((t) => targetForBand(t, '5-6'));
 const IDS = TARGETS.map((t) => t.id);
 
-/** Проба по модели экрана: «верно» — образец и такая же карточка; «нет ответа» — окно истекает без касаний. */
+/**
+ * Проба по модели экрана: «верно» — образец и такая же карточка; «неверно» — образец и другая карточка; «нет ответа» —
+ * окно истекает без касаний.
+ */
 function runTrial(r0: MatchTrialRun, act: Act, at0: number): { r: MatchTrialRun; at: number } {
   let r = r0;
   let at = at0;
-  if (act === 'correct') {
-    if (r.sampleTouchedAt === null) r = stepMatchTrial(r, { type: 'tap_sample', at: (at += 1000) });
-    if (optionActive(r, r.step.sampleCardId!)) r = stepMatchTrial(r, { type: 'tap_option', id: r.step.sampleCardId!, at: (at += 500) });
+  if (act !== 'none' && r.sampleTouchedAt === null) r = stepMatchTrial(r, { type: 'tap_sample', at: (at += 1000) });
+  if (act === 'correct' && optionActive(r, r.step.sampleCardId!)) r = stepMatchTrial(r, { type: 'tap_option', id: r.step.sampleCardId!, at: (at += 500) });
+  if (act === 'wrong') {
+    const other = r.step.field!.find((id) => id !== r.step.sampleCardId && optionActive(r, id));
+    if (other) r = stepMatchTrial(r, { type: 'tap_option', id: other, at: (at += 500) });
   }
   for (let guard = 0; !r.done && guard < 50; guard += 1) {
     if (r.awaitingL4) {
@@ -82,7 +87,7 @@ function preview(c: Child): { stage: ParentStage; tokens: boolean | null; plan: 
 }
 
 /** Одно занятие до конца: пробы измерения — по `policy`, остальные — верно. Возвращает ребёнка после итога. */
-function runSession(c: Child, policy: (trialNo: number) => Act): Child {
+function runSession(c: Child, policy: (trialNo: number, kind: string) => Act): Child {
   let now = c.now + 3 * 3600_000;
   let st = startAbaSession(inputOf({ ...c, now }, 1000 + c.index));
   let trialNo = 0;
@@ -102,7 +107,7 @@ function runSession(c: Child, policy: (trialNo: number) => Act): Child {
     } else if (step.kind === 'end') break;
     else if (step.kind === 'adult_finish_chain') throw new Error('цепочек в match нет');
     else {
-      const act = step.trialKind === 'high_p' || step.trialKind === 'closing' ? 'correct' : policy(trialNo);
+      const act = step.trialKind === 'high_p' || step.trialKind === 'closing' ? 'correct' : policy(trialNo, step.trialKind);
       const run = startMatchTrial({ step, target: st.targets[step.targetId], config: 'with_adult', seed: st.seed, trialId: `t${(seq += 1)}`, sessionId: st.sessionId, index: st.trials.length, shownAt: now });
       const done = runTrial(run, act, now);
       now = done.at + 200;
@@ -143,14 +148,22 @@ describe('stageOfPlan на настоящих целях', () => {
     expect(v.tokens).toBe(false);
   });
 
-  it('всё верно: занятие 2 — первые пробы цвета без жетонов, занятие 3 — обучение цвету с жетонами и плановым перерывом', () => {
+  // цвет из 3 (решение методиста 40): поле 3 осваивается по базовой линии — 5/5 даёт «освоено» без обучения
+  it('всё верно: занятие 2 — первые пробы цвета из трёх без жетонов, занятие 3 — всё освоено', () => {
     let c = runSession(freshChild(), () => 'correct');
     const second = preview(c);
-    expect(second.stage).toEqual({ kind: 'baseline', targetId: 'match-color' });
+    expect(second.stage).toEqual({ kind: 'baseline', targetId: 'match-color-3' });
     expect(second.tokens).toBe(false);
     c = runSession(c, () => 'correct');
+    expect(c.states['match-color-3']).toMatchObject({ phase: 'mastered', masteredBy: 'baseline' });
+    expect(preview(c).stage).toEqual({ kind: 'all_mastered' });
+  });
+
+  it('ошибки на первых пробах цвета: занятие 3 — обучение цвету из трёх с жетонами и плановым перерывом', () => {
+    let c = runSession(freshChild(), () => 'correct');
+    c = runSession(c, (_, kind) => (kind === 'baseline' ? 'wrong' : 'correct'));
     const third = preview(c);
-    expect(third.stage).toEqual({ kind: 'teaching', targetId: 'match-color', plannedBreak: true });
+    expect(third.stage).toEqual({ kind: 'teaching', targetId: 'match-color-3', plannedBreak: true });
     expect(third.tokens).toBe(true);
     expect(hasPlannedBreak(third.plan)).toBe(true);
   });

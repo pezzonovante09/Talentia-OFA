@@ -620,7 +620,7 @@
         "match-same-2": "Одинаковые из двух",
         "match-same-3": "Одинаковые из трёх",
         "match-shape": "По форме",
-        "match-color": "По цвету"
+        "match-color-3": "По цвету"
       },
       "goalStatus": {
         "ahead": "впереди",

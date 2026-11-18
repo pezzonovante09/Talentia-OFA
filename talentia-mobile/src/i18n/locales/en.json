@@ -612,7 +612,7 @@
         "match-same-2": "Same one of two",
         "match-same-3": "Same one of three",
         "match-shape": "By shape",
-        "match-color": "By color"
+        "match-color-3": "By color"
       },
       "goalStatus": {
         "ahead": "ahead",

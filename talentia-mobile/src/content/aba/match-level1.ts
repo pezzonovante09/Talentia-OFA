@@ -1,6 +1,6 @@
 /**
  * Цели ABA, ступень 1, сопоставление (`match`, область `matching`) — ABA.md «Сетка целей», лестница: одинаковые из 2
- * → из 3 → форма; цвет — от «из 2» (№162: две цели, а не ступень; вопрос 11, решение 2026-10-31). «Одинаковые фото» не пишутся: растр на экране пробы
+ * → из 3 → форма и цвет из 3 (решение методиста 40, 2026-11-18, вместо №162 «цвет из 2 от «из 2»»). «Одинаковые фото» не пишутся: растр на экране пробы
  * запрещён — открыто. Поля — по `abaTargetRules.ts` (`targetErrors`, `programErrors`): 3–5 экземпляров, не меньше
  * двух обучающих и одного переноса, у переноса — другой голос; касательный формат: `modelKey` — повтор SD,
  * частичных моделей нет. Полоса — самая строгая (5–6); загрузчик подставляет полосу ребёнка.
@@ -88,22 +88,23 @@ export const MATCH_SHAPE: AbaTarget = {
 };
 
 /**
- * Цвет: одна форма одного размера; первое поле — синий и киноварь; зелёный с пурпурным — не вместе; перенос — на квадрате.
- * Открывается от «одинаковых из 2» (решение владельца 2026-10-31, «две цели»): то же поле 2, другой класс стимулов, не рост
- * трудности; учится параллельно с «одинаковыми из 3».
+ * Цвет из трёх (решение методиста 40, 2026-11-18; пересматривает №162 «цвет из 2 от «одинаковых из 2»»): после
+ * «одинаковых из 3», параллельно с формой. Одна форма одного размера; первое поле — с синим и киноварью; вместе не
+ * ставятся зелёный с пурпурным и синий с голубым (`ABA_COLOR_NOT_TOGETHER`) — поэтому киноварь есть в каждом поле.
+ * Перенос — на квадрате. «Включает» нет: выводить «одинаковые» из цвета или нет — вопрос методисту (у формы — вопрос 63).
  */
-export const MATCH_COLOR: AbaTarget = {
+export const MATCH_COLOR_3: AbaTarget = {
   ...base,
-  id: 'match-color',
-  fieldSize: 2,
-  prerequisiteTargetIds: ['match-same-2'],
+  id: 'match-color-3',
+  fieldSize: 3,
+  prerequisiteTargetIds: ['match-same-3'],
   exemplars: [
-    ex('e1', [c('blue'), c('vermilion')]),
-    ex('e2', [c('blue'), c('green')]),
-    ex('e3', [c('vermilion'), c('purple')]),
-    ex('g1', [c('blue-sq'), c('purple-sq')], 'generalization', 'adult_f'),
-    ex('g2', [c('vermilion-sq'), c('green-sq')], 'generalization', 'adult_m'),
+    ex('e1', [c('blue'), c('vermilion'), c('green')]),
+    ex('e2', [c('sky'), c('purple'), c('vermilion')]),
+    ex('e3', [c('vermilion'), c('blue'), c('purple')]),
+    ex('g1', [c('green-sq'), c('vermilion-sq'), c('sky-sq')], 'generalization', 'adult_f'),
+    ex('g2', [c('purple-sq'), c('blue-sq'), c('vermilion-sq')], 'generalization', 'adult_m'),
   ],
 };
 
-export const MATCH_LEVEL1: readonly AbaTarget[] = [MATCH_SAME_2, MATCH_SAME_3, MATCH_SHAPE, MATCH_COLOR];
+export const MATCH_LEVEL1: readonly AbaTarget[] = [MATCH_SAME_2, MATCH_SAME_3, MATCH_SHAPE, MATCH_COLOR_3];

@@ -10,7 +10,7 @@ import { EXCHANGE_ACCESS_MS } from '../../domain/abaTokenTraining';
 import { MIN_REINFORCER_POOL } from '../../domain/abaTokens';
 import ru from '../../i18n/locales/ru.json';
 import en from '../../i18n/locales/en.json';
-import { MATCH_COLOR, MATCH_LEVEL1, MATCH_SAME_2, MATCH_SAME_3, MATCH_SHAPE } from '../aba/match-level1';
+import { MATCH_COLOR_3, MATCH_LEVEL1, MATCH_SAME_2, MATCH_SAME_3, MATCH_SHAPE } from '../aba/match-level1';
 import { REINFORCERS } from '../aba/reinforcers';
 import { ABA_COLOR_NOT_TOGETHER, ABA_SHAPE_FILL, ABA_SHAPE_NOT_TOGETHER, ABA_STIMULI } from '../aba/stimuli';
 import { abaTargetReady, ABA_TARGETS, readyAbaTargets } from '../aba';
@@ -68,11 +68,23 @@ describe('стимулы', () => {
     }
   });
 
-  it('цвет: первое поле — синий и киноварь; зелёный с пурпурным в одно поле не ставятся', () => {
-    expect(MATCH_COLOR.exemplars[0].cards).toEqual(['aba-color-blue', 'aba-color-vermilion']);
-    for (const e of MATCH_COLOR.exemplars) {
+  it('цвет из 3: первое поле — с синим и киноварью; зелёный с пурпурным и синий с голубым в одно поле не ставятся', () => {
+    expect(MATCH_COLOR_3.exemplars[0].cards).toEqual(expect.arrayContaining(['aba-color-blue', 'aba-color-vermilion']));
+    for (const e of MATCH_COLOR_3.exemplars) {
       for (const [a, b] of ABA_COLOR_NOT_TOGETHER) expect(e.cards!.includes(a) && e.cards!.includes(b)).toBe(false);
     }
+  });
+
+  it('цвет из 3 (решение методиста 40): три разных обучающих поля из пяти цветов, перенос — два поля на квадрате', () => {
+    const teaching = MATCH_COLOR_3.exemplars.filter((e) => e.role === 'teaching');
+    const general = MATCH_COLOR_3.exemplars.filter((e) => e.role === 'generalization');
+    expect(teaching).toHaveLength(3);
+    expect(general).toHaveLength(2);
+    expect(new Set(teaching.map((e) => [...e.cards!].sort().join())).size).toBe(3);
+    const colors = new Set(teaching.flatMap((e) => e.cards!));
+    expect(colors.size).toBe(5);
+    for (const id of colors) expect(byId.get(id)).toMatchObject({ kind: 'color', carrier: 'circle' });
+    for (const id of general.flatMap((e) => e.cards!)) expect(byId.get(id)).toMatchObject({ kind: 'color', carrier: 'square' });
   });
 });
 
@@ -142,16 +154,19 @@ describe('объём первой версии (versionErrors, вопрос 65) 
   });
 });
 
-describe('связи лестницы match (решение владельца 2026-10-31: цвет — от «из 2», форма включает обе «одинаковые»)', () => {
+describe('связи лестницы match (решение методиста 40: цвет из 3 — от «из 3»; форма включает обе «одинаковые»)', () => {
   /** Картинки только у предметов «одинаковых из 2»: «из 3» не готовы, формы и цвета рисует код. */
   const artSame2Only = Object.fromEntries(MATCH_SAME_2.exemplars.flatMap((e) => e.cards ?? []).map((id) => [id, {}]));
 
-  it('цвет открывается после «одинаковых из 2», форма — нет (ждёт «из 3»)', () => {
-    expect(readyAbaTargets(MATCH_LEVEL1, artSame2Only).map((t) => t.id)).toEqual(['match-same-2', 'match-color']);
+  it('после «одинаковых из 2» открыта только она: и форма, и цвет ждут «из 3»', () => {
+    expect(readyAbaTargets(MATCH_LEVEL1, artSame2Only).map((t) => t.id)).toEqual(['match-same-2']);
   });
 
-  it('предпосылки: цвет — от «из 2», форма — от «из 3»; проверка сверху вниз на форме выводит обе «одинаковые»', () => {
-    expect(MATCH_COLOR.prerequisiteTargetIds).toEqual(['match-same-2']);
+  it('предпосылки: цвет и форма — от «из 3»; проверка сверху вниз на форме выводит обе «одинаковые»; цвет ничего не включает', () => {
+    expect(MATCH_COLOR_3.prerequisiteTargetIds).toEqual(['match-same-3']);
+    expect(MATCH_COLOR_3.fieldSize).toBe(3);
+    expect(MATCH_COLOR_3.includesTargetIds).toBeUndefined();
+    expect(MATCH_LEVEL1.map((t) => t.id)).not.toContain('match-color');
     expect(MATCH_SHAPE.prerequisiteTargetIds).toEqual(['match-same-3']);
     expect(MATCH_SHAPE.includesTargetIds).toEqual(['match-same-3', 'match-same-2']);
   });

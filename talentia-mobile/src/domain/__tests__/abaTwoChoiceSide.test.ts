@@ -253,10 +253,10 @@ function positionsByTarget(trials: readonly AbaTrial[]): Map<string, number[]> {
 }
 
 const TGT = (id: string) => TARGETS.find((t) => t.id === id)!;
-/** Обучение «одинаковых из 3» (поле 3): «из 2» и цвет освоены, проверки сверху вниз нет. */
+/** Обучение «одинаковых из 3» (поле 3): «из 2» освоена, цвет из 3 ещё закрыт (решение методиста 40), проверки сверху вниз нет. */
 const teachingThree = (): Child => ({
   ...freshChild(),
-  states: { 'match-same-2': masteredState(TGT('match-same-2'), 0), 'match-color': masteredState(TGT('match-color'), 0), 'match-same-3': acq(TGT('match-same-3')) },
+  states: { 'match-same-2': masteredState(TGT('match-same-2'), 0), 'match-same-3': acq(TGT('match-same-3')) },
 });
 
 /**

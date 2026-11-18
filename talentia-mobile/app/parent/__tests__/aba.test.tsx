@@ -604,7 +604,7 @@ describe('«Занятия ABA»: карточка «Цели» (этап G2, в
     expect(goal('match-same-2')).toBeTruthy();
     expect(goalStatus('match-same-2')).toBe('впереди');
     expect(screen.getByTestId('aba-goal-match-same-2-glyph-ahead')).toBeTruthy();
-    expect([screen.queryByTestId('aba-goal-match-same-3'), screen.queryByTestId('aba-goal-match-shape'), screen.queryByTestId('aba-goal-match-color')]).toEqual([null, null, null]);
+    expect([screen.queryByTestId('aba-goal-match-same-3'), screen.queryByTestId('aba-goal-match-shape'), screen.queryByTestId('aba-goal-match-color-3')]).toEqual([null, null, null]);
     expect(screen.getByTestId('aba-goals-summary').props.children).toBe('Первое занятие покажет, что ребёнок уже умеет');
     expect(screen.queryByText(/%/)).toBeNull();
   });
@@ -623,7 +623,7 @@ describe('«Занятия ABA»: карточка «Цели» (этап G2, в
     expect([goalStatus('match-same-2'), goalStatus('match-same-3'), goalStatus('match-shape')]).toEqual(['освоено', 'учим', 'впереди']);
     expect(screen.getByTestId('aba-goal-match-same-2-glyph-mastered')).toBeTruthy();
     expect(screen.getByTestId('aba-goal-match-same-3-glyph-learning')).toBeTruthy();
-    expect(screen.queryByTestId('aba-goal-match-color')).toBeNull();
+    expect(screen.queryByTestId('aba-goal-match-color-3')).toBeNull();
     expect(screen.getByText('Одинаковые из двух')).toBeTruthy();
     expect(rows).toBeTruthy();
   });
