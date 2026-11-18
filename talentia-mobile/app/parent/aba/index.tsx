@@ -181,6 +181,7 @@ export default function AbaParentScreen() {
   // «Где мы сейчас»: план следующего занятия вхолостую — по тем, кто ведёт сейчас (обученный наблюдатель меняет план)
   const band = profile?.band;
   const soundOn = profile?.soundEffects ?? true;
+  const adultReward = profile?.adultReward === true;
   useEffect(() => {
     if (!db || !childId || !band || !ov) return;
     let alive = true;
@@ -189,6 +190,7 @@ export default function AbaParentScreen() {
       config: 'with_adult',
       band,
       soundOn,
+      adultReward,
       observers: lead ? [lead, ...prevObservers.filter((o) => o.id !== lead.id)] : prevObservers,
       primaryObserverId: lead?.id ?? null,
       now: Date.now(),
@@ -203,7 +205,7 @@ export default function AbaParentScreen() {
     return () => {
       alive = false;
     };
-  }, [db, childId, band, soundOn, ov, who, prevObservers]);
+  }, [db, childId, band, soundOn, adultReward, ov, who, prevObservers]);
   // согласие и отзыв уходят назад через `router.back()` — этот экран остаётся смонтированным, читать на фокус
   useFocusEffect(
     useCallback(() => {

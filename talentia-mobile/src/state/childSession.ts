@@ -42,6 +42,8 @@ export type ChildSettings = {
   calmMode: boolean;
   focusMode: boolean;
   soundEffects: boolean;
+  /** «Награда от взрослого» в ABA «Со взрослым» (решение 14): из профиля, по умолчанию выключена. */
+  adultReward: boolean;
   interfaceLang: InterfaceLang;
   kyrgyzRegion: false;
   /** Как Tali обращается к ребёнку (№71): только выбор родовой надстройки реплики, на устройстве (`lineKeyFor`). */
@@ -76,7 +78,7 @@ export type ChildSessionState = {
   startNoRecordSession(input: { childId: string; now: Date; interfaceLang: InterfaceLang }): void;
   /** Сеанс ребёнка с аккаунтом: настройки из профиля, прогресс — снимок с устройства (`ProgressPort.load`). */
   startAccountSession(input: { profile: ChildProfile; snapshot: ProgressSnapshot; now: Date; openedForAba?: boolean }): void;
-  setSettings(patch: Partial<Pick<ChildSettings, 'calmMode' | 'focusMode' | 'soundEffects' | 'interfaceLang'>>): void;
+  setSettings(patch: Partial<Pick<ChildSettings, 'calmMode' | 'focusMode' | 'soundEffects' | 'interfaceLang' | 'adultReward'>>): void;
   /** Начать или продолжить урок. Возвращает состояние оркестратора для экрана. */
   openLesson(input: { lessonId: string; now: Date; seed: number; nodeState: NodeState }): LessonSessionState;
   /**
@@ -102,6 +104,7 @@ export const DEFAULT_SETTINGS: ChildSettings = {
   calmMode: false,
   focusMode: false,
   soundEffects: true,
+  adultReward: false,
   interfaceLang: 'ru',
   kyrgyzRegion: false,
   addressForm: DEFAULT_ADDRESS_FORM,
@@ -130,6 +133,7 @@ export const useChildSession = create<ChildSessionState>((set, get) => ({
       calmMode: profile.calmMode,
       focusMode: profile.focusMode,
       soundEffects: profile.soundEffects,
+      adultReward: profile.adultReward === true,
       interfaceLang: profile.interfaceLang,
       kyrgyzRegion: false,
       addressForm: profile.addressForm,

@@ -431,6 +431,16 @@ describe('форма обращения из профиля и память ре
     expect(useChildSession.getState().settings.addressForm).toBe('masculine');
   });
 
+  it('«Награда от взрослого» (решение 14): профиль, записанный до неё (без поля), — выключена; включённая — в настройках', () => {
+    const base = newProfile({ childId: KID, band: '5-6', interfaceLang: 'ru', createdAt: '2026-10-25T00:00:00.000Z' });
+    const { adultReward: _drop, ...legacy } = base;
+    useChildSession.getState().startAccountSession({ profile: legacy, snapshot: { ...EMPTY_PROGRESS }, now: new Date('2026-11-18T10:00:00.000Z') });
+    expect(useChildSession.getState().settings.adultReward).toBe(false);
+    useChildSession.getState().startAccountSession({ profile: { ...base, adultReward: true }, snapshot: { ...EMPTY_PROGRESS }, now: new Date('2026-11-18T10:00:00.000Z') });
+    expect(useChildSession.getState().settings.adultReward).toBe(true);
+    expect(DEFAULT_SETTINGS.adultReward).toBe(false);
+  });
+
   it('профиль без явной формы (newProfile) — neutral', () => {
     account(KID);
     expect(useChildSession.getState().settings.addressForm).toBe('neutral');

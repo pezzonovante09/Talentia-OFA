@@ -29,6 +29,10 @@ export default function ChildSettingsScreen() {
     if (session.mode !== 'none' && session.childId === profile.childId && session.settings.interfaceLang !== d.interfaceLang) {
       session.setSettings({ interfaceLang: d.interfaceLang });
     }
+    // «Награда от взрослого» (решение 14) — тоже сразу: следующее занятие этого ребёнка берёт пул из настроек сеанса
+    if (session.mode !== 'none' && session.childId === profile.childId && session.settings.adultReward !== (d.adultReward === true)) {
+      session.setSettings({ adultReward: d.adultReward === true });
+    }
   };
 
   return (

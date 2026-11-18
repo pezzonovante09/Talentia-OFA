@@ -188,6 +188,8 @@ export type StartOptions = {
   config: AbaConfig;
   band: AgeBand;
   soundOn: boolean;
+  /** «Награда от взрослого» в профиле (решение 14): без неё `from_adult` в выбор не идёт. Нет — выключена. */
+  adultReward?: boolean;
   observers: AbaObserver[];
   primaryObserverId: string | null;
   now: number;
@@ -196,10 +198,10 @@ export type StartOptions = {
 };
 
 /** Пул подкрепителей под сессию: фильтры каталога и классы стимулов допущенных целей. */
-export function poolFor(targets: readonly AbaTarget[], o: Pick<StartOptions, 'config' | 'soundOn'>, accessMs: number): string[] {
+export function poolFor(targets: readonly AbaTarget[], o: Pick<StartOptions, 'config' | 'soundOn' | 'adultReward'>, accessMs: number): string[] {
   const byId = new Map(ABA_STIMULI.map((s) => [s.id, s]));
   const classes = [...new Set(targets.flatMap((t) => t.exemplars.flatMap((e) => e.cards ?? [])).map((id) => byId.get(id)?.class ?? ''))];
-  const filter = { config: o.config, soundOn: o.soundOn, accessMs, stimulusClasses: classes.filter(Boolean) };
+  const filter = { config: o.config, soundOn: o.soundOn, adultReward: o.adultReward === true, accessMs, stimulusClasses: classes.filter(Boolean) };
   // в выбор — только награды с готовой сценой (правка 1); пока их меньше порога — весь каталог, как раньше
   const ready = reinforcerPoolFor(
     REINFORCERS.filter((r) => REWARD_SCENE_READY.has(r.id)),
@@ -212,9 +214,9 @@ export function poolFor(targets: readonly AbaTarget[], o: Pick<StartOptions, 'co
  * Пул подкрепителей для возобновления (фаза 8): по снимку сессии — её конфигурации, полосе и размеру доски, а не по
  * текущему `tokenTraining`: иначе варианты нового выбора разошлись бы с доской сессии (`backend-auditor`).
  */
-export function resumePoolFor(state: AbaSessionState, soundOn: boolean, art?: Readonly<Record<string, unknown>>): string[] {
+export function resumePoolFor(state: AbaSessionState, soundOn: boolean, art?: Readonly<Record<string, unknown>>, adultReward = false): string[] {
   const targets = readyAbaTargets(ABA_TARGETS, artFor(art)).map((t) => targetForBand(t, state.band));
-  return poolFor(targets, { config: state.config, soundOn }, EXCHANGE_ACCESS_MS[state.board.size]);
+  return poolFor(targets, { config: state.config, soundOn, adultReward }, EXCHANGE_ACCESS_MS[state.board.size]);
 }
 
 /** Вход рабочей сессии — или причина, почему её не начать. */
@@ -308,7 +310,10 @@ export async function readAbaStartInput(
   };
 }
 
-/** Вход сопряжения: пул под доступ сопряжения (20 с) и история выборов. */
+/**
+ * Вход сопряжения: пул под доступ сопряжения (20 с) и история выборов. «Награды от взрослого» здесь нет (`adultReward`
+ * не передаётся): сопряжение делает подкрепителем само занятие, а не то, что взрослый даёт вне приложения.
+ */
 export async function loadPairingStart(
   db: SqlDb,
   childId: string,
@@ -353,14 +358,14 @@ export async function loadFinishInputs(db: SqlDb, childId: string, state: AbaSes
 export async function abandonInProgressSession(
   db: SqlDb,
   childId: string,
-  o: { reason: 'adult_stopped' | 'app_backgrounded'; at: number; now: number; soundOn?: boolean; art?: Readonly<Record<string, unknown>> },
+  o: { reason: 'adult_stopped' | 'app_backgrounded'; at: number; now: number; soundOn?: boolean; adultReward?: boolean; art?: Readonly<Record<string, unknown>> },
 ): Promise<boolean> {
   return db.transaction(async (tx) => {
     const inProgress = await loadChildState(tx, childId, 'abaSessionInProgress');
     if (!inProgress) return false;
     let resumed: AbaSessionState | null = null;
     try {
-      resumed = await resumeAbaSession(tx, childId, resumePoolFor(inProgress, o.soundOn ?? true, o.art), 0);
+      resumed = await resumeAbaSession(tx, childId, resumePoolFor(inProgress, o.soundOn ?? true, o.art, o.adultReward), 0);
     } catch {
       // вариантов нет — варианты и не нужны: занятие закрывается
     }

@@ -1251,4 +1251,9 @@ export type ReinforcerItem = {
   classes: readonly string[];
   /** Не ставится в одну тройку с этими позициями. */
   apartFrom?: readonly string[];
+  /**
+   * Награду даёт взрослый вне приложения (`from_adult`, решение 14 методиста, 2026-11-18): в пул только при включённой
+   * «Награде от взрослого» в профиле ребёнка (`PoolFilter.adultReward`), по умолчанию выключена.
+   */
+  adultGiven?: boolean;
 };

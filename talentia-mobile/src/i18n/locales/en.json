@@ -57,7 +57,8 @@
       "drum": "Drum",
       "xylophone": "Xylophone",
       "song": "Song",
-      "sing_together": "Sing together"
+      "sing_together": "Sing together",
+      "from_adult": "Reward from an adult"
     }
   },
   "abaReinforcement": {
@@ -499,7 +500,9 @@
       "calm": "Calm mode",
       "focus": "Focus",
       "sound": "Sounds and music",
-      "soundHint": "Without sound the child will not hear the instructions"
+      "soundHint": "Without sound the child will not hear the instructions",
+      "adultReward": "Reward from an adult",
+      "adultRewardHint": "In “With an adult” sessions your own reward joins the choices: you decide what to give, the app does not record it"
     },
     "home": {
       "lastRun": "Last time — {{when}}",
@@ -754,6 +757,8 @@
     "tali": "Tali, your helper",
     "accessScene": "Play",
     "singTogetherHint": "Sing along with your child",
+    "fromAdultHint": "Give your child what they chose. Tap “Done” when you finish",
+    "fromAdultDone": "Done",
     "breakCard": "Break",
     "sample": "Sample",
     "option": "Option {{n}}",

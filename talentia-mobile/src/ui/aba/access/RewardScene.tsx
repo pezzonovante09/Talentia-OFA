@@ -6,6 +6,7 @@
  * доигрывания, и в момент конца сцена сразу сворачивается в карточку (`aba-pedagogy-specialist`: по процедуре допустимо).
  */
 import { BubblesScene } from './BubblesScene';
+import { FromAdultScene } from './FromAdultScene';
 import { KaleidoscopeScene } from './KaleidoscopeScene';
 import { MarbleRunScene } from './MarbleRunScene';
 import { PaintDropScene } from './PaintDropScene';
@@ -30,6 +31,8 @@ export function RewardScene({ reinforcerId, ended, still }: { reinforcerId: stri
       return <PaintDropScene ended={ended} still={still} />;
     case 'sing_together':
       return <SingTogetherScene ended={ended} still={still} />;
+    case 'from_adult':
+      return <FromAdultScene ended={ended} still={still} />;
     default:
       return <PlaceholderScene reinforcerId={reinforcerId} ended={ended} />;
   }

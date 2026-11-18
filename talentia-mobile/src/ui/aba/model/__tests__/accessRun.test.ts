@@ -5,7 +5,7 @@
  * стоит `endSettleMs`.
  */
 import { abaAccessScene } from '../../../../design/abaTokens';
-import { accessDueAt, accessEndsAt, accessLeft, accessRingVisible, startAccess, stepAccess, type AccessEffect } from '../accessRun';
+import { accessDueAt, accessEndsAt, accessLeft, accessRingVisible, finishAccessNow, startAccess, stepAccess, type AccessEffect } from '../accessRun';
 
 const types = (fx: AccessEffect[]) => fx.map((f) => f.type);
 const CUE = abaAccessScene.endCue.beforeEndMs;
@@ -180,5 +180,34 @@ describe('кольцо', () => {
     const r = startAccess(0, 20_000);
     expect(accessRingVisible(stepAccess(r, 20_000 + FOLD).run)).toBe(false);
     expect(accessRingVisible(stepAccess(r, 1e9).run)).toBe(false);
+  });
+});
+
+describe('«Готово» взрослого у «Награды от взрослого» (решение 14)', () => {
+  it('T переносится на касание: кольца нет, дальше обычный кадр конца до done, без «закругляемся»', () => {
+    const r = finishAccessNow(startAccess(0, 20_000), 7_000);
+    expect(accessEndsAt(r)).toBe(7_000);
+    const end = stepAccess(r, 7_000);
+    expect(types(end.effects)).toEqual(['scene_ended', 'fold']);
+    expect(end.effects[0]).toEqual({ type: 'scene_ended', at: 7_000 });
+    expect(accessRingVisible(end.run)).toBe(false);
+    const done = stepAccess(end.run, 7_000 + FOLD + HOLD);
+    expect(types(done.effects)).toEqual(['done']);
+    expect(done.run.stage).toBe('done');
+  });
+
+  it('после срока «закругляемся» касание тоже кончает доступ, сигнал второй раз не звучит', () => {
+    const cued = stepAccess(startAccess(0, 20_000), 20_000 - CUE).run;
+    const { effects } = stepAccess(finishAccessNow(cued, 16_000), 16_000);
+    expect(types(effects)).not.toContain('cue');
+    expect(effects[0]).toEqual({ type: 'scene_ended', at: 16_000 });
+  });
+
+  it('после T и в момент старта касание ничего не ломает', () => {
+    const ended = stepAccess(startAccess(0, 20_000), 20_000).run;
+    expect(finishAccessNow(ended, 21_000)).toBe(ended);
+    const atStart = finishAccessNow(startAccess(0, 20_000), 0);
+    expect(atStart.durationMs).toBeGreaterThan(0);
+    expect(Number.isFinite(accessLeft(atStart, 0))).toBe(true);
   });
 });

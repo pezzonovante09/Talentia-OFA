@@ -11,6 +11,7 @@ import Svg, { Circle, Path } from 'react-native-svg';
 import { ICONS } from '../../../assets/registry';
 import { abaRewardScene } from '../../../design/abaTokens';
 import { TaliFigure } from '../../TaliFigure';
+import { GiftPicture } from './FromAdultScene';
 import { KaleidoscopePicture } from './KaleidoscopeScene';
 import { MarbleRunPicture } from './MarbleRunScene';
 import { blob, drop } from './PaintDropScene';
@@ -73,6 +74,9 @@ export function rewardPicture(id: string, size: number, label: string, mono?: st
       );
     case 'marble_run':
       return mono ? null : <MarbleRunPicture size={size} />;
+    case 'from_adult':
+      // общий значок без ассета (решение 14): что именно даст взрослый, картинка не обещает
+      return <GiftPicture size={size} mono={mono} />;
     default:
       return null;
   }

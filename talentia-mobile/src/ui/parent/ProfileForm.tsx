@@ -1,7 +1,7 @@
 /**
  * Форма профиля ребёнка (дизайн-док §3, §5): имя в игре (необязательно), полоса сегментами, язык,
  * регион «Кыргызский»; на экране настроек — ещё длительность сессии, вибрация, спокойный режим,
- * фокус и звук. Смена полосы в настройках — через лист подтверждения, если свежести нет.
+ * фокус, звук и «Награда от взрослого» в ABA (решение 14). Смена полосы в настройках — через лист подтверждения, если свежести нет.
  */
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -58,6 +58,10 @@ export function ProfileForm({ draft, onChange, extended = false, onBandChange }:
             <Row kind="toggle" label={t('parent.profile.calm')} toggle={draft.calmMode} onToggle={(calmMode) => patch({ calmMode })} testID="profile-calm" />
             <Row kind="toggle" label={t('parent.profile.focus')} toggle={draft.focusMode} onToggle={(focusMode) => patch({ focusMode })} testID="profile-focus" />
             <Row kind="toggle" label={t('parent.profile.sound')} caption={t('parent.profile.soundHint')} toggle={draft.soundEffects} onToggle={(soundEffects) => patch({ soundEffects })} testID="profile-sound" />
+          </Card>
+          {/* решение 14: позиция `from_adult` в выборе награды ABA «Со взрослым»; выключена по умолчанию */}
+          <Card>
+            <Row kind="toggle" first label={t('parent.profile.adultReward')} caption={t('parent.profile.adultRewardHint')} toggle={draft.adultReward === true} onToggle={(adultReward) => patch({ adultReward })} testID="profile-adult-reward" />
           </Card>
         </>
       )}

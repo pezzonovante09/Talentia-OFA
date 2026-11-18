@@ -14,12 +14,15 @@ export type PoolFilter = {
   accessMs: number;
   /** Классы стимулов целей программы ребёнка. */
   stimulusClasses: readonly string[];
+  /** «Награда от взрослого» включена в профиле (решение 14): без неё позиции `adultGiven` в пул не идут. */
+  adultReward?: boolean;
 };
 
 export function reinforcerPoolFor(catalog: readonly ReinforcerItem[], f: PoolFilter): string[] {
   const classes = new Set(f.stimulusClasses);
   return catalog
     .filter((r) => (r.configs ? r.configs.includes(f.config) : true))
+    .filter((r) => !r.adultGiven || f.adultReward === true)
     .filter((r) => f.soundOn || !r.sound)
     .filter((r) => (r.minAccessMs ?? 0) <= f.accessMs)
     .filter((r) => !r.classes.some((c) => classes.has(c)))
