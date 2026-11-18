@@ -12,12 +12,15 @@ import { useChildT } from '../../../i18n';
 import { useAbaColors } from '../parts';
 import { ReinforcerArt } from '../reinforcer';
 
-/** Глиф «задание»: две плиты поля пробы (до ассета, скилл `asset-pipeline`). */
+/**
+ * Глиф «задание»: две квадратные плиты поля пробы (до ассета, скилл `asset-pipeline`). Квадратные, не вертикальные
+ * рамки: вертикальные на этом же экране читались бы как значок «Вернуться» (`pause_bars_outline`; design-lead).
+ */
 function TaskGlyph({ size, color }: { size: number; color: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
-      <Rect x={2.5} y={6.5} width={8} height={11} rx={1.5} stroke={color} strokeWidth={2} fill="none" />
-      <Rect x={13.5} y={6.5} width={8} height={11} rx={1.5} stroke={color} strokeWidth={2} fill="none" />
+      <Rect x={2.5} y={7.5} width={9} height={9} rx={1.5} stroke={color} strokeWidth={2} fill="none" />
+      <Rect x={12.5} y={7.5} width={9} height={9} rx={1.5} stroke={color} strokeWidth={2} fill="none" />
     </Svg>
   );
 }
@@ -62,7 +65,8 @@ export function ChildSchedule({ blocksLeft, isLast, reinforcerId }: BlockSchedul
           <TaskGlyph size={s.taskGlyph} color={c[s.color.taskGlyph]} />
         </View>
         <ArrowGlyph size={s.arrow} color={c[s.color.arrow]} />
-        <View testID="aba-schedule-reward" style={{ ...cell, backgroundColor: c[s.color.reward] }}>
+        {/* окно награды к фону 1.12:1 — край несёт контур плиты (design-lead) */}
+        <View testID="aba-schedule-reward" style={{ ...cell, backgroundColor: c[s.color.reward], borderWidth: s.cellStroke, borderColor: c[s.color.taskOutline] }}>
           <ReinforcerArt id={reinforcerId} size={s.rewardArt} />
         </View>
       </View>
