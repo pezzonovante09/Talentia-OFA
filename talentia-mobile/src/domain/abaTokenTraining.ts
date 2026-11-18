@@ -57,6 +57,11 @@ export type TokenTrainingFlag = 'pairing_not_established' | 'pairing_keeps_break
 export type StageSession = {
   sessionIndex: number;
   exchanges: number;
+  /**
+   * Из них обмены доски, заполненной целиком не за ответы (жетоны за участие в измерении, решение методиста 2):
+   * ступень вверх они не растят, но и «ноль обменов» не дают — обмен был.
+   */
+  freeExchanges?: number;
   endReason: AbaSessionEndReason;
   /**
    * В окне сессии (старт → фиксация) был обмен рутины (методист, 2026-10-12). Рутинные обмены в
@@ -189,12 +194,17 @@ export function applyStageSession(t: TokenTrainingState, band: AgeBand, session:
   if (!t.pairingDone || session.endReason === 'adult_stopped' || session.endReason === 'app_error') return t;
   if (session.endReason === 'app_backgrounded' && session.config !== 'alone') return t;
   if (session.routineExchangeInWindow && session.exchanges === 0) return t;
+  // все обмены — доска, заполненная не за ответы (участие в измерении): о доске сессия ничего не говорит — ни вверх,
+  // ни вниз, ни флага, серия не рвётся (решение методиста 2, рецензия 2026-11-18)
+  if (session.freeExchanges && session.exchanges <= session.freeExchanges) return t;
   const atStage = [...t.atStage, session].slice(-STAGE_WINDOW);
   if (atStage.length < STAGE_WINDOW) return { ...t, atStage };
 
   const i = BOARD_STAGES.indexOf(t.stage);
-  const grows = atStage.every((x) => x.exchanges >= EXCHANGES_TO_GROW && !leftByChild(x));
-  const falls = atStage.every((x) => x.exchanges === 0 || leftByChild(x));
+  const grows = atStage.every((x) => x.exchanges - (x.freeExchanges ?? 0) >= EXCHANGES_TO_GROW && !leftByChild(x));
+  // «ноль» — по обменам за ответы
+  const zero = (x: StageSession) => x.exchanges - (x.freeExchanges ?? 0) <= 0;
+  const falls = atStage.every((x) => zero(x) || leftByChild(x));
 
   if (grows && t.stage < finalStage(band)) return { ...t, stage: BOARD_STAGES[i + 1], atStage: [] };
   if (falls) {

@@ -693,8 +693,9 @@ describe('цепочки', () => {
   });
 
   it('базовая линия цепочки — два прогона, старт у каждого звена свой', () => {
+    // только базовая линия: последнее звено провалено — занятие кончается закрывающей на нём с L3 (решение методиста 2)
     const { state } = drive(begin([C], {}), (s) =>
-      s.stepId === 's2' && s.runIndex === 1 ? { response: 'no_response', used: 0, emitted: false } : 'ok',
+      s.trialKind === 'baseline' && s.stepId === 's2' && s.runIndex === 1 ? { response: 'no_response', used: 0, emitted: false } : 'ok',
     );
     const result = finishSession(state, 99_000);
     expect(promptStateOf(result.states.C, 's1').startPromptLevel).toBe(0);
@@ -916,13 +917,14 @@ describe('базовая линия', () => {
     expect(applyBaseline(initialTargetState(N), base(['independent']), 4, N).phase).toBe('baseline');
   });
 
-  it('в сессии: без подсказки, без жетонов за ответ, без участия; внимание хвалят до инструкции', () => {
+  // решение методиста 2 (2026-11-18): знака «принято» на измерении нет; блок, где был выбор, кончается жетоном за участие
+  it('в сессии: без подсказки, без жетонов за ответ, без знака «принято»; конец блока — жетон за участие', () => {
     const st = begin([N], {});
     const r = answer(st, 1, { response: 'incorrect', used: 0, emitted: true });
-    expect([r.step.trialKind, r.step.allowEscalation, r.step.praiseAttentionBeforeSd]).toEqual(['baseline', false, true]);
+    expect([r.step.trialKind, r.step.allowEscalation, r.step.praiseAttentionBeforeSd]).toEqual(['baseline', false, false]);
     expect([r.res.award.feedback, r.res.award.tokens]).toEqual(['neutral', 0]);
     const { state } = drive(r.state, () => 'ok');
-    expect(state.events.some((e) => e.kind === 'participation')).toBe(false);
+    expect(state.events.filter((e) => e.kind === 'participation')).toEqual([expect.objectContaining({ targetId: 'N' })]);
     expect(state.queue).toEqual([]);
     const result = finishSession(state, 10_000);
     expect(result.states.N).toMatchObject({ phase: 'acquisition', startPromptLevel: 1 });
@@ -1880,7 +1882,11 @@ describe('ABA v1: проверка сверху вниз в цепочке', () 
     const { steps, state } = drive(st, () => 'ok');
     const finish = steps.find((x) => x.kind === 'adult_finish_chain');
     expect(finish).toEqual({ kind: 'adult_finish_chain', targetId: 'B', stepIds: ['B-2', 'B-3'] });
-    expect(state.trials.filter((t) => t.targetId === 'B')).toHaveLength(1);
+    expect(state.trials.filter((t) => t.targetId === 'B' && t.kind === 'baseline')).toHaveLength(1);
+    // решение методиста 2: проверку оборвала ошибка — занятие кончается закрывающей на том же звене с полной моделью
+    expect(state.trials.filter((t) => t.targetId === 'B' && t.kind !== 'baseline')).toEqual([
+      expect.objectContaining({ kind: 'closing', stepId: 'B-1', exemplarId: 'B-1', startPromptLevel: 3 }),
+    ]);
   });
 });
 
@@ -1950,5 +1956,123 @@ describe('раунд 4: история целей обязательна (В4) �
     const r = finishSession(drive(begin([A, M], { A: flagged, M: mastered(M) }), () => 'ok').state, 9e6);
     expect(r.states.A.phase).toBe('acquisition');
     expect([r.states.A.flags.includes('prompt_dependent'), r.states.A.dependenceClearedAt]).toEqual([true, undefined]);
+  });
+});
+
+describe('решение методиста 2: долг участия за блок измерения, кончившийся неуспехом', () => {
+  const A = tgt('A');
+  const B = tgt('B', { prerequisiteTargetIds: ['A'], includesTargetIds: ['A'] });
+  const M = tgt('M', { format: 'do_action' });
+  const T = tgt('T', { format: 'do_action' });
+  const N = tgt('N');
+  const BOARD1 = { tokenTraining: { ...TRAINED, stage: 1 as const } };
+  type Row = { kind: string; targetId: string; start: number; exemplarId: string; response: string; participation: boolean; exchanged: number; owed: string | null };
+  /** Занятие до конца: ответ — по `how(шаг, номер пробы того же вида той же цели)`. */
+  const run = (st0: AbaSessionState, how: (step: TrialStep, n: number) => How) => {
+    let st = st0;
+    const seen = new Map<string, number>();
+    const out: Row[] = [];
+    for (let k = 1; k < 60; k += 1) {
+      const nx = nextStep(st, k * 1000);
+      if (nx.step.kind === 'end') return { out, state: nx.state, end: nx.step };
+      if (nx.step.kind === 'access') {
+        st = finishAccess(nx.state, k * 1000);
+        continue;
+      }
+      if (nx.step.kind === 'break') {
+        st = finishBreak(nx.state, k * 1000).state;
+        continue;
+      }
+      if (nx.step.kind !== 'trial') throw new Error(`шаг ${nx.step.kind}`);
+      const key = `${nx.step.targetId}|${nx.step.trialKind}`;
+      const n = seen.get(key) ?? 0;
+      seen.set(key, n + 1);
+      const r = answer(st, k * 1000, how(nx.step, n));
+      out.push({
+        kind: r.step.trialKind,
+        targetId: r.step.targetId,
+        start: r.step.startPromptLevel,
+        exemplarId: r.res.trial.exemplarId,
+        response: r.res.trial.response,
+        participation: r.res.participation,
+        exchanged: r.res.exchanged,
+        owed: r.state.participationOwed,
+      });
+      st = r.state;
+    }
+    throw new Error('занятие не дошло до конца');
+  };
+  /** Последняя проба базовой линии N неверна (номер — по плану, без замен). */
+  const lastN = (st: AbaSessionState) => {
+    const last = st.queue.filter((q) => q.kind === 'trial' && q.trial.kind === 'baseline').length - 1;
+    return (x: TrialStep, n: number): How => (x.trialKind === 'baseline' && n === last ? 'wrong' : 'ok');
+  };
+  const wrongSecondB = (x: TrialStep, n: number): How => (x.trialKind === 'baseline' && x.targetId === 'B' && n === 1 ? 'wrong' : 'ok');
+
+  it('проверка оборвана ошибкой, освоенных нет: долг записан на ошибке и платится первой успешной обучающей пробой', () => {
+    const st = begin([A, B, T], { T: acq(T, 1) }, { autoPlacement: true });
+    expect([st.placementTargetIds, st.highPTargetIds, st.teachingTargetIds]).toEqual([['B'], [], ['T']]);
+    const { out } = run(st, wrongSecondB);
+    const err = out.findIndex((x) => x.response === 'incorrect');
+    expect(out[err]).toMatchObject({ kind: 'baseline', targetId: 'B', participation: false, owed: 'B' });
+    expect(out[err + 1]).toMatchObject({ kind: 'teaching', targetId: 'T', response: 'prompted', participation: true, owed: null });
+    expect(out.filter((x) => x.participation)).toHaveLength(1);
+  });
+
+  // Нюанс на 2026-11-18: конец блока B стоит за двумя высоковероятными взамен снятого остатка, долг возникает только
+  // на нём — поэтому платит вторая высоковероятная после ошибки, а не первая.
+  it('с освоенной целью: долг возникает на конце блока за двумя высоковероятными и платится второй из них', () => {
+    const st = begin([A, B, M], { M: mastered(M) }, { autoPlacement: true });
+    expect([st.placementTargetIds, st.highPTargetIds]).toEqual([['B'], ['M']]);
+    const { out } = run(st, wrongSecondB);
+    const err = out.findIndex((x) => x.response === 'incorrect');
+    expect(out.slice(err).map((x) => [x.kind, x.response, x.participation])).toEqual([
+      ['baseline', 'incorrect', false],
+      ['high_p', 'independent', false],
+      ['high_p', 'independent', true],
+    ]);
+    expect(out.filter((x) => x.participation)).toHaveLength(1);
+  });
+
+  // Падает на 2026-11-18 (abaSession.ts, recordTrial, блок «долг участия»): на доске 1 жетон самой обучающей пробы
+  // заполняет доску, payParticipation получает полную доску и не платит, а participationOwed всё равно обнуляется —
+  // долг теряется молча. Ждёт решения: переносить долг за обмен или считать его погашенным обменом.
+  it('доска на 1: долг за оборванную проверку не теряется, когда жетон обучающей пробы уже заполнил доску', () => {
+    const st = begin([A, B, T], { T: acq(T, 1) }, { autoPlacement: true, ...BOARD1 });
+    expect([st.placementTargetIds, st.board.size]).toEqual([['B'], 1]);
+    const { out, state } = run(st, wrongSecondB);
+    const err = out.findIndex((x) => x.response === 'incorrect');
+    expect(out[err + 1]).toMatchObject({ kind: 'teaching', response: 'prompted', exchanged: 1 });
+    expect(state.events.filter((e) => e.kind === 'participation')).toEqual([expect.objectContaining({ targetId: 'B' })]);
+  });
+
+  it('успешная коррекция после ошибки на обучающей пробе долг не платит — ни жетона, ни обмена', () => {
+    const st = begin([A, B, T], { T: acq(T, 1) }, { autoPlacement: true, ...BOARD1 });
+    const { out } = run(st, (x, n) => (x.trialKind === 'teaching' && x.targetId === 'T' && n === 0 ? 'wrong' : wrongSecondB(x, n)));
+    const err = out.findIndex((x) => x.response === 'incorrect');
+    expect(out[err]).toMatchObject({ kind: 'baseline', targetId: 'B', owed: 'B' });
+    expect(out[err + 1]).toMatchObject({ kind: 'teaching', targetId: 'T', participation: false, exchanged: 0, owed: 'B' });
+    expect(['incorrect', 'no_response']).toContain(out[err + 1].response);
+    const correction = out[err + 2];
+    expect(correction).toMatchObject({ kind: 'correction', participation: false, exchanged: 0, owed: 'B' });
+    expect(['independent', 'prompted']).toContain(correction.response);
+  });
+
+  it('обычная базовая линия, последняя проба неверна: жетона сразу нет, долг', () => {
+    const st = begin([N], {}, BOARD1);
+    expect([st.baselineTargetIds, st.placementTargetIds, st.board.size]).toEqual([['N'], [], 1]);
+    const { out } = run(st, lastN(st));
+    const last = out.filter((x) => x.kind === 'baseline').at(-1)!;
+    expect(last).toMatchObject({ response: 'incorrect', participation: false, exchanged: 0, owed: 'N' });
+  });
+
+  it('обычная базовая линия, последняя проба неверна: закрывающая L3 на том же экземпляре, успех платит жетон и обмен на доске 1', () => {
+    const st = begin([N], {}, BOARD1);
+    const { out, state, end } = run(st, lastN(st));
+    const last = out.filter((x) => x.kind === 'baseline').at(-1)!;
+    expect(out.at(-1)).toMatchObject({ kind: 'closing', targetId: 'N', start: 3, exemplarId: last.exemplarId, response: 'prompted' });
+    expect(state.events.filter((e) => e.kind === 'participation')).toEqual([expect.objectContaining({ targetId: 'N' })]);
+    expect([state.tokensEarned, state.exchangesMade]).toEqual([1, 1]);
+    expect(end).toMatchObject({ endedOnSuccess: true, pairingCycle: false });
   });
 });

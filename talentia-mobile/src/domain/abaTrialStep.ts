@@ -119,8 +119,11 @@ export type TrialContext = {
 
 /** Ожидаемая проба: что предъявить и как оценивать. */
 export function buildTrialStep(target: AbaTarget, s: AbaTargetState, p: PlannedTrial, ctx: TrialContext): TrialStep {
+  // разогрев на освоенной цели (любым путём, в том числе проверкой сверху вниз) — без подсказки: состояние подсказки
+  // такой цели могло остаться начальным L3 (методист 2026-11-18)
+  const masteredWarmup = p.kind === 'high_p' && (s.phase === 'mastered' || s.phase === 'maintenance');
   const planned: PromptLevel =
-    p.fixedStart ?? (MEASURING_KINDS.has(p.kind) ? 0 : clampToApp(promptStateOf(s, p.stepId).startPromptLevel));
+    p.fixedStart ?? (MEASURING_KINDS.has(p.kind) || masteredWarmup ? 0 : clampToApp(promptStateOf(s, p.stepId).startPromptLevel));
   // старт 4 — только с просьбой к взрослому: коррекцию поставили до сопротивления или без
   // помощи взрослого — теперь это полная модель
   const start: PromptLevel = planned === 4 && !(ctx.l4Available && p.adultAssist) ? APP_MAX_PROMPT : planned;
@@ -149,7 +152,9 @@ export function buildTrialStep(target: AbaTarget, s: AbaTargetState, p: PlannedT
     askAdultForL4: ctx.l4Available && (p.adultAssist === true || (chainStep && p.kind === 'teaching')),
     // звено цепочки: ошибка сразу поднимает уровень, цепочка завершается верно (блок 1)
     escalateOnIncorrect: p.escalateOnIncorrect === true || (chainStep && (p.kind === 'teaching' || p.kind === 'transfer')),
-    praiseAttentionBeforeSd: p.kind === 'baseline',
+    // знака «принято» на измерительных пробах нет (решение методиста 2, поправка к 35): он уводил бы взгляд от поля
+    // ответа; наблюдение подкрепляет сам образец, мотивацию — жетон за участие в конце блока
+    praiseAttentionBeforeSd: false,
     adultCompletesOnFail:
       ctx.withAdult &&
       chainStep &&

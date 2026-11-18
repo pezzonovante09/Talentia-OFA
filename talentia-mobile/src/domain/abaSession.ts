@@ -207,7 +207,10 @@ export const NO_PROGRESS_SESSIONS = 5;
 type QueueItem =
   | { kind: 'reinforcer' }
   | { kind: 'trial'; trial: PlannedTrial }
-  /** Конец блока цели. `participation` — жетон за участие; базовая линия его не получает. */
+  /**
+   * Конец блока цели. `participation` — жетон за участие: у обучения и у измерения (базовая линия, проверка сверху
+   * вниз; решение методиста 2) — у измерения только если в блоке был хоть один выбор.
+   */
   | {
       kind: 'block_end';
       /** Цель блока; у набора — id набора, участники — в `members`. */
@@ -370,6 +373,8 @@ export type AbaSessionState = {
   openBlockTargetId: string | null;
   /** Остановка или лимит оборвали начатый блок: участие — после успешной закрывающей пробы. */
   participationOwed: string | null;
+  /** Цели, чью проверку сверху вниз в этой сессии оборвала настоящая ошибка: их участие — в долг. */
+  placementStopped?: string[];
   endReason: AbaSessionEndReason | null;
   brokenTargetId: string | null;
   closingAttempts: number;
@@ -795,7 +800,7 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
   } else {
     for (const t of baseline) {
       for (const trial of baselineBlock(t, highP, rng)) queue.push({ kind: 'trial', trial });
-      queue.push({ kind: 'block_end', targetId: t.id, participation: false });
+      queue.push({ kind: 'block_end', targetId: t.id, participation: true });
     }
     teaching.forEach((t, i) => {
       if (i > 0) queue.push({ kind: 'break' });
@@ -862,6 +867,7 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
     highPTokenPaid: false,
     openBlockTargetId: null,
     participationOwed: null,
+    placementStopped: [],
     endReason: null,
     brokenTargetId: null,
     closingAttempts: 0,
@@ -1008,6 +1014,8 @@ function stopPlacementOnFailure(state: AbaSessionState, trial: AbaTrial, r: { rn
     observingClose = true;
   }
   if (!observingClose && !state.placementTargetIds.includes(target.id)) return state;
+  // настоящая ошибка на проверке: жетон за участие её блока — в долг (решение методиста 2)
+  if (!observingClose) state = { ...state, placementStopped: [...(state.placementStopped ?? []), target.id] };
   // снимается весь остаток, у цепочки — и остаток прогона: его доводит взрослый, без записи
   const isRest = (q: QueueItem) => q.kind === 'trial' && q.trial.targetId === trial.targetId && q.trial.kind === 'baseline';
   const removedAt = state.queue.findIndex(isRest);
@@ -1086,8 +1094,10 @@ function withObservingReplacement(state: AbaSessionState, trial: AbaTrial, r: { 
     kind: 'trial',
     trial: { kind: 'baseline', targetId: target.id, exemplarId, replacesTrialId: trial.id, pauseBeforeMs: NEUTRAL_PAUSE_MS },
   };
+  // и перед концом блока цели: иначе жетон за участие и обмен пришли бы до замены
+  const blockEnd = state.queue.findIndex((q) => q.kind === 'block_end' && q.targetId === target.id);
   const next = state.queue.findIndex((q) => q.kind === 'trial');
-  const at = next < 0 ? state.queue.length : next;
+  const at = blockEnd >= 0 ? blockEnd : next < 0 ? state.queue.length : next;
   return [...state.queue.slice(0, at), replacement, ...state.queue.slice(at)];
 }
 
@@ -1759,7 +1769,10 @@ function trackUnreliable(state: AbaSessionState, trial: AbaTrial, now: number): 
 }
 
 function payParticipation(state: AbaSessionState, targetId: string, now: number): { state: AbaSessionState; paid: boolean } {
-  const award = participationAward(state.board);
+  const measuring = isMeasuringBlock(state, targetId);
+  // блок измерения без единого выбора (только промахи наблюдения, прерывания) — без жетона
+  if (measuring && !madeChoice(state, targetId)) return { state, paid: false };
+  const award = participationAward(state.board, measuring);
   if (award.tokens === 0) return { state, paid: false };
   const paid: AbaSessionState = {
     ...state,
@@ -1819,7 +1832,11 @@ function needsPairingCycle(state: AbaSessionState): boolean {
   const reason = state.endReason;
   // в «сам» высоковероятные пробы бывают без жетона («Tali послушал») — их не считаем
   const paying = state.highPTargetIds.some((id) => counts(state.targets[id], state.config));
-  const baselineOnly = state.teachingTargetIds.length === 0 && !paying;
+  // и только если за сессию не было обмена и сессия не кончилась неудачной пробой (решение методиста 2): иначе
+  // доступ дважды или доступ сразу за ошибкой
+  const last = lastTrial(state);
+  const endedOnFailure = last !== null && last !== undefined && !SUCCESS.has(last.response) && last.response !== 'interrupted';
+  const baselineOnly = state.teachingTargetIds.length === 0 && !paying && state.exchangesMade === 0 && !endedOnFailure;
   // конец по отказу — без требования, сопряжение без жетона в доску; но по тому же условию, что обычный конец
   // (№170): иначе уход из учебной сессии приносил бы доступ, а законченная по плану — нет. До начала работы
   // (выбора не было) подкрепителя нет — доступ «за не выбрал» не выдаётся
@@ -1827,12 +1844,34 @@ function needsPairingCycle(state: AbaSessionState): boolean {
   return baselineOnly && (reason === 'completed' || reason === 'time_limit');
 }
 
-/** Снять конец блока; обучающий блок получает жетон за участие. */
+/** Снять конец блока; блок обучения и измерения получает жетон за участие. */
 function endBlock(state: AbaSessionState, now: number): { state: AbaSessionState; paid: boolean } {
   const head = state.queue[0];
   if (head?.kind !== 'block_end') return { state, paid: false };
   const st = { ...state, queue: state.queue.slice(1), openBlockTargetId: null };
-  return head.participation ? payParticipation(st, head.targetId, now) : { state: st, paid: false };
+  if (!head.participation) return { state: st, paid: false };
+  // блок измерения кончился неуспехом (ошибка, промах наблюдения; проверку оборвала ошибка) — участие в долг, после
+  // успешной пробы: иначе ошибка — кратчайший путь к жетону, а на доске 1 и к обмену (решение методиста 2)
+  if (isMeasuringBlock(state, head.targetId) && lastBlockTrialFailed(state, head.targetId)) {
+    return { state: { ...st, participationOwed: st.participationOwed ?? head.targetId }, paid: false };
+  }
+  return payParticipation(st, head.targetId, now);
+}
+
+/** Блок измерения цели: базовая линия или проверка сверху вниз этой сессии. */
+function isMeasuringBlock(state: AbaSessionState, targetId: string): boolean {
+  return state.baselineTargetIds.includes(targetId);
+}
+
+/** Последняя (не прерванная) проба базовой линии цели в сессии неуспешна. */
+function lastBlockTrialFailed(state: AbaSessionState, targetId: string): boolean {
+  const last = [...state.trials].reverse().find((t) => t.targetId === targetId && t.kind === 'baseline' && t.response !== 'interrupted');
+  return last !== undefined && !SUCCESS.has(last.response);
+}
+
+/** В блоке измерения цели был выбор: проба не прервана и не промах наблюдения. */
+function madeChoice(state: AbaSessionState, targetId: string): boolean {
+  return state.trials.some((t) => t.targetId === targetId && t.kind === 'baseline' && t.response !== 'interrupted' && !isObservingMiss(t));
 }
 
 /**
@@ -1849,7 +1888,7 @@ function closeOut(
     ...state,
     endReason: state.endReason ?? reason,
     brokenTargetId: brokenTargetId ?? state.brokenTargetId,
-    participationOwed: state.openBlockTargetId,
+    participationOwed: state.participationOwed ?? state.openBlockTargetId,
     openBlockTargetId: null,
     // доступ к подкрепителю после обмена у ребёнка не отнимается, как и перерыв, о котором он уже попросил (№160)
     queue: state.queue.filter((q) => q.kind === 'access' || (q.kind === 'break' && q.between === true)),
@@ -1889,7 +1928,11 @@ function ensureSuccessfulEnd(state: AbaSessionState, now: number): AbaSessionSta
 
   const r = seeded(state.seed);
   let trial: PlannedTrial | null = null;
-  const broken = state.brokenTargetId;
+  // срыв обучения — или проверка, оборванная настоящей ошибкой: закрывающая на той же цели и том же экземпляре с
+  // полной моделью; она не измерительная, ступень подсказки не двигает (решение методиста 2, 2026-11-18)
+  const owedMeasuring = state.participationOwed && isMeasuringBlock(state, state.participationOwed) ? state.participationOwed : null;
+  const failedMeasuring = owedMeasuring ?? (state.placementStopped ?? []).at(-1) ?? null;
+  const broken = state.brokenTargetId ?? (failedMeasuring && last.targetId === failedMeasuring ? failedMeasuring : null);
   if (state.closingAttempts === 0 && broken && state.config === 'with_adult') {
     const failed = [...state.trials].reverse().find((t) => t.targetId === broken && !SUCCESS.has(t.response));
     if (failed) {
@@ -2034,7 +2077,7 @@ export function recordTrial(
     states: countsHere ? { ...state.states, [trial.targetId]: applyTrialToFading(targetState, trial, state.targets[trial.targetId]) } : state.states,
     // блок набора — один блок: участие пишется на набор, как и в конце половины
     openBlockTargetId:
-      trial.kind === 'teaching'
+      trial.kind === 'teaching' || trial.kind === 'baseline'
         ? (state.set?.memberIds.includes(trial.targetId) ? state.set.id : trial.targetId)
         : state.openBlockTargetId,
     seed: r.seed(),
@@ -2074,6 +2117,21 @@ export function recordTrial(
     const ended = endBlock(st, now);
     st = ended.state;
     participation ||= ended.paid;
+  }
+  // долг участия (проверку оборвала ошибка) — после первой успешной пробы, не измерительной
+  // коррекция идёт за ошибкой — её успех не гасит долг: платили бы за саму ошибку
+  if (
+    st.endReason === null &&
+    st.participationOwed &&
+    SUCCESS.has(trial.response) &&
+    !MEASURING_KINDS.has(trial.kind) &&
+    trial.kind !== 'correction' &&
+    trial.kind !== 'closing'
+  ) {
+    const paid = payParticipation(st, st.participationOwed, now);
+    // доска полна (жетон этой пробы её заполнил, обмен — в конце записи) — долг ждёт следующей успешной пробы
+    st = { ...paid.state, participationOwed: paid.paid ? null : st.participationOwed };
+    participation ||= paid.paid;
   }
   if (st.endReason !== null && st.queue.length === 0) {
     const before = st.tokensEarned;
@@ -2702,10 +2760,16 @@ export function finishAbaSession(
     state.events.filter((e) => e.kind === 'exchange' && e.includesReturned && !returnedAt.has(e.at) && !own(e.tokens, e.returnedTokens)).length +
     (exchanged > 0 && base.returned && !own(exchanged, base.returned.tokens) ? 1 : 0);
   const stageExchanges = Math.max(0, exchangesMade - notOwn);
+  // доска, заполненная целиком не за ответы (участие в измерении), ступень не растит (решение методиста 2)
+  const free = (tokens: number, nonContingent: number | undefined) => (nonContingent ?? 0) >= tokens;
+  const freeExchanges =
+    state.events.filter((e) => e.kind === 'exchange' && free(e.tokens, e.nonContingent)).length +
+    (exchanged > 0 && free(exchanged, base.nonContingent) ? 1 : 0);
   // конец по бездействию — отсутствие ребёнка, а не результат на ступени: ступень доски не решает (№170)
   const tokenTraining = endedByInactivity(state) || (state.exchangeDropped && stageExchanges === 0) ? state.tokenTraining : applyStageSession(state.tokenTraining, state.band, {
     sessionIndex: idx,
     exchanges: stageExchanges,
+    ...(freeExchanges > 0 ? { freeExchanges: Math.min(freeExchanges, stageExchanges) } : {}),
     endReason: state.endReason,
     config: state.config,
     ...(extra.routineExchangeInWindow ? { routineExchangeInWindow: true as const } : {}),

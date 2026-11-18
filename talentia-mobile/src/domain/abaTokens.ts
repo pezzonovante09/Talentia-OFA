@@ -171,8 +171,14 @@ export function awardForTrial(
  * пока на доске есть для него место. На полной доске — не начисляется (№173): сверх доски он
  * ушёл бы в обмен невидимым, а показать его до обмена — задержать обмен дольше 1 с (№172).
  */
-export function participationAward(board: TokenBoard): { tokens: 0 | 1; reason: 'participation' } {
-  return { tokens: nonContingentRoom(board) && !isBoardFull(board) ? 1 : 0, reason: 'participation' };
+/**
+ * Жетон за участие в конце блока. Блок измерения (базовая линия, проверка сверху вниз) — исключение из предела
+ * `size − 1`: за ответ там жетона не бывает, и без участия ребёнок проходит проверку без единого подкрепления —
+ * ценность жетона, созданная знакомством с доской, гаснет (решение методиста 2, 2026-11-18; вопрос 115). Такой
+ * жетон может заполнить доску и при доске из одной ячейки.
+ */
+export function participationAward(board: TokenBoard, measuring = false): { tokens: 0 | 1; reason: 'participation' } {
+  return { tokens: (measuring || nonContingentRoom(board)) && !isBoardFull(board) ? 1 : 0, reason: 'participation' };
 }
 
 export function addTokens(board: TokenBoard, n: number, nonContingent = false): TokenBoard {
