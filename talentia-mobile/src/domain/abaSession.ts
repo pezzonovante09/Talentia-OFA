@@ -130,6 +130,26 @@ import {
   BREAK_CARD_TRAINING_SECONDS,
   type BreakCardStep,
 } from './abaBreakCard';
+import {
+  closeSampleTouchSession,
+  endsStepToday,
+  fadeSampleTouch,
+  isIndependentTouch,
+  isTouchSuccess,
+  markPassed,
+  matchAllowedAlone,
+  passesWith,
+  SAMPLE_TOUCH_CLOSING_MAX,
+  SAMPLE_TOUCH_DELAY_MS,
+  SAMPLE_TOUCH_MAX_TRIALS,
+  SAMPLE_TOUCH_WINDOW_MS,
+  sampleTouchDue,
+  touchConsequence,
+  touchEventsOf,
+  type SampleTouchInput,
+  type SampleTouchLevel,
+  type SampleTouchState,
+} from './abaSampleTouch';
 import { arrange, baselineMembers, poolErrors, setHalves, updateSets, type IdentifySet } from './abaIdentifySet';
 import { mixedBlockId, mixedBlockTrials, mixedGroupDue, mixedVerdict, mixGroups, replacementSlot } from './abaMixedBlock';
 import {
@@ -232,6 +252,11 @@ export const NO_PROGRESS_SESSIONS = 5;
 /** Проба в плане сессии. Уровень подсказки и поле определяются, когда до неё дошла очередь. */
 type QueueItem =
   | { kind: 'reinforcer' }
+  /**
+   * Проба шага «коснись картинки» (`abaSampleTouch.ts`): стоит в голове очереди, пока шаг идёт; `sampleId` выкладывает
+   * `nextStep`; `closes` — закрывающая проба на модели, когда после шага в сессии ничего нет.
+   */
+  | { kind: 'sample_touch'; sampleId?: string; closes?: true }
   | { kind: 'trial'; trial: PlannedTrial }
   /**
    * Конец блока цели. `participation` — жетон за участие: у обучения и у измерения (базовая линия, проверка сверху
@@ -265,6 +290,21 @@ type QueueItem =
 /** Что показать сейчас. */
 export type AbaStep =
   | { kind: 'choose_reinforcer'; options: string[]; adultChoosesAfterMs: number }
+  /**
+   * Шаг «коснись картинки»: на экране только образец `sampleId`. Старт `startLevel`; L0 ждёт `delayMs`, метка и
+   * модель — `windowMs`; `l4Available` — после модели просьба к взрослому (карточка L4); `index` — номер пробы шага.
+   */
+  | {
+      kind: 'sample_touch';
+      sampleId: string;
+      startLevel: SampleTouchLevel;
+      delayMs: number;
+      windowMs: number;
+      l4Available: boolean;
+      index: number;
+      closes: boolean;
+      pauseBeforeMs: number;
+    }
   | TrialStep
   /** Перерыв по расписанию. Обмен — только при полной доске. */
   | {
@@ -408,6 +448,8 @@ export type AbaSessionState = {
   closingAttempts: number;
   events: AbaSessionEvent[];
   seed: number;
+  /** Шаг «коснись картинки» на ребёнке, как он идёт в сессии (прохождение, затухание); нет — шаг не применяется. */
+  sampleTouch?: SampleTouchState;
 };
 
 export type StartInput = {
@@ -457,6 +499,11 @@ export type StartInput = {
   observers?: AbaObserver[];
   /** Кто ведёт сессию; `null` в «Сам». */
   primaryObserverId?: string | null;
+  /**
+   * Шаг «коснись картинки» (`abaSampleTouch.ts`). Нет — шаг не применяется (домен без него — как раньше); у ребёнка без
+   * записи чтение входа (`abaStart.ts`) передаёт `initialSampleTouch()`: шаг не пройден.
+   */
+  sampleTouch?: SampleTouchState;
   startedAt: number;
   seed: number;
 };
@@ -688,8 +735,12 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
   // Рутины самообслуживания в сессию не входят вовсе: у них свой естественный момент —
   // прогон рутины (`abaRoutineRun.ts`, раунд 2, Р3). Их состояния здесь только для чтения —
   // чтобы предпосылка на освоенную рутину открывала цель.
+  // «Сам»: цели `match` — только после пройденного шага «коснись картинки» (решение 1, часть В)
   const offered = input.targets.filter(
-    (t) => !isRoutine(t) && !(config === 'alone' && (t.format === 'do_action' || t.format === 'say')),
+    (t) =>
+      !isRoutine(t) &&
+      !(config === 'alone' && (t.format === 'do_action' || t.format === 'say')) &&
+      !(config === 'alone' && t.format === 'match' && !matchAllowedAlone(input.sampleTouch)),
   );
   const isMastered = (id: string) => states[id] !== undefined && MASTERED_PHASES.has(states[id].phase);
   const ready = (t: AbaTarget) => counts(t, config) && (t.prerequisiteTargetIds ?? []).every(isMastered);
@@ -851,6 +902,9 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
     if (teaching.length === 1 && probes.length > 0) queue.push({ kind: 'break' });
   }
   for (const trial of probes.flat()) queue.push({ kind: 'trial', trial });
+  // шаг «коснись картинки» — сразу после выбора подкрепителя, до первой пробы `match`
+  const hasMatch = queue.some((q) => q.kind === 'trial' && input.targets.find((t) => t.id === q.trial.targetId)?.format === 'match');
+  if (sampleTouchDue(input.sampleTouch, config) && hasMatch) queue.splice(1, 0, { kind: 'sample_touch' });
 
   const reinforcerOptions = reinforcerChoices(input.reinforcerPool, input.reinforcerHistory, rng, input.reinforcerApart);
   const schedule = newSchedule(rng);
@@ -915,6 +969,7 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
     closingAttempts: 0,
     events: [],
     seed: r.seed(),
+    ...(input.sampleTouch ? { sampleTouch: input.sampleTouch } : {}),
   };
 }
 
@@ -1280,7 +1335,6 @@ export function nextStep(
     return done(st, { kind: 'choose_reinforcer', options: st.reinforcerOptions, adultChoosesAfterMs: REINFORCER_CHOICE_TIMEOUT_MS });
   }
   if (!head) {
-    const last = lastTrial(st);
     const pairingCycle = needsPairingCycle(st);
     return done(
       { ...st, pendingPauseMs: 0 },
@@ -1288,7 +1342,7 @@ export function nextStep(
         kind: 'end',
         byInactivity: endedByInactivity(st),
         reason: st.endReason ?? 'completed',
-        endedOnSuccess: st.endReason !== 'assent_withdrawn' && (!last || SUCCESS.has(last.response)),
+        endedOnSuccess: endsOnSuccess(st),
         pairingCycle,
         pairingCycleAfterMs: pairingCycle ? PAIRING.tokenAfterMs : 0,
         pauseBeforeMs: pause,
@@ -1324,6 +1378,22 @@ export function nextStep(
       st = withField(st);
       const step = trialStep(st, (st.queue[0] as { trial: PlannedTrial }).trial);
       return done({ ...st, pendingPauseMs: 0 }, step);
+    }
+    case 'sample_touch': {
+      st = withTouchSample(st);
+      const item = st.queue[0] as Extract<QueueItem, { kind: 'sample_touch' }>;
+      return done({ ...st, pendingPauseMs: 0 }, {
+        kind: 'sample_touch',
+        sampleId: item.sampleId!,
+        // закрывающая — на модели: конец сессии на успешной пробе
+        startLevel: item.closes ? 3 : (st.sampleTouch?.startLevel ?? 0),
+        delayMs: SAMPLE_TOUCH_DELAY_MS[st.band],
+        windowMs: SAMPLE_TOUCH_WINDOW_MS,
+        l4Available: l4Available(st),
+        index: touchEventsOf(st.events).length,
+        closes: item.closes === true,
+        pauseBeforeMs: pause,
+      });
     }
     case 'block_end':
       throw new Error('недостижимо: концы блоков сняты выше');
@@ -1715,6 +1785,147 @@ export function recordBreakCardTraining(
 }
 
 /**
+ * Образец пробы шага «коснись картинки»: карточки образцов учебных экземпляров целей `match` по кругу, в порядке,
+ * перемешанном от id сессии, — при восстановлении сессии тот же образец, соседние пробы — разные.
+ */
+function withTouchSample(state: AbaSessionState): AbaSessionState {
+  const head = state.queue[0];
+  if (head?.kind !== 'sample_touch' || head.sampleId) return state;
+  const cards = [
+    ...new Set(
+      Object.values(state.targets)
+        .filter((t) => t.format === 'match' && t.matchMode !== 'sort')
+        .flatMap((t) => teachingExemplars(t).flatMap((e) => e.cards ?? [])),
+    ),
+  ];
+  if (!cards.length) throw new Error('Шаг «коснись картинки» без карточек match');
+  const order = shuffle(cards, seeded(stableHash(state.sessionId)).rng);
+  const sampleId = order[touchEventsOf(state.events).length % order.length];
+  return { ...state, queue: [{ ...head, sampleId }, ...state.queue.slice(1)] };
+}
+
+/**
+ * Шаг не пройден — `match` в этой сессии не идёт (решение 1, часть В): из очереди снимаются все пробы `match` (и
+ * разогрев, и поддержание, и смешанный блок с участником `match`), их концы блоков и перерывы, за которыми или перед
+ * которыми проб больше нет; цели — из списков сессии, чтобы итог их не трогал. Остальное идёт.
+ */
+function withoutMatch(state: AbaSessionState): AbaSessionState {
+  const isMatch = (id: string) => state.targets[id]?.format === 'match';
+  const mixed = state.mixedTargetIds ?? [];
+  const mixedDropped = mixed.some(isMatch);
+  const mixedId = mixedDropped ? mixedBlockId(mixed.map((id) => ({ id }))) : null;
+  const dropTrial = (p: PlannedTrial) => isMatch(p.targetId) || (mixedDropped && mixed.includes(p.targetId) && p.kind === 'verification');
+  const kept = state.queue.filter(
+    (q) => !(q.kind === 'trial' && dropTrial(q.trial)) && !(q.kind === 'block_end' && (isMatch(q.targetId) || q.targetId === mixedId)),
+  );
+  const done = state.trials.length > 0;
+  const queue = kept.filter((q, i) => {
+    if (q.kind !== 'break' || q.initiatedBy !== undefined) return true;
+    const before = done || kept.slice(0, i).some((x) => x.kind === 'trial');
+    const after = kept.slice(i + 1).some((x) => x.kind === 'trial');
+    return before && after && kept[i - 1]?.kind !== 'break';
+  });
+  const keep = (ids: readonly string[]) => ids.filter((id) => !isMatch(id) && !(mixedDropped && mixed.includes(id)));
+  const { mixedTargetIds: _m, ...rest } = state;
+  return {
+    ...(mixedDropped ? rest : state),
+    queue,
+    teachingTargetIds: keep(state.teachingTargetIds),
+    baselineTargetIds: keep(state.baselineTargetIds),
+    placementTargetIds: keep(state.placementTargetIds),
+    maintenanceTargetIds: keep(state.maintenanceTargetIds),
+    highPTargetIds: keep(state.highPTargetIds),
+  };
+}
+
+export type SampleTouchRecord = {
+  state: AbaSessionState;
+  /** Последствие: L0 сам — жетон (`observing`, не за результат); L1–L3 и «Была подсказка» — «принято»; иначе ничего. */
+  consequence: 'token' | 'praise' | 'none';
+  /** Доска заполнилась и обменялась сразу (обучение доске): экран даёт обмен и доступ. */
+  exchanged: number;
+};
+
+/**
+ * Записать пробу шага «коснись картинки» (решение 1, часть В): событие `sample_touch`, жетон или «принято», затухание
+ * стартового уровня шага. Шаг кончается: пять самостоятельных подряд (пройден) — дальше план как есть; десять проб,
+ * «Сопротивляется» или «Отказ» — шаг на сегодня кончен, и не пройденный снимает `match` из сессии (`withoutMatch`).
+ * Больше в сессии ничего — до двух закрывающих проб на модели, чтобы конец был на успешной пробе. Обмен доски от
+ * жетонов шага помечается «бесплатным» (`exchange.sampleTouch`): ступень доски он не растит. На полной доске жетон
+ * не начисляется — «принято».
+ */
+export function recordSampleTouch(state: AbaSessionState, input: SampleTouchInput, now: number): SampleTouchRecord {
+  const head = state.queue[0];
+  if (head?.kind !== 'sample_touch' || !state.sampleTouch) throw new Error('Сессия сейчас не ждёт пробу шага «коснись картинки»');
+  if (state.config === 'alone') throw new Error('Шаг «коснись картинки» — только со взрослым');
+  const expectedStart = head.closes ? 3 : state.sampleTouch.startLevel;
+  if (input.startLevel !== expectedStart) throw new Error('Стартовый уровень пробы шага не тот, что ждала сессия');
+  if ((input.levelUsed === 4) !== (input.outcome === 'l4_done')) throw new Error('L4 — только «Сделали вместе»');
+
+  const passedNow = !head.closes && passesWith(state.events, input);
+  const consequence = touchConsequence(input);
+  const token = consequence === 'token' && !isBoardFull(state.board);
+  const event: AbaSessionEvent = {
+    kind: 'sample_touch',
+    at: iso(now),
+    startLevel: input.startLevel,
+    levelUsed: input.levelUsed,
+    outcome: input.outcome,
+    adultPrompted: input.adultPrompted,
+    latencyMs: input.latencyMs,
+    independent: isIndependentTouch(input),
+    ...(head.closes ? { closes: true as const } : {}),
+  };
+  let touch = head.closes ? state.sampleTouch : fadeSampleTouch(state.sampleTouch, input);
+  if (passedNow) touch = markPassed(touch, state.day);
+  let st: AbaSessionState = {
+    ...state,
+    sampleTouch: touch,
+    events: [...state.events, event],
+    board: token ? addTokens(state.board, 1, true) : state.board,
+    tokensEarned: state.tokensEarned + (token ? 1 : 0),
+    l4Stopped: state.l4Stopped || input.outcome === 'l4_resisted',
+  };
+  const counted = touchEventsOf(st.events).filter((e) => !e.closes).length;
+  const over = passedNow || endsStepToday(input) || head.closes === true || counted >= SAMPLE_TOUCH_MAX_TRIALS;
+  if (!over) {
+    st = { ...st, queue: [{ kind: 'sample_touch' }, ...st.queue.slice(1)] };
+  } else {
+    st = { ...st, queue: st.queue.slice(1) };
+    if (!touch.passed) {
+      st = withoutMatch(st);
+      const closings = touchEventsOf(st.events).filter((e) => e.closes).length;
+      const nothingElse = !st.queue.some((q) => q.kind === 'trial');
+      if (nothingElse && !endsStepToday(input) && !isTouchSuccess(input) && closings < SAMPLE_TOUCH_CLOSING_MAX) {
+        st = { ...st, queue: [{ kind: 'sample_touch', closes: true }, ...st.queue] };
+      }
+    }
+  }
+  const before = st.exchangesMade;
+  st = settleBoard(st, now).state;
+  if (st.exchangesMade > before) {
+    // обмен доски на шаге — «бесплатный» (как `freeExchanges`): ступень доски он не растит
+    const i = st.events.length - 1;
+    const ex = st.events[i];
+    if (ex.kind === 'exchange') st = { ...st, events: [...st.events.slice(0, i), { ...ex, sampleTouch: true }] };
+  }
+  return {
+    state: st,
+    consequence: consequence === 'token' && !token ? 'praise' : consequence,
+    exchanged: st.exchangesMade > before ? exchangedSince(st, state) : 0,
+  };
+}
+
+/** Конец на успехе: последняя проба сессии успешна; в сессии только шаг — последняя проба шага. */
+function endsOnSuccess(state: AbaSessionState): boolean {
+  if (state.endReason === 'assent_withdrawn') return false;
+  const last = lastTrial(state);
+  if (last) return SUCCESS.has(last.response);
+  const touch = touchEventsOf(state.events).at(-1);
+  return !touch || isTouchSuccess(touch);
+}
+
+/**
  * «Tali предлагает перерыв» (две пробы без активности в «Сам», методист 2026-10-12): «да» — перерыв
  * `device_offer`. В `childBreaks` и в просьбы карточки не идёт: это ответ «да» на вопрос, а не
  * просьба. «Нет» — идём дальше без изменений; нет касания 60 с — `withdrawAssent(…,
@@ -1993,7 +2204,11 @@ function needsPairingCycle(state: AbaSessionState): boolean {
   // и только если за сессию не было обмена и сессия не кончилась неудачной пробой (решение методиста 2): иначе
   // доступ дважды или доступ сразу за ошибкой
   const last = lastTrial(state);
-  const endedOnFailure = last !== null && last !== undefined && !SUCCESS.has(last.response) && last.response !== 'interrupted';
+  // сессия только с шагом «коснись картинки» — по последней пробе шага
+  const lastTouch = touchEventsOf(state.events).at(-1);
+  const endedOnFailure =
+    (last !== null && last !== undefined && !SUCCESS.has(last.response) && last.response !== 'interrupted') ||
+    (!last && lastTouch !== undefined && !isTouchSuccess(lastTouch));
   const baselineOnly = state.teachingTargetIds.length === 0 && !paying && state.exchangesMade === 0 && !endedOnFailure;
   // конец по отказу — без требования, сопряжение без жетона в доску; но по тому же условию, что обычный конец
   // (№170): иначе уход из учебной сессии приносил бы доступ, а законченная по плану — нет. До начала работы
@@ -2551,6 +2766,8 @@ export type AbaSessionResult = {
    * ступень доски решилась бы ложно.
    */
   routineExchangeInWindow?: boolean;
+  /** Шаг «коснись картинки» после сессии (`closeSampleTouchSession`); нет — у сессии шага не было (старый снимок). */
+  sampleTouch?: SampleTouchState;
   /** Сколько жетонов ушло в обмен в конце. 0 — доска неполная или обмена по этой причине нет. */
   exchanged: number;
   /** Обучение доске после этой сессии. */
@@ -2755,6 +2972,8 @@ export function finishAbaSession(
   const phaseEvents: AbaSessionEvent[] = [];
   /** Участники смешанного блока, по которым он дал итог (зачёт дня или провал). */
   const mixedJudged = new Set<string>();
+  /** Измерение `match` закрыто вторым промахом наблюдения (срез А): ребёнок снова на шаге «коснись картинки». */
+  let touchReturn = false;
 
   for (const id of touched) {
     const target = state.targets[id];
@@ -2789,6 +3008,7 @@ export function finishAbaSession(
         if (passed === null && closedByMisses) {
           const n = (s.observingMissSessions ?? 0) + 1;
           s = { ...s, observingMissSessions: n };
+          if (n < OBSERVING_MISS_SESSIONS && target.format === 'match') touchReturn = true;
           // внимание к образцу не установлено — проверка сверху вниз снимается со всей лестницы
           if (n >= OBSERVING_MISS_SESSIONS) {
             const dropped: string[] = [];
@@ -2820,6 +3040,7 @@ export function finishAbaSession(
         if (s.phase === 'baseline' && closedByMisses) {
           const n = (s.observingMissSessions ?? 0) + 1;
           s = { ...s, observingMissSessions: n };
+          if (n < OBSERVING_MISS_SESSIONS && target.format === 'match') touchReturn = true;
           if (n >= OBSERVING_MISS_SESSIONS) {
             s = withoutObservingMissSessions(startAfterObservingMisses(s));
             phaseEvents.push({
@@ -2938,10 +3159,12 @@ export function finishAbaSession(
   // доска, заполненная целиком не за ответы (участие в измерении), ступень не растит (решение методиста 2)
   const free = (tokens: number, nonContingent: number | undefined) => (nonContingent ?? 0) >= tokens;
   const freeExchanges =
-    state.events.filter((e) => e.kind === 'exchange' && free(e.tokens, e.nonContingent)).length +
+    state.events.filter((e) => e.kind === 'exchange' && (free(e.tokens, e.nonContingent) || e.sampleTouch === true)).length +
     (exchanged > 0 && free(exchanged, base.nonContingent) ? 1 : 0);
   // конец по бездействию — отсутствие ребёнка, а не результат на ступени: ступень доски не решает (№170)
-  const tokenTraining = endedByInactivity(state) || (state.exchangeDropped && stageExchanges === 0) ? state.tokenTraining : applyStageSession(state.tokenTraining, state.band, {
+  // сессия только с шагом «коснись картинки» для ступени доски нейтральна (решение 1, часть В)
+  const touchOnly = state.trials.length === 0 && touchEventsOf(state.events).length > 0;
+  const tokenTraining = touchOnly || endedByInactivity(state) || (state.exchangeDropped && stageExchanges === 0) ? state.tokenTraining : applyStageSession(state.tokenTraining, state.band, {
     sessionIndex: idx,
     exchanges: stageExchanges,
     ...(freeExchanges > 0 ? { freeExchanges: Math.min(freeExchanges, stageExchanges) } : {}),
@@ -2960,9 +3183,18 @@ export function finishAbaSession(
       ? [{ kind: 'board_stage' as const, at, from: state.tokenTraining.stage, to: tokenTraining.stage }]
       : []),
   ];
-  const last = lastTrial(state);
+  const sampleTouch = state.sampleTouch
+    ? closeSampleTouchSession(state.sampleTouch, state.events, {
+        day,
+        sessionIndex: idx,
+        endReason: state.endReason,
+        returnToStep: touchReturn,
+        observingNotEstablished: phaseEvents.some((e) => e.kind === 'measurement' && e.action === 'observing_not_established'),
+      })
+    : undefined;
 
   return {
+    ...(sampleTouch ? { sampleTouch } : {}),
     session: {
       id: state.sessionId,
       index: idx,
@@ -2978,7 +3210,7 @@ export function finishAbaSession(
       endReason: state.endReason,
       brokenTargetId: state.brokenTargetId,
       boardSize: state.board.size,
-      endedOnSuccess: state.endReason !== 'assent_withdrawn' && (!last || SUCCESS.has(last.response)),
+      endedOnSuccess: endsOnSuccess(state),
       events,
       primaryObserverId: state.primaryObserverId,
     },

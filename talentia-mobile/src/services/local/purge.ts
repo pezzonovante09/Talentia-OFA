@@ -71,6 +71,7 @@ export const SPECIALIST_STATE_KEYS = [
   'physicalPromptAllowed',
   'abaObservers',
   'breakCard',
+  'sampleTouch',
 ] as const satisfies readonly (typeof ABA_STATE_KEYS)[number][];
 
 /** Снимки «в работе»: срок хранения — по их началу (копии проб в них живут не дольше журнала). */

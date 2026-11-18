@@ -12,6 +12,7 @@ import { consequenceDueAt, type ConsequenceRun } from './consequenceRun';
 import { exchangeDueAt, startExchange, type ExchangeRun } from './exchangeRun';
 import { matchDueAt, type MatchTrialRun } from './matchTrialRun';
 import { choiceDueAt, type ChoiceRun } from './reinforcerChoiceRun';
+import { sampleTouchDueAt, type SampleTouchRun } from './sampleTouchRun';
 import type { TailStep } from './endTail';
 
 export type EndBoard = { cells: number; filled: number } | null;
@@ -35,6 +36,11 @@ export type Phase =
   | { kind: 'choose'; options: string[]; choice: ChoiceRun }
   | { kind: 'pause'; step: TrialStep; until: number }
   | { kind: 'trial'; run: MatchTrialRun; pressed: PanelButton | null }
+  /**
+   * Проба шага «коснись картинки» (решение 1, часть В): только образец. `praiseUntil` — проба записана, держится знак
+   * «принято» (L1–L3), потом шаг домена; жетон L0 идёт фазой `participation`.
+   */
+  | { kind: 'touch'; run: SampleTouchRun; pressed: PanelButton | null; praiseUntil: number | null }
   /**
    * `stripEarned` — сколько жетонов показывать в полосе (без жетона за участие — он отдельным событием; при обмене сразу —
    * полная доска до экрана обмена). `participation` — жетон за участие ждёт своего события после последствия.
@@ -123,6 +129,8 @@ export function phaseDueAt(phase: Phase): number | null {
       return phase.until;
     case 'trial':
       return matchDueAt(phase.run);
+    case 'touch':
+      return phase.praiseUntil ?? sampleTouchDueAt(phase.run);
     case 'consequence':
       return phase.gate?.frameAt ?? consequenceDueAt(phase.run);
     case 'participation':

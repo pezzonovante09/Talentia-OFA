@@ -344,7 +344,15 @@ export type AbaTokenReason =
    * Высоковероятная проба: разогрев или отвлекающая. Не за результат по цели — в
    * данных отличается от `at_start_level`, иначе результативность завышается.
    */
-  | 'high_p';
+  | 'high_p'
+  /**
+   * Шаг «коснись картинки» (решение 1, часть В): ребёнок сам коснулся образца без подсказки. Не за ответ по цели —
+   * жетон не за результат (`nonContingent`), в результативность не входит.
+   */
+  | 'observing';
+
+/** Исход пробы шага «коснись картинки»: коснулся, не коснулся до конца лестницы, L4 взрослого, «Отказ». */
+export type SampleTouchOutcome = 'touched' | 'no_response' | 'l4_done' | 'l4_resisted' | 'l4_skipped' | 'refusal';
 
 /** Что произошло на предъявлении. L4 — исход полной модели, а не отдельное предъявление. */
 export type PresentationOutcome =
@@ -1027,7 +1035,25 @@ export type AbaSessionEvent =
       between?: true;
     }
   /** `nonContingent` — сколько из них не за результат; `includesReturned` — в обмен вошли вернувшиеся жетоны (в ступень не идёт). */
-  | { kind: 'exchange'; at: string; tokens: number; nonContingent?: number; includesReturned?: true; returnedTokens?: number; fromSessionId?: string }
+  /** `sampleTouch` — доску обменяли на шаге «коснись картинки»: обмен «бесплатный», ступень доски не растит. */
+  | { kind: 'exchange'; at: string; tokens: number; nonContingent?: number; includesReturned?: true; returnedTokens?: number; fromSessionId?: string; sampleTouch?: true }
+  /**
+   * Проба шага «коснись картинки» (решение 1, часть В): на экране только образец. `startLevel` и `levelUsed` — по
+   * лестнице L0 → L1 → L3 (L2 нет), `levelUsed` 4 — помог взрослый; `adultPrompted` — «Была подсказка»;
+   * `independent` — коснулся сам на L0 без подсказки (идёт в серию «5 подряд»); `closes` — закрывающая проба
+   * (после неё в сессии ничего нет). Исход `refusal` и `l4_resisted` кончают шаг на сегодня.
+   */
+  | {
+      kind: 'sample_touch';
+      at: string;
+      startLevel: PromptLevel;
+      levelUsed: PromptLevel;
+      outcome: SampleTouchOutcome;
+      adultPrompted: boolean;
+      latencyMs: number | null;
+      independent: boolean;
+      closes?: true;
+    }
   /** Обмен прошёл, а сцена доступа не началась (№181): жетоны этого обмена вернулись на доску; `reason` — остановка. */
   | { kind: 'exchange_returned'; at: string; tokens: number; nonContingent: number; exchangeAt: string; reason: AbaSessionEndReason }
   /** Доступ к подкрепителю после обмена при обучении доске — фактическое время. */

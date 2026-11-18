@@ -139,7 +139,7 @@ function runSession(c: Child, policy: Policy): Run {
       now += step.durationMs;
       st = finishAccess(st, now);
     } else if (step.kind === 'end') break;
-    else if (step.kind === 'adult_finish_chain') throw new Error('цепочек в match нет');
+    else if (step.kind === 'adult_finish_chain' || step.kind === 'sample_touch') throw new Error('цепочек и шага «коснись» здесь нет');
     else {
       const key = `${step.targetId}|${step.trialKind}`;
       const n = seen.get(key) ?? 0;

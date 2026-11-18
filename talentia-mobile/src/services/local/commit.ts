@@ -395,6 +395,8 @@ export async function commitAbaSession(
       ),
       at,
     );
+    // шаг «коснись картинки» на ребёнке: итог считает сессия (`closeSampleTouchSession`); у сессии без шага — не трогаем
+    if (result.sampleTouch) await saveChildState(tx, childId, 'sampleTouch', result.sampleTouch, at);
     await saveChildState(tx, childId, 'identifySets', result.identifySets, at);
     await saveChildState(tx, childId, 'abaSessionIndex', result.session.index + 1, at);
     await saveChildState(tx, childId, 'abaSessionInProgress', null, at);

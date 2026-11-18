@@ -619,6 +619,39 @@ BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA 
   `
 ALTER TABLE retention_clock ADD COLUMN drift_ms INTEGER NOT NULL DEFAULT 0;
 `,
+  // 19 — шаг «коснись картинки» на ребёнке (решение 1, часть В; методист 2026-11-18): ключ ABA-состояния sampleTouch —
+  // в триггерах согласия и отзыва, как breakCard. Новых таблиц нет.
+  `
+${['insert', 'update'].map((op) => `DROP TRIGGER child_state_aba_need_consent_${op};`).join('\n')}
+${['INSERT', 'UPDATE']
+  .map(
+    (op) => `
+CREATE TRIGGER child_state_aba_need_consent_${op.toLowerCase()} BEFORE ${op} ON child_state
+WHEN NEW.key IN ('abaTargets', 'tokenTraining', 'identifySets', 'abaBoard', 'abaSessionIndex', 'abaSessionInProgress',
+                 'physicalPromptAllowed', 'abaObservers', 'abaRoutineRunInProgress', 'breakCard', 'abaRoutineSettingOpen',
+                 'sampleTouch')
+  AND NOT EXISTS (SELECT 1 FROM aba_write_gate WHERE child_id = NEW.child_id)
+BEGIN SELECT RAISE(ABORT, 'child_state: состояние ABA только через commit.ts при согласии на данные ABA'); END;`,
+  )
+  .join('\n')}
+DROP TRIGGER consent_events_aba_revoke_needs_purge;
+CREATE TRIGGER consent_events_aba_revoke_needs_purge BEFORE INSERT ON consent_events
+WHEN NEW.scope = 'aba_processing' AND NEW.action = 'revoke' AND (
+  EXISTS (SELECT 1 FROM aba_trials WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_sessions WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_ioa WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_routine_runs WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_reinforcer_choices WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_trial_corrections WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_routine_run_amendments WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_pairing_sessions WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM aba_session_tails WHERE child_id = NEW.child_id)
+  OR EXISTS (SELECT 1 FROM child_state WHERE child_id = NEW.child_id AND key IN
+    ('abaTargets', 'tokenTraining', 'identifySets', 'abaBoard', 'abaSessionIndex', 'abaSessionInProgress', 'abaPaused',
+     'physicalPromptAllowed', 'abaObservers', 'abaRoutineRunInProgress', 'breakCard', 'abaRoutineSettingOpen', 'sampleTouch'))
+)
+BEGIN SELECT RAISE(ABORT, 'consent_events: отзыв согласия на ABA — только вместе с удалением данных'); END;
+`,
 ];
 
 /** База новее приложения: откат версии открыл бы таблицы без их охран (аудит 2026-11-09, `backend-auditor`). */

@@ -94,7 +94,10 @@ export function stageLines(t: (k: string, o?: Record<string, unknown>) => string
     ];
   }
   const lines: string[] = v.breakCardTraining ? [t('parent.aba.where.breakCard')] : [];
-  if (st.kind === 'placement') lines.push(t('parent.aba.where.placement', { target: goal(st.targetId) }));
+  // решение 1, часть В: пояснение после «внимание к образцу не установлено» и шаг «коснись картинки»
+  if (v.observingNote) lines.push(t('parent.aba.where.observingNotEstablished'));
+  if (st.kind === 'sample_touch') lines.push(t(st.returned ? 'parent.aba.where.sampleTouchAgain' : 'parent.aba.where.sampleTouch'));
+  else if (st.kind === 'placement') lines.push(t('parent.aba.where.placement', { target: goal(st.targetId) }));
   else if (st.kind === 'baseline') lines.push(t('parent.aba.where.baseline', { target: goal(st.targetId) }));
   const teaching = st.kind === 'teaching' ? st : v.alsoTeaching;
   if (teaching) {

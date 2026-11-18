@@ -160,7 +160,7 @@ function runSession(c: Child, policy: Policy, seed = 1000 + c.index, nextDay?: s
     } else if (step.kind === 'end') {
       ended = true;
       break;
-    } else if (step.kind === 'adult_finish_chain') throw new Error('цепочек в match нет');
+    } else if (step.kind === 'adult_finish_chain' || step.kind === 'sample_touch') throw new Error('цепочек и шага «коснись» здесь нет');
     else {
       const key = `${step.targetId}|${step.trialKind}`;
       const n = seen.get(key) ?? 0;

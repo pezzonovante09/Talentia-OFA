@@ -155,7 +155,8 @@ describe('накат миграции 17 на базе версии 16 с дан
     const v17 = await revokeTriggerSql(db);
     expect(tablesIn(v16)).toContain('aba_pairing_sessions'); // предпосылка: разбор SQL работает и видит таблицу 16
     expect(tablesIn(v17)).toEqual([...tablesIn(v16), 'aba_session_tails']);
-    expect(keysIn(v17)).toEqual(keysIn(v16));
+    // миграция 19 добавила ключ sampleTouch (шаг «коснись картинки»); прочие ключи те же
+    expect(keysIn(v17).filter((k) => k !== 'sampleTouch')).toEqual(keysIn(v16));
     expect(keysIn(v16).length).toBeGreaterThanOrEqual(12);
   });
 
@@ -164,7 +165,9 @@ describe('накат миграции 17 на базе версии 16 с дан
     const before = await triggers(db);
     await migrate(db);
     const after = await triggers(db);
-    expect(after.filter((t) => !t.name.startsWith('aba_session_tails_'))).toEqual(before);
+    // триггеры ключей ABA-состояния пересоздала миграция 19 (ключ sampleTouch) — вне сравнения
+    const same = (t: { name: string }) => !t.name.startsWith('aba_session_tails_') && !t.name.startsWith('child_state_aba_need_consent_');
+    expect(after.filter(same)).toEqual(before.filter(same));
     expect(after.filter((t) => t.name.startsWith('aba_session_tails_')).map((t) => t.name)).toEqual([
       'aba_session_tails_need_consent',
       'aba_session_tails_no_delete',
