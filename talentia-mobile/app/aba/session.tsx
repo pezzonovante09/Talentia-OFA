@@ -1171,6 +1171,8 @@ export default function AbaSessionScreen() {
           <SampleTouchField
             sampleId={r.step.sampleId}
             level={touchLevel(r)}
+            levelStartedAt={r.log[r.log.length - 1].startedAt}
+            still={still}
             touched={r.touchedAt !== null}
             sampleSize={zone.sample}
             frameShownAt={r.shownAt}

@@ -792,8 +792,11 @@
         },
         "roleSpecialist": "specialist",
         "roleSpecialistClaimed": "specialist (as stated)",
+        "roleParent": "parent",
+        "roleParentClaimed": "parent (as stated)",
         "field": {
           "paramsBand": "parameter band",
+          "band": "profile age band",
           "timeLimitMs": "session length",
           "responseWindowMs": "time to answer ({{format}})",
           "maxTeachingTargets": "targets taught per session",
@@ -980,6 +983,7 @@
         "noChanges": "No changes yet.",
         "changeLine": "{{day}} · {{field}}: {{from}} → {{to}}",
         "field": {
+          "band": "profile band",
           "paramsBand": "parameter band",
           "timeLimitMs": "session length, ms",
           "responseWindowMs": "time to answer, ms",
@@ -989,6 +993,12 @@
           "pairingDone": "token introduction",
           "flag": "signal"
         },
+        "touchFlag": {
+          "sample_touch_not_acquired": "the \u201ctouch the picture\u201d step not passed in three sessions",
+          "assent_concern": "assent concern on the \u201ctouch the picture\u201d step: sessions are often interrupted"
+        },
+        "assentReviewedTouch": "Assent concern reviewed: the \u201ctouch the picture\u201d step",
+        "changeLineParent": "{{line}} (parent)",
         "valueOn": "yes",
         "valueOff": "no",
         "valueDefault": "default"

@@ -4,15 +4,17 @@
  */
 import { ABA_TARGETS } from '../../content/aba';
 import { mixGroups } from '../../domain/abaMixedBlock';
+import { deepEqual } from '../../domain/deepEqual';
 import { sanitizeSessionParams, type AbaSessionParams } from '../../domain/abaSessionParams';
 import { adultRewardChange, type SpecialistEvent } from '../../domain/abaSpecialist';
 import { initialTokenTraining, type TokenTrainingFlag } from '../../domain/abaTokenTraining';
 import type { BreakCardFlag } from '../../domain/abaBreakCard';
 import type { AbaFlag, AbaObserver, AbaPhase, MixedNoVerdictReason, PromptLevel } from '../../types/aba';
 import type { AgeBand } from '../../types/task';
-import { sessionsOf } from './abaLog';
+import type { SampleTouchFlag } from '../../domain/abaSampleTouch';
+import { AbaConsentRequiredError, AbaPausedError, sessionsOf } from './abaLog';
 import { loadChildState } from './childState';
-import { abaSpecialistEventsOf, appendAbaSpecialistEvents } from './commit';
+import { abaSpecialistEventsOf, appendAbaSpecialistEvents, applyAbaBandChange } from './commit';
 import type { ChildProfile } from './profiles';
 import type { SqlDb } from './sql';
 
@@ -24,7 +26,7 @@ export type SpecialistSessionNote =
 export type SpecialistView = {
   /** Действующие параметры (`{}` — по умолчанию полосы). */
   params: AbaSessionParams;
-  /** В хранилище параметры есть, но не годятся при полосе профиля: старт их пропускает. */
+  /** В хранилище есть поля, которые не годятся при полосе профиля: старт их пропускает (годные — берёт). */
   paramsIgnored: boolean;
   observers: AbaObserver[];
   pairingDone: boolean;
@@ -33,6 +35,8 @@ export type SpecialistView = {
   boardStage: number;
   tokenFlags: TokenTrainingFlag[];
   breakCardFlags: BreakCardFlag[];
+  /** Флаги шага «коснись картинки»: `sample_touch_not_acquired` — только просмотр, `assent_concern` — с отметкой. */
+  sampleTouchFlags: SampleTouchFlag[];
   /** Цели с состоянием, в порядке программы. */
   targets: { id: string; phase: AbaPhase; startPromptLevel: PromptLevel; currentDelayMs: number | null; flags: AbaFlag[] }[];
   /** Группы смешанного блока, снятые с плана (`mixed_not_established`): действие «Назначить проверку вперемешку». */
@@ -52,6 +56,7 @@ export async function loadSpecialistView(db: SqlDb, childId: string, band: AgeBa
   const observers = (await loadChildState(db, childId, 'abaObservers')) ?? [];
   const token = (await loadChildState(db, childId, 'tokenTraining')) ?? initialTokenTraining();
   const card = await loadChildState(db, childId, 'breakCard');
+  const touch = await loadChildState(db, childId, 'sampleTouch');
   const states = (await loadChildState(db, childId, 'abaTargets')) ?? {};
   const targets = ABA_TARGETS.filter((t) => states[t.id]).map((t) => {
     const s = states[t.id];
@@ -75,13 +80,15 @@ export async function loadSpecialistView(db: SqlDb, childId: string, band: AgeBa
   }
   return {
     params: params ?? {},
-    paramsIgnored: stored !== undefined && params === undefined && Object.keys(stored ?? {}).length > 0,
+    // снято хоть одно поле (по полю, `sanitizeSessionParams`): старт идёт без него — предупреждение на экране
+    paramsIgnored: stored !== undefined && Object.keys(stored ?? {}).length > 0 && !deepEqual(stored, params ?? {}),
     observers,
     pairingDone: token.pairingDone,
     trainedObserverId: observers.find((o) => o.trained)?.id ?? null,
     boardStage: token.stage,
     tokenFlags: token.flags,
     breakCardFlags: card?.flags ?? [],
+    sampleTouchFlags: touch?.flags ?? [],
     targets,
     mixedHeld,
     notes: notes.slice(0, NOTES_SHOWN),
@@ -112,4 +119,39 @@ export async function setAdultRewardAsSpecialist(
     throw e;
   }
   return true;
+}
+
+/**
+ * Изменение условий вне раздела специалиста (роль `parent`, финальная рецензия методиста 2026-11-18). Профиль экран
+ * пишет всегда; событие — только когда у ребёнка есть данные ABA: без согласия на ABA или на паузе (`withAbaWrite`)
+ * журнала нет и писать нечего — настройка профиля из-за этого не падает. Возвращает, записано ли событие.
+ */
+async function asParent(write: () => Promise<unknown>): Promise<boolean> {
+  try {
+    await write();
+    return true;
+  } catch (e) {
+    if (e instanceof AbaConsentRequiredError || e instanceof AbaPausedError) return false;
+    throw e;
+  }
+}
+
+/**
+ * Настройки профиля (родитель, за PIN смены полосы): профиль пишется всегда, затем — условия ABA, которые меняет и раздел
+ * специалиста, событиями с ролью `parent`: смена полосы снимает параметры специалиста вне пределов новой полосы и пишет
+ * `band` (`applyAbaBandChange`), «Награда от взрослого» — `adultReward`. Возвращает, записано ли хоть одно событие.
+ */
+export async function saveProfileAsParent(
+  db: SqlDb,
+  before: ChildProfile,
+  after: ChildProfile,
+  save: (p: ChildProfile) => Promise<void>,
+  at: string,
+): Promise<boolean> {
+  await save(after);
+  let logged = false;
+  if (after.band !== before.band) logged = (await asParent(() => applyAbaBandChange(db, after.childId, before.band, after.band, at))) || logged;
+  const reward = adultRewardChange(before.adultReward === true, after.adultReward === true, at, 'parent');
+  if (reward.length) logged = (await asParent(() => appendAbaSpecialistEvents(db, after.childId, reward))) || logged;
+  return logged;
 }

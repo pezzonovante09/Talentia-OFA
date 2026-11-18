@@ -34,16 +34,20 @@ import type { SkillState } from '../../domain/mastery';
 import type { LessonRun } from '../../domain/parentReport';
 import { ioaRecordErrors } from '../../domain/abaIoa';
 import { awayOutcome, resumeAbaSession as resumeSessionState, reviewAssentConcern, type AbaSessionResult, type AbaSessionState } from '../../domain/abaSession';
-import { sanitizeSessionParams, type AbaSessionParams } from '../../domain/abaSessionParams';
+import { reviewSampleTouchAssentConcern } from '../../domain/abaSampleTouch';
+import { pruneSessionParams, sanitizeSessionParams, type AbaSessionParams } from '../../domain/abaSessionParams';
 import {
   assignMixedCheck,
+  bandChange,
   flagReviewed,
+  observerTrainedChanges,
   pairingConfirmedEvent,
   paramsChanges,
   reviewTargetFlag,
   reviewTokenFlag,
   setObserverTrained,
   type SpecialistEvent,
+  type SpecialistRole,
 } from '../../domain/abaSpecialist';
 import { deepEqual } from '../../domain/deepEqual';
 import {
@@ -779,13 +783,22 @@ export class AbaObserverNotTrainedError extends Error {
   }
 }
 
+/**
+ * «Сопряжение подтверждено» — одной транзакцией с событием журнала условий (финальная рецензия методиста 2026-11-18):
+ * из карточки ABA (`index.tsx`, держатель PIN — роль `parent`, заявленная) и из раздела специалиста (`specialist`).
+ * Уже подтверждено — ничего: ни записи, ни события.
+ */
+async function confirmPairingIn(tx: SqlDb, childId: string, by: PairingConfirmed, role: SpecialistRole): Promise<void> {
+  const observers = (await loadChildState(tx, childId, 'abaObservers')) ?? [];
+  if (!observers.some((o) => o.id === by.observerId && o.trained)) throw new AbaObserverNotTrainedError();
+  const t = (await loadChildState(tx, childId, 'tokenTraining')) ?? initialTokenTraining();
+  if (t.pairingDone) return;
+  await saveChildState(tx, childId, 'tokenTraining', confirmPairing(t, by), by.at);
+  await appendSpecialistEvents(tx, childId, [pairingConfirmedEvent(by.at, role)]);
+}
+
 export async function confirmAbaPairing(db: SqlDb, childId: string, by: PairingConfirmed): Promise<void> {
-  await withAbaWrite(db, childId, async (tx) => {
-    const observers = (await loadChildState(tx, childId, 'abaObservers')) ?? [];
-    if (!observers.some((o) => o.id === by.observerId && o.trained)) throw new AbaObserverNotTrainedError();
-    const t = (await loadChildState(tx, childId, 'tokenTraining')) ?? initialTokenTraining();
-    await saveChildState(tx, childId, 'tokenTraining', confirmPairing(t, by), by.at);
-  });
+  await withAbaWrite(db, childId, (tx) => confirmPairingIn(tx, childId, by, 'parent'));
 }
 
 /**
@@ -816,9 +829,16 @@ export async function commitIoa(
   });
 }
 
-/** Наблюдатели ребёнка — без имён; при согласии. */
-export async function setAbaObservers(db: SqlDb, childId: string, observers: AbaObserver[], at: string): Promise<void> {
-  await withAbaWrite(db, childId, (tx) => saveChildState(tx, childId, 'abaObservers', observers, at));
+/**
+ * Наблюдатели ребёнка — без имён; при согласии. `role` — изменение условий от взрослого («Кто ведёт» — `parent`): смена
+ * «обучен» пишется событием журнала той же транзакцией (`observerTrainedChanges`, без uuid). Без роли — без события.
+ */
+export async function setAbaObservers(db: SqlDb, childId: string, observers: AbaObserver[], at: string, role?: SpecialistRole): Promise<void> {
+  await withAbaWrite(db, childId, async (tx) => {
+    const before = role ? ((await loadChildState(tx, childId, 'abaObservers')) ?? []) : [];
+    await saveChildState(tx, childId, 'abaObservers', observers, at);
+    if (role) await appendSpecialistEvents(tx, childId, observerTrainedChanges(before, observers, at, role));
+  });
 }
 
 /** Состояния целей вне итога сессии — например, «цель пересмотрена» (`reviewAssentConcern`). */
@@ -953,15 +973,40 @@ export async function reviewAbaFlag(db: SqlDb, childId: string, flag: Reviewable
 
 /** «Подтвердить сопряжение» из раздела специалиста: `confirmAbaPairing` и событие — одной транзакцией. */
 export async function confirmAbaPairingAsSpecialist(db: SqlDb, childId: string, observerId: string, at: string): Promise<void> {
+  await withAbaWrite(db, childId, (tx) => confirmPairingIn(tx, childId, { observerId, byRole: 'specialist', at }, 'specialist'));
+}
+
+/** «Беспокойство по согласию просмотрено» у шага «коснись картинки» (`reviewSampleTouchAssentConcern`). Флага нет — ничего. */
+export async function reviewAbaSampleTouchAssentConcern(db: SqlDb, childId: string, at: string): Promise<boolean> {
+  let changed = false;
   await withAbaWrite(db, childId, async (tx) => {
-    // то же, что `confirmAbaPairing`, без второго `withAbaWrite`: ворота уже открыты этой транзакцией
-    const observers = (await loadChildState(tx, childId, 'abaObservers')) ?? [];
-    if (!observers.some((o) => o.id === observerId && o.trained)) throw new AbaObserverNotTrainedError();
-    const t = (await loadChildState(tx, childId, 'tokenTraining')) ?? initialTokenTraining();
-    if (t.pairingDone) return;
-    await saveChildState(tx, childId, 'tokenTraining', confirmPairing(t, { observerId, byRole: 'specialist', at }), at);
-    await appendSpecialistEvents(tx, childId, [pairingConfirmedEvent(at)]);
+    const st = await loadChildState(tx, childId, 'sampleTouch');
+    const next = st && reviewSampleTouchAssentConcern(st, 'specialist', at);
+    if (!next) return;
+    await saveChildState(tx, childId, 'sampleTouch', next, at);
+    await appendSpecialistEvents(tx, childId, [flagReviewed('assent_concern', at, undefined, 'sample_touch')]);
+    changed = true;
   });
+  return changed;
+}
+
+/**
+ * Смена полосы профиля (родитель, за PIN): параметры специалиста, которые при новой полосе вне пределов, снимаются
+ * (`pruneSessionParams`), и пишется событие `band` с ними (`bandChange`, роль `parent`) — одной транзакцией. Профиль
+ * (полоса) живёт на устройстве, не в SQLite: его пишет вызывающий (`abaSpecialist.ts` сервиса).
+ */
+export async function applyAbaBandChange(db: SqlDb, childId: string, from: AgeBand, to: AgeBand, at: string): Promise<SpecialistEvent[]> {
+  let events: SpecialistEvent[] = [];
+  if (from === to) return events;
+  await withAbaWrite(db, childId, async (tx) => {
+    const raw = await loadChildState(tx, childId, 'abaSessionParams');
+    const before = sanitizeSessionParams(raw, from) ?? {};
+    const after = pruneSessionParams(before, to);
+    events = bandChange(from, to, before, after, at);
+    if (raw !== undefined && !deepEqual(raw, after)) await saveChildState(tx, childId, 'abaSessionParams', after, at);
+    await appendSpecialistEvents(tx, childId, events);
+  });
+  return events;
 }
 
 /** Журнал раздела специалиста, по порядку записи. */

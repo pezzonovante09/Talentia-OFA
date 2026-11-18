@@ -513,7 +513,11 @@ function changesTable(ctx: Ctx): string {
   const title = `<h2>${e(t(`${K}.changesTitle`))}</h2>`;
   if (!ctx.changes.length) return `${title}\n<p class="small">${e(t(`${K}.noChanges`))}</p>`;
   const who = (c: ChangeRow) =>
-    c.role === 'specialist' ? t(c.claimed ? `${K}.roleSpecialistClaimed` : `${K}.roleSpecialist`) : (c.role ?? '—');
+    c.role === 'specialist'
+      ? t(c.claimed ? `${K}.roleSpecialistClaimed` : `${K}.roleSpecialist`)
+      : c.role === 'parent'
+        ? t(c.claimed ? `${K}.roleParentClaimed` : `${K}.roleParent`)
+        : (c.role ?? '—');
   const rows = ctx.changes
     .map((c) => {
       const cells = [f.dateShort(c.day), who(c), changeField(ctx, c), changeValue(ctx, c.field, c.from), changeValue(ctx, c.field, c.to)];

@@ -5,7 +5,8 @@
  *
  * Задаёт: параметры сессии (`AbaSessionParams`), «Награду от взрослого», «обучен» у наблюдателей. Отметки: беспокойство
  * по согласию просмотрено, подтвердить сопряжение, назначить проверку вперемешку, «Просмотрено» для трёх сигналов.
- * Только чтение: сигналы целей, доски и карточки «перерыв», ступень доски, старт подсказки, задержка, события занятий.
+ * Только чтение: сигналы целей, доски, карточки «перерыв» и шага «коснись картинки», ступень доски, старт подсказки,
+ * задержка, события занятий. Беспокойство по согласию на шаге «коснись картинки» — с отметкой «просмотрено».
  * Каждое изменение — событие журнала с ролью «специалист», заявленной (`commit.ts`, `abaSpecialist.ts`).
  */
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -26,6 +27,7 @@ import {
   confirmAbaPairingAsSpecialist,
   reviewAbaAssentConcern,
   reviewAbaFlag,
+  reviewAbaSampleTouchAssentConcern,
   setAbaObserverTrained,
   setAbaSessionParams,
   type ReviewableFlag,
@@ -62,11 +64,13 @@ export function changeLine(t: Tr, e: SpecialistEvent): string {
     head === 'responseWindowMs'
       ? `${t('parent.aba.spec.field.responseWindowMs')} (${t(`parent.aba.spec.format.${tail}`)})`
       : head === 'flag'
-        ? `${t('parent.aba.spec.field.flag')}: ${t(`parent.aba.spec.${tail === 'token_training_stalled' || tail === 'pairing_keeps_breaking' ? 'tokenFlag' : 'flag'}.${tail}`)}`
+        ? `${t('parent.aba.spec.field.flag')}: ${t(`parent.aba.spec.${e.step === 'sample_touch' ? 'touchFlag' : tail === 'token_training_stalled' || tail === 'pairing_keeps_breaking' ? 'tokenFlag' : 'flag'}.${tail}`)}`
         : head === 'observerTrained' && e.observerRole
           ? `${t('parent.aba.spec.field.observerTrained')} (${t(`abaSession.role.${e.observerRole}`)})`
           : t(`parent.aba.spec.field.${head}`);
-  return t('parent.aba.spec.changeLine', { day: abaLocalDay(Date.parse(e.at)), field, from: valueText(t, e.from), to: valueText(t, e.to) });
+  const line = t('parent.aba.spec.changeLine', { day: abaLocalDay(Date.parse(e.at)), field, from: valueText(t, e.from), to: valueText(t, e.to) });
+  // изменение вне раздела (профиль, «Кто ведёт», карточка ABA) — роль «родитель», тоже заявленная
+  return e.role === 'parent' ? t('parent.aba.spec.changeLineParent', { line }) : line;
 }
 
 /** Событие занятия словами. */
@@ -134,6 +138,9 @@ export default function AbaSpecialistScreen() {
   if (view) {
     for (const tg of view.targets.filter((x) => x.flags.includes('assent_concern'))) {
       actions.push({ key: `assent-${tg.id}`, label: t('parent.aba.spec.assentReviewed', { target: goal(t, tg.id) }), run: () => reviewAbaAssentConcern(db, profile.childId, tg.id, now()) });
+    }
+    if (view.sampleTouchFlags.includes('assent_concern')) {
+      actions.push({ key: 'assent-sample-touch', label: t('parent.aba.spec.assentReviewedTouch'), run: () => reviewAbaSampleTouchAssentConcern(db, profile.childId, now()) });
     }
     if (!view.pairingDone && view.trainedObserverId) {
       const observerId = view.trainedObserverId;
@@ -288,6 +295,11 @@ export default function AbaSpecialistScreen() {
               {view.breakCardFlags.map((f) => (
                 <ParentText key={f} role="caption" testID={`spec-break-flag-${f}`}>
                   {t(`parent.aba.spec.breakFlag.${f}`)}
+                </ParentText>
+              ))}
+              {view.sampleTouchFlags.map((f) => (
+                <ParentText key={f} role="caption" testID={`spec-touch-flag-${f}`}>
+                  {t(`parent.aba.spec.touchFlag.${f}`)}
                 </ParentText>
               ))}
               {view.targets.map((tg) => (

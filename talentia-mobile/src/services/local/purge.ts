@@ -1228,6 +1228,8 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
       to: e.to,
       ...(e.targetIds ? { targetIds: e.targetIds } : {}),
       ...(e.observerRole ? { observerRole: e.observerRole } : {}),
+      ...(e.removed ? { removed: e.removed } : {}),
+      ...(e.step ? { step: e.step } : {}),
     }));
     const corrections = (await correctionsOf(tx, childId)) as { trialId: string }[];
     // сводки (Ж12) — из тех же проб и записей, до замены id: метки сессий в них должны совпасть с `abaSessions`

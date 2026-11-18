@@ -7,6 +7,8 @@ import AbaParentScreen from '../aba/index';
 import AbaSpecialistScreen from '../aba/specialist';
 import { ABA_TARGETS } from '../../../src/content/aba';
 import { initialTargetState } from '../../../src/domain/abaPrompting';
+import { initialSampleTouch } from '../../../src/domain/abaSampleTouch';
+import { adultRewardChange } from '../../../src/domain/abaSpecialist';
 import { initialTokenTraining } from '../../../src/domain/abaTokenTraining';
 import ru from '../../../src/i18n/locales/ru.json';
 import { createLocalAccount } from '../../../src/services/local/account';
@@ -14,7 +16,7 @@ import { grantAbaProcessing } from '../../../src/services/local/abaConsent';
 import { markAbaIntroSeen } from '../../../src/services/local/abaIntro';
 import { loadChildState, saveChildState } from '../../../src/services/local/childState';
 import { appendSession } from '../../../src/services/local/abaLog';
-import { abaSpecialistEventsOf, setAbaObserverTrained } from '../../../src/services/local/commit';
+import { abaSpecialistEventsOf, appendAbaSpecialistEvents, setAbaObserverTrained } from '../../../src/services/local/commit';
 import type { AbaSession } from '../../../src/types/aba';
 import { asAbaWriter, memoryDb } from '../../../src/services/local/__tests__/nodeSql';
 import { newProfile } from '../../../src/services/local/profiles';
@@ -211,5 +213,41 @@ describe('экран «Для специалиста»', () => {
     const states = (await loadChildState(db, KID, 'abaTargets')) ?? {};
     expect(Object.values(states).some((s) => s.flags.includes('mixed_not_established') || s.flags.includes('assent_concern'))).toBe(false);
     expect((await abaSpecialistEventsOf(db, KID)).map((e) => e.field)).toEqual(['flag.mixed_not_established', 'flag.assent_concern']);
+  });
+});
+
+describe('экран «Для специалиста»: шаг «коснись картинки» и изменения родителя', () => {
+  it('флаги шага словами; «Беспокойство по согласию просмотрено» у шага снимает флаг с событием', async () => {
+    useGate.getState().open();
+    await asAbaWriter(db, KID, (tx) =>
+      saveChildState(tx, KID, 'sampleTouch', { ...initialSampleTouch(), flags: ['sample_touch_not_acquired', 'assent_concern'], assentSessionsInRow: 2 }, iso()),
+    );
+    await wrap(<AbaSpecialistScreen />);
+    await waitFor(() => expect(screen.getByTestId('spec-touch-flag-sample_touch_not_acquired')).toHaveTextContent(spec.touchFlag.sample_touch_not_acquired));
+    expect(screen.getByTestId('spec-touch-flag-assent_concern')).toHaveTextContent(spec.touchFlag.assent_concern);
+    await fireEvent.press(screen.getByTestId('spec-action-assent-sample-touch'));
+    await waitFor(() => expect(screen.queryByTestId('spec-action-assent-sample-touch')).toBeNull());
+    expect((await loadChildState(db, KID, 'sampleTouch'))?.flags).toEqual(['sample_touch_not_acquired']);
+    expect((await abaSpecialistEventsOf(db, KID)).map((e) => [e.field, e.step])).toEqual([['flag.assent_concern', 'sample_touch']]);
+    await waitFor(() => expect(screen.getByTestId('spec-change-0')).toHaveTextContent(spec.touchFlag.assent_concern, { exact: false }));
+  });
+
+  it('изменение вне раздела в журнале — с пометкой «родитель»', async () => {
+    await appendAbaSpecialistEvents(db, KID, adultRewardChange(false, true, iso(), 'parent'));
+    await wrap(<AbaSpecialistScreen />);
+    await waitFor(() => expect(screen.getByTestId('spec-change-0')).toHaveTextContent(/награда от взрослого: было нет, стало да \(родитель\)$/));
+  });
+
+  it('«Кто ведёт» и «Начать» с той же отметкой «обучен» — события parent нет (без повтора)', async () => {
+    useGate.getState().open();
+    await write('tokenTraining', { ...initialTokenTraining(), pairingDone: true });
+    await write('abaObservers', [{ id: 'obs-1', role: 'specialist', trained: false }]);
+    await wrap(<AbaParentScreen />);
+    await waitFor(() => expect(screen.getByTestId('aba-who-row-value')).toHaveTextContent(ru.abaSession.role.specialist));
+    // «Начать» с тем же «обучен», что в базе, — события нет (журнал не множится на каждом занятии)
+    await fireEvent.press(screen.getByTestId('aba-start'));
+    await waitFor(() => expect(router.replace).toHaveBeenCalled());
+    expect((await loadChildState(db, KID, 'abaObservers'))?.[0]).toEqual({ id: 'obs-1', role: 'specialist', trained: false });
+    expect(await abaSpecialistEventsOf(db, KID)).toEqual([]);
   });
 });

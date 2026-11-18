@@ -9,7 +9,7 @@
  *
  * В состоянии нет ни наблюдателей, ни устройства: ключ уходит специалисту как есть.
  */
-import { MATCH_OBSERVING_MS, MAX_DELAY_MS, type AbaConfig, type AbaSessionEndReason, type AbaSessionEvent, type PromptLevel, type SampleTouchOutcome } from '../types/aba';
+import { INTERRUPTIONS_FOR_CONCERN, MATCH_OBSERVING_MS, MAX_DELAY_MS, type AbaConfig, type AbaSessionEndReason, type AbaSessionEvent, type PromptLevel, type SampleTouchOutcome } from '../types/aba';
 import type { AgeBand } from '../types/task';
 import { FADE_AFTER, FAILURES_TO_RAISE } from './abaPrompting';
 
@@ -31,7 +31,11 @@ export const SAMPLE_TOUCH_DELAY_MS: Record<AgeBand, number> = MAX_DELAY_MS;
 export const SAMPLE_TOUCH_WINDOW_MS = MATCH_OBSERVING_MS;
 
 export type SampleTouchLevel = 0 | 1 | 3;
-export type SampleTouchFlag = 'sample_touch_not_acquired';
+/**
+ * `sample_touch_not_acquired` — 3 сессии без прохождения; `assent_concern` — две тревожные сессии шага подряд
+ * (`touchStepConcerning`), снимает только отметка «просмотрено» (`reviewSampleTouchAssentConcern`).
+ */
+export type SampleTouchFlag = 'sample_touch_not_acquired' | 'assent_concern';
 
 export type SampleTouchState = {
   passed: boolean;
@@ -50,6 +54,10 @@ export type SampleTouchState = {
   returned?: true;
   /** Номер сессии, итогом которой «внимание к образцу не установлено» (`observing_not_established`) — строка взрослому. */
   observingNotEstablishedSession?: number;
+  /** Тревожных сессий шага подряд (`touchStepConcerning`) — для `assent_concern`, как `assentSessionsInRow` у цели. */
+  assentSessionsInRow?: number;
+  /** Кто отметил «беспокойство по согласию просмотрено» — роль без имени. */
+  assentConcernReviewed?: { role: 'owner' | 'guardian' | 'specialist'; at: string };
 };
 
 export function initialSampleTouch(): SampleTouchState {
@@ -140,15 +148,62 @@ export const endsStepToday = (t: Pick<SampleTouchInput, 'outcome'>): boolean => 
 
 const withFlag = (flags: SampleTouchFlag[], f: SampleTouchFlag) => (flags.includes(f) ? flags : [...flags, f]);
 
-/** Остановка взрослым и ошибка приложения сессию шага не засчитывают. */
-const NOT_COUNTED: ReadonlySet<AbaSessionEndReason> = new Set(['adult_stopped', 'app_error']);
+/**
+ * Конец сессии, который сессию шага не засчитывает (финальная рецензия методиста 2026-11-18): остановка взрослым,
+ * ошибка приложения, сворачивание (со взрослым — как остановка, `types/aba.ts`), отказ — в том числе бездействие
+ * телефона, оно приходит отказом (`withdrawAssent(…, 'device_inactivity')`).
+ */
+const NOT_COUNTED: ReadonlySet<AbaSessionEndReason> = new Set(['adult_stopped', 'app_error', 'app_backgrounded', 'assent_withdrawn']);
+
+/**
+ * Шаг дошёл до своего конца: «Сопротивляется» или десять проб (прохождение — отдельная ветка). Шаг, оборванный «Отказом»
+ * или концом сессии, — нет: такая сессия для `sample_touch_not_acquired` не в счёт.
+ */
+export function touchStepReachedEnd(events: readonly AbaSessionEvent[]): boolean {
+  const own = touchEventsOf(events).filter((e) => !e.closes);
+  return own.some((e) => e.outcome === 'l4_resisted') || own.length >= SAMPLE_TOUCH_MAX_TRIALS;
+}
+
+type AssentEvent = Extract<AbaSessionEvent, { kind: 'assent' }>;
+/** События согласия на шаге «коснись картинки» (`step: 'sample_touch'`): «Отказ», «Сопротивляется», карточка «перерыв». */
+export const touchAssentEventsOf = (events: readonly AbaSessionEvent[]): AssentEvent[] =>
+  events.filter((e): e is AssentEvent => e.kind === 'assent' && e.step === 'sample_touch');
+
+/**
+ * Тревожна ли сессия шага — аналог `isConcerning` у проб: «Сопротивляется» на шаге, «Отказ» на шаге (он кончает шаг,
+ * второго прерывания на шаге уже не бывает — иначе отказ каждой сессии не дал бы сигнала нигде), конец сессии отказом
+ * на шаге или хотя бы два прерывания на шаге (карточка «перерыв»).
+ */
+export function touchStepConcerning(events: readonly AbaSessionEvent[]): boolean {
+  const own = touchAssentEventsOf(events);
+  // конец сессии отказом на шаге (второй «Отказ», третья карточка) — тоже тревожно; бездействие телефона — нет
+  const refusedOrEnded = (e: AssentEvent) => e.by !== 'device_inactivity' && (e.action === 'end' || (e.by === 'adult_observed' && e.action === 'break'));
+  return (
+    own.some((e) => e.action === 'l4_stopped' || refusedOrEnded(e)) ||
+    own.filter((e) => e.action === 'break' || e.action === 'l4_stopped').length >= INTERRUPTIONS_FOR_CONCERN
+  );
+}
+
+/** Две тревожные сессии шага подряд — `assent_concern`; спокойная сессия шага обнуляет счётчик, флаг снимает только отметка. */
+function withTouchAssentConcern(s: SampleTouchState, concern: boolean): SampleTouchState {
+  const inRow = concern ? (s.assentSessionsInRow ?? 0) + 1 : 0;
+  return { ...s, assentSessionsInRow: inRow, flags: inRow >= 2 ? withFlag(s.flags, 'assent_concern') : s.flags };
+}
+
+/** «Беспокойство по согласию просмотрено» для шага: флаг снят, счётчик обнулён, роль снявшего. Флага нет — `null`. */
+export function reviewSampleTouchAssentConcern(s: SampleTouchState, role: 'owner' | 'guardian' | 'specialist', at: string): SampleTouchState | null {
+  if (!s.flags.includes('assent_concern')) return null;
+  return { ...s, flags: s.flags.filter((f) => f !== 'assent_concern'), assentSessionsInRow: 0, assentConcernReviewed: { role, at } };
+}
 
 /**
  * Итог сессии для шага. `inSession` — состояние шага в сессии (прохождение, затухание); `events` — события хода.
  *
  * - Пройден в сессии — флаг снят, «возвращён» снят, счётчик сессий обнулён.
- * - Пробы были, не пройден — сессия в счёт (кроме остановки взрослым и ошибки приложения); после трёх — флаг
+ * - Пробы были, не пройден — сессия в счёт, только если шаг дошёл до своего конца (`touchStepReachedEnd`) и сессия
+ *   кончилась не остановкой, ошибкой, сворачиванием или отказом (`NOT_COUNTED`); после трёх — флаг
  *   `sample_touch_not_acquired`, шаг продолжается.
+ * - Пробы были — тревожность шага (`touchStepConcerning`): две подряд — `assent_concern`; прохождение его не снимает.
  * - `returnToStep` — измерение `match` закрыто вторым промахом наблюдения (срез А): ребёнок снова на шаге; стартовый
  *   уровень шага не откатывается.
  * - `observingNotEstablished` — в сессии «внимание к образцу не установлено»: номер сессии для строки взрослому.
@@ -164,10 +219,12 @@ export function closeSampleTouchSession(
     // пройден в этой сессии
     const { returned: _r, ...rest } = s;
     s = { ...rest, sessionsTried: 0, flags: s.flags.filter((f) => f !== 'sample_touch_not_acquired') };
-  } else if (!inSession.passed && touches.length > 0 && !NOT_COUNTED.has(ctx.endReason)) {
+  } else if (!inSession.passed && touches.length > 0 && touchStepReachedEnd(events) && !NOT_COUNTED.has(ctx.endReason)) {
     const sessionsTried = s.sessionsTried + 1;
     s = { ...s, sessionsTried, flags: sessionsTried >= SAMPLE_TOUCH_SESSIONS_BEFORE_FLAG ? withFlag(s.flags, 'sample_touch_not_acquired') : s.flags };
   }
+  // шаг был в сессии (пробы или прерывания на нём) — тревожность шага; без шага счётчик не трогается
+  if (touches.length > 0 || touchAssentEventsOf(events).length > 0) s = withTouchAssentConcern(s, touchStepConcerning(events));
   if (ctx.returnToStep && s.passed) {
     const { passedAt: _p, ...rest } = s;
     s = { ...rest, passed: false, returned: true, sessionsTried: 0 };
