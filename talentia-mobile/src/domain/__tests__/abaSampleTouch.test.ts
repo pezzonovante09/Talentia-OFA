@@ -8,7 +8,7 @@
  */
 import { ABA_TARGETS, readyAbaTargets } from '../../content/aba';
 import { DEV_PLACEHOLDER_ART } from '../../services/local/abaStart';
-import type { AbaTargetState } from '../../types/aba';
+import { REFUSAL_CARD_OFFER_MS, REFUSAL_QUIET_MS, type AbaSessionEvent, type AbaTargetState } from '../../types/aba';
 import { matchDueAt, matchTrialInput, optionActive, startMatchTrial, stepMatchTrial, type MatchTrialRun } from '../../ui/aba/model/matchTrialRun';
 import { sampleTouchDueAt, sampleTouchInput, startSampleTouch, stepSampleTouch, type SampleTouchRun } from '../../ui/aba/model/sampleTouchRun';
 import { stageOfPlan } from '../abaParentStage';
@@ -16,6 +16,7 @@ import {
   closeSampleTouchSession,
   fadeSampleTouch,
   initialSampleTouch,
+  reviewSampleTouchAssentConcern,
   SAMPLE_TOUCH_MAX_TRIALS,
   SAMPLE_TOUCH_SESSIONS_BEFORE_FLAG,
   SAMPLE_TOUCH_STREAK,
@@ -393,5 +394,92 @@ describe('модель экрана', () => {
     expect(sampleTouchInput(r)).toMatchObject({ outcome: 'no_response', levelUsed: 3 });
     const refused = stepSampleTouch(startSampleTouch(step, 0), { type: 'adult', button: 'refusal', at: 100 });
     expect(sampleTouchInput(refused).outcome).toBe('refusal');
+  });
+});
+
+describe('согласие на шаге (финальная рецензия методиста 2026-11-18)', () => {
+  const atTouch = () => nextStep(chooseReinforcer(startAbaSession(inputOf(freshChild(), 1)), POOL[0], T0, 'child'), T0).state;
+  const refusal = { startLevel: 0 as const, levelUsed: 1 as const, outcome: 'refusal' as const, adultPrompted: false, latencyMs: null };
+  const resisted = { startLevel: 0 as const, levelUsed: 3 as const, outcome: 'l4_resisted' as const, adultPrompted: false, latencyMs: null };
+  const l1 = { startLevel: 0 as const, levelUsed: 1 as const, outcome: 'touched' as const, adultPrompted: false, latencyMs: 4000 };
+  const ctx = (endReason: 'completed' | 'adult_stopped' | 'app_error' | 'app_backgrounded' | 'assent_withdrawn' = 'completed') => ({
+    day: '2026-11-18',
+    sessionIndex: 1,
+    endReason,
+    returnToStep: false,
+    observingNotEstablished: false,
+  });
+  const assents = (events: readonly AbaSessionEvent[]) => events.filter((e) => e.kind === 'assent');
+
+  it('«Отказ» на шаге — ход согласия с отметкой шага, в счёт отказов, тихая пауза с подсвеченной карточкой', () => {
+    const out = recordSampleTouch(atTouch(), refusal, T0 + 1000).state;
+    expect(assents(out.events)).toEqual([{ kind: 'assent', at: new Date(T0 + 1000).toISOString(), by: 'adult_observed', action: 'break', step: 'sample_touch' }]);
+    expect(out.refusals).toBe(1);
+    expect(out.queue[0]).toEqual({ kind: 'break', initiatedBy: 'adult', maxMs: REFUSAL_QUIET_MS, offerCardMs: REFUSAL_CARD_OFFER_MS });
+    expect(out.queue.some((q) => q.kind === 'sample_touch')).toBe(false);
+    expect(out.endReason).toBeNull();
+    const brk = nextStep(out, T0 + 2000);
+    expect(brk.step).toMatchObject({ kind: 'break', offerCardMs: REFUSAL_CARD_OFFER_MS });
+  });
+
+  it('второй «Отказ» в сессии (первый — на пробе) — конец по отказу, отметка шага в событии конца', () => {
+    const out = recordSampleTouch({ ...atTouch(), refusals: 1 }, refusal, T0 + 1000).state;
+    expect(out.endReason).toBe('assent_withdrawn');
+    expect(assents(out.events)).toEqual([expect.objectContaining({ by: 'adult_observed', action: 'end', step: 'sample_touch' })]);
+  });
+
+  it('«Сопротивляется» на шаге — ход l4_stopped с отметкой шага', () => {
+    const out = recordSampleTouch(atTouch(), resisted, T0 + 1000).state;
+    expect(assents(out.events)).toEqual([expect.objectContaining({ by: 'adult_observed', action: 'l4_stopped', step: 'sample_touch' })]);
+    expect(out.refusals).toBe(0);
+  });
+
+  it('карточка «перерыв» посреди пробы шага — с отметкой шага', () => {
+    const st = requestBreakBetweenTrials(atTouch(), T0 + 1000);
+    expect(assents(st.events)).toEqual([expect.objectContaining({ by: 'child_card', action: 'break', step: 'sample_touch' })]);
+  });
+
+  it('две тревожные сессии шага подряд — assent_concern у шага; спокойная обнуляет; прохождение не снимает; снимает отметка', () => {
+    const refusedEvents = recordSampleTouch(atTouch(), refusal, T0 + 1000).state.events;
+    const calmEvents = recordSampleTouch(atTouch(), l1, T0 + 1000).state.events;
+    let s = closeSampleTouchSession(initialSampleTouch(), refusedEvents, ctx());
+    expect(s).toMatchObject({ assentSessionsInRow: 1, flags: [] });
+    s = closeSampleTouchSession(s, calmEvents, ctx());
+    expect(s.assentSessionsInRow).toBe(0);
+    s = closeSampleTouchSession(s, refusedEvents, ctx());
+    s = closeSampleTouchSession(s, recordSampleTouch(atTouch(), resisted, T0 + 1000).state.events, ctx('adult_stopped'));
+    expect(s).toMatchObject({ assentSessionsInRow: 2, flags: ['assent_concern'] });
+    // сессии без проб шага счётчик не трогают
+    expect(closeSampleTouchSession(s, [], ctx()).assentSessionsInRow).toBe(2);
+    const passed = closeSampleTouchSession({ ...s, passed: true }, calmEvents, ctx());
+    expect(passed.flags).toContain('assent_concern');
+    const reviewed = reviewSampleTouchAssentConcern(s, 'specialist', '2026-11-19T10:00:00.000Z');
+    expect(reviewed).toMatchObject({ flags: [], assentSessionsInRow: 0, assentConcernReviewed: { role: 'specialist' } });
+    expect(reviewSampleTouchAssentConcern(reviewed!, 'specialist', '2026-11-19T10:00:00.000Z')).toBeNull();
+  });
+
+  it('одна карточка на шаге — не тревожно; две — тревожно', () => {
+    const one = requestBreakBetweenTrials(atTouch(), T0 + 1000);
+    expect(closeSampleTouchSession(initialSampleTouch(), one.events, ctx()).assentSessionsInRow).toBe(0);
+    const two: AbaSessionEvent[] = [...one.events, { ...assents(one.events)[0], at: new Date(T0 + 9000).toISOString() }];
+    expect(closeSampleTouchSession(initialSampleTouch(), two, ctx()).assentSessionsInRow).toBe(1);
+  });
+
+  it('sample_touch_not_acquired: в счёт — только шаг, дошедший до своего конца, и не оборванная сессия', () => {
+    // «Отказ» кончает шаг, но не своим концом — не в счёт
+    const refusedEvents = recordSampleTouch(atTouch(), refusal, T0 + 1000).state.events;
+    expect(closeSampleTouchSession(initialSampleTouch(), refusedEvents, ctx()).sessionsTried).toBe(0);
+    // «Сопротивляется» — свой конец шага: в счёт
+    const resistedEvents = recordSampleTouch(atTouch(), resisted, T0 + 1000).state.events;
+    expect(closeSampleTouchSession(initialSampleTouch(), resistedEvents, ctx()).sessionsTried).toBe(1);
+    // десять проб, но конец сессии — сворачивание, отказ, остановка, ошибка: не в счёт
+    const ten = runSession(freshChild(), always('l1')).final.events;
+    expect(closeSampleTouchSession(initialSampleTouch(), ten, ctx()).sessionsTried).toBe(1);
+    for (const reason of ['app_backgrounded', 'assent_withdrawn', 'adult_stopped', 'app_error'] as const) {
+      expect(closeSampleTouchSession(initialSampleTouch(), ten, ctx(reason)).sessionsTried).toBe(0);
+    }
+    // шаг оборван посреди (две пробы) — не в счёт и при обычном конце
+    const two = recordSampleTouch(atTouch(), l1, T0 + 1000).state.events;
+    expect(closeSampleTouchSession(initialSampleTouch(), two, ctx()).sessionsTried).toBe(0);
   });
 });

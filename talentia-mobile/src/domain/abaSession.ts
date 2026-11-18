@@ -1729,7 +1729,7 @@ export function withdrawAssent(
   state: AbaSessionState,
   now: number,
   by: 'child_card' | 'adult_observed' | 'device_inactivity',
-  where: { targetId?: string; trialId?: string } = {},
+  where: { targetId?: string; trialId?: string; step?: 'sample_touch' } = {},
 ): AbaSessionState {
   // конец уже решён (лимит), а перерыв по просьбе не кончился: без возврата ребёнка нет, приглашения не идут по кругу
   if (state.endReason !== null && by !== 'device_inactivity') return state;
@@ -1856,6 +1856,10 @@ export type SampleTouchRecord = {
  * Больше в сессии ничего — до двух закрывающих проб на модели, чтобы конец был на успешной пробе. Обмен доски от
  * жетонов шага помечается «бесплатным» (`exchange.sampleTouch`): ступень доски он не растит. На полной доске жетон
  * не начисляется — «принято».
+ *
+ * «Отказ» и «Сопротивляется» на шаге пишут ход согласия `assent` с отметкой `step: 'sample_touch'` (финальная рецензия
+ * методиста 2026-11-18): «Отказ» идёт в счёт `refusals` — второй в сессии кончает её по отказу, иначе тихая пауза с
+ * подсвеченной карточкой «перерыв», как после отказа на пробе.
  */
 export function recordSampleTouch(state: AbaSessionState, input: SampleTouchInput, now: number): SampleTouchRecord {
   const head = state.queue[0];
@@ -1891,6 +1895,13 @@ export function recordSampleTouch(state: AbaSessionState, input: SampleTouchInpu
     tokensEarned: state.tokensEarned + (token ? 1 : 0),
     l4Stopped: state.l4Stopped || input.outcome === 'l4_resisted',
   };
+  // «Отказ» и «Сопротивляется» на шаге — ход согласия, как у проб (`handleInterruption`), с отметкой места `step`
+  const onStep = { step: 'sample_touch' as const };
+  if (input.outcome === 'l4_resisted') {
+    st = { ...st, events: [...st.events, { kind: 'assent', at: iso(now), by: 'adult_observed', action: 'l4_stopped', ...onStep }] };
+  }
+  const refused = input.outcome === 'refusal';
+  const refusals = state.refusals + (refused ? 1 : 0);
   const counted = touchEventsOf(st.events).filter((e) => !e.closes).length;
   const over = passedNow || endsStepToday(input) || head.closes === true || counted >= SAMPLE_TOUCH_MAX_TRIALS;
   if (!over) {
@@ -1904,6 +1915,21 @@ export function recordSampleTouch(state: AbaSessionState, input: SampleTouchInpu
       if (nothingElse && !endsStepToday(input) && !isTouchSuccess(input) && closings < SAMPLE_TOUCH_CLOSING_MAX) {
         st = { ...st, queue: [{ kind: 'sample_touch', closes: true }, ...st.queue] };
       }
+    }
+  }
+  if (refused) {
+    // второй «Отказ» в сессии — конец по отказу, как у проб; иначе тихая пауза с подсвеченной карточкой «перерыв»
+    // (`REFUSAL_CARD_OFFER_MS`): коснулся — полный перерыв; дальше — план без шага
+    if (refusals >= REFUSALS_TO_END) {
+      st = withdrawAssent({ ...st, refusals }, now, 'adult_observed', onStep);
+    } else {
+      const pause: QueueItem = { kind: 'break', initiatedBy: 'adult', maxMs: REFUSAL_QUIET_MS, offerCardMs: REFUSAL_CARD_OFFER_MS };
+      st = {
+        ...st,
+        refusals,
+        queue: [pause, ...st.queue],
+        events: [...st.events, { kind: 'assent', at: iso(now), by: 'adult_observed', action: 'break', ...onStep }],
+      };
     }
   }
   const before = st.exchangesMade;
@@ -2044,7 +2070,9 @@ export function takeBreakCard(state: AbaSessionState, now: number): AbaSessionSt
 export function requestBreakBetweenTrials(state: AbaSessionState, now: number): AbaSessionState {
   if (state.queue.some((q) => q.kind === 'break' && q.between)) return state;
   const last = lastTrial(state);
-  const where = last ? { targetId: last.targetId, trialId: last.id } : {};
+  // посреди пробы шага «коснись картинки» — отметка места: тревожность шага считается по ней (`touchStepConcerning`)
+  const onTouch = state.queue[0]?.kind === 'sample_touch' ? { step: 'sample_touch' as const } : {};
+  const where = { ...(last ? { targetId: last.targetId, trialId: last.id } : {}), ...onTouch };
   const event: AbaSessionEvent = { kind: 'assent', at: iso(now), by: 'child_card', action: 'break', between: true, ...where };
   const childBreaks = state.childBreaks + 1;
   const pause: QueueItem = { kind: 'break', initiatedBy: 'child_card', maxMs: CHILD_BREAK_MS[state.band], between: true };
