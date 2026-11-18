@@ -23,7 +23,12 @@
     "endedToday": "We're done for today",
     "done": "Done",
     "offer": "Want a rest?",
-    "trainingWaitHint": "Wait. No? Point to the button silently. No? Press it yourself"
+    "trainingWaitHint": "Wait. No? Point to the button silently. No? Press it yourself",
+    "schedule": {
+      "firstThen": "First the task, then the reward",
+      "left": "Tasks left: {{count}}",
+      "last": "Last task"
+    }
   },
   "abaRoutine": {
     "kind": {

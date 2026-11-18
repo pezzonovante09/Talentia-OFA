@@ -244,6 +244,8 @@ describe('фаза 7 (№169): перерыв, обмен, конец', () => {
     await tick(500);
     await fireEvent.press(screen.getByTestId('aba-panel-refusal'));
     await waitFor(() => expect(screen.getByTestId('aba-refusal-pause')).toBeTruthy());
+    // пауза после «Отказ» — посреди блока: расписания ребёнку нет (решение методиста 34)
+    expect(screen.queryByTestId('aba-schedule', HIDDEN)).toBeNull();
   }
 
   /**

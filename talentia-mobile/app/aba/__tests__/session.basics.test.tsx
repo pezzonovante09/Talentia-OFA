@@ -43,6 +43,8 @@ it('касание карточки при обучении — перерыв, 
   await tick(1000);
   await fireEvent.press(screen.getByTestId('aba-break-card'));
   await waitFor(() => expect(screen.getByTestId('aba-break')).toBeTruthy());
+  // награда ещё не выбрана — «потом» показать нечем: расписания нет
+  expect(screen.queryByTestId('aba-schedule', HIDDEN)).toBeNull();
   await fireEvent.press(screen.getByTestId('aba-break-return'));
   await waitFor(() => expect(screen.getByTestId('aba-panel-caption').props.children).toBe('Покажите на неё жестом'));
 });
@@ -165,6 +167,8 @@ it('карточка «перерыв» в пробе — проба прерв�
   await tick(500);
   await fireEvent.press(screen.getByTestId('aba-break-card'));
   await waitFor(() => expect(screen.getByTestId('aba-break')).toBeTruthy());
+  // перерыв посреди сессии: расписание ребёнку под кольцом (решение методиста 34)
+  expect(screen.getByTestId('aba-schedule', HIDDEN)).toBeTruthy();
   const [row] = await db.all<{ body: string }>('SELECT body FROM aba_trials WHERE child_id = ?', [KID]);
   expect(JSON.parse(row.body)).toMatchObject({ response: 'interrupted', interruptedBy: 'child_break' });
 });

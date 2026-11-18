@@ -35,6 +35,7 @@ import {
 } from '../../src/design/abaTokens';
 import { useChildT } from '../../src/i18n';
 import { typography } from '../../src/design/tokens';
+import { blockSchedule } from '../../src/domain/abaBlockSchedule';
 import type { BreakCardStep } from '../../src/domain/abaBreakCard';
 import type { PanelButton } from '../../src/domain/abaScoring';
 import {
@@ -98,6 +99,7 @@ import { ExitHold, useAbaColors, useReduceMotion } from '../../src/ui/aba/parts'
 import { AccessView } from '../../src/ui/aba/session/AccessView';
 import { AwayFrame } from '../../src/ui/aba/session/AwayFrame';
 import { BreakView } from '../../src/ui/aba/session/BreakView';
+import { ChildSchedule } from '../../src/ui/aba/session/ChildSchedule';
 import { ChooseFrame } from '../../src/ui/aba/session/ChooseFrame';
 import { ExchangeView, PairingWaitView } from '../../src/ui/aba/session/ExchangeView';
 import { AdultPanel, BreakTrace, TokenStrip, TopBar } from '../../src/ui/aba/session/parts';
@@ -1145,7 +1147,8 @@ export default function AbaSessionScreen() {
           </>
         );
       } else {
-        body = <BreakView phase={phase} onReturn={(at) => run(endBreak(at))} />;
+        // расписание ребёнку (решение методиста 34) — только здесь, не на паузе после «Отказ»
+        body = <BreakView phase={phase} onReturn={(at) => run(endBreak(at))} schedule={s && <ChildSchedule {...blockSchedule(s.queue)} reinforcerId={s.reinforcerId} />} />;
       }
       break;
     }
