@@ -933,7 +933,7 @@ export default function AbaSessionScreen() {
       exchanged = done.exchanged > 0;
       return done.state;
     });
-    // обмен на перерыве по расписанию (№169): доступ следующим шагом домена — сначала экран обмена
+    // запасной обмен (обычно доска обменяна до перерыва, решение 16): доступ следующим шагом — сначала экран обмена
     if (exchanged) exchangePending.current = true;
     await advance();
   }

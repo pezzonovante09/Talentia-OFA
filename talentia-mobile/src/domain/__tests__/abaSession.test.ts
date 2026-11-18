@@ -266,8 +266,8 @@ describe('порядок сессии', () => {
       'high_p', 'high_p',
       'baseline', 'high_p', 'baseline', 'high_p', 'baseline',
       'teaching', 'teaching', 'teaching', 'teaching', 'teaching',
-      // полная доска на перерыве по расписанию — обмен, затем доступ (№169)
-      'break', 'access',
+      // полная доска перед перерывом по расписанию — обмен и доступ (№169), затем перерыв (решение 16)
+      'access', 'break',
       'teaching', 'teaching', 'teaching', 'teaching', 'teaching',
       'generalization', 'maintenance',
       'end',
@@ -521,7 +521,8 @@ describe('остановка и закрытие', () => {
     });
     const k = kinds(steps);
     const brk = k.indexOf('break');
-    expect(k.slice(brk - 4, brk + 1)).toEqual(['correction', 'high_p', 'transfer', 'closing', 'break']);
+    // жетон за участие заполнил доску — обмен и доступ до перерыва (решение 16)
+    expect(k.slice(brk - 5, brk + 1)).toEqual(['correction', 'high_p', 'transfer', 'closing', 'access', 'break']);
     const partAt = state.events.findIndex((e) => e.kind === 'participation');
     expect(partAt).toBeGreaterThanOrEqual(0);
   });
@@ -556,18 +557,18 @@ describe('время и доска', () => {
   it('перерыв в рабочее время не идёт', () => {
     let st = begin([A, B], { A: acq(A), B: acq(B) }, { timeLimitMs: 8000 });
     // два жетона за пробы на доске из трёх: жетон за участие ложится в последнюю ячейку (на полной доске он не
-    // платится, №173), доска полна к перерыву — обмен и доступ
+    // платится, №173), доска полна к перерыву — обмен и доступ до него (решение 16)
     for (let i = 1; i <= 5; i += 1) st = answer(st, i * 1000, i <= 3 ? 'approx' : 'ok').state;
-    const brk = nextStep(st, 5000);
-    expect(brk.step.kind).toBe('break');
-    st = finishBreak(brk.state, 60_000).state;
-    // обмен на перерыве даёт доступ (№169); доступ в рабочее время не идёт, как и перерыв
-    const access = nextStep(st, 60_000);
+    // обмен перед перерывом даёт доступ (№169); доступ в рабочее время не идёт, как и перерыв
+    const access = nextStep(st, 5000);
     expect(access.step).toEqual({ kind: 'access', durationMs: EXCHANGE_ACCESS_MS[st.board.size] });
-    st = finishAccess(access.state, 100_000);
+    st = finishAccess(access.state, 45_000);
+    const brk = nextStep(st, 45_000);
+    expect(brk.step.kind).toBe('break');
+    st = finishBreak(brk.state, 100_000).state;
     const next = nextStep(st, 101_000).step as TrialStep;
     expect([next.kind, next.targetId]).toEqual(['trial', 'B']);
-    expect(st.events.map((e) => e.kind)).toEqual(['participation', 'break', 'exchange', 'access']);
+    expect(st.events.map((e) => e.kind)).toEqual(['participation', 'exchange', 'access', 'break']);
   });
 
   it('лимит взрослый может уменьшить, но не увеличить', () => {
@@ -811,8 +812,9 @@ describe('набор identify', () => {
   it('обучение набора: по 5 проб на цель, 8 + 7 вокруг перерыва, поле — карточки набора', () => {
     const { steps } = drive(begin(pool, acqAll(), { identifySets: withSet() }), () => 'ok');
     const k = kinds(steps);
+    // 8 проб, затем обмен и доступ полной доски перед перерывом (решение 16)
     const brk = k.indexOf('break');
-    expect([brk, k.filter((x) => x === 'teaching').length]).toEqual([8, 15]);
+    expect([brk, k[brk - 1], k.filter((x) => x === 'teaching').length]).toEqual([9, 'access', 15]);
     const first = trialSteps(steps)[0];
     expect(first.field).toHaveLength(3);
     expect(new Set(first.field!.map((id) => id.split('-')[0]))).toEqual(new Set(['I1', 'I2', 'I3']));

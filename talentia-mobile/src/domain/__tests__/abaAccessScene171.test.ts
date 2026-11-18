@@ -11,12 +11,11 @@ import { answerNext, BASE_MS, beginSession } from './abaSessionDriver';
 const T = BASE_MS + 2000;
 const iso = (ms: number) => new Date(ms).toISOString();
 
-/** Полная доска, перерыв по расписанию кончился в `T + 30 с`, шаг доступа показан там же (`accessStartedAt`). */
+/** Полная доска перед перерывом по расписанию: обмен до него (решение 16), шаг доступа показан в `T + 30 с` (`accessStartedAt`). */
 function inAccess(over: Parameters<typeof beginSession>[0] = {}): AbaSessionState {
   const worked = answerNext(beginSession(over), BASE_MS + 1000).state;
   const full = { ...worked, board: { ...worked.board, earned: worked.board.size } };
-  const shown = nextStep({ ...full, queue: [{ kind: 'break', maxMs: 30_000 }, ...full.queue] }, T).state;
-  const next = nextStep(finishBreak(shown, T + 30_000).state, T + 30_000);
+  const next = nextStep({ ...full, queue: [{ kind: 'break', maxMs: 30_000 }, ...full.queue] }, T + 30_000);
   expect(next.step.kind).toBe('access');
   expect(next.state.accessStartedAt).toBe(T + 30_000);
   return next.state;
@@ -64,9 +63,12 @@ describe('finishAccess со сценой (№171)', () => {
   });
 
   it('длинный шаг (обмен + кадр конца) не приближает лимит времени работы', () => {
-    const st = { ...inAccess(), timeLimitMs: 10_000 };
+    // до доступа отработано ~32 с (перерыва перед доступом больше нет — решение 16); сам шаг ~43 с вышел бы за 40
+    const st = { ...inAccess(), timeLimitMs: 40_000 };
     const after = finishAccess(st, STEP_END, { startedAt: SCENE_START, endedAt: SCENE_END });
-    expect(nextStep(after, STEP_END).step.kind).toBe('trial');
+    const brk = nextStep(after, STEP_END);
+    expect(brk.step.kind).toBe('break');
+    expect(nextStep(finishBreak(brk.state, STEP_END + 30_000).state, STEP_END + 30_000).step.kind).toBe('trial');
   });
 });
 

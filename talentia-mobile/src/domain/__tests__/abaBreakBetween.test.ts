@@ -107,12 +107,13 @@ describe('обмен на перерыве по просьбе ребёнка (�
     expect(done.state.board.earned).toBe(done.state.board.size);
   });
 
-  it('перерыв по расписанию при полной доске — обмен как раньше', () => {
+  it('перерыв по расписанию при полной доске — обмен и доступ до него (решение 16)', () => {
     const st = full(afterTrial());
     const scheduled: AbaSessionState = { ...st, queue: [{ kind: 'break', maxMs: 30_000 }, ...st.queue] };
     const step = nextStep(scheduled, T);
-    expect(step.step).toMatchObject({ kind: 'break', canExchange: true });
-    expect(finishBreak(step.state, T + 30_000).exchanged).toBeGreaterThan(0);
+    expect(step.step.kind).toBe('access');
+    expect(step.exchanged).toBeGreaterThan(0);
+    expect(step.state.queue[1]).toEqual({ kind: 'break', maxMs: 30_000 });
   });
 
   it('карточка после отказа (cardTaken) — тоже без обмена', () => {
