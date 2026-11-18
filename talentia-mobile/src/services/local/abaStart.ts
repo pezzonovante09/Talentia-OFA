@@ -31,6 +31,7 @@ import {
   type StartInput,
 } from '../../domain/abaSession';
 import type { RandomBytes } from '../../domain/ids';
+import { sanitizeSessionParams } from '../../domain/abaSessionParams';
 import { targetForBand } from '../../domain/abaTargetRules';
 import type { AbaConfig, AbaObserver, AbaPairingSession, AbaTarget } from '../../types/aba';
 import type { AgeBand } from '../../types/task';
@@ -284,9 +285,14 @@ export async function readAbaStartInput(
   const art = artFor(o.art);
   const block = abaBlockOf(await abaOverview(db, childId, art));
   if (block) return { kind: 'blocked', reason: block };
-  const targets = readyAbaTargets(ABA_TARGETS, art).map((t) => targetForBand(t, o.band));
+  // параметры специалиста (раздел «Для специалиста»): негодные — пропускаются, сессия идёт по умолчанию полосы
+  // (`startAbaSession` на них бросил бы, и занятие не началось бы вовсе)
+  const params = sanitizeSessionParams(await loadChildState(db, childId, 'abaSessionParams'), o.band);
+  // полоса параметров заменяет полосу профиля во всём сразу (№61): и цели, и доступ обмена — как доска сессии
+  const band = params?.paramsBand ?? o.band;
+  const targets = readyAbaTargets(ABA_TARGETS, art).map((t) => targetForBand(t, band));
   const tokenTraining = (await loadChildState(db, childId, 'tokenTraining')) ?? initialTokenTraining();
-  const accessMs = EXCHANGE_ACCESS_MS[workingBoardSize(tokenTraining, o.band)];
+  const accessMs = EXCHANGE_ACCESS_MS[workingBoardSize(tokenTraining, band)];
   const pool = poolFor(targets, o, accessMs);
   if (pool.length < MIN_REINFORCER_POOL) return { kind: 'blocked', reason: 'pool_small' };
   const board = await loadChildState(db, childId, 'abaBoard');
@@ -313,6 +319,7 @@ export async function readAbaStartInput(
       autoPlacement: true,
       observers: o.observers,
       primaryObserverId: o.primaryObserverId,
+      ...(params ? { params } : {}),
     },
   };
 }

@@ -23,6 +23,7 @@ const ALL: Record<ChildStateKey, true> = {
   abaRoutineRunInProgress: true,
   breakCard: true,
   abaRoutineSettingOpen: true,
+  abaSessionParams: true,
 };
 
 describe('ключи состояния ребёнка', () => {

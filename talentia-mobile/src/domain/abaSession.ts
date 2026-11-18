@@ -717,7 +717,10 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
   const setMembers = set ? set.memberIds.map((id) => input.targets.find((t) => t.id === id)!) : [];
   // смешанный блок (решение методиста 43): цели, освоенные по отдельности, вперемешку; 10 проб — оба слота обучения,
   // как у набора
-  const mixed = set ? null : mixedGroupDue(mixGroups(offered), states, input.day, (t) => counts(t, config));
+  const mixedDue = set ? null : mixedGroupDue(mixGroups(offered), states, input.day, (t) => counts(t, config));
+  // потолок нейтральных «без итога» (методист 2026-11-18): после двух подряд эта сессия идёт без блока — оба слота
+  // обучению; другая группа блок не подхватывает. Номер сессии в `yieldAt` сам истекает
+  const mixed = mixedDue?.some((t) => states[t.id].mixedCheck?.yieldAt === sessionIndex) ? null : mixedDue;
   const mixedIds = mixed?.map((t) => t.id) ?? [];
   const teaching = set ? setMembers.filter((t) => TEACHING_PHASES.has(states[t.id].phase)) : mixed ? [] : regular;
   // 5–6: базовая линия занимает слоты обучения — иначе сессия малыша вдвое длиннее нормы
@@ -3031,6 +3034,10 @@ function mixedNoVerdictReason(state: AbaSessionState, id: string): MixedNoVerdic
  * участникам флаг `mixed_not_established`, решает специалист; обучение и поддержание идут как обычно. Нейтральная
  * причина (остановка взрослым, бездействие, сворачивание, ошибка) не считается и счёт не сбрасывает. Сессия с итогом
  * по всем — счётчик снимается. Блок не начался — сессия нейтральна, события нет.
+ *
+ * Потолок нейтральных (методист 2026-11-18): нейтральные сессии без итога считаются отдельно (`neutralNoVerdict`); две
+ * подряд — следующая сессия идёт без блока (`yieldAt`, оба слота — обучению), счётчик снят, флага нет, событие —
+ * `yielded: true`. Сессия с итогом по кому-то из участников или засчитанная «без итога» счёт снимает.
  */
 function mixedNoVerdict(
   state: AbaSessionState,
@@ -3051,18 +3058,26 @@ function mixedNoVerdict(
   const counted = reason !== undefined && MIXED_NO_VERDICT_COUNTED.has(reason);
   const n = Math.max(0, ...ids.map((id) => state.states[id].mixedCheck?.noVerdict ?? 0)) + 1;
   const dropped = counted && n >= MIXED_BLOCK.noVerdictSessions;
+  // потолок нейтральных (методист 2026-11-18): своя серия, отдельно от `noVerdict`; итог по кому-то из участников или
+  // засчитанная «без итога» её снимает; вторая подряд — следующая сессия без блока, счётчик снят, флага нет
+  const judgedAny = due.some((id) => judged.has(id));
+  const neutral = Math.max(0, ...ids.map((id) => state.states[id].mixedCheck?.neutralNoVerdict ?? 0)) + 1;
+  const yielded = missing.length > 0 && !counted && !judgedAny && neutral >= MIXED_BLOCK.neutralNoVerdictSessions;
   for (const id of ids) {
     const s = states[id];
     // провал вернул цель в обучение — её блок кончился, счётчика нет
     if (!s || !MASTERED_PHASES.has(s.phase)) continue;
-    const { noVerdict: _n, ...check } = s.mixedCheck ?? { days: [] };
+    const { noVerdict: _n, neutralNoVerdict: _nn, yieldAt: _y, ...check } = s.mixedCheck ?? { days: [] };
+    const m = s.mixedCheck;
     if (!missing.length) {
-      if (s.mixedCheck?.noVerdict !== undefined) states[id] = { ...s, mixedCheck: check };
+      if (m?.noVerdict !== undefined || m?.neutralNoVerdict !== undefined || m?.yieldAt !== undefined) states[id] = { ...s, mixedCheck: check };
     } else if (!counted) {
-      // нейтрально: счёт как до сессии (зачёт или провал участника его не снимают)
+      // нейтрально: счёт `noVerdict` как до сессии (зачёт или провал участника его не снимают)
       const before = state.states[id].mixedCheck?.noVerdict;
-      if (s.mixedCheck?.noVerdict === before) continue;
-      states[id] = { ...s, mixedCheck: before === undefined ? check : { ...check, noVerdict: before } };
+      const base: NonNullable<AbaTargetState['mixedCheck']> = before === undefined ? check : { ...check, noVerdict: before };
+      const next: NonNullable<AbaTargetState['mixedCheck']> = judgedAny ? base : yielded ? { ...base, yieldAt: state.sessionIndex + 1 } : { ...base, neutralNoVerdict: neutral };
+      if (m?.noVerdict === next.noVerdict && m?.neutralNoVerdict === next.neutralNoVerdict && m?.yieldAt === next.yieldAt) continue;
+      states[id] = { ...s, mixedCheck: next };
     } else if (dropped) {
       states[id] = {
         ...s,
@@ -3084,6 +3099,7 @@ function mixedNoVerdict(
     counted,
     targetIds: missing,
     ...(dropped ? { dropped: true as const } : {}),
+    ...(yielded ? { yielded: true as const } : {}),
   };
 }
 
