@@ -480,7 +480,7 @@ function runReal(states: Record<string, AbaTargetState>, day: string, index: num
       st = accessShown(st);
       st = finishAccess(st, (now += step.durationMs));
     } else if (step.kind === 'end') break;
-    else if (step.kind === 'adult_finish_chain') throw new Error('цепочек в match нет');
+    else if (step.kind === 'adult_finish_chain' || step.kind === 'sample_touch') throw new Error('цепочек и шага «коснись» здесь нет');
     else {
       const n = seen.get(step.targetId) ?? 0;
       const mixedTrial = step.trialKind === 'verification';

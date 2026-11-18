@@ -16,6 +16,7 @@ import * as abaResume from '../services/local/abaResume';
 import { loadAbaStart } from '../services/local/abaStart';
 import * as commit from '../services/local/commit';
 import { saveAbaSessionStep } from '../services/local/commit';
+import { initialSampleTouch } from '../domain/abaSampleTouch';
 import { childStateUpdatedAt, loadChildState, saveChildState } from '../services/local/childState';
 import { asAbaWriter, memoryDb } from '../services/local/__tests__/nodeSql';
 import type { SqlDb, SqlValue } from '../services/local/sql';
@@ -125,6 +126,8 @@ export function registerAbaSessionHooks() {
     db = await memoryDb();
     await grantAbaProcessing(db, { childId: KID, accountId: 'acc', lang: 'ru', at: new Date(clock.now() - 60_000).toISOString(), randomBytes: (n) => new Uint8Array(n).fill(7) });
     await asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'tokenTraining', { ...initialTokenTraining(), pairingDone: true, stage: 1 }, new Date(clock.now()).toISOString()));
+    // шаг «коснись картинки» пройден: прежние сценарии идут сразу к пробам `match` (шаг — `session.sampleTouch.test.tsx`)
+    await asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'sampleTouch', { ...initialSampleTouch(), passed: true }, new Date(clock.now()).toISOString()));
     useAccount.setState({ db, accountId: 'acc', status: 'ready' });
     useChildSession.setState({ childId: KID, mode: 'account', openedForAba: false });
     useAbaRun.getState().set({ config: 'with_adult', observers: [{ id: OBS, role: 'parent', trained: false }], primaryObserverId: OBS });

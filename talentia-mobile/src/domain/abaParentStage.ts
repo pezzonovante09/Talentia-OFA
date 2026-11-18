@@ -8,12 +8,18 @@
  * умеет» → первые пробы без жетонов → обучение с жетонами → повторение освоенного.
  */
 import type { AbaTargetState } from '../types/aba';
+import type { SampleTouchState } from './abaSampleTouch';
 import { MASTERED_PHASES, type AbaSessionState } from './abaSession';
 import { PAIRING } from './abaTokenTraining';
 
 export type ParentStage =
   /** Знакомство с жетонами: `n` — какое по счёту удачное подряд будет следующим; `reset` — серия уже сбрасывалась. */
   | { kind: 'pairing'; n: number; of: number; reset: boolean }
+  /**
+   * Шаг «коснись картинки» (решение 1, часть В): перед первыми заданиями ребёнок учится касаться картинки сверху;
+   * `returned` — вернулся к шагу после промахов на проверках.
+   */
+  | { kind: 'sample_touch'; returned: boolean }
   /** Проверка «что ребёнок уже умеет»: без подсказок и жетонов, первая ошибка заканчивает проверку. */
   | { kind: 'placement'; targetId: string }
   /** Первые пробы цели без помощи и без жетонов — чтобы знать, с чего начать учить. */
@@ -38,6 +44,8 @@ export type ParentStageView = {
   breakCardTraining: boolean;
   /** Будут ли жетоны: `false` — занятие-проверка без жетонов; `null` — не говорим (повторение, неизвестно). */
   tokens: boolean | null;
+  /** Прошлое занятие закончилось «внимание к образцу не установлено» — пояснение взрослому (решение 1, часть В). */
+  observingNote?: boolean;
 };
 
 export type PairingProgress = { pairingDone: boolean; pairingStreak: number; pairingSessions: number };
@@ -55,10 +63,12 @@ export function hasPlannedBreak(plan: Pick<AbaSessionState, 'queue'>): boolean {
 
 /** Этап по плану следующего занятия; `states` — состояния целей ребёнка до занятия (для «всё освоено»). */
 export function stageOfPlan(
-  plan: Pick<AbaSessionState, 'placementTargetIds' | 'baselineTargetIds' | 'teachingTargetIds' | 'maintenanceTargetIds' | 'queue' | 'mixedTargetIds'>,
+  plan: Pick<AbaSessionState, 'placementTargetIds' | 'baselineTargetIds' | 'teachingTargetIds' | 'maintenanceTargetIds' | 'queue' | 'mixedTargetIds' | 'sampleTouch'>,
   states: Readonly<Record<string, AbaTargetState>>,
   targetIds: readonly string[],
 ): ParentStage {
+  // шаг «коснись картинки» ребёнок встретит первым
+  if (plan.queue.some((q) => q.kind === 'sample_touch')) return { kind: 'sample_touch', returned: plan.sampleTouch?.returned === true };
   const [placement] = plan.placementTargetIds;
   if (placement) return { kind: 'placement', targetId: placement };
   const baseline = plan.baselineTargetIds.find((id) => !plan.placementTargetIds.includes(id));
@@ -72,6 +82,11 @@ export function stageOfPlan(
   }
   if (plan.maintenanceTargetIds.length) return { kind: 'maintenance', targetIds: [...plan.maintenanceTargetIds] };
   return { kind: 'unknown' };
+}
+
+/** «Внимание к образцу не установлено» итогом прошлого занятия: `nextSessionIndex` — номер следующего. */
+export function observingNoteOf(st: SampleTouchState | undefined, nextSessionIndex: number): boolean {
+  return st?.observingNotEstablishedSession !== undefined && st.observingNotEstablishedSession === nextSessionIndex - 1;
 }
 
 /** Обучение рядом с проверкой или первыми пробами в одном занятии; `null` — его нет или оно и есть главный этап. */

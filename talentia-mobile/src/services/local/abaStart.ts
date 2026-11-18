@@ -17,8 +17,9 @@ import { sessionSignals, type SessionSignal, type SignalSession } from '../../do
 import { initialTokenTraining, workingBoardSize, EXCHANGE_ACCESS_MS } from '../../domain/abaTokenTraining';
 import { boardRevOf, liveBoardOf, MIN_REINFORCER_POOL } from '../../domain/abaTokens';
 import { lastSessionSummary, parentTargetStatus, sortForParent, type LastSessionSummary, type ParentTargetStatus } from '../../domain/abaParentProgress';
-import { alsoTeachingOf, pairingStage, stageOfPlan, tokensOf, type ParentStageView } from '../../domain/abaParentStage';
+import { alsoTeachingOf, observingNoteOf, pairingStage, stageOfPlan, tokensOf, type ParentStageView } from '../../domain/abaParentStage';
 import { BREAK_CARD_MAX_OPPORTUNITIES, breakCardPlan, initialBreakCard } from '../../domain/abaBreakCard';
+import { initialSampleTouch } from '../../domain/abaSampleTouch';
 import { aloneFormatKey, formatUnlockedAlone } from '../../domain/abaPlacement';
 import { mixGroups } from '../../domain/abaMixedBlock';
 import {
@@ -262,7 +263,8 @@ export async function previewParentStage(db: SqlDb, childId: string, o: StartOpt
     const plan = startAbaSession(start.input);
     const stage = stageOfPlan(plan, start.input.states, start.input.targets.map((t) => t.id));
     const alsoTeaching = alsoTeachingOf(plan, stage);
-    return { stage, alsoTeaching, breakCardTraining, tokens: tokensOf(stage, alsoTeaching) };
+    const observingNote = observingNoteOf(start.input.sampleTouch, start.input.sessionIndex);
+    return { stage, alsoTeaching, breakCardTraining, tokens: tokensOf(stage, alsoTeaching), ...(observingNote ? { observingNote } : {}) };
   } catch (e) {
     // превью — пояснение, а не занятие: сбой чтения не держит экран, карточка остаётся со строкой «Как проходят занятия»
     if (__DEV__) console.warn('aba-stage-preview', e);
@@ -313,6 +315,8 @@ export async function readAbaStartInput(
       autoPlacement: true,
       observers: o.observers,
       primaryObserverId: o.primaryObserverId,
+      // шаг «коснись картинки»: нет записи — не пройден (без миграции, методист 2026-11-18)
+      sampleTouch: (await loadChildState(db, childId, 'sampleTouch')) ?? initialSampleTouch(),
     },
   };
 }

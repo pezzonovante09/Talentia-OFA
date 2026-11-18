@@ -31,6 +31,8 @@ export function stageStepOf(kind: ParentStage['kind']): StageStep | null {
   switch (kind) {
     case 'pairing':
       return 'pairing';
+    // шаг «коснись картинки» — перед первыми заданиями, в колонке «Проверка»
+    case 'sample_touch':
     case 'placement':
     case 'baseline':
       return 'placement';

@@ -105,7 +105,7 @@ function runSession(c: Child, policy: (trialNo: number, kind: string) => Act): C
       now += step.durationMs;
       st = finishAccess(st, now);
     } else if (step.kind === 'end') break;
-    else if (step.kind === 'adult_finish_chain') throw new Error('цепочек в match нет');
+    else if (step.kind === 'adult_finish_chain' || step.kind === 'sample_touch') throw new Error('цепочек и шага «коснись» здесь нет');
     else {
       const act = step.trialKind === 'high_p' || step.trialKind === 'closing' ? 'correct' : policy(trialNo, step.trialKind);
       const run = startMatchTrial({ step, target: st.targets[step.targetId], config: 'with_adult', seed: st.seed, trialId: `t${(seq += 1)}`, sessionId: st.sessionId, index: st.trials.length, shownAt: now });

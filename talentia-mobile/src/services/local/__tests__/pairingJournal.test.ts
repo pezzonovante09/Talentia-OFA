@@ -668,7 +668,8 @@ describe('накат миграции 15 → 16 на базе с данными'
     const last = await revokeTriggerSql(db);
     expect(tablesIn(last).slice(0, tablesIn(v15).length)).toEqual(tablesIn(v15));
     expect(tablesIn(last)).toEqual(expect.arrayContaining(['aba_pairing_sessions', 'aba_session_tails']));
-    expect(keysIn(last)).toEqual(keysIn(v15));
+    // миграция 19 добавила ключ sampleTouch (шаг «коснись картинки»); прочие ключи те же
+    expect(keysIn(last).filter((k) => k !== 'sampleTouch')).toEqual(keysIn(v15));
   });
 
   it('шаг 15 → 16: прочие триггеры версии 15 не тронуты, добавлены ровно три триггера журнала сопряжения', async () => {
@@ -689,8 +690,9 @@ describe('накат миграции 15 → 16 на базе с данными'
     const before = await triggers(db);
     await migrate(db);
     const after = await triggers(db);
-    const names15 = new Set(before.map((t) => t.name));
-    expect(after.filter((t) => names15.has(t.name))).toEqual(before);
+    // триггеры ключей ABA-состояния пересоздала миграция 19 (ключ sampleTouch) — вне сравнения
+    const names15 = new Set(before.filter((t) => !t.name.startsWith('child_state_aba_need_consent_')).map((t) => t.name));
+    expect(after.filter((t) => names15.has(t.name))).toEqual(before.filter((t) => names15.has(t.name)));
   });
 
   it('после полного наката отзыв блокирует каждая таблица триггера (включая пришедшие после 16) и каждый ключ состояния по отдельности', async () => {

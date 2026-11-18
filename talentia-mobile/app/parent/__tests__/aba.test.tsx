@@ -21,6 +21,7 @@ import { nextStep, startAbaSession } from '../../../src/domain/abaSession';
 import { CURRENT_CONSENT_TEXTS } from '../../../src/domain/consentTexts';
 import ru from '../../../src/i18n/locales/ru.json';
 import { initialTokenTraining } from '../../../src/domain/abaTokenTraining';
+import { initialSampleTouch } from '../../../src/domain/abaSampleTouch';
 import { createLocalAccount } from '../../../src/services/local/account';
 import { abaIntroSeen, markAbaIntroSeen } from '../../../src/services/local/abaIntro';
 import { abaConsentTextVersion, grantAbaProcessing } from '../../../src/services/local/abaConsent';
@@ -227,10 +228,44 @@ describe('«Где мы сейчас» и введение (№202)', () => {
     expect(router.push).toHaveBeenCalledWith('/parent/aba/intro');
   });
 
-  it('знакомство пройдено: проверка «По форме» без жетонов и обучение карточке «перерыв»', async () => {
+  it('знакомство пройдено, шаг «коснись картинки» не пройден: сначала карточка «перерыв», потом шаг (решение 1, часть В)', async () => {
     await grant();
     await pair();
     await observers(OBS);
+    await renderAba();
+    await waitFor(() => expect(screen.getByTestId('aba-where-line-0')).toHaveTextContent('Сначала ребёнок научится просить перерыв карточкой с двумя полосками.'));
+    expect(screen.getByTestId('aba-where-line-1')).toHaveTextContent(ru.parent.aba.where.sampleTouch);
+    expect(screen.queryByTestId('aba-where-line-2')).toBeNull();
+    // шаг — перед первыми заданиями, в колонке «Проверка»
+    expect(screen.getByTestId('aba-stage-strip-placement-now')).toBeTruthy();
+  });
+
+  it('возврат к шагу после промахов на проверках — своя строка взрослому', async () => {
+    await grant();
+    await pair();
+    await observers(OBS);
+    await asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'sampleTouch', { ...initialSampleTouch(), returned: true }, iso()));
+    await renderAba();
+    await waitFor(() => expect(screen.getByTestId('aba-where-line-1')).toHaveTextContent(ru.parent.aba.where.sampleTouchAgain));
+  });
+
+  it('прошлое занятие: «внимание к образцу не установлено» — пояснение взрослому перед этапом', async () => {
+    await grant();
+    await pair();
+    await observers(OBS);
+    await asAbaWriter(db, KID, async (tx) => {
+      await saveChildState(tx, KID, 'sampleTouch', { ...initialSampleTouch(), passed: true, observingNotEstablishedSession: 2 }, iso());
+      await saveChildState(tx, KID, 'abaSessionIndex', 3, iso());
+    });
+    await renderAba();
+    await waitFor(() => expect(screen.getByTestId('aba-where-line-1')).toHaveTextContent(ru.parent.aba.where.observingNotEstablished));
+  });
+
+  it('знакомство пройдено, шаг пройден: проверка «По форме» без жетонов и обучение карточке «перерыв»', async () => {
+    await grant();
+    await pair();
+    await observers(OBS);
+    await asAbaWriter(db, KID, (tx) => saveChildState(tx, KID, 'sampleTouch', { ...initialSampleTouch(), passed: true }, iso()));
     await renderAba();
     await waitFor(() => expect(screen.getByTestId('aba-where-line-0')).toHaveTextContent('Сначала ребёнок научится просить перерыв карточкой с двумя полосками.'));
     expect(screen.getByTestId('aba-where-line-1')).toHaveTextContent(/Проверяем, что ребёнок уже умеет: «По форме»/);
