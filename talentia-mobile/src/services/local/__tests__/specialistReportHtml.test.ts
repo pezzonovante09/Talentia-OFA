@@ -2,7 +2,8 @@
  * Читаемый отчёт специалисту (вопрос 118): `specialistReportHtml` по выдуманной выгрузке (`specialistReportFixture`).
  * Проверяется: шапка («Р1», период, число занятий, режим, кто ведёт метками, знакомство с жетонами), таблица
  * заданий словами, график со столбцами, линией критерия из `summaries.criterion` и отметкой базовой линии,
- * таблица по датам, таблица занятий, сигналы словами или «Сигналов нет»; экранирование; нет имени ребёнка, uuid
+ * таблица по датам, таблица занятий, сигналы словами или «Сигналов нет»; журнал «Для специалиста» — таблица
+ * «Изменения условий», линии смены условий на графиках и текущие параметры в шапке; экранирование; нет имени ребёнка, uuid
  * записей и наблюдателя, сырых ключей локали, скриптов и внешних ресурсов. Образец для владельца пишется в
  * `docs/aba-center/specialist-report-generated-sample.html` при `WRITE_REPORT_SAMPLE=1`.
  */
@@ -10,7 +11,7 @@ import fs from 'fs';
 import path from 'path';
 
 import type { SpecialistExport } from '../purge';
-import { escapeHtml, specialistReportHtml } from '../specialistReportHtml';
+import { changeLineSlots, escapeHtml, specialistReportHtml } from '../specialistReportHtml';
 import { reportT } from '../../../test/reportT';
 import { FIXTURE_OBSERVER, fabricatedExport, fixtureId } from '../../../test/specialistReportFixture';
 
@@ -27,7 +28,7 @@ describe('specialistReportHtml: содержание', () => {
   it('шапка: Р1 без имени, период, число занятий, режим, кто ведёт меткой, знакомство с жетонами, день выгрузки', () => {
     expect(plain).toContain('Ребёнок: Р1 (имени в файле нет)');
     expect(plain).toContain('3.11.2026 – 14.11.2026');
-    expect(plain).toContain('6 занятий');
+    expect(plain).toContain('занятий: 6');
     expect(plain).toContain('режим: Со взрослым');
     expect(plain).toContain('ведёт: O1 — Родитель, обучение у специалиста пройдено');
     expect(plain).toContain('знакомство с жетонами пройдено 31.10.2026');
@@ -36,7 +37,7 @@ describe('specialistReportHtml: содержание', () => {
 
   it('задания — состояние словами: освоено с датой, в обучении — чего не хватает до критерия, без занятий — базовая линия', () => {
     expect(plain).toMatch(/Одинаковые из двух освоено 14\.11/);
-    expect(plain).toContain('По форме учим; старт с подсказки 0; занятий подряд с 80 % и выше: 0 из 3; ещё нужно: 3 занятия подряд с 80 % и выше');
+    expect(plain).toContain('По форме учим; старт с подсказки 0; занятий подряд с 80 % и выше: 0 из 3; ещё нужно: занятий подряд с 80 % и выше: 3');
     expect(plain).toContain('Одинаковые из трёх базовая линия');
   });
 
@@ -56,17 +57,17 @@ describe('specialistReportHtml: содержание', () => {
   });
 
   it('таблица по датам: доля в зачёт, старт с подсказки в начале → в конце, задержка, медианы, пробы на новых карточках', () => {
-    expect(plain).toContain('база: 3 из 5 сам');
+    expect(plain).toContain('база: 3 из 5 самост.');
     expect(plain).toContain('20 % из 5');
     expect(plain).toContain('3 → 0');
     expect(plain).toContain('Время до касания образца, медиана, с 2,6 2,4 2,0 1,6 1,5 1,3');
-    expect(plain).toContain('Пробы на новых карточках — — — 1 из 1 сам 0 из 1 сам 1 из 1 сам');
+    expect(plain).toContain('Пробы на новых карточках — — — 1 из 1 самост. 0 из 1 самост. 1 из 1 самост.');
     expect(plain).toContain('Для критерия — серия прервана серия прервана в серию в серию в серию');
   });
 
   it('занятия: дата, длительность, попытки (базовая линия, после ошибки), пробы, перерывы по карточке, «Отказ»', () => {
-    expect(plain).toContain('3.11 5 мин базовая линия: 5 (3 сам) — 0 0');
-    expect(plain).toContain('7.11 8 мин 5 — 1, по карточке 1 0');
+    expect(plain).toContain('3.11 5 мин базовая линия: 5 (3 самост.) — 0 0');
+    expect(plain).toContain('7.11 8 мин 5 — 1, из них карточкой: 1 0');
     expect(plain).toContain('10.11 8 мин 5 + 1 после ошибки 1 0 1');
   });
 
@@ -105,8 +106,77 @@ describe('specialistReportHtml: содержание', () => {
     for (const f of [...flags, 'token_training_stalled']) expect(p).not.toContain(f);
   });
 
-  it('ссылка на файл для программы — по имени', () => {
-    expect(plain).toContain('Полные записи — в файле для программы talentia-aba-2026-11-15.json.');
+  it('ссылка на файл данных — по имени', () => {
+    expect(plain).toContain('Полные записи — в файле данных talentia-aba-2026-11-15.json.');
+  });
+
+  it('шапка: сохранённые параметры занятий простыми словами; без параметров — по умолчанию полосы профиля', () => {
+    expect(plain).toContain(
+      'условия занятий, сохранённые в разделе «Для специалиста»: полоса параметров как в профиле, длительность 10 мин, заданий в обучении за занятие: по умолчанию, время на ответ: по умолчанию',
+    );
+    const data = fabricatedExport();
+    const custom = { ...data, state: { ...data.state, abaSessionParams: { paramsBand: '9-10', maxTeachingTargets: 1, responseWindowMs: { match: 7500 } } } };
+    expect(text(render(custom))).toContain(
+      'полоса параметров 9–10, длительность по умолчанию, заданий в обучении за занятие: 1, время на ответ (сопоставить): 7,5 с',
+    );
+    const { abaSessionParams: _p, ...without } = data.state;
+    expect(text(render({ ...data, state: without }))).toContain('условия занятий: по умолчанию для полосы профиля');
+  });
+
+  it('«Изменения условий»: день, кто — со слов, что изменено, было → стало словами, без мс и null', () => {
+    expect(plain).toContain('Изменения условий');
+    expect(plain).toContain('Кто менял — со слов: приложение не проверяет, кто держит телефон.');
+    expect(plain).toContain('1.11 специалист (со слов) заданий в обучении за занятие по умолчанию 1');
+    expect(plain).toContain('7.11 специалист (со слов) длительность занятия по умолчанию 10 мин');
+    expect(plain).toContain('10.11 специалист (со слов) обучение наблюдателя у специалиста (Родитель) нет да');
+    expect(plain).toContain('12.11 специалист (со слов) заданий в обучении за занятие 1 по умолчанию');
+    expect(plain).not.toContain('600000');
+  });
+
+  it('«Изменения условий»: окно ответа, полоса, флаг с целью — словами; без журнала — «Изменений условий в файле нет.»', () => {
+    const data = fabricatedExport();
+    const more = {
+      ...data,
+      abaSpecialistEvents: [
+        { order: 1, day: '2026-11-04', role: 'specialist', claimed: true, field: 'responseWindowMs.match', from: null, to: 8000 },
+        { order: 2, day: '2026-11-04', role: 'specialist', claimed: true, field: 'paramsBand', from: null, to: '7' },
+        { order: 3, day: '2026-11-13', role: 'specialist', claimed: true, field: 'flag.assent_concern', from: true, to: false, targetIds: ['match-shape'] },
+        { order: 4, day: '2026-11-13', role: 'specialist', claimed: true, field: 'flag.mixed_not_established', from: true, to: false, targetIds: ['match-same-2', 'match-shape'] },
+      ],
+    };
+    const p = text(render(more));
+    expect(p).toContain('4.11 специалист (со слов) время на ответ (сопоставить) по умолчанию 8 с');
+    expect(p).toContain('4.11 специалист (со слов) полоса параметров как в профиле 7');
+    expect(p).toContain('13.11 специалист (со слов) сигнал просмотрен: ребёнок часто отказывается: занятия прерываются — По форме да нет');
+    expect(p).toContain('13.11 специалист (со слов) проверка вперемешку назначена снова (сигнал «снята с плана») — Одинаковые из двух, По форме да нет');
+    expect(text(render({ ...data, abaSpecialistEvents: [] }))).toContain('Изменений условий в файле нет.');
+  });
+
+  it('графики: линия смены условий в день изменения, подпись — день; изменения других целей и до первого столбца — не рисуются', () => {
+    const svgs = html.match(/<svg[\s\S]*?<\/svg>/g) ?? [];
+    const lines = (svg = '') => (svg.match(/class="cc"/g) ?? []).length;
+    // «Одинаковые из двух»: 7.11, 10.11, 12.11; 1.11 — раньше первого занятия
+    expect(lines(svgs[0])).toBe(3);
+    for (const d of ['>7.11<', '>10.11<', '>12.11<']) expect(svgs[0]).toContain(d);
+    // «По форме»: занятия с 12.11 — линия только у первого столбца
+    expect(lines(svgs[1])).toBe(1);
+    expect(plain).toContain('Точечная вертикальная линия с датой — день изменения условий');
+    const data = fabricatedExport();
+    const own = { ...data, abaSpecialistEvents: [{ order: 1, day: '2026-11-14', role: 'specialist', claimed: true, field: 'flag.ioa_low', from: true, to: false, targetIds: ['match-shape'] }] };
+    const [a, b] = render(own).match(/<svg[\s\S]*?<\/svg>/g) ?? [];
+    expect([lines(a), lines(b)]).toEqual([0, 1]);
+    // без линий — без подписи о линиях
+    expect(text(render({ ...data, abaSpecialistEvents: [] }))).not.toContain('Точечная вертикальная линия');
+  });
+
+  it('changeLineSlots: перед первым столбцом с днём не раньше изменения; после последнего — у края; раньше первого — нет', () => {
+    const bars = ['2026-11-03', '2026-11-05', '2026-11-05', '2026-11-10'];
+    expect(changeLineSlots(bars, ['2026-11-01'])).toEqual([]);
+    expect(changeLineSlots(bars, ['2026-11-03'])).toEqual([{ slot: 0, days: ['2026-11-03'] }]);
+    expect(changeLineSlots(bars, ['2026-11-04', '2026-11-05'])).toEqual([{ slot: 1, days: ['2026-11-04', '2026-11-05'] }]);
+    expect(changeLineSlots(bars, ['2026-11-12'])).toEqual([{ slot: 4, days: ['2026-11-12'] }]);
+    expect(changeLineSlots(bars, ['2026-11-07', '2026-11-07'])).toEqual([{ slot: 3, days: ['2026-11-07'] }]);
+    expect(changeLineSlots([null], ['2026-11-07'])).toEqual([]);
   });
 });
 
@@ -138,6 +208,10 @@ describe('specialistReportHtml: приватность и безопасност
     const hostile = {
       ...data,
       abaSessions: (data.abaSessions as Record<string, unknown>[]).map((s) => ({ ...s, primaryObserverId: evil })),
+      abaSpecialistEvents: [
+        { order: 1, day: '2026-11-08', role: evil, claimed: true, field: evil, from: evil, to: evil },
+        { order: 2, day: '2026-11-09', role: 'specialist', claimed: true, field: 'responseWindowMs.match', from: null, to: evil },
+      ],
       summaries: {
         ...data.summaries,
         byTarget: [...data.summaries.byTarget, { ...data.summaries.byTarget[0], targetId: `x"${evil}`, catalogMissing: true as const, state: { ...data.summaries.byTarget[0].state!, flags: [evil as never] } }],
@@ -178,7 +252,7 @@ describe('specialistReportHtml: приватность и безопасност
 
   it('плашка образца — только с demo', () => {
     expect(html).not.toContain('class="demo"');
-    expect(render(undefined, { demo: true })).toContain('Образец на выдуманных данных');
+    expect(render(undefined, { demo: true })).toContain('Пример на выдуманных данных');
   });
 });
 

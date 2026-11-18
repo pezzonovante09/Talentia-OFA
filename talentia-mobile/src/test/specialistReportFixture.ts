@@ -4,6 +4,11 @@
  * в обучении с сигналом. Сводки считает настоящая `specialistSummaries` из проб и записей сессий; записи
  * `abaSessions` / `abaTrials` — в том виде, в каком их пишет `exportForSpecialist` (дни, длительность, смещения
  * в мс, метка наблюдателя `O1`). Идентификаторы записей — UUIDv4 (в файле не заменяются): отчёт не должен их показывать.
+ *
+ * Журнал «Для специалиста» согласован с записями: до первого занятия — одна цель в обучении (занятия до 12.11 учат
+ * только «Одинаковые из двух»), 7.11 — длительность 10 минут (все занятия короче), 10.11 — наблюдатель-родитель
+ * обучен (в состоянии `trained: true`), 12.11 — снова по умолчанию две цели (в этот день начинается «По форме»).
+ * Окно ответа не менялось: у проб `responseWindowMs` 10 000 мс с начала. Текущие параметры — только длительность.
  */
 import { ABA_TARGETS } from '../content/aba';
 import { initialTargetState } from '../domain/abaPrompting';
@@ -54,6 +59,14 @@ function trialsOf(sessionId: string, specs: TrialSpec[]): AbaTrial[] {
 }
 
 const rep = <T>(n: number, x: T): T[] => Array.from({ length: n }, () => x);
+
+/** Журнал «Для специалиста» в виде файла (`exportForSpecialist`): день, роль со слов, поле, было → стало. */
+export const FIXTURE_CHANGES = [
+  { order: 1, day: '2026-11-01', role: 'specialist', claimed: true, field: 'maxTeachingTargets', from: null, to: 1 },
+  { order: 2, day: '2026-11-07', role: 'specialist', claimed: true, field: 'timeLimitMs', from: null, to: 600_000 },
+  { order: 3, day: '2026-11-10', role: 'specialist', claimed: true, field: 'observerTrained', from: false, to: true, observerRole: 'parent' },
+  { order: 4, day: '2026-11-12', role: 'specialist', claimed: true, field: 'maxTeachingTargets', from: 1, to: null },
+];
 
 type SessionSpec = { day: string; minutes: number; trials: TrialSpec[]; events?: AbaSessionEvent[]; targets?: string[]; endReason?: AbaSession['endReason'] };
 
@@ -202,9 +215,10 @@ export function fabricatedExport(): SpecialistExport {
     abaRoutineRuns: [],
     abaReinforcerChoices: [],
     abaPairingSessions: [{ id: fixtureId(900), day: '2026-10-31', durationSec: 240, config: 'with_adult', endReason: 'completed', primaryObserverId: 'O1' }],
-    abaSpecialistEvents: [],
+    abaSpecialistEvents: FIXTURE_CHANGES,
     summaries,
     state: {
+      abaSessionParams: { timeLimitMs: 600_000 },
       abaTargets: states,
       abaObservers: [{ id: 'O1', role: 'parent', trained: true }],
       tokenTraining: { pairingDone: true, pairingConfirmed: { observerId: 'O1', byRole: 'owner', at: '2026-10-31' }, pairingSessions: 2, pairingStreak: 2, stage: 5, atStage: [], flags: [] },

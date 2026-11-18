@@ -28,7 +28,7 @@ import { abaConsentTextVersion, grantAbaProcessing } from '../../../src/services
 import { appendPairingSession, sessionsOf } from '../../../src/services/local/abaLog';
 import { abaBlockOf, abaOverview, DEV_PLACEHOLDER_ART, finishInProgressSession, loadAbaStart } from '../../../src/services/local/abaStart';
 import { ABA_DELETED_KEYS, childStateUpdatedAt, loadChildState, saveChildState } from '../../../src/services/local/childState';
-import { saveAbaSessionStep, setAbaPaused } from '../../../src/services/local/commit';
+import { saveAbaSessionStep, setAbaPaused, setAbaSessionParams } from '../../../src/services/local/commit';
 import { appendConsentEvent, readConsentLog } from '../../../src/services/local/consentLog';
 import { asAbaWriter, memoryDb, writeLessonRun, writeLessonState } from '../../../src/services/local/__tests__/nodeSql';
 import { newProfile } from '../../../src/services/local/profiles';
@@ -78,6 +78,7 @@ jest.mock('../../../src/services/local/shareSpecialistExport', () => {
       return flags.enabled;
     },
     shareSpecialistExport: jest.fn(async () => 'shared'),
+    resetPreparedExport: jest.fn(),
   };
 });
 jest.mock('../../../src/services/local/buildInfo', () => ({ buildTime: () => null }));
@@ -88,7 +89,11 @@ jest.mock('../../../src/assets/registry', () => {
 });
 const { ABA_OBJECT_ART: objectArt } = jest.requireMock('../../../src/assets/registry') as { ABA_OBJECT_ART: Record<string, unknown> };
 
-const { __flags: exportFlags, shareSpecialistExport } = jest.requireMock('../../../src/services/local/shareSpecialistExport') as { __flags: { enabled: boolean }; shareSpecialistExport: jest.Mock };
+const { __flags: exportFlags, shareSpecialistExport, resetPreparedExport } = jest.requireMock('../../../src/services/local/shareSpecialistExport') as {
+  __flags: { enabled: boolean };
+  shareSpecialistExport: jest.Mock;
+  resetPreparedExport: jest.Mock;
+};
 const { __router: router, __params: params, __focus: focus } = jest.requireMock('expo-router') as {
   __router: { push: jest.Mock; back: jest.Mock; replace: jest.Mock; dismissAll: jest.Mock };
   __params: { action: string | undefined };
@@ -1397,7 +1402,7 @@ describe('«Занятия ABA»: согласие, пауза, файл, отз
   });
 
   // --- файл для специалиста (G3, вопрос 67) ---
-  const CAPTION = 'Что уходит: задания, подсказки, итоги занятий и выбор наград — без имени ребёнка. Отчёт — страница, которую специалист откроет в браузере или распечатает; файл для программы — те же записи целиком, для обработки на компьютере. Вы сами решаете, кому передать файлы; что с ними будет дальше, приложение не контролирует.';
+  const CAPTION = 'Что уходит: цели, подсказки, итоги занятий и выбор наград — без имени ребёнка. Отчёт — страница, которую специалист откроет в браузере или распечатает; файл данных — те же записи целиком, для обработки на компьютере. Вы сами решаете, кому передать файлы; что с ними будет дальше, приложение не контролирует.';
   // «выключено» и «на устройстве не передать» — разные подписи (приватность по диффу этапа C, М1)
   const LATER = 'Выгрузка файлом пока выключена.';
   const UNAVAILABLE = 'На этом устройстве файл не передать: нет системного листа «Поделиться».';
@@ -1450,13 +1455,13 @@ describe('«Занятия ABA»: согласие, пауза, файл, отз
     expect(note()).toBe(CAPTION);
   });
 
-  it('две строки: «Отчёт специалисту» отдаёт отчёт, «Файл для программы» — JSON той же выгрузки', async () => {
+  it('две строки: «Отчёт специалисту» отдаёт отчёт, «Файл данных» — JSON той же выгрузки', async () => {
     await grant();
     useGate.getState().open();
     await renderAba();
     await waitFor(() => expect(screen.getByTestId('aba-export-data')).toBeTruthy());
     expect(screen.getByText('Отчёт специалисту')).toBeTruthy();
-    expect(screen.getByText('Файл для программы')).toBeTruthy();
+    expect(screen.getByText('Файл данных')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('aba-export-data'));
     await waitFor(() => expect(shareSpecialistExport).toHaveBeenCalledTimes(1));
     expect((shareSpecialistExport.mock.calls[0][4] as { kind: string }).kind).toBe('data');
@@ -1723,6 +1728,18 @@ describe('подтверждение aba_revoke', () => {
     await typePin(PIN);
     await waitFor(() => expect(router.back).toHaveBeenCalledTimes(1));
     expect([await sessionsOf(db, KID), await abaStateKeys(KID), (await abaOverview(db, KID)).consent]).toEqual([[], [], 'revoked']);
+    // подготовленная выгрузка специалисту в памяти — тоже прочь (child-privacy-compliance 2026-11-19)
+    expect(resetPreparedExport).toHaveBeenCalledTimes(1);
+  });
+
+  it('неверный PIN — выгрузка в памяти не снимается (ничего не удалено)', async () => {
+    await withAbaData();
+    resetPreparedExport.mockClear();
+    await renderRevoke();
+    await fireEvent.press(screen.getByTestId('confirm-action'));
+    await typePin('000000');
+    await waitFor(() => expect(screen.getByTestId('confirm-pin-error')).toBeTruthy());
+    expect(resetPreparedExport).not.toHaveBeenCalled();
   });
 
   /** Контрольный аудит 2026-11-09, п. 9: в журнал — версия того текста, что родитель видел; ky без перевода → ru. */
@@ -1803,6 +1820,20 @@ describe('подтверждение aba_revoke', () => {
     await renderRevoke();
     // одно законченное занятие (незаконченное — снимок, не сессия)
     await waitFor(() => expect(screen.getByText(/\b1\b/)).toBeTruthy());
+    // журнала специалиста и параметров нет — строки о них нет
+    expect(screen.queryByTestId('aba-revoke-specialist')).toBeNull();
+  });
+
+  it('экран отзыва называет журнал «Для специалиста» и параметры занятий, которые тоже удалятся', async () => {
+    await withAbaData();
+    await setAbaPaused(db, KID, false, iso());
+    // два изменения: длительность и одна цель в обучении — два события журнала и сохранённые параметры
+    await setAbaSessionParams(db, KID, { timeLimitMs: 10 * 60_000, maxTeachingTargets: 1 }, '5-6', iso());
+    await renderRevoke();
+    await waitFor(() => expect(screen.getByTestId('aba-revoke-specialist')).toBeTruthy());
+    expect(screen.getByTestId('aba-revoke-specialist').props.children).toBe(
+      'Записей журнала «Для специалиста»: 2. Параметры занятий, заданные специалистом, тоже удалятся.',
+    );
   });
 });
 

@@ -7,9 +7,15 @@
  * домена, что двигает критерий), линия критерия — из `summaries.criterion`, а не константой. Записи `abaSessions` и
  * `abaTrials` в типе выгрузки — `unknown[]`: читаются узким защитным чтением, время событий там — смещения в мс.
  *
+ * Журнал раздела «Для специалиста» (`abaSpecialistEvents`) — таблица «Изменения условий» (день, роль со слов, поле,
+ * было → стало) и вертикальные линии на графиках целей в день изменения; текущие `state.abaSessionParams` — в шапке.
+ * В файле у изменения только день: если в тот день было занятие, линия стоит перед ним — порядок внутри дня не
+ * восстановить, это сказано в подписи графика.
+ *
  * Приватность: в отчёте нет имени ребёнка (только «Р1»), идентификаторов записей, наблюдателей (кроме меток `O1`…
- * из файла), наград и времени суток — только дни. Весь текст, в том числе из `t()` (`escapeValue: false` у i18next),
- * экранируется. Ни скриптов, ни внешних шрифтов и стилей: страница открывается без сети и печатается на A4.
+ * из файла и роли наблюдателя в журнале изменений), наград и времени суток — только дни. Весь текст, в том числе из
+ * `t()` (`escapeValue: false` у i18next), экранируется. Ни скриптов, ни внешних шрифтов и стилей: страница
+ * открывается без сети и печатается на A4.
  */
 import { ABA_TARGETS } from '../../content/aba';
 import type { SpecialistExport, SessionTargetSummary, TargetSummary } from './purge';
@@ -84,6 +90,41 @@ function readTrials(raw: unknown[]): TrialRow[] {
   }));
 }
 
+/** Запись журнала «Для специалиста» из файла (`exportForSpecialist`): день без времени, роль заявленная. */
+type ChangeRow = {
+  order: number;
+  day: string | null;
+  role: string | null;
+  claimed: boolean;
+  field: string;
+  from: unknown;
+  to: unknown;
+  targetIds: string[] | null;
+  observerRole: string | null;
+};
+
+function readChanges(raw: unknown[]): ChangeRow[] {
+  return raw
+    .filter(isObj)
+    .map((c, i) => {
+      const day = str(c.day);
+      const targets = Array.isArray(c.targetIds) ? c.targetIds.map(str).filter((x): x is string => !!x) : null;
+      return {
+        order: num(c.order) ?? i + 1,
+        day: day && DAY.test(day) ? day : null,
+        role: str(c.role),
+        claimed: c.claimed === true,
+        field: str(c.field) ?? '',
+        from: c.from,
+        to: c.to,
+        targetIds: targets && targets.length ? targets : null,
+        observerRole: str(c.observerRole),
+      };
+    })
+    .filter((c) => c.field !== '')
+    .sort((a, b) => a.order - b.order);
+}
+
 // --- форматирование ----------------------------------------------------------------------------------
 
 /** Экранирование для текста и атрибутов. */
@@ -105,7 +146,12 @@ function makeFormat(t: ReportT) {
   };
   const percent = (rate: number) => t(`${K}.percent`, { value: Math.round(rate * 100) });
   const seconds = (ms: number) => (Math.round(ms / 100) / 10).toFixed(1).replace('.', decimal);
-  return { dateShort, dateFull, percent, seconds };
+  /** Секунды без лишнего «,0»: окно ответа 8000 мс — «8», 7500 — «7,5». */
+  const wholeSeconds = (ms: number) => {
+    const s = Math.round(ms / 100) / 10;
+    return Number.isInteger(s) ? String(s) : s.toFixed(1).replace('.', decimal);
+  };
+  return { dateShort, dateFull, percent, seconds, wholeSeconds };
 }
 
 /** Перевод или запасная строка, если ключа нет (`fallbackLng: false` отдаёт сам ключ). */
@@ -136,6 +182,7 @@ th { background: #f4f4f4; font-weight: 600; }
 .st { font-weight: 600; font-size: 10px; padding: 1px 6px; border-radius: 8px; margin-left: 6px; background: #EEF1F4; color: #333; }
 .st.ok { background: #DFF2E7; color: #1E5E3E; }
 .small { font-size: 10px; color: #555; } .ch { max-width: 120mm; margin: 4px 0; }
+.changes td:nth-child(4), .changes td:nth-child(5) { white-space: nowrap; }
 ul { margin: 2px 0 0 16px; padding: 0; }
 .scroll { overflow-x: auto; }
 @media print { body { padding: 0; } .scroll { overflow: visible; } }
@@ -147,7 +194,75 @@ type Ctx = {
   e: (s: string) => string;
   criterionRate: number;
   targetName: (id: string, missing?: boolean) => string;
+  /** Журнал «Для специалиста» по порядку записи. */
+  changes: ChangeRow[];
 };
+
+const BAND = (b: string) => b.replace('-', '–');
+
+/** Значение изменения словами: `null` — по умолчанию (у полосы — как в профиле), мс — минуты или секунды. */
+function changeValue(ctx: Ctx, field: string, v: unknown): string {
+  const { t, f } = ctx;
+  if (v === null || v === undefined) return t(field === 'paramsBand' ? `${K}.valueProfile` : `${K}.valueDefault`);
+  if (typeof v === 'boolean') return t(v ? `${K}.valueOn` : `${K}.valueOff`);
+  if (typeof v === 'number' && Number.isFinite(v)) {
+    if (field === 'timeLimitMs') return t(`${K}.minutes`, { n: Math.round(v / 6000) / 10 });
+    if (field.startsWith('responseWindowMs.')) return t(`${K}.seconds`, { n: f.wholeSeconds(v) });
+    return String(v);
+  }
+  if (typeof v === 'string') return field === 'paramsBand' ? BAND(v) : v;
+  return '—';
+}
+
+/** Что изменено — словами; цели изменения — названиями. */
+function changeField(ctx: Ctx, c: ChangeRow): string {
+  const { t } = ctx;
+  const dot = c.field.indexOf('.');
+  const head = dot < 0 ? c.field : c.field.slice(0, dot);
+  const tail = dot < 0 ? '' : c.field.slice(dot + 1);
+  let text: string;
+  if (head === 'responseWindowMs') {
+    text = t(`${K}.field.responseWindowMs`, { format: tOr(t, `parent.aba.spec.format.${tail}`, () => tail) });
+  } else if (c.field === 'flag.mixed_not_established') {
+    // «Назначить проверку вперемешку»: снимает сигнал, но это назначение, а не «просмотрено»
+    text = t(`${K}.field.mixedAssigned`);
+  } else if (head === 'flag') {
+    const flag = tOr(t, `parent.aba.spec.flag.${tail}`, () => tOr(t, `parent.aba.spec.tokenFlag.${tail}`, () => t(`${K}.unknownFlag`, { code: tail })));
+    text = t(`${K}.field.flag`, { text: flag });
+  } else {
+    text = tOr(t, `${K}.field.${head}`, () => c.field);
+    if (head === 'observerTrained' && c.observerRole) {
+      const role = tOr(t, `abaSession.role.${c.observerRole}`, () => '');
+      if (role) text = `${text} (${role})`;
+    }
+  }
+  return c.targetIds ? `${text} — ${c.targetIds.map((id) => ctx.targetName(id)).join(', ')}` : text;
+}
+
+/** Текущие параметры занятий из `state.abaSessionParams` — сохранённые; действуют ли при полосе профиля, файл не знает. */
+function paramsText(ctx: Ctx, raw: unknown): string {
+  const { t, f } = ctx;
+  const p = isObj(raw) ? raw : {};
+  const band = str(p.paramsBand);
+  const time = num(p.timeLimitMs);
+  const teaching = num(p.maxTeachingTargets);
+  const windows = isObj(p.responseWindowMs)
+    ? Object.entries(p.responseWindowMs).flatMap(([format, ms]) => (num(ms) !== null ? [[format, num(ms)!] as const] : []))
+    : [];
+  if (!band && time === null && teaching === null && !windows.length) return t(`${K}.paramsDefault`);
+  const def = t(`${K}.valueDefault`);
+  const list = [
+    t(`${K}.param.band`, { value: band ? BAND(band) : t(`${K}.valueProfile`) }),
+    t(`${K}.param.time`, { value: time !== null ? t(`${K}.minutes`, { n: Math.round(time / 6000) / 10 }) : def }),
+    t(`${K}.param.teaching`, { value: teaching !== null ? String(teaching) : def }),
+    ...(windows.length
+      ? windows.map(([format, ms]) =>
+          t(`${K}.param.window`, { format: tOr(t, `parent.aba.spec.format.${format}`, () => format), value: t(`${K}.seconds`, { n: f.wholeSeconds(ms) }) }),
+        )
+      : [t(`${K}.param.windowDefault`)]),
+  ];
+  return t(`${K}.paramsLine`, { list: list.join(', ') });
+}
 
 function header(ctx: Ctx, data: SpecialistExport, sessions: SessionRow[]): string {
   const { t, f, e } = ctx;
@@ -173,6 +288,7 @@ function header(ctx: Ctx, data: SpecialistExport, sessions: SessionRow[]): strin
     const day = confirmed ?? (tt.pairingDone === true ? (pairingDays[pairingDays.length - 1] ?? null) : null);
     parts.push(e(tt.pairingDone === true || confirmed ? (day ? t(`${K}.pairingDone`, { date: f.dateFull(day) }) : t(`${K}.pairingDoneNoDate`)) : t(`${K}.pairingNotDone`)));
   }
+  parts.push(e(paramsText(ctx, data.state.abaSessionParams)));
   parts.push(e(t(`${K}.exported`, { date: f.dateFull(data.exportedAt) })));
   return `<h1>${e(t(`${K}.docTitle`))}</h1>\n<div class="meta">${parts.join(' · ')}</div>`;
 }
@@ -218,16 +334,36 @@ function targetsTable(ctx: Ctx, data: SpecialistExport, targets: TargetSummary[]
 
 const baselineOf = (r: SessionTargetSummary) => r.byKind.baseline ?? null;
 
-/** Столбцы доли самостоятельных по занятиям: обучение — столбец, базовая линия — пунктирная рамка. */
-function chart(ctx: Ctx, rows: SessionTargetSummary[]): string {
+/**
+ * Где на графике линии смены условий: граница слота перед первым столбцом с днём не раньше дня изменения (в файле только
+ * день — изменение в день занятия ставится перед ним); изменение после последнего столбца — у правого края; раньше
+ * первого показанного столбца — не рисуется (оно в таблице «Изменения условий»). Одна линия на границу, подписи — дни.
+ */
+export function changeLineSlots(barDays: readonly (string | null)[], changeDays: readonly string[]): { slot: number; days: string[] }[] {
+  const out = new Map<number, string[]>();
+  for (const d of [...new Set(changeDays)].sort()) {
+    const idx = barDays.findIndex((b) => b !== null && b >= d);
+    if (idx === 0 && barDays[0] !== d) continue;
+    const slot = idx < 0 ? barDays.length : idx;
+    if (slot === barDays.length && !barDays.some((b) => b !== null && b < d)) continue;
+    out.set(slot, [...(out.get(slot) ?? []), d]);
+  }
+  return [...out].sort((a, b) => a[0] - b[0]).map(([slot, days]) => ({ slot, days }));
+}
+
+/**
+ * Столбцы доли самостоятельных по занятиям: обучение — столбец, базовая линия — пунктирная рамка; смена условий —
+ * точечная вертикальная линия с днём над графиком (`changeLineSlots`).
+ */
+function chart(ctx: Ctx, rows: SessionTargetSummary[], changeDays: readonly string[]): { svg: string; lines: number } {
   const { t, f, e } = ctx;
   const bars = rows.filter((r) => (r.role === 'teaching' && r.independentRate !== null) || (r.role === 'baseline' && baselineOf(r))).slice(-MAX_BARS);
-  if (!bars.length) return '';
+  if (!bars.length) return { svg: '', lines: 0 };
   const W = 300;
-  const H = 96;
+  const H = 104;
   const left = 26;
-  const top = 12;
-  const bottom = 80;
+  const top = 20;
+  const bottom = 88;
   const slot = (W - left - 4) / bars.length;
   const bw = Math.max(4, slot * 0.7);
   const y = (rate: number) => bottom - (bottom - top) * rate;
@@ -251,12 +387,25 @@ function chart(ctx: Ctx, rows: SessionTargetSummary[]): string {
       out.push(`<rect x="${r1(x)}" y="${r1(y(rate))}" width="${r1(bw)}" height="${r1(bottom - y(rate))}" fill="${fill}"/>`);
       out.push(`<text x="${cx}" y="${r1(Math.min(y(rate) - 2, bottom - 2))}" font-size="7" text-anchor="middle" fill="#333">${e(f.percent(rate))}</text>`);
     }
-    out.push(`<text x="${cx}" y="92" font-size="8" text-anchor="middle" fill="#444">${e(f.dateShort(r.day))}</text>`);
+    out.push(`<text x="${cx}" y="100" font-size="8" text-anchor="middle" fill="#444">${e(f.dateShort(r.day))}</text>`);
   });
   const cy = r1(y(ctx.criterionRate));
   out.push(`<line x1="${left}" x2="${W - 4}" y1="${cy}" y2="${cy}" stroke="#C62828" stroke-dasharray="4 2"/>`);
   out.push(`<text x="${left + 3}" y="${r1(cy - 2)}" font-size="7" fill="#C62828">${e(t(`${K}.criterionLine`, { rate: f.percent(ctx.criterionRate) }))}</text>`);
-  return `<div class="ch"><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${e(t(`${K}.chartLabel`))}">${out.join('')}</svg></div>`;
+  const slots = changeLineSlots(
+    bars.map((r) => r.day),
+    changeDays,
+  );
+  for (const { slot: at, days } of slots) {
+    const x = r1(Math.min(left + slot * at, W - 4));
+    const anchor = x > W - 24 ? 'end' : x < left + 12 ? 'start' : 'middle';
+    out.push(`<line class="cc" x1="${x}" x2="${x}" y1="${top - 8}" y2="${bottom}" stroke="#4A5866" stroke-width="0.8" stroke-dasharray="1 1.5"/>`);
+    out.push(`<text x="${x}" y="9" font-size="7" text-anchor="${anchor}" fill="#4A5866">${e(days.map((d) => f.dateShort(d)).join(', '))}</text>`);
+  }
+  return {
+    svg: `<div class="ch"><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${e(t(`${K}.chartLabel`))}">${out.join('')}</svg></div>`,
+    lines: slots.length,
+  };
 }
 
 function targetCard(ctx: Ctx, data: SpecialistExport, tg: TargetSummary, trials: TrialRow[], corrected: ReadonlySet<string>): string {
@@ -301,10 +450,14 @@ function targetCard(ctx: Ctx, data: SpecialistExport, tg: TargetSummary, trials:
     line(t(`${K}.row.outcome`), (r) => (r.outcome ? tOr(t, `${K}.outcome.${r.outcome}`, () => '—') : '—')),
   ].join('\n');
   const more = rows.length > cols.length ? `<p class="small">${e(t(`${K}.lastColumns`, { shown: cols.length, total: rows.length }))}</p>` : '';
+  // смена условий: все изменения, кроме привязанных к другим целям
+  const changeDays = ctx.changes.filter((c) => c.day && (!c.targetIds || c.targetIds.includes(tg.targetId))).map((c) => c.day!);
+  const ch = chart(ctx, rows, changeDays);
+  const changeLegend = ch.lines ? `\n<div class="small">${e(t(`${K}.changeLegend`))}</div>` : '';
   return `${title}
 <div class="t">
 <div class="small">${e(t(`${K}.legend`, { rate: f.percent(ctx.criterionRate) }))}</div>
-${chart(ctx, rows)}
+${ch.svg}${changeLegend}
 <div class="scroll"><table class="mini">
 <tr><th></th>${head}</tr>
 ${body}
@@ -354,6 +507,23 @@ function sessionsTable(ctx: Ctx, data: SpecialistExport, sessions: SessionRow[])
   return `<h2>${e(t(`${K}.sessionsTitle`))}</h2>\n<div class="scroll"><table>\n<tr>${cols}</tr>\n${rows}\n</table></div>`;
 }
 
+/** «Изменения условий»: журнал раздела «Для специалиста» — день, кто (со слов), что, было → стало. */
+function changesTable(ctx: Ctx): string {
+  const { t, f, e } = ctx;
+  const title = `<h2>${e(t(`${K}.changesTitle`))}</h2>`;
+  if (!ctx.changes.length) return `${title}\n<p class="small">${e(t(`${K}.noChanges`))}</p>`;
+  const who = (c: ChangeRow) =>
+    c.role === 'specialist' ? t(c.claimed ? `${K}.roleSpecialistClaimed` : `${K}.roleSpecialist`) : (c.role ?? '—');
+  const rows = ctx.changes
+    .map((c) => {
+      const cells = [f.dateShort(c.day), who(c), changeField(ctx, c), changeValue(ctx, c.field, c.from), changeValue(ctx, c.field, c.to)];
+      return `<tr>${cells.map((x) => `<td>${e(x)}</td>`).join('')}</tr>`;
+    })
+    .join('\n');
+  const head = [`${K}.col.date`, `${K}.changeCol.who`, `${K}.changeCol.what`, `${K}.changeCol.from`, `${K}.changeCol.to`].map((k) => `<th>${e(t(k))}</th>`).join('');
+  return `${title}\n<p class="small">${e(t(`${K}.changesNote`))}</p>\n<div class="scroll"><table class="changes">\n<tr>${head}</tr>\n${rows}\n</table></div>`;
+}
+
 function signals(ctx: Ctx, data: SpecialistExport, targets: TargetSummary[]): string {
   const { t, e } = ctx;
   const items: string[] = [];
@@ -388,6 +558,7 @@ export function specialistReportHtml(data: SpecialistExport, t: ReportT, opts: R
     e,
     criterionRate: data.summaries.criterion.minIndependentRate,
     targetName: (id, missing) => (missing ? t(`${K}.unknownTarget`, { id }) : tOr(t, `parent.aba.goal.${id}`, () => t(`${K}.unknownTarget`, { id }))),
+    changes: readChanges(arr(data.abaSpecialistEvents)),
   };
   const sessions = readSessions(data.abaSessions);
   const trials = readTrials(data.abaTrials);
@@ -406,6 +577,7 @@ export function specialistReportHtml(data: SpecialistExport, t: ReportT, opts: R
 <style>${STYLE}</style></head><body>
 ${opts.demo ? `<div class="demo">${e(t(`${K}.demo`))}</div>\n` : ''}${header(ctx, data, sessions)}
 ${targetsTable(ctx, data, targets)}
+${changesTable(ctx)}
 ${cards.join('\n')}
 ${sessionsTable(ctx, data, sessions)}
 ${signals(ctx, data, targets)}

@@ -110,7 +110,9 @@ describe.each(['en', 'ky'] as const)('парность ru ↔ %s', (lang) => {
   });
 
   it('значение не равно русскому: не заглушка под видом перевода', () => {
-    const same = [...L].filter(([k, vals]) => (R.get(k) ?? []).some((r) => vals.includes(r) && r.trim() !== '')).map(([k]) => k);
+    // строка без букв вне подстановок — формат, а не текст (дата `{{d}}.{{m}}`, localization-qa 2026-11-19): совпадать может
+    const hasWords = (s: string) => /\p{L}/u.test(s.replace(/\{\{[^}]*\}\}/g, ''));
+    const same = [...L].filter(([k, vals]) => (R.get(k) ?? []).some((r) => vals.includes(r) && hasWords(r))).map(([k]) => k);
     expect(same).toEqual([]);
   });
 });

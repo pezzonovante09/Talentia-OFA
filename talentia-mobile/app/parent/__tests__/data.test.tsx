@@ -49,11 +49,17 @@ jest.mock('../../../src/services/local/expoSqlite', () => ({
   openLocalDb: jest.fn(),
   deleteLocalDb: jest.fn(async () => undefined),
 }));
+// подготовленная выгрузка специалисту в памяти снимается после каждого удаления (child-privacy-compliance 2026-11-19)
+jest.mock('../../../src/services/local/shareSpecialistExport', () => ({
+  ...jest.requireActual<object>('../../../src/services/local/shareSpecialistExport'),
+  resetPreparedExport: jest.fn(),
+}));
 
 const { __router: router, __params: params } = jest.requireMock('expo-router') as { __router: { push: jest.Mock; back: jest.Mock; replace: jest.Mock }; __params: { action: string | undefined } };
 const { clearChildProgress } = jest.requireMock('../../../src/services/local/purge') as { clearChildProgress: jest.Mock };
 const { deleteChildEverywhere, wipeAccountEverywhere } = jest.requireMock('../../../src/services/local/deleteEverywhere') as { deleteChildEverywhere: jest.Mock; wipeAccountEverywhere: jest.Mock };
 const { deleteLocalDb } = jest.requireMock('../../../src/services/local/expoSqlite') as { deleteLocalDb: jest.Mock };
+const { resetPreparedExport } = jest.requireMock('../../../src/services/local/shareSpecialistExport') as { resetPreparedExport: jest.Mock };
 
 const PIN = '295173';
 const KID1 = '00000000-0000-4000-8000-0000000000e1';
@@ -160,6 +166,8 @@ describe('подтверждение', () => {
     await confirmWithPin();
     await waitFor(() => expect(clearChildProgress).toHaveBeenCalledWith(db, KID1, expect.anything()));
     await waitFor(() => expect(router.back).toHaveBeenCalled());
+    expect(resetPreparedExport).toHaveBeenCalledTimes(1);
+    expect(clearChildProgress.mock.invocationCallOrder[0]).toBeLessThan(resetPreparedExport.mock.invocationCallOrder[0]);
     expect(useChildSession.getState().mode).toBe('none');
     expect(deleteChildEverywhere).not.toHaveBeenCalled();
     expect(useAccount.getState().profiles).toHaveLength(2);
@@ -185,6 +193,7 @@ describe('подтверждение', () => {
     expect(deleteChildEverywhere.mock.calls[0][0].pseudonym).toMatch(/^[0-9a-f-]{36}$/);
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/parent'));
     expect(refreshProfiles).toHaveBeenCalled();
+    expect(resetPreparedExport).toHaveBeenCalledTimes(1);
     expect(useParentView.getState().childId).toBe(KID2);
     expect(clearChildProgress).not.toHaveBeenCalled();
     expect(wipeAccountEverywhere).not.toHaveBeenCalled();
@@ -204,6 +213,7 @@ describe('подтверждение', () => {
     expect(useAccount.getState()).toMatchObject({ status: 'none', accountId: null, db: null, profiles: [] });
     expect(useGate.getState().session).toBeNull();
     expect(useChildSession.getState().mode).toBe('none');
+    expect(resetPreparedExport).toHaveBeenCalledTimes(1);
   });
 
   /**
@@ -223,6 +233,8 @@ describe('подтверждение', () => {
     expect(useAccount.getState().status).toBe('ready');
     expect(useAccount.getState().accountId).toBe(accountId);
     expect(screen.getByTestId('confirm-error')).toBeTruthy();
+    // ничего не удалено — и выгрузку в памяти снимать не с чего
+    expect(resetPreparedExport).not.toHaveBeenCalled();
   });
 
   /** Контрольный аудит 2026-11-09, приватность п. 6: выбор ABA (режим, наблюдатели) и выбранный ребёнок не переживают удаление. */
