@@ -223,6 +223,9 @@ function changeField(ctx: Ctx, c: ChangeRow): string {
   let text: string;
   if (head === 'responseWindowMs') {
     text = t(`${K}.field.responseWindowMs`, { format: tOr(t, `parent.aba.spec.format.${tail}`, () => tail) });
+  } else if (c.field === 'flag.mixed_not_established') {
+    // «Назначить проверку вперемешку»: снимает сигнал, но это назначение, а не «просмотрено»
+    text = t(`${K}.field.mixedAssigned`);
   } else if (head === 'flag') {
     const flag = tOr(t, `parent.aba.spec.flag.${tail}`, () => tOr(t, `parent.aba.spec.tokenFlag.${tail}`, () => t(`${K}.unknownFlag`, { code: tail })));
     text = t(`${K}.field.flag`, { text: flag });

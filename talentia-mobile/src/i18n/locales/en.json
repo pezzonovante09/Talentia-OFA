@@ -594,7 +594,7 @@
         "in_progress": "A session is not finished",
         "in_progress_stale": "The session was interrupted — close it to start a new one",
         "pairing_needed": "First, getting to know tokens — a short session without tasks",
-        "no_ready_targets": "Targets are waiting for pictures",
+        "no_ready_targets": "Goals are waiting for pictures",
         "pool_small": "Not enough rewards to choose from — turn sound on"
       },
       "readConsent": "Read the consent",
@@ -800,7 +800,8 @@
           "adultReward": "reward from the adult",
           "observerTrained": "observer trained by the specialist",
           "pairingDone": "getting to know tokens done",
-          "flag": "signal reviewed: {{text}}"
+          "flag": "signal reviewed: {{text}}",
+          "mixedAssigned": "mixed check scheduled again (signal “off the plan”)"
         },
         "valueDefault": "default",
         "valueProfile": "as in profile",

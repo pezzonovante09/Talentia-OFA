@@ -141,12 +141,14 @@ describe('specialistReportHtml: содержание', () => {
         { order: 1, day: '2026-11-04', role: 'specialist', claimed: true, field: 'responseWindowMs.match', from: null, to: 8000 },
         { order: 2, day: '2026-11-04', role: 'specialist', claimed: true, field: 'paramsBand', from: null, to: '7' },
         { order: 3, day: '2026-11-13', role: 'specialist', claimed: true, field: 'flag.assent_concern', from: true, to: false, targetIds: ['match-shape'] },
+        { order: 4, day: '2026-11-13', role: 'specialist', claimed: true, field: 'flag.mixed_not_established', from: true, to: false, targetIds: ['match-same-2', 'match-shape'] },
       ],
     };
     const p = text(render(more));
     expect(p).toContain('4.11 специалист (со слов) время на ответ (сопоставить) по умолчанию 8 с');
     expect(p).toContain('4.11 специалист (со слов) полоса параметров как в профиле 7');
     expect(p).toContain('13.11 специалист (со слов) сигнал просмотрен: ребёнок часто отказывается: занятия прерываются — По форме да нет');
+    expect(p).toContain('13.11 специалист (со слов) проверка вперемешку назначена снова (сигнал «снята с плана») — Одинаковые из двух, По форме да нет');
     expect(text(render({ ...data, abaSpecialistEvents: [] }))).toContain('Изменений условий в файле нет.');
   });
 
