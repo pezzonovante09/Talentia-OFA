@@ -401,6 +401,9 @@ describe('шаг «коснись картинки» в разделе спец�
     expect(await reviewAbaSampleTouchAssentConcern(db, KID, AT)).toBe(false);
     const out = await exportForSpecialist(db, KID, AT);
     expect(out.abaSpecialistEvents.at(-1)).toMatchObject({ field: 'flag.assent_concern', step: 'sample_touch' });
+    // отметка в состоянии шага уходит специалисту только днём, без времени суток
+    expect(out.state.sampleTouch).toMatchObject({ assentConcernReviewed: { role: 'specialist', at: '2026-11-18' } });
+    expect(JSON.stringify(out.state.sampleTouch)).not.toMatch(/T\d{2}:\d{2}/);
   });
 });
 

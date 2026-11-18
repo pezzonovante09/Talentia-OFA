@@ -171,13 +171,15 @@ export const touchAssentEventsOf = (events: readonly AbaSessionEvent[]): AssentE
 
 /**
  * Тревожна ли сессия шага — аналог `isConcerning` у проб: «Сопротивляется» на шаге, «Отказ» на шаге (он кончает шаг,
- * второго прерывания на шаге уже не бывает — иначе отказ каждой сессии не дал бы сигнала нигде) или хотя бы два
- * прерывания на шаге (карточка «перерыв»).
+ * второго прерывания на шаге уже не бывает — иначе отказ каждой сессии не дал бы сигнала нигде), конец сессии отказом
+ * на шаге или хотя бы два прерывания на шаге (карточка «перерыв»).
  */
 export function touchStepConcerning(events: readonly AbaSessionEvent[]): boolean {
   const own = touchAssentEventsOf(events);
+  // конец сессии отказом на шаге (второй «Отказ», третья карточка) — тоже тревожно; бездействие телефона — нет
+  const refusedOrEnded = (e: AssentEvent) => e.by !== 'device_inactivity' && (e.action === 'end' || (e.by === 'adult_observed' && e.action === 'break'));
   return (
-    own.some((e) => e.action === 'l4_stopped' || (e.by === 'adult_observed' && e.action === 'break')) ||
+    own.some((e) => e.action === 'l4_stopped' || refusedOrEnded(e)) ||
     own.filter((e) => e.action === 'break' || e.action === 'l4_stopped').length >= INTERRUPTIONS_FOR_CONCERN
   );
 }

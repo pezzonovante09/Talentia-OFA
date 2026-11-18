@@ -426,6 +426,8 @@ describe('согласие на шаге (финальная рецензия м
     const out = recordSampleTouch({ ...atTouch(), refusals: 1 }, refusal, T0 + 1000).state;
     expect(out.endReason).toBe('assent_withdrawn');
     expect(assents(out.events)).toEqual([expect.objectContaining({ by: 'adult_observed', action: 'end', step: 'sample_touch' })]);
+    // конец отказом на шаге — тревожная сессия шага
+    expect(closeSampleTouchSession(initialSampleTouch(), out.events, ctx('assent_withdrawn')).assentSessionsInRow).toBe(1);
   });
 
   it('«Сопротивляется» на шаге — ход l4_stopped с отметкой шага', () => {
