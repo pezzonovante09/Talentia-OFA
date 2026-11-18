@@ -1180,7 +1180,8 @@ export default function AbaSessionScreen() {
           {panel(
             r.done ? ['refusal'] : r.awaitingL4 ? TOUCH_L4_PANEL : TOUCH_PANEL,
             phase.pressed,
-            (b, at) => (r.done ? (b === 'refusal' ? refuseOutsideTrial() : undefined) : onTouch({ type: 'adult', button: b, at })),
+            // проба пишется (`recordTouch`): панель молчит, иначе «Отказ» лёг бы поверх записи; на «принято» — отказ вне пробы
+            (b, at) => (!r.done ? onTouch({ type: 'adult', button: b, at }) : b === 'refusal' && phase.praiseUntil !== null ? refuseOutsideTrial() : undefined),
             r.done ? undefined : t('abaPanel.waitQuiet'),
           )}
         </>

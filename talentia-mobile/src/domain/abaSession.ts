@@ -1874,6 +1874,8 @@ export function recordSampleTouch(state: AbaSessionState, input: SampleTouchInpu
     adultPrompted: input.adultPrompted,
     latencyMs: input.latencyMs,
     independent: isIndependentTouch(input),
+    tokens: token ? 1 : 0,
+    ...(token ? { tokenReason: 'observing' as const } : {}),
     ...(head.closes ? { closes: true as const } : {}),
   };
   let touch = head.closes ? state.sampleTouch : fadeSampleTouch(state.sampleTouch, input);

@@ -30,6 +30,7 @@ import {
   nextStep,
   recordSampleTouch,
   recordTrial,
+  requestBreakBetweenTrials,
   startAbaSession,
   stopSession,
   type AbaSessionResult,
@@ -201,6 +202,9 @@ describe('прохождение и объём', () => {
     expect(r.touchesBeforeMatch).toBe(SAMPLE_TOUCH_STREAK);
     expect(r.result.trials.length).toBeGreaterThan(0);
     expect(r.result.sampleTouch).toMatchObject({ passed: true, passedAt: '2026-11-18', sessionsTried: 0 });
+    // доска из одной ячейки: каждое касание L0 — обмен и доступ, поэтому цикла сопряжения в конце занятия-проверки нет
+    expect(r.result.session.exchangesMade).toBeGreaterThanOrEqual(SAMPLE_TOUCH_STREAK);
+    expect(r.result.session.events.some((e) => e.kind === 'pairing')).toBe(false);
     // следующее занятие — без шага
     expect(startAbaSession(inputOf(r.child, 2)).queue.some((q) => q.kind === 'sample_touch')).toBe(false);
   });
@@ -235,7 +239,7 @@ describe('прохождение и объём', () => {
     for (let i = 0; i < SAMPLE_TOUCH_SESSIONS_BEFORE_FLAG; i += 1) c = runSession(c, always('l1')).child;
     expect(c.sampleTouch).toMatchObject({ passed: false, sessionsTried: 3, flags: ['sample_touch_not_acquired'] });
     expect(startAbaSession(inputOf(c, 9)).queue[1]).toEqual({ kind: 'sample_touch' });
-    // старт дошёл до L1 (метка сразу) — затухание по общему правилу
+    // «дождался метки» со старта L0 старт не поднимает — затухание по общему правилу
     expect(c.sampleTouch?.startLevel).toBe(0);
     const passed = runSession({ ...c, sampleTouch: { ...c.sampleTouch!, startLevel: 0 } }, always('l0')).child;
     expect(passed.sampleTouch).toMatchObject({ passed: true, flags: [] });
@@ -270,6 +274,9 @@ describe('жетоны и ступень доски', () => {
     const l0 = recordSampleTouch(st, { startLevel: 0, levelUsed: 0, outcome: 'touched', adultPrompted: false, latencyMs: 900 }, T0);
     expect(l0.consequence).toBe('token');
     expect(l0.state.board.nonContingent + l0.state.exchangesMade).toBeGreaterThan(0);
+    expect(l0.state.events.find((e) => e.kind === 'sample_touch')).toMatchObject({ tokens: 1, tokenReason: 'observing', independent: true });
+    expect(l1.state.events.find((e) => e.kind === 'sample_touch')).toMatchObject({ tokens: 0 });
+    expect(l1.state.events.find((e) => e.kind === 'sample_touch')).not.toHaveProperty('tokenReason');
   });
 
   it('«Сопротивляется» — шаг на сегодня кончен, L4 до конца сессии нет', () => {
@@ -278,6 +285,49 @@ describe('жетоны и ступень доски', () => {
     expect(out.consequence).toBe('none');
     expect(out.state.l4Stopped).toBe(true);
     expect(out.state.queue.some((q) => q.kind === 'sample_touch')).toBe(false);
+  });
+});
+
+describe('сворачивание и перерыв посреди шага', () => {
+  /** Доска из одной ячейки: жетон L0 — обмен и доступ; до следующей пробы шага. */
+  const toTouch = (st0: AbaSessionState, at: number) => {
+    let st = st0;
+    for (;;) {
+      const n = nextStep(st, at);
+      if (n.step.kind !== 'access') return n;
+      st = finishAccess(accessShown(n.state), at + n.step.durationMs);
+    }
+  };
+  it('«5 подряд» считается по событиям сессии: снимок посреди шага (JSON) продолжает серию', () => {
+    let st = nextStep(chooseReinforcer(startAbaSession(inputOf(freshChild(), 1)), POOL[0], T0, 'child'), T0).state;
+    const l0 = { startLevel: 0 as const, levelUsed: 0 as const, outcome: 'touched' as const, adultPrompted: false, latencyMs: 600 };
+    let now = T0;
+    for (let i = 0; i < 3; i += 1) st = toTouch(recordSampleTouch(st, l0, (now += 3000)).state, now).state;
+    st = JSON.parse(JSON.stringify(st)) as AbaSessionState;
+    for (let i = 0; i < 2; i += 1) {
+      const step = toTouch(st, (now += 30_000));
+      expect(step.step.kind).toBe('sample_touch');
+      st = recordSampleTouch(step.state, l0, now).state;
+    }
+    expect(st.sampleTouch?.passed).toBe(true);
+    expect(st.events.filter((e) => e.kind === 'sample_touch' && e.independent)).toHaveLength(SAMPLE_TOUCH_STREAK);
+    expect(st.queue.some((q) => q.kind === 'sample_touch')).toBe(false);
+  });
+
+  it('карточка «перерыв» посреди пробы шага — перерыв, потом тот же образец; серия не рвётся', () => {
+    let st = nextStep(chooseReinforcer(startAbaSession(inputOf(freshChild(), 1)), POOL[0], T0, 'child'), T0).state;
+    const l0 = { startLevel: 0 as const, levelUsed: 0 as const, outcome: 'touched' as const, adultPrompted: false, latencyMs: 600 };
+    st = recordSampleTouch(st, l0, T0 + 1000).state;
+    const shown = toTouch(st, T0 + 4000);
+    const sample = shown.step.kind === 'sample_touch' ? shown.step.sampleId : null;
+    st = requestBreakBetweenTrials(shown.state, T0 + 5000);
+    const brk = nextStep(st, T0 + 5000);
+    expect(brk.step.kind).toBe('break');
+    st = finishBreak(brk.state, T0 + 20_000).state;
+    const again = toTouch(st, T0 + 60_000);
+    expect(again.step).toMatchObject({ kind: 'sample_touch', sampleId: sample });
+    st = recordSampleTouch(again.state, l0, T0 + 61_000).state;
+    expect(st.events.filter((e) => e.kind === 'sample_touch' && e.independent)).toHaveLength(2);
   });
 });
 

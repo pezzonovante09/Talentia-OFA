@@ -1052,6 +1052,9 @@ export type AbaSessionEvent =
       adultPrompted: boolean;
       latencyMs: number | null;
       independent: boolean;
+      /** Жетон за пробу (`observing`, не за результат); 0 — «принято» или ничего, в том числе на полной доске. */
+      tokens: 0 | 1;
+      tokenReason?: 'observing';
       closes?: true;
     }
   /** Обмен прошёл, а сцена доступа не началась (№181): жетоны этого обмена вернулись на доску; `reason` — остановка. */
