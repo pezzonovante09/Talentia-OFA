@@ -78,6 +78,8 @@ export const MATCH_SHAPE: AbaTarget = {
   prerequisiteTargetIds: ['match-same-3'],
   // проверка сверху вниз (вопрос 63): 5/5 на форме выводит освоенность «одинаковых» из 3 и из 2
   includesTargetIds: ['match-same-3', 'match-same-2'],
+  // смешанный блок с цветом после освоения обеих по отдельности (решение методиста 43)
+  mixWith: ['match-color'],
   exemplars: [
     ex('e1', [s('circle'), s('square'), s('triangle')]),
     ex('e2', [s('triangle'), s('ring'), s('square')]),

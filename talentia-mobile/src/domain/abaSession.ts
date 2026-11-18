@@ -128,6 +128,7 @@ import {
   type BreakCardStep,
 } from './abaBreakCard';
 import { arrange, baselineMembers, poolErrors, setHalves, updateSets, type IdentifySet } from './abaIdentifySet';
+import { mixedBlockId, mixedBlockTrials, mixedGroupDue, mixedVerdict, mixGroups } from './abaMixedBlock';
 import {
   applyStageSession,
   EXCHANGE_ACCESS_MS,
@@ -353,6 +354,8 @@ export type AbaSessionState = {
   teachingTargetIds: string[];
   /** Цели с пробой поддержания в этой сессии: практикой их не загрязняем. */
   maintenanceTargetIds: string[];
+  /** Участники смешанного блока этой сессии (решение методиста 43): их пробы `verification` судит `mixedVerdict`. */
+  mixedTargetIds?: string[];
   /** Освоенные цели для разогрева, отвлекающих и закрывающих проб: не цепочки, не на поддержании. */
   highPTargetIds: string[];
   /** Наборы `identify` ребёнка на эту сессию. */
@@ -709,10 +712,14 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
   const regularLast = Math.max(-1, ...regular.map((t) => states[t.id].lastSessionIndex));
   const set = candidate && (regular.length === 0 || candidate.lastSetSessionIndex <= regularLast) ? candidate : null;
   const setMembers = set ? set.memberIds.map((id) => input.targets.find((t) => t.id === id)!) : [];
-  const teaching = set ? setMembers.filter((t) => TEACHING_PHASES.has(states[t.id].phase)) : regular;
+  // смешанный блок (решение методиста 43): цели, освоенные по отдельности, вперемешку; 10 проб — оба слота обучения,
+  // как у набора
+  const mixed = set ? null : mixedGroupDue(mixGroups(offered), states, input.day, (t) => counts(t, config));
+  const mixedIds = mixed?.map((t) => t.id) ?? [];
+  const teaching = set ? setMembers.filter((t) => TEACHING_PHASES.has(states[t.id].phase)) : mixed ? [] : regular;
   // 5–6: базовая линия занимает слоты обучения — иначе сессия малыша вдвое длиннее нормы
   const baselineRoom = Math.min(
-    band === '5-6' ? maxTeaching - teaching.length : MAX_BASELINE_TARGETS,
+    band === '5-6' ? (mixed ? 0 : maxTeaching - teaching.length) : MAX_BASELINE_TARGETS,
     // на ступенях 1–2 обучения доске — не больше одной новой цели
     input.tokenTraining.stage <= 2 ? 1 : MAX_BASELINE_TARGETS,
   );
@@ -748,6 +755,7 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
     .filter(
       (t) =>
         t.id !== toVerify?.id &&
+        !mixedIds.includes(t.id) &&
         counts(t, config) &&
         isMaintenanceDue(states[t.id], sessionIndex),
     )
@@ -786,6 +794,8 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
     ...setDue,
     ...probes.filter((p) => p[0].kind === 'maintenance').map((p) => p[0].targetId),
     ...(toVerify ? [toVerify.id] : []),
+    // смешанный блок сам измеряет освоенное: ни разогрева, ни отвлекающих на его целях
+    ...mixedIds,
   ];
   // для разогрева и отвлекающих — проверенные навыки, если они есть: непроверенный ненадёжен
   const highPAll = mastered.filter((t) => !t.steps?.length && !maintenanceIds.includes(t.id));
@@ -796,6 +806,12 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
   if (highP.length) {
     const warm = pick(highP, rng);
     for (let i = 0; i < WARMUP_TRIALS; i += 1) queue.push({ kind: 'trial', trial: highPTrial(warm, rng) });
+  }
+  if (mixed) {
+    // сразу после разогрева: в конце сессии лимит времени обрывал бы его, и блок ничего не решал бы
+    for (const trial of mixedBlockTrials(mixed, (t) => rotation(t, rng), rng)) queue.push({ kind: 'trial', trial });
+    queue.push({ kind: 'block_end', targetId: mixedBlockId(mixed), participation: true, members: mixedIds });
+    if (baseline.length || probes.length) queue.push({ kind: 'break' });
   }
   if (set) {
     // набор: две половины вокруг перерыва, инструкции вперемешку
@@ -865,6 +881,7 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
     placementTargetIds,
     teachingTargetIds: teaching.map((t) => t.id),
     maintenanceTargetIds: maintenanceIds,
+    ...(mixed ? { mixedTargetIds: mixedIds } : {}),
     highPTargetIds: highP.map((t) => t.id),
     identifySets,
     set,
@@ -2736,7 +2753,16 @@ export function finishAbaSession(
             : 'maintenance_failed';
       if (target.steps?.length && s.phase === 'acquisition') s = rollbackSteps(before, s, target, own);
     }
-    if (primary?.trained && !unreliable) {
+    // смешанный блок: его пробы `verification` судит своё правило, а не проверка «дома, без проверки»
+    const mixedHere = state.mixedTargetIds?.includes(id) === true;
+    if (mixedHere && !unreliable && state.endReason !== 'assent_withdrawn' && !state.states[id].mixedCheck?.done) {
+      const verdict = mixedVerdict(s, target, own, idx, day);
+      if (verdict) {
+        s = verdict.state;
+        if (verdict.reason) reason = verdict.reason;
+      }
+    }
+    if (primary?.trained && !unreliable && !mixedHere) {
       const verdict = verificationVerdict(s, target, own, idx);
       if (verdict) {
         s = verdict.state;
@@ -2768,7 +2794,7 @@ export function finishAbaSession(
     if (!unreliable) s = applyChoiceBias(s, biasWindow(state, id, past), target.format);
     // сортировка: в следующей сессии с целью карточки категорий меняются местами
     if (target.matchMode === 'sort' && own.some((t) => t.field)) s = { ...s, sortFlipped: !s.sortFlipped };
-    if (reason && (s.phase !== from || reason === 'verification_passed')) {
+    if (reason && (s.phase !== from || reason === 'verification_passed' || reason === 'mixed_passed')) {
       phaseEvents.push({ kind: 'phase', at: iso(endedAt), targetId: id, from, to: s.phase, reason });
     }
     states[id] = s;

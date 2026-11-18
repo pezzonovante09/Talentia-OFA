@@ -7,6 +7,7 @@
  * такой целью не начинается (`abaSession.startAbaSession`), и тот же список —
  * основа гарда корпуса ABA, когда появится контент.
  */
+import { mixErrors } from './abaMixedBlock';
 import { promptLadder } from './abaPrompting';
 import { MAX_DELAY_MS, type AbaArea, type AbaExemplar, type AbaFormat, type AbaSdKind, type AbaTarget } from '../types/aba';
 import type { AgeBand } from '../types/task';
@@ -133,6 +134,7 @@ export function programErrors(targets: readonly AbaTarget[]): string[] {
       errors.push(`${t.id}: рутина не открывается другой рутиной — они друг друга не включают`);
     }
   }
+  errors.push(...mixErrors(targets));
   return errors;
 }
 
