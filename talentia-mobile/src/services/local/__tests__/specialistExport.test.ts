@@ -19,7 +19,9 @@ import { saveChildState } from '../childState';
 import { commitAbaSession, commitIoa, commitPairingSession, commitRoutineRun, confirmAbaPairing, recordAbaTrial, recordRoutineStep, setAbaObservers } from '../commit';
 import { appendConsentEvent } from '../consentLog';
 import { exportChild, exportForSpecialist } from '../purge';
+import { specialistReportHtml } from '../specialistReportHtml';
 import type { SqlDb } from '../sql';
+import { reportT } from '../../../test/reportT';
 import { asAbaWriter, memoryDb } from './nodeSql';
 import { resultTail } from './routineResultTail';
 
@@ -238,6 +240,15 @@ describe('экспорт специалисту: нет времени суто�
   it('во всём JSON, включая exportedAt, нет ISO-даты со временем и шаблона чч:мм', async () => {
     const out = await exportForSpecialist(await richDb(), 'kid', '2026-10-12T13:37:00.000Z');
     expect(JSON.stringify(out)).not.toMatch(/\d{4}-\d{2}-\d{2}T\d{2}|\d{2}:\d{2}/);
+  });
+
+  it('отчёт специалисту (вопрос 118) по настоящей выгрузке: без NaN, сырых ключей, времени суток, uuid наблюдателя', async () => {
+    const out = await exportForSpecialist(await richDb(), 'kid', '2026-10-12T13:37:00.000Z');
+    const html = specialistReportHtml(out, reportT(), { dataFileName: 'talentia-aba-2026-10-12.json' });
+    expect(html).toContain('Отчёт по домашней практике');
+    expect(html).not.toMatch(/NaN|undefined|parent\.aba\.|abaSession\.|\d{4}-\d{2}-\d{2}T\d{2}/);
+    expect(html).not.toContain(OBSERVER);
+    expect(html).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
   });
 });
 

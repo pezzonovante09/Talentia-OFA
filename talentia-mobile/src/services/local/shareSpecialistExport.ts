@@ -105,7 +105,11 @@ export async function shareSpecialistExport(
   opts: ShareSpecialistExportOptions,
 ): Promise<ShareSpecialistExportResult> {
   if (!(await Sharing.isAvailableAsync())) return 'unavailable';
-  if (consentStatus(await readConsentLog(db), 'aba_processing', childId, CURRENT_CONSENT_TEXTS.aba_processing) !== 'granted') return 'no_consent';
+  if (consentStatus(await readConsentLog(db), 'aba_processing', childId, CURRENT_CONSENT_TEXTS.aba_processing) !== 'granted') {
+    // согласия нет — и копии прошлой выгрузки в памяти не держим
+    prepared = null;
+    return 'no_consent';
+  }
   const data = await exportForSpecialist(db, childId, now);
   const json = JSON.stringify(data);
   const html = specialistReportHtml(data, opts.t, { lang: opts.lang, dataFileName: exportFileName(data.exportedAt) });

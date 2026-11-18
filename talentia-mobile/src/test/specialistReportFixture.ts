@@ -79,7 +79,11 @@ const SESSIONS: SessionSpec[] = [
     day: '2026-11-07',
     minutes: 8,
     trials: [{ start: 0, delay: 1000, latency: 800, observing: 2000 }, { start: 0, delay: 1000, latency: 800, observing: 2000 }, { start: 0, delay: 1000, latency: 800 }, { start: 0, response: 'prompted', delay: 1000 }, { start: 0, response: 'prompted', delay: 1000 }],
-    events: [{ kind: 'break', startedAt: '', endedAt: '', initiatedBy: 'child_card', cardTaken: true }],
+    // перерыв по карточке пишет и `assent` от карточки — в «Отказ» взрослого он не идёт
+    events: [
+      { kind: 'assent', at: '', by: 'child_card', action: 'break', between: true, targetId: SAME2 },
+      { kind: 'break', startedAt: '', endedAt: '', initiatedBy: 'child_card', cardTaken: true, between: true },
+    ],
   },
   {
     day: '2026-11-10',
@@ -187,7 +191,6 @@ export function fabricatedExport(): SpecialistExport {
     abaTrials: trials.map(({ sdEndedAt: _s, ...t }) => ({ ...t, sdEndedAt: 0 })),
     abaSessions: sessions.map(({ startedAt, endedAt, ...s }) => ({
       ...s,
-      endedAt: Date.parse(endedAt!) - Date.parse(startedAt),
       events: s.events.map((e) => Object.fromEntries(Object.entries(e).map(([k, v]) => [k, typeof v === 'string' && /T\d\d:/.test(v) ? 0 : v]))),
       durationSec: Math.round((Date.parse(endedAt!) - Date.parse(startedAt)) / 1000),
       exchangesGiven: s.exchangesMade,

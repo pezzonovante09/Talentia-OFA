@@ -647,7 +647,7 @@
       "pauseRetention": "If there are no sessions for 12 months, practice progress data is deleted.",
       "specialist": "For a specialist",
       "exportRow": "Export for a specialist",
-      "exportCaption": "The report is a page the specialist opens in a browser or prints: targets, charts, sessions, signals. The file for software holds the same records in full, for processing on a computer. Neither contains the child's name. You decide whom to give the file to; the app does not control what happens to it next.",
+      "exportCaption": "What leaves the device: targets, prompts, session results and reward choices, without the child's name. The report is a page the specialist opens in a browser or prints; the file for software holds the same records in full, for processing on a computer. You decide whom to give the files to; the app does not control what happens to them next.",
       "exportLater": "Export as a file is turned off for now.",
       "exportUnavailable": "This device cannot share the file: there is no system share sheet.",
       "exportLaterValue": "Later",
@@ -730,7 +730,7 @@
           "teaching": "Teaching trials",
           "generalization": "Probes on new cards",
           "breaks": "Breaks",
-          "refusals": "\"No\"",
+          "refusals": "\"No\" marked by the adult",
           "note": "Note"
         },
         "minutes": "{{n}} min",

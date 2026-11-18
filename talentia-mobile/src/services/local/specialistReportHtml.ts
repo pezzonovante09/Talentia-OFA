@@ -61,8 +61,8 @@ function readSessions(raw: unknown[]): SessionRow[] {
       durationSec: num(s.durationSec),
       config: str(s.config),
       endReason: str(s.endReason),
-      // `endedAt` в файле — смещение в мс от начала; `null` — записи конца нет
-      incomplete: s.endedAt === null,
+      // `endedAt` в файл не попадает (`exportForSpecialist`): записи конца нет — нет и длительности
+      incomplete: num(s.durationSec) === null,
       events: arr(s.events).filter(isObj),
       lead: str(s.primaryObserverId),
     }))
@@ -330,7 +330,8 @@ function sessionsTable(ctx: Ctx, data: SpecialistExport, sessions: SessionRow[])
       ].join('; ');
       const breaks = s.events.filter((ev) => ev.kind === 'break' && ev.training !== true);
       const byCard = breaks.filter((ev) => ev.initiatedBy === 'child_card').length;
-      const refusals = s.events.filter((ev) => ev.kind === 'assent').length;
+      // «Отказ» взрослого: перерыв по карточке ребёнка тоже пишет событие `assent` (by: 'child_card') — он уже в перерывах
+      const refusals = s.events.filter((ev) => ev.kind === 'assent' && ev.by === 'adult_observed').length;
       const duration =
         s.durationSec === null ? '—' : s.durationSec < 60 ? t(`${K}.underMinute`) : t(`${K}.minutes`, { n: Math.round(s.durationSec / 60) });
       const notes = [

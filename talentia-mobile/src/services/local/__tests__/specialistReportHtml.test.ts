@@ -70,6 +70,15 @@ describe('specialistReportHtml: содержание', () => {
     expect(plain).toContain('10.11 8 мин 5 + 1 после ошибки 1 0 1');
   });
 
+  it('занятие без записи конца (длительности нет) и с остановкой — заметка словами', () => {
+    const data = fabricatedExport();
+    const rows = data.abaSessions as Record<string, unknown>[];
+    const changed = { ...data, abaSessions: rows.map((s, i) => (i === 1 ? { ...s, durationSec: null } : i === 2 ? { ...s, endReason: 'assent_withdrawn' } : s)) };
+    const p = text(render(changed));
+    expect(p).toContain('5.11 — 5 — 0 0 запись конца занятия не сохранилась');
+    expect(p).toContain('остановлено: отказ ребёнка');
+  });
+
   it('сигналы словами; без флагов — «Сигналов нет.»', () => {
     expect(plain).toContain('По форме: ребёнок чаще, чем случайно, выбирает одно и то же место на экране');
     expect(plain).not.toContain('position_bias');

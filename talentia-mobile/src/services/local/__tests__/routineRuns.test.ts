@@ -12,6 +12,7 @@ import { initialTokenTraining, type TokenTrainingState } from '../../../domain/a
 import type { ConsentEvent } from '../../../domain/consent';
 import {
   AbaConsentRequiredError,
+  abaLocalDay,
   RoutineAlreadyRunError,
   RoutineStateConflictError,
   appendIoa,
@@ -625,7 +626,8 @@ describe('экспорт специалисту: сессии, пробы сес
     const out = await exportForSpecialist(db, 'kid', NOW);
     const [r] = out.abaIoa as Record<string, unknown>[];
     expect(r).not.toHaveProperty('enteredAt');
-    expect(r.enteredDay).toBe('2026-10-12');
+    // местный день ввода (вопрос 119): в UTC — 12-е, в Бишкеке — уже 13-е
+    expect(r.enteredDay).toBe(abaLocalDay(Date.parse(ioaRecord.enteredAt)));
     expect(JSON.stringify(out.abaIoa)).not.toMatch(ISO_DATETIME);
   });
 
@@ -660,8 +662,10 @@ describe('экспорт специалисту: сессии, пробы сес
     });
     const out = await exportForSpecialist(db, 'kid', NOW);
     const targets = out.state.abaTargets as Record<string, { assentConcernReviewed: { role: string; at: string } }>;
-    expect(targets.A.assentConcernReviewed).toEqual({ role: 'specialist', at: '2026-10-09' });
-    expect(out.state.physicalPromptAllowed).toEqual({ value: true, setAt: '2026-10-10', setByRole: 'owner' });
+    // местные дни (вопрос 119): 18:20 UTC 9-го — уже 10-е в Бишкеке
+    const day = (iso: string) => abaLocalDay(Date.parse(iso));
+    expect(targets.A.assentConcernReviewed).toEqual({ role: 'specialist', at: day('2026-10-09T18:20:00.000Z') });
+    expect(out.state.physicalPromptAllowed).toEqual({ value: true, setAt: day('2026-10-10T06:05:00.000Z'), setByRole: 'owner' });
     expect(JSON.stringify(out.state)).not.toMatch(ISO_DATETIME);
   });
 
