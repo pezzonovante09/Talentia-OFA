@@ -24,6 +24,7 @@ const ALL: Record<ChildStateKey, true> = {
   breakCard: true,
   abaRoutineSettingOpen: true,
   sampleTouch: true,
+  abaSessionParams: true,
 };
 
 describe('ключи состояния ребёнка', () => {

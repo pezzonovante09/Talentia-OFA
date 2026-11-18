@@ -158,6 +158,7 @@ describe('specialistReportHtml: приватность и безопасност
       abaRoutineRuns: [],
       abaReinforcerChoices: [],
       abaPairingSessions: [],
+      abaSpecialistEvents: [],
       summaries: { ...fabricatedExport().summaries, bySession: [], byTarget: [] },
       state: {},
     };

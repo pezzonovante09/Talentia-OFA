@@ -667,9 +667,9 @@ describe('накат миграции 15 → 16 на базе с данными'
     await migrate(db);
     const last = await revokeTriggerSql(db);
     expect(tablesIn(last).slice(0, tablesIn(v15).length)).toEqual(tablesIn(v15));
-    expect(tablesIn(last)).toEqual(expect.arrayContaining(['aba_pairing_sessions', 'aba_session_tails']));
-    // миграция 19 добавила ключ sampleTouch (шаг «коснись картинки»); прочие ключи те же
-    expect(keysIn(last).filter((k) => k !== 'sampleTouch')).toEqual(keysIn(v15));
+    expect(tablesIn(last)).toEqual(expect.arrayContaining(['aba_pairing_sessions', 'aba_session_tails', 'aba_specialist_events']));
+    // ключи версии 15 на месте в своём порядке; позже добавились только `sampleTouch` (миграция 19) и `abaSessionParams` (20)
+    expect(keysIn(last)).toEqual([...keysIn(v15), 'sampleTouch', 'abaSessionParams']);
   });
 
   it('шаг 15 → 16: прочие триггеры версии 15 не тронуты, добавлены ровно три триггера журнала сопряжения', async () => {
@@ -690,9 +690,13 @@ describe('накат миграции 15 → 16 на базе с данными'
     const before = await triggers(db);
     await migrate(db);
     const after = await triggers(db);
-    // триггеры ключей ABA-состояния пересоздала миграция 19 (ключ sampleTouch) — вне сравнения
-    const names15 = new Set(before.filter((t) => !t.name.startsWith('child_state_aba_need_consent_')).map((t) => t.name));
-    expect(after.filter((t) => names15.has(t.name))).toEqual(before.filter((t) => names15.has(t.name)));
+    // ворота состояния ABA пересоздают миграции 19 (`sampleTouch`) и 20 (`abaSessionParams`) — прежние ключи в них остаются
+    const regated = (name: string) => name.startsWith('child_state_aba_need_consent_');
+    const names15 = new Set(before.map((t) => t.name));
+    expect(after.filter((t) => names15.has(t.name) && !regated(t.name))).toEqual(before.filter((t) => !regated(t.name)));
+    for (const t of after.filter((x) => regated(x.name))) {
+      expect(keysIn(t.sql)).toEqual([...keysIn(before.find((b) => b.name === t.name)!.sql), 'sampleTouch', 'abaSessionParams']);
+    }
   });
 
   it('после полного наката отзыв блокирует каждая таблица триггера (включая пришедшие после 16) и каждый ключ состояния по отдельности', async () => {
@@ -717,6 +721,7 @@ describe('накат миграции 15 → 16 на базе с данными'
       aba_routine_run_amendments: "INSERT INTO aba_routine_run_amendments (child_id, run_id, body, recorded_at) VALUES ('kid', 'x', '{}', '2026-10-25T10:00:00.000Z')",
       aba_pairing_sessions: "INSERT INTO aba_pairing_sessions (child_id, id, day, body, recorded_at) VALUES ('kid', 'x', '2026-10-25', '{}', '2026-10-25T10:00:00.000Z')",
       aba_session_tails: "INSERT INTO aba_session_tails (child_id, session_id, body, recorded_at) VALUES ('kid', 's', '{}', '2026-10-25T10:00:00.000Z')",
+      aba_specialist_events: "INSERT INTO aba_specialist_events (child_id, body, recorded_at) VALUES ('kid', '{}', '2026-10-25T10:00:00.000Z')",
     };
     const cases = [
       ...tablesIn(sql).map((t) => ({ what: t, insert: rows[t], table: t })),

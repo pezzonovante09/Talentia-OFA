@@ -44,3 +44,58 @@ export function sessionParamsErrors(p: AbaSessionParams | undefined, profileBand
   }
   return errors;
 }
+
+/**
+ * Параметры после смены полосы: лимит времени и окна, которые при новой полосе вне пределов, снимаются («по умолчанию»),
+ * остальное остаётся. Экран специалиста зовёт это перед записью — смена полосы не упирается в старые числа.
+ */
+export function pruneSessionParams(p: AbaSessionParams, profileBand: AgeBand): AbaSessionParams {
+  const { timeLimitMs, responseWindowMs, ...rest } = p;
+  const out: AbaSessionParams = { ...rest };
+  if (timeLimitMs !== undefined && !sessionParamsErrors({ ...rest, timeLimitMs }, profileBand).length) out.timeLimitMs = timeLimitMs;
+  const windows = Object.fromEntries(
+    Object.entries(responseWindowMs ?? {}).filter(([f, ms]) => !sessionParamsErrors({ ...rest, responseWindowMs: { [f]: ms } }, profileBand).length),
+  );
+  if (Object.keys(windows).length) out.responseWindowMs = windows;
+  return out;
+}
+
+const BANDS: readonly AgeBand[] = ['5-6', '7', '8', '9-10'];
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isWholeMs = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v > 0;
+
+/**
+ * Параметры из хранилища — ко входу старта (раздел «Для специалиста», методист 2026-11-18). `startAbaSession` на негодных
+ * параметрах бросает, поэтому старт берёт их только отсюда: неверная форма (незнакомая полоса, формат, число слотов,
+ * дробные мс, лишнее поле) или ошибка `sessionParamsErrors` при полосе профиля — `undefined`, сессия идёт по умолчанию
+ * полосы. Пустые параметры — тоже `undefined`.
+ */
+export function sanitizeSessionParams(raw: unknown, profileBand: AgeBand): AbaSessionParams | undefined {
+  if (!isObject(raw)) return undefined;
+  const known = new Set(['paramsBand', 'timeLimitMs', 'responseWindowMs', 'maxTeachingTargets']);
+  if (Object.keys(raw).some((k) => !known.has(k))) return undefined;
+  const out: AbaSessionParams = {};
+  if (raw.paramsBand !== undefined) {
+    if (!BANDS.includes(raw.paramsBand as AgeBand)) return undefined;
+    out.paramsBand = raw.paramsBand as AgeBand;
+  }
+  if (raw.timeLimitMs !== undefined) {
+    if (!isWholeMs(raw.timeLimitMs)) return undefined;
+    out.timeLimitMs = raw.timeLimitMs;
+  }
+  if (raw.maxTeachingTargets !== undefined) {
+    if (raw.maxTeachingTargets !== 1 && raw.maxTeachingTargets !== 2) return undefined;
+    out.maxTeachingTargets = raw.maxTeachingTargets;
+  }
+  if (raw.responseWindowMs !== undefined) {
+    if (!isObject(raw.responseWindowMs)) return undefined;
+    const windows: Partial<Record<AbaFormat, number>> = {};
+    for (const [format, ms] of Object.entries(raw.responseWindowMs)) {
+      if (!Object.prototype.hasOwnProperty.call(RESPONSE_WINDOW_MS, format) || !isWholeMs(ms)) return undefined;
+      windows[format as AbaFormat] = ms;
+    }
+    if (Object.keys(windows).length) out.responseWindowMs = windows;
+  }
+  if (!Object.keys(out).length) return undefined;
+  return sessionParamsErrors(out, profileBand).length ? undefined : out;
+}

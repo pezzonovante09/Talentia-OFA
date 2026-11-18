@@ -185,7 +185,9 @@ export type SensitiveAction =
   | 'aba_consent'
   | 'aba_resume'
   | 'aba_export'
-  | 'aba_pairing_confirm';
+  | 'aba_pairing_confirm'
+  /** Раздел «Для специалиста» (методист 2026-11-18): вход и каждое изменение на нём. */
+  | 'aba_specialist';
 
 /**
  * Чем подтверждается действие.
@@ -208,6 +210,7 @@ export const CONFIRMATION: Record<SensitiveAction, Confirmation> = {
   aba_resume: 'gate_fresh',
   aba_export: 'gate_fresh',
   aba_pairing_confirm: 'gate_fresh',
+  aba_specialist: 'gate_fresh',
   /**
    * Временно, до облака (решение владельца 2026-10-25, проверка приватности): почты в локальной
    * версии нет, поэтому `gate_now` — PIN вводится на самом экране удаления, окно свежести не

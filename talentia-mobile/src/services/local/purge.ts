@@ -31,6 +31,7 @@ import type { ConsentEvent, GuardianRole } from '../../domain/consent';
 import { criterionGaps, generalizationPasses, isRoutine, summarizeSession, type CriterionGap, type SessionOutcome } from '../../domain/abaCriterion';
 import { fadeClass, type FadeClass } from '../../domain/abaPrompting';
 import type { TokenTrainingState } from '../../domain/abaTokenTraining';
+import type { SpecialistEvent } from '../../domain/abaSpecialist';
 import { abaLocalDay, withAmendments, type RoutineRunAmendment } from './abaLog';
 import { ABA_DELETED_KEYS, ABA_STATE_KEYS, loadChildState } from './childState';
 import { insertConsentEvent, readConsentLog } from './consentLog';
@@ -50,6 +51,7 @@ const JOURNALS = [
   'aba_routine_run_amendments',
   'aba_pairing_sessions',
   'aba_session_tails',
+  'aba_specialist_events',
   'lesson_runs',
 ] as const;
 
@@ -72,6 +74,7 @@ export const SPECIALIST_STATE_KEYS = [
   'abaObservers',
   'breakCard',
   'sampleTouch',
+  'abaSessionParams',
 ] as const satisfies readonly (typeof ABA_STATE_KEYS)[number][];
 
 /** Снимки «в работе»: срок хранения — по их началу (копии проб в них живут не дольше журнала). */
@@ -107,6 +110,7 @@ const RETENTION_COLUMNS = [
   ['aba_routine_run_amendments', 'recorded_at'],
   ['aba_pairing_sessions', 'recorded_at'],
   ['aba_session_tails', 'recorded_at'],
+  ['aba_specialist_events', 'recorded_at'],
   ['lesson_runs', 'started_at'],
 ] as const;
 
@@ -434,6 +438,8 @@ export async function abaDataSummary(
   pairingSessions: number;
   /** Строки журнала хвоста конца (фаза 8): на сессию их может быть несколько. */
   sessionTails: number;
+  /** Записи журнала раздела «Для специалиста». */
+  specialistEvents: number;
   observers: number;
   settings: boolean;
 }> {
@@ -453,6 +459,7 @@ export async function abaDataSummary(
     reinforcerChoices: await count('aba_reinforcer_choices'),
     pairingSessions: await count('aba_pairing_sessions'),
     sessionTails: await count('aba_session_tails'),
+    specialistEvents: await count('aba_specialist_events'),
     observers: observers?.length ?? 0,
     settings: settings.n > 0,
   };
@@ -491,6 +498,8 @@ export type ChildExport = {
   abaSessionTails: unknown[];
   /** Исправления отметок взрослого: исходные пробы остаются в `abaTrials`, замены — отдельными строками. */
   abaTrialCorrections: unknown[];
+  /** Журнал раздела «Для специалиста»: поле, было, стало, роль (заявленная), момент. */
+  abaSpecialistEvents: unknown[];
   lessonRuns: unknown[];
   state: Record<string, unknown>;
   consentEvents: ConsentEvent[];
@@ -557,6 +566,7 @@ async function collectExport(
     abaPairingSessions: await bodies('aba_pairing_sessions'),
     abaSessionTails: await bodies('aba_session_tails'),
     abaTrialCorrections: await correctionsOf(db, childId),
+    abaSpecialistEvents: await bodies('aba_specialist_events'),
     lessonRuns: await bodies('lesson_runs'),
     state,
     consentEvents: (await readConsentLog(db)).filter((e) => e.childId === childId || e.childId === null),
@@ -682,7 +692,13 @@ export type SpecialistExport = {
    * номера сессий, как у записей; `sessionId` — те же метки, что у сессий.
    */
   summaries: SpecialistSummaries;
-  /** Состояние ABA; наблюдатели — метками `O1`, `O2`… с ролью и обучен ли. */
+  /**
+   * Журнал раздела «Для специалиста» (методист 2026-11-18): по порядку записи `order`, `day` (без времени суток), роль
+   * `specialist` — **заявленная** (`claimed: true`, кто держал телефон, приложение не проверяет), поле, было, стало; цели
+   * и роль наблюдателя — если есть. По нему отчёт рисует линию смены условий. Без имён и uuid взрослых.
+   */
+  abaSpecialistEvents: unknown[];
+  /** Состояние ABA; наблюдатели — метками `O1`, `O2`… с ролью и обучен ли. `abaSessionParams` — параметры специалиста. */
   state: Record<string, unknown>;
 };
 
@@ -1195,6 +1211,18 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
       const seconds = Math.round((Date.parse(endedAt) - Date.parse(startedAt)) / 1000);
       return { ...p, durationSec: Number.isFinite(seconds) ? Math.max(0, seconds) : null, primaryObserverId: label(p.primaryObserverId) };
     });
+    // журнал раздела «Для специалиста»: только день (как у всего файла), порядок — номером; поля — явным списком
+    const abaSpecialistEvents = (await bodies<SpecialistEvent>('aba_specialist_events')).map((e, i) => ({
+      order: i + 1,
+      day: abaLocalDay(Date.parse(e.at)),
+      role: e.role,
+      claimed: true as const,
+      field: e.field,
+      from: e.from,
+      to: e.to,
+      ...(e.targetIds ? { targetIds: e.targetIds } : {}),
+      ...(e.observerRole ? { observerRole: e.observerRole } : {}),
+    }));
     const corrections = (await correctionsOf(tx, childId)) as { trialId: string }[];
     // сводки (Ж12) — из тех же проб и записей, до замены id: метки сессий в них должны совпасть с `abaSessions`
     const summaries = specialistSummaries({
@@ -1226,6 +1254,7 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
       abaReinforcerChoices: choicesOut,
       abaPairingSessions: pairingOut,
       summaries: { criterion: summaries.criterion, bySession: bySessionOut, byTarget: byTargetOut },
+      abaSpecialistEvents,
       state: {
         ...dayOnly(withoutBreakCardIds(state)),
         abaObservers: observers.map((o) => ({ id: label(o.id), role: o.role, trained: o.trained })),

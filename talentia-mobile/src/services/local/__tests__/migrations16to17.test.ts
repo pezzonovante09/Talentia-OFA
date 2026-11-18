@@ -148,25 +148,32 @@ describe('накат миграции 17 на базе версии 16 с дан
     expect(await userVersion(db)).toBe(MIGRATIONS.length);
   });
 
+  /** Ровно шаг 16 → 17, как его делает `migrate`: после 17 есть следующие миграции (19 — шаг «коснись картинки», 20 — раздел специалиста). */
+  const step17 = (db: SqlDb) =>
+    db.transaction(async (tx) => {
+      await tx.exec(MIGRATIONS[16]);
+      await tx.exec('PRAGMA user_version = 17');
+    });
+
   it('триггер отзыва пересоздан: все прежние таблицы на месте плюс aba_session_tails, ключи состояния те же', async () => {
     const db = await v16WithData();
     const v16 = await revokeTriggerSql(db);
-    await migrate(db);
+    await step17(db);
     const v17 = await revokeTriggerSql(db);
     expect(tablesIn(v16)).toContain('aba_pairing_sessions'); // предпосылка: разбор SQL работает и видит таблицу 16
     expect(tablesIn(v17)).toEqual([...tablesIn(v16), 'aba_session_tails']);
-    // миграция 19 добавила ключ sampleTouch (шаг «коснись картинки»); прочие ключи те же
-    expect(keysIn(v17).filter((k) => k !== 'sampleTouch')).toEqual(keysIn(v16));
+    // ровно шаг 17: ключи те же (sampleTouch и abaSessionParams приходят миграциями 19 и 20)
+    expect(keysIn(v17)).toEqual(keysIn(v16));
     expect(keysIn(v16).length).toBeGreaterThanOrEqual(12);
   });
 
   it('прочие триггеры версии 16 не тронуты, добавлены ровно три триггера хвостов', async () => {
     const db = await v16WithData();
     const before = await triggers(db);
-    await migrate(db);
+    await step17(db);
     const after = await triggers(db);
-    // триггеры ключей ABA-состояния пересоздала миграция 19 (ключ sampleTouch) — вне сравнения
-    const same = (t: { name: string }) => !t.name.startsWith('aba_session_tails_') && !t.name.startsWith('child_state_aba_need_consent_');
+    // ровно шаг 17: триггеры ключей ABA-состояния не тронуты (их пересоздают миграции 19 и 20)
+    const same = (t: { name: string }) => !t.name.startsWith('aba_session_tails_');
     expect(after.filter(same)).toEqual(before.filter(same));
     expect(after.filter((t) => t.name.startsWith('aba_session_tails_')).map((t) => t.name)).toEqual([
       'aba_session_tails_need_consent',

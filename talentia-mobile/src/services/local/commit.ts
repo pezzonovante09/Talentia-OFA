@@ -7,8 +7,7 @@
  * на `UNIQUE(child_id, session_index)`; ABA у ребёнка ломалось навсегда. Здесь — или всё,
  * или ничего.
  */
-import type { AbaIoaRecord, AbaObserver, AbaSession, AbaSessionTail, AbaTargetState, AbaTrial, RoutineSetting } from '../../types/aba';
-import { awayOutcome, resumeAbaSession as resumeSessionState, type AbaSessionResult, type AbaSessionState } from '../../domain/abaSession';
+import type { AbaIoaRecord, AbaObserver, AbaSession, AbaSessionTail, AbaTarget, AbaTargetState, AbaTrial, RoutineSetting } from '../../types/aba';
 import {
   finishRoutineRun,
   routineResultWithSetting,
@@ -34,6 +33,18 @@ import type { AtlasEntry } from '../../domain/lessonAssembly';
 import type { SkillState } from '../../domain/mastery';
 import type { LessonRun } from '../../domain/parentReport';
 import { ioaRecordErrors } from '../../domain/abaIoa';
+import { awayOutcome, resumeAbaSession as resumeSessionState, reviewAssentConcern, type AbaSessionResult, type AbaSessionState } from '../../domain/abaSession';
+import { sanitizeSessionParams, type AbaSessionParams } from '../../domain/abaSessionParams';
+import {
+  assignMixedCheck,
+  flagReviewed,
+  pairingConfirmedEvent,
+  paramsChanges,
+  reviewTargetFlag,
+  reviewTokenFlag,
+  setObserverTrained,
+  type SpecialistEvent,
+} from '../../domain/abaSpecialist';
 import { deepEqual } from '../../domain/deepEqual';
 import {
   AbaBoardConflictError,
@@ -54,6 +65,7 @@ import {
   appendTrial,
   appendTrialCorrection,
   openRoutineOfferOf,
+  recordedAtIso,
   reinforcerHistoryOf,
   routineExchangedSince,
   withAbaWrite,
@@ -66,7 +78,7 @@ import { readConsentLog } from './consentLog';
 import { consentStatus, isGranted, type GuardianRole } from '../../domain/consent';
 import { CURRENT_CONSENT_TEXTS } from '../../domain/consentTexts';
 import { appendLessonRun, withLessonWrite } from './lessonRuns';
-import type { TaskFormat } from '../../types/task';
+import type { AgeBand, TaskFormat } from '../../types/task';
 import type { SqlDb } from './sql';
 
 export type LessonCommit = {
@@ -821,6 +833,142 @@ export async function saveAbaTargets(
     const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
     await saveChildState(tx, childId, 'abaTargets', mergeTargets(targets, states), at);
   });
+}
+
+/**
+ * Раздел «Для специалиста» (методист 2026-11-18): каждое изменение — вместе с событием журнала `aba_specialist_events`
+ * одной транзакцией при согласии и не на паузе (`withAbaWrite`). «Было» читается внутри транзакции; ничего не
+ * изменилось — ничего не пишется. События — без имён и uuid взрослых, роль заявленная (`abaSpecialist.ts`).
+ */
+async function appendSpecialistEvents(tx: SqlDb, childId: string, events: readonly SpecialistEvent[]): Promise<void> {
+  for (const e of events) {
+    await tx.run('INSERT INTO aba_specialist_events (child_id, body, recorded_at) VALUES (?, ?, ?)', [childId, JSON.stringify(e), recordedAtIso(e.at)]);
+  }
+}
+
+/** Параметры не годятся при полосе профиля (`sanitizeSessionParams`): ничего не пишется. */
+export class AbaSessionParamsInvalidError extends Error {
+  constructor() {
+    super('Параметры сессии вне допустимых пределов');
+    this.name = 'AbaSessionParamsInvalidError';
+  }
+}
+
+/** Параметры сессии. Пустые `{}` — «по умолчанию полосы». Возвращает записанные события (пусто — ничего не менялось). */
+export async function setAbaSessionParams(
+  db: SqlDb,
+  childId: string,
+  params: AbaSessionParams,
+  profileBand: AgeBand,
+  at: string,
+): Promise<SpecialistEvent[]> {
+  const clean = sanitizeSessionParams(params, profileBand) ?? {};
+  if (!deepEqual(clean, params)) throw new AbaSessionParamsInvalidError();
+  let events: SpecialistEvent[] = [];
+  await withAbaWrite(db, childId, async (tx) => {
+    const before = await loadChildState(tx, childId, 'abaSessionParams');
+    events = paramsChanges(sanitizeSessionParams(before, profileBand), clean, at);
+    // негодные сохранённые параметры старт и так пропускал: «по умолчанию» поверх них — запись без события (условия
+    // занятий не меняются), но предупреждение на экране уходит
+    if (!events.length && (before === undefined || deepEqual(before, clean))) return;
+    await saveChildState(tx, childId, 'abaSessionParams', clean, at);
+    await appendSpecialistEvents(tx, childId, events);
+  });
+  return events;
+}
+
+/** «Обучен» у наблюдателя ребёнка — с событием (роль наблюдателя, без uuid). Наблюдателя нет или то же — ничего. */
+export async function setAbaObserverTrained(db: SqlDb, childId: string, observerId: string, trained: boolean, at: string): Promise<boolean> {
+  let changed = false;
+  await withAbaWrite(db, childId, async (tx) => {
+    const r = setObserverTrained((await loadChildState(tx, childId, 'abaObservers')) ?? [], observerId, trained, at);
+    if (!r) return;
+    await saveChildState(tx, childId, 'abaObservers', r.observers, at);
+    await appendSpecialistEvents(tx, childId, [r.event]);
+    changed = true;
+  });
+  return changed;
+}
+
+/**
+ * Событие без своего состояния в базе: «Награда от взрослого» живёт в профиле на устройстве (`profiles.ts`), не в
+ * SQLite, — порядок записи держит вызывающий (`abaSpecialist.ts` сервиса). Проверки согласия и паузы — те же.
+ */
+export async function appendAbaSpecialistEvents(db: SqlDb, childId: string, events: readonly SpecialistEvent[]): Promise<void> {
+  if (!events.length) return;
+  await withAbaWrite(db, childId, (tx) => appendSpecialistEvents(tx, childId, events));
+}
+
+/** «Беспокойство по согласию просмотрено» (`reviewAssentConcern`, роль `specialist`). Флага нет — ничего. */
+export async function reviewAbaAssentConcern(db: SqlDb, childId: string, targetId: string, at: string): Promise<boolean> {
+  let changed = false;
+  await withAbaWrite(db, childId, async (tx) => {
+    const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
+    const s = targets[targetId];
+    if (!s?.flags.includes('assent_concern')) return;
+    await saveChildState(tx, childId, 'abaTargets', mergeTargets(targets, { [targetId]: reviewAssentConcern(s, 'specialist', at) }), at);
+    await appendSpecialistEvents(tx, childId, [flagReviewed('assent_concern', at, [targetId])]);
+    changed = true;
+  });
+  return changed;
+}
+
+/** «Назначить проверку вперемешку» (`assignMixedCheck`): группа цели снова в плане. Флага нет — ничего. */
+export async function assignAbaMixedCheck(db: SqlDb, childId: string, program: readonly AbaTarget[], targetId: string, at: string): Promise<boolean> {
+  let changed = false;
+  await withAbaWrite(db, childId, async (tx) => {
+    const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
+    const next = assignMixedCheck(program, targets, targetId);
+    if (!next) return;
+    await saveChildState(tx, childId, 'abaTargets', mergeTargets(targets, next), at);
+    await appendSpecialistEvents(tx, childId, [flagReviewed('mixed_not_established', at, Object.keys(next))]);
+    changed = true;
+  });
+  return changed;
+}
+
+export type ReviewableFlag = 'token_training_stalled' | 'pairing_keeps_breaking' | 'ioa_low';
+
+/** «Просмотрено» (`token_training_stalled`, `pairing_keeps_breaking` — на доске; `ioa_low` — у цели): флаг снят, может вернуться. */
+export async function reviewAbaFlag(db: SqlDb, childId: string, flag: ReviewableFlag, at: string, targetId?: string): Promise<boolean> {
+  let changed = false;
+  await withAbaWrite(db, childId, async (tx) => {
+    if (flag === 'ioa_low') {
+      if (!targetId) throw new Error('ioa_low — флаг цели: нужен targetId');
+      const targets = (await loadChildState(tx, childId, 'abaTargets')) ?? {};
+      const s = targets[targetId] && reviewTargetFlag(targets[targetId], flag);
+      if (!s) return;
+      await saveChildState(tx, childId, 'abaTargets', mergeTargets(targets, { [targetId]: s }), at);
+      await appendSpecialistEvents(tx, childId, [flagReviewed(flag, at, [targetId])]);
+    } else {
+      const t = reviewTokenFlag((await loadChildState(tx, childId, 'tokenTraining')) ?? initialTokenTraining(), flag);
+      if (!t) return;
+      await saveChildState(tx, childId, 'tokenTraining', t, at);
+      await appendSpecialistEvents(tx, childId, [flagReviewed(flag, at)]);
+    }
+    changed = true;
+  });
+  return changed;
+}
+
+/** «Подтвердить сопряжение» из раздела специалиста: `confirmAbaPairing` и событие — одной транзакцией. */
+export async function confirmAbaPairingAsSpecialist(db: SqlDb, childId: string, observerId: string, at: string): Promise<void> {
+  await withAbaWrite(db, childId, async (tx) => {
+    // то же, что `confirmAbaPairing`, без второго `withAbaWrite`: ворота уже открыты этой транзакцией
+    const observers = (await loadChildState(tx, childId, 'abaObservers')) ?? [];
+    if (!observers.some((o) => o.id === observerId && o.trained)) throw new AbaObserverNotTrainedError();
+    const t = (await loadChildState(tx, childId, 'tokenTraining')) ?? initialTokenTraining();
+    if (t.pairingDone) return;
+    await saveChildState(tx, childId, 'tokenTraining', confirmPairing(t, { observerId, byRole: 'specialist', at }), at);
+    await appendSpecialistEvents(tx, childId, [pairingConfirmedEvent(at)]);
+  });
+}
+
+/** Журнал раздела специалиста, по порядку записи. */
+export async function abaSpecialistEventsOf(db: SqlDb, childId: string): Promise<SpecialistEvent[]> {
+  return (await db.all<{ body: string }>('SELECT body FROM aba_specialist_events WHERE child_id = ? ORDER BY seq', [childId])).map(
+    (r) => JSON.parse(r.body) as SpecialistEvent,
+  );
 }
 
 /**

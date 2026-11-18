@@ -16,6 +16,7 @@ import type { AbaSessionState } from '../../domain/abaSession';
 import type { RoutineRunState, RoutineSettingOpen } from '../../domain/abaRoutineRun';
 import type { BreakCardState } from '../../domain/abaBreakCard';
 import type { SampleTouchState } from '../../domain/abaSampleTouch';
+import type { AbaSessionParams } from '../../domain/abaSessionParams';
 import type { TaskFormat } from '../../types/task';
 import type { SqlDb } from './sql';
 
@@ -60,13 +61,18 @@ export type ChildStateValues = {
   abaRoutineSettingOpen: RoutineSettingOpen | null;
   /** Шаг «коснись картинки» — на ребёнке (`abaSampleTouch.ts`); нет записи — шаг не пройден. */
   sampleTouch: SampleTouchState;
+  /**
+   * Параметры сессии, заданные специалистом в разделе «Для специалиста» (`abaSessionParams.ts`). Читается как
+   * `unknown`-надёжное: негодные параметры старт пропускает (`sanitizeSessionParams`), а не падает.
+   */
+  abaSessionParams: AbaSessionParams;
 };
 
 export type ChildStateKey = keyof ChildStateValues;
 
 /**
  * Ключи ABA, которые пишутся только при согласии на данные ABA. Запись в обход
- * `commit.ts` отклоняет сама база (`schema.ts`, миграции 3, 5, 6, 8, 10, 12 и 19, — список там продублирован:
+ * `commit.ts` отклоняет сама база (`schema.ts`, миграции 3, 5, 6, 8, 10, 12, 19 и 20, — список там продублирован:
  * миграции не правятся, новый ключ — новая миграция).
  */
 export const ABA_STATE_KEYS = [
@@ -82,6 +88,7 @@ export const ABA_STATE_KEYS = [
   'breakCard',
   'abaRoutineSettingOpen',
   'sampleTouch',
+  'abaSessionParams',
 ] as const satisfies readonly ChildStateKey[];
 
 /**

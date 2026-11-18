@@ -202,6 +202,7 @@ export function fabricatedExport(): SpecialistExport {
     abaRoutineRuns: [],
     abaReinforcerChoices: [],
     abaPairingSessions: [{ id: fixtureId(900), day: '2026-10-31', durationSec: 240, config: 'with_adult', endReason: 'completed', primaryObserverId: 'O1' }],
+    abaSpecialistEvents: [],
     summaries,
     state: {
       abaTargets: states,
