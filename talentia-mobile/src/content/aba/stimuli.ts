@@ -98,3 +98,15 @@ export const ABA_SHAPE_NOT_TOGETHER: readonly [AbaShape, AbaShape][] = [
   ['square', 'rhombus'],
   ['circle', 'ring'],
 ];
+
+/**
+ * Все пары «не вместе» как id карточек — для `AbaTarget.notTogether`: соседей образца сессия выбирает на каждой пробе
+ * (решение методиста 41), и правило должно держаться в любом собранном поле, а не только в написанных экземплярах.
+ */
+export const ABA_CARDS_NOT_TOGETHER: readonly (readonly [string, string])[] = [
+  ...ABA_COLOR_NOT_TOGETHER,
+  ...ABA_SHAPE_NOT_TOGETHER.flatMap(([a, b]): [string, string][] => [
+    [`aba-shape-${a}`, `aba-shape-${b}`],
+    [`aba-shape-${a}-alt`, `aba-shape-${b}-alt`],
+  ]),
+];
