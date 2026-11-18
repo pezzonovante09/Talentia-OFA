@@ -979,12 +979,38 @@ function leastUsed<T>(options: readonly T[], used: readonly T[], rng: Rng, avoid
   return pick(pool.filter((o) => count(o) === min), rng);
 }
 
+/** Все сочетания по `k` из `items`, в исходном порядке. */
+function combinations<T>(items: readonly T[], k: number): T[][] {
+  if (k === 0) return [[]];
+  return items.flatMap((x, i) => combinations(items.slice(i + 1), k - 1).map((rest) => [x, ...rest]));
+}
+
+/**
+ * Соседи образца `match` (решение методиста 41, 2026-11-18). У обучающего экземпляра — новые на каждой пробе: любые
+ * обучающие карточки цели (не переноса), без пар `notTogether` и не тем же набором поля, что в прошлой пробе цели;
+ * иначе при постоянных соседях ребёнок учит «эта пара — ответ вот этот», а не правило «такой же». У переноса поле
+ * написано целиком — новый набор показывается как есть. Если правила не выполнимы — снимается запрет повтора, затем
+ * берутся написанные карточки экземпляра.
+ */
+function matchDistractors(target: AbaTarget, exemplar: AbaExemplar, sample: string, previous: readonly string[] | undefined, rng: Rng): string[] {
+  const authored = exemplar.cards!.filter((c) => c !== sample);
+  if (exemplar.role !== 'teaching') return authored;
+  const pool = [...new Set(teachingExemplars(target).flatMap((e) => e.cards ?? []))].filter((c) => c !== sample);
+  const apart = target.notTogether ?? [];
+  const fits = (set: readonly string[]) => !apart.some(([a, b]) => set.includes(a) && set.includes(b));
+  const repeats = (set: readonly string[]) => previous !== undefined && previous.length === set.length && set.every((c) => previous.includes(c));
+  const allowed = combinations(pool, authored.length).filter((d) => fits([sample, ...d]));
+  const fresh = allowed.filter((d) => !repeats([sample, ...d]));
+  const options = fresh.length ? fresh : allowed;
+  return options.length ? pick(options, rng) : authored;
+}
+
 /**
  * Поле `match` (ABA.md, «Спецификация первой версии»). Сопоставление: образец — карточка экземпляра,
  * реже других бывшая образцом в этой сессии и не та же, что в прошлый раз (контрбалансировка: иначе
  * учится любимая карточка); его место в поле — реже других занятое верной у этой цели и не третий
- * раз подряд. Сортировка: поле — две карточки категорий, их порядок неизменен в сессии; верная —
- * категория предмета.
+ * раз подряд (из двух — ряды `twoChoicePosition`); соседи — `matchDistractors`. Сортировка: поле — две
+ * карточки категорий, их порядок неизменен в сессии; верная — категория предмета.
  */
 function withMatchField(state: AbaSessionState, planned: PlannedTrial, target: AbaTarget): AbaSessionState {
   const r = seeded(state.seed);
@@ -1014,7 +1040,7 @@ function withMatchField(state: AbaSessionState, planned: PlannedTrial, target: A
       const ban = last2.length === MAX_SAME_POSITION && last2.every((p) => p === last2[0]) ? [last2[0]] : [];
       at = leastUsed(cards.map((_, i) => i), positions, r.rng, ban);
     }
-    const rest = shuffle(cards.filter((c) => c !== sample), r.rng);
+    const rest = shuffle(matchDistractors(target, exemplar, sample, before[before.length - 1]?.field, r.rng), r.rng);
     field = [...rest.slice(0, at), sample, ...rest.slice(at)];
   }
   const trial = { ...planned, field, sampleCardId: sample };

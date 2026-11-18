@@ -6,6 +6,7 @@
  * частичных моделей нет. Полоса — самая строгая (5–6); загрузчик подставляет полосу ребёнка.
  */
 import type { AbaExemplar, AbaTarget } from '../../types/aba';
+import { ABA_CARDS_NOT_TOGETHER } from './stimuli';
 
 const SD = 'aba.sd.matchSame';
 const SD_WHERE = 'aba.sd.matchWhere';
@@ -32,6 +33,8 @@ const base = {
   delayMode: 'progressive',
   blockSize: 5,
   scoredBy: 'device_tap',
+  // соседи образца меняются на каждой пробе (решение методиста 41) — правила «не вместе» держит сессия
+  notTogether: ABA_CARDS_NOT_TOGETHER,
 } as const satisfies Partial<AbaTarget>;
 
 const o = (n: string) => `aba-obj-${n}`;
