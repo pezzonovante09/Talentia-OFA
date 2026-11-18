@@ -31,7 +31,7 @@ import type { ConsentEvent, GuardianRole } from '../../domain/consent';
 import { criterionGaps, generalizationPasses, isRoutine, summarizeSession, type CriterionGap, type SessionOutcome } from '../../domain/abaCriterion';
 import { fadeClass, type FadeClass } from '../../domain/abaPrompting';
 import type { TokenTrainingState } from '../../domain/abaTokenTraining';
-import { withAmendments, type RoutineRunAmendment } from './abaLog';
+import { abaLocalDay, withAmendments, type RoutineRunAmendment } from './abaLog';
 import { ABA_DELETED_KEYS, ABA_STATE_KEYS, loadChildState } from './childState';
 import { insertConsentEvent, readConsentLog } from './consentLog';
 import { EXPORT_DIR, type DeviceStore } from './device';
@@ -621,9 +621,19 @@ function aliasTimeLeakingIds<T extends unknown[]>(collections: T): T {
   return rename.size === 0 ? collections : (renameStrings(collections, rename) as T);
 }
 
-/** Все строки-даты внутри значения заменены датой без времени суток (`YYYY-MM-DD`). */
+/**
+ * Местный день (`abaLocalDay`) метки времени — как `day` записей сессий и имя файла (вопрос 119): в Бишкеке (UTC+6)
+ * с 00:00 до 06:00 UTC-дата отстала бы на день. Уже день (`YYYY-MM-DD`) — как есть; не разбирается — первые 10 знаков.
+ */
+export function localDayOf(stamp: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(stamp)) return stamp;
+  const ms = Date.parse(stamp);
+  return Number.isFinite(ms) ? abaLocalDay(ms) : stamp.slice(0, 10);
+}
+
+/** Все строки-даты внутри значения заменены местным днём без времени суток (`YYYY-MM-DD`, вопрос 119). */
 function dayOnly<T>(value: T): T {
-  if (typeof value === 'string' && ISO_TIME.test(value)) return value.slice(0, 10) as T;
+  if (typeof value === 'string' && ISO_TIME.test(value)) return localDayOf(value) as T;
   if (Array.isArray(value)) return value.map(dayOnly) as T;
   if (value && typeof value === 'object') {
     return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, dayOnly(v)])) as T;
@@ -633,7 +643,7 @@ function dayOnly<T>(value: T): T {
 
 /** Экспорт для специалиста центра: только данные ABA, без данных взрослых. */
 export type SpecialistExport = {
-  /** День выгрузки `YYYY-MM-DD`, без времени суток. */
+  /** День выгрузки `YYYY-MM-DD`, местный (`abaLocalDay`, вопрос 119), без времени суток. */
   exportedAt: string;
   /** Пробы рутин и сессий: время — смещения в мс от начала прогона или сессии (№95, №96). */
   abaTrials: unknown[];
@@ -941,7 +951,7 @@ export function specialistSummaries(o: {
   const trials = o.trials.filter((t) => !o.correctedTrialIds.has(t.id));
   const targetOf = (id: string) => catalog.find((t) => t.id === id);
   const sessions = [...o.sessions].sort((a, b) => a.index - b.index);
-  const dayOf = (s: AbaSession) => s.day ?? s.startedAt.slice(0, 10);
+  const dayOf = (s: AbaSession) => s.day ?? localDayOf(s.startedAt);
 
   const bySession: SessionTargetSummary[] = [];
   /** Зачётные пробы по сессиям и целям — для объединённой доли на цель. */
@@ -1067,7 +1077,7 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
       return labels.get(id)!;
     };
     // время суток сессий и IOA — тот же режим дня дома (№96): день, длительность и смещения в мс
-    // от начала сессии; день — локальный `day` записи сессии (старые записи — UTC-дата метки)
+    // от начала сессии; день — локальный `day` записи сессии (старые записи — местный день метки начала)
     const sessionStart = new Map(sessions.map((s) => [s.id, Date.parse(s.startedAt)]));
     // хвост конца (фаза 8): что было сделано после записанного итога; `null` — хвост не записан, то есть «неизвестно», не
     // «выдано». Времена — те же смещения от начала сессии; хвост без записи сессии не экспортируется (отсчёта нет)
@@ -1098,8 +1108,8 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
         : null;
       return {
         ...relativeTimes({ ...s, tail }, origin),
-        // локальный день записи сессии; старые записи без него — UTC-дата метки
-        day: s.day ?? startedAt.slice(0, 10),
+        // локальный день записи сессии; старые записи без него — местный день метки начала (вопрос 119)
+        day: s.day ?? localDayOf(startedAt),
         durationSec: Number.isFinite(seconds) ? Math.max(0, seconds) : null,
         // выдано обменов (№183): обмен в конце, жетоны которого вернулись на доску, не выдан; снятый остановкой (`exchange_returned`)
         // уже вычтен из `exchangesMade` доменом
@@ -1109,7 +1119,7 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
     });
     const abaIoa = ioa.map(({ enteredAt, ...r }) => ({
       ...r,
-      enteredDay: String(enteredAt).slice(0, 10),
+      enteredDay: localDayOf(String(enteredAt)),
       secondaryObserverId: label(r.secondaryObserverId),
     }));
     // точное время прогона выдаёт расписание дня ребёнка дома (туалет, одевание) — решение №95:
@@ -1169,7 +1179,7 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
       // видит в событиях `exchange` записи сессии
       return {
         order: i + 1,
-        day: session ? (session.day ?? session.startedAt.slice(0, 10)) : run ? run.day : c.chosen_at.slice(0, 10),
+        day: session ? (session.day ?? localDayOf(session.startedAt)) : run ? run.day : localDayOf(c.chosen_at),
         source: c.source,
         sourceId: c.source_id,
         reinforcerId: c.reinforcer_id,
@@ -1205,8 +1215,8 @@ export async function exportForSpecialist(db: SqlDb, childId: string, exportedAt
     ]);
     return {
       // единственная метка с временем в файле — тоже только день (вопрос 67, `child-privacy-compliance` 2026-11-01):
-      // время выгрузки выдавало бы, когда родитель был у телефона
-      exportedAt: exportedAt.slice(0, 10),
+      // время выгрузки выдавало бы, когда родитель был у телефона; день — местный, как в имени файла (вопрос 119)
+      exportedAt: localDayOf(exportedAt),
       abaTrials: trialsOut,
       abaSessions: sessionsOut,
       abaIoa: ioaOut,

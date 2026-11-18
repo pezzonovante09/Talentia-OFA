@@ -11,7 +11,7 @@ import type { AbaSessionResult } from '../../../domain/abaSession';
 import { boardRevOf } from '../../../domain/abaTokens';
 import { initialTokenTraining, type TokenTrainingState } from '../../../domain/abaTokenTraining';
 import type { ConsentEvent } from '../../../domain/consent';
-import { RoutineAlreadyRunError, RoutineStateConflictError, routineRunsOf } from '../abaLog';
+import { RoutineAlreadyRunError, RoutineStateConflictError, abaLocalDay, routineRunsOf } from '../abaLog';
 import { loadChildState, saveChildState } from '../childState';
 import { commitAbaSession, commitIoa, commitRoutineRun, recordRoutineStep, saveAbaTargets } from '../commit';
 import { appendConsentEvent } from '../consentLog';
@@ -463,7 +463,7 @@ describe('экспорт специалисту: день сессии', () => {
     expect(await exportedDay({ day: '2026-10-11' })).toBe('2026-10-11');
   });
 
-  it('старая запись без day — UTC-дата метки', async () => {
-    expect(await exportedDay({})).toBe('2026-10-10');
+  it('старая запись без day — местный день метки начала, как у записей с day (вопрос 119)', async () => {
+    expect(await exportedDay({})).toBe(abaLocalDay(Date.parse('2026-10-10T23:30:00.000Z')));
   });
 });

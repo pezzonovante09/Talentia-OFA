@@ -1362,7 +1362,7 @@ describe('«Занятия ABA»: согласие, пауза, файл, отз
   });
 
   // --- файл для специалиста (G3, вопрос 67) ---
-  const CAPTION = 'Что в файле: задания, подсказки, итоги занятий и выбор наград — без имени ребёнка. Вы сами решаете, кому передать файл; что с ним будет дальше, приложение не контролирует.';
+  const CAPTION = 'Что уходит: задания, подсказки, итоги занятий и выбор наград — без имени ребёнка. Отчёт — страница, которую специалист откроет в браузере или распечатает; файл для программы — те же записи целиком, для обработки на компьютере. Вы сами решаете, кому передать файлы; что с ними будет дальше, приложение не контролирует.';
   // «выключено» и «на устройстве не передать» — разные подписи (приватность по диффу этапа C, М1)
   const LATER = 'Выгрузка файлом пока выключена.';
   const UNAVAILABLE = 'На этом устройстве файл не передать: нет системного листа «Поделиться».';
@@ -1390,8 +1390,9 @@ describe('«Занятия ABA»: согласие, пауза, файл, отз
     await typePin(PIN);
     await waitFor(() => expect(exportValue()).toBe('Готовится…'));
     expect(shareSpecialistExport).toHaveBeenCalledTimes(1);
-    const [calledDb, calledChild, calledDevice, calledNow] = shareSpecialistExport.mock.calls[0] as [unknown, string, unknown, string];
+    const [calledDb, calledChild, calledDevice, calledNow, calledOpts] = shareSpecialistExport.mock.calls[0] as [unknown, string, unknown, string, { kind: string; t: unknown; lang: string }];
     expect([calledDb === db, calledChild, typeof (calledDevice as { deleteCacheDir: unknown }).deleteCacheDir, /^\d{4}-\d{2}-\d{2}T/.test(calledNow)]).toEqual([true, KID, 'function', true]);
+    expect([calledOpts.kind, typeof calledOpts.t, calledOpts.lang]).toEqual(['report', 'function', 'ru']);
     expect(note()).toBe(CAPTION);
     await act(async () => release('shared'));
     await waitFor(() => expect(screen.getByTestId('aba-export-shared').props.children).toBe('Файл передан в выбранное приложение'));
@@ -1412,6 +1413,22 @@ describe('«Занятия ABA»: согласие, пауза, файл, отз
     await waitFor(() => expect(exportValue()).toBeUndefined());
     expect([screen.queryByTestId('aba-export-shared'), screen.queryByTestId('aba-export-error')]).toEqual([null, null]);
     expect(note()).toBe(CAPTION);
+  });
+
+  it('две строки: «Отчёт специалисту» отдаёт отчёт, «Файл для программы» — JSON той же выгрузки', async () => {
+    await grant();
+    useGate.getState().open();
+    await renderAba();
+    await waitFor(() => expect(screen.getByTestId('aba-export-data')).toBeTruthy());
+    expect(screen.getByText('Отчёт специалисту')).toBeTruthy();
+    expect(screen.getByText('Файл для программы')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('aba-export-data'));
+    await waitFor(() => expect(shareSpecialistExport).toHaveBeenCalledTimes(1));
+    expect((shareSpecialistExport.mock.calls[0][4] as { kind: string }).kind).toBe('data');
+    await waitFor(() => expect(screen.getByTestId('aba-export-shared')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('aba-export'));
+    await waitFor(() => expect(shareSpecialistExport).toHaveBeenCalledTimes(2));
+    expect((shareSpecialistExport.mock.calls[1][4] as { kind: string }).kind).toBe('report');
   });
 
   it('ошибка сборки файла — «Не удалось собрать файл» над подписью, строка снова ссылка', async () => {

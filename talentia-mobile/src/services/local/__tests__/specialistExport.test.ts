@@ -19,7 +19,9 @@ import { saveChildState } from '../childState';
 import { commitAbaSession, commitIoa, commitPairingSession, commitRoutineRun, confirmAbaPairing, recordAbaTrial, recordRoutineStep, setAbaObservers } from '../commit';
 import { appendConsentEvent } from '../consentLog';
 import { exportChild, exportForSpecialist } from '../purge';
+import { specialistReportHtml } from '../specialistReportHtml';
 import type { SqlDb } from '../sql';
+import { reportT } from '../../../test/reportT';
 import { asAbaWriter, memoryDb } from './nodeSql';
 import { resultTail } from './routineResultTail';
 
@@ -238,6 +240,15 @@ describe('экспорт специалисту: нет времени суто�
   it('во всём JSON, включая exportedAt, нет ISO-даты со временем и шаблона чч:мм', async () => {
     const out = await exportForSpecialist(await richDb(), 'kid', '2026-10-12T13:37:00.000Z');
     expect(JSON.stringify(out)).not.toMatch(/\d{4}-\d{2}-\d{2}T\d{2}|\d{2}:\d{2}/);
+  });
+
+  it('отчёт специалисту (вопрос 118) по настоящей выгрузке: без NaN, сырых ключей, времени суток, uuid наблюдателя', async () => {
+    const out = await exportForSpecialist(await richDb(), 'kid', '2026-10-12T13:37:00.000Z');
+    const html = specialistReportHtml(out, reportT(), { dataFileName: 'talentia-aba-2026-10-12.json' });
+    expect(html).toContain('Отчёт по домашней практике');
+    expect(html).not.toMatch(/NaN|undefined|parent\.aba\.|abaSession\.|\d{4}-\d{2}-\d{2}T\d{2}/);
+    expect(html).not.toContain(OBSERVER);
+    expect(html).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
   });
 });
 
@@ -608,5 +619,50 @@ describe('экспорт специалисту: идентификаторы с
     const out = await exportChild(await dbWithV7(), 'kid', NOW, {});
     expect((out.abaSessions[0] as { id: string }).id).toBe(V7_SESSION);
     expect(JSON.stringify(out.abaTrials)).toContain(V7_TRIAL);
+  });
+});
+
+describe('экспорт специалисту: все дни — местные (вопрос 119), полночь в Бишкеке (UTC+6)', () => {
+  /** Подмена локальных геттеров даты на +6 ч — как в `pairingJournal.test.ts` (пояс процесса в Jest не переключить). */
+  const BISHKEK_MS = 6 * 60 * 60 * 1000;
+  let restore: (() => void) | null = null;
+  beforeEach(() => {
+    const shifted = (d: Date) => new Date(d.getTime() + BISHKEK_MS);
+    const spies = [
+      jest.spyOn(Date.prototype, 'getFullYear').mockImplementation(function (this: Date) {
+        return shifted(this).getUTCFullYear();
+      }),
+      jest.spyOn(Date.prototype, 'getMonth').mockImplementation(function (this: Date) {
+        return shifted(this).getUTCMonth();
+      }),
+      jest.spyOn(Date.prototype, 'getDate').mockImplementation(function (this: Date) {
+        return shifted(this).getUTCDate();
+      }),
+    ];
+    restore = () => spies.forEach((s) => s.mockRestore());
+  });
+  afterEach(() => restore?.());
+
+  // 02:10 по Бишкеку 26 октября = 20:10 UTC 25 октября; запись сессии старая — без поля `day`
+  const LATE = '2026-10-25T20:10:00.000Z';
+  const late = (ms: number) => new Date(Date.parse(LATE) + ms).toISOString();
+
+  async function lateDb() {
+    const db = await dbWithConsent();
+    await recordAbaTrial(db, 'kid', { ...baseTrial, id: 'tr-late', sessionId: 's-late' }, snapOf('s-late'), NOW);
+    await commitAbaSession(db, 'kid', sessionResult({ ...SESSION, id: 's-late', startedAt: LATE, endedAt: late(600_000) }), NOW);
+    await commitIoa(db, 'kid', { id: 'ioa-late', sessionId: 's-late', secondaryObserverId: 'obs-2', source: 'paper_entry', enteredAt: late(1_800_000), items: [], byTarget: {} }, {}, NOW);
+    await asAbaWriter(db, 'kid', (tx) =>
+      saveChildState(tx, 'kid', 'abaTargets', { A: { targetId: 'A', phase: 'mastered', assentConcernReviewed: { role: 'specialist', at: late(-3_600_000) } } as AbaTargetState }, NOW),
+    );
+    return db;
+  }
+
+  it('exportedAt, день старой сессии, enteredDay IOA, даты состояния и день сводки — 2026-10-26, а не UTC 2026-10-25', async () => {
+    const out = await exportForSpecialist(await lateDb(), 'kid', late(3_000_000));
+    const session = out.abaSessions[0] as { day: string };
+    const ioa = out.abaIoa[0] as { enteredDay: string };
+    const reviewed = (out.state.abaTargets as Record<string, { assentConcernReviewed: { at: string } }>).A.assentConcernReviewed.at;
+    expect([out.exportedAt, session.day, ioa.enteredDay, reviewed, out.summaries.bySession[0]?.day]).toEqual(Array(5).fill('2026-10-26'));
   });
 });
