@@ -8,7 +8,7 @@ import { Animated, Easing, Platform, Pressable, useColorScheme, View } from 'rea
 import Svg, { Path } from 'react-native-svg';
 
 import { useChildT } from '../../../i18n';
-import { abaAdultPanel, abaAdultPanelColors, abaAdultSheet, abaInstruction, abaBoardCell, abaBreak, abaBreakTrace, abaControls, abaLayout, abaRefusalPause, abaReinforcementOverlay, abaTokenBoard, ABA_CONTROL_STROKE, ABA_STRIP_SILHOUETTE, ABA_STRIP_SILHOUETTE_GAP, abaTypography } from '../../../design/abaTokens';
+import { abaAdultPanel, abaAdultPanelColors, abaAdultSheet, abaInstruction, abaBoardCell, abaBreak, abaBreakTrace, abaControls, abaLayout, abaRefusalPause, abaReinforcementOverlay, abaTokenBoard, abaVisiblePraise, ABA_CONTROL_STROKE, ABA_STRIP_SILHOUETTE, ABA_STRIP_SILHOUETTE_GAP, abaTypography } from '../../../design/abaTokens';
 import { parentColors, parentPressed, parentTypography } from '../../../design/parentTokens';
 import { radii, typography } from '../../../design/tokens';
 import { AbaText } from '../AbaText';
@@ -27,11 +27,40 @@ import { StimulusPlate } from '../StimulusPlate';
  * Выход и карточка — детские кнопки «Тихого кабинета» (№203): белые, контур `controlInk`, борт `controlLip` под
  * кнопкой (4, в calm 2) за её габаритом — места и зоны нажатия прежние (№198).
  */
+/**
+ * Знак «принято» (решение 35, `abaVisiblePraise`): сплошной квадрат `ink` в центре полосы, не кнопка и не для чтения
+ * экрана. В обычном режиме — одно нарастание масштаба, в calm и «уменьшить движение» — смена кадра.
+ */
+function PraiseMark({ still }: { still: boolean }) {
+  const c = useAbaColors();
+  const v = abaVisiblePraise;
+  const scale = useRef(new Animated.Value(still ? 1 : v.appearFromScale)).current;
+  useEffect(() => {
+    if (still) return;
+    Animated.timing(scale, { toValue: 1, duration: v.appearMs, easing: Easing.out(Easing.quad), useNativeDriver: Platform.OS !== 'web' }).start();
+  }, [scale, still, v.appearMs]);
+  return (
+    <View
+      pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      testID="aba-praise-mark"
+      style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}
+    >
+      <Animated.View
+        style={{ width: v.size, height: v.size, borderRadius: v.radius, backgroundColor: c[v.color], transform: [{ scale }] }}
+      />
+    </View>
+  );
+}
+
 export function TopBar({
   onExit,
   breakCard,
   caption,
   calm = false,
+  praiseMark = false,
+  still = false,
 }: {
   onExit?: () => void;
   /**
@@ -42,6 +71,10 @@ export function TopBar({
   caption?: string;
   /** Calm: борт детских кнопок 2 вместо 4 (`abaControlLip`); без пропа — 4. */
   calm?: boolean;
+  /** Знак «принято» у похвалы без жетона (`abaVisiblePraise`, решение 35) — в центре полосы. */
+  praiseMark?: boolean;
+  /** Calm или «уменьшить движение»: знак появляется сменой кадра. */
+  still?: boolean;
 }) {
   const { t } = useTranslation();
   const c = useAbaColors();
@@ -49,6 +82,7 @@ export function TopBar({
   const w = abaBreak.trainingWait;
   return (
     <View style={{ height: abaLayout.topBar, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      {praiseMark && <PraiseMark still={still} />}
       {onExit ? (
         <ExitHold onExit={onExit} label={t('abaSession.exit')} hintLabel={t('abaSession.exitHint')} calm={calm} />
       ) : (

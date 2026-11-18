@@ -626,10 +626,11 @@ export default function AbaSessionScreen() {
             voice.say('abaSession.sound.token');
             np = { ...np, landed: true } as Phase;
           } else if (fx.kind === 'say') {
-            // похвала — только голосом (№158): без плашки подсказанный ответ не получает условного подкрепителя
-            // варианты похвалы — по кругу среди записанных (правка 4)
+            // похвала без плашки (№158): подсказанный ответ не получает условного подкрепителя; виден знак «принято»
+            // (решение 35); варианты похвалы — по кругу среди записанных (правка 4)
             voice.say(fx.key === 'praise' ? nextPraiseKey() : 'abaSession.sound.listened');
           } else if (fx.kind === 'overlay_hide') np = { ...np, overlay: false } as Phase;
+          else if (fx.kind === 'praise_mark_show' || fx.kind === 'praise_mark_hide') np = { ...np, praiseMark: fx.kind === 'praise_mark_show' } as Phase;
           else if (fx.kind === 'plates_empty') np = { ...np, empty: true } as Phase;
           else if (fx.kind === 'next_sd') {
             if (p.participation) {
@@ -811,7 +812,7 @@ export default function AbaSessionScreen() {
     setPhase({
       kind: 'consequence',
       // сроки — по calm и системному «уменьшить движение» (Ц2.6.1): жетон появляется в 120, похвала в 500
-      run: startConsequence({ markedAt, feedback: res.award.feedback, calm: still, exchange: filledByTrial }),
+      run: startConsequence({ markedAt, feedback: res.award.feedback, calm: still, calmMode: calm, exchange: filledByTrial }),
       overlay,
       earnedBefore,
       landed: false,

@@ -236,7 +236,7 @@ describe('звук последствия (№158)', () => {
     expect(voice.last?.key).toBe('abaSession.sound.praise');
   });
 
-  it('praise без жетона (проба коррекции): только похвала в 300, звука жетона и плашки нет', async () => {
+  it('praise без жетона (проба коррекции): знак «принято» 0…1000, похвала в 300, звука жетона и плашки нет', async () => {
     await acquisitionAtL0();
     await mount();
     await skipCardTraining();
@@ -261,12 +261,19 @@ describe('звук последствия (№158)', () => {
     expect(JSON.parse(rows[1].body)).toMatchObject({ kind: 'correction', response: 'prompted', tokens: 0 });
     expect(screen.queryByTestId('aba-reinforcement')).toBeNull();
     expect(voice.last).toBeNull();
+    const M = clock.now();
+    expect(screen.queryByTestId('aba-praise-mark', HIDDEN)).toBeNull();
+    // знак «принято» (решение 35) — в момент записи: ручные часы проходят этот срок отдельным шагом
     await tick(0);
-    await tick(300);
+    expect(screen.queryByTestId('aba-praise-mark', HIDDEN)).not.toBeNull();
+    await stepTo(M + 300);
     expect(voice.last?.key).toBe('abaSession.sound.praise');
+    await stepTo(M + 999);
+    expect(screen.queryByTestId('aba-praise-mark', HIDDEN)).not.toBeNull();
+    await stepTo(M + 1000);
+    expect(screen.queryByTestId('aba-praise-mark', HIDDEN)).toBeNull();
     // до следующего SD никакого звука жетона
-    await tick(400);
-    await tick(3300);
+    await stepTo(M + 4000, 100);
     expect(voice.last?.key).toBe('abaSession.sound.praise');
     expect(screen.queryAllByTestId('aba-overlay-token-filled', HIDDEN)).toHaveLength(0);
   });
@@ -281,7 +288,10 @@ describe('звук последствия (№158)', () => {
     await fireEvent.press(screen.getByTestId(correctOption()));
     await waitFor(async () => expect(await count('aba_trials')).toBe(1));
     await tick(0);
+    // нейтрально — без знака «принято» (решение 35)
+    expect(screen.queryByTestId('aba-praise-mark', HIDDEN)).toBeNull();
     await tick(300);
+    expect(screen.queryByTestId('aba-praise-mark', HIDDEN)).toBeNull();
     await tick(400);
     await tick(3300);
     expect(voice.last).toBeNull();

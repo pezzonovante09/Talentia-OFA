@@ -1,4 +1,7 @@
-/** Последствие от markedAt (Ц2.6.1): плашка только у token_praise, похвала голосом, следующий SD в +5000. */
+/**
+ * Последствие от markedAt (Ц2.6.1): плашка только у token_praise; у praise / listened — знак «принято» 0…1000 и голос
+ * в 300 (в спокойном режиме без голоса, решение 35); следующий SD в +5000.
+ */
 import { UNDO_WINDOW_MS } from '../../../domain/abaUndo';
 import { advanceConsequence, consequenceDueAt, startConsequence } from '../model/consequenceRun';
 
@@ -23,16 +26,75 @@ describe('последствие', () => {
     expect(k).toContainEqual([500, 'say:praise']);
   });
 
-  it('без жетона — без плашки: похвала только голосом; нейтрально — ничего', () => {
-    expect(kinds(startConsequence({ markedAt: M, feedback: 'praise', calm: false }))).toEqual([
-      [300, 'say:praise'],
-      [4000, 'plates_empty'],
-      [5000, 'next_sd'],
-    ]);
-    expect(kinds(startConsequence({ markedAt: M, feedback: 'neutral', calm: false }))).toEqual([
-      [4000, 'plates_empty'],
-      [5000, 'next_sd'],
-    ]);
+  describe('видимая похвала без жетона (решение 35)', () => {
+    const effectsOf = (run: ReturnType<typeof startConsequence>) => run.plan.map((p) => p.effect.kind as string);
+
+    it.each(['praise', 'listened'] as const)('%s: без плашки — знак в 0, голос в 300, знак уходит в 1000, пустые плиты 4000, SD 5000', (feedback) => {
+      expect(kinds(startConsequence({ markedAt: M, feedback, calm: false }))).toEqual([
+        [0, 'praise_mark_show'],
+        [300, `say:${feedback}`],
+        [1000, 'praise_mark_hide'],
+        [4000, 'plates_empty'],
+        [5000, 'next_sd'],
+      ]);
+    });
+
+    it.each(['praise', 'listened'] as const)('%s в спокойном режиме: голоса нет, знак 0…1000 остаётся', (feedback) => {
+      expect(kinds(startConsequence({ markedAt: M, feedback, calm: true, calmMode: true }))).toEqual([
+        [0, 'praise_mark_show'],
+        [1000, 'praise_mark_hide'],
+        [4000, 'plates_empty'],
+        [5000, 'next_sd'],
+      ]);
+    });
+
+    it.each(['praise', 'listened'] as const)('%s при одном «уменьшить движение» (calm без calmMode): голос в 300 остаётся', (feedback) => {
+      expect(kinds(startConsequence({ markedAt: M, feedback, calm: true }))).toContainEqual([300, `say:${feedback}`]);
+    });
+
+    it('token_praise в спокойном режиме голос сохраняет (500), знака «принято» нет', () => {
+      const k = kinds(startConsequence({ markedAt: M, feedback: 'token_praise', calm: true, calmMode: true }));
+      expect(k).toContainEqual([500, 'say:praise']);
+      expect(k.map(([, x]) => x)).not.toContain('praise_mark_show');
+      expect(k.map(([, x]) => x)).not.toContain('praise_mark_hide');
+    });
+
+    it('token_praise с обменом в спокойном режиме голос сохраняет', () => {
+      const k = kinds(startConsequence({ markedAt: M, feedback: 'token_praise', calm: true, calmMode: true, exchange: true }));
+      expect(k).toContainEqual([500, 'say:praise']);
+    });
+
+    it.each([false, true])('neutral (calmMode %s) — ничего: ни знака, ни голоса', (calmMode) => {
+      expect(kinds(startConsequence({ markedAt: M, feedback: 'neutral', calm: calmMode, calmMode }))).toEqual([
+        [4000, 'plates_empty'],
+        [5000, 'next_sd'],
+      ]);
+    });
+
+    it.each([
+      ['praise', false, undefined],
+      ['listened', true, undefined],
+      ['praise', false, M + 4500],
+      ['listened', true, M + 4500],
+    ] as const)('%s (calmMode %s, жетон отменой %s): знак уходит раньше пустых плит и следующего SD', (feedback, calmMode, tokenAddedLandedAt) => {
+      const k = kinds(startConsequence({ markedAt: M, feedback, calm: calmMode, calmMode, tokenAddedLandedAt }));
+      const at = (kind: string) => k.find(([, x]) => x === kind)![0] as number;
+      expect(at('praise_mark_hide')).toBeLessThan(at('plates_empty'));
+      expect(at('praise_mark_hide')).toBeLessThan(at('next_sd'));
+      // знак показан ровно один раз и убран ровно один раз
+      expect(effectsOf(startConsequence({ markedAt: M, feedback, calm: calmMode, calmMode, tokenAddedLandedAt })).filter((x) => x.startsWith('praise_mark'))).toEqual(['praise_mark_show', 'praise_mark_hide']);
+    });
+
+    it('advance: в 999 знак показан и голос прозвучал, знак ещё на экране; в 1000 — уходит', () => {
+      let run = startConsequence({ markedAt: M, feedback: 'praise', calm: false });
+      const a = advanceConsequence(run, M + 999);
+      expect(a.effects).toEqual([{ kind: 'praise_mark_show' }, { kind: 'say', key: 'praise' }]);
+      run = a.run;
+      expect(consequenceDueAt(run)).toBe(M + 1000);
+      const b = advanceConsequence(run, M + 1000);
+      expect(b.effects).toEqual([{ kind: 'praise_mark_hide' }]);
+      expect(consequenceDueAt(b.run)).toBe(M + 4000);
+    });
   });
 
   it('жетон, добавленный отменой, отодвигает SD на 1000 после приземления', () => {

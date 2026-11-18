@@ -5,7 +5,7 @@
  */
 import { StyleSheet } from 'react-native';
 
-import { abaAdultPanel, abaAdultPanelColors, abaAdultPanelTier, abaAdultSheet, abaColors, abaControlLip, abaIdentifyGrid, abaLayout, abaTypography } from '../../../../design/abaTokens';
+import { abaAdultPanel, abaAdultPanelColors, abaAdultPanelTier, abaAdultSheet, abaColors, abaControlLip, abaIdentifyGrid, abaLayout, abaTypography, abaVisiblePraise } from '../../../../design/abaTokens';
 import { contrast } from '../../../../design/contrast';
 import { parentColors } from '../../../../design/parentTokens';
 import ru from '../../../../i18n/locales/ru.json';
@@ -184,5 +184,45 @@ describe('полоса 68: детские кнопки с бортом (№203)'
   it('calm: борт 2', async () => {
     await bar(true);
     for (const id of ['aba-break-card-lip', 'aba-exit-lip']) expect(flat(id).top).toBe(abaControlLip.calm);
+  });
+});
+
+describe('знак «принято» в полосе 68 (решение 35, `abaVisiblePraise`)', () => {
+  async function bar(more: Partial<Parameters<typeof TopBar>[0]> = {}) {
+    await renderWithProviders(
+      <AbaClockProvider clock={manualClock()}>
+        <TopBar breakCard={{ frameShownAt: 0, onTap: jest.fn() }} {...more} />
+      </AbaClockProvider>,
+    );
+  }
+
+  it('без пропа знака нет', async () => {
+    await bar();
+    expect(screen.queryByTestId('aba-praise-mark', HIDDEN)).toBeNull();
+  });
+
+  it('praiseMark: знак есть, квадрат 48 со скруглением 6 цвета ink', async () => {
+    await bar({ praiseMark: true, still: true });
+    const square = screen.getByTestId('aba-praise-mark', HIDDEN).children[0];
+    if (typeof square === 'string') throw new Error('ожидался квадрат, а не текст');
+    const inner = StyleSheet.flatten(square.props.style);
+    expect([inner.width, inner.height, inner.borderRadius, inner.backgroundColor]).toEqual([abaVisiblePraise.size, abaVisiblePraise.size, abaVisiblePraise.radius, abaColors.light.ink]);
+  });
+
+  it('знак не кнопка: касания проходят сквозь, обработчика нажатия нет', async () => {
+    await bar({ praiseMark: true, still: true });
+    const mark = screen.getByTestId('aba-praise-mark', HIDDEN);
+    expect(mark.props.pointerEvents).toBe('none');
+    expect(mark.props.onPress).toBeUndefined();
+    expect(mark.props.accessibilityRole).toBeUndefined();
+  });
+
+  it('знак скрыт от чтения экрана: без includeHiddenElements его не найти', async () => {
+    await bar({ praiseMark: true, still: true });
+    expect(screen.getByTestId('aba-praise-mark', HIDDEN)).toBeTruthy();
+    expect(screen.queryByTestId('aba-praise-mark')).toBeNull();
+    const mark = screen.getByTestId('aba-praise-mark', HIDDEN);
+    expect(mark.props.importantForAccessibility).toBe('no-hide-descendants');
+    expect(mark.props.accessibilityElementsHidden).toBe(true);
   });
 });

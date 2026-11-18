@@ -43,6 +43,8 @@ export function TrialFrame({ phase, step, session: s, layout, zone, calm, still,
   return (
     <>
       <TopBar
+        praiseMark={phase.kind === 'consequence' && phase.praiseMark === true}
+        still={still}
         breakCard={{
           frameShownAt: phase.kind === 'consequence' ? phase.run.markedAt : frame,
           highlight: (phase.kind === 'consequence' || phase.kind === 'participation') && phase.breakAsked,

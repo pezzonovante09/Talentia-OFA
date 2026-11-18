@@ -46,6 +46,8 @@ export type Phase =
       earnedBefore: number;
       landed: boolean;
       empty: boolean;
+      /** Знак «принято» у похвалы без жетона (решение 35) виден. */
+      praiseMark?: boolean;
       field: TrialStep;
       stripEarned: number;
       participation: boolean;
