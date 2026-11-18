@@ -133,7 +133,7 @@ describe('экран «Для специалиста»', () => {
     await waitFor(() => expect(screen.queryByTestId('spec-action-token_training_stalled')).toBeNull());
     expect((await loadChildState(db, KID, 'tokenTraining'))?.flags).toEqual([]);
     expect((await abaSpecialistEventsOf(db, KID)).map((e) => [e.field, e.role, e.claimed])).toEqual([['flag.token_training_stalled', 'specialist', true]]);
-    await waitFor(() => expect(screen.getByTestId('spec-change-0')).toHaveTextContent(/сигнал: доска жетонов не растёт: да → нет/));
+    await waitFor(() => expect(screen.getByTestId('spec-change-0')).toHaveTextContent(/сигнал: доска жетонов не растёт: было да, стало нет/));
   });
 
   it('параметры: одна цель в обучении — в базе и в журнале; «обучен» у наблюдателя', async () => {

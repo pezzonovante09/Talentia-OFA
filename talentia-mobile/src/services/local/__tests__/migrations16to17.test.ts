@@ -148,10 +148,17 @@ describe('накат миграции 17 на базе версии 16 с дан
     expect(await userVersion(db)).toBe(MIGRATIONS.length);
   });
 
+  /** Ровно шаг 16 → 17, как его делает `migrate`: после 17 есть следующие миграции (19 — раздел специалиста). */
+  const step17 = (db: SqlDb) =>
+    db.transaction(async (tx) => {
+      await tx.exec(MIGRATIONS[16]);
+      await tx.exec('PRAGMA user_version = 17');
+    });
+
   it('триггер отзыва пересоздан: все прежние таблицы на месте плюс aba_session_tails, ключи состояния те же', async () => {
     const db = await v16WithData();
     const v16 = await revokeTriggerSql(db);
-    await migrate(db);
+    await step17(db);
     const v17 = await revokeTriggerSql(db);
     expect(tablesIn(v16)).toContain('aba_pairing_sessions'); // предпосылка: разбор SQL работает и видит таблицу 16
     expect(tablesIn(v17)).toEqual([...tablesIn(v16), 'aba_session_tails']);
@@ -162,7 +169,7 @@ describe('накат миграции 17 на базе версии 16 с дан
   it('прочие триггеры версии 16 не тронуты, добавлены ровно три триггера хвостов', async () => {
     const db = await v16WithData();
     const before = await triggers(db);
-    await migrate(db);
+    await step17(db);
     const after = await triggers(db);
     expect(after.filter((t) => !t.name.startsWith('aba_session_tails_'))).toEqual(before);
     expect(after.filter((t) => t.name.startsWith('aba_session_tails_')).map((t) => t.name)).toEqual([

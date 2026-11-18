@@ -747,7 +747,7 @@
           "say": "сказать"
         },
         "people": "Награда и наблюдатели",
-        "observerTrained": "{{role}}: обучен",
+        "observerTrained": "{{role}}: обучение пройдено",
         "noObservers": "Наблюдателей пока нет — их записывает «Кто ведёт» перед занятием.",
         "actions": "Отметки",
         "noActions": "Сейчас отмечать нечего.",
@@ -762,7 +762,7 @@
         "reviewedCaption": "Отметка снимает сигнал. Если повторится — сигнал вернётся.",
         "seen": "Что видит приложение",
         "boardStage": "Доска жетонов: ступень {{n}}",
-        "targetLine": "{{target}}: {{phase}}",
+        "targetLine": "{{target}} — {{phase}}",
         "targetDetail": "Старт с подсказки уровня {{level}} из 4 · ожидание перед подсказкой {{delay}} с",
         "phase": {
           "baseline": "проверка",
@@ -821,14 +821,14 @@
         "noNotes": "Особых событий в занятиях не было.",
         "changes": "Журнал изменений",
         "noChanges": "Изменений пока не было.",
-        "changeLine": "{{day}} · {{field}}: {{from}} → {{to}}",
+        "changeLine": "{{day}} · {{field}}: было {{from}}, стало {{to}}",
         "field": {
           "paramsBand": "полоса параметров",
           "timeLimitMs": "длительность, мс",
           "responseWindowMs": "время на ответ, мс",
           "maxTeachingTargets": "целей в обучении",
           "adultReward": "награда от взрослого",
-          "observerTrained": "наблюдатель обучен",
+          "observerTrained": "обучение наблюдателя",
           "pairingDone": "знакомство с жетонами",
           "flag": "сигнал"
         },
