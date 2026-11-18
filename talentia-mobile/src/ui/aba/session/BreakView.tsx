@@ -3,6 +3,7 @@
  * контурными). Доля кольца — от начала перерыва, не от показа кадра: после возврата из фона кольцо не начинается заново
  * (фаза 8). Пауза после «Отказ» — не здесь: у неё экран пробы без плит (`app/aba/session.tsx`).
  */
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, View } from "react-native";
 
@@ -27,9 +28,12 @@ import { TopBar } from "./parts";
 export function BreakView({
   phase,
   onReturn,
+  schedule = null,
 }: {
   phase: Extract<Phase, { kind: "break" }>;
   onReturn: (at: number) => void;
+  /** Расписание ребёнку под кольцом (решение методиста 34, `ChildSchedule`); `null` — его нет. */
+  schedule?: ReactNode;
 }) {
   const { t } = useTranslation();
   const childT = useChildT();
@@ -91,6 +95,7 @@ export function BreakView({
             />
           )}
         </Pressable>
+        {schedule}
       </View>
       {/* детская цель (`abaChildTouch`): сжатие 0.94 на касание, засчитывается по правилу кадра; борт — «можно нажать» (№203) */}
       <View
