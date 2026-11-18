@@ -8,7 +8,8 @@
  * «Начать» пишет наблюдателей и `useAbaRun` до навигации и ведёт сразу в сопряжение или сессию через гейт окна
  * `app/aba/index.tsx`. Этап G2 (вопрос 66): карточка «Цели» — три слова на цель и две цифры за занятие. Этап G3
  * (вопрос 67): «Выгрузить для специалиста» — файл через системный лист (`shareSpecialistExport`), строка в трёх
- * состояниях; за флагом `ABA_EXPORT_FILE_ENABLED` — «Позже», как раньше.
+ * состояниях; за флагом `ABA_EXPORT_FILE_ENABLED` — «Позже», как раньше. Вопрос 118: две строки — «Отчёт
+ * специалисту» (читаемая страница HTML) и «Файл для программы» (JSON той же выгрузки).
  *
  * №202 (вопрос 116): над «Занятием» — карточка «Где мы сейчас»: что будет на следующем занятии простыми словами
  * (`previewParentStage` — план вхолостую, процедура не меняется) и строка «Как проходят занятия». Первое «Начать»
@@ -44,7 +45,7 @@ import {
 import { abaIntroSeen } from '../../../src/services/local/abaIntro';
 import { loadChildState } from '../../../src/services/local/childState';
 import { confirmAbaPairing, setAbaObservers, setAbaPaused, settleTailExchange } from '../../../src/services/local/commit';
-import { ABA_EXPORT_FILE_ENABLED, shareSpecialistExport } from '../../../src/services/local/shareSpecialistExport';
+import { ABA_EXPORT_FILE_ENABLED, shareSpecialistExport, type SpecialistExportKind } from '../../../src/services/local/shareSpecialistExport';
 import { useAbaRun } from '../../../src/state/abaRun';
 import { useAccount } from '../../../src/state/account';
 import { useChildSession } from '../../../src/state/childSession';
@@ -134,7 +135,7 @@ function goalRows(progress: AbaParentProgress, ready: boolean): { id: string; st
 }
 
 export default function AbaParentScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const db = useAccount((s) => s.db);
   const profile = useSelectedProfile();
@@ -352,12 +353,12 @@ export default function AbaParentScreen() {
    * Файл для специалиста (G3): «Готовится…» не короче `guardMs`, чтобы слово не мигнуло; результат листа система не
    * сообщает — на `'shared'` нейтральная подпись на 3 с, на отмену ничего, лист недоступен — «появится позже».
    */
-  const exportFile = async () => {
+  const exportFile = async (kind: SpecialistExportKind) => {
     if (exportState === 'preparing') return;
     setExportState('preparing');
     const started = Date.now();
     try {
-      const result = await shareSpecialistExport(db, profile.childId, device(), new Date().toISOString());
+      const result = await shareSpecialistExport(db, profile.childId, device(), new Date().toISOString(), { kind, t, lang: i18n.language });
       await new Promise((r) => setTimeout(r, Math.max(0, parentButton.guardMs - (Date.now() - started))));
       if (result === 'shared') {
         setExportState('shared');
@@ -556,7 +557,10 @@ export default function AbaParentScreen() {
             ) : exportState === 'preparing' ? (
               <Row first kind="value" label={t('parent.aba.exportRow')} value={t('parent.aba.exportPreparing')} testID="aba-export" valueTestID="aba-export-value" />
             ) : (
-              <Row first kind="link" label={t('parent.aba.exportRow')} onPress={() => guarded('aba_export', () => void exportFile())} testID="aba-export" />
+              <>
+                <Row first kind="link" label={t('parent.aba.reportRow')} onPress={() => guarded('aba_export', () => void exportFile('report'))} testID="aba-export" />
+                <Row kind="link" label={t('parent.aba.dataRow')} onPress={() => guarded('aba_export', () => void exportFile('data'))} testID="aba-export-data" />
+              </>
             )}
             {exportState === 'error' && (
               <ParentText role="caption" color="error" testID="aba-export-error">
