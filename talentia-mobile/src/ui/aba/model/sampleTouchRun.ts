@@ -8,6 +8,7 @@
  *   проба кончается без касания.
  * - «Была подсказка» делает пробу подсказанной (касание — «принято», а не жетон); «Отказ» кончает шаг на сегодня.
  */
+import { abaSampleTouch } from '../../../design/abaTokens';
 import { SAMPLE_TOUCH_LADDER, SAMPLE_TOUCH_MAX_PRESENTATIONS, type SampleTouchInput, type SampleTouchLevel } from '../../../domain/abaSampleTouch';
 import type { AbaStep } from '../../../domain/abaSession';
 import type { PanelButton } from '../../../domain/abaScoring';
@@ -24,6 +25,11 @@ export type SampleTouchRun = {
   adultPrompted: boolean;
   /** Модель без касания и L4 разрешена: ждём кнопку взрослого на карточке L4. */
   awaitingL4: boolean;
+  /**
+   * На карточке L4 ребёнок коснулся образца с помощью взрослого: только вид нажатия (контур), без записи, знака, звука
+   * и жетона — источник записи по-прежнему кнопка взрослого (методист 2026-11-19).
+   */
+  l4Touched?: boolean;
   outcome: SampleTouchOutcome | null;
   done: boolean;
 };
@@ -44,10 +50,19 @@ export function startSampleTouch(step: SampleTouchStep, shownAt: number): Sample
 /** Уровень текущего предъявления приложения: от него метка (L1+) и рука-модель (L3). */
 export const touchLevel = (r: SampleTouchRun): SampleTouchLevel => r.log[r.log.length - 1].level;
 
+/**
+ * Задержка модели L3, когда она стоит в том же кадре, что и новая картинка (первое предъявление пробы — сразу L3:
+ * старт с модели, закрывающая проба): ребёнок сначала видит картинку. В остальных случаях модель идёт сразу.
+ */
+export function touchModelDelayMs(r: SampleTouchRun): number {
+  return r.log.length === 1 && r.log[0].level === 3 ? abaSampleTouch.modelDelayMs : 0;
+}
+
 export function sampleTouchDueAt(r: SampleTouchRun): number | null {
   if (r.done || r.awaitingL4) return null;
   const cur = r.log[r.log.length - 1];
-  return cur.startedAt + (cur.level === 0 ? r.step.delayMs : r.step.windowMs);
+  // окно касания модели — от её начала: задержка + окно
+  return cur.startedAt + (cur.level === 0 ? r.step.delayMs : r.step.windowMs + (cur.level === 3 ? touchModelDelayMs(r) : 0));
 }
 
 const close = (r: SampleTouchRun, outcome: SampleTouchOutcome, touchedAt: number | null = null): SampleTouchRun => ({
@@ -62,7 +77,7 @@ export function stepSampleTouch(r: SampleTouchRun, e: SampleTouchEvent): SampleT
   if (r.done) return r;
   switch (e.type) {
     case 'tap_sample':
-      return r.awaitingL4 ? r : close(r, 'touched', e.at);
+      return r.awaitingL4 ? { ...r, l4Touched: true } : close(r, 'touched', e.at);
     case 'adult':
       if (e.button === 'refusal') return close(r, 'refusal');
       if (e.button === 'l4_done' || e.button === 'l4_resisted' || e.button === 'l4_skipped') return r.awaitingL4 ? close(r, e.button) : r;

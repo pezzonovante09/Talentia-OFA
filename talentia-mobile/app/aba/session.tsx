@@ -30,7 +30,6 @@ import {
   abaParticipation,
   abaReinforcerCardSize,
   abaReinforcementOverlay,
-  abaSampleTouch,
   abaTokenLandingMs,
   type AbaTier,
 } from '../../src/design/abaTokens';
@@ -82,6 +81,7 @@ import {
   TOUCH_L4_PANEL,
   TOUCH_PANEL,
   touchLevel,
+  touchModelDelayMs,
   type SampleTouchEvent,
   type SampleTouchRun,
 } from '../../src/ui/aba/model/sampleTouchRun';
@@ -345,7 +345,7 @@ export default function AbaSessionScreen() {
         // снимок на входе: образец пробы шага выложен `nextStep` — после возврата тот же
         await saveStep((c) => c);
         if (await stepStale()) return;
-        setPhase({ kind: 'touch', run: startSampleTouch(step, now), pressed: null, praiseUntil: null });
+        setPhase({ kind: 'touch', run: startSampleTouch(step, now), pressed: null, praise: null });
         return;
       case 'break': {
         // снимок на входе: `breakStartedAt` доживает до холодного старта, в том числе если iOS заморозит JS сразу после `background`
@@ -633,10 +633,28 @@ export default function AbaSessionScreen() {
       case 'trial':
         onTrial({ type: 'due', at });
         return;
-      case 'touch':
-        if (p.praiseUntil !== null) run(advance());
-        else onTouch({ type: 'due', at });
+      case 'touch': {
+        if (!p.praise) {
+          onTouch({ type: 'due', at });
+          return;
+        }
+        // последствие «принято» шага — то же расписание, что у пробы без жетона (`startConsequence`, `fastNoToken`)
+        const { run: next, effects } = advanceConsequence(p.praise.run, at);
+        let mark = p.praise.mark;
+        let empty = p.praise.empty;
+        for (const fx of effects) {
+          if (fx.kind === 'say') voice.say(nextPraiseKey());
+          else if (fx.kind === 'praise_mark_show') mark = true;
+          else if (fx.kind === 'praise_mark_hide') mark = false;
+          else if (fx.kind === 'plates_empty') empty = true;
+          else if (fx.kind === 'next_sd') {
+            run(advance());
+            return;
+          }
+        }
+        setPhase({ ...p, praise: { ...p.praise, run: next, mark, empty } });
         return;
+      }
       case 'consequence': {
         if (p.gate?.frameAt != null) {
           // смена кадра ждала касание: отклик показан или потолок
@@ -863,7 +881,7 @@ export default function AbaSessionScreen() {
   // --- шаг «коснись картинки» (решение 1, часть В)
   function onTouch(e: SampleTouchEvent) {
     const p = phase;
-    if (p.kind !== 'touch' || p.run.done || p.praiseUntil !== null) return;
+    if (p.kind !== 'touch' || p.run.done || p.praise !== null) return;
     const next = stepSampleTouch(p.run, e);
     const pressed = next.adultPrompted && !next.awaitingL4 ? 'adult_prompted' : null;
     setPhase({ ...p, run: next, pressed: next.done ? null : pressed });
@@ -884,9 +902,20 @@ export default function AbaSessionScreen() {
       return;
     }
     if (out.consequence === 'praise') {
-      // похвала без жетона и знак «принято» (решение 35), как у подсказанного ответа
-      voice.say(nextPraiseKey());
-      setPhase({ kind: 'touch', run: r, pressed: null, praiseUntil: clock.now() + abaSampleTouch.praiseMs });
+      // похвала без жетона и знак «принято» (решение 35), как у подсказанного ответа: знак 0…1000, голос в 300 и не
+      // в спокойном режиме, следующая проба шага — в 2000 (методист 2026-11-19; раньше знак 1500 и голос сразу)
+      const at = clock.now();
+      // специалист вернул длинную паузу (`longInterTrial`) — она действует и на шаге
+      const first = advanceConsequence(
+        startConsequence({ markedAt: at, feedback: 'praise', calm: still, calmMode: calm, fastNoToken: !st.current!.longInterTrial }),
+        at,
+      );
+      setPhase({
+        kind: 'touch',
+        run: r,
+        pressed: null,
+        praise: { run: first.run, mark: first.effects.some((fx) => fx.kind === 'praise_mark_show'), empty: false, breakAsked: false },
+      });
       return;
     }
     await advance();
@@ -902,10 +931,22 @@ export default function AbaSessionScreen() {
       })(),
     );
 
+  /**
+   * Карточка «перерыв» на похвале шага (№160, методист 2026-11-19): просьба не теряется — перерыв встанет на место
+   * следующей пробы шага, похвала доигрывает. Как `breakInConsequence` у обычной пробы.
+   */
+  const breakInTouchPraise = () => {
+    setPhase((p) => (p.kind === 'touch' && p.praise ? { ...p, praise: { ...p.praise, breakAsked: true } } : p));
+    breakTrace.current = true;
+    run(saveAside(requestBreakBetweenTrials(st.current!, clock.now())));
+  };
+
   /** «Отказ» вне пробы (последствие, пауза, пауза после «Отказ»): отказ вне пробы — `withdrawAssent` (спецификация п. 1). */
   const refuseOutsideTrial = () =>
     run(
       (async () => {
+        // отказ на похвале шага «коснись картинки» относится к требованию шага: отметка места — в «тревожность» шага
+        const onTouchStep = phase.kind === 'touch' ? { step: 'sample_touch' as const } : {};
         // на пути Ц4 доска уже полна и обменена: экран обмена — с удержанием переехавшей доски (№173)
         if ((phase.kind === 'consequence' || phase.kind === 'participation') && phase.gate) fromFullBoard.current = true;
         setPhase({ kind: 'busy' });
@@ -913,7 +954,7 @@ export default function AbaSessionScreen() {
         if (writing.current) await writing.current;
         await saveStep((s) => {
           const last = s.trials[s.trials.length - 1];
-          return withdrawAssent(s, clock.now(), 'adult_observed', last ? { targetId: last.targetId, trialId: last.id } : {});
+          return withdrawAssent(s, clock.now(), 'adult_observed', { ...(last ? { targetId: last.targetId, trialId: last.id } : {}), ...onTouchStep });
         });
         await advance();
       })(),
@@ -1169,10 +1210,17 @@ export default function AbaSessionScreen() {
     }
     case 'touch': {
       const r = phase.run;
-      const praising = phase.praiseUntil !== null;
+      const praising = phase.praise !== null;
       body = (
         <>
-          <TopBar praiseMark={praising} still={still} breakCard={{ frameShownAt: r.shownAt, onTap: () => (r.done ? undefined : breakInTouch()), onHold: holdCard }} />
+          <TopBar praiseMark={phase.praise?.mark === true} still={still} breakCard={{
+              frameShownAt: r.shownAt,
+              // проба пишется — карточка молчит; идёт похвала — просьба ставит перерыв на место следующей пробы шага
+              onTap: () => (!r.done ? breakInTouch() : phase.praise ? breakInTouchPraise() : undefined),
+              highlight: phase.praise?.breakAsked === true,
+              onHold: holdCard,
+            }}
+          />
           {strip}
           <View style={{ height: layout.gapAfterBoard }} />
           {instruction(praising ? null : 'abaSession.touchSd')}
@@ -1181,7 +1229,9 @@ export default function AbaSessionScreen() {
             level={touchLevel(r)}
             levelStartedAt={r.log[r.log.length - 1].startedAt}
             still={still}
-            touched={r.touchedAt !== null}
+            touched={r.touchedAt !== null || r.l4Touched === true}
+            empty={phase.praise?.empty === true}
+            modelDelayMs={touchModelDelayMs(r)}
             sampleSize={zone.sample}
             frameShownAt={r.shownAt}
             onSample={(at) => onTouch({ type: 'tap_sample', at })}
@@ -1191,7 +1241,7 @@ export default function AbaSessionScreen() {
             r.done ? ['refusal'] : r.awaitingL4 ? TOUCH_L4_PANEL : TOUCH_PANEL,
             phase.pressed,
             // проба пишется (`recordTouch`): панель молчит, иначе «Отказ» лёг бы поверх записи; на «принято» — отказ вне пробы
-            (b, at) => (!r.done ? onTouch({ type: 'adult', button: b, at }) : b === 'refusal' && phase.praiseUntil !== null ? refuseOutsideTrial() : undefined),
+            (b, at) => (!r.done ? onTouch({ type: 'adult', button: b, at }) : b === 'refusal' && phase.praise !== null ? refuseOutsideTrial() : undefined),
             r.done ? undefined : t('abaPanel.waitQuiet'),
           )}
         </>

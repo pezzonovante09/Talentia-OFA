@@ -1839,13 +1839,10 @@ export function recordBreakCardTraining(
 function withTouchSample(state: AbaSessionState): AbaSessionState {
   const head = state.queue[0];
   if (head?.kind !== 'sample_touch' || head.sampleId) return state;
-  const cards = [
-    ...new Set(
-      Object.values(state.targets)
-        .filter((t) => t.format === 'match' && t.matchMode !== 'sort')
-        .flatMap((t) => teachingExemplars(t).flatMap((e) => e.cards ?? [])),
-    ),
-  ];
+  const matches = Object.values(state.targets).filter((t) => t.format === 'match' && t.matchMode !== 'sort');
+  // карточки, похожие на руку-модель L3, образцом шага не бывают (`AbaTarget.notForSampleTouch`)
+  const excluded = new Set(matches.flatMap((t) => t.notForSampleTouch ?? []));
+  const cards = [...new Set(matches.flatMap((t) => teachingExemplars(t).flatMap((e) => e.cards ?? [])))].filter((c) => !excluded.has(c));
   if (!cards.length) throw new Error('Шаг «коснись картинки» без карточек match');
   const order = shuffle(cards, seeded(stableHash(state.sessionId)).rng);
   const sampleId = order[touchEventsOf(state.events).length % order.length];

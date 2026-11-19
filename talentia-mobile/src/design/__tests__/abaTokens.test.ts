@@ -35,6 +35,8 @@ import {
   abaSound,
   abaTokenLandingMs,
   abaTouchCommits,
+  abaSampleTap,
+  abaSampleTouch,
   abaWhoLeadsAccepts,
   abaWhoLeadsSheet,
   type AbaSoundChannel,
@@ -1635,6 +1637,48 @@ describe('касание выбора на детских экранах ABA (п
     expect(abaTouchCommits({ ...ok, startedAt: 999 })).toBe(false);
     expect(abaTouchCommits({ ...ok, startedAt: 1001 })).toBe(true);
     expect(abaTouchCommits({ ...ok, endedInside: false })).toBe(false);
+  });
+});
+
+describe('касание образца — не выбор (`abaSampleTap`, методист и `child-ux-specialist` 2026-11-19)', () => {
+  const ok = { startedAt: 1000, frameShownAt: 1000, pointerIndex: 0, endedInside: true, slopPt: 0 };
+
+  it('правило образца: при отпускании внутри, без порога сдвига, любым пальцем, касание до кадра не считается, метка входит в зону', () => {
+    expect(abaSampleTap).toEqual({
+      scope: 'sample',
+      commitOn: 'touch_up_inside',
+      maxSlopPt: null,
+      firstPointerOnly: false,
+      ignoreStartedBeforeFrame: true,
+      markCounts: true,
+    });
+  });
+
+  it("abaTouchCommits(…, 'sample'): сдвиг 50 pt и второй палец засчитываются", () => {
+    expect(abaTouchCommits(ok, 'sample')).toBe(true);
+    expect(abaTouchCommits({ ...ok, slopPt: abaChildTouch.maxSlopPt }, 'sample')).toBe(true);
+    expect(abaTouchCommits({ ...ok, slopPt: 50 }, 'sample')).toBe(true);
+    expect(abaTouchCommits({ ...ok, pointerIndex: 1 }, 'sample')).toBe(true);
+    expect(abaTouchCommits({ ...ok, pointerIndex: 3, slopPt: 50 }, 'sample')).toBe(true);
+  });
+
+  it("abaTouchCommits(…, 'sample'): касание, начатое до кадра, и отпускание снаружи — не засчитываются", () => {
+    expect(abaTouchCommits({ ...ok, startedAt: 999 }, 'sample')).toBe(false);
+    expect(abaTouchCommits({ ...ok, startedAt: 999, slopPt: 50, pointerIndex: 1 }, 'sample')).toBe(false);
+    expect(abaTouchCommits({ ...ok, startedAt: 1001 }, 'sample')).toBe(true);
+    expect(abaTouchCommits({ ...ok, endedInside: false }, 'sample')).toBe(false);
+  });
+
+  it("'choice' явно — то же, что без второго аргумента: порог 10 pt и первый палец на месте", () => {
+    const cases = [ok, { ...ok, slopPt: 9.9 }, { ...ok, slopPt: 10 }, { ...ok, slopPt: 50 }, { ...ok, pointerIndex: 1 }, { ...ok, startedAt: 999 }, { ...ok, endedInside: false }];
+    expect(cases.map((c) => abaTouchCommits(c, 'choice'))).toEqual([true, true, false, false, false, false, false]);
+    expect(cases.map((c) => abaTouchCommits(c, 'choice'))).toEqual(cases.map((c) => abaTouchCommits(c)));
+  });
+
+  it('у шага нет своей длительности знака «принято»; задержка модели в одном кадре с картинкой — 600, не больше 700', () => {
+    expect(abaSampleTouch).not.toHaveProperty('praiseMs');
+    expect(abaSampleTouch.modelDelayMs).toBe(600);
+    expect(abaSampleTouch.modelDelayMs).toBeLessThanOrEqual(700);
   });
 });
 

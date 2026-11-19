@@ -212,6 +212,7 @@ function Plate({
   onTap,
   testID,
   label,
+  sample,
 }: {
   stimulusId: string | null;
   size: number;
@@ -221,12 +222,15 @@ function Plate({
   onTap: (at: number) => void;
   testID: string;
   label: string;
+  /** Плита образца: касание по правилу `abaSampleTap`, а не выбора. */
+  sample?: boolean;
 }) {
   const c = useAbaColors();
   return (
     <ChildPressable
       frameShownAt={frameShownAt}
       onCommit={onTap}
+      sample={sample}
       testID={testID}
       accessibilityLabel={label}
       style={{
@@ -281,7 +285,14 @@ export function MatchField({
   const mark = !empty && visual?.focus?.on === 'sample';
   return (
     <View style={{ alignItems: 'center' }} testID="aba-match-field">
-      <View style={{ height: abaLayout.hintBand, justifyContent: 'flex-end', paddingBottom: 2 }}>{mark && <Chevron color={c.ink} />}</View>
+      <View style={{ height: abaLayout.hintBand, justifyContent: 'flex-end', paddingBottom: 2 }}>
+        {mark && (
+          // касание метки — касание образца (`abaSampleTap.markCounts`): соседней плиты над образцом нет
+          <ChildPressable frameShownAt={frameShownAt} onCommit={onSample} sample testID="aba-sample-mark" accessibilityLabel={t('abaSession.sample')}>
+            <Chevron color={c.ink} />
+          </ChildPressable>
+        )}
+      </View>
       <Plate
         stimulusId={empty ? null : sampleId}
         size={sampleSize}
@@ -289,6 +300,7 @@ export function MatchField({
         inactive={false}
         frameShownAt={frameShownAt}
         onTap={onSample}
+        sample
         testID="aba-sample"
         label={t('abaSession.sample')}
       />

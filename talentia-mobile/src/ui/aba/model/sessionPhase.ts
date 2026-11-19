@@ -37,10 +37,19 @@ export type Phase =
   | { kind: 'pause'; step: TrialStep; until: number }
   | { kind: 'trial'; run: MatchTrialRun; pressed: PanelButton | null }
   /**
-   * Проба шага «коснись картинки» (решение 1, часть В): только образец. `praiseUntil` — проба записана, держится знак
-   * «принято» (L1–L3), потом шаг домена; жетон L0 идёт фазой `participation`.
+   * Проба шага «коснись картинки» (решение 1, часть В): только образец. `praise` — проба записана, идёт последствие
+   * «принято» (L1–L3) по тем же правилам, что у обычной пробы без жетона (решение 35, №206; методист 2026-11-19):
+   * знак 0…1000, голос в 300 (в спокойном режиме без голоса), следующий шаг домена в 2000. `mark` — знак на экране;
+   * `empty` — плита образца пустая с 1000, как плиты пробы в межпробной паузе: касания по стоящей картинке были бы
+   * неподкреплёнными повторами ответа; `breakAsked` — ребёнок коснулся карточки «перерыв» на похвале (№160): перерыв
+   * встанет на место следующей пробы шага, похвала доигрывает. Жетон L0 идёт фазой `participation`.
    */
-  | { kind: 'touch'; run: SampleTouchRun; pressed: PanelButton | null; praiseUntil: number | null }
+  | {
+      kind: 'touch';
+      run: SampleTouchRun;
+      pressed: PanelButton | null;
+      praise: { run: ConsequenceRun; mark: boolean; empty: boolean; breakAsked: boolean } | null;
+    }
   /**
    * `stripEarned` — сколько жетонов показывать в полосе (без жетона за участие — он отдельным событием; при обмене сразу —
    * полная доска до экрана обмена). `participation` — жетон за участие ждёт своего события после последствия.
@@ -130,7 +139,7 @@ export function phaseDueAt(phase: Phase): number | null {
     case 'trial':
       return matchDueAt(phase.run);
     case 'touch':
-      return phase.praiseUntil ?? sampleTouchDueAt(phase.run);
+      return phase.praise ? consequenceDueAt(phase.praise.run) : sampleTouchDueAt(phase.run);
     case 'consequence':
       return phase.gate?.frameAt ?? consequenceDueAt(phase.run);
     case 'participation':

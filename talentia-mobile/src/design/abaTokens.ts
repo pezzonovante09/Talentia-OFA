@@ -1391,15 +1391,37 @@ export const abaChildTouch = {
   pressShownFrom: 'touch_down',
 } as const;
 
-/** Засчитывается ли касание как выбор (пункт 4 проверки цикла 2). */
-export function abaTouchCommits(t: {
-  startedAt: number;
-  frameShownAt: number;
-  pointerIndex: number;
-  endedInside: boolean;
-  slopPt: number;
-}): boolean {
+/**
+ * Касание **образца** — не выбор (`child-ux-specialist` и методист 2026-11-19): выбирать не из чего, а тихо
+ * отклонённое «смазанное» касание писалось как «нет ответа», поднимало подсказку и вело к флагу. Засчитывается
+ * касание, начатое после показа кадра и отпущенное внутри образца, — без порога сдвига и любым пальцем: палец
+ * взрослого, который держит телефон, не должен гасить касание ребёнка. Одно правило для шага «коснись картинки» и
+ * для образца пробы `match` — иначе ребёнок прошёл бы шаг, а в пробе получил «не коснулся образца». У вариантов
+ * ответа — прежнее правило выбора.
+ */
+export const abaSampleTap = {
+  scope: 'sample',
+  commitOn: 'touch_up_inside',
+  maxSlopPt: null,
+  firstPointerOnly: false,
+  ignoreStartedBeforeFrame: true,
+  /** Метка-подсказка над образцом входит в его зону: на L1 это единственный новый объект, ребёнок жмёт и её. */
+  markCounts: true,
+} as const;
+
+/** Засчитывается ли касание: как выбор (пункт 4 проверки цикла 2) или как касание образца (`abaSampleTap`). */
+export function abaTouchCommits(
+  t: {
+    startedAt: number;
+    frameShownAt: number;
+    pointerIndex: number;
+    endedInside: boolean;
+    slopPt: number;
+  },
+  scope: 'choice' | 'sample' = 'choice',
+): boolean {
   if (t.startedAt < t.frameShownAt) return false;
+  if (scope === 'sample') return t.endedInside;
   if (abaChildTouch.firstPointerOnly && t.pointerIndex !== 0) return false;
   return t.endedInside && t.slopPt < abaChildTouch.maxSlopPt;
 }
@@ -1695,7 +1717,8 @@ export const abaParticipation = { holdMs: 1000, drop: { fromPt: 24, ms: motion.q
 /**
  * Шаг «коснись картинки» (решение 1, часть В). Модель L3 — «экранная рука касается образца»: нового ассета нет, пока —
  * точка касания (круг цвета чернил) в центре образца. **Временно, на ревью `design-lead`**: рука, движение, calm.
- * `praiseMs` — сколько держится знак «принято» у касания на L1–L3 (решение 35).
+ * Знак «принято» у касания на L1–L3 — по общим правилам `abaVisiblePraise` и `abaInterTrial` (решение 35, №206):
+ * отдельной длительности у шага нет (было 1500 мс и голос сразу — приведено к обычной пробе, методист 2026-11-19).
  *
  * `model` — короткое «нажатие» вместо неподвижной точки (финальная рецензия методиста 2026-11-18): метка появляется
  * крупнее (`fromScale`), вжимается в центр образца (`toScale`) и гаснет — `presses` раза, ~1,2 с на предъявление L3
@@ -1705,7 +1728,11 @@ export const abaParticipation = { holdMs: 1000, drop: { fromPt: 24, ms: motion.q
 export const abaSampleTouch = {
   handDot: 36,
   handDotOpacity: 0.55,
-  praiseMs: 1500,
+  /**
+   * Модель L3 в том же кадре, что и новая картинка (старт с L3, закрывающая проба): сначала ребёнок видит картинку,
+   * модель — через `modelDelayMs`; окно ответа считается от начала модели (методист 2026-11-19, не больше 700).
+   */
+  modelDelayMs: 600,
   model: { presses: 2, appearMs: 150, pressMs: 300, fadeMs: 150, fromScale: 1.3, toScale: 0.7, stillOnMs: 300, stillOffMs: 300 },
 } as const;
 

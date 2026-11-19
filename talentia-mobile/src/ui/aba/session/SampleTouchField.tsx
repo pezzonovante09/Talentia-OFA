@@ -21,7 +21,7 @@ const NATIVE = Platform.OS !== 'web';
  * Модель L3: метка появляется, вжимается в центр образца и гаснет — `presses` раза (~1,2 с). `still` (calm, reduce
  * motion) — без движения: столько же вспышек кадром. Новое предъявление L3 (`startedAt`) — ход заново.
  */
-function TouchModel({ top, still, startedAt }: { top: number; still: boolean; startedAt: number }) {
+function TouchModel({ top, still, startedAt, delayMs = 0 }: { top: number; still: boolean; startedAt: number; delayMs?: number }) {
   const c = useAbaColors();
   const clock = useAbaClock();
   const m = abaSampleTouch.model;
@@ -33,7 +33,7 @@ function TouchModel({ top, still, startedAt }: { top: number; still: boolean; st
   useEffect(() => {
     if (still) {
       // вспышки кадром по часам сессии: видна `stillOnMs`, нет `stillOffMs` — без анимации прозрачности и размера
-      const t0 = clock.now();
+      const t0 = clock.now() + delayMs;
       const period = m.stillOnMs + m.stillOffMs;
       const cancels: (() => void)[] = [];
       for (let i = 0; i < m.presses; i += 1) {
@@ -51,14 +51,14 @@ function TouchModel({ top, still, startedAt }: { top: number; still: boolean; st
         Animated.timing(scale, { toValue: m.toScale, duration: m.pressMs, easing: Easing.in(Easing.quad), useNativeDriver: NATIVE }),
         Animated.timing(opacity, { toValue: 0, duration: m.fadeMs, useNativeDriver: NATIVE }),
       ]);
-    const run = Animated.sequence(Array.from({ length: m.presses }, press));
+    const run = Animated.sequence([Animated.delay(delayMs), ...Array.from({ length: m.presses }, press)]);
     run.start();
     return () => {
       run.stop();
       opacity.setValue(0);
       scale.setValue(m.fromScale);
     };
-  }, [still, startedAt, opacity, scale, m, clock]);
+  }, [still, startedAt, delayMs, opacity, scale, m, clock]);
 
   return (
     <Animated.View
@@ -88,6 +88,8 @@ export function SampleTouchField({
   onSample,
   still = false,
   levelStartedAt = frameShownAt,
+  modelDelayMs = 0,
+  empty = false,
 }: {
   sampleId: string;
   level: 0 | 1 | 3;
@@ -99,6 +101,10 @@ export function SampleTouchField({
   still?: boolean;
   /** Начало текущего предъявления: новая L3 — ход модели заново. */
   levelStartedAt?: number;
+  /** Модель в одном кадре с новой картинкой — показать её позже (`abaSampleTouch.modelDelayMs`). */
+  modelDelayMs?: number;
+  /** Пауза после «принято»: пустая белая плита без картинки, метки и контура — как плиты пробы между пробами. */
+  empty?: boolean;
 }) {
   const visual: PromptVisualPlan = {
     focus: level >= 1 ? { on: 'sample', id: sampleId, pulse: false } : null,
@@ -119,12 +125,12 @@ export function SampleTouchField({
         sampleSize={sampleSize}
         choiceSize={0}
         frameShownAt={frameShownAt}
-        empty={false}
+        empty={empty}
         onSample={onSample}
         onOption={() => undefined}
       />
       {level === 3 && !touched && (
-        <TouchModel key={levelStartedAt} top={abaLayout.hintBand + sampleSize / 2} still={still} startedAt={levelStartedAt} />
+        <TouchModel key={levelStartedAt} top={abaLayout.hintBand + sampleSize / 2} still={still} startedAt={levelStartedAt} delayMs={modelDelayMs} />
       )}
     </View>
   );

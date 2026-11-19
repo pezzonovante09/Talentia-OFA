@@ -113,3 +113,45 @@ describe('образцы шага «коснись картинки» и пят�
     }
   });
 });
+
+// методист 2026-11-19: рука-модель L3 — белая кисть, варежка образцом шага не бывает (`AbaTarget.notForSampleTouch`)
+describe('варежка не бывает картинкой шага', () => {
+  const MITTEN = 'aba-obj-mitten';
+  // 6 занятий по 10 проб шага — 60 проб на каждом наборе целей
+  const all = (targets: AbaTarget[]) => SESSIONS.flatMap((sessionId) => touchSamples(targets, sessionId));
+  const without = (targets: readonly AbaTarget[]) => targets.map(({ notForSampleTouch: _drop, ...t }) => t as AbaTarget);
+
+  it('предусловие: варежка — обучающая карточка настоящего контента и запрещена образцом шага у целей match', () => {
+    expect(teachingCards(OPEN).has(MITTEN)).toBe(true);
+    expect(OPEN.filter((t) => t.format === 'match').every((t) => t.notForSampleTouch?.includes(MITTEN))).toBe(true);
+  });
+
+  it.each([
+    ['пять целей (заглушки)', OPEN],
+    ['лестница из четырёх (настоящий реестр)', CLOSED],
+  ])('%s: за 60 проб шага на шести занятиях варежки образцом нет', (_name, targets) => {
+    const samples = all(targets);
+    expect(samples).toHaveLength(SESSIONS.length * SAMPLE_TOUCH_MAX_TRIALS);
+    expect(samples.filter((id) => id === MITTEN)).toEqual([]);
+  });
+
+  it('остальные обучающие карточки образцом бывают: круг — все обучающие карточки, кроме варежки', () => {
+    const expected = [...teachingCards(OPEN)].filter((id) => id !== MITTEN).sort();
+    expect(expected.length).toBeGreaterThan(SAMPLE_TOUCH_MAX_TRIALS);
+    // за занятие шаг показывает первые 10 карточек круга: чтобы круг вышел целиком, занятий берём больше шести
+    const more = [...SESSIONS, 's-g', 's-h', 's-i', 's-j', 's-k', 's-l'];
+    const seen = new Set(more.flatMap((sessionId) => touchSamples(OPEN, sessionId)));
+    expect(seen.has(MITTEN)).toBe(false);
+    expect([...seen].sort()).toEqual(expected);
+  });
+
+  it('контроль: без `notForSampleTouch` на тех же занятиях варежка образцом бывает — запрет держит именно поле', () => {
+    expect(all(without(OPEN))).toContain(MITTEN);
+  });
+
+  it('запрет одной цели действует на общий круг: варежка из карточек другой цели match тоже не образец', () => {
+    // запрет оставлен только у первой цели — карточки остальных целей с варежкой всё равно не выходят образцом
+    const onlyFirst = OPEN.map((t, i) => (i === 0 ? t : without([t])[0]));
+    expect(all(onlyFirst).filter((id) => id === MITTEN)).toEqual([]);
+  });
+});

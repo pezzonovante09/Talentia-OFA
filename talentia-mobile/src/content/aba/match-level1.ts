@@ -35,6 +35,8 @@ const base = {
   scoredBy: 'device_tap',
   // соседи образца меняются на каждой пробе (решение методиста 41) — правила «не вместе» держит сессия
   notTogether: ABA_CARDS_NOT_TOGETHER,
+  // рука-модель шага «коснись картинки» — белая кисть: варежка рядом с ней читалась бы как та же рука
+  notForSampleTouch: ['aba-obj-mitten'],
 } as const satisfies Partial<AbaTarget>;
 
 const o = (n: string) => `aba-obj-${n}`;

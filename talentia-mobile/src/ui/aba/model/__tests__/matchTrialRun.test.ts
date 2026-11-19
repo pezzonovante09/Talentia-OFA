@@ -259,6 +259,36 @@ describe('касания', () => {
   });
 });
 
+// 2026-11-19: метка над образцом и сама плита образца шлют одно событие `tap_sample` (`MatchField`, `abaSampleTap.markCounts`)
+describe('касание образца и его метки — не выбор', () => {
+  it('касание образца делает варианты активными, но ответом не становится: проба идёт, выбранной карточки нет', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_sample', at: at(1) });
+    expect([r.done, r.chosenCardId, r.fieldSizeAtResponse, r.tapCount]).toEqual([false, null, null, 1]);
+    expect(s.step.field!.every((id) => optionActive(r, id))).toBe(true);
+  });
+
+  it('сколько ни касайся образца — проба не закрывается и ответа нет; момент наблюдения — первое касание', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_sample', at: at(1) }, { type: 'tap_sample', at: at(2) }, { type: 'tap_sample', at: at(3) });
+    expect([r.done, r.chosenCardId, r.sampleTouchedAt, r.tapCount]).toEqual([false, null, at(1), 3]);
+  });
+
+  it('метка и плита образца подряд (< 150 мс) — одно касание в `tapCount`, не два', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_sample', at: at(1) }, { type: 'tap_sample', at: at(1) + 149 });
+    expect(r.tapCount).toBe(1);
+    const apart = go(run(s), { type: 'tap_sample', at: at(1) }, { type: 'tap_sample', at: at(1) + 150 });
+    expect(apart.tapCount).toBe(2);
+  });
+
+  it('после касания образца верный вариант — ответ; в записи два касания (образец и вариант), а не три', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_sample', at: at(1) }, { type: 'tap_option', id: s.step.sampleCardId!, at: at(1.5) });
+    expect(matchTrialInput(r)).toMatchObject({ chosenCardId: s.step.sampleCardId, tapCount: 2 });
+  });
+});
+
 // решение методиста 1 (ABA.md, 2026-11-18), срез Б: нажатие на вариант до образца в обучении со старта L0
 describe('нажатие на вариант до касания образца — метка над образцом сразу', () => {
   it('обучение, старт L0, первое предъявление: L1 наблюдения без окна, причина bottom_tap, выбора нет', () => {

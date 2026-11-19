@@ -85,6 +85,7 @@ export function ChildPressable({
   onCommit,
   onDownAt,
   onUpAt,
+  sample,
   disabled,
   children,
   style,
@@ -97,6 +98,8 @@ export function ChildPressable({
   onDownAt?: (at: number) => void;
   /** Палец снят — или цель ушла с экрана, пока он лежал (смена кадра ждёт касание, Ц4 огр. 1). */
   onUpAt?: (at: number) => void;
+  /** Касание образца, а не выбор (`abaSampleTap`): без порога сдвига и любым пальцем. */
+  sample?: boolean;
   disabled?: boolean;
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
@@ -129,7 +132,7 @@ export function ChildPressable({
     const d = down.current ?? { at: clock.now(), x: 0, y: 0, id: 0 };
     down.current = null;
     const slop = Math.hypot((e.nativeEvent?.pageX ?? d.x) - d.x, (e.nativeEvent?.pageY ?? d.y) - d.y);
-    if (abaTouchCommits({ startedAt: d.at, frameShownAt, pointerIndex: d.id, endedInside: true, slopPt: slop })) onCommit(clock.now());
+    if (abaTouchCommits({ startedAt: d.at, frameShownAt, pointerIndex: d.id, endedInside: true, slopPt: slop }, sample ? 'sample' : 'choice')) onCommit(clock.now());
   };
   return (
     // отклик на касание — сжатие 0.94 до отпускания у любой детской цели, и у неактивной (`inactiveChoice.tapPress`)

@@ -10,7 +10,8 @@ import { ABA_TARGETS, readyAbaTargets } from '../../content/aba';
 import { DEV_PLACEHOLDER_ART } from '../../services/local/abaStart';
 import { REFUSAL_CARD_OFFER_MS, REFUSAL_QUIET_MS, type AbaSessionEvent, type AbaTargetState } from '../../types/aba';
 import { matchDueAt, matchTrialInput, optionActive, startMatchTrial, stepMatchTrial, type MatchTrialRun } from '../../ui/aba/model/matchTrialRun';
-import { sampleTouchDueAt, sampleTouchInput, startSampleTouch, stepSampleTouch, type SampleTouchRun } from '../../ui/aba/model/sampleTouchRun';
+import { sampleTouchDueAt, sampleTouchInput, startSampleTouch, stepSampleTouch, touchModelDelayMs, type SampleTouchRun } from '../../ui/aba/model/sampleTouchRun';
+import { abaSampleTouch } from '../../design/abaTokens';
 import { stageOfPlan } from '../abaParentStage';
 import {
   closeSampleTouchSession,
@@ -390,7 +391,12 @@ describe('модель экрана', () => {
 
   it('без L4 после модели — без касания; «Отказ» — исход refusal', () => {
     let r = startSampleTouch({ ...step, l4Available: false, startLevel: 3 }, 0);
+    // модель в одном кадре с новой картинкой идёт через `modelDelayMs`, окно касания — от её начала (методист 2026-11-19)
+    expect(touchModelDelayMs(r)).toBe(abaSampleTouch.modelDelayMs);
+    expect(sampleTouchDueAt(r)).toBe(abaSampleTouch.modelDelayMs + 5000);
     r = stepSampleTouch(r, { type: 'due', at: 5000 });
+    expect(r.done).toBe(false);
+    r = stepSampleTouch(r, { type: 'due', at: abaSampleTouch.modelDelayMs + 5000 });
     expect(sampleTouchInput(r)).toMatchObject({ outcome: 'no_response', levelUsed: 3 });
     const refused = stepSampleTouch(startSampleTouch(step, 0), { type: 'adult', button: 'refusal', at: 100 });
     expect(sampleTouchInput(refused).outcome).toBe('refusal');
