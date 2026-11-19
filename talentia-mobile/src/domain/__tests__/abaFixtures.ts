@@ -1,10 +1,28 @@
-import type { AbaTarget, AbaTrial } from '../../types/aba';
+import type { AbaFormat, AbaTarget, AbaTrial } from '../../types/aba';
+import type { RoutineHistory } from '../abaRoutineRun';
+import { finishAbaSession } from '../abaSession';
+
+/**
+ * Место цели в сетке по формату — для фикстур, которые меняют только формат. Подражание и
+ * самообслуживание проверяются своими тестами.
+ */
+export const GRID_FOR: Record<AbaFormat, Pick<AbaTarget, 'level' | 'area' | 'sdKind' | 'fieldSize'>> = {
+  imitate_sound: { level: 1, area: 'echoic' },
+  repeat_word: { level: 1, area: 'echoic' },
+  voice_volume: { level: 2, area: 'voice_control', sdKind: 'instruction' },
+  do_action: { level: 1, area: 'receptive_instructions', sdKind: 'instruction' },
+  identify: { level: 1, area: 'receptive_identify', sdKind: 'name' },
+  match: { level: 1, area: 'matching', fieldSize: 3 },
+  say: { level: 2, area: 'tact', sdKind: 'picture' },
+};
 
 export const target: AbaTarget = {
   id: 't-meow',
   programId: 'p-sounds',
   format: 'imitate_sound',
   band: '5-6',
+  level: 1,
+  area: 'echoic',
   sdKey: 'aba.sd.meow',
   exemplars: [
     { id: 'cat-1', role: 'teaching', targetKey: 'k1', modelKey: 'm1', partialModelKeys: [] },
@@ -21,6 +39,9 @@ let seq = 0;
 
 export function trial(over: Partial<AbaTrial> = {}): AbaTrial {
   seq += 1;
+  const latencyMs = over.latencyMs !== undefined ? over.latencyMs : over.response === 'no_response' ? null : 1200;
+  const kind = over.kind ?? 'teaching';
+  const delayed = (kind === 'teaching' || kind === 'transfer') && (over.startPromptLevel ?? 0) === 0;
   return {
     id: `tr-${seq}`,
     sessionId: 's-1',
@@ -33,10 +54,34 @@ export function trial(over: Partial<AbaTrial> = {}): AbaTrial {
     presentations: 1,
     response: 'independent',
     emittedBeforePrompt: true,
-    latencyMs: 1200,
+    latencyMs,
+    latencyFromFirstSdMs: latencyMs,
+    latencySource: latencyMs === null ? null : 'adult_press',
+    promptDelayMs: delayed ? 3000 : null,
+    responseWindowMs: 5000,
+    presentationLog: [],
     sdEndedAt: '2026-09-24T10:00:00Z',
     scoredBy: 'adult',
     tokens: 0,
     ...over,
   };
 }
+
+/**
+ * `finishAbaSession` для тестов, где обмен рутины в окне сессии не важен: признак обязателен
+ * (`extra`, аудит раунда 3, В-2), здесь по умолчанию «обмена не было». Тесты, которым важен сам
+ * признак, зовут `finishAbaSession` напрямую.
+ */
+export function finishSession(
+  state: Parameters<typeof finishAbaSession>[0],
+  endedAt: number,
+  pastSessions: Parameters<typeof finishAbaSession>[2] = {},
+  ioa?: Parameters<typeof finishAbaSession>[3],
+  signalHistory?: Parameters<typeof finishAbaSession>[4],
+  extra: Parameters<typeof finishAbaSession>[5] = { routineExchangeInWindow: false },
+): ReturnType<typeof finishAbaSession> {
+  return finishAbaSession(state, endedAt, pastSessions, ioa, signalHistory, extra);
+}
+
+/** Прогонов рутины до этого не было: вход `finishRoutineRun` для тестов, где история не важна. */
+export const NO_HISTORY: RoutineHistory = { runs: [] };

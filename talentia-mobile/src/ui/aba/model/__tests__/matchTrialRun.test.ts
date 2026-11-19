@@ -1,0 +1,414 @@
+/**
+ * Проба `match` на экране — сценарии журнала (`aba-screens-spec-2026-10-25.md`, «Журнал пробы `match`») через
+ * настоящий домен: `startAbaSession` → `nextStep` → модель → `recordTrial`. Запись, которую домен не принял, — провал.
+ */
+import { MATCH_SAME_2, MATCH_SAME_3 } from '../../../../content/aba/match-level1';
+import { initialTargetState } from '../../../../domain/abaPrompting';
+import { chooseReinforcer, nextStep, recordTrial, startAbaSession, type AbaSessionState, type TrialStep } from '../../../../domain/abaSession';
+import { scoreAgainst } from '../../../../domain/abaTrialStep';
+import { targetForBand } from '../../../../domain/abaTargetRules';
+import { initialTokenTraining } from '../../../../domain/abaTokenTraining';
+import type { AbaTarget, AbaTargetState, PromptLevel } from '../../../../types/aba';
+import { matchDueAt, matchTrialInput, matchVisual, optionActive, startMatchTrial, stepMatchTrial, type MatchEvent, type MatchTrialRun } from '../matchTrialRun';
+
+const T0 = Date.UTC(2026, 9, 30, 8);
+const POOL = ['puzzle', 'bubbles', 'drum', 'paint_drop', 'kaleidoscope', 'pinwheel'];
+
+function session(base: AbaTarget, start: PromptLevel = 0, config: 'with_adult' | 'alone' = 'with_adult', over: Partial<AbaTargetState> = {}) {
+  const t = targetForBand(base, '7');
+  const state: AbaTargetState = { ...initialTargetState(t), phase: 'acquisition', startPromptLevel: start, lastSuccessfulPromptLevel: start, ...over };
+  // предпосылки цели (у «из трёх» — «из двух») — освоены: их пробы разогрева проходятся верно до нужной пробы
+  const pre = (base.prerequisiteTargetIds ?? []).map((id) => targetForBand([MATCH_SAME_2, MATCH_SAME_3].find((x) => x.id === id)!, '7'));
+  const preStates = Object.fromEntries(pre.map((p) => [p.id, { ...initialTargetState(p), phase: 'mastered' as const, startPromptLevel: 0 as const, lastSuccessfulPromptLevel: 0 as const, lastMaintenanceSessionIndex: 3 }]));
+  let st = startAbaSession({
+    sessionId: 's-1',
+    sessionIndex: 3,
+    day: '2026-10-30',
+    config,
+    band: '7',
+    targets: [...pre, t],
+    states: { ...preStates, [t.id]: state },
+    reinforcerPool: POOL,
+    reinforcerApart: [],
+    reinforcerHistory: [],
+    tokenTraining: { ...initialTokenTraining(), pairingDone: true, stage: 5 },
+    startedAt: T0,
+    seed: 11,
+    observers: config === 'with_adult' ? [{ id: 'o1', role: 'parent', trained: false }] : [],
+    primaryObserverId: config === 'with_adult' ? 'o1' : null,
+  });
+  const first = nextStep(st, T0);
+  st = chooseReinforcer(first.state, (first.step as { options: string[] }).options[0], T0);
+  for (let i = 0; i < 10; i += 1) {
+    const next = nextStep(st, T0);
+    if (next.step.kind !== 'trial') throw new Error(`ждали пробу, а шаг ${next.step.kind}`);
+    const step = next.step;
+    if (step.targetId === t.id) return { state: next.state, step, target: t };
+    // проба разогрева освоенной цели — верно
+    const warm = { state: next.state, step, target: pre.find((p) => p.id === step.targetId)! };
+    const r = go(run(warm, config), { type: 'tap_sample', at: at(1) }, { type: 'tap_option', id: step.sampleCardId!, at: at(1.5) });
+    const res = recordTrial(next.state, matchTrialInput(r), at(2));
+    if (!res.ok) throw new Error(res.errors.join('; '));
+    st = res.state;
+  }
+  throw new Error('до пробы цели не дошли');
+}
+
+function run(s: { state: AbaSessionState; step: TrialStep; target: AbaTarget }, config: 'with_adult' | 'alone' = 'with_adult'): MatchTrialRun {
+  return startMatchTrial({ step: s.step, target: s.target, config, seed: s.state.seed, trialId: `tr-${(trialSeq += 1)}`, sessionId: s.state.sessionId, index: s.state.trials.length, shownAt: T0 + 1000 });
+}
+
+let trialSeq = 0;
+const go = (r: MatchTrialRun, ...events: MatchEvent[]) => events.reduce(stepMatchTrial, r);
+const at = (s: number) => T0 + 1000 + s * 1000;
+/** Сроки модели до конца пробы. */
+function runOut(r: MatchTrialRun): MatchTrialRun {
+  let x = r;
+  for (let i = 0; i < 10 && !x.done && matchDueAt(x) !== null; i += 1) x = stepMatchTrial(x, { type: 'due', at: matchDueAt(x)! });
+  return x;
+}
+function record(s: { state: AbaSessionState }, r: MatchTrialRun) {
+  const res = recordTrial(s.state, matchTrialInput(r), at(30));
+  if (!res.ok) throw new Error(res.errors.join('; '));
+  return res.trial;
+}
+const distractor = (s: { step: TrialStep }) => s.step.field!.find((id) => id !== s.step.sampleCardId)!;
+
+describe('до касания образца', () => {
+  it('варианты неактивны; касание по ним считается, но ответом не становится', () => {
+    const s = session(MATCH_SAME_3);
+    let r = run(s);
+    expect(optionActive(r, s.step.sampleCardId!)).toBe(false);
+    r = go(r, { type: 'tap_option', id: s.step.sampleCardId!, at: at(0.5) });
+    expect([r.done, r.tapCount, r.chosenCardId]).toEqual([false, 1, null]);
+    r = go(r, { type: 'tap_sample', at: at(1) });
+    expect(optionActive(r, s.step.sampleCardId!)).toBe(true);
+  });
+});
+
+describe('сценарии журнала', () => {
+  it('а: образец через 1 с, верно — самостоятельно, латентность наблюдения 1000', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_sample', at: at(1) }, { type: 'tap_option', id: s.step.sampleCardId!, at: at(1.5) });
+    expect(r.done).toBe(true);
+    expect(matchTrialInput(r)).toMatchObject({ observingLatencyMs: 1000, chosenCardId: s.step.sampleCardId, tapCount: 2, fieldSizeAtResponse: 3 });
+    expect(record(s, r)).toMatchObject({ response: 'independent', promptLevelUsed: 0, latencyMs: 500 });
+  });
+
+  it('б: образца коснулись, выбора нет до конца задержки — L1, верно', () => {
+    const s = session(MATCH_SAME_3);
+    let r = go(run(s), { type: 'tap_sample', at: at(1) });
+    r = go(r, { type: 'due', at: matchDueAt(r)! });
+    expect(r.log).toHaveLength(2);
+    expect(r.observingPrompted).toBe(false);
+    r = go(r, { type: 'tap_option', id: s.step.sampleCardId!, at: matchDueAt(r)! - 1000 });
+    expect(record(s, r)).toMatchObject({ response: 'prompted', promptLevelUsed: 1 });
+  });
+
+  it('в: образца не коснулись 5 с — L1 наблюдения, метка над образцом; коснулись и выбрали — подсказано', () => {
+    const s = session(MATCH_SAME_3);
+    let r = run(s);
+    expect(matchDueAt(r)).toBe(at(5));
+    r = go(r, { type: 'due', at: at(5) });
+    expect(r.observingPrompted).toBe(true);
+    expect(matchVisual(r).focus).toMatchObject({ on: 'sample', id: s.step.sampleCardId });
+    r = go(r, { type: 'tap_sample', at: at(6.5) }, { type: 'tap_option', id: s.step.sampleCardId!, at: at(7.7) });
+    expect(matchTrialInput(r)).toMatchObject({ observingPrompted: true, observingLatencyMs: 6500 });
+    expect(record(s, r)).toMatchObject({ response: 'prompted', promptLevelUsed: 1 });
+  });
+
+  it('г: и после L1 образца нет — нет ответа, наблюдения нет', () => {
+    const s = session(MATCH_SAME_3);
+    const r = runOut(run(s));
+    expect(r.log).toHaveLength(2);
+    expect(matchTrialInput(r)).toMatchObject({ observingPrompted: true, observingLatencyMs: null });
+    expect(record(s, r)).toMatchObject({ response: 'no_response', promptLevelUsed: 1 });
+  });
+
+  it('д: неверный выбор — неверно, проба закрыта', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_sample', at: at(1) }, { type: 'tap_option', id: distractor(s), at: at(1.4) });
+    expect(r.done).toBe(true);
+    expect(record(s, r)).toMatchObject({ response: 'incorrect', chosenCardId: distractor(s) });
+  });
+
+  it('е: «Была подсказка» в окне — подсказано, `adultUnplannedPrompt`', () => {
+    const s = session(MATCH_SAME_3);
+    let r = go(run(s), { type: 'tap_sample', at: at(1) });
+    r = go(r, { type: 'adult', button: 'adult_prompted', at: at(2) });
+    expect(r.log.map((p) => p.by)).toEqual(['app', 'adult']);
+    r = go(r, { type: 'tap_option', id: s.step.sampleCardId!, at: at(2.6) });
+    expect(record(s, r)).toMatchObject({ response: 'prompted', adultUnplannedPrompt: true });
+  });
+
+  it('ж: «Отказ» — прервана, без времени ответа', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_sample', at: at(1) }, { type: 'adult', button: 'refusal', at: at(2) });
+    expect(r.done).toBe(true);
+    expect(record(s, r)).toMatchObject({ response: 'interrupted', interruptedBy: 'assent' });
+  });
+
+  it('з: карточка «перерыв» в пробеле наблюдения — прервана просьбой ребёнка', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'break_card', at: at(4) });
+    expect(record(s, r)).toMatchObject({ response: 'interrupted', interruptedBy: 'child_break', msSinceSd: 4000 });
+  });
+
+  it('и: поле из двух — L0 → L1 → L3, без L2', () => {
+    const s = session(MATCH_SAME_2);
+    let r = go(run(s), { type: 'tap_sample', at: at(1) });
+    r = runOut(r);
+    expect(r.log.map((p) => p.level)).toEqual([0, 1, 3]);
+    expect(record(s, r)).toMatchObject({ response: 'no_response', promptLevelUsed: 3 });
+  });
+});
+
+describe('старт L1+ и измерение', () => {
+  it('старт L3: активен только верный; без касания образца — дальше по лестнице, отдельной L1 наблюдения нет', () => {
+    const s = session(MATCH_SAME_3, 3);
+    let r = run(s);
+    r = go(r, { type: 'tap_sample', at: at(0.5) });
+    expect(s.step.field!.filter((id) => optionActive(r, id))).toEqual([s.step.sampleCardId]);
+    const untouched = runOut(run(s));
+    expect(untouched.observingPrompted).toBe(false);
+    expect(record(s, untouched)).toMatchObject({ response: 'no_response' });
+  });
+
+  it('старт L1, образца не коснулись — L2, наблюдения не отмечено', () => {
+    const s = session(MATCH_SAME_3, 1);
+    let r = run(s);
+    r = go(r, { type: 'due', at: matchDueAt(r)! });
+    expect([r.log.map((p) => p.level), r.observingPrompted]).toEqual([[1, 2], false]);
+  });
+
+  it('базовая линия: подсказок нет, без ответа — закрыта по окну', () => {
+    const s = session(MATCH_SAME_3, 0, 'with_adult', { phase: 'baseline' });
+    expect(s.step.allowEscalation).toBe(false);
+    const r = runOut(go(run(s), { type: 'tap_sample', at: at(1) }));
+    expect(r.log).toHaveLength(1);
+    expect(record(s, r)).toMatchObject({ response: 'no_response', promptLevelUsed: 0 });
+  });
+});
+
+describe('панель взрослого', () => {
+  it('«Была подсказка» сразу после касания ребёнка — в очереди 400 мс, применяется по снятию окна', () => {
+    const s = session(MATCH_SAME_3);
+    let r = go(run(s), { type: 'tap_sample', at: at(1) }, { type: 'adult', button: 'adult_prompted', at: at(1.1) });
+    expect(r.pending).toEqual({ at: at(1.1) });
+    expect(matchDueAt(r)).toBe(at(1.4));
+    r = go(r, { type: 'due', at: at(1.4) });
+    expect(r.log.map((p) => [p.by, p.startedAt])).toEqual([
+      ['app', at(0)],
+      ['adult', at(1.1)],
+    ]);
+  });
+
+  it('«Отказ» снимает отложенную отметку и закрывает пробу сразу', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_sample', at: at(1) }, { type: 'adult', button: 'adult_prompted', at: at(1.1) }, { type: 'adult', button: 'refusal', at: at(1.2) });
+    expect([r.done, r.pending, r.log]).toEqual([true, null, [expect.objectContaining({ outcome: 'refusal' })]]);
+  });
+
+  it('ответ ребёнка в окне очереди — отложенная подсказка не применяется', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(
+      run(s),
+      { type: 'tap_sample', at: at(1) },
+      { type: 'adult', button: 'adult_prompted', at: at(1.1) },
+      { type: 'tap_option', id: s.step.sampleCardId!, at: at(1.2) },
+    );
+    expect(r.log).toHaveLength(1);
+    expect(record(s, r)).toMatchObject({ response: 'independent' });
+  });
+
+  it('№167: «Была подсказка» в пробеле наблюдения принимается — потом коснулись и верно: подсказано, не «самостоятельно»', () => {
+    const s = session(MATCH_SAME_3);
+    let r = go(run(s), { type: 'adult', button: 'adult_prompted', at: at(4) });
+    expect(r.log.map((p) => [p.by, p.startedAt])).toEqual([
+      ['app', at(0)],
+      ['adult', at(4)],
+    ]);
+    r = go(r, { type: 'tap_sample', at: at(5) }, { type: 'tap_option', id: s.step.sampleCardId!, at: at(5.5) });
+    expect(record(s, r)).toMatchObject({ response: 'prompted', adultUnplannedPrompt: true, promptLevelUsed: 1 });
+  });
+
+  it('№167: подсказка взрослого, образца так и не коснулись — после L1 приложения проба закрыта, без «наблюдения»', () => {
+    const s = session(MATCH_SAME_3);
+    const r = runOut(go(run(s), { type: 'adult', button: 'adult_prompted', at: at(4) }));
+    expect(r.log.map((p) => [p.by, p.level])).toEqual([
+      ['app', 0],
+      ['adult', 0],
+      ['app', 1],
+    ]);
+    expect(r.observingPrompted).toBe(false);
+    expect(record(s, r)).toMatchObject({ response: 'no_response', adultUnplannedPrompt: true });
+  });
+
+  it('№167: и после окна наблюдения — не принимается', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'adult', button: 'adult_prompted', at: at(5.5) });
+    expect(r.log).toHaveLength(1);
+  });
+});
+
+describe('касания', () => {
+  it('одна плита чаще 150 мс — одно касание', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_sample', at: at(1) }, { type: 'tap_sample', at: at(1.1) }, { type: 'tap_sample', at: at(1.3) });
+    expect(r.tapCount).toBe(2);
+  });
+});
+
+// 2026-11-19: метка над образцом и сама плита образца шлют одно событие `tap_sample` (`MatchField`, `abaSampleTap.markCounts`)
+describe('касание образца и его метки — не выбор', () => {
+  it('касание образца делает варианты активными, но ответом не становится: проба идёт, выбранной карточки нет', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_sample', at: at(1) });
+    expect([r.done, r.chosenCardId, r.fieldSizeAtResponse, r.tapCount]).toEqual([false, null, null, 1]);
+    expect(s.step.field!.every((id) => optionActive(r, id))).toBe(true);
+  });
+
+  it('сколько ни касайся образца — проба не закрывается и ответа нет; момент наблюдения — первое касание', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_sample', at: at(1) }, { type: 'tap_sample', at: at(2) }, { type: 'tap_sample', at: at(3) });
+    expect([r.done, r.chosenCardId, r.sampleTouchedAt, r.tapCount]).toEqual([false, null, at(1), 3]);
+  });
+
+  it('метка и плита образца подряд (< 150 мс) — одно касание в `tapCount`, не два', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_sample', at: at(1) }, { type: 'tap_sample', at: at(1) + 149 });
+    expect(r.tapCount).toBe(1);
+    const apart = go(run(s), { type: 'tap_sample', at: at(1) }, { type: 'tap_sample', at: at(1) + 150 });
+    expect(apart.tapCount).toBe(2);
+  });
+
+  it('после касания образца верный вариант — ответ; в записи два касания (образец и вариант), а не три', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_sample', at: at(1) }, { type: 'tap_option', id: s.step.sampleCardId!, at: at(1.5) });
+    expect(matchTrialInput(r)).toMatchObject({ chosenCardId: s.step.sampleCardId, tapCount: 2 });
+  });
+});
+
+// решение методиста 1 (ABA.md, 2026-11-18), срез Б: нажатие на вариант до образца в обучении со старта L0
+describe('нажатие на вариант до касания образца — метка над образцом сразу', () => {
+  it('обучение, старт L0, первое предъявление: L1 наблюдения без окна, причина bottom_tap, выбора нет', () => {
+    const s = session(MATCH_SAME_3);
+    expect([s.step.trialKind, s.step.startPromptLevel]).toEqual(['teaching', 0]);
+    const r = go(run(s), { type: 'tap_option', id: distractor(s), at: at(0.5) });
+    expect([r.done, r.chosenCardId, r.observingPrompted, r.observingCue]).toEqual([false, null, true, 'bottom_tap']);
+    expect(r.log.map((p) => [p.by, p.level, p.outcome])).toEqual([['app', 0, 'none'], ['app', 1, null]]);
+    expect(r.log[1].startedAt).toBe(at(0.5));
+    expect(matchVisual(r).focus).toMatchObject({ on: 'sample', id: s.step.sampleCardId });
+  });
+
+  it('домен принимает пробу: подсказано на L1, observingPrompted и observingCue в записи', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_option', id: distractor(s), at: at(0.5) }, { type: 'tap_sample', at: at(1) }, { type: 'tap_option', id: s.step.sampleCardId!, at: at(1.5) });
+    expect(matchTrialInput(r)).toMatchObject({ observingPrompted: true, observingCue: 'bottom_tap', observingLatencyMs: 1000 });
+    expect(record(s, r)).toMatchObject({ response: 'prompted', promptLevelUsed: 1, observingPrompted: true, observingCue: 'bottom_tap' });
+  });
+
+  it('второе нажатие до образца после метки — без второго подъёма уровня', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_option', id: distractor(s), at: at(0.5) }, { type: 'tap_option', id: distractor(s), at: at(1) });
+    expect(r.log.map((p) => p.level)).toEqual([0, 1]);
+    expect(r.done).toBe(false);
+  });
+
+  it('и после метки образца не коснулись — нет ответа, как по истёкшему окну', () => {
+    const s = session(MATCH_SAME_3);
+    const r = runOut(go(run(s), { type: 'tap_option', id: distractor(s), at: at(0.5) }));
+    expect(record(s, r)).toMatchObject({ response: 'no_response', observingCue: 'bottom_tap', observingLatencyMs: null });
+  });
+
+  it('старт L1+: нажатие до образца ничего не поднимает', () => {
+    const s = session(MATCH_SAME_3, 1);
+    const r = go(run(s), { type: 'tap_option', id: distractor(s), at: at(0.5) });
+    expect([r.log.length, r.observingCue, r.observingPrompted]).toEqual([1, null, false]);
+  });
+
+  it('не первое предъявление (после «Была подсказка»): нажатие до образца ничего не поднимает', () => {
+    const s = session(MATCH_SAME_3);
+    let r = go(run(s), { type: 'adult', button: 'adult_prompted', at: at(1) });
+    expect(r.log).toHaveLength(2);
+    r = go(r, { type: 'tap_option', id: distractor(s), at: at(1.5) });
+    expect([r.log.length, r.observingCue]).toEqual([2, null]);
+  });
+
+  it('базовая линия (настоящий шаг): нажатие до образца ничего не поднимает', () => {
+    const s = session(MATCH_SAME_3, 0, 'with_adult', { phase: 'baseline' });
+    expect(s.step.trialKind).toBe('baseline');
+    const r = go(run(s), { type: 'tap_option', id: distractor(s), at: at(0.5) });
+    expect([r.log.length, r.observingCue, r.observingPrompted]).toEqual([1, null, false]);
+  });
+
+  it.each(['baseline', 'generalization', 'maintenance', 'verification', 'correction', 'transfer'] as const)(
+    '%s со старта L0 и с подъёмом: нажатие до образца ничего не поднимает',
+    (kind) => {
+      const s = session(MATCH_SAME_3);
+      const step = { ...s.step, trialKind: kind };
+      const r = go(run({ ...s, step }), { type: 'tap_option', id: distractor(s), at: at(0.5) });
+      expect([r.log.length, r.observingCue]).toEqual([1, null]);
+    },
+  );
+});
+
+describe('проверка записи с observingCue', () => {
+  // L1 наблюдения по истёкшему окну (сценарий «в») — журнал проходит оценку, решает только правило причины
+  const late = () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'due', at: at(5) }, { type: 'tap_sample', at: at(6.5) }, { type: 'tap_option', id: s.step.sampleCardId!, at: at(7.7) });
+    return { s, input: matchTrialInput(r) };
+  };
+
+  it('причина без самой подсказки — отказ', () => {
+    const { s, input } = late();
+    const { observingPrompted: _, ...bare } = input;
+    const res = recordTrial(s.state, { ...bare, observingCue: 'bottom_tap' }, at(30));
+    expect(res.ok ? [] : res.errors).toEqual(['причина подсказки к образцу без самой подсказки']);
+  });
+
+  it('причина bottom_tap без касания на первом предъявлении — отказ', () => {
+    const { s, input } = late();
+    const res = scoreAgainst({ ...input, observingCue: 'bottom_tap' }, s.step, s.state.sessionId, 'match');
+    expect(res.ok ? [] : res.errors).toEqual(['подсказка к образцу не согласована с журналом']);
+  });
+
+  it('ранняя L1 с причиной вне обучения — отказ, та же запись в обучении — принята', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_option', id: distractor(s), at: at(0.5) }, { type: 'tap_sample', at: at(1) }, { type: 'tap_option', id: s.step.sampleCardId!, at: at(1.5) });
+    const input = matchTrialInput(r);
+    expect(scoreAgainst(input, s.step, s.state.sessionId, 'match').ok).toBe(true);
+    const res = scoreAgainst({ ...input, kind: 'transfer' }, { ...s.step, trialKind: 'transfer' }, s.state.sessionId, 'match');
+    expect(res.ok ? [] : res.errors).toEqual(['подсказка к образцу не согласована с журналом']);
+  });
+
+  const earlyInput = () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_option', id: distractor(s), at: at(0.5) }, { type: 'tap_sample', at: at(1) }, { type: 'tap_option', id: s.step.sampleCardId!, at: at(1.5) });
+    return { s, input: matchTrialInput(r) };
+  };
+
+  it('ранняя L1 с причиной, но без касания на первом предъявлении — отказ', () => {
+    const { s, input } = earlyInput();
+    const log = input.presentationLog.map((p, i) => {
+      if (i !== 0) return p;
+      const { activity: _, ...rest } = p;
+      return rest;
+    });
+    expect(scoreAgainst({ ...input, presentationLog: log }, s.step, s.state.sessionId, 'match').ok).toBe(false);
+  });
+
+  it('ранняя L1 с причиной, а образца коснулись раньше неё — отказ: окно не выждано', () => {
+    const { s, input } = earlyInput();
+    const res = scoreAgainst({ ...input, observingLatencyMs: 100 }, s.step, s.state.sessionId, 'match');
+    expect(res.ok ? [] : res.errors).toContain('предъявление 2: началось раньше конца окна');
+  });
+
+  it('ранняя L1 без причины — отказ: окно наблюдения не выждано', () => {
+    const s = session(MATCH_SAME_3);
+    const r = go(run(s), { type: 'tap_option', id: distractor(s), at: at(0.5) }, { type: 'tap_sample', at: at(1) }, { type: 'tap_option', id: s.step.sampleCardId!, at: at(1.5) });
+    const { observingCue: _, ...noCue } = matchTrialInput(r);
+    expect(recordTrial(s.state, noCue, at(30)).ok).toBe(false);
+  });
+});

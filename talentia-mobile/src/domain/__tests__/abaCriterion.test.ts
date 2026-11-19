@@ -19,6 +19,7 @@ function session(n: number, independent: number, over: Partial<AbaTrial> = {}): 
     trial({
       exemplarId: i % 2 ? 'cat-2' : 'cat-1',
       response: i < independent ? 'independent' : 'prompted',
+      ...(over.stepId ? { runIndex: i } : {}),
       promptLevelUsed: i < independent ? 0 : 1,
       ...over,
     }),

@@ -1,0 +1,68 @@
+/** Настройки ребёнка (дизайн-док §5): сохраняются сразу; смена полосы — через подтверждение PIN. */
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import { saveProfileAsParent } from '../../../src/services/local/abaSpecialist';
+import { useAccount } from '../../../src/state/account';
+import { useChildSession } from '../../../src/state/childSession';
+import { useGate } from '../../../src/state/gate';
+import type { AgeBand } from '../../../src/types/task';
+import { ConfirmPinSheet } from '../../../src/ui/parent/ConfirmPinSheet';
+import { ProfileForm, type ProfileDraft } from '../../../src/ui/parent/ProfileForm';
+import { ParentButton, ParentScreen } from '../../../src/ui/parent/primitives';
+
+export default function ChildSettingsScreen() {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const { childId } = useLocalSearchParams<{ childId: string }>();
+  const profile = useAccount((s) => s.profiles.find((p) => p.childId === childId));
+  const updateProfile = useAccount((s) => s.updateProfile);
+  const db = useAccount((s) => s.db);
+  const can = useGate((s) => s.can);
+  const [pendingBand, setPendingBand] = useState<AgeBand | null>(null);
+
+  if (!profile) return <Redirect href="/parent" />;
+  const draft: ProfileDraft = profile;
+  const save = (d: ProfileDraft) => {
+    const next = { ...profile, ...d };
+    // полоса и «Награда от взрослого» — условия ABA: событие журнала с ролью «родитель», полоса ещё и снимает параметры
+    // специалиста вне её пределов (финальная рецензия методиста 2026-11-18); без данных ABA — только профиль
+    const write = db ? saveProfileAsParent(db, profile, next, updateProfile, new Date().toISOString()) : updateProfile(next);
+    void write.catch((e: unknown) => {
+      if (__DEV__) console.warn('profile-save', e);
+    });
+    // язык — сразу и в идущую сессию этого ребёнка: карта под разделом взрослого переходит на него (№190)
+    const session = useChildSession.getState();
+    if (session.mode !== 'none' && session.childId === profile.childId && session.settings.interfaceLang !== d.interfaceLang) {
+      session.setSettings({ interfaceLang: d.interfaceLang });
+    }
+    // «Награда от взрослого» (решение 14) — тоже сразу: следующее занятие этого ребёнка берёт пул из настроек сеанса
+    if (session.mode !== 'none' && session.childId === profile.childId && session.settings.adultReward !== (d.adultReward === true)) {
+      session.setSettings({ adultReward: d.adultReward === true });
+    }
+  };
+
+  return (
+    <ParentScreen title={t('parent.profile.settings')} left={<ParentButton variant="quiet" label={t('parent.back')} onPress={() => router.back()} block={false} testID="settings-back" />} right={<ParentButton variant="quiet" label={t('parent.done')} onPress={() => router.dismissAll()} block={false} testID="settings-done" />} testID="parent-settings">
+      <ProfileForm
+        draft={draft}
+        onChange={save}
+        extended
+        onBandChange={(band) => {
+          if (band === profile.band) return;
+          if (can('change_band')) save({ ...draft, band });
+          else setPendingBand(band);
+        }}
+      />
+      <ConfirmPinSheet
+        visible={pendingBand !== null}
+        onCancel={() => setPendingBand(null)}
+        onConfirmed={() => {
+          if (pendingBand) save({ ...draft, band: pendingBand });
+          setPendingBand(null);
+        }}
+      />
+    </ParentScreen>
+  );
+}

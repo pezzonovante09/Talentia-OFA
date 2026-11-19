@@ -32,6 +32,13 @@ export type LessonRun = {
  */
 export const TASK_SECONDS_CAP = 120;
 
+/**
+ * `lessonId` прохождения-повторения: сессия с узла «повторение» карты, не урок. Не входит в число
+ * уроков недели, в атлас не пишется; её задания — повторения (`reviewTasks`). Урока с таким id в
+ * реестре быть не может (гард `content/index.ts`).
+ */
+export const REVIEW_LESSON_ID = 'review';
+
 export function runSeconds(run: LessonRun): number {
   return run.taskSeconds.reduce((sum, s) => sum + Math.min(TASK_SECONDS_CAP, Math.max(0, s)), 0);
 }
@@ -72,7 +79,7 @@ export function weekSummary(runs: readonly LessonRun[], today: string, dayOf: Da
     days: week.map((day) => ({ day, active: active.has(day) })),
     activeDays: active.size,
     minutes: Math.round(seconds / 60),
-    lessons: inWeek.length,
+    lessons: inWeek.filter((r) => r.lessonId !== REVIEW_LESSON_ID).length,
     reviewTasks: inWeek.reduce((sum, r) => sum + r.reviewTasks, 0),
   };
 }
@@ -80,15 +87,25 @@ export function weekSummary(runs: readonly LessonRun[], today: string, dayOf: Da
 /** Сколько строк в блоке «даётся тяжело». Больше — это уже не подсказка родителю, а тревога. */
 export const HARD_LIMIT = 5;
 
-/** С какого числа попыток навык можно назвать трудным. Раньше это шум, а не трудность. */
+/** С какого числа попыток навык в первой коробке можно назвать трудным. Раньше это шум, а не трудность. */
 export const HARD_MIN_ATTEMPTS = 3;
+/** Вторая коробка — «застрял»: попыток не меньше стольких и верных меньше половины. */
+export const HARD_STALL_ATTEMPTS = 5;
+export const HARD_STALL_ACCURACY = 0.5;
 
 /**
- * Навык даётся тяжело: младшие коробки при накопленных попытках. Одна неудача на
- * новом навыке — не трудность.
+ * Навык даётся тяжело (разбор 2026-10-31, вопрос 57). Первая коробка — туда навык попадает после
+ * показанного ответа — при трёх попытках и верных не больше половины: два верных из трёх в первом
+ * уроке темы трудностью не считаются. Вторая коробка — только если попыток накопилось и точность
+ * ниже половины: безошибочный первый урок (четыре из четырёх, коробка 2) — не трудность. Третья и
+ * четвёртая — нет.
  */
 export function isHard(s: SkillState): boolean {
-  return s.box <= 2 && s.attempts >= HARD_MIN_ATTEMPTS;
+  if (s.attempts === 0) return false;
+  const accuracy = s.correct / s.attempts;
+  if (s.box === 1) return s.attempts >= HARD_MIN_ATTEMPTS && accuracy <= HARD_STALL_ACCURACY;
+  if (s.box === 2) return s.attempts >= HARD_STALL_ATTEMPTS && accuracy < HARD_STALL_ACCURACY;
+  return false;
 }
 
 export type SkillsSummary = {

@@ -1,0 +1,142 @@
+/**
+ * Стимулы проб `match` (Ц2.12 `docs/design/aba-screens-2026-10-25.md`, проверка `aba-pedagogy-specialist` 2026-10-26;
+ * правило цвета — ABA.md «Визуальный язык», №162). Предметы — SVG из партии `docs/assets/aba-match-stimuli.md` (скилл `asset-pipeline`; пока файла нет — у
+ * `ABA_OBJECT_ART` `null`, экран рисует заглушку-силуэт). Формы и цвета — не файлы, их рисует код.
+ *
+ * `class` — класс стимула для пула подкрепителей (`reinforcerPoolFor`): позиция каталога с тем же классом в
+ * программу не идёт. Ведёрко убрано (класс сцены `marble_run`), вместо него ложка.
+ */
+export type AbaShape = 'circle' | 'square' | 'triangle' | 'ring' | 'rhombus';
+
+export type AbaStimulus =
+  | { id: string; kind: 'object'; class: string }
+  /** Форма одной заливки на всё поле: обучение — `ABA_SHAPE_FILL.teaching`, перенос — `.generalization`. */
+  | { id: string; kind: 'shape'; class: 'shape'; shape: AbaShape; fill: string }
+  /** Цвет на форме-носителе одного размера: обучение — круг, перенос — квадрат; hex одинаков в обеих темах. */
+  | { id: string; kind: 'color'; class: 'color'; hex: string; carrier: 'circle' | 'square' };
+
+const obj = (name: string, cls: string): AbaStimulus => ({ id: `aba-obj-${name}`, kind: 'object', class: cls });
+
+/**
+ * Заливка форм — **не из цветов-целей** (`aba-pedagogy-specialist` 2026-10-26, п. 5): иначе синий круг формы был бы
+ * тем же стимулом, что синий цвета, и навык держался бы за «этот синий круг». У переноса — другая заливка.
+ * 2026-11-12 (аудит контента, правка 3): прежние синий и зелёный были почти теми же цветами, что в цели «цвет», —
+ * теперь коричневый и серый: далеко от синего, красно-оранжевого, зелёного, пурпурного, жёлтого жетона и фиолетовых наград.
+ */
+export const ABA_SHAPE_FILL = { teaching: '#7A4E2D', generalization: '#5E5E5E' } as const;
+
+/**
+ * Пропорции форм для рендера (п. 4): ромб — углы 60° / 120°, не повёрнутый квадрат; кольцо — внутренний диаметр
+ * 0.5 внешнего. Все формы вписаны в один квадрат. `area` — площадь каждой формы как доля площади плиты (правка 3):
+ * фигуры различаются только формой, а не размером; предел задаёт ромб 60° — его длинная диагональ ≈ 0.87 плиты.
+ */
+export const ABA_SHAPE_SPEC = { rhombusAcuteDeg: 60, ringInnerRatio: 0.5, area: 0.22 } as const;
+
+const shape = (name: AbaShape, alt = false): AbaStimulus => ({
+  id: `aba-shape-${name}${alt ? '-alt' : ''}`,
+  kind: 'shape',
+  class: 'shape',
+  shape: name,
+  fill: alt ? ABA_SHAPE_FILL.generalization : ABA_SHAPE_FILL.teaching,
+});
+const color = (name: string, hex: string, carrier: 'circle' | 'square' = 'circle'): AbaStimulus => ({
+  id: `aba-color-${name}${carrier === 'square' ? '-sq' : ''}`,
+  kind: 'color',
+  class: 'color',
+  hex,
+  carrier,
+});
+const SHAPES: AbaShape[] = ['circle', 'square', 'triangle', 'ring', 'rhombus'];
+const COLORS: [string, string][] = [
+  ['blue', '#0072B2'],
+  ['vermilion', '#D55E00'],
+  ['green', '#009E73'],
+  ['purple', '#CC79A7'],
+  // Пятый цвет для «цвета из 3» (решение методиста 40): голубой Окабе–Ито. подтверждён design-lead 2026-11-18 (`docs/design/aba-decisions-34-40-14-review-2026-11-18.md`) — к белой плите
+  // около 2.2:1 (светлее остальных), видимость круга проверить на устройстве; с синим в одно поле не ставится.
+  ['sky', '#56B4E9'],
+];
+
+export const ABA_STIMULI: readonly AbaStimulus[] = [
+  obj('apple', 'fruit'),
+  obj('pear', 'fruit'),
+  obj('carrot', 'vegetable'),
+  obj('mushroom', 'mushroom'),
+  obj('leaf', 'leaf'),
+  obj('car', 'vehicle'),
+  obj('plane', 'vehicle'),
+  obj('boat', 'vehicle'),
+  obj('house', 'house'),
+  obj('umbrella', 'umbrella'),
+  obj('key', 'key'),
+  obj('spoon', 'kitchen'),
+  obj('teapot', 'kitchen'),
+  obj('book', 'book'),
+  obj('hat', 'clothes'),
+  obj('mitten', 'clothes'),
+  obj('pyramid', 'toy'),
+  obj('sock', 'clothes'),
+  // только для переноса «одинаковые из 3»: ни в одном обучении лестницы их нет (п. 3)
+  obj('chair', 'furniture'),
+  obj('flower', 'flower'),
+  obj('cup', 'kitchen'),
+  obj('tree', 'tree'),
+  obj('bus', 'vehicle'),
+  obj('bell', 'bell'),
+  // вторые рисунки тех же предметов — образцы «похожее, но не такое же» (№206, предметы выбрал методист 2026-11-19):
+  // другой цвет и форма деталей, тот же стиль, ракурс и размер; в поле не ставятся никогда (`samplePairs`)
+  obj('car-b', 'vehicle'),
+  obj('cup-b', 'kitchen'),
+  obj('hat-b', 'clothes'),
+  obj('book-b', 'book'),
+  obj('chair-b', 'furniture'),
+  ...SHAPES.map((n) => shape(n)),
+  ...SHAPES.map((n) => shape(n, true)),
+  // Окабе–Ито без оранжевого #E69F00 и жёлтого #F0E442 (близки к жетону) и чёрного (чернила); пары «не вместе» — ниже
+  ...COLORS.map(([n, hex]) => color(n, hex)),
+  ...COLORS.map(([n, hex]) => color(n, hex, 'square')),
+];
+
+/**
+ * Пары цветов, которые не ставятся в одно поле: зелёный с пурпурным — близкая яркость, хуже при нарушениях цветового
+ * зрения; синий с голубым — один оттенок (осторожность до решения design-lead по пятому цвету).
+ */
+export const ABA_COLOR_NOT_TOGETHER: readonly [string, string][] = [
+  ['aba-color-green', 'aba-color-purple'],
+  ['aba-color-green-sq', 'aba-color-purple-sq'],
+  ['aba-color-blue', 'aba-color-sky'],
+  ['aba-color-blue-sq', 'aba-color-sky-sq'],
+];
+
+/** Близкие формы — не в одно поле первой цели по форме (п. 4): различение ориентации и внутреннего признака — позже. */
+export const ABA_SHAPE_NOT_TOGETHER: readonly [AbaShape, AbaShape][] = [
+  ['square', 'rhombus'],
+  ['circle', 'ring'],
+];
+
+/**
+ * Все пары «не вместе» как id карточек — для `AbaTarget.notTogether`: соседей образца сессия выбирает на каждой пробе
+ * (решение методиста 41), и правило должно держаться в любом собранном поле, а не только в написанных экземплярах.
+ */
+/**
+ * Предметы с близким силуэтом — не в одно поле (рецензия методиста к решению 41, 2026-11-18): один класс сам по себе
+ * не запрет (самолёт и лодка можно), близкий силуэт — запрет, как квадрат и ромб.
+ */
+export const ABA_OBJECT_NOT_TOGETHER: readonly [string, string][] = [
+  ['aba-obj-apple', 'aba-obj-pear'],
+  ['aba-obj-mitten', 'aba-obj-sock'],
+  // к «похожему» (методист 2026-11-19): рядом с образцом-машиной автобус читался бы как «тоже машина», чайник — как чашка
+  ['aba-obj-car', 'aba-obj-bus'],
+  ['aba-obj-car-b', 'aba-obj-bus'],
+  ['aba-obj-cup', 'aba-obj-teapot'],
+  ['aba-obj-cup-b', 'aba-obj-teapot'],
+];
+
+export const ABA_CARDS_NOT_TOGETHER: readonly (readonly [string, string])[] = [
+  ...ABA_COLOR_NOT_TOGETHER,
+  ...ABA_OBJECT_NOT_TOGETHER,
+  ...ABA_SHAPE_NOT_TOGETHER.flatMap(([a, b]): [string, string][] => [
+    [`aba-shape-${a}`, `aba-shape-${b}`],
+    [`aba-shape-${a}-alt`, `aba-shape-${b}-alt`],
+  ]),
+];

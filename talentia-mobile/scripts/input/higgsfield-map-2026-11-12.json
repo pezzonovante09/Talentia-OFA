@@ -1,0 +1,77 @@
+[
+ {
+  "src": "160419_7418fdfd.svg",
+  "name": "aba-reward-bubbles.svg",
+  "kind": "stimulus"
+ },
+ {
+  "src": "160429_f64c0e2d.svg",
+  "name": "aba-reward-kaleidoscope.svg",
+  "kind": "stimulus"
+ },
+ {
+  "src": "160436_e8be1766.svg",
+  "name": "aba-reward-pinwheel.svg",
+  "kind": "stimulus"
+ },
+ {
+  "src": "160445_3d9a2001.svg",
+  "name": "aba-reward-marble-run.svg",
+  "kind": "stimulus"
+ },
+ {
+  "src": "160456_13a55b1e.svg",
+  "name": "aba-reward-paint-drop.svg",
+  "kind": "stimulus"
+ },
+ {
+  "src": "160515_bcd051f0.svg",
+  "name": "aba-reward-pinwheel-head.svg",
+  "kind": "stimulus"
+ },
+ {
+  "src": "160524_c4d2647d.svg",
+  "name": "aba-reward-marble-track.svg",
+  "kind": "stimulus"
+ },
+ {
+  "src": "160532_1dd3bb5f.svg",
+  "name": "aba-reward-marble.svg",
+  "kind": "stimulus"
+ },
+ {
+  "src": "160549_c88019b4.svg",
+  "name": "ui-reward-bubbles.svg",
+  "kind": "icon"
+ },
+ {
+  "src": "160557_4caf3bb4.svg",
+  "name": "ui-reward-kaleidoscope.svg",
+  "kind": "icon"
+ },
+ {
+  "src": "160605_795589c5.svg",
+  "name": "ui-reward-pinwheel.svg",
+  "kind": "icon"
+ },
+ {
+  "src": "160612_eefe0984.svg",
+  "name": "ui-reward-marble-run.svg",
+  "kind": "icon"
+ },
+ {
+  "src": "160630_93844eae.svg",
+  "name": "ui-reward-tali-dance.svg",
+  "kind": "icon"
+ },
+ {
+  "src": "160639_e062fb08.svg",
+  "name": "ui-reward-paint-drop.svg",
+  "kind": "icon"
+ },
+ {
+  "src": "160646_1f34a9b3.svg",
+  "name": "ui-reward-sing-together.svg",
+  "kind": "icon"
+ }
+]

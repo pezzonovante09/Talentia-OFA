@@ -1,0 +1,90 @@
+{
+  "about": "Журнал раундов аудита при воротах по риску (решение владельца №121; хук №76 снят). Прототип — открыт: экраны и контент пишутся сразу, только локально. «Данные» — раунд child-privacy-compliance + backend-auditor с 0 блокеров, запись со scope: \"data\"; снимает ESLint-запрет сети (offlineRules в talentia-mobile/eslint.config.js) для одного адаптера src/services/remote/**. «Выпуск» — раунд всех девяти с 0 блокеров. Раунд дописывается после сводки отчётов, находки — в AUDIT.md. Раунды 2026-10-06 — 2026-10-19 — журнал прежних ворот №76.",
+  "rounds": [
+    {
+      "date": "2026-10-06",
+      "commit": "91c0210",
+      "agents": [
+        "backend-auditor",
+        "child-privacy-compliance",
+        "aba-pedagogy-specialist",
+        "curriculum-content-reviewer",
+        "localization-qa",
+        "qa-engineer",
+        "release-readiness-auditor",
+        "design-lead",
+        "child-ux-specialist"
+      ],
+      "blockers": 17,
+      "findings": "AUDIT.md, «Аудит пересборки — 2026-10-06», А1–А26"
+    },
+    {
+      "date": "2026-10-11",
+      "commit": "5b3e942",
+      "agents": [
+        "backend-auditor",
+        "child-privacy-compliance",
+        "aba-pedagogy-specialist",
+        "curriculum-content-reviewer",
+        "localization-qa",
+        "qa-engineer",
+        "release-readiness-auditor",
+        "design-lead",
+        "child-ux-specialist"
+      ],
+      "blockers": 17,
+      "findings": "AUDIT.md, «Аудит пересборки, раунд 2 — 2026-10-11», Р1–Р17"
+    },
+    {
+      "date": "2026-10-12",
+      "commit": "c4fbb98",
+      "agents": [
+        "backend-auditor",
+        "child-privacy-compliance",
+        "aba-pedagogy-specialist",
+        "curriculum-content-reviewer",
+        "localization-qa",
+        "qa-engineer",
+        "release-readiness-auditor",
+        "design-lead",
+        "child-ux-specialist"
+      ],
+      "blockers": 15,
+      "findings": "AUDIT.md, «Аудит пересборки, раунд 3 — 2026-10-12», Г1–Г15; docs/audit/round3-2026-10-12.md"
+    },
+    {
+      "date": "2026-10-18",
+      "commit": "aa1f03c",
+      "agents": [
+        "backend-auditor",
+        "child-privacy-compliance",
+        "aba-pedagogy-specialist",
+        "curriculum-content-reviewer",
+        "localization-qa",
+        "qa-engineer",
+        "release-readiness-auditor",
+        "design-lead",
+        "child-ux-specialist"
+      ],
+      "blockers": 8,
+      "findings": "AUDIT.md, «Аудит пересборки, раунд 4 — 2026-10-18», Д1–Д8; docs/audit/round4-2026-10-18.md"
+    },
+    {
+      "date": "2026-10-19",
+      "commit": "3a9c231",
+      "agents": [
+        "backend-auditor",
+        "child-privacy-compliance",
+        "aba-pedagogy-specialist",
+        "curriculum-content-reviewer",
+        "localization-qa",
+        "qa-engineer",
+        "release-readiness-auditor",
+        "design-lead",
+        "child-ux-specialist"
+      ],
+      "blockers": 2,
+      "findings": "AUDIT.md, «Аудит пересборки, раунд 5 — 2026-10-19», Е1–Е2; docs/audit/round5-2026-10-19.md"
+    }
+  ]
+}

@@ -1,0 +1,298 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Talentia: перед тестом ABA — гайд и промпты</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#FFF3E3;color:#2A1A12;font:15px/1.45 -apple-system,"Segoe UI",Roboto,sans-serif}
+header,section,footer{max-width:1180px;margin:auto;padding:20px 24px 6px}h1{font-size:26px;margin:0 0 6px}h2{font-size:20px;margin:0 0 8px}h3{font-size:15px}
+nav{position:sticky;top:0;z-index:2;background:#FFF3E3f2;padding:10px 24px;border-bottom:1px solid #e0d8cd}nav div{max-width:1180px;margin:auto;display:flex;gap:6px 14px;flex-wrap:wrap}nav a{color:#5A34C4;font-weight:600;text-decoration:none}
+ol.steps>li{margin:0 0 10px}.box{background:#fff;border:1px solid #e0d8cd;border-radius:12px;padding:10px 14px;margin:0 0 12px}
+.params{background:#fff;border:1px solid #e0d8cd;border-radius:12px;padding:8px 12px;margin:0 0 12px;font-size:13.5px}.params th{text-align:left;font-weight:600;padding:3px 12px 3px 0;vertical-align:top}
+code{font:13px/1.4 Consolas,"Cascadia Mono",monospace;background:#fff;border:1px solid #e8dfd3;border-radius:5px;padding:0 4px}
+table.t{border-collapse:collapse;width:100%;background:#fff}table.t th,table.t td{border:1px solid #e0d8cd;padding:6px 8px;text-align:left;vertical-align:top;font-size:14px}
+.tg{display:flex;gap:6px;margin:0 0 12px}.tg button{all:unset;cursor:pointer;padding:6px 12px;border-radius:999px;border:1.5px solid #c9bdb0;font-size:13.5px;background:#fff}.tg button.on{background:#5A34C4;border-color:#5A34C4;color:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:14px;margin-bottom:10px}
+article{background:#fff;border:1px solid #e0d8cd;border-radius:14px;padding:12px 14px}article h3{margin:0 0 8px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.p{position:relative}.p pre{margin:0;white-space:pre-wrap;word-wrap:break-word;font:13px/1.5 Consolas,"Cascadia Mono",monospace;background:#FAF6F0;border:1px solid #ece4d8;border-radius:10px;padding:10px 12px 44px}
+.p.alt{display:none}section.alt .p.main{display:none}section.alt .p.alt{display:block}
+button.c{all:unset;cursor:pointer;position:absolute;right:10px;bottom:10px;background:#5A34C4;color:#fff;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px}
+button.c.s{position:static;padding:2px 9px;font-size:12px;margin-left:6px;vertical-align:middle}
+@media (max-width:600px){.cards{grid-template-columns:1fr}header,section,footer{padding:16px}}
+</style></head><body>
+<header><h1>Перед тестом ABA: гайд и промпты</h1><p>2026-11-12 · награды партии 1 и звуки. Почему: на телефоне карточки наград одинаковые и награда — заглушка (аудит <code>docs/aba-center/content-audit-2026-11-12.md</code>).</p></header>
+<nav><div><a href="#guide">Что делать по шагам</a><a href="#cards">1. Картинки наград — 5</a><a href="#parts">2. Детали сцен — 3</a><a href="#icons">3. Силуэты — 7</a><a href="#sounds">4. Звуки — 7</a><a href="#accept">5. Куда класть</a><a href="#buttons">6. Кнопки</a></div></nav>
+
+<section id="guide"><h2>Что делать по шагам</h2>
+<ol class="steps">
+<li><b>Решить по 6 правкам</b> из аудита (ответить мне в чате «да» / «нет» на каждую; советую все «да»): 1) не показывать награды без готовой сцены; 2) сцены 7 наград и картинки на карточках; 3) цвет и обводка форм; 4) 3 варианта похвалы; 5) «Спойте вместе с ребёнком» для «Поём вместе»; 6) «Готово» без значка карты; и 3 правки кнопок — 7–9 в разделе 6.</li>
+<li><b>Сгенерировать 7 обязательных картинок</b> — вертушка и горка (помечены «обязательно»). Остальные 8 — по желанию: после правок №201 картинки и силуэты пузырей, калейдоскопа, капли, танца Tali и «Поём вместе» рисует код кадром той же сцены. Промпты ниже (разделы 1–3): одна картинка — один промпт; лучше 2–3 варианта и выбрать лучший. Сначала <b>одну пробную</b> (<code>aba-reward-pinwheel.svg</code>) — проверить, что скачивается <code>.svg</code>, а не PNG.</li>
+<li><b>Положить файлы</b> в <code>talentia-mobile/scripts/input/</code> с именами точно как в заголовках карточек.</li>
+<li><b>Записать звуки</b> (раздел 4) и положить в <code>talentia-mobile/assets/audio/aba/</code>.</li>
+<li><b>Написать мне «ассеты готовы»</b>. Я проверю файлы (<code>assets:check</code>, глазами), почищу, подключу; сделаю правки, которые вы одобрили, и сцены наград. Проверяют <code>qa-engineer</code> и один агент зоны.</li>
+<li><b>Новая сборка:</b> в корне репозитория <code>npm run build:aba</code>. На телефоне <b>удалить старую Talentia</b> (вместе с ней уйдёт тестовый профиль, где «знакомство» могло засчитаться на одинаковых карточках), поставить новую по прямой ссылке на apk.</li>
+<li><b>Тест:</b> 20 шагов <code>docs/audit/smoke-aba-20.md</code> и 8 ручных проверок кнопок (раздел 6).</li>
+</ol>
+<div class="box"><b>Не нужно генерировать:</b> пузыри, каплю краски и узор калейдоскопа в сцене рисует код; «Танец Tali» и «Поём вместе» собираются из готовых поз Tali и значка ноты. <b>Цвета наград</b> — только фиолетовый, лавандовый, кремовый, белый и коричневый контур: синий, красно-оранжевый, зелёный и розовый — цвета заданий, жёлтый — цвет жетона. Награда не должна выглядеть как картинка задания.</div>
+</section>
+
+<section id="cards"><h2>1. Картинки наград на карточки — 5 файлов</h2>
+<div class="params"><table>
+<tr><th>Модель</th><td><code>Recraft V4.1</code> · <code>model_type: vector</code> · <code>1:1</code> · <code>1k</code></td></tr>
+<tr><th>colors</th><td><code>#2A1A12 #5A34C4 #9671DB #FFE6C7 #FFFFFF</code> <button class="c s" type="button" data-copy-text="#2A1A12 #5A34C4 #9671DB #FFE6C7 #FFFFFF">Копировать</button></td></tr>
+<tr><th>background_color</th><td><code>#FFFFFF</code></td></tr>
+<tr><th>Запасной путь</th><td>Nano Banana Pro · 1:1 · 1k · образец <code>docs/assets/ref/tali-hello-1024.png</code> → Ideogram Vector · <code>vectorize</code> · <code>default</code></td></tr>
+</table></div>
+<div class="tg"><button type="button" class="on" data-tg="main">Recraft V4.1</button><button type="button" data-tg="alt">Nano Banana Pro → Ideogram</button></div>
+<div class="cards"><article><h3><code>aba-reward-bubbles.svg</code> <span>Пузыри — карточка</span> <b style="color:#12855A">по желанию — код уже рисует</b></h3>
+<div class="p main"><pre>Three soap bubbles of different sizes floating together in a loose cluster, the largest in front. Each bubble is lavender #9671DB with a lighter inner tone step and one small curved white #FFFFFF shine shape on its upper left. Front view.
+Single object only, centered, nothing else in the picture.
+Flat vector cut-out style, children's picture-book applique look: simple rounded shapes, recognisable by its silhouette alone at 24 px.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div>
+<div class="p alt"><pre>Three soap bubbles of different sizes floating together in a loose cluster, the largest in front. Each bubble is lavender #9671DB with a lighter inner tone step and one small curved white #FFFFFF shine shape on its upper left. Front view.
+Single object only, centered, nothing else in the picture.
+Draw it in exactly the same style as the reference character image: the same thick dark brown outline #2A1A12 of the same weight around every shape, the same flat fills with hard-edged tone steps, the same picture-book applique look. Do not draw the character itself.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div></article>
+<article><h3><code>aba-reward-kaleidoscope.svg</code> <span>Калейдоскоп — карточка</span> <b style="color:#12855A">по желанию — код уже рисует</b></h3>
+<div class="p main"><pre>A symmetric kaleidoscope rosette seen from the front: eight rounded flower petals in alternating violet #5A34C4 and lavender #9671DB whose tips meet in the middle like a flower, with small curly cream #FFE6C7 swirls between the petals. Perfectly mirror-symmetric. Front view.
+Do not use circles, squares, triangles or diamonds anywhere in the pattern: only petals, swirls and teardrops.
+Single object only, centered, nothing else in the picture.
+Flat vector cut-out style, children's picture-book applique look: simple rounded shapes, recognisable by its silhouette alone at 24 px.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div>
+<div class="p alt"><pre>A symmetric kaleidoscope rosette seen from the front: eight rounded flower petals in alternating violet #5A34C4 and lavender #9671DB whose tips meet in the middle like a flower, with small curly cream #FFE6C7 swirls between the petals. Perfectly mirror-symmetric. Front view.
+Do not use circles, squares, triangles or diamonds anywhere in the pattern: only petals, swirls and teardrops.
+Single object only, centered, nothing else in the picture.
+Draw it in exactly the same style as the reference character image: the same thick dark brown outline #2A1A12 of the same weight around every shape, the same flat fills with hard-edged tone steps, the same picture-book applique look. Do not draw the character itself.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div></article>
+<article><h3><code>aba-reward-pinwheel.svg</code> <span>Вертушка — карточка</span> <b style="color:#D93A1E">обязательно</b></h3>
+<div class="p main"><pre>A paper pinwheel toy on a straight cream #FFE6C7 wooden stick, front view. Four curved blades that alternate violet #5A34C4 and lavender #9671DB, each blade with a white #FFFFFF folded edge, and a round cream pin in the centre. The stick goes straight down from the centre.
+Single object only, centered, nothing else in the picture.
+Flat vector cut-out style, children's picture-book applique look: simple rounded shapes, recognisable by its silhouette alone at 24 px.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div>
+<div class="p alt"><pre>A paper pinwheel toy on a straight cream #FFE6C7 wooden stick, front view. Four curved blades that alternate violet #5A34C4 and lavender #9671DB, each blade with a white #FFFFFF folded edge, and a round cream pin in the centre. The stick goes straight down from the centre.
+Single object only, centered, nothing else in the picture.
+Draw it in exactly the same style as the reference character image: the same thick dark brown outline #2A1A12 of the same weight around every shape, the same flat fills with hard-edged tone steps, the same picture-book applique look. Do not draw the character itself.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div></article>
+<article><h3><code>aba-reward-marble-run.svg</code> <span>Горка с шариком — карточка</span> <b style="color:#D93A1E">обязательно</b></h3>
+<div class="p main"><pre>A toy marble run, side view: a cream #FFE6C7 wooden zig-zag ramp with three slopes going down from the upper left to the lower right, a violet #5A34C4 glass marble with a lavender swirl sitting at the top, and a small lavender #9671DB bucket at the bottom end of the ramp.
+Single object only, centered, nothing else in the picture.
+Flat vector cut-out style, children's picture-book applique look: simple rounded shapes, recognisable by its silhouette alone at 24 px.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div>
+<div class="p alt"><pre>A toy marble run, side view: a cream #FFE6C7 wooden zig-zag ramp with three slopes going down from the upper left to the lower right, a violet #5A34C4 glass marble with a lavender swirl sitting at the top, and a small lavender #9671DB bucket at the bottom end of the ramp.
+Single object only, centered, nothing else in the picture.
+Draw it in exactly the same style as the reference character image: the same thick dark brown outline #2A1A12 of the same weight around every shape, the same flat fills with hard-edged tone steps, the same picture-book applique look. Do not draw the character itself.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div></article>
+<article><h3><code>aba-reward-paint-drop.svg</code> <span>Капля краски — карточка</span> <b style="color:#12855A">по желанию — код уже рисует</b></h3>
+<div class="p main"><pre>One big violet #5A34C4 paint drop shaped like a teardrop, falling onto a wavy violet paint splash below it, the splash with a lighter lavender #9671DB tone step and a few small teardrop-shaped droplets flying out, one small white #FFFFFF shine on the falling drop. Front view.
+Do not use circles, squares, triangles or diamonds anywhere in the pattern: only petals, swirls and teardrops.
+Single object only, centered, nothing else in the picture.
+Flat vector cut-out style, children's picture-book applique look: simple rounded shapes, recognisable by its silhouette alone at 24 px.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div>
+<div class="p alt"><pre>One big violet #5A34C4 paint drop shaped like a teardrop, falling onto a wavy violet paint splash below it, the splash with a lighter lavender #9671DB tone step and a few small teardrop-shaped droplets flying out, one small white #FFFFFF shine on the falling drop. Front view.
+Do not use circles, squares, triangles or diamonds anywhere in the pattern: only petals, swirls and teardrops.
+Single object only, centered, nothing else in the picture.
+Draw it in exactly the same style as the reference character image: the same thick dark brown outline #2A1A12 of the same weight around every shape, the same flat fills with hard-edged tone steps, the same picture-book applique look. Do not draw the character itself.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div></article></div></section>
+
+<section id="parts"><h2>2. Детали сцен — 3 файла</h2><p>Вертушку код будет вращать вокруг центра, шарик — катить по рельсам. Поэтому отдельными файлами.</p>
+<div class="params"><table>
+<tr><th>Модель</th><td><code>Recraft V4.1</code> · <code>model_type: vector</code> · <code>1:1</code> · <code>1k</code></td></tr>
+<tr><th>colors</th><td><code>#2A1A12 #5A34C4 #9671DB #FFE6C7 #FFFFFF</code> <button class="c s" type="button" data-copy-text="#2A1A12 #5A34C4 #9671DB #FFE6C7 #FFFFFF">Копировать</button></td></tr>
+<tr><th>background_color</th><td><code>#FFFFFF</code></td></tr>
+<tr><th>Запасной путь</th><td>Nano Banana Pro · 1:1 · 1k · образец <code>docs/assets/ref/tali-hello-1024.png</code> → Ideogram Vector · <code>vectorize</code> · <code>default</code></td></tr>
+</table></div>
+<div class="tg"><button type="button" class="on" data-tg="main">Recraft V4.1</button><button type="button" data-tg="alt">Nano Banana Pro → Ideogram</button></div>
+<div class="cards"><article><h3><code>aba-reward-pinwheel-head.svg</code> <span>Вертушка — головка для вращения</span> <b style="color:#D93A1E">обязательно</b></h3>
+<div class="p main"><pre>Only the four-blade head of a paper pinwheel, without the stick, front view, perfectly centred on its round cream #FFE6C7 pin so it can spin around the exact centre. Four curved blades alternate violet #5A34C4 and lavender #9671DB, each with a white #FFFFFF folded edge. Rotationally balanced.
+Single object only, centered, nothing else in the picture.
+Flat vector cut-out style, children's picture-book applique look: simple rounded shapes, recognisable by its silhouette alone at 24 px.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div>
+<div class="p alt"><pre>Only the four-blade head of a paper pinwheel, without the stick, front view, perfectly centred on its round cream #FFE6C7 pin so it can spin around the exact centre. Four curved blades alternate violet #5A34C4 and lavender #9671DB, each with a white #FFFFFF folded edge. Rotationally balanced.
+Single object only, centered, nothing else in the picture.
+Draw it in exactly the same style as the reference character image: the same thick dark brown outline #2A1A12 of the same weight around every shape, the same flat fills with hard-edged tone steps, the same picture-book applique look. Do not draw the character itself.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div></article>
+<article><h3><code>aba-reward-marble-track.svg</code> <span>Горка — рельсы с ведёрком, без шарика</span> <b style="color:#D93A1E">обязательно</b></h3>
+<div class="p main"><pre>Only the track of a toy marble run, without any marble, side view: a cream #FFE6C7 wooden zig-zag ramp with three slopes going down from the upper left to the lower right, raised side rails, and a small lavender #9671DB bucket at the bottom end. Wide landscape composition centred in the square.
+Single object only, centered, nothing else in the picture.
+Flat vector cut-out style, children's picture-book applique look: simple rounded shapes, recognisable by its silhouette alone at 24 px.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div>
+<div class="p alt"><pre>Only the track of a toy marble run, without any marble, side view: a cream #FFE6C7 wooden zig-zag ramp with three slopes going down from the upper left to the lower right, raised side rails, and a small lavender #9671DB bucket at the bottom end. Wide landscape composition centred in the square.
+Single object only, centered, nothing else in the picture.
+Draw it in exactly the same style as the reference character image: the same thick dark brown outline #2A1A12 of the same weight around every shape, the same flat fills with hard-edged tone steps, the same picture-book applique look. Do not draw the character itself.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div></article>
+<article><h3><code>aba-reward-marble.svg</code> <span>Горка — стеклянный шарик</span> <b style="color:#D93A1E">обязательно</b></h3>
+<div class="p main"><pre>A single glass marble, a perfect round ball, violet #5A34C4 with one lavender #9671DB swirl inside and one small curved white #FFFFFF shine on the upper left. Front view.
+Single object only, centered, nothing else in the picture.
+Flat vector cut-out style, children's picture-book applique look: simple rounded shapes, recognisable by its silhouette alone at 24 px.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div>
+<div class="p alt"><pre>A single glass marble, a perfect round ball, violet #5A34C4 with one lavender #9671DB swirl inside and one small curved white #FFFFFF shine on the upper left. Front view.
+Single object only, centered, nothing else in the picture.
+Draw it in exactly the same style as the reference character image: the same thick dark brown outline #2A1A12 of the same weight around every shape, the same flat fills with hard-edged tone steps, the same picture-book applique look. Do not draw the character itself.
+A thick uniform dark brown outline #2A1A12 (exactly this colour) around every shape, the same thickness everywhere, bold, never thin, rounded corners.
+Flat fills only, with two or three hard-edged tone steps made of the listed colours: no gradients, no texture, no shadow, no soft highlights, no reflections.
+Use only these colours: #5A34C4 #9671DB #FFE6C7 #FFFFFF and the outline #2A1A12. No blue, no green, no red, no orange, no pink, no yellow.
+Plain flat white background, no ground shadow, no text, no letters, no frame.</pre><button class="c" type="button" data-copy>Копировать</button></div></article></div></section>
+
+<section id="icons"><h2>3. Силуэты наград — 7 файлов</h2><p>Одноцветные значки для полоски «работаю за…» и кольца времени. Должны различаться в 24 px: пузыри, калейдоскоп и капля — не «три кружка». После скачивания я заменю чёрный на <code>currentColor</code>.</p>
+<div class="params"><table>
+<tr><th>Модель</th><td><code>Recraft V4.1</code> · <code>model_type: vector</code> · <code>1:1</code> · <code>1k</code></td></tr>
+<tr><th>colors</th><td><code>#000000 #2A1A12</code> <button class="c s" type="button" data-copy-text="#000000 #2A1A12">Копировать</button></td></tr>
+<tr><th>background_color</th><td><code>#FFFFFF</code></td></tr>
+<tr><th>Запасной путь</th><td>Nano Banana Pro · 1:1 · 1k · образец <code>docs/assets/ref/tali-hello-1024.png</code> → Ideogram Vector · <code>vectorize</code> · <code>simple</code></td></tr>
+</table></div>
+<div class="tg"><button type="button" class="on" data-tg="main">Recraft V4.1</button><button type="button" data-tg="alt">Nano Banana Pro → Ideogram</button></div>
+<div class="cards"><article><h3><code>ui-reward-bubbles.svg</code> <span>Пузыри — силуэт</span> <b style="color:#12855A">по желанию — код уже рисует</b></h3>
+<div class="p main"><pre>A cluster of three round bubbles of clearly different sizes touching each other, the largest at the bottom left.
+Flat vector cut-out icon. The glyph is one solid filled silhouette drawn with uniform thick rounded shapes: the same thickness everywhere, rounded ends and rounded corners, no tapering, no calligraphic thin ends.
+Exactly two colours in the whole image: the glyph is filled with pure black #000000, and around the whole glyph runs a thick outline in dark brown #2A1A12 (exactly this colour), about one tenth of the icon width, the same thickness all the way round. No second fill colour, no details in other colours, no gradients, no texture, no shadows, no highlights.
+Simple bold silhouette that stays readable at 24 px. Centered, filling the frame with a small even margin, square format.
+Plain flat white background, no text, no letters, no frame, no border.</pre><button class="c" type="button" data-copy>Копировать</button></div>
+<div class="p alt"><pre>A cluster of three round bubbles of clearly different sizes touching each other, the largest at the bottom left.
+Flat vector cut-out icon. The glyph is one solid filled silhouette drawn with uniform thick rounded shapes: the same thickness everywhere, rounded ends and rounded corners, no tapering, no calligraphic thin ends.
+Exactly two colours in the whole image: the glyph is filled with pure black #000000, and around the whole glyph runs a thick outline in dark brown #2A1A12 (exactly this colour), about one tenth of the icon width, the same thickness all the way round. No second fill colour, no details in other colours, no gradients, no texture, no shadows, no highlights.
+Simple bold silhouette that stays readable at 24 px. Centered, filling the frame with a small even margin, square format.
+Fully transparent background, no text, no letters, no frame, no border. Output clean flat filled vector paths.</pre><button class="c" type="button" data-copy>Копировать</button></div></article>
+<article><h3><code>ui-reward-kaleidoscope.svg</code> <span>Калейдоскоп — силуэт</span> <b style="color:#12855A">по желанию — код уже рисует</b></h3>
+<div class="p main"><pre>A symmetric rosette of eight rounded flower petals around a small round centre, like a stylised flower seen from the front.
+Flat vector cut-out icon. The glyph is one solid filled silhouette drawn with uniform thick rounded shapes: the same thickness everywhere, rounded ends and rounded corners, no tapering, no calligraphic thin ends.
+Exactly two colours in the whole image: the glyph is filled with pure black #000000, and around the whole glyph runs a thick outline in dark brown #2A1A12 (exactly this colour), about one tenth of the icon width, the same thickness all the way round. No second fill colour, no details in other colours, no gradients, no texture, no shadows, no highlights.
+Simple bold silhouette that stays readable at 24 px. Centered, filling the frame with a small even margin, square format.
+Plain flat white background, no text, no letters, no frame, no border.</pre><button class="c" type="button" data-copy>Копировать</button></div>
+<div class="p alt"><pre>A symmetric rosette of eight rounded flower petals around a small round centre, like a stylised flower seen from the front.
+Flat vector cut-out icon. The glyph is one solid filled silhouette drawn with uniform thick rounded shapes: the same thickness everywhere, rounded ends and rounded corners, no tapering, no calligraphic thin ends.
+Exactly two colours in the whole image: the glyph is filled with pure black #000000, and around the whole glyph runs a thick outline in dark brown #2A1A12 (exactly this colour), about one tenth of the icon width, the same thickness all the way round. No second fill colour, no details in other colours, no gradients, no texture, no shadows, no highlights.
+Simple bold silhouette that stays readable at 24 px. Centered, filling the frame with a small even margin, square format.
+Fully transparent background, no text, no letters, no frame, no border. Output clean flat filled vector paths.</pre><button class="c" type="button" data-copy>Копировать</button></div></article>
+<article><h3><code>ui-reward-pinwheel.svg</code> <span>Вертушка — силуэт</span> <b style="color:#D93A1E">обязательно</b></h3>
+<div class="p main"><pre>A pinwheel toy with four curved blades on a straight stick going down.
+Flat vector cut-out icon. The glyph is one solid filled silhouette drawn with uniform thick rounded shapes: the same thickness everywhere, rounded ends and rounded corners, no tapering, no calligraphic thin ends.
+Exactly two colours in the whole image: the glyph is filled with pure black #000000, and around the whole glyph runs a thick outline in dark brown #2A1A12 (exactly this colour), about one tenth of the icon width, the same thickness all the way round. No second fill colour, no details in other colours, no gradients, no texture, no shadows, no highlights.
+Simple bold silhouette that stays readable at 24 px. Centered, filling the frame with a small even margin, square format.
+Plain flat white background, no text, no letters, no frame, no border.</pre><button class="c" type="button" data-copy>Копировать</button></div>
+<div class="p alt"><pre>A pinwheel toy with four curved blades on a straight stick going down.
+Flat vector cut-out icon. The glyph is one solid filled silhouette drawn with uniform thick rounded shapes: the same thickness everywhere, rounded ends and rounded corners, no tapering, no calligraphic thin ends.
+Exactly two colours in the whole image: the glyph is filled with pure black #000000, and around the whole glyph runs a thick outline in dark brown #2A1A12 (exactly this colour), about one tenth of the icon width, the same thickness all the way round. No second fill colour, no details in other colours, no gradients, no texture, no shadows, no highlights.
+Simple bold silhouette that stays readable at 24 px. Centered, filling the frame with a small even margin, square format.
+Fully transparent background, no text, no letters, no frame, no border. Output clean flat filled vector paths.</pre><button class="c" type="button" data-copy>Копировать</button></div></article>
+<article><h3><code>ui-reward-marble-run.svg</code> <span>Горка с шариком — силуэт</span> <b style="color:#D93A1E">обязательно</b></h3>
+<div class="p main"><pre>A zig-zag ramp with three slopes going down and one round ball at its top.
+Flat vector cut-out icon. The glyph is one solid filled silhouette drawn with uniform thick rounded shapes: the same thickness everywhere, rounded ends and rounded corners, no tapering, no calligraphic thin ends.
+Exactly two colours in the whole image: the glyph is filled with pure black #000000, and around the whole glyph runs a thick outline in dark brown #2A1A12 (exactly this colour), about one tenth of the icon width, the same thickness all the way round. No second fill colour, no details in other colours, no gradients, no texture, no shadows, no highlights.
+Simple bold silhouette that stays readable at 24 px. Centered, filling the frame with a small even margin, square format.
+Plain flat white background, no text, no letters, no frame, no border.</pre><button class="c" type="button" data-copy>Копировать</button></div>
+<div class="p alt"><pre>A zig-zag ramp with three slopes going down and one round ball at its top.
+Flat vector cut-out icon. The glyph is one solid filled silhouette drawn with uniform thick rounded shapes: the same thickness everywhere, rounded ends and rounded corners, no tapering, no calligraphic thin ends.
+Exactly two colours in the whole image: the glyph is filled with pure black #000000, and around the whole glyph runs a thick outline in dark brown #2A1A12 (exactly this colour), about one tenth of the icon width, the same thickness all the way round. No second fill colour, no details in other colours, no gradients, no texture, no shadows, no highlights.
+Simple bold silhouette that stays readable at 24 px. Centered, filling the frame with a small even margin, square format.
+Fully transparent background, no text, no letters, no frame, no border. Output clean flat filled vector paths.</pre><button class="c" type="button" data-copy>Копировать</button></div></article>
+<article><h3><code>ui-reward-tali-dance.svg</code> <span>Танец Tali — силуэт</span> <b style="color:#12855A">по желанию — код уже рисует</b></h3>
+<div class="p main"><pre>A small happy cartoon tyrannosaurus dancing, side view, big head, one foot lifted, tiny arms raised, short tail.
+Flat vector cut-out icon. The glyph is one solid filled silhouette drawn with uniform thick rounded shapes: the same thickness everywhere, rounded ends and rounded corners, no tapering, no calligraphic thin ends.
+Exactly two colours in the whole image: the glyph is filled with pure black #000000, and around the whole glyph runs a thick outline in dark brown #2A1A12 (exactly this colour), about one tenth of the icon width, the same thickness all the way round. No second fill colour, no details in other colours, no gradients, no texture, no shadows, no highlights.
+Simple bold silhouette that stays readable at 24 px. Centered, filling the frame with a small even margin, square format.
+Plain flat white background, no text, no letters, no frame, no border.</pre><button class="c" type="button" data-copy>Копировать</button></div>
+<div class="p alt"><pre>A small happy cartoon tyrannosaurus dancing, side view, big head, one foot lifted, tiny arms raised, short tail.
+Flat vector cut-out icon. The glyph is one solid filled silhouette drawn with uniform thick rounded shapes: the same thickness everywhere, rounded ends and rounded corners, no tapering, no calligraphic thin ends.
+Exactly two colours in the whole image: the glyph is filled with pure black #000000, and around the whole glyph runs a thick outline in dark brown #2A1A12 (exactly this colour), about one tenth of the icon width, the same thickness all the way round. No second fill colour, no details in other colours, no gradients, no texture, no shadows, no highlights.
+Simple bold silhouette that stays readable at 24 px. Centered, filling the frame with a small even margin, square format.
+Fully transparent background, no text, no letters, no frame, no border. Output clean flat filled vector paths.</pre><button class="c" type="button" data-copy>Копировать</button></div></article>
+<article><h3><code>ui-reward-paint-drop.svg</code> <span>Капля краски — силуэт</span> <b style="color:#12855A">по желанию — код уже рисует</b></h3>
+<div class="p main"><pre>One teardrop-shaped paint drop falling above a small wavy splash.
+Flat vector cut-out icon. The glyph is one solid filled silhouette drawn with uniform thick rounded shapes: the same thickness everywhere, rounded ends and rounded corners, no tapering, no calligraphic thin ends.
+Exactly two colours in the whole image: the glyph is filled with pure black #000000, and around the whole glyph runs a thick outline in dark brown #2A1A12 (exactly this colour), about one tenth of the icon width, the same thickness all the way round. No second fill colour, no details in other colours, no gradients, no texture, no shadows, no highlights.
+Simple bold silhouette that stays readable at 24 px. Centered, filling the frame with a small even margin, square format.
+Plain flat white background, no text, no letters, no frame, no border.</pre><button class="c" type="button" data-copy>Копировать</button></div>
+<div class="p alt"><pre>One teardrop-shaped paint drop falling above a small wavy splash.
+Flat vector cut-out icon. The glyph is one solid filled silhouette drawn with uniform thick rounded shapes: the same thickness everywhere, rounded ends and rounded corners, no tapering, no calligraphic thin ends.
+Exactly two colours in the whole image: the glyph is filled with pure black #000000, and around the whole glyph runs a thick outline in dark brown #2A1A12 (exactly this colour), about one tenth of the icon width, the same thickness all the way round. No second fill colour, no details in other colours, no gradients, no texture, no shadows, no highlights.
+Simple bold silhouette that stays readable at 24 px. Centered, filling the frame with a small even margin, square format.
+Fully transparent background, no text, no letters, no frame, no border. Output clean flat filled vector paths.</pre><button class="c" type="button" data-copy>Копировать</button></div></article>
+<article><h3><code>ui-reward-sing-together.svg</code> <span>Поём вместе — силуэт</span> <b style="color:#12855A">по желанию — код уже рисует</b></h3>
+<div class="p main"><pre>Two eighth music notes joined by one beam, solid note heads.
+Flat vector cut-out icon. The glyph is one solid filled silhouette drawn with uniform thick rounded shapes: the same thickness everywhere, rounded ends and rounded corners, no tapering, no calligraphic thin ends.
+Exactly two colours in the whole image: the glyph is filled with pure black #000000, and around the whole glyph runs a thick outline in dark brown #2A1A12 (exactly this colour), about one tenth of the icon width, the same thickness all the way round. No second fill colour, no details in other colours, no gradients, no texture, no shadows, no highlights.
+Simple bold silhouette that stays readable at 24 px. Centered, filling the frame with a small even margin, square format.
+Plain flat white background, no text, no letters, no frame, no border.</pre><button class="c" type="button" data-copy>Копировать</button></div>
+<div class="p alt"><pre>Two eighth music notes joined by one beam, solid note heads.
+Flat vector cut-out icon. The glyph is one solid filled silhouette drawn with uniform thick rounded shapes: the same thickness everywhere, rounded ends and rounded corners, no tapering, no calligraphic thin ends.
+Exactly two colours in the whole image: the glyph is filled with pure black #000000, and around the whole glyph runs a thick outline in dark brown #2A1A12 (exactly this colour), about one tenth of the icon width, the same thickness all the way round. No second fill colour, no details in other colours, no gradients, no texture, no shadows, no highlights.
+Simple bold silhouette that stays readable at 24 px. Centered, filling the frame with a small even margin, square format.
+Fully transparent background, no text, no letters, no frame, no border. Output clean flat filled vector paths.</pre><button class="c" type="button" data-copy>Копировать</button></div></article></div></section>
+
+<section id="sounds"><h2>4. Звуки — 7 файлов</h2><p>Записать на телефон (диктофон), обрезать тишину в начале и в конце, сохранить <code>.m4a</code> или <code>.mp3</code>, моно. Имя файла — точно как в таблице. Один и тот же голос для всех фраз. Детали — <code>docs/aba-center/voice-lines-ru.md</code>.</p>
+<table class="t"><tr><th>Файл</th><th>Что</th><th>Длина</th><th>Как</th></tr>
+<tr><td><code>abaSession.sound.token.m4a</code></td><td>звук жетона — короткий «дзынь», НЕ голос</td><td>≤ 0,25 с</td><td>ложкой по стеклянному стакану, обрезать до одного удара; или бесплатный звук «chime / coin» с pixabay.com/sound-effects (без указания автора)</td></tr><tr><td><code>abaSession.sound.praise.m4a</code></td><td>голос: «Молодец!»</td><td>≤ 0,8 с вместе с хвостом</td><td>бодро, коротко; один и тот же голос для всех фраз</td></tr><tr><td><code>firstRun.callAdult.m4a</code></td><td>голос: «Позови взрослого»</td><td>≤ 1,5 с</td><td>спокойно, дружелюбно</td></tr><tr><td><code>abaSession.sound.invite.m4a</code></td><td>голос: «Возвращаемся!»</td><td>≤ 1,5 с</td><td>приглашающе, не строго</td></tr><tr><td><code>abaSession.sound.wrapUp.m4a</code></td><td>мягкий звук «закругляемся», НЕ голос</td><td>≤ 1 с</td><td>тихий колокольчик или два мягких тона вниз; pixabay.com/sound-effects</td></tr><tr><td><code>abaSession.sound.praise-2.m4a</code></td><td>голос: «Такая же!»</td><td>≤ 0,8 с</td><td>заработает после правки 4 (чередование похвалы)</td></tr><tr><td><code>abaSession.sound.praise-3.m4a</code></td><td>голос: «Правильно!»</td><td>≤ 0,8 с</td><td>заработает после правки 4</td></tr>
+</table></section>
+
+<section id="accept"><h2>5. Куда класть</h2>
+<table class="t"><tr><th>Что</th><th>Куда</th><th>Дальше</th></tr>
+<tr><td>картинки и силуэты (15 SVG)</td><td><code>talentia-mobile/scripts/input/</code></td><td>я проверяю, чищу и раскладываю по папкам</td></tr>
+<tr><td>звуки (7 файлов)</td><td><code>talentia-mobile/assets/audio/aba/</code></td><td><code>npm run audio:register</code> в <code>talentia-mobile</code> — или я</td></tr>
+</table></section>
+<section id="buttons"><h2>6. Кнопки: что проверено и что нажать руками</h2>
+<p><code>qa-engineer</code> прошёл по коду каждую кнопку пути ABA: первый экран, PIN, раздел взрослого, «Занятия ABA», согласие, знакомство, занятие. Тесты зелёные (642). Переходов на карту и уроки в сборке ABA нет. Но тесты не включают флаг сборки и не проверяют системную «назад» — это только руками.</p>
+<div class="box"><b>Найдено по коду (на телефоне не проверено) — правки 7–9 на ваше решение:</b>
+<ol>
+<li value="7"><b>После экрана «Экран слишком мал» → «Назад» перестают работать «X» на PIN и «Назад» в «Занятиях ABA»</b>, системная «назад» сворачивает приложение. Бывает в разделённом экране или при очень крупном «Размере экрана». Правка: «назад, а если некуда — на первый экран».</li>
+<li value="8"><b>Копии первого экрана копятся</b> после «Для взрослых» → «Занятия ABA» → занятие → выход: системная «назад» показывает тот же экран вместо выхода. Правка — та же, что в 7.</li>
+<li value="9"><b>Двойной тап</b> по «Начать занятие» может перезапустить занятие, по «Для взрослых» и строкам раздела — открыть экран дважды. Правка: кнопка не нажимается, пока идёт переход.</li>
+</ol></div>
+<table class="t"><tr><th>№</th><th>Что нажать на телефоне</th><th>Что должно быть</th></tr>
+<tr><td>1</td><td>Карточка ребёнка → PIN → «Назад» в «Занятиях ABA». Отдельно: карточка → «X» на PIN</td><td>первый экран, приложение не сворачивается</td></tr>
+<tr><td>2</td><td>Во время задания, перерыва, обмена, награды и знакомства — системная «назад» и свайп от края</td><td>ничего не происходит; короткий тап по стрелке выхода — подсказка, удержание 1,5 с — выход</td></tr>
+<tr><td>3</td><td>Выход удержанием и «Готово» в конце</td><td>первый экран с карточками, «Позови взрослого» звучит один раз; тап по карточке снова просит PIN</td></tr>
+<tr><td>4</td><td>«Для взрослых» → «Занятия ABA» → занятие → выход → системная «назад» на первом экране</td><td>приложение сворачивается (если тот же экран ещё раз — это правка 8)</td></tr>
+<tr><td>5</td><td>Свернуть посреди занятия, вернуться через 1 мин и через 31 мин</td><td>«Продолжить» / «Закрыть занятие» в «Занятиях ABA», PIN спрашивается заново</td></tr>
+<tr><td>6</td><td>«Выгрузить для специалиста» → в окне выбора приложения — «назад»</td><td>снова «Занятия ABA», повторное нажатие работает</td></tr>
+<tr><td>7</td><td>Быстрый двойной тап по «Начать занятие», «Для взрослых», строке «Согласие»</td><td>открывается один раз (если дважды — правка 9)</td></tr>
+<tr><td>8</td><td>Разделённый экран, Talentia в маленькой половине → «Начать занятие» → «Экран слишком мал» → «Назад» → «X» на PIN</td><td>первый экран (если ничего не происходит — правка 7)</td></tr>
+</table></section>
+<footer>Партия — <code>docs/assets/aba-rewards-batch1.md</code>. Скилл <code>asset-pipeline</code>.</footer>
+<script>
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+if(b.hasAttribute('data-tg')){const s=b.closest('section');s.classList.toggle('alt',b.dataset.tg==='alt');s.querySelectorAll('.tg button').forEach(x=>x.classList.toggle('on',x===b));return}
+const text=b.dataset.copyText??b.parentElement.querySelector('pre')?.innerText;if(text==null)return;
+navigator.clipboard.writeText(text).then(()=>{const o=b.textContent;b.textContent='Скопировано';setTimeout(()=>b.textContent=o,1200)})});
+</script></body></html>

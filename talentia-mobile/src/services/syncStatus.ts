@@ -10,10 +10,10 @@ type SyncStatusState = {
 };
 
 /**
- * Tracks background cloud-sync health across the app (progress, analytics,
- * ABA live sessions, ...). Nothing here blocks the child's local play —
- * it exists so failures are observable (e.g. a future "not synced" badge)
- * instead of vanishing into a swallowed `.catch(() => {})`.
+ * Состояние фоновой синхронизации с облаком (`services/local/sync.ts`: согласия, навыки,
+ * прохождения — по источникам). Ничего здесь не блокирует игру ребёнка: сбои видны
+ * (например, будущему значку «не синхронизировано»), а не пропадают в `.catch(() => {})`.
+ * Пробы ABA в облако не уходят, телеметрии нет (№62).
  */
 export const useSyncStatusStore = create<SyncStatusState>((set) => ({
   hasSyncErrors: false,

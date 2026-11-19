@@ -1,8 +1,10 @@
 import {
+  applyLessonOutcomes,
   applyOutcome,
   emptySkill,
   isDue,
   isMastered,
+  skillsForReviewSession,
   skillsToReview,
   starsForLesson,
   type SkillState,
@@ -27,6 +29,27 @@ describe('освоение навыка', () => {
     const before = s.box;
     s = applyOutcome(s, 'hinted', 2);
     expect({ box: s.box, подряд: s.correctInRow }).toEqual({ box: before, подряд: 0 });
+  });
+
+  it('спираль темы: верно вне срока не двигает часы повторения, с подсказкой — двигает', () => {
+    // урок 1 — первая встреча (коробка 2), урок 2 — спираль не в срок: коробка и часы стоят, счётчики растут
+    const first = applyLessonOutcomes(emptySkill('x'), ['correct', 'correct'], 1, '2026-10-01');
+    const spiral = applyLessonOutcomes(first, ['correct'], 2, '2026-10-02');
+    expect({ box: spiral.box, lesson: spiral.lastSeenLesson, day: spiral.lastSeenDay, attempts: spiral.attempts }).toEqual({ box: 2, lesson: 1, day: '2026-10-01', attempts: 3 });
+    // урок 3 — в срок (зазор 2 от урока 1): коробка 3, часы на урок 3
+    const due = applyLessonOutcomes(spiral, ['correct'], 3, '2026-10-03');
+    expect({ box: due.box, lesson: due.lastSeenLesson }).toEqual({ box: 3, lesson: 3 });
+    // подсказка не в срок — часы заново, коробка стоит
+    const hinted = applyLessonOutcomes(first, ['hinted'], 2, '2026-10-02');
+    expect({ box: hinted.box, lesson: hinted.lastSeenLesson, day: hinted.lastSeenDay }).toEqual({ box: 2, lesson: 2, day: '2026-10-02' });
+  });
+
+  it('сессия повторения: навык, встреченный сегодня, не предлагается', () => {
+    const today = applyLessonOutcomes(emptySkill('a'), ['helped'], 3, '2026-10-05');
+    const earlier = { ...applyLessonOutcomes(emptySkill('b'), ['correct'], 1, '2026-10-01'), lastSeenLesson: 1 };
+    const due = skillsForReviewSession([today, earlier], 4, '2026-10-05');
+    expect(due.map((s) => s.skill)).toEqual(['b']);
+    expect(skillsToReview([today, earlier], 4, 2, '2026-10-05').map((s) => s.skill)).toEqual(['a', 'b']);
   });
 
   it('ошибка не портит статистику попыток', () => {

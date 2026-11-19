@@ -1,0 +1,52 @@
+[
+  {
+    "src": "hf_20261106_122720_c0200b86-6d6c-471a-8419-83310d8c02ff.svg",
+    "name": "ui-sound.svg",
+    "kind": "icon"
+  },
+  {
+    "src": "hf_20261106_122726_41cd196c-edba-4dcc-822f-072078a068b0.svg",
+    "name": "ui-star-helped.svg",
+    "kind": "icon"
+  },
+  {
+    "src": "hf_20261106_122740_eb7a2606-074a-4ce7-acc2-deef1d86d7fb.svg",
+    "name": "ui-region-nature.svg",
+    "kind": "icon"
+  },
+  {
+    "src": "hf_20261106_122746_c44e5e10-1bcf-4f43-9d10-eebe80bc546f.svg",
+    "name": "ui-region-kyrgyz.svg",
+    "kind": "icon"
+  },
+  {
+    "src": "hf_20261106_122751_18370aa4-bf50-4b5b-b2ce-0c9300bdad98.svg",
+    "name": "ui-pause-bars.svg",
+    "kind": "icon"
+  },
+  {
+    "src": "hf_20261106_122756_227ed575-7485-43f7-991d-95a4eda86723.svg",
+    "name": "landmark-nature.svg",
+    "kind": "landmark"
+  },
+  {
+    "src": "hf_20261106_122800_fedb73da-fd47-44bd-8002-06d4627a4eb2.svg",
+    "name": "landmark-workshop.svg",
+    "kind": "landmark",
+    "snap": {
+      "glyph": "#060605"
+    }
+  },
+  {
+    "src": "hf_20261106_080942_2f4eacc9-0709-4a42-8ed3-e8f98117e9c4.svg",
+    "name": "ui-region-words.svg",
+    "kind": "icon",
+    "note": "из landmark-words: генерация 32 дважды дала двойной контур"
+  },
+  {
+    "src": "hf_20261106_122746_c44e5e10-1bcf-4f43-9d10-eebe80bc546f.svg",
+    "name": "landmark-kyrgyz.svg",
+    "kind": "landmark",
+    "note": "из ui-region-kyrgyz: генерация 64 дважды дала контурный рисунок с решёткой"
+  }
+]

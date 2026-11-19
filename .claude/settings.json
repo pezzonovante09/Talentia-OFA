@@ -1,4 +1,19 @@
 {
+  "permissions": {
+    "ask": [
+      "Edit(/.claude/audit-gate.json)",
+      "Edit(/.claude/settings.json)",
+      "Edit(/.claude/hooks/**)",
+      "Edit(/talentia-mobile/eslint.config.js)",
+      "mcp__plugin_desktop-commander_desktop-commander__write_file",
+      "mcp__plugin_desktop-commander_desktop-commander__edit_block",
+      "mcp__plugin_desktop-commander_desktop-commander__move_file",
+      "mcp__plugin_desktop-commander_desktop-commander__create_directory",
+      "mcp__plugin_desktop-commander_desktop-commander__write_pdf",
+      "mcp__plugin_desktop-commander_desktop-commander__start_process",
+      "mcp__plugin_desktop-commander_desktop-commander__interact_with_process"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
@@ -6,6 +21,28 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/dictionary-words-reminder.js\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/aba-reminder.js\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/legal-ky-reminder.js\"",
+            "timeout": 10
           }
         ]
       }

@@ -171,6 +171,26 @@ describe('порог намерения', () => {
     }
   });
 
+  it('не повторяет прошлую задачу — экран обещает другую', () => {
+    const first = intentChallenge(cycle(0, 0));
+    // первые два числа дали бы ту же задачу
+    const next = intentChallenge(cycle(0, 0, 0.5, 0.5), first);
+    expect(next).toEqual({ a: 21, b: 21, answer: 441 });
+  });
+
+  it('сломанный генератор всё равно не повторяет задачу и не выходит из её правил', () => {
+    // 0.36 → 19: соседняя 20 круглая; 0.99 → 29: край диапазона
+    for (const v of [0.36, 0.99]) {
+      const first = intentChallenge(cycle(v));
+      const next = intentChallenge(cycle(v), first);
+      expect([next.a, next.b]).not.toEqual([first.a, first.b]);
+      expect(next.b).toBeGreaterThanOrEqual(13);
+      expect(next.b).toBeLessThanOrEqual(29);
+      expect(next.b % 10).not.toBe(0);
+      expect(next.answer).toBe(next.a * next.b);
+    }
+  });
+
   it('ответ проверяется строго', () => {
     const c = { a: 17, b: 23, answer: 391 };
     expect([checkIntent(c, '391'), checkIntent(c, ' 391 '), checkIntent(c, '390'), checkIntent(c, '391abc')]).toEqual([
