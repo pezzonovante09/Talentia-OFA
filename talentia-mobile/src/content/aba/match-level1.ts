@@ -112,4 +112,37 @@ export const MATCH_COLOR_3: AbaTarget = {
   ],
 };
 
+/**
+ * «Похожее, но не такое же» (решение владельца №206, условия методиста 2026-11-19): образец сверху — второй рисунок
+ * предмета (`-b`), верная в поле — его первый рисунок (`samplePairs`), соседи — обучающие карточки цели. У экземпляра
+ * одна карточка с парой; перенос — на предметах вне обучения всей лестницы (чашка, стул — поэтому обучение на машине,
+ * книге и шапке, а не на чашке, как предлагал методист). Поле 3, после «одинаковых из 3»; в программе стоит
+ * после формы и цвета и занимает слот, когда освоена первая из них. Инструкция та же — «Найди такую же»; «включает» нет;
+ * в смешанный блок не входит. Пока вторых рисунков нет в реестре, цель закрыта (`abaTargetReady`).
+ */
+export const MATCH_SIMILAR_3: AbaTarget = {
+  ...base,
+  id: 'match-similar-3',
+  fieldSize: 3,
+  prerequisiteTargetIds: ['match-same-3'],
+  samplePairs: {
+    [o('car')]: o('car-b'),
+    [o('cup')]: o('cup-b'),
+    [o('hat')]: o('hat-b'),
+    [o('book')]: o('book-b'),
+    [o('chair')]: o('chair-b'),
+  },
+  exemplars: [
+    ex('e1', [o('car'), o('spoon'), o('house')]),
+    ex('e2', [o('book'), o('plane'), o('umbrella')]),
+    ex('e3', [o('hat'), o('carrot'), o('boat')]),
+    // перенос — на предметах, которых не было ни в одном обучении лестницы: чашка и стул
+    ex('g1', [o('cup'), o('flower'), o('tree')], 'generalization', 'adult_f'),
+    ex('g2', [o('chair'), o('bell'), o('key')], 'generalization', 'adult_m'),
+  ],
+};
+
 export const MATCH_LEVEL1: readonly AbaTarget[] = [MATCH_SAME_2, MATCH_SAME_3, MATCH_SHAPE, MATCH_COLOR_3];
+
+/** Цели после лестницы «одинаковые → форма и цвет»: в программе стоят за ней и ждут своих картинок. */
+export const MATCH_AFTER_LADDER: readonly AbaTarget[] = [MATCH_SIMILAR_3];

@@ -5,7 +5,8 @@
  * сразу: потолок задержки, окна ответа, доску, размер набора, длину цепочки, перерыв. По одному
  * параметры не переопределяются — получились бы несогласованные сочетания.
  *
- * Отдельно: лимит времени, удлинение окна ответа по формату, одна или две обучаемые цели. Не
+ * Отдельно: лимит времени, удлинение окна ответа по формату, одна или две обучаемые цели, длинная пауза после
+ * ответа без жетона, освоенное вперемешку в обучающем блоке. Не
  * переопределяются: критерий, размер блока, потолок задержки, число эскалаций, правила жетонов.
  */
 import { MAX_DELAY_MS, RESPONSE_WINDOW_MS, type AbaFormat } from '../types/aba';
@@ -18,6 +19,16 @@ export type AbaSessionParams = {
   /** Окно ответа по формату: от `max(текущее, потолок задержки)` до 10 с. */
   responseWindowMs?: Partial<Record<AbaFormat, number>>;
   maxTeachingTargets?: 1 | 2;
+  /**
+   * Вернуть паузу 5 с после ответа без жетона (решение владельца 2026-11-19): по умолчанию следующее задание приходит
+   * через 2 с. Части детей быстрый темп тяжёл — специалист включает длинную паузу.
+   */
+  longInterTrial?: true;
+  /**
+   * Не подмешивать освоенное в обучающий блок (решение владельца 2026-11-19): по умолчанию между пробами цели идут
+   * две пробы освоенной на блок из 5, в блоке 10 — четыре (`abaSession.ts`, `teachingBlock`).
+   */
+  noInterspersal?: true;
 };
 
 export const PARAM_LIMITS = {
@@ -77,6 +88,8 @@ export function sanitizeSessionParams(raw: unknown, profileBand: AgeBand): AbaSe
   if (BANDS.includes(raw.paramsBand as AgeBand)) out.paramsBand = raw.paramsBand as AgeBand;
   if (isWholeMs(raw.timeLimitMs)) out.timeLimitMs = raw.timeLimitMs;
   if (raw.maxTeachingTargets === 1 || raw.maxTeachingTargets === 2) out.maxTeachingTargets = raw.maxTeachingTargets;
+  if (raw.longInterTrial === true) out.longInterTrial = true;
+  if (raw.noInterspersal === true) out.noInterspersal = true;
   if (isObject(raw.responseWindowMs)) {
     const windows: Partial<Record<AbaFormat, number>> = {};
     for (const [format, ms] of Object.entries(raw.responseWindowMs)) {

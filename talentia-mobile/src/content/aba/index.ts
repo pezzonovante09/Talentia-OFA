@@ -4,11 +4,11 @@
 import { ABA_OBJECT_ART } from '../../assets/registry';
 import { versionErrors } from '../../domain/abaTargetRules';
 import type { AbaTarget } from '../../types/aba';
-import { MATCH_LEVEL1 } from './match-level1';
+import { MATCH_AFTER_LADDER, MATCH_LEVEL1 } from './match-level1';
 import { ABA_STIMULI } from './stimuli';
 
 /** Все цели контента ABA — для гарда пула (худший случай: классы стимулов всех целей) и загрузчика. */
-export const ABA_TARGETS: readonly AbaTarget[] = [...MATCH_LEVEL1];
+export const ABA_TARGETS: readonly AbaTarget[] = [...MATCH_LEVEL1, ...MATCH_AFTER_LADDER];
 
 const byId = new Map(ABA_STIMULI.map((s) => [s.id, s]));
 
@@ -19,12 +19,12 @@ const byId = new Map(ABA_STIMULI.map((s) => [s.id, s]));
  * рисует код — готовы всегда.
  */
 export function abaTargetReady(t: AbaTarget, art: Readonly<Record<string, unknown>> = ABA_OBJECT_ART): boolean {
-  return t.exemplars.every((e) =>
-    (e.cards ?? (e.image ? [e.image] : [])).every((id) => {
-      const s = byId.get(id);
-      return s !== undefined && (s.kind !== 'object' || art[id] != null);
-    }),
-  );
+  const shown = (id: string) => {
+    const s = byId.get(id);
+    return s !== undefined && (s.kind !== 'object' || art[id] != null);
+  };
+  // и образцы неидентичного сопоставления (`samplePairs`): без второго рисунка сверху была бы заглушка
+  return t.exemplars.every((e) => (e.cards ?? (e.image ? [e.image] : [])).every(shown)) && Object.values(t.samplePairs ?? {}).every(shown);
 }
 
 /**

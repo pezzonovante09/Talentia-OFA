@@ -97,6 +97,35 @@ describe('последствие', () => {
     });
   });
 
+  describe('быстрый темп без жетона (решение владельца 2026-11-19, пересматривает решение 31)', () => {
+    it.each(['praise', 'listened'] as const)('%s: знак 0…1000, пустые плиты 1000, SD 2000', (feedback) => {
+      expect(kinds(startConsequence({ markedAt: M, feedback, calm: false, fastNoToken: true }))).toEqual([
+        [0, 'praise_mark_show'],
+        [300, `say:${feedback}`],
+        [1000, 'praise_mark_hide'],
+        [1000, 'plates_empty'],
+        [2000, 'next_sd'],
+      ]);
+    });
+
+    it('neutral: пустые плиты 1000, SD 2000', () => {
+      expect(kinds(startConsequence({ markedAt: M, feedback: 'neutral', calm: false, fastNoToken: true }))).toEqual([
+        [1000, 'plates_empty'],
+        [2000, 'next_sd'],
+      ]);
+    });
+
+    it('жетон: плашка до 4000 и SD в 5000 — как без быстрого темпа', () => {
+      const fast = startConsequence({ markedAt: M, feedback: 'token_praise', calm: false, fastNoToken: true });
+      expect(kinds(fast)).toEqual(kinds(startConsequence({ markedAt: M, feedback: 'token_praise', calm: false })));
+    });
+
+    it('похвала голосом (≤ 800 мс от 300) договаривает до следующего SD', () => {
+      const run = startConsequence({ markedAt: M, feedback: 'praise', calm: false, fastNoToken: true });
+      expect(run.plan.at(-1)!.at - M).toBeGreaterThanOrEqual(300 + 800);
+    });
+  });
+
   it('жетон, добавленный отменой, отодвигает SD на 1000 после приземления', () => {
     const run = startConsequence({ markedAt: M, feedback: 'neutral', calm: false, tokenAddedLandedAt: M + 4500 });
     expect(run.plan.at(-1)).toEqual({ at: M + 5500, effect: { kind: 'next_sd' } });

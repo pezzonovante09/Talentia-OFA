@@ -3,7 +3,8 @@
  * 5–6, «Со взрослым», проверка сверху вниз. Два пути из первого теста на телефоне (2026-11-15): «всё верно» и
  * «неответ на третьей пробе первого занятия». Сессии проходят через модель экрана пробы (`matchTrialRun`).
  */
-import { ABA_TARGETS, readyAbaTargets } from '../../content/aba';
+import { readyAbaTargets } from '../../content/aba';
+import { MATCH_LEVEL1 } from '../../content/aba/match-level1';
 import { DEV_PLACEHOLDER_ART } from '../../services/local/abaStart';
 import type { AbaTargetState } from '../../types/aba';
 import { matchDueAt, matchTrialInput, optionActive, startMatchTrial, stepMatchTrial, type MatchTrialRun } from '../../ui/aba/model/matchTrialRun';
@@ -16,7 +17,8 @@ type Act = 'correct' | 'wrong' | 'none';
 
 const POOL = ['puzzle', 'bubbles', 'drum', 'paint_drop', 'kaleidoscope', 'pinwheel'];
 const T0 = Date.UTC(2026, 10, 15, 6);
-const TARGETS = readyAbaTargets(ABA_TARGETS, DEV_PLACEHOLDER_ART).map((t) => targetForBand(t, '5-6'));
+// лестница из четырёх целей: «похожее, но не такое же» (№206) — отдельно, `abaSimilarMatch.test.ts`
+const TARGETS = readyAbaTargets(MATCH_LEVEL1, DEV_PLACEHOLDER_ART).map((t) => targetForBand(t, '5-6'));
 const IDS = TARGETS.map((t) => t.id);
 
 /**

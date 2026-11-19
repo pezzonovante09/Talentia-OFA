@@ -35,6 +35,8 @@ export type PlannedTrial = {
   field?: string[];
   /** `match`: карточка-образец (она же верная); у сортировки — верная категория. */
   sampleCardId?: string;
+  /** `match` с `samplePairs`: что показано образцом сверху вместо верной карточки. */
+  sampleShownId?: string;
   pauseBeforeMs?: number;
   /** Со взрослым: после полной модели попросить взрослого помочь (L4). */
   adultAssist?: true;
@@ -48,6 +50,11 @@ export type PlannedTrial = {
   closes?: 'block' | 'session';
   /** Без подсказок: прогон поддержания рутины измеряет, звено с L0 без эскалации (методист, Р3). */
   measureOnly?: true;
+  /**
+   * Высоковероятная проба вперемешку в обучающем блоке этой цели (`INTERSPERSAL`, `abaSession.ts`): цель снята с
+   * сессии — снимается и она.
+   */
+  inBlockOf?: string;
 };
 
 export type TrialStep = {
@@ -69,6 +76,11 @@ export type TrialStep = {
    * категория, а образец — предмет `exemplarId`. Варианты неактивны, пока не коснулись образца.
    */
   sampleCardId?: string;
+  /**
+   * Неидентичное сопоставление (`AbaTarget.samplePairs`): сверху показан этот стимул — другой рисунок того же
+   * предмета; верной в поле остаётся `sampleCardId`. Нет — сверху сама `sampleCardId`.
+   */
+  sampleShownId?: string;
   startPromptLevel: PromptLevel;
   /**
    * Сколько ждать после конца SD до первой подсказки на старте L0; `null` — подсказки по
@@ -142,6 +154,7 @@ export function buildTrialStep(target: AbaTarget, s: AbaTargetState, p: PlannedT
     ...(p.sdVariantKey ? { sdVariantKey: p.sdVariantKey } : {}),
     ...(p.field ? { field: p.field } : {}),
     ...(p.sampleCardId ? { sampleCardId: p.sampleCardId } : {}),
+    ...(p.sampleShownId ? { sampleShownId: p.sampleShownId } : {}),
     startPromptLevel: start,
     promptDelayMs: promptDelayMs(s, target, p.kind, start, windowMs, p.stepId),
     responseWindowMs: windowMs,
@@ -178,6 +191,7 @@ export function trialMismatch(input: AbaTrialInput, expected: TrialStep, procedu
   if (!same(input.sdVariantKey, expected.sdVariantKey)) errors.push('не та формулировка SD');
   if (!same(input.field, expected.field)) errors.push('не то поле карточек');
   if (!same(input.sampleCardId, expected.sampleCardId)) errors.push('не тот образец');
+  if (!same(input.sampleShownId, expected.sampleShownId)) errors.push('не тот показанный образец');
   // данные касаний — только у проб касанием, и выбранная карточка — из поля
   const touch = expected.field !== undefined;
   if (!touch && (input.chosenCardId !== undefined || input.tapCount !== undefined || input.fieldSizeAtResponse !== undefined)) {

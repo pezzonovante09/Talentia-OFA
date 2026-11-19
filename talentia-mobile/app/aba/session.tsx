@@ -838,7 +838,15 @@ export default function AbaSessionScreen() {
     setPhase({
       kind: 'consequence',
       // сроки — по calm и системному «уменьшить движение» (Ц2.6.1): жетон появляется в 120, похвала в 500
-      run: startConsequence({ markedAt, feedback: res.award.feedback, calm: still, calmMode: calm, exchange: filledByTrial }),
+      // без жетона и без отмены (оценило касание) следующий SD — через 2 с; специалист возвращает 5 с (`longInterTrial`)
+      run: startConsequence({
+        markedAt,
+        feedback: res.award.feedback,
+        calm: still,
+        calmMode: calm,
+        exchange: filledByTrial,
+        fastNoToken: res.trial.scoredBy !== 'adult' && !st.current!.longInterTrial,
+      }),
       overlay,
       earnedBefore,
       landed: false,

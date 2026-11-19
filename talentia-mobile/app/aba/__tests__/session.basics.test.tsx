@@ -8,6 +8,7 @@ import { ABA_TARGETS } from '../../../src/content/aba';
 import { initialTargetState } from '../../../src/domain/abaPrompting';
 import { initialTokenTraining } from '../../../src/domain/abaTokenTraining';
 import { loadChildState, saveChildState } from '../../../src/services/local/childState';
+import { setAbaSessionParams } from '../../../src/services/local/commit';
 import { asAbaWriter } from '../../../src/services/local/__tests__/nodeSql';
 import { voice } from '../../../src/services/voice';
 import { useAbaRun } from '../../../src/state/abaRun';
@@ -129,6 +130,70 @@ it('обучение, верно на стартовом уровне, доск�
   await stepTo(M + 5000);
   await waitFor(() => expect(screen.getByTestId('aba-instruction')).toBeTruthy());
   expect(screen.queryByTestId('aba-exchange')).toBeNull();
+});
+
+describe('темп после ответа без жетона (решение владельца 2026-11-19)', () => {
+  /** Первая проба занятия — базовая линия `match`, оценивает касание: верный ответ — `neutral`, без жетона. */
+  const answerFirstTrialWithoutToken = async () => {
+    await mount();
+    await skipCardTraining();
+    await chooseFirst();
+    await waitFor(() => expect(screen.getByTestId('aba-sample')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('aba-sample'));
+    await fireEvent.press(screen.getByTestId(correctOption()));
+    await waitFor(async () => expect(await count('aba_trials')).toBe(1));
+    const [row] = await db.all<{ body: string }>('SELECT body FROM aba_trials WHERE child_id = ?', [KID]);
+    expect(JSON.parse(row.body)).toMatchObject({ scoredBy: 'device_tap', tokens: 0 });
+    expect(screen.queryByTestId('aba-reinforcement')).toBeNull();
+    const M = clock.now();
+    await tick(0);
+    return M;
+  };
+
+  /** Попытка ответить: в фазе последствия касания не принимаются — проба не записывается. */
+  const tryAnswer = async () => {
+    await fireEvent.press(screen.getByTestId('aba-sample'));
+    await fireEvent.press(screen.getByTestId(correctOption()));
+  };
+
+  it('по умолчанию следующее задание — через 2 с: пустые плиты с 1000, в 1999 задания ещё нет, в 2000 на него можно ответить', async () => {
+    const M = await answerFirstTrialWithoutToken();
+    // до пустых плит прежнее задание стоит на экране
+    await stepTo(M + 999, 100);
+    expect(screen.getByTestId('aba-instruction')).toBeTruthy();
+    await stepTo(M + 1000);
+    expect(screen.queryByTestId('aba-instruction')).toBeNull();
+    await stepTo(M + 1999, 100);
+    expect(screen.queryByTestId('aba-instruction')).toBeNull();
+    expect(await count('aba_trials')).toBe(1);
+    await stepTo(M + 2000);
+    await waitFor(() => expect(screen.getByTestId('aba-instruction')).toBeTruthy());
+    await tryAnswer();
+    await waitFor(async () => expect(await count('aba_trials')).toBe(2));
+  });
+
+  it('специалист вернул длинную паузу (`longInterTrial`) — через 5 с: в 2000 ответить нельзя, пустые плиты с 4000, задание в 5000', async () => {
+    await setAbaSessionParams(db, KID, { longInterTrial: true }, '7', new Date(clock.now()).toISOString());
+    const M = await answerFirstTrialWithoutToken();
+    // в 1000 плиты не пустеют: это срок быстрого темпа
+    await stepTo(M + 1500, 100);
+    expect(screen.getByTestId('aba-instruction')).toBeTruthy();
+    // в 2000 нового задания нет: прежнее ещё на экране, ответ не принимается
+    await stepTo(M + 2500, 100);
+    await tryAnswer();
+    await tick(0);
+    expect(await count('aba_trials')).toBe(1);
+    await stepTo(M + 3999, 100);
+    expect(screen.getByTestId('aba-instruction')).toBeTruthy();
+    await stepTo(M + 4000);
+    expect(screen.queryByTestId('aba-instruction')).toBeNull();
+    await stepTo(M + 4999, 100);
+    expect(screen.queryByTestId('aba-instruction')).toBeNull();
+    await stepTo(M + 5000);
+    await waitFor(() => expect(screen.getByTestId('aba-instruction')).toBeTruthy());
+    await tryAnswer();
+    await waitFor(async () => expect(await count('aba_trials')).toBe(2));
+  });
 });
 
 it('«Отказ» в фазе последствия — отказ вне пробы: сессия кончается спокойно, следующего SD нет', async () => {

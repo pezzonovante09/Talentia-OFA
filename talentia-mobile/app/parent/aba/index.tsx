@@ -129,7 +129,8 @@ function goalRows(progress: AbaParentProgress, ready: boolean): { id: string; st
   for (const tg of ABA_TARGETS) {
     const r = byId.get(tg.id);
     if (r?.started) rows.push({ id: tg.id, status: r.status });
-    else if (!aheadShown && ready) {
+    // цели, не допущенной к сессии, в прогрессе нет (`loadAbaParentProgress`) — она и не «впереди»
+    else if (r && !aheadShown && ready) {
       rows.push({ id: tg.id, status: 'ahead' });
       aheadShown = true;
     }

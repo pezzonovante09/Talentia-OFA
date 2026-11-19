@@ -51,7 +51,10 @@ const FORMATS: readonly AbaFormat[] = [...new Set(ABA_TARGETS.map((t) => t.forma
 
 const goal = (t: Tr, id: string) => t(`parent.aba.goal.${id}`, { defaultValue: id });
 
-function valueText(t: Tr, v: SpecialistEvent['from']): string {
+function valueText(t: Tr, v: SpecialistEvent['from'], field?: string): string {
+  // два выключателя (№206) — значением, а не «по умолчанию → да»
+  if (field === 'longInterTrial') return t(v === true ? 'parent.aba.spec.paceLong' : 'parent.aba.spec.paceFast');
+  if (field === 'noInterspersal') return t(v === true ? 'parent.aba.spec.interspersalOff' : 'parent.aba.spec.interspersalOn');
   if (v === null) return t('parent.aba.spec.valueDefault');
   if (typeof v === 'boolean') return t(v ? 'parent.aba.spec.valueOn' : 'parent.aba.spec.valueOff');
   return String(v);
@@ -68,7 +71,7 @@ export function changeLine(t: Tr, e: SpecialistEvent): string {
         : head === 'observerTrained' && e.observerRole
           ? `${t('parent.aba.spec.field.observerTrained')} (${t(`abaSession.role.${e.observerRole}`)})`
           : t(`parent.aba.spec.field.${head}`);
-  const line = t('parent.aba.spec.changeLine', { day: abaLocalDay(Date.parse(e.at)), field, from: valueText(t, e.from), to: valueText(t, e.to) });
+  const line = t('parent.aba.spec.changeLine', { day: abaLocalDay(Date.parse(e.at)), field, from: valueText(t, e.from, e.field), to: valueText(t, e.to, e.field) });
   // изменение вне раздела (профиль, «Кто ведёт», карточка ABA) — роль «родитель», тоже заявленная
   return e.role === 'parent' ? t('parent.aba.spec.changeLineParent', { line }) : line;
 }
@@ -208,6 +211,32 @@ export default function AbaSpecialistScreen() {
                   saveParams(v === '1' ? { ...rest, maxTeachingTargets: 1 } : rest);
                 }}
                 testID="spec-teaching"
+              />
+              <ParentText role="label">{t('parent.aba.spec.pace')}</ParentText>
+              <Segmented
+                options={[
+                  { value: 'fast', label: t('parent.aba.spec.paceFast') },
+                  { value: 'long', label: t('parent.aba.spec.paceLong') },
+                ]}
+                value={params.longInterTrial ? 'long' : 'fast'}
+                onChange={(v) => {
+                  const { longInterTrial: _x, ...rest } = params;
+                  saveParams(v === 'long' ? { ...rest, longInterTrial: true } : rest);
+                }}
+                testID="spec-pace"
+              />
+              <ParentText role="label">{t('parent.aba.spec.interspersal')}</ParentText>
+              <Segmented
+                options={[
+                  { value: 'on', label: t('parent.aba.spec.interspersalOn') },
+                  { value: 'off', label: t('parent.aba.spec.interspersalOff') },
+                ]}
+                value={params.noInterspersal ? 'off' : 'on'}
+                onChange={(v) => {
+                  const { noInterspersal: _x, ...rest } = params;
+                  saveParams(v === 'off' ? { ...rest, noInterspersal: true } : rest);
+                }}
+                testID="spec-interspersal"
               />
               {FORMATS.map((f) => (
                 <View key={f} style={{ gap: parentSpacing.md }}>

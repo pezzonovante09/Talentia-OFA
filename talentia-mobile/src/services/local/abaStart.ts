@@ -143,19 +143,29 @@ export type AbaParentProgress = {
 };
 
 /** Прогресс ABA для экрана родителя (вопрос 66): три слова на цель, две цифры за занятие — ничего больше. */
-export async function loadAbaParentProgress(db: SqlDb, childId: string, targets: readonly AbaTarget[] = ABA_TARGETS): Promise<AbaParentProgress> {
+export async function loadAbaParentProgress(
+  db: SqlDb,
+  childId: string,
+  targets: readonly AbaTarget[] = ABA_TARGETS,
+  art?: Readonly<Record<string, unknown>>,
+): Promise<AbaParentProgress> {
   const states = (await loadChildState(db, childId, 'abaTargets')) ?? {};
+  // цель, не допущенная к сессии (нет картинок — «похожее» до вторых рисунков, №206), родителю не показывается и как
+  // «впереди»: в занятие она не придёт. Допуск — тот же, что у старта (`artFor`); уже начатая цель остаётся в списке
+  const open = new Set(readyAbaTargets(targets, artFor(art)).map((t) => t.id));
   // смешанный блок (решение методиста 43): освоенное по отдельности ждёт проверки вперемешку
   const mixing = new Set(mixGroups(targets).flat().map((t) => t.id));
-  const rows = targets.map((tg) => {
-    const s = states[tg.id];
-    // состояние цели заводится при планировании сессии — «начата» только та, до которой дошли (методист 2026-11-01)
-    return {
-      id: tg.id,
-      status: s ? parentTargetStatus(s, { mixes: mixing.has(tg.id) }) : ('learning' as const),
-      started: s !== undefined && (s.lastSessionIndex >= 0 || s.phase !== 'baseline'),
-    };
-  });
+  const rows = targets
+    .filter((tg) => open.has(tg.id) || states[tg.id] !== undefined)
+    .map((tg) => {
+      const s = states[tg.id];
+      // состояние цели заводится при планировании сессии — «начата» только та, до которой дошли (методист 2026-11-01)
+      return {
+        id: tg.id,
+        status: s ? parentTargetStatus(s, { mixes: mixing.has(tg.id) }) : ('learning' as const),
+        started: s !== undefined && (s.lastSessionIndex >= 0 || s.phase !== 'baseline'),
+      };
+    });
   const sessions = await sessionsOf(db, childId);
   const lastSession = sessions.at(-1) ?? null;
   const trials = lastSession ? await trialsOfSession(db, childId, lastSession.id) : [];

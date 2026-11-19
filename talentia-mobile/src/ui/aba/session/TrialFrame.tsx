@@ -60,7 +60,8 @@ export function TrialFrame({ phase, step, session: s, layout, zone, calm, still,
           <View style={{ height: layout.gapAfterBoard }} />
           {instruction(empty ? null : sdKey)}
           <MatchField
-            sampleId={step.sampleCardId!}
+            // неидентичное сопоставление (`samplePairs`): сверху — другой рисунок того же предмета
+            sampleId={step.sampleShownId ?? step.sampleCardId!}
             field={step.field!}
             visual={r ? matchVisual(r) : null}
             sampleTouched={r ? r.sampleTouchedAt !== null : phase.kind === 'consequence'}

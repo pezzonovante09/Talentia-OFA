@@ -1311,17 +1311,24 @@ export function abaTokenLandingMs(): number {
 /**
  * Межпробная пауза (Ц2.14 п. 3): плашка ушла в 4000 → пустые белые плиты (рисунки возвращаются все сразу со
  * следующим SD) → **следующий SD в `markedAt + 5000`** = `UNDO_WINDOW_MS` домена: окно отмены используется
- * целиком, отмена не попадает в чужую пробу. У `neutral` и `praise` то же время.
+ * целиком, отмена не попадает в чужую пробу.
+ *
+ * Без жетона (`praise`, `listened`, `neutral`) там, где отмены нет, — оценивает касание (`device_tap`, `match`) —
+ * следующий SD в `markedAt + noTokenNextSdAtMs` (решение владельца 2026-11-19, пересматривает решение методиста 31):
+ * знак «принято» уходит в 1000, дальше экран пустовал 4 с без подкрепления. Плашку жетона и пробы с оценкой взрослого
+ * (окно отмены) это не трогает; специалист возвращает 5 с параметром `longInterTrial`. Не короче 1000: похвала
+ * голосом должна договорить.
  */
-export const abaInterTrial = { ms: 1000, plates: 'empty_frames', nextSdAtMs: 5000 } as const;
+export const abaInterTrial = { ms: 1000, plates: 'empty_frames', nextSdAtMs: 5000, noTokenNextSdAtMs: 2000 } as const;
 
 /**
  * Момент следующего SD. Жетон, добавленный отменой (`tokenAdded`), отодвигает SD: не раньше чем через
  * `gapToNextSdMs` после приземления в полосе (Ц2.6.3) — `max(markedAt + 5000, приземление + 1000)`. Просьба
- * «перерыв» в фазе последствия ставит перерыв на место этого SD (№160).
+ * «перерыв» в фазе последствия ставит перерыв на место этого SD (№160). `delayMs` — срок без отмены:
+ * по умолчанию `nextSdAtMs`, у быстрого темпа без жетона — `noTokenNextSdAtMs`.
  */
-export function abaNextSdAt(markedAt: number, tokenAddedLandedAt?: number): number {
-  const base = markedAt + abaInterTrial.nextSdAtMs;
+export function abaNextSdAt(markedAt: number, tokenAddedLandedAt?: number, delayMs: number = abaInterTrial.nextSdAtMs): number {
+  const base = markedAt + delayMs;
   if (tokenAddedLandedAt === undefined) return base;
   return Math.max(base, tokenAddedLandedAt + abaAdultPanel.undo.tokenAddedDrop.gapToNextSdMs);
 }

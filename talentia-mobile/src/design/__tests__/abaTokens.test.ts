@@ -89,6 +89,7 @@ import {
   abaReserve,
   abaTierFor,
   abaTokenBoard,
+  abaVisiblePraise,
   abaWindowPolicy,
   type AbaTier,
   inactiveChoice,
@@ -1413,6 +1414,44 @@ describe('последствие пробы — время от markedAt (Ц2.6.
     expect(abaInterTrial.nextSdAtMs).toBe(UNDO_WINDOW_MS); // окно отмены используется целиком, не дольше
     expect(abaNextSdAt(10_000)).toBe(15_000);
     expect(abaInterTrial.plates).toBe('empty_frames');
+  });
+
+  describe('быстрый темп без жетона (решение владельца 2026-11-19): следующий SD в markedAt + noTokenNextSdAtMs', () => {
+    it('срок — 2000: короче окна отмены, но не короче паузы пустых плит', () => {
+      expect(abaInterTrial.noTokenNextSdAtMs).toBe(2000);
+      expect(abaInterTrial.noTokenNextSdAtMs).toBeLessThan(abaInterTrial.nextSdAtMs);
+      expect(abaInterTrial.noTokenNextSdAtMs).toBeGreaterThanOrEqual(1000);
+      expect(abaInterTrial.noTokenNextSdAtMs).toBeGreaterThanOrEqual(abaInterTrial.ms);
+    });
+
+    it('похвала голосом договаривает до следующего SD: начало praiseOnlyAtMs + самая длинная запись', () => {
+      expect(abaInterTrial.noTokenNextSdAtMs).toBeGreaterThanOrEqual(abaConsequence.praiseOnlyAtMs + o.praiseMaxMs);
+    });
+
+    it('знак «принято» уходит не позже пустых плит и до следующего SD', () => {
+      const platesEmptyAt = abaInterTrial.noTokenNextSdAtMs - abaInterTrial.ms;
+      expect(abaVisiblePraise.appearsAtMs + abaVisiblePraise.holdMs).toBeLessThanOrEqual(platesEmptyAt);
+      expect(abaVisiblePraise.holdMs).toBeLessThan(abaInterTrial.noTokenNextSdAtMs);
+    });
+
+    it('abaNextSdAt с delayMs: срок от markedAt; без delayMs — прежние 5000', () => {
+      const fast = abaInterTrial.noTokenNextSdAtMs;
+      expect(abaNextSdAt(10_000, undefined, fast)).toBe(12_000);
+      expect(abaNextSdAt(10_000)).toBe(15_000);
+      expect(abaNextSdAt(10_000, undefined, abaInterTrial.nextSdAtMs)).toBe(abaNextSdAt(10_000));
+    });
+
+    it('abaNextSdAt с delayMs и жетоном отмены: max(markedAt + delayMs, приземление + gapToNextSdMs)', () => {
+      const fast = abaInterTrial.noTokenNextSdAtMs;
+      const gap = abaAdultPanel.undo.tokenAddedDrop.gapToNextSdMs;
+      // жетон приземлился рано — срок быстрого темпа не сдвигается
+      expect(abaNextSdAt(0, 500, fast)).toBe(fast);
+      expect(abaNextSdAt(0, fast - gap, fast)).toBe(fast);
+      // приземлился позже — SD не раньше чем через gapToNextSdMs после него
+      expect(abaNextSdAt(0, fast - gap + 1, fast)).toBe(fast + 1);
+      expect(abaNextSdAt(0, 4500, fast)).toBe(4500 + gap);
+      expect(abaNextSdAt(7000, 7000 + 1500, fast)).toBe(7000 + 2500);
+    });
   });
 
   it('жетон падает 120 → 340 (motion.base), звук в момент приземления; похвала 700 (calm 500) кончается до ухода плашки', () => {

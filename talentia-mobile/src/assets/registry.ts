@@ -271,6 +271,12 @@ export const ABA_OBJECT_ART: Record<string, Svg | null> = {
   'aba-obj-tree': AbaObjTree,
   'aba-obj-bus': AbaObjBus,
   'aba-obj-bell': AbaObjBell,
+  // вторые рисунки предметов для «похожее, но не такое же» (№206): файлов ещё нет — цель закрыта (`abaTargetReady`)
+  'aba-obj-car-b': null,
+  'aba-obj-cup-b': null,
+  'aba-obj-hat-b': null,
+  'aba-obj-book-b': null,
+  'aba-obj-chair-b': null,
 };
 
 /**

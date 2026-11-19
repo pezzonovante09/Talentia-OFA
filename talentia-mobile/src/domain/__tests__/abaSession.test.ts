@@ -265,13 +265,82 @@ describe('порядок сессии', () => {
     expect(kinds(steps)).toEqual([
       'high_p', 'high_p',
       'baseline', 'high_p', 'baseline', 'high_p', 'baseline',
-      'teaching', 'teaching', 'teaching', 'teaching', 'teaching',
+      // обе цели стартуют с L0, доска полная — освоенное вперемешку: перед третьей и пятой пробой (`INTERSPERSAL`)
+      'teaching', 'teaching', 'high_p', 'teaching', 'teaching', 'high_p', 'teaching',
       // полная доска перед перерывом по расписанию — обмен и доступ (№169), затем перерыв (решение 16)
       'access', 'break',
-      'teaching', 'teaching', 'teaching', 'teaching', 'teaching',
+      'teaching', 'teaching', 'high_p', 'teaching', 'teaching', 'high_p', 'teaching',
       'generalization', 'maintenance',
       'end',
     ]);
+  });
+
+  describe('освоенное вперемешку в обучающем блоке (решение владельца 2026-11-19)', () => {
+    const blockKinds = (st: AbaSessionState) => kinds(drive(st, () => 'ok').steps).filter((k) => k === 'teaching' || k === 'high_p');
+    const plain = ['teaching', 'teaching', 'teaching', 'teaching', 'teaching'];
+
+    it('цель стартует с полной модели (безошибочная сессия) — блок только из проб цели', () => {
+      expect(blockKinds(begin([M1, A], { M1: mastered(M1), A: acq(A, 3) })).slice(2)).toEqual(plain);
+    });
+
+    it('старт с L1 — вперемешку; с L2 — нет', () => {
+      expect(blockKinds(begin([M1, A], { M1: mastered(M1), A: acq(A, 1) })).slice(2)).toEqual(['teaching', 'teaching', 'high_p', 'teaching', 'teaching', 'high_p', 'teaching']);
+      expect(blockKinds(begin([M1, A], { M1: mastered(M1), A: acq(A, 2) })).slice(2)).toEqual(plain);
+    });
+
+    it('освоенного нет — блок только из проб цели', () => {
+      expect(blockKinds(begin([A], { A: acq(A, 0) }))).toEqual(plain);
+    });
+
+    it('ступень доски 2 — блок только из проб цели: жетон за каждый ответ важнее', () => {
+      expect(blockKinds(begin([M1, A], { M1: mastered(M1), A: acq(A, 0) }, { tokenTraining: { ...TRAINED, stage: 2 } })).slice(2)).toEqual(plain);
+    });
+
+    it('специалист выключил (`noInterspersal`) — блок только из проб цели', () => {
+      expect(blockKinds(begin([M1, A], { M1: mastered(M1), A: acq(A, 0) }, { params: { noInterspersal: true } })).slice(2)).toEqual(plain);
+    });
+
+    it('ошибка на пробе цели, старт прежний — ближайшая проба вперемешку снята: отвлекающую ставит коррекция', () => {
+      // вторая проба цели A провалена на L0 — один провал старт не поднимает
+      let n = 0;
+      const { state } = drive(begin([M1, A], { M1: mastered(M1), A: acq(A, 0) }), (s) => (s.targetId === 'A' && s.trialKind === 'teaching' && ++n === 2 ? 'wrong' : 'ok'));
+      expect(state.trials.filter((t) => t.targetId === 'A' && t.kind === 'teaching')).toHaveLength(5);
+      // было бы две пробы вперемешку — осталась одна
+      expect(state.trials.filter((t) => t.kind === 'high_p' && t.targetId === 'M1').length).toBe(2 + 1 + 1);
+    });
+
+    it('старт цели поднялся выше L1 посреди блока — остаток проб вперемешку снят', () => {
+      // цель проваливается всё время: два провала подряд сбрасывают её на безошибочный старт
+      let cur = begin([M1, A], { M1: mastered(M1), A: acq(A, 1) });
+      const mixedLeft = () => cur.queue.filter((q) => q.kind === 'trial' && q.trial.inBlockOf === 'A').length;
+      expect(mixedLeft()).toBe(2);
+      let raised = false;
+      for (let now = 1; now < 60 && !raised; now += 1) {
+        const next = nextStep(cur, now);
+        cur = next.state;
+        if (next.step.kind === 'end') break;
+        if (next.step.kind === 'break') cur = finishBreak(cur, now).state;
+        else if (next.step.kind === 'access') cur = finishAccess(cur, now);
+        else if (next.step.kind === 'trial') {
+          const res = recordTrial(cur, trialFor(cur, next.step, next.step.targetId === 'A' ? 'wrong' : 'ok'), now);
+          if (!res.ok) throw new Error(res.errors.join('; '));
+          cur = res.state;
+          raised = cur.states.A.startPromptLevel > 1;
+        }
+      }
+      expect(raised).toBe(true);
+      expect(mixedLeft()).toBe(0);
+    });
+
+    it('проба вперемешку — другой цели, помечена блоком и в критерий цели не идёт', () => {
+      const st = begin([M1, A], { M1: mastered(M1), A: acq(A, 0) });
+      const mixed = st.queue.flatMap((q) => (q.kind === 'trial' && q.trial.inBlockOf ? [q.trial] : []));
+      expect(mixed.map((t) => [t.kind, t.targetId, t.inBlockOf])).toEqual([['high_p', 'M1', 'A'], ['high_p', 'M1', 'A']]);
+      const done = drive(st, () => 'ok').state;
+      expect(done.trials.filter((t) => t.targetId === 'A' && t.kind === 'teaching')).toHaveLength(5);
+      // жетон за высоковероятную — один на сессию: разогрев его уже взял
+      expect(done.trials.filter((t) => t.kind === 'high_p' && t.tokens > 0).length).toBeLessThanOrEqual(1);
+    });
   });
 
   it('цель на поддержании не бывает высоковероятной пробой — ни в разогреве, ни между пробами', () => {

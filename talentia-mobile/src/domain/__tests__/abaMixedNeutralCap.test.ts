@@ -188,4 +188,63 @@ describe('параметры специалиста: чтение из хран�
       ['responseWindowMs.match', null, 8000],
     ]);
   });
+
+  describe('длинная пауза и «без вперемешку» (решение владельца 2026-11-19)', () => {
+    it('sanitizeSessionParams: `true` сохраняется — по отдельности, вместе и рядом с другими полями', () => {
+      expect(sanitizeSessionParams({ longInterTrial: true }, '7')).toEqual({ longInterTrial: true });
+      expect(sanitizeSessionParams({ noInterspersal: true }, '7')).toEqual({ noInterspersal: true });
+      expect(sanitizeSessionParams({ longInterTrial: true, noInterspersal: true, maxTeachingTargets: 1 }, '5-6')).toEqual({
+        longInterTrial: true,
+        noInterspersal: true,
+        maxTeachingTargets: 1,
+      });
+    });
+
+    it.each([false, 'true', 1, 0, null, {}, []])('sanitizeSessionParams: %p вместо `true` отбрасывается — поле «по умолчанию»', (bad) => {
+      expect(sanitizeSessionParams({ longInterTrial: bad }, '7')).toBeUndefined();
+      expect(sanitizeSessionParams({ noInterspersal: bad }, '7')).toBeUndefined();
+      // негодное значение одного поля не уносит другое
+      expect(sanitizeSessionParams({ longInterTrial: bad, noInterspersal: true }, '7')).toEqual({ noInterspersal: true });
+      expect(sanitizeSessionParams({ longInterTrial: true, noInterspersal: bad }, '7')).toEqual({ longInterTrial: true });
+    });
+
+    it('sanitizeSessionParams: негодные лимит и окно снимаются, а оба поля остаются; итог годится старту', () => {
+      const out = sanitizeSessionParams({ longInterTrial: true, noInterspersal: true, timeLimitMs: 18 * 60_000, responseWindowMs: { match: 2000 } }, '5-6');
+      expect(out).toEqual({ longInterTrial: true, noInterspersal: true });
+      expect(sessionParamsErrors(out, '5-6')).toEqual([]);
+    });
+
+    it('pruneSessionParams: смена полосы снимает лимит вне пределов, оба поля остаются', () => {
+      expect(pruneSessionParams({ longInterTrial: true, noInterspersal: true, timeLimitMs: 20 * 60_000 }, '5-6')).toEqual({ longInterTrial: true, noInterspersal: true });
+      expect(pruneSessionParams({ paramsBand: '5-6', longInterTrial: true, noInterspersal: true, timeLimitMs: 20 * 60_000, responseWindowMs: { match: 6000 } }, '7')).toEqual({
+        paramsBand: '5-6',
+        longInterTrial: true,
+        noInterspersal: true,
+        responseWindowMs: { match: 6000 },
+      });
+      for (const band of ['5-6', '7', '8', '9-10'] as const) {
+        expect(pruneSessionParams({ longInterTrial: true, noInterspersal: true }, band)).toEqual({ longInterTrial: true, noInterspersal: true });
+      }
+    });
+
+    it('paramsChanges: включение — по событию на поле, `null → true`', () => {
+      const at = '2026-11-19T09:00:00.000Z';
+      expect(paramsChanges(undefined, { longInterTrial: true, noInterspersal: true }, at).map((e) => [e.field, e.from, e.to, e.role])).toEqual([
+        ['longInterTrial', null, true, 'specialist'],
+        ['noInterspersal', null, true, 'specialist'],
+      ]);
+      expect(paramsChanges({}, { longInterTrial: true }, at).map((e) => [e.field, e.from, e.to])).toEqual([['longInterTrial', null, true]]);
+      expect(paramsChanges({ longInterTrial: true }, { longInterTrial: true, noInterspersal: true }, at).map((e) => [e.field, e.from, e.to])).toEqual([['noInterspersal', null, true]]);
+    });
+
+    it('paramsChanges: возврат к умолчанию — `true → null`; без изменений — пусто', () => {
+      const at = '2026-11-19T09:00:00.000Z';
+      expect(paramsChanges({ longInterTrial: true, noInterspersal: true }, {}, at).map((e) => [e.field, e.from, e.to])).toEqual([
+        ['longInterTrial', true, null],
+        ['noInterspersal', true, null],
+      ]);
+      expect(paramsChanges({ longInterTrial: true, noInterspersal: true }, { noInterspersal: true }, at).map((e) => [e.field, e.from, e.to])).toEqual([['longInterTrial', true, null]]);
+      expect(paramsChanges({ longInterTrial: true, noInterspersal: true }, { longInterTrial: true, noInterspersal: true }, at)).toEqual([]);
+    });
+  });
 });

@@ -7,6 +7,7 @@
  * «Со взрослым», пробы через модель экрана (`matchTrialRun`).
  */
 import { ABA_TARGETS, readyAbaTargets } from '../../content/aba';
+import { MATCH_LEVEL1 } from '../../content/aba/match-level1';
 import { poolFor, resumePoolFor, DEV_PLACEHOLDER_ART } from '../../services/local/abaStart';
 import type { AbaTargetState, AbaTrial } from '../../types/aba';
 import { matchDueAt, matchTrialInput, optionActive, startMatchTrial, stepMatchTrial, type MatchTrialRun } from '../../ui/aba/model/matchTrialRun';
@@ -39,7 +40,8 @@ type Act = 'correct' | 'none' | 'incorrect';
 
 const POOL = ['puzzle', 'bubbles', 'drum', 'paint_drop', 'kaleidoscope', 'pinwheel'];
 const T0 = Date.UTC(2026, 10, 15, 6);
-const TARGETS = readyAbaTargets(ABA_TARGETS, DEV_PLACEHOLDER_ART).map((t) => targetForBand(t, '5-6'));
+// лестница из четырёх целей: «похожее, но не такое же» (№206) — отдельно, `abaSimilarMatch.test.ts`
+const TARGETS = readyAbaTargets(MATCH_LEVEL1, DEV_PLACEHOLDER_ART).map((t) => targetForBand(t, '5-6'));
 const SHAPE = 'match-shape';
 const COLOR = 'match-color-3';
 const MIXED_END = `mixed:${SHAPE}+${COLOR}`;

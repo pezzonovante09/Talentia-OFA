@@ -32,6 +32,8 @@ export type SpecialistField =
   | 'timeLimitMs'
   | `responseWindowMs.${AbaFormat}`
   | 'maxTeachingTargets'
+  | 'longInterTrial'
+  | 'noInterspersal'
   | 'adultReward'
   | 'observerTrained'
   | 'pairingDone'
@@ -78,7 +80,7 @@ const event = (field: SpecialistField, from: Value, to: Value, at: string, { rol
 export function paramsChanges(before: AbaSessionParams | undefined, after: AbaSessionParams, at: string, role: SpecialistRole = 'specialist'): SpecialistEvent[] {
   const b = before ?? {};
   const out: SpecialistEvent[] = [];
-  for (const field of ['paramsBand', 'timeLimitMs', 'maxTeachingTargets'] as const) {
+  for (const field of ['paramsBand', 'timeLimitMs', 'maxTeachingTargets', 'longInterTrial', 'noInterspersal'] as const) {
     const from = b[field] ?? null;
     const to = after[field] ?? null;
     if (from !== to) out.push(event(field, from, to, at, { role }));

@@ -203,6 +203,9 @@ const BAND = (b: string) => b.replace('-', '–');
 /** Значение изменения словами: `null` — по умолчанию (у полосы — как в профиле), мс — минуты или секунды. */
 function changeValue(ctx: Ctx, field: string, v: unknown): string {
   const { t, f } = ctx;
+  // два выключателя (№206) — значением, а не «по умолчанию → да»: пауза 2 с или 5 с, вперемешку да или нет
+  if (field === 'longInterTrial') return t(v === true ? `${K}.pace.long` : `${K}.pace.fast`);
+  if (field === 'noInterspersal') return t(v === true ? `${K}.valueOff` : `${K}.valueOn`);
   if (v === null || v === undefined) return t(field === 'paramsBand' ? `${K}.valueProfile` : `${K}.valueDefault`);
   if (typeof v === 'boolean') return t(v ? `${K}.valueOn` : `${K}.valueOff`);
   if (typeof v === 'number' && Number.isFinite(v)) {
@@ -249,12 +252,16 @@ function paramsText(ctx: Ctx, raw: unknown): string {
   const windows = isObj(p.responseWindowMs)
     ? Object.entries(p.responseWindowMs).flatMap(([format, ms]) => (num(ms) !== null ? [[format, num(ms)!] as const] : []))
     : [];
-  if (!band && time === null && teaching === null && !windows.length) return t(`${K}.paramsDefault`);
+  const longPause = p.longInterTrial === true;
+  const noInterspersal = p.noInterspersal === true;
+  if (!band && time === null && teaching === null && !windows.length && !longPause && !noInterspersal) return t(`${K}.paramsDefault`);
   const def = t(`${K}.valueDefault`);
   const list = [
     t(`${K}.param.band`, { value: band ? BAND(band) : t(`${K}.valueProfile`) }),
     t(`${K}.param.time`, { value: time !== null ? t(`${K}.minutes`, { n: Math.round(time / 6000) / 10 }) : def }),
     t(`${K}.param.teaching`, { value: teaching !== null ? String(teaching) : def }),
+    ...(longPause ? [t(`${K}.param.longInterTrial`)] : []),
+    ...(noInterspersal ? [t(`${K}.param.noInterspersal`)] : []),
     ...(windows.length
       ? windows.map(([format, ms]) =>
           t(`${K}.param.window`, { format: tOr(t, `parent.aba.spec.format.${format}`, () => format), value: t(`${K}.seconds`, { n: f.wholeSeconds(ms) }) }),

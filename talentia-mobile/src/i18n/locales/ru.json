@@ -628,7 +628,8 @@
         "match-same-2": "Одинаковые из двух",
         "match-same-3": "Одинаковые из трёх",
         "match-shape": "По форме",
-        "match-color-3": "По цвету"
+        "match-color-3": "По цвету",
+        "match-similar-3": "Похожие предметы"
       },
       "goalStatus": {
         "ahead": "впереди",
@@ -786,6 +787,8 @@
           "band": "полоса параметров {{value}}",
           "time": "длительность {{value}}",
           "teaching": "заданий в обучении за занятие: {{value}}",
+          "longInterTrial": "пауза после ответа без жетона: 5 с",
+          "noInterspersal": "освоенное вперемешку: выключено",
           "window": "время на ответ ({{format}}): {{value}}",
           "windowDefault": "время на ответ: по умолчанию"
         },
@@ -808,6 +811,8 @@
           "timeLimitMs": "длительность занятия",
           "responseWindowMs": "время на ответ ({{format}})",
           "maxTeachingTargets": "заданий в обучении за занятие",
+          "longInterTrial": "пауза после ответа без жетона",
+          "noInterspersal": "освоенное вперемешку",
           "adultReward": "награда от взрослого",
           "observerTrained": "обучение наблюдателя у специалиста",
           "pairingDone": "знакомство с жетонами пройдено",
@@ -815,6 +820,10 @@
           "mixedAssigned": "проверка вперемешку назначена снова (сигнал «снята с плана»)"
         },
         "valueDefault": "по умолчанию",
+        "pace": {
+          "fast": "2 с",
+          "long": "5 с"
+        },
         "valueProfile": "как в профиле",
         "valueOn": "да",
         "valueOff": "нет",
@@ -901,6 +910,12 @@
         "bandDefault": "Как в профиле",
         "time": "Длительность занятия",
         "teaching": "Целей в обучении за занятие",
+        "pace": "Пауза после ответа без жетона",
+        "paceFast": "2 с",
+        "paceLong": "5 с",
+        "interspersal": "Освоенное вперемешку в блоке",
+        "interspersalOn": "Да",
+        "interspersalOff": "Нет",
         "window": "Время на ответ: {{format}}",
         "default": "По умолчанию",
         "minutes": "{{n}} мин",
@@ -996,6 +1011,8 @@
           "timeLimitMs": "длительность, мс",
           "responseWindowMs": "время на ответ, мс",
           "maxTeachingTargets": "целей в обучении",
+          "longInterTrial": "пауза после ответа без жетона",
+          "noInterspersal": "освоенное вперемешку",
           "adultReward": "награда от взрослого",
           "observerTrained": "обучение наблюдателя",
           "pairingDone": "знакомство с жетонами",

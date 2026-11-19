@@ -122,7 +122,7 @@ const withCurrent = (r: MatchTrialRun, p: Partial<Pres>): MatchTrialRun => ({ ..
 
 /** Что рисовать: подсказка по уровню текущего предъявления приложения. */
 export function matchVisual(r: MatchTrialRun): PromptVisualPlan {
-  return promptVisualFor(r.target, lastApp(r).level, { correctId: r.step.sampleCardId!, choiceIds: r.step.field!, sampleId: r.step.sampleCardId }, r.seed);
+  return promptVisualFor(r.target, lastApp(r).level, { correctId: r.step.sampleCardId!, choiceIds: r.step.field!, sampleId: r.step.sampleShownId ?? r.step.sampleCardId }, r.seed);
 }
 
 /** Активны ли сейчас варианты для касания ребёнка. */
@@ -278,6 +278,7 @@ export function matchTrialInput(r: MatchTrialRun): AbaTrialInput {
     ...(step.closes ? { closes: step.closes } : {}),
     field: step.field,
     sampleCardId: step.sampleCardId,
+    ...(step.sampleShownId ? { sampleShownId: step.sampleShownId } : {}),
     ...(r.chosenCardId !== null ? { chosenCardId: r.chosenCardId, fieldSizeAtResponse: r.fieldSizeAtResponse! } : {}),
     tapCount: r.tapCount,
     index: r.index,

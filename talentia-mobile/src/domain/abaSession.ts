@@ -371,6 +371,8 @@ export type AbaSessionState = {
   band: AgeBand;
   /** Окно ответа по формату, удлинённое специалистом (`AbaSessionParams.responseWindowMs`). */
   windowOverrideMs?: Partial<Record<AbaFormat, number>>;
+  /** Специалист вернул паузу 5 с после ответа без жетона (`AbaSessionParams.longInterTrial`); читает экран. */
+  longInterTrial?: true;
   startedAt: number;
   /** Начало работы — выбор подкрепителя сделан. От него считается лимит. */
   workStartedAt: number | null;
@@ -559,8 +561,23 @@ function unit(target: AbaTarget, base: PlannedTrial, runIndex = 0): PlannedTrial
   return target.steps?.length ? chainRun(target, base, runIndex) : [base];
 }
 
-/** Пробы обучающего блока. `generalization` в обучении не используется никогда. */
-function teachingBlock(target: AbaTarget, rng: Rng): PlannedTrial[] {
+/**
+ * Освоенное вперемешку в обучающем блоке (решение владельца 2026-11-19, условия методиста): перед каждой третьей и
+ * пятой пробой цели — одна высоковероятная проба освоенной цели на других картинках. Это разнообразие, а не ускорение:
+ * обучающие пробы блока остаются все, освоенные добавляются сверху, не больше двух на пять и не две подряд; первые
+ * две пробы цели идут подряд. Только когда цель стартует без подсказки или с меткой над образцом (до
+ * `maxStartLevel`) — не в безошибочной сессии — и когда доска выросла до трёх ячеек (ступень доски
+ * `minBoardStage`): на ступенях доски 1–2 жетон за каждый ответ важнее. В блоке 10 — четыре пробы вперемешку. Подкрепление — как у любой высоковероятной: похвала, жетон один на сессию
+ * (`awardForTrial`); щедрое подкрепление освоенного ухудшает новое (Volkert 2008, Charlop 1992). В критерий и в
+ * расписание поддержания не идёт (`high_p`). Выключает специалист (`AbaSessionParams.noInterspersal`).
+ */
+export const INTERSPERSAL = { everyTeaching: 2, maxStartLevel: 1, minBoardStage: 3 } as const;
+
+/**
+ * Пробы обучающего блока. `generalization` в обучении не используется никогда. `highP` — освоенные цели для проб
+ * вперемешку (`INTERSPERSAL`); пусто — блок только из проб цели. У цепочек и сортировки вперемешку нет.
+ */
+function teachingBlock(target: AbaTarget, rng: Rng, highP: AbaTarget[] = []): PlannedTrial[] {
   const at = rotation(target, rng);
   if (target.steps?.length) {
     return Array.from({ length: CHAIN_RUNS_PER_BLOCK }, (_, run) =>
@@ -568,11 +585,12 @@ function teachingBlock(target: AbaTarget, rng: Rng): PlannedTrial[] {
     ).flat();
   }
   if (target.matchMode === 'sort') return sortBlock(target, rng).map((exemplarId) => ({ kind: 'teaching' as const, targetId: target.id, exemplarId }));
-  return Array.from({ length: target.blockSize }, (_, i) => ({
-    kind: 'teaching' as const,
-    targetId: target.id,
-    exemplarId: at(i),
-  }));
+  const out: PlannedTrial[] = [];
+  for (let i = 0; i < target.blockSize; i += 1) {
+    if (highP.length && i > 0 && i % INTERSPERSAL.everyTeaching === 0) out.push({ ...highPTrial(pick(highP, rng), rng), inBlockOf: target.id });
+    out.push({ kind: 'teaching', targetId: target.id, exemplarId: at(i) });
+  }
+  return out;
 }
 
 /**
@@ -897,9 +915,16 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
       for (const trial of baselineBlock(t, highP, rng)) queue.push({ kind: 'trial', trial });
       queue.push({ kind: 'block_end', targetId: t.id, participation: true });
     }
+    // освоенное вперемешку — условия в `INTERSPERSAL`
+    const interspersed = (t: AbaTarget) =>
+      !input.params?.noInterspersal &&
+      input.tokenTraining.stage >= INTERSPERSAL.minBoardStage &&
+      states[t.id].startPromptLevel <= INTERSPERSAL.maxStartLevel
+        ? highP.filter((h) => h.id !== t.id)
+        : [];
     teaching.forEach((t, i) => {
       if (i > 0) queue.push({ kind: 'break' });
-      for (const trial of teachingBlock(t, rng)) queue.push({ kind: 'trial', trial });
+      for (const trial of teachingBlock(t, rng, interspersed(t))) queue.push({ kind: 'trial', trial });
       queue.push({ kind: 'block_end', targetId: t.id, participation: true });
     });
     if (teaching.length === 1 && probes.length > 0) queue.push({ kind: 'break' });
@@ -928,6 +953,7 @@ export function startAbaSession(raw: StartInput): AbaSessionState {
     unreliableTargetIds: [],
     band,
     ...(input.params?.responseWindowMs ? { windowOverrideMs: input.params.responseWindowMs } : {}),
+    ...(input.params?.longInterTrial ? { longInterTrial: true as const } : {}),
     startedAt: input.startedAt,
     workStartedAt: null,
     timeLimitMs: Math.min(input.timeLimitMs ?? Infinity, input.params?.timeLimitMs ?? SESSION_TIME_LIMIT_MS[band]),
@@ -1070,14 +1096,29 @@ function combinations<T>(items: readonly T[], k: number): T[][] {
  * написано целиком — новый набор показывается как есть. Если правила не выполнимы — снимается запрет повтора, затем
  * берутся написанные карточки экземпляра.
  */
-function matchDistractors(target: AbaTarget, exemplar: AbaExemplar, sample: string, previous: readonly string[] | undefined, rng: Rng): string[] {
+function matchDistractors(
+  target: AbaTarget,
+  exemplar: AbaExemplar,
+  sample: string,
+  previous: readonly string[] | undefined,
+  rng: Rng,
+  shown?: string,
+): string[] {
   const authored = exemplar.cards!.filter((c) => c !== sample);
   if (exemplar.role !== 'teaching') return authored;
   const pool = [...new Set(teachingExemplars(target).flatMap((e) => e.cards ?? []))].filter((c) => c !== sample);
   const apart = target.notTogether ?? [];
-  const fits = (set: readonly string[]) => !apart.some(([a, b]) => set.includes(a) && set.includes(b));
+  // показанный образец (`samplePairs`) тоже на экране: сосед, похожий на него, не ставится
+  const onScreen = shown ? [sample, shown] : [sample];
+  const fits = (set: readonly string[]) => !apart.some(([a, b]) => [...onScreen, ...set].includes(a) && [...onScreen, ...set].includes(b));
   const repeats = (set: readonly string[]) => previous !== undefined && previous.length === set.length && set.every((c) => previous.includes(c));
-  const allowed = combinations(pool, authored.length).filter((d) => fits([sample, ...d]));
+  // неидентичное сопоставление (методист 2026-11-19): верными бывают только карточки с парой, и без такой карточки
+  // среди соседей ребёнок, который жмёт «ту, за которую давали жетон», не глядя на образец, набирал бы около 77 % при
+  // критерии 80 %. Поэтому в каждом обучающем поле — не меньше одной чужой парной карточки (тогда около 49 %)
+  const pairs = target.samplePairs;
+  const lure = (d: readonly string[]) => !pairs || d.some((c) => pairs[c] !== undefined);
+  const withLure = combinations(pool, authored.length).filter((d) => fits(d) && lure(d));
+  const allowed = withLure.length ? withLure : combinations(pool, authored.length).filter((d) => fits(d));
   const fresh = allowed.filter((d) => !repeats([sample, ...d]));
   const options = fresh.length ? fresh : allowed;
   return options.length ? pick(options, rng) : authored;
@@ -1096,6 +1137,7 @@ function withMatchField(state: AbaSessionState, planned: PlannedTrial, target: A
   const exemplar = target.exemplars.find((e) => e.id === planned.exemplarId)!;
   let field: string[];
   let sample: string;
+  let shown: string | undefined;
   if (target.matchMode === 'sort') {
     // порядок неизменен в сессии и меняется местами между сессиями **этой цели**: иначе позиция
     // совпадала бы с категорией, и смещение по позиции не отличить от предпочтения карточки.
@@ -1108,7 +1150,10 @@ function withMatchField(state: AbaSessionState, planned: PlannedTrial, target: A
   } else {
     const cards = exemplar.cards!;
     const samples = before.filter((t) => t.exemplarId === exemplar.id).map((t) => t.sampleCardId!);
-    sample = leastUsed(cards, samples, r.rng, samples.slice(-1));
+    // неидентичное сопоставление: верной бывает только карточка с парой — у экземпляра она одна
+    const paired = target.samplePairs ? cards.filter((c) => target.samplePairs![c]) : [];
+    sample = leastUsed(paired.length ? paired : cards, samples, r.rng, samples.slice(-1));
+    shown = target.samplePairs?.[sample];
     const positions = before.map((t) => t.field!.indexOf(t.sampleCardId!));
     let at: number;
     if (cards.length === 2) {
@@ -1118,10 +1163,10 @@ function withMatchField(state: AbaSessionState, planned: PlannedTrial, target: A
       const ban = last2.length === MAX_SAME_POSITION && last2.every((p) => p === last2[0]) ? [last2[0]] : [];
       at = leastUsed(cards.map((_, i) => i), positions, r.rng, ban);
     }
-    const rest = shuffle(matchDistractors(target, exemplar, sample, before[before.length - 1]?.field, r.rng), r.rng);
+    const rest = shuffle(matchDistractors(target, exemplar, sample, before[before.length - 1]?.field, r.rng, shown), r.rng);
     field = [...rest.slice(0, at), sample, ...rest.slice(at)];
   }
-  const trial = { ...planned, field, sampleCardId: sample };
+  const trial = { ...planned, field, sampleCardId: sample, ...(shown ? { sampleShownId: shown } : {}) };
   return { ...state, queue: [{ kind: 'trial', trial }, ...state.queue.slice(1)], seed: r.seed() };
 }
 
@@ -1817,7 +1862,9 @@ function withoutMatch(state: AbaSessionState): AbaSessionState {
   const mixed = state.mixedTargetIds ?? [];
   const mixedDropped = mixed.some(isMatch);
   const mixedId = mixedDropped ? mixedBlockId(mixed.map((id) => ({ id }))) : null;
-  const dropTrial = (p: PlannedTrial) => isMatch(p.targetId) || (mixedDropped && mixed.includes(p.targetId) && p.kind === 'verification');
+  // вместе с блоком `match` — и освоенные другого формата, подмешанные в него (`INTERSPERSAL`)
+  const dropTrial = (p: PlannedTrial) =>
+    isMatch(p.targetId) || (p.inBlockOf !== undefined && isMatch(p.inBlockOf)) || (mixedDropped && mixed.includes(p.targetId) && p.kind === 'verification');
   const kept = state.queue.filter(
     (q) => !(q.kind === 'trial' && dropTrial(q.trial)) && !(q.kind === 'block_end' && (isMatch(q.targetId) || q.targetId === mixedId)),
   );
@@ -2134,7 +2181,8 @@ function trackUnreliable(state: AbaSessionState, trial: AbaTrial, now: number): 
   const run = unscored ? (state.unreliableRun[trial.targetId] ?? 0) + 1 : 0;
   const unreliableRun = { ...state.unreliableRun, [trial.targetId]: run };
   if (run < UNRELIABLE_AFTER || state.unreliableTargetIds.includes(trial.targetId)) return { ...state, unreliableRun };
-  const queue = state.queue.filter((q) => !(q.kind === 'trial' && q.trial.targetId === trial.targetId));
+  // вместе с пробами цели — освоенные, подмешанные в её блок (`INTERSPERSAL`)
+  const queue = state.queue.filter((q) => !(q.kind === 'trial' && (q.trial.targetId === trial.targetId || q.trial.inBlockOf === trial.targetId)));
   const next: AbaSessionState = {
     ...state,
     unreliableRun,
@@ -2515,6 +2563,7 @@ export function recordTrial(
     }
   }
 
+  st = trimInterspersed(st, trial, failed);
   st = stopPlacementOnFailure(st, trial, r);
   st = replaceMixedObservingMiss(st, trial, r);
   st = bridgeFailedBlock(st, trial);
@@ -2610,6 +2659,22 @@ function bridgeFailedBlock(state: AbaSessionState, last: AbaTrial): AbaSessionSt
       },
     },
   ]);
+}
+
+/**
+ * Освоенное вперемешку после обучающей пробы цели (`INTERSPERSAL`; рецензия методиста 2026-11-19). Старт цели
+ * поднялся выше `maxStartLevel` — у ребёнка пошли ошибки, блок не растягиваем пробами без жетона: остаток проб
+ * вперемешку этого блока снимается. Проба провалена, но старт прежний — снимается ближайшая: отвлекающую
+ * высоковероятную уже ставит коррекция, две лёгкие из трёх предъявлений — лишнее.
+ */
+function trimInterspersed(state: AbaSessionState, trial: AbaTrial, failed: boolean): AbaSessionState {
+  // старт меняют обучающая проба и повтор после коррекции (`transfer`) — `applyTrialToFading`
+  if ((trial.kind !== 'teaching' && trial.kind !== 'transfer') || state.endReason !== null) return state;
+  const mine = (q: QueueItem) => q.kind === 'trial' && q.trial.inBlockOf === trial.targetId;
+  const first = state.queue.findIndex(mine);
+  if (first < 0) return state;
+  if (state.states[trial.targetId].startPromptLevel > INTERSPERSAL.maxStartLevel) return { ...state, queue: state.queue.filter((q) => !mine(q)) };
+  return failed && trial.kind === 'teaching' ? { ...state, queue: state.queue.filter((_, i) => i !== first) } : state;
 }
 
 /** Сколько жетонов ушло в обмены между двумя состояниями. */

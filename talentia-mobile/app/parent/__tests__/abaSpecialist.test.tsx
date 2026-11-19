@@ -195,6 +195,82 @@ describe('экран «Для специалиста»', () => {
     expect((await abaSpecialistEventsOf(db, KID)).map((e) => e.field)).toEqual(['maxTeachingTargets', 'observerTrained']);
   });
 
+  describe('пауза после ответа без жетона и освоенное вперемешку (решение владельца 2026-11-19)', () => {
+    const params = () => loadChildState(db, KID, 'abaSessionParams');
+    const events = async () => (await abaSpecialistEventsOf(db, KID)).map((e) => [e.field, e.from, e.to, e.role]);
+    const selected = (testID: string) => screen.getByTestId(testID).props.accessibilityState?.selected;
+
+    it('по умолчанию выбраны «2 с» и «Да»; в базе параметров нет', async () => {
+      useGate.getState().open();
+      await wrap(<AbaSpecialistScreen />);
+      await waitFor(() => expect(screen.getByTestId('spec-pace')).toBeTruthy());
+      expect([selected('spec-pace-fast'), selected('spec-pace-long')]).toEqual([true, false]);
+      expect([selected('spec-interspersal-on'), selected('spec-interspersal-off')]).toEqual([true, false]);
+      expect(await params()).toBeFalsy();
+    });
+
+    it('«5 с» — `longInterTrial: true` в базе и событие `null → true`; назад «2 с» — поле убрано, событие `true → null`', async () => {
+      useGate.getState().open();
+      await wrap(<AbaSpecialistScreen />);
+      await waitFor(() => expect(screen.getByTestId('spec-pace')).toBeTruthy());
+      await fireEvent.press(screen.getByTestId('spec-pace-long'));
+      await waitFor(async () => expect(await params()).toEqual({ longInterTrial: true }));
+      await waitFor(() => expect(selected('spec-pace-long')).toBe(true));
+      expect(await events()).toEqual([['longInterTrial', null, true, 'specialist']]);
+      await fireEvent.press(screen.getByTestId('spec-pace-fast'));
+      await waitFor(async () => expect((await params()) ?? {}).toEqual({}));
+      expect(await events()).toEqual([
+        ['longInterTrial', null, true, 'specialist'],
+        ['longInterTrial', true, null, 'specialist'],
+      ]);
+    });
+
+    it('«Нет» — `noInterspersal: true` в базе и событие `null → true`; назад «Да» — поле убрано, событие `true → null`', async () => {
+      useGate.getState().open();
+      await wrap(<AbaSpecialistScreen />);
+      await waitFor(() => expect(screen.getByTestId('spec-interspersal')).toBeTruthy());
+      await fireEvent.press(screen.getByTestId('spec-interspersal-off'));
+      await waitFor(async () => expect(await params()).toEqual({ noInterspersal: true }));
+      await waitFor(() => expect(selected('spec-interspersal-off')).toBe(true));
+      expect(await events()).toEqual([['noInterspersal', null, true, 'specialist']]);
+      await fireEvent.press(screen.getByTestId('spec-interspersal-on'));
+      await waitFor(async () => expect((await params()) ?? {}).toEqual({}));
+      expect(await events()).toEqual([
+        ['noInterspersal', null, true, 'specialist'],
+        ['noInterspersal', true, null, 'specialist'],
+      ]);
+    });
+
+    it('оба включены вместе с «одной целью»; вернули один — остальные на месте', async () => {
+      useGate.getState().open();
+      await wrap(<AbaSpecialistScreen />);
+      await waitFor(() => expect(screen.getByTestId('spec-pace')).toBeTruthy());
+      await fireEvent.press(screen.getByTestId('spec-teaching-1'));
+      await waitFor(async () => expect(await params()).toEqual({ maxTeachingTargets: 1 }));
+      await fireEvent.press(screen.getByTestId('spec-pace-long'));
+      await waitFor(async () => expect(await params()).toEqual({ maxTeachingTargets: 1, longInterTrial: true }));
+      await fireEvent.press(screen.getByTestId('spec-interspersal-off'));
+      await waitFor(async () => expect(await params()).toEqual({ maxTeachingTargets: 1, longInterTrial: true, noInterspersal: true }));
+      await fireEvent.press(screen.getByTestId('spec-pace-fast'));
+      await waitFor(async () => expect(await params()).toEqual({ maxTeachingTargets: 1, noInterspersal: true }));
+      expect((await events()).map((e) => e.slice(0, 3))).toEqual([
+        ['maxTeachingTargets', null, 1],
+        ['longInterTrial', null, true],
+        ['noInterspersal', null, true],
+        ['longInterTrial', true, null],
+      ]);
+    });
+
+    it('без свежего PIN переключатель просит PIN и ничего не пишет', async () => {
+      await wrap(<AbaSpecialistScreen />);
+      await waitFor(() => expect(screen.getByTestId('spec-pace')).toBeTruthy());
+      await fireEvent.press(screen.getByTestId('spec-pace-long'));
+      expect(screen.getByTestId('confirm-pin-sheet')).toBeTruthy();
+      expect(await params()).toBeFalsy();
+      expect(await events()).toEqual([]);
+    });
+  });
+
   it('«Назначить проверку вперемешку» и «Беспокойство по согласию просмотрено» — отметки снимают флаги', async () => {
     useGate.getState().open();
     const [a] = ABA_TARGETS;

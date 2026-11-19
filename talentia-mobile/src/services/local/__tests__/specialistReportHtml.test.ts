@@ -123,6 +123,83 @@ describe('specialistReportHtml: содержание', () => {
     expect(text(render({ ...data, state: without }))).toContain('условия занятий: по умолчанию для полосы профиля');
   });
 
+  describe('длинная пауза и «без вперемешку» (решение владельца 2026-11-19)', () => {
+    const data = fabricatedExport();
+    const withParams = (abaSessionParams: unknown, lang: 'ru' | 'en' = 'ru') => {
+      const custom = { ...data, state: { ...data.state, abaSessionParams } } as SpecialistExport;
+      return text(lang === 'ru' ? render(custom) : specialistReportHtml(custom, reportT('en'), { lang: 'en' }));
+    };
+    const withEvents = (lang: 'ru' | 'en' = 'ru') => {
+      const custom = {
+        ...data,
+        abaSpecialistEvents: [
+          { order: 1, day: '2026-11-04', role: 'specialist', claimed: true, field: 'longInterTrial', from: null, to: true },
+          { order: 2, day: '2026-11-04', role: 'specialist', claimed: true, field: 'noInterspersal', from: null, to: true },
+          { order: 3, day: '2026-11-12', role: 'specialist', claimed: true, field: 'longInterTrial', from: true, to: null },
+          { order: 4, day: '2026-11-12', role: 'specialist', claimed: true, field: 'noInterspersal', from: true, to: null },
+        ],
+      } as SpecialistExport;
+      return text(lang === 'ru' ? render(custom) : specialistReportHtml(custom, reportT('en'), { lang: 'en' }));
+    };
+
+    it('шапка ru: оба параметра — строками после «заданий в обучении», перед временем на ответ', () => {
+      expect(withParams({ longInterTrial: true, noInterspersal: true, maxTeachingTargets: 1 })).toContain(
+        'условия занятий, сохранённые в разделе «Для специалиста»: полоса параметров как в профиле, длительность по умолчанию, заданий в обучении за занятие: 1, пауза после ответа без жетона: 5 с, освоенное вперемешку: выключено, время на ответ: по умолчанию',
+      );
+    });
+
+    it('шапка ru: один параметр без остальных — уже не «по умолчанию для полосы профиля»; второго в строке нет', () => {
+      const long = withParams({ longInterTrial: true });
+      expect(long).toContain('заданий в обучении за занятие: по умолчанию, пауза после ответа без жетона: 5 с, время на ответ: по умолчанию');
+      expect(long).not.toContain('условия занятий: по умолчанию для полосы профиля');
+      expect(long).not.toContain('освоенное вперемешку');
+      const off = withParams({ noInterspersal: true });
+      expect(off).toContain('заданий в обучении за занятие: по умолчанию, освоенное вперемешку: выключено, время на ответ: по умолчанию');
+      expect(off).not.toContain('пауза после ответа без жетона');
+    });
+
+    it('шапка en: те же строки по-английски', () => {
+      expect(withParams({ longInterTrial: true, noInterspersal: true }, 'en')).toContain(
+        'targets taught per session: default, pause after an answer without a token: 5 s, mastered trials mixed in: off, time to answer: default',
+      );
+    });
+
+    it.each([false, 'true', 1, null])('значение %p вместо `true` — текст прежний: «по умолчанию для полосы профиля»', (bad) => {
+      const plainBad = withParams({ longInterTrial: bad, noInterspersal: bad });
+      expect(plainBad).toContain('условия занятий: по умолчанию для полосы профиля');
+      expect(plainBad).not.toContain('пауза после ответа без жетона');
+      expect(plainBad).not.toContain('освоенное вперемешку');
+    });
+
+    it('параметры по умолчанию — шапка прежняя, новых строк нет ни на ru, ни на en', () => {
+      expect(plain).not.toContain('пауза после ответа без жетона');
+      expect(plain).not.toContain('освоенное вперемешку');
+      const { abaSessionParams: _p, ...without } = data.state;
+      expect(text(render({ ...data, state: without }))).toContain('условия занятий: по умолчанию для полосы профиля');
+      const en = text(specialistReportHtml(data, reportT('en'), { lang: 'en' }));
+      expect(en).not.toContain('pause after an answer without a token');
+      expect(en).not.toContain('mastered trials mixed in');
+    });
+
+    it('«Изменения условий» ru: значениями — пауза «2 с → 5 с» и обратно, вперемешку «да → нет» и обратно', () => {
+      const p = withEvents();
+      expect(p).toContain('4.11 специалист (со слов) пауза после ответа без жетона 2 с 5 с');
+      expect(p).toContain('4.11 специалист (со слов) освоенное вперемешку да нет');
+      expect(p).toContain('12.11 специалист (со слов) пауза после ответа без жетона 5 с 2 с');
+      expect(p).toContain('12.11 специалист (со слов) освоенное вперемешку нет да');
+      expect(p).not.toMatch(/longInterTrial|noInterspersal|null|true/);
+    });
+
+    it('«Изменения условий» en: те же строки по-английски, без сырых ключей', () => {
+      const p = withEvents('en');
+      expect(p).toContain('pause after an answer without a token 2 s 5 s');
+      expect(p).toContain('mastered trials mixed in yes no');
+      expect(p).toContain('pause after an answer without a token 5 s 2 s');
+      expect(p).toContain('mastered trials mixed in no yes');
+      expect(p).not.toMatch(/longInterTrial|noInterspersal|[А-Яа-яЁё]/);
+    });
+  });
+
   it('«Изменения условий»: день, кто — со слов, что изменено, было → стало словами, без мс и null', () => {
     expect(plain).toContain('Изменения условий');
     expect(plain).toContain('Кто менял — со слов: приложение не проверяет, кто держит телефон.');

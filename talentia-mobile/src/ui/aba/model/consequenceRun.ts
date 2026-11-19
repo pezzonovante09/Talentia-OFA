@@ -8,7 +8,8 @@
  * - `praise` / `listened` — без плашки (иначе подсказанный ответ получил бы тот же условный подкрепитель, что
  *   самостоятельный): знак «принято» в центре полосы (`abaVisiblePraise`, решение 35) с 0 до 1000 и голос в 300 —
  *   в calm голоса нет; `neutral` — ничего;
- * - следующий SD — `abaNextSdAt(markedAt, tokenAddedLandedAt)`; пустые плиты межпробной паузы — с 4000;
+ * - следующий SD — `abaNextSdAt(markedAt, tokenAddedLandedAt)`; пустые плиты межпробной паузы — с 4000; при
+ *   `fastNoToken` без жетона — SD в 2000, пустые плиты с 1000 (`abaInterTrial.noTokenNextSdAtMs`);
  * - жетон пробы заполнил доску (`exchange`, №172): плашки до 4000, пустых плит и SD нет — `exchange` через
  *   `abaExchange.fromFullBoard.afterLandingMs` после посадки жетона (1040, calm 820); похвала договаривается на
  *   удержании полной доски экрана обмена.
@@ -50,8 +51,14 @@ export function startConsequence(input: {
   tokenAddedLandedAt?: number;
   /** Жетон этой пробы заполнил доску (обучение доске, №172): после посадки — сразу обмен. */
   exchange?: boolean;
+  /**
+   * Быстрый темп без жетона (решение владельца 2026-11-19): пробу оценило касание — отмены нет — и специалист не
+   * вернул длинную паузу. Тогда после `praise` / `listened` / `neutral` следующий SD в `noTokenNextSdAtMs`, а не в 5000.
+   */
+  fastNoToken?: boolean;
 }): ConsequenceRun {
   const { markedAt, feedback, calm } = input;
+  const nextSdMs = input.fastNoToken && feedback !== 'token_praise' ? abaInterTrial.noTokenNextSdAtMs : abaInterTrial.nextSdAtMs;
   const o = abaReinforcementOverlay;
   const plan: ConsequenceRun['plan'] = [];
   if (feedback === 'token_praise') {
@@ -73,8 +80,8 @@ export function startConsequence(input: {
     }
     plan.push({ at: markedAt + v.holdMs, effect: { kind: 'praise_mark_hide' } });
   }
-  plan.push({ at: markedAt + abaInterTrial.nextSdAtMs - abaInterTrial.ms, effect: { kind: 'plates_empty' } });
-  plan.push({ at: abaNextSdAt(markedAt, input.tokenAddedLandedAt), effect: { kind: 'next_sd' } });
+  plan.push({ at: markedAt + nextSdMs - abaInterTrial.ms, effect: { kind: 'plates_empty' } });
+  plan.push({ at: abaNextSdAt(markedAt, input.tokenAddedLandedAt, nextSdMs), effect: { kind: 'next_sd' } });
   plan.sort((a, b) => a.at - b.at);
   return { markedAt, plan, done: 0 };
 }

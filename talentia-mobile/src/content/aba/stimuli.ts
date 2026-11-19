@@ -83,6 +83,13 @@ export const ABA_STIMULI: readonly AbaStimulus[] = [
   obj('tree', 'tree'),
   obj('bus', 'vehicle'),
   obj('bell', 'bell'),
+  // вторые рисунки тех же предметов — образцы «похожее, но не такое же» (№206, предметы выбрал методист 2026-11-19):
+  // другой цвет и форма деталей, тот же стиль, ракурс и размер; в поле не ставятся никогда (`samplePairs`)
+  obj('car-b', 'vehicle'),
+  obj('cup-b', 'kitchen'),
+  obj('hat-b', 'clothes'),
+  obj('book-b', 'book'),
+  obj('chair-b', 'furniture'),
   ...SHAPES.map((n) => shape(n)),
   ...SHAPES.map((n) => shape(n, true)),
   // Окабе–Ито без оранжевого #E69F00 и жёлтого #F0E442 (близки к жетону) и чёрного (чернила); пары «не вместе» — ниже
@@ -118,6 +125,11 @@ export const ABA_SHAPE_NOT_TOGETHER: readonly [AbaShape, AbaShape][] = [
 export const ABA_OBJECT_NOT_TOGETHER: readonly [string, string][] = [
   ['aba-obj-apple', 'aba-obj-pear'],
   ['aba-obj-mitten', 'aba-obj-sock'],
+  // к «похожему» (методист 2026-11-19): рядом с образцом-машиной автобус читался бы как «тоже машина», чайник — как чашка
+  ['aba-obj-car', 'aba-obj-bus'],
+  ['aba-obj-car-b', 'aba-obj-bus'],
+  ['aba-obj-cup', 'aba-obj-teapot'],
+  ['aba-obj-cup-b', 'aba-obj-teapot'],
 ];
 
 export const ABA_CARDS_NOT_TOGETHER: readonly (readonly [string, string])[] = [

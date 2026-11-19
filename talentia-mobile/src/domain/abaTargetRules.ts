@@ -91,6 +91,41 @@ function matchErrors(t: AbaTarget): string[] {
     if (!e.cards || e.cards.length !== t.fieldSize) errors.push(`у экземпляра ${e.id} карточек ${e.cards?.length ?? 0}, нужно ${t.fieldSize}`);
     else if (new Set(e.cards).size < e.cards.length) errors.push(`у экземпляра ${e.id} карточки повторяются`);
   }
+  return [...errors, ...samplePairErrors(t)];
+}
+
+/**
+ * Неидентичное сопоставление (`samplePairs`; условия методиста 2026-11-19, №206):
+ * - у каждого экземпляра ровно одна карточка с парой: образец выбирается внутри экземпляра, и общая парная карточка
+ *   дала бы «два разных экземпляра» критерия на одном предмете — ложное «освоено»;
+ * - образец — другой рисунок того же предмета (id образца начинается с id карточки), сам в поле не стоит: иначе в поле
+ *   был бы идентичный вариант, и в поле не бывает двух карточек одного предмета;
+ * - карточки переноса — предметы вне обучения этой цели, ни верными, ни соседями;
+ * - ничего лишнего: у каждой пары есть экземпляр.
+ */
+function samplePairErrors(t: AbaTarget): string[] {
+  const pairs = t.samplePairs;
+  if (!pairs) return [];
+  const errors: string[] = [];
+  const fieldCards = new Set(t.exemplars.flatMap((e) => e.cards ?? []));
+  for (const [card, sample] of Object.entries(pairs)) {
+    if (sample === card || !sample.startsWith(`${card}-`)) errors.push(`образец ${sample} — не другой рисунок предмета ${card}`);
+    if (fieldCards.has(sample)) errors.push(`образец ${sample} стоит в поле цели`);
+    if (!fieldCards.has(card)) errors.push(`у пары ${card} нет экземпляра`);
+  }
+  if (new Set(Object.values(pairs)).size < Object.values(pairs).length) errors.push('один образец у двух карточек');
+  const paired = new Map<string, string>();
+  for (const e of t.exemplars) {
+    const own = (e.cards ?? []).filter((c) => pairs[c]);
+    if (own.length !== 1) errors.push(`у экземпляра ${e.id} карточек с парой ${own.length}, нужна одна`);
+    else if (paired.has(own[0])) errors.push(`карточка с парой ${own[0]} у двух экземпляров: ${paired.get(own[0])} и ${e.id}`);
+    else paired.set(own[0], e.id);
+  }
+  const teaching = new Set(t.exemplars.filter((e) => e.role === 'teaching').flatMap((e) => e.cards ?? []));
+  for (const e of t.exemplars.filter((x) => x.role === 'generalization')) {
+    const shared = (e.cards ?? []).filter((c) => teaching.has(c));
+    if (shared.length) errors.push(`перенос ${e.id} на предметах обучения: ${shared.join(', ')}`);
+  }
   return errors;
 }
 

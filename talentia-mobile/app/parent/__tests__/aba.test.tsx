@@ -709,6 +709,29 @@ describe('«Занятия ABA»: карточка «Цели» (этап G2, в
     await waitFor(() => expect(screen.getByTestId('aba-goals-summary').props.children).toBe('Занятие сегодня: без проб'));
   });
 
+  it('закрытая цель «похожее» (№206, вторых рисунков нет в реестре) в «Целях» не стоит и строкой «впереди»: лестница начата целиком', async () => {
+    // сборка для детей: `__DEV__` выключен — допуск целей по настоящему реестру, как на телефоне семьи
+    const g = globalThis as unknown as { __DEV__: boolean };
+    const was = g.__DEV__;
+    g.__DEV__ = false;
+    try {
+      expect(objectArt['aba-obj-car-b']).toBeNull();
+      await grant();
+      await pair();
+      const [same2, same3, shape, color] = ABA_TARGETS;
+      const own = (t: (typeof ABA_TARGETS)[number]) => markMastered(initialTargetState(t), 1, 'criterion', 'with_adult');
+      await setTargets({ [same2.id]: own(same2), [same3.id]: own(same3), [shape.id]: own(shape), [color.id]: { ...initialTargetState(color), phase: 'acquisition', lastSessionIndex: 2 } });
+      await renderAba();
+      await waitFor(() => expect(screen.getByTestId('aba-goals')).toBeTruthy());
+      expect(goalStatus('match-color-3')).toBe('учим');
+      expect((await abaOverview(db, KID)).readyTargets).toBe(4);
+      expect(screen.queryByTestId('aba-goal-match-similar-3')).toBeNull();
+      expect(screen.queryByText(ru.parent.aba.goal['match-similar-3'])).toBeNull();
+    } finally {
+      g.__DEV__ = was;
+    }
+  });
+
   it('цели — выбранного ребёнка: у второго без согласия карточки нет', async () => {
     await grant();
     await pair();
